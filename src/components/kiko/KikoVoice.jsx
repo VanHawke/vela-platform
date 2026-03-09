@@ -159,6 +159,13 @@ export default function KikoVoice({ open, onClose, onExchange }) {
       dcRef.current = dc
 
       dc.addEventListener('open', () => {
+        // Enable input audio transcription so we get user speech text
+        dc.send(JSON.stringify({
+          type: 'session.update',
+          session: {
+            input_audio_transcription: { model: 'whisper-1' },
+          },
+        }))
         setState(STATES.LISTENING)
       })
 

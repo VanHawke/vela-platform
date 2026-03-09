@@ -214,8 +214,12 @@ export default function KikoChat({ user }) {
     }
   }, [recording, startRecording, stopRecording])
 
+  // Track activeConvId in a ref so voice callbacks always see latest value
+  const activeConvIdRef = useRef(activeConvId)
+  useEffect(() => { activeConvIdRef.current = activeConvId }, [activeConvId])
+
   // Mode 3 — Voice exchange callback (fires per turn, not on close)
-  // Adds messages to chat, saves to Supabase, refreshes history
+  // Adds messages to chat, saves to Supabase, feeds Mem0
   const handleVoiceExchange = useCallback(async ({ user: userText, kiko: kikoText }) => {
     const newMsgs = []
     if (userText) {
@@ -226,19 +230,31 @@ export default function KikoChat({ user }) {
     }
     if (newMsgs.length === 0) return
 
-    // Update local state
+    // Update local state, then save async using ref for latest convId
     setMessages(prev => {
       const updated = [...prev, ...newMsgs]
-      // Save async — use the updated array directly
       const toSave = updated.map(m => ({ role: m.role, content: m.content }))
-      saveConversation(toSave, activeConvId, userText || 'Voice conversation')
+      const currentConvId = activeConvIdRef.current
+      saveConversation(toSave, currentConvId, userText || 'Voice conversation')
         .then(newId => {
-          if (newId && !activeConvId) setActiveConvId(newId)
+          if (newId && !currentConvId) {
+            setActiveConvId(newId)
+            activeConvIdRef.current = newId
+          }
           loadConversations()
         })
       return updated
     })
-  }, [activeConvId, user])
+
+    // Feed Mem0 with voice exchange (fire-and-forget)
+    if (userText && kikoText) {
+      fetch('/api/voice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'mem0', userText, kikoText }),
+      }).catch(() => {})
+    }
+  }, [user])
 
   const hasMessages = messages.length > 0 || streaming
 

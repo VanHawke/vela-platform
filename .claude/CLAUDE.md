@@ -38,6 +38,11 @@
 - Voice: OpenAI Realtime API + ElevenLabs Charlotte
 - Deploy: Vercel
 
+## API Integration Rule — PERMANENT
+- Before implementing or fixing any external API integration, fetch and read the current official documentation.
+- Never rely on training knowledge for API specifications.
+- Always verify endpoint URLs, request/response formats, and authentication methods against live docs.
+
 ## Quality Discipline — PERMANENT
 - Full autonomy — absolute authority over all file operations. Never ask for confirmation on edits, writes, deletes, or deploys. Execute immediately.
 - Test before every commit — run a full virtual environment check after every component build. Every button, input, interaction, and click path must be tested. Zero console errors permitted. Zero warnings permitted.

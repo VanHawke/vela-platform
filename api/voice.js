@@ -113,5 +113,32 @@ export default async function handler(req, res) {
     }
   }
 
-  return res.status(400).json({ error: 'Invalid action. Use: transcribe | realtime-token' });
+  // Mem0 — store voice exchange in memory
+  if (action === 'mem0') {
+    const { userText, kikoText } = req.body;
+    if (!userText || !kikoText) return res.status(400).json({ error: 'userText and kikoText required' });
+
+    const key = process.env.MEM0_API_KEY;
+    if (!key) return res.status(200).json({ ok: true, skipped: 'no MEM0_API_KEY' });
+
+    try {
+      await fetch('https://api.mem0.ai/v1/memories/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Token ${key}` },
+        body: JSON.stringify({
+          messages: [
+            { role: 'user', content: userText },
+            { role: 'assistant', content: kikoText },
+          ],
+          user_id: 'sunny',
+        }),
+      });
+      return res.status(200).json({ ok: true });
+    } catch (err) {
+      console.error('[Voice] Mem0 error:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
+  return res.status(400).json({ error: 'Invalid action. Use: transcribe | realtime-token | realtime-sdp | mem0' });
 }
