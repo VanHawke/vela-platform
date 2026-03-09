@@ -48,16 +48,7 @@ export default async function handler(req, res) {
   if (action === 'realtime-token') {
     try {
       const sessionConfig = {
-        session: {
-          type: 'realtime',
-          model: 'gpt-realtime',
-          input_audio_transcription: { model: 'whisper-1' },
-          audio: {
-            output: {
-              voice: 'shimmer',
-            },
-          },
-        },
+        voice: 'shimmer',
       };
 
       const response = await fetch('https://api.openai.com/v1/realtime/client_secrets', {
