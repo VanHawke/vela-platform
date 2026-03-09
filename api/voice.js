@@ -50,8 +50,8 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4o-realtime-preview-2024-12-17',
           voice: 'alloy',
+          expires_in: 60,
         }),
       });
 

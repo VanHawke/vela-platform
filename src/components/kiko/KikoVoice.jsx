@@ -129,8 +129,8 @@ export default function KikoVoice({ open, onClose, onTranscript }) {
         throw new Error(`No client_secret in response. Keys: ${Object.keys(data).join(', ')}`)
       }
 
-      const ws = new WebSocket(`wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17`, [
-        'realtime', `openai-insecure-api-key.${token}`,
+      const ws = new WebSocket('wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17', [
+        'realtime', `openai-insecure-api-key.${token}`, 'openai-beta.realtime-v1',
       ])
 
       ws.onopen = () => {
