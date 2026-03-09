@@ -29,7 +29,7 @@ export default function KikoChat({ user }) {
   const [streamText, setStreamText] = useState('')
   const [conversations, setConversations] = useState([])
   const [activeConvId, setActiveConvId] = useState(null)
-  const [historyOpen, setHistoryOpen] = useState(true)
+  const [historyOpen, setHistoryOpen] = useState(false)
   const [voiceOpen, setVoiceOpen] = useState(false)
   const [thinkingSteps, setThinkingSteps] = useState([])
   const [isThinking, setIsThinking] = useState(false)

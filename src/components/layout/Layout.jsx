@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 
 export default function Layout({ user }) {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(true)
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background">
