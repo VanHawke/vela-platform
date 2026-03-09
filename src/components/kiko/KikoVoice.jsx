@@ -159,6 +159,7 @@ export default function KikoVoice({ open, onClose, onExchange }) {
       dcRef.current = dc
 
       dc.addEventListener('open', () => {
+        console.log('[Voice DC] DataChannel opened — sending session.update')
         // Enable input audio transcription so we get user speech text
         dc.send(JSON.stringify({
           type: 'session.update',
@@ -173,9 +174,11 @@ export default function KikoVoice({ open, onClose, onExchange }) {
       dc.addEventListener('message', (e) => {
         try {
           const event = JSON.parse(e.data)
+          console.log('[Voice DC] Event:', event.type)
 
           // User finished speaking — capture their transcript for this turn
           if (event.type === 'conversation.item.input_audio_transcription.completed') {
+            console.log('[Voice DC] User transcript:', JSON.stringify(event.transcript))
             currentUserText.current += (event.transcript || '')
           }
 
@@ -194,14 +197,20 @@ export default function KikoVoice({ open, onClose, onExchange }) {
           if (event.type === 'response.done') {
             const userText = currentUserText.current.trim()
             const kikoText = currentKikoText.current.trim()
+            console.log('[Voice DC] response.done — userText:', JSON.stringify(userText), 'kikoText:', JSON.stringify(kikoText))
 
             if (userText || kikoText) {
+              console.log('[Voice DC] Firing onExchange callback')
               // Add to overlay display
               setExchanges(prev => [...prev, { user: userText, kiko: kikoText }])
               // Fire callback to parent — adds to chat + saves to Supabase
               if (onExchangeRef.current) {
                 onExchangeRef.current({ user: userText, kiko: kikoText })
+              } else {
+                console.warn('[Voice DC] onExchangeRef.current is null!')
               }
+            } else {
+              console.warn('[Voice DC] response.done but both userText and kikoText are empty')
             }
 
             // Reset for next turn
@@ -211,11 +220,13 @@ export default function KikoVoice({ open, onClose, onExchange }) {
           }
 
           if (event.type === 'error') {
-            console.error('[Voice DC] Error:', event.error)
+            console.error('[Voice DC] Error:', JSON.stringify(event.error))
             setError(event.error?.message || 'Realtime error')
             setState(STATES.ERROR)
           }
-        } catch {}
+        } catch (parseErr) {
+          console.error('[Voice DC] Parse error:', parseErr.message, 'raw:', e.data?.slice?.(0, 200))
+        }
       })
 
       // Step 3: SDP exchange via server proxy

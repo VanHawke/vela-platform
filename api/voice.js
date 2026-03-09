@@ -116,14 +116,19 @@ export default async function handler(req, res) {
 
   // Mem0 — store voice exchange in memory
   if (action === 'mem0') {
+    console.log('[Voice API] Mem0 action received — userText:', req.body.userText?.slice(0, 50), 'kikoText:', req.body.kikoText?.slice(0, 50));
     const { userText, kikoText } = req.body;
     if (!userText || !kikoText) return res.status(400).json({ error: 'userText and kikoText required' });
 
     const key = process.env.MEM0_API_KEY;
-    if (!key) return res.status(200).json({ ok: true, skipped: 'no MEM0_API_KEY' });
+    if (!key) {
+      console.warn('[Voice API] No MEM0_API_KEY — skipping');
+      return res.status(200).json({ ok: true, skipped: 'no MEM0_API_KEY' });
+    }
 
     try {
-      await fetch('https://api.mem0.ai/v1/memories/', {
+      console.log('[Voice API] Sending to Mem0...');
+      const mem0Res = await fetch('https://api.mem0.ai/v1/memories/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Token ${key}` },
         body: JSON.stringify({
@@ -134,9 +139,11 @@ export default async function handler(req, res) {
           user_id: 'sunny',
         }),
       });
+      const mem0Data = await mem0Res.json();
+      console.log('[Voice API] Mem0 response:', mem0Res.status, JSON.stringify(mem0Data).slice(0, 200));
       return res.status(200).json({ ok: true });
     } catch (err) {
-      console.error('[Voice] Mem0 error:', err.message);
+      console.error('[Voice API] Mem0 error:', err.message);
       return res.status(500).json({ error: err.message });
     }
   }

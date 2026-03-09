@@ -56,18 +56,25 @@ export default function KikoChat({ user }) {
 
   // Save conversation to Supabase (client-side, authenticated, RLS works)
   const saveConversation = async (allMessages, convId, firstUserMessage) => {
-    if (!user?.id) return convId
+    console.log('[SaveConv] Called — msgCount:', allMessages.length, 'convId:', convId, 'userId:', user?.id, 'title:', firstUserMessage?.slice(0, 30))
+    if (!user?.id) {
+      console.warn('[SaveConv] No user.id — aborting')
+      return convId
+    }
     try {
       if (convId) {
         // Update existing conversation
+        console.log('[SaveConv] Updating existing:', convId)
         const { error } = await supabase
           .from('conversations')
           .update({ messages: allMessages, updated_at: new Date().toISOString() })
           .eq('id', convId)
-        if (error) console.error('[Chat] Update conversation error:', error.message, error.details)
+        if (error) console.error('[SaveConv] Update error:', error.message, error.details)
+        else console.log('[SaveConv] Update success')
         return convId
       } else {
         // Insert new conversation
+        console.log('[SaveConv] Inserting new conversation')
         const { data, error } = await supabase
           .from('conversations')
           .insert({
@@ -80,14 +87,14 @@ export default function KikoChat({ user }) {
           .select('id')
           .single()
         if (error) {
-          console.error('[Chat] Insert conversation error:', error.message, error.details, error.hint)
+          console.error('[SaveConv] Insert error:', error.message, error.details, error.hint)
           return null
         }
-        console.log('[Chat] New conversation created:', data?.id)
+        console.log('[SaveConv] Insert success — new id:', data?.id)
         return data?.id || null
       }
     } catch (err) {
-      console.error('[Chat] Save conversation exception:', err)
+      console.error('[SaveConv] Exception:', err)
       return convId
     }
   }
@@ -221,6 +228,7 @@ export default function KikoChat({ user }) {
   // Mode 3 — Voice exchange callback (fires per turn, not on close)
   // Adds messages to chat, saves to Supabase, feeds Mem0
   const handleVoiceExchange = useCallback(async ({ user: userText, kiko: kikoText }) => {
+    console.log('[VoiceExchange] Called with userText:', JSON.stringify(userText), 'kikoText:', JSON.stringify(kikoText))
     const newMsgs = []
     if (userText) {
       newMsgs.push({ role: 'user', content: userText, timestamp: new Date().toISOString() })
@@ -228,31 +236,45 @@ export default function KikoChat({ user }) {
     if (kikoText) {
       newMsgs.push({ role: 'assistant', content: kikoText, timestamp: new Date().toISOString() })
     }
-    if (newMsgs.length === 0) return
+    if (newMsgs.length === 0) {
+      console.warn('[VoiceExchange] No messages to save — returning early')
+      return
+    }
+
+    console.log('[VoiceExchange] Adding', newMsgs.length, 'messages to state. activeConvIdRef:', activeConvIdRef.current, 'user?.id:', user?.id)
 
     // Update local state, then save async using ref for latest convId
     setMessages(prev => {
       const updated = [...prev, ...newMsgs]
       const toSave = updated.map(m => ({ role: m.role, content: m.content }))
       const currentConvId = activeConvIdRef.current
+      console.log('[VoiceExchange] Inside setMessages — saving', toSave.length, 'messages, convId:', currentConvId)
       saveConversation(toSave, currentConvId, userText || 'Voice conversation')
         .then(newId => {
+          console.log('[VoiceExchange] saveConversation returned:', newId, '(was:', currentConvId, ')')
           if (newId && !currentConvId) {
             setActiveConvId(newId)
             activeConvIdRef.current = newId
           }
           loadConversations()
         })
+        .catch(err => console.error('[VoiceExchange] saveConversation error:', err))
       return updated
     })
 
     // Feed Mem0 with voice exchange (fire-and-forget)
     if (userText && kikoText) {
+      console.log('[VoiceExchange] Sending to Mem0')
       fetch('/api/voice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'mem0', userText, kikoText }),
-      }).catch(() => {})
+      })
+        .then(r => r.json())
+        .then(d => console.log('[VoiceExchange] Mem0 response:', d))
+        .catch(err => console.error('[VoiceExchange] Mem0 error:', err))
+    } else {
+      console.log('[VoiceExchange] Skipping Mem0 — missing userText or kikoText')
     }
   }, [user])
 
