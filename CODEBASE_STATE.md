@@ -3,7 +3,8 @@
 **Version:** 2.0.0-alpha
 **Build Date:** 2026-03-09
 **Repo:** github.com/VanHawke/vela-platform
-**Target Domain:** vela.vanhawke.com
+**Deployed At:** https://vela-platform-one.vercel.app
+**Target Domain:** vela.vanhawke.com (not yet configured)
 **Platform:** Vite + React 19 + Tailwind v4 + shadcn/ui
 **Database:** Supabase (same project as vanhawke-crm)
 **AI Backend:** Anthropic Claude (tiered: Haiku/Sonnet) + OpenAI (voice/search) + Mem0 (memory)
@@ -36,7 +37,7 @@
 - [x] 1.6 api/kiko.js — tiered routing (Haiku/Sonnet), KIKO_CORE/KIKO_FULL prompts, Mem0, 7 tools, streaming, prompt caching, tool loop
 - [x] 1.7 Voice — api/voice.js (Whisper STT + Realtime token), KikoVoice.jsx (overlay, states, transcripts)
 - [x] 1.8 Settings — 5 tabs (Profile, AI Config, Visual Builder, Images, About), ImageUpload component
-- [ ] 1.9 Deploy Gate — needs Vercel project + env vars + domain config
+- [x] 1.9 Deploy Gate — deployed to https://vela-platform-one.vercel.app (env vars + domain pending)
 ### Phase 2 — CRM: NOT STARTED
 ### Phase 3 — Intelligence: NOT STARTED
 
