@@ -81,23 +81,19 @@ export function useMicInput() {
 }
 
 // Mode 3 — Full voice overlay (WebRTC, GA Realtime API)
-// onExchange fires after EACH complete turn (user spoke → Kiko responded)
-// with { user: string, kiko: string } for that single exchange.
-export default function KikoVoice({ open, onClose, onExchange }) {
+// onVoiceMessage fires for EACH individual transcript (user or assistant)
+// with { role: 'user'|'assistant', content: string }
+export default function KikoVoice({ open, onClose, onVoiceMessage }) {
   const [state, setState] = useState(STATES.IDLE)
   const [error, setError] = useState('')
-  // All exchanges for overlay display
-  const [exchanges, setExchanges] = useState([])
-  // Current turn accumulators (reset after each response.done)
-  const currentUserText = useRef('')
-  const currentKikoText = useRef('')
+  const [transcripts, setTranscripts] = useState([])
+  const streamingKikoText = useRef('')
   const pcRef = useRef(null)
   const dcRef = useRef(null)
   const audioRef = useRef(null)
   const localStreamRef = useRef(null)
-  // Ref to onExchange so the DC message handler always has the latest
-  const onExchangeRef = useRef(onExchange)
-  useEffect(() => { onExchangeRef.current = onExchange }, [onExchange])
+  const onVoiceMessageRef = useRef(onVoiceMessage)
+  useEffect(() => { onVoiceMessageRef.current = onVoiceMessage }, [onVoiceMessage])
 
   useEffect(() => {
     if (open) {
@@ -116,9 +112,8 @@ export default function KikoVoice({ open, onClose, onExchange }) {
   const connect = async () => {
     setState(STATES.CONNECTING)
     setError('')
-    setExchanges([])
-    currentUserText.current = ''
-    currentKikoText.current = ''
+    setTranscripts([])
+    streamingKikoText.current = ''
 
     try {
       // Step 1: Get ephemeral token from server
@@ -164,56 +159,58 @@ export default function KikoVoice({ open, onClose, onExchange }) {
           type: 'session.update',
           session: {
             type: 'realtime',
-            input_audio_transcription: { model: 'whisper-1' },
-            turn_detection: { type: 'server_vad' }
+            audio: {
+              input: {
+                transcription: { model: 'whisper-1' },
+                turn_detection: { type: 'server_vad' }
+              },
+              output: { voice: 'shimmer' }
+            }
           }
         }))
         setState(STATES.LISTENING)
       })
 
-      dc.addEventListener('message', (e) => {
+      dc.onmessage = (e) => {
         try {
           const event = JSON.parse(e.data)
           console.log('[Voice DC] Event:', event.type)
 
-          // User finished speaking — capture transcript for pairing
+          // User speech transcript
           if (event.type === 'conversation.item.input_audio_transcription.completed') {
-            console.log('[Voice DC] User transcript:', JSON.stringify(event.transcript))
-            currentUserText.current = (event.transcript || '').trim()
+            const userText = event.transcript
+            console.log('[Voice DC] User transcript:', JSON.stringify(userText))
+            if (userText) {
+              setTranscripts(prev => [...prev, { role: 'user', content: userText }])
+              if (onVoiceMessageRef.current) {
+                onVoiceMessageRef.current({ role: 'user', content: userText })
+              }
+            }
           }
 
-          // Kiko streaming audio transcript delta — for overlay display only
+          // Kiko streaming delta — for overlay display only
           if (event.type === 'response.audio_transcript.delta') {
-            currentKikoText.current += (event.delta || '')
+            streamingKikoText.current += (event.delta || '')
             setState(STATES.SPEAKING)
           }
 
-          // Kiko finished responding — final transcript, fire exchange
+          // Kiko response transcript — final
           if (event.type === 'response.audio_transcript.done') {
-            const kikoText = (event.transcript || '').trim()
-            const userText = currentUserText.current
-            console.log('[Voice DC] response.audio_transcript.done — userText:', JSON.stringify(userText), 'kikoText:', JSON.stringify(kikoText))
-
-            if (userText || kikoText) {
-              console.log('[Voice DC] Firing onExchange callback')
-              setExchanges(prev => [...prev, { user: userText, kiko: kikoText }])
-              if (onExchangeRef.current) {
-                onExchangeRef.current({ user: userText, kiko: kikoText })
-              } else {
-                console.warn('[Voice DC] onExchangeRef.current is null!')
+            const kikoText = event.transcript
+            console.log('[Voice DC] Kiko transcript:', JSON.stringify(kikoText))
+            streamingKikoText.current = ''
+            if (kikoText) {
+              setTranscripts(prev => [...prev, { role: 'assistant', content: kikoText }])
+              if (onVoiceMessageRef.current) {
+                onVoiceMessageRef.current({ role: 'assistant', content: kikoText })
               }
-            } else {
-              console.warn('[Voice DC] audio_transcript.done but both texts empty')
             }
-
-            // Reset for next turn
-            currentUserText.current = ''
-            currentKikoText.current = ''
             setState(STATES.LISTENING)
           }
 
           // User started speaking
           if (event.type === 'input_audio_buffer.speech_started') {
+            streamingKikoText.current = ''
             setState(STATES.LISTENING)
           }
 
@@ -223,9 +220,9 @@ export default function KikoVoice({ open, onClose, onExchange }) {
             setState(STATES.ERROR)
           }
         } catch (parseErr) {
-          console.error('[Voice DC] Parse error:', parseErr.message, 'raw:', e.data?.slice?.(0, 200))
+          console.error('[Voice DC] Parse error:', parseErr.message)
         }
-      })
+      }
 
       // Step 3: SDP exchange via server proxy
       const offer = await pc.createOffer()
@@ -321,29 +318,25 @@ export default function KikoVoice({ open, onClose, onExchange }) {
           <p className="text-sm text-red-400 bg-red-400/10 px-4 py-2 rounded-lg max-w-sm text-center">{error}</p>
         )}
 
-        {/* Transcript history — all exchanges */}
-        <div className="w-full space-y-4 max-h-[40vh] overflow-y-auto">
-          {exchanges.map((ex, i) => (
-            <div key={i} className="space-y-2">
-              {ex.user && (
-                <div className="text-right">
-                  <span className="text-[10px] text-white/20 block mb-1">You</span>
-                  <p className="text-sm text-white/70 bg-white/5 rounded-xl px-4 py-2 inline-block">{ex.user}</p>
-                </div>
-              )}
-              {ex.kiko && (
-                <div className="text-left">
-                  <span className="text-[10px] text-white/20 block mb-1">Kiko</span>
-                  <p className="text-sm text-white/70 bg-white/5 rounded-xl px-4 py-2 inline-block">{ex.kiko}</p>
-                </div>
-              )}
+        {/* Transcript history */}
+        <div className="w-full space-y-2 max-h-[40vh] overflow-y-auto">
+          {transcripts.map((t, i) => (
+            <div key={i} className={t.role === 'user' ? 'text-right' : 'text-left'}>
+              <span className="text-[10px] text-white/20 block mb-1">
+                {t.role === 'user' ? 'You' : 'Kiko'}
+              </span>
+              <p className="text-sm text-white/70 bg-white/5 rounded-xl px-4 py-2 inline-block">
+                {t.content}
+              </p>
             </div>
           ))}
-          {/* Show in-progress Kiko response */}
-          {currentKikoText.current && state === STATES.SPEAKING && (
+          {/* Streaming kiko response */}
+          {streamingKikoText.current && state === STATES.SPEAKING && (
             <div className="text-left">
               <span className="text-[10px] text-white/20 block mb-1">Kiko</span>
-              <p className="text-sm text-white/70 bg-white/5 rounded-xl px-4 py-2 inline-block">{currentKikoText.current}▍</p>
+              <p className="text-sm text-white/70 bg-white/5 rounded-xl px-4 py-2 inline-block">
+                {streamingKikoText.current}▍
+              </p>
             </div>
           )}
         </div>

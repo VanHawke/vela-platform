@@ -225,56 +225,54 @@ export default function KikoChat({ user }) {
   const activeConvIdRef = useRef(activeConvId)
   useEffect(() => { activeConvIdRef.current = activeConvId }, [activeConvId])
 
-  // Mode 3 — Voice exchange callback (fires per turn, not on close)
-  // Adds messages to chat, saves to Supabase, feeds Mem0
-  const handleVoiceExchange = useCallback(async ({ user: userText, kiko: kikoText }) => {
-    console.log('[VoiceExchange] Called with userText:', JSON.stringify(userText), 'kikoText:', JSON.stringify(kikoText))
-    const newMsgs = []
-    if (userText) {
-      newMsgs.push({ role: 'user', content: userText, timestamp: new Date().toISOString() })
-    }
-    if (kikoText) {
-      newMsgs.push({ role: 'assistant', content: kikoText, timestamp: new Date().toISOString() })
-    }
-    if (newMsgs.length === 0) {
-      console.warn('[VoiceExchange] No messages to save — returning early')
-      return
+  // Track last user voice text for Mem0 pairing
+  const lastVoiceUserText = useRef('')
+
+  // Mode 3 — Voice message callback (fires per individual transcript)
+  // { role: 'user'|'assistant', content: string }
+  const handleVoiceMessage = useCallback(async ({ role, content }) => {
+    if (!content) return
+    console.log('[VoiceMsg] Received:', role, JSON.stringify(content.slice(0, 80)))
+
+    const msg = { role, content, timestamp: new Date().toISOString() }
+
+    // Track user text for Mem0 pairing
+    if (role === 'user') {
+      lastVoiceUserText.current = content
     }
 
-    console.log('[VoiceExchange] Adding', newMsgs.length, 'messages to state. activeConvIdRef:', activeConvIdRef.current, 'user?.id:', user?.id)
-
-    // Update local state, then save async using ref for latest convId
+    // Add message bubble to chat immediately + save to Supabase
     setMessages(prev => {
-      const updated = [...prev, ...newMsgs]
+      const updated = [...prev, msg]
       const toSave = updated.map(m => ({ role: m.role, content: m.content }))
       const currentConvId = activeConvIdRef.current
-      console.log('[VoiceExchange] Inside setMessages — saving', toSave.length, 'messages, convId:', currentConvId)
-      saveConversation(toSave, currentConvId, userText || 'Voice conversation')
+      console.log('[VoiceMsg] Saving', toSave.length, 'messages, convId:', currentConvId)
+      saveConversation(toSave, currentConvId, content.slice(0, 60) || 'Voice conversation')
         .then(newId => {
-          console.log('[VoiceExchange] saveConversation returned:', newId, '(was:', currentConvId, ')')
+          console.log('[VoiceMsg] saveConversation returned:', newId)
           if (newId && !currentConvId) {
             setActiveConvId(newId)
             activeConvIdRef.current = newId
           }
           loadConversations()
         })
-        .catch(err => console.error('[VoiceExchange] saveConversation error:', err))
+        .catch(err => console.error('[VoiceMsg] saveConversation error:', err))
       return updated
     })
 
-    // Feed Mem0 with voice exchange (fire-and-forget)
-    if (userText && kikoText) {
-      console.log('[VoiceExchange] Sending to Mem0')
+    // Mem0 — store after each complete exchange (assistant message arrives)
+    if (role === 'assistant' && lastVoiceUserText.current) {
+      console.log('[VoiceMsg] Sending exchange to Mem0')
+      const userText = lastVoiceUserText.current
+      lastVoiceUserText.current = ''
       fetch('/api/voice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'mem0', userText, kikoText }),
+        body: JSON.stringify({ action: 'mem0', userText, kikoText: content }),
       })
         .then(r => r.json())
-        .then(d => console.log('[VoiceExchange] Mem0 response:', d))
-        .catch(err => console.error('[VoiceExchange] Mem0 error:', err))
-    } else {
-      console.log('[VoiceExchange] Skipping Mem0 — missing userText or kikoText')
+        .then(d => console.log('[VoiceMsg] Mem0 response:', d))
+        .catch(err => console.error('[VoiceMsg] Mem0 error:', err))
     }
   }, [user])
 
@@ -390,7 +388,7 @@ export default function KikoChat({ user }) {
       <KikoVoice
         open={voiceOpen}
         onClose={() => setVoiceOpen(false)}
-        onExchange={handleVoiceExchange}
+        onVoiceMessage={handleVoiceMessage}
       />
     </div>
   )
