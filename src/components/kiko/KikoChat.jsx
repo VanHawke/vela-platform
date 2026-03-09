@@ -214,15 +214,31 @@ export default function KikoChat({ user }) {
     }
   }, [recording, startRecording, stopRecording])
 
-  // Mode 3 — Voice transcript callback
-  const handleVoiceTranscript = useCallback(({ user: userText, kiko: kikoText }) => {
+  // Mode 3 — Voice exchange callback (fires per turn, not on close)
+  // Adds messages to chat, saves to Supabase, refreshes history
+  const handleVoiceExchange = useCallback(async ({ user: userText, kiko: kikoText }) => {
+    const newMsgs = []
     if (userText) {
-      setMessages(prev => [...prev, { role: 'user', content: userText.trim(), timestamp: new Date().toISOString() }])
+      newMsgs.push({ role: 'user', content: userText, timestamp: new Date().toISOString() })
     }
     if (kikoText) {
-      setMessages(prev => [...prev, { role: 'assistant', content: kikoText.trim(), timestamp: new Date().toISOString() }])
+      newMsgs.push({ role: 'assistant', content: kikoText, timestamp: new Date().toISOString() })
     }
-  }, [])
+    if (newMsgs.length === 0) return
+
+    // Update local state
+    setMessages(prev => {
+      const updated = [...prev, ...newMsgs]
+      // Save async — use the updated array directly
+      const toSave = updated.map(m => ({ role: m.role, content: m.content }))
+      saveConversation(toSave, activeConvId, userText || 'Voice conversation')
+        .then(newId => {
+          if (newId && !activeConvId) setActiveConvId(newId)
+          loadConversations()
+        })
+      return updated
+    })
+  }, [activeConvId, user])
 
   const hasMessages = messages.length > 0 || streaming
 
@@ -336,7 +352,7 @@ export default function KikoChat({ user }) {
       <KikoVoice
         open={voiceOpen}
         onClose={() => setVoiceOpen(false)}
-        onTranscript={handleVoiceTranscript}
+        onExchange={handleVoiceExchange}
       />
     </div>
   )

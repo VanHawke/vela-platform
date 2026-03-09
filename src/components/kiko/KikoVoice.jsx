@@ -81,20 +81,23 @@ export function useMicInput() {
 }
 
 // Mode 3 — Full voice overlay (WebRTC, GA Realtime API)
-// Architecture matches OpenAI's official openai-realtime-console exactly:
-// 1. Fetch ephemeral token from /api/voice (action: realtime-token)
-// 2. Create RTCPeerConnection, add local mic track
-// 3. Create SDP offer, exchange via /api/voice (action: realtime-sdp)
-// 4. Events flow through RTCDataChannel, audio through WebRTC tracks
-export default function KikoVoice({ open, onClose, onTranscript }) {
+// onExchange fires after EACH complete turn (user spoke → Kiko responded)
+// with { user: string, kiko: string } for that single exchange.
+export default function KikoVoice({ open, onClose, onExchange }) {
   const [state, setState] = useState(STATES.IDLE)
-  const [userTranscript, setUserTranscript] = useState('')
-  const [kikoTranscript, setKikoTranscript] = useState('')
   const [error, setError] = useState('')
+  // All exchanges for overlay display
+  const [exchanges, setExchanges] = useState([])
+  // Current turn accumulators (reset after each response.done)
+  const currentUserText = useRef('')
+  const currentKikoText = useRef('')
   const pcRef = useRef(null)
   const dcRef = useRef(null)
   const audioRef = useRef(null)
   const localStreamRef = useRef(null)
+  // Ref to onExchange so the DC message handler always has the latest
+  const onExchangeRef = useRef(onExchange)
+  useEffect(() => { onExchangeRef.current = onExchange }, [onExchange])
 
   useEffect(() => {
     if (open) {
@@ -113,8 +116,9 @@ export default function KikoVoice({ open, onClose, onTranscript }) {
   const connect = async () => {
     setState(STATES.CONNECTING)
     setError('')
-    setUserTranscript('')
-    setKikoTranscript('')
+    setExchanges([])
+    currentUserText.current = ''
+    currentKikoText.current = ''
 
     try {
       // Step 1: Get ephemeral token from server
@@ -162,19 +166,42 @@ export default function KikoVoice({ open, onClose, onTranscript }) {
         try {
           const event = JSON.parse(e.data)
 
+          // User finished speaking — capture their transcript for this turn
+          if (event.type === 'conversation.item.input_audio_transcription.completed') {
+            currentUserText.current += (event.transcript || '')
+          }
+
+          // Kiko streaming audio transcript delta
           if (event.type === 'response.audio_transcript.delta') {
-            setKikoTranscript(prev => prev + (event.delta || ''))
+            currentKikoText.current += (event.delta || '')
             setState(STATES.SPEAKING)
           }
+
+          // User started speaking — switch to listening state
           if (event.type === 'input_audio_buffer.speech_started') {
             setState(STATES.LISTENING)
           }
-          if (event.type === 'conversation.item.input_audio_transcription.completed') {
-            setUserTranscript(prev => prev + (event.transcript || '') + ' ')
-          }
+
+          // Complete exchange — Kiko finished responding
           if (event.type === 'response.done') {
+            const userText = currentUserText.current.trim()
+            const kikoText = currentKikoText.current.trim()
+
+            if (userText || kikoText) {
+              // Add to overlay display
+              setExchanges(prev => [...prev, { user: userText, kiko: kikoText }])
+              // Fire callback to parent — adds to chat + saves to Supabase
+              if (onExchangeRef.current) {
+                onExchangeRef.current({ user: userText, kiko: kikoText })
+              }
+            }
+
+            // Reset for next turn
+            currentUserText.current = ''
+            currentKikoText.current = ''
             setState(STATES.LISTENING)
           }
+
           if (event.type === 'error') {
             console.error('[Voice DC] Error:', event.error)
             setError(event.error?.message || 'Realtime error')
@@ -213,17 +240,14 @@ export default function KikoVoice({ open, onClose, onTranscript }) {
   }
 
   const disconnect = () => {
-    // Close data channel
     if (dcRef.current) {
       dcRef.current.close()
       dcRef.current = null
     }
-    // Stop local mic tracks
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(t => t.stop())
       localStreamRef.current = null
     }
-    // Close peer connection
     if (pcRef.current) {
       pcRef.current.getSenders().forEach(sender => {
         if (sender.track) sender.track.stop()
@@ -231,7 +255,6 @@ export default function KikoVoice({ open, onClose, onTranscript }) {
       pcRef.current.close()
       pcRef.current = null
     }
-    // Clean up audio element
     if (audioRef.current) {
       audioRef.current.srcObject = null
       audioRef.current = null
@@ -240,13 +263,7 @@ export default function KikoVoice({ open, onClose, onTranscript }) {
   }
 
   const handleClose = () => {
-    // Capture transcripts before disconnect
-    const ut = userTranscript
-    const kt = kikoTranscript
     disconnect()
-    if (onTranscript && (ut || kt)) {
-      onTranscript({ user: ut, kiko: kt })
-    }
     onClose()
   }
 
@@ -287,18 +304,29 @@ export default function KikoVoice({ open, onClose, onTranscript }) {
           <p className="text-sm text-red-400 bg-red-400/10 px-4 py-2 rounded-lg max-w-sm text-center">{error}</p>
         )}
 
-        {/* Transcripts */}
+        {/* Transcript history — all exchanges */}
         <div className="w-full space-y-4 max-h-[40vh] overflow-y-auto">
-          {userTranscript && (
-            <div className="text-right">
-              <span className="text-[10px] text-white/20 block mb-1">You</span>
-              <p className="text-sm text-white/70 bg-white/5 rounded-xl px-4 py-2 inline-block">{userTranscript}</p>
+          {exchanges.map((ex, i) => (
+            <div key={i} className="space-y-2">
+              {ex.user && (
+                <div className="text-right">
+                  <span className="text-[10px] text-white/20 block mb-1">You</span>
+                  <p className="text-sm text-white/70 bg-white/5 rounded-xl px-4 py-2 inline-block">{ex.user}</p>
+                </div>
+              )}
+              {ex.kiko && (
+                <div className="text-left">
+                  <span className="text-[10px] text-white/20 block mb-1">Kiko</span>
+                  <p className="text-sm text-white/70 bg-white/5 rounded-xl px-4 py-2 inline-block">{ex.kiko}</p>
+                </div>
+              )}
             </div>
-          )}
-          {kikoTranscript && (
+          ))}
+          {/* Show in-progress Kiko response */}
+          {currentKikoText.current && state === STATES.SPEAKING && (
             <div className="text-left">
               <span className="text-[10px] text-white/20 block mb-1">Kiko</span>
-              <p className="text-sm text-white/70 bg-white/5 rounded-xl px-4 py-2 inline-block">{kikoTranscript}</p>
+              <p className="text-sm text-white/70 bg-white/5 rounded-xl px-4 py-2 inline-block">{currentKikoText.current}▍</p>
             </div>
           )}
         </div>
