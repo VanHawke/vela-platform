@@ -604,53 +604,8 @@ export default async function handler(req, res) {
       addMemory(message, textContent).catch(() => {});
     }
 
-    // Save conversation to Supabase — MUST complete before res.end()
-    // so the conversationId SSE event reaches the client
-    const SB = process.env.VITE_SUPABASE_URL;
-    const SK = process.env.VITE_SUPABASE_ANON_KEY;
-    if (SB && SK && userEmail) {
-      const allMessages = [
-        ...conversationHistory,
-        { role: 'user', content: message },
-        { role: 'assistant', content: textContent },
-      ];
-      const title = conversationHistory.length === 0 ? message.slice(0, 60) : undefined;
-
-      try {
-        if (conversationId) {
-          const patchRes = await fetch(`${SB}/rest/v1/conversations?id=eq.${conversationId}`, {
-            method: 'PATCH',
-            headers: { apikey: SK, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-            body: JSON.stringify({ messages: allMessages, updated_at: new Date().toISOString() }),
-          });
-          if (!patchRes.ok) console.error('[KIKO] Conv PATCH failed:', patchRes.status, await patchRes.text());
-        } else {
-          const newConv = {
-            user_id: userEmail,
-            title: title || 'New conversation',
-            messages: allMessages,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
-          const postRes = await fetch(`${SB}/rest/v1/conversations`, {
-            method: 'POST',
-            headers: { apikey: SK, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-            body: JSON.stringify(newConv),
-          });
-          if (postRes.ok) {
-            const data = await postRes.json();
-            if (data?.[0]?.id) {
-              write({ conversationId: data[0].id });
-              console.log('[KIKO] New conversation created:', data[0].id);
-            }
-          } else {
-            console.error('[KIKO] Conv POST failed:', postRes.status, await postRes.text());
-          }
-        }
-      } catch (err) {
-        console.error('[KIKO] Conv save error:', err.message);
-      }
-    }
+    // Conversation persistence is handled client-side (KikoChat.jsx)
+    // using the authenticated Supabase client, so RLS policies work.
 
     // Final metadata
     const totalMs = Date.now() - requestStart;

@@ -34,21 +34,62 @@ export default function KikoChat({ user }) {
   const inputRef = useRef(null)
   const { recording, startRecording, stopRecording } = useMicInput()
 
-  // Load conversations from Supabase
+  // Load conversations from Supabase (uses authenticated client — RLS safe)
   useEffect(() => {
-    loadConversations()
-  }, [])
+    if (user?.id) loadConversations()
+  }, [user?.id])
 
   const loadConversations = async () => {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('conversations')
         .select('id, title, updated_at')
-        .eq('user_id', user?.email)
+        .eq('user_id', user?.id)
         .order('updated_at', { ascending: false })
         .limit(50)
+      if (error) console.error('[Chat] Load conversations error:', error.message)
       if (data) setConversations(data)
-    } catch {}
+    } catch (err) {
+      console.error('[Chat] Load conversations exception:', err)
+    }
+  }
+
+  // Save conversation to Supabase (client-side, authenticated, RLS works)
+  const saveConversation = async (allMessages, convId, firstUserMessage) => {
+    if (!user?.id) return convId
+    try {
+      if (convId) {
+        // Update existing conversation
+        const { error } = await supabase
+          .from('conversations')
+          .update({ messages: allMessages, updated_at: new Date().toISOString() })
+          .eq('id', convId)
+        if (error) console.error('[Chat] Update conversation error:', error.message, error.details)
+        return convId
+      } else {
+        // Insert new conversation
+        const { data, error } = await supabase
+          .from('conversations')
+          .insert({
+            user_id: user.id,
+            title: (firstUserMessage || 'New conversation').slice(0, 60),
+            messages: allMessages,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .select('id')
+          .single()
+        if (error) {
+          console.error('[Chat] Insert conversation error:', error.message, error.details, error.hint)
+          return null
+        }
+        console.log('[Chat] New conversation created:', data?.id)
+        return data?.id || null
+      }
+    } catch (err) {
+      console.error('[Chat] Save conversation exception:', err)
+      return convId
+    }
   }
 
   // Auto-scroll on new messages
@@ -100,7 +141,6 @@ export default function KikoChat({ user }) {
           if (d === '[DONE]') continue
           try {
             const j = JSON.parse(d)
-            if (j.conversationId && !activeConvId) setActiveConvId(j.conversationId)
             if (j.delta) { full += j.delta; setStreamText(full) }
             if (j.meta) meta = j.meta
           } catch {}
@@ -114,8 +154,17 @@ export default function KikoChat({ user }) {
         timestamp: new Date().toISOString(),
         meta: { ttft, model: meta.model, tier: meta.tier },
       }
+      const updatedMessages = [...messages, userMsg, kikoMsg]
       setMessages(prev => [...prev, kikoMsg])
       setStreamText('')
+
+      // Save to Supabase (client-side, authenticated)
+      const newId = await saveConversation(
+        updatedMessages.map(m => ({ role: m.role, content: m.content })),
+        activeConvId,
+        msg,
+      )
+      if (newId && !activeConvId) setActiveConvId(newId)
       loadConversations()
     } catch (err) {
       const errMsg = {
