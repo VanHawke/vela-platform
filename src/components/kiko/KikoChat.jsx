@@ -6,6 +6,7 @@ import KikoMessage from './KikoMessage'
 import KikoVoice, { useMicInput } from './KikoVoice'
 import ChatHistory from '@/components/layout/ChatHistory'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import KikoThinking from '../KikoThinking'
 
 const CHIPS = [
   'Brief me on my pipeline',
@@ -30,6 +31,8 @@ export default function KikoChat({ user }) {
   const [activeConvId, setActiveConvId] = useState(null)
   const [historyOpen, setHistoryOpen] = useState(true)
   const [voiceOpen, setVoiceOpen] = useState(false)
+  const [thinkingSteps, setThinkingSteps] = useState([])
+  const [isThinking, setIsThinking] = useState(false)
   const scrollRef = useRef(null)
   const inputRef = useRef(null)
   const { recording, startRecording, stopRecording } = useMicInput()
@@ -113,6 +116,8 @@ export default function KikoChat({ user }) {
     setMessages(prev => [...prev, userMsg])
     setStreaming(true)
     setStreamText('')
+    setThinkingSteps([])
+    setIsThinking(false)
 
     const startTime = Date.now()
 
@@ -150,9 +155,24 @@ export default function KikoChat({ user }) {
             const j = JSON.parse(d)
             if (j.delta) { full += j.delta; setStreamText(full) }
             if (j.meta) meta = j.meta
+            if (j.tool_start) {
+              setIsThinking(true)
+              setThinkingSteps(prev => [...prev, { type: j.tool_start.type || 'tool', label: j.tool_start.label || j.tool_start.name, results: [] }])
+            }
+            if (j.tool_result) {
+              setThinkingSteps(prev => {
+                const updated = [...prev]
+                if (updated.length > 0) {
+                  updated[updated.length - 1] = { ...updated[updated.length - 1], results: j.tool_result.results || [] }
+                }
+                return updated
+              })
+            }
           } catch {}
         }
       }
+
+      setIsThinking(false)
 
       const ttft = meta.ttft || (Date.now() - startTime)
       const kikoMsg = {
@@ -316,6 +336,9 @@ export default function KikoChat({ user }) {
               {messages.map((msg, i) => (
                 <KikoMessage key={i} message={msg} />
               ))}
+              {(thinkingSteps.length > 0) && (
+                <KikoThinking steps={thinkingSteps} isActive={isThinking} />
+              )}
               {streaming && streamText && (
                 <KikoMessage
                   message={{ role: 'assistant', content: streamText + '▍' }}
