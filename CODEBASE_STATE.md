@@ -14,7 +14,7 @@
 
 ## Current Status
 
-### Phase 0 — Project Setup: IN PROGRESS
+### Phase 0 — Project Setup: COMPLETE
 - [x] React + Vite scaffold
 - [x] Git init
 - [x] Tailwind CSS v4 + @tailwindcss/vite plugin
@@ -24,10 +24,19 @@
 - [x] Build passes (clean)
 - [x] TASKS.md created
 - [x] CODEBASE_STATE.md created
-- [ ] .env.local + vercel.json + .claude/CLAUDE.md + .gitignore
-- [ ] PWA files (manifest.json, sw.js, audio-processor.js)
+- [x] .env.local + vercel.json + .claude/CLAUDE.md + .gitignore
+- [x] PWA files (manifest.json, sw.js, audio-processor.js, icons)
 
-### Phase 1 — Foundation: NOT STARTED
+### Phase 1 — Foundation: IN PROGRESS
+- [x] 1.1 Design System — dark palette, glassmorphism, typography, radius, transitions
+- [x] 1.2 Supabase Client — src/lib/supabase.js
+- [x] 1.3 Auth — LoginPage.jsx (split screen, Google OAuth, email/password, error states, routing)
+- [ ] 1.4 Layout Shell (Sidebar + Layout)
+- [ ] 1.5 Home (KikoChat)
+- [ ] 1.6 api/kiko.js (The Brain)
+- [ ] 1.7 Voice Module
+- [ ] 1.8 Settings
+- [ ] 1.9 Phase 1 Deploy Gate
 ### Phase 2 — CRM: NOT STARTED
 ### Phase 3 — Intelligence: NOT STARTED
 

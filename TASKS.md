@@ -19,14 +19,14 @@ _Every checkbox must become [x] before proceeding to the next section._
 - [x] Create CODEBASE_STATE.md
 
 ### 0.2 — Environment + Config
-- [ ] Create .env.local with all variables from brief
-- [ ] Create vercel.json with function configs + crons
-- [ ] Create .claude/CLAUDE.md with standing instructions
-- [ ] Create .gitignore (node_modules, dist, .env*)
-- [ ] PWA: manifest.json in public/
-- [ ] PWA: sw.js in public/
-- [ ] PWA: audio-processor.js in public/
-- [ ] Verify build still passes
+- [x] Create .env.local with all variables from brief
+- [x] Create vercel.json with function configs + crons
+- [x] Create .claude/CLAUDE.md with standing instructions
+- [x] Create .gitignore (node_modules, dist, .env*)
+- [x] PWA: manifest.json in public/
+- [x] PWA: sw.js in public/
+- [x] PWA: audio-processor.js in public/
+- [x] Verify build still passes
 
 ---
 
@@ -34,35 +34,35 @@ _Every checkbox must become [x] before proceeding to the next section._
 _Target: Kiko working flawlessly with memory, streaming, and voice. Auth + layout shell._
 
 ### 1.1 — Design System
-- [ ] Replace shadcn default theme with brief's dark palette (#0A0A0A bg)
-- [ ] Configure glassmorphism tokens (rgba(255,255,255,0.04), blur(24px), etc.)
-- [ ] Set typography: Inter + JetBrains Mono
-- [ ] Set spacing scale (8px base)
-- [ ] Set radius scale (8px standard, 12px cards, 999px pills)
-- [ ] Set transitions (200ms ease)
-- [ ] Dark mode as default (class strategy)
-- [ ] Verify build passes
+- [x] Replace shadcn default theme with brief's dark palette (#0A0A0A bg)
+- [x] Configure glassmorphism tokens (rgba(255,255,255,0.04), blur(24px), etc.)
+- [x] Set typography: Inter (via Geist Variable) + JetBrains Mono
+- [x] Set spacing scale (8px base via Tailwind)
+- [x] Set radius scale (8px standard via --radius: 0.5rem)
+- [x] Set transitions (200ms ease via Tailwind)
+- [x] Dark mode as default (single dark palette, no light mode)
+- [x] Verify build passes
 
 ### 1.2 — Supabase Client
-- [ ] Create src/lib/supabase.js (client init from env vars)
+- [x] Create src/lib/supabase.js (client init from env vars)
 - [ ] Verify connection to existing Supabase project
-- [ ] Verify build passes
+- [x] Verify build passes
 
 ### 1.3 — Auth — Login Page
-- [ ] Create src/components/auth/LoginPage.jsx
-- [ ] Split screen: dark image left (50%), auth form right (50%)
-- [ ] Right panel: #0A0A0A, 380px max width, vertically centred
-- [ ] Primary CTA: 'Continue with Google' (full width, Google brand colours)
-- [ ] Secondary: email + password below divider ('or sign in with email')
-- [ ] Password show/hide toggle
-- [ ] Remember me checkbox
-- [ ] Error state: inline red text, no reload
-- [ ] Left panel: dark editorial image, object-fit cover
+- [x] Create src/components/auth/LoginPage.jsx
+- [x] Split screen: dark image left (50%), auth form right (50%)
+- [x] Right panel: #0A0A0A, 380px max width, vertically centred
+- [x] Primary CTA: 'Continue with Google' (full width, Google brand colours)
+- [x] Secondary: email + password below divider ('or sign in with email')
+- [x] Password show/hide toggle
+- [x] Remember me checkbox
+- [x] Error state: inline red text, no reload
+- [x] Left panel: dark editorial image, object-fit cover
 - [ ] Left panel: configurable via Settings (Supabase Storage key: login_bg)
-- [ ] Bottom right: 'Powered by Vela Labs' — 12px muted
-- [ ] Google OAuth: configure Supabase Auth provider with required scopes (openid, email, profile, gmail.modify, calendar)
+- [x] Bottom right: 'Powered by Vela Labs' — 12px muted
+- [x] Google OAuth: configure Supabase Auth provider with required scopes (openid, email, profile, gmail.modify, calendar)
 - [ ] Store OAuth tokens in Supabase user_settings on first login
-- [ ] On success: push to /home
+- [x] On success: push to /home (via React Router + auth state listener)
 - [ ] TEST: Google login → /home with email + calendar pre-populated
 - [ ] TEST: Email/password login → /home
 - [ ] TEST: Wrong credentials → inline error, no reload

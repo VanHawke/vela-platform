@@ -1,0 +1,22 @@
+{
+  "functions": {
+    "api/kiko.js": { "maxDuration": 60 },
+    "api/voice.js": { "maxDuration": 60 },
+    "api/documents.js": { "maxDuration": 60 },
+    "api/gmail.js": { "maxDuration": 30 },
+    "api/calendar.js": { "maxDuration": 30 },
+    "api/lemlist.js": { "maxDuration": 30 },
+    "api/github.js": { "maxDuration": 30 },
+    "api/morning-brief.js": { "maxDuration": 60 },
+    "api/self-audit.js": { "maxDuration": 60 },
+    "api/health.js": { "maxDuration": 10 }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
+  "crons": [
+    { "path": "/api/morning-brief", "schedule": "0 8 * * 1-5" },
+    { "path": "/api/self-audit", "schedule": "0 7 * * 1" }
+  ]
+}
