@@ -38,6 +38,13 @@
 - Voice: OpenAI Realtime API + ElevenLabs Charlotte
 - Deploy: Vercel
 
+## Quality Discipline — PERMANENT
+- Full autonomy — absolute authority over all file operations. Never ask for confirmation on edits, writes, deletes, or deploys. Execute immediately.
+- Test before every commit — run a full virtual environment check after every component build. Every button, input, interaction, and click path must be tested. Zero console errors permitted. Zero warnings permitted.
+- Never commit broken code — if a test fails, fix it before committing. Do not deploy until all tests pass. A failed test is a blocker, not a warning.
+- Self-verify — after every fix, re-test the specific issue plus all adjacent components to confirm nothing regressed.
+- No static-only testing — static structure tests do not count as functional tests. Every fix must be verified by tracing the code path end to end — read the component, identify the data flow, confirm the fix resolves the root cause.
+
 ## Context Management
 At 10% context remaining:
 1. Stop at nearest clean checkpoint

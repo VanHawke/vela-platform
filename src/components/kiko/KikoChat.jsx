@@ -3,6 +3,7 @@ import { Send, Mic, AudioLines, PanelRightClose, PanelRightOpen } from 'lucide-r
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { supabase } from '@/lib/supabase'
 import KikoMessage from './KikoMessage'
+import KikoVoice, { useMicInput } from './KikoVoice'
 import ChatHistory from '@/components/layout/ChatHistory'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
@@ -28,8 +29,10 @@ export default function KikoChat({ user }) {
   const [conversations, setConversations] = useState([])
   const [activeConvId, setActiveConvId] = useState(null)
   const [historyOpen, setHistoryOpen] = useState(true)
+  const [voiceOpen, setVoiceOpen] = useState(false)
   const scrollRef = useRef(null)
   const inputRef = useRef(null)
+  const { recording, startRecording, stopRecording } = useMicInput()
 
   // Load conversations from Supabase
   useEffect(() => {
@@ -41,7 +44,7 @@ export default function KikoChat({ user }) {
       const { data } = await supabase
         .from('conversations')
         .select('id, title, updated_at')
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.email)
         .order('updated_at', { ascending: false })
         .limit(50)
       if (data) setConversations(data)
@@ -149,6 +152,29 @@ export default function KikoChat({ user }) {
     }
   }
 
+  // Mode 2 — Mic toggle (STT → text input)
+  const handleMicToggle = useCallback(async () => {
+    if (recording) {
+      const text = await stopRecording()
+      if (text) {
+        setInput(text)
+        inputRef.current?.focus()
+      }
+    } else {
+      await startRecording()
+    }
+  }, [recording, startRecording, stopRecording])
+
+  // Mode 3 — Voice transcript callback
+  const handleVoiceTranscript = useCallback(({ user: userText, kiko: kikoText }) => {
+    if (userText) {
+      setMessages(prev => [...prev, { role: 'user', content: userText.trim(), timestamp: new Date().toISOString() }])
+    }
+    if (kikoText) {
+      setMessages(prev => [...prev, { role: 'assistant', content: kikoText.trim(), timestamp: new Date().toISOString() }])
+    }
+  }, [])
+
   const hasMessages = messages.length > 0 || streaming
 
   return (
@@ -214,12 +240,14 @@ export default function KikoChat({ user }) {
                 className="flex-1 bg-transparent text-white text-sm placeholder:text-white/25 outline-none"
               />
               <button
-                className="text-white/25 hover:text-white/50 transition-colors p-1.5"
-                title="Voice input (Mode 2)"
+                onClick={handleMicToggle}
+                className={`transition-colors p-1.5 ${recording ? 'text-red-400 animate-pulse' : 'text-white/25 hover:text-white/50'}`}
+                title={recording ? 'Stop recording' : 'Voice input (Mode 2)'}
               >
                 <Mic className="h-5 w-5" />
               </button>
               <button
+                onClick={() => setVoiceOpen(true)}
                 className="text-white/25 hover:text-white/50 transition-colors p-1.5"
                 title="Voice conversation (Mode 3)"
               >
@@ -253,6 +281,13 @@ export default function KikoChat({ user }) {
         onNewChat={handleNewChat}
         collapsed={!historyOpen}
         onToggle={() => setHistoryOpen(!historyOpen)}
+      />
+
+      {/* Voice Mode 3 overlay */}
+      <KikoVoice
+        open={voiceOpen}
+        onClose={() => setVoiceOpen(false)}
+        onTranscript={handleVoiceTranscript}
       />
     </div>
   )
