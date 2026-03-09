@@ -40,32 +40,75 @@ export default async function handler(req, res) {
     }
   }
 
-  // Mode 3 — Get ephemeral Realtime API client secret (GA endpoint)
+  // Mode 3 — Ephemeral token for Realtime API (GA, WebRTC)
+  // Matches OpenAI's official realtime-console implementation exactly.
+  // Endpoint: POST /v1/realtime/client_secrets
+  // Body: { session: { type, model, audio config } }
+  // Response: { value: "<ephemeral_key>", ... }
   if (action === 'realtime-token') {
     try {
+      const sessionConfig = {
+        session: {
+          type: 'realtime',
+          model: 'gpt-realtime',
+          audio: {
+            output: {
+              voice: 'alloy',
+            },
+          },
+        },
+      };
+
       const response = await fetch('https://api.openai.com/v1/realtime/client_secrets', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${process.env.OPENAI_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          voice: 'alloy',
-          expires_in: 60,
-        }),
+        body: JSON.stringify(sessionConfig),
       });
 
       if (!response.ok) {
         const errBody = await response.text();
-        console.error('[Voice] Realtime client_secrets error:', response.status, errBody);
+        console.error('[Voice] client_secrets error:', response.status, errBody);
         return res.status(response.status).json({ error: `OpenAI ${response.status}: ${errBody}` });
       }
 
       const data = await response.json();
-      console.log('[Voice] Client secret response keys:', Object.keys(data));
+      console.log('[Voice] Token response keys:', Object.keys(data));
       return res.status(200).json(data);
     } catch (err) {
       console.error('[Voice] Realtime token error:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
+  // Mode 3b — SDP proxy for WebRTC call establishment
+  // Client sends SDP offer, we forward to OpenAI and return the SDP answer.
+  if (action === 'realtime-sdp') {
+    const { sdp, token } = req.body;
+    if (!sdp || !token) return res.status(400).json({ error: 'sdp and token required' });
+
+    try {
+      const sdpResponse = await fetch('https://api.openai.com/v1/realtime/calls?model=gpt-realtime', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/sdp',
+        },
+        body: sdp,
+      });
+
+      if (!sdpResponse.ok) {
+        const errBody = await sdpResponse.text();
+        console.error('[Voice] SDP exchange error:', sdpResponse.status, errBody);
+        return res.status(sdpResponse.status).json({ error: `OpenAI ${sdpResponse.status}: ${errBody}` });
+      }
+
+      const answerSdp = await sdpResponse.text();
+      return res.status(200).json({ sdp: answerSdp });
+    } catch (err) {
+      console.error('[Voice] SDP exchange error:', err.message);
       return res.status(500).json({ error: err.message });
     }
   }

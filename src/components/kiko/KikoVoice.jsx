@@ -80,14 +80,21 @@ export function useMicInput() {
   return { recording, startRecording, stopRecording }
 }
 
-// Mode 3 — Full voice overlay
+// Mode 3 — Full voice overlay (WebRTC, GA Realtime API)
+// Architecture matches OpenAI's official openai-realtime-console exactly:
+// 1. Fetch ephemeral token from /api/voice (action: realtime-token)
+// 2. Create RTCPeerConnection, add local mic track
+// 3. Create SDP offer, exchange via /api/voice (action: realtime-sdp)
+// 4. Events flow through RTCDataChannel, audio through WebRTC tracks
 export default function KikoVoice({ open, onClose, onTranscript }) {
   const [state, setState] = useState(STATES.IDLE)
   const [userTranscript, setUserTranscript] = useState('')
   const [kikoTranscript, setKikoTranscript] = useState('')
   const [error, setError] = useState('')
-  const wsRef = useRef(null)
-  const audioCtxRef = useRef(null)
+  const pcRef = useRef(null)
+  const dcRef = useRef(null)
+  const audioRef = useRef(null)
+  const localStreamRef = useRef(null)
 
   useEffect(() => {
     if (open) {
@@ -110,7 +117,7 @@ export default function KikoVoice({ open, onClose, onTranscript }) {
     setKikoTranscript('')
 
     try {
-      // Get ephemeral client secret from GA endpoint
+      // Step 1: Get ephemeral token from server
       const tokenRes = await fetch('/api/voice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -122,118 +129,124 @@ export default function KikoVoice({ open, onClose, onTranscript }) {
         throw new Error(errData.error || `Token request failed: ${tokenRes.status}`)
       }
 
-      const data = await tokenRes.json()
-      // GA client_secrets returns { client_secret: { value: "..." } } directly
-      const token = data?.client_secret?.value
-      if (!token) {
-        throw new Error(`No client_secret in response. Keys: ${Object.keys(data).join(', ')}`)
+      const tokenData = await tokenRes.json()
+      const ephemeralKey = tokenData.value
+      if (!ephemeralKey) {
+        throw new Error(`No token value in response. Keys: ${Object.keys(tokenData).join(', ')}`)
       }
 
-      const ws = new WebSocket('wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17', [
-        'realtime', `openai-insecure-api-key.${token}`, 'openai-beta.realtime-v1',
-      ])
+      // Step 2: Create RTCPeerConnection
+      const pc = new RTCPeerConnection()
+      pcRef.current = pc
 
-      ws.onopen = () => {
-        // Configure session with voice settings
-        ws.send(JSON.stringify({
-          type: 'session.update',
-          session: {
-            modalities: ['text', 'audio'],
-            voice: 'alloy',
-            input_audio_format: 'pcm16',
-            output_audio_format: 'pcm16',
-            turn_detection: { type: 'server_vad' },
-            instructions: 'You are Kiko, AI assistant for Sunny, CEO of Van Hawke. Be direct, warm, and fast. Keep voice responses under 30 seconds.',
-            input_audio_transcription: { model: 'whisper-1' },
-          },
-        }))
+      // Set up remote audio playback
+      const audioEl = document.createElement('audio')
+      audioEl.autoplay = true
+      audioRef.current = audioEl
+      pc.ontrack = (e) => { audioEl.srcObject = e.streams[0] }
+
+      // Add local mic track
+      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      localStreamRef.current = micStream
+      pc.addTrack(micStream.getTracks()[0])
+
+      // Set up data channel for events
+      const dc = pc.createDataChannel('oai-events')
+      dcRef.current = dc
+
+      dc.addEventListener('open', () => {
         setState(STATES.LISTENING)
-        startMicCapture(ws)
-      }
+      })
 
-      ws.onmessage = (event) => {
+      dc.addEventListener('message', (e) => {
         try {
-          const data = JSON.parse(event.data)
-          if (data.type === 'response.audio_transcript.delta') {
-            setKikoTranscript(prev => prev + (data.delta || ''))
+          const event = JSON.parse(e.data)
+
+          if (event.type === 'response.audio_transcript.delta') {
+            setKikoTranscript(prev => prev + (event.delta || ''))
             setState(STATES.SPEAKING)
           }
-          if (data.type === 'input_audio_buffer.speech_started') {
+          if (event.type === 'input_audio_buffer.speech_started') {
             setState(STATES.LISTENING)
           }
-          if (data.type === 'conversation.item.input_audio_transcription.completed') {
-            setUserTranscript(prev => prev + (data.transcript || '') + ' ')
+          if (event.type === 'conversation.item.input_audio_transcription.completed') {
+            setUserTranscript(prev => prev + (event.transcript || '') + ' ')
           }
-          if (data.type === 'response.done') {
+          if (event.type === 'response.done') {
             setState(STATES.LISTENING)
-            if (onTranscript && kikoTranscript) {
-              onTranscript({ user: userTranscript, kiko: kikoTranscript })
-            }
           }
-          if (data.type === 'error') {
-            console.error('[Voice WS] Error:', data.error)
-            setError(data.error?.message || 'WebSocket error')
+          if (event.type === 'error') {
+            console.error('[Voice DC] Error:', event.error)
+            setError(event.error?.message || 'Realtime error')
             setState(STATES.ERROR)
           }
         } catch {}
+      })
+
+      // Step 3: SDP exchange via server proxy
+      const offer = await pc.createOffer()
+      await pc.setLocalDescription(offer)
+
+      const sdpRes = await fetch('/api/voice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'realtime-sdp',
+          sdp: offer.sdp,
+          token: ephemeralKey,
+        }),
+      })
+
+      if (!sdpRes.ok) {
+        const errData = await sdpRes.json().catch(() => ({}))
+        throw new Error(errData.error || `SDP exchange failed: ${sdpRes.status}`)
       }
 
-      ws.onerror = () => {
-        setError('WebSocket connection failed')
-        setState(STATES.ERROR)
-      }
+      const { sdp: answerSdp } = await sdpRes.json()
+      await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp })
 
-      ws.onclose = () => {
-        setState(prev => prev !== STATES.ERROR ? STATES.IDLE : prev)
-      }
-
-      wsRef.current = ws
     } catch (err) {
+      console.error('[Voice] Connection error:', err)
       setError(err.message)
       setState(STATES.ERROR)
     }
   }
 
-  const startMicCapture = async (ws) => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 24000, channelCount: 1 } })
-      const audioCtx = new AudioContext({ sampleRate: 24000 })
-      audioCtxRef.current = audioCtx
-
-      await audioCtx.audioWorklet.addModule('/audio-processor.js')
-      const source = audioCtx.createMediaStreamSource(stream)
-      const processor = new AudioWorkletNode(audioCtx, 'audio-processor')
-
-      processor.port.onmessage = (e) => {
-        if (e.data.type === 'audio' && ws.readyState === WebSocket.OPEN) {
-          const base64 = btoa(String.fromCharCode(...new Uint8Array(e.data.audio)))
-          ws.send(JSON.stringify({ type: 'input_audio_buffer.append', audio: base64 }))
-        }
-      }
-
-      source.connect(processor)
-      processor.connect(audioCtx.destination)
-    } catch (err) {
-      console.error('[Voice] Mic capture error:', err)
-      setError('Microphone access denied')
-      setState(STATES.ERROR)
-    }
-  }
-
   const disconnect = () => {
-    if (wsRef.current) {
-      wsRef.current.close()
-      wsRef.current = null
+    // Close data channel
+    if (dcRef.current) {
+      dcRef.current.close()
+      dcRef.current = null
     }
-    if (audioCtxRef.current) {
-      audioCtxRef.current.close().catch(() => {})
-      audioCtxRef.current = null
+    // Stop local mic tracks
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(t => t.stop())
+      localStreamRef.current = null
+    }
+    // Close peer connection
+    if (pcRef.current) {
+      pcRef.current.getSenders().forEach(sender => {
+        if (sender.track) sender.track.stop()
+      })
+      pcRef.current.close()
+      pcRef.current = null
+    }
+    // Clean up audio element
+    if (audioRef.current) {
+      audioRef.current.srcObject = null
+      audioRef.current = null
     }
     setState(STATES.IDLE)
   }
 
   const handleClose = () => {
+    // Capture transcripts before disconnect
+    const ut = userTranscript
+    const kt = kikoTranscript
     disconnect()
+    if (onTranscript && (ut || kt)) {
+      onTranscript({ user: ut, kiko: kt })
+    }
     onClose()
   }
 
@@ -271,7 +284,7 @@ export default function KikoVoice({ open, onClose, onTranscript }) {
         <p className="text-lg text-white/60 font-light">{STATE_LABELS[state]}</p>
 
         {error && (
-          <p className="text-sm text-red-400 bg-red-400/10 px-4 py-2 rounded-lg">{error}</p>
+          <p className="text-sm text-red-400 bg-red-400/10 px-4 py-2 rounded-lg max-w-sm text-center">{error}</p>
         )}
 
         {/* Transcripts */}
