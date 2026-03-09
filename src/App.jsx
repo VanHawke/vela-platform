@@ -26,6 +26,8 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user || null)
+    }).catch(() => {
+      setSession(null)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
