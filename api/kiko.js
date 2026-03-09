@@ -154,6 +154,73 @@ const TOOLS = [
   },
 ];
 
+// ── Phase 3 Tools — Self-Improvement Intelligence ──────
+// These are flagged for Phase 3 but defined now so the tool loop is ready.
+// Human approval gate: Kiko proposes, Sunny approves, Kiko deploys. Non-negotiable.
+const PHASE3_TOOLS = [
+  {
+    name: 'read_codebase',
+    description: 'Read any file from the vela-platform GitHub repo. Use for self-audit: reviewing your own code, finding bugs, or understanding architecture. Returns file contents.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        path: { type: 'string', description: 'File path relative to repo root (e.g. "api/kiko.js", "src/App.jsx")' },
+      },
+      required: ['path'],
+    },
+  },
+  {
+    name: 'push_to_github',
+    description: 'Propose a code change to the vela-platform repo. REQUIRES HUMAN APPROVAL — Kiko proposes the diff, Sunny must confirm before any push happens. Never auto-push.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        path: { type: 'string', description: 'File path to modify' },
+        diff_summary: { type: 'string', description: 'Human-readable summary of what changes and why' },
+        new_content: { type: 'string', description: 'Full new file content (will replace entire file)' },
+        commit_message: { type: 'string', description: 'Proposed commit message' },
+      },
+      required: ['path', 'diff_summary', 'new_content', 'commit_message'],
+    },
+  },
+  {
+    name: 'review_error_log',
+    description: 'Review recent entries from the error_log table. Used for weekly error analysis to identify recurring issues and propose fixes.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        days: { type: 'number', description: 'Number of days to look back (default 7)' },
+        limit: { type: 'number', description: 'Max entries to return (default 50)' },
+      },
+    },
+  },
+  {
+    name: 'log_self_improvement',
+    description: 'Log an approved self-improvement to the self_improvement_log table. Records what changed, why, and outcome for Kiko\'s learning record.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        change_type: { type: 'string', enum: ['bug_fix', 'optimization', 'feature', 'refactor'], description: 'Type of change' },
+        file_path: { type: 'string', description: 'File that was changed' },
+        description: { type: 'string', description: 'What changed and why' },
+        outcome: { type: 'string', description: 'Expected or observed outcome' },
+      },
+      required: ['change_type', 'file_path', 'description'],
+    },
+  },
+  {
+    name: 'memory_reflection',
+    description: 'Trigger a memory reflection: review recent Mem0 memories, extract behavioural patterns, and store a user profile update. Makes Kiko actively smarter over time.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        user_id: { type: 'string', description: 'User ID to reflect on (default: sunny)' },
+        days: { type: 'number', description: 'Days to look back (default 7)' },
+      },
+    },
+  },
+];
+
 // ── Tool Execution ──────────────────────────────────────
 async function executeTool(name, input, userEmail) {
   const SB = process.env.VITE_SUPABASE_URL;
@@ -220,6 +287,116 @@ async function executeTool(name, input, userEmail) {
       return { status: 'placeholder', message: 'Calendar will be implemented in api/calendar.js' };
     case 'create_calendar_event':
       return { status: 'placeholder', message: 'Calendar creation will be implemented in api/calendar.js' };
+
+    // ── Phase 3: Self-Improvement Tools ──────────────────
+    case 'read_codebase': {
+      const ghToken = process.env.GITHUB_TOKEN;
+      if (!ghToken) return { error: 'No GitHub token configured' };
+      try {
+        const filePath = input.path.replace(/^\//, '');
+        const ghRes = await fetch(`https://api.github.com/repos/VanHawke/vela-platform/contents/${filePath}`, {
+          headers: { Authorization: `Bearer ${ghToken}`, Accept: 'application/vnd.github.v3.raw' },
+        });
+        if (!ghRes.ok) return { error: `File not found: ${filePath} (${ghRes.status})` };
+        const content = await ghRes.text();
+        return { path: filePath, content: content.slice(0, 12000), truncated: content.length > 12000 };
+      } catch (err) {
+        return { error: err.message };
+      }
+    }
+    case 'push_to_github': {
+      // HUMAN APPROVAL GATE — never auto-push
+      // This returns the proposal for Sunny to review. Actual push only on explicit confirmation.
+      return {
+        status: 'pending_approval',
+        message: `PROPOSED CHANGE — requires Sunny's approval before push.`,
+        path: input.path,
+        diff_summary: input.diff_summary,
+        commit_message: input.commit_message,
+        instruction: 'Reply "approve" to push this change, or "reject" to discard.',
+      };
+    }
+    case 'review_error_log': {
+      if (!SB || !SK) return { error: 'No Supabase config' };
+      const days = input.days || 7;
+      const limit = input.limit || 50;
+      const since = new Date(Date.now() - days * 86400000).toISOString();
+      try {
+        const data = await sbFetch(`error_log?select=*&created_at=gte.${since}&order=created_at.desc&limit=${limit}`);
+        const patterns = {};
+        for (const entry of (data || [])) {
+          const key = (entry.error_type || entry.message || 'unknown').slice(0, 80);
+          patterns[key] = (patterns[key] || 0) + 1;
+        }
+        return { entries: (data || []).length, period_days: days, recurring_patterns: patterns, raw: (data || []).slice(0, 10) };
+      } catch (err) {
+        return { error: err.message };
+      }
+    }
+    case 'log_self_improvement': {
+      if (!SB || !SK) return { error: 'No Supabase config' };
+      try {
+        await fetch(`${SB}/rest/v1/self_improvement_log`, {
+          method: 'POST',
+          headers: { apikey: SK, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+          body: JSON.stringify({
+            change_type: input.change_type,
+            file_path: input.file_path,
+            description: input.description,
+            outcome: input.outcome || 'pending',
+            proposed_by: 'kiko',
+            created_at: new Date().toISOString(),
+          }),
+        });
+        return { logged: true };
+      } catch (err) {
+        return { error: err.message };
+      }
+    }
+    case 'memory_reflection': {
+      const memKey = process.env.MEM0_API_KEY;
+      if (!memKey) return { error: 'No Mem0 API key' };
+      const userId = input.user_id || 'sunny';
+      try {
+        // Fetch recent memories
+        const memRes = await fetch('https://api.mem0.ai/v1/memories/', {
+          headers: { Authorization: `Token ${memKey}` },
+        });
+        const allMems = await memRes.json();
+        const recent = (allMems.results || allMems || [])
+          .filter(m => m.user_id === userId)
+          .slice(0, 30);
+
+        if (recent.length === 0) return { reflection: 'No recent memories to reflect on.' };
+
+        // Use Claude to extract patterns
+        const reflectionPrompt = `Analyse these ${recent.length} recent memories for user "${userId}" and extract behavioural patterns, preferences, and workflow habits. Output a concise user profile update (max 200 words) that would help an AI assistant serve this user better:\n\n${recent.map(m => `- ${m.memory || m.content || ''}`).join('\n')}`;
+
+        const reflectionRes = await anthropic.messages.create({
+          model: MODEL.FAST,
+          max_tokens: 512,
+          messages: [{ role: 'user', content: reflectionPrompt }],
+        });
+
+        const profileUpdate = reflectionRes.content?.[0]?.text || '';
+
+        // Store as a profile memory in Mem0
+        if (profileUpdate) {
+          await fetch('https://api.mem0.ai/v1/memories/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Token ${memKey}` },
+            body: JSON.stringify({
+              messages: [{ role: 'system', content: `USER PROFILE UPDATE (auto-reflected): ${profileUpdate}` }],
+              user_id: userId,
+            }),
+          });
+        }
+
+        return { reflection: profileUpdate, memories_analysed: recent.length };
+      } catch (err) {
+        return { error: err.message };
+      }
+    }
     default:
       return { error: `Unknown tool: ${name}` };
   }
@@ -289,7 +466,7 @@ export default async function handler(req, res) {
     // Tier-based config
     const model = tier === 'tier1' ? MODEL.FAST : MODEL.PRIMARY;
     const systemPrompt = tier === 'tier1' ? KIKO_CORE : KIKO_FULL;
-    const tools = tier === 'tier1' ? [] : TOOLS;
+    const tools = tier === 'tier1' ? [] : tier === 'tier3' ? [...TOOLS, ...PHASE3_TOOLS] : TOOLS;
     const historyCap = tier === 'tier1' ? 6 : 20;
     const maxTokens = tier === 'tier1' ? 1024 : 4096;
 

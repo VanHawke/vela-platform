@@ -43,7 +43,7 @@ export default async function handler(req, res) {
   // Mode 3 — Get ephemeral Realtime API token
   if (action === 'realtime-token') {
     try {
-      const response = await fetch('https://api.openai.com/v1/realtime/sessions', {
+      const response = await fetch('https://api.openai.com/v1/realtime/client_secrets', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${process.env.OPENAI_KEY}`,
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           model: 'gpt-4o-realtime-preview',
-          voice: 'alloy', // Will be overridden by ElevenLabs for output
+          voice: 'alloy',
           modalities: ['text', 'audio'],
           input_audio_format: 'pcm16',
           output_audio_format: 'pcm16',
