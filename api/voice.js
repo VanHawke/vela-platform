@@ -47,17 +47,13 @@ export default async function handler(req, res) {
   // Response: { value: "<ephemeral_key>", ... }
   if (action === 'realtime-token') {
     try {
-      const sessionConfig = {
-        voice: 'shimmer',
-      };
-
       const response = await fetch('https://api.openai.com/v1/realtime/client_secrets', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${process.env.OPENAI_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(sessionConfig),
+        body: JSON.stringify({}),
       });
 
       if (!response.ok) {
