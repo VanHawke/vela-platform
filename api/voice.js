@@ -40,7 +40,7 @@ export default async function handler(req, res) {
     }
   }
 
-  // Mode 3 — Get ephemeral Realtime API token
+  // Mode 3 — Get ephemeral Realtime API client secret (GA endpoint)
   if (action === 'realtime-token') {
     try {
       const response = await fetch('https://api.openai.com/v1/realtime/client_secrets', {
@@ -50,24 +50,20 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4o-realtime-preview',
+          model: 'gpt-4o-realtime-preview-2024-12-17',
           voice: 'alloy',
-          modalities: ['text', 'audio'],
-          input_audio_format: 'pcm16',
-          output_audio_format: 'pcm16',
-          turn_detection: { type: 'server_vad' },
-          instructions: 'You are Kiko, AI assistant for Sunny, CEO of Van Hawke. Be direct, warm, and fast. Keep voice responses under 30 seconds.',
         }),
       });
 
       if (!response.ok) {
-        const err = await response.text();
-        console.error('[Voice] Realtime session error:', err);
-        return res.status(500).json({ error: 'Failed to create realtime session' });
+        const errBody = await response.text();
+        console.error('[Voice] Realtime client_secrets error:', response.status, errBody);
+        return res.status(response.status).json({ error: `OpenAI ${response.status}: ${errBody}` });
       }
 
-      const session = await response.json();
-      return res.status(200).json({ session });
+      const data = await response.json();
+      console.log('[Voice] Client secret response keys:', Object.keys(data));
+      return res.status(200).json(data);
     } catch (err) {
       console.error('[Voice] Realtime token error:', err.message);
       return res.status(500).json({ error: err.message });

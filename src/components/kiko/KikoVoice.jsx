@@ -110,21 +110,43 @@ export default function KikoVoice({ open, onClose, onTranscript }) {
     setKikoTranscript('')
 
     try {
-      // Get ephemeral token
+      // Get ephemeral client secret from GA endpoint
       const tokenRes = await fetch('/api/voice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'realtime-token' }),
       })
-      const { session } = await tokenRes.json()
-      if (!session?.client_secret?.value) throw new Error('No session token')
 
-      const token = session.client_secret.value
-      const ws = new WebSocket(`wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview`, [
+      if (!tokenRes.ok) {
+        const errData = await tokenRes.json().catch(() => ({}))
+        throw new Error(errData.error || `Token request failed: ${tokenRes.status}`)
+      }
+
+      const data = await tokenRes.json()
+      // GA client_secrets returns { client_secret: { value: "..." } } directly
+      const token = data?.client_secret?.value
+      if (!token) {
+        throw new Error(`No client_secret in response. Keys: ${Object.keys(data).join(', ')}`)
+      }
+
+      const ws = new WebSocket(`wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17`, [
         'realtime', `openai-insecure-api-key.${token}`,
       ])
 
       ws.onopen = () => {
+        // Configure session with voice settings
+        ws.send(JSON.stringify({
+          type: 'session.update',
+          session: {
+            modalities: ['text', 'audio'],
+            voice: 'alloy',
+            input_audio_format: 'pcm16',
+            output_audio_format: 'pcm16',
+            turn_detection: { type: 'server_vad' },
+            instructions: 'You are Kiko, AI assistant for Sunny, CEO of Van Hawke. Be direct, warm, and fast. Keep voice responses under 30 seconds.',
+            input_audio_transcription: { model: 'whisper-1' },
+          },
+        }))
         setState(STATES.LISTENING)
         startMicCapture(ws)
       }
@@ -162,7 +184,7 @@ export default function KikoVoice({ open, onClose, onTranscript }) {
       }
 
       ws.onclose = () => {
-        if (state !== STATES.ERROR) setState(STATES.IDLE)
+        setState(prev => prev !== STATES.ERROR ? STATES.IDLE : prev)
       }
 
       wsRef.current = ws
