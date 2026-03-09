@@ -195,7 +195,7 @@ export default function KikoVoice({ open, onClose, onVoiceMessage }) {
           }
 
           // Kiko response transcript — final
-          if (event.type === 'response.audio_transcript.done') {
+          if (event.type === 'response.output_audio_transcript.done') {
             const kikoText = event.transcript
             console.log('[Voice DC] Kiko transcript:', JSON.stringify(kikoText))
             streamingKikoText.current = ''
