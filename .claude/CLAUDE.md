@@ -50,6 +50,12 @@
 - Self-verify — after every fix, re-test the specific issue plus all adjacent components to confirm nothing regressed.
 - No static-only testing — static structure tests do not count as functional tests. Every fix must be verified by tracing the code path end to end — read the component, identify the data flow, confirm the fix resolves the root cause.
 
+## Pre-Deploy Testing Protocol — PERMANENT
+- Never deploy without testing — every change must be tested in a simulated execution trace before committing. Read the code path end to end and verify it will work before touching git.
+- API calls must be verified against live documentation — before writing any API call, fetch the current documentation and confirm every parameter name, every required field, every event name. If the docs say a parameter doesn't exist, don't use it.
+- Fix the full error chain — when fixing an error, read the entire relevant file, identify ALL potential issues, fix them all in one pass. Do not fix one error and create another.
+- Self-review before commit — after writing a fix, re-read the changed code and ask: will this throw an error? Is every required parameter present? Is every event name correct? Only commit if the answer is yes to all.
+
 ## Context Management
 At 10% context remaining:
 1. Stop at nearest clean checkpoint

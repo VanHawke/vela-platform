@@ -51,6 +51,7 @@ export default async function handler(req, res) {
         session: {
           type: 'realtime',
           model: 'gpt-realtime',
+          input_audio_transcription: { model: 'whisper-1' },
           audio: {
             output: {
               voice: 'shimmer',
