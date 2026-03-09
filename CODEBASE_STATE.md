@@ -27,16 +27,16 @@
 - [x] .env.local + vercel.json + .claude/CLAUDE.md + .gitignore
 - [x] PWA files (manifest.json, sw.js, audio-processor.js, icons)
 
-### Phase 1 — Foundation: IN PROGRESS
-- [x] 1.1 Design System — dark palette, glassmorphism, typography, radius, transitions
+### Phase 1 — Foundation: BUILT — AWAITING DEPLOY
+- [x] 1.1 Design System — dark palette (#0A0A0A), glassmorphism, Geist/Inter/JetBrains Mono
 - [x] 1.2 Supabase Client — src/lib/supabase.js
-- [x] 1.3 Auth — LoginPage.jsx (split screen, Google OAuth, email/password, error states, routing)
-- [ ] 1.4 Layout Shell (Sidebar + Layout)
-- [ ] 1.5 Home (KikoChat)
-- [ ] 1.6 api/kiko.js (The Brain)
-- [ ] 1.7 Voice Module
-- [ ] 1.8 Settings
-- [ ] 1.9 Phase 1 Deploy Gate
+- [x] 1.3 Auth — LoginPage.jsx (split screen, Google OAuth, email/password, routing)
+- [x] 1.4 Layout Shell — Sidebar (expand/collapse/glassmorphism/tooltips) + Layout (Outlet)
+- [x] 1.5 Home — KikoChat (greeting, chips, input bar, SSE streaming, message display, chat history panel)
+- [x] 1.6 api/kiko.js — tiered routing (Haiku/Sonnet), KIKO_CORE/KIKO_FULL prompts, Mem0, 7 tools, streaming, prompt caching, tool loop
+- [x] 1.7 Voice — api/voice.js (Whisper STT + Realtime token), KikoVoice.jsx (overlay, states, transcripts)
+- [x] 1.8 Settings — 5 tabs (Profile, AI Config, Visual Builder, Images, About), ImageUpload component
+- [ ] 1.9 Deploy Gate — needs Vercel project + env vars + domain config
 ### Phase 2 — CRM: NOT STARTED
 ### Phase 3 — Intelligence: NOT STARTED
 
