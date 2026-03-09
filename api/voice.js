@@ -53,17 +53,23 @@ export default async function handler(req, res) {
           'Authorization': `Bearer ${process.env.OPENAI_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({}),
+        body: JSON.stringify({
+          session: {
+            type: 'realtime',
+            model: 'gpt-realtime',
+            audio: {
+              output: {
+                voice: 'shimmer'
+              }
+            }
+          }
+        })
       });
-
-      if (!response.ok) {
-        const errBody = await response.text();
-        console.error('[Voice] client_secrets error:', response.status, errBody);
-        return res.status(response.status).json({ error: `OpenAI ${response.status}: ${errBody}` });
-      }
-
       const data = await response.json();
-      console.log('[Voice] Token response keys:', Object.keys(data));
+      if (!response.ok) {
+        console.error('[Voice] client_secrets error:', response.status, data);
+        return res.status(response.status).json(data);
+      }
       return res.status(200).json(data);
     } catch (err) {
       console.error('[Voice] Realtime token error:', err.message);

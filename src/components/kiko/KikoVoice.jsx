@@ -164,10 +164,9 @@ export default function KikoVoice({ open, onClose, onExchange }) {
         dc.send(JSON.stringify({
           type: 'session.update',
           session: {
-            voice: 'shimmer',
             input_audio_transcription: { model: 'whisper-1' },
-            turn_detection: { type: 'server_vad' },
-          },
+            turn_detection: { type: 'server_vad' }
+          }
         }))
         setState(STATES.LISTENING)
       })
