@@ -63,7 +63,11 @@ RESPONSE RULES:
 - You are Kiko. Never refer to yourself as Claude or an AI assistant.
 
 TOOL USAGE:
-Before making any tool call, ask: does this query actually need live data? If it's conversational, factual from context, or answerable from session history — answer directly. Only call tools when the query explicitly needs current CRM data, live web results, memory lookup, or calendar/email data.`;
+You HAVE internet access via your tools. Never say you don't have internet access or can't search the web.
+- search_web: USE THIS for any question about current events, news, weather, market data, company info, or anything that needs up-to-date information. When in doubt, search.
+- get_realtime_data: USE THIS for weather (type: "weather"), time, or live data.
+- get_crm_data: USE THIS for pipeline, deals, contacts, tasks.
+- Only skip tools for purely conversational replies (greetings, opinions, follow-ups on existing context).`;
 
 // ── Tools — Phase 1 ─────────────────────────────────────
 const TOOLS = [
@@ -254,27 +258,46 @@ async function executeTool(name, input, userEmail) {
       return { saved: true };
     }
     case 'search_web': {
+      const oaiKey = process.env.OPENAI_KEY;
+      if (!oaiKey) {
+        console.error('[KIKO] search_web: OPENAI_KEY not set');
+        return { error: 'OpenAI API key not configured' };
+      }
       try {
+        console.log(`[KIKO] search_web: query="${input.query}"`);
         const { default: OpenAI } = await import('openai');
-        const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY });
+        const openai = new OpenAI({ apiKey: oaiKey });
         const res = await openai.responses.create({
           model: 'gpt-4o-mini',
           tools: [{ type: 'web_search_preview' }],
           input: input.query,
         });
         const text = res.output?.filter(o => o.type === 'message')?.map(o => o.content?.map(c => c.text).join('')).join('\n') || 'No results found.';
+        console.log(`[KIKO] search_web: got ${text.length} chars`);
         return { results: text };
       } catch (err) {
-        return { error: err.message };
+        console.error('[KIKO] search_web error:', err.message, err.stack?.slice(0, 300));
+        return { error: `Web search failed: ${err.message}` };
       }
     }
     case 'get_realtime_data': {
+      console.log(`[KIKO] get_realtime_data: type=${input.type} query=${input.query}`);
       if (input.type === 'weather') {
         const loc = input.query || 'Weybridge,UK';
         const key = process.env.OPENWEATHER_API_KEY;
-        if (!key) return { error: 'No weather API key' };
-        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(loc)}&appid=${key}&units=metric`);
-        return await res.json();
+        if (!key) {
+          console.error('[KIKO] get_realtime_data: OPENWEATHER_API_KEY not set');
+          return { error: 'Weather API key not configured' };
+        }
+        try {
+          const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(loc)}&appid=${key}&units=metric`);
+          const data = await res.json();
+          if (data.cod && data.cod !== 200) console.error('[KIKO] Weather API error:', data);
+          return data;
+        } catch (err) {
+          console.error('[KIKO] Weather fetch error:', err.message);
+          return { error: err.message };
+        }
       }
       if (input.type === 'time') {
         return { time: new Date().toISOString(), timezone: 'UTC' };
@@ -581,7 +604,8 @@ export default async function handler(req, res) {
       addMemory(message, textContent).catch(() => {});
     }
 
-    // Save conversation to Supabase
+    // Save conversation to Supabase — MUST complete before res.end()
+    // so the conversationId SSE event reaches the client
     const SB = process.env.VITE_SUPABASE_URL;
     const SK = process.env.VITE_SUPABASE_ANON_KEY;
     if (SB && SK && userEmail) {
@@ -592,27 +616,39 @@ export default async function handler(req, res) {
       ];
       const title = conversationHistory.length === 0 ? message.slice(0, 60) : undefined;
 
-      if (conversationId) {
-        fetch(`${SB}/rest/v1/conversations?id=eq.${conversationId}`, {
-          method: 'PATCH',
-          headers: { apikey: SK, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-          body: JSON.stringify({ messages: allMessages, updated_at: new Date().toISOString() }),
-        }).catch(() => {});
-      } else {
-        const newConv = {
-          user_id: userEmail,
-          title: title || 'New conversation',
-          messages: allMessages,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-        fetch(`${SB}/rest/v1/conversations`, {
-          method: 'POST',
-          headers: { apikey: SK, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-          body: JSON.stringify(newConv),
-        }).then(r => r.json()).then(data => {
-          if (data?.[0]?.id) write({ conversationId: data[0].id });
-        }).catch(() => {});
+      try {
+        if (conversationId) {
+          const patchRes = await fetch(`${SB}/rest/v1/conversations?id=eq.${conversationId}`, {
+            method: 'PATCH',
+            headers: { apikey: SK, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+            body: JSON.stringify({ messages: allMessages, updated_at: new Date().toISOString() }),
+          });
+          if (!patchRes.ok) console.error('[KIKO] Conv PATCH failed:', patchRes.status, await patchRes.text());
+        } else {
+          const newConv = {
+            user_id: userEmail,
+            title: title || 'New conversation',
+            messages: allMessages,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+          const postRes = await fetch(`${SB}/rest/v1/conversations`, {
+            method: 'POST',
+            headers: { apikey: SK, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+            body: JSON.stringify(newConv),
+          });
+          if (postRes.ok) {
+            const data = await postRes.json();
+            if (data?.[0]?.id) {
+              write({ conversationId: data[0].id });
+              console.log('[KIKO] New conversation created:', data[0].id);
+            }
+          } else {
+            console.error('[KIKO] Conv POST failed:', postRes.status, await postRes.text());
+          }
+        }
+      } catch (err) {
+        console.error('[KIKO] Conv save error:', err.message);
       }
     }
 
