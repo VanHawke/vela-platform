@@ -134,7 +134,7 @@ export default function Settings({ user }) {
               <h3 className="text-sm font-medium text-white">Voice</h3>
               <p className="text-xs text-white/30">
                 Mode 2 (mic icon): Speech-to-text via Whisper.
-                Mode 3 (speak toggle): Full voice conversation via OpenAI Realtime + ElevenLabs Charlotte.
+                Mode 3 (speak toggle): Full voice conversation via OpenAI Realtime (Shimmer voice).
               </p>
             </div>
           </div>
@@ -309,7 +309,7 @@ export default function Settings({ user }) {
               <p>Parent: <span className="text-white/60">Van Hawke Group</span></p>
               <p>AI: <span className="text-white/60">Anthropic Claude + OpenAI + Mem0</span></p>
               <p>Database: <span className="text-white/60">Supabase</span></p>
-              <p>Voice: <span className="text-white/60">OpenAI Realtime + ElevenLabs Charlotte</span></p>
+              <p>Voice: <span className="text-white/60">OpenAI Realtime (Shimmer)</span></p>
             </div>
           </div>
         </TabsContent>

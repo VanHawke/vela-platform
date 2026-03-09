@@ -35,7 +35,7 @@
 - Frontend: React 19 + Vite + Tailwind v4 + shadcn/ui
 - AI: Anthropic Claude (tiered) + OpenAI (voice/search) + Mem0 (memory)
 - Database: Supabase (PostgreSQL + pgvector)
-- Voice: OpenAI Realtime API + ElevenLabs Charlotte
+- Voice: OpenAI Realtime API (Shimmer voice)
 - Deploy: Vercel
 
 ## API Integration Rule — PERMANENT

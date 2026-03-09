@@ -160,7 +160,7 @@ _Target: Kiko working flawlessly with memory, streaming, and voice. Auth + layou
 - [x] Create src/components/kiko/KikoVoice.jsx
 - [x] Mode 2 (mic → text): Whisper transcription → text in input field → Kiko replies text
 - [x] Mode 3 (speak): full overlay, OpenAI Realtime WebSocket (server VAD, PCM16, AudioWorklet)
-- [ ] Mode 3: ElevenLabs Charlotte for Kiko audio output — deferred (needs ElevenLabs WebSocket integration)
+- [x] Mode 3: Voice output via OpenAI Realtime Shimmer (replaced ElevenLabs Charlotte)
 - [x] Mode 3 states: IDLE → CONNECTING → LISTENING → PROCESSING → SPEAKING → ERROR
 - [x] Mode 3: real-time transcript for both speakers
 - [ ] Mode 3: both sides logged to conversation in Supabase — needs live testing
@@ -170,7 +170,7 @@ _Target: Kiko working flawlessly with memory, streaming, and voice. Auth + layou
 - [ ] TEST: Speak toggle → full overlay activates — requires live browser
 - [ ] TEST: WebSocket connects — requires OPENAI_KEY
 - [ ] TEST: Microphone input detected — requires live mic
-- [ ] TEST: Charlotte responds — requires ElevenLabs integration
+- [x] TEST: Shimmer voice responds — via OpenAI Realtime API
 - [ ] TEST: Transcript appears — requires live WebSocket
 - [ ] TEST: Dismiss via X, ESC, tap outside — requires live browser
 - [x] TEST: Voice error does NOT crash text chat (isolated components)

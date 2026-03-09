@@ -8,7 +8,7 @@
 **Platform:** Vite + React 19 + Tailwind v4 + shadcn/ui
 **Database:** Supabase (same project as vanhawke-crm)
 **AI Backend:** Anthropic Claude (tiered: Haiku/Sonnet) + OpenAI (voice/search) + Mem0 (memory)
-**Voice:** OpenAI Realtime API + ElevenLabs Charlotte
+**Voice:** OpenAI Realtime API (Shimmer voice)
 **Deployment:** Vercel
 
 ---
