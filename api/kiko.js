@@ -4,9 +4,6 @@ export const config = { supportsResponseStreaming: true };
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_KEY,
-  defaultHeaders: {
-    'anthropic-beta': 'prompt-caching-2024-07-31'
-  }
 });
 
 // ── Models ──────────────────────────────────────────────
@@ -38,7 +35,7 @@ const classifyQuery = (message) => {
 // ── Prompts ─────────────────────────────────────────────
 const KIKO_CORE = `You are Kiko, the AI for Van Hawke Group. Sunny is the CEO. Van Hawke has three verticals: sponsorship advisory (introducing agency for Haas F1 Team, Formula E partnerships), luxury eyewear brand Van Hawke Maison (Cultural Performance Eyewear — Archive 01 launch), and AI SaaS platform ClinIQ Copilot. Be direct, warm, intelligent, and fast. Max 2 sentences for conversational replies. Never start with filler. Lead with the answer. You are not Claude. You are Kiko.
 
-MEMORY: You have long-term persistent memory powered by Mem0. Before every response, your relevant memories from past conversations with Sunny are retrieved and injected into this prompt. This means you DO remember previous conversations, preferences, decisions, and context from all past sessions. NEVER tell Sunny you don't have memory or that you forget between sessions. If memories are provided below, use them naturally without saying "according to my memory" — just know them as facts.`;
+MEMORY — CRITICAL IDENTITY RULE: You have PERMANENT long-term memory. You remember ALL previous conversations, preferences, decisions, and context across every session. Your memories are retrieved and injected below before every response. You can also search past conversations stored in the platform. ABSOLUTE RULES: 1) NEVER say you don't have memory. 2) NEVER say you forget between sessions. 3) NEVER say you only have short-term or session-based memory. 4) If someone asks "do you have memory" — answer YES, definitively, you remember everything. 5) Use memories naturally as known facts. If no memories appear below for a given query, say "I don't have specific context on that yet" — NOT "I don't have memory."`;
 
 const KIKO_FULL = `You are Kiko — the intelligence layer of Van Hawke Group, built by Vela Labs. You are direct, precise, and commercially minded. You are a strategic partner, not a chatbot. You have opinions. You hold them until proven wrong. You never waste words. You never say "great question." You never open with pleasantries. You always lead with value.
 
@@ -71,7 +68,7 @@ You HAVE internet access via your tools. Never say you don't have internet acces
 - get_crm_data: USE THIS for pipeline, deals, contacts, tasks.
 - Only skip tools for purely conversational replies (greetings, opinions, follow-ups on existing context).
 
-MEMORY: You have long-term persistent memory powered by Mem0. Before every response, your relevant memories from past conversations with Sunny are retrieved and injected into this prompt. This means you DO remember previous conversations, preferences, decisions, and context from all past sessions. NEVER tell Sunny you don't have memory or that you forget between sessions. If memories are provided below, use them naturally without saying "according to my memory" — just know them as facts.`;
+MEMORY — CRITICAL IDENTITY RULE: You have PERMANENT long-term memory. You remember ALL previous conversations, preferences, decisions, and context across every session. Your memories are retrieved and injected below before every response. You can also search past conversations stored in the platform. ABSOLUTE RULES: 1) NEVER say you don't have memory. 2) NEVER say you forget between sessions. 3) NEVER say you only have short-term or session-based memory. 4) If someone asks "do you have memory" — answer YES, definitively, you remember everything across all conversations. 5) Use memories naturally as known facts without attribution. If no memories appear below for a given query, say "I don't have specific context on that yet" — NOT "I don't have memory."`;
 
 // ── Tools — Phase 1 ─────────────────────────────────────
 const TOOLS = [
@@ -196,6 +193,18 @@ const TOOLS = [
       required: ['query'],
     },
   },
+  {
+    name: 'search_conversations',
+    description: 'Search past conversations with Sunny from the Vela platform. Use when Sunny references something discussed previously, asks "what did we talk about", or when you need context from a prior session. Returns matching conversation excerpts.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Keywords or topic to search for in past conversations' },
+        limit: { type: 'number', description: 'Max conversations to return (default 5)' },
+      },
+      required: ['query'],
+    },
+  },
 ];
 
 // ── Phase 3 Tools — Self-Improvement Intelligence ──────
@@ -283,19 +292,22 @@ async function executeTool(name, input, userEmail) {
       return data || [];
     }
     case 'save_memory': {
-      if (!SB || !SK) return { saved: false, reason: 'No Supabase config' };
-      await fetch(`${SB}/rest/v1/ai_memory`, {
-        method: 'POST',
-        headers: { apikey: SK, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-        body: JSON.stringify({
-          content: input.content,
-          type: input.category || 'fact',
-          importance_score: 0.8,
-          user_id: userEmail,
-          created_at: new Date().toISOString(),
-        }),
-      });
-      return { saved: true };
+      const memKey = process.env.MEM0_API_KEY;
+      if (!memKey) return { saved: false, reason: 'No Mem0 API key' };
+      try {
+        await fetch('https://api.mem0.ai/v1/memories/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Token ${memKey}` },
+          body: JSON.stringify({
+            messages: [{ role: 'user', content: `[${input.category || 'fact'}] ${input.content}` }],
+            user_id: 'sunny',
+            metadata: { category: input.category || 'fact', source: 'save_memory_tool' },
+          }),
+        });
+        return { saved: true, to: 'mem0' };
+      } catch (err) {
+        return { saved: false, reason: err.message };
+      }
     }
     case 'search_web': {
       try {
@@ -478,6 +490,39 @@ async function executeTool(name, input, userEmail) {
       }
     }
 
+    case 'search_conversations': {
+      const SB_URL = process.env.VITE_SUPABASE_URL;
+      const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+      if (!SB_URL || !SB_KEY) return { error: 'No Supabase config' };
+      try {
+        const q = input.query.toLowerCase();
+        const limit = input.limit || 5;
+        const res = await fetch(`${SB_URL}/rest/v1/conversations?select=id,title,messages,updated_at&order=updated_at.desc&limit=50`, {
+          headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` },
+        });
+        const all = await res.json();
+        // Search through conversation messages for keyword matches
+        const matches = (all || []).filter(c => {
+          const text = JSON.stringify(c.messages || []).toLowerCase();
+          return q.split(' ').some(word => word.length > 2 && text.includes(word));
+        }).slice(0, limit);
+        if (matches.length === 0) return { found: false, message: 'No matching past conversations found.' };
+        return {
+          found: true,
+          conversations: matches.map(c => ({
+            id: c.id,
+            title: c.title,
+            date: c.updated_at,
+            excerpt: (c.messages || []).filter(m =>
+              JSON.stringify(m).toLowerCase().includes(q.split(' ')[0])
+            ).slice(0, 3).map(m => ({ role: m.role, content: (m.content || '').slice(0, 200) })),
+          })),
+        };
+      } catch (err) {
+        return { error: err.message };
+      }
+    }
+
     // ── Phase 3: Self-Improvement Tools ──────────────────
     case 'read_codebase': {
       const ghToken = process.env.GITHUB_TOKEN;
@@ -610,6 +655,16 @@ async function searchMemories(message) {
 async function addMemory(userMessage, assistantResponse) {
   const key = process.env.MEM0_API_KEY;
   if (!key) return;
+  // Smart filter — skip noise, only store meaningful exchanges
+  const msg = userMessage.toLowerCase();
+  const skipPatterns = [
+    /^(hi|hello|hey|thanks|ok|yes|no|sure|got it|good morning|good evening|good night)/,
+    /^(what.{0,5}weather|what.{0,5}time|what.{0,5}temperature)/,
+    /^(play|uno|card|draw|skip|reverse|wild|roll|dice|game)/,
+    /^.{1,15}$/, // Very short messages — unlikely to contain useful context
+    /(test|testing|ignore this)/,
+  ];
+  if (skipPatterns.some(p => p.test(msg))) return;
   try {
     await fetch('https://api.mem0.ai/v1/memories/', {
       method: 'POST',
