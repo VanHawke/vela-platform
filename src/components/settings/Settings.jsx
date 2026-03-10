@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { supabase } from '@/lib/supabase'
 import ImageUpload from './ImageUpload'
-import { Check, ExternalLink, Unplug } from 'lucide-react'
+import { Check, ExternalLink, Unplug, UserPlus, Trash2, Copy } from 'lucide-react'
 
 const FONTS = ['Inter', 'DM Sans', 'Geist', 'Satoshi']
 const SIDEBAR_STYLES = ['glassmorphism', 'solid', 'minimal']
@@ -31,6 +31,10 @@ export default function Settings({ user }) {
   const [saved, setSaved] = useState(false)
   const [settings, setSettings] = useState({})
   const [googleStatus, setGoogleStatus] = useState(null)
+  const [teamMembers, setTeamMembers] = useState([])
+  const [invitations, setInvitations] = useState([])
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState('member')
 
   const email = user?.email || ''
   const displayName = user?.user_metadata?.full_name || email.split('@')[0] || ''
@@ -54,6 +58,7 @@ export default function Settings({ user }) {
     if (email) {
       loadSettings()
       checkGoogleStatus()
+      loadTeam()
     }
   }, [email])
 
@@ -102,7 +107,6 @@ export default function Settings({ user }) {
 
   const disconnectGoogle = async () => {
     try {
-      // Delete token from Supabase (via service role would be better but client works with RLS)
       await supabase
         .from('user_tokens')
         .delete()
@@ -112,6 +116,42 @@ export default function Settings({ user }) {
     } catch (err) {
       console.error('[Settings] Disconnect error:', err)
     }
+  }
+
+  const loadTeam = async () => {
+    try {
+      const { data: members } = await supabase.from('users').select('id, email, full_name, role, created_at').order('created_at', { ascending: true })
+      setTeamMembers(members || [])
+      const { data: invites } = await supabase.from('invitations').select('*').eq('status', 'pending').order('created_at', { ascending: false })
+      setInvitations(invites || [])
+    } catch (err) {
+      console.error('[Settings] Load team error:', err)
+    }
+  }
+
+  const sendInvite = async () => {
+    if (!inviteEmail.trim()) return
+    const orgId = user?.app_metadata?.org_id
+    if (!orgId) return
+    try {
+      await supabase.from('invitations').insert({
+        org_id: orgId,
+        email: inviteEmail.trim().toLowerCase(),
+        role: inviteRole,
+        invited_by: user.id,
+      })
+      setInviteEmail('')
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+      loadTeam()
+    } catch (err) {
+      console.error('[Settings] Invite error:', err)
+    }
+  }
+
+  const revokeInvite = async (id) => {
+    await supabase.from('invitations').update({ status: 'revoked' }).eq('id', id)
+    loadTeam()
   }
 
   const saveTheme = () => saveSettings({ theme_config: theme })
@@ -144,6 +184,7 @@ export default function Settings({ user }) {
         <TabsList className="bg-white/5 mb-6">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="kiko">Kiko</TabsTrigger>
+          <TabsTrigger value="team">Team</TabsTrigger>
           <TabsTrigger value="visual">Appearance</TabsTrigger>
           <TabsTrigger value="images">Images</TabsTrigger>
           <TabsTrigger value="accounts">Accounts</TabsTrigger>
@@ -184,7 +225,41 @@ export default function Settings({ user }) {
               aspectHint="Square, at least 200x200px"
               currentUrl={user?.user_metadata?.avatar_url}
             />
-            <Button onClick={() => saveSettings({ display_name: settings.display_name, timezone: settings.timezone })} className="bg-white text-black hover:bg-white/90">
+            <div>
+              <label className="text-sm text-white/50 block mb-1.5">Email Signature</label>
+              <textarea
+                value={settings.email_signature || ''}
+                onChange={(e) => setSettings(prev => ({ ...prev, email_signature: e.target.value }))}
+                placeholder="Your email signature (HTML supported)"
+                rows={4}
+                className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white placeholder:text-white/30 resize-none"
+              />
+            </div>
+            <Separator className="bg-white/8" />
+            <div>
+              <label className="text-sm text-white/50 block mb-2">Notifications</label>
+              <div className="space-y-2">
+                {[
+                  { key: 'email', label: 'Email notifications' },
+                  { key: 'desktop', label: 'Desktop notifications' },
+                  { key: 'sound', label: 'Sound alerts' },
+                ].map(({ key, label }) => (
+                  <label key={key} className="flex items-center justify-between cursor-pointer group">
+                    <span className="text-sm text-white/60 group-hover:text-white transition-colors">{label}</span>
+                    <div
+                      onClick={() => setSettings(prev => ({
+                        ...prev,
+                        notification_prefs: { ...(prev.notification_prefs || {}), [key]: !(prev.notification_prefs?.[key] ?? true) }
+                      }))}
+                      className={`relative w-9 h-5 rounded-full transition-colors cursor-pointer ${(settings.notification_prefs?.[key] ?? true) ? 'bg-white' : 'bg-white/20'}`}
+                    >
+                      <div className={`absolute top-0.5 w-4 h-4 rounded-full transition-transform ${(settings.notification_prefs?.[key] ?? true) ? 'translate-x-4 bg-black' : 'translate-x-0.5 bg-white/60'}`} />
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <Button onClick={() => saveSettings({ display_name: settings.display_name, timezone: settings.timezone, email_signature: settings.email_signature, notification_prefs: settings.notification_prefs })} className="bg-white text-black hover:bg-white/90">
               {saved ? 'Saved!' : 'Save Profile'}
             </Button>
           </div>
@@ -223,6 +298,77 @@ export default function Settings({ user }) {
                 via Mem0. Memories are automatically extracted from conversations.
               </p>
             </div>
+          </div>
+        </TabsContent>
+
+        {/* Team */}
+        <TabsContent value="team" className="space-y-6">
+          {/* Invite */}
+          <div className="bg-white/5 rounded-xl p-5 space-y-4">
+            <h3 className="text-sm font-medium text-white">Invite Team Member</h3>
+            <div className="flex gap-2">
+              <Input
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="colleague@company.com"
+                className="flex-1 bg-white/5 border-white/10 text-white"
+                onKeyDown={(e) => e.key === 'Enter' && sendInvite()}
+              />
+              <select
+                value={inviteRole}
+                onChange={(e) => setInviteRole(e.target.value)}
+                className="bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white"
+              >
+                <option value="member" className="bg-[#1a1a1a]">Member</option>
+                <option value="admin" className="bg-[#1a1a1a]">Admin</option>
+              </select>
+              <Button onClick={sendInvite} size="sm" className="bg-white text-black hover:bg-white/90">
+                <UserPlus className="h-4 w-4 mr-1" /> Invite
+              </Button>
+            </div>
+          </div>
+
+          {/* Pending invitations */}
+          {invitations.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-xs text-white/40 font-semibold uppercase tracking-wider">Pending Invitations</h3>
+              {invitations.map(inv => (
+                <div key={inv.id} className="bg-white/5 rounded-lg px-4 py-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-white/70">{inv.email}</p>
+                    <p className="text-xs text-white/30">{inv.role} · expires {new Date(inv.expires_at).toLocaleDateString()}</p>
+                  </div>
+                  <button onClick={() => revokeInvite(inv.id)} className="text-white/20 hover:text-red-400 transition-colors">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Current members */}
+          <div className="space-y-2">
+            <h3 className="text-xs text-white/40 font-semibold uppercase tracking-wider">Team Members</h3>
+            {teamMembers.length === 0 ? (
+              <p className="text-sm text-white/20">No team members yet</p>
+            ) : (
+              teamMembers.map(m => (
+                <div key={m.id} className="bg-white/5 rounded-lg px-4 py-3 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
+                      <span className="text-xs text-white/60">{(m.full_name || m.email)?.[0]?.toUpperCase()}</span>
+                    </div>
+                    <div>
+                      <p className="text-sm text-white/70">{m.full_name || m.email}</p>
+                      <p className="text-xs text-white/30">{m.email}</p>
+                    </div>
+                  </div>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${m.role === 'super_admin' ? 'bg-violet-500/20 text-violet-300' : m.role === 'admin' ? 'bg-blue-500/20 text-blue-300' : 'bg-white/10 text-white/40'}`}>
+                    {m.role}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </TabsContent>
 

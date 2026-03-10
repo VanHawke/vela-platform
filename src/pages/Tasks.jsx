@@ -12,18 +12,18 @@ export default function Tasks({ user }) {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ title: '', description: '', priority: 'medium', due_date: '' })
 
-  useEffect(() => { if (user?.email) load() }, [user?.email])
+  useEffect(() => { if (user?.id) load() }, [user?.id])
 
   const load = async () => {
     setLoading(true)
-    const { data } = await supabase.from('tasks').select('*').eq('user_email', user.email).order('created_at', { ascending: false })
+    const { data } = await supabase.from('tasks').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
     setTasks(data || [])
     setLoading(false)
   }
 
   const save = async () => {
     if (!form.title.trim()) return
-    await supabase.from('tasks').insert({ ...form, user_email: user.email, status: 'todo', created_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    await supabase.from('tasks').insert({ ...form, user_id: user.id, org_id: user.app_metadata?.org_id, status: 'todo', created_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     setShowForm(false)
     setForm({ title: '', description: '', priority: 'medium', due_date: '' })
     load()

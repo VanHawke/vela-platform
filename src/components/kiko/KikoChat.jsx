@@ -22,7 +22,7 @@ function getGreeting() {
   return 'Good evening'
 }
 
-export default function KikoChat({ user }) {
+export default function KikoChat({ user, compact = false }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
@@ -82,6 +82,7 @@ export default function KikoChat({ user }) {
           .from('conversations')
           .insert({
             user_id: user.id,
+            org_id: user.app_metadata?.org_id,
             title: (firstUserMessage || 'New conversation').slice(0, 60),
             messages: allMessages,
             created_at: new Date().toISOString(),
@@ -397,16 +398,19 @@ export default function KikoChat({ user }) {
         </div>
       </div>
 
-      {/* History toggle */}
-      <button
-        onClick={() => setHistoryOpen(!historyOpen)}
-        className="absolute top-3 right-3 z-10 text-white/20 hover:text-white/50 transition-colors p-1.5"
-      >
-        {historyOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
-      </button>
+      {/* History toggle — full mode only */}
+      {!compact && (
+        <button
+          onClick={() => setHistoryOpen(!historyOpen)}
+          className="absolute top-3 right-3 z-10 text-white/20 hover:text-white/50 transition-colors p-1.5"
+        >
+          {historyOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
+        </button>
+      )}
 
-      {/* Right panel — chat history */}
-      <ChatHistory
+      {/* Right panel — chat history (full mode only) */}
+      {!compact && (
+        <ChatHistory
         conversations={conversations}
         activeId={activeConvId}
         onSelect={handleSelectConversation}
@@ -414,6 +418,7 @@ export default function KikoChat({ user }) {
         collapsed={!historyOpen}
         onToggle={() => setHistoryOpen(!historyOpen)}
       />
+      )}
 
       {/* Voice Mode 3 overlay */}
       <KikoVoice

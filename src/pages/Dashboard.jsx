@@ -25,11 +25,13 @@ export default function Dashboard({ user }) {
         supabase.from('deals').select('id, data, updated_at').order('updated_at', { ascending: false }).limit(5),
         supabase.from('contacts').select('id', { count: 'exact', head: true }),
         supabase.from('companies').select('id', { count: 'exact', head: true }),
-        supabase.from('tasks').select('id', { count: 'exact', head: true }).eq('status', 'todo'),
+        supabase.from('tasks').select('id', { count: 'exact', head: true }),
       ])
       const deals = (dealsRes.data || []).map(row => ({ id: row.id, ...row.data, updated_at: row.updated_at }))
+      // Get total deal count separately
+      const { count: dealCount } = await supabase.from('deals').select('id', { count: 'exact', head: true })
       setStats({
-        deals: deals.length,
+        deals: dealCount || 0,
         contacts: contactsRes.count || 0,
         companies: companiesRes.count || 0,
         tasks: tasksRes.count || 0,

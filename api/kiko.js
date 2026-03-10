@@ -276,8 +276,8 @@ const PHASE3_TOOLS = [
 
 // ── Tool Execution ──────────────────────────────────────
 async function executeTool(name, input, userEmail) {
-  const SB = process.env.VITE_SUPABASE_URL;
-  const SK = process.env.VITE_SUPABASE_ANON_KEY;
+  const SB = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const SK = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
   const sbFetch = (path) => fetch(`${SB}/rest/v1/${path}`, { headers: { apikey: SK } }).then(r => r.json()).catch(() => []);
 
   switch (name) {
@@ -491,7 +491,7 @@ async function executeTool(name, input, userEmail) {
     }
 
     case 'search_conversations': {
-      const SB_URL = process.env.VITE_SUPABASE_URL;
+      const SB_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
       const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
       if (!SB_URL || !SB_KEY) return { error: 'No Supabase config' };
       try {
