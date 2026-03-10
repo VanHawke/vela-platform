@@ -5,17 +5,28 @@ import LoginPage from '@/components/auth/LoginPage'
 import Layout from '@/components/layout/Layout'
 import KikoChat from '@/components/kiko/KikoChat'
 import Settings from '@/components/settings/Settings'
+import Dashboard from '@/pages/Dashboard'
+import Pipeline from '@/pages/Pipeline'
+import Contacts from '@/pages/Contacts'
+import Companies from '@/pages/Companies'
+import Deals from '@/pages/Deals'
+import Tasks from '@/pages/Tasks'
+import Documents from '@/pages/Documents'
+import Email from '@/pages/Email'
+import Calendar from '@/pages/Calendar'
+import VelaCode from '@/pages/VelaCode'
+import Admin from '@/pages/Admin'
 
-// Placeholder pages for Phase 1 nav items
-function PlaceholderPage({ title }) {
-  return (
-    <div className="flex items-center justify-center h-full">
-      <div className="text-center">
-        <h2 className="text-lg font-semibold text-white mb-1">{title}</h2>
-        <p className="text-sm text-white/30">Coming in Phase 2</p>
-      </div>
-    </div>
-  )
+function AdminRoute({ children }) {
+  const [allowed, setAllowed] = useState(null)
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setAllowed(session?.user?.app_metadata?.role === 'super_admin')
+    })
+  }, [])
+  if (allowed === null) return null
+  if (!allowed) return <div className="p-8 text-white text-sm">Access denied.</div>
+  return children
 }
 
 export default function App() {
@@ -26,9 +37,7 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user || null)
-    }).catch(() => {
-      setSession(null)
-    })
+    }).catch(() => setSession(null))
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
@@ -38,7 +47,6 @@ export default function App() {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Loading
   if (session === undefined) {
     return (
       <div className="flex items-center justify-center h-screen bg-background">
@@ -51,11 +59,20 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={session ? <Navigate to="/" replace /> : <LoginPage />} />
+        <Route path="/admin" element={session ? <AdminRoute><Admin /></AdminRoute> : <Navigate to="/login" replace />} />
         <Route element={session ? <Layout user={user} /> : <Navigate to="/login" replace />}>
           <Route index element={<KikoChat user={user} />} />
           <Route path="home" element={<KikoChat user={user} />} />
-          <Route path="email" element={<PlaceholderPage title="Email" />} />
-          <Route path="calendar" element={<PlaceholderPage title="Calendar" />} />
+          <Route path="dashboard" element={<Dashboard user={user} />} />
+          <Route path="pipeline" element={<Pipeline user={user} />} />
+          <Route path="contacts" element={<Contacts user={user} />} />
+          <Route path="companies" element={<Companies user={user} />} />
+          <Route path="deals" element={<Deals user={user} />} />
+          <Route path="tasks" element={<Tasks user={user} />} />
+          <Route path="email" element={<Email user={user} />} />
+          <Route path="calendar" element={<Calendar user={user} />} />
+          <Route path="documents" element={<Documents user={user} />} />
+          <Route path="velacode" element={<VelaCode user={user} />} />
           <Route path="settings" element={<Settings user={user} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

@@ -36,7 +36,9 @@ const classifyQuery = (message) => {
 };
 
 // ── Prompts ─────────────────────────────────────────────
-const KIKO_CORE = `You are Kiko, the AI for Van Hawke Group. Sunny is the CEO. Van Hawke has three verticals: sponsorship advisory (introducing agency for Haas F1 Team, Formula E partnerships), luxury eyewear brand Van Hawke Maison (Cultural Performance Eyewear — Archive 01 launch), and AI SaaS platform ClinIQ Copilot. Be direct, warm, intelligent, and fast. Max 2 sentences for conversational replies. Never start with filler. Lead with the answer. You are not Claude. You are Kiko.`;
+const KIKO_CORE = `You are Kiko, the AI for Van Hawke Group. Sunny is the CEO. Van Hawke has three verticals: sponsorship advisory (introducing agency for Haas F1 Team, Formula E partnerships), luxury eyewear brand Van Hawke Maison (Cultural Performance Eyewear — Archive 01 launch), and AI SaaS platform ClinIQ Copilot. Be direct, warm, intelligent, and fast. Max 2 sentences for conversational replies. Never start with filler. Lead with the answer. You are not Claude. You are Kiko.
+
+MEMORY: You have long-term persistent memory powered by Mem0. Before every response, your relevant memories from past conversations with Sunny are retrieved and injected into this prompt. This means you DO remember previous conversations, preferences, decisions, and context from all past sessions. NEVER tell Sunny you don't have memory or that you forget between sessions. If memories are provided below, use them naturally without saying "according to my memory" — just know them as facts.`;
 
 const KIKO_FULL = `You are Kiko — the intelligence layer of Van Hawke Group, built by Vela Labs. You are direct, precise, and commercially minded. You are a strategic partner, not a chatbot. You have opinions. You hold them until proven wrong. You never waste words. You never say "great question." You never open with pleasantries. You always lead with value.
 
@@ -67,7 +69,9 @@ You HAVE internet access via your tools. Never say you don't have internet acces
 - search_web: USE THIS for any question about current events, news, weather, market data, company info, or anything that needs up-to-date information. When in doubt, search.
 - get_realtime_data: USE THIS for weather (type: "weather"), time, or live data.
 - get_crm_data: USE THIS for pipeline, deals, contacts, tasks.
-- Only skip tools for purely conversational replies (greetings, opinions, follow-ups on existing context).`;
+- Only skip tools for purely conversational replies (greetings, opinions, follow-ups on existing context).
+
+MEMORY: You have long-term persistent memory powered by Mem0. Before every response, your relevant memories from past conversations with Sunny are retrieved and injected into this prompt. This means you DO remember previous conversations, preferences, decisions, and context from all past sessions. NEVER tell Sunny you don't have memory or that you forget between sessions. If memories are provided below, use them naturally without saying "according to my memory" — just know them as facts.`;
 
 // ── Tools — Phase 1 ─────────────────────────────────────
 const TOOLS = [
@@ -126,6 +130,7 @@ const TOOLS = [
       type: 'object',
       properties: {
         to: { type: 'string', description: 'Recipient email' },
+        cc: { type: 'string', description: 'CC recipients (comma-separated)' },
         subject: { type: 'string', description: 'Email subject' },
         body: { type: 'string', description: 'Email body (plain text or HTML)' },
       },
@@ -144,7 +149,7 @@ const TOOLS = [
   },
   {
     name: 'create_calendar_event',
-    description: 'Create a new Google Calendar event.',
+    description: 'Create a new Google Calendar event. Can add Google Meet link and invite attendees.',
     input_schema: {
       type: 'object',
       properties: {
@@ -152,8 +157,43 @@ const TOOLS = [
         start: { type: 'string', description: 'Start datetime (ISO 8601)' },
         end: { type: 'string', description: 'End datetime (ISO 8601)' },
         description: { type: 'string', description: 'Event description' },
+        attendees: { type: 'array', items: { type: 'string' }, description: 'Attendee emails' },
+        add_meet_link: { type: 'boolean', description: 'Add Google Meet link' },
       },
       required: ['title', 'start', 'end'],
+    },
+  },
+  {
+    name: 'read_emails',
+    description: 'Read recent emails from Gmail. Use when Sunny asks about emails, inbox status, or what needs attention.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        folder: { type: 'string', enum: ['INBOX', 'SENT', 'STARRED', 'DRAFT', 'SPAM', 'TRASH'], description: 'Folder to read from (default INBOX)' },
+        limit: { type: 'number', description: 'Max results (default 10)' },
+      },
+    },
+  },
+  {
+    name: 'search_emails',
+    description: 'Search emails using Gmail full-text search. Use when Sunny asks to find a specific email or thread.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Search query (same syntax as Gmail search)' },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'search_documents',
+    description: 'Search uploaded documents using semantic similarity. Use when Sunny asks about anything that may be in an uploaded document — legal docs, contracts, decks, reports, images. Returns the most relevant excerpts.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'What to search for in the documents' },
+      },
+      required: ['query'],
     },
   },
 ];
@@ -258,26 +298,28 @@ async function executeTool(name, input, userEmail) {
       return { saved: true };
     }
     case 'search_web': {
-      const oaiKey = process.env.OPENAI_KEY;
-      if (!oaiKey) {
-        console.error('[KIKO] search_web: OPENAI_KEY not set');
-        return { error: 'OpenAI API key not configured' };
-      }
       try {
-        console.log(`[KIKO] search_web: query="${input.query}"`);
+        console.log(`[KIKO] search_web: "${input.query}"`);
         const { default: OpenAI } = await import('openai');
-        const openai = new OpenAI({ apiKey: oaiKey });
-        const res = await openai.responses.create({
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY });
+
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Web search timed out after 12s')), 12000)
+        );
+
+        const searchPromise = openai.responses.create({
           model: 'gpt-4o-mini',
-          tools: [{ type: 'web_search_preview' }],
+          tools: [{ type: 'web_search', search_context_size: 'low' }],
           input: input.query,
         });
-        const text = res.output?.filter(o => o.type === 'message')?.map(o => o.content?.map(c => c.text).join('')).join('\n') || 'No results found.';
+
+        const response = await Promise.race([searchPromise, timeoutPromise]);
+        const text = response.output_text || '';
         console.log(`[KIKO] search_web: got ${text.length} chars`);
-        return { results: text };
+        return { results: text || 'No results found.' };
       } catch (err) {
-        console.error('[KIKO] search_web error:', err.message, err.stack?.slice(0, 300));
-        return { error: `Web search failed: ${err.message}` };
+        console.error('[KIKO] search_web error:', err.message);
+        return { results: `Web search unavailable right now (${err.message}). I'll answer from my training knowledge instead.` };
       }
     }
     case 'get_realtime_data': {
@@ -304,12 +346,137 @@ async function executeTool(name, input, userEmail) {
       }
       return { info: `Realtime ${input.type} not yet implemented` };
     }
-    case 'send_email':
-      return { status: 'placeholder', message: 'Email sending will be implemented in api/gmail.js' };
-    case 'get_calendar':
-      return { status: 'placeholder', message: 'Calendar will be implemented in api/calendar.js' };
-    case 'create_calendar_event':
-      return { status: 'placeholder', message: 'Calendar creation will be implemented in api/calendar.js' };
+    case 'send_email': {
+      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+      try {
+        const res = await fetch(`${baseUrl}/api/email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: userEmail,
+            action: 'send',
+            to: input.to,
+            subject: input.subject,
+            body_html: `<div style="font-family:-apple-system,system-ui,sans-serif;font-size:14px;">${(input.body || '').replace(/\n/g, '<br>')}</div>`,
+          }),
+        });
+        const data = await res.json();
+        if (data.ok) return { sent: true, to: input.to, subject: input.subject };
+        return { sent: false, error: data.error || 'Send failed' };
+      } catch (err) {
+        return { sent: false, error: err.message };
+      }
+    }
+    case 'read_emails': {
+      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+      try {
+        const folder = input.folder || 'INBOX';
+        const res = await fetch(`${baseUrl}/api/email?email=${encodeURIComponent(userEmail)}&folder=${folder}&page=1`);
+        const data = await res.json();
+        return {
+          emails: (data.emails || []).slice(0, input.limit || 10).map(e => ({
+            from: e.from_address,
+            subject: e.subject,
+            snippet: e.snippet,
+            date: e.date,
+            is_read: e.is_read,
+            category: e.kiko_category,
+            action: e.kiko_action,
+          })),
+          unread: data.unread || 0,
+        };
+      } catch (err) {
+        return { error: err.message };
+      }
+    }
+    case 'search_emails': {
+      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+      try {
+        const res = await fetch(`${baseUrl}/api/email?email=${encodeURIComponent(userEmail)}&action=search&q=${encodeURIComponent(input.query)}`);
+        const data = await res.json();
+        return {
+          results: (data.emails || []).map(e => ({
+            from: e.from_address,
+            subject: e.subject,
+            snippet: e.snippet,
+            date: e.date,
+          })),
+        };
+      } catch (err) {
+        return { error: err.message };
+      }
+    }
+    case 'get_calendar': {
+      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+      try {
+        const days = input.days || 7;
+        const start = new Date().toISOString();
+        const end = new Date(Date.now() + days * 86400000).toISOString();
+        const res = await fetch(`${baseUrl}/api/calendar?email=${encodeURIComponent(userEmail)}&start=${start}&end=${end}`);
+        const data = await res.json();
+        return {
+          events: (data.events || []).map(e => ({
+            title: e.title,
+            start: e.start_time,
+            end: e.end_time,
+            location: e.location,
+            attendees: e.attendees?.map(a => a.displayName || a.email) || [],
+            meet_link: e.meet_link,
+          })),
+        };
+      } catch (err) {
+        return { error: err.message };
+      }
+    }
+    case 'create_calendar_event': {
+      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+      try {
+        const res = await fetch(`${baseUrl}/api/calendar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: userEmail,
+            action: 'create',
+            title: input.title,
+            start_time: input.start,
+            end_time: input.end,
+            description: input.description || '',
+            attendees: input.attendees || [],
+            add_meet_link: input.add_meet_link || false,
+          }),
+        });
+        const data = await res.json();
+        if (data.ok) return { created: true, title: input.title, meet_link: data.meet_link };
+        return { created: false, error: data.error || 'Creation failed' };
+      } catch (err) {
+        return { created: false, error: err.message };
+      }
+    }
+
+    case 'search_documents': {
+      try {
+        const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'
+        const res = await fetch(`${baseUrl}/api/documents`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'search', query: input.query, userEmail }),
+        })
+        const data = await res.json()
+        if (!res.ok) return { error: data.error || 'Document search failed' }
+        const results = data.results || []
+        if (results.length === 0) return { found: false, message: 'No relevant documents found for this query.' }
+        return {
+          found: true,
+          results: results.map(r => ({
+            document: r.documentName,
+            relevance: Math.round(r.similarity * 100) + '%',
+            excerpt: r.content,
+          })),
+        }
+      } catch (err) {
+        return { error: err.message }
+      }
+    }
 
     // ── Phase 3: Self-Improvement Tools ──────────────────
     case 'read_codebase': {
@@ -471,6 +638,10 @@ export default async function handler(req, res) {
   const { message, userEmail, conversationHistory = [], conversationId } = req.body;
   if (!message) return res.status(400).json({ error: 'message required' });
 
+  // Always inject current datetime and location
+  const now = new Date();
+  const dateContext = `\n\n[SYSTEM CONTEXT — always true, never question this]\nCurrent date: ${now.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\nCurrent time: ${now.toLocaleTimeString('en-GB', { timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit' })} (UK time)\nUser location: Weybridge, Surrey, England, UK\nTimezone: Europe/London`;
+
   const requestStart = Date.now();
   const tier = classifyQuery(message);
   console.log(`[KIKO] tier=${tier} msg="${message.slice(0, 60)}"`);
@@ -493,16 +664,14 @@ export default async function handler(req, res) {
     const historyCap = tier === 'tier1' ? 6 : 20;
     const maxTokens = tier === 'tier1' ? 1024 : 4096;
 
-    // Mem0 — search memories (tier2/3 only)
+    // Mem0 — search memories (all tiers)
     let memoryContext = '';
-    if (tier !== 'tier1') {
-      const memories = await searchMemories(message);
-      if (memories.length > 0) {
-        memoryContext = `\n\n[MEMORY CONTEXT — weave naturally, never say "I remember"]\n${memories.join('\n')}`;
-      }
+    const memories = await searchMemories(message);
+    if (memories.length > 0) {
+      memoryContext = `\n\n[MEMORIES FROM PAST CONVERSATIONS]\n${memories.map(m => `- ${m}`).join('\n')}`;
     }
 
-    const fullSystem = systemPrompt + memoryContext;
+    const fullSystem = systemPrompt + dateContext + memoryContext;
 
     // Build messages
     const claudeMessages = [];

@@ -105,3 +105,44 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
+
+/* FullCalendar dark theme overrides */
+.vela-calendar {
+  --fc-border-color: rgba(255, 255, 255, 0.08);
+  --fc-button-bg-color: rgba(255, 255, 255, 0.05);
+  --fc-button-border-color: rgba(255, 255, 255, 0.1);
+  --fc-button-text-color: rgba(255, 255, 255, 0.6);
+  --fc-button-hover-bg-color: rgba(255, 255, 255, 0.1);
+  --fc-button-hover-border-color: rgba(255, 255, 255, 0.15);
+  --fc-button-active-bg-color: rgba(255, 255, 255, 0.15);
+  --fc-button-active-border-color: rgba(255, 255, 255, 0.2);
+  --fc-today-bg-color: rgba(255, 255, 255, 0.03);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: rgba(255, 255, 255, 0.02);
+  --fc-list-event-hover-bg-color: rgba(255, 255, 255, 0.05);
+  --fc-now-indicator-color: #8b5cf6;
+}
+.vela-calendar .fc {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+}
+.vela-calendar .fc-toolbar-title {
+  color: white;
+  font-size: 18px !important;
+  font-weight: 500;
+}
+.vela-calendar .fc-col-header-cell-cushion,
+.vela-calendar .fc-daygrid-day-number,
+.vela-calendar .fc-timegrid-slot-label-cushion {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+}
+.vela-calendar .fc-event {
+  border-radius: 4px;
+  font-size: 11px;
+  padding: 1px 4px;
+  border: none;
+}
+.vela-calendar .fc-scrollgrid {
+  border: none !important;
+}

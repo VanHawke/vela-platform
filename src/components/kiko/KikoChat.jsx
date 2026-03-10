@@ -155,6 +155,14 @@ export default function KikoChat({ user }) {
             const j = JSON.parse(d)
             if (j.delta) { full += j.delta; setStreamText(full) }
             if (j.meta) meta = j.meta
+            if (j.toolStatus) {
+              if (j.toolStatus === null || j.toolStatus === '') {
+                setIsThinking(false)
+              } else {
+                setIsThinking(true)
+                setThinkingSteps(prev => [...prev, { type: 'tool', label: j.toolStatus, results: [] }])
+              }
+            }
             if (j.tool_start) {
               setIsThinking(true)
               setThinkingSteps(prev => [...prev, { type: j.tool_start.type || 'tool', label: j.tool_start.label || j.tool_start.name, results: [] }])
@@ -412,6 +420,15 @@ export default function KikoChat({ user }) {
         open={voiceOpen}
         onClose={() => setVoiceOpen(false)}
         onVoiceMessage={handleVoiceMessage}
+        user={user}
+        onToolStart={(tool) => {
+          setIsThinking(true);
+          setThinkingSteps(prev => [...prev, { name: tool.name, input: tool.input, status: 'running' }]);
+        }}
+        onToolEnd={() => {
+          setIsThinking(false);
+          setThinkingSteps(prev => prev.map(s => ({ ...s, status: 'done' })));
+        }}
       />
     </div>
   )

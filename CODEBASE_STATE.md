@@ -1,113 +1,134 @@
 # Vela Platform v2.0 — Codebase State
 
-**Version:** 2.0.0-alpha
-**Build Date:** 2026-03-09
+**Version:** 2.1.0
+**Build Date:** 2026-03-10
 **Repo:** github.com/VanHawke/vela-platform
 **Deployed At:** https://vela-platform-one.vercel.app
-**Target Domain:** vela.vanhawke.com (not yet configured)
 **Platform:** Vite + React 19 + Tailwind v4 + shadcn/ui
-**Database:** Supabase (same project as vanhawke-crm)
-**AI Backend:** Anthropic Claude (tiered: Haiku/Sonnet) + OpenAI (voice/search) + Mem0 (memory)
-**Voice:** OpenAI Realtime API (Shimmer voice)
-**Deployment:** Vercel
+**Database:** Supabase (project: dwiywqeleyckzcxbwrlb)
+**AI Backend:** Anthropic Claude (tiered: Haiku/Sonnet) + OpenAI (voice/search) + Mem0
+**Voice:** OpenAI Realtime API (Shimmer voice, WebRTC GA)
+**Deployment:** Vercel (11/12 serverless functions used)
 
 ---
 
 ## Current Status
 
 ### Phase 0 — Project Setup: COMPLETE
-- [x] React + Vite scaffold
-- [x] Git init
-- [x] Tailwind CSS v4 + @tailwindcss/vite plugin
-- [x] shadcn/ui initialized (21 components)
-- [x] All app dependencies installed
-- [x] Directory structure matches brief
-- [x] Build passes (clean)
-- [x] TASKS.md created
-- [x] CODEBASE_STATE.md created
-- [x] .env.local + vercel.json + .claude/CLAUDE.md + .gitignore
-- [x] PWA files (manifest.json, sw.js, audio-processor.js, icons)
+### Phase 1 — Foundation: COMPLETE
+### Phase 2 — CRM Pages: COMPLETE
+### Phase 3 — Documents: PARTIAL (upload 400 error needs fix)
 
-### Phase 1 — Foundation: BUILT — AWAITING DEPLOY
-- [x] 1.1 Design System — dark palette (#0A0A0A), glassmorphism, Geist/Inter/JetBrains Mono
-- [x] 1.2 Supabase Client — src/lib/supabase.js
-- [x] 1.3 Auth — LoginPage.jsx (split screen, Google OAuth, email/password, routing)
-- [x] 1.4 Layout Shell — Sidebar (expand/collapse/glassmorphism/tooltips) + Layout (Outlet)
-- [x] 1.5 Home — KikoChat (greeting, chips, input bar, SSE streaming, message display, chat history panel)
-- [x] 1.6 api/kiko.js — tiered routing (Haiku/Sonnet), KIKO_CORE/KIKO_FULL prompts, Mem0, 7 tools, streaming, prompt caching, tool loop
-- [x] 1.7 Voice — api/voice.js (Whisper STT + Realtime token), KikoVoice.jsx (overlay, states, transcripts)
-- [x] 1.8 Settings — 5 tabs (Profile, AI Config, Visual Builder, Images, About), ImageUpload component
-- [x] 1.9 Deploy Gate — deployed to https://vela-platform-one.vercel.app (env vars + domain pending)
-### Phase 2 — CRM: NOT STARTED
-### Phase 3 — Intelligence: NOT STARTED
+### Phase 4 — Google OAuth: CODE COMPLETE
+- [x] api/google-auth.js — consent flow + callback token exchange
+- [x] api/google-token.js — shared helper with auto-refresh
+- [ ] Awaiting: Supabase user_tokens table, Google Cloud Console config
+
+### Phase 5 — Email Client: CODE COMPLETE
+- [x] api/email.js — full CRUD via Gmail API + Supabase cache
+- [x] src/pages/Email.jsx — three-pane layout (folders, list, viewer/compose)
+- [ ] Awaiting: Supabase emails + email_sync_state tables, OAuth tokens
+
+### Phase 6 — Calendar: CODE COMPLETE
+- [x] api/calendar.js — CRUD via Google Calendar API + Supabase cache
+- [x] src/pages/Calendar.jsx — FullCalendar with week/month/day/list views
+- [ ] Awaiting: Supabase calendar_events table, OAuth tokens
+
+### Phase 7A — Settings: CODE COMPLETE
+- [x] api/settings.js — GET/PATCH settings
+- [x] Settings.jsx — 6 tabs (Profile, Kiko, Appearance, Images, Accounts, About)
+- [ ] Awaiting: Supabase user_settings table with user_email PK
+
+### Phase 7C — Vela Code: CODE COMPLETE
+- [x] api/vela-code.js — file tree, file content, AI streaming, save + deploy
+- [x] src/pages/VelaCode.jsx — Monaco editor + Kiko code chat
 
 ---
 
-## Project Structure
+## Serverless Functions (11/12 used)
 
-```
-vela-platform/
-├── api/                          ← Serverless functions (to be created)
-├── src/
-│   ├── components/
-│   │   ├── auth/                 ← LoginPage (to be created)
-│   │   ├── crm/                  ← Phase 2
-│   │   ├── intelligence/         ← Phase 3
-│   │   ├── kiko/                 ← KikoChat, KikoMessage, KikoVoice
-│   │   ├── layout/               ← Layout, Sidebar, ChatHistory
-│   │   ├── outreach/             ← Phase 3
-│   │   ├── platform/             ← Phase 3
-│   │   ├── settings/             ← Settings, ImageUpload, VisualBuilder
-│   │   └── ui/                   ← shadcn components (21 installed)
-│   ├── lib/
-│   │   ├── supabase.js           ← (to be created)
-│   │   └── utils.js              ← shadcn utility (exists)
-│   ├── pages/                    ← Thin route wrappers
-│   ├── App.jsx
-│   ├── main.jsx
-│   └── index.css                 ← Tailwind + shadcn theme tokens
-├── public/
-├── jsconfig.json
-├── vite.config.js
-├── components.json               ← shadcn config
-├── TASKS.md
-├── CODEBASE_STATE.md
-└── package.json
-```
+| # | File | Purpose |
+|---|------|---------|
+| 1 | api/kiko.js | Main AI chat (Claude tiered, tools, streaming) |
+| 2 | api/voice.js | Whisper STT + Realtime tokens + Mem0 |
+| 3 | api/health.js | Health check |
+| 4 | api/documents.js | Document upload, chunk, embed, search |
+| 5 | api/tool.js | Voice Realtime tool executor |
+| 6 | api/google-auth.js | OAuth consent + callback |
+| 7 | api/google-token.js | Token refresh helper + status check |
+| 8 | api/email.js | Gmail operations |
+| 9 | api/calendar.js | Google Calendar operations |
+| 10 | api/settings.js | User settings CRUD |
+| 11 | api/vela-code.js | Code editor backend |
 
-## Installed Dependencies
+**1 slot remaining** — reserve for future use.
 
-### Core
-- react 19, react-dom 19, vite
-- tailwindcss v4, @tailwindcss/vite
-- shadcn/ui (21 components)
+---
 
-### AI + Backend
-- @anthropic-ai/sdk (latest)
-- openai
-- mem0ai
+## Kiko Tools (12 total)
 
-### Data + Auth
-- @supabase/supabase-js
-- @supabase/auth-helpers-react
-- react-router-dom
+| Tool | Status |
+|------|--------|
+| get_crm_data | Working |
+| save_memory | Working |
+| search_web | Working (gpt-4o-mini + 12s timeout) |
+| get_realtime_data | Working (weather + time) |
+| send_email | Implemented (needs OAuth) |
+| read_emails | Implemented (needs OAuth) |
+| search_emails | Implemented (needs OAuth) |
+| get_calendar | Implemented (needs OAuth) |
+| create_calendar_event | Implemented (needs OAuth) |
+| search_documents | Working |
+| read_codebase | Working (GitHub API) |
+| push_to_github | Working (approval gate) |
 
-### UI
-- lucide-react
-- react-image-crop
-- react-hot-toast
-- date-fns
+---
 
-### Utilities
-- axios
+## Routes
 
-## shadcn Components Installed
-avatar, badge, button, card, command, dialog, dropdown-menu, input, input-group, popover, scroll-area, select, separator, sheet, sidebar, skeleton, sonner, table, tabs, textarea, tooltip
+| Path | Component | Status |
+|------|-----------|--------|
+| / | KikoChat | Active |
+| /home | KikoChat | Active |
+| /email | Email | Active (needs OAuth) |
+| /calendar | Calendar | Active (needs OAuth) |
+| /settings | Settings | Active |
+| /dashboard | Dashboard | Active |
+| /pipeline | Pipeline | Active |
+| /contacts | Contacts | Active |
+| /companies | Companies | Active |
+| /deals | Deals | Active |
+| /tasks | Tasks | Active |
+| /documents | Documents | Active (upload error) |
+| /velacode | VelaCode | Active |
+
+---
+
+## Dependencies Added This Session
+
+- @tiptap/react, @tiptap/starter-kit, @tiptap/extension-underline, @tiptap/extension-link, @tiptap/pm
+- dompurify
+- @fullcalendar/react, @fullcalendar/core, @fullcalendar/daygrid, @fullcalendar/timegrid, @fullcalendar/list, @fullcalendar/interaction
+- @monaco-editor/react
+
+---
+
+## Blocking Items (Sunny Action Required)
+
+1. **Supabase Tables** — Run the SQL from the brief to create: user_tokens, emails, email_sync_state, calendar_events, user_settings, code_sessions
+2. **Google Cloud Console** — Enable Gmail + Calendar APIs, create OAuth credentials, set redirect URI
+3. **Vercel Env Vars** — Verify GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET are set
+4. **VERCEL_DEPLOY_HOOK** — Create deploy hook in Vercel dashboard, add to env vars
+5. **SUPABASE_SERVICE_ROLE_KEY** — Add to Vercel env vars (needed for server-side DB calls)
 
 ---
 
 ## Decisions Log
-1. **Tailwind v4** — shadcn auto-detected v4, using @tailwindcss/vite plugin (not PostCSS)
-2. **sonner** over toast — shadcn deprecated toast in favour of sonner
-3. **Geist font** — auto-installed by shadcn as default sans font
-4. **Dark theme** — shadcn generated oklch-based dark/light vars; will customize to brief palette in Phase 1.1
+
+1. **Settings use user_email not user_id** — all new tables use TEXT user_email column per brief
+2. **DOMPurify for email HTML** — sanitized iframe rendering, no dangerouslySetInnerHTML
+3. **FullCalendar for calendar** — standard library, dark theme via CSS vars
+4. **Monaco for code editor** — vs-dark theme, syntax highlighting
+5. **11/12 functions used** — 1 slot reserved for future
+6. **Email sync initial: 200 messages** — batched in 50s to stay within 60s timeout
+7. **Token auto-refresh** — 5-minute buffer before expiry

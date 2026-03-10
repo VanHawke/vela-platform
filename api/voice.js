@@ -61,7 +61,33 @@ export default async function handler(req, res) {
               output: {
                 voice: 'shimmer'
               }
-            }
+            },
+            tools: [
+              {
+                type: 'function',
+                name: 'get_realtime_data',
+                description: 'Get current weather for a location',
+                parameters: {
+                  type: 'object',
+                  properties: {
+                    type: { type: 'string', enum: ['weather'] },
+                    location: { type: 'string', description: 'City name' }
+                  },
+                  required: ['type', 'location']
+                }
+              },
+              {
+                type: 'function',
+                name: 'search_web',
+                description: 'Search the web for current information',
+                parameters: {
+                  type: 'object',
+                  properties: { query: { type: 'string' } },
+                  required: ['query']
+                }
+              }
+            ],
+            tool_choice: 'auto'
           }
         })
       });

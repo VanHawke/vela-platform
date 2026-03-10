@@ -83,7 +83,7 @@ export function useMicInput() {
 // Mode 3 — Full voice overlay (WebRTC, GA Realtime API)
 // onVoiceMessage fires for EACH individual transcript (user or assistant)
 // with { role: 'user'|'assistant', content: string }
-export default function KikoVoice({ open, onClose, onVoiceMessage }) {
+export default function KikoVoice({ open, onClose, onVoiceMessage, user, onToolStart, onToolEnd }) {
   const [state, setState] = useState(STATES.IDLE)
   const [error, setError] = useState('')
   const [transcripts, setTranscripts] = useState([])
@@ -145,7 +145,9 @@ export default function KikoVoice({ open, onClose, onVoiceMessage }) {
       pc.ontrack = (e) => { audioEl.srcObject = e.streams[0] }
 
       // Add local mic track
-      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const micStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      })
       localStreamRef.current = micStream
       pc.addTrack(micStream.getTracks()[0])
 
@@ -165,13 +167,39 @@ export default function KikoVoice({ open, onClose, onVoiceMessage }) {
                 turn_detection: { type: 'server_vad' }
               },
               output: { voice: 'shimmer' }
-            }
+            },
+            tools: [
+              {
+                type: 'function',
+                name: 'get_realtime_data',
+                description: 'Get current weather for a location',
+                parameters: {
+                  type: 'object',
+                  properties: {
+                    type: { type: 'string', enum: ['weather'] },
+                    location: { type: 'string', description: 'City name' }
+                  },
+                  required: ['type', 'location']
+                }
+              },
+              {
+                type: 'function',
+                name: 'search_web',
+                description: 'Search the web for current information',
+                parameters: {
+                  type: 'object',
+                  properties: { query: { type: 'string' } },
+                  required: ['query']
+                }
+              }
+            ],
+            tool_choice: 'auto'
           }
         }))
         setState(STATES.LISTENING)
       })
 
-      dc.onmessage = (e) => {
+      dc.onmessage = async (e) => {
         try {
           const event = JSON.parse(e.data)
           console.log('[Voice DC] Event:', event.type)
@@ -186,6 +214,18 @@ export default function KikoVoice({ open, onClose, onVoiceMessage }) {
                 onVoiceMessageRef.current({ role: 'user', content: userText })
               }
             }
+          }
+
+          // Kiko is speaking — mute mic to prevent echo loop
+          if (event.type === 'response.audio.delta') {
+            localStreamRef.current?.getAudioTracks().forEach(t => { t.enabled = false })
+          }
+
+          // Kiko audio stream finished — re-enable mic after short delay
+          if (event.type === 'response.audio.done') {
+            setTimeout(() => {
+              localStreamRef.current?.getAudioTracks().forEach(t => { t.enabled = true })
+            }, 600)
           }
 
           // Kiko streaming delta — for overlay display only
@@ -205,7 +245,39 @@ export default function KikoVoice({ open, onClose, onVoiceMessage }) {
                 onVoiceMessageRef.current({ role: 'assistant', content: kikoText })
               }
             }
+            // Re-enable mic after Kiko finishes speaking
+            setTimeout(() => {
+              localStreamRef.current?.getAudioTracks().forEach(t => { t.enabled = true })
+            }, 600)
             setState(STATES.LISTENING)
+          }
+
+          // Tool call completed — execute and return result
+          if (event.type === 'response.function_call_arguments.done') {
+            onToolStart?.({ name: event.name, input: event.arguments });
+            const args = JSON.parse(event.arguments);
+            // Call kiko's executeTool via a new lightweight endpoint
+            const result = await fetch('/api/tool', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ tool: event.name, input: args, userEmail: user?.email })
+            }).then(r => r.json());
+
+            // Send result back to Realtime session
+            dc.send(JSON.stringify({
+              type: 'conversation.item.create',
+              item: {
+                type: 'function_call_output',
+                call_id: event.call_id,
+                output: JSON.stringify(result)
+              }
+            }));
+            dc.send(JSON.stringify({ type: 'response.create' }));
+          }
+
+          // Response complete — signal tool end
+          if (event.type === 'response.done') {
+            onToolEnd?.();
           }
 
           // User started speaking
