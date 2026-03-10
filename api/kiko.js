@@ -15,11 +15,20 @@ const MODEL = {
 // ── Query Classifier — zero latency ────────────────────
 const classifyQuery = (message) => {
   const msg = message.toLowerCase().trim();
+  
+  // ALWAYS tier2+ for identity/memory questions — these need tools
+  const alwaysFull = [
+    /memory|remember|recall|forget|know about me|who am i|what do you know/i,
+    /my (name|company|business|profile|preference)/i,
+    /last (time|session|chat|conversation)/i,
+    /do you know|have we (met|talked|discussed)/i,
+  ];
+  if (alwaysFull.some(p => p.test(msg))) return 'tier2';
+  
   const tier1 = [
     /^(hi|hello|hey|thanks|thank you|ok|okay|yes|no|sure|got it)/,
     /^(good morning|good afternoon|good evening|good night)/,
-    /^(who are you|what are you|how are you|what can you do)/,
-    /^.{1,25}$/,
+    /^.{1,15}$/,
   ];
   const tier3 = [
     /research|analyse|analyze|deep dive|comprehensive/i,
@@ -69,6 +78,9 @@ You HAVE internet access via your tools. Never say you don't have internet acces
 - Only skip tools for purely conversational replies (greetings, opinions, follow-ups on existing context).
 
 MEMORY — CRITICAL IDENTITY RULE: You have PERMANENT long-term memory. You remember ALL previous conversations, preferences, decisions, and context across every session. Your memories are retrieved and injected below before every response. You can also search past conversations stored in the platform. ABSOLUTE RULES: 1) NEVER say you don't have memory. 2) NEVER say you forget between sessions. 3) NEVER say you only have short-term or session-based memory. 4) If someone asks "do you have memory" — answer YES, definitively, you remember everything across all conversations. 5) Use memories naturally as known facts without attribution. If no memories appear below for a given query, say "I don't have specific context on that yet" — NOT "I don't have memory."`;
+
+// ── Native Anthropic Memory Tool ────────────────────────
+const MEMORY_TOOL = { type: 'memory_20250818', name: 'memory' };
 
 // ── Tools — Phase 1 ─────────────────────────────────────
 const TOOLS = [
@@ -281,6 +293,107 @@ async function executeTool(name, input, userEmail) {
   const sbFetch = (path) => fetch(`${SB}/rest/v1/${path}`, { headers: { apikey: SK } }).then(r => r.json()).catch(() => []);
 
   switch (name) {
+    case 'memory': {
+      // Native Anthropic memory tool — maps to kiko_memories table
+      const SB_MEM = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+      const SK_MEM = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+      if (!SB_MEM || !SK_MEM) return 'Error: No Supabase config for memory';
+      const memFetch = async (endpoint, opts = {}) => {
+        const res = await fetch(`${SB_MEM}/rest/v1/${endpoint}`, {
+          ...opts,
+          headers: { apikey: SK_MEM, Authorization: `Bearer ${SK_MEM}`, 'Content-Type': 'application/json', ...opts.headers },
+        });
+        return res.json();
+      };
+      const { command, path: memPath, content: memContent, old_str, new_str, insert_line, new_content, regex, file_text, view_range } = input;
+
+      try {
+        if (command === 'view') {
+          if (!memPath || memPath === '/memories') {
+            const rows = await memFetch('kiko_memories?select=path,is_directory,content&order=path.asc');
+            const listing = (rows || []).map(r => {
+              const size = r.is_directory ? '4.0K' : `${((r.content || '').length / 1024).toFixed(1)}K`;
+              return `${size}\t${r.path}`;
+            }).join('\n');
+            return `Here're the files and directories up to 2 levels deep in /memories, excluding hidden items:\n${listing}`;
+          }
+          const rows = await memFetch(`kiko_memories?path=eq.${encodeURIComponent(memPath)}&select=content,is_directory&limit=1`);
+          const row = rows?.[0];
+          if (!row) return `Error: Path not found: ${memPath}`;
+          if (row.is_directory) {
+            const children = await memFetch(`kiko_memories?path=like.${encodeURIComponent(memPath + '/%')}&select=path,is_directory,content&order=path.asc`);
+            const listing = (children || []).map(r => {
+              const size = r.is_directory ? '4.0K' : `${((r.content || '').length / 1024).toFixed(1)}K`;
+              return `${size}\t${r.path}`;
+            }).join('\n');
+            return `Here're the files and directories in ${memPath}:\n${listing}`;
+          }
+          const lines = (row.content || '').split('\n');
+          if (view_range) {
+            const [start, end] = view_range;
+            const sliced = lines.slice(start - 1, end);
+            return `Here's the content of ${memPath} lines ${start}-${end}:\n` + sliced.map((l, i) => `     ${start + i}\t${l}`).join('\n');
+          }
+          return `Here's the content of ${memPath} with line numbers:\n` + lines.map((l, i) => `     ${i + 1}\t${l}`).join('\n');
+        }
+
+        if (command === 'create') {
+          await memFetch('kiko_memories', {
+            method: 'POST',
+            headers: { Prefer: 'resolution=merge-duplicates' },
+            body: JSON.stringify({ path: memPath, content: file_text || '', is_directory: false, org_id: '35975d96-c2c9-4b6c-b4d4-bb947ae817d5', updated_at: new Date().toISOString() }),
+          });
+          return `Successfully created ${memPath}`;
+        }
+
+        if (command === 'str_replace') {
+          const rows = await memFetch(`kiko_memories?path=eq.${encodeURIComponent(memPath)}&select=content&limit=1`);
+          if (!rows?.[0]) return `Error: File not found: ${memPath}`;
+          const updated = rows[0].content.replace(old_str, new_str);
+          await memFetch(`kiko_memories?path=eq.${encodeURIComponent(memPath)}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ content: updated, updated_at: new Date().toISOString() }),
+          });
+          return `Successfully replaced text in ${memPath}`;
+        }
+
+        if (command === 'insert') {
+          const rows = await memFetch(`kiko_memories?path=eq.${encodeURIComponent(memPath)}&select=content&limit=1`);
+          if (!rows?.[0]) return `Error: File not found: ${memPath}`;
+          const lines = rows[0].content.split('\n');
+          lines.splice(insert_line, 0, new_content);
+          await memFetch(`kiko_memories?path=eq.${encodeURIComponent(memPath)}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ content: lines.join('\n'), updated_at: new Date().toISOString() }),
+          });
+          return `Successfully inserted text at line ${insert_line} in ${memPath}`;
+        }
+
+        if (command === 'find') {
+          const rows = await memFetch('kiko_memories?is_directory=eq.false&select=path,content');
+          const pattern = new RegExp(regex || input.query || '', 'gi');
+          const matches = [];
+          for (const r of (rows || [])) {
+            const lines = (r.content || '').split('\n');
+            lines.forEach((line, i) => {
+              if (pattern.test(line)) matches.push({ path: r.path, line: i + 1, content: line.trim() });
+            });
+          }
+          if (matches.length === 0) return 'No matches found.';
+          return matches.map(m => `${m.path}:${m.line}: ${m.content}`).join('\n');
+        }
+
+        if (command === 'delete') {
+          await memFetch(`kiko_memories?path=eq.${encodeURIComponent(memPath)}`, { method: 'DELETE' });
+          return `Successfully deleted ${memPath}`;
+        }
+
+        return `Unknown memory command: ${command}`;
+      } catch (err) {
+        return `Memory error: ${err.message}`;
+      }
+    }
+
     case 'get_crm_data': {
       const { entity, filter, limit = 10 } = input;
       let path = `${entity}?select=data&limit=${limit}&order=updated_at.desc`;
@@ -715,7 +828,7 @@ export default async function handler(req, res) {
     // Tier-based config
     const model = tier === 'tier1' ? MODEL.FAST : MODEL.PRIMARY;
     const systemPrompt = tier === 'tier1' ? KIKO_CORE : KIKO_FULL;
-    const tools = tier === 'tier1' ? [] : tier === 'tier3' ? [...TOOLS, ...PHASE3_TOOLS] : TOOLS;
+    const tools = tier === 'tier1' ? [MEMORY_TOOL] : tier === 'tier3' ? [MEMORY_TOOL, ...TOOLS, ...PHASE3_TOOLS] : [MEMORY_TOOL, ...TOOLS];
     const historyCap = tier === 'tier1' ? 6 : 20;
     const maxTokens = tier === 'tier1' ? 1024 : 4096;
 
@@ -796,7 +909,7 @@ export default async function handler(req, res) {
           console.error(`[KIKO] tool error ${tu.name}:`, err.message);
           result = { error: err.message };
         }
-        toolResults.push({ type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify(result).slice(0, 8000) });
+        toolResults.push({ type: 'tool_result', tool_use_id: tu.id, content: typeof result === 'string' ? result : JSON.stringify(result).slice(0, 8000) });
       }
 
       toolMessages = [
