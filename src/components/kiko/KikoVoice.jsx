@@ -45,10 +45,10 @@ export default function KikoVoice({ onClose, user, micStream }) {
         body: JSON.stringify({ action: 'realtime-token' })
       })
       const tokenData = await tokenRes.json()
-      if (!tokenRes.ok || !tokenData.client_secret?.value) {
+      if (!tokenRes.ok || (!tokenData.client_secret?.value && !tokenData.value)) {
         throw new Error(tokenData.error?.message || 'Failed to get voice token')
       }
-      const ephemeralKey = tokenData.client_secret.value
+      const ephemeralKey = tokenData.client_secret?.value || tokenData.value
 
       // 2. Use pre-acquired microphone stream (permission already granted by parent)
       const stream = micStream || await navigator.mediaDevices.getUserMedia({ audio: true })
