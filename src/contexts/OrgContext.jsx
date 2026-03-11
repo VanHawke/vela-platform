@@ -12,12 +12,13 @@ export function OrgProvider({ children }) {
     const orgId = session.user.app_metadata?.org_id
     if (!orgId) { setLoading(false); return }
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('organisations')
       .select('*')
       .eq('id', orgId)
       .single()
 
+    if (error) { setLoading(false); return }
     if (data) {
       setOrg(data)
       if (data.branding?.platform_name) document.title = data.branding.platform_name
@@ -34,7 +35,7 @@ export function OrgProvider({ children }) {
   }
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => loadOrg(session))
+    // onAuthStateChange fires INITIAL_SESSION on subscribe — no separate getSession needed
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => loadOrg(session))
     return () => subscription.unsubscribe()
   }, [])
