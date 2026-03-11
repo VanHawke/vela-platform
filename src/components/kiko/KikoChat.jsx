@@ -1,147 +1,71 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Send, Mic, AudioLines, PanelRightClose, PanelRightOpen } from 'lucide-react'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { ArrowUp, Mic, AudioLines } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import KikoMessage from './KikoMessage'
-import KikoVoice, { useMicInput } from './KikoVoice'
-import ChatHistory from '@/components/layout/ChatHistory'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import KikoThinking from '../KikoThinking'
+import KikoVoice from './KikoVoice'
 
-const CHIPS = [
-  'Brief me on my pipeline',
-  "What's happening in F1 this week",
-  'What do I need to follow up on',
-  "Summarise yesterday's activity",
-]
+const CHIPS = ['Brief me on my pipeline', "What's happening in F1", 'Draft a follow-up email', "Summarise yesterday"]
 
 function getGreeting() {
   const h = new Date().getHours()
-  if (h >= 5 && h < 12) return 'Good morning'
-  if (h >= 12 && h < 18) return 'Good afternoon'
-  return 'Good evening'
+  return h >= 5 && h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'
 }
 
-export default function KikoChat({ user, compact = false }) {
+export default function KikoChat({ user, compact = false, initialMessage = '' }) {
   const [messages, setMessages] = useState([])
-  const [input, setInput] = useState('')
+  const [input, setInput] = useState(initialMessage)
   const [streaming, setStreaming] = useState(false)
   const [streamText, setStreamText] = useState('')
-  const [conversations, setConversations] = useState([])
-  const [activeConvId, setActiveConvId] = useState(null)
-  const [historyOpen, setHistoryOpen] = useState(false)
+  const [toolStatus, setToolStatus] = useState(null)
   const [voiceOpen, setVoiceOpen] = useState(false)
-  const [thinkingSteps, setThinkingSteps] = useState([])
-  const [isThinking, setIsThinking] = useState(false)
+  const [activeConvId, setActiveConvId] = useState(null)
   const scrollRef = useRef(null)
   const inputRef = useRef(null)
-  const { recording, startRecording, stopRecording } = useMicInput()
+  const hasMessages = messages.length > 0 || streaming
 
-  // Load conversations from Supabase (uses authenticated client — RLS safe)
+  // Auto-send initial message from panel
   useEffect(() => {
-    if (user?.id) loadConversations()
-  }, [user?.id])
+    if (initialMessage && !messages.length) handleSubmit(initialMessage)
+  }, [])
 
-  const loadConversations = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('conversations')
-        .select('id, title, updated_at')
-        .eq('user_id', user?.id)
-        .order('updated_at', { ascending: false })
-        .limit(50)
-      if (error) console.error('[Chat] Load conversations error:', error.message)
-      if (data) setConversations(data)
-    } catch (err) {
-      console.error('[Chat] Load conversations exception:', err)
-    }
-  }
+  useEffect(() => { scrollRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, streamText])
 
-  // Save conversation to Supabase (client-side, authenticated, RLS works)
-  const saveConversation = async (allMessages, convId, firstUserMessage) => {
-    console.log('[SaveConv] Called — msgCount:', allMessages.length, 'convId:', convId, 'userId:', user?.id, 'title:', firstUserMessage?.slice(0, 30))
-    if (!user?.id) {
-      console.warn('[SaveConv] No user.id — aborting')
-      return convId
-    }
+  const saveConversation = async (allMsgs, convId, title) => {
+    if (!user?.id) return convId
     try {
       if (convId) {
-        // Update existing conversation
-        console.log('[SaveConv] Updating existing:', convId)
-        const { error } = await supabase
-          .from('conversations')
-          .update({ messages: allMessages, updated_at: new Date().toISOString() })
-          .eq('id', convId)
-        if (error) console.error('[SaveConv] Update error:', error.message, error.details)
-        else console.log('[SaveConv] Update success')
+        await supabase.from('conversations').update({ messages: allMsgs, updated_at: new Date().toISOString() }).eq('id', convId)
         return convId
-      } else {
-        // Insert new conversation
-        console.log('[SaveConv] Inserting new conversation')
-        const { data, error } = await supabase
-          .from('conversations')
-          .insert({
-            user_id: user.id,
-            org_id: user.app_metadata?.org_id,
-            title: (firstUserMessage || 'New conversation').slice(0, 60),
-            messages: allMessages,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .select('id')
-          .single()
-        if (error) {
-          console.error('[SaveConv] Insert error:', error.message, error.details, error.hint)
-          return null
-        }
-        console.log('[SaveConv] Insert success — new id:', data?.id)
-        return data?.id || null
       }
-    } catch (err) {
-      console.error('[SaveConv] Exception:', err)
-      return convId
-    }
+      const { data } = await supabase.from('conversations').insert({
+        user_id: user.id, org_id: user.app_metadata?.org_id,
+        title: (title || 'New conversation').slice(0, 60),
+        messages: allMsgs, created_at: new Date().toISOString(), updated_at: new Date().toISOString()
+      }).select('id').single()
+      return data?.id || null
+    } catch { return convId }
   }
-
-  // Auto-scroll on new messages
-  useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, streamText])
 
   const handleSubmit = useCallback(async (text) => {
     const msg = (text || input).trim()
     if (!msg || streaming) return
     setInput('')
-
-    const userMsg = { role: 'user', content: msg, timestamp: new Date().toISOString() }
+    const userMsg = { role: 'user', content: msg }
     setMessages(prev => [...prev, userMsg])
     setStreaming(true)
     setStreamText('')
-    setThinkingSteps([])
-    setIsThinking(false)
-
-    const startTime = Date.now()
+    setToolStatus(null)
 
     try {
       const res = await fetch('/api/kiko', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: msg,
-          userEmail: user?.email,
-          conversationHistory: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
-          conversationId: activeConvId,
+          message: msg, conversationHistory: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
+          currentPage: window.location.pathname.replace('/', '') || 'home'
         }),
       })
-
-      if (!res.ok) throw new Error(`API error: ${res.status}`)
-
       const reader = res.body.getReader()
       const dec = new TextDecoder()
-      let full = ''
-      let buf = ''
-      let meta = {}
-
+      let full = '', buf = ''
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
@@ -155,286 +79,117 @@ export default function KikoChat({ user, compact = false }) {
           try {
             const j = JSON.parse(d)
             if (j.delta) { full += j.delta; setStreamText(full) }
-            if (j.meta) meta = j.meta
-            if (j.toolStatus) {
-              if (j.toolStatus === null || j.toolStatus === '') {
-                setIsThinking(false)
-              } else {
-                setIsThinking(true)
-                setThinkingSteps(prev => [...prev, { type: 'tool', label: j.toolStatus, results: [] }])
-              }
-            }
-            if (j.tool_start) {
-              setIsThinking(true)
-              setThinkingSteps(prev => [...prev, { type: j.tool_start.type || 'tool', label: j.tool_start.label || j.tool_start.name, results: [] }])
-            }
-            if (j.tool_result) {
-              setThinkingSteps(prev => {
-                const updated = [...prev]
-                if (updated.length > 0) {
-                  updated[updated.length - 1] = { ...updated[updated.length - 1], results: j.tool_result.results || [] }
-                }
-                return updated
-              })
-            }
+            if (j.toolStatus !== undefined) setToolStatus(j.toolStatus)
           } catch {}
         }
       }
-
-      setIsThinking(false)
-
-      const ttft = meta.ttft || (Date.now() - startTime)
-      const kikoMsg = {
-        role: 'assistant',
-        content: full,
-        timestamp: new Date().toISOString(),
-        meta: { ttft, model: meta.model, tier: meta.tier },
-      }
-      const updatedMessages = [...messages, userMsg, kikoMsg]
+      const kikoMsg = { role: 'assistant', content: full }
+      const updated = [...messages, userMsg, kikoMsg]
       setMessages(prev => [...prev, kikoMsg])
       setStreamText('')
-
-      // Save to Supabase (client-side, authenticated)
-      const newId = await saveConversation(
-        updatedMessages.map(m => ({ role: m.role, content: m.content })),
-        activeConvId,
-        msg,
-      )
+      setToolStatus(null)
+      const newId = await saveConversation(updated.map(m => ({ role: m.role, content: m.content })), activeConvId, msg)
       if (newId && !activeConvId) setActiveConvId(newId)
-      loadConversations()
     } catch (err) {
-      const errMsg = {
-        role: 'assistant',
-        content: `Sorry, something went wrong. ${err.message}`,
-        timestamp: new Date().toISOString(),
-      }
-      setMessages(prev => [...prev, errMsg])
+      setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message}` }])
       setStreamText('')
-    } finally {
-      setStreaming(false)
-    }
+    } finally { setStreaming(false) }
   }, [input, streaming, messages, user, activeConvId])
 
-  const handleNewChat = () => {
-    setMessages([])
-    setActiveConvId(null)
-    setStreamText('')
-    inputRef.current?.focus()
-  }
-
-  const handleSelectConversation = async (convId) => {
-    setActiveConvId(convId)
-    try {
-      const { data } = await supabase
-        .from('conversations')
-        .select('messages')
-        .eq('id', convId)
-        .single()
-      if (data?.messages) setMessages(data.messages)
-      else setMessages([])
-    } catch {
-      setMessages([])
-    }
-  }
-
-  // Mode 2 — Mic toggle (STT → text input)
-  const handleMicToggle = useCallback(async () => {
-    if (recording) {
-      const text = await stopRecording()
-      if (text) {
-        setInput(text)
-        inputRef.current?.focus()
-      }
-    } else {
-      await startRecording()
-    }
-  }, [recording, startRecording, stopRecording])
-
-  // Track activeConvId in a ref so voice callbacks always see latest value
-  const activeConvIdRef = useRef(activeConvId)
-  useEffect(() => { activeConvIdRef.current = activeConvId }, [activeConvId])
-
-  // Track last user voice text for Mem0 pairing
-  const lastVoiceUserText = useRef('')
-
-  // Mode 3 — Voice message callback (fires per individual transcript)
-  // { role: 'user'|'assistant', content: string }
-  const handleVoiceMessage = useCallback(async ({ role, content }) => {
-    if (!content) return
-    console.log('[VoiceMsg] Received:', role, JSON.stringify(content.slice(0, 80)))
-
-    const msg = { role, content, timestamp: new Date().toISOString() }
-
-    // Track user text for Mem0 pairing
-    if (role === 'user') {
-      lastVoiceUserText.current = content
-    }
-
-    // Add message bubble to chat immediately + save to Supabase
-    setMessages(prev => {
-      const updated = [...prev, msg]
-      const toSave = updated.map(m => ({ role: m.role, content: m.content }))
-      const currentConvId = activeConvIdRef.current
-      console.log('[VoiceMsg] Saving', toSave.length, 'messages, convId:', currentConvId)
-      saveConversation(toSave, currentConvId, content.slice(0, 60) || 'Voice conversation')
-        .then(newId => {
-          console.log('[VoiceMsg] saveConversation returned:', newId)
-          if (newId && !currentConvId) {
-            setActiveConvId(newId)
-            activeConvIdRef.current = newId
-          }
-          loadConversations()
-        })
-        .catch(err => console.error('[VoiceMsg] saveConversation error:', err))
-      return updated
-    })
-
-    // Mem0 — store after each complete exchange (assistant message arrives)
-    if (role === 'assistant' && lastVoiceUserText.current) {
-      console.log('[VoiceMsg] Sending exchange to Mem0')
-      const userText = lastVoiceUserText.current
-      lastVoiceUserText.current = ''
-      fetch('/api/voice', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'mem0', userText, kikoText: content }),
-      })
-        .then(r => r.json())
-        .then(d => console.log('[VoiceMsg] Mem0 response:', d))
-        .catch(err => console.error('[VoiceMsg] Mem0 error:', err))
-    }
-  }, [user])
-
-  const hasMessages = messages.length > 0 || streaming
-
+  // Render: Welcome state or conversation
   return (
-    <div className="flex h-full">
-      {/* Centre zone */}
-      <div className="flex-1 flex flex-col h-full relative">
-        {/* Messages or welcome */}
-        <div className="flex-1 overflow-y-auto">
-          {!hasMessages ? (
-            /* Welcome state */
-            <div className="flex flex-col items-center justify-center h-full px-6">
-              <Avatar className="h-14 w-14 mb-6">
-                <AvatarFallback className="text-lg bg-white/10 text-white font-semibold">K</AvatarFallback>
-              </Avatar>
-              <h1 className="text-[32px] font-light text-white mb-1">
-                {getGreeting()}, Sunny
-              </h1>
-              <p className="text-sm text-white/30 mb-10">How can I help today?</p>
-
-              {/* Suggestion chips */}
-              <div className="grid grid-cols-2 gap-3 max-w-md w-full">
-                {CHIPS.map((chip) => (
-                  <button
-                    key={chip}
-                    onClick={() => handleSubmit(chip)}
-                    className="px-4 py-3 rounded-xl border border-white/10 text-sm text-white/50
-                      hover:text-white hover:border-white/25 hover:shadow-[0_0_12px_rgba(255,255,255,0.05)]
-                      transition-all duration-200 text-left"
-                  >
-                    {chip}
-                  </button>
-                ))}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg)' }}>
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        {!hasMessages ? (
+          /* Welcome — Kiko home */
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: compact ? 20 : 40 }}>
+            <div style={{ width: '100%', maxWidth: compact ? '100%' : 680, textAlign: 'center' }}>
+              {!compact && <>
+                <h1 style={{ fontSize: 36, fontWeight: 300, color: 'var(--text)', margin: '0 0 4px', fontFamily: 'var(--font)', letterSpacing: '-0.02em' }}>
+                  {getGreeting()}, {user?.user_metadata?.full_name?.split(' ')[0] || 'Sunny'}
+                </h1>
+                <p style={{ fontSize: 15, color: 'var(--text-tertiary)', margin: '0 0 48px', fontFamily: 'var(--font)' }}>How can Kiko help?</p>
+              </>}
+              {/* Prompt bar */}
+              <div className="glass" style={{ borderRadius: 'var(--radius-pill)', padding: '8px 8px 8px 24px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSubmit()}
+                  placeholder="Ask anything..." autoFocus
+                  style={{ flex:1, border:'none', background:'transparent', outline:'none', fontSize:16, color:'var(--text)', fontFamily:'var(--font)', height:44 }} />
+                {!compact && <button onClick={() => setVoiceOpen(true)} style={{ width:40, height:40, borderRadius:'50%', background:'transparent', border:'none', color:'var(--text-tertiary)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><Mic size={20} /></button>}
+                <button onClick={() => handleSubmit()} disabled={!input.trim() || streaming} style={{
+                  width:40, height:40, borderRadius:'50%', background: input.trim() ? 'var(--accent)' : 'var(--accent-soft)',
+                  border:'none', color: input.trim() ? '#fff' : 'var(--text-tertiary)', cursor:'pointer',
+                  display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.15s', flexShrink:0
+                }}><ArrowUp size={18} /></button>
               </div>
+              {/* Chips */}
+              {!compact && <div style={{ display:'flex', flexWrap:'wrap', gap:8, justifyContent:'center', marginTop:24 }}>
+                {CHIPS.map(c => (
+                  <button key={c} onClick={() => handleSubmit(c)} style={{
+                    padding:'10px 18px', borderRadius:24, background:'var(--surface)', border:'1px solid var(--border)',
+                    color:'var(--text-secondary)', fontSize:13, cursor:'pointer', fontFamily:'var(--font)', transition:'all 0.15s'
+                  }}
+                    onMouseOver={e => { e.currentTarget.style.borderColor='var(--border-hover)'; e.currentTarget.style.background='var(--surface-hover)' }}
+                    onMouseOut={e => { e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.background='var(--surface)' }}
+                  >{c}</button>
+                ))}
+              </div>}
             </div>
-          ) : (
-            /* Conversation */
-            <div className="max-w-2xl mx-auto w-full px-6 py-6">
-              {messages.map((msg, i) => (
-                <KikoMessage key={i} message={msg} />
-              ))}
-              {(thinkingSteps.length > 0) && (
-                <KikoThinking steps={thinkingSteps} isActive={isThinking} />
-              )}
-              {streaming && streamText && (
-                <KikoMessage
-                  message={{ role: 'assistant', content: streamText + '▍' }}
-                />
-              )}
-              <div ref={scrollRef} />
-            </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          /* Conversation view */
+          <div style={{ maxWidth: compact ? '100%' : 680, margin:'0 auto', width:'100%', padding: compact ? 16 : 24 }}>
+            {messages.map((msg, i) => (
+              <div key={i} style={{ marginBottom:16, display:'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                <div style={{
+                  maxWidth:'85%', padding:'12px 16px', borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                  background: msg.role === 'user' ? 'var(--accent)' : 'var(--accent-soft)',
+                  color: msg.role === 'user' ? '#fff' : 'var(--text)',
+                  fontSize:14, lineHeight:1.6, fontFamily:'var(--font)', whiteSpace:'pre-wrap'
+                }}>{msg.content}</div>
+              </div>
+            ))}
+            {/* Tool status */}
+            {toolStatus && <div style={{ padding:'8px 16px', color:'var(--text-tertiary)', fontSize:12, fontFamily:'var(--font)', display:'flex', alignItems:'center', gap:8 }}>
+              <span style={{ width:6, height:6, borderRadius:'50%', background:'var(--text-tertiary)', animation:'pulse 1s infinite' }} />
+              {toolStatus}
+            </div>}
+            {/* Streaming */}
+            {streaming && streamText && (
+              <div style={{ marginBottom:16 }}>
+                <div style={{ maxWidth:'85%', padding:'12px 16px', borderRadius:'16px 16px 16px 4px', background:'var(--accent-soft)', color:'var(--text)', fontSize:14, lineHeight:1.6, fontFamily:'var(--font)', whiteSpace:'pre-wrap' }}>
+                  {streamText}<span style={{ animation:'pulse 1s infinite' }}>▍</span>
+                </div>
+              </div>
+            )}
+            <div ref={scrollRef} />
+          </div>
+        )}
+      </div>
 
-        {/* Input bar — fixed bottom */}
-        <div className="p-4 pb-6">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center gap-2 bg-[#1A1A1A] rounded-[28px] px-4 h-14">
-              <input
-                ref={inputRef}
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSubmit()}
-                placeholder="Ask Kiko anything..."
-                disabled={streaming}
-                className="flex-1 bg-transparent text-white text-sm placeholder:text-white/25 outline-none"
-              />
-              <button
-                onClick={handleMicToggle}
-                className={`transition-colors p-1.5 ${recording ? 'text-red-400 animate-pulse' : 'text-white/25 hover:text-white/50'}`}
-                title={recording ? 'Stop recording' : 'Voice input (Mode 2)'}
-              >
-                <Mic className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => setVoiceOpen(true)}
-                className="text-white/25 hover:text-white/50 transition-colors p-1.5"
-                title="Voice conversation (Mode 3)"
-              >
-                <AudioLines className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => handleSubmit()}
-                disabled={!input.trim() || streaming}
-                className="text-white/40 hover:text-white disabled:text-white/15 transition-colors p-1.5"
-              >
-                <Send className="h-5 w-5" />
-              </button>
+      {/* Bottom input bar (when in conversation) */}
+      {hasMessages && (
+        <div style={{ padding: compact ? 12 : 16, borderTop: '1px solid var(--border)' }}>
+          <div style={{ maxWidth: compact ? '100%' : 680, margin:'0 auto' }}>
+            <div className="glass" style={{ borderRadius:'var(--radius-pill)', padding:'6px 6px 6px 20px', display:'flex', alignItems:'center', gap:8 }}>
+              <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSubmit()}
+                placeholder="Ask Kiko..." disabled={streaming}
+                style={{ flex:1, border:'none', background:'transparent', outline:'none', fontSize:14, color:'var(--text)', fontFamily:'var(--font)' }} />
+              {!compact && <button onClick={() => setVoiceOpen(true)} style={{ width:36, height:36, borderRadius:'50%', background:'transparent', border:'none', color:'var(--text-tertiary)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><Mic size={18} /></button>}
+              <button onClick={() => handleSubmit()} disabled={!input.trim() || streaming} style={{
+                width:36, height:36, borderRadius:'50%', background: input.trim() ? 'var(--accent)' : 'var(--accent-soft)',
+                border:'none', color: input.trim() ? '#fff' : 'var(--text-tertiary)', cursor:'pointer',
+                display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0
+              }}><ArrowUp size={16} /></button>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* History toggle — full mode only */}
-      {!compact && (
-        <button
-          onClick={() => setHistoryOpen(!historyOpen)}
-          className="absolute top-3 right-3 z-10 text-white/20 hover:text-white/50 transition-colors p-1.5"
-        >
-          {historyOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
-        </button>
       )}
 
-      {/* Right panel — chat history (full mode only) */}
-      {!compact && (
-        <ChatHistory
-        conversations={conversations}
-        activeId={activeConvId}
-        onSelect={handleSelectConversation}
-        onNewChat={handleNewChat}
-        collapsed={!historyOpen}
-        onToggle={() => setHistoryOpen(!historyOpen)}
-      />
-      )}
-
-      {/* Voice Mode 3 overlay */}
-      <KikoVoice
-        open={voiceOpen}
-        onClose={() => setVoiceOpen(false)}
-        onVoiceMessage={handleVoiceMessage}
-        user={user}
-        onToolStart={(tool) => {
-          setIsThinking(true);
-          setThinkingSteps(prev => [...prev, { name: tool.name, input: tool.input, status: 'running' }]);
-        }}
-        onToolEnd={() => {
-          setIsThinking(false);
-          setThinkingSteps(prev => prev.map(s => ({ ...s, status: 'done' })));
-        }}
-      />
+      {/* Voice overlay */}
+      {voiceOpen && <KikoVoice onClose={() => setVoiceOpen(false)} user={user} />}
     </div>
   )
 }
