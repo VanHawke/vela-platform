@@ -27,7 +27,7 @@ export default function Layout({ user }) {
 
   return (
     <div style={{ display:'flex', height:'100vh', width:'100vw', overflow:'hidden', background:'var(--bg)' }}>
-      <Sidebar user={user} />
+      <Sidebar />
       <main style={{ flex:1, overflow:'hidden', display:'flex', flexDirection:'column', transition:'margin-right 0.3s ease', marginRight: kikoStage===2 && !isHome ? 420 : 0 }}>
         <Outlet />
       </main>
