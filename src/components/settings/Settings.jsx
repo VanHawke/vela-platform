@@ -4,7 +4,23 @@ import { useNavigate } from 'react-router-dom'
 import ImageUpload from './ImageUpload'
 import { Check, ExternalLink, Unplug, UserPlus, Trash2, LogOut } from 'lucide-react'
 
-const VOICES = ['shimmer', 'alloy', 'echo', 'fable', 'onyx', 'nova']
+const VOICES = [
+  { id: 'shimmer', label: 'Shimmer', desc: 'Warm, expressive female' },
+  { id: 'alloy', label: 'Alloy', desc: 'Neutral, balanced' },
+  { id: 'echo', label: 'Echo', desc: 'Clear, articulate male' },
+  { id: 'sage', label: 'Sage', desc: 'Calm, authoritative' },
+  { id: 'verse', label: 'Verse', desc: 'Expressive, dynamic' },
+  { id: 'coral', label: 'Coral', desc: 'Friendly, conversational' },
+  { id: 'cedar', label: 'Cedar', desc: 'Deep, confident' },
+  { id: 'marin', label: 'Marin', desc: 'Smooth, professional' },
+]
+const SPEEDS = [
+  { id: 0.8, label: 'Slow' },
+  { id: 0.9, label: 'Relaxed' },
+  { id: 1.0, label: 'Normal' },
+  { id: 1.1, label: 'Brisk' },
+  { id: 1.2, label: 'Fast' },
+]
 const TABS = ['Profile', 'Kiko', 'Team', 'Appearance', 'Accounts']
 
 const T = {
@@ -165,14 +181,31 @@ export default function Settings({ user }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={cardStyle}>
               <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Voice</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
                 {VOICES.map(v => (
-                  <button key={v} onClick={() => saveSettings({ kiko_voice: v })} style={{
-                    padding: '8px 12px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
-                    background: (settings.kiko_voice || 'shimmer') === v ? T.accent : T.surface,
-                    color: (settings.kiko_voice || 'shimmer') === v ? '#fff' : T.textSecondary,
-                    fontSize: 12, cursor: 'pointer', fontFamily: T.font, textTransform: 'capitalize',
-                  }}>{v}</button>
+                  <button key={v.id} onClick={() => saveSettings({ kiko_voice: v.id })} style={{
+                    padding: '10px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
+                    background: (settings.kiko_voice || 'shimmer') === v.id ? T.accent : T.surface,
+                    color: (settings.kiko_voice || 'shimmer') === v.id ? '#fff' : T.text,
+                    fontSize: 13, cursor: 'pointer', fontFamily: T.font, textAlign: 'left',
+                    display: 'flex', flexDirection: 'column', gap: 2,
+                  }}>
+                    <span style={{ fontWeight: 600 }}>{v.label}</span>
+                    <span style={{ fontSize: 11, opacity: 0.7 }}>{v.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Speech Speed</h3>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {SPEEDS.map(s => (
+                  <button key={s.id} onClick={() => saveSettings({ kiko_speed: s.id })} style={{
+                    padding: '8px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
+                    background: (settings.kiko_speed || 1.0) === s.id ? T.accent : T.surface,
+                    color: (settings.kiko_speed || 1.0) === s.id ? '#fff' : T.textSecondary,
+                    fontSize: 12, cursor: 'pointer', fontFamily: T.font,
+                  }}>{s.label}</button>
                 ))}
               </div>
             </div>

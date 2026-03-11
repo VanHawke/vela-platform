@@ -46,6 +46,7 @@ export default async function handler(req, res) {
   // Body: { session: { type, model, audio config } }
   // Response: { value: "<ephemeral_key>", ... }
   if (action === 'realtime-token') {
+    const voiceId = req.body.voice || 'shimmer';
     try {
       const response = await fetch('https://api.openai.com/v1/realtime/client_secrets', {
         method: 'POST',
@@ -58,7 +59,7 @@ export default async function handler(req, res) {
             type: 'realtime',
             model: 'gpt-4o-realtime-preview',
             audio: {
-              output: { voice: 'shimmer' }
+              output: { voice: voiceId }
             },
           }
         })

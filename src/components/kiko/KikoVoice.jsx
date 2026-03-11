@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { X } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 function Equalizer({ active }) {
   return (
@@ -38,11 +39,22 @@ export default function KikoVoice({ onClose, user, micStream }) {
       setStatus('connecting')
       setError('')
 
-      // 1. Get ephemeral token from our backend
+      // Fetch user's voice preferences
+      let voiceId = 'shimmer'
+      let speed = 1.0
+      if (user?.id) {
+        const { data } = await supabase.from('user_settings').select('settings').eq('user_id', user.id).single()
+        if (data?.settings) {
+          voiceId = data.settings.kiko_voice || 'shimmer'
+          speed = data.settings.kiko_speed || 1.0
+        }
+      }
+
+      // 1. Get ephemeral token with selected voice
       const tokenRes = await fetch('/api/voice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'realtime-token' })
+        body: JSON.stringify({ action: 'realtime-token', voice: voiceId })
       })
       const tokenData = await tokenRes.json()
       if (!tokenRes.ok || (!tokenData.client_secret?.value && !tokenData.value)) {
@@ -83,13 +95,30 @@ You are direct, precise, commercially minded. A strategic partner, not a chatbot
 Never waste words. Lead with value. Keep responses concise — 2-3 sentences for simple queries.
 Never refer to yourself as an AI assistant or ChatGPT. You are Kiko.
 Van Hawke operates three verticals: Haas F1 sponsorship advisory, Van Hawke Maison eyewear, and ClinIQ Copilot.
-All financials in USD. Use "intelligent age" not "AI generation".`,
+All financials in USD. Use "intelligent age" not "AI generation".
+You have access to web search via the search_web function. Use it when asked about current events, news, weather, company research, or anything requiring live data.`,
             audio: {
               input: {
                 transcription: { model: 'whisper-1' },
                 turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
+              },
+              output: { speed }
+            },
+            tools: [
+              {
+                type: 'function',
+                name: 'search_web',
+                description: 'Search the internet for current information, news, weather, company data, or any live data. Use this whenever the user asks about current events or real-time information.',
+                parameters: {
+                  type: 'object',
+                  properties: {
+                    query: { type: 'string', description: 'The search query' }
+                  },
+                  required: ['query']
+                }
               }
-            }
+            ],
+            tool_choice: 'auto'
           }
         }))
       }
@@ -154,6 +183,60 @@ All financials in USD. Use "intelligent age" not "AI generation".`,
       setTranscript('')
       setKikoText('')
       setSpeaking(false)
+    }
+    // Function call — Kiko wants to use a tool (e.g. web search)
+    if (t === 'response.function_call_arguments.done') {
+      handleToolCall(event)
+    }
+  }
+
+  async function handleToolCall(event) {
+    const { name, arguments: argsStr, call_id } = event
+    try {
+      const args = JSON.parse(argsStr)
+      let result = ''
+
+      if (name === 'search_web') {
+        // Proxy search through our backend
+        const res = await fetch('/api/kiko', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: `Search the web for: ${args.query}`, currentPage: 'voice' })
+        })
+        const reader = res.body.getReader()
+        const dec = new TextDecoder()
+        let full = '', buf = ''
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          buf += dec.decode(value, { stream: true })
+          const lines = buf.split('\n')
+          buf = lines.pop() || ''
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue
+            const d = line.slice(6)
+            if (d === '[DONE]') continue
+            try { const j = JSON.parse(d); if (j.delta) full += j.delta } catch {}
+          }
+        }
+        result = full || 'No results found'
+      }
+
+      // Send tool result back to Realtime session
+      if (dcRef.current?.readyState === 'open') {
+        dcRef.current.send(JSON.stringify({
+          type: 'conversation.item.create',
+          item: {
+            type: 'function_call_output',
+            call_id: call_id,
+            output: result.slice(0, 4000)
+          }
+        }))
+        // Ask model to continue responding
+        dcRef.current.send(JSON.stringify({ type: 'response.create' }))
+      }
+    } catch (err) {
+      console.error('[Voice] Tool call error:', err)
     }
   }
 
