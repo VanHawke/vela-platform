@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useOutletContext } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import DOMPurify from 'dompurify'
 import KikoVoice from './KikoVoice'
@@ -48,6 +48,7 @@ const CHIPS = ['Brief me on my pipeline', "What's happening in F1", 'Draft a fol
 
 export default function KikoChat({ user, compact = false, initialMessage = '' }) {
   const navigate = useNavigate()
+  const outletCtx = useOutletContext() || {}
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState(initialMessage)
   const [streaming, setStreaming] = useState(false)
@@ -165,7 +166,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       })
       const reader = res.body.getReader()
       const dec = new TextDecoder()
-      let full = '', buf = ''
+      let full = '', buf = '', pendingNav = null
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
@@ -180,7 +181,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             const j = JSON.parse(d)
             if (j.delta) { full += j.delta; setStreamText(full) }
             if (j.toolStatus !== undefined) setToolStatus(j.toolStatus)
-            if (j.navigate) navigate('/' + (j.navigate === 'home' ? '' : j.navigate))
+            if (j.navigate) {
+              // Store pending navigation, execute after stream completes
+              pendingNav = j.navigate
+            }
           } catch {}
         }
       }
@@ -194,6 +198,15 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         activeConvId, msg
       )
       if (newId && !activeConvId) setActiveConvId(newId)
+      // If Kiko requested navigation, sync conversation to Layout and navigate
+      if (pendingNav) {
+        if (outletCtx.setKikoMessages) outletCtx.setKikoMessages(updated)
+        if (outletCtx.setKikoConvId) outletCtx.setKikoConvId(newId || activeConvId)
+        setTimeout(() => {
+          if (outletCtx.kikoNavigate) outletCtx.kikoNavigate(pendingNav)
+          else navigate('/' + (pendingNav === 'home' ? '' : pendingNav))
+        }, 100)
+      }
     } catch (err) {
       setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message}` }])
       setStreamText('')

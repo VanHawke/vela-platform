@@ -1,28 +1,24 @@
-// KikoSymbol — unique, identifiable, modern SVG icon
-// Inspired by: neural pulse + voice wave + awareness
-// Works at 16px to 140px. Used everywhere Kiko appears.
+// KikoSymbol — Clean, modern AI symbol
+// Inspired by OpenAI's aperture, Perplexity's geometry, Claude's simplicity
+// A stylised iris/lens: represents intelligence, awareness, voice
+// Works from 14px to 140px
 
 export default function KikoSymbol({ size = 24, color = 'currentColor', className = '' }) {
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 32 32"
+      viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Outer ring — awareness/presence */}
-      <circle cx="16" cy="16" r="14" stroke={color} strokeWidth="1.5" opacity="0.3" />
-      {/* Inner iris — intelligence core */}
-      <circle cx="16" cy="16" r="6" fill={color} opacity="0.15" />
-      <circle cx="16" cy="16" r="3" fill={color} />
-      {/* Voice/pulse waves — radiating from center */}
-      <path d="M8 16c0-4.4 3.6-8 8-8" stroke={color} strokeWidth="1.5" strokeLinecap="round" opacity="0.5" />
-      <path d="M24 16c0 4.4-3.6 8-8 8" stroke={color} strokeWidth="1.5" strokeLinecap="round" opacity="0.5" />
-      {/* Neural connectors — top-right and bottom-left accents */}
-      <path d="M22 10l2-2" stroke={color} strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
-      <path d="M10 22l-2 2" stroke={color} strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
+      {/* Core dot — the intelligence centre */}
+      <circle cx="12" cy="12" r="2.5" fill={color} />
+      {/* Three arcs — awareness, voice, cognition */}
+      <path d="M12 4a8 8 0 0 1 6.93 4" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M20 12a8 8 0 0 1-4 6.93" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M4 12a8 8 0 0 1 4-6.93" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   )
 }

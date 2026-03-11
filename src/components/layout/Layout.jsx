@@ -16,15 +16,24 @@ export default function Layout({ user }) {
   const nav = useNavigate()
   const isHome = loc.pathname === '/' || loc.pathname === '/home'
 
+  // Kiko conversation state — persists across page navigation
+  const [kikoMessages, setKikoMessages] = useState([])
+  const [kikoConvId, setKikoConvId] = useState(null)
+
   // Cmd+K shortcut
   useEffect(() => {
     const handler = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault() }
-      if (e.key === 'Escape') { /* KikoFloat handles its own close */ }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') e.preventDefault()
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [])
+
+  // Called by Kiko when she wants to navigate
+  function kikoNavigate(page) {
+    const path = page === 'home' ? '/' : `/${page}`
+    nav(path)
+  }
 
   return (
     <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', background: 'var(--bg)' }}>
@@ -47,12 +56,22 @@ export default function Layout({ user }) {
       </div>
 
       <Sidebar />
+
       <main style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <Outlet />
+        <Outlet context={{ kikoMessages, setKikoMessages, kikoConvId, setKikoConvId, kikoNavigate }} />
       </main>
 
       {/* Kiko floating — present on every page except home */}
-      {!isHome && <KikoFloat user={user} />}
+      {!isHome && (
+        <KikoFloat
+          user={user}
+          messages={kikoMessages}
+          setMessages={setKikoMessages}
+          convId={kikoConvId}
+          setConvId={setKikoConvId}
+          onNavigate={kikoNavigate}
+        />
+      )}
     </div>
   )
 }

@@ -39,15 +39,17 @@ function EqIcon({ size = 18, color = 'currentColor' }) {
   )
 }
 
-export default function KikoFloat({ user, onNavigate }) {
-  const [stage, setStage] = useState(0) // 0=icon, 1=bar, 2=panel
+export default function KikoFloat({ user, messages: sharedMessages, setMessages: setSharedMessages, convId: sharedConvId, setConvId: setSharedConvId, onNavigate }) {
+  const [stage, setStage] = useState(sharedMessages?.length > 0 ? 2 : 0) // auto-show panel if conversation exists
   const [input, setInput] = useState('')
-  const [messages, setMessages] = useState([])
+  const messages = sharedMessages || []
+  const setMessages = setSharedMessages || (() => {})
   const [streaming, setStreaming] = useState(false)
   const [streamText, setStreamText] = useState('')
   const [transcribing, setTranscribing] = useState(false)
   const [voiceOpen, setVoiceOpen] = useState(false)
-  const [convId, setConvId] = useState(null)
+  const convId = sharedConvId || null
+  const setConvId = setSharedConvId || (() => {})
   const navigate = useNavigate()
   const inputRef = useRef(null)
   const scrollRef = useRef(null)
@@ -234,7 +236,7 @@ export default function KikoFloat({ user, onNavigate }) {
               <KikoSymbol size={18} color={T.accent} />
               <span style={{ fontSize: 13, fontWeight: 600, color: T.text, fontFamily: T.font }}>Kiko</span>
             </div>
-            <button onClick={() => { setStage(0); setMessages([]); setConvId(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textTertiary, padding: 4 }}><X size={14} /></button>
+            <button onClick={() => setStage(0)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textTertiary, padding: 4 }}><X size={14} /></button>
           </div>
 
           {/* Messages */}
