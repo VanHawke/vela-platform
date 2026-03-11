@@ -185,57 +185,44 @@ export default async function handler(req, res) {
     // All tools: native (memory + web search) + custom
     const tools = [...NATIVE_TOOLS, ...CUSTOM_TOOLS];
 
-    // Initial API call with streaming
-    const params = {
-      model: MODEL, max_tokens: 4096, system,
-      messages,
-      tools,
-      betas: ['context-management-2025-06-27'],
-    };
+    // Helper: stream one API call, emit text deltas live, return final message
+    async function streamedCall(msgs) {
+      const stream = anthropic.beta.messages.stream({
+        model: MODEL, max_tokens: 4096, system, messages: msgs,
+        tools: [...NATIVE_TOOLS, ...CUSTOM_TOOLS],
+        betas: ['context-management-2025-06-27'],
+      });
+      for await (const event of stream) {
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+          write({ delta: event.delta.text });
+        }
+      }
+      return await stream.finalMessage();
+    }
 
-    let response = await anthropic.beta.messages.create({ ...params, stream: false });
+    let response = await streamedCall(messages);
     let toolRounds = 0;
     const MAX_ROUNDS = 8;
 
-    // Agentic loop: handle tool calls (non-streamed to collect tool blocks)
     while (response.stop_reason === 'tool_use' && toolRounds < MAX_ROUNDS) {
       toolRounds++;
       const toolResults = [];
-
       for (const block of response.content) {
         if (block.type === 'tool_use') {
           write({ toolStatus: `${block.name}...` });
-          let result;
-          if (block.name === 'memory') {
-            result = await handleMemory(block.input);
-          } else {
-            result = await executeTool(block.name, block.input);
-          }
+          const result = block.name === 'memory'
+            ? await handleMemory(block.input)
+            : await executeTool(block.name, block.input);
           toolResults.push({
             type: 'tool_result', tool_use_id: block.id,
             content: typeof result === 'string' ? result : JSON.stringify(result).slice(0, 8000)
           });
-        } else if (block.type === 'text' && block.text) {
-          write({ delta: block.text });
         }
       }
       write({ toolStatus: null });
-
-      // Continue conversation with tool results
       messages.push({ role: 'assistant', content: response.content });
       messages.push({ role: 'user', content: toolResults });
-
-      // If we've done enough tool rounds, break and stream the final
-      if (toolRounds >= MAX_ROUNDS) break;
-      response = await anthropic.beta.messages.create({ ...params, messages, stream: false });
-    }
-
-    // FINAL RESPONSE — stream for instant text delivery
-    // If the last response was already end_turn, emit it; otherwise stream fresh
-    if (response.stop_reason !== 'tool_use') {
-      for (const block of response.content) {
-        if (block.type === 'text' && block.text) write({ delta: block.text });
-      }
+      response = await streamedCall(messages);
     }
 
     write({ meta: { done: true, model: MODEL, toolRounds } });

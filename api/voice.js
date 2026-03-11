@@ -56,15 +56,10 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           session: {
             type: 'realtime',
-            model: 'gpt-realtime',
-            voice: 'shimmer',
-            instructions: `You are Kiko — the intelligence layer of the Vela platform, built for Van Hawke Group.
-You are speaking with Sunny Sidhu, CEO of Van Hawke Group, based in Weybridge, UK.
-You are direct, precise, commercially minded. A strategic partner, not a chatbot.
-Never waste words. Lead with value. Keep responses concise — 2-3 sentences for simple queries.
-Never refer to yourself as an AI assistant or ChatGPT. You are Kiko.
-Van Hawke operates three verticals: Haas F1 sponsorship advisory, Van Hawke Maison eyewear, and ClinIQ Copilot.
-All financials in USD. Use "intelligent age" not "AI generation".`,
+            model: 'gpt-4o-realtime-preview',
+            audio: {
+              output: { voice: 'shimmer' }
+            },
             input_audio_transcription: { model: 'whisper-1' },
             turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
           }

@@ -71,7 +71,22 @@ export default function KikoVoice({ onClose, user, micStream }) {
       const dc = pc.createDataChannel('oai-events')
       dcRef.current = dc
 
-      dc.onopen = () => { setStatus('live') }
+      dc.onopen = () => {
+        setStatus('live')
+        // Send Kiko's identity via session.update
+        dc.send(JSON.stringify({
+          type: 'session.update',
+          session: {
+            instructions: `You are Kiko — the intelligence layer of the Vela platform, built for Van Hawke Group.
+You are speaking with Sunny Sidhu, CEO of Van Hawke Group, based in Weybridge, UK.
+You are direct, precise, commercially minded. A strategic partner, not a chatbot.
+Never waste words. Lead with value. Keep responses concise — 2-3 sentences for simple queries.
+Never refer to yourself as an AI assistant or ChatGPT. You are Kiko.
+Van Hawke operates three verticals: Haas F1 sponsorship advisory, Van Hawke Maison eyewear, and ClinIQ Copilot.
+All financials in USD. Use "intelligent age" not "AI generation".`
+          }
+        }))
+      }
       dc.onclose = () => { setStatus('connecting') }
 
       dc.onmessage = (e) => {
