@@ -167,5 +167,54 @@ export default async function handler(req, res) {
     }
   }
 
-  return res.status(400).json({ error: 'Invalid action. Use: transcribe | realtime-token | realtime-sdp | mem0' });
+  // TTS — ElevenLabs text-to-speech streaming
+  if (action === 'tts') {
+    const { text, voice_id } = req.body;
+    if (!text) return res.status(400).json({ error: 'text required' });
+
+    const key = process.env.ELEVENLABS_API_KEY;
+    if (!key) return res.status(500).json({ error: 'No ELEVENLABS_API_KEY configured' });
+
+    // Default: British female voice. Rachel = 21m00Tcm4TlvDq8ikWAM, Charlotte = XB0fDUnXU5powFXDhCwa
+    const vid = voice_id || 'XB0fDUnXU5powFXDhCwa';
+
+    try {
+      const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${vid}/stream`, {
+        method: 'POST',
+        headers: {
+          'xi-api-key': key,
+          'Content-Type': 'application/json',
+          'Accept': 'audio/mpeg',
+        },
+        body: JSON.stringify({
+          text: text.slice(0, 5000),
+          model_id: 'eleven_turbo_v2_5',
+          voice_settings: { stability: 0.5, similarity_boost: 0.75, style: 0.3 },
+        }),
+      });
+
+      if (!ttsRes.ok) {
+        const errText = await ttsRes.text();
+        console.error('[Voice] ElevenLabs TTS error:', ttsRes.status, errText);
+        return res.status(ttsRes.status).json({ error: `ElevenLabs ${ttsRes.status}: ${errText}` });
+      }
+
+      res.setHeader('Content-Type', 'audio/mpeg');
+      res.setHeader('Transfer-Encoding', 'chunked');
+
+      const reader = ttsRes.body.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        res.write(value);
+      }
+      res.end();
+    } catch (err) {
+      console.error('[Voice] TTS error:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    return;
+  }
+
+  return res.status(400).json({ error: 'Invalid action. Use: transcribe | realtime-token | realtime-sdp | mem0 | tts' });
 }

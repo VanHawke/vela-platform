@@ -1,19 +1,19 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { X } from 'lucide-react'
+import { X, Mic, MicOff } from 'lucide-react'
 
 // Kiko symbol — large centred circle
-function KikoSymbol({ size = 120, active = false, onClick }) {
+function KikoSymbol({ size = 140, active = false, speaking = false, onClick }) {
   return (
     <button onClick={onClick} style={{
       width: size, height: size, borderRadius: '50%',
-      background: active ? 'var(--accent)' : 'rgba(0,0,0,0.06)',
+      background: active ? 'var(--accent)' : speaking ? 'var(--accent)' : 'rgba(0,0,0,0.06)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       cursor: 'pointer', transition: 'all 0.4s ease', border: 'none',
-      boxShadow: active ? '0 0 80px rgba(0,0,0,0.12)' : 'none',
+      boxShadow: active || speaking ? '0 0 80px rgba(0,0,0,0.12)' : 'none',
     }}>
       <span style={{
         fontSize: size * 0.38, fontWeight: 700, fontFamily: 'var(--font)',
-        color: active ? '#fff' : 'var(--text-tertiary)',
+        color: active || speaking ? '#fff' : 'var(--text-tertiary)',
         letterSpacing: '-0.02em', transition: 'color 0.3s'
       }}>K</span>
     </button>
@@ -21,14 +21,14 @@ function KikoSymbol({ size = 120, active = false, onClick }) {
 }
 
 // Equalizer bars
-function Equalizer() {
+function Equalizer({ active }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4, height: 48 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4, height: 48, opacity: active ? 1 : 0.3 }}>
       {[0,1,2,3,4].map(i => (
         <div key={i} style={{
           width: 4, borderRadius: 2, background: 'var(--accent)',
-          animation: `equalizerBar 0.8s ease-in-out ${i * 0.12}s infinite`,
-          height: 16, minHeight: 8,
+          animation: active ? `equalizerBar 0.8s ease-in-out ${i * 0.12}s infinite` : 'none',
+          height: active ? 16 : 8, minHeight: 8, transition: 'height 0.3s'
         }} />
       ))}
     </div>
@@ -36,126 +36,186 @@ function Equalizer() {
 }
 
 export default function KikoVoice({ onClose, user }) {
-  const [listening, setListening] = useState(false)
+  const [phase, setPhase] = useState('idle') // idle | listening | processing | speaking
   const [transcript, setTranscript] = useState('')
-  const [kikoSpeaking, setKikoSpeaking] = useState(false)
   const [kikoText, setKikoText] = useState('')
+  const [error, setError] = useState('')
   const mediaRef = useRef(null)
-  const wsRef = useRef(null)
+  const recorderRef = useRef(null)
+  const audioRef = useRef(null)
+  const chunksRef = useRef([])
 
-  const toggleListening = useCallback(() => {
-    if (listening) {
-      // Stop
-      if (wsRef.current) { wsRef.current.close(); wsRef.current = null }
-      if (mediaRef.current) { mediaRef.current.getTracks().forEach(t => t.stop()); mediaRef.current = null }
-      setListening(false)
-    } else {
-      // Start — connect to OpenAI Realtime
-      setListening(true)
-      setTranscript('')
-      setKikoText('')
-      startVoiceSession()
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (mediaRef.current) mediaRef.current.getTracks().forEach(t => t.stop())
+      if (audioRef.current) { audioRef.current.pause(); audioRef.current = null }
     }
-  }, [listening])
+  }, [])
 
-  const startVoiceSession = async () => {
+  // Start recording
+  const startListening = async () => {
+    setError('')
+    setTranscript('')
+    setKikoText('')
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       mediaRef.current = stream
-
-      // Use Whisper STT for now — send chunks to /api/voice
+      chunksRef.current = []
       const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' })
-      const chunks = []
-      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data) }
-      recorder.onstop = async () => {
-        const blob = new Blob(chunks, { type: 'audio/webm' })
-        const formData = new FormData()
-        formData.append('audio', blob, 'voice.webm')
-        try {
-          const res = await fetch('/api/voice', { method: 'POST', body: formData })
-          const data = await res.json()
-          if (data.text) {
-            setTranscript(data.text)
-            // Send to Kiko
-            const kikoRes = await fetch('/api/kiko', {
-              method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ message: data.text, currentPage: 'voice' })
-            })
-            const reader = kikoRes.body.getReader()
-            const dec = new TextDecoder()
-            let full = '', buf = ''
-            setKikoSpeaking(true)
-            while (true) {
-              const { done, value } = await reader.read()
-              if (done) break
-              buf += dec.decode(value, { stream: true })
-              const lines = buf.split('\n')
-              buf = lines.pop() || ''
-              for (const line of lines) {
-                if (!line.startsWith('data: ')) continue
-                const d = line.slice(6)
-                if (d === '[DONE]') continue
-                try { const j = JSON.parse(d); if (j.delta) { full += j.delta; setKikoText(full) } } catch {}
-              }
-            }
-            setKikoSpeaking(false)
-          }
-        } catch (err) { console.error('[Voice] STT error:', err) }
-      }
-      // Record for 10s max, or until user stops
+      recorderRef.current = recorder
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data) }
+      recorder.onstop = () => processAudio()
       recorder.start()
-      setTimeout(() => { if (recorder.state === 'recording') recorder.stop() }, 10000)
+      setPhase('listening')
     } catch (err) {
-      console.error('[Voice] Mic error:', err)
-      setListening(false)
+      setError('Microphone access denied')
+      setPhase('idle')
     }
   }
 
-  // Close handler
-  const handleClose = () => {
-    if (wsRef.current) wsRef.current.close()
-    if (mediaRef.current) mediaRef.current.getTracks().forEach(t => t.stop())
-    setListening(false)
-    onClose()
+  // Stop recording
+  const stopListening = () => {
+    if (recorderRef.current && recorderRef.current.state === 'recording') {
+      recorderRef.current.stop()
+    }
+    if (mediaRef.current) {
+      mediaRef.current.getTracks().forEach(t => t.stop())
+      mediaRef.current = null
+    }
+    setPhase('processing')
+  }
+
+  // Process audio: transcribe → Kiko → TTS
+  const processAudio = async () => {
+    const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
+    // Convert to base64
+    const reader = new FileReader()
+    reader.onload = async () => {
+      const base64 = reader.result.split(',')[1]
+      try {
+        // Step 1: Whisper transcription
+        const sttRes = await fetch('/api/voice', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'transcribe', audio: base64 })
+        })
+        const sttData = await sttRes.json()
+        if (!sttData.text) { setError('Could not transcribe audio'); setPhase('idle'); return }
+        setTranscript(sttData.text)
+
+        // Step 2: Send to Kiko
+        const kikoRes = await fetch('/api/kiko', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: sttData.text, currentPage: 'voice' })
+        })
+        const kikoReader = kikoRes.body.getReader()
+        const dec = new TextDecoder()
+        let full = '', buf = ''
+        while (true) {
+          const { done, value } = await kikoReader.read()
+          if (done) break
+          buf += dec.decode(value, { stream: true })
+          const lines = buf.split('\n')
+          buf = lines.pop() || ''
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue
+            const d = line.slice(6)
+            if (d === '[DONE]') continue
+            try { const j = JSON.parse(d); if (j.delta) { full += j.delta; setKikoText(full) } } catch {}
+          }
+        }
+
+        if (!full) { setPhase('idle'); return }
+
+        // Step 3: TTS — Kiko speaks back
+        setPhase('speaking')
+        const ttsRes = await fetch('/api/voice', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'tts', text: full })
+        })
+
+        if (ttsRes.ok) {
+          const audioBlob = await ttsRes.blob()
+          const audioUrl = URL.createObjectURL(audioBlob)
+          const audio = new Audio(audioUrl)
+          audioRef.current = audio
+          audio.onended = () => { setPhase('idle'); URL.revokeObjectURL(audioUrl) }
+          audio.onerror = () => { setPhase('idle'); URL.revokeObjectURL(audioUrl) }
+          await audio.play()
+        } else {
+          setPhase('idle')
+        }
+      } catch (err) {
+        setError(err.message)
+        setPhase('idle')
+      }
+    }
+    reader.readAsDataURL(blob)
+  }
+
+  // Toggle: tap K to start/stop
+  const handleToggle = () => {
+    if (phase === 'idle') startListening()
+    else if (phase === 'listening') stopListening()
+    else if (phase === 'speaking') {
+      if (audioRef.current) { audioRef.current.pause(); audioRef.current = null }
+      setPhase('idle')
+    }
+  }
+
+  const statusText = {
+    idle: 'Tap to speak',
+    listening: 'Listening...',
+    processing: 'Thinking...',
+    speaking: ''
   }
 
   return (
     <div className="voice-overlay animate-fade-in">
       {/* Close button */}
-      <button onClick={handleClose} style={{
+      <button onClick={onClose} style={{
         position: 'absolute', top: 24, right: 24, width: 40, height: 40,
         borderRadius: '50%', background: 'rgba(0,0,0,0.04)', border: 'none',
         color: 'var(--text-tertiary)', cursor: 'pointer', display: 'flex',
-        alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s'
+        alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', zIndex: 10
       }}><X size={20} /></button>
 
-      {/* Centre: Kiko symbol or equalizer */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32 }}>
-        {listening && kikoSpeaking ? (
-          <Equalizer />
+      {/* Centre: K symbol + equalizer */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
+        {phase === 'speaking' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+            <KikoSymbol size={140} speaking onClick={handleToggle} />
+            <Equalizer active />
+          </div>
         ) : (
-          <KikoSymbol size={140} active={listening} onClick={toggleListening} />
+          <KikoSymbol size={140} active={phase === 'listening'} onClick={handleToggle} />
         )}
 
+        {phase === 'listening' && <Equalizer active />}
+
         <p style={{
-          fontSize: 14, color: listening ? 'var(--text-secondary)' : 'var(--text-tertiary)',
-          fontFamily: 'var(--font)', textAlign: 'center', maxWidth: 400, lineHeight: 1.5
+          fontSize: 14, color: phase === 'idle' ? 'var(--text-tertiary)' : 'var(--text-secondary)',
+          fontFamily: 'var(--font)', textAlign: 'center', maxWidth: 400
         }}>
-          {listening ? (kikoSpeaking ? '' : 'Listening...') : 'Tap to start speaking'}
+          {error || statusText[phase]}
         </p>
       </div>
 
-      {/* Spoken text — only current utterance */}
+      {/* Transcript display */}
       {(transcript || kikoText) && (
         <div style={{
           position: 'absolute', bottom: 80, left: '50%', transform: 'translateX(-50%)',
-          maxWidth: 500, textAlign: 'center', padding: '0 24px'
+          maxWidth: 560, width: '90%', textAlign: 'center', padding: '0 24px'
         }}>
-          {transcript && !kikoText && (
-            <p style={{ fontSize: 16, color: 'var(--text)', fontFamily: 'var(--font)', fontWeight: 500 }}>{transcript}</p>
+          {transcript && (
+            <p style={{ fontSize: 15, color: 'var(--text)', fontFamily: 'var(--font)', fontWeight: 500, marginBottom: kikoText ? 12 : 0 }}>
+              {transcript}
+            </p>
           )}
           {kikoText && (
-            <p style={{ fontSize: 15, color: 'var(--text-secondary)', fontFamily: 'var(--font)', lineHeight: 1.6 }}>{kikoText}</p>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)', fontFamily: 'var(--font)', lineHeight: 1.6 }}>
+              {kikoText}
+            </p>
           )}
         </div>
       )}
