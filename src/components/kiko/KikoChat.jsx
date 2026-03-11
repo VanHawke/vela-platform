@@ -2,6 +2,22 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { ArrowUp, Mic, AudioLines } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import KikoVoice from './KikoVoice'
+import DOMPurify from 'dompurify'
+
+// Simple markdown → HTML
+function md(text) {
+  if (!text) return ''
+  let h = text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(0,0,0,0.04);padding:12px;border-radius:8px;font-size:12px;overflow-x:auto;margin:8px 0"><code>$1</code></pre>')
+    .replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.05);padding:2px 6px;border-radius:4px;font-size:12px">$1</code>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^[-–•] (.+)$/gm, '<li style="margin-left:16px;list-style:disc">$1</li>')
+    .replace(/^(\d+)\. (.+)$/gm, '<li style="margin-left:16px;list-style:decimal">$2</li>')
+    .replace(/\n/g, '<br/>')
+  return DOMPurify.sanitize(h)
+}
 
 const CHIPS = ['Brief me on my pipeline', "What's happening in F1", 'Draft a follow-up email', "Summarise yesterday"]
 
@@ -146,8 +162,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   maxWidth:'85%', padding:'12px 16px', borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
                   background: msg.role === 'user' ? 'var(--accent)' : 'var(--accent-soft)',
                   color: msg.role === 'user' ? '#fff' : 'var(--text)',
-                  fontSize:14, lineHeight:1.6, fontFamily:'var(--font)', whiteSpace:'pre-wrap'
-                }}>{msg.content}</div>
+                  fontSize:14, lineHeight:1.6, fontFamily:'var(--font)'
+                }}>{msg.role === 'user' ? msg.content : <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />}</div>
               </div>
             ))}
             {/* Tool status */}
@@ -158,8 +174,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             {/* Streaming */}
             {streaming && streamText && (
               <div style={{ marginBottom:16 }}>
-                <div style={{ maxWidth:'85%', padding:'12px 16px', borderRadius:'16px 16px 16px 4px', background:'var(--accent-soft)', color:'var(--text)', fontSize:14, lineHeight:1.6, fontFamily:'var(--font)', whiteSpace:'pre-wrap' }}>
-                  {streamText}<span style={{ animation:'pulse 1s infinite' }}>▍</span>
+                <div style={{ maxWidth:'85%', padding:'12px 16px', borderRadius:'16px 16px 16px 4px', background:'var(--accent-soft)', color:'var(--text)', fontSize:14, lineHeight:1.6, fontFamily:'var(--font)' }}>
+                  <span dangerouslySetInnerHTML={{ __html: md(streamText) }} /><span style={{ animation:'pulse 1s infinite' }}>▍</span>
                 </div>
               </div>
             )}
