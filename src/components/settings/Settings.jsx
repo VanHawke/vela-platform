@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { supabase } from '@/lib/supabase'
 import ImageUpload from './ImageUpload'
-import { Check, ExternalLink, Unplug, UserPlus, Trash2, Copy } from 'lucide-react'
+import { Check, ExternalLink, Unplug, UserPlus, Trash2, Copy, LogOut } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const FONTS = ['Inter', 'DM Sans', 'Geist', 'Satoshi']
 const SIDEBAR_STYLES = ['glassmorphism', 'solid', 'minimal']
@@ -26,6 +27,7 @@ const DEFAULT_THEME = {
 }
 
 export default function Settings({ user }) {
+  const navigate = useNavigate()
   const [tab, setTab] = useState('profile')
   const [theme, setTheme] = useState(DEFAULT_THEME)
   const [saved, setSaved] = useState(false)
@@ -262,6 +264,13 @@ export default function Settings({ user }) {
             <Button onClick={() => saveSettings({ display_name: settings.display_name, timezone: settings.timezone, email_signature: settings.email_signature, notification_prefs: settings.notification_prefs })} className="bg-white text-black hover:bg-white/90">
               {saved ? 'Saved!' : 'Save Profile'}
             </Button>
+            <Separator className="bg-white/8" />
+            <button
+              onClick={async () => { await supabase.auth.signOut(); navigate('/login') }}
+              className="flex items-center gap-2 text-sm text-red-400 hover:text-red-300 transition-colors"
+            >
+              <LogOut className="h-4 w-4" /> Sign out
+            </button>
           </div>
         </TabsContent>
 
