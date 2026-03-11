@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import DOMPurify from 'dompurify'
 import KikoVoice from './KikoVoice'
 import ChatHistory from './ChatHistory'
+import KikoSymbol from './KikoSymbol'
 
 // Design tokens (from approved render)
 const T = {
@@ -45,6 +47,7 @@ function getGreeting() {
 const CHIPS = ['Brief me on my pipeline', "What's happening in F1", 'Draft a follow-up email', 'Summarise yesterday']
 
 export default function KikoChat({ user, compact = false, initialMessage = '' }) {
+  const navigate = useNavigate()
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState(initialMessage)
   const [streaming, setStreaming] = useState(false)
@@ -54,11 +57,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [micStream, setMicStream] = useState(null)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [activeConvId, setActiveConvId] = useState(null)
+  const [transcribing, setTranscribing] = useState(false)
   const scrollRef = useRef(null)
   const inputRef = useRef(null)
+  const transcribeRef = useRef({ media: null, recorder: null })
   const hasMessages = messages.length > 0 || streaming
 
-  // Request mic permission before opening voice overlay (must be in user gesture)
+  // Equalizer → opens voice mode overlay
   const openVoice = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -67,6 +72,39 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     } catch (err) {
       console.error('Mic permission denied:', err)
     }
+  }
+
+  // Mic → speech-to-text transcription into prompt bar
+  const startTranscribe = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      transcribeRef.current.media = stream
+      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' })
+      const chunks = []
+      transcribeRef.current.recorder = recorder
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data) }
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop())
+        const blob = new Blob(chunks, { type: 'audio/webm' })
+        if (blob.size < 500) { setTranscribing(false); return }
+        const base64 = await new Promise((res) => {
+          const r = new FileReader(); r.onload = () => res(r.result.split(',')[1]); r.readAsDataURL(blob)
+        })
+        const sttRes = await fetch('/api/voice', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'transcribe', audio: base64 })
+        })
+        const stt = await sttRes.json()
+        if (stt.text) setInput(prev => prev + (prev ? ' ' : '') + stt.text)
+        setTranscribing(false)
+      }
+      recorder.start()
+      setTranscribing(true)
+    } catch { setTranscribing(false) }
+  }
+  const stopTranscribe = () => {
+    if (transcribeRef.current.recorder?.state === 'recording') transcribeRef.current.recorder.stop()
+    if (transcribeRef.current.media) { transcribeRef.current.media.getTracks().forEach(t => t.stop()); transcribeRef.current.media = null }
   }
 
   // Load a previous conversation
@@ -142,6 +180,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             const j = JSON.parse(d)
             if (j.delta) { full += j.delta; setStreamText(full) }
             if (j.toolStatus !== undefined) setToolStatus(j.toolStatus)
+            if (j.navigate) navigate('/' + (j.navigate === 'home' ? '' : j.navigate))
           } catch {}
         }
       }
@@ -182,11 +221,27 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 16, color: T.text, fontFamily: T.font, height: 44 }}
             />
             <div style={{ display: 'flex', gap: 4 }}>
-              <button onClick={openVoice} style={{
-                width: 40, height: 40, borderRadius: '50%', background: 'transparent', border: 'none',
-                color: T.textTertiary, cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }} title="Voice">
+              {/* Mic — speech-to-text transcription */}
+              <button onClick={transcribing ? stopTranscribe : startTranscribe} title="Dictate" style={{
+                width: 40, height: 40, borderRadius: '50%', border: 'none',
+                background: transcribing ? '#C62828' : 'transparent',
+                color: transcribing ? '#fff' : T.textTertiary,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              </button>
+              {/* Equalizer — voice mode (talk directly) */}
+              <button onClick={openVoice} title="Voice mode" style={{
+                width: 40, height: 40, borderRadius: '50%', background: 'transparent', border: 'none',
+                color: T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <rect x="4" y="8" width="2" height="8" rx="1" fill="currentColor" opacity="0.6" />
+                  <rect x="8" y="5" width="2" height="14" rx="1" fill="currentColor" opacity="0.8" />
+                  <rect x="12" y="7" width="2" height="10" rx="1" fill="currentColor" />
+                  <rect x="16" y="4" width="2" height="16" rx="1" fill="currentColor" opacity="0.8" />
+                  <rect x="20" y="9" width="2" height="6" rx="1" fill="currentColor" opacity="0.6" />
+                </svg>
               </button>
               <button onClick={() => handleSubmit()} disabled={!input.trim() || streaming} style={{
                 width: 40, height: 40, borderRadius: '50%',
@@ -229,7 +284,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div key={i} style={{ marginBottom: 12, display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
               {msg.role !== 'user' && (
                 <div style={{ width: 24, height: 24, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 10, marginTop: 4 }}>
-                  <span style={{ fontSize: 9, fontWeight: 700, color: '#fff', fontFamily: T.font }}>K</span>
+                  <KikoSymbol size={13} color="#fff" />
                 </div>
               )}
               {msg.role === 'user' ? (
@@ -261,7 +316,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {streaming && streamText && (
             <div style={{ marginBottom: 12, display: 'flex' }}>
               <div style={{ width: 24, height: 24, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 10, marginTop: 4 }}>
-                <span style={{ fontSize: 9, fontWeight: 700, color: '#fff', fontFamily: T.font }}>K</span>
+                <KikoSymbol size={13} color="#fff" />
               </div>
               <div style={{ maxWidth: '75%', padding: '12px 16px', borderRadius: T.radiusSm, background: T.accentSoft, fontSize: 13, color: T.textSecondary, lineHeight: 1.5, fontFamily: T.font }}>
                 <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
@@ -283,12 +338,28 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 13, color: T.text, fontFamily: T.font }}
             />
             {!compact && (
-              <button onClick={openVoice} style={{
-                width: 32, height: 32, borderRadius: '50%', background: 'transparent', border: 'none',
-                color: T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-              </button>
+              <>
+                <button onClick={transcribing ? stopTranscribe : startTranscribe} title="Dictate" style={{
+                  width: 32, height: 32, borderRadius: '50%', border: 'none',
+                  background: transcribing ? '#C62828' : 'transparent',
+                  color: transcribing ? '#fff' : T.textTertiary,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                </button>
+                <button onClick={openVoice} title="Voice mode" style={{
+                  width: 32, height: 32, borderRadius: '50%', background: 'transparent', border: 'none',
+                  color: T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <rect x="4" y="8" width="2" height="8" rx="1" fill="currentColor" opacity="0.6" />
+                    <rect x="8" y="5" width="2" height="14" rx="1" fill="currentColor" opacity="0.8" />
+                    <rect x="12" y="7" width="2" height="10" rx="1" fill="currentColor" />
+                    <rect x="16" y="4" width="2" height="16" rx="1" fill="currentColor" opacity="0.8" />
+                    <rect x="20" y="9" width="2" height="6" rx="1" fill="currentColor" opacity="0.6" />
+                  </svg>
+                </button>
+              </>
             )}
             <button onClick={() => handleSubmit()} disabled={!input.trim() || streaming} style={{
               width: 32, height: 32, borderRadius: '50%',

@@ -23,6 +23,8 @@ function timeAgo(d) {
 export default function ChatHistory({ user, open, onToggle, onSelectConversation, onNewChat, activeConvId }) {
   const [conversations, setConversations] = useState([])
   const [loading, setLoading] = useState(true)
+  const [renamingId, setRenamingId] = useState(null)
+  const [renameValue, setRenameValue] = useState('')
 
   const orgId = user?.app_metadata?.org_id
 
@@ -47,6 +49,19 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
     e.stopPropagation()
     await supabase.from('conversations').delete().eq('id', id)
     setConversations(prev => prev.filter(c => c.id !== id))
+  }
+
+  async function renameConversation(id) {
+    if (!renameValue.trim()) { setRenamingId(null); return }
+    await supabase.from('conversations').update({ title: renameValue.trim() }).eq('id', id)
+    setConversations(prev => prev.map(c => c.id === id ? { ...c, title: renameValue.trim() } : c))
+    setRenamingId(null)
+  }
+
+  function startRename(conv, e) {
+    e.stopPropagation()
+    setRenamingId(conv.id)
+    setRenameValue(conv.title || '')
   }
 
   function getPreview(conv) {
@@ -135,15 +150,23 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
                 </div>
 
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                    <span style={{
-                      fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font,
-                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180,
-                    }}>{(conv.title || 'Untitled').replace('🎤 ', '')}</span>
-                    <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font, flexShrink: 0 }}>
-                      {timeAgo(conv.updated_at)}
-                    </span>
-                  </div>
+                  {renamingId === conv.id ? (
+                    <input value={renameValue} onChange={e => setRenameValue(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') renameConversation(conv.id); if (e.key === 'Escape') setRenamingId(null) }}
+                      onBlur={() => renameConversation(conv.id)}
+                      autoFocus onClick={e => e.stopPropagation()}
+                      style={{ width: '100%', fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font, border: `1px solid ${T.border}`, borderRadius: 6, padding: '2px 6px', outline: 'none', background: T.bg }} />
+                  ) : (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                      <span onDoubleClick={(e) => startRename(conv, e)} style={{
+                        fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font,
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180,
+                      }}>{(conv.title || 'Untitled').replace('🎤 ', '')}</span>
+                      <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font, flexShrink: 0 }}>
+                        {timeAgo(conv.updated_at)}
+                      </span>
+                    </div>
+                  )}
                   <p style={{
                     fontSize: 11, color: T.textTertiary, fontFamily: T.font, margin: 0,
                     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',

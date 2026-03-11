@@ -29,8 +29,15 @@ RESPONSE RULES:
 TOOLS:
 - get_crm_data: Query contacts, deals, companies, tasks from the CRM
 - search_conversations: Search past conversation history
+- navigate_page: Navigate the user to any page in the platform. When the user says "show me the pipeline", "pull up deals", "go to contacts", etc., ALWAYS use this tool to navigate them there. You are the operating system — you control the interface.
 - Web search: You have native web search. Use it for news, weather, market data, company research.
 - Memory: You have a /memories directory. Check it before responding. Store important facts there.
+
+NAVIGATION RULES:
+- When asked to "show", "pull up", "go to", "open", or "take me to" any page — use navigate_page immediately.
+- After navigating, briefly acknowledge what you've done and offer to help with the data on that page.
+- You follow the user from page to page. The current page context is injected per-request. Use it to be contextually aware.
+- You ARE the operating system. The user interacts with the platform through you.
 
 CURRENT PAGE CONTEXT (injected per-request): {currentPage}`;
 
@@ -54,6 +61,11 @@ const CUSTOM_TOOLS = [
       query: { type: 'string', description: 'Keywords to search in past conversations' },
       limit: { type: 'number', description: 'Max results (default 5)' },
     }, required: ['query'] } },
+  { name: 'navigate_page', description: 'Navigate the user to a specific page in the Vela platform. Use this when the user asks to see a page, pull up data, go to a section, or show something. ALWAYS use this tool when asked to show/open/go to a page.',
+    input_schema: { type: 'object', properties: {
+      page: { type: 'string', enum: ['home', 'pipeline', 'contacts', 'companies', 'deals', 'email', 'calendar', 'documents', 'tasks', 'settings', 'dashboard'], description: 'Page to navigate to' },
+      reason: { type: 'string', description: 'Brief description of why navigating (shown to user)' },
+    }, required: ['page'] } },
 ];
 
 // ── Supabase Helper ─────────────────────────────────────
@@ -143,6 +155,10 @@ async function executeTool(name, input) {
         .slice(0,3).map(m => ({role:m.role, content:(m.content||'').slice(0,200)}))
     }))};
   }
+  if (name === 'navigate_page') {
+    const { page, reason } = input;
+    return { navigated: true, page, reason: reason || `Opening ${page}`, instruction: `NAVIGATION: Navigating to ${page}. Tell the user you're taking them there.` };
+  }
   return { error: `Unknown tool: ${name}` };
 }
 
@@ -213,6 +229,10 @@ export default async function handler(req, res) {
           const result = block.name === 'memory'
             ? await handleMemory(block.input)
             : await executeTool(block.name, block.input);
+          // Emit navigation event if navigate_page was called
+          if (block.name === 'navigate_page' && result?.navigated) {
+            write({ navigate: result.page });
+          }
           toolResults.push({
             type: 'tool_result', tool_use_id: block.id,
             content: typeof result === 'string' ? result : JSON.stringify(result).slice(0, 8000)
