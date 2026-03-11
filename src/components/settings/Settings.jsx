@@ -1,35 +1,24 @@
 import { useState, useEffect } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import { supabase } from '@/lib/supabase'
-import ImageUpload from './ImageUpload'
-import { Check, ExternalLink, Unplug, UserPlus, Trash2, Copy, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import ImageUpload from './ImageUpload'
+import { Check, ExternalLink, Unplug, UserPlus, Trash2, LogOut } from 'lucide-react'
 
-const FONTS = ['Inter', 'DM Sans', 'Geist', 'Satoshi']
-const SIDEBAR_STYLES = ['glassmorphism', 'solid', 'minimal']
-const DENSITIES = ['compact', 'default', 'spacious']
 const VOICES = ['shimmer', 'alloy', 'echo', 'fable', 'onyx', 'nova']
+const TABS = ['Profile', 'Kiko', 'Team', 'Appearance', 'Accounts']
 
-const DEFAULT_THEME = {
-  background: '#0A0A0A',
-  surface: '#141414',
-  border: 'rgba(255,255,255,0.08)',
-  accent: '#FFFFFF',
-  textPrimary: 'rgba(255,255,255,0.95)',
-  textMuted: 'rgba(255,255,255,0.40)',
-  font: 'Inter',
-  sidebarStyle: 'glassmorphism',
-  radius: 8,
-  density: 'default',
+const T = {
+  bg: '#FAFAFA', surface: '#FFFFFF', surfaceHover: '#F5F5F5',
+  border: 'rgba(0,0,0,0.06)', borderHover: 'rgba(0,0,0,0.12)',
+  text: '#1A1A1A', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
+  accent: '#1A1A1A', accentSoft: 'rgba(0,0,0,0.04)',
+  radius: 16, radiusSm: 10,
+  font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 }
 
 export default function Settings({ user }) {
   const navigate = useNavigate()
-  const [tab, setTab] = useState('profile')
-  const [theme, setTheme] = useState(DEFAULT_THEME)
+  const [tab, setTab] = useState('Profile')
   const [saved, setSaved] = useState(false)
   const [settings, setSettings] = useState({})
   const [googleStatus, setGoogleStatus] = useState(null)
@@ -41,83 +30,38 @@ export default function Settings({ user }) {
   const email = user?.email || ''
   const displayName = user?.user_metadata?.full_name || email.split('@')[0] || ''
 
-  // Check URL params for connection status
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    if (params.get('connected') === 'google') {
-      setTab('accounts')
-      // Clean URL
-      window.history.replaceState({}, '', '/settings')
-    }
-    if (params.get('error')) {
-      setTab('accounts')
-      window.history.replaceState({}, '', '/settings')
-    }
+    if (params.get('connected') === 'google') { setTab('Accounts'); window.history.replaceState({}, '', '/settings') }
+    if (params.get('error')) { setTab('Accounts'); window.history.replaceState({}, '', '/settings') }
   }, [])
 
-  // Load saved settings + theme
-  useEffect(() => {
-    if (email) {
-      loadSettings()
-      checkGoogleStatus()
-      loadTeam()
-    }
-  }, [email])
+  useEffect(() => { if (email) { loadSettings(); checkGoogleStatus(); loadTeam() } }, [email])
 
   const loadSettings = async () => {
     try {
-      const { data } = await supabase
-        .from('user_settings')
-        .select('*')
-        .eq('user_id', user?.id)
-        .single()
-      if (data) {
-        setSettings(data)
-        if (data.theme_config) setTheme({ ...DEFAULT_THEME, ...data.theme_config })
-      }
+      const { data } = await supabase.from('user_settings').select('*').eq('user_id', user?.id).single()
+      if (data) setSettings(data)
     } catch {}
   }
 
   const saveSettings = async (updates) => {
     try {
-      await supabase.from('user_settings').upsert({
-        user_id: user?.id,
-        ...updates,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' })
+      await supabase.from('user_settings').upsert({ user_id: user?.id, ...updates, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
       setSettings(prev => ({ ...prev, ...updates }))
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
-    } catch (err) {
-      console.error('[Settings] Save error:', err)
-    }
+      setSaved(true); setTimeout(() => setSaved(false), 2000)
+    } catch {}
   }
 
   const checkGoogleStatus = async () => {
-    try {
-      const res = await fetch(`/api/google-token?email=${encodeURIComponent(email)}`)
-      const data = await res.json()
-      setGoogleStatus(data)
-    } catch {
-      setGoogleStatus({ connected: false })
-    }
+    try { const res = await fetch(`/api/google-token?email=${encodeURIComponent(email)}`); setGoogleStatus(await res.json()) }
+    catch { setGoogleStatus({ connected: false }) }
   }
 
-  const connectGoogle = () => {
-    window.location.href = `/api/google-auth?email=${encodeURIComponent(email)}`
-  }
+  const connectGoogle = () => { window.location.href = `/api/google-auth?email=${encodeURIComponent(email)}` }
 
   const disconnectGoogle = async () => {
-    try {
-      await supabase
-        .from('user_tokens')
-        .delete()
-        .eq('user_email', email)
-        .eq('provider', 'google')
-      setGoogleStatus({ connected: false })
-    } catch (err) {
-      console.error('[Settings] Disconnect error:', err)
-    }
+    try { await supabase.from('user_tokens').delete().eq('user_email', email).eq('provider', 'google'); setGoogleStatus({ connected: false }) } catch {}
   }
 
   const loadTeam = async () => {
@@ -126,9 +70,7 @@ export default function Settings({ user }) {
       setTeamMembers(members || [])
       const { data: invites } = await supabase.from('invitations').select('*').eq('status', 'pending').order('created_at', { ascending: false })
       setInvitations(invites || [])
-    } catch (err) {
-      console.error('[Settings] Load team error:', err)
-    }
+    } catch {}
   }
 
   const sendInvite = async () => {
@@ -136,469 +78,238 @@ export default function Settings({ user }) {
     const orgId = user?.app_metadata?.org_id
     if (!orgId) return
     try {
-      await supabase.from('invitations').insert({
-        org_id: orgId,
-        email: inviteEmail.trim().toLowerCase(),
-        role: inviteRole,
-        invited_by: user.id,
-      })
-      setInviteEmail('')
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
-      loadTeam()
-    } catch (err) {
-      console.error('[Settings] Invite error:', err)
-    }
+      await supabase.from('invitations').insert({ org_id: orgId, email: inviteEmail.trim().toLowerCase(), role: inviteRole, invited_by: user.id })
+      setInviteEmail(''); setSaved(true); setTimeout(() => setSaved(false), 2000); loadTeam()
+    } catch {}
   }
 
   const revokeInvite = async (id) => {
-    await supabase.from('invitations').update({ status: 'revoked' }).eq('id', id)
-    loadTeam()
+    await supabase.from('invitations').update({ status: 'revoked' }).eq('id', id); loadTeam()
   }
 
-  const saveTheme = () => saveSettings({ theme_config: theme })
-
-  const updateTheme = (key, value) => {
-    setTheme(prev => ({ ...prev, [key]: value }))
+  const inputStyle = {
+    width: '100%', height: 44, borderRadius: 12, border: `1px solid ${T.border}`,
+    padding: '0 14px', fontSize: 14, color: T.text, fontFamily: T.font,
+    outline: 'none', background: T.surface, boxSizing: 'border-box',
   }
-
-  const exportCSS = () => {
-    const css = `:root {
-  --vela-bg: ${theme.background};
-  --vela-surface: ${theme.surface};
-  --vela-border: ${theme.border};
-  --vela-accent: ${theme.accent};
-  --vela-text: ${theme.textPrimary};
-  --vela-text-muted: ${theme.textMuted};
-  --vela-font: '${theme.font}', system-ui, sans-serif;
-  --vela-radius: ${theme.radius}px;
-}`
-    navigator.clipboard.writeText(css)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
-  }
+  const labelStyle = { fontSize: 13, fontWeight: 500, color: T.text, display: 'block', marginBottom: 6, fontFamily: T.font }
+  const cardStyle = { background: T.surface, borderRadius: T.radius, border: `1px solid ${T.border}`, padding: 20 }
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 max-w-3xl mx-auto w-full">
-      <h1 className="text-xl font-semibold text-white mb-6">Settings</h1>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: T.bg }}>
+      {/* Header + Tabs */}
+      <div style={{ padding: '24px 32px 0' }}>
+        <h1 style={{ fontSize: 24, fontWeight: 600, color: T.text, margin: '0 0 20px', fontFamily: T.font }}>Settings</h1>
+        <div style={{ display: 'flex', gap: 4, borderBottom: `1px solid ${T.border}` }}>
+          {TABS.map(t => (
+            <button key={t} onClick={() => setTab(t)} style={{
+              padding: '10px 16px', borderRadius: '8px 8px 0 0', border: 'none',
+              background: tab === t ? T.surface : 'transparent',
+              color: tab === t ? T.text : T.textTertiary,
+              fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
+              borderBottom: tab === t ? `2px solid ${T.accent}` : '2px solid transparent',
+            }}>{t}</button>
+          ))}
+        </div>
+      </div>
 
-      <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="bg-white/5 mb-6">
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="kiko">Kiko</TabsTrigger>
-          <TabsTrigger value="team">Team</TabsTrigger>
-          <TabsTrigger value="visual">Appearance</TabsTrigger>
-          <TabsTrigger value="images">Images</TabsTrigger>
-          <TabsTrigger value="accounts">Accounts</TabsTrigger>
-          <TabsTrigger value="about">About</TabsTrigger>
-        </TabsList>
-
+      {/* Content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 32px 32px', maxWidth: 600 }}>
         {/* Profile */}
-        <TabsContent value="profile" className="space-y-6">
-          <div className="space-y-4">
+        {tab === 'Profile' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <div>
-              <label className="text-sm text-white/50 block mb-1.5">Display Name</label>
-              <Input
-                value={settings.display_name || displayName}
-                onChange={(e) => setSettings(prev => ({ ...prev, display_name: e.target.value }))}
-                className="bg-white/5 border-white/10 text-white"
-              />
+              <label style={labelStyle}>Display Name</label>
+              <input value={settings.display_name || displayName} onChange={e => setSettings(p => ({ ...p, display_name: e.target.value }))} style={inputStyle} />
             </div>
             <div>
-              <label className="text-sm text-white/50 block mb-1.5">Email</label>
-              <Input value={email} disabled className="bg-white/5 border-white/10 text-white" />
+              <label style={labelStyle}>Email</label>
+              <input value={email} disabled style={{ ...inputStyle, background: T.bg, color: T.textTertiary }} />
             </div>
             <div>
-              <label className="text-sm text-white/50 block mb-1.5">Timezone</label>
-              <select
-                value={settings.timezone || 'Europe/London'}
-                onChange={(e) => setSettings(prev => ({ ...prev, timezone: e.target.value }))}
-                className="w-full h-10 px-3 rounded-md bg-white/5 border border-white/10 text-white text-sm"
-              >
-                {['Europe/London', 'America/New_York', 'America/Los_Angeles', 'Asia/Tokyo', 'Asia/Dubai', 'Australia/Sydney'].map(tz => (
-                  <option key={tz} value={tz} className="bg-[#1A1A1A]">{tz}</option>
-                ))}
-              </select>
+              <label style={labelStyle}>Email Signature</label>
+              <textarea value={settings.email_signature || ''} onChange={e => setSettings(p => ({ ...p, email_signature: e.target.value }))}
+                rows={3} style={{ ...inputStyle, height: 'auto', padding: '12px 14px', resize: 'none' }}
+                placeholder="Sunny Sidhu&#10;CEO, Van Hawke Group" />
             </div>
-            <ImageUpload
-              label="Profile Photo"
-              storageKey="user_avatar"
-              folder="avatars"
-              aspectHint="Square, at least 200x200px"
-              currentUrl={user?.user_metadata?.avatar_url}
-            />
             <div>
-              <label className="text-sm text-white/50 block mb-1.5">Email Signature</label>
-              <textarea
-                value={settings.email_signature || ''}
-                onChange={(e) => setSettings(prev => ({ ...prev, email_signature: e.target.value }))}
-                placeholder="Your email signature (HTML supported)"
-                rows={4}
-                className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white placeholder:text-white/30 resize-none"
-              />
-            </div>
-            <Separator className="bg-white/8" />
-            <div>
-              <label className="text-sm text-white/50 block mb-2">Notifications</label>
-              <div className="space-y-2">
-                {[
-                  { key: 'email', label: 'Email notifications' },
-                  { key: 'desktop', label: 'Desktop notifications' },
-                  { key: 'sound', label: 'Sound alerts' },
-                ].map(({ key, label }) => (
-                  <label key={key} className="flex items-center justify-between cursor-pointer group">
-                    <span className="text-sm text-white/60 group-hover:text-white transition-colors">{label}</span>
-                    <div
-                      onClick={() => setSettings(prev => ({
-                        ...prev,
-                        notification_prefs: { ...(prev.notification_prefs || {}), [key]: !(prev.notification_prefs?.[key] ?? true) }
-                      }))}
-                      className={`relative w-9 h-5 rounded-full transition-colors cursor-pointer ${(settings.notification_prefs?.[key] ?? true) ? 'bg-white' : 'bg-white/20'}`}
-                    >
-                      <div className={`absolute top-0.5 w-4 h-4 rounded-full transition-transform ${(settings.notification_prefs?.[key] ?? true) ? 'translate-x-4 bg-black' : 'translate-x-0.5 bg-white/60'}`} />
+              <label style={{ ...labelStyle, marginBottom: 10 }}>Notifications</label>
+              {['Email notifications', 'Desktop notifications', 'Sound alerts'].map((n, i) => {
+                const key = ['email', 'desktop', 'sound'][i]
+                const on = settings.notification_prefs?.[key] ?? true
+                return (
+                  <div key={n} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0' }}>
+                    <span style={{ fontSize: 14, color: T.textSecondary, fontFamily: T.font }}>{n}</span>
+                    <div onClick={() => setSettings(p => ({ ...p, notification_prefs: { ...(p.notification_prefs || {}), [key]: !on } }))}
+                      style={{ width: 44, height: 24, borderRadius: 12, background: on ? T.accent : T.border, position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}>
+                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#fff', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
                     </div>
-                  </label>
-                ))}
-              </div>
+                  </div>
+                )
+              })}
             </div>
-            <Button onClick={() => saveSettings({ display_name: settings.display_name, timezone: settings.timezone, email_signature: settings.email_signature, notification_prefs: settings.notification_prefs })} className="bg-white text-black hover:bg-white/90">
-              {saved ? 'Saved!' : 'Save Profile'}
-            </Button>
-            <Separator className="bg-white/8" />
-            <button
-              onClick={async () => { await supabase.auth.signOut(); navigate('/login') }}
-              className="flex items-center gap-2 text-sm text-red-400 hover:text-red-300 transition-colors"
-            >
-              <LogOut className="h-4 w-4" /> Sign out
+            <button onClick={() => saveSettings({ display_name: settings.display_name, timezone: settings.timezone, email_signature: settings.email_signature, notification_prefs: settings.notification_prefs })}
+              style={{ height: 44, borderRadius: 12, background: T.accent, color: '#fff', border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
+              {saved ? 'Saved!' : 'Save changes'}
+            </button>
+            <div style={{ height: 1, background: T.border, margin: '4px 0' }} />
+            <button onClick={async () => { await supabase.auth.signOut(); navigate('/login') }}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: '#C62828', fontFamily: T.font, padding: 0 }}>
+              <LogOut size={16} /> Sign out
             </button>
           </div>
-        </TabsContent>
+        )}
 
         {/* Kiko */}
-        <TabsContent value="kiko" className="space-y-6">
-          <div className="space-y-4">
-            <div className="bg-white/5 rounded-xl p-4 space-y-3">
-              <h3 className="text-sm font-medium text-white">Voice</h3>
-              <div className="grid grid-cols-3 gap-2">
+        {tab === 'Kiko' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Voice</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                 {VOICES.map(v => (
-                  <button
-                    key={v}
-                    onClick={() => saveSettings({ kiko_voice: v })}
-                    className={`px-3 py-2 rounded-lg text-xs capitalize transition-colors ${
-                      (settings.kiko_voice || 'shimmer') === v ? 'bg-white text-black' : 'bg-white/5 text-white/50 hover:bg-white/10'
-                    }`}
-                  >
-                    {v}
-                  </button>
+                  <button key={v} onClick={() => saveSettings({ kiko_voice: v })} style={{
+                    padding: '8px 12px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
+                    background: (settings.kiko_voice || 'shimmer') === v ? T.accent : T.surface,
+                    color: (settings.kiko_voice || 'shimmer') === v ? '#fff' : T.textSecondary,
+                    fontSize: 12, cursor: 'pointer', fontFamily: T.font, textTransform: 'capitalize',
+                  }}>{v}</button>
                 ))}
               </div>
             </div>
-            <div className="bg-white/5 rounded-xl p-4 space-y-2">
-              <h3 className="text-sm font-medium text-white">Model Routing</h3>
-              <p className="text-xs text-white/30">
-                Kiko automatically routes queries: simple greetings use Haiku (fast),
-                standard queries use Sonnet, complex analysis uses Sonnet with full tools.
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 8px', fontFamily: T.font }}>Model Routing</h3>
+              <p style={{ fontSize: 13, color: T.textTertiary, lineHeight: 1.5, margin: 0, fontFamily: T.font }}>
+                Kiko automatically routes queries: simple greetings use Haiku (fast), standard queries use Sonnet, complex analysis uses Sonnet with full tools.
               </p>
             </div>
-            <div className="bg-white/5 rounded-xl p-4 space-y-2">
-              <h3 className="text-sm font-medium text-white">Memory (Mem0)</h3>
-              <p className="text-xs text-white/30">
-                Kiko remembers preferences, decisions, and context across sessions
-                via Mem0. Memories are automatically extracted from conversations.
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 8px', fontFamily: T.font }}>Memory</h3>
+              <p style={{ fontSize: 13, color: T.textTertiary, lineHeight: 1.5, margin: 0, fontFamily: T.font }}>
+                Kiko remembers preferences, decisions, and context across sessions. Memories are automatically extracted from conversations.
               </p>
             </div>
           </div>
-        </TabsContent>
+        )}
 
         {/* Team */}
-        <TabsContent value="team" className="space-y-6">
-          {/* Invite */}
-          <div className="bg-white/5 rounded-xl p-5 space-y-4">
-            <h3 className="text-sm font-medium text-white">Invite Team Member</h3>
-            <div className="flex gap-2">
-              <Input
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                placeholder="colleague@company.com"
-                className="flex-1 bg-white/5 border-white/10 text-white"
-                onKeyDown={(e) => e.key === 'Enter' && sendInvite()}
-              />
-              <select
-                value={inviteRole}
-                onChange={(e) => setInviteRole(e.target.value)}
-                className="bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white"
-              >
-                <option value="member" className="bg-[#1a1a1a]">Member</option>
-                <option value="admin" className="bg-[#1a1a1a]">Admin</option>
-              </select>
-              <Button onClick={sendInvite} size="sm" className="bg-white text-black hover:bg-white/90">
-                <UserPlus className="h-4 w-4 mr-1" /> Invite
-              </Button>
-            </div>
-          </div>
-
-          {/* Pending invitations */}
-          {invitations.length > 0 && (
-            <div className="space-y-2">
-              <h3 className="text-xs text-white/40 font-semibold uppercase tracking-wider">Pending Invitations</h3>
-              {invitations.map(inv => (
-                <div key={inv.id} className="bg-white/5 rounded-lg px-4 py-3 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-white/70">{inv.email}</p>
-                    <p className="text-xs text-white/30">{inv.role} · expires {new Date(inv.expires_at).toLocaleDateString()}</p>
-                  </div>
-                  <button onClick={() => revokeInvite(inv.id)} className="text-white/20 hover:text-red-400 transition-colors">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Current members */}
-          <div className="space-y-2">
-            <h3 className="text-xs text-white/40 font-semibold uppercase tracking-wider">Team Members</h3>
-            {teamMembers.length === 0 ? (
-              <p className="text-sm text-white/20">No team members yet</p>
-            ) : (
-              teamMembers.map(m => (
-                <div key={m.id} className="bg-white/5 rounded-lg px-4 py-3 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
-                      <span className="text-xs text-white/60">{(m.full_name || m.email)?.[0]?.toUpperCase()}</span>
-                    </div>
-                    <div>
-                      <p className="text-sm text-white/70">{m.full_name || m.email}</p>
-                      <p className="text-xs text-white/30">{m.email}</p>
-                    </div>
-                  </div>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${m.role === 'super_admin' ? 'bg-violet-500/20 text-violet-300' : m.role === 'admin' ? 'bg-blue-500/20 text-blue-300' : 'bg-white/10 text-white/40'}`}>
-                    {m.role}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-        </TabsContent>
-
-        {/* Appearance / Visual Builder */}
-        <TabsContent value="visual" className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              ['background', 'Background'],
-              ['surface', 'Surface'],
-              ['accent', 'Accent'],
-            ].map(([key, label]) => (
-              <div key={key}>
-                <label className="text-xs text-white/40 block mb-1">{label}</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={theme[key]}
-                    onChange={(e) => updateTheme(key, e.target.value)}
-                    className="h-8 w-8 rounded border-0 cursor-pointer bg-transparent"
-                  />
-                  <Input
-                    value={theme[key]}
-                    onChange={(e) => updateTheme(key, e.target.value)}
-                    className="h-8 text-xs bg-white/5 border-white/10 text-white font-mono"
-                  />
-                </div>
+        {tab === 'Team' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Invite Team Member</h3>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendInvite()}
+                  placeholder="colleague@company.com" style={{ ...inputStyle, flex: 1 }} />
+                <select value={inviteRole} onChange={e => setInviteRole(e.target.value)}
+                  style={{ ...inputStyle, width: 100, padding: '0 8px' }}>
+                  <option value="member">Member</option>
+                  <option value="admin">Admin</option>
+                </select>
+                <button onClick={sendInvite} style={{
+                  height: 44, padding: '0 16px', borderRadius: 12, background: T.accent, color: '#fff',
+                  border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
+                  display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
+                }}><UserPlus size={14} /> Invite</button>
               </div>
-            ))}
-          </div>
-
-          <Separator className="bg-white/8" />
-
-          {/* Font */}
-          <div>
-            <label className="text-xs text-white/40 block mb-1.5">Font Family</label>
-            <div className="flex gap-2">
-              {FONTS.map(f => (
-                <button
-                  key={f}
-                  onClick={() => updateTheme('font', f)}
-                  className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${
-                    theme.font === f ? 'bg-white text-black' : 'bg-white/5 text-white/50 hover:bg-white/10'
-                  }`}
-                  style={{ fontFamily: f }}
-                >
-                  {f}
-                </button>
-              ))}
             </div>
-          </div>
 
-          {/* Sidebar style */}
-          <div>
-            <label className="text-xs text-white/40 block mb-1.5">Sidebar Style</label>
-            <div className="flex gap-2">
-              {SIDEBAR_STYLES.map(s => (
-                <button
-                  key={s}
-                  onClick={() => updateTheme('sidebarStyle', s)}
-                  className={`px-3 py-1.5 rounded-lg text-xs capitalize transition-colors ${
-                    theme.sidebarStyle === s ? 'bg-white text-black' : 'bg-white/5 text-white/50 hover:bg-white/10'
-                  }`}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Radius */}
-          <div>
-            <label className="text-xs text-white/40 block mb-1.5">
-              Border Radius: {theme.radius}px
-            </label>
-            <input
-              type="range"
-              min={0}
-              max={16}
-              value={theme.radius}
-              onChange={(e) => updateTheme('radius', Number(e.target.value))}
-              className="w-full accent-white"
-            />
-          </div>
-
-          {/* Density */}
-          <div>
-            <label className="text-xs text-white/40 block mb-1.5">Density</label>
-            <div className="flex gap-2">
-              {DENSITIES.map(d => (
-                <button
-                  key={d}
-                  onClick={() => updateTheme('density', d)}
-                  className={`px-3 py-1.5 rounded-lg text-xs capitalize transition-colors ${
-                    theme.density === d ? 'bg-white text-black' : 'bg-white/5 text-white/50 hover:bg-white/10'
-                  }`}
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <Separator className="bg-white/8" />
-
-          <div className="flex gap-2">
-            <Button onClick={saveTheme} className="bg-white text-black hover:bg-white/90">
-              {saved ? 'Saved!' : 'Save Theme'}
-            </Button>
-            <Button variant="outline" onClick={exportCSS} className="border-white/10 text-white/60">
-              Export CSS
-            </Button>
-            <Button variant="outline" onClick={() => setTheme(DEFAULT_THEME)} className="border-white/10 text-white/60">
-              Reset
-            </Button>
-          </div>
-
-          {/* Live preview */}
-          <div>
-            <label className="text-xs text-white/40 block mb-2">Preview</label>
-            <div
-              className="rounded-xl border overflow-hidden h-48 flex"
-              style={{
-                background: theme.background,
-                borderColor: theme.border,
-                borderRadius: theme.radius,
-                fontFamily: `'${theme.font}', system-ui`,
-              }}
-            >
-              <div
-                className="w-14 flex-shrink-0 p-2 space-y-2 border-r"
-                style={{
-                  background: theme.sidebarStyle === 'glassmorphism' ? 'rgba(255,255,255,0.04)' :
-                    theme.sidebarStyle === 'solid' ? theme.surface : 'transparent',
-                  borderColor: theme.border,
-                  backdropFilter: theme.sidebarStyle === 'glassmorphism' ? 'blur(24px)' : 'none',
-                }}
-              >
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="h-3 rounded" style={{
-                    background: i === 1 ? theme.accent : 'rgba(255,255,255,0.1)',
-                    width: '100%',
-                  }} />
+            {invitations.length > 0 && (
+              <div>
+                <h3 style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px', fontFamily: T.font }}>Pending Invitations</h3>
+                {invitations.map(inv => (
+                  <div key={inv.id} style={{ ...cardStyle, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <div>
+                      <p style={{ fontSize: 13, color: T.text, margin: 0, fontFamily: T.font }}>{inv.email}</p>
+                      <p style={{ fontSize: 11, color: T.textTertiary, margin: '2px 0 0', fontFamily: T.font }}>{inv.role} · expires {new Date(inv.expires_at).toLocaleDateString()}</p>
+                    </div>
+                    <button onClick={() => revokeInvite(inv.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textTertiary, padding: 4 }}><Trash2 size={14} /></button>
+                  </div>
                 ))}
               </div>
-              <div className="flex-1 p-4 flex flex-col items-center justify-center">
-                <div className="h-4 w-32 rounded mb-2" style={{ background: theme.textPrimary }} />
-                <div className="h-3 w-48 rounded" style={{ background: theme.textMuted }} />
-              </div>
+            )}
+
+            <div>
+              <h3 style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px', fontFamily: T.font }}>Team Members</h3>
+              {teamMembers.length === 0 ? (
+                <p style={{ fontSize: 13, color: T.textTertiary, fontFamily: T.font }}>No team members yet</p>
+              ) : teamMembers.map(m => (
+                <div key={m.id} style={{ ...cardStyle, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: T.accentSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: T.text, fontFamily: T.font }}>
+                      {(m.full_name || m.email)?.[0]?.toUpperCase()}
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 13, color: T.text, margin: 0, fontFamily: T.font }}>{m.full_name || m.email}</p>
+                      <p style={{ fontSize: 11, color: T.textTertiary, margin: '2px 0 0', fontFamily: T.font }}>{m.email}</p>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 11, padding: '4px 10px', borderRadius: 20, fontWeight: 500,
+                    background: m.role === 'super_admin' ? '#F3E5F5' : m.role === 'admin' ? '#E3F2FD' : T.accentSoft,
+                    color: m.role === 'super_admin' ? '#6A1B9A' : m.role === 'admin' ? '#1565C0' : T.textSecondary,
+                  }}>{m.role}</span>
+                </div>
+              ))}
             </div>
           </div>
-        </TabsContent>
+        )}
 
-        {/* Images */}
-        <TabsContent value="images" className="space-y-6">
-          <ImageUpload label="Kiko Avatar" storageKey="kiko_avatar" folder="avatars" aspectHint="Square, shown in chat" />
-          <ImageUpload label="Login Background" storageKey="login_bg" folder="backgrounds" aspectHint="16:9 recommended, dark editorial" />
-          <ImageUpload label="Sidebar Logo" storageKey="sidebar_logo" folder="logos" aspectHint="Horizontal, max 180px wide" />
-          <ImageUpload label="Company Logo" storageKey="company_logo" folder="logos" aspectHint="Square or horizontal" />
-        </TabsContent>
+        {/* Appearance */}
+        {tab === 'Appearance' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={cardStyle}>
+              <p style={{ fontSize: 13, color: T.textTertiary, lineHeight: 1.5, margin: 0, fontFamily: T.font }}>
+                Theme customization coming soon. The current light theme matches the approved Van Hawke design system.
+              </p>
+            </div>
+            <ImageUpload label="Kiko Avatar" storageKey="kiko_avatar" folder="avatars" aspectHint="Square, shown in chat" />
+            <ImageUpload label="Login Background" storageKey="login_bg" folder="backgrounds" aspectHint="16:9 recommended" />
+            <ImageUpload label="Sidebar Logo" storageKey="sidebar_logo" folder="logos" aspectHint="Horizontal, max 180px wide" />
+          </div>
+        )}
 
-        {/* Connected Accounts */}
-        <TabsContent value="accounts" className="space-y-6">
-          <div className="bg-white/5 rounded-xl p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-white/10 flex items-center justify-center">
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                  </svg>
+        {/* Accounts */}
+        {tab === 'Accounts' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={cardStyle}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: T.radiusSm, background: T.accentSoft, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: T.text, margin: 0, fontFamily: T.font }}>Google</p>
+                    <p style={{ fontSize: 12, color: T.textTertiary, margin: '2px 0 0', fontFamily: T.font }}>Gmail + Calendar</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-white">Google</p>
-                  <p className="text-xs text-white/30">Gmail + Calendar</p>
-                </div>
+                {googleStatus?.connected ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#2E7D32' }}><Check size={12} /> Connected</span>
+                    <button onClick={disconnectGoogle} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: T.textTertiary }}>
+                      <Unplug size={12} /> Disconnect
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={connectGoogle} style={{
+                    height: 36, padding: '0 16px', borderRadius: T.radiusSm, background: T.accent, color: '#fff',
+                    border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
+                    display: 'flex', alignItems: 'center', gap: 6,
+                  }}><ExternalLink size={12} /> Connect</button>
+                )}
               </div>
-              {googleStatus?.connected ? (
-                <div className="flex items-center gap-2">
-                  <span className="flex items-center gap-1 text-xs text-green-400">
-                    <Check className="h-3 w-3" /> Connected
-                  </span>
-                  <button
-                    onClick={disconnectGoogle}
-                    className="text-xs text-white/30 hover:text-red-400 transition-colors flex items-center gap-1"
-                  >
-                    <Unplug className="h-3 w-3" /> Disconnect
-                  </button>
+              {googleStatus?.connected && (
+                <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 12, paddingLeft: 52, fontFamily: T.font }}>
+                  <p style={{ margin: '0 0 2px' }}>Scopes: Gmail (full), Calendar, Profile</p>
+                  <p style={{ margin: 0 }}>Last updated: {googleStatus.last_updated ? new Date(googleStatus.last_updated).toLocaleString() : 'Unknown'}</p>
                 </div>
-              ) : (
-                <Button onClick={connectGoogle} size="sm" className="bg-white text-black hover:bg-white/90 text-xs">
-                  <ExternalLink className="h-3 w-3 mr-1" /> Connect
-                </Button>
               )}
             </div>
-            {googleStatus?.connected && (
-              <div className="text-xs text-white/20 space-y-1 pl-[52px]">
-                <p>Scopes: Gmail (full), Calendar, Profile</p>
-                <p>Last updated: {googleStatus.last_updated ? new Date(googleStatus.last_updated).toLocaleString() : 'Unknown'}</p>
-              </div>
-            )}
           </div>
-        </TabsContent>
-
-        {/* About */}
-        <TabsContent value="about" className="space-y-4">
-          <div className="bg-white/5 rounded-xl p-6 space-y-3">
-            <h3 className="text-lg font-semibold text-white">Vela Platform</h3>
-            <p className="text-sm text-white/40">v2.0.0-alpha</p>
-            <Separator className="bg-white/8" />
-            <div className="space-y-1.5 text-sm text-white/40">
-              <p>Built by <span className="text-white/60">Vela Labs</span></p>
-              <p>Parent: <span className="text-white/60">Van Hawke Group</span></p>
-              <p>AI: <span className="text-white/60">Anthropic Claude + OpenAI + Mem0</span></p>
-              <p>Database: <span className="text-white/60">Supabase</span></p>
-              <p>Voice: <span className="text-white/60">OpenAI Realtime (Shimmer)</span></p>
-            </div>
-          </div>
-        </TabsContent>
-      </Tabs>
+        )}
+      </div>
     </div>
   )
 }

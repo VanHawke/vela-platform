@@ -16,6 +16,7 @@ import Email from '@/pages/Email'
 import Calendar from '@/pages/Calendar'
 import VelaCode from '@/pages/VelaCode'
 import Admin from '@/pages/Admin'
+import MemoryConsole from '@/pages/MemoryConsole'
 
 function AdminRoute({ children }) {
   const [allowed, setAllowed] = useState(null)
@@ -74,6 +75,7 @@ export default function App() {
           <Route path="documents" element={<Documents user={user} />} />
           <Route path="velacode" element={<VelaCode user={user} />} />
           <Route path="settings" element={<Settings user={user} />} />
+          <Route path="memory" element={<AdminRoute><MemoryConsole user={user} /></AdminRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
