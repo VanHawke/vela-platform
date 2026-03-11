@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import DOMPurify from 'dompurify'
 import KikoVoice from './KikoVoice'
+import ChatHistory from './ChatHistory'
 
 // Design tokens (from approved render)
 const T = {
@@ -51,6 +52,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [toolStatus, setToolStatus] = useState(null)
   const [voiceOpen, setVoiceOpen] = useState(false)
   const [micStream, setMicStream] = useState(null)
+  const [historyOpen, setHistoryOpen] = useState(false)
   const [activeConvId, setActiveConvId] = useState(null)
   const scrollRef = useRef(null)
   const inputRef = useRef(null)
@@ -65,6 +67,25 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     } catch (err) {
       console.error('Mic permission denied:', err)
     }
+  }
+
+  // Load a previous conversation
+  const loadConversation = (conv) => {
+    if (!conv?.messages) return
+    setMessages(conv.messages.map(m => ({ role: m.role, content: m.content })))
+    setActiveConvId(conv.id)
+    setStreamText('')
+    setStreaming(false)
+  }
+
+  // Start a fresh conversation
+  const startNewChat = () => {
+    setMessages([])
+    setActiveConvId(null)
+    setStreamText('')
+    setStreaming(false)
+    setInput('')
+    inputRef.current?.focus()
   }
 
   useEffect(() => { if (initialMessage && !messages.length) handleSubmit(initialMessage) }, [])
@@ -194,6 +215,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           </div>
         </div>
         {voiceOpen && <KikoVoice onClose={() => { setVoiceOpen(false); if (micStream) { micStream.getTracks().forEach(t => t.stop()); setMicStream(null) } }} user={user} micStream={micStream} />}
+        {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => setHistoryOpen(!historyOpen)} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} />}
       </div>
     )
   }
@@ -283,6 +305,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
       {/* Voice overlay */}
       {voiceOpen && <KikoVoice onClose={() => { setVoiceOpen(false); if (micStream) { micStream.getTracks().forEach(t => t.stop()); setMicStream(null) } }} user={user} micStream={micStream} />}
+      {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => setHistoryOpen(!historyOpen)} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} />}
     </div>
   )
 }

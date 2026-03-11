@@ -5,14 +5,14 @@ import ImageUpload from './ImageUpload'
 import { Check, ExternalLink, Unplug, UserPlus, Trash2, LogOut } from 'lucide-react'
 
 const VOICES = [
-  { id: 'shimmer', label: 'Shimmer', desc: 'Warm, expressive female' },
+  { id: 'shimmer', label: 'Shimmer', desc: 'Warm, articulate female' },
+  { id: 'coral', label: 'Coral', desc: 'Friendly, natural female' },
+  { id: 'sage', label: 'Sage', desc: 'Calm, authoritative female' },
+  { id: 'verse', label: 'Verse', desc: 'Expressive, dynamic female' },
+  { id: 'marin', label: 'Marin', desc: 'Smooth, professional female' },
   { id: 'alloy', label: 'Alloy', desc: 'Neutral, balanced' },
   { id: 'echo', label: 'Echo', desc: 'Clear, articulate male' },
-  { id: 'sage', label: 'Sage', desc: 'Calm, authoritative' },
-  { id: 'verse', label: 'Verse', desc: 'Expressive, dynamic' },
-  { id: 'coral', label: 'Coral', desc: 'Friendly, conversational' },
-  { id: 'cedar', label: 'Cedar', desc: 'Deep, confident' },
-  { id: 'marin', label: 'Marin', desc: 'Smooth, professional' },
+  { id: 'cedar', label: 'Cedar', desc: 'Deep, confident male' },
 ]
 const SPEEDS = [
   { id: 0.8, label: 'Slow' },

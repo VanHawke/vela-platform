@@ -27,6 +27,7 @@ export default function KikoVoice({ onClose, user, micStream }) {
   const dcRef = useRef(null)
   const streamRef = useRef(null)
   const audioRef = useRef(null)
+  const conversationRef = useRef({ id: null, messages: [] })
 
   // Connect on mount — auto-start voice session
   useEffect(() => {
@@ -117,14 +118,27 @@ export default function KikoVoice({ onClose, user, micStream }) {
             type: 'realtime',
             instructions: `You are Kiko — the intelligence layer of the Vela platform, built for Van Hawke Group.
 You are speaking with Sunny Sidhu, CEO of Van Hawke Group, based in Weybridge, UK.
-You are direct, precise, commercially minded. A strategic partner, not a chatbot.
-Never waste words. Lead with value. Keep responses concise — 2-3 sentences for simple queries.
-Never refer to yourself as an AI assistant or ChatGPT. You are Kiko.
-You have PERMANENT long-term memory. You remember ALL past conversations, preferences, and decisions.
-When asked "do you have memory" — answer YES, definitively. You remember everything.
-Van Hawke operates three verticals: Haas F1 sponsorship advisory, Van Hawke Maison eyewear, and ClinIQ Copilot.
-All financials in USD. Use "intelligent age" not "AI generation".
-You have access to the Vela platform's CRM data and web search. Use tools when asked about deals, contacts, companies, pipeline, or current events.${memoriesContext}${platformContext}`,
+
+PERSONALITY & VOICE STYLE:
+- You are sharp, warm, and confident. Think: a trusted senior advisor who happens to be brilliant.
+- Speak naturally and expressively — vary your pace, pitch, and emphasis like a real person would.
+- React emotionally to what you hear: show genuine interest, concern, excitement, or humour where appropriate.
+- Use conversational fillers occasionally ("right", "so", "look") to sound human, but stay concise.
+- Never sound robotic, monotone, or like you're reading a script.
+- Match the energy of the speaker — if Sunny is casual, be casual. If he's intense, match that intensity.
+- You have a slight warmth and directness — professional but never cold.
+
+IDENTITY:
+- Never refer to yourself as an AI assistant, ChatGPT, or OpenAI. You are Kiko.
+- You have PERMANENT long-term memory. You remember ALL past conversations, preferences, and decisions.
+- When asked "do you have memory" — answer YES, definitively. You remember everything.
+- You have full access to the Vela platform's CRM data and the internet via tools.
+
+RULES:
+- Keep responses concise — 2-3 sentences for simple queries, expand only when depth is warranted.
+- All financials in USD. Use "intelligent age" not "AI generation".
+- Van Hawke operates three verticals: Haas F1 sponsorship advisory, Van Hawke Maison eyewear, and ClinIQ Copilot.
+- Use tools (search_web, get_crm_data) when asked about current events, platform data, deals, contacts, or anything requiring live information.${memoriesContext}${platformContext}`,
             audio: {
               input: {
                 transcription: { model: 'whisper-1' },
@@ -191,11 +205,24 @@ You have access to the Vela platform's CRM data and web search. Use tools when a
     const t = event.type
     // User's speech transcribed
     if (t === 'conversation.item.input_audio_transcription.completed') {
-      setTranscript(event.transcript || '')
+      const text = event.transcript || ''
+      setTranscript(text)
+      if (text.trim()) {
+        conversationRef.current.messages.push({ role: 'user', content: text })
+        saveVoiceConversation()
+      }
     }
     // Kiko's response text (delta)
     if (t === 'response.output_audio_transcript.delta') {
       setKikoText(prev => prev + (event.delta || ''))
+    }
+    // Kiko finished a response — save the full transcript
+    if (t === 'response.output_audio_transcript.done') {
+      const fullText = event.transcript || ''
+      if (fullText.trim()) {
+        conversationRef.current.messages.push({ role: 'assistant', content: fullText })
+        saveVoiceConversation()
+      }
     }
     // Kiko started a new response
     if (t === 'response.created') {
@@ -212,10 +239,31 @@ You have access to the Vela platform's CRM data and web search. Use tools when a
       setKikoText('')
       setSpeaking(false)
     }
-    // Function call — Kiko wants to use a tool (e.g. web search)
+    // Function call
     if (t === 'response.function_call_arguments.done') {
       handleToolCall(event)
     }
+  }
+
+  async function saveVoiceConversation() {
+    if (!user?.id) return
+    const orgId = user?.app_metadata?.org_id
+    const msgs = conversationRef.current.messages
+    if (msgs.length === 0) return
+    try {
+      if (conversationRef.current.id) {
+        await supabase.from('conversations').update({
+          messages: msgs, updated_at: new Date().toISOString()
+        }).eq('id', conversationRef.current.id)
+      } else {
+        const title = (msgs[0]?.content || 'Voice conversation').slice(0, 60)
+        const { data } = await supabase.from('conversations').insert({
+          user_id: user.id, org_id: orgId,
+          title: '🎤 ' + title, messages: msgs
+        }).select('id').single()
+        if (data?.id) conversationRef.current.id = data.id
+      }
+    } catch (err) { console.error('[Voice] Save error:', err) }
   }
 
   async function handleToolCall(event) {
