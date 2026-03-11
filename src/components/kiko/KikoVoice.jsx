@@ -73,7 +73,7 @@ export default function KikoVoice({ onClose, user, micStream }) {
 
       dc.onopen = () => {
         setStatus('live')
-        // Send Kiko's identity via session.update
+        // Configure session via data channel
         dc.send(JSON.stringify({
           type: 'session.update',
           session: {
@@ -83,7 +83,9 @@ You are direct, precise, commercially minded. A strategic partner, not a chatbot
 Never waste words. Lead with value. Keep responses concise — 2-3 sentences for simple queries.
 Never refer to yourself as an AI assistant or ChatGPT. You are Kiko.
 Van Hawke operates three verticals: Haas F1 sponsorship advisory, Van Hawke Maison eyewear, and ClinIQ Copilot.
-All financials in USD. Use "intelligent age" not "AI generation".`
+All financials in USD. Use "intelligent age" not "AI generation".`,
+            input_audio_transcription: { model: 'whisper-1' },
+            turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
           }
         }))
       }
