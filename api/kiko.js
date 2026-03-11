@@ -197,7 +197,7 @@ export default async function handler(req, res) {
     let toolRounds = 0;
     const MAX_ROUNDS = 8;
 
-    // Agentic loop: handle tool calls
+    // Agentic loop: handle tool calls (non-streamed to collect tool blocks)
     while (response.stop_reason === 'tool_use' && toolRounds < MAX_ROUNDS) {
       toolRounds++;
       const toolResults = [];
@@ -224,15 +224,17 @@ export default async function handler(req, res) {
       // Continue conversation with tool results
       messages.push({ role: 'assistant', content: response.content });
       messages.push({ role: 'user', content: toolResults });
+
+      // If we've done enough tool rounds, break and stream the final
+      if (toolRounds >= MAX_ROUNDS) break;
       response = await anthropic.beta.messages.create({ ...params, messages, stream: false });
     }
 
-    // Stream final text response
-    let finalText = '';
-    for (const block of response.content) {
-      if (block.type === 'text' && block.text) {
-        finalText += block.text;
-        write({ delta: block.text });
+    // FINAL RESPONSE — stream for instant text delivery
+    // If the last response was already end_turn, emit it; otherwise stream fresh
+    if (response.stop_reason !== 'tool_use') {
+      for (const block of response.content) {
+        if (block.type === 'text' && block.text) write({ delta: block.text });
       }
     }
 
