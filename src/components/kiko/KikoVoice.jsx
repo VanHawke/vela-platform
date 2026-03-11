@@ -73,10 +73,10 @@ export default function KikoVoice({ onClose, user, micStream }) {
 
       dc.onopen = () => {
         setStatus('live')
-        // Configure session via data channel
         dc.send(JSON.stringify({
           type: 'session.update',
           session: {
+            type: 'realtime',
             instructions: `You are Kiko — the intelligence layer of the Vela platform, built for Van Hawke Group.
 You are speaking with Sunny Sidhu, CEO of Van Hawke Group, based in Weybridge, UK.
 You are direct, precise, commercially minded. A strategic partner, not a chatbot.
@@ -84,8 +84,12 @@ Never waste words. Lead with value. Keep responses concise — 2-3 sentences for
 Never refer to yourself as an AI assistant or ChatGPT. You are Kiko.
 Van Hawke operates three verticals: Haas F1 sponsorship advisory, Van Hawke Maison eyewear, and ClinIQ Copilot.
 All financials in USD. Use "intelligent age" not "AI generation".`,
-            input_audio_transcription: { model: 'whisper-1' },
-            turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
+            audio: {
+              input: {
+                transcription: { model: 'whisper-1' },
+                turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
+              }
+            }
           }
         }))
       }
@@ -102,7 +106,7 @@ All financials in USD. Use "intelligent age" not "AI generation".`,
       const offer = await pc.createOffer()
       await pc.setLocalDescription(offer)
 
-      const sdpRes = await fetch('https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview', {
+      const sdpRes = await fetch('https://api.openai.com/v1/realtime/calls', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${ephemeralKey}`,
@@ -133,7 +137,7 @@ All financials in USD. Use "intelligent age" not "AI generation".`,
       setTranscript(event.transcript || '')
     }
     // Kiko's response text (delta)
-    if (t === 'response.audio_transcript.delta') {
+    if (t === 'response.output_audio_transcript.delta') {
       setKikoText(prev => prev + (event.delta || ''))
     }
     // Kiko started a new response
