@@ -1,32 +1,25 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { useOrg } from '@/contexts/OrgContext'
 import {
-  Home, Mail, Calendar, LayoutDashboard, GitBranch,
-  Briefcase, Users, Building2, CheckSquare, FileText,
+  Home, GitBranch, Users, Building2, FileText,
   Settings, LogOut, ChevronLeft, ChevronRight
 } from 'lucide-react'
 import { useState } from 'react'
 
 const NAV = [
-  { id:'home', icon:Home, path:'/', label:'Home', module:null },
-  { id:'email', icon:Mail, path:'/email', label:'Email', module:'email' },
-  { id:'calendar', icon:Calendar, path:'/calendar', label:'Calendar', module:'calendar' },
-  { id:'dashboard', icon:LayoutDashboard, path:'/dashboard', label:'Dashboard', module:'crm' },
-  { id:'pipeline', icon:GitBranch, path:'/pipeline', label:'Pipeline', module:'crm' },
-  { id:'deals', icon:Briefcase, path:'/deals', label:'Deals', module:'crm' },
-  { id:'contacts', icon:Users, path:'/contacts', label:'Contacts', module:'crm' },
-  { id:'companies', icon:Building2, path:'/companies', label:'Companies', module:'crm' },
-  { id:'tasks', icon:CheckSquare, path:'/tasks', label:'Tasks', module:'tasks' },
-  { id:'documents', icon:FileText, path:'/documents', label:'Documents', module:'documents' },
+  { id:'home', icon:Home, path:'/', label:'Home' },
+  { id:'pipeline', icon:GitBranch, path:'/pipeline', label:'Pipeline' },
+  { id:'contacts', icon:Users, path:'/contacts', label:'Contacts' },
+  { id:'companies', icon:Building2, path:'/companies', label:'Companies' },
+  { id:'documents', icon:FileText, path:'/documents', label:'Documents' },
 ]
 
 export default function Sidebar({ user }) {
   const nav = useNavigate()
   const loc = useLocation()
-  const { hasModule, platformName } = useOrg()
   const [expanded, setExpanded] = useState(false)
-  const items = NAV.filter(i => !i.module || hasModule(i.module))
+  const platformName = 'Vela'
+  const items = NAV
   const W_COLLAPSED = 60
   const W_EXPANDED = 240
 
