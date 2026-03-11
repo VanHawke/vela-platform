@@ -14,6 +14,42 @@ export default async function handler(req, res) {
 
   const { action } = req.body;
 
+  // Voice preview — short sample via OpenAI TTS
+  if (action === 'preview-voice') {
+    const { voice } = req.body;
+    if (!voice) return res.status(400).json({ error: 'voice required' });
+    try {
+      const ttsRes = await fetch('https://api.openai.com/v1/audio/speech', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini-tts',
+          voice: voice,
+          input: 'Hello Sunny. I\'m Kiko, your strategic partner at Van Hawke. How can I help today?',
+          response_format: 'mp3',
+        }),
+      });
+      if (!ttsRes.ok) {
+        const err = await ttsRes.text();
+        return res.status(ttsRes.status).json({ error: err });
+      }
+      res.setHeader('Content-Type', 'audio/mpeg');
+      const reader = ttsRes.body.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        res.write(value);
+      }
+      res.end();
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    return;
+  }
+
   // Mode 2 — Whisper transcription
   if (action === 'transcribe') {
     // Expects base64-encoded audio in req.body.audio

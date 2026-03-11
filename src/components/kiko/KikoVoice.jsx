@@ -39,14 +39,40 @@ export default function KikoVoice({ onClose, user, micStream }) {
       setStatus('connecting')
       setError('')
 
-      // Fetch user's voice preferences
+      // Fetch user's voice preferences + memories + platform context
       let voiceId = 'shimmer'
       let speed = 1.0
+      let memoriesContext = ''
+      let platformContext = ''
+      const orgId = user?.app_metadata?.org_id
+
       if (user?.id) {
-        const { data } = await supabase.from('user_settings').select('settings').eq('user_id', user.id).single()
-        if (data?.settings) {
-          voiceId = data.settings.kiko_voice || 'shimmer'
-          speed = data.settings.kiko_speed || 1.0
+        // Voice settings
+        const { data: settingsData } = await supabase.from('user_settings').select('settings').eq('user_id', user.id).single()
+        if (settingsData?.settings) {
+          voiceId = settingsData.settings.kiko_voice || 'shimmer'
+          speed = settingsData.settings.kiko_speed || 1.0
+        }
+
+        // Load Kiko's memories
+        if (orgId) {
+          const { data: memories } = await supabase
+            .from('kiko_memories')
+            .select('path, content')
+            .eq('org_id', orgId)
+            .eq('is_directory', false)
+            .order('updated_at', { ascending: false })
+            .limit(10)
+          if (memories?.length) {
+            memoriesContext = '\n\nYOUR MEMORY (knowledge from past interactions):\n' +
+              memories.map(m => m.content).join('\n---\n').slice(0, 3000)
+          }
+
+          // Load CRM summary
+          const { count: dealCount } = await supabase.from('deals').select('*', { count: 'exact', head: true }).eq('org_id', orgId)
+          const { count: contactCount } = await supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('org_id', orgId)
+          const { count: companyCount } = await supabase.from('companies').select('*', { count: 'exact', head: true }).eq('org_id', orgId)
+          platformContext = `\n\nPLATFORM DATA ACCESS: You have ${dealCount || 0} deals, ${contactCount || 0} contacts, ${companyCount || 0} companies in the CRM. Use the get_crm_data and search_web tools to access this data and the internet.`
         }
       }
 
@@ -94,9 +120,11 @@ You are speaking with Sunny Sidhu, CEO of Van Hawke Group, based in Weybridge, U
 You are direct, precise, commercially minded. A strategic partner, not a chatbot.
 Never waste words. Lead with value. Keep responses concise — 2-3 sentences for simple queries.
 Never refer to yourself as an AI assistant or ChatGPT. You are Kiko.
+You have PERMANENT long-term memory. You remember ALL past conversations, preferences, and decisions.
+When asked "do you have memory" — answer YES, definitively. You remember everything.
 Van Hawke operates three verticals: Haas F1 sponsorship advisory, Van Hawke Maison eyewear, and ClinIQ Copilot.
 All financials in USD. Use "intelligent age" not "AI generation".
-You have access to web search via the search_web function. Use it when asked about current events, news, weather, company research, or anything requiring live data.`,
+You have access to the Vela platform's CRM data and web search. Use tools when asked about deals, contacts, companies, pipeline, or current events.${memoriesContext}${platformContext}`,
             audio: {
               input: {
                 transcription: { model: 'whisper-1' },
@@ -108,14 +136,14 @@ You have access to web search via the search_web function. Use it when asked abo
               {
                 type: 'function',
                 name: 'search_web',
-                description: 'Search the internet for current information, news, weather, company data, or any live data. Use this whenever the user asks about current events or real-time information.',
-                parameters: {
-                  type: 'object',
-                  properties: {
-                    query: { type: 'string', description: 'The search query' }
-                  },
-                  required: ['query']
-                }
+                description: 'Search the internet for current information, news, weather, company data, F1 news, or any live data.',
+                parameters: { type: 'object', properties: { query: { type: 'string', description: 'The search query' } }, required: ['query'] }
+              },
+              {
+                type: 'function',
+                name: 'get_crm_data',
+                description: 'Query the Vela CRM for deals, contacts, companies, or tasks. Use this when asked about pipeline, specific deals, contacts, or company information.',
+                parameters: { type: 'object', properties: { entity: { type: 'string', enum: ['deals', 'contacts', 'companies', 'tasks'], description: 'What to query' }, filter: { type: 'string', description: 'Optional search term or filter' } }, required: ['entity'] }
               }
             ],
             tool_choice: 'auto'
@@ -196,12 +224,16 @@ You have access to web search via the search_web function. Use it when asked abo
       const args = JSON.parse(argsStr)
       let result = ''
 
-      if (name === 'search_web') {
-        // Proxy search through our backend
+      if (name === 'search_web' || name === 'get_crm_data') {
+        // Proxy all tool calls through Kiko's Claude backend
+        const message = name === 'search_web'
+          ? `Search the web for: ${args.query}`
+          : `Query CRM ${args.entity}${args.filter ? ` filtered by: ${args.filter}` : ''}`
+
         const res = await fetch('/api/kiko', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: `Search the web for: ${args.query}`, currentPage: 'voice' })
+          body: JSON.stringify({ message, currentPage: 'voice' })
         })
         const reader = res.body.getReader()
         const dec = new TextDecoder()

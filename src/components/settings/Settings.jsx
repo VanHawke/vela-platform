@@ -42,8 +42,30 @@ export default function Settings({ user }) {
   const [invitations, setInvitations] = useState([])
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState('member')
+  const [previewingVoice, setPreviewingVoice] = useState(null)
+  const previewAudioRef = useState(null)
 
   const email = user?.email || ''
+
+  async function previewVoice(voiceId) {
+    // Stop any current preview
+    if (previewAudioRef[0]) { previewAudioRef[0].pause(); previewAudioRef[0] = null }
+    setPreviewingVoice(voiceId)
+    try {
+      const res = await fetch('/api/voice', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'preview-voice', voice: voiceId })
+      })
+      if (!res.ok) { setPreviewingVoice(null); return }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const audio = new Audio(url)
+      previewAudioRef[0] = audio
+      audio.onended = () => { setPreviewingVoice(null); URL.revokeObjectURL(url) }
+      audio.onerror = () => { setPreviewingVoice(null); URL.revokeObjectURL(url) }
+      await audio.play()
+    } catch { setPreviewingVoice(null) }
+  }
   const displayName = user?.user_metadata?.full_name || email.split('@')[0] || ''
 
   useEffect(() => {
@@ -182,18 +204,31 @@ export default function Settings({ user }) {
             <div style={cardStyle}>
               <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Voice</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-                {VOICES.map(v => (
-                  <button key={v.id} onClick={() => saveSettings({ kiko_voice: v.id })} style={{
-                    padding: '10px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
-                    background: (settings.kiko_voice || 'shimmer') === v.id ? T.accent : T.surface,
-                    color: (settings.kiko_voice || 'shimmer') === v.id ? '#fff' : T.text,
-                    fontSize: 13, cursor: 'pointer', fontFamily: T.font, textAlign: 'left',
-                    display: 'flex', flexDirection: 'column', gap: 2,
-                  }}>
-                    <span style={{ fontWeight: 600 }}>{v.label}</span>
-                    <span style={{ fontSize: 11, opacity: 0.7 }}>{v.desc}</span>
-                  </button>
-                ))}
+                {VOICES.map(v => {
+                  const isSelected = (settings.kiko_voice || 'shimmer') === v.id
+                  const isPreviewing = previewingVoice === v.id
+                  return (
+                    <div key={v.id} style={{
+                      padding: '10px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
+                      background: isSelected ? T.accent : T.surface,
+                      color: isSelected ? '#fff' : T.text,
+                      display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
+                      transition: 'all 0.15s',
+                    }} onClick={() => saveSettings({ kiko_voice: v.id })}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, fontFamily: T.font }}>{v.label}</div>
+                        <div style={{ fontSize: 11, opacity: 0.7, fontFamily: T.font }}>{v.desc}</div>
+                      </div>
+                      <button onClick={(e) => { e.stopPropagation(); previewVoice(v.id) }} style={{
+                        width: 30, height: 30, borderRadius: '50%', border: 'none',
+                        background: isSelected ? 'rgba(255,255,255,0.2)' : T.accentSoft,
+                        color: isSelected ? '#fff' : T.textSecondary,
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 14, flexShrink: 0,
+                      }}>{isPreviewing ? '■' : '▶'}</button>
+                    </div>
+                  )
+                })}
               </div>
             </div>
             <div style={cardStyle}>
