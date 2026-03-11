@@ -1,13 +1,22 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import KikoChat from '../kiko/KikoChat'
 import { MessageCircle, X, ArrowUp } from 'lucide-react'
+
+const TOP_NAV = [
+  { label: 'Home', path: '/' },
+  { label: 'Contacts', path: '/contacts' },
+  { label: 'Pipeline', path: '/pipeline' },
+  { label: 'Deals', path: '/deals' },
+  { label: 'Settings', path: '/settings' },
+]
 
 export default function Layout({ user }) {
   const [kikoStage, setKikoStage] = useState(0) // 0=button, 1=promptbar, 2=panel
   const [kikoInput, setKikoInput] = useState('')
   const loc = useLocation()
+  const nav = useNavigate()
   const isHome = loc.pathname === '/' || loc.pathname === '/home'
 
   // Cmd+K toggle
@@ -27,6 +36,25 @@ export default function Layout({ user }) {
 
   return (
     <div style={{ display:'flex', height:'100vh', width:'100vw', overflow:'hidden', background:'var(--bg)' }}>
+      {/* Floating top nav bar — glass pill, centered */}
+      <div className="glass" style={{
+        position:'fixed', top:12, left:'50%', transform:'translateX(-50%)', zIndex:200,
+        display:'flex', gap:4, borderRadius:20, padding:4
+      }}>
+        {TOP_NAV.map(item => {
+          const active = loc.pathname === item.path || (item.path === '/' && loc.pathname === '/home')
+          return (
+            <button key={item.path} onClick={() => nav(item.path)} style={{
+              padding:'6px 14px', borderRadius:16, border:'none',
+              background: active ? 'var(--accent)' : 'transparent',
+              color: active ? '#fff' : 'var(--text-secondary)',
+              fontSize:11, fontWeight:500, cursor:'pointer', fontFamily:'var(--font)',
+              transition:'all 0.15s'
+            }}>{item.label}</button>
+          )
+        })}
+      </div>
+
       <Sidebar />
       <main style={{ flex:1, overflow:'hidden', display:'flex', flexDirection:'column', transition:'margin-right 0.3s ease', marginRight: kikoStage===2 && !isHome ? 420 : 0 }}>
         <Outlet />

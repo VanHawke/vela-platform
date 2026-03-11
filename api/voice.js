@@ -25,11 +25,14 @@ export default async function handler(req, res) {
       const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY });
 
       const audioBuffer = Buffer.from(audio, 'base64');
-      const file = new File([audioBuffer], 'audio.webm', { type: 'audio/webm' });
+      // Use Blob (universally supported on Vercel/Node 18+) instead of File
+      const blob = new Blob([audioBuffer], { type: 'audio/webm' });
+      // OpenAI SDK accepts File-like objects with a name property
+      blob.name = 'audio.webm';
 
       const transcription = await openai.audio.transcriptions.create({
         model: 'whisper-1',
-        file,
+        file: blob,
         language: 'en',
       });
 

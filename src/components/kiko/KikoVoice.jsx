@@ -88,12 +88,25 @@ export default function KikoVoice({ onClose, user }) {
 
   // Process audio: transcribe → Kiko → TTS
   const processAudio = async () => {
+    setPhase('processing')
     const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
+    
+    if (blob.size < 1000) {
+      setError('Recording too short — try speaking longer')
+      setPhase('idle')
+      return
+    }
+
     // Convert to base64
-    const reader = new FileReader()
-    reader.onload = async () => {
-      const base64 = reader.result.split(',')[1]
-      try {
+    const toBase64 = (b) => new Promise((resolve, reject) => {
+      const r = new FileReader()
+      r.onload = () => resolve(r.result.split(',')[1])
+      r.onerror = () => reject(new Error('Failed to read audio'))
+      r.readAsDataURL(b)
+    })
+
+    try {
+      const base64 = await toBase64(blob)
         // Step 1: Whisper transcription
         const sttRes = await fetch('/api/voice', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -145,12 +158,10 @@ export default function KikoVoice({ onClose, user }) {
         } else {
           setPhase('idle')
         }
-      } catch (err) {
-        setError(err.message)
-        setPhase('idle')
-      }
+    } catch (err) {
+      setError(err.message || 'Voice error')
+      setPhase('idle')
     }
-    reader.readAsDataURL(blob)
   }
 
   // Toggle: tap K to start/stop
