@@ -15,7 +15,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: {
       scopes: 'openid email profile https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/calendar',
       redirectTo: `${window.location.origin}/`, queryParams: { access_type: 'offline', prompt: 'consent' } } })
-    if (error) setError(error.message); setGLoading(false)
+    if (error) { setError(error.message); setGLoading(false) }
   }
 
   const emailLogin = async (e) => {
@@ -23,7 +23,7 @@ export default function LoginPage() {
     if (!email || !password) { setError('Email and password required.'); return }
     setLoading(true)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) setError(error.message); setLoading(false)
+    if (error) { setError(error.message); setLoading(false) }
   }
 
   return (

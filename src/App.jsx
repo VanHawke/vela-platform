@@ -25,7 +25,7 @@ function AdminRoute({ children }) {
     })
   }, [])
   if (allowed === null) return null
-  if (!allowed) return <div className="p-8 text-white text-sm">Access denied.</div>
+  if (!allowed) return <div className="p-8 text-[#1A1A1A] text-sm">Access denied.</div>
   return children
 }
 
@@ -49,8 +49,8 @@ export default function App() {
 
   if (session === undefined) {
     return (
-      <div className="flex items-center justify-center h-screen bg-background">
-        <div className="h-6 w-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+      <div className="flex items-center justify-center h-screen" style={{ background: '#FAFAFA' }}>
+        <div className="h-6 w-6 border-2 border-black/10 border-t-[#1A1A1A] rounded-full animate-spin" />
       </div>
     )
   }
