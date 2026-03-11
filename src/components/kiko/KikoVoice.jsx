@@ -74,16 +74,19 @@ export default function KikoVoice({ onClose, user }) {
     }
   }
 
-  // Stop recording
+  // Stop recording — let recorder finish BEFORE killing stream
   const stopListening = () => {
     if (recorderRef.current && recorderRef.current.state === 'recording') {
+      // onstop handler calls processAudio, which will clean up media tracks after
       recorderRef.current.stop()
+    } else {
+      // Recorder not active — clean up directly
+      if (mediaRef.current) {
+        mediaRef.current.getTracks().forEach(t => t.stop())
+        mediaRef.current = null
+      }
+      setPhase('idle')
     }
-    if (mediaRef.current) {
-      mediaRef.current.getTracks().forEach(t => t.stop())
-      mediaRef.current = null
-    }
-    setPhase('processing')
   }
 
   // Process audio: transcribe → Kiko → TTS
@@ -91,6 +94,12 @@ export default function KikoVoice({ onClose, user }) {
     setPhase('processing')
     const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
     
+    // Now safe to release mic
+    if (mediaRef.current) {
+      mediaRef.current.getTracks().forEach(t => t.stop())
+      mediaRef.current = null
+    }
+
     if (blob.size < 1000) {
       setError('Recording too short — try speaking longer')
       setPhase('idle')

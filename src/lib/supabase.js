@@ -10,5 +10,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: true,
     storageKey: 'vela-auth-token',
     flowType: 'pkce',
+    // Bypass Web Lock API to prevent "Lock broken by steal" errors
+    lock: (_name, _acquireTimeout, fn) => fn(),
   },
 })
