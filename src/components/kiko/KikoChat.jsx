@@ -50,10 +50,22 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [streamText, setStreamText] = useState('')
   const [toolStatus, setToolStatus] = useState(null)
   const [voiceOpen, setVoiceOpen] = useState(false)
+  const [micStream, setMicStream] = useState(null)
   const [activeConvId, setActiveConvId] = useState(null)
   const scrollRef = useRef(null)
   const inputRef = useRef(null)
   const hasMessages = messages.length > 0 || streaming
+
+  // Request mic permission before opening voice overlay (must be in user gesture)
+  const openVoice = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      setMicStream(stream)
+      setVoiceOpen(true)
+    } catch (err) {
+      console.error('Mic permission denied:', err)
+    }
+  }
 
   useEffect(() => { if (initialMessage && !messages.length) handleSubmit(initialMessage) }, [])
   useEffect(() => { scrollRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, streamText])
@@ -149,7 +161,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 16, color: T.text, fontFamily: T.font, height: 44 }}
             />
             <div style={{ display: 'flex', gap: 4 }}>
-              <button onClick={() => setVoiceOpen(true)} style={{
+              <button onClick={openVoice} style={{
                 width: 40, height: 40, borderRadius: '50%', background: 'transparent', border: 'none',
                 color: T.textTertiary, cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center'
               }} title="Voice">
@@ -181,7 +193,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             ))}
           </div>
         </div>
-        {voiceOpen && <KikoVoice onClose={() => setVoiceOpen(false)} user={user} />}
+        {voiceOpen && <KikoVoice onClose={() => { setVoiceOpen(false); if (micStream) { micStream.getTracks().forEach(t => t.stop()); setMicStream(null) } }} user={user} micStream={micStream} />}
       </div>
     )
   }
@@ -249,7 +261,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 13, color: T.text, fontFamily: T.font }}
             />
             {!compact && (
-              <button onClick={() => setVoiceOpen(true)} style={{
+              <button onClick={openVoice} style={{
                 width: 32, height: 32, borderRadius: '50%', background: 'transparent', border: 'none',
                 color: T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}>
@@ -270,7 +282,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       </div>
 
       {/* Voice overlay */}
-      {voiceOpen && <KikoVoice onClose={() => setVoiceOpen(false)} user={user} />}
+      {voiceOpen && <KikoVoice onClose={() => { setVoiceOpen(false); if (micStream) { micStream.getTracks().forEach(t => t.stop()); setMicStream(null) } }} user={user} micStream={micStream} />}
     </div>
   )
 }

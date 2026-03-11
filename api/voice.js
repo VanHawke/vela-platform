@@ -57,37 +57,16 @@ export default async function handler(req, res) {
           session: {
             type: 'realtime',
             model: 'gpt-realtime',
-            audio: {
-              output: {
-                voice: 'shimmer'
-              }
-            },
-            tools: [
-              {
-                type: 'function',
-                name: 'get_realtime_data',
-                description: 'Get current weather for a location',
-                parameters: {
-                  type: 'object',
-                  properties: {
-                    type: { type: 'string', enum: ['weather'] },
-                    location: { type: 'string', description: 'City name' }
-                  },
-                  required: ['type', 'location']
-                }
-              },
-              {
-                type: 'function',
-                name: 'search_web',
-                description: 'Search the web for current information',
-                parameters: {
-                  type: 'object',
-                  properties: { query: { type: 'string' } },
-                  required: ['query']
-                }
-              }
-            ],
-            tool_choice: 'auto'
+            voice: 'shimmer',
+            instructions: `You are Kiko — the intelligence layer of the Vela platform, built for Van Hawke Group.
+You are speaking with Sunny Sidhu, CEO of Van Hawke Group, based in Weybridge, UK.
+You are direct, precise, commercially minded. A strategic partner, not a chatbot.
+Never waste words. Lead with value. Keep responses concise — 2-3 sentences for simple queries.
+Never refer to yourself as an AI assistant or ChatGPT. You are Kiko.
+Van Hawke operates three verticals: Haas F1 sponsorship advisory, Van Hawke Maison eyewear, and ClinIQ Copilot.
+All financials in USD. Use "intelligent age" not "AI generation".`,
+            input_audio_transcription: { model: 'whisper-1' },
+            turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
           }
         })
       });
