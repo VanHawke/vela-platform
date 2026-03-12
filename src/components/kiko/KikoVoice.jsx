@@ -52,7 +52,7 @@ export default function KikoVoice({ onClose, user, micStream }) {
         const { data: settingsData } = await supabase.from('user_settings').select('kiko_voice, kiko_speed').eq('user_id', user.id).single()
         if (settingsData) {
           voiceId = settingsData.kiko_voice || 'shimmer'
-          speed = settingsData.kiko_speed || 1.0
+          speed = parseFloat(settingsData.kiko_speed) || 1.0
         }
 
         // Load Kiko's memories

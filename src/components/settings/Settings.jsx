@@ -237,8 +237,8 @@ export default function Settings({ user }) {
                 {SPEEDS.map(s => (
                   <button key={s.id} onClick={() => saveSettings({ kiko_speed: s.id })} style={{
                     padding: '8px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
-                    background: (settings.kiko_speed || 1.0) === s.id ? T.accent : T.surface,
-                    color: (settings.kiko_speed || 1.0) === s.id ? '#fff' : T.textSecondary,
+                    background: parseFloat(settings.kiko_speed || 1.0) === s.id ? T.accent : T.surface,
+                    color: parseFloat(settings.kiko_speed || 1.0) === s.id ? '#fff' : T.textSecondary,
                     fontSize: 12, cursor: 'pointer', fontFamily: T.font,
                   }}>{s.label}</button>
                 ))}
