@@ -354,9 +354,15 @@ RULES:
           background: isActive ? 'var(--accent)' : 'rgba(0,0,0,0.06)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: isActive ? '0 4px 20px rgba(0,0,0,0.15)' : 'none',
-          transition: 'all 0.3s', position: 'relative',
+          transition: 'all 0.3s', position: 'relative', overflow: 'hidden',
         }}>
-          {isTalking ? <Equalizer active /> : <KikoSymbol size={26} color={isActive ? '#fff' : 'var(--text-tertiary)'} />}
+          {/* Crossfade: both rendered, opacity toggles */}
+          <div style={{ position: 'absolute', transition: 'opacity 0.3s', opacity: isTalking ? 0 : 1 }}>
+            <KikoSymbol size={26} color={isActive ? '#fff' : 'var(--text-tertiary)'} />
+          </div>
+          <div style={{ position: 'absolute', transition: 'opacity 0.3s', opacity: isTalking ? 1 : 0 }}>
+            <Equalizer active={isTalking} />
+          </div>
           {isActive && !isTalking && <div style={{ position: 'absolute', inset: -4, borderRadius: '50%', border: '2px solid var(--accent)', opacity: 0.3, animation: 'pulse 2s infinite' }} />}
         </button>
         {status === 'connecting' && <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>Connecting...</span>}
@@ -396,22 +402,26 @@ RULES:
           alignItems: 'center', justifyContent: 'center',
         }}><X size={16} /></button>
 
-        {/* Kiko symbol — switches to equalizer when talking */}
-        {speaking ? (
-          <div style={{ width: 100, height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Equalizer active />
-          </div>
-        ) : (
+        {/* Kiko symbol — crossfade to equalizer when talking */}
+        <div style={{ width: 100, height: 100, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {/* Symbol layer */}
           <div style={{
-            width: 100, height: 100, borderRadius: '50%',
+            position: 'absolute', width: 100, height: 100, borderRadius: '50%',
             background: status === 'live' ? 'var(--accent)' : 'rgba(0,0,0,0.06)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'all 0.4s',
+            transition: 'opacity 0.4s ease', opacity: speaking ? 0 : 1,
             boxShadow: status === 'live' ? '0 0 40px rgba(0,0,0,0.08)' : 'none',
           }}>
             <KikoSymbol size={40} color={status === 'live' ? '#fff' : 'var(--text-tertiary)'} />
           </div>
-        )}
+          {/* Equalizer layer */}
+          <div style={{
+            position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'opacity 0.4s ease', opacity: speaking ? 1 : 0,
+          }}>
+            <Equalizer active={speaking} />
+          </div>
+        </div>
 
         <p style={{
           fontSize: 13, fontFamily: 'var(--font)', textAlign: 'center',

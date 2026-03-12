@@ -324,13 +324,16 @@ export default function Settings({ user }) {
         {tab === 'Appearance' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={cardStyle}>
-              <p style={{ fontSize: 13, color: T.textTertiary, lineHeight: 1.5, margin: 0, fontFamily: T.font }}>
-                Theme customization coming soon. The current light theme matches the approved Van Hawke design system.
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Branding</h3>
+              <p style={{ fontSize: 12, color: T.textTertiary, lineHeight: 1.5, margin: '0 0 16px', fontFamily: T.font }}>
+                Upload logos and images. Click to upload, crop to fit, then save.
               </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <ImageUpload label="Profile Picture" storageKey="profile_photo" folder="avatars" aspectHint="Square, shown in your profile" currentUrl={settings.profile_photo_url} onUploaded={(url) => saveSettings({ profile_photo_url: url })} />
+                <ImageUpload label="Platform Logo (Sidebar Icon)" storageKey="sidebar_logo" folder="logos" aspectHint="Square icon, shown when collapsed" currentUrl={settings.platform_logo_url} onUploaded={(url) => saveSettings({ platform_logo_url: url })} />
+                <ImageUpload label="Login Background Image" storageKey="login_bg" folder="backgrounds" aspectHint="16:9 landscape recommended" currentUrl={settings.login_bg_url} onUploaded={(url) => { saveSettings({ login_bg_url: url }); try { localStorage.setItem('vela_login_bg', url) } catch {} }} />
+              </div>
             </div>
-            <ImageUpload label="Kiko Avatar" storageKey="kiko_avatar" folder="avatars" aspectHint="Square, shown in chat" />
-            <ImageUpload label="Login Background" storageKey="login_bg" folder="backgrounds" aspectHint="16:9 recommended" />
-            <ImageUpload label="Sidebar Logo" storageKey="sidebar_logo" folder="logos" aspectHint="Horizontal, max 180px wide" />
           </div>
         )}
 

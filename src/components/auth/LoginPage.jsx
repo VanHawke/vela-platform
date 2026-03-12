@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Loader2, Eye, EyeOff } from 'lucide-react'
 
@@ -9,6 +9,11 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [gLoading, setGLoading] = useState(false)
+  const [loginBg, setLoginBg] = useState(null)
+
+  useEffect(() => {
+    try { const bg = localStorage.getItem('vela_login_bg'); if (bg) setLoginBg(bg) } catch {}
+  }, [])
 
   const googleLogin = async () => {
     setGLoading(true); setError('')
@@ -65,10 +70,13 @@ export default function LoginPage() {
           <p className="text-center text-[11px] text-[#CDCDCD] mt-12">Powered by Vela Labs</p>
         </div>
       </div>
-      {/* Right — editorial */}
-      <div className="hidden lg:flex w-[45%] bg-gradient-to-br from-[#F8F8F8] to-[#EEEEEE] items-end p-10 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-black/[0.02] blur-[60px]" />
-        <p className="text-[13px] text-[#ABABAB] tracking-[0.15em] uppercase">Van Hawke</p>
+      {/* Right — editorial / background image */}
+      <div className="hidden lg:flex w-[45%] items-end p-10 relative overflow-hidden"
+        style={{
+          background: loginBg ? `url(${loginBg}) center/cover no-repeat` : 'linear-gradient(135deg, #F8F8F8, #EEEEEE)',
+        }}>
+        {!loginBg && <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-black/[0.02] blur-[60px]" />}
+        <p className="text-[13px] text-[#ABABAB] tracking-[0.15em] uppercase" style={{ textShadow: loginBg ? '0 1px 4px rgba(0,0,0,0.3)' : 'none', color: loginBg ? '#fff' : '#ABABAB' }}>Van Hawke</p>
       </div>
     </div>
   )
