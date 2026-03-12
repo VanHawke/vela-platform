@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import KikoSymbol from './KikoSymbol'
 
 function Equalizer({ active }) {
   return (
@@ -17,7 +18,7 @@ function Equalizer({ active }) {
   )
 }
 
-export default function KikoVoice({ onClose, user, micStream }) {
+export default function KikoVoice({ onClose, user, micStream, mini = false, onShowPrompt }) {
   const [status, setStatus] = useState('connecting') // connecting | live | error
   const [transcript, setTranscript] = useState('')
   const [kikoText, setKikoText] = useState('')
@@ -341,9 +342,33 @@ RULES:
     error: error || 'Connection failed',
   }
 
+  const isActive = status === 'live'
+  const isTalking = isActive && speaking
+
+  // ── MINI MODE: small floating widget for sub-pages ──
+  if (mini) {
+    return (
+      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+        <button onClick={onShowPrompt} style={{
+          width: 52, height: 52, borderRadius: '50%', border: 'none', cursor: 'pointer',
+          background: isActive ? 'var(--accent)' : 'rgba(0,0,0,0.06)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: isActive ? '0 4px 20px rgba(0,0,0,0.15)' : 'none',
+          transition: 'all 0.3s', position: 'relative',
+        }}>
+          {isTalking ? <Equalizer active /> : <KikoSymbol size={26} color={isActive ? '#fff' : 'var(--text-tertiary)'} />}
+          {isActive && !isTalking && <div style={{ position: 'absolute', inset: -4, borderRadius: '50%', border: '2px solid var(--accent)', opacity: 0.3, animation: 'pulse 2s infinite' }} />}
+        </button>
+        {status === 'connecting' && <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>Connecting...</span>}
+        {status === 'error' && <button onClick={connectRealtime} style={{ fontSize: 10, color: '#C62828', fontFamily: 'var(--font)', background: 'none', border: 'none', cursor: 'pointer' }}>Retry</button>}
+        <button onClick={handleClose} style={{ position: 'absolute', top: -8, right: -8, width: 20, height: 20, borderRadius: '50%', background: 'var(--surface)', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--text-tertiary)' }}>×</button>
+      </div>
+    )
+  }
+
+  // ── FULL-SCREEN MODE ──
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 200,
       background: 'rgba(250,250,250,0.92)',
       backdropFilter: 'blur(60px) saturate(1.8)',
       WebkitBackdropFilter: 'blur(60px) saturate(1.8)',
@@ -359,24 +384,22 @@ RULES:
         alignItems: 'center', justifyContent: 'center', zIndex: 10,
       }}><X size={20} /></button>
 
-      {/* K symbol */}
-      <div style={{
-        width: 140, height: 140, borderRadius: '50%',
-        background: status === 'live' ? 'var(--accent)' : 'rgba(0,0,0,0.06)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'all 0.4s',
-        boxShadow: status === 'live' ? '0 0 60px rgba(0,0,0,0.1)' : 'none',
-      }}>
-        <span style={{
-          fontSize: 52, fontWeight: 700, fontFamily: 'var(--font)',
-          color: status === 'live' ? '#fff' : 'var(--text-tertiary)',
-          letterSpacing: '-0.02em',
-        }}>K</span>
-      </div>
-
-      <div style={{ marginTop: 20 }}>
-        <Equalizer active={status === 'live'} />
-      </div>
+      {/* Kiko symbol — switches to equalizer when talking */}
+      {speaking ? (
+        <div style={{ width: 140, height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Equalizer active />
+        </div>
+      ) : (
+        <div style={{
+          width: 140, height: 140, borderRadius: '50%',
+          background: status === 'live' ? 'var(--accent)' : 'rgba(0,0,0,0.06)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'all 0.4s',
+          boxShadow: status === 'live' ? '0 0 60px rgba(0,0,0,0.1)' : 'none',
+        }}>
+          <KikoSymbol size={56} color={status === 'live' ? '#fff' : 'var(--text-tertiary)'} />
+        </div>
+      )}
 
       <p style={{
         fontSize: 14, marginTop: 12, fontFamily: 'var(--font)',

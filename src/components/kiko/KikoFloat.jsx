@@ -212,9 +212,17 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
     )
   }
 
-  // Voice overlay
+  // Voice overlay — MINI mode on sub-pages
   if (voiceOpen) {
-    return <KikoVoice onClose={() => { if (voiceOpen && voiceOpen.getTracks) voiceOpen.getTracks().forEach(t => t.stop()); setVoiceOpen(false) }} user={user} micStream={voiceOpen} />
+    return (
+      <KikoVoice
+        onClose={() => { if (voiceOpen?.getTracks) voiceOpen.getTracks().forEach(t => t.stop()); setVoiceOpen(false); setStage(0) }}
+        user={user}
+        micStream={voiceOpen}
+        mini={true}
+        onShowPrompt={() => { if (voiceOpen?.getTracks) voiceOpen.getTracks().forEach(t => t.stop()); setVoiceOpen(false); setStage(1) }}
+      />
+    )
   }
 
   // ── STAGE 1 & 2: Prompt bar (+ panel if stage 2) ──
