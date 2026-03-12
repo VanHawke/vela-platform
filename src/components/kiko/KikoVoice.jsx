@@ -366,79 +366,80 @@ RULES:
     )
   }
 
-  // ── FULL-SCREEN MODE ──
+  // ── POPUP MODE (home page) ──
   return (
     <div style={{
-      background: 'rgba(250,250,250,0.92)',
-      backdropFilter: 'blur(60px) saturate(1.8)',
-      WebkitBackdropFilter: 'blur(60px) saturate(1.8)',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-    }} className="animate-fade-in">
+      position: 'fixed', inset: 0, zIndex: 200,
+      background: 'rgba(0,0,0,0.3)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }} className="animate-fade-in" onClick={handleClose}>
 
-      {/* Close / Stop */}
-      <button onClick={handleClose} style={{
-        position: 'absolute', top: 24, right: 24, width: 40, height: 40,
-        borderRadius: '50%', background: 'rgba(0,0,0,0.04)', border: 'none',
-        color: 'var(--text-tertiary)', cursor: 'pointer', display: 'flex',
-        alignItems: 'center', justifyContent: 'center', zIndex: 10,
-      }}><X size={20} /></button>
+      {/* Glass popup card */}
+      <div onClick={e => e.stopPropagation()} style={{
+        width: 360, padding: '48px 40px 40px', borderRadius: 28,
+        background: 'rgba(255,255,255,0.88)',
+        backdropFilter: 'blur(40px) saturate(1.8)',
+        WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
+        border: '1px solid rgba(255,255,255,0.5)',
+        boxShadow: '0 24px 80px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.04)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20,
+        position: 'relative',
+      }}>
 
-      {/* Kiko symbol — switches to equalizer when talking */}
-      {speaking ? (
-        <div style={{ width: 140, height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Equalizer active />
-        </div>
-      ) : (
-        <div style={{
-          width: 140, height: 140, borderRadius: '50%',
-          background: status === 'live' ? 'var(--accent)' : 'rgba(0,0,0,0.06)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'all 0.4s',
-          boxShadow: status === 'live' ? '0 0 60px rgba(0,0,0,0.1)' : 'none',
-        }}>
-          <KikoSymbol size={56} color={status === 'live' ? '#fff' : 'var(--text-tertiary)'} />
-        </div>
-      )}
+        {/* Close */}
+        <button onClick={handleClose} style={{
+          position: 'absolute', top: 16, right: 16, width: 32, height: 32,
+          borderRadius: '50%', background: 'rgba(0,0,0,0.04)', border: 'none',
+          color: 'var(--text-tertiary)', cursor: 'pointer', display: 'flex',
+          alignItems: 'center', justifyContent: 'center',
+        }}><X size={16} /></button>
 
-      <p style={{
-        fontSize: 14, marginTop: 12, fontFamily: 'var(--font)',
-        textAlign: 'center',
-        color: status === 'error' ? '#C62828' : 'var(--text-tertiary)',
-      }}>{statusLabel[status]}</p>
+        {/* Kiko symbol — switches to equalizer when talking */}
+        {speaking ? (
+          <div style={{ width: 100, height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Equalizer active />
+          </div>
+        ) : (
+          <div style={{
+            width: 100, height: 100, borderRadius: '50%',
+            background: status === 'live' ? 'var(--accent)' : 'rgba(0,0,0,0.06)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all 0.4s',
+            boxShadow: status === 'live' ? '0 0 40px rgba(0,0,0,0.08)' : 'none',
+          }}>
+            <KikoSymbol size={40} color={status === 'live' ? '#fff' : 'var(--text-tertiary)'} />
+          </div>
+        )}
 
-      {/* Transcript */}
-      {(transcript || kikoText) && (
-        <div style={{
-          position: 'absolute', bottom: 60, left: '50%',
-          transform: 'translateX(-50%)', maxWidth: 560,
-          width: '90%', textAlign: 'center', padding: '0 24px',
-        }}>
-          {transcript && (
-            <p style={{
-              fontSize: 15, color: 'var(--text)',
-              fontFamily: 'var(--font)', fontWeight: 500,
-              marginBottom: kikoText ? 12 : 0,
-            }}>{transcript}</p>
-          )}
-          {kikoText && (
-            <p style={{
-              fontSize: 14, color: 'var(--text-secondary)',
-              fontFamily: 'var(--font)', lineHeight: 1.6,
-            }}>{kikoText}</p>
-          )}
-        </div>
-      )}
+        <p style={{
+          fontSize: 13, fontFamily: 'var(--font)', textAlign: 'center',
+          color: status === 'error' ? '#C62828' : 'var(--text-tertiary)',
+        }}>{statusLabel[status]}</p>
 
-      {/* Retry on error */}
-      {status === 'error' && (
-        <button onClick={connectRealtime} style={{
-          marginTop: 16, height: 36, padding: '0 20px',
-          borderRadius: 10, background: 'var(--accent)',
-          color: '#fff', border: 'none', fontSize: 13,
-          fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)',
-        }}>Retry</button>
-      )}
+        {/* Transcript inside card */}
+        {(transcript || kikoText) && (
+          <div style={{ textAlign: 'center', maxWidth: 280 }}>
+            {transcript && (
+              <p style={{ fontSize: 14, color: 'var(--text)', fontFamily: 'var(--font)', fontWeight: 500, marginBottom: kikoText ? 8 : 0, margin: 0 }}>{transcript}</p>
+            )}
+            {kikoText && (
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)', lineHeight: 1.5, margin: kikoText ? '8px 0 0' : 0 }}>{kikoText}</p>
+            )}
+          </div>
+        )}
+
+        {/* Retry */}
+        {status === 'error' && (
+          <button onClick={connectRealtime} style={{
+            height: 32, padding: '0 16px', borderRadius: 8,
+            background: 'var(--accent)', color: '#fff', border: 'none',
+            fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)',
+          }}>Retry</button>
+        )}
+
+      </div>
     </div>
   )
 }

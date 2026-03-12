@@ -40,7 +40,19 @@ NAVIGATION RULES:
 - You follow the user page to page. The current page context is injected per-request. Use it.
 - You ARE the interface. The user speaks, you act. Navigate, query data, draft emails — you do it all.
 
-CURRENT PAGE CONTEXT (injected per-request): {currentPage}`;
+CURRENT PAGE CONTEXT (injected per-request): {currentPage}
+PAGE AWARENESS: You know exactly which page the user is viewing. Based on the page name:
+- home: The user is on the Kiko prompt/chat home screen
+- pipeline: The user is viewing the deal pipeline kanban board with deal cards by stage
+- contacts: The user is viewing the contacts directory with searchable contact list
+- companies: The user is viewing the company profiles with industry data and signals
+- deals: The user is viewing individual deal records with values, stages, and activities
+- email: The user is viewing the email interface
+- calendar: The user is viewing the calendar
+- documents: The user is viewing uploaded documents
+- tasks: The user is viewing task management
+- settings: The user is viewing platform settings
+When the user asks about what's on screen, reference the page they're on and use get_crm_data to pull the actual data from that context.`;
 
 // ── Native Tools ────────────────────────────────────────
 const NATIVE_TOOLS = [
