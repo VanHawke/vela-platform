@@ -77,15 +77,25 @@ export default function Pipeline() {
   }
 
   return (
-    <div className="flex-1 overflow-hidden flex flex-col">
-      <div className="px-6 py-4 border-b border-white/8 flex items-center justify-between">
+    <div className="flex-1 overflow-hidden flex flex-col" style={{ paddingTop: 8 }}>
+      <div style={{
+        margin: '0 16px', padding: '12px 20px', borderRadius: 16,
+        background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(40px) saturate(1.8)',
+        WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
+        border: '1px solid rgba(255,255,255,0.5)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02)',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
         <div>
-          <h1 className="text-lg font-semibold text-white">Pipeline</h1>
-          <p className="text-xs text-white/30 mt-0.5">{filteredDeals.length} deal{filteredDeals.length !== 1 ? 's' : ''}</p>
+          <h1 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Pipeline</h1>
+          <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{filteredDeals.length} deal{filteredDeals.length !== 1 ? 's' : ''}</p>
         </div>
-        <select value={pipelineFilter} onChange={e => setPipelineFilter(e.target.value)} className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white/60 outline-none focus:border-white/25 transition-colors">
-          <option value="" className="bg-[#1a1a1a]">All Pipelines</option>
-          {PIPELINES.filter(Boolean).map(p => <option key={p} value={p} className="bg-[#1a1a1a]">{p}</option>)}
+        <select value={pipelineFilter} onChange={e => setPipelineFilter(e.target.value)} style={{
+          background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)', borderRadius: 8,
+          padding: '6px 12px', fontSize: 12, color: 'var(--text-secondary)', outline: 'none', fontFamily: 'var(--font)',
+        }}>
+          <option value="">All Pipelines</option>
+          {PIPELINES.filter(Boolean).map(p => <option key={p} value={p}>{p}</option>)}
         </select>
       </div>
       <div className="flex-1 overflow-x-auto p-6">

@@ -3,14 +3,15 @@ import { X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import KikoSymbol from './KikoSymbol'
 
-function Equalizer({ active }) {
+function Equalizer({ active, color = '#fff' }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, height: 48 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 5, height: 48 }}>
       {[0,1,2,3,4].map(i => (
         <div key={i} style={{
-          width: 4, borderRadius: 2, background: 'var(--accent)',
+          width: 3.5, borderRadius: 2, background: color,
           animation: active ? `equalizerBar 0.8s ease-in-out ${i * 0.12}s infinite` : 'none',
-          height: active ? 16 : 6, minHeight: 6, transition: 'height 0.3s',
+          height: active ? [14,22,18,24,12][i] : 4, minHeight: 4,
+          transition: 'height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s',
           opacity: active ? 1 : 0.3,
         }} />
       ))}

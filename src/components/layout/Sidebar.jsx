@@ -16,7 +16,7 @@ const NAV = [
   { id: 'tasks', label: 'Tasks', icon: CheckSquare, path: '/tasks' },
 ]
 
-const W_COLLAPSED = 52
+const W_COLLAPSED = 44
 const W_EXPANDED = 200
 
 export default function Sidebar({ brandLogo }) {
@@ -56,9 +56,9 @@ export default function Sidebar({ brandLogo }) {
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden', whiteSpace: 'nowrap' }}>
             <div style={{
-              width: 32, height: 32, borderRadius: 8, background: 'var(--accent)',
+              width: 28, height: 28, borderRadius: 7, background: 'var(--accent)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontSize: 14, fontWeight: 700, fontFamily: 'var(--font)', flexShrink: 0,
+              color: '#fff', fontSize: 12, fontWeight: 700, fontFamily: 'var(--font)', flexShrink: 0,
             }}>V</div>
             {expanded && <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font)', opacity: expanded ? 1 : 0, transition: 'opacity 0.15s' }}>Vela</span>}
           </div>
@@ -72,7 +72,7 @@ export default function Sidebar({ brandLogo }) {
           const active = isActive(item.path)
           return (
             <button key={item.id} onClick={() => nav(item.path)} style={{
-              height: 36, borderRadius: 8, border: 'none', padding: '0 8px',
+              height: 34, borderRadius: 8, border: 'none', padding: '0 7px',
               background: active ? 'var(--accent-soft)' : 'transparent',
               color: active ? 'var(--text)' : 'var(--text-tertiary)',
               cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10,
@@ -81,7 +81,7 @@ export default function Sidebar({ brandLogo }) {
               onMouseOver={e => { if (!active) e.currentTarget.style.background = 'var(--accent-soft)' }}
               onMouseOut={e => { e.currentTarget.style.background = active ? 'var(--accent-soft)' : 'transparent' }}
             >
-              <Icon size={18} strokeWidth={1.8} style={{ flexShrink: 0, marginLeft: expanded ? 0 : 1 }} />
+              <Icon size={17} strokeWidth={1.8} style={{ flexShrink: 0, marginLeft: expanded ? 0 : 0 }} />
               {expanded && <span style={{ fontSize: 13, fontWeight: active ? 500 : 400, fontFamily: 'var(--font)' }}>{item.label}</span>}
             </button>
           )
@@ -91,13 +91,13 @@ export default function Sidebar({ brandLogo }) {
       {/* Settings at bottom */}
       <div style={{ padding: '0 8px' }}>
         <button onClick={() => nav('/settings')} style={{
-          height: 36, borderRadius: 8, border: 'none', padding: '0 8px', width: '100%',
+          height: 34, borderRadius: 8, border: 'none', padding: '0 7px', width: '100%',
           background: loc.pathname === '/settings' ? 'var(--accent-soft)' : 'transparent',
           color: loc.pathname === '/settings' ? 'var(--text)' : 'var(--text-tertiary)',
           cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10,
           transition: 'all 0.15s', overflow: 'hidden', whiteSpace: 'nowrap',
         }}>
-          <Settings size={18} strokeWidth={1.8} style={{ flexShrink: 0, marginLeft: expanded ? 0 : 1 }} />
+          <Settings size={17} strokeWidth={1.8} style={{ flexShrink: 0, marginLeft: expanded ? 0 : 0 }} />
           {expanded && <span style={{ fontSize: 13, fontFamily: 'var(--font)' }}>Settings</span>}
         </button>
       </div>

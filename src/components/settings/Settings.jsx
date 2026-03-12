@@ -330,6 +330,7 @@ export default function Settings({ user }) {
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 <ImageUpload label="Profile Picture" storageKey="profile_photo" folder="avatars" aspectHint="Square, shown in your profile" currentUrl={settings.profile_photo_url} onUploaded={(url) => saveSettings({ profile_photo_url: url })} />
+                <ImageUpload label="Login Brand Logo" storageKey="brand_logo" folder="logos" aspectHint="Shown on the login page above the sign-in form" currentUrl={settings.kiko_avatar_url} onUploaded={(url) => { saveSettings({ kiko_avatar_url: url }); try { localStorage.setItem('vela_brand_logo', url) } catch {} }} />
                 <ImageUpload label="Platform Logo (Sidebar Icon)" storageKey="sidebar_logo" folder="logos" aspectHint="Square icon, shown when collapsed" currentUrl={settings.platform_logo_url} onUploaded={(url) => saveSettings({ platform_logo_url: url })} />
                 <ImageUpload label="Login Background Image" storageKey="login_bg" folder="backgrounds" aspectHint="16:9 landscape recommended" currentUrl={settings.login_bg_url} onUploaded={(url) => { saveSettings({ login_bg_url: url }); try { localStorage.setItem('vela_login_bg', url) } catch {} }} />
               </div>

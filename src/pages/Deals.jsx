@@ -89,19 +89,34 @@ export default function Deals() {
 
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
-      <div className="px-6 py-4 border-b border-white/8 flex items-center justify-between">
+      <div style={{
+        margin: '8px 16px 0', padding: '12px 20px', borderRadius: 16,
+        background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(40px) saturate(1.8)',
+        WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
+        border: '1px solid rgba(255,255,255,0.5)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02)',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
         <div>
-          <h1 className="text-lg font-semibold text-white">Deals</h1>
-          <p className="text-xs text-white/30 mt-0.5">{filtered.length.toLocaleString()} deal{filtered.length !== 1 ? 's' : ''}{totalValue > 0 ? ` \u00B7 Pipeline: ${formatCurrency(totalValue)}` : ''}</p>
+          <h1 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Deals</h1>
+          <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{filtered.length.toLocaleString()} deal{filtered.length !== 1 ? 's' : ''}{totalValue > 0 ? ` · Pipeline: ${formatCurrency(totalValue)}` : ''}</p>
         </div>
-        <button onClick={() => setShowForm(true)} className="flex items-center gap-2 text-xs bg-white text-black px-3 py-1.5 rounded-lg font-medium hover:bg-white/90 transition-colors">
+        <button onClick={() => setShowForm(true)} style={{
+          display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500,
+          background: 'var(--accent)', color: '#fff', padding: '6px 14px', borderRadius: 8,
+          border: 'none', cursor: 'pointer', fontFamily: 'var(--font)',
+        }}>
           <Plus className="h-3.5 w-3.5" /> Add Deal
         </button>
       </div>
-      <div className="px-6 py-3 border-b border-white/8 flex items-center gap-4 flex-wrap">
+      <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/25" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search deals..." className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-white/25 outline-none focus:border-white/25 transition-colors" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5" style={{ color: 'var(--text-tertiary)' }} />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search deals..." style={{
+            width: '100%', background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)',
+            borderRadius: 10, padding: '8px 12px 8px 34px', fontSize: 13, color: 'var(--text)',
+            outline: 'none', fontFamily: 'var(--font)',
+          }} />
         </div>
         <select value={stageFilter} onChange={e => setStageFilter(e.target.value)} className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/60 outline-none focus:border-white/25 transition-colors">
           <option value="" className="bg-[#1a1a1a]">All stages</option>

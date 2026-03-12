@@ -10,9 +10,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [gLoading, setGLoading] = useState(false)
   const [loginBg, setLoginBg] = useState(null)
+  const [brandLogoUrl, setBrandLogoUrl] = useState(null)
 
   useEffect(() => {
     try { const bg = localStorage.getItem('vela_login_bg'); if (bg) setLoginBg(bg) } catch {}
+    try { const logo = localStorage.getItem('vela_brand_logo'); if (logo) setBrandLogoUrl(logo) } catch {}
   }, [])
 
   const googleLogin = async () => {
@@ -36,7 +38,11 @@ export default function LoginPage() {
       {/* Left — auth */}
       <div className="flex-1 flex items-center justify-center px-8">
         <div className="w-full max-w-[380px]">
-          <h1 className="text-[42px] font-light text-[#1A1A1A] tracking-[-0.02em] mb-1">Van Hawke</h1>
+          {brandLogoUrl ? (
+            <img src={brandLogoUrl} alt="Brand" style={{ height: 40, objectFit: 'contain', marginBottom: 4 }} />
+          ) : (
+            <h1 className="text-[42px] font-light text-[#1A1A1A] tracking-[-0.02em] mb-1">Van Hawke</h1>
+          )}
           <p className="text-[15px] text-[#ABABAB] mb-12">Sign in to Vela</p>
           {/* Google */}
           <button onClick={googleLogin} disabled={gLoading}
