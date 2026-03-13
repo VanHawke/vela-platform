@@ -8,6 +8,7 @@ import Settings from '@/components/settings/Settings'
 import Dashboard from '@/pages/Dashboard'
 import Pipeline from '@/pages/Pipeline'
 import Contacts from '@/pages/Contacts'
+import ContactDetail from '@/pages/ContactDetail'
 import Organisations from '@/pages/Organisations'
 // import Deals from '@/pages/Deals' // hidden — re-enable when needed
 import Tasks from '@/pages/Tasks'
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="dashboard" element={<Dashboard user={user} />} />
           <Route path="pipeline" element={<Pipeline user={user} />} />
           <Route path="contacts" element={<Contacts user={user} />} />
+          <Route path="contacts/:id" element={<ContactDetail user={user} />} />
           <Route path="organisations" element={<Organisations user={user} />} />
           <Route path="companies" element={<Navigate to="/organisations" replace />} />
           <Route path="deals" element={<Navigate to="/pipeline" replace />} />

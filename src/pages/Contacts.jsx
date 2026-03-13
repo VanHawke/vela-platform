@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { Plus, Search, X, User, Mail, Phone, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const PAGE_SIZE = 50
 
 export default function Contacts() {
+  const nav = useNavigate()
   const [contacts, setContacts] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -59,7 +61,7 @@ export default function Contacts() {
   const displayName = (c) => [c.firstName, c.lastName].filter(Boolean).join(' ') || 'Unnamed'
 
   const glass = { margin: '0 16px', padding: '12px 20px', borderRadius: 16, background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(40px) saturate(1.8)', WebkitBackdropFilter: 'blur(40px) saturate(1.8)', border: '1px solid rgba(255,255,255,0.5)', boxShadow: '0 4px 24px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
-  const card = { background: '#FFFFFF', borderRadius: 12, padding: '14px 18px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'box-shadow 0.15s ease', cursor: 'default' }
+  const card = { background: '#FFFFFF', borderRadius: 12, padding: '14px 18px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'box-shadow 0.15s ease', cursor: 'pointer' }
   const inputStyle = { width: '100%', background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
 
   return (
@@ -99,7 +101,7 @@ export default function Contacts() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {paged.map(contact => (
-              <div key={contact.id} style={card} onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)'} onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'}>
+              <div key={contact.id} style={card} onClick={() => nav(`/contacts/${contact.id}`)} onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)'} onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, flex: 1 }}>
                   <div style={{ width: 36, height: 36, borderRadius: 18, background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{(contact.firstName || contact.lastName || '?')[0]?.toUpperCase()}</span>
@@ -110,10 +112,10 @@ export default function Contacts() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, marginLeft: 16 }}>
-                  {contact.email && <a href={`mailto:${contact.email}`} style={{ color: 'var(--text-tertiary)', transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-tertiary)'}><Mail style={{ width: 15, height: 15 }} /></a>}
-                  {contact.phone && <a href={`tel:${contact.phone}`} style={{ color: 'var(--text-tertiary)', transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-tertiary)'}><Phone style={{ width: 15, height: 15 }} /></a>}
-                  <button onClick={() => edit(contact)} style={{ fontSize: 11, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', opacity: 0.5, transition: 'opacity 0.15s' }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}>Edit</button>
-                  <button onClick={() => remove(contact.id)} style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', opacity: 0.3, transition: 'all 0.15s', padding: 2 }} onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = '#ef4444' }} onMouseLeave={e => { e.currentTarget.style.opacity = '0.3'; e.currentTarget.style.color = 'var(--text-tertiary)' }}><X style={{ width: 14, height: 14 }} /></button>
+                  {contact.email && <a href={`mailto:${contact.email}`} onClick={e => e.stopPropagation()} style={{ color: 'var(--text-tertiary)', transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-tertiary)'}><Mail style={{ width: 15, height: 15 }} /></a>}
+                  {contact.phone && <a href={`tel:${contact.phone}`} onClick={e => e.stopPropagation()} style={{ color: 'var(--text-tertiary)', transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-tertiary)'}><Phone style={{ width: 15, height: 15 }} /></a>}
+                  <button onClick={(e) => { e.stopPropagation(); edit(contact) }} style={{ fontSize: 11, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', opacity: 0.5, transition: 'opacity 0.15s' }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}>Edit</button>
+                  <button onClick={(e) => { e.stopPropagation(); remove(contact.id) }} style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', opacity: 0.3, transition: 'all 0.15s', padding: 2 }} onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = '#ef4444' }} onMouseLeave={e => { e.currentTarget.style.opacity = '0.3'; e.currentTarget.style.color = 'var(--text-tertiary)' }}><X style={{ width: 14, height: 14 }} /></button>
                 </div>
               </div>
             ))}
