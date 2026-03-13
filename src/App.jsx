@@ -8,7 +8,7 @@ import Settings from '@/components/settings/Settings'
 import Dashboard from '@/pages/Dashboard'
 import Pipeline from '@/pages/Pipeline'
 import Contacts from '@/pages/Contacts'
-import Companies from '@/pages/Companies'
+import Organisations from '@/pages/Organisations'
 import Deals from '@/pages/Deals'
 import Tasks from '@/pages/Tasks'
 import Documents from '@/pages/Documents'
@@ -39,12 +39,10 @@ export default function App() {
       setSession(session)
       setUser(session?.user || null)
     }).catch(() => setSession(null))
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       setUser(session?.user || null)
     })
-
     return () => subscription.unsubscribe()
   }, [])
 
@@ -67,7 +65,8 @@ export default function App() {
           <Route path="dashboard" element={<Dashboard user={user} />} />
           <Route path="pipeline" element={<Pipeline user={user} />} />
           <Route path="contacts" element={<Contacts user={user} />} />
-          <Route path="companies" element={<Companies user={user} />} />
+          <Route path="organisations" element={<Organisations user={user} />} />
+          <Route path="companies" element={<Navigate to="/organisations" replace />} />
           <Route path="deals" element={<Deals user={user} />} />
           <Route path="tasks" element={<Tasks user={user} />} />
           <Route path="email" element={<Email user={user} />} />
