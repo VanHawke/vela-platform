@@ -7,8 +7,7 @@ import KikoFloat from '../kiko/KikoFloat'
 const TOP_NAV = [
   { label: 'Home', path: '/' },
   { label: 'Contacts', path: '/contacts' },
-  { label: 'Pipeline', path: '/pipeline' },
-  { label: 'Deals', path: '/deals' },
+  { label: 'Deal Pipeline', path: '/pipeline' },
   { label: 'Settings', path: '/settings' },
 ]
 
