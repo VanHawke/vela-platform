@@ -118,7 +118,7 @@ export default function Pipeline() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div>
-          <h1 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Pipeline</h1>
+          <h1 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Deal Pipeline</h1>
           <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>
             {activeDealCount} active deal{activeDealCount !== 1 ? 's' : ''}
           </p>

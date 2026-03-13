@@ -9,7 +9,7 @@ import Dashboard from '@/pages/Dashboard'
 import Pipeline from '@/pages/Pipeline'
 import Contacts from '@/pages/Contacts'
 import Organisations from '@/pages/Organisations'
-import Deals from '@/pages/Deals'
+// import Deals from '@/pages/Deals' // hidden — re-enable when needed
 import Tasks from '@/pages/Tasks'
 import Documents from '@/pages/Documents'
 import Email from '@/pages/Email'
@@ -67,7 +67,7 @@ export default function App() {
           <Route path="contacts" element={<Contacts user={user} />} />
           <Route path="organisations" element={<Organisations user={user} />} />
           <Route path="companies" element={<Navigate to="/organisations" replace />} />
-          <Route path="deals" element={<Deals user={user} />} />
+          <Route path="deals" element={<Navigate to="/pipeline" replace />} />
           <Route path="tasks" element={<Tasks user={user} />} />
           <Route path="email" element={<Email user={user} />} />
           <Route path="calendar" element={<Calendar user={user} />} />
