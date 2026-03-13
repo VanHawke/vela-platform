@@ -1,83 +1,114 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Plus, X, DollarSign } from 'lucide-react'
+import { ChevronDown, Clock, User, Building2, GripVertical } from 'lucide-react'
 
-const PIPELINES = ['', 'ONE Championship', 'Haas F1', 'Formula E', 'Alpine F1', 'Esports']
+const PIPELINES = ['Haas F1', 'Alpine F1', 'Formula E', 'ONE Championship', 'Esports']
 
 const STAGES = [
-  { id: 'Contact made', label: 'Contact Made', color: 'border-white/20' },
-  { id: 'In Dialogue', label: 'In Dialogue', color: 'border-indigo-500/40' },
-  { id: 'Meeting arranged', label: 'Meeting', color: 'border-cyan-500/40' },
-  { id: 'Qualified', label: 'Qualified', color: 'border-blue-500/40' },
-  { id: 'Proposal made', label: 'Proposal', color: 'border-violet-500/40' },
-  { id: 'Negotiations started', label: 'Negotiation', color: 'border-amber-500/40' },
-  { id: 'Closed Won', label: 'Won', color: 'border-emerald-500/40' },
-  { id: 'Closed Lost', label: 'Lost', color: 'border-red-500/40' },
+  { id: 'To revisit', label: 'To Revisit' },
+  { id: 'Contact made', label: 'Contact Made' },
+  { id: 'In Dialogue', label: 'In Dialogue' },
+  { id: 'Qualified', label: 'Qualified' },
+  { id: 'Meeting arranged (brand x RH)', label: 'Meeting Arranged' },
+]
+
+const CLOSED_STAGES = [
+  { id: 'Closed Won', label: 'Won' },
+  { id: 'Closed Lost', label: 'Lost' },
 ]
 
 export default function Pipeline() {
   const [deals, setDeals] = useState([])
   const [loading, setLoading] = useState(true)
-  const [adding, setAdding] = useState(null)
-  const [pipelineFilter, setPipelineFilter] = useState('')
-  const [newDeal, setNewDeal] = useState({ title: '', company: '', value: '' })
+  const [pipelineFilter, setPipelineFilter] = useState('Haas F1')
+  const [showClosed, setShowClosed] = useState(false)
+  const [dragDeal, setDragDeal] = useState(null)
+  const [dragOverStage, setDragOverStage] = useState(null)
 
   useEffect(() => { load() }, [])
 
   const load = async () => {
     setLoading(true)
     const { data } = await supabase.from('deals').select('id, data, updated_at').order('updated_at', { ascending: false })
-    setDeals((data || []).map(row => ({ id: row.id, ...row.data, updated_at: row.updated_at })))
+    setDeals((data || []).map(row => ({ _id: row.id, ...row.data, updated_at: row.updated_at })))
     setLoading(false)
   }
 
+  const activeStages = useMemo(() => showClosed ? [...STAGES, ...CLOSED_STAGES] : STAGES, [showClosed])
+
   const filteredDeals = useMemo(() => {
-    if (!pipelineFilter) return deals
     return deals.filter(d => d.pipeline === pipelineFilter)
   }, [deals, pipelineFilter])
 
-  const addDeal = async (stage) => {
-    if (!newDeal.title.trim()) return
-    const id = `deal${Date.now()}`
-    const now = new Date().toISOString()
-    const data = {
-      id, title: newDeal.title, company: newDeal.company,
-      value: newDeal.value ? Number(newDeal.value) : 0,
-      stage, status: 'open', pipeline: pipelineFilter || '',
-      source: 'Manual', owner: 'Sunny Sidhu', createdAt: now.split('T')[0],
-    }
-    await supabase.from('deals').upsert({ id, data, updated_at: now }, { onConflict: 'id' })
-    setDeals(prev => [{ ...data, updated_at: now }, ...prev])
-    setAdding(null)
-    setNewDeal({ title: '', company: '', value: '' })
-  }
+  const dealsByStage = (stageId) => filteredDeals.filter(d => d.stage === stageId)
+
+  const activeDealCount = useMemo(() => {
+    return filteredDeals.filter(d => d.stage !== 'Closed Won' && d.stage !== 'Closed Lost').length
+  }, [filteredDeals])
 
   const moveStage = async (deal, newStage) => {
     const now = new Date().toISOString()
-    const data = { ...deal }
-    delete data.updated_at
-    data.stage = newStage
-    if (newStage === 'Closed Won') data.status = 'won'
-    else if (newStage === 'Closed Lost') data.status = 'lost'
-    else data.status = 'open'
-    await supabase.from('deals').upsert({ id: deal.id, data, updated_at: now }, { onConflict: 'id' })
-    setDeals(prev => prev.map(d => d.id === deal.id ? { ...data, updated_at: now } : d))
+    const updated = { ...deal }
+    delete updated._id
+    delete updated.updated_at
+    updated.stage = newStage
+    if (newStage === 'Closed Won') { updated.status = 'won'; updated.wonDate = now.split('T')[0] }
+    else if (newStage === 'Closed Lost') { updated.status = 'lost'; updated.lostDate = now.split('T')[0] }
+    else updated.status = 'open'
+    await supabase.from('deals').upsert({ id: deal._id, data: updated, updated_at: now }, { onConflict: 'id' })
+    setDeals(prev => prev.map(d => d._id === deal._id ? { ...updated, _id: deal._id, updated_at: now } : d))
   }
 
-  const deleteDeal = async (id) => {
-    await supabase.from('deals').delete().eq('id', id)
-    setDeals(prev => prev.filter(d => d.id !== id))
+  // Drag and drop
+  const handleDragStart = (e, deal) => {
+    setDragDeal(deal)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', deal._id)
+    e.target.style.opacity = '0.4'
+  }
+  const handleDragEnd = (e) => {
+    e.target.style.opacity = '1'
+    setDragDeal(null)
+    setDragOverStage(null)
+  }
+  const handleDragOver = (e, stageId) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setDragOverStage(stageId)
+  }
+  const handleDragLeave = () => setDragOverStage(null)
+  const handleDrop = (e, stageId) => {
+    e.preventDefault()
+    setDragOverStage(null)
+    if (dragDeal && dragDeal.stage !== stageId) {
+      moveStage(dragDeal, stageId)
+    }
+    setDragDeal(null)
   }
 
-  const dealsByStage = (stageId) => filteredDeals.filter(d => d.stage === stageId)
+  const daysAgo = (dateStr) => {
+    if (!dateStr) return null
+    const d = new Date(dateStr)
+    const now = new Date()
+    const diff = Math.floor((now - d) / 86400000)
+    if (diff === 0) return 'Today'
+    if (diff === 1) return '1d ago'
+    if (diff < 30) return `${diff}d ago`
+    if (diff < 365) return `${Math.floor(diff / 30)}mo ago`
+    return `${Math.floor(diff / 365)}y ago`
+  }
 
-  const formatValue = (v) => {
-    if (!v) return null
-    return Number(v).toLocaleString()
+  const staleClass = (dateStr) => {
+    if (!dateStr) return { color: 'var(--text-tertiary)' }
+    const diff = Math.floor((new Date() - new Date(dateStr)) / 86400000)
+    if (diff > 60) return { color: '#ef4444' }
+    if (diff > 30) return { color: '#f59e0b' }
+    return { color: 'var(--text-tertiary)' }
   }
 
   return (
-    <div className="flex-1 overflow-hidden flex flex-col" style={{ paddingTop: 8 }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: 8 }}>
+      {/* Glass toolbar */}
       <div style={{
         margin: '0 16px', padding: '12px 20px', borderRadius: 16,
         background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(40px) saturate(1.8)',
@@ -88,64 +119,104 @@ export default function Pipeline() {
       }}>
         <div>
           <h1 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Pipeline</h1>
-          <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{filteredDeals.length} deal{filteredDeals.length !== 1 ? 's' : ''}</p>
+          <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>
+            {activeDealCount} active deal{activeDealCount !== 1 ? 's' : ''}
+          </p>
         </div>
-        <select value={pipelineFilter} onChange={e => setPipelineFilter(e.target.value)} style={{
-          background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)', borderRadius: 8,
-          padding: '6px 12px', fontSize: 12, color: 'var(--text-secondary)', outline: 'none', fontFamily: 'var(--font)',
-        }}>
-          <option value="">All Pipelines</option>
-          {PIPELINES.filter(Boolean).map(p => <option key={p} value={p}>{p}</option>)}
-        </select>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+            <input type="checkbox" checked={showClosed} onChange={e => setShowClosed(e.target.checked)}
+              style={{ width: 14, height: 14, accentColor: '#1A1A1A' }} />
+            <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>Show closed</span>
+          </label>
+          <select value={pipelineFilter} onChange={e => setPipelineFilter(e.target.value)} style={{
+            background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)', borderRadius: 8,
+            padding: '6px 12px', fontSize: 12, color: 'var(--text-secondary)', outline: 'none', fontFamily: 'var(--font)',
+          }}>
+            {PIPELINES.map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
+        </div>
       </div>
-      <div className="flex-1 overflow-x-auto p-6">
-        <div className="flex gap-4 h-full min-w-max">
-          {STAGES.map(stage => {
+
+      {/* Kanban columns */}
+      <div style={{ flex: 1, overflowX: 'auto', padding: '16px 16px 16px' }}>
+        <div style={{ display: 'flex', gap: 12, height: '100%', minWidth: 'max-content' }}>
+          {activeStages.map(stage => {
             const stageDeals = dealsByStage(stage.id)
-            const stageTotal = stageDeals.reduce((sum, d) => sum + (Number(d.value) || 0), 0)
+            const isOver = dragOverStage === stage.id
+            const isClosedStage = stage.id === 'Closed Won' || stage.id === 'Closed Lost'
             return (
-              <div key={stage.id} className={`w-64 flex flex-col glass rounded-xl border ${stage.color} overflow-hidden`}>
-                <div className="px-4 py-3 border-b border-white/8">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-white/70 uppercase tracking-wide">{stage.label}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-white/30">{stageDeals.length}</span>
-                      <button onClick={() => { setAdding(stage.id); setNewDeal({ title: '', company: '', value: '' }) }} className="text-white/30 hover:text-white/60 transition-colors">
-                        <Plus className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+              <div key={stage.id}
+                onDragOver={e => handleDragOver(e, stage.id)}
+                onDragLeave={handleDragLeave}
+                onDrop={e => handleDrop(e, stage.id)}
+                style={{
+                  width: 260, flexShrink: 0, display: 'flex', flexDirection: 'column',
+                  background: isOver ? 'rgba(26,26,26,0.04)' : 'rgba(0,0,0,0.015)',
+                  borderRadius: 14, border: isOver ? '2px dashed rgba(26,26,26,0.2)' : '1px solid rgba(0,0,0,0.04)',
+                  transition: 'all 0.15s ease',
+                }}>
+                {/* Column header */}
+                <div style={{
+                  padding: '12px 14px 10px', borderBottom: '1px solid rgba(0,0,0,0.04)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{
+                      fontSize: 12, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font)',
+                      textTransform: 'uppercase', letterSpacing: '0.04em',
+                    }}>{stage.label}</span>
+                    <span style={{
+                      fontSize: 10, fontWeight: 500, color: 'var(--text-tertiary)', fontFamily: 'var(--font)',
+                      background: 'rgba(0,0,0,0.04)', borderRadius: 10, padding: '1px 7px',
+                    }}>{stageDeals.length}</span>
                   </div>
-                  {stageTotal > 0 && <p className="text-[10px] text-white/25 mt-1">{'\u00A3'}{stageTotal.toLocaleString()}</p>}
                 </div>
-                <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                  {adding === stage.id && (
-                    <div className="bg-white/8 rounded-lg p-3 space-y-2">
-                      <input autoFocus value={newDeal.title} onChange={e => setNewDeal(p => ({ ...p, title: e.target.value }))} onKeyDown={e => e.key === 'Enter' && addDeal(stage.id)} placeholder="Deal name" className="w-full bg-transparent text-sm text-white placeholder:text-white/30 outline-none border-b border-white/20 pb-1" />
-                      <input value={newDeal.company} onChange={e => setNewDeal(p => ({ ...p, company: e.target.value }))} placeholder="Company" className="w-full bg-transparent text-xs text-white/70 placeholder:text-white/30 outline-none" />
-                      <input value={newDeal.value} onChange={e => setNewDeal(p => ({ ...p, value: e.target.value }))} placeholder="Value" type="number" className="w-full bg-transparent text-xs text-white/70 placeholder:text-white/30 outline-none" />
-                      <div className="flex gap-2 pt-1">
-                        <button onClick={() => addDeal(stage.id)} className="flex-1 text-xs bg-white text-black rounded-md py-1 font-medium hover:bg-white/90 transition-colors">Add</button>
-                        <button onClick={() => setAdding(null)} className="text-white/30 hover:text-white/60"><X className="h-3.5 w-3.5" /></button>
-                      </div>
-                    </div>
-                  )}
+
+                {/* Deal cards */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {loading ? (
-                    [...Array(2)].map((_, i) => <div key={i} className="h-16 bg-white/5 rounded-lg animate-pulse" />)
+                    [...Array(2)].map((_, i) => (
+                      <div key={i} style={{ height: 80, background: 'rgba(0,0,0,0.03)', borderRadius: 10, animation: 'pulse 1.5s infinite' }} />
+                    ))
+                  ) : stageDeals.length === 0 ? (
+                    <p style={{ fontSize: 11, color: 'var(--text-tertiary)', textAlign: 'center', padding: '20px 0', fontFamily: 'var(--font)' }}>
+                      No deals
+                    </p>
                   ) : stageDeals.map(deal => (
-                    <div key={deal.id} className="bg-white/5 hover:bg-white/8 rounded-lg p-3 group transition-colors">
-                      <div className="flex items-start justify-between mb-1">
-                        <p className="text-sm text-white/80 font-medium leading-tight">{deal.title}</p>
-                        <button onClick={() => deleteDeal(deal.id)} className="opacity-0 group-hover:opacity-100 text-white/20 hover:text-red-400 transition-all ml-2 flex-shrink-0">
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                      {deal.company && <p className="text-xs text-white/40 mb-1">{deal.company}</p>}
-                      {deal.pipeline && <p className="text-[10px] text-white/25 mb-2">{deal.pipeline}</p>}
-                      <div className="flex items-center justify-between">
-                        {formatValue(deal.value) ? <span className="text-xs text-white/50 flex items-center gap-0.5"><DollarSign className="h-3 w-3" />{formatValue(deal.value)}</span> : <span />}
-                        <select value={deal.stage} onChange={e => moveStage(deal, e.target.value)} className="text-[10px] bg-white/10 text-white/50 rounded px-1.5 py-0.5 outline-none cursor-pointer">
-                          {STAGES.map(s => <option key={s.id} value={s.id} className="bg-[#1a1a1a]">{s.label}</option>)}
-                        </select>
+                    <div key={deal._id}
+                      draggable
+                      onDragStart={e => handleDragStart(e, deal)}
+                      onDragEnd={handleDragEnd}
+                      style={{
+                        background: '#FFFFFF', borderRadius: 10, padding: '12px 14px',
+                        border: '1px solid rgba(0,0,0,0.06)',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                        cursor: 'grab', transition: 'box-shadow 0.15s ease',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)'}
+                      onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'}
+                    >
+                      {/* Company name - headline */}
+                      <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.3 }}>
+                        {deal.company || deal.title}
+                      </p>
+                      {/* Contact name */}
+                      {deal.contactName && (
+                        <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '4px 0 0', fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <User style={{ width: 10, height: 10, opacity: 0.4 }} />
+                          {deal.contactName}
+                        </p>
+                      )}
+                      {/* Bottom row: last activity + owner */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+                        <span style={{ fontSize: 10, fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', gap: 3, ...staleClass(deal.lastActivity) }}>
+                          <Clock style={{ width: 9, height: 9 }} />
+                          {daysAgo(deal.lastActivity) || 'No activity'}
+                        </span>
+                        <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>
+                          {deal.owner ? deal.owner.split(' ')[0] : ''}
+                        </span>
                       </div>
                     </div>
                   ))}
