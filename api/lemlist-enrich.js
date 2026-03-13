@@ -115,5 +115,52 @@ export default async function handler(req, res) {
     } catch (e) { return res.status(500).json({ error: e.message }) }
   }
 
-  return res.status(400).json({ error: 'Use "sample" or "enrich"' })
+  // REGISTER-WEBHOOK: register the Vela webhook with Lemlist
+  if (action === 'register-webhook') {
+    try {
+      const auth = Buffer.from(':' + key).toString('base64')
+      // First list existing hooks
+      const listResp = await fetch('https://api.lemlist.com/api/hooks', {
+        headers: { 'Authorization': `Basic ${auth}` }
+      })
+      const existing = await listResp.json()
+      
+      const targetUrl = 'https://vela-platform-one.vercel.app/api/lemlist-webhook'
+      const alreadyRegistered = Array.isArray(existing) && existing.some(h => h.targetUrl === targetUrl)
+      
+      if (alreadyRegistered) {
+        return res.json({ success: true, message: 'Webhook already registered', hooks: existing })
+      }
+
+      // Register new hook (no type = subscribes to ALL events)
+      const regResp = await fetch('https://api.lemlist.com/api/hooks', {
+        method: 'POST',
+        headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUrl })
+      })
+      const result = await regResp.json()
+      
+      // Verify
+      const verifyResp = await fetch('https://api.lemlist.com/api/hooks', {
+        headers: { 'Authorization': `Basic ${auth}` }
+      })
+      const allHooks = await verifyResp.json()
+      
+      return res.json({ success: true, registered: result, allHooks })
+    } catch (e) { return res.status(500).json({ error: e.message }) }
+  }
+
+  // LIST-HOOKS: show all registered webhooks
+  if (action === 'list-hooks') {
+    try {
+      const auth = Buffer.from(':' + key).toString('base64')
+      const resp = await fetch('https://api.lemlist.com/api/hooks', {
+        headers: { 'Authorization': `Basic ${auth}` }
+      })
+      const hooks = await resp.json()
+      return res.json({ hooks })
+    } catch (e) { return res.status(500).json({ error: e.message }) }
+  }
+
+  return res.status(400).json({ error: 'Use "sample", "enrich", "register-webhook", or "list-hooks"' })
 }
