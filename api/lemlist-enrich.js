@@ -7,8 +7,10 @@ const supabase = createClient(
 
 const LEMLIST_KEY = process.env.LEMLIST_KEY || ''
 
-async function lemlistFetch(path) {
-  const auth = Buffer.from(':' + LEMLIST_KEY).toString('base64')
+async function lemlistFetch(path, apiKey) {
+  const key = apiKey || LEMLIST_KEY
+  if (!key) throw new Error('No Lemlist API key')
+  const auth = Buffer.from(':' + key).toString('base64')
   const r = await fetch(`https://api.lemlist.com/api${path}`, {
     headers: { 'Authorization': `Basic ${auth}` }
   })
@@ -19,12 +21,12 @@ async function lemlistFetch(path) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' })
 
-  const { action } = req.body || {}
+  const { action, apiKey } = req.body || {}
 
   // Action: sample — pull 10 contacts and show what fields Lemlist has
   if (action === 'sample') {
     try {
-      const contacts = await lemlistFetch('/contacts?limit=10&version=v2')
+      const contacts = await lemlistFetch('/contacts?limit=10&version=v2', apiKey)
       const summary = contacts.map(c => ({
         email: c.email,
         fullName: c.fullName,
