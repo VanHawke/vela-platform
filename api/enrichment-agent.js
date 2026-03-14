@@ -154,5 +154,59 @@ ${list}`
     } catch (e) { return res.status(500).json({ error: e.message }) }
   }
 
-  return res.status(400).json({ error: 'Use "status", "enrich-contacts", or "enrich-companies"' })
+  // FIND-DOMAINS: infer company website domains from names via Claude
+  if (action === 'find-domains') {
+    try {
+      const { data: companies } = await supabase.from('companies').select('id, data')
+        .or('data->>website.is.null,data->>website.eq.')
+        .not('data->>name', 'is', null).not('data->>name', 'eq', '')
+        .order('id', { ascending: true }).range(OFFSET, OFFSET + BATCH - 1)
+
+      if (!companies || companies.length === 0) {
+        return res.json({ done: true, message: 'No more companies need domains', offset: OFFSET })
+      }
+
+      const list = companies.map(c => `${c.id}|${c.data?.name || ''}`).join('\n')
+
+      const prompt = `You are a business domain lookup specialist. For each company name, provide the most likely primary website domain.
+
+Format: one line per company:
+ID|DOMAIN
+
+Rules:
+- DOMAIN should be the bare domain with no protocol (e.g. "enfusion.com", "sentry.io", "zuora.com", "servicetitan.com")
+- Use the most common/official domain. For example: Sentry → sentry.io, Zuora → zuora.com, ServiceTitan → servicetitan.com
+- For well-known companies use their real domain
+- For lesser-known companies, use the most logical domain (companyname.com or companyname.io)
+- If the company name has spaces, the domain usually removes them (e.g. "Big Bear" → bigbear.ai or bigbear.com)
+- If genuinely impossible to determine, use "unknown"
+- One line per ID, nothing else
+
+Companies:
+${list}`
+
+      const response = await askClaude(prompt)
+      const lines = response.trim().split('\n').filter(l => l.includes('|'))
+      let enriched = 0
+
+      for (const line of lines) {
+        const [id, domain] = line.split('|').map(s => s.trim())
+        if (!domain || domain === 'unknown') continue
+        const company = companies.find(c => c.id === id)
+        if (!company) continue
+
+        const existing = { ...company.data }
+        if (!existing.website) {
+          existing.website = domain
+          await supabase.from('companies').update({ data: existing, updated_at: new Date().toISOString() }).eq('id', id)
+          enriched++
+        }
+      }
+
+      const nextOffset = OFFSET + companies.length
+      return res.json({ done: companies.length < BATCH, processed: companies.length, enriched, nextOffset })
+    } catch (e) { return res.status(500).json({ error: e.message }) }
+  }
+
+  return res.status(400).json({ error: 'Use "status", "enrich-contacts", "enrich-companies", or "find-domains"' })
 }
