@@ -19,21 +19,11 @@ async function lemlistFetch(path) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' })
   const { action, offset: reqOffset, batchSize: reqBatch } = req.body || {}
-  const BATCH = Math.min(reqBatch || 25, 50)
+  const BATCH = Math.min(reqBatch || 30, 60)
   const OFFSET = reqOffset || 0
-
-  // DEBUG: inspect raw Lemlist response for one contact
-  if (action === 'debug') {
-    const email = req.body.email
-    if (!email) return res.status(400).json({ error: 'Provide email' })
-    const lead = await lemlistFetch(`/leads/${encodeURIComponent(email)}?version=v2`)
-    const keys = lead ? (Array.isArray(lead) ? lead.map(l => Object.keys(l)) : Object.keys(lead)) : null
-    return res.json({ lead: lead ? (Array.isArray(lead) ? lead[0] : lead) : null, keys, isArray: Array.isArray(lead) })
-  }
 
   if (action === 'backfill') {
     try {
-      // Get contacts that have Lemlist campaigns and real emails
       const { data: contacts } = await supabase.from('contacts').select('id, data')
         .not('data->>lastCampaign', 'is', null).not('data->>lastCampaign', 'eq', '')
         .not('data->>email', 'is', null).not('data->>email', 'eq', '').not('data->>email', 'eq', 'undefined')
@@ -51,7 +41,6 @@ export default async function handler(req, res) {
         if (!email || email === 'undefined') continue
 
         try {
-          // Get all lead data including activities
           const leads = await lemlistFetch(`/leads/${encodeURIComponent(email)}?version=v2`)
           if (!leads) continue
 
@@ -59,49 +48,55 @@ export default async function handler(req, res) {
           const activities = []
 
           for (const lead of leadArr) {
-            if (lead.activities && Array.isArray(lead.activities)) {
-              for (const act of lead.activities) {
-                activities.push({
-                  contact_id: c.id,
-                  type: act.type || 'unknown',
-                  campaign_name: lead.campaign?.name || null,
-                  campaign_id: lead.campaign?.id || null,
-                  sequence_step: act.sequenceStep ?? null,
-                  email_subject: act.emailSubject || act.subject || null,
-                  details: JSON.stringify({
-                    sendUserEmail: act.sendUserEmail,
-                    isFirst: act.isFirst,
-                  }),
-                  created_at: act.createdAt || act.date || new Date().toISOString(),
-                })
-              }
+            if (!lead.state || !lead.updatedAt) continue
+
+            // Create activity record from lead state
+            activities.push({
+              contact_id: c.id,
+              type: lead.state,
+              campaign_name: lead.campaign?.name || null,
+              campaign_id: lead.campaign?.id || null,
+              sequence_step: null,
+              email_subject: null,
+              details: JSON.stringify({
+                sendUserEmail: lead.sendingUser?.email,
+                sendUserName: lead.sendingUser?.fullName,
+                leadStatus: lead.status,
+                campaignStatus: lead.campaign?.status,
+              }),
+              created_at: lead.updatedAt,
+            })
+
+            // If state implies a sent email happened before opens/clicks, add that too
+            if (['emailsOpened', 'emailsClicked', 'emailsReplied'].includes(lead.state)) {
+              activities.push({
+                contact_id: c.id,
+                type: 'emailsSent',
+                campaign_name: lead.campaign?.name || null,
+                campaign_id: lead.campaign?.id || null,
+                sequence_step: null,
+                email_subject: null,
+                details: JSON.stringify({
+                  sendUserEmail: lead.sendingUser?.email,
+                  sendUserName: lead.sendingUser?.fullName,
+                  inferred: true,
+                }),
+                created_at: lead.updatedAt,
+              })
             }
           }
 
           if (activities.length > 0) {
-            // Insert in batches of 50
-            for (let i = 0; i < activities.length; i += 50) {
-              const batch = activities.slice(i, i + 50)
-              await supabase.from('contact_activities').insert(batch)
-            }
+            await supabase.from('contact_activities').insert(activities)
             totalActivities += activities.length
             enriched++
           }
-        } catch (e) { /* skip individual errors */ }
-
-        // Rate limit
-        await new Promise(r => setTimeout(r, 150))
+        } catch (e) { /* skip */ }
+        await new Promise(r => setTimeout(r, 120))
       }
 
       const nextOffset = OFFSET + contacts.length
-      return res.json({
-        done: contacts.length < BATCH,
-        processed: contacts.length,
-        enriched,
-        activitiesLogged: totalActivities,
-        nextOffset,
-        message: contacts.length < BATCH ? 'All done' : `Call again with offset: ${nextOffset}`
-      })
+      return res.json({ done: contacts.length < BATCH, processed: contacts.length, enriched, activitiesLogged: totalActivities, nextOffset })
     } catch (e) { return res.status(500).json({ error: e.message }) }
   }
 
