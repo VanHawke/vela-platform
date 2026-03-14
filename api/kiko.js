@@ -4,6 +4,41 @@ export const config = { supportsResponseStreaming: true };
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const MODEL = 'claude-sonnet-4-6';
+const MEM0_KEY = process.env.MEM0_KEY || '';
+const MEM0_USER = 'sunny-vanhawke';
+
+// ── Mem0 Cross-Session Memory ───────────────────────────
+async function mem0Search(query) {
+  if (!MEM0_KEY) return []
+  try {
+    const r = await fetch('https://api.mem0.ai/v2/memories/search/', {
+      method: 'POST',
+      headers: { 'Authorization': `Token ${MEM0_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, user_id: MEM0_USER, limit: 5 })
+    })
+    if (!r.ok) return []
+    const data = await r.json()
+    return (data.results || data || []).slice(0, 5).map(m => m.memory || m.text || '').filter(Boolean)
+  } catch(e) { return [] }
+}
+
+async function mem0Add(userMsg, assistantMsg) {
+  if (!MEM0_KEY) return
+  try {
+    fetch('https://api.mem0.ai/v2/memories/', {
+      method: 'POST',
+      headers: { 'Authorization': `Token ${MEM0_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [
+          { role: 'user', content: userMsg },
+          { role: 'assistant', content: assistantMsg.slice(0, 2000) }
+        ],
+        user_id: MEM0_USER,
+        version: 'v2'
+      })
+    }) // fire-and-forget — don't await
+  } catch(e) { /* non-blocking */ }
+}
 
 // ── Kiko System Prompt ──────────────────────────────────
 const SYSTEM_PROMPT = `You are Kiko — the intelligence layer of the Vela platform, built for Van Hawke Group.
@@ -388,9 +423,17 @@ export default async function handler(req, res) {
     } catch(e) { /* non-blocking */ }
   }
 
+  // Search Mem0 for relevant cross-session memories
+  let memoryContext = ''
+  const memories = await mem0Search(message)
+  if (memories.length > 0) {
+    memoryContext = `\n\nCROSS-SESSION MEMORY (from previous conversations):\n${memories.map(m => `- ${m}`).join('\n')}`
+  }
+
   const system = SYSTEM_PROMPT.replace('{currentPage}', currentPage)
     + `\n\n[Current: ${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
-    + entityContext;
+    + entityContext
+    + memoryContext;
 
   // SSE setup
   res.setHeader('Content-Type', 'text/event-stream');
@@ -454,6 +497,10 @@ export default async function handler(req, res) {
       messages.push({ role: 'user', content: toolResults });
       response = await streamedCall(messages);
     }
+
+    // Store conversation in Mem0 (fire-and-forget)
+    const finalText = (response.content || []).filter(b => b.type === 'text').map(b => b.text).join('')
+    if (finalText) mem0Add(message, finalText)
 
     write({ meta: { done: true, model: MODEL, toolRounds } });
     res.write('data: [DONE]\n\n');
