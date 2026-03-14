@@ -210,10 +210,20 @@ export default async function handler(req, res) {
     memoryContext = `\n\nCROSS-SESSION MEMORY (from previous conversations):\n${memories.map(m => `- ${m}`).join('\n')}`
   }
 
+  // Voice-specific formatting
+  const voiceContext = currentPage === 'voice' ? `\n\nVOICE MODE ACTIVE: You are speaking aloud. Rules:
+- Keep responses under 3 sentences for simple queries, 5 sentences maximum for complex ones.
+- Never use markdown formatting, tables, bullet points, or bold text — these don't translate to speech.
+- Use natural spoken language: "You've got 15 deals in Haas F1" not "There are 15 deals in the Haas F1 pipeline."
+- Say numbers naturally: "about two and a half million" not "$2,500,000".
+- For lists, limit to top 3 items. Say "and a few others" instead of reading all.
+- End with a brief question or offer, not a summary.` : ''
+
   const system = SYSTEM_PROMPT.replace('{currentPage}', currentPage)
     + `\n\n[Current: ${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
     + entityContext
-    + memoryContext;
+    + memoryContext
+    + voiceContext;
 
   // SSE setup
   res.setHeader('Content-Type', 'text/event-stream');
