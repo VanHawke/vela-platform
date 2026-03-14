@@ -45,7 +45,9 @@ export default function Organisations() {
   const [orgDomain, setOrgDomain] = useState(null)
   const [orgCampaigns, setOrgCampaigns] = useState([])
   const [orgLastComm, setOrgLastComm] = useState({ sent: null, received: null })
+  const [orgDeals, setOrgDeals] = useState([])
   const [loadingPanel, setLoadingPanel] = useState(false)
+  const [dealMap, setDealMap] = useState({})
 
   useEffect(() => { load() }, [])
 
@@ -62,6 +64,12 @@ export default function Organisations() {
     setLoading(true)
     const { data } = await supabase.from('companies').select('id, data, updated_at').order('updated_at', { ascending: false })
     setCompanies((data || []).map(row => ({ id: row.id, ...row.data, updated_at: row.updated_at })))
+    const { data: dealRows } = await supabase.from('deals').select('data->>company, data->>pipeline, data->>stage').not('data->>company', 'is', null)
+    const dm = {}
+    ;(dealRows || []).forEach(d => {
+      if (d.company && d.stage !== 'Closed Lost') dm[d.company] = { pipeline: d.pipeline, stage: d.stage }
+    })
+    setDealMap(dm)
     setLoading(false)
   }
 
@@ -152,10 +160,16 @@ export default function Organisations() {
     }
 
     setOrgCampaigns(Object.values(campMap).sort((a, b) => (b.contacts || 0) - (a.contacts || 0)))
+
+    // Fetch deals for this org
+    const { data: dealRows } = await supabase.from('deals').select('id, data')
+      .filter('data->>company', 'eq', company.name).limit(10)
+    setOrgDeals((dealRows || []).map(d => ({ id: d.id, ...d.data })))
+
     setLoadingPanel(false)
   }
 
-  const closePanel = () => { setSelectedOrg(null); setOrgContacts([]); setOrgLinkedin(null); setOrgDomain(null); setOrgCampaigns([]); setOrgLastComm({ sent: null, received: null }) }
+  const closePanel = () => { setSelectedOrg(null); setOrgContacts([]); setOrgLinkedin(null); setOrgDomain(null); setOrgCampaigns([]); setOrgLastComm({ sent: null, received: null }); setOrgDeals([]) }
 
   const filtered = useMemo(() => {
     if (!search) return companies
@@ -234,7 +248,7 @@ export default function Organisations() {
                     <OrgLogo domain={listDomainCache[company.id]} name={company.name} size={36} />
                     <div style={{ minWidth: 0 }}>
                       <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.name}</p>
-                      <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.industry || '—'}{company.country ? ` · ${company.country}` : ''}</p>
+                      <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.industry || '—'}{company.country ? ` · ${company.country}` : ''}{dealMap[company.name] ? ` · ${dealMap[company.name].pipeline} — ${dealMap[company.name].stage}` : ''}</p>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, marginLeft: 16 }}>
@@ -309,6 +323,21 @@ export default function Organisations() {
                   </button>
                 </div>
               </div>
+
+              {/* Deal Pipeline Stage */}
+              {orgDeals.length > 0 && (
+                <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '16px 20px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                  <p style={sectionTitle}>Deal Pipeline</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {orgDeals.map(d => (
+                      <div key={d.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(0,0,0,0.02)', borderRadius: 8 }}>
+                        <p style={{ fontSize: 12, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{d.pipeline || '—'}</p>
+                        <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, background: d.stage === 'Closed Won' ? 'rgba(16,185,129,0.08)' : d.stage === 'Closed Lost' ? 'rgba(239,68,68,0.08)' : 'rgba(59,130,246,0.08)', color: d.stage === 'Closed Won' ? '#10b981' : d.stage === 'Closed Lost' ? '#ef4444' : '#3b82f6', fontWeight: 500, fontFamily: 'var(--font)' }}>{d.stage || '—'}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Contacts */}
               <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '16px 20px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
