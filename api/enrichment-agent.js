@@ -60,19 +60,23 @@ export default async function handler(req, res) {
         return `${c.id}|${d.firstName || ''} ${d.lastName || ''}|${d.company || ''}|${d.email || ''}|${d.linkedin || ''}`
       }).join('\n')
 
-      const prompt = `You are a B2B sales data analyst. For each contact below, infer their most likely job title based on their name, company, email, and LinkedIn URL pattern.
+      const prompt = `You are a B2B sponsorship sales data analyst working for a Formula 1 sponsorship advisory firm. These contacts are decision-makers at technology companies who were sourced as potential F1 sponsorship prospects. They are typically senior marketing, partnerships, C-suite, or business development leaders.
+
+For each contact, provide your BEST ESTIMATE of their job title. You MUST provide a title for every contact — never say "Unknown".
 
 Format: one line per contact, exactly:
 ID|JOB_TITLE
 
 Rules:
-- Be specific: "VP of Marketing", "Chief Technology Officer", "Head of Partnerships", "Director of Business Development"
-- Use the email domain and company to inform the seniority level
-- If the LinkedIn URL contains clues (e.g., /in/john-cto), use them
-- If genuinely impossible to determine, use "Unknown"
+- These are sponsorship decision-makers: titles are typically CMO, VP Marketing, Head of Partnerships, Director of Brand, VP Business Development, Chief Revenue Officer, CEO, CFO, Head of Sponsorships, Director of Strategic Alliances, SVP Marketing, Global Head of Marketing, Chief Marketing Officer, VP Corporate Development, Head of Communications
+- Use the company name to inform seniority. Larger/well-known companies = more specific titles (VP, Director). Smaller/startups = broader titles (Head of Marketing, CMO)
+- If you recognise the person's name and company from your knowledge, use their actual title
+- If email is provided, the domain confirms the company. If "undefined", ignore it
+- If LinkedIn URL is provided, use any clues from it
+- ALWAYS provide a reasonable estimate. If minimal info, default to "Head of Marketing" or "VP of Marketing" as these are the most common roles for sponsorship prospects
 - One line per ID, nothing else
 
-Contacts:
+Contacts (format: ID|Name|Company|Email|LinkedIn):
 ${list}`
 
       const response = await askClaude(prompt)
