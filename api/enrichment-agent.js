@@ -208,5 +208,68 @@ ${list}`
     } catch (e) { return res.status(500).json({ error: e.message }) }
   }
 
-  return res.status(400).json({ error: 'Use "status", "enrich-contacts", "enrich-companies", or "find-domains"' })
+  // ENRICH-FUNDING: populate funding/revenue intelligence via Claude
+  if (action === 'enrich-funding') {
+    try {
+      const { data: companies } = await supabase.from('companies').select('id, data')
+        .or('data->>lastRound.is.null,data->>lastRound.eq.')
+        .not('data->>name', 'is', null).not('data->>name', 'eq', '')
+        .order('id', { ascending: true }).range(OFFSET, OFFSET + BATCH - 1)
+
+      if (!companies || companies.length === 0) {
+        return res.json({ done: true, message: 'No more companies need funding data', offset: OFFSET })
+      }
+
+      const list = companies.map(c => `${c.id}|${c.data?.name || ''}|${c.data?.industry || ''}|${c.data?.country || ''}`).join('\n')
+
+      const prompt = `You are a venture capital and business intelligence analyst. For each company, provide funding and business intelligence data from your knowledge.
+
+Format: one line per company:
+ID|LAST_ROUND|TOTAL_FUNDING|VALUATION|EMPLOYEES|REVENUE_EST|FOUNDED
+
+Rules:
+- LAST_ROUND: Most recent funding round (e.g. "Series C - $200M (2024)", "Series B - $50M (2023)", "IPO (2021)", "Bootstrapped", "Unknown")
+- TOTAL_FUNDING: Estimated total raised (e.g. "$350M", "$1.2B", "Bootstrapped", "Unknown")
+- VALUATION: Last known valuation if available (e.g. "$2B", "$500M", "Public - $10B market cap", "Unknown")
+- EMPLOYEES: Approximate headcount (e.g. "500-1000", "50-200", "1000-5000", "Unknown")
+- REVENUE_EST: Annual revenue estimate if known (e.g. "$50M ARR", "$200M+", "Pre-revenue", "Unknown")
+- FOUNDED: Year founded (e.g. "2019", "2015", "Unknown")
+- Use "Unknown" for any field you genuinely cannot determine
+- One line per company, nothing else
+
+Companies:
+${list}`
+
+      const response = await askClaude(prompt)
+      const lines = response.trim().split('\n').filter(l => l.includes('|'))
+      let enriched = 0
+
+      for (const line of lines) {
+        const parts = line.split('|').map(s => s.trim())
+        if (parts.length < 7) continue
+        const [id, lastRound, totalFunding, valuation, employees, revenueEst, founded] = parts
+        const company = companies.find(c => c.id === id)
+        if (!company) continue
+
+        const existing = { ...company.data }
+        let changed = false
+        if (lastRound && lastRound !== 'Unknown') { existing.lastRound = lastRound; changed = true }
+        if (totalFunding && totalFunding !== 'Unknown') { existing.totalFunding = totalFunding; changed = true }
+        if (valuation && valuation !== 'Unknown') { existing.valuation = valuation; changed = true }
+        if (employees && employees !== 'Unknown') { existing.employees = employees; changed = true }
+        if (revenueEst && revenueEst !== 'Unknown') { existing.revenueEst = revenueEst; changed = true }
+        if (founded && founded !== 'Unknown') { existing.founded = founded; changed = true }
+
+        if (changed) {
+          await supabase.from('companies').update({ data: existing, updated_at: new Date().toISOString() }).eq('id', id)
+          enriched++
+        }
+      }
+
+      const nextOffset = OFFSET + companies.length
+      return res.json({ done: companies.length < BATCH, processed: companies.length, enriched, nextOffset })
+    } catch (e) { return res.status(500).json({ error: e.message }) }
+  }
+
+  return res.status(400).json({ error: 'Use "status", "enrich-contacts", "enrich-companies", "find-domains", or "enrich-funding"' })
 }
