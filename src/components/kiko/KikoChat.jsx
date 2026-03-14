@@ -161,7 +161,15 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         body: JSON.stringify({
           message: msg,
           conversationHistory: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
-          currentPage: (window.location.pathname.replace('/', '') || 'home') + (window.location.search || '')
+          currentPage: (window.location.pathname.replace('/', '') || 'home') + (window.location.search || ''),
+          pageEntity: (() => {
+            const path = window.location.pathname
+            const search = window.location.search
+            const params = new URLSearchParams(search)
+            if (path.startsWith('/contacts/')) return { type: 'contact', id: path.split('/contacts/')[1] }
+            if (params.get('org')) return { type: 'company', id: params.get('org') }
+            return null
+          })(),
         }),
       })
       const reader = res.body.getReader()

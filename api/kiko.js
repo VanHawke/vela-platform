@@ -343,15 +343,37 @@ export default async function handler(req, res) {
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const { message, conversationHistory = [], currentPage = 'home' } = req.body;
+  const { message, conversationHistory = [], currentPage = 'home', pageEntity = null } = req.body;
   if (!message) return res.status(400).json({ error: 'message required' });
 
   // Inject datetime + page context into system prompt
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   const timeStr = now.toLocaleTimeString('en-GB', { timeZone:'Europe/London', hour:'2-digit', minute:'2-digit' });
+
+  // Auto-fetch entity context if user is viewing a specific record
+  let entityContext = ''
+  if (pageEntity?.type && pageEntity?.id) {
+    try {
+      if (pageEntity.type === 'contact') {
+        const rows = await sbFetch(`contacts?id=eq.${pageEntity.id}&select=data&limit=1`)
+        if (rows?.[0]?.data) {
+          const d = rows[0].data
+          entityContext = `\n\nACTIVE CONTEXT — User is viewing contact: ${d.firstName || ''} ${d.lastName || ''}, ${d.title || '?'} at ${d.company || '?'}. Email: ${d.email || '—'}. LinkedIn: ${d.linkedin ? 'Yes' : 'No'}.`
+        }
+      } else if (pageEntity.type === 'company') {
+        const rows = await sbFetch(`companies?id=eq.${pageEntity.id}&select=data&limit=1`)
+        if (rows?.[0]?.data) {
+          const d = rows[0].data
+          entityContext = `\n\nACTIVE CONTEXT — User is viewing company: ${d.name || '?'}. Industry: ${d.industry || '?'}. Country: ${d.country || '?'}.${d.lastRound ? ` Last Round: ${d.lastRound}.` : ''}${d.totalFunding ? ` Total Funding: ${d.totalFunding}.` : ''}${d.employees ? ` Employees: ${d.employees}.` : ''}`
+        }
+      }
+    } catch(e) { /* non-blocking */ }
+  }
+
   const system = SYSTEM_PROMPT.replace('{currentPage}', currentPage)
-    + `\n\n[Current: ${dateStr}, ${timeStr} UK | Page: ${currentPage}]`;
+    + `\n\n[Current: ${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
+    + entityContext;
 
   // SSE setup
   res.setHeader('Content-Type', 'text/event-stream');
