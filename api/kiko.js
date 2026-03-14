@@ -111,7 +111,17 @@ PAGE AWARENESS: You know exactly which page the user is viewing. Based on the pa
 - documents: The user is viewing uploaded documents
 - tasks: The user is viewing task management
 - settings: The user is viewing platform settings
-When the user asks about what's on screen, reference the page they're on and use get_crm_data to pull the actual data from that context.`;
+When the user asks about what's on screen, reference the page they're on and use the appropriate search tool to pull the actual data from that context.
+
+CONTEXT INFERENCE (critical):
+When the user says "What am I looking at?", "What's on screen?", "Tell me about this", or similar without specifying a page or entity:
+1. FIRST check ACTIVE CONTEXT — if provided, use it immediately. This is the most reliable signal.
+2. If no ACTIVE CONTEXT, scan the conversation history for the most recently discussed entity:
+   - If the last few messages discussed a company (e.g. "Brief me on Decagon") → assume user is viewing that company. Use get_entity_detail to pull full data.
+   - If recent messages discussed deals or pipeline → assume user is on the pipeline page. Use search_deals to pull pipeline summary.
+   - If recent messages discussed a specific person → assume user is viewing that contact. Use get_entity_detail for that contact.
+3. If no conversation history gives a clue, use the currentPage value to describe what's on that page.
+4. NEVER say "I can't see your screen" or "I don't know what page you're on." You are the operating system — you ALWAYS have context. Make your best inference and state it confidently.`;
 
 // ── Native Tools ────────────────────────────────────────
 const NATIVE_TOOLS = [
