@@ -46,6 +46,8 @@ export default function Organisations() {
   const [orgCampaigns, setOrgCampaigns] = useState([])
   const [orgLastComm, setOrgLastComm] = useState({ sent: null, received: null })
   const [orgDeals, setOrgDeals] = useState([])
+  const [orgSignals, setOrgSignals] = useState([])
+  const [loadingSignals, setLoadingSignals] = useState(false)
   const [loadingPanel, setLoadingPanel] = useState(false)
   const [dealMap, setDealMap] = useState({})
 
@@ -175,9 +177,20 @@ export default function Organisations() {
     setOrgDeals((dealRows || []).map(d => ({ id: d.id, ...d.data })))
 
     setLoadingPanel(false)
+
+    // Fetch news signals in background (non-blocking)
+    setOrgSignals([])
+    setLoadingSignals(true)
+    fetch('/api/news-signals', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ company: company.name, industry: company.industry, country: company.country })
+    }).then(r => r.json()).then(data => {
+      setOrgSignals(data.signals || [])
+      setLoadingSignals(false)
+    }).catch(() => setLoadingSignals(false))
   }
 
-  const closePanel = () => { setSelectedOrg(null); setOrgContacts([]); setOrgLinkedin(null); setOrgDomain(null); setOrgCampaigns([]); setOrgLastComm({ sent: null, received: null }); setOrgDeals([]) }
+  const closePanel = () => { setSelectedOrg(null); setOrgContacts([]); setOrgLinkedin(null); setOrgDomain(null); setOrgCampaigns([]); setOrgLastComm({ sent: null, received: null }); setOrgDeals([]); setOrgSignals([]) }
 
   const filtered = useMemo(() => {
     if (!search) return companies
@@ -441,6 +454,30 @@ export default function Organisations() {
                     )}
                   </div>
                 ) : <p style={emptyText}>No communications logged yet</p>}
+              </div>
+
+              {/* News Signals */}
+              <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '16px 20px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                <p style={sectionTitle}>Recent Signals</p>
+                {loadingSignals ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{[...Array(2)].map((_, i) => <div key={i} style={{ height: 48, background: 'rgba(0,0,0,0.03)', borderRadius: 8, animation: 'pulse 1.5s infinite' }} />)}</div>
+                ) : orgSignals.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {orgSignals.map((s, i) => {
+                      const typeColor = { funding: '#10b981', partnership: '#3b82f6', product: '#8b5cf6', leadership: '#f59e0b', acquisition: '#ef4444', expansion: '#06b6d4' }[s.type] || 'var(--text-tertiary)'
+                      return (
+                        <div key={i} style={{ padding: '10px 12px', background: 'rgba(0,0,0,0.02)', borderRadius: 8, borderLeft: `3px solid ${typeColor}` }}>
+                          <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.4 }}>{s.headline}</p>
+                          <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '4px 0 0', fontFamily: 'var(--font)', lineHeight: 1.4 }}>{s.summary}</p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+                            <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: `${typeColor}15`, color: typeColor, fontWeight: 600, fontFamily: 'var(--font)', textTransform: 'uppercase' }}>{s.type}</span>
+                            {s.date && <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>{s.date}</span>}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : <p style={emptyText}>No recent signals found</p>}
               </div>
             </div>
           )}
