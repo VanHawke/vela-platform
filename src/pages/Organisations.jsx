@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { Plus, Search, X, Building2, Globe, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, Search, X, Building2, Globe, ChevronLeft, ChevronRight, Users, Linkedin, Send, ExternalLink } from 'lucide-react'
 
 const PAGE_SIZE = 50
 
 export default function Organisations() {
+  const nav = useNavigate()
   const [companies, setCompanies] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -12,6 +14,11 @@ export default function Organisations() {
   const [editing, setEditing] = useState(null)
   const [page, setPage] = useState(0)
   const [form, setForm] = useState({ name: '', industry: '', website: '', country: '', notes: '' })
+  const [selectedOrg, setSelectedOrg] = useState(null)
+  const [orgContacts, setOrgContacts] = useState([])
+  const [orgLinkedin, setOrgLinkedin] = useState(null)
+  const [orgCampaigns, setOrgCampaigns] = useState([])
+  const [loadingPanel, setLoadingPanel] = useState(false)
 
   useEffect(() => { load() }, [])
 
@@ -36,6 +43,7 @@ export default function Organisations() {
   const remove = async (id) => {
     await supabase.from('companies').delete().eq('id', id)
     setCompanies(prev => prev.filter(c => c.id !== id))
+    if (selectedOrg?.id === id) closePanel()
   }
 
   const edit = (c) => {
@@ -45,6 +53,51 @@ export default function Organisations() {
   }
 
   const reset = () => { setShowForm(false); setEditing(null); setForm({ name: '', industry: '', website: '', country: '', notes: '' }) }
+
+  const selectOrg = async (company) => {
+    setSelectedOrg(company)
+    setLoadingPanel(true)
+    setOrgContacts([])
+    setOrgLinkedin(null)
+    setOrgCampaigns([])
+
+    // Fetch contacts linked to this org
+    const { data: contacts } = await supabase.from('contacts').select('id, data')
+      .or(`data->>companyId.eq.${company.id},data->>company.eq.${company.name}`)
+      .order('updated_at', { ascending: false })
+      .limit(50)
+
+    const contactList = (contacts || []).map(c => ({ id: c.id, ...c.data }))
+    setOrgContacts(contactList)
+
+    // Get company LinkedIn from first contact that has it
+    const withLi = contactList.find(c => c.companyLinkedin)
+    setOrgLinkedin(withLi?.companyLinkedin || company.linkedin || null)
+
+    // Get campaign data from contact activities
+    const contactIds = contactList.map(c => c.id)
+    if (contactIds.length > 0) {
+      const { data: activities } = await supabase.from('contact_activities')
+        .select('campaign_name, created_at')
+        .in('contact_id', contactIds)
+        .order('created_at', { ascending: false })
+        .limit(200)
+
+      const campMap = {}
+      ;(activities || []).forEach(a => {
+        if (a.campaign_name) {
+          if (!campMap[a.campaign_name]) campMap[a.campaign_name] = { name: a.campaign_name, events: 0, lastEvent: a.created_at }
+          campMap[a.campaign_name].events++
+          if (a.created_at > campMap[a.campaign_name].lastEvent) campMap[a.campaign_name].lastEvent = a.created_at
+        }
+      })
+      setOrgCampaigns(Object.values(campMap).sort((a, b) => b.lastEvent.localeCompare(a.lastEvent)))
+    }
+
+    setLoadingPanel(false)
+  }
+
+  const closePanel = () => { setSelectedOrg(null); setOrgContacts([]); setOrgLinkedin(null); setOrgCampaigns([]) }
 
   const filtered = useMemo(() => {
     if (!search) return companies
@@ -57,11 +110,18 @@ export default function Organisations() {
   useEffect(() => { setPage(0) }, [search])
 
   const glass = { margin: '0 16px', padding: '12px 20px', borderRadius: 16, background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(40px) saturate(1.8)', WebkitBackdropFilter: 'blur(40px) saturate(1.8)', border: '1px solid rgba(255,255,255,0.5)', boxShadow: '0 4px 24px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
-  const card = { background: '#FFFFFF', borderRadius: 12, padding: '14px 18px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'box-shadow 0.15s ease', cursor: 'default' }
+  const card = { background: '#FFFFFF', borderRadius: 12, padding: '14px 18px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'box-shadow 0.15s ease', cursor: 'pointer' }
   const inputStyle = { width: '100%', background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
+  const sectionTitle = { fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.04em' }
+  const emptyText = { fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', fontStyle: 'italic' }
+
+  const panelOpen = !!selectedOrg
+
+  const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : null
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: 8 }}>
+      {/* Glass toolbar */}
       <div style={glass}>
         <div>
           <h1 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Organisations</h1>
@@ -72,6 +132,7 @@ export default function Organisations() {
         </button>
       </div>
 
+      {/* Search + pagination */}
       <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{ position: 'relative', flex: 1, maxWidth: 320 }}>
           <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: 'var(--text-tertiary)' }} />
@@ -86,40 +147,161 @@ export default function Organisations() {
         )}
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 16px' }}>
-        {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[...Array(8)].map((_, i) => <div key={i} style={{ height: 64, background: 'rgba(0,0,0,0.03)', borderRadius: 12, animation: 'pulse 1.5s infinite' }} />)}</div>
-        ) : paged.length === 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-tertiary)' }}>
-            <Building2 style={{ width: 32, height: 32, marginBottom: 12, opacity: 0.4 }} />
-            <p style={{ fontSize: 13, fontFamily: 'var(--font)' }}>{search ? 'No organisations match' : 'No organisations yet'}</p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {paged.map(company => (
-              <div key={company.id} style={card} onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)'} onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, flex: 1 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Building2 style={{ width: 16, height: 16, color: 'var(--text-tertiary)' }} />
+      {/* Main area: list + panel */}
+      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', padding: '0 16px 16px' }}>
+        {/* Org list */}
+        <div style={{ flex: 1, overflowY: 'auto', transition: 'flex 0.3s ease', minWidth: 0 }}>
+          {loading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[...Array(8)].map((_, i) => <div key={i} style={{ height: 64, background: 'rgba(0,0,0,0.03)', borderRadius: 12, animation: 'pulse 1.5s infinite' }} />)}</div>
+          ) : paged.length === 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-tertiary)' }}>
+              <Building2 style={{ width: 32, height: 32, marginBottom: 12, opacity: 0.4 }} />
+              <p style={{ fontSize: 13, fontFamily: 'var(--font)' }}>{search ? 'No organisations match' : 'No organisations yet'}</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {paged.map(company => (
+                <div key={company.id} style={{ ...card, background: selectedOrg?.id === company.id ? 'rgba(26,26,26,0.04)' : '#FFFFFF', borderColor: selectedOrg?.id === company.id ? 'rgba(26,26,26,0.12)' : 'rgba(0,0,0,0.06)' }}
+                  onClick={() => selectOrg(company)}
+                  onMouseEnter={e => { if (selectedOrg?.id !== company.id) e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)' }}
+                  onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, flex: 1 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Building2 style={{ width: 16, height: 16, color: 'var(--text-tertiary)' }} />
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.name}</p>
+                      <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[company.industry, company.country].filter(Boolean).join(' · ') || '—'}</p>
+                    </div>
                   </div>
-                  <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.name}</p>
-                    <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[company.industry, company.country].filter(Boolean).join(' · ') || '—'}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, marginLeft: 16 }}>
+                    {company.openDeals > 0 && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, background: 'rgba(59,130,246,0.08)', color: '#3b82f6', fontWeight: 500, fontFamily: 'var(--font)' }}>{company.openDeals} open</span>}
+                    {company.wonDeals > 0 && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, background: 'rgba(16,185,129,0.08)', color: '#10b981', fontWeight: 500, fontFamily: 'var(--font)' }}>{company.wonDeals} won</span>}
+                    <button onClick={(e) => { e.stopPropagation(); edit(company) }} style={{ fontSize: 11, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', opacity: 0.5, transition: 'opacity 0.15s' }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}>Edit</button>
+                    <button onClick={(e) => { e.stopPropagation(); remove(company.id) }} style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', opacity: 0.3, transition: 'all 0.15s', padding: 2 }} onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = '#ef4444' }} onMouseLeave={e => { e.currentTarget.style.opacity = '0.3'; e.currentTarget.style.color = 'var(--text-tertiary)' }}><X style={{ width: 14, height: 14 }} /></button>
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, marginLeft: 16 }}>
-                  {company.openDeals > 0 && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, background: 'rgba(59,130,246,0.08)', color: '#3b82f6', fontWeight: 500, fontFamily: 'var(--font)' }}>{company.openDeals} open</span>}
-                  {company.wonDeals > 0 && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, background: 'rgba(16,185,129,0.08)', color: '#10b981', fontWeight: 500, fontFamily: 'var(--font)' }}>{company.wonDeals} won</span>}
-                  {company.website && <a href={company.website.startsWith('http') ? company.website : `https://${company.website}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-tertiary)', transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-tertiary)'}><Globe style={{ width: 15, height: 15 }} /></a>}
-                  <button onClick={() => edit(company)} style={{ fontSize: 11, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', opacity: 0.5, transition: 'opacity 0.15s' }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}>Edit</button>
-                  <button onClick={() => remove(company.id)} style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', opacity: 0.3, transition: 'all 0.15s', padding: 2 }} onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = '#ef4444' }} onMouseLeave={e => { e.currentTarget.style.opacity = '0.3'; e.currentTarget.style.color = 'var(--text-tertiary)' }}><X style={{ width: 14, height: 14 }} /></button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Slide-out panel */}
+        <div style={{
+          width: panelOpen ? 380 : 0, minWidth: panelOpen ? 380 : 0,
+          transition: 'width 0.3s ease, min-width 0.3s ease, opacity 0.2s ease',
+          opacity: panelOpen ? 1 : 0, overflow: 'hidden',
+          marginLeft: panelOpen ? 16 : 0,
+        }}>
+          {selectedOrg && (
+            <div style={{ width: 380, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {/* Header */}
+              <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '20px 20px 16px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Building2 style={{ width: 20, height: 20, color: 'var(--text-secondary)' }} />
+                    </div>
+                    <div>
+                      <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{selectedOrg.name}</h2>
+                      {selectedOrg.industry && <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{selectedOrg.industry}</p>}
+                    </div>
+                  </div>
+                  <button onClick={closePanel} style={{ background: 'rgba(0,0,0,0.04)', border: 'none', borderRadius: 8, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-tertiary)', flexShrink: 0 }}>
+                    <X style={{ width: 14, height: 14 }} />
+                  </button>
+                </div>
+
+                {/* Quick info */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {selectedOrg.country && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
+                      <Globe style={{ width: 13, height: 13, color: 'var(--text-tertiary)' }} /> {selectedOrg.country}
+                    </div>
+                  )}
+                  {selectedOrg.industry && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
+                      <Building2 style={{ width: 13, height: 13, color: 'var(--text-tertiary)' }} /> {selectedOrg.industry}
+                    </div>
+                  )}
+                </div>
+
+                {/* Action buttons */}
+                <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                  {orgLinkedin && (
+                    <a href={orgLinkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.03)', padding: '6px 12px', borderRadius: 8, textDecoration: 'none', fontFamily: 'var(--font)', border: '1px solid rgba(0,0,0,0.04)' }}>
+                      <Linkedin style={{ width: 13, height: 13 }} /> LinkedIn
+                    </a>
+                  )}
+                  {selectedOrg.website && (
+                    <a href={selectedOrg.website.startsWith('http') ? selectedOrg.website : `https://${selectedOrg.website}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.03)', padding: '6px 12px', borderRadius: 8, textDecoration: 'none', fontFamily: 'var(--font)', border: '1px solid rgba(0,0,0,0.04)' }}>
+                      <ExternalLink style={{ width: 13, height: 13 }} /> Website
+                    </a>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+
+              {/* Contacts */}
+              <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '16px 20px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                <p style={sectionTitle}><Users style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Contacts ({orgContacts.length})</p>
+                {loadingPanel ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{[...Array(3)].map((_, i) => <div key={i} style={{ height: 40, background: 'rgba(0,0,0,0.03)', borderRadius: 8, animation: 'pulse 1.5s infinite' }} />)}</div>
+                ) : orgContacts.length === 0 ? (
+                  <p style={emptyText}>No contacts linked</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {orgContacts.map(c => (
+                      <div key={c.id} onClick={() => nav(`/contacts/${c.id}`)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', transition: 'background 0.15s' }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                        <div style={{ width: 28, height: 28, borderRadius: 14, background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{(c.firstName || c.lastName || '?')[0]?.toUpperCase()}</span>
+                        </div>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[c.firstName, c.lastName].filter(Boolean).join(' ') || 'Unnamed'}</p>
+                          <p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '1px 0 0', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title || '—'}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Active Campaign */}
+              <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '16px 20px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                <p style={sectionTitle}><Send style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Active Campaign</p>
+                {orgCampaigns.length > 0 ? (
+                  <div style={{ padding: '8px 10px', background: 'rgba(59,130,246,0.04)', borderRadius: 8, border: '1px solid rgba(59,130,246,0.1)' }}>
+                    <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{orgCampaigns[0].name}</p>
+                    <p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{orgCampaigns[0].events} event{orgCampaigns[0].events !== 1 ? 's' : ''} · Last: {formatDate(orgCampaigns[0].lastEvent)}</p>
+                  </div>
+                ) : (
+                  <p style={emptyText}>No active campaign</p>
+                )}
+              </div>
+
+              {/* Campaign History */}
+              <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '16px 20px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                <p style={sectionTitle}>Campaign History</p>
+                {orgCampaigns.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {orgCampaigns.map(c => (
+                      <div key={c.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: 'rgba(0,0,0,0.02)', borderRadius: 8 }}>
+                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0, fontFamily: 'var(--font)' }}>{c.name}</p>
+                        <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>{c.events} events</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={emptyText}>No campaign history yet</p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* Modal form */}
       {showForm && (
         <div onClick={e => e.target === e.currentTarget && reset()} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(8px)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div style={{ background: '#FFFFFF', borderRadius: 20, border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 24px 80px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.06)', width: '100%', maxWidth: 420, padding: 24 }}>
@@ -128,7 +310,7 @@ export default function Organisations() {
               <button onClick={reset} style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer' }}><X style={{ width: 16, height: 16 }} /></button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {[{ key: 'name', placeholder: 'Organisation name *' }, { key: 'industry', placeholder: 'Industry' }, { key: 'website', placeholder: 'Website' }, { key: 'country', placeholder: 'Country' }].map(f => (
+              {[{ key: 'name', placeholder: 'Organisation name *' }, { key: 'industry', placeholder: 'Industry / Sector' }, { key: 'website', placeholder: 'Website' }, { key: 'country', placeholder: 'Country HQ' }].map(f => (
                 <input key={f.key} value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} style={inputStyle} />
               ))}
               <textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Notes" rows={2} style={{ ...inputStyle, resize: 'none' }} />
