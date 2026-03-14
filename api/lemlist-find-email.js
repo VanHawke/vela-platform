@@ -25,22 +25,13 @@ export default async function handler(req, res) {
 
   if (action === 'find') {
     try {
-      // Get contacts missing email that have name + company with domain
-      const { data: contacts } = await supabase.rpc('get_enrichable_contacts', {
-        lim: BATCH, off: OFFSET
-      }).catch(() => ({ data: null }))
-
-      // Fallback: raw SQL via direct query
-      let contactList = contacts
-      if (!contactList) {
-        const { data: raw } = await supabase.from('contacts').select('id, data')
-          .or('data->>email.is.null,data->>email.eq.')
-          .not('data->>firstName', 'is', null).not('data->>firstName', 'eq', '')
-          .not('data->>company', 'is', null).not('data->>company', 'eq', '')
-          .order('id', { ascending: true })
-          .range(OFFSET, OFFSET + BATCH - 1)
-        contactList = raw
-      }
+      // Get contacts missing email that have name + company
+      const { data: contactList } = await supabase.from('contacts').select('id, data')
+        .or('data->>email.is.null,data->>email.eq.')
+        .not('data->>firstName', 'is', null).not('data->>firstName', 'eq', '')
+        .not('data->>company', 'is', null).not('data->>company', 'eq', '')
+        .order('id', { ascending: true })
+        .range(OFFSET, OFFSET + BATCH - 1)
 
       if (!contactList || contactList.length === 0) {
         return res.json({ done: true, message: 'No more contacts', offset: OFFSET })
