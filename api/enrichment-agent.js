@@ -222,20 +222,22 @@ ${list}`
 
       const list = companies.map(c => `${c.id}|${c.data?.name || ''}|${c.data?.industry || ''}|${c.data?.country || ''}`).join('\n')
 
-      const prompt = `You are a venture capital and business intelligence analyst. For each company, provide funding and business intelligence data from your knowledge.
-
-Format: one line per company:
+      const prompt = `For each company, provide funding intelligence. One line per company in this EXACT format — 7 pipe-separated fields, no company name:
 ID|LAST_ROUND|TOTAL_FUNDING|VALUATION|EMPLOYEES|REVENUE_EST|FOUNDED
 
-Rules:
-- LAST_ROUND: Most recent funding round (e.g. "Series C - $200M (2024)", "Series B - $50M (2023)", "IPO (2021)", "Bootstrapped", "Unknown")
-- TOTAL_FUNDING: Estimated total raised (e.g. "$350M", "$1.2B", "Bootstrapped", "Unknown")
-- VALUATION: Last known valuation if available (e.g. "$2B", "$500M", "Public - $10B market cap", "Unknown")
-- EMPLOYEES: Approximate headcount (e.g. "500-1000", "50-200", "1000-5000", "Unknown")
-- REVENUE_EST: Annual revenue estimate if known (e.g. "$50M ARR", "$200M+", "Pre-revenue", "Unknown")
-- FOUNDED: Year founded (e.g. "2019", "2015", "Unknown")
-- Use "Unknown" for any field you genuinely cannot determine
-- One line per company, nothing else
+Example output:
+org100|Series B - $200M (2024)|$350M|$2B|200-500|$50M ARR|2017
+org101|IPO (2021)|$500M|Public - $10B|1000-5000|$200M+|2015
+org102|Bootstrapped|Bootstrapped|Unknown|10-50|Pre-revenue|2022
+
+Fields:
+- LAST_ROUND: e.g. "Series C - $200M (2024)", "IPO (2021)", "Bootstrapped"
+- TOTAL_FUNDING: e.g. "$350M", "$1.2B", "Bootstrapped"
+- VALUATION: e.g. "$2B", "Public - $10B market cap", "Unknown"
+- EMPLOYEES: e.g. "500-1000", "50-200"
+- REVENUE_EST: e.g. "$50M ARR", "$200M+", "Pre-revenue"
+- FOUNDED: e.g. "2019", "2015"
+Use "Unknown" if uncertain. Do NOT include company names. One line per ID, nothing else.
 
 Companies:
 ${list}`
@@ -247,7 +249,13 @@ ${list}`
       for (const line of lines) {
         const parts = line.split('|').map(s => s.trim())
         if (parts.length < 7) continue
-        const [id, lastRound, totalFunding, valuation, employees, revenueEst, founded] = parts
+        // Claude sometimes echoes company name — detect and skip it
+        let id, lastRound, totalFunding, valuation, employees, revenueEst, founded
+        if (parts.length >= 8) {
+          [id, , lastRound, totalFunding, valuation, employees, revenueEst, founded] = parts
+        } else {
+          [id, lastRound, totalFunding, valuation, employees, revenueEst, founded] = parts
+        }
         const company = companies.find(c => c.id === id)
         if (!company) continue
 
