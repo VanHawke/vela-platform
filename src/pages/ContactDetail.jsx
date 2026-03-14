@@ -12,6 +12,7 @@ export default function ContactDetail() {
   const [form, setForm] = useState({})
   const [activities, setActivities] = useState([])
   const [orgId, setOrgId] = useState(null)
+  const [dealInfo, setDealInfo] = useState(null)
 
   useEffect(() => { load() }, [id])
 
@@ -37,6 +38,13 @@ export default function ContactDetail() {
         .select('*').eq('contact_id', data.id)
         .order('created_at', { ascending: false }).limit(50)
       setActivities(acts || [])
+
+      // Load deal info for this company
+      if (c.company) {
+        const { data: dealRows } = await supabase.from('deals').select('data')
+          .filter('data->>company', 'eq', c.company).limit(1)
+        if (dealRows && dealRows.length > 0) setDealInfo(dealRows[0].data)
+      }
     }
     setLoading(false)
   }
@@ -221,6 +229,17 @@ export default function ContactDetail() {
               </div>
             </div>
           </div>
+
+          {/* Deal Pipeline */}
+          {dealInfo && (
+            <div style={card}>
+              <p style={sectionTitle}>Deal Pipeline</p>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(0,0,0,0.02)', borderRadius: 8 }}>
+                <p style={{ fontSize: 12, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{dealInfo.pipeline || '—'}</p>
+                <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, background: dealInfo.stage === 'Closed Won' ? 'rgba(16,185,129,0.08)' : dealInfo.stage === 'Closed Lost' ? 'rgba(239,68,68,0.08)' : 'rgba(59,130,246,0.08)', color: dealInfo.stage === 'Closed Won' ? '#10b981' : dealInfo.stage === 'Closed Lost' ? '#ef4444' : '#3b82f6', fontWeight: 500, fontFamily: 'var(--font)' }}>{dealInfo.stage || '—'}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right column */}
