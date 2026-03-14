@@ -58,7 +58,10 @@ export default function Layout({ user }) {
         {TOP_NAV.map(item => {
           const active = loc.pathname === item.path || (item.path === '/' && loc.pathname === '/home')
           return (
-            <button key={item.path} onClick={() => nav(item.path)} style={{
+            <button key={item.path} onClick={() => {
+              if (item.path === '/') { setKikoMessages([]); setKikoConvId(null) }
+              nav(item.path)
+            }} style={{
               padding: '6px 14px', borderRadius: 16, border: 'none',
               background: active ? 'var(--accent)' : 'transparent',
               color: active ? '#fff' : 'var(--text-secondary)',
