@@ -161,7 +161,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         body: JSON.stringify({
           message: msg,
           conversationHistory: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
-          currentPage: window.location.pathname.replace('/', '') || 'home'
+          currentPage: (window.location.pathname.replace('/', '') || 'home') + (window.location.search || '')
         }),
       })
       const reader = res.body.getReader()

@@ -43,9 +43,11 @@ NAVIGATION RULES:
 CURRENT PAGE CONTEXT (injected per-request): {currentPage}
 PAGE AWARENESS: You know exactly which page the user is viewing. Based on the page name:
 - home: The user is on the Kiko prompt/chat home screen
-- pipeline: The user is viewing the deal pipeline kanban board with deal cards by stage
-- contacts: The user is viewing the contacts directory with searchable contact list
-- companies: The user is viewing the company profiles with industry data and signals
+- pipeline: The user is viewing the deal pipeline kanban board (Haas F1 default). Deals show company, contact, last activity, stage.
+- contacts: The user is viewing the contacts directory with searchable contact list. Each contact shows name, job title, company, email/LinkedIn icons.
+- contacts/[id]: The user is viewing a specific contact's detail page. Shows job title, company, email, LinkedIn, deal pipeline stage, active campaign, correspondence, tasks due.
+- organisations: The user is viewing the organisations directory. Each org shows name, industry, country, deal stage. Click opens slide-out panel with contacts, campaigns, deal info.
+- organisations?org=[id]: The user is viewing a specific organisation's slide-out panel showing contacts, industry, country, campaigns, deal pipeline stage.
 - deals: The user is viewing individual deal records with values, stages, and activities
 - email: The user is viewing the email interface
 - calendar: The user is viewing the calendar
@@ -76,7 +78,7 @@ const CUSTOM_TOOLS = [
     }, required: ['query'] } },
   { name: 'navigate_page', description: 'Navigate the user to a specific page in the Vela platform. Use this when the user asks to see a page, pull up data, go to a section, or show something. ALWAYS use this tool when asked to show/open/go to a page.',
     input_schema: { type: 'object', properties: {
-      page: { type: 'string', enum: ['home', 'pipeline', 'contacts', 'companies', 'deals', 'email', 'calendar', 'documents', 'tasks', 'settings', 'dashboard'], description: 'Page to navigate to' },
+      page: { type: 'string', enum: ['home', 'pipeline', 'contacts', 'organisations', 'deals', 'email', 'calendar', 'documents', 'tasks', 'settings', 'dashboard'], description: 'Page to navigate to' },
       reason: { type: 'string', description: 'Brief description of why navigating (shown to user)' },
     }, required: ['page'] } },
 ];
