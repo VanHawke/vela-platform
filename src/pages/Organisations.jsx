@@ -13,6 +13,19 @@ const getDomain = (email) => {
   return d
 }
 
+// Company logo with Clearbit fallback
+function OrgLogo({ domain, name, size = 36 }) {
+  const [imgErr, setImgErr] = useState(false)
+  const logoUrl = domain && !imgErr ? `https://logo.clearbit.com/${domain}` : null
+  return logoUrl ? (
+    <img src={logoUrl} alt="" onError={() => setImgErr(true)} style={{ width: size, height: size, borderRadius: size > 30 ? 10 : 8, objectFit: "contain", background: "#fff", border: "1px solid rgba(0,0,0,0.06)" }} />
+  ) : (
+    <div style={{ width: size, height: size, borderRadius: size > 30 ? 10 : 8, background: "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <Building2 style={{ width: size * 0.44, height: size * 0.44, color: "var(--text-tertiary)" }} />
+    </div>
+  )
+}
+
 export default function Organisations() {
   const nav = useNavigate()
   const [companies, setCompanies] = useState([])
@@ -128,19 +141,6 @@ export default function Organisations() {
 
   const panelOpen = !!selectedOrg
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : null
-
-  // Logo component
-  const OrgLogo = ({ domain, name, size = 36 }) => {
-    const [imgErr, setImgErr] = useState(false)
-    const logoUrl = domain && !imgErr ? `https://logo.clearbit.com/${domain}` : null
-    return logoUrl ? (
-      <img src={logoUrl} alt="" onError={() => setImgErr(true)} style={{ width: size, height: size, borderRadius: size > 30 ? 10 : 8, objectFit: 'contain', background: '#fff', border: '1px solid rgba(0,0,0,0.06)' }} />
-    ) : (
-      <div style={{ width: size, height: size, borderRadius: size > 30 ? 10 : 8, background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <Building2 style={{ width: size * 0.44, height: size * 0.44, color: 'var(--text-tertiary)' }} />
-      </div>
-    )
-  }
 
   // Derive domain for list items from company name (simple heuristic)
   const listDomainCache = useMemo(() => {
