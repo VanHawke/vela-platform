@@ -27,6 +27,7 @@ export default function Layout({ user }) {
   // Kiko conversation state — persists across page navigation
   const [kikoMessages, setKikoMessages] = useState([])
   const [kikoConvId, setKikoConvId] = useState(null)
+  const [kikoResetKey, setKikoResetKey] = useState(0)
 
   // Cmd+K shortcut
   useEffect(() => {
@@ -59,7 +60,7 @@ export default function Layout({ user }) {
           const active = loc.pathname === item.path || (item.path === '/' && loc.pathname === '/home')
           return (
             <button key={item.path} onClick={() => {
-              if (item.path === '/') { setKikoMessages([]); setKikoConvId(null) }
+              if (item.path === '/') { setKikoMessages([]); setKikoConvId(null); setKikoResetKey(k => k + 1) }
               nav(item.path)
             }} style={{
               padding: '6px 14px', borderRadius: 16, border: 'none',
@@ -74,7 +75,7 @@ export default function Layout({ user }) {
       <Sidebar brandLogo={brandLogo} />
 
       <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
-        <Outlet context={{ kikoMessages, setKikoMessages, kikoConvId, setKikoConvId, kikoNavigate }} />
+        <Outlet context={{ kikoMessages, setKikoMessages, kikoConvId, setKikoConvId, kikoNavigate, kikoResetKey }} />
       </main>
 
       {/* Kiko floating — present on every page except home */}

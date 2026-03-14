@@ -132,6 +132,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   useEffect(() => { if (initialMessage && !messages.length) handleSubmit(initialMessage) }, [])
   useEffect(() => { scrollRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, streamText])
 
+  // Watch for Home button reset from Layout
+  const resetKey = outletCtx.kikoResetKey
+  useEffect(() => {
+    if (resetKey > 0) startNewChat()
+  }, [resetKey])
+
   // Fetch proactive alerts on mount
   useEffect(() => {
     fetch('/api/kiko-alerts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get' }) })

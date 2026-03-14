@@ -101,7 +101,15 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         body: JSON.stringify({
           message: msg,
           conversationHistory: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
-          currentPage: window.location.pathname.replace('/', '') || 'home'
+          currentPage: (window.location.pathname.replace('/', '') || 'home') + (window.location.search || ''),
+          pageEntity: (() => {
+            const path = window.location.pathname
+            const params = new URLSearchParams(window.location.search)
+            if (path.startsWith('/contacts/')) return { type: 'contact', id: path.split('/contacts/')[1] }
+            if (params.get('org')) return { type: 'company', id: params.get('org') }
+            if (path.startsWith('/deals/')) return { type: 'deal', id: path.split('/deals/')[1] }
+            return null
+          })(),
         }),
       })
       const reader = res.body.getReader()
