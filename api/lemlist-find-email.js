@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     const text = await r.text()
     let parsed = null
     try { parsed = JSON.parse(text) } catch(e) {}
-    return res.json({ status, parsedKeys: parsed ? Object.keys(parsed) : null, hasEmail: !!parsed?.email })
+    return res.json({ status, rawLen: text.length, rawPreview: text.slice(0, 300), parsedKeys: parsed ? Object.keys(parsed) : null, hasEmail: !!parsed?.email })
   }
 
   if (action === 'status') {
