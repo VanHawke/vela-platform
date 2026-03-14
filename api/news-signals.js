@@ -44,6 +44,13 @@ Return ONLY the JSON array, no other text.`
       if (match) { try { signals = JSON.parse(match[0]) } catch (e2) {} }
     }
 
+    // Clean cite tags from summaries
+    signals = signals.map(s => ({
+      ...s,
+      summary: (s.summary || '').replace(/<cite[^>]*>/g, '').replace(/<\/cite>/g, ''),
+      headline: (s.headline || '').replace(/<cite[^>]*>/g, '').replace(/<\/cite>/g, '')
+    }))
+
     return res.json({ company, signals })
   } catch (e) { return res.status(500).json({ error: e.message }) }
 }
