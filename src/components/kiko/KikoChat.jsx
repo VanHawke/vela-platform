@@ -59,6 +59,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [historyOpen, setHistoryOpen] = useState(false)
   const [activeConvId, setActiveConvId] = useState(null)
   const [transcribing, setTranscribing] = useState(false)
+  const [kikoAlerts, setKikoAlerts] = useState([])
+  const [loadingAlerts, setLoadingAlerts] = useState(true)
   const scrollRef = useRef(null)
   const inputRef = useRef(null)
   const transcribeRef = useRef({ media: null, recorder: null })
@@ -129,6 +131,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   useEffect(() => { if (initialMessage && !messages.length) handleSubmit(initialMessage) }, [])
   useEffect(() => { scrollRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, streamText])
+
+  // Fetch proactive alerts on mount
+  useEffect(() => {
+    fetch('/api/kiko-alerts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get' }) })
+      .then(r => r.json())
+      .then(d => { setKikoAlerts((d.alerts || []).slice(0, 3)); setLoadingAlerts(false) })
+      .catch(() => setLoadingAlerts(false))
+  }, [])
 
   const saveConversation = async (allMsgs, convId, title) => {
     if (!user?.id) return convId
@@ -275,6 +285,31 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               </button>
             </div>
           </div>
+
+          {/* Kiko Insights — proactive intelligence */}
+          {!loadingAlerts && kikoAlerts.length > 0 && (
+            <div style={{ marginBottom: 20, display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 580 }}>
+              <p style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2, fontFamily: T.font }}>Kiko Insights</p>
+              {kikoAlerts.map((a, i) => {
+                const color = a.severity === 'high' ? '#ef4444' : a.severity === 'medium' ? '#f59e0b' : '#3b82f6'
+                return (
+                  <button key={a.id || i} onClick={() => handleSubmit(`Tell me more about: ${a.title}`)} style={{
+                    display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px', borderRadius: 12,
+                    background: T.surface, border: `1px solid ${T.border}`, cursor: 'pointer', textAlign: 'left',
+                    transition: 'all 0.15s', width: '100%', fontFamily: T.font
+                  }}
+                    onMouseOver={e => { e.currentTarget.style.borderColor = color + '40'; e.currentTarget.style.background = color + '06' }}
+                    onMouseOut={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.background = T.surface }}>
+                    <div style={{ width: 6, height: 6, borderRadius: 3, background: color, marginTop: 6, flexShrink: 0 }} />
+                    <div>
+                      <p style={{ fontSize: 12, fontWeight: 500, color: T.text, margin: 0, lineHeight: 1.4 }}>{a.title}</p>
+                      <p style={{ fontSize: 11, color: T.textTertiary, margin: '2px 0 0', lineHeight: 1.3 }}>{(a.detail || '').slice(0, 100)}{(a.detail || '').length > 100 ? '...' : ''}</p>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          )}
 
           {/* Suggestion chips */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
