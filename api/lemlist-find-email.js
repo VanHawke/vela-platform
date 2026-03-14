@@ -14,6 +14,20 @@ export default async function handler(req, res) {
   const OFFSET = reqOffset || 0
   const auth = Buffer.from(':' + LEMLIST_KEY).toString('base64')
 
+  if (action === 'debug') {
+    const { firstName, lastName, domain } = req.body
+    const r = await fetch('https://api.lemlist.com/api/email-finder', {
+      method: 'POST',
+      headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ firstName: firstName || 'Charlie', lastName: lastName || 'Jalali-Farhani', companyDomain: domain || 'payhawk.com' })
+    })
+    const status = r.status
+    const text = await r.text()
+    let parsed = null
+    try { parsed = JSON.parse(text) } catch(e) {}
+    return res.json({ status, raw: text.slice(0, 500), parsed, headers: Object.fromEntries([...r.headers.entries()].slice(0, 10)) })
+  }
+
   if (action === 'status') {
     const { count: total } = await supabase.from('contacts').select('id', { count: 'exact', head: true })
     const { count: noEmail } = await supabase.from('contacts').select('id', { count: 'exact', head: true })
