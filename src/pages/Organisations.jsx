@@ -15,13 +15,16 @@ const getDomain = (email) => {
 
 // Company logo with Clearbit fallback
 function OrgLogo({ domain, name, size = 36 }) {
-  const [imgErr, setImgErr] = useState(false)
-  const logoUrl = domain && !imgErr ? `https://logo.clearbit.com/${domain}` : null
-  return logoUrl ? (
-    <img src={logoUrl} alt="" onError={() => setImgErr(true)} style={{ width: size, height: size, borderRadius: size > 30 ? 10 : 8, objectFit: "contain", background: "#fff", border: "1px solid rgba(0,0,0,0.06)" }} />
-  ) : (
-    <div style={{ width: size, height: size, borderRadius: size > 30 ? 10 : 8, background: "rgba(0,0,0,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-      <Building2 style={{ width: size * 0.44, height: size * 0.44, color: "var(--text-tertiary)" }} />
+  if (domain) {
+    return (
+      <div style={{ width: size, height: size, borderRadius: size > 30 ? 10 : 8, background: '#fff', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+        <img src={`https://www.google.com/s2/favicons?domain=${domain}&sz=${size > 36 ? 128 : 64}`} alt="" style={{ width: size * 0.7, height: size * 0.7, objectFit: 'contain' }} />
+      </div>
+    )
+  }
+  return (
+    <div style={{ width: size, height: size, borderRadius: size > 30 ? 10 : 8, background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <Building2 style={{ width: size * 0.44, height: size * 0.44, color: 'var(--text-tertiary)' }} />
     </div>
   )
 }
