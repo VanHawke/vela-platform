@@ -4,7 +4,7 @@ export const config = { supportsResponseStreaming: true };
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const MODEL = 'claude-sonnet-4-6';
-const MEM0_KEY = process.env.MEM0_KEY || '';
+const MEM0_KEY = process.env.MEM0_API_KEY || process.env.MEM0_KEY || '';
 const MEM0_USER = 'sunny-vanhawke';
 
 // ── Mem0 Cross-Session Memory ───────────────────────────
