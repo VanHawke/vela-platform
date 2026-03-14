@@ -16,16 +16,15 @@ export default async function handler(req, res) {
 
   if (action === 'debug') {
     const { firstName, lastName, domain } = req.body
-    const r = await fetch('https://api.lemlist.com/api/email-finder', {
-      method: 'POST',
-      headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ firstName: firstName || 'Charlie', lastName: lastName || 'Jalali-Farhani', companyDomain: domain || 'payhawk.com' })
+    const fn = firstName || 'Charlie', ln = lastName || 'Jalali-Farhani', dm = domain || 'payhawk.com'
+    const r = await fetch(`https://api.lemlist.com/api/email-finder?firstName=${encodeURIComponent(fn)}&lastName=${encodeURIComponent(ln)}&companyDomain=${encodeURIComponent(dm)}`, {
+      headers: { 'Authorization': `Basic ${auth}` }
     })
     const status = r.status
     const text = await r.text()
     let parsed = null
     try { parsed = JSON.parse(text) } catch(e) {}
-    return res.json({ status, raw: text.slice(0, 500), parsed, headers: Object.fromEntries([...r.headers.entries()].slice(0, 10)) })
+    return res.json({ status, parsedKeys: parsed ? Object.keys(parsed) : null, hasEmail: !!parsed?.email })
   }
 
   if (action === 'status') {
@@ -69,11 +68,9 @@ export default async function handler(req, res) {
         if (!domain) { notFound++; continue }
 
         try {
-          // Lemlist email finder API
-          const r = await fetch('https://api.lemlist.com/api/email-finder', {
-            method: 'POST',
-            headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ firstName, lastName, companyDomain: domain })
+          // Lemlist email finder API (GET)
+          const r = await fetch(`https://api.lemlist.com/api/email-finder?firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&companyDomain=${encodeURIComponent(domain)}`, {
+            headers: { 'Authorization': `Basic ${auth}` }
           })
 
           if (!r.ok) {
