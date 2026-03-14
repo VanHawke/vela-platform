@@ -20,8 +20,17 @@ export default function Contacts() {
 
   const load = async () => {
     setLoading(true)
-    const { data } = await supabase.from('contacts').select('id, data, updated_at').order('updated_at', { ascending: false })
-    setContacts((data || []).map(row => ({ id: row.id, ...row.data, updated_at: row.updated_at })))
+    let allData = [], from = 0
+    const batch = 1000
+    while (true) {
+      const { data } = await supabase.from('contacts').select('id, data, updated_at')
+        .order('updated_at', { ascending: false }).range(from, from + batch - 1)
+      if (!data || data.length === 0) break
+      allData = allData.concat(data)
+      if (data.length < batch) break
+      from += batch
+    }
+    setContacts(allData.map(row => ({ id: row.id, ...row.data, updated_at: row.updated_at })))
     setLoading(false)
   }
 
