@@ -51,12 +51,20 @@ export default function Organisations() {
 
   useEffect(() => { load() }, [])
 
-  // Auto-open org from query param (e.g. from ContactDetail clickthrough)
+  // Auto-open org from query param (e.g. from Pipeline or ContactDetail clickthrough)
   useEffect(() => {
     const orgParam = searchParams.get('org')
     if (orgParam && companies.length > 0 && !selectedOrg) {
       const found = companies.find(c => c.id === orgParam)
-      if (found) selectOrg(found)
+      if (found) {
+        selectOrg(found)
+      } else {
+        // Org not in loaded page — fetch directly from Supabase
+        supabase.from('companies').select('id, data, updated_at').eq('id', orgParam).single()
+          .then(({ data }) => {
+            if (data) selectOrg({ id: data.id, ...data.data, updated_at: data.updated_at })
+          })
+      }
     }
   }, [companies, searchParams])
 
