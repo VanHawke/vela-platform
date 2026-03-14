@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { ChevronDown, Clock, User, Building2, GripVertical } from 'lucide-react'
+import { ChevronDown, Clock, User, Building2, GripVertical, X, Send, Users, ExternalLink } from 'lucide-react'
 
 const PIPELINES = ['Haas F1', 'Alpine F1', 'Formula E', 'ONE Championship', 'Esports']
 
@@ -24,6 +25,12 @@ export default function Pipeline() {
   const [showClosed, setShowClosed] = useState(false)
   const [dragDeal, setDragDeal] = useState(null)
   const [dragOverStage, setDragOverStage] = useState(null)
+  const [selectedDeal, setSelectedDeal] = useState(null)
+  const [dealCompany, setDealCompany] = useState(null)
+  const [dealContacts, setDealContacts] = useState([])
+  const [dealCampaigns, setDealCampaigns] = useState([])
+  const [loadingPanel, setLoadingPanel] = useState(false)
+  const nav = useNavigate()
 
   useEffect(() => { load() }, [])
 
@@ -41,6 +48,42 @@ export default function Pipeline() {
   }, [deals, pipelineFilter])
 
   const dealsByStage = (stageId) => filteredDeals.filter(d => d.stage === stageId)
+
+  const selectDeal = async (deal) => {
+    setSelectedDeal(deal)
+    setLoadingPanel(true)
+    setDealCompany(null)
+    setDealContacts([])
+    setDealCampaigns([])
+    if (deal.company) {
+      const { data: orgs } = await supabase.from('companies').select('id, data').filter('data->>name', 'eq', deal.company).limit(1)
+      if (orgs && orgs.length > 0) setDealCompany({ id: orgs[0].id, ...orgs[0].data })
+      const { data: contacts } = await supabase.from('contacts').select('id, data').filter('data->>company', 'eq', deal.company).order('updated_at', { ascending: false }).limit(20)
+      const cl = (contacts || []).map(ct => ({ id: ct.id, ...ct.data }))
+      if (deal.contactName) {
+        const pi = cl.findIndex(ct => (ct.firstName + ' ' + (ct.lastName || '')).trim().includes(deal.contactName?.split(' ')[0]))
+        if (pi > 0) { const [p] = cl.splice(pi, 1); cl.unshift(p) }
+      }
+      setDealContacts(cl)
+      const campMap = {}
+      cl.forEach(ct => {
+        if (ct.lemlistCampaigns && Array.isArray(ct.lemlistCampaigns)) {
+          ct.lemlistCampaigns.forEach(camp => {
+            if (!camp.name) return
+            if (!campMap[camp.name]) campMap[camp.name] = { name: camp.name, contacts: 0 }
+            campMap[camp.name].contacts++
+          })
+        }
+      })
+      setDealCampaigns(Object.values(campMap).sort((a, b) => b.contacts - a.contacts))
+    }
+    setLoadingPanel(false)
+  }
+  const closePanel = () => { setSelectedDeal(null); setDealCompany(null); setDealContacts([]); setDealCampaigns([]) }
+  const panelOpen = !!selectedDeal
+  const sectionTitle = { fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.04em' }
+  const emptyText = { fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', fontStyle: 'italic' }
+  const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : null
 
   const activeDealCount = useMemo(() => {
     return filteredDeals.filter(d => d.stage !== 'Closed Won' && d.stage !== 'Closed Lost').length
@@ -138,8 +181,10 @@ export default function Pipeline() {
         </div>
       </div>
 
+      {/* Main area with panel */}
+      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', padding: '0 16px 16px' }}>
       {/* Kanban columns */}
-      <div style={{ flex: 1, overflowX: 'auto', padding: '16px 16px 16px' }}>
+      <div style={{ flex: 1, overflowX: 'auto', paddingTop: 16 }}>
         <div style={{ display: 'flex', gap: 12, height: '100%', minWidth: 'max-content' }}>
           {activeStages.map(stage => {
             const stageDeals = dealsByStage(stage.id)
@@ -196,6 +241,7 @@ export default function Pipeline() {
                       }}
                       onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)'}
                       onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'}
+                      onClick={() => selectDeal(deal)}
                     >
                       {/* Company name - headline */}
                       <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.3 }}>
@@ -208,14 +254,11 @@ export default function Pipeline() {
                           {deal.contactName}
                         </p>
                       )}
-                      {/* Bottom row: last activity + owner */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+                      {/* Bottom row: last activity */}
+                      <div style={{ display: 'flex', alignItems: 'center', marginTop: 8 }}>
                         <span style={{ fontSize: 10, fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', gap: 3, ...staleClass(deal.lastActivity) }}>
                           <Clock style={{ width: 9, height: 9 }} />
                           {daysAgo(deal.lastActivity) || 'No activity'}
-                        </span>
-                        <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>
-                          {deal.owner ? deal.owner.split(' ')[0] : ''}
                         </span>
                       </div>
                     </div>
@@ -225,6 +268,76 @@ export default function Pipeline() {
             )
           })}
         </div>
+      </div>
+
+      {/* Deal slide-out panel */}
+      <div style={{ width: panelOpen ? 380 : 0, minWidth: panelOpen ? 380 : 0, transition: 'width 0.3s ease, min-width 0.3s ease, opacity 0.2s ease', opacity: panelOpen ? 1 : 0, overflow: 'hidden', marginLeft: panelOpen ? 16 : 0 }}>
+        {selectedDeal && (
+          <div style={{ width: 380, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 16 }}>
+            <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '20px 20px 16px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div>
+                  <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{selectedDeal.company || selectedDeal.title}</h2>
+                  {dealCompany?.industry && <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '3px 0 0', fontFamily: 'var(--font)' }}>{dealCompany.industry}{dealCompany.country ? ` · ${dealCompany.country}` : ''}</p>}
+                </div>
+                <button onClick={closePanel} style={{ background: 'rgba(0,0,0,0.04)', border: 'none', borderRadius: 8, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-tertiary)', flexShrink: 0 }}><X style={{ width: 14, height: 14 }} /></button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
+                  <Building2 style={{ width: 13, height: 13, color: 'var(--text-tertiary)' }} /> Rights Holder: <strong>{selectedDeal.pipeline || '—'}</strong>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
+                  <Clock style={{ width: 13, height: 13, color: 'var(--text-tertiary)' }} /> Stage: <strong>{selectedDeal.stage || '—'}</strong>
+                </div>
+              </div>
+              {dealCompany && (
+                <button onClick={() => nav(`/organisations?org=${dealCompany.id}`)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--accent)', background: 'rgba(0,0,0,0.03)', padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.04)', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                  <ExternalLink style={{ width: 12, height: 12 }} /> View Organisation
+                </button>
+              )}
+            </div>
+            <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '16px 20px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+              <p style={sectionTitle}><Users style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Contacts ({dealContacts.length})</p>
+              {loadingPanel ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{[...Array(2)].map((_, i) => <div key={i} style={{ height: 40, background: 'rgba(0,0,0,0.03)', borderRadius: 8, animation: 'pulse 1.5s infinite' }} />)}</div>
+              ) : dealContacts.length === 0 ? (
+                <p style={emptyText}>No contacts linked</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {dealContacts.map((ct, i) => (
+                    <div key={ct.id} onClick={() => nav(`/contacts/${ct.id}`)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', transition: 'background 0.15s', background: i === 0 ? 'rgba(59,130,246,0.04)' : 'transparent', border: i === 0 ? '1px solid rgba(59,130,246,0.1)' : '1px solid transparent' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
+                      onMouseLeave={e => e.currentTarget.style.background = i === 0 ? 'rgba(59,130,246,0.04)' : 'transparent'}>
+                      {ct.picture ? <img src={ct.picture} alt="" style={{ width: 28, height: 28, borderRadius: 14, objectFit: 'cover' }} /> : (
+                        <div style={{ width: 28, height: 28, borderRadius: 14, background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{(ct.firstName || '?')[0]?.toUpperCase()}</span>
+                        </div>
+                      )}
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{[ct.firstName, ct.lastName].filter(Boolean).join(' ')}{i === 0 ? ' (Primary)' : ''}</p>
+                        <p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '1px 0 0', fontFamily: 'var(--font)' }}>{ct.title || '—'}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '16px 20px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+              <p style={sectionTitle}><Send style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Lemlist Campaigns</p>
+              {dealCampaigns.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {dealCampaigns.map(camp => (
+                    <div key={camp.name} style={{ padding: '8px 10px', background: 'rgba(59,130,246,0.04)', borderRadius: 8, border: '1px solid rgba(59,130,246,0.1)' }}>
+                      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{camp.name}</p>
+                      <p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{camp.contacts} contact{camp.contacts !== 1 ? 's' : ''}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : <p style={emptyText}>No campaigns linked</p>}
+            </div>
+          </div>
+        )}
+      </div>
       </div>
     </div>
   )
