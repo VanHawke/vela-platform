@@ -43,6 +43,7 @@ export default function Organisations() {
   const [orgLinkedin, setOrgLinkedin] = useState(null)
   const [orgDomain, setOrgDomain] = useState(null)
   const [orgCampaigns, setOrgCampaigns] = useState([])
+  const [orgLastComm, setOrgLastComm] = useState({ sent: null, received: null })
   const [loadingPanel, setLoadingPanel] = useState(false)
 
   useEffect(() => { load() }, [])
@@ -103,26 +104,48 @@ export default function Organisations() {
     const firstDomain = contactList.map(c => getDomain(c.email)).find(Boolean)
     setOrgDomain(firstDomain || (company.website ? company.website.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0] : null))
 
-    // Campaign data from activities
+    // Campaign data from contacts' Lemlist data + activities table
+    const campMap = {}
+    contactList.forEach(c => {
+      if (c.lemlistCampaigns && Array.isArray(c.lemlistCampaigns)) {
+        c.lemlistCampaigns.forEach(camp => {
+          if (!camp.name) return
+          if (!campMap[camp.name]) campMap[camp.name] = { name: camp.name, contacts: 0, status: camp.status, lastContact: c.firstName ? `${c.firstName} ${c.lastName || ''}`.trim() : '' }
+          campMap[camp.name].contacts++
+        })
+      }
+      if (c.lastCampaign && !campMap[c.lastCampaign]) {
+        campMap[c.lastCampaign] = { name: c.lastCampaign, contacts: 1, status: null, lastContact: '' }
+      }
+    })
+
+    // Also check activities table for event-level data
     const contactIds = contactList.map(c => c.id)
     if (contactIds.length > 0) {
       const { data: activities } = await supabase.from('contact_activities')
-        .select('campaign_name, created_at').in('contact_id', contactIds)
+        .select('campaign_name, type, email_subject, created_at, contact_id').in('contact_id', contactIds)
         .order('created_at', { ascending: false }).limit(200)
-      const campMap = {}
       ;(activities || []).forEach(a => {
         if (a.campaign_name) {
-          if (!campMap[a.campaign_name]) campMap[a.campaign_name] = { name: a.campaign_name, events: 0, lastEvent: a.created_at }
-          campMap[a.campaign_name].events++
-          if (a.created_at > campMap[a.campaign_name].lastEvent) campMap[a.campaign_name].lastEvent = a.created_at
+          if (!campMap[a.campaign_name]) campMap[a.campaign_name] = { name: a.campaign_name, contacts: 0, status: null, lastContact: '' }
+          if (!campMap[a.campaign_name].lastEvent || a.created_at > campMap[a.campaign_name].lastEvent) {
+            campMap[a.campaign_name].lastEvent = a.created_at
+            campMap[a.campaign_name].lastEventType = a.type
+            campMap[a.campaign_name].lastSubject = a.email_subject
+          }
         }
       })
-      setOrgCampaigns(Object.values(campMap).sort((a, b) => b.lastEvent.localeCompare(a.lastEvent)))
+      // Store last sent/received for org panel
+      const lastSent = (activities || []).find(a => ['emailsSent', 'linkedinSent'].includes(a.type))
+      const lastReceived = (activities || []).find(a => ['emailsReplied', 'linkedinReplied'].includes(a.type))
+      setOrgLastComm({ sent: lastSent || null, received: lastReceived || null })
     }
+
+    setOrgCampaigns(Object.values(campMap).sort((a, b) => (b.contacts || 0) - (a.contacts || 0)))
     setLoadingPanel(false)
   }
 
-  const closePanel = () => { setSelectedOrg(null); setOrgContacts([]); setOrgLinkedin(null); setOrgDomain(null); setOrgCampaigns([]) }
+  const closePanel = () => { setSelectedOrg(null); setOrgContacts([]); setOrgLinkedin(null); setOrgDomain(null); setOrgCampaigns([]); setOrgLastComm({ sent: null, received: null }) }
 
   const filtered = useMemo(() => {
     if (!search) return companies
@@ -311,9 +334,13 @@ export default function Organisations() {
               <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '16px 20px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
                 <p style={sectionTitle}><Send style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Active Campaign</p>
                 {orgCampaigns.length > 0 ? (
-                  <div style={{ padding: '8px 10px', background: 'rgba(59,130,246,0.04)', borderRadius: 8, border: '1px solid rgba(59,130,246,0.1)' }}>
-                    <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{orgCampaigns[0].name}</p>
-                    <p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{orgCampaigns[0].events} event{orgCampaigns[0].events !== 1 ? 's' : ''} · Last: {formatDate(orgCampaigns[0].lastEvent)}</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {orgCampaigns.map(c => (
+                      <div key={c.name} style={{ padding: '8px 10px', background: 'rgba(59,130,246,0.04)', borderRadius: 8, border: '1px solid rgba(59,130,246,0.1)' }}>
+                        <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{c.name}</p>
+                        <p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{c.contacts} contact{c.contacts !== 1 ? 's' : ''}{c.status ? ` · ${c.status}` : ''}{c.lastEvent ? ` · Last: ${formatDate(c.lastEvent)}` : ''}</p>
+                      </div>
+                    ))}
                   </div>
                 ) : <p style={emptyText}>No active campaign</p>}
               </div>
@@ -325,12 +352,33 @@ export default function Organisations() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {orgCampaigns.map(c => (
                       <div key={c.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: 'rgba(0,0,0,0.02)', borderRadius: 8 }}>
-                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0, fontFamily: 'var(--font)' }}>{c.name}</p>
-                        <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>{c.events} events</span>
+                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0, fontFamily: 'var(--font)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</p>
+                        <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', flexShrink: 0, marginLeft: 8 }}>{c.contacts} contact{c.contacts !== 1 ? 's' : ''}</span>
                       </div>
                     ))}
                   </div>
                 ) : <p style={emptyText}>No campaign history yet</p>}
+              </div>
+              {/* Last Communication */}
+              <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '16px 20px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                <p style={sectionTitle}>Last Communication</p>
+                {orgLastComm.sent || orgLastComm.received ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {orgLastComm.sent && (
+                      <div style={{ padding: '8px 10px', background: 'rgba(0,0,0,0.02)', borderRadius: 8 }}>
+                        <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Last sent: {orgLastComm.sent.type === 'emailsSent' ? 'Email' : 'LinkedIn message'}</p>
+                        {orgLastComm.sent.email_subject && <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{orgLastComm.sent.email_subject}</p>}
+                        <p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '3px 0 0', fontFamily: 'var(--font)' }}>{formatDate(orgLastComm.sent.created_at)} · {orgLastComm.sent.campaign_name || ''}</p>
+                      </div>
+                    )}
+                    {orgLastComm.received && (
+                      <div style={{ padding: '8px 10px', background: 'rgba(16,185,129,0.04)', borderRadius: 8, border: '1px solid rgba(16,185,129,0.1)' }}>
+                        <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Last received: {orgLastComm.received.type === 'emailsReplied' ? 'Email reply' : 'LinkedIn reply'}</p>
+                        <p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '3px 0 0', fontFamily: 'var(--font)' }}>{formatDate(orgLastComm.received.created_at)}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : <p style={emptyText}>No communications logged yet</p>}
               </div>
             </div>
           )}
