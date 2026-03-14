@@ -33,6 +33,7 @@ TOOLS:
 - get_entity_detail: Deep briefing on a specific contact, company, or deal. Returns full profile with funding, campaigns, activities, related records.
 - search_conversations: Search past Kiko conversations by keyword.
 - navigate_page: Navigate the user to any page in the platform. When the user says "show me the pipeline", "pull up deals", "go to contacts", etc., ALWAYS use this tool to navigate them there. You are the operating system — you control the interface.
+- get_alerts: Get proactive intelligence alerts — stale deals, pipeline bottlenecks, data gaps. Use when asked for a status update, morning briefing, or "what should I focus on."
 - Web search: You have native web search. Use it for news, weather, market data, company research.
 - Memory: You have a /memories directory. Check it before responding. Store important facts there.
 
@@ -118,6 +119,8 @@ const CUSTOM_TOOLS = [
       page: { type: 'string', enum: ['home', 'pipeline', 'contacts', 'organisations', 'deals', 'email', 'calendar', 'documents', 'tasks', 'settings', 'dashboard'], description: 'Page to navigate to' },
       reason: { type: 'string', description: 'Brief description of why navigating (shown to user)' },
     }, required: ['page'] } },
+  { name: 'get_alerts', description: 'Get proactive intelligence alerts — stale deals, pipeline bottlenecks, data quality issues. Use when user asks for updates, status briefing, "what should I focus on", or when on the home page.',
+    input_schema: { type: 'object', properties: {}, required: [] } },
 ];
 
 // ── Supabase Helper ─────────────────────────────────────
@@ -338,6 +341,11 @@ async function executeTool(name, input) {
   if (name === 'navigate_page') {
     const { page, reason } = input;
     return { navigated: true, page, reason: reason || `Opening ${page}`, instruction: `NAVIGATION: Navigating to ${page}. Tell the user you're taking them there.` };
+  }
+  if (name === 'get_alerts') {
+    const alerts = await sbFetch('kiko_alerts?dismissed=eq.false&expires_at=gt.' + new Date().toISOString() + '&select=type,severity,title,detail,entity_name&order=created_at.desc&limit=10')
+    if (!alerts || alerts.length === 0) return 'No active alerts. Pipeline is clean.'
+    return `${alerts.length} active alert${alerts.length > 1 ? 's' : ''}:\n${alerts.map(a => `[${a.severity?.toUpperCase()}] ${a.title}\n  ${a.detail}`).join('\n\n')}`
   }
   return { error: `Unknown tool: ${name}` };
 }

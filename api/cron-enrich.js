@@ -47,5 +47,9 @@ export default async function handler(req, res) {
   const actResult = await callEndpoint(`${BASE}/api/backfill-activities`, { action: 'backfill', offset: 0, batchSize: 30 })
   results.activities = { logged: actResult.activitiesLogged || 0 }
 
+  // 5. Scan for proactive intelligence alerts
+  const alertResult = await callEndpoint(`${BASE}/api/kiko-alerts`, { action: 'scan' })
+  results.alerts = { generated: alertResult.alertsGenerated || 0 }
+
   return res.json({ status: 'complete', timestamp: new Date().toISOString(), results })
 }
