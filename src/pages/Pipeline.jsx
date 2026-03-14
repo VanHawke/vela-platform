@@ -30,6 +30,7 @@ export default function Pipeline() {
   const [dealContacts, setDealContacts] = useState([])
   const [dealCampaigns, setDealCampaigns] = useState([])
   const [loadingPanel, setLoadingPanel] = useState(false)
+  const [companyDomains, setCompanyDomains] = useState({})
   const nav = useNavigate()
 
   useEffect(() => { load() }, [])
@@ -38,6 +39,11 @@ export default function Pipeline() {
     setLoading(true)
     const { data } = await supabase.from('deals').select('id, data, updated_at').order('updated_at', { ascending: false })
     setDeals((data || []).map(row => ({ _id: row.id, ...row.data, updated_at: row.updated_at })))
+    // Load company domains for logos
+    const { data: orgs } = await supabase.from('companies').select('data->>name, data->>website').not('data->>website', 'is', null).not('data->>website', 'eq', '')
+    const domainMap = {}
+    ;(orgs || []).forEach(o => { if (o.name && o.website) domainMap[o.name] = o.website.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0] })
+    setCompanyDomains(domainMap)
     setLoading(false)
   }
 
@@ -243,10 +249,21 @@ export default function Pipeline() {
                       onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'}
                       onClick={() => selectDeal(deal)}
                     >
-                      {/* Company name - headline */}
-                      <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.3 }}>
-                        {deal.company || deal.title}
-                      </p>
+                      {/* Company name with logo */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {companyDomains[deal.company] ? (
+                          <div style={{ width: 22, height: 22, borderRadius: 6, background: '#fff', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                            <img src={`https://www.google.com/s2/favicons?domain=${companyDomains[deal.company]}&sz=64`} alt="" style={{ width: 15, height: 15, objectFit: 'contain' }} />
+                          </div>
+                        ) : (
+                          <div style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <Building2 style={{ width: 11, height: 11, color: 'var(--text-tertiary)' }} />
+                          </div>
+                        )}
+                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {deal.company || deal.title}
+                        </p>
+                      </div>
                       {/* Contact name */}
                       {deal.contactName && (
                         <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '4px 0 0', fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -276,9 +293,20 @@ export default function Pipeline() {
           <div style={{ width: 380, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 16 }}>
             <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '20px 20px 16px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
-                <div>
-                  <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{selectedDeal.company || selectedDeal.title}</h2>
-                  {dealCompany?.industry && <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '3px 0 0', fontFamily: 'var(--font)' }}>{dealCompany.industry}{dealCompany.country ? ` · ${dealCompany.country}` : ''}</p>}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  {companyDomains[selectedDeal.company] ? (
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: '#fff', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                      <img src={`https://www.google.com/s2/favicons?domain=${companyDomains[selectedDeal.company]}&sz=128`} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                    </div>
+                  ) : (
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Building2 style={{ width: 18, height: 18, color: 'var(--text-tertiary)' }} />
+                    </div>
+                  )}
+                  <div>
+                    <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{selectedDeal.company || selectedDeal.title}</h2>
+                    {dealCompany?.industry && <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '3px 0 0', fontFamily: 'var(--font)' }}>{dealCompany.industry}{dealCompany.country ? ` · ${dealCompany.country}` : ''}</p>}
+                  </div>
                 </div>
                 <button onClick={closePanel} style={{ background: 'rgba(0,0,0,0.04)', border: 'none', borderRadius: 8, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-tertiary)', flexShrink: 0 }}><X style={{ width: 14, height: 14 }} /></button>
               </div>
