@@ -22,6 +22,15 @@ export default async function handler(req, res) {
   const BATCH = Math.min(reqBatch || 25, 50)
   const OFFSET = reqOffset || 0
 
+  // DEBUG: inspect raw Lemlist response for one contact
+  if (action === 'debug') {
+    const email = req.body.email
+    if (!email) return res.status(400).json({ error: 'Provide email' })
+    const lead = await lemlistFetch(`/leads/${encodeURIComponent(email)}?version=v2`)
+    const keys = lead ? (Array.isArray(lead) ? lead.map(l => Object.keys(l)) : Object.keys(lead)) : null
+    return res.json({ lead: lead ? (Array.isArray(lead) ? lead[0] : lead) : null, keys, isArray: Array.isArray(lead) })
+  }
+
   if (action === 'backfill') {
     try {
       // Get contacts that have Lemlist campaigns and real emails
