@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { Plus, Search, X, Building2, Globe, ChevronLeft, ChevronRight, Users, Linkedin, Send, ExternalLink } from 'lucide-react'
 
@@ -31,6 +31,7 @@ function OrgLogo({ domain, name, size = 36 }) {
 
 export default function Organisations() {
   const nav = useNavigate()
+  const [searchParams] = useSearchParams()
   const [companies, setCompanies] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -47,6 +48,15 @@ export default function Organisations() {
   const [loadingPanel, setLoadingPanel] = useState(false)
 
   useEffect(() => { load() }, [])
+
+  // Auto-open org from query param (e.g. from ContactDetail clickthrough)
+  useEffect(() => {
+    const orgParam = searchParams.get('org')
+    if (orgParam && companies.length > 0 && !selectedOrg) {
+      const found = companies.find(c => c.id === orgParam)
+      if (found) selectOrg(found)
+    }
+  }, [companies, searchParams])
 
   const load = async () => {
     setLoading(true)

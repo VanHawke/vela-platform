@@ -169,7 +169,7 @@ export default function ContactDetail() {
                 <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{displayName(contact)}</p>
                 {contact.title && <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '4px 0 0', fontFamily: 'var(--font)' }}>{contact.title}</p>}
                 {contact.company && (
-                  <p onClick={() => orgId && nav(`/organisations`)} style={{ fontSize: 12, color: orgId ? 'var(--accent)' : 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', gap: 4, cursor: orgId ? 'pointer' : 'default' }}>
+                  <p onClick={() => orgId && nav(`/organisations?org=${orgId}`)} style={{ fontSize: 12, color: orgId ? 'var(--accent)' : 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', gap: 4, cursor: orgId ? 'pointer' : 'default' }}>
                     <Building2 style={{ width: 11, height: 11 }} /> {contact.company} {orgId && <ChevronRight style={{ width: 10, height: 10 }} />}
                   </p>
                 )}
@@ -250,7 +250,7 @@ export default function ContactDetail() {
                     { label: 'First Name', value: contact.firstName },
                     { label: 'Last Name', value: contact.lastName },
                     { label: 'Job Title', value: contact.title },
-                    { label: 'Company', value: contact.company, onClick: orgId ? () => nav(`/organisations`) : null },
+                    { label: 'Company', value: contact.company, onClick: orgId ? () => nav(`/organisations?org=${orgId}`) : null },
                     { label: 'Email', value: contact.email, link: contact.email ? `mailto:${contact.email}` : null },
                     { label: 'Phone', value: contact.phone, link: contact.phone ? `tel:${contact.phone}` : null },
                     { label: 'LinkedIn', value: contact.linkedin ? 'View Profile' : null, link: contact.linkedin },
