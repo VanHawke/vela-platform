@@ -38,6 +38,7 @@ export default function Organisations() {
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState(null)
   const [page, setPage] = useState(0)
+  const [sortDir, setSortDir] = useState('asc')
   const [form, setForm] = useState({ name: '', industry: '', website: '', country: '', notes: '' })
   const [selectedOrg, setSelectedOrg] = useState(null)
   const [orgContacts, setOrgContacts] = useState([])
@@ -193,10 +194,18 @@ export default function Organisations() {
   const closePanel = () => { setSelectedOrg(null); setOrgContacts([]); setOrgLinkedin(null); setOrgDomain(null); setOrgCampaigns([]); setOrgLastComm({ sent: null, received: null }); setOrgDeals([]); setOrgSignals([]) }
 
   const filtered = useMemo(() => {
-    if (!search) return companies
-    const q = search.toLowerCase()
-    return companies.filter(c => [c.name, c.industry, c.country].some(f => f?.toLowerCase().includes(q)))
-  }, [companies, search])
+    let list = companies
+    if (search) {
+      const q = search.toLowerCase()
+      list = list.filter(c => [c.name, c.industry, c.country].some(f => f?.toLowerCase().includes(q)))
+    }
+    list = [...list].sort((a, b) => {
+      const nameA = (a.name || '').toLowerCase()
+      const nameB = (b.name || '').toLowerCase()
+      return sortDir === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA)
+    })
+    return list
+  }, [companies, search, sortDir])
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
@@ -239,6 +248,10 @@ export default function Organisations() {
           <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: 'var(--text-tertiary)' }} />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search organisations..." style={{ ...inputStyle, padding: '8px 12px 8px 34px' }} />
         </div>
+        <select value={sortDir} onChange={e => setSortDir(e.target.value)} style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 10px', fontSize: 11, color: 'var(--text-secondary)', outline: 'none', fontFamily: 'var(--font)', cursor: 'pointer' }}>
+          <option value="asc">A → Z</option>
+          <option value="desc">Z → A</option>
+        </select>
         {totalPages > 1 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>
             <button disabled={page === 0} onClick={() => setPage(p => p - 1)} style={{ background: 'none', border: 'none', cursor: page === 0 ? 'default' : 'pointer', opacity: page === 0 ? 0.3 : 1, color: 'var(--text-secondary)', padding: 2 }}><ChevronLeft style={{ width: 16, height: 16 }} /></button>
