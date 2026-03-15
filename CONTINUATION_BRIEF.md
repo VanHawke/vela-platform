@@ -47,9 +47,11 @@ Vela is a custom CRM and intelligence platform for Van Hawke Group, built with R
 ```
 api/
   kiko.js              (323 lines) — Kiko orchestrator: system prompt, Mem0, SSE streaming, tool routing
-  kiko-tools.js        (355 lines) — Tool registry: CRM, email, analytics, nav, alerts (MCP-ready)
+  kiko-tools.js        (389 lines) — Tool registry: CRM, email, analytics, nav, alerts (MCP-ready)
+  kiko-calendar.js     (46 lines)  — Calendar tool handlers (get + create events)
   kiko-alerts.js       (124 lines) — Proactive intelligence: stale deals, bottlenecks, data quality
-  email.js             (482 lines) — Gmail API proxy: sync, send, reply, trash, star, labels, search, threads, list-live
+  email.js             (398 lines) — Gmail API proxy: sync, send, reply, trash, star, labels, search, threads, list-live, attachments
+  email-helpers.js     (85 lines)  — Gmail message parsing and MIME building utilities
   google-token.js      (118 lines) — Google OAuth token management with auto-refresh
   cron-email-sync.js   (104 lines) — 5-minute Gmail sync cron for all connected users
   cron-enrich.js       (58 lines)  — Daily 6am enrichment + alerts cron
@@ -113,7 +115,7 @@ Pipelines: Haas F1, Alpine F1, Formula E, ONE Championship, Esports
 
 ---
 
-## KIKO TOOLS (11 total)
+## KIKO TOOLS (13 total)
 
 1. search_contacts — fuzzy CRM contact search
 2. search_companies — fuzzy CRM company search
@@ -126,6 +128,8 @@ Pipelines: Haas F1, Alpine F1, Formula E, ONE Championship, Esports
 9. get_email_thread — full thread fetch
 10. draft_email — create Gmail draft with auto-signature
 11. get_email_analytics — communication frequency, recency, engagement patterns
+12. get_calendar — upcoming calendar events (Google Calendar API)
+13. create_calendar_event — create events with attendees, location, Google Meet
 
 Plus native: web_search, memory
 
@@ -202,6 +206,11 @@ Everything from previous session (see v3.3 brief) PLUS:
 | Kiko get_email_thread tool | ✅ |
 | Kiko draft_email tool (creates Gmail drafts with signature) | ✅ |
 | Kiko get_email_analytics tool (frequency, recency, engagement) | ✅ |
+| Kiko get_calendar tool (upcoming events from Google Calendar) | ✅ |
+| Kiko create_calendar_event tool (create with attendees, location) | ✅ |
+| Email attachment download (metadata extraction + download endpoint + UI) | ✅ |
+| Enriched entity context (contact: email/campaigns/outreach, company: key contacts) | ✅ |
+| File splits: email-helpers.js, kiko-calendar.js — all files under 400 lines | ✅ |
 | Voice model upgrade (gpt-4o-realtime-preview → gpt-realtime) | ✅ |
 | Funding enrichment: 1,428 → 1,684 companies (75%) | ✅ |
 
@@ -215,18 +224,16 @@ Everything from previous session (see v3.3 brief) PLUS:
 3. **Google Cloud Pub/Sub for push email sync** — Currently polling. Push would eliminate 5-min delay. Requires Google Cloud project config.
 
 ### MEDIUM PRIORITY
-4. **Kiko email drafting from contact context** — When viewing a contact, "draft an email to them" should auto-populate recipient.
-5. **Email templates** — Saved templates for common outreach patterns (sponsorship intro, follow-up, etc).
-6. **Calendar integration with Kiko** — Google Calendar MCP connected but Kiko doesn't use it yet.
-7. **Pipeline: "Meeting Arranged" column visibility** — currently hidden if no deals in that stage.
-8. **Email attachment download/view** — Currently shows attachment indicator but can't download.
+4. **Email templates** — Saved templates for common outreach patterns (sponsorship intro, follow-up, etc).
+5. **Pipeline: "Meeting Arranged" column visibility** — currently hidden if no deals in that stage.
+6. **Calendar page UI** — Calendar page exists but needs restyle to match email page (Apple light theme).
 
 ### LOWER PRIORITY / FUTURE
-9. **MCP server migration** — kiko-tools.js structured for MCP. Would allow Kiko from Claude Desktop, mobile.
-10. **Cloudflare migration** — planned post-stabilisation.
-11. **Cancel Pipedrive** — once CRM confirmed fully working.
-12. **SponsorSignal integration** — daily LinkedIn content, not yet connected.
-13. **Kiko voice selection** — Voice audition panel built (artifact), user hasn't picked yet. Current: shimmer.
+7. **MCP server migration** — kiko-tools.js structured for MCP. Would allow Kiko from Claude Desktop, mobile.
+8. **Cloudflare migration** — planned post-stabilisation.
+9. **Cancel Pipedrive** — once CRM confirmed fully working.
+10. **SponsorSignal integration** — daily LinkedIn content, not yet connected.
+11. **Kiko voice selection** — Voice audition panel built (artifact), user hasn't picked yet. Current: shimmer on gpt-realtime.
 
 ---
 
@@ -240,4 +247,4 @@ Everything from previous session (see v3.3 brief) PLUS:
 
 ---
 
-*Generated 15 March 2026. Session covered: Home button fix, pagination, Gmail full integration (6 chunks), Kiko email tools (search, thread, draft, analytics), voice model upgrade, funding enrichment, chat rename, Kiko Insights centering.*
+*Generated 15 March 2026. Session covered: Home button fix, pagination, Gmail full integration (8 chunks), Kiko 13 tools (email search/thread/draft/analytics, calendar get/create), voice model upgrade, funding enrichment, chat rename, attachment downloads, entity context enrichment, file splits.*
