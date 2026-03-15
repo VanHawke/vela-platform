@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Mail, Star, Send, FileText, AlertTriangle, Trash2, Search, RefreshCw, Loader2, Plus, Inbox } from 'lucide-react'
+import { Mail, Star, Send, FileText, AlertTriangle, Trash2, Search, RefreshCw, Loader2, Plus, Inbox, Tag } from 'lucide-react'
 import EmailThread from './EmailThread'
 import EmailCompose from './EmailCompose'
 
@@ -47,12 +47,16 @@ export default function Email({ user }) {
   const [search, setSearch] = useState('')
   const [composing, setComposing] = useState(null) // null | 'new' | { mode: 'reply'|'forward', email }
   const [nextPageToken, setNextPageToken] = useState(null)
+  const [userLabels, setUserLabels] = useState([])
   const email = user?.email
 
   // Auto-sync on mount, then load
   useEffect(() => {
     if (!email) return
     handleSync().then(() => fetchEmails())
+    // Fetch custom labels
+    fetch(`/api/email?email=${encodeURIComponent(email)}&action=labels`)
+      .then(r => r.json()).then(d => setUserLabels(d.labels || [])).catch(() => {})
   }, [email])
 
   // Refetch when folder changes
@@ -157,6 +161,28 @@ export default function Email({ user }) {
             </button>
           )
         })}
+
+        {/* User labels */}
+        {userLabels.length > 0 && (
+          <>
+            <div style={{ height: 1, background: T.border, margin: '8px 0' }} />
+            <div style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, padding: '4px 12px', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: T.font }}>Labels</div>
+            {userLabels.map(l => {
+              const active = folder === l.id
+              return (
+                <button key={l.id} onClick={() => { setFolder(l.id); setSelectedThread(null) }} style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '6px 12px',
+                  borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left',
+                  background: active ? T.accentSoft : 'transparent', fontFamily: T.font,
+                  color: active ? T.text : T.textSecondary, fontSize: 12, fontWeight: active ? 600 : 400,
+                }}>
+                  <Tag size={13} style={{ flexShrink: 0 }} />
+                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.name}</span>
+                </button>
+              )
+            })}
+          </>
+        )}
       </div>
 
       {/* Middle — Email list */}

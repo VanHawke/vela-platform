@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Send, X, Bold, Italic, Underline, Link, List, Loader2 } from 'lucide-react'
+import { Send, X, Bold, Italic, Underline, Link, List, Loader2, Paperclip, XCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 const T = {
@@ -24,7 +24,9 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
   const [sending, setSending] = useState(false)
   const [showCc, setShowCc] = useState(false)
   const [signature, setSignature] = useState('')
+  const [attachments, setAttachments] = useState([]) // { name, size, type, base64 }
   const editorRef = useRef(null)
+  const fileInputRef = useRef(null)
 
   // Fetch email signature from user_settings
   useEffect(() => {
@@ -34,6 +36,20 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
         .then(({ data: s }) => { if (s?.email_signature) setSignature(s.email_signature) })
     })
   }, [])
+
+  const handleAttach = async (e) => {
+    const files = Array.from(e.target.files || [])
+    for (const file of files) {
+      if (file.size > 10 * 1024 * 1024) { alert(`${file.name} exceeds 10MB limit`); continue }
+      const base64 = await new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result.split(',')[1])
+        reader.readAsDataURL(file)
+      })
+      setAttachments(prev => [...prev, { name: file.name, size: file.size, type: file.type || 'application/octet-stream', base64 }])
+    }
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
 
   useEffect(() => {
     if (mode === 'reply' && replyTo) {
@@ -105,6 +121,7 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
         bcc: bcc.trim() || undefined,
         subject,
         body_html: bodyHtml,
+        attachments: attachments.length > 0 ? attachments : undefined,
       }
       if (replyTo?.gmail_id && (mode === 'reply' || mode === 'reply-all')) {
         payload.id = replyTo.gmail_id
@@ -189,7 +206,32 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
             <btn.icon size={14} />
           </button>
         ))}
+        <div style={{ flex: 1 }} />
+        <button onClick={() => fileInputRef.current?.click()} style={{
+          width: 30, height: 28, borderRadius: 6, border: 'none', background: 'transparent',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.textSecondary,
+        }}
+          onMouseOver={e => e.currentTarget.style.background = T.accentSoft}
+          onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
+          <Paperclip size={14} />
+        </button>
+        <input ref={fileInputRef} type="file" multiple onChange={handleAttach} style={{ display: 'none' }} />
       </div>
+
+      {/* Attachment list */}
+      {attachments.length > 0 && (
+        <div style={{ padding: '6px 16px', borderBottom: `1px solid ${T.border}`, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {attachments.map((a, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, background: T.accentSoft, fontSize: 11, color: T.textSecondary, fontFamily: T.font }}>
+              <Paperclip size={10} />
+              <span>{a.name} ({(a.size / 1024).toFixed(0)}KB)</span>
+              <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: T.textTertiary, display: 'flex' }}>
+                <XCircle size={12} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Rich text editor (contentEditable) */}
       <div style={{ flex: 1, overflow: 'auto', padding: '12px 16px' }}>

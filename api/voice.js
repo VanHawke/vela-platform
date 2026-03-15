@@ -93,7 +93,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           session: {
             type: 'realtime',
-            model: 'gpt-4o-realtime-preview',
+            model: 'gpt-realtime',
             audio: {
               output: { voice: voiceId }
             },

@@ -73,6 +73,15 @@ export default async function handler(req, res) {
       return res.status(200).json(data || {});
     }
 
+    // LABELS — fetch all Gmail labels
+    if (action === 'labels') {
+      const labelsRes = await fetch(`${GMAIL_BASE}/labels`, { headers });
+      const labelsData = await labelsRes.json();
+      const labels = (labelsData.labels || []).filter(l => l.type === 'user' && l.labelListVisibility !== 'labelHide')
+        .map(l => ({ id: l.id, name: l.name }));
+      return res.status(200).json({ labels });
+    }
+
     // SYNC — fetch from Gmail and cache
     if (action === 'sync') {
       return await syncEmails(email, token, res);
@@ -80,10 +89,10 @@ export default async function handler(req, res) {
 
     // SEND email
     if (action === 'send') {
-      const { to, cc, bcc, subject, body_html, in_reply_to, thread_id } = req.body;
+      const { to, cc, bcc, subject, body_html, in_reply_to, thread_id, attachments } = req.body;
       if (!to || !subject) return res.status(400).json({ error: 'to and subject required' });
 
-      const raw = buildMimeMessage({ to, cc, bcc, subject, body_html, in_reply_to });
+      const raw = buildMimeMessage({ to, cc, bcc, subject, body_html, in_reply_to, attachments });
       const sendBody = { raw };
       if (thread_id) sendBody.threadId = thread_id;
 
@@ -438,8 +447,11 @@ function base64UrlDecode(data) {
   }
 }
 
-function buildMimeMessage({ to, cc, bcc, subject, body_html, in_reply_to }) {
-  const boundary = `boundary_${Date.now()}`;
+function buildMimeMessage({ to, cc, bcc, subject, body_html, in_reply_to, attachments }) {
+  const altBoundary = `alt_${Date.now()}`;
+  const mixBoundary = `mix_${Date.now() + 1}`;
+  const hasAttachments = attachments && attachments.length > 0;
+
   let mime = '';
   mime += `To: ${to}\r\n`;
   if (cc) mime += `Cc: ${cc}\r\n`;
@@ -450,17 +462,30 @@ function buildMimeMessage({ to, cc, bcc, subject, body_html, in_reply_to }) {
     mime += `In-Reply-To: <${in_reply_to}>\r\n`;
     mime += `References: <${in_reply_to}>\r\n`;
   }
-  mime += `Content-Type: multipart/alternative; boundary="${boundary}"\r\n\r\n`;
-  // Plain text fallback
+
+  if (hasAttachments) {
+    mime += `Content-Type: multipart/mixed; boundary="${mixBoundary}"\r\n\r\n`;
+    mime += `--${mixBoundary}\r\n`;
+    mime += `Content-Type: multipart/alternative; boundary="${altBoundary}"\r\n\r\n`;
+  } else {
+    mime += `Content-Type: multipart/alternative; boundary="${altBoundary}"\r\n\r\n`;
+  }
+
   const plainText = (body_html || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
-  mime += `--${boundary}\r\n`;
-  mime += `Content-Type: text/plain; charset="UTF-8"\r\n\r\n`;
-  mime += `${plainText}\r\n`;
-  // HTML
-  mime += `--${boundary}\r\n`;
-  mime += `Content-Type: text/html; charset="UTF-8"\r\n\r\n`;
-  mime += `${body_html || ''}\r\n`;
-  mime += `--${boundary}--`;
+  mime += `--${altBoundary}\r\nContent-Type: text/plain; charset="UTF-8"\r\n\r\n${plainText}\r\n`;
+  mime += `--${altBoundary}\r\nContent-Type: text/html; charset="UTF-8"\r\n\r\n${body_html || ''}\r\n`;
+  mime += `--${altBoundary}--\r\n`;
+
+  if (hasAttachments) {
+    for (const att of attachments) {
+      mime += `--${mixBoundary}\r\n`;
+      mime += `Content-Type: ${att.type}; name="${att.name}"\r\n`;
+      mime += `Content-Disposition: attachment; filename="${att.name}"\r\n`;
+      mime += `Content-Transfer-Encoding: base64\r\n\r\n`;
+      mime += `${att.base64}\r\n`;
+    }
+    mime += `--${mixBoundary}--`;
+  }
 
   return Buffer.from(mime).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
