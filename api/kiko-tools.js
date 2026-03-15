@@ -73,6 +73,14 @@ export const TOOL_DEFINITIONS = [
     input_schema: { type: 'object', properties: {
       thread_id: { type: 'string', description: 'Gmail thread ID' },
     }, required: ['thread_id'] } },
+  { name: 'draft_email', description: 'Create a Gmail draft email. Use when user asks to draft, compose, or write an email. The draft is saved in Gmail Drafts — user can review and send.',
+    input_schema: { type: 'object', properties: {
+      to: { type: 'string', description: 'Recipient email(s), comma-separated' },
+      subject: { type: 'string', description: 'Email subject line' },
+      body: { type: 'string', description: 'Email body — can be HTML or plain text. Write in Sunny\'s direct, board-level tone.' },
+      cc: { type: 'string', description: 'CC recipients (optional)' },
+      thread_id: { type: 'string', description: 'Thread ID to reply within (optional — makes it a reply draft)' },
+    }, required: ['to', 'body'] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -222,6 +230,40 @@ export async function executeTool(name, input) {
       if (!msgs.length) return 'Thread not found.'
       return `EMAIL THREAD: "${msgs[0].subject}" (${msgs.length} messages)\n${msgs.map((m, i) => `\n[${i + 1}] ${m.from} → ${m.to} (${m.date ? new Date(m.date).toLocaleDateString('en-GB') : '?'})\n${m.snippet}`).join('\n')}`
     } catch(e) { return `Thread fetch error: ${e.message}` }
+  }
+
+  if (name === 'draft_email') {
+    const { to, subject, body, cc, thread_id } = input
+    try {
+      const userEmail = 'sunny@vanhawke.com'
+      const { getGoogleToken } = await import('./google-token.js')
+      const token = await getGoogleToken(userEmail)
+      // Fetch signature from user_settings
+      let sig = ''
+      try {
+        const sigRows = await sbFetch(`user_settings?select=email_signature&limit=1`)
+        if (sigRows?.[0]?.email_signature) sig = `<br><div style="margin-top:16px;padding-top:12px;border-top:1px solid #e0e0e0">${sigRows[0].email_signature}</div>`
+      } catch {}
+      const htmlBody = `<div style="font-family:-apple-system,system-ui,sans-serif;font-size:14px">${body.replace(/\n/g, '<br>')}${sig}</div>`
+      const boundary = `b_${Date.now()}`
+      let mime = `To: ${to}\r\nFrom: ${userEmail}\r\n`
+      if (cc) mime += `Cc: ${cc}\r\n`
+      if (subject) mime += `Subject: ${subject}\r\n`
+      mime += `MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary="${boundary}"\r\n\r\n`
+      mime += `--${boundary}\r\nContent-Type: text/plain; charset="UTF-8"\r\n\r\n${body}\r\n`
+      mime += `--${boundary}\r\nContent-Type: text/html; charset="UTF-8"\r\n\r\n${htmlBody}\r\n`
+      mime += `--${boundary}--`
+      const raw = Buffer.from(mime).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+      const draftBody = { message: { raw } }
+      if (thread_id) draftBody.message.threadId = thread_id
+      const draftRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/drafts', {
+        method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(draftBody)
+      })
+      const draft = await draftRes.json()
+      if (!draftRes.ok) return `Failed to create draft: ${JSON.stringify(draft)}`
+      return `Draft created successfully. To: ${to}${subject ? `, Subject: "${subject}"` : ''}. It's saved in Gmail Drafts — Sunny can review and send from the Email page.`
+    } catch(e) { return `Draft error: ${e.message}` }
   }
 
   return { error: `Unknown tool: ${name}` }

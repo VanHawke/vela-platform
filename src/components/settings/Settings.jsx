@@ -166,9 +166,23 @@ export default function Settings({ user }) {
             </div>
             <div>
               <label style={labelStyle}>Email Signature</label>
-              <textarea value={settings.email_signature || ''} onChange={e => setSettings(p => ({ ...p, email_signature: e.target.value }))}
-                rows={3} style={{ ...inputStyle, height: 'auto', padding: '12px 14px', resize: 'none' }}
-                placeholder="Sunny Sidhu&#10;CEO, Van Hawke Group" />
+              <p style={{ fontSize: 11, color: T.textTertiary, marginBottom: 8, fontFamily: T.font }}>
+                Paste your HTML signature from Gmail or type one. This will be auto-appended to outgoing emails.
+              </p>
+              <div
+                contentEditable
+                suppressContentEditableWarning
+                dangerouslySetInnerHTML={{ __html: settings.email_signature || '' }}
+                onBlur={e => setSettings(p => ({ ...p, email_signature: e.currentTarget.innerHTML }))}
+                onPaste={e => {
+                  const html = e.clipboardData?.getData('text/html')
+                  if (html) { e.preventDefault(); document.execCommand('insertHTML', false, html) }
+                }}
+                style={{
+                  ...inputStyle, height: 'auto', minHeight: 120, padding: '12px 14px',
+                  lineHeight: 1.5, overflow: 'auto', whiteSpace: 'pre-wrap',
+                }}
+              />
             </div>
             <div>
               <label style={{ ...labelStyle, marginBottom: 10 }}>Notifications</label>

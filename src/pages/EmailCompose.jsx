@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Send, X, Bold, Italic, Underline, Link, List, Loader2 } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 const T = {
   bg: '#FAFAFA', surface: '#FFFFFF',
@@ -22,7 +23,17 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
   const [subject, setSubject] = useState('')
   const [sending, setSending] = useState(false)
   const [showCc, setShowCc] = useState(false)
+  const [signature, setSignature] = useState('')
   const editorRef = useRef(null)
+
+  // Fetch email signature from user_settings
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data?.user?.id) return
+      supabase.from('user_settings').select('email_signature').eq('user_id', data.user.id).single()
+        .then(({ data: s }) => { if (s?.email_signature) setSignature(s.email_signature) })
+    })
+  }, [])
 
   useEffect(() => {
     if (mode === 'reply' && replyTo) {
@@ -39,9 +50,11 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
     }
   }, [mode, replyTo])
 
-  // Set initial content in contentEditable after mount
+  // Set initial content in contentEditable after mount + signature loads
   useEffect(() => {
     if (!editorRef.current) return
+    const sig = signature ? `<br><div class="email-signature" style="margin-top:16px;padding-top:12px;border-top:1px solid #e0e0e0">${signature}</div>` : ''
+
     if (mode === 'forward' && replyTo) {
       const fwd = `<br><br><div style="border-left:2px solid #ccc;padding-left:12px;color:#6B6B6B;font-size:13px">
         <p><b>From:</b> ${replyTo.from_address || ''}<br>
@@ -55,7 +68,7 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
         <p>On ${replyTo.date ? new Date(replyTo.date).toLocaleString() : ''}, ${replyTo.from_address || ''} wrote:</p>
         ${replyTo.body_html || replyTo.snippet || ''}
       </div>`
-      editorRef.current.innerHTML = `<p><br></p>${quote}`
+      editorRef.current.innerHTML = `<p><br></p>${sig}${quote}`
       // Place cursor at start
       const sel = window.getSelection()
       const range = document.createRange()
@@ -64,10 +77,10 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
       sel.removeAllRanges()
       sel.addRange(range)
     } else {
-      editorRef.current.innerHTML = '<p><br></p>'
+      editorRef.current.innerHTML = `<p><br></p>${sig}`
     }
     editorRef.current.focus()
-  }, [])
+  }, [signature])
 
   const execCmd = (cmd, val = null) => {
     document.execCommand(cmd, false, val)
