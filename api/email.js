@@ -187,6 +187,74 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
+    // THREAD — fetch full thread from Gmail API (real-time, not cached)
+    if (action === 'thread') {
+      const threadId = req.query?.threadId || req.body?.threadId;
+      if (!threadId) return res.status(400).json({ error: 'threadId required' });
+
+      const threadRes = await fetch(`${GMAIL_BASE}/threads/${threadId}?format=full`, { headers });
+      if (!threadRes.ok) {
+        const err = await threadRes.text();
+        return res.status(threadRes.status).json({ error: err });
+      }
+      const thread = await threadRes.json();
+      const messages = (thread.messages || []).map(msg => {
+        const parsed = parseGmailMessage(msg);
+        return parsed;
+      });
+      return res.status(200).json({ threadId: thread.id, messages });
+    }
+
+    // LIST-LIVE — fetch inbox directly from Gmail API (real-time)
+    if (action === 'list-live') {
+      const label = req.query?.label || req.body?.label || 'INBOX';
+      const maxResults = parseInt(req.query?.maxResults || req.body?.maxResults || '50');
+      const pageToken = req.query?.pageToken || req.body?.pageToken || '';
+      const q = req.query?.q || req.body?.q || '';
+
+      let url = `${GMAIL_BASE}/messages?maxResults=${maxResults}&labelIds=${label}`;
+      if (pageToken) url += `&pageToken=${pageToken}`;
+      if (q) url += `&q=${encodeURIComponent(q)}`;
+
+      const listRes = await fetch(url, { headers });
+      const listData = await listRes.json();
+      if (!listRes.ok) return res.status(listRes.status).json(listData);
+
+      const messageIds = (listData.messages || []).map(m => m.id);
+      if (messageIds.length === 0) {
+        return res.status(200).json({ emails: [], nextPageToken: null, resultSizeEstimate: 0 });
+      }
+
+      // Fetch metadata for each message (minimal format for speed)
+      const emails = [];
+      for (const msgId of messageIds) {
+        try {
+          const msgRes = await fetch(`${GMAIL_BASE}/messages/${msgId}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Cc&metadataHeaders=Subject&metadataHeaders=Date`, { headers });
+          const msg = await msgRes.json();
+          const msgHeaders = msg.payload?.headers || [];
+          const getH = (n) => msgHeaders.find(h => h.name.toLowerCase() === n.toLowerCase())?.value || '';
+          emails.push({
+            gmail_id: msg.id,
+            thread_id: msg.threadId,
+            from_address: getH('From'),
+            to_addresses: getH('To'),
+            subject: getH('Subject'),
+            snippet: msg.snippet || '',
+            labels: msg.labelIds || [],
+            is_read: !(msg.labelIds || []).includes('UNREAD'),
+            is_starred: (msg.labelIds || []).includes('STARRED'),
+            date: getH('Date') ? new Date(getH('Date')).toISOString() : null,
+          });
+        } catch {}
+      }
+
+      return res.status(200).json({
+        emails,
+        nextPageToken: listData.nextPageToken || null,
+        resultSizeEstimate: listData.resultSizeEstimate || emails.length,
+      });
+    }
+
     // SEARCH via Gmail API
     if (action === 'search') {
       const q = req.query?.q || req.body?.q;
