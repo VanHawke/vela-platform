@@ -33,20 +33,9 @@ export default async function handler(req, res) {
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
   const action = req.body?.action || req.query?.action;
 
-  // Look up org_id for this user (required for RLS)
-  let orgId = null;
-  try {
-    const { data: userData } = await supabase.auth.admin.getUserByEmail ? 
-      { data: null } : { data: null };
-    // Fallback: look up from existing emails or user_tokens
-    const { data: existingEmail } = await supabase.from('emails').select('org_id').eq('user_email', email).limit(1).single();
-    orgId = existingEmail?.org_id || null;
-    if (!orgId) {
-      // Look up from user's auth metadata via identities
-      const { data: tokenRow } = await supabase.from('user_tokens').select('org_id').eq('user_email', email).limit(1).single();
-      orgId = tokenRow?.org_id || '35975d96-c2c9-4b6c-b4d4-bb947ae817d5'; // Van Hawke default
-    }
-  } catch { orgId = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5'; }
+  // Get org_id for this user (required for email inserts)
+  const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5'; // Van Hawke — multi-tenant lookup added later
+  const orgId = ORG_ID;
 
   try {
     // LIST emails from Supabase cache
@@ -430,8 +419,9 @@ async function syncEmails(userEmail, token, orgId, res) {
       parsed.user_email = userEmail;
       parsed.org_id = orgId;
 
-      await supabase.from('emails').upsert(parsed, { onConflict: 'user_email,gmail_id' });
-      synced++;
+      const { error: upsertErr } = await supabase.from('emails').upsert(parsed, { onConflict: 'user_email,gmail_id' });
+      if (upsertErr) console.error('[EmailSync] Upsert error:', msgId, upsertErr.message, upsertErr.details);
+      else synced++;
     } catch (err) {
       console.error('[EmailSync] Message fetch error:', msgId, err.message);
     }
