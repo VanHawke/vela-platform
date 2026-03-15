@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Reply, ReplyAll, Forward, Trash2, ChevronDown, ChevronUp, Paperclip } from 'lucide-react'
+import { Reply, ReplyAll, Forward, Trash2, ChevronDown, ChevronUp, Paperclip, Download } from 'lucide-react'
 import DOMPurify from 'dompurify'
 
 const T = {
@@ -154,7 +154,27 @@ export default function EmailThread({ threadId, userEmail, onReply, onReplyAll, 
                       <span style={{ display: 'block' }}>CC: {msg.cc_addresses.join(', ')}</span>
                     )}
                   </div>
-                  {msg.has_attachments && (
+                  {msg.has_attachments && msg.attachments?.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                      {msg.attachments.map((att, ai) => (
+                        <a key={ai} href={`/api/email?email=${encodeURIComponent(userEmail)}&action=attachment&messageId=${att.messageId}&attachmentId=${att.id}&filename=${encodeURIComponent(att.filename)}`}
+                          download={att.filename} target="_blank" rel="noopener"
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px',
+                            borderRadius: 8, background: T.accentSoft, fontSize: 11, color: T.textSecondary,
+                            textDecoration: 'none', border: `1px solid ${T.border}`, fontFamily: T.font,
+                          }}
+                          onMouseOver={e => e.currentTarget.style.borderColor = T.blue}
+                          onMouseOut={e => e.currentTarget.style.borderColor = T.border}>
+                          <Paperclip size={11} />
+                          <span style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{att.filename}</span>
+                          <span style={{ color: T.textTertiary }}>{att.size ? `${(att.size / 1024).toFixed(0)}KB` : ''}</span>
+                          <Download size={11} style={{ color: T.blue }} />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                  {msg.has_attachments && (!msg.attachments || msg.attachments.length === 0) && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: T.textTertiary, marginBottom: 8 }}>
                       <Paperclip size={12} /> Attachments
                     </div>

@@ -3,6 +3,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { getGoogleToken } from './google-token.js';
+import { parseGmailMessage, buildMimeMessage } from './email-helpers.js';
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
@@ -80,6 +81,24 @@ export default async function handler(req, res) {
       const labels = (labelsData.labels || []).filter(l => l.type === 'user' && l.labelListVisibility !== 'labelHide')
         .map(l => ({ id: l.id, name: l.name }));
       return res.status(200).json({ labels });
+    }
+
+    // ATTACHMENT — download a specific attachment
+    if (action === 'attachment') {
+      const messageId = req.query?.messageId || req.body?.messageId;
+      const attachmentId = req.query?.attachmentId || req.body?.attachmentId;
+      const filename = req.query?.filename || req.body?.filename || 'attachment';
+      if (!messageId || !attachmentId) return res.status(400).json({ error: 'messageId and attachmentId required' });
+
+      const attRes = await fetch(`${GMAIL_BASE}/messages/${messageId}/attachments/${attachmentId}`, { headers });
+      if (!attRes.ok) return res.status(attRes.status).json({ error: 'Attachment fetch failed' });
+      const attData = await attRes.json();
+      const data = attData.data.replace(/-/g, '+').replace(/_/g, '/');
+      const buffer = Buffer.from(data, 'base64');
+      res.setHeader('Content-Type', 'application/octet-stream');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', buffer.length);
+      return res.status(200).end(buffer);
     }
 
     // SYNC — fetch from Gmail and cache
@@ -376,116 +395,4 @@ async function syncEmails(userEmail, token, res) {
   }, { onConflict: 'user_email' });
 
   return res.status(200).json({ synced, total: messageIds.length });
-}
-
-// --- Parse Gmail message into our schema ---
-function parseGmailMessage(msg) {
-  const headers = msg.payload?.headers || [];
-  const getHeader = (name) => headers.find(h => h.name.toLowerCase() === name.toLowerCase())?.value || '';
-
-  const from = getHeader('From');
-  const to = getHeader('To').split(',').map(s => s.trim()).filter(Boolean);
-  const cc = getHeader('Cc').split(',').map(s => s.trim()).filter(Boolean);
-  const subject = getHeader('Subject');
-  const date = getHeader('Date');
-
-  // Extract body
-  let bodyHtml = '';
-  let bodyText = '';
-  extractBody(msg.payload, (html, text) => { bodyHtml = html; bodyText = text; });
-
-  return {
-    gmail_id: msg.id,
-    thread_id: msg.threadId,
-    from_address: from,
-    to_addresses: to,
-    cc_addresses: cc.length > 0 ? cc : null,
-    subject,
-    snippet: msg.snippet || '',
-    body_html: bodyHtml,
-    body_text: bodyText,
-    labels: msg.labelIds || [],
-    is_read: !(msg.labelIds || []).includes('UNREAD'),
-    is_starred: (msg.labelIds || []).includes('STARRED'),
-    date: date ? new Date(date).toISOString() : new Date().toISOString(),
-    has_attachments: hasAttachments(msg.payload),
-  };
-}
-
-function extractBody(part, cb) {
-  if (!part) return;
-  if (part.mimeType === 'text/html' && part.body?.data) {
-    cb(base64UrlDecode(part.body.data), '');
-    return;
-  }
-  if (part.mimeType === 'text/plain' && part.body?.data) {
-    cb('', base64UrlDecode(part.body.data));
-    return;
-  }
-  if (part.parts) {
-    let html = '', text = '';
-    for (const p of part.parts) {
-      extractBody(p, (h, t) => { if (h) html = h; if (t) text = t; });
-    }
-    cb(html, text);
-  }
-}
-
-function hasAttachments(part) {
-  if (!part) return false;
-  if (part.filename && part.filename.length > 0) return true;
-  if (part.parts) return part.parts.some(p => hasAttachments(p));
-  return false;
-}
-
-function base64UrlDecode(data) {
-  try {
-    const base64 = data.replace(/-/g, '+').replace(/_/g, '/');
-    return Buffer.from(base64, 'base64').toString('utf-8');
-  } catch {
-    return '';
-  }
-}
-
-function buildMimeMessage({ to, cc, bcc, subject, body_html, in_reply_to, attachments }) {
-  const altBoundary = `alt_${Date.now()}`;
-  const mixBoundary = `mix_${Date.now() + 1}`;
-  const hasAttachments = attachments && attachments.length > 0;
-
-  let mime = '';
-  mime += `To: ${to}\r\n`;
-  if (cc) mime += `Cc: ${cc}\r\n`;
-  if (bcc) mime += `Bcc: ${bcc}\r\n`;
-  mime += `Subject: ${subject}\r\n`;
-  mime += `MIME-Version: 1.0\r\n`;
-  if (in_reply_to) {
-    mime += `In-Reply-To: <${in_reply_to}>\r\n`;
-    mime += `References: <${in_reply_to}>\r\n`;
-  }
-
-  if (hasAttachments) {
-    mime += `Content-Type: multipart/mixed; boundary="${mixBoundary}"\r\n\r\n`;
-    mime += `--${mixBoundary}\r\n`;
-    mime += `Content-Type: multipart/alternative; boundary="${altBoundary}"\r\n\r\n`;
-  } else {
-    mime += `Content-Type: multipart/alternative; boundary="${altBoundary}"\r\n\r\n`;
-  }
-
-  const plainText = (body_html || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
-  mime += `--${altBoundary}\r\nContent-Type: text/plain; charset="UTF-8"\r\n\r\n${plainText}\r\n`;
-  mime += `--${altBoundary}\r\nContent-Type: text/html; charset="UTF-8"\r\n\r\n${body_html || ''}\r\n`;
-  mime += `--${altBoundary}--\r\n`;
-
-  if (hasAttachments) {
-    for (const att of attachments) {
-      mime += `--${mixBoundary}\r\n`;
-      mime += `Content-Type: ${att.type}; name="${att.name}"\r\n`;
-      mime += `Content-Disposition: attachment; filename="${att.name}"\r\n`;
-      mime += `Content-Transfer-Encoding: base64\r\n\r\n`;
-      mime += `${att.base64}\r\n`;
-    }
-    mime += `--${mixBoundary}--`;
-  }
-
-  return Buffer.from(mime).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }

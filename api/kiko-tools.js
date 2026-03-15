@@ -1,5 +1,6 @@
 // Kiko Tool Registry — modular, MCP-ready tool definitions and handlers
 // Each tool exports { definition, handler } — kiko.js imports and orchestrates
+import { getCalendar, createCalendarEvent } from './kiko-calendar.js';
 
 // ── Supabase Helper ─────────────────────────────────────
 const SB = () => process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -86,6 +87,20 @@ export const TOOL_DEFINITIONS = [
       query: { type: 'string', description: 'Contact name, email, or company domain to analyse. E.g. "haas", "john@acme.com", "decagon.ai"' },
       direction: { type: 'string', enum: ['all', 'sent', 'received'], description: 'Filter direction (default: all)' },
     }, required: ['query'] } },
+  { name: 'get_calendar', description: 'Get upcoming calendar events. Use when user asks about schedule, meetings, what\'s next, availability, or "what\'s on my calendar".',
+    input_schema: { type: 'object', properties: {
+      days: { type: 'number', description: 'Number of days ahead to look (default: 7)' },
+      query: { type: 'string', description: 'Search term to filter events (optional)' },
+    }, required: [] } },
+  { name: 'create_calendar_event', description: 'Create a calendar event. Use when user asks to schedule, book, or set up a meeting/call.',
+    input_schema: { type: 'object', properties: {
+      summary: { type: 'string', description: 'Event title' },
+      start: { type: 'string', description: 'Start time in ISO format (e.g. 2026-03-20T10:00:00)' },
+      end: { type: 'string', description: 'End time in ISO format (e.g. 2026-03-20T11:00:00)' },
+      description: { type: 'string', description: 'Event description (optional)' },
+      attendees: { type: 'string', description: 'Comma-separated attendee emails (optional)' },
+      location: { type: 'string', description: 'Location (optional)' },
+    }, required: ['summary', 'start', 'end'] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -336,6 +351,9 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com')
     } catch(e) { return `Analytics error: ${e.message}` }
   }
 
+  if (name === 'get_calendar') return await getCalendar(input, userEmail)
+  if (name === 'create_calendar_event') return await createCalendarEvent(input, userEmail)
+
   return { error: `Unknown tool: ${name}` }
 }
 
@@ -345,10 +363,26 @@ export async function fetchEntityContext(pageEntity) {
   try {
     if (pageEntity.type === 'contact') {
       const rows = await sbFetch(`contacts?id=eq.${pageEntity.id}&select=data&limit=1`)
-      if (rows?.[0]?.data) { const d = rows[0].data; return `\n\nACTIVE CONTEXT — User is viewing contact: ${d.firstName || ''} ${d.lastName || ''}, ${d.title || '?'} at ${d.company || '?'}. Email: ${d.email || '—'}. LinkedIn: ${d.linkedin ? 'Yes' : 'No'}.` }
+      if (rows?.[0]?.data) {
+        const d = rows[0].data
+        let ctx = `\n\nACTIVE CONTEXT — User is viewing contact: ${d.firstName || ''} ${d.lastName || ''}, ${d.title || '?'} at ${d.company || '?'}. Email: ${d.email || '—'}. LinkedIn: ${d.linkedin ? 'Yes' : 'No'}. Phone: ${d.phone || '—'}.`
+        if (d.lastCampaign) ctx += ` Last campaign: ${d.lastCampaign}.`
+        if (d.outreachStatus) ctx += ` Outreach status: ${d.outreachStatus}.`
+        ctx += ` When user asks to draft/email this person, use their email (${d.email || 'not available'}) as the recipient.`
+        return ctx
+      }
     } else if (pageEntity.type === 'company') {
       const rows = await sbFetch(`companies?id=eq.${pageEntity.id}&select=data&limit=1`)
-      if (rows?.[0]?.data) { const d = rows[0].data; return `\n\nACTIVE CONTEXT — User is viewing company: ${d.name || '?'}. Industry: ${d.industry || '?'}. Country: ${d.country || '?'}.${d.lastRound ? ` Last Round: ${d.lastRound}.` : ''}${d.totalFunding ? ` Total Funding: ${d.totalFunding}.` : ''}${d.employees ? ` Employees: ${d.employees}.` : ''}` }
+      if (rows?.[0]?.data) {
+        const d = rows[0].data
+        let ctx = `\n\nACTIVE CONTEXT — User is viewing company: ${d.name || '?'}. Industry: ${d.industry || '?'}. Country: ${d.country || '?'}.${d.lastRound ? ` Last Round: ${d.lastRound}.` : ''}${d.totalFunding ? ` Total Funding: ${d.totalFunding}.` : ''}${d.employees ? ` Employees: ${d.employees}.` : ''}`
+        // Fetch top contacts for this company
+        const contacts = await sbFetch(`contacts?select=data&data->>company=eq.${encodeURIComponent(d.name)}&limit=5&order=updated_at.desc`)
+        if (contacts?.length) {
+          ctx += ` Key contacts: ${contacts.map(c => `${c.data.firstName || ''} ${c.data.lastName || ''} (${c.data.title || '?'}, ${c.data.email || 'no email'})`).join('; ')}.`
+        }
+        return ctx
+      }
     }
   } catch(e) { /* non-blocking */ }
   return ''
