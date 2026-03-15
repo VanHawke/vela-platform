@@ -64,6 +64,15 @@ export const TOOL_DEFINITIONS = [
     }, required: ['page'] } },
   { name: 'get_alerts', description: 'Get proactive intelligence alerts — stale deals, pipeline bottlenecks, data quality issues.',
     input_schema: { type: 'object', properties: {}, required: [] } },
+  { name: 'search_emails', description: 'Search Gmail emails by query. Use when user asks about emails, messages, or correspondence with a person/company.',
+    input_schema: { type: 'object', properties: {
+      query: { type: 'string', description: 'Gmail search query — e.g. "from:john@company.com", "subject:sponsorship", "to:haas", or freetext' },
+      limit: { type: 'number', description: 'Max results (default 10)' },
+    }, required: ['query'] } },
+  { name: 'get_email_thread', description: 'Get a full email thread/conversation by thread ID. Use when user asks for details of a specific email thread.',
+    input_schema: { type: 'object', properties: {
+      thread_id: { type: 'string', description: 'Gmail thread ID' },
+    }, required: ['thread_id'] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -167,6 +176,52 @@ export async function executeTool(name, input) {
     const alerts = await sbFetch('kiko_alerts?dismissed=eq.false&expires_at=gt.' + new Date().toISOString() + '&select=type,severity,title,detail,entity_name&order=created_at.desc&limit=10')
     if (!alerts || alerts.length === 0) return 'No active alerts. Pipeline is clean.'
     return `${alerts.length} active alert${alerts.length > 1 ? 's' : ''}:\n${alerts.map(a => `[${a.severity?.toUpperCase()}] ${a.title}\n  ${a.detail}`).join('\n\n')}`
+  }
+
+  if (name === 'search_emails') {
+    const { query: q, limit = 10 } = input
+    try {
+      const userEmail = 'sunny@vanhawke.com'
+      const { getGoogleToken } = await import('./google-token.js')
+      const token = await getGoogleToken(userEmail)
+      const searchRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(q)}&maxResults=${limit}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const searchData = await searchRes.json()
+      const ids = (searchData.messages || []).map(m => m.id)
+      if (!ids.length) return `No emails found matching "${q}".`
+      const emails = []
+      for (const id of ids.slice(0, limit)) {
+        const msgRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject&metadataHeaders=Date`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        const msg = await msgRes.json()
+        const h = msg.payload?.headers || []
+        const getH = (n) => h.find(x => x.name.toLowerCase() === n.toLowerCase())?.value || ''
+        emails.push({ id: msg.id, threadId: msg.threadId, from: getH('From'), subject: getH('Subject'), date: getH('Date'), snippet: msg.snippet })
+      }
+      return `Found ${emails.length} email${emails.length > 1 ? 's' : ''} matching "${q}":\n${emails.map(e => `• ${e.from} — "${e.subject}" (${e.date ? new Date(e.date).toLocaleDateString('en-GB') : '?'}) [thread:${e.threadId}]\n  ${(e.snippet || '').slice(0, 120)}`).join('\n')}`
+    } catch(e) { return `Email search error: ${e.message}` }
+  }
+
+  if (name === 'get_email_thread') {
+    const { thread_id } = input
+    try {
+      const userEmail = 'sunny@vanhawke.com'
+      const { getGoogleToken } = await import('./google-token.js')
+      const token = await getGoogleToken(userEmail)
+      const threadRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/threads/${thread_id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject&metadataHeaders=Date`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const thread = await threadRes.json()
+      const msgs = (thread.messages || []).map(msg => {
+        const h = msg.payload?.headers || []
+        const getH = (n) => h.find(x => x.name.toLowerCase() === n.toLowerCase())?.value || ''
+        return { from: getH('From'), to: getH('To'), subject: getH('Subject'), date: getH('Date'), snippet: msg.snippet }
+      })
+      if (!msgs.length) return 'Thread not found.'
+      return `EMAIL THREAD: "${msgs[0].subject}" (${msgs.length} messages)\n${msgs.map((m, i) => `\n[${i + 1}] ${m.from} → ${m.to} (${m.date ? new Date(m.date).toLocaleDateString('en-GB') : '?'})\n${m.snippet}`).join('\n')}`
+    } catch(e) { return `Thread fetch error: ${e.message}` }
   }
 
   return { error: `Unknown tool: ${name}` }
