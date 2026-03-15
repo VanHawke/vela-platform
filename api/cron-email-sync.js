@@ -22,6 +22,10 @@ export default async function handler(req, res) {
       const token = await getGoogleToken(t.user_email);
       const headers = { Authorization: `Bearer ${token}` };
 
+      // Get org_id for RLS
+      const { data: orgRow } = await supabase.from('emails').select('org_id').eq('user_email', t.user_email).limit(1).single();
+      const orgId = orgRow?.org_id || '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
+
       // Check sync state
       const { data: syncState } = await supabase
         .from('email_sync_state').select('*').eq('user_email', t.user_email).single();
@@ -73,7 +77,7 @@ export default async function handler(req, res) {
           const cc = getH('Cc').split(',').map(s => s.trim()).filter(Boolean);
           const date = getH('Date');
           await supabase.from('emails').upsert({
-            gmail_id: msg.id, thread_id: msg.threadId, user_email: t.user_email,
+            gmail_id: msg.id, thread_id: msg.threadId, user_email: t.user_email, org_id: orgId,
             from_address: from, to_addresses: to, cc_addresses: cc.length ? cc : null,
             subject: getH('Subject'), snippet: msg.snippet || '',
             body_html: bodyHtml, body_text: bodyText,

@@ -33,6 +33,21 @@ export default async function handler(req, res) {
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
   const action = req.body?.action || req.query?.action;
 
+  // Look up org_id for this user (required for RLS)
+  let orgId = null;
+  try {
+    const { data: userData } = await supabase.auth.admin.getUserByEmail ? 
+      { data: null } : { data: null };
+    // Fallback: look up from existing emails or user_tokens
+    const { data: existingEmail } = await supabase.from('emails').select('org_id').eq('user_email', email).limit(1).single();
+    orgId = existingEmail?.org_id || null;
+    if (!orgId) {
+      // Look up from user's auth metadata via identities
+      const { data: tokenRow } = await supabase.from('user_tokens').select('org_id').eq('user_email', email).limit(1).single();
+      orgId = tokenRow?.org_id || '35975d96-c2c9-4b6c-b4d4-bb947ae817d5'; // Van Hawke default
+    }
+  } catch { orgId = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5'; }
+
   try {
     // LIST emails from Supabase cache
     if (req.method === 'GET' && !action) {
@@ -103,7 +118,7 @@ export default async function handler(req, res) {
 
     // SYNC — fetch from Gmail and cache
     if (action === 'sync') {
-      return await syncEmails(email, token, res);
+      return await syncEmails(email, token, orgId, res);
     }
 
     // SEND email
@@ -245,7 +260,7 @@ export default async function handler(req, res) {
       });
       // Cache to Supabase (fire-and-forget)
       for (const m of messages) {
-        supabase.from('emails').upsert({ ...m, user_email: email }, { onConflict: 'user_email,gmail_id' }).then(() => {});
+        supabase.from('emails').upsert({ ...m, user_email: email, org_id: orgId }, { onConflict: 'user_email,gmail_id' }).then(() => {});
       }
       return res.status(200).json({ threadId: thread.id, messages });
     }
@@ -329,7 +344,7 @@ export default async function handler(req, res) {
 }
 
 // --- Sync emails from Gmail ---
-async function syncEmails(userEmail, token, res) {
+async function syncEmails(userEmail, token, orgId, res) {
   const headers = { Authorization: `Bearer ${token}` };
 
   // Check sync state
@@ -413,6 +428,7 @@ async function syncEmails(userEmail, token, res) {
 
       const parsed = parseGmailMessage(msg);
       parsed.user_email = userEmail;
+      parsed.org_id = orgId;
 
       await supabase.from('emails').upsert(parsed, { onConflict: 'user_email,gmail_id' });
       synced++;
