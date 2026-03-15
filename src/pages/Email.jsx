@@ -98,6 +98,20 @@ export default function Email({ user }) {
     } catch {} finally { setSyncing(false) }
   }
 
+  const handleSelectThread = (em) => {
+    setSelectedThread(em.thread_id)
+    setComposing(null)
+    // Mark as read if unread
+    if (!em.is_read) {
+      setEmails(prev => prev.map(x => x.gmail_id === em.gmail_id ? { ...x, is_read: true } : x))
+      setUnreadCount(prev => Math.max(0, prev - 1))
+      fetch('/api/email', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, action: 'read', id: em.gmail_id, is_read: true }),
+      }).catch(() => {})
+    }
+  }
+
   const handleStar = async (em, e) => {
     e.stopPropagation()
     const newStarred = !em.is_starred
@@ -226,7 +240,7 @@ export default function Email({ user }) {
             const active = selectedThread === em.thread_id
             const unread = !em.is_read
             return (
-              <button key={em.gmail_id} onClick={() => { setSelectedThread(em.thread_id); setComposing(null) }}
+              <button key={em.gmail_id} onClick={() => handleSelectThread(em)}
                 style={{
                   width: '100%', textAlign: 'left', display: 'block', padding: '12px 16px',
                   borderBottom: `1px solid ${T.border}`, border: 'none', cursor: 'pointer',
