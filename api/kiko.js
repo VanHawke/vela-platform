@@ -208,7 +208,7 @@ export default async function handler(req, res) {
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const { message, conversationHistory = [], currentPage = 'home', pageEntity = null } = req.body;
+  const { message, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null } = req.body;
   if (!message) return res.status(400).json({ error: 'message required' });
 
   // Inject datetime + page context into system prompt
@@ -287,7 +287,7 @@ export default async function handler(req, res) {
           write({ toolStatus: `${block.name}...` });
           const result = block.name === 'memory'
             ? await handleMemory(block.input)
-            : await executeTool(block.name, block.input);
+            : await executeTool(block.name, block.input, userEmail);
           // Emit navigation event if navigate_page was called
           if (block.name === 'navigate_page' && result?.navigated) {
             write({ navigate: result.page });

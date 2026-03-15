@@ -176,6 +176,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: msg,
+          userEmail: user?.email,
           conversationHistory: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
           currentPage: (window.location.pathname.replace('/', '') || 'home') + (window.location.search || ''),
           pageEntity: (() => {

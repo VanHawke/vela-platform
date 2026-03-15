@@ -84,7 +84,7 @@ export const TOOL_DEFINITIONS = [
 ];
 
 // ── Tool Executor ────────────────────────────────────────
-export async function executeTool(name, input) {
+export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com') {
   if (name === 'search_contacts') {
     const { query, limit = 10 } = input
     const q = query.trim()
@@ -189,7 +189,6 @@ export async function executeTool(name, input) {
   if (name === 'search_emails') {
     const { query: q, limit = 10 } = input
     try {
-      const userEmail = 'sunny@vanhawke.com'
       const { getGoogleToken } = await import('./google-token.js')
       const token = await getGoogleToken(userEmail)
       const searchRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(q)}&maxResults=${limit}`, {
@@ -215,7 +214,6 @@ export async function executeTool(name, input) {
   if (name === 'get_email_thread') {
     const { thread_id } = input
     try {
-      const userEmail = 'sunny@vanhawke.com'
       const { getGoogleToken } = await import('./google-token.js')
       const token = await getGoogleToken(userEmail)
       const threadRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/threads/${thread_id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject&metadataHeaders=Date`, {
@@ -235,7 +233,6 @@ export async function executeTool(name, input) {
   if (name === 'draft_email') {
     const { to, subject, body, cc, thread_id } = input
     try {
-      const userEmail = 'sunny@vanhawke.com'
       const { getGoogleToken } = await import('./google-token.js')
       const token = await getGoogleToken(userEmail)
       // Fetch signature from user_settings
