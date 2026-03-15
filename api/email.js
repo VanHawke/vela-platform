@@ -379,9 +379,25 @@ async function syncEmails(userEmail, token, res) {
     return res.status(200).json({ synced: 0, message: 'Already up to date' });
   }
 
-  // Batch fetch message details (max 50 at a time to stay within timeout)
+  // Filter out already-cached messages to avoid re-fetching
+  const { data: existingIds } = await supabase
+    .from('emails')
+    .select('gmail_id')
+    .eq('user_email', userEmail)
+    .in('gmail_id', messageIds.slice(0, 500));
+  const cachedSet = new Set((existingIds || []).map(e => e.gmail_id));
+  const uncached = messageIds.filter(id => !cachedSet.has(id));
+
+  if (uncached.length === 0) {
+    // All messages already cached, just update sync state
+    await supabase.from('email_sync_state').upsert({
+      user_email: userEmail, last_synced_at: new Date().toISOString(), full_sync_done: true,
+    }, { onConflict: 'user_email' });
+    return res.status(200).json({ synced: 0, message: 'All cached', total: messageIds.length, cached: cachedSet.size });
+  }
+
   const batchSize = 100;
-  const toFetch = messageIds.slice(0, batchSize);
+  const toFetch = uncached.slice(0, batchSize);
   let synced = 0;
   let latestHistoryId = null;
   const syncStart = Date.now();
@@ -405,13 +421,14 @@ async function syncEmails(userEmail, token, res) {
     }
   }
 
-  // Update sync state
+  // Update sync state — only mark full_sync_done when all messages are cached
+  const allCached = synced >= uncached.length
   await supabase.from('email_sync_state').upsert({
     user_email: userEmail,
     history_id: latestHistoryId || syncState?.history_id,
     last_synced_at: new Date().toISOString(),
-    full_sync_done: true,
+    full_sync_done: allCached,
   }, { onConflict: 'user_email' });
 
-  return res.status(200).json({ synced, total: messageIds.length });
+  return res.status(200).json({ synced, total: messageIds.length, remaining: uncached.length - synced });
 }
