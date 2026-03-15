@@ -51,5 +51,9 @@ export default async function handler(req, res) {
   const alertResult = await callEndpoint(`${BASE}/api/kiko-alerts`, { action: 'scan' })
   results.alerts = { generated: alertResult.alertsGenerated || 0 }
 
+  // 6. Sync emails for all users with Google tokens
+  const emailResult = await callEndpoint(`${BASE}/api/email`, { email: 'sunny@vanhawke.com', action: 'sync' })
+  results.emails = { synced: emailResult.synced || 0 }
+
   return res.json({ status: 'complete', timestamp: new Date().toISOString(), results })
 }

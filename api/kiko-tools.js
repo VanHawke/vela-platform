@@ -81,6 +81,11 @@ export const TOOL_DEFINITIONS = [
       cc: { type: 'string', description: 'CC recipients (optional)' },
       thread_id: { type: 'string', description: 'Thread ID to reply within (optional — makes it a reply draft)' },
     }, required: ['to', 'body'] } },
+  { name: 'get_email_analytics', description: 'Analyse email communication patterns for a contact or company. Shows frequency, recency, response patterns, engagement score. Use for "how active is our communication with X", "when did I last email X", "who am I most in touch with at X".',
+    input_schema: { type: 'object', properties: {
+      query: { type: 'string', description: 'Contact name, email, or company domain to analyse. E.g. "haas", "john@acme.com", "decagon.ai"' },
+      direction: { type: 'string', enum: ['all', 'sent', 'received'], description: 'Filter direction (default: all)' },
+    }, required: ['query'] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -261,6 +266,74 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com')
       if (!draftRes.ok) return `Failed to create draft: ${JSON.stringify(draft)}`
       return `Draft created successfully. To: ${to}${subject ? `, Subject: "${subject}"` : ''}. It's saved in Gmail Drafts — Sunny can review and send from the Email page.`
     } catch(e) { return `Draft error: ${e.message}` }
+  }
+
+  if (name === 'get_email_analytics') {
+    const { query: q, direction = 'all' } = input
+    try {
+      const { getGoogleToken } = await import('./google-token.js')
+      const token = await getGoogleToken(userEmail)
+      // Build Gmail search query
+      let gmailQ = q
+      if (direction === 'sent') gmailQ = `to:${q} in:sent`
+      else if (direction === 'received') gmailQ = `from:${q}`
+      else gmailQ = `{from:${q} to:${q}}`
+
+      const searchRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(gmailQ)}&maxResults=100`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const searchData = await searchRes.json()
+      const ids = (searchData.messages || []).map(m => m.id)
+      if (!ids.length) return `No email history found with "${q}".`
+
+      // Fetch metadata for the messages (date, from, to, subject)
+      const msgs = []
+      for (const id of ids.slice(0, 50)) {
+        try {
+          const r = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Date&metadataHeaders=Subject`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+          const msg = await r.json()
+          const h = msg.payload?.headers || []
+          const getH = (n) => h.find(x => x.name.toLowerCase() === n.toLowerCase())?.value || ''
+          msgs.push({ from: getH('From'), to: getH('To'), date: getH('Date'), subject: getH('Subject'), labels: msg.labelIds || [] })
+        } catch {}
+      }
+
+      // Analyse patterns
+      const total = ids.length
+      const sampled = msgs.length
+      const sent = msgs.filter(m => m.labels.includes('SENT')).length
+      const received = sampled - sent
+      const dates = msgs.map(m => new Date(m.date)).filter(d => !isNaN(d)).sort((a, b) => b - a)
+      const newest = dates[0]
+      const oldest = dates[dates.length - 1]
+      const daySpan = newest && oldest ? Math.ceil((newest - oldest) / 86400000) : 0
+      const avgPerWeek = daySpan > 0 ? ((sampled / daySpan) * 7).toFixed(1) : sampled
+
+      // Day-of-week distribution
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+      const dayCounts = {}; days.forEach(d => dayCounts[d] = 0)
+      dates.forEach(d => dayCounts[days[d.getDay()]]++)
+      const busiestDay = Object.entries(dayCounts).sort((a, b) => b[1] - a[1])[0]
+
+      // Recency
+      const daysSinceLast = newest ? Math.floor((Date.now() - newest) / 86400000) : null
+      const recency = daysSinceLast === 0 ? 'Today' : daysSinceLast === 1 ? 'Yesterday' : daysSinceLast !== null ? `${daysSinceLast} days ago` : 'Unknown'
+
+      // Recent subjects
+      const recentSubjects = msgs.slice(0, 5).map(m => m.subject).filter(Boolean)
+
+      let out = `EMAIL ANALYTICS: "${q}"\n`
+      out += `Total emails: ${total} (analysed ${sampled})\n`
+      out += `Sent: ${sent} | Received: ${received}\n`
+      out += `Last contact: ${recency}\n`
+      out += `Frequency: ~${avgPerWeek} emails/week over ${daySpan} days\n`
+      out += `Busiest day: ${busiestDay[0]} (${busiestDay[1]} emails)\n`
+      if (daysSinceLast !== null && daysSinceLast > 14) out += `⚠️ STALE — no contact in ${daysSinceLast} days. Consider re-engaging.\n`
+      if (recentSubjects.length) out += `Recent threads:\n${recentSubjects.map(s => `  • ${s}`).join('\n')}\n`
+      return out
+    } catch(e) { return `Analytics error: ${e.message}` }
   }
 
   return { error: `Unknown tool: ${name}` }

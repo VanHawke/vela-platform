@@ -64,6 +64,15 @@ export default function Email({ user }) {
     if (email) fetchEmails()
   }, [folder])
 
+  // Auto-refresh every 60s while page is visible
+  useEffect(() => {
+    if (!email) return
+    const interval = setInterval(() => {
+      if (!document.hidden) fetchEmails()
+    }, 60000)
+    return () => clearInterval(interval)
+  }, [email, folder])
+
   const fetchEmails = async () => {
     setLoading(true)
     try {
