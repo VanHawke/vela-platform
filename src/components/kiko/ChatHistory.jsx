@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { MessageCircle, Mic, ChevronRight, ChevronLeft, Plus, Trash2 } from 'lucide-react'
+import { MessageCircle, Mic, ChevronRight, ChevronLeft, Plus, Trash2, Pencil } from 'lucide-react'
 
 const T = {
   bg: '#FAFAFA', surface: '#FFFFFF', surfaceHover: '#F5F5F5',
@@ -173,17 +173,30 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
                     lineHeight: 1.4,
                   }}>{getPreview(conv)}</p>
                 </div>
-                <button onClick={(e) => deleteConversation(conv.id, e)} style={{
-                  width: 24, height: 24, borderRadius: 6, border: 'none',
-                  background: 'transparent', cursor: 'pointer', display: 'flex',
-                  alignItems: 'center', justifyContent: 'center',
-                  color: T.textTertiary, opacity: 0.5, flexShrink: 0, marginTop: 2,
-                }}
-                  onMouseOver={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = '#C62828' }}
-                  onMouseOut={e => { e.currentTarget.style.opacity = '0.5'; e.currentTarget.style.color = T.textTertiary }}
-                >
-                  <Trash2 size={12} />
-                </button>
+                <div style={{ display: 'flex', gap: 2, flexShrink: 0, marginTop: 2 }}>
+                  <button onClick={(e) => startRename(conv, e)} title="Rename" style={{
+                    width: 24, height: 24, borderRadius: 6, border: 'none',
+                    background: 'transparent', cursor: 'pointer', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center',
+                    color: T.textTertiary, opacity: 0.5, flexShrink: 0,
+                  }}
+                    onMouseOver={e => { e.currentTarget.style.opacity = '1' }}
+                    onMouseOut={e => { e.currentTarget.style.opacity = '0.5' }}
+                  >
+                    <Pencil size={11} />
+                  </button>
+                  <button onClick={(e) => deleteConversation(conv.id, e)} title="Delete" style={{
+                    width: 24, height: 24, borderRadius: 6, border: 'none',
+                    background: 'transparent', cursor: 'pointer', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center',
+                    color: T.textTertiary, opacity: 0.5, flexShrink: 0,
+                  }}
+                    onMouseOver={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = '#C62828' }}
+                    onMouseOut={e => { e.currentTarget.style.opacity = '0.5'; e.currentTarget.style.color = T.textTertiary }}
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
               </div>
             )
           })

@@ -294,8 +294,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
           {/* Kiko Insights — proactive intelligence */}
           {!loadingAlerts && kikoAlerts.length > 0 && (
-            <div style={{ marginBottom: 20, display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 580 }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2, fontFamily: T.font }}>Kiko Insights</p>
+            <div style={{ marginBottom: 20, display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 580, margin: '0 auto 20px' }}>
+              <p style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2, fontFamily: T.font, textAlign: 'center' }}>Kiko Insights</p>
               {kikoAlerts.map((a, i) => {
                 const color = a.severity === 'high' ? '#ef4444' : a.severity === 'medium' ? '#f59e0b' : '#3b82f6'
                 return (
