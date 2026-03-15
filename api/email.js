@@ -215,6 +215,19 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
+    // THREAD-CACHED — read thread from Supabase cache (instant)
+    if (action === 'thread-cached') {
+      const threadId = req.query?.threadId || req.body?.threadId;
+      if (!threadId) return res.status(400).json({ error: 'threadId required' });
+      const { data } = await supabase
+        .from('emails')
+        .select('*')
+        .eq('user_email', email)
+        .eq('thread_id', threadId)
+        .order('date', { ascending: true });
+      return res.status(200).json({ threadId, messages: data || [] });
+    }
+
     // THREAD — fetch full thread from Gmail API (real-time, not cached)
     if (action === 'thread') {
       const threadId = req.query?.threadId || req.body?.threadId;
@@ -230,6 +243,10 @@ export default async function handler(req, res) {
         const parsed = parseGmailMessage(msg);
         return parsed;
       });
+      // Cache to Supabase (fire-and-forget)
+      for (const m of messages) {
+        supabase.from('emails').upsert({ ...m, user_email: email }, { onConflict: 'user_email,gmail_id' }).then(() => {});
+      }
       return res.status(200).json({ threadId: thread.id, messages });
     }
 
@@ -353,7 +370,7 @@ async function syncEmails(userEmail, token, res) {
   } else {
     // Full sync — fetch last 200 message IDs
     console.log('[EmailSync] Full sync');
-    const listRes = await fetch(`${GMAIL_BASE}/messages?maxResults=200`, { headers });
+    const listRes = await fetch(`${GMAIL_BASE}/messages?maxResults=500`, { headers });
     const listData = await listRes.json();
     messageIds = (listData.messages || []).map(m => m.id);
   }
@@ -363,12 +380,14 @@ async function syncEmails(userEmail, token, res) {
   }
 
   // Batch fetch message details (max 50 at a time to stay within timeout)
-  const batchSize = 50;
+  const batchSize = 100;
   const toFetch = messageIds.slice(0, batchSize);
   let synced = 0;
   let latestHistoryId = null;
+  const syncStart = Date.now();
 
   for (const msgId of toFetch) {
+    if (Date.now() - syncStart > 50000) break; // Stop before Vercel 60s timeout
     try {
       const msgRes = await fetch(`${GMAIL_BASE}/messages/${msgId}?format=full`, { headers });
       const msg = await msgRes.json();

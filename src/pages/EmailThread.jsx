@@ -32,11 +32,21 @@ export default function EmailThread({ threadId, userEmail, onReply, onReplyAll, 
     if (!threadId) return
     setLoading(true)
     setMessages([])
-    fetch(`/api/email?email=${encodeURIComponent(userEmail)}&action=thread&threadId=${threadId}`)
+    // Try Supabase cache first (instant), fall back to Gmail API if no body
+    fetch(`/api/email?email=${encodeURIComponent(userEmail)}&action=thread-cached&threadId=${threadId}`)
       .then(r => r.json())
-      .then(data => {
-        const msgs = data.messages || []
-        setMessages(msgs)
+      .then(async (data) => {
+        let msgs = data.messages || []
+        // If cache has messages with body, use them
+        if (msgs.length > 0 && msgs.some(m => m.body_html || m.body_text)) {
+          setMessages(msgs)
+        } else {
+          // Fall back to live Gmail API fetch and cache the result
+          const live = await fetch(`/api/email?email=${encodeURIComponent(userEmail)}&action=thread&threadId=${threadId}`)
+          const liveData = await live.json()
+          msgs = liveData.messages || []
+          setMessages(msgs)
+        }
         // Auto-expand the last message
         if (msgs.length > 0) {
           const last = msgs[msgs.length - 1]

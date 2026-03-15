@@ -50,11 +50,11 @@ export default function Email({ user }) {
   const [userLabels, setUserLabels] = useState([])
   const email = user?.email
 
-  // Auto-sync on mount, then load
+  // Auto-sync on mount, then load from cache
   useEffect(() => {
     if (!email) return
-    handleSync().then(() => fetchEmails())
-    // Fetch custom labels
+    fetchEmails() // Instant load from Supabase cache
+    handleSync().then(() => fetchEmails()) // Background sync, then refresh
     fetch(`/api/email?email=${encodeURIComponent(email)}&action=labels`)
       .then(r => r.json()).then(d => setUserLabels(d.labels || [])).catch(() => {})
   }, [email])
@@ -64,29 +64,25 @@ export default function Email({ user }) {
     if (email) fetchEmails()
   }, [folder])
 
-  // Auto-refresh every 60s while page is visible
+  // Auto-refresh every 60s — background sync then reload cache
   useEffect(() => {
     if (!email) return
     const interval = setInterval(() => {
-      if (!document.hidden) fetchEmails()
+      if (!document.hidden) handleSync().then(() => fetchEmails())
     }, 60000)
     return () => clearInterval(interval)
   }, [email, folder])
 
+  // Read from Supabase cache (instant)
   const fetchEmails = async () => {
-    setLoading(true)
+    setLoading(prev => emails.length === 0 ? true : prev) // Only show spinner if no data yet
     try {
-      const params = new URLSearchParams({ email, action: 'list-live', label: folder, maxResults: '50' })
-      if (search.trim()) params.set('q', search.trim())
+      const params = new URLSearchParams({ email, folder, page: '1' })
+      if (search.trim()) params.set('action', 'search'); params.set('q', search.trim() || '')
       const res = await fetch(`/api/email?${params}`)
       const data = await res.json()
       setEmails(data.emails || [])
-      setNextPageToken(data.nextPageToken || null)
-      // Count unread from results
-      if (folder === 'INBOX') {
-        const unread = (data.emails || []).filter(e => !e.is_read).length
-        setUnreadCount(unread)
-      }
+      if (data.unread !== undefined) setUnreadCount(data.unread)
     } catch (err) {
       console.error('[Email] Fetch error:', err)
     } finally { setLoading(false) }
