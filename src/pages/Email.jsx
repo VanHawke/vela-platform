@@ -78,7 +78,7 @@ export default function Email({ user }) {
     setLoading(prev => emails.length === 0 ? true : prev) // Only show spinner if no data yet
     try {
       const params = new URLSearchParams({ email, folder, page: '1' })
-      if (search.trim()) params.set('action', 'search'); params.set('q', search.trim() || '')
+      if (search.trim()) { params.set('action', 'search'); params.set('q', search.trim()) }
       const res = await fetch(`/api/email?${params}`)
       const data = await res.json()
       setEmails(data.emails || [])
