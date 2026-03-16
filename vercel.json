@@ -1,7 +1,8 @@
 {
   "crons": [
     { "path": "/api/cron-enrich", "schedule": "0 6 * * *" },
-    { "path": "/api/cron-email-sync", "schedule": "*/5 * * * *" }
+    { "path": "/api/cron-email-sync", "schedule": "*/5 * * * *" },
+    { "path": "/api/news-agent", "schedule": "*/30 * * * *" }
   ],
   "functions": {
     "api/kiko.js": { "maxDuration": 60 },
