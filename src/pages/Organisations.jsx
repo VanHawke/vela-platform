@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { Plus, Search, X, Building2, Globe, ChevronLeft, ChevronRight, Users, Linkedin, Send, ExternalLink } from 'lucide-react'
+import { Plus, Search, X, Building2, Globe, ChevronLeft, ChevronRight, Users, Linkedin, Send, ExternalLink, SlidersHorizontal, ChevronDown } from 'lucide-react'
 
 const PAGE_SIZE = 50
 
@@ -39,6 +39,9 @@ export default function Organisations() {
   const [editing, setEditing] = useState(null)
   const [page, setPage] = useState(0)
   const [sortDir, setSortDir] = useState('asc')
+  const [sortField, setSortField] = useState('name')
+  const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState({ industries: [], countries: [], fundingMin: '', fundingMax: '', revenueMin: '', revenueMax: '', lastRound: '' })
   const [form, setForm] = useState({ name: '', industry: '', website: '', country: '', notes: '' })
   const [selectedOrg, setSelectedOrg] = useState(null)
   const [orgContacts, setOrgContacts] = useState([])
@@ -202,19 +205,68 @@ export default function Organisations() {
 
   const closePanel = () => { setSelectedOrg(null); setOrgContacts([]); setOrgLinkedin(null); setOrgDomain(null); setOrgCampaigns([]); setOrgLastComm({ sent: null, received: null }); setOrgDeals([]); setOrgSignals([]) }
 
+  // Derive filter options from data
+  const filterOptions = useMemo(() => {
+    const industries = [...new Set(companies.map(c => c.industry).filter(Boolean))].sort()
+    const countries = [...new Set(companies.map(c => c.country).filter(Boolean))].sort()
+    return { industries, countries }
+  }, [companies])
+
+  // Parse funding/revenue strings to numbers for comparison
+  const parseAmount = (str) => {
+    if (!str) return null
+    const clean = str.replace(/[^0-9.BMKbmk]/g, '')
+    const num = parseFloat(clean)
+    if (isNaN(num)) return null
+    const upper = str.toUpperCase()
+    if (upper.includes('B')) return num * 1e9
+    if (upper.includes('M')) return num * 1e6
+    if (upper.includes('K')) return num * 1e3
+    return num
+  }
+
+  const activeFilterCount = useMemo(() => {
+    let c = 0
+    if (filters.industries.length) c++
+    if (filters.countries.length) c++
+    if (filters.fundingMin || filters.fundingMax) c++
+    if (filters.revenueMin || filters.revenueMax) c++
+    if (filters.lastRound) c++
+    return c
+  }, [filters])
+
   const filtered = useMemo(() => {
     let list = companies
     if (search) {
       const q = search.toLowerCase()
-      list = list.filter(c => [c.name, c.industry, c.country].some(f => f?.toLowerCase().includes(q)))
+      list = list.filter(c => [c.name, c.industry, c.country, c.lastRound, c.totalFunding].some(f => f?.toLowerCase().includes(q)))
     }
+    // Industry filter (multi-select)
+    if (filters.industries.length) list = list.filter(c => filters.industries.includes(c.industry))
+    // Country filter (multi-select)
+    if (filters.countries.length) list = list.filter(c => filters.countries.includes(c.country))
+    // Funding range
+    if (filters.fundingMin) { const min = parseAmount(filters.fundingMin); if (min) list = list.filter(c => parseAmount(c.totalFunding) >= min) }
+    if (filters.fundingMax) { const max = parseAmount(filters.fundingMax); if (max) list = list.filter(c => parseAmount(c.totalFunding) <= max) }
+    // Revenue range
+    if (filters.revenueMin) { const min = parseAmount(filters.revenueMin); if (min) list = list.filter(c => parseAmount(c.revenueEst) >= min) }
+    if (filters.revenueMax) { const max = parseAmount(filters.revenueMax); if (max) list = list.filter(c => parseAmount(c.revenueEst) <= max) }
+    // Last round filter
+    if (filters.lastRound) list = list.filter(c => c.lastRound?.toLowerCase().includes(filters.lastRound.toLowerCase()))
+
+    // Sort
     list = [...list].sort((a, b) => {
-      const nameA = (a.name || '').toLowerCase()
-      const nameB = (b.name || '').toLowerCase()
-      return sortDir === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA)
+      let va, vb
+      if (sortField === 'name') { va = (a.name || '').toLowerCase(); vb = (b.name || '').toLowerCase(); return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va) }
+      if (sortField === 'funding') { va = parseAmount(a.totalFunding) || 0; vb = parseAmount(b.totalFunding) || 0 }
+      else if (sortField === 'revenue') { va = parseAmount(a.revenueEst) || 0; vb = parseAmount(b.revenueEst) || 0 }
+      else if (sortField === 'country') { va = (a.country || 'zzz').toLowerCase(); vb = (b.country || 'zzz').toLowerCase(); return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va) }
+      else if (sortField === 'employees') { va = parseInt(a.employees) || 0; vb = parseInt(b.employees) || 0 }
+      else { va = 0; vb = 0 }
+      return sortDir === 'asc' ? va - vb : vb - va
     })
     return list
-  }, [companies, search, sortDir])
+  }, [companies, search, sortDir, sortField, filters])
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
@@ -252,20 +304,83 @@ export default function Organisations() {
         </button>
       </div>
 
-      <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ position: 'relative', flex: 1, maxWidth: 320 }}>
-          <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: 'var(--text-tertiary)' }} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search organisations..." style={{ ...inputStyle, padding: '8px 12px 8px 34px' }} />
+      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ position: 'relative', flex: 1, maxWidth: 320 }}>
+            <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: 'var(--text-tertiary)' }} />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search organisations..." style={{ ...inputStyle, padding: '8px 12px 8px 34px' }} />
+          </div>
+          <button onClick={() => setShowFilters(!showFilters)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: showFilters ? 'var(--accent)' : 'rgba(0,0,0,0.03)', color: showFilters ? '#fff' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: 500, transition: 'all 0.15s' }}>
+            <SlidersHorizontal style={{ width: 13, height: 13 }} /> Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+          </button>
+          <select value={`${sortField}-${sortDir}`} onChange={e => { const [f, d] = e.target.value.split('-'); setSortField(f); setSortDir(d) }} style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 10px', fontSize: 11, color: 'var(--text-secondary)', outline: 'none', fontFamily: 'var(--font)', cursor: 'pointer' }}>
+            <option value="name-asc">Name A → Z</option>
+            <option value="name-desc">Name Z → A</option>
+            <option value="funding-desc">Funding ↓ High</option>
+            <option value="funding-asc">Funding ↑ Low</option>
+            <option value="revenue-desc">Revenue ↓ High</option>
+            <option value="revenue-asc">Revenue ↑ Low</option>
+            <option value="employees-desc">Employees ↓</option>
+            <option value="employees-asc">Employees ↑</option>
+            <option value="country-asc">Country A → Z</option>
+            <option value="country-desc">Country Z → A</option>
+          </select>
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>
+              <button disabled={page === 0} onClick={() => setPage(p => p - 1)} style={{ background: 'none', border: 'none', cursor: page === 0 ? 'default' : 'pointer', opacity: page === 0 ? 0.3 : 1, color: 'var(--text-secondary)', padding: 2 }}><ChevronLeft style={{ width: 16, height: 16 }} /></button>
+              <span>{page + 1} / {totalPages}</span>
+              <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} style={{ background: 'none', border: 'none', cursor: page >= totalPages - 1 ? 'default' : 'pointer', opacity: page >= totalPages - 1 ? 0.3 : 1, color: 'var(--text-secondary)', padding: 2 }}><ChevronRight style={{ width: 16, height: 16 }} /></button>
+            </div>
+          )}
         </div>
-        <select value={sortDir} onChange={e => setSortDir(e.target.value)} style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 10px', fontSize: 11, color: 'var(--text-secondary)', outline: 'none', fontFamily: 'var(--font)', cursor: 'pointer' }}>
-          <option value="asc">A → Z</option>
-          <option value="desc">Z → A</option>
-        </select>
-        {totalPages > 1 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>
-            <button disabled={page === 0} onClick={() => setPage(p => p - 1)} style={{ background: 'none', border: 'none', cursor: page === 0 ? 'default' : 'pointer', opacity: page === 0 ? 0.3 : 1, color: 'var(--text-secondary)', padding: 2 }}><ChevronLeft style={{ width: 16, height: 16 }} /></button>
-            <span>{page + 1} / {totalPages}</span>
-            <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} style={{ background: 'none', border: 'none', cursor: page >= totalPages - 1 ? 'default' : 'pointer', opacity: page >= totalPages - 1 ? 0.3 : 1, color: 'var(--text-secondary)', padding: 2 }}><ChevronRight style={{ width: 16, height: 16 }} /></button>
+
+        {/* Filter panel */}
+        {showFilters && (
+          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid rgba(0,0,0,0.06)', padding: 16, display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end' }}>
+            {/* Industry multi-select */}
+            <div style={{ minWidth: 160, flex: 1 }}>
+              <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: 4 }}>Industry</label>
+              <select multiple value={filters.industries} onChange={e => setFilters(p => ({ ...p, industries: [...e.target.selectedOptions].map(o => o.value) }))}
+                style={{ ...inputStyle, padding: '6px 8px', fontSize: 11, height: 68 }}>
+                {filterOptions.industries.map(i => <option key={i} value={i}>{i}</option>)}
+              </select>
+            </div>
+            {/* Country multi-select */}
+            <div style={{ minWidth: 140, flex: 1 }}>
+              <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: 4 }}>Country</label>
+              <select multiple value={filters.countries} onChange={e => setFilters(p => ({ ...p, countries: [...e.target.selectedOptions].map(o => o.value) }))}
+                style={{ ...inputStyle, padding: '6px 8px', fontSize: 11, height: 68 }}>
+                {filterOptions.countries.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            {/* Funding range */}
+            <div style={{ minWidth: 130 }}>
+              <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: 4 }}>Total Funding</label>
+              <div style={{ display: 'flex', gap: 4 }}>
+                <input value={filters.fundingMin} onChange={e => setFilters(p => ({ ...p, fundingMin: e.target.value }))} placeholder="Min (e.g. 10M)" style={{ ...inputStyle, padding: '6px 8px', fontSize: 11, width: 80 }} />
+                <input value={filters.fundingMax} onChange={e => setFilters(p => ({ ...p, fundingMax: e.target.value }))} placeholder="Max (e.g. 1B)" style={{ ...inputStyle, padding: '6px 8px', fontSize: 11, width: 80 }} />
+              </div>
+            </div>
+            {/* Revenue range */}
+            <div style={{ minWidth: 130 }}>
+              <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: 4 }}>Revenue Est.</label>
+              <div style={{ display: 'flex', gap: 4 }}>
+                <input value={filters.revenueMin} onChange={e => setFilters(p => ({ ...p, revenueMin: e.target.value }))} placeholder="Min" style={{ ...inputStyle, padding: '6px 8px', fontSize: 11, width: 80 }} />
+                <input value={filters.revenueMax} onChange={e => setFilters(p => ({ ...p, revenueMax: e.target.value }))} placeholder="Max" style={{ ...inputStyle, padding: '6px 8px', fontSize: 11, width: 80 }} />
+              </div>
+            </div>
+            {/* Last Round */}
+            <div style={{ minWidth: 120 }}>
+              <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: 4 }}>Last Round</label>
+              <input value={filters.lastRound} onChange={e => setFilters(p => ({ ...p, lastRound: e.target.value }))} placeholder="e.g. Series B" style={{ ...inputStyle, padding: '6px 8px', fontSize: 11 }} />
+            </div>
+            {/* Clear */}
+            {activeFilterCount > 0 && (
+              <button onClick={() => setFilters({ industries: [], countries: [], fundingMin: '', fundingMax: '', revenueMin: '', revenueMax: '', lastRound: '' })}
+                style={{ fontSize: 11, color: '#ef4444', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.12)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: 500, alignSelf: 'flex-end' }}>
+                Clear All
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -291,7 +406,13 @@ export default function Organisations() {
                     <OrgLogo domain={listDomainCache[company.id]} name={company.name} size={36} />
                     <div style={{ minWidth: 0 }}>
                       <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.name}</p>
-                      <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.industry || '—'}{company.country ? ` · ${company.country}` : ''}{dealMap[company.name] ? ` · ${dealMap[company.name].pipeline} — ${dealMap[company.name].stage}` : ''}</p>
+                      <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {company.industry || '—'}{company.country ? ` · ${company.country}` : ''}
+                        {sortField === 'funding' && company.totalFunding ? ` · 💰 ${company.totalFunding}` : ''}
+                        {sortField === 'revenue' && company.revenueEst ? ` · 📊 ${company.revenueEst}` : ''}
+                        {sortField === 'employees' && company.employees ? ` · 👥 ${company.employees}` : ''}
+                        {sortField === 'name' && dealMap[company.name] ? ` · ${dealMap[company.name].pipeline} — ${dealMap[company.name].stage}` : ''}
+                      </p>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, marginLeft: 16 }}>
