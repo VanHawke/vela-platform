@@ -1,6 +1,7 @@
-// api/cron-partnership-scan.js — Partnership Scanner Agent
-// Runs daily, cross-references news_articles for new partnership announcements
-// Auto-classifies and updates f1_partnerships table
+// api/cron-partnership-scan.js — Partnership Scanner Agent v2
+// Phase 1: Scan news_articles for deal signals (RSS feed)
+// Phase 2: Web search for recent F1 partnership announcements
+// Phase 3: Auto-classify + upsert + Kiko alert + activity log
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
 
@@ -13,116 +14,144 @@ const CATEGORIES = [
   'hospitality','gaming','health','logistics','semiconductors','robotics'
 ];
 
-const TEAM_ALIASES = {
-  'red bull': 'red_bull', 'redbull': 'red_bull', 'oracle red bull': 'red_bull',
-  'ferrari': 'ferrari', 'scuderia ferrari': 'ferrari', 'hp ferrari': 'ferrari',
-  'mclaren': 'mclaren', 'mastercard mclaren': 'mclaren',
-  'mercedes': 'mercedes', 'petronas mercedes': 'mercedes', 'silver arrows': 'mercedes',
-  'aston martin': 'aston_martin', 'aramco aston martin': 'aston_martin',
-  'alpine': 'alpine', 'bwt alpine': 'alpine',
-  'williams': 'williams', 'atlassian williams': 'williams',
-  'haas': 'haas', 'tgr haas': 'haas',
-  'racing bulls': 'racing_bulls', 'visa cash app': 'racing_bulls', 'rb': 'racing_bulls',
-  'audi': 'audi', 'revolut audi': 'audi', 'sauber': 'audi',
-  'cadillac': 'cadillac',
-};
+const TEAMS = ['Red Bull','Ferrari','McLaren','Mercedes','Aston Martin',
+  'Alpine','Williams','Haas','Racing Bulls','Audi','Cadillac'];
 
-async function classifyPartnership(articleTitle, articleSummary) {
+async function classifyPartnership(text) {
   try {
     const resp = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 300,
-      system: `You are an F1 sponsorship data extractor. Given an article about an F1 partnership announcement, extract:
-1. team_id: Which F1 team (use these IDs: red_bull, ferrari, mclaren, mercedes, aston_martin, alpine, williams, haas, racing_bulls, audi, cadillac)
-2. partner_name: The company/brand name (clean, official name)
-3. category_id: Best fit from: ${CATEGORIES.join(', ')}
-4. tier: One of: title, principal, official, technical, partner, supplier
+      max_tokens: 400,
+      system: `You are an F1 sponsorship data extractor. Given text about F1 partnership/sponsorship announcements, extract ALL new partnerships mentioned.
 
-Respond ONLY with valid JSON: {"team_id":"...","partner_name":"...","category_id":"...","tier":"..."}
-If the article is NOT about a new F1 team partnership announcement, respond: {"skip":true}`,
-      messages: [{ role: 'user', content: `Title: ${articleTitle}\nSummary: ${articleSummary || 'N/A'}` }]
+For each partnership found, output a JSON object with:
+- team_id: one of: red_bull, ferrari, mclaren, mercedes, aston_martin, alpine, williams, haas, racing_bulls, audi, cadillac
+- partner_name: Clean official company/brand name
+- category_id: Best fit from: ${CATEGORIES.join(', ')}
+- tier: One of: title, principal, official, technical, partner, supplier
+
+Respond ONLY with a JSON array: [{"team_id":"...","partner_name":"...","category_id":"...","tier":"..."}]
+If no F1 team partnerships found, respond: []`,
+      messages: [{ role: 'user', content: text.slice(0, 2000) }]
     });
-    const text = resp.content[0]?.text?.trim();
-    return JSON.parse(text);
+    const raw = resp.content[0]?.text?.trim();
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
   } catch (e) {
     console.error('[PartnerScan] Classification error:', e.message);
-    return { skip: true };
+    return [];
   }
 }
 
-export default async function handler(req, res) {
-  console.log('[PartnerScan] Starting daily partnership scan...');
+async function upsertPartnership(p, source) {
+  if (!p.team_id || !p.partner_name) return null;
+  // Check if already exists
+  const { data: existing } = await supabase.from('f1_partnerships')
+    .select('id').eq('team_id', p.team_id).eq('partner_name', p.partner_name).maybeSingle();
 
-  // 1. Get news articles from last 24h that are deal signals or sponsorship-related
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const { data: articles } = await supabase.from('news_articles')
-    .select('id, title, summary, intelligence')
-    .or('intelligence->>is_deal_signal.eq.true,intelligence->>category.eq.f1_sponsorship,intelligence->>category.eq.sports_sponsorship')
-    .gte('published_at', since)
-    .order('published_at', { ascending: false })
-    .limit(50);
+  const record = {
+    team_id: p.team_id, partner_name: p.partner_name,
+    category_id: p.category_id || null, tier: p.tier || 'partner',
+    status: 'active', verified: false,
+    last_verified_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
 
-  if (!articles?.length) {
-    console.log('[PartnerScan] No new deal signal articles found');
-    return res.json({ ok: true, message: 'No new articles to scan', scanned: 0 });
+  const { error } = await supabase.from('f1_partnerships')
+    .upsert(record, { onConflict: 'team_id,partner_name' });
+  if (error) { console.error('[PartnerScan] Upsert error:', error.message); return null; }
+
+  const isNew = !existing;
+  if (isNew) {
+    // Log activity
+    await supabase.from('kiko_alerts').insert({
+      type: 'new_partnership',
+      title: `New: ${p.partner_name} → ${p.team_id}`,
+      body: `${p.partner_name} detected as ${p.tier || 'partner'} for ${p.team_id} (${p.category_id}). Source: ${source}`,
+      priority: 'medium',
+      data: { ...p, source },
+    });
   }
+  return isNew ? 'new' : 'existing';
+}
 
-  console.log(`[PartnerScan] Found ${articles.length} deal signal articles to analyse`);
-
-  let added = 0, skipped = 0, errors = 0;
+export default async function handler(req, res) {
+  console.log('[PartnerScan] Starting partnership scan...');
+  let added = 0, updated = 0, skipped = 0;
   const results = [];
 
-  for (const article of articles) {
-    // Check if already processed
-    const intel = article.intelligence || {};
-    if (intel.partnership_scanned) { skipped++; continue; }
+  // === PHASE 1: Scan unprocessed news_articles (deal signals) ===
+  const { data: articles } = await supabase.from('news_articles')
+    .select('id, title, summary, intelligence')
+    .or('intelligence->>is_deal_signal.eq.true,intelligence->>category.eq.f1_sponsorship')
+    .order('published_at', { ascending: false })
+    .limit(30);
 
-    const classification = await classifyPartnership(article.title, article.summary);
+  const unscanned = (articles || []).filter(a => !a.intelligence?.partnership_scanned);
+  console.log(`[PartnerScan] Phase 1: ${unscanned.length} unscanned deal articles`);
 
-    if (classification.skip) {
-      skipped++;
-    } else if (classification.team_id && classification.partner_name) {
-      // Upsert into f1_partnerships
-      const { error } = await supabase.from('f1_partnerships').upsert({
-        team_id: classification.team_id,
-        partner_name: classification.partner_name,
-        category_id: classification.category_id || null,
-        tier: classification.tier || 'partner',
-        status: 'active',
-        source_url: null,
-        verified: false,
-        last_verified_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'team_id,partner_name' });
-
-      if (error) {
-        console.error('[PartnerScan] Upsert error:', error.message);
-        errors++;
-      } else {
-        added++;
-        results.push({ team: classification.team_id, partner: classification.partner_name, category: classification.category_id });
-
-        // Create Kiko alert for new partnership
-        await supabase.from('kiko_alerts').insert({
-          type: 'new_partnership',
-          title: `New Partnership: ${classification.partner_name} → ${classification.team_id}`,
-          body: `${classification.partner_name} detected as new ${classification.tier || 'partner'} for ${classification.team_id} in category ${classification.category_id}. Source: ${article.title}`,
-          priority: 'medium',
-          data: { article_id: article.id, ...classification },
-        });
-      }
+  for (const article of unscanned) {
+    const partnerships = await classifyPartnership(`Title: ${article.title}\nSummary: ${article.summary || ''}`);
+    for (const p of partnerships) {
+      const result = await upsertPartnership(p, article.title);
+      if (result === 'new') { added++; results.push(p); }
+      else if (result === 'existing') updated++;
     }
-
-    // Mark article as scanned
+    // Mark scanned
     await supabase.from('news_articles').update({
-      intelligence: { ...intel, partnership_scanned: true }
+      intelligence: { ...(article.intelligence || {}), partnership_scanned: true }
     }).eq('id', article.id);
-
-    // Rate limit: 1 Haiku call per second
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise(r => setTimeout(r, 500));
   }
 
-  const summary = { scanned: articles.length, added, skipped, errors, results };
+  // === PHASE 2: Web search for fresh partnership news ===
+  // Fetch Google News RSS for F1 partnership announcements
+  const searchFeeds = [
+    'https://news.google.com/rss/search?q=F1+team+sponsor+partner+2026&hl=en&gl=US&ceid=US:en',
+    'https://news.google.com/rss/search?q=Formula+1+sponsorship+deal+2026&hl=en&gl=GB&ceid=GB:en',
+  ];
+
+  let webArticles = 0;
+  for (const feedUrl of searchFeeds) {
+    try {
+      const feedRes = await fetch(feedUrl, { headers: { 'User-Agent': 'Vela-Platform/1.0' } });
+      if (!feedRes.ok) continue;
+      const xml = await feedRes.text();
+      // Simple XML title extraction
+      const titles = [...xml.matchAll(/<title><!\[CDATA\[(.*?)\]\]><\/title>/g)].map(m => m[1]);
+      const altTitles = [...xml.matchAll(/<title>([^<]+)<\/title>/g)].map(m => m[1]);
+      const allTitles = [...titles, ...altTitles].filter(t => t && t.length > 20 && !t.includes('Google News'));
+
+      for (const title of allTitles.slice(0, 10)) {
+        // Check if already in news_articles
+        const { data: exists } = await supabase.from('news_articles')
+          .select('id').ilike('title', `%${title.slice(0, 50)}%`).maybeSingle();
+        if (exists) continue;
+
+        const partnerships = await classifyPartnership(title);
+        for (const p of partnerships) {
+          const result = await upsertPartnership(p, `Web: ${title}`);
+          if (result === 'new') { added++; results.push(p); webArticles++; }
+          else if (result === 'existing') updated++;
+        }
+        await new Promise(r => setTimeout(r, 500));
+      }
+    } catch (e) { console.error('[PartnerScan] Feed error:', e.message); }
+  }
+  console.log(`[PartnerScan] Phase 2: ${webArticles} new from web search`);
+
+  // === PHASE 3: Update scan timestamp on all teams ===
+  await supabase.from('f1_teams').update({ updated_at: new Date().toISOString() })
+    .neq('id', 'none');
+
+  const summary = {
+    phase1_articles: unscanned.length,
+    phase2_web: webArticles,
+    new_partnerships: added,
+    existing_updated: updated,
+    results,
+    timestamp: new Date().toISOString()
+  };
   console.log('[PartnerScan] Complete:', JSON.stringify(summary));
   return res.json({ ok: true, ...summary });
 }

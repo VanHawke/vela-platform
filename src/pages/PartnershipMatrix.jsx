@@ -29,8 +29,9 @@ export default function PartnershipMatrix() {
   const [view, setView] = useState('grid') // grid | list
   const [showAdd, setShowAdd] = useState(false)
   const [addForm, setAddForm] = useState({ team_id: '', partner_name: '', category_id: '', tier: 'partner' })
+  const [activity, setActivity] = useState(null)
 
-  useEffect(() => { fetchMatrix() }, [])
+  useEffect(() => { fetchMatrix(); fetchActivity() }, [])
 
   const fetchMatrix = async () => {
     setLoading(true)
@@ -40,6 +41,14 @@ export default function PartnershipMatrix() {
       setData(d)
     } catch (e) { console.error('[Matrix] Fetch error:', e) }
     finally { setLoading(false) }
+  }
+
+  const fetchActivity = async () => {
+    try {
+      const res = await fetch('/api/partnership-matrix?action=activity')
+      const d = await res.json()
+      setActivity(d)
+    } catch (e) { console.error('[Matrix] Activity error:', e) }
   }
 
   const addPartnership = async () => {
@@ -233,6 +242,26 @@ export default function PartnershipMatrix() {
           })}
         </div>
       </div>
+
+      {/* Activity Log */}
+      {activity?.recent?.length > 0 && (
+        <div style={{ padding: '0 16px 12px', flexShrink: 0 }}>
+          <div style={{ background: T.surface, borderRadius: 10, border: `1px solid ${T.border}`, padding: '10px 14px', maxHeight: 120, overflow: 'auto' }}>
+            <p style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recent Activity (7 days)</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {activity.recent.slice(0, 8).map((r, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: 3, background: r.verified ? T.green : T.yellow, flexShrink: 0 }} />
+                  <span style={{ color: T.text, fontWeight: 500 }}>{r.partner_name}</span>
+                  <span style={{ color: T.textTertiary }}>→ {r.team_id}</span>
+                  <span style={{ fontSize: 9, color: T.textTertiary, padding: '0 4px', background: T.accentSoft, borderRadius: 3 }}>{r.category_id}</span>
+                  <span style={{ fontSize: 9, color: T.textTertiary, marginLeft: 'auto' }}>{new Date(r.updated_at).toLocaleDateString()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -74,5 +74,42 @@ export default async function handler(req, res) {
     return res.json({ ok: true });
   }
 
-  return res.status(400).json({ error: 'action required: matrix|gaps|add|remove' });
+  // ACTIVITY — recent partnership changes from Kiko alerts
+  if (action === 'activity') {
+    const { data: alerts } = await supabase.from('kiko_alerts')
+      .select('*')
+      .eq('type', 'new_partnership')
+      .order('created_at', { ascending: false })
+      .limit(20);
+    // Also get recently updated partnerships
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: recent } = await supabase.from('f1_partnerships')
+      .select('team_id, partner_name, category_id, tier, updated_at, verified')
+      .gte('updated_at', since)
+      .order('updated_at', { ascending: false })
+      .limit(20);
+    return res.json({ alerts: alerts || [], recent: recent || [] });
+  }
+
+  // STATS — summary for dashboard widgets
+  if (action === 'stats') {
+    const { data: teams } = await supabase.from('f1_teams').select('id, name').order('sort_order');
+    const { data: partnerships } = await supabase.from('f1_partnerships').select('team_id, category_id, tier').eq('status', 'active');
+    const { data: categories } = await supabase.from('sponsor_categories').select('id, name');
+    const byTeam = {};
+    for (const t of (teams || [])) byTeam[t.id] = { name: t.name, count: 0, categories: new Set() };
+    for (const p of (partnerships || [])) {
+      if (byTeam[p.team_id]) { byTeam[p.team_id].count++; if (p.category_id) byTeam[p.team_id].categories.add(p.category_id); }
+    }
+    const totalGaps = Object.values(byTeam).reduce((a, t) => a + ((categories || []).length - t.categories.size), 0);
+    return res.json({
+      totalPartnerships: (partnerships || []).length,
+      totalTeams: (teams || []).length,
+      totalCategories: (categories || []).length,
+      totalGaps,
+      byTeam: Object.fromEntries(Object.entries(byTeam).map(([k, v]) => [k, { ...v, categories: v.categories.size, gaps: (categories || []).length - v.categories.size }])),
+    });
+  }
+
+  return res.status(400).json({ error: 'action required: matrix|gaps|add|remove|activity|stats' });
 }
