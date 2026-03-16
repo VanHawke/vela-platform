@@ -61,7 +61,7 @@ export const TOOL_DEFINITIONS = [
     }, required: ['query'] } },
   { name: 'navigate_page', description: 'Navigate user to a Vela page. ALWAYS use when asked to show/open/go to a page.',
     input_schema: { type: 'object', properties: {
-      page: { type: 'string', enum: ['home', 'pipeline', 'contacts', 'organisations', 'deals', 'email', 'calendar', 'documents', 'tasks', 'settings', 'dashboard'], description: 'Page to navigate to' },
+      page: { type: 'string', enum: ['home', 'pipeline', 'contacts', 'organisations', 'deals', 'email', 'calendar', 'documents', 'tasks', 'settings', 'dashboard', 'news', 'partnership-matrix'], description: 'Page to navigate to' },
       reason: { type: 'string', description: 'Brief reason for navigation' },
     }, required: ['page'] } },
   { name: 'get_alerts', description: 'Get proactive intelligence alerts — stale deals, pipeline bottlenecks, data quality issues.',

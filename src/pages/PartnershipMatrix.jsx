@@ -255,7 +255,10 @@ export default function PartnershipMatrix() {
                   <div style={{ width: 6, height: 32, borderRadius: 3, background: team.color, flexShrink: 0 }} />
                   <div style={{ flex: 1 }}>
                     <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>{team.name}</h3>
-                    <p style={{ fontSize: 10, color: T.textTertiary, margin: '1px 0 0' }}>{team.full_name} · {team.engine}</p>
+                    <p style={{ fontSize: 10, color: T.textTertiary, margin: '1px 0 0' }}>
+                      {team.full_name} · {team.engine}
+                      {team.website && <> · <a href={team.website} target="_blank" rel="noopener" style={{ color: T.blue, textDecoration: 'none' }}>Partners page <ExternalLink size={8} style={{ verticalAlign: -1 }} /></a></>}
+                    </p>
                   </div>
                   <div style={{ display: 'flex', gap: 6 }}>
                     {(() => {
