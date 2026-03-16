@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Home, Users, Building2, GitBranch, Diamond, Mail, Newspaper, Calendar, FileText, CheckSquare, Settings } from 'lucide-react'
+import { Home, Users, Building2, GitBranch, Diamond, Mail, Newspaper, Grid3X3, Calendar, FileText, CheckSquare, Settings } from 'lucide-react'
 
 const NAV = [
   { id: 'home', label: 'Home', icon: Home, path: '/' },
@@ -10,6 +10,7 @@ const NAV = [
   // { id: 'deals', label: 'Deals', icon: Diamond, path: '/deals' },
   { id: 'email', label: 'Email', icon: Mail, path: '/email' },
   { id: 'news', label: 'News', icon: Newspaper, path: '/news' },
+  { id: 'partnership-matrix', label: 'Matrix', icon: Grid3X3, path: '/partnership-matrix' },
   { id: 'calendar', label: 'Calendar', icon: Calendar, path: '/calendar' },
   { id: 'documents', label: 'Documents', icon: FileText, path: '/documents' },
   { id: 'tasks', label: 'Tasks', icon: CheckSquare, path: '/tasks' },

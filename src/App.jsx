@@ -15,6 +15,7 @@ import Tasks from '@/pages/Tasks'
 import Documents from '@/pages/Documents'
 import Email from '@/pages/Email'
 import News from '@/pages/News'
+import PartnershipMatrix from '@/pages/PartnershipMatrix'
 import Calendar from '@/pages/Calendar'
 import VelaCode from '@/pages/VelaCode'
 import Admin from '@/pages/Admin'
@@ -74,6 +75,7 @@ export default function App() {
           <Route path="tasks" element={<Tasks user={user} />} />
           <Route path="email" element={<Email user={user} />} />
           <Route path="news" element={<News />} />
+          <Route path="partnership-matrix" element={<PartnershipMatrix />} />
           <Route path="calendar" element={<Calendar user={user} />} />
           <Route path="documents" element={<Documents user={user} />} />
           <Route path="velacode" element={<VelaCode user={user} />} />

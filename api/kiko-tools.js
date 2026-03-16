@@ -122,6 +122,12 @@ export const TOOL_DEFINITIONS = [
       company: { type: 'string', description: 'Search for news mentioning a specific company (optional)' },
       deals_only: { type: 'boolean', description: 'Only return deal signal articles (default: false)' },
     }, required: [] } },
+  { name: 'get_partnership_matrix', description: 'Query the F1 Partnership Matrix. Shows which teams have sponsors in which categories, and highlights gaps. Use for "who sponsors Red Bull", "which F1 teams have no cybersecurity partner", "show me the partnership matrix", "gaps in F1 sponsorship".',
+    input_schema: { type: 'object', properties: {
+      team: { type: 'string', description: 'Filter by team name (e.g. "Red Bull", "Ferrari", "Haas"). Optional.' },
+      category: { type: 'string', description: 'Filter by category (e.g. "cybersecurity", "fintech", "cloud"). Optional.' },
+      gaps_only: { type: 'boolean', description: 'Only show gaps (empty sponsorship slots). Default: false' },
+    }, required: [] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -379,6 +385,47 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com')
       out += `\n  ${a.article_url}\n`
     }
     return out
+  }
+
+  if (name === 'get_partnership_matrix') {
+    const { team, category, gaps_only } = input
+    const teams = await sbFetch('f1_teams?order=sort_order&select=id,name,full_name,engine,color')
+    const categories = await sbFetch('sponsor_categories?order=sort_order&select=id,name')
+    const partnerships = await sbFetch('f1_partnerships?status=eq.active&select=team_id,partner_name,category_id,tier')
+    if (!teams?.length) return 'Partnership matrix data not loaded.'
+
+    // Filter
+    let filteredTeams = teams
+    if (team) filteredTeams = teams.filter(t => t.name.toLowerCase().includes(team.toLowerCase()) || t.id.includes(team.toLowerCase()))
+    let filteredCats = categories || []
+    if (category) filteredCats = filteredCats.filter(c => c.name.toLowerCase().includes(category.toLowerCase()) || c.id.includes(category.toLowerCase()))
+
+    // Build response
+    let out = ''
+    for (const t of filteredTeams) {
+      const teamPartners = (partnerships || []).filter(p => p.team_id === t.id)
+      const filledCats = new Set(teamPartners.map(p => p.category_id))
+      const gaps = filteredCats.filter(c => !filledCats.has(c.id))
+      if (gaps_only && gaps.length === 0) continue
+
+      out += `\n**${t.name}** (${t.full_name || ''}) — ${teamPartners.length} partners\n`
+      if (!gaps_only) {
+        for (const c of filteredCats) {
+          const catPartners = teamPartners.filter(p => p.category_id === c.id)
+          if (catPartners.length) out += `  ✅ ${c.name}: ${catPartners.map(p => `${p.partner_name} [${p.tier}]`).join(', ')}\n`
+          else out += `  ❌ ${c.name}: **GAP** — no partner\n`
+        }
+      } else {
+        out += `  Gaps: ${gaps.map(g => g.name).join(', ')}\n`
+      }
+    }
+
+    if (!out) return gaps_only ? 'No gaps found for the specified criteria.' : 'No matching teams or categories.'
+    const totalGaps = filteredTeams.reduce((acc, t) => {
+      const filled = new Set((partnerships || []).filter(p => p.team_id === t.id).map(p => p.category_id))
+      return acc + filteredCats.filter(c => !filled.has(c.id)).length
+    }, 0)
+    return `F1 PARTNERSHIP MATRIX${team ? ` — ${team}` : ''}${category ? ` — ${category}` : ''}\n${filteredTeams.length} teams, ${(partnerships||[]).length} active partnerships, ${totalGaps} gaps\n${out}`
   }
 
   return { error: `Unknown tool: ${name}` }
