@@ -12,12 +12,13 @@ const T = {
 
 const CATEGORIES = [
   { id: 'all', label: 'All News' },
+  { id: 'sports_sponsorship', label: 'Sponsorship Deals' },
   { id: 'f1_sponsorship', label: 'F1 Sponsorship' },
-  { id: 'sports_sponsorship', label: 'Sports Sponsorship' },
-  { id: 'formula_e', label: 'Formula E' },
-  { id: 'f1_general', label: 'F1 General' },
   { id: 'market_activity', label: 'Market Activity' },
   { id: 'brand_ambassador', label: 'Brand Ambassador' },
+  { id: 'formula_e', label: 'Formula E' },
+  { id: 'f1_general', label: 'F1 General' },
+  { id: 'team_news', label: 'Team News' },
 ]
 
 const relevanceBadge = (score) => {
@@ -37,7 +38,7 @@ const timeAgo = (date) => {
 
 export default function News() {
   const [articles, setArticles] = useState([])
-  const [category, setCategory] = useState('all')
+  const [category, setCategory] = useState('sports_sponsorship')
   const [dealsOnly, setDealsOnly] = useState(false)
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)

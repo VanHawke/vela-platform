@@ -7,17 +7,22 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
 
-// RSS Feed sources — free, public, no API keys needed
+// RSS Feed sources — rebalanced: sponsorship-first, F1 secondary
 const FEEDS = [
+  // SPONSORSHIP & SPORTS BUSINESS (primary — 8 feeds)
+  { name: 'SportsPro Media', url: 'https://www.sportspromedia.com/feed/', category: 'sports_sponsorship' },
+  { name: 'InsiderSport', url: 'https://insidersport.com/feed/', category: 'sports_sponsorship' },
+  { name: 'SportBusiness', url: 'https://www.sportbusiness.com/feed/', category: 'sports_sponsorship' },
+  { name: 'The Sponsor', url: 'https://www.thesponsor.com/feed/', category: 'sports_sponsorship' },
+  { name: 'Front Office Sports', url: 'https://frontofficesports.com/feed/', category: 'sports_sponsorship' },
+  { name: 'SportsMint Media', url: 'https://www.sportsmintmedia.com/feed/', category: 'sports_sponsorship' },
+  { name: 'SportTechie', url: 'https://www.sporttechie.com/feed', category: 'market_activity' },
+  { name: 'World Sports Advertising', url: 'https://www.worldsportsadvertising.com/feed/', category: 'sports_sponsorship' },
+  // F1 & MOTORSPORT (secondary — 3 feeds)
   { name: 'Formula1.com', url: 'https://www.formula1.com/en/latest/all.xml', category: 'f1_general' },
   { name: 'Motorsport.com F1', url: 'https://www.motorsport.com/rss/f1/news/', category: 'f1_general' },
-  { name: 'Autosport F1', url: 'https://www.autosport.com/rss/feed/f1', category: 'f1_general' },
   { name: 'RaceFans', url: 'https://www.racefans.net/feed/', category: 'f1_general' },
-  { name: 'Racer.com F1', url: 'https://racer.com/f1/feed/', category: 'f1_general' },
-  { name: 'PlanetF1', url: 'https://www.planetf1.com/feed/', category: 'f1_general' },
-  { name: 'SportsPro Media', url: 'https://www.sportspromedia.com/feed/', category: 'sports_sponsorship' },
-  { name: 'SportsMint Media', url: 'https://www.sportsmintmedia.com/feed/', category: 'sports_sponsorship' },
-  { name: 'InsiderSport', url: 'https://insidersport.com/feed/', category: 'sports_sponsorship' },
+  // FORMULA E
   { name: 'FIA', url: 'https://www.fia.com/rss/news', category: 'f1_general' },
 ];
 
@@ -93,9 +98,19 @@ Summary: ${(article.summary || '').slice(0, 800)}
 
 Context: Van Hawke Group is an F1/Formula E sponsorship advisory firm. Key clients: Haas F1, Alpine F1. Target sectors: cybersecurity, AI, cloud, semiconductors, fintech, robotics, legal, banking.
 
+CATEGORY RULES (pick the most specific match):
+- "sports_sponsorship" = ANY new sponsorship deal, brand partnership, naming rights, shirt deal, renewal, or commercial agreement in ANY sport. This is the PRIMARY category — use it for any article about a brand signing/renewing with a sports entity.
+- "f1_sponsorship" = Sponsorship deals specifically involving F1 teams, FIA, or F1 as a property.
+- "brand_ambassador" = Individual athlete endorsement or ambassador deals.
+- "market_activity" = Media rights deals, broadcast agreements, M&A, investment, league valuations. NOT sponsorship deals.
+- "formula_e" = Anything specifically about Formula E (Season 12, E-Prix, FIA Formula E).
+- "f1_general" = F1 race results, driver news, technical regulations, team performance — NOT commercial/sponsorship.
+- "team_news" = Team operations, management changes, new venues — NOT sponsorship.
+- "regulatory" = FIA/league rules, governance, policy changes.
+
 Return JSON:
 {
-  "category": "f1_sponsorship|sports_sponsorship|formula_e|f1_general|market_activity|brand_ambassador|team_news|regulatory",
+  "category": "sports_sponsorship|f1_sponsorship|formula_e|f1_general|market_activity|brand_ambassador|team_news|regulatory",
   "relevance_score": 0-10,
   "deal_signal": true/false,
   "key_topics": ["topic1", "topic2"],
@@ -103,15 +118,16 @@ Return JSON:
   "matched_companies": []
 }
 
-Relevance scoring:
-- 10: Directly mentions Haas F1, Van Hawke, or a company in Van Hawke's CRM
-- 8-9: New F1/Formula E sponsorship deal announcement
-- 6-7: Sports sponsorship deal in a target sector (cyber, AI, cloud, fintech)
-- 4-5: General F1 commercial/business news
-- 2-3: General sports business news
-- 0-1: Irrelevant (race results, driver gossip, non-commercial)
+deal_signal = true if the article announces a NEW deal, partnership, renewal, naming rights, or commercial agreement.
 
-For matched_companies, check if any of these company names appear in the title or summary: ${companyNames.slice(0, 100).join(', ')}
+Relevance scoring:
+- 9-10: Mentions Haas F1, Van Hawke, Toyota, or a company in Van Hawke's CRM
+- 7-8: New sponsorship deal announcement in ANY sport (brand + rights holder named)
+- 5-6: Sponsorship market analysis, deal renewals, commercial trends
+- 3-4: General sports business (media rights, investment, M&A)
+- 1-2: Race results, driver gossip, non-commercial content
+
+For matched_companies, check if any of these appear: ${companyNames.slice(0, 100).join(', ')}
 Return matched names as strings in the array.`;
 
   try {
