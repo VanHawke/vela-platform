@@ -27,6 +27,8 @@ export default function PartnershipMatrix() {
   const [filterCategory, setFilterCategory] = useState('all')
   const [showGapsOnly, setShowGapsOnly] = useState(false)
   const [view, setView] = useState('grid') // grid | list
+  const [showAdd, setShowAdd] = useState(false)
+  const [addForm, setAddForm] = useState({ team_id: '', partner_name: '', category_id: '', tier: 'partner' })
 
   useEffect(() => { fetchMatrix() }, [])
 
@@ -38,6 +40,26 @@ export default function PartnershipMatrix() {
       setData(d)
     } catch (e) { console.error('[Matrix] Fetch error:', e) }
     finally { setLoading(false) }
+  }
+
+  const addPartnership = async () => {
+    if (!addForm.team_id || !addForm.partner_name) return
+    await fetch('/api/partnership-matrix', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'add', ...addForm })
+    })
+    setShowAdd(false)
+    setAddForm({ team_id: '', partner_name: '', category_id: '', tier: 'partner' })
+    fetchMatrix()
+  }
+
+  const removePartnership = async (id) => {
+    if (!confirm('Remove this partnership?')) return
+    await fetch('/api/partnership-matrix', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'remove', id })
+    })
+    fetchMatrix()
   }
 
   const filteredTeams = useMemo(() => {
@@ -78,7 +100,7 @@ export default function PartnershipMatrix() {
         <div>
           <h1 style={{ fontSize: 18, fontWeight: 600, margin: 0, letterSpacing: '-0.02em' }}>Partnership Matrix</h1>
           <p style={{ fontSize: 11, color: T.textTertiary, margin: '2px 0 0' }}>
-            {data?.partnerships?.length || 0} partnerships · {filteredTeams.length} teams · {totalGaps} gaps
+            {data?.partnerships?.length || 0} partnerships · {filteredTeams.length} teams · {totalGaps} gaps · Auto-scanned daily 7am
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -102,8 +124,44 @@ export default function PartnershipMatrix() {
           <button onClick={fetchMatrix} style={{ fontSize: 11, padding: '5px 8px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer' }}>
             <RefreshCw size={12} />
           </button>
+          <button onClick={() => setShowAdd(true)} style={{ fontSize: 11, padding: '5px 10px', borderRadius: 6, border: `1px solid ${T.blue}`, background: 'rgba(0,122,255,0.06)', color: T.blue, cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>
+            <Plus size={11} style={{ marginRight: 3, verticalAlign: -1 }} />Add
+          </button>
         </div>
       </div>
+
+      {/* Add Partnership Modal */}
+      {showAdd && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={() => setShowAdd(false)}>
+          <div onClick={e => e.stopPropagation()} style={{ background: T.surface, borderRadius: 12, padding: 20, width: 360, boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}>
+            <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px' }}>Add Partnership</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <select value={addForm.team_id} onChange={e => setAddForm(p => ({ ...p, team_id: e.target.value }))}
+                style={{ fontSize: 12, padding: '6px 8px', borderRadius: 6, border: `1px solid ${T.border}`, fontFamily: T.font }}>
+                <option value="">Select Team</option>
+                {(data?.teams || []).map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+              <input placeholder="Partner Name" value={addForm.partner_name}
+                onChange={e => setAddForm(p => ({ ...p, partner_name: e.target.value }))}
+                style={{ fontSize: 12, padding: '6px 8px', borderRadius: 6, border: `1px solid ${T.border}`, fontFamily: T.font }} />
+              <select value={addForm.category_id} onChange={e => setAddForm(p => ({ ...p, category_id: e.target.value }))}
+                style={{ fontSize: 12, padding: '6px 8px', borderRadius: 6, border: `1px solid ${T.border}`, fontFamily: T.font }}>
+                <option value="">Select Category</option>
+                {(data?.categories || []).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+              <select value={addForm.tier} onChange={e => setAddForm(p => ({ ...p, tier: e.target.value }))}
+                style={{ fontSize: 12, padding: '6px 8px', borderRadius: 6, border: `1px solid ${T.border}`, fontFamily: T.font }}>
+                {Object.keys(TIER_BADGE).map(t => <option key={t} value={t}>{TIER_BADGE[t].label}</option>)}
+              </select>
+              <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                <button onClick={() => setShowAdd(false)} style={{ flex: 1, fontSize: 12, padding: '6px 0', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
+                <button onClick={addPartnership} style={{ flex: 1, fontSize: 12, padding: '6px 0', borderRadius: 6, border: 'none', background: T.accent, color: '#fff', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Matrix grid */}
       <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
@@ -156,8 +214,11 @@ export default function PartnershipMatrix() {
                               const badge = TIER_BADGE[p.tier] || TIER_BADGE.partner
                               return (
                                 <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                  <span style={{ fontSize: 11, fontWeight: 500, color: T.text }}>{p.partner_name}</span>
+                                  <span style={{ fontSize: 11, fontWeight: 500, color: T.text, flex: 1 }}>{p.partner_name}</span>
                                   <span style={{ fontSize: 8, padding: '0px 4px', borderRadius: 3, background: badge.bg, color: badge.color, fontWeight: 600 }}>{badge.label}</span>
+                                  <button onClick={() => removePartnership(p.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, opacity: 0.3, lineHeight: 1 }} title="Remove">
+                                    <X size={10} color={T.red} />
+                                  </button>
                                 </div>
                               )
                             })}
