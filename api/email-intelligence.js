@@ -87,22 +87,23 @@ export async function updateContactScore(userEmail, contactEmail) {
   else if (daysSinceLast > 60) engagement -= 25;
   engagement = Math.max(0, Math.min(100, engagement));
 
-  // Staleness score (0-100, higher = more stale)
+  // Staleness score (0-100, higher = more stale) — minimum 14 days before flagging
   let staleness = 0;
-  if (typicalResponseDays && daysSinceLast > typicalResponseDays * 2) staleness = 60;
-  if (daysSinceLast > 30) staleness = Math.min(100, staleness + 20);
-  if (daysSinceLast > 60) staleness = 90;
+  if (daysSinceLast > 14 && typicalResponseDays && daysSinceLast > typicalResponseDays * 3) staleness = 50;
+  if (daysSinceLast > 30) staleness = Math.min(100, staleness + 30);
+  if (daysSinceLast > 60) staleness = 80;
   if (daysSinceLast > 90) staleness = 100;
 
-  // Momentum: compare recent 30 days vs prior 30 days
-  const thirtyDaysAgo = new Date(now - 30 * 86400000);
-  const sixtyDaysAgo = new Date(now - 60 * 86400000);
-  const recentEmails = emails.filter(e => new Date(e.date) > thirtyDaysAgo).length;
-  const priorEmails = emails.filter(e => new Date(e.date) > sixtyDaysAgo && new Date(e.date) <= thirtyDaysAgo).length;
+  // Momentum: compare recent 14 days vs prior 14 days
+  const fourteenDaysAgo = new Date(now - 14 * 86400000);
+  const twentyEightDaysAgo = new Date(now - 28 * 86400000);
+  const recentEmails = emails.filter(e => new Date(e.date) > fourteenDaysAgo).length;
+  const priorEmails = emails.filter(e => new Date(e.date) > twentyEightDaysAgo && new Date(e.date) <= fourteenDaysAgo).length;
   let momentum = 'stable';
-  if (recentEmails > priorEmails * 1.5) momentum = 'rising';
+  if (priorEmails === 0 && recentEmails > 0) momentum = 'stable'; // Not enough history
+  else if (recentEmails > priorEmails * 1.5 && priorEmails > 0) momentum = 'rising';
   else if (recentEmails < priorEmails * 0.5 && priorEmails > 0) momentum = 'declining';
-  else if (daysSinceLast > 45) momentum = 'cold';
+  if (daysSinceLast > 45) momentum = 'cold';
 
   // Relationship health (0-100)
   let health = engagement;
@@ -125,10 +126,10 @@ export async function updateContactScore(userEmail, contactEmail) {
 
   // Follow-up recommendation
   let nextFollowup = null, followupReason = null;
-  if (staleness > 50) {
+  if (staleness > 50 && daysSinceLast > 14) {
     nextFollowup = new Date().toISOString();
     followupReason = `${daysSinceLast} days since last contact — relationship at risk`;
-  } else if (momentum === 'declining') {
+  } else if (momentum === 'declining' && daysSinceLast > 7) {
     nextFollowup = new Date(now.getTime() + 3 * 86400000).toISOString();
     followupReason = 'Communication declining — proactive re-engagement recommended';
   } else if (sent.length > received.length + 3) {
@@ -234,6 +235,17 @@ export default async function handler(req, res) {
       .order('staleness_score', { ascending: false })
       .limit(20);
     return res.json({ stale: data || [] });
+  }
+
+  if (action === 'rescore') {
+    // Re-score all contacts with updated algorithm
+    const { data: contacts } = await supabase.from('email_scores').select('contact_email').eq('user_email', userEmail);
+    let scored = 0;
+    for (const c of (contacts || [])) {
+      await updateContactScore(userEmail, c.contact_email);
+      scored++;
+    }
+    return res.json({ rescored: scored });
   }
 
   if (action === 'dashboard') {
