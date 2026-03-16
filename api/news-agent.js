@@ -7,22 +7,20 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
 
-// RSS Feed sources — rebalanced: sponsorship-first, F1 secondary
+// RSS Feed sources — sponsorship-first, all verified working
 const FEEDS = [
-  // SPONSORSHIP & SPORTS BUSINESS (primary — 8 feeds)
+  // SPONSORSHIP & SPORTS BUSINESS (primary — 7 feeds, all verified 200 OK)
   { name: 'SportsPro Media', url: 'https://www.sportspromedia.com/feed/', category: 'sports_sponsorship' },
   { name: 'InsiderSport', url: 'https://insidersport.com/feed/', category: 'sports_sponsorship' },
-  { name: 'SportBusiness', url: 'https://www.sportbusiness.com/feed/', category: 'sports_sponsorship' },
   { name: 'The Sponsor', url: 'https://www.thesponsor.com/feed/', category: 'sports_sponsorship' },
   { name: 'Front Office Sports', url: 'https://frontofficesports.com/feed/', category: 'sports_sponsorship' },
-  { name: 'SportsMint Media', url: 'https://www.sportsmintmedia.com/feed/', category: 'sports_sponsorship' },
-  { name: 'SportTechie', url: 'https://www.sporttechie.com/feed', category: 'market_activity' },
-  { name: 'World Sports Advertising', url: 'https://www.worldsportsadvertising.com/feed/', category: 'sports_sponsorship' },
+  { name: 'iSportConnect', url: 'https://www.isportconnect.com/feed/', category: 'sports_sponsorship' },
+  { name: 'Sportcal', url: 'https://sportcal.com/feed/', category: 'market_activity' },
   // F1 & MOTORSPORT (secondary — 3 feeds)
   { name: 'Formula1.com', url: 'https://www.formula1.com/en/latest/all.xml', category: 'f1_general' },
   { name: 'Motorsport.com F1', url: 'https://www.motorsport.com/rss/f1/news/', category: 'f1_general' },
   { name: 'RaceFans', url: 'https://www.racefans.net/feed/', category: 'f1_general' },
-  // FORMULA E
+  // FIA / FORMULA E
   { name: 'FIA', url: 'https://www.fia.com/rss/news', category: 'f1_general' },
 ];
 
