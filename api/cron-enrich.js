@@ -54,5 +54,12 @@ export default async function handler(req, res) {
   // 6. Email sync handled by dedicated cron-email-sync.js (runs every 5 min)
   results.emails = { note: 'handled by cron-email-sync' }
 
+  // 7. Email intelligence — analyse unprocessed emails and update contact scores
+  try {
+    const { processUnanalysedEmails } = await import('./email-intelligence.js')
+    const intelResult = await processUnanalysedEmails('sunny@vanhawke.com', 30)
+    results.intelligence = intelResult
+  } catch (e) { results.intelligence = { error: e.message } }
+
   return res.json({ status: 'complete', timestamp: new Date().toISOString(), results })
 }
