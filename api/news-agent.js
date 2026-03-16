@@ -218,10 +218,7 @@ export default async function handler(req, res) {
     const { data, count, error } = await query;
     if (error) return res.status(500).json({ error: error.message });
 
-    // Stats
-    const { data: stats } = await supabase.rpc('news_stats').catch(() => ({ data: null }));
-
-    return res.json({ articles: data || [], total: count || 0, page, stats });
+    return res.json({ articles: data || [], total: count || 0, page });
   }
 
   // STAR/READ — toggle state
