@@ -53,6 +53,9 @@ api/
   email.js             (398 lines) — Gmail API proxy: sync, send, reply, trash, star, labels, search, threads, list-live, attachments
   email-helpers.js     (85 lines)  — Gmail message parsing and MIME building utilities
   google-token.js      (118 lines) — Google OAuth token management with auto-refresh
+  email-intelligence.js (265 lines) — Haiku email analysis + contact scoring (engagement/staleness/momentum)
+  kiko-followup.js     (69 lines)  — Follow-up draft generation + queue handlers
+  news-agent.js        (241 lines) — RSS aggregator (10 feeds) + Haiku classifier + deal signal detection
   cron-email-sync.js   (104 lines) — 5-minute Gmail sync cron for all connected users
   cron-enrich.js       (58 lines)  — Daily 6am enrichment + alerts cron
   voice.js             (229 lines) — Whisper transcription + OpenAI Realtime (gpt-realtime model)
@@ -68,6 +71,7 @@ src/
     Email.jsx            (290 lines) — Gmail inbox: folders, labels, thread list, compose, auto-refresh
     EmailThread.jsx      (212 lines) — Thread viewer: expand/collapse, HTML rendering, reply/forward
     EmailCompose.jsx     (249 lines) — Rich text compose: formatting toolbar, attachments, signature auto-append
+    News.jsx             (200 lines) — News intelligence feed: category sidebar, deal signals, relevance badges
     Pipeline.jsx         — Deal Pipeline kanban
     Contacts.jsx         — Contact list (paginated, all 5,006)
     ContactDetail.jsx    — Contact detail page
@@ -112,10 +116,13 @@ Pipelines: Haas F1, Alpine F1, Formula E, ONE Championship, Esports
 ### emails (70+ cached, live fetch from Gmail API)
 ### email_sync_state (1 row — sunny@vanhawke.com, incremental sync active)
 ### user_tokens (1 row — Google OAuth with refresh token, gmail.modify + calendar scopes)
+### email_scores (122 contacts — engagement, staleness, momentum, tone scoring)
+### followup_queue (2 Campfire drafts pending review)
+### news_articles (181 articles — 10 RSS feeds, Haiku-classified, 6 deal signals)
 
 ---
 
-## KIKO TOOLS (13 total)
+## KIKO TOOLS (17 total)
 
 1. search_contacts — fuzzy CRM contact search
 2. search_companies — fuzzy CRM company search
@@ -127,9 +134,13 @@ Pipelines: Haas F1, Alpine F1, Formula E, ONE Championship, Esports
 8. search_emails — Gmail search via API (dynamic userEmail)
 9. get_email_thread — full thread fetch
 10. draft_email — create Gmail draft with auto-signature
-11. get_email_analytics — communication frequency, recency, engagement patterns
+11. get_email_analytics — pre-computed contact intelligence (engagement/staleness/momentum/tone)
 12. get_calendar — upcoming calendar events (Google Calendar API)
-13. create_calendar_event — create events with attendees, location, Google Meet
+13. create_calendar_event — create events with attendees, location
+14. get_stale_contacts — contacts needing follow-up from email intelligence
+15. generate_followup — Sonnet-drafted follow-up emails, queued for review
+16. get_followup_queue — pending follow-up drafts
+17. get_news — sports sponsorship/F1 news from 10 RSS feeds, Haiku-classified
 
 Plus native: web_search, memory
 
@@ -172,6 +183,7 @@ Plus native: web_search, memory
 |---|---|---|
 | `/api/cron-enrich` | `0 6 * * *` (daily 6am) | Enrichment + campaigns + activities + alerts |
 | `/api/cron-email-sync` | `*/5 * * * *` (every 5 min) | Gmail sync for all connected users |
+| `/api/news-agent` | `*/30 * * * *` (every 30 min) | RSS fetch + Haiku classify from 10 feeds |
 
 
 ---
@@ -213,6 +225,13 @@ Everything from previous session (see v3.3 brief) PLUS:
 | File splits: email-helpers.js, kiko-calendar.js — all files under 400 lines | ✅ |
 | Voice model upgrade (gpt-4o-realtime-preview → gpt-realtime) | ✅ |
 | Funding enrichment: 1,428 → 1,684 companies (75%) | ✅ |
+| Cache-first email architecture (Supabase reads, Gmail for sync only) | ✅ |
+| Email intelligence: 508 emails analysed, 122 contacts scored | ✅ |
+| Campfire follow-up workflow (deal note, draft queued, Sonnet-generated) | ✅ |
+| Follow-up queue (generate_followup + get_followup_queue tools) | ✅ |
+| News intelligence: 10 RSS feeds, 181 articles, Haiku classifier, deal signals | ✅ |
+| News page UI (Apple light theme, categories, deal signal filter) | ✅ |
+| Kiko conversation priming (fixed email/calendar access refusal) | ✅ |
 
 ---
 
@@ -248,4 +267,4 @@ Everything from previous session (see v3.3 brief) PLUS:
 
 ---
 
-*Generated 15 March 2026. Session covered: Home button fix, pagination, Gmail full integration (8 chunks), Kiko 13 tools (email search/thread/draft/analytics, calendar get/create), voice model upgrade, funding enrichment, chat rename, attachment downloads, entity context enrichment, file splits.*
+*Generated 16 March 2026. Sessions covered: Gmail integration (8 chunks), email intelligence (analysis agent, contact scoring, follow-up queue, Campfire workflow), news intelligence (RSS aggregator, Haiku classifier, deal signals, News page UI), cache-first email architecture, calendar tools, conversation priming, 17 Kiko tools.*
