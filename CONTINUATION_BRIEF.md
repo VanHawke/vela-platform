@@ -219,21 +219,22 @@ Everything from previous session (see v3.3 brief) PLUS:
 ## REMAINING WORK / ROADMAP
 
 ### HIGH PRIORITY
-1. **2,432 contacts missing email/LinkedIn** — Lemlist email finder API dead end. Options: CSV export → Lemlist campaign, Apollo.io/Hunter.io API, or Clay.
+1. **2,432 contacts missing email/LinkedIn** — Lemlist email finder API dead end. Options: CSV export → Lemlist campaign, or Clay.
 2. **Email signature testing** — Set up Sunny's actual HTML signature in Settings, verify it renders correctly in sent emails.
 3. **Google Cloud Pub/Sub for push email sync** — Currently polling. Push would eliminate 5-min delay. Requires Google Cloud project config.
 
 ### MEDIUM PRIORITY
-4. **Email templates** — Saved templates for common outreach patterns (sponsorship intro, follow-up, etc).
-5. **Pipeline: "Meeting Arranged" column visibility** — currently hidden if no deals in that stage.
-6. **Calendar page UI** — Calendar page exists but needs restyle to match email page (Apple light theme).
+4. **LinkedIn Marketing API integration** — PARKED. Steps: Create developer app at developer.linkedin.com, request Community Management API access (free, Development tier). Enables: automated SponsorSignal posts to Van Hawke page, post engagement analytics (who interacts by job title/industry), follower demographics. Approval: 1-3 business days. Build: one session once credentials received.
+5. **Email templates** — Saved templates for common outreach patterns (sponsorship intro, follow-up, etc).
+6. **Pipeline: "Meeting Arranged" column visibility** — currently hidden if no deals in that stage.
+7. **Calendar page UI** — Calendar page exists but needs restyle to match email page (Apple light theme).
 
 ### LOWER PRIORITY / FUTURE
-7. **MCP server migration** — kiko-tools.js structured for MCP. Would allow Kiko from Claude Desktop, mobile.
-8. **Cloudflare migration** — planned post-stabilisation.
-9. **Cancel Pipedrive** — once CRM confirmed fully working.
-10. **SponsorSignal integration** — daily LinkedIn content, not yet connected.
-11. **Kiko voice selection** — Voice audition panel built (artifact), user hasn't picked yet. Current: shimmer on gpt-realtime.
+8. **MCP server migration** — kiko-tools.js structured for MCP. Would allow Kiko from Claude Desktop, mobile.
+9. **Cloudflare migration** — planned post-stabilisation.
+10. **Cancel Pipedrive** — once CRM confirmed fully working.
+11. **SponsorSignal integration** — daily LinkedIn content. Blocked on LinkedIn Marketing API (#4 above).
+12. **Kiko voice selection** — Voice audition panel built (artifact), user hasn't picked yet. Current: shimmer on gpt-realtime.
 
 ---
 
