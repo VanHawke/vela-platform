@@ -1,6 +1,7 @@
 // Kiko Tool Registry — modular, MCP-ready tool definitions and handlers
 // Each tool exports { definition, handler } — kiko.js imports and orchestrates
 import { getCalendar, createCalendarEvent } from './kiko-calendar.js';
+import { generateFollowup, getFollowupQueue } from './kiko-followup.js';
 
 // ── Supabase Helper ─────────────────────────────────────
 const SB = () => process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -101,6 +102,20 @@ export const TOOL_DEFINITIONS = [
       attendees: { type: 'string', description: 'Comma-separated attendee emails (optional)' },
       location: { type: 'string', description: 'Location (optional)' },
     }, required: ['summary', 'start', 'end'] } },
+  { name: 'get_stale_contacts', description: 'Get contacts who need follow-up based on email intelligence. Use for "who should I follow up with", "stale contacts", "who am I losing touch with".',
+    input_schema: { type: 'object', properties: {
+      min_staleness: { type: 'number', description: 'Minimum staleness score 0-100 (default: 40)' },
+    }, required: [] } },
+  { name: 'generate_followup', description: 'Generate a follow-up email draft for a deal or contact, queue it for review. Use for "draft a follow-up for X", "write a re-engagement email for Y deal".',
+    input_schema: { type: 'object', properties: {
+      contact_email: { type: 'string', description: 'Recipient email address' },
+      deal_name: { type: 'string', description: 'Deal name for context (optional)' },
+      context: { type: 'string', description: 'Any additional context — last touchpoint, deal stage, tone instructions' },
+    }, required: ['contact_email'] } },
+  { name: 'get_followup_queue', description: 'Get pending follow-up drafts awaiting review. Use for "show follow-up queue", "what drafts are waiting".',
+    input_schema: { type: 'object', properties: {
+      status: { type: 'string', enum: ['pending_review', 'approved', 'sent', 'all'], description: 'Filter by status (default: pending_review)' },
+    }, required: [] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -286,73 +301,49 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com')
   if (name === 'get_email_analytics') {
     const { query: q, direction = 'all' } = input
     try {
-      const { getGoogleToken } = await import('./google-token.js')
-      const token = await getGoogleToken(userEmail)
-      // Build Gmail search query
-      let gmailQ = q
-      if (direction === 'sent') gmailQ = `to:${q} in:sent`
-      else if (direction === 'received') gmailQ = `from:${q}`
-      else gmailQ = `{from:${q} to:${q}}`
-
-      const searchRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(gmailQ)}&maxResults=100`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      const searchData = await searchRes.json()
-      const ids = (searchData.messages || []).map(m => m.id)
-      if (!ids.length) return `No email history found with "${q}".`
-
-      // Fetch metadata for the messages (date, from, to, subject)
-      const msgs = []
-      for (const id of ids.slice(0, 50)) {
-        try {
-          const r = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Date&metadataHeaders=Subject`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-          const msg = await r.json()
-          const h = msg.payload?.headers || []
-          const getH = (n) => h.find(x => x.name.toLowerCase() === n.toLowerCase())?.value || ''
-          msgs.push({ from: getH('From'), to: getH('To'), date: getH('Date'), subject: getH('Subject'), labels: msg.labelIds || [] })
-        } catch {}
+      // Try pre-computed scores first (instant)
+      const { data: scores } = await sbFetch(`email_scores?user_email=eq.${encodeURIComponent(userEmail)}&or=(contact_email.ilike.*${encodeURIComponent(q)}*,contact_name.ilike.*${encodeURIComponent(q)}*,company.ilike.*${encodeURIComponent(q)}*)&limit=5`)
+      if (scores?.length) {
+        const s = scores[0]
+        let out = `EMAIL INTELLIGENCE: ${s.contact_name || s.contact_email}\n`
+        out += `Total emails: ${s.total_emails} (Sent: ${s.sent_count} | Received: ${s.received_count})\n`
+        out += `Last contact: ${s.days_since_last_contact} days ago\n`
+        out += `Avg response time: ${s.avg_response_hours ? Math.round(s.avg_response_hours) + ' hours' : 'N/A'}\n`
+        out += `Relationship health: ${s.relationship_health}/100\n`
+        out += `Engagement: ${s.engagement_score}/100\n`
+        out += `Momentum: ${s.momentum}\n`
+        out += `Tone trend: ${s.tone_trend}\n`
+        if (s.staleness_score > 40) out += `⚠️ STALE (${s.staleness_score}/100) — ${s.followup_reason || 'Follow-up recommended'}\n`
+        if (s.next_followup_recommended) out += `Next follow-up: ${new Date(s.next_followup_recommended).toLocaleDateString('en-GB')}\n`
+        if (s.last_action_items?.length) out += `Open action items: ${s.last_action_items.join('; ')}\n`
+        if (scores.length > 1) out += `\n(${scores.length - 1} more matches found)`
+        return out
       }
-
-      // Analyse patterns
-      const total = ids.length
-      const sampled = msgs.length
-      const sent = msgs.filter(m => m.labels.includes('SENT')).length
-      const received = sampled - sent
-      const dates = msgs.map(m => new Date(m.date)).filter(d => !isNaN(d)).sort((a, b) => b - a)
-      const newest = dates[0]
-      const oldest = dates[dates.length - 1]
-      const daySpan = newest && oldest ? Math.ceil((newest - oldest) / 86400000) : 0
-      const avgPerWeek = daySpan > 0 ? ((sampled / daySpan) * 7).toFixed(1) : sampled
-
-      // Day-of-week distribution
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-      const dayCounts = {}; days.forEach(d => dayCounts[d] = 0)
-      dates.forEach(d => dayCounts[days[d.getDay()]]++)
-      const busiestDay = Object.entries(dayCounts).sort((a, b) => b[1] - a[1])[0]
-
-      // Recency
-      const daysSinceLast = newest ? Math.floor((Date.now() - newest) / 86400000) : null
-      const recency = daysSinceLast === 0 ? 'Today' : daysSinceLast === 1 ? 'Yesterday' : daysSinceLast !== null ? `${daysSinceLast} days ago` : 'Unknown'
-
-      // Recent subjects
-      const recentSubjects = msgs.slice(0, 5).map(m => m.subject).filter(Boolean)
-
-      let out = `EMAIL ANALYTICS: "${q}"\n`
-      out += `Total emails: ${total} (analysed ${sampled})\n`
-      out += `Sent: ${sent} | Received: ${received}\n`
-      out += `Last contact: ${recency}\n`
-      out += `Frequency: ~${avgPerWeek} emails/week over ${daySpan} days\n`
-      out += `Busiest day: ${busiestDay[0]} (${busiestDay[1]} emails)\n`
-      if (daysSinceLast !== null && daysSinceLast > 14) out += `⚠️ STALE — no contact in ${daysSinceLast} days. Consider re-engaging.\n`
-      if (recentSubjects.length) out += `Recent threads:\n${recentSubjects.map(s => `  • ${s}`).join('\n')}\n`
-      return out
+      // Fallback: live Gmail search if no pre-computed scores
+      return `No pre-computed intelligence for "${q}". Run email analysis first, or ask me to search emails directly.`
     } catch(e) { return `Analytics error: ${e.message}` }
   }
 
   if (name === 'get_calendar') return await getCalendar(input, userEmail)
   if (name === 'create_calendar_event') return await createCalendarEvent(input, userEmail)
+
+  if (name === 'get_stale_contacts') {
+    const minStaleness = input.min_staleness || 40
+    const scores = await sbFetch(`email_scores?user_email=eq.${encodeURIComponent(userEmail)}&staleness_score=gte.${minStaleness}&order=staleness_score.desc&limit=15`)
+    if (!scores?.length) return 'No stale contacts found. All relationships are healthy.'
+    let out = `${scores.length} contacts need follow-up:\n`
+    for (const s of scores) {
+      out += `\n• **${s.contact_name || s.contact_email}**${s.company ? ` (${s.company})` : ''}\n`
+      out += `  Health: ${s.relationship_health}/100 | Staleness: ${s.staleness_score}/100 | Momentum: ${s.momentum}\n`
+      out += `  Last contact: ${s.days_since_last_contact} days ago | Emails: ${s.total_emails}\n`
+      if (s.followup_reason) out += `  → ${s.followup_reason}\n`
+    }
+    return out
+  }
+
+  if (name === 'generate_followup') return await generateFollowup(input, userEmail)
+
+  if (name === 'get_followup_queue') return await getFollowupQueue(input, userEmail)
 
   return { error: `Unknown tool: ${name}` }
 }
