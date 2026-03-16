@@ -116,6 +116,12 @@ export const TOOL_DEFINITIONS = [
     input_schema: { type: 'object', properties: {
       status: { type: 'string', enum: ['pending_review', 'approved', 'sent', 'all'], description: 'Filter by status (default: pending_review)' },
     }, required: [] } },
+  { name: 'get_news', description: 'Get latest sports sponsorship and F1 news from the intelligence feed. Use for "what\'s the latest news", "F1 sponsorship deals", "any news about X company", "deal signals".',
+    input_schema: { type: 'object', properties: {
+      category: { type: 'string', enum: ['all', 'f1_sponsorship', 'sports_sponsorship', 'formula_e', 'f1_general', 'market_activity', 'brand_ambassador'], description: 'Filter by category (default: all)' },
+      company: { type: 'string', description: 'Search for news mentioning a specific company (optional)' },
+      deals_only: { type: 'boolean', description: 'Only return deal signal articles (default: false)' },
+    }, required: [] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -344,6 +350,36 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com')
   if (name === 'generate_followup') return await generateFollowup(input, userEmail)
 
   if (name === 'get_followup_queue') return await getFollowupQueue(input, userEmail)
+
+  if (name === 'get_news') {
+    const { category, company, deals_only } = input
+    let filter = 'is_processed=eq.true&order=published_at.desc&limit=15'
+    if (category && category !== 'all') filter += `&category=eq.${category}`
+    if (deals_only) filter += '&deal_signal=eq.true'
+    let articles = await sbFetch(`news_articles?${filter}&select=title,source_name,article_url,published_at,category,relevance_score,deal_signal,matched_companies,key_topics`)
+    // If company search, filter client-side (more flexible matching)
+    if (company && articles?.length) {
+      const q = company.toLowerCase()
+      articles = articles.filter(a =>
+        a.title?.toLowerCase().includes(q) ||
+        (a.matched_companies || []).some(c => (c.name || c).toLowerCase().includes(q)) ||
+        (a.key_topics || []).some(t => t.toLowerCase().includes(q))
+      )
+    }
+    if (!articles?.length) return `No news found${category ? ` in ${category}` : ''}${company ? ` about "${company}"` : ''}.`
+    let out = `${articles.length} article${articles.length > 1 ? 's' : ''}${company ? ` mentioning "${company}"` : ''}:\n`
+    for (const a of articles.slice(0, 10)) {
+      const date = new Date(a.published_at)
+      const ago = Math.floor((Date.now() - date) / 3600000)
+      const timeStr = ago < 24 ? `${ago}h ago` : `${Math.floor(ago / 24)}d ago`
+      out += `\n• **${a.title}** (${a.source_name}, ${timeStr})`
+      if (a.deal_signal) out += ` 🔴 DEAL SIGNAL`
+      if (a.relevance_score >= 7) out += ` ⭐ High relevance`
+      if (a.matched_companies?.length) out += ` — Companies: ${a.matched_companies.map(c => c.name || c).join(', ')}`
+      out += `\n  ${a.article_url}\n`
+    }
+    return out
+  }
 
   return { error: `Unknown tool: ${name}` }
 }

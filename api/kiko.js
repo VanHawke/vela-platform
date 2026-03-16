@@ -90,6 +90,7 @@ TOOLS:
 - get_stale_contacts: Get contacts needing follow-up based on email intelligence. Returns staleness scores, momentum, relationship health. Use for "who should I follow up with", "stale contacts", "who needs attention".
 - generate_followup: Generate a follow-up email for a deal or contact. Drafts are queued for human review before sending. Uses Van Hawke tone — sharp, professional, no fluff.
 - get_followup_queue: Get pending follow-up drafts awaiting review. Use for "show follow-up queue", "what drafts are waiting".
+- get_news: Get latest sports sponsorship and F1 news from the intelligence feed. Sourced from 10+ RSS feeds (Formula1.com, Motorsport.com, SportsPro, etc), classified by Haiku. Use for "latest news", "F1 sponsorship news", "any news about X company", "deal signals".
 - Web search: You have native web search. Use it for news, weather, market data, company research.
 - Memory: You have a /memories directory. Check it before responding. Store important facts there.
 
@@ -109,6 +110,7 @@ TOOL USAGE RULES:
 - "Who should I follow up with" / "Stale contacts" / "Who needs attention" → get_stale_contacts. Returns pre-computed intelligence scores.
 - "Draft a follow-up for X" / "Write an email to re-engage Y" → generate_followup. Creates a draft queued for human review.
 - "Show follow-up queue" / "What drafts are waiting" → get_followup_queue. Shows pending drafts.
+- "What's the latest news" / "F1 sponsorship news" / "Any news about X" / "Deal signals" → get_news. Returns classified articles from the intelligence feed.
 
 RESPONSE FORMATTING:
 - Company briefings: Lead with company name, industry, and key metric. Then funding, deal stage, key contacts, and recommendation. End with a specific next action.

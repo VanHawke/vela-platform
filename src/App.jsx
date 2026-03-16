@@ -14,6 +14,7 @@ import Organisations from '@/pages/Organisations'
 import Tasks from '@/pages/Tasks'
 import Documents from '@/pages/Documents'
 import Email from '@/pages/Email'
+import News from '@/pages/News'
 import Calendar from '@/pages/Calendar'
 import VelaCode from '@/pages/VelaCode'
 import Admin from '@/pages/Admin'
@@ -72,6 +73,7 @@ export default function App() {
           <Route path="deals" element={<Navigate to="/pipeline" replace />} />
           <Route path="tasks" element={<Tasks user={user} />} />
           <Route path="email" element={<Email user={user} />} />
+          <Route path="news" element={<News />} />
           <Route path="calendar" element={<Calendar user={user} />} />
           <Route path="documents" element={<Documents user={user} />} />
           <Route path="velacode" element={<VelaCode user={user} />} />
