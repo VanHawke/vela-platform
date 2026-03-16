@@ -113,6 +113,7 @@ TOOL USAGE RULES:
 - "Show follow-up queue" / "What drafts are waiting" → get_followup_queue. Shows pending drafts.
 - "What's the latest news" / "F1 sponsorship news" / "Any news about X" / "Deal signals" → get_news.
 - "Who sponsors Red Bull" / "F1 partnership matrix" / "Which teams have no cybersecurity partner" / "Show sponsorship gaps" → get_partnership_matrix.
+- "Generate partnership report" / "Export matrix" → Direct user to the Export button in the Matrix page, or provide the link /api/partnership-report?format=html.
 
 RESPONSE FORMATTING:
 - Company briefings: Lead with company name, industry, and key metric. Then funding, deal stage, key contacts, and recommendation. End with a specific next action.
