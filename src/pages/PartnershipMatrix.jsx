@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Filter, RefreshCw, Loader2, AlertTriangle, ChevronDown, Plus, X, ExternalLink } from 'lucide-react'
+import { Filter, RefreshCw, Loader2, AlertTriangle, ChevronDown, Plus, X, ExternalLink, LayoutGrid, List, FileDown } from 'lucide-react'
 
 const T = {
   bg: '#FAFAFA', surface: '#FFFFFF', surfaceHover: '#F5F5F5',
@@ -26,7 +26,7 @@ export default function PartnershipMatrix() {
   const [filterTeam, setFilterTeam] = useState('all')
   const [filterCategory, setFilterCategory] = useState('all')
   const [showGapsOnly, setShowGapsOnly] = useState(false)
-  const [view, setView] = useState('grid') // grid | list
+  const [view, setView] = useState('grid') // grid | heatmap
   const [showAdd, setShowAdd] = useState(false)
   const [addForm, setAddForm] = useState({ team_id: '', partner_name: '', category_id: '', tier: 'partner' })
   const [activity, setActivity] = useState(null)
@@ -133,9 +133,21 @@ export default function PartnershipMatrix() {
           <button onClick={fetchMatrix} style={{ fontSize: 11, padding: '5px 8px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer' }}>
             <RefreshCw size={12} />
           </button>
+          <a href={`/api/partnership-report?format=html${filterTeam !== 'all' ? `&team=${filterTeam}` : ''}`} target="_blank" rel="noopener"
+            style={{ fontSize: 11, padding: '5px 10px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font, fontWeight: 500, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 3 }}>
+            <FileDown size={11} />Export
+          </a>
           <button onClick={() => setShowAdd(true)} style={{ fontSize: 11, padding: '5px 10px', borderRadius: 6, border: `1px solid ${T.blue}`, background: 'rgba(0,122,255,0.06)', color: T.blue, cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>
             <Plus size={11} style={{ marginRight: 3, verticalAlign: -1 }} />Add
           </button>
+          <div style={{ display: 'flex', borderRadius: 6, border: `1px solid ${T.border}`, overflow: 'hidden' }}>
+            <button onClick={() => setView('grid')} style={{ fontSize: 11, padding: '5px 8px', border: 'none', cursor: 'pointer', background: view === 'grid' ? T.accent : T.surface, color: view === 'grid' ? '#fff' : T.textSecondary }}>
+              <LayoutGrid size={12} />
+            </button>
+            <button onClick={() => setView('heatmap')} style={{ fontSize: 11, padding: '5px 8px', border: 'none', cursor: 'pointer', background: view === 'heatmap' ? T.accent : T.surface, color: view === 'heatmap' ? '#fff' : T.textSecondary }}>
+              <List size={12} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -174,6 +186,63 @@ export default function PartnershipMatrix() {
 
       {/* Matrix grid */}
       <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+
+        {/* HEATMAP VIEW — compact team × category grid */}
+        {view === 'heatmap' && (
+          <div style={{ background: T.surface, borderRadius: 12, border: `1px solid ${T.border}`, overflow: 'auto' }}>
+            <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 10, fontFamily: T.font }}>
+              <thead>
+                <tr>
+                  <th style={{ position: 'sticky', left: 0, background: T.surface, padding: '8px 12px', textAlign: 'left', fontWeight: 600, borderBottom: `1px solid ${T.border}`, zIndex: 2, minWidth: 120 }}>Team</th>
+                  {filteredCategories.map(c => (
+                    <th key={c.id} style={{ padding: '6px 4px', fontWeight: 500, borderBottom: `1px solid ${T.border}`, color: c.color || T.textTertiary, writingMode: 'vertical-rl', textOrientation: 'mixed', height: 100, fontSize: 9 }}>
+                      {c.name.replace(/ \/ .*/,'')}
+                    </th>
+                  ))}
+                  <th style={{ padding: '6px 8px', fontWeight: 600, borderBottom: `1px solid ${T.border}`, color: T.textSecondary }}>Total</th>
+                  <th style={{ padding: '6px 8px', fontWeight: 600, borderBottom: `1px solid ${T.border}`, color: T.red }}>Gaps</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTeams.map(team => {
+                  const td = data?.matrix?.[team.id]
+                  if (!td) return null
+                  const partners = Object.values(td.categories).flat()
+                  const filledCats = new Set(partners.map(p => p.category_id))
+                  const gapCount = filteredCategories.filter(c => !filledCats.has(c.id)).length
+                  return (
+                    <tr key={team.id} style={{ borderBottom: `1px solid ${T.border}` }}>
+                      <td style={{ position: 'sticky', left: 0, background: T.surface, padding: '6px 12px', fontWeight: 600, zIndex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ width: 8, height: 8, borderRadius: 4, background: team.color, flexShrink: 0 }} />
+                          {team.name}
+                        </div>
+                      </td>
+                      {filteredCategories.map(c => {
+                        const cp = td.categories[c.id] || []
+                        const filled = cp.length > 0
+                        return (
+                          <td key={c.id} style={{ padding: '4px', textAlign: 'center' }} title={filled ? cp.map(p => p.partner_name).join(', ') : 'GAP'}>
+                            <span style={{ display: 'inline-block', width: 14, height: 14, borderRadius: 3,
+                              background: filled ? `${T.green}20` : `${T.red}15`,
+                              border: `1.5px solid ${filled ? T.green : T.red}40`,
+                              fontSize: 8, lineHeight: '14px', color: filled ? T.green : T.red, fontWeight: 700
+                            }}>{filled ? cp.length : '—'}</span>
+                          </td>
+                        )
+                      })}
+                      <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 600, color: T.text }}>{partners.length}</td>
+                      <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 600, color: gapCount > 5 ? T.red : T.yellow }}>{gapCount}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* GRID VIEW — expanded team cards */}
+        {view === 'grid' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {filteredTeams.map(team => {
             const teamData = data?.matrix?.[team.id]
@@ -241,6 +310,7 @@ export default function PartnershipMatrix() {
             )
           })}
         </div>
+        )}
       </div>
 
       {/* Activity Log */}
