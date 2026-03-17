@@ -209,24 +209,27 @@ async function classifyBatch(limit = 15) {
         const teamName = (intel.partnership_team || '').toLowerCase().trim();
         const teamId = teamAliases[teamName] || Object.entries(teamAliases).find(([k]) => teamName.includes(k))?.[1];
         if (teamId) {
-          const { data: existing } = await supabase.from('f1_partnerships')
-            .select('id').eq('team_id', teamId).eq('partner_name', intel.partnership_partner).maybeSingle();
-          if (!existing) {
-            await supabase.from('f1_partnerships').upsert({
-              team_id: teamId, partner_name: intel.partnership_partner,
-              tier: 'partner', status: 'active', verified: false,
-              last_verified_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-            }, { onConflict: 'team_id,partner_name' });
-            // Create alert for new partnership detection
-            await supabase.from('kiko_alerts').insert({
-              type: 'new_partnership', severity: 'medium',
-              title: `New: ${intel.partnership_partner} → ${teamId}`,
-              detail: `Auto-detected from news: "${article.title}". ${intel.partnership_partner} identified as new partner for ${teamId}.`,
-              entity_type: 'partnership', entity_name: intel.partnership_partner,
-              metadata: { source: article.title, article_id: article.id, team_id: teamId, partner: intel.partnership_partner },
-              expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-            });
-            console.log(`[News] Auto-added partnership: ${intel.partnership_partner} → ${teamId}`);
+          // Handle comma-separated partner names (Haiku sometimes returns multiple)
+          const partnerNames = intel.partnership_partner.split(/[,&]/).map(s => s.trim()).filter(s => s.length > 1 && s.length < 60);
+          for (const partnerName of partnerNames) {
+            const { data: existing } = await supabase.from('f1_partnerships')
+              .select('id').eq('team_id', teamId).eq('partner_name', partnerName).maybeSingle();
+            if (!existing) {
+              await supabase.from('f1_partnerships').upsert({
+                team_id: teamId, partner_name: partnerName,
+                tier: 'partner', status: 'active', verified: false,
+                last_verified_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+              }, { onConflict: 'team_id,partner_name' });
+              await supabase.from('kiko_alerts').insert({
+                type: 'new_partnership', severity: 'medium',
+                title: `New: ${partnerName} → ${teamId}`,
+                detail: `Auto-detected from news: "${article.title}". ${partnerName} identified as new partner for ${teamId}.`,
+                entity_type: 'partnership', entity_name: partnerName,
+                metadata: { source: article.title, article_id: article.id, team_id: teamId, partner: partnerName },
+                expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+              });
+              console.log(`[News] Auto-added partnership: ${partnerName} → ${teamId}`);
+            }
           }
         }
       }
