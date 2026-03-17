@@ -213,7 +213,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         position: 'fixed', bottom: 24, right: 24, zIndex: 100,
         width: 52, height: 52, borderRadius: '50%',
         background: T.accent, border: 'none', color: '#fff',
-        cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+        cursor: 'pointer', boxShadow: '0 10px 40px rgba(0,0,0,0.22), 0 3px 10px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.08)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'transform 0.2s',
       }}
@@ -247,8 +247,8 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           position: 'fixed', bottom: 72, right: 24, width: 400, maxHeight: 'calc(100vh - 140px)',
           zIndex: 100, borderRadius: 16, overflow: 'hidden',
           background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(40px)',
-          WebkitBackdropFilter: 'blur(40px)', border: `1px solid ${T.border}`,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+          WebkitBackdropFilter: 'blur(40px)', border: `0.5px solid rgba(0,0,0,0.05)`,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.06), 0 1.5px 4px rgba(0,0,0,0.02), inset 0 1px 0 rgba(255,255,255,1)',
           display: 'flex', flexDirection: 'column',
         }}>
           {/* Header */}

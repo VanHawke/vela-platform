@@ -77,8 +77,8 @@ export default function Layout({ user }) {
         background: 'rgba(255,255,255,0.72)',
         backdropFilter: 'blur(40px) saturate(1.8)',
         WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
-        border: '1px solid rgba(255,255,255,0.5)',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.03)',
+        border: '0.5px solid rgba(0,0,0,0.06)',
+        boxShadow: '0 8px 36px rgba(0,0,0,0.09), 0 2px 6px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.9)',
       }}>
         {topNav.map(item => {
           const active = loc.pathname === item.path || (item.path === '/' && loc.pathname === '/home')
@@ -90,7 +90,8 @@ export default function Layout({ user }) {
               padding: '6px 14px', borderRadius: 16, border: 'none',
               background: active ? 'var(--accent)' : 'transparent',
               color: active ? '#fff' : 'var(--text-secondary)',
-              fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)', transition: 'all 0.15s'
+              fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)', transition: 'all 0.15s',
+              boxShadow: active ? '0 2px 8px rgba(0,0,0,0.12)' : 'none',
             }}>{item.label}</button>
           )
         })}
