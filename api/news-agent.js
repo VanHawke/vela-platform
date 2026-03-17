@@ -190,6 +190,46 @@ async function classifyBatch(limit = 15) {
           metadata: { article_id: article.id, url: article.article_url, matched_companies: matchedCompanies },
         });
       }
+
+      // === AUTO-UPDATE PARTNERSHIP MATRIX IN REAL-TIME ===
+      if (intel.is_partnership_announcement && intel.partnership_team && intel.partnership_partner) {
+        const teamAliases = {
+          'red bull': 'red_bull', 'red bull racing': 'red_bull', 'oracle red bull': 'red_bull', 'rbr': 'red_bull',
+          'ferrari': 'ferrari', 'scuderia ferrari': 'ferrari', 'hp ferrari': 'ferrari',
+          'mclaren': 'mclaren', 'mastercard mclaren': 'mclaren', 'mclaren f1': 'mclaren',
+          'mercedes': 'mercedes', 'petronas mercedes': 'mercedes', 'silver arrows': 'mercedes', 'mercedes-amg': 'mercedes',
+          'aston martin': 'aston_martin', 'aramco aston martin': 'aston_martin', 'amr': 'aston_martin',
+          'alpine': 'alpine', 'bwt alpine': 'alpine',
+          'williams': 'williams', 'atlassian williams': 'williams', 'williams f1': 'williams',
+          'haas': 'haas', 'tgr haas': 'haas', 'haas f1': 'haas',
+          'racing bulls': 'racing_bulls', 'visa cash app': 'racing_bulls', 'rb': 'racing_bulls',
+          'audi': 'audi', 'revolut audi': 'audi', 'sauber': 'audi',
+          'cadillac': 'cadillac',
+        };
+        const teamName = (intel.partnership_team || '').toLowerCase().trim();
+        const teamId = teamAliases[teamName] || Object.entries(teamAliases).find(([k]) => teamName.includes(k))?.[1];
+        if (teamId) {
+          const { data: existing } = await supabase.from('f1_partnerships')
+            .select('id').eq('team_id', teamId).eq('partner_name', intel.partnership_partner).maybeSingle();
+          if (!existing) {
+            await supabase.from('f1_partnerships').upsert({
+              team_id: teamId, partner_name: intel.partnership_partner,
+              tier: 'partner', status: 'active', verified: false,
+              last_verified_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+            }, { onConflict: 'team_id,partner_name' });
+            // Create alert for new partnership detection
+            await supabase.from('kiko_alerts').insert({
+              type: 'new_partnership', severity: 'medium',
+              title: `New: ${intel.partnership_partner} → ${teamId}`,
+              detail: `Auto-detected from news: "${article.title}". ${intel.partnership_partner} identified as new partner for ${teamId}.`,
+              entity_type: 'partnership', entity_name: intel.partnership_partner,
+              metadata: { source: article.title, article_id: article.id, team_id: teamId, partner: intel.partnership_partner },
+              expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            });
+            console.log(`[News] Auto-added partnership: ${intel.partnership_partner} → ${teamId}`);
+          }
+        }
+      }
       classified++;
     }
   }
