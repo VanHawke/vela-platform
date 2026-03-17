@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import LoginPage from '@/components/auth/LoginPage'
+import AuthCallback from '@/pages/AuthCallback'
 import Layout from '@/components/layout/Layout'
 import KikoChat from '@/components/kiko/KikoChat'
 import Settings from '@/components/settings/Settings'
@@ -32,72 +33,41 @@ function AdminRoute({ children }) {
   return children
 }
 
-// Detect PKCE OAuth callback — URL has ?code= param (Supabase PKCE flow)
-// or legacy implicit flow — URL hash has access_token
-function isOAuthCallback() {
-  const params = new URLSearchParams(window.location.search)
-  return params.has('code') || window.location.hash.includes('access_token')
-}
+const Spinner = () => (
+  <div className="flex items-center justify-center h-screen" style={{ background: '#fff' }}>
+    <div className="h-6 w-6 border-2 border-black/10 border-t-[#1A1A1A] rounded-full animate-spin" />
+  </div>
+)
 
 export default function App() {
-  // undefined = resolving (show spinner)
-  // null      = no session (show login)
-  // object    = authenticated (show platform)
+  // undefined = resolving | null = unauthenticated | object = authenticated
   const [session, setSession] = useState(undefined)
   const [user, setUser] = useState(null)
 
   useEffect(() => {
-    const onCallback = isOAuthCallback()
-
-    if (!onCallback) {
-      // Normal load: getSession() is fast (reads from storage), use it to
-      // set initial state immediately, then onAuthStateChange handles updates.
-      supabase.auth.getSession().then(({ data: { session: s } }) => {
-        setSession(s ?? null)
-        setUser(s?.user ?? null)
-      }).catch(() => {
-        setSession(null)
-      })
-    }
-    // If onCallback: stay in undefined (spinner) until SIGNED_IN fires below.
-    // This prevents the router flashing to /login while the PKCE code exchange runs.
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        setSession(sess)
-        setUser(sess?.user ?? null)
-      } else if (event === 'SIGNED_OUT') {
-        setSession(null)
-        setUser(null)
-      } else if (event === 'INITIAL_SESSION') {
-        // Only use INITIAL_SESSION to resolve spinner on non-callback loads
-        // (on callback loads getSession() is skipped and we wait for SIGNED_IN)
-        if (onCallback && sess) {
-          setSession(sess)
-          setUser(sess?.user ?? null)
-        } else if (onCallback && !sess) {
-          // PKCE exchange in progress — stay as undefined (spinner), SIGNED_IN will follow
-        }
-        // non-callback: getSession() already handled it above
-      }
+    // Single source of truth: onAuthStateChange
+    // INITIAL_SESSION fires immediately on mount with the stored session (or null)
+    // SIGNED_IN fires after AuthCallback calls exchangeCodeForSession and navigates here
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
+      setSession(sess ?? null)
+      setUser(sess?.user ?? null)
     })
-
     return () => subscription.unsubscribe()
   }, [])
 
-  if (session === undefined) {
-    return (
-      <div className="flex items-center justify-center h-screen" style={{ background: '#fff' }}>
-        <div className="h-6 w-6 border-2 border-black/10 border-t-[#1A1A1A] rounded-full animate-spin" />
-      </div>
-    )
-  }
+  if (session === undefined) return <Spinner />
 
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public routes — no auth needed */}
         <Route path="/login" element={session ? <Navigate to="/" replace /> : <LoginPage />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+
+        {/* Admin */}
         <Route path="/admin" element={session ? <AdminRoute><Admin /></AdminRoute> : <Navigate to="/login" replace />} />
+
+        {/* Protected routes */}
         <Route element={session ? <Layout key={user?.id || 'auth'} user={user} /> : <Navigate to="/login" replace />}>
           <Route index element={<KikoChat user={user} />} />
           <Route path="home" element={<KikoChat user={user} />} />
