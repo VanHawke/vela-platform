@@ -35,6 +35,8 @@ export default function Documents({ user }) {
   const [uploadCategory, setUploadCategory] = useState('deck')
   const [uploadTeam, setUploadTeam] = useState('')
   const [uploadTags, setUploadTags] = useState('')
+  const [lastUploaded, setLastUploaded] = useState(null) // {id, name, detectedTeam, confirmedTeam}
+  const [editingTeam, setEditingTeam] = useState(null) // doc id being reassigned
   const [dragOver, setDragOver] = useState(false)
   const dragCounter = useRef(0)
   const fileRef = useRef(null)
@@ -76,6 +78,10 @@ export default function Documents({ user }) {
       const result = await res.json()
       if (!res.ok) throw new Error(result.error || `Processing failed (${res.status})`)
       setUploadStatus(`Done — ${result.chunks} chunks indexed`)
+      const detectedTeam = result.intelligence?.detected_team || result.links?.linked_team || uploadTeam || null
+      if (detectedTeam) {
+        setLastUploaded({ id: result.documentId, name: file.name, detectedTeam, confirmedTeam: detectedTeam })
+      }
       setTimeout(() => setUploadStatus(''), 3000)
       loadDocs()
     } catch (err) {
@@ -109,6 +115,12 @@ export default function Documents({ user }) {
       })
       if (res.ok) loadDocs()
     } catch {} finally { setRescanning(null) }
+  }
+
+  const reassignTeam = async (docId, newTeam) => {
+    await supabase.from('documents').update({ linked_team: newTeam || null }).eq('id', docId)
+    setDocuments(prev => prev.map(d => d.id === docId ? { ...d, linked_team: newTeam || null } : d))
+    setEditingTeam(null)
   }
 
   const remove = async (doc) => {
@@ -179,6 +191,25 @@ export default function Documents({ user }) {
         </div>
       )}
 
+      {/* Post-upload team confirmation */}
+      {lastUploaded && (
+        <div style={{ padding: '10px 24px', background: 'rgba(0,122,255,0.06)', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 12, color: T.text, fontFamily: T.font, fontWeight: 500 }}>
+            Detected team: <span style={{ color: T.blue }}>{lastUploaded.detectedTeam}</span>
+          </span>
+          <button onClick={() => { reassignTeam(lastUploaded.id, lastUploaded.confirmedTeam); setLastUploaded(null) }}
+            style={{ fontSize: 11, padding: '4px 12px', borderRadius: 6, border: 'none', background: T.accent, color: '#fff', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>
+            Confirm
+          </button>
+          <select value={lastUploaded.confirmedTeam || ''} onChange={e => setLastUploaded(prev => ({ ...prev, confirmedTeam: e.target.value }))}
+            style={{ ...inputStyle, width: 150, height: 28, fontSize: 11 }}>
+            <option value="">No team</option>
+            {teams.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <button onClick={() => setLastUploaded(null)} style={{ fontSize: 11, color: T.textTertiary, background: 'none', border: 'none', cursor: 'pointer', fontFamily: T.font }}>Dismiss</button>
+        </div>
+      )}
+
       {/* Filter bar */}
       <div style={{ padding: '8px 24px 12px', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', gap: 3, background: 'rgba(0,0,0,0.03)', borderRadius: 8, padding: 3 }}>
@@ -228,7 +259,18 @@ export default function Documents({ user }) {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
                         <span style={pillStyle(catColor)}>{(doc.category || 'other').replace('_', ' ')}</span>
-                        {doc.linked_team && <span style={pillStyle(T.blue)}>{doc.linked_team}</span>}
+                        {editingTeam === doc.id ? (
+                          <select autoFocus value={doc.linked_team || ''} onChange={e => reassignTeam(doc.id, e.target.value)} onBlur={() => setEditingTeam(null)}
+                            onClick={e => e.stopPropagation()}
+                            style={{ fontSize: 10, padding: '1px 4px', borderRadius: 6, border: `1px solid ${T.blue}`, background: '#fff', color: T.text, outline: 'none', fontFamily: T.font }}>
+                            <option value="">No team</option>
+                            {teams.map(t => <option key={t} value={t}>{t}</option>)}
+                          </select>
+                        ) : (
+                          <span onClick={e => { e.stopPropagation(); setEditingTeam(doc.id) }} style={{ ...pillStyle(doc.linked_team ? T.blue : T.textTertiary), cursor: 'pointer' }} title="Click to reassign team">
+                            {doc.linked_team || '+ Assign team'}
+                          </span>
+                        )}
                         {doc.tags?.map(t => <span key={t} style={pillStyle(T.textTertiary)}>{t}</span>)}
                       </div>
                     </div>
