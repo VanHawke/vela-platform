@@ -74,6 +74,18 @@ async function upsertPartnership(p, source) {
       metadata: { ...p, source },
       expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     });
+    // Homepage notification
+    await supabase.from('pipeline_notifications').insert({
+      type: 'new_partnership',
+      title: `New F1 partner: ${p.partner_name} → ${p.team_id}`,
+      body: `${p.partner_name} detected as ${p.tier || 'partner'} for ${p.team_id} (${p.category_id || 'uncategorised'}). Source: ${source}`,
+      company_name: p.partner_name,
+      pipeline: p.team_id,
+      stage: 'Partnership Announced',
+      source: 'partnership_scanner',
+      priority: 'high',
+      metadata: { ...p, source },
+    });
   }
   return isNew ? 'new' : 'existing';
 }

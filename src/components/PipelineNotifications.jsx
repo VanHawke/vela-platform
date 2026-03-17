@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Bell, BellRing, X, Mail, MessageSquare, Zap, UserCheck, ChevronRight, Check } from 'lucide-react'
+import { Bell, BellRing, X, Mail, MessageSquare, Zap, UserCheck, ChevronRight, Check, Trophy } from 'lucide-react'
 
 const T = {
   bg: '#FAFAFA', surface: '#FFFFFF',
@@ -14,6 +14,7 @@ const TYPE_CONFIG = {
   reply: { icon: MessageSquare, color: T.red, bg: 'rgba(255,59,48,0.08)', label: 'Reply' },
   interested: { icon: UserCheck, color: T.green, bg: 'rgba(52,199,89,0.08)', label: 'Interested' },
   new_lead: { icon: Zap, color: T.blue, bg: 'rgba(0,122,255,0.08)', label: 'New Lead' },
+  new_partnership: { icon: Trophy, color: '#8b5cf6', bg: 'rgba(139,92,246,0.08)', label: 'F1 Partnership' },
   engagement: { icon: Mail, color: T.yellow, bg: 'rgba(255,149,0,0.08)', label: 'Engaged' },
   stage_change: { icon: ChevronRight, color: T.blue, bg: 'rgba(0,122,255,0.08)', label: 'Stage Change' },
   deal_won: { icon: Check, color: T.green, bg: 'rgba(52,199,89,0.08)', label: 'Won' },
@@ -71,7 +72,7 @@ export default function PipelineNotifications() {
     <div style={{ background: T.surface, borderRadius: 16, border: `1px solid ${T.border}`, padding: 20, fontFamily: T.font }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <Bell size={16} style={{ color: T.textTertiary }} />
-        <span style={{ fontSize: 13, color: T.textTertiary }}>No pipeline activity yet. Notifications will appear here when prospects interact with your campaigns.</span>
+        <span style={{ fontSize: 13, color: T.textTertiary }}>No activity yet. Notifications appear here when prospects interact with campaigns or new F1 partnerships are announced.</span>
       </div>
     </div>
   )

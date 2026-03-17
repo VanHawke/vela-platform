@@ -228,6 +228,19 @@ async function classifyBatch(limit = 15) {
                 metadata: { source: article.title, article_id: article.id, team_id: teamId, partner: partnerName },
                 expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
               });
+              // Homepage notification — shows in the Pipeline Activity panel
+              const teamDisplayName = intel.partnership_team || teamId;
+              await supabase.from('pipeline_notifications').insert({
+                type: 'new_partnership',
+                title: `New F1 partner: ${partnerName} → ${teamDisplayName}`,
+                body: `${partnerName} announced as partner for ${teamDisplayName}. Source: ${article.source_name}. Auto-detected from: "${article.title.slice(0, 100)}"`,
+                company_name: partnerName,
+                pipeline: teamDisplayName,
+                stage: 'Partnership Announced',
+                source: 'news_agent',
+                priority: 'high',
+                metadata: { article_id: article.id, team_id: teamId, partner: partnerName, article_url: article.article_url },
+              });
               console.log(`[News] Auto-added partnership: ${partnerName} → ${teamId}`);
             }
           }
