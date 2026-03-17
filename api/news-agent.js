@@ -9,19 +9,26 @@ const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
 
 // RSS Feed sources — sponsorship-first, all verified working
 const FEEDS = [
-  // SPONSORSHIP & SPORTS BUSINESS (primary — 7 feeds, all verified 200 OK)
+  // SPONSORSHIP & SPORTS BUSINESS (primary — 7 feeds)
   { name: 'SportsPro Media', url: 'https://www.sportspromedia.com/feed/', category: 'sports_sponsorship' },
   { name: 'InsiderSport', url: 'https://insidersport.com/feed/', category: 'sports_sponsorship' },
   { name: 'The Sponsor', url: 'https://www.thesponsor.com/feed/', category: 'sports_sponsorship' },
   { name: 'Front Office Sports', url: 'https://frontofficesports.com/feed/', category: 'sports_sponsorship' },
   { name: 'iSportConnect', url: 'https://www.isportconnect.com/feed/', category: 'sports_sponsorship' },
   { name: 'Sportcal', url: 'https://sportcal.com/feed/', category: 'market_activity' },
-  // F1 & MOTORSPORT (secondary — 3 feeds)
+  { name: 'BlackBook Motorsport', url: 'https://www.blackbookmotorsport.com/feed/', category: 'sports_sponsorship' },
+  // F1 & MOTORSPORT (5 feeds — expanded for partnership coverage)
   { name: 'Formula1.com', url: 'https://www.formula1.com/en/latest/all.xml', category: 'f1_general' },
   { name: 'Motorsport.com F1', url: 'https://www.motorsport.com/rss/f1/news/', category: 'f1_general' },
   { name: 'RaceFans', url: 'https://www.racefans.net/feed/', category: 'f1_general' },
+  { name: 'Autosport', url: 'https://www.autosport.com/rss/feed/f1', category: 'f1_general' },
+  { name: 'RacingNews365', url: 'https://racingnews365.com/feed/news.xml', category: 'f1_general' },
   // FIA / FORMULA E
   { name: 'FIA', url: 'https://www.fia.com/rss/news', category: 'f1_general' },
+  // GOOGLE NEWS — targeted sponsorship queries (catches team press releases via aggregation)
+  { name: 'GNews: F1 Sponsor', url: 'https://news.google.com/rss/search?q=F1+team+sponsor+partner+deal+2026&hl=en&gl=GB&ceid=GB:en', category: 'f1_sponsorship' },
+  { name: 'GNews: F1 Partnership', url: 'https://news.google.com/rss/search?q=Formula+1+sponsorship+partnership+announcement&hl=en&gl=US&ceid=US:en', category: 'f1_sponsorship' },
+  { name: 'GNews: F1 Commercial', url: 'https://news.google.com/rss/search?q=%22F1+team%22+%22new+partner%22+OR+%22title+sponsor%22+OR+%22official+partner%22&hl=en&gl=GB&ceid=GB:en', category: 'f1_sponsorship' },
 ];
 
 // Simple XML RSS parser (no dependencies)
@@ -113,10 +120,14 @@ Return JSON:
   "deal_signal": true/false,
   "key_topics": ["topic1", "topic2"],
   "sentiment": "positive|neutral|negative",
-  "matched_companies": []
+  "matched_companies": [],
+  "is_partnership_announcement": true/false,
+  "partnership_team": "team name if F1 partnership",
+  "partnership_partner": "company name if partnership"
 }
 
 deal_signal = true if the article announces a NEW deal, partnership, renewal, naming rights, or commercial agreement.
+is_partnership_announcement = true if the article specifically announces or confirms a NEW or RENEWED partnership between an F1 team and a sponsor/partner. This is the most important signal.
 
 Relevance scoring:
 - 9-10: Mentions Haas F1, Van Hawke, Toyota, or a company in Van Hawke's CRM
@@ -220,14 +231,21 @@ export default async function handler(req, res) {
     const limit = parseInt(req.query?.limit || '30');
     const offset = (page - 1) * limit;
     const dealSignalsOnly = req.query?.deals === 'true';
+    const partnershipsOnly = req.query?.partnerships === 'true';
 
     let query = supabase.from('news_articles')
-      .select('id, title, source_name, article_url, image_url, published_at, category, relevance_score, deal_signal, matched_companies, key_topics, sentiment, is_read, is_starred', { count: 'exact' })
+      .select('id, title, source_name, article_url, image_url, published_at, category, relevance_score, deal_signal, matched_companies, key_topics, sentiment, is_read, is_starred, intelligence', { count: 'exact' })
       .order('published_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (category && category !== 'all') query = query.eq('category', category);
-    if (dealSignalsOnly) query = query.eq('deal_signal', true);
+    if (partnershipsOnly) {
+      // Show articles that are partnership/sponsorship announcements
+      query = query.or('deal_signal.eq.true,intelligence->>is_partnership_announcement.eq.true')
+        .in('category', ['f1_sponsorship', 'sports_sponsorship', 'brand_ambassador']);
+    } else {
+      if (category && category !== 'all') query = query.eq('category', category);
+      if (dealSignalsOnly) query = query.eq('deal_signal', true);
+    }
 
     const { data, count, error } = await query;
     if (error) return res.status(500).json({ error: error.message });

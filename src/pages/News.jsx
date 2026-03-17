@@ -12,6 +12,7 @@ const T = {
 
 const CATEGORIES = [
   { id: 'all', label: 'All News' },
+  { id: 'partnerships', label: 'Partnerships', icon: '🤝' },
   { id: 'sports_sponsorship', label: 'Sponsorship Deals' },
   { id: 'f1_sponsorship', label: 'F1 Sponsorship' },
   { id: 'market_activity', label: 'Market Activity' },
@@ -51,7 +52,8 @@ export default function News() {
     setLoading(articles.length === 0)
     try {
       const params = new URLSearchParams({ action: 'list', page: String(page), limit: '30' })
-      if (category !== 'all') params.set('category', category)
+      if (category === 'partnerships') params.set('partnerships', 'true')
+      else if (category !== 'all') params.set('category', category)
       if (dealsOnly) params.set('deals', 'true')
       const res = await fetch(`/api/news-agent?${params}`)
       const data = await res.json()
@@ -111,7 +113,7 @@ export default function News() {
           <h2 style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-0.02em', margin: 0 }}>
             {CATEGORIES.find(c => c.id === category)?.label || 'News'}{dealsOnly ? ' — Deal Signals' : ''}
           </h2>
-          <span style={{ fontSize: 11, color: T.textTertiary }}>Auto-updates every 30 min</span>
+          <span style={{ fontSize: 11, color: T.textTertiary }}>16 feeds · Auto-updates every 30 min</span>
         </div>
 
         {loading ? (
@@ -144,6 +146,12 @@ export default function News() {
                       <span style={{ fontSize: 10, color: T.textTertiary }}>{timeAgo(article.published_at)}</span>
                       {article.deal_signal && (
                         <span style={{ fontSize: 9, fontWeight: 600, color: T.red, background: 'rgba(255,59,48,0.08)', padding: '1px 5px', borderRadius: 4 }}>DEAL SIGNAL</span>
+                      )}
+                      {article.intelligence?.is_partnership_announcement && (
+                        <span style={{ fontSize: 9, fontWeight: 600, color: T.blue, background: 'rgba(0,122,255,0.08)', padding: '1px 5px', borderRadius: 4 }}>PARTNERSHIP</span>
+                      )}
+                      {article.intelligence?.partnership_team && (
+                        <span style={{ fontSize: 9, fontWeight: 500, color: T.green, background: 'rgba(52,199,89,0.08)', padding: '1px 5px', borderRadius: 4 }}>{article.intelligence.partnership_team} ← {article.intelligence.partnership_partner}</span>
                       )}
                     </div>
                     <a href={article.article_url} target="_blank" rel="noopener noreferrer" style={{
