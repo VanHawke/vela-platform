@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { Plus, Search, X, Building2, Globe, ChevronLeft, ChevronRight, Users, Linkedin, Send, ExternalLink, SlidersHorizontal, ChevronDown } from 'lucide-react'
+import { Plus, Search, X, Building2, Globe, ChevronLeft, ChevronRight, Users, Linkedin, Send, ExternalLink, ChevronDown, RefreshCw } from 'lucide-react'
 
 const PAGE_SIZE = 50
 
@@ -41,6 +41,7 @@ export default function Organisations({ user }) {
   const [sortDir, setSortDir] = useState('asc')
   const [sortField, setSortField] = useState('name')
   const [showFilters, setShowFilters] = useState(false)
+  const [openPopover, setOpenPopover] = useState(null) // 'industry' | 'country' | 'funding' | 'round' | 'employees'
   const [filters, setFilters] = useState({ industries: [], countries: [], fundingMin: '', fundingMax: '', revenueMin: '', revenueMax: '', lastRound: '' })
   const [form, setForm] = useState({ name: '', industry: '', website: '', country: '', notes: '' })
   const [selectedOrg, setSelectedOrg] = useState(null)
@@ -56,6 +57,16 @@ export default function Organisations({ user }) {
   const [loadingCompetitors, setLoadingCompetitors] = useState(false)
   const [loadingPanel, setLoadingPanel] = useState(false)
   const [dealMap, setDealMap] = useState({})
+
+  // Close popover on outside click
+  useEffect(() => {
+    if (!openPopover) return
+    const handler = (e) => {
+      if (!e.target.closest('[data-popover]')) setOpenPopover(null)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [openPopover])
 
   useEffect(() => { if (user?.id) load() }, [user?.id])
 
@@ -323,83 +334,204 @@ export default function Organisations({ user }) {
         </button>
       </div>
 
-      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ position: 'relative', flex: 1, maxWidth: 320 }}>
-            <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: 'var(--text-tertiary)' }} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search organisations..." style={{ ...inputStyle, padding: '8px 12px 8px 34px' }} />
+      <div style={{ padding: '10px 16px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {/* ── Row 1: search + sort + pagination ── */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ position: 'relative', flex: 1, maxWidth: 300 }}>
+            <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 13, height: 13, color: 'var(--text-tertiary)' }} />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search organisations..." style={{ ...inputStyle, padding: '7px 10px 7px 30px', fontSize: 12 }} />
           </div>
-          <button onClick={() => setShowFilters(!showFilters)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: showFilters ? 'var(--accent)' : 'rgba(0,0,0,0.03)', color: showFilters ? '#fff' : 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: 500, transition: 'all 0.15s' }}>
-            <SlidersHorizontal style={{ width: 13, height: 13 }} /> Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
-          </button>
           <select value={`${sortField}-${sortDir}`} onChange={e => { const [f, d] = e.target.value.split('-'); setSortField(f); setSortDir(d) }} style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 10px', fontSize: 11, color: 'var(--text-secondary)', outline: 'none', fontFamily: 'var(--font)', cursor: 'pointer' }}>
             <option value="name-asc">Name A → Z</option>
             <option value="name-desc">Name Z → A</option>
-            <option value="funding-desc">Funding ↓ High</option>
-            <option value="funding-asc">Funding ↑ Low</option>
-            <option value="revenue-desc">Revenue ↓ High</option>
-            <option value="revenue-asc">Revenue ↑ Low</option>
+            <option value="funding-desc">Funding ↓</option>
+            <option value="funding-asc">Funding ↑</option>
+            <option value="revenue-desc">Revenue ↓</option>
+            <option value="revenue-asc">Revenue ↑</option>
             <option value="employees-desc">Employees ↓</option>
             <option value="employees-asc">Employees ↑</option>
             <option value="country-asc">Country A → Z</option>
-            <option value="country-desc">Country Z → A</option>
           </select>
           {totalPages > 1 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>
-              <button disabled={page === 0} onClick={() => setPage(p => p - 1)} style={{ background: 'none', border: 'none', cursor: page === 0 ? 'default' : 'pointer', opacity: page === 0 ? 0.3 : 1, color: 'var(--text-secondary)', padding: 2 }}><ChevronLeft style={{ width: 16, height: 16 }} /></button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>
+              <button disabled={page === 0} onClick={() => setPage(p => p - 1)} style={{ background: 'none', border: 'none', cursor: page === 0 ? 'default' : 'pointer', opacity: page === 0 ? 0.3 : 1, color: 'var(--text-secondary)', padding: 2 }}><ChevronLeft style={{ width: 14, height: 14 }} /></button>
               <span>{page + 1} / {totalPages}</span>
-              <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} style={{ background: 'none', border: 'none', cursor: page >= totalPages - 1 ? 'default' : 'pointer', opacity: page >= totalPages - 1 ? 0.3 : 1, color: 'var(--text-secondary)', padding: 2 }}><ChevronRight style={{ width: 16, height: 16 }} /></button>
+              <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} style={{ background: 'none', border: 'none', cursor: page >= totalPages - 1 ? 'default' : 'pointer', opacity: page >= totalPages - 1 ? 0.3 : 1, color: 'var(--text-secondary)', padding: 2 }}><ChevronRight style={{ width: 14, height: 14 }} /></button>
             </div>
           )}
         </div>
 
-        {/* Filter panel */}
-        {showFilters && (
-          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid rgba(0,0,0,0.06)', padding: 16, display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end' }}>
-            {/* Industry multi-select */}
-            <div style={{ minWidth: 160, flex: 1 }}>
-              <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: 4 }}>Industry</label>
-              <select multiple value={filters.industries} onChange={e => setFilters(p => ({ ...p, industries: [...e.target.selectedOptions].map(o => o.value) }))}
-                style={{ ...inputStyle, padding: '6px 8px', fontSize: 11, height: 68 }}>
-                {filterOptions.industries.map(i => <option key={i} value={i}>{i}</option>)}
-              </select>
-            </div>
-            {/* Country multi-select */}
-            <div style={{ minWidth: 140, flex: 1 }}>
-              <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: 4 }}>Country</label>
-              <select multiple value={filters.countries} onChange={e => setFilters(p => ({ ...p, countries: [...e.target.selectedOptions].map(o => o.value) }))}
-                style={{ ...inputStyle, padding: '6px 8px', fontSize: 11, height: 68 }}>
-                {filterOptions.countries.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            {/* Funding range */}
-            <div style={{ minWidth: 130 }}>
-              <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: 4 }}>Total Funding</label>
-              <div style={{ display: 'flex', gap: 4 }}>
-                <input value={filters.fundingMin} onChange={e => setFilters(p => ({ ...p, fundingMin: e.target.value }))} placeholder="Min (e.g. 10M)" style={{ ...inputStyle, padding: '6px 8px', fontSize: 11, width: 80 }} />
-                <input value={filters.fundingMax} onChange={e => setFilters(p => ({ ...p, fundingMax: e.target.value }))} placeholder="Max (e.g. 1B)" style={{ ...inputStyle, padding: '6px 8px', fontSize: 11, width: 80 }} />
-              </div>
-            </div>
-            {/* Revenue range */}
-            <div style={{ minWidth: 130 }}>
-              <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: 4 }}>Revenue Est.</label>
-              <div style={{ display: 'flex', gap: 4 }}>
-                <input value={filters.revenueMin} onChange={e => setFilters(p => ({ ...p, revenueMin: e.target.value }))} placeholder="Min" style={{ ...inputStyle, padding: '6px 8px', fontSize: 11, width: 80 }} />
-                <input value={filters.revenueMax} onChange={e => setFilters(p => ({ ...p, revenueMax: e.target.value }))} placeholder="Max" style={{ ...inputStyle, padding: '6px 8px', fontSize: 11, width: 80 }} />
-              </div>
-            </div>
-            {/* Last Round */}
-            <div style={{ minWidth: 120 }}>
-              <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: 4 }}>Last Round</label>
-              <input value={filters.lastRound} onChange={e => setFilters(p => ({ ...p, lastRound: e.target.value }))} placeholder="e.g. Series B" style={{ ...inputStyle, padding: '6px 8px', fontSize: 11 }} />
-            </div>
-            {/* Clear */}
-            {activeFilterCount > 0 && (
-              <button onClick={() => setFilters({ industries: [], countries: [], fundingMin: '', fundingMax: '', revenueMin: '', revenueMax: '', lastRound: '' })}
-                style={{ fontSize: 11, color: '#ef4444', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.12)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: 500, alignSelf: 'flex-end' }}>
-                Clear All
+        {/* ── Row 2: filter chips ── */}
+        <div data-popover style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
+          {[
+            { id: 'industry', label: 'Industry', count: filters.industries.length },
+            { id: 'country', label: 'Country', count: filters.countries.length },
+            { id: 'funding', label: 'Funding', count: (filters.fundingMin || filters.fundingMax) ? 1 : 0 },
+            { id: 'round', label: 'Round', count: filters.lastRound ? 1 : 0 },
+            { id: 'revenue', label: 'Revenue', count: (filters.revenueMin || filters.revenueMax) ? 1 : 0 },
+          ].map(chip => {
+            const isActive = chip.count > 0
+            const isOpen = openPopover === chip.id
+            return (
+              <button key={chip.id} onClick={() => setOpenPopover(isOpen ? null : chip.id)} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                padding: '5px 10px', borderRadius: 20,
+                border: isActive ? '1px solid #1A1A1A' : '1px solid rgba(0,0,0,0.1)',
+                background: isActive ? '#1A1A1A' : isOpen ? 'rgba(0,0,0,0.04)' : '#fff',
+                color: isActive ? '#fff' : 'var(--text-secondary)',
+                fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: isActive ? 500 : 400,
+                transition: 'all 0.12s',
+              }}>
+                {chip.label}
+                {chip.count > 0 && <span style={{ fontSize: 10, fontWeight: 600, background: 'rgba(255,255,255,0.2)', borderRadius: 10, padding: '1px 5px' }}>{chip.count}</span>}
+                <ChevronDown style={{ width: 11, height: 11, opacity: 0.6, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
               </button>
+            )
+          })}
+          {activeFilterCount > 0 && (
+            <button onClick={() => { setFilters({ industries: [], countries: [], fundingMin: '', fundingMax: '', revenueMin: '', revenueMax: '', lastRound: '' }); setOpenPopover(null) }}
+              style={{ fontSize: 11, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', padding: '5px 6px' }}>
+              Clear all
+            </button>
+          )}
+
+          {/* ── Popovers ── */}
+          {openPopover && (
+            <div style={{ position: 'absolute', top: 36, left: 0, zIndex: 200, background: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 12, padding: 14, boxShadow: '0 8px 24px rgba(0,0,0,0.08)', minWidth: 280, maxWidth: 360 }}
+              onMouseDown={e => e.stopPropagation()}>
+
+              {/* Industry */}
+              {openPopover === 'industry' && (
+                <>
+                  <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 8px', fontFamily: 'var(--font)' }}>Industry</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, maxHeight: 220, overflowY: 'auto' }}>
+                    {filterOptions.industries.map(ind => {
+                      const sel = filters.industries.includes(ind)
+                      return (
+                        <button key={ind} onClick={() => setFilters(p => ({ ...p, industries: sel ? p.industries.filter(i => i !== ind) : [...p.industries, ind] }))} style={{
+                          padding: '4px 10px', borderRadius: 20, border: '1px solid rgba(0,0,0,0.1)',
+                          background: sel ? '#1A1A1A' : '#fff', color: sel ? '#fff' : 'var(--text-secondary)',
+                          fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
+                        }}>{ind}</button>
+                      )
+                    })}
+                  </div>
+                </>
+              )}
+
+              {/* Country */}
+              {openPopover === 'country' && (
+                <>
+                  <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 8px', fontFamily: 'var(--font)' }}>Country</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, maxHeight: 220, overflowY: 'auto' }}>
+                    {filterOptions.countries.map(cty => {
+                      const sel = filters.countries.includes(cty)
+                      return (
+                        <button key={cty} onClick={() => setFilters(p => ({ ...p, countries: sel ? p.countries.filter(c => c !== cty) : [...p.countries, cty] }))} style={{
+                          padding: '4px 10px', borderRadius: 20, border: '1px solid rgba(0,0,0,0.1)',
+                          background: sel ? '#1A1A1A' : '#fff', color: sel ? '#fff' : 'var(--text-secondary)',
+                          fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
+                        }}>{cty}</button>
+                      )
+                    })}
+                  </div>
+                </>
+              )}
+
+              {/* Funding */}
+              {openPopover === 'funding' && (
+                <>
+                  <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 8px', fontFamily: 'var(--font)' }}>Total Funding</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input value={filters.fundingMin} onChange={e => setFilters(p => ({ ...p, fundingMin: e.target.value }))} placeholder="Min e.g. $10M" style={{ ...inputStyle, padding: '7px 10px', fontSize: 12, flex: 1 }} />
+                    <span style={{ fontSize: 11, color: 'var(--text-tertiary)', flexShrink: 0 }}>→</span>
+                    <input value={filters.fundingMax} onChange={e => setFilters(p => ({ ...p, fundingMax: e.target.value }))} placeholder="Max e.g. $1B" style={{ ...inputStyle, padding: '7px 10px', fontSize: 12, flex: 1 }} />
+                  </div>
+                </>
+              )}
+
+              {/* Round */}
+              {openPopover === 'round' && (
+                <>
+                  <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 8px', fontFamily: 'var(--font)' }}>Last Round</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 10 }}>
+                    {['Seed', 'Series A', 'Series B', 'Series C', 'Series D+', 'Growth', 'IPO', 'Public', 'Bootstrapped'].map(r => {
+                      const sel = filters.lastRound === r
+                      return (
+                        <button key={r} onClick={() => setFilters(p => ({ ...p, lastRound: sel ? '' : r }))} style={{
+                          padding: '4px 10px', borderRadius: 20, border: '1px solid rgba(0,0,0,0.1)',
+                          background: sel ? '#1A1A1A' : '#fff', color: sel ? '#fff' : 'var(--text-secondary)',
+                          fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
+                        }}>{r}</button>
+                      )
+                    })}
+                  </div>
+                  <input value={filters.lastRound} onChange={e => setFilters(p => ({ ...p, lastRound: e.target.value }))} placeholder="Or type e.g. Series B" style={{ ...inputStyle, padding: '7px 10px', fontSize: 12 }} />
+                </>
+              )}
+
+              {/* Revenue */}
+              {openPopover === 'revenue' && (
+                <>
+                  <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 8px', fontFamily: 'var(--font)' }}>Revenue Estimate</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input value={filters.revenueMin} onChange={e => setFilters(p => ({ ...p, revenueMin: e.target.value }))} placeholder="Min e.g. $1M" style={{ ...inputStyle, padding: '7px 10px', fontSize: 12, flex: 1 }} />
+                    <span style={{ fontSize: 11, color: 'var(--text-tertiary)', flexShrink: 0 }}>→</span>
+                    <input value={filters.revenueMax} onChange={e => setFilters(p => ({ ...p, revenueMax: e.target.value }))} placeholder="Max e.g. $500M" style={{ ...inputStyle, padding: '7px 10px', fontSize: 12, flex: 1 }} />
+                  </div>
+                </>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                <button onClick={() => {
+                  if (openPopover === 'industry') setFilters(p => ({ ...p, industries: [] }))
+                  if (openPopover === 'country') setFilters(p => ({ ...p, countries: [] }))
+                  if (openPopover === 'funding') setFilters(p => ({ ...p, fundingMin: '', fundingMax: '' }))
+                  if (openPopover === 'round') setFilters(p => ({ ...p, lastRound: '' }))
+                  if (openPopover === 'revenue') setFilters(p => ({ ...p, revenueMin: '', revenueMax: '' }))
+                }} style={{ fontSize: 11, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Reset</button>
+                <button onClick={() => setOpenPopover(null)} style={{ fontSize: 12, fontWeight: 500, padding: '6px 16px', borderRadius: 8, background: '#1A1A1A', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                  Show {filtered.length.toLocaleString()}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Active filter pills ── */}
+        {activeFilterCount > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap', paddingBottom: 4 }}>
+            {filters.industries.map(ind => (
+              <span key={ind} onClick={() => setFilters(p => ({ ...p, industries: p.industries.filter(i => i !== ind) }))}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 20, background: '#E6F1FB', color: '#0C447C', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                {ind} <X style={{ width: 11, height: 11, opacity: 0.7 }} />
+              </span>
+            ))}
+            {filters.countries.map(cty => (
+              <span key={cty} onClick={() => setFilters(p => ({ ...p, countries: p.countries.filter(c => c !== cty) }))}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 20, background: '#E1F5EE', color: '#085041', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                {cty} <X style={{ width: 11, height: 11, opacity: 0.7 }} />
+              </span>
+            ))}
+            {(filters.fundingMin || filters.fundingMax) && (
+              <span onClick={() => setFilters(p => ({ ...p, fundingMin: '', fundingMax: '' }))}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 20, background: '#FAEEDA', color: '#633806', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                Funding: {filters.fundingMin || '—'} → {filters.fundingMax || '—'} <X style={{ width: 11, height: 11, opacity: 0.7 }} />
+              </span>
             )}
+            {filters.lastRound && (
+              <span onClick={() => setFilters(p => ({ ...p, lastRound: '' }))}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 20, background: '#EEEDFE', color: '#3C3489', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                {filters.lastRound} <X style={{ width: 11, height: 11, opacity: 0.7 }} />
+              </span>
+            )}
+            {(filters.revenueMin || filters.revenueMax) && (
+              <span onClick={() => setFilters(p => ({ ...p, revenueMin: '', revenueMax: '' }))}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 20, background: '#EAF3DE', color: '#27500A', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                Revenue: {filters.revenueMin || '—'} → {filters.revenueMax || '—'} <X style={{ width: 11, height: 11, opacity: 0.7 }} />
+              </span>
+            )}
+            <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', marginLeft: 2 }}>{filtered.length.toLocaleString()} results</span>
           </div>
         )}
       </div>
