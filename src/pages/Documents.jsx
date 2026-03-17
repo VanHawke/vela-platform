@@ -11,8 +11,11 @@ const T = {
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 }
 
-const CATEGORIES = ['all', 'deck', 'proposal', 'contract', 'brief', 'report', 'media_kit', 'other']
-const CAT_COLORS = { deck: T.blue, proposal: T.purple, contract: '#FF9500', brief: T.green, report: '#6B6B6B', media_kit: '#FF2D55', other: '#ABABAB' }
+const CATEGORIES = ['all', 'deck', 'proposal', 'contract', 'brief', 'report', 'media_kit', 'research', 'playbook', 'other']
+const CAT_COLORS = { deck: T.blue, proposal: T.purple, contract: '#FF9500', brief: T.green, report: '#6B6B6B', media_kit: '#FF2D55', research: '#5856D6', playbook: '#34C759', other: '#ABABAB' }
+const CONTEXTS = ['all', 'f1', 'formula_e', 'motorsport', 'sport', 'technology', 'luxury', 'finance', 'consulting', 'media', 'general']
+const CTX_LABELS = { f1: 'F1', formula_e: 'Formula E', motorsport: 'Motorsport', sport: 'Sport', technology: 'Technology', luxury: 'Luxury', finance: 'Finance', consulting: 'Consulting', media: 'Media', general: 'General' }
+const CTX_COLORS = { f1: '#E10600', formula_e: '#00A19C', motorsport: '#FF9500', sport: '#34C759', technology: '#007AFF', luxury: '#AF52DE', finance: '#5856D6', consulting: '#FF2D55', media: '#FF9500', general: '#ABABAB' }
 
 const fileIcon = (type) => {
   if (type?.includes('pdf')) return FileText
@@ -28,11 +31,13 @@ export default function Documents({ user }) {
   const [uploadStatus, setUploadStatus] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [catFilter, setCatFilter] = useState('all')
+  const [ctxFilter, setCtxFilter] = useState('all')
   const [teamFilter, setTeamFilter] = useState('')
   const [teams, setTeams] = useState([])
   const [expanded, setExpanded] = useState(null)
   const [rescanning, setRescanning] = useState(null)
   const [uploadCategory, setUploadCategory] = useState('deck')
+  const [uploadEntity, setUploadEntity] = useState('')
   const [uploadTeam, setUploadTeam] = useState('')
   const [uploadTags, setUploadTags] = useState('')
   const [lastUploaded, setLastUploaded] = useState(null) // {id, name, detectedTeam, confirmedTeam}
@@ -79,8 +84,10 @@ export default function Documents({ user }) {
       if (!res.ok) throw new Error(result.error || `Processing failed (${res.status})`)
       setUploadStatus(`Done — ${result.chunks} chunks indexed`)
       const detectedTeam = result.intelligence?.detected_team || result.links?.linked_team || uploadTeam || null
-      if (detectedTeam) {
-        setLastUploaded({ id: result.documentId, name: file.name, detectedTeam, confirmedTeam: detectedTeam })
+      const detectedEntity = result.intelligence?.detected_entity || uploadEntity || null
+      const detectedContext = result.intelligence?.detected_context || null
+      if (detectedTeam || detectedEntity) {
+        setLastUploaded({ id: result.documentId, name: file.name, detectedTeam, detectedEntity, detectedContext, confirmedTeam: detectedTeam })
       }
       setTimeout(() => setUploadStatus(''), 3000)
       loadDocs()
@@ -133,8 +140,9 @@ export default function Documents({ user }) {
 
   const filtered = documents.filter(d => {
     if (catFilter !== 'all' && d.category !== catFilter) return false
-    if (teamFilter && d.linked_team !== teamFilter) return false
-    if (searchQuery && !d.name?.toLowerCase().includes(searchQuery.toLowerCase()) && !d.summary?.toLowerCase().includes(searchQuery.toLowerCase())) return false
+    if (ctxFilter !== 'all' && d.context !== ctxFilter) return false
+    if (teamFilter && d.linked_team !== teamFilter && d.linked_entity !== teamFilter) return false
+    if (searchQuery && !d.name?.toLowerCase().includes(searchQuery.toLowerCase()) && !d.summary?.toLowerCase().includes(searchQuery.toLowerCase()) && !d.linked_entity?.toLowerCase().includes(searchQuery.toLowerCase())) return false
     return true
   })
 
@@ -165,8 +173,8 @@ export default function Documents({ user }) {
       {/* Header */}
       <div style={{ padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 600, color: T.text, margin: 0 }}>Documents</h1>
-          <p style={{ fontSize: 12, color: T.textTertiary, margin: '4px 0 0' }}>{documents.length} documents · Kiko analyses and remembers everything you upload</p>
+          <h1 style={{ fontSize: 22, fontWeight: 600, color: T.text, margin: 0 }}>Knowledge Library</h1>
+          <p style={{ fontSize: 12, color: T.textTertiary, margin: '4px 0 0' }}>{documents.length} documents — Kiko analyses and learns from everything you upload</p>
         </div>
         <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ height: 36, padding: '0 16px', borderRadius: 10, background: T.accent, color: '#fff', border: 'none', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6, opacity: uploading ? 0.5 : 1 }}>
           {uploading ? <><Loader2 size={14} style={{ animation: 'kikoVortexSpin 1s linear infinite' }} />{uploadStatus}</> : <><Upload size={14} />Upload</>}
@@ -176,14 +184,15 @@ export default function Documents({ user }) {
 
       {/* Upload options */}
       <div style={{ padding: '0 24px 12px', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-        <select value={uploadCategory} onChange={e => setUploadCategory(e.target.value)} style={{ ...inputStyle, width: 120 }}>
+        <select value={uploadCategory} onChange={e => setUploadCategory(e.target.value)} style={{ ...inputStyle, width: 110 }}>
           {CATEGORIES.filter(c => c !== 'all').map(c => <option key={c} value={c}>{c.replace('_', ' ')}</option>)}
         </select>
-        <select value={uploadTeam} onChange={e => setUploadTeam(e.target.value)} style={{ ...inputStyle, width: 150 }}>
-          <option value="">No team link</option>
+        <input value={uploadEntity} onChange={e => setUploadEntity(e.target.value)} placeholder="Entity (e.g. Alpine, Nike, Haas)" style={{ ...inputStyle, width: 180 }} />
+        <select value={uploadTeam} onChange={e => setUploadTeam(e.target.value)} style={{ ...inputStyle, width: 140 }}>
+          <option value="">F1 team (optional)</option>
           {teams.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
-        <input value={uploadTags} onChange={e => setUploadTags(e.target.value)} placeholder="Tags (comma separated)" style={{ ...inputStyle, width: 180 }} />
+        <input value={uploadTags} onChange={e => setUploadTags(e.target.value)} placeholder="Tags (comma separated)" style={{ ...inputStyle, width: 160 }} />
       </div>
       {uploadStatus && (
         <div style={{ padding: '8px 24px', background: uploadStatus.startsWith('Error') ? 'rgba(255,59,48,0.08)' : uploading ? 'rgba(0,122,255,0.06)' : 'rgba(52,199,89,0.08)' }}>
@@ -191,19 +200,21 @@ export default function Documents({ user }) {
         </div>
       )}
 
-      {/* Post-upload team confirmation */}
+      {/* Post-upload detection confirmation */}
       {lastUploaded && (
-        <div style={{ padding: '10px 24px', background: 'rgba(0,122,255,0.06)', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 12, color: T.text, fontFamily: T.font, fontWeight: 500 }}>
-            Detected team: <span style={{ color: T.blue }}>{lastUploaded.detectedTeam}</span>
+        <div style={{ padding: '10px 24px', background: 'rgba(0,122,255,0.06)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 12, color: T.text, fontFamily: T.font }}>
+            Detected: {lastUploaded.detectedEntity && <strong>{lastUploaded.detectedEntity}</strong>}
+            {lastUploaded.detectedTeam && lastUploaded.detectedEntity !== lastUploaded.detectedTeam && <> · <span style={{ color: T.blue }}>{lastUploaded.detectedTeam}</span></>}
+            {lastUploaded.detectedContext && <> · <span style={{ color: CTX_COLORS[lastUploaded.detectedContext] || T.textTertiary }}>{CTX_LABELS[lastUploaded.detectedContext] || lastUploaded.detectedContext}</span></>}
           </span>
-          <button onClick={() => { reassignTeam(lastUploaded.id, lastUploaded.confirmedTeam); setLastUploaded(null) }}
+          <button onClick={() => { if (lastUploaded.confirmedTeam) reassignTeam(lastUploaded.id, lastUploaded.confirmedTeam); setLastUploaded(null) }}
             style={{ fontSize: 11, padding: '4px 12px', borderRadius: 6, border: 'none', background: T.accent, color: '#fff', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>
             Confirm
           </button>
           <select value={lastUploaded.confirmedTeam || ''} onChange={e => setLastUploaded(prev => ({ ...prev, confirmedTeam: e.target.value }))}
-            style={{ ...inputStyle, width: 150, height: 28, fontSize: 11 }}>
-            <option value="">No team</option>
+            style={{ ...inputStyle, width: 140, height: 28, fontSize: 11 }}>
+            <option value="">No team link</option>
             {teams.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
           <button onClick={() => setLastUploaded(null)} style={{ fontSize: 11, color: T.textTertiary, background: 'none', border: 'none', cursor: 'pointer', fontFamily: T.font }}>Dismiss</button>
@@ -212,15 +223,18 @@ export default function Documents({ user }) {
 
       {/* Filter bar */}
       <div style={{ padding: '8px 24px 12px', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        {/* Context filter */}
+        <select value={ctxFilter} onChange={e => setCtxFilter(e.target.value)} style={{ ...inputStyle, width: 120 }}>
+          <option value="all">All contexts</option>
+          {CONTEXTS.filter(c => c !== 'all').map(c => <option key={c} value={c}>{CTX_LABELS[c] || c}</option>)}
+        </select>
+        {/* Category pills */}
         <div style={{ display: 'flex', gap: 3, background: 'rgba(0,0,0,0.03)', borderRadius: 8, padding: 3 }}>
           {CATEGORIES.map(c => (
             <button key={c} onClick={() => setCatFilter(c)} style={{ padding: '4px 10px', borderRadius: 6, border: 'none', fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, background: catFilter === c ? T.accent : 'transparent', color: catFilter === c ? '#fff' : T.textTertiary, transition: 'all 0.15s' }}>{c === 'all' ? 'All' : c.replace('_', ' ')}</button>
           ))}
         </div>
-        <select value={teamFilter} onChange={e => setTeamFilter(e.target.value)} style={{ ...inputStyle, width: 140 }}>
-          <option value="">All teams</option>
-          {teams.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
+        {/* Search */}
         <div style={{ position: 'relative', flex: 1, minWidth: 160 }}>
           <Search size={14} style={{ position: 'absolute', left: 10, top: 11, color: T.textTertiary }} />
           <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search documents..." style={{ ...inputStyle, width: '100%', paddingLeft: 30 }} />
@@ -234,8 +248,9 @@ export default function Documents({ user }) {
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 60 }}>
             <FileText size={32} color={T.textTertiary} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
-            <p style={{ fontSize: 14, color: T.textTertiary }}>No documents{catFilter !== 'all' ? ` in ${catFilter}` : ''}</p>
-            <p style={{ fontSize: 12, color: T.textTertiary, opacity: 0.6, marginTop: 4 }}>Upload PDFs, PPTX decks, Word docs, or images</p>
+            <p style={{ fontSize: 14, color: T.textTertiary }}>No documents{catFilter !== 'all' ? ` in ${catFilter}` : ''}{ctxFilter !== 'all' ? ` (${CTX_LABELS[ctxFilter]})` : ''}</p>
+            <p style={{ fontSize: 12, color: T.textTertiary, opacity: 0.6, marginTop: 4 }}>Upload decks, proposals, briefs from any sport, business, or industry</p>
+            <p style={{ fontSize: 12, color: T.textTertiary, opacity: 0.6, marginTop: 2 }}>Kiko learns from everything — drag and drop or click Upload</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -257,8 +272,10 @@ export default function Documents({ user }) {
                         {doc.scan_status === 'complete' && <Brain size={12} color={T.green} />}
                         {doc.scan_status === 'scanning' && <Loader2 size={12} color={T.blue} style={{ animation: 'kikoVortexSpin 1s linear infinite' }} />}
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 3, flexWrap: 'wrap' }}>
+                        {doc.context && doc.context !== 'general' && <span style={pillStyle(CTX_COLORS[doc.context] || T.textTertiary)}>{CTX_LABELS[doc.context] || doc.context}</span>}
                         <span style={pillStyle(catColor)}>{(doc.category || 'other').replace('_', ' ')}</span>
+                        {doc.linked_entity && !doc.linked_team && <span style={pillStyle(T.purple)}>{doc.linked_entity}</span>}
                         {editingTeam === doc.id ? (
                           <select autoFocus value={doc.linked_team || ''} onChange={e => reassignTeam(doc.id, e.target.value)} onBlur={() => setEditingTeam(null)}
                             onClick={e => e.stopPropagation()}
@@ -266,11 +283,11 @@ export default function Documents({ user }) {
                             <option value="">No team</option>
                             {teams.map(t => <option key={t} value={t}>{t}</option>)}
                           </select>
-                        ) : (
-                          <span onClick={e => { e.stopPropagation(); setEditingTeam(doc.id) }} style={{ ...pillStyle(doc.linked_team ? T.blue : T.textTertiary), cursor: 'pointer' }} title="Click to reassign team">
-                            {doc.linked_team || '+ Assign team'}
+                        ) : doc.linked_team ? (
+                          <span onClick={e => { e.stopPropagation(); setEditingTeam(doc.id) }} style={{ ...pillStyle(T.blue), cursor: 'pointer' }} title="Click to reassign">
+                            {doc.linked_team}
                           </span>
-                        )}
+                        ) : null}
                         {doc.tags?.map(t => <span key={t} style={pillStyle(T.textTertiary)}>{t}</span>)}
                       </div>
                     </div>

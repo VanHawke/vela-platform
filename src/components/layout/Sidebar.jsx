@@ -13,7 +13,7 @@ const NAV_DEFAULTS = [
   { id: 'news', label: 'News', icon: 'Newspaper', path: '/news' },
   { id: 'partnership-matrix', label: 'Matrix', icon: 'Grid3X3', path: '/partnership-matrix' },
   { id: 'calendar', label: 'Calendar', icon: 'Calendar', path: '/calendar' },
-  { id: 'documents', label: 'Documents', icon: 'FileText', path: '/documents' },
+  { id: 'documents', label: 'Library', icon: 'FileText', path: '/documents' },
   { id: 'tasks', label: 'Tasks', icon: 'CheckSquare', path: '/tasks' },
 ]
 

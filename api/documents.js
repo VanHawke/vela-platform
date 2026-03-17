@@ -152,7 +152,9 @@ async function deepAnalysis(text, fileName) {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY })
   const r = await client.messages.create({
     model: 'claude-sonnet-4-20250514', max_tokens: 2000,
-    messages: [{ role: 'user', content: `You are analysing a business document for a sponsorship advisory firm. The document is titled "${fileName}".
+    messages: [{ role: 'user', content: `You are analysing a business document. The document is titled "${fileName}".
+
+This could be from any industry — F1, Formula E, other motorsports, technology, luxury, finance, consulting, or any other business. Analyse it universally.
 
 Extract the following as JSON (no markdown, no backticks, just raw JSON):
 {
@@ -163,11 +165,13 @@ Extract the following as JSON (no markdown, no backticks, just raw JSON):
   "value_propositions": ["array of key value props or selling points"],
   "target_audience": "who is this document aimed at",
   "talking_points": ["array of notable claims, achievements, or angles"],
-  "partner_benefits": ["array of partnership/sponsorship benefits mentioned"],
+  "partner_benefits": ["array of partnership/sponsorship/commercial benefits mentioned"],
   "unique_angles": ["what makes this entity distinctive"],
-  "detected_team": "if this relates to an F1 team, which one (Alpine, Aston Martin, Audi, Cadillac, Ferrari, Haas, McLaren, Mercedes, Racing Bulls, Red Bull Racing, Williams) — or null",
+  "detected_context": "one of: f1, formula_e, motorsport, sport, technology, luxury, finance, consulting, media, general",
+  "detected_entity": "the primary organisation, team, brand, or company this document is about — or null",
+  "detected_team": "if this relates to an F1 team specifically, which one (Alpine, Aston Martin, Audi, Cadillac, Ferrari, Haas, McLaren, Mercedes, Racing Bulls, Red Bull Racing, Williams) — or null",
   "detected_company": "company or organisation name mentioned — or null",
-  "suggested_category": "one of: deck, proposal, contract, brief, report, media_kit, other"
+  "suggested_category": "one of: deck, proposal, contract, brief, report, media_kit, research, playbook, other"
 }
 
 Be specific. Extract real numbers. If data isn't present, use null or empty arrays.
@@ -233,6 +237,8 @@ export default async function handler(req, res) {
         org_id: ORG_ID, intelligence, scan_status: 'complete',
         last_scanned_at: new Date().toISOString(), scan_version: 1,
         category: category || intelligence.suggested_category || 'other',
+        context: intelligence.detected_context || 'general',
+        linked_entity: intelligence.detected_entity || null,
         linked_team: links.linked_team, linked_company_id: links.linked_company_id,
         source: 'upload', created_at: new Date().toISOString(),
       }
@@ -318,10 +324,12 @@ export default async function handler(req, res) {
 
   // ── LIST: get documents with filters ──
   if (action === 'list') {
+    const { context: ctx } = req.body
     let filter = `org_id=eq.${ORG_ID}`
     if (team) filter += `&linked_team=ilike.*${encodeURIComponent(team)}*`
     if (category) filter += `&category=eq.${encodeURIComponent(category)}`
-    const docsRes = await fetch(`${SB}/rest/v1/documents?${filter}&order=created_at.desc&select=id,name,doc_type,summary,tags,category,linked_team,linked_company_id,intelligence,scan_status,last_scanned_at,access_level,created_at,storage_path`, { headers: h })
+    if (ctx && ctx !== 'all') filter += `&context=eq.${encodeURIComponent(ctx)}`
+    const docsRes = await fetch(`${SB}/rest/v1/documents?${filter}&order=created_at.desc&select=id,name,doc_type,summary,tags,category,context,linked_team,linked_entity,linked_company_id,intelligence,scan_status,last_scanned_at,access_level,created_at,storage_path`, { headers: h })
     const docs = await docsRes.json()
     return res.status(200).json({ documents: Array.isArray(docs) ? docs : [] })
   }
