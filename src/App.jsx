@@ -33,27 +33,26 @@ function AdminRoute({ children }) {
 }
 
 export default function App() {
+  // undefined = not yet determined (show spinner)
+  // null = no session (show login)
+  // object = authenticated (show platform)
   const [session, setSession] = useState(undefined)
   const [user, setUser] = useState(null)
-  const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user || null)
-      // Small delay to let Supabase RLS headers settle after OAuth redirect
-      if (session) setTimeout(() => setReady(true), 300)
-      else setReady(true)
-    }).catch(() => { setSession(null); setReady(true) })
+    // onAuthStateChange is the single source of truth.
+    // It fires INITIAL_SESSION on mount (handles existing sessions + OAuth redirects),
+    // SIGNED_IN after OAuth completes, SIGNED_OUT on logout.
+    // This eliminates the getSession() + onAuthStateChange race condition.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
-      setSession(sess)
-      setUser(sess?.user || null)
-      if (sess && !ready) setTimeout(() => setReady(true), 300)
+      setSession(sess ?? null)
+      setUser(sess?.user ?? null)
     })
     return () => subscription.unsubscribe()
   }, [])
 
-  if (session === undefined || !ready) {
+  // Spinner until INITIAL_SESSION fires (typically <100ms)
+  if (session === undefined) {
     return (
       <div className="flex items-center justify-center h-screen" style={{ background: '#fff' }}>
         <div className="h-6 w-6 border-2 border-black/10 border-t-[#1A1A1A] rounded-full animate-spin" />
