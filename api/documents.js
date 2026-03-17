@@ -291,12 +291,41 @@ export default async function handler(req, res) {
     if (!query) return res.status(400).json({ error: 'query required' })
     try {
       const embedding = await embedText(query)
-      const rpcRes = await fetch(`${SB}/rest/v1/rpc/match_document_chunks`, {
-        method: 'POST', headers: h,
-        body: JSON.stringify({ query_embedding: embedding, match_threshold: 0.6, match_count: 8, p_user_email: userEmail || 'sunny@vanhawke.com' }),
-      })
-      const results = await rpcRes.json()
-      if (!Array.isArray(results)) return res.status(200).json({ results: [] })
+      console.log(`[Documents] Search query: "${query}", embedding dims: ${embedding.length}`)
+
+      // Method 1: RPC vector search (pass embedding as string for Supabase)
+      let results = []
+      try {
+        const embeddingStr = `[${embedding.join(',')}]`
+        const rpcRes = await fetch(`${SB}/rest/v1/rpc/match_document_chunks`, {
+          method: 'POST', headers: h,
+          body: JSON.stringify({ query_embedding: embeddingStr, match_threshold: 0.5, match_count: 8, p_user_email: userEmail || 'sunny@vanhawke.com' }),
+        })
+        const rpcData = await rpcRes.json()
+        console.log(`[Documents] RPC response: ${rpcRes.status}, results: ${Array.isArray(rpcData) ? rpcData.length : 'not array'}, data: ${JSON.stringify(rpcData).slice(0, 200)}`)
+        if (Array.isArray(rpcData) && rpcData.length > 0) results = rpcData
+      } catch (e) { console.log('[Documents] RPC search failed:', e.message) }
+
+      // Method 2: Fallback — direct text search on document content if vector search returns nothing
+      if (results.length === 0) {
+        console.log('[Documents] Vector search returned 0 results, falling back to text search')
+        const words = query.toLowerCase().split(/\s+/).filter(w => w.length > 2).slice(0, 3)
+        const textFilter = words.map(w => `content.ilike.*${encodeURIComponent(w)}*`).join('&')
+        const textRes = await fetch(`${SB}/rest/v1/documents?${textFilter}&select=id,name,linked_team,category,context,linked_entity,intelligence,summary,content&limit=5`, { headers: h })
+        const textDocs = await textRes.json()
+        console.log(`[Documents] Text fallback: ${Array.isArray(textDocs) ? textDocs.length : 0} docs`)
+        if (Array.isArray(textDocs) && textDocs.length > 0) {
+          return res.status(200).json({
+            results: textDocs.map(d => ({
+              content: d.content?.slice(0, 500) || d.summary || '', similarity: 0.8,
+              documentId: d.id, documentName: d.name, team: d.linked_team,
+              category: d.category, intelligence: d.intelligence,
+            })),
+          })
+        }
+      }
+
+      if (!results.length) return res.status(200).json({ results: [] })
 
       // Enrich with document metadata + intelligence
       const docIds = [...new Set(results.map(r => r.document_id))].filter(Boolean)
