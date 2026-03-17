@@ -143,8 +143,11 @@ PAGE AWARENESS: You know exactly which page the user is viewing. Based on the pa
 - deals: The user is viewing individual deal records with values, stages, and activities
 - email: The user is viewing the Gmail email interface. Shows inbox, folders, threads, compose. Use search_emails to find specific emails. Use get_email_thread to read a full conversation.
 - calendar: The user is viewing the calendar
-- documents: The user is viewing uploaded documents
+- documents: The user is viewing uploaded documents. Use search_documents to find and reference uploaded decks, briefs, and materials.
 - tasks: The user is viewing task management
+
+DOCUMENT INTELLIGENCE (critical for outreach):
+When drafting outreach, emails, or messaging to F1 teams or sponsors, ALWAYS use search_documents first to check for uploaded materials (introductory decks, partnership proposals, media kits). Ground your messaging in the team's own language, stats, and positioning. Reference specific figures and talking points extracted from their decks. If no documents are found, proceed with general knowledge but note that uploaded materials would improve personalisation.
 - settings: The user is viewing platform settings
 When the user asks about what's on screen, reference the page they're on and use the appropriate search tool to pull the actual data from that context.
 
@@ -336,6 +339,7 @@ export default async function handler(req, res) {
         get_news: 'Scanning news feed', get_partnership_matrix: 'Querying partnership matrix',
         get_pipeline_notifications: 'Loading pipeline activity', navigate_page: 'Navigating',
         web_search: 'Searching the web', memory: 'Checking memory',
+        search_documents: 'Searching documents',
       };
       for (const block of response.content) {
         if (block.type === 'tool_use') {

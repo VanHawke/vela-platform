@@ -132,6 +132,12 @@ export const TOOL_DEFINITIONS = [
     input_schema: { type: 'object', properties: {
       unread_only: { type: 'boolean', description: 'Only show unread notifications. Default: false' },
     }, required: [] } },
+  { name: 'search_documents', description: 'Search uploaded documents (decks, proposals, briefs) by content or team. Use when user asks about a deck, document, what a team said, team positioning, partnership benefits, or references uploaded materials. Returns relevant passages with extracted intelligence (stats, tone, positioning, talking points).',
+    input_schema: { type: 'object', properties: {
+      query: { type: 'string', description: 'Search query — what to look for in documents' },
+      team: { type: 'string', description: 'Filter by F1 team name (optional). E.g. Alpine, Haas, Mercedes' },
+      category: { type: 'string', description: 'Filter by category: deck, proposal, contract, brief, report, media_kit (optional)' },
+    }, required: ['query'] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -446,6 +452,44 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com')
       out += `   ${n.pipeline ? n.pipeline : ''}${n.stage ? ' → ' + n.stage : ''} · ${n.source || ''} · ${n.priority} priority\n\n`
     }
     return out
+  }
+
+  if (name === 'search_documents') {
+    const { query: q, team, category } = input
+    try {
+      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://vela-platform-one.vercel.app'
+      const searchRes = await fetch(`${baseUrl}/api/documents`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'search', query: q, team, category, userEmail }),
+      })
+      const data = await searchRes.json()
+      if (!data.results?.length) return `No documents found matching "${q}"${team ? ` for ${team}` : ''}. Upload relevant decks or briefs to build the knowledge base.`
+      // Group by document
+      const byDoc = {}
+      for (const r of data.results) {
+        if (!byDoc[r.documentId]) byDoc[r.documentId] = { name: r.documentName, team: r.team, category: r.category, intelligence: r.intelligence, passages: [] }
+        byDoc[r.documentId].passages.push(r.content)
+      }
+      let out = `DOCUMENT SEARCH: "${q}" — ${data.results.length} passages from ${Object.keys(byDoc).length} documents\n\n`
+      for (const [id, doc] of Object.entries(byDoc)) {
+        out += `📄 **${doc.name}**${doc.team ? ` (${doc.team})` : ''}${doc.category ? ` [${doc.category}]` : ''}\n`
+        if (doc.intelligence) {
+          const intel = doc.intelligence
+          if (intel.key_stats?.length) out += `   Key stats: ${intel.key_stats.join(', ')}\n`
+          if (intel.messaging_tone) out += `   Tone: ${intel.messaging_tone}\n`
+          if (intel.positioning) out += `   Positioning: ${intel.positioning}\n`
+          if (intel.talking_points?.length) out += `   Talking points: ${intel.talking_points.join(', ')}\n`
+          if (intel.partner_benefits?.length) out += `   Partner benefits: ${intel.partner_benefits.join(', ')}\n`
+          if (intel.unique_angles?.length) out += `   Unique angles: ${intel.unique_angles.join(', ')}\n`
+        }
+        out += `   Relevant passages:\n`
+        for (const p of doc.passages.slice(0, 3)) out += `   > ${p.slice(0, 300)}...\n`
+        out += '\n'
+      }
+      return out
+    } catch (err) {
+      return `Document search error: ${err.message}`
+    }
   }
 
   return { error: `Unknown tool: ${name}` }
