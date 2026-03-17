@@ -5,6 +5,7 @@ import DOMPurify from 'dompurify'
 import KikoVoice from './KikoVoice'
 import ChatHistory from './ChatHistory'
 import KikoSymbol from './KikoSymbol'
+import PipelineNotifications from '@/components/PipelineNotifications'
 
 // Design tokens (from approved render)
 const T = {
@@ -343,6 +344,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: T.bg }}>
       <div style={{ flex: 1, overflowY: 'auto', padding: compact ? 16 : 24 }}>
         <div style={{ maxWidth: compact ? '100%' : 680, margin: '0 auto', width: '100%' }}>
+          {/* Pipeline notifications — always visible at top */}
+          {messages.length === 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <PipelineNotifications />
+            </div>
+          )}
           {messages.map((msg, i) => (
             <div key={i} style={{ marginBottom: 12, display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
               {msg.role !== 'user' && (
