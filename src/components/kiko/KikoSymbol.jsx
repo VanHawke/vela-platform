@@ -1,9 +1,11 @@
 // KikoSymbol — Bold, distinctive AI mark
 // Design: Aperture vortex — four bold curved blades spiral from a solid core
-// No background shape — the mark stands alone
-// Thick strokes, tight geometry, instantly recognisable at 14px–140px
+// Animation states: 'idle' (static), 'thinking' (vortex spin), 'streaming' (pulsing core)
 
-export default function KikoSymbol({ size = 24, color = 'currentColor', className = '' }) {
+export default function KikoSymbol({ size = 24, color = 'currentColor', className = '', animate = 'idle' }) {
+  const svgStyle = animate === 'thinking' ? { animation: 'kikoVortexSpin 2.5s linear infinite' } : {}
+  const coreStyle = animate === 'streaming' ? { animation: 'kikoCorePulse 1.5s ease-in-out infinite' } : {}
+
   return (
     <svg
       width={size}
@@ -12,9 +14,10 @@ export default function KikoSymbol({ size = 24, color = 'currentColor', classNam
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
+      style={svgStyle}
     >
       {/* Solid core */}
-      <circle cx="12" cy="12" r="3" fill={color} />
+      <circle cx="12" cy="12" r="3" fill={color} style={coreStyle} />
       {/* Four vortex blades — thick, curved, asymmetric */}
       <path d="M12 2C12 2 17 5.5 17 8.5" stroke={color} strokeWidth="2.2" strokeLinecap="round" />
       <path d="M22 12C22 12 18.5 17 15.5 17" stroke={color} strokeWidth="2.2" strokeLinecap="round" />

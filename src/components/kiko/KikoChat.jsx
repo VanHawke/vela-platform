@@ -385,7 +385,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {streaming && !streamText && (
             <div style={{ marginBottom: 12, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
               <div style={{ width: 24, height: 24, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 4 }}>
-                <KikoSymbol size={13} color="#fff" />
+                <KikoSymbol size={13} color="#fff" animate="thinking" />
               </div>
               <div style={{ maxWidth: 320 }}>
                 {/* Main thinking bubble */}
@@ -430,7 +430,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {streaming && streamText && (
             <div style={{ marginBottom: 12, display: 'flex' }}>
               <div style={{ width: 24, height: 24, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 10, marginTop: 4 }}>
-                <KikoSymbol size={13} color="#fff" />
+                <KikoSymbol size={13} color="#fff" animate="streaming" />
               </div>
               <div style={{ maxWidth: '75%', padding: '12px 16px', borderRadius: T.radiusSm, background: T.accentSoft, fontSize: 13, color: T.textSecondary, lineHeight: 1.5, fontFamily: T.font }}>
                 <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />

@@ -284,7 +284,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
             {streaming && !streamText && (
               <div style={{ marginBottom: 8, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                 <div style={{ width: 20, height: 20, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
-                  <KikoSymbol size={12} color="#fff" />
+                  <KikoSymbol size={12} color="#fff" animate="thinking" />
                 </div>
                 <div style={{ maxWidth: '85%' }}>
                   <div style={{ padding: '8px 12px', borderRadius: 8, background: T.accentSoft }}>
@@ -302,7 +302,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
             {streaming && streamText && (
               <div style={{ marginBottom: 8, display: 'flex' }}>
                 <div style={{ width: 20, height: 20, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
-                  <KikoSymbol size={12} color="#fff" />
+                  <KikoSymbol size={12} color="#fff" animate="streaming" />
                 </div>
                 <div style={{ maxWidth: '80%', padding: '8px 12px', borderRadius: 8, background: T.accentSoft, fontSize: 12, color: T.textSecondary, lineHeight: 1.5, fontFamily: T.font }}>
                   <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
