@@ -420,7 +420,7 @@ RULES:
             position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'opacity 0.4s ease', opacity: speaking ? 1 : 0,
           }}>
-            <Equalizer active={speaking} />
+            <Equalizer active={speaking} color="#1A1A1A" />
           </div>
         </div>
 

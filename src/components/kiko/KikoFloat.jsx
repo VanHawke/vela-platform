@@ -220,7 +220,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
         onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
       >
-        <KikoSymbol size={26} color="#fff" />
+        <KikoSymbol size={26} color="#fff" animate={streaming ? (streamText ? 'streaming' : 'thinking') : 'idle'} />
       </button>
     )
   }
@@ -254,7 +254,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           {/* Header */}
           <div style={{ padding: '10px 14px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <KikoSymbol size={18} color={T.accent} />
+              <KikoSymbol size={18} color={T.accent} animate={streaming ? (streamText ? 'streaming' : 'thinking') : 'idle'} />
               <span style={{ fontSize: 13, fontWeight: 600, color: T.text, fontFamily: T.font }}>Kiko</span>
             </div>
             <button onClick={() => setStage(0)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textTertiary, padding: 4 }}><X size={14} /></button>
