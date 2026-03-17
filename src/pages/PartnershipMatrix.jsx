@@ -26,6 +26,23 @@ const TABS = [
   { id: 'gaps', label: 'Gap Targeting', icon: Target, desc: 'Categories ranked by opportunity' },
 ]
 
+function TeamLogo({ team, size = 20 }) {
+  const [imgError, setImgError] = useState(false)
+  const showImg = team.logo_url && !imgError
+  return (
+    <div style={{ width: size, height: size, borderRadius: size * 0.3, background: team.color || '#333', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      {showImg ? (
+        <img src={team.logo_url} alt={team.name} style={{ width: size * 0.7, height: size * 0.7, objectFit: 'contain', filter: 'brightness(10)' }}
+          onError={() => setImgError(true)} />
+      ) : (
+        <span style={{ fontSize: Math.max(size * 0.35, 8), fontWeight: 700, color: '#fff', letterSpacing: '-0.02em' }}>
+          {team.name?.slice(0,2).toUpperCase()}
+        </span>
+      )}
+    </div>
+  )
+}
+
 export default function PartnershipMatrix() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -166,7 +183,7 @@ export default function PartnershipMatrix() {
                     <tr key={team.id} style={{ borderBottom: `1px solid ${T.border}` }}>
                       <td style={{ position: 'sticky', left: 0, background: T.surface, padding: '6px 12px', fontWeight: 600, zIndex: 1, fontSize: 11 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{ width: 8, height: 8, borderRadius: 4, background: team.color, flexShrink: 0 }} />
+                          <TeamLogo team={team} size={22} />
                           {team.name}
                         </div>
                       </td>
@@ -205,7 +222,7 @@ export default function PartnershipMatrix() {
                   background: selectedTeam === t.id ? T.accentSoft : 'transparent', fontWeight: selectedTeam === t.id ? 600 : 400,
                   color: selectedTeam === t.id ? T.text : T.textSecondary, display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.1s',
                 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: 4, background: t.color, flexShrink: 0 }} />
+                  <TeamLogo team={t} size={20} />
                   <span style={{ flex: 1 }}>{t.name}</span>
                   {gaps > 0 && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 8, background: `${T.red}12`, color: T.red, fontWeight: 600 }}>{gaps}</span>}
                 </button>
@@ -228,7 +245,7 @@ export default function PartnershipMatrix() {
                 <div style={{ maxWidth: 800 }}>
                   {/* Team header */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                    <div style={{ width: 12, height: 40, borderRadius: 6, background: team.color }} />
+                    <TeamLogo team={team} size={36} />
                     <div style={{ flex: 1 }}>
                       <h2 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>{team.name}</h2>
                       <p style={{ fontSize: 11, color: T.textTertiary, margin: '2px 0 0' }}>
@@ -283,6 +300,15 @@ export default function PartnershipMatrix() {
       {tab === 'gaps' && (
         <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
           <div style={{ maxWidth: 900 }}>
+            {/* Team legend with logos */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', marginBottom: 8, background: T.surface, borderRadius: 10, border: `1px solid ${T.border}`, flexWrap: 'wrap' }}>
+              {filteredTeams.map(t => (
+                <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: T.textSecondary }}>
+                  <TeamLogo team={t} size={16} />
+                  <span>{t.name.replace('Racing Bulls','RB').replace('Aston Martin','AMR').replace('Red Bull Racing','RBR')}</span>
+                </div>
+              ))}
+            </div>
             {(() => {
               const catGaps = filteredCats.map(c => {
                 const teamsWithout = filteredTeams.filter(t => {
