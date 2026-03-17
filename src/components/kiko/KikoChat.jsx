@@ -295,7 +295,16 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   // ── WELCOME STATE (no messages yet) ──
   if (!hasMessages && !compact) {
     return (
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 40, background: T.bg }}>
+      <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
+        style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 40, background: T.bg, position: 'relative' }}>
+        {/* Drop overlay */}
+        {chatDragOver && (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed #1A1A1A', borderRadius: 16, margin: 8, pointerEvents: 'none' }}>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="1.5" style={{ marginBottom: 10, opacity: 0.7 }}><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+            <p style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: T.font }}>Drop file for Kiko to analyse</p>
+            <p style={{ fontSize: 12, color: T.textTertiary, marginTop: 4, fontFamily: T.font }}>PDF, PPTX, DOCX, images — saved to Knowledge Library</p>
+          </div>
+        )}
         <div style={{ width: '100%', maxWidth: 680, textAlign: 'center' }}>
           <h1 style={{ fontSize: 36, fontWeight: 300, color: T.text, margin: '0 0 4px', fontFamily: T.font, letterSpacing: '-0.02em' }}>
             {getGreeting()}, {firstName}
@@ -303,11 +312,20 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <p style={{ fontSize: 15, color: T.textTertiary, margin: '0 0 48px', fontFamily: T.font }}>How can Kiko help?</p>
 
           {/* Main prompt bar — glass pill */}
-          <div style={{ ...glass, borderRadius: 28, padding: '8px 8px 8px 24px', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
+          <div style={{ ...glass, borderRadius: 28, padding: '8px 8px 8px 12px', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
+            <input ref={fileInputRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx" onChange={e => { const f = e.target.files?.[0]; if (f) processFileForKiko(f); e.target.value = '' }} style={{ display: 'none' }} />
+            <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} title="Attach document" style={{
+              width: 40, height: 40, borderRadius: '50%', border: 'none',
+              background: fileUploading ? T.accentSoft : 'transparent', color: fileUploading ? T.accent : T.textTertiary,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              {fileUploading ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'kikoVortexSpin 1s linear infinite' }}><circle cx="12" cy="12" r="10"/></svg>
+              : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>}
+            </button>
             <input
               ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSubmit()}
-              placeholder="Ask anything..." autoFocus
+              placeholder={fileUploading ? "Analysing document..." : "Ask anything or drop a file..."} autoFocus
               style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 16, color: T.text, fontFamily: T.font, height: 44 }}
             />
             <div style={{ display: 'flex', gap: 4 }}>
