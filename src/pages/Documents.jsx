@@ -35,6 +35,8 @@ export default function Documents({ user }) {
   const [uploadCategory, setUploadCategory] = useState('deck')
   const [uploadTeam, setUploadTeam] = useState('')
   const [uploadTags, setUploadTags] = useState('')
+  const [dragOver, setDragOver] = useState(false)
+  const dragCounter = useRef(0)
   const fileRef = useRef(null)
 
   useEffect(() => { loadDocs(); loadTeams() }, [])
@@ -55,8 +57,7 @@ export default function Documents({ user }) {
     setLoading(false)
   }
 
-  const handleUpload = async (e) => {
-    const file = e.target.files?.[0]
+  const processFile = async (file) => {
     if (!file || !user?.email) return
     setUploading(true); setUploadStatus('Uploading...')
     try {
@@ -79,6 +80,21 @@ export default function Documents({ user }) {
       setTimeout(() => setUploadStatus(''), 5000)
     } finally { setUploading(false); if (fileRef.current) fileRef.current.value = '' }
   }
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (file) processFile(file)
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault(); e.stopPropagation()
+    dragCounter.current = 0; setDragOver(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) processFile(file)
+  }
+  const handleDragEnter = (e) => { e.preventDefault(); e.stopPropagation(); dragCounter.current++; setDragOver(true) }
+  const handleDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); dragCounter.current--; if (dragCounter.current <= 0) { dragCounter.current = 0; setDragOver(false) } }
+  const handleDragOver = (e) => { e.preventDefault(); e.stopPropagation() }
 
   const rescan = async (docId) => {
     setRescanning(docId)
@@ -111,7 +127,25 @@ export default function Documents({ user }) {
   const inputStyle = { height: 36, borderRadius: 8, border: `0.5px solid rgba(0,0,0,0.06)`, padding: '0 10px', fontSize: 12, color: T.text, fontFamily: T.font, outline: 'none', background: T.surface }
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', fontFamily: T.font, background: T.bg, overflow: 'hidden' }}>
+    <div
+      onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={handleDragOver} onDrop={handleDrop}
+      style={{ flex: 1, display: 'flex', flexDirection: 'column', fontFamily: T.font, background: T.bg, overflow: 'hidden', position: 'relative' }}>
+
+      {/* Drag-and-drop overlay */}
+      {dragOver && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          border: '2px dashed #1A1A1A', borderRadius: 16, margin: 8,
+          pointerEvents: 'none',
+        }}>
+          <Upload size={40} color="#1A1A1A" style={{ marginBottom: 12, opacity: 0.7 }} />
+          <p style={{ fontSize: 16, fontWeight: 600, color: T.text }}>Drop file to upload</p>
+          <p style={{ fontSize: 12, color: T.textTertiary, marginTop: 4 }}>PDF, PPTX, DOCX, images, text files</p>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
         <div>
