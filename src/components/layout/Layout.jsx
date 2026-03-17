@@ -96,7 +96,7 @@ export default function Layout({ user }) {
         })}
       </div>
 
-      <Sidebar brandLogo={brandLogo} />
+      <Sidebar brandLogo={brandLogo} user={user} onHomeClick={() => { setKikoMessages([]); setKikoConvId(null); setKikoResetKey(k => k + 1) }} />
 
       <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', paddingTop: 52 }}>
         <Outlet context={{ kikoMessages, setKikoMessages, kikoConvId, setKikoConvId, kikoNavigate, kikoResetKey }} />

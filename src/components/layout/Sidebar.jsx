@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { Home, Users, Building2, GitBranch, Diamond, Mail, Newspaper, Grid3X3, Calendar, FileText, CheckSquare, Settings, LogOut } from 'lucide-react'
+import { Home, Users, Building2, GitBranch, Diamond, Mail, Newspaper, Grid3X3, Calendar, FileText, CheckSquare, Settings, LogOut, User } from 'lucide-react'
 
 const ICON_MAP = { Home, Users, Building2, GitBranch, Diamond, Mail, Newspaper, Grid3X3, Calendar, FileText, CheckSquare }
 const NAV_DEFAULTS = [
@@ -20,11 +20,24 @@ const NAV_DEFAULTS = [
 const W_COLLAPSED = 44
 const W_EXPANDED = 200
 
-export default function Sidebar({ brandLogo }) {
+export default function Sidebar({ brandLogo, user, onHomeClick }) {
   const nav = useNavigate()
   const loc = useLocation()
   const [expanded, setExpanded] = useState(false)
   const [navItems, setNavItems] = useState(NAV_DEFAULTS)
+  const [profile, setProfile] = useState({})
+
+  useEffect(() => {
+    if (!user?.id) return
+    const load = () => {
+      supabase.from('user_settings').select('first_name, last_name, display_name, profile_photo_url, role_title')
+        .eq('user_id', user.id).single()
+        .then(({ data }) => { if (data) setProfile(data) })
+    }
+    load()
+    window.addEventListener('vela_profile_updated', load)
+    return () => window.removeEventListener('vela_profile_updated', load)
+  }, [user?.id])
 
   useEffect(() => {
     const loadOrder = () => {
@@ -61,7 +74,7 @@ export default function Sidebar({ brandLogo }) {
         transition: 'width 0.2s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         overflow: 'hidden', zIndex: 50,
       }}>
-      <div style={{ padding: '0 8px', marginBottom: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', height: 36 }} onClick={() => nav('/')}>
+      <div style={{ padding: '0 8px', marginBottom: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', height: 36 }} onClick={() => { if (onHomeClick) onHomeClick(); nav('/') }}>
         {brandLogo ? (
           <img src={brandLogo} alt="" style={{ height: 28, maxWidth: expanded ? 160 : 36, objectFit: 'contain', transition: 'max-width 0.2s', borderRadius: 6 }} />
         ) : (
@@ -77,7 +90,7 @@ export default function Sidebar({ brandLogo }) {
           if (!Icon) return null
           const active = isActive(item.path)
           return (
-            <button key={item.id} onClick={() => nav(item.path)} style={{ height: 34, borderRadius: 8, border: 'none', padding: '0 7px', background: active ? 'var(--accent-soft)' : 'transparent', color: active ? 'var(--text)' : 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s', overflow: 'hidden', whiteSpace: 'nowrap' }}
+            <button key={item.id} onClick={() => { if (item.id === 'home' && onHomeClick) onHomeClick(); nav(item.path) }} style={{ height: 34, borderRadius: 8, border: 'none', padding: '0 7px', background: active ? 'var(--accent-soft)' : 'transparent', color: active ? 'var(--text)' : 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s', overflow: 'hidden', whiteSpace: 'nowrap' }}
               onMouseOver={e => { if (!active) e.currentTarget.style.background = 'var(--accent-soft)' }}
               onMouseOut={e => { e.currentTarget.style.background = active ? 'var(--accent-soft)' : 'transparent' }}>
               <Icon size={17} strokeWidth={1.8} style={{ flexShrink: 0 }} />
@@ -87,6 +100,27 @@ export default function Sidebar({ brandLogo }) {
         })}
       </nav>
       <div style={{ padding: '0 8px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {/* User profile mini-card */}
+        <button onClick={() => nav('/settings')} style={{ height: expanded ? 44 : 34, borderRadius: 8, border: 'none', padding: '0 7px', width: '100%', background: 'transparent', color: 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s', overflow: 'hidden', whiteSpace: 'nowrap', marginBottom: 4 }}
+          onMouseOver={e => e.currentTarget.style.background = 'var(--accent-soft)'}
+          onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
+          {profile.profile_photo_url ? (
+            <img src={profile.profile_photo_url} alt="" style={{ width: expanded ? 30 : 22, height: expanded ? 30 : 22, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, transition: 'all 0.2s' }} />
+          ) : (
+            <div style={{ width: expanded ? 30 : 22, height: expanded ? 30 : 22, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
+              <User size={expanded ? 14 : 11} color="#fff" strokeWidth={2} />
+            </div>
+          )}
+          {expanded && (
+            <div style={{ overflow: 'hidden', minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {profile.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : (profile.display_name || user?.email?.split('@')[0] || 'User')}
+              </div>
+              {profile.role_title && <div style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.role_title}</div>}
+            </div>
+          )}
+        </button>
+        <div style={{ height: 1, background: 'var(--border)', margin: '0 4px 4px' }} />
         <button onClick={() => nav('/settings')} style={{ height: 34, borderRadius: 8, border: 'none', padding: '0 7px', width: '100%', background: loc.pathname === '/settings' ? 'var(--accent-soft)' : 'transparent', color: loc.pathname === '/settings' ? 'var(--text)' : 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s', overflow: 'hidden', whiteSpace: 'nowrap' }}>
           <Settings size={17} strokeWidth={1.8} style={{ flexShrink: 0 }} />
           {expanded && <span style={{ fontSize: 13, fontFamily: 'var(--font)' }}>Settings</span>}

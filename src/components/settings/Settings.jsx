@@ -121,6 +121,7 @@ export default function Settings({ user }) {
       await supabase.from('user_settings').upsert({ user_id: user?.id, ...updates, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
       setSettings(prev => ({ ...prev, ...updates }))
       setSaved(true); setTimeout(() => setSaved(false), 2000)
+      window.dispatchEvent(new Event('vela_profile_updated'))
     } catch {}
   }
 
@@ -189,18 +190,85 @@ export default function Settings({ user }) {
         {/* Profile */}
         {tab === 'Profile' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div>
-              <label style={labelStyle}>Display Name</label>
-              <input value={settings.display_name || displayName} onChange={e => setSettings(p => ({ ...p, display_name: e.target.value }))} style={inputStyle} />
+            {/* Profile Photo */}
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Profile Photo</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', background: T.accentSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: `2px solid ${T.border}` }}>
+                  {settings.profile_photo_url ? (
+                    <img src={settings.profile_photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <span style={{ fontSize: 24, fontWeight: 600, color: T.textTertiary, fontFamily: T.font }}>
+                      {(settings.first_name || settings.display_name || email)?.[0]?.toUpperCase() || 'U'}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <ImageUpload label="" storageKey={`profile_${user?.id}`} folder="profiles" onUploaded={(url) => setSettings(p => ({ ...p, profile_photo_url: url }))} currentUrl={settings.profile_photo_url} />
+                </div>
+              </div>
             </div>
-            <div>
-              <label style={labelStyle}>Email</label>
-              <input value={email} disabled style={{ ...inputStyle, background: T.bg, color: T.textTertiary }} />
+
+            {/* Name */}
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Personal Details</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={labelStyle}>First Name</label>
+                  <input value={settings.first_name || ''} onChange={e => setSettings(p => ({ ...p, first_name: e.target.value }))} placeholder="First" style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Last Name</label>
+                  <input value={settings.last_name || ''} onChange={e => setSettings(p => ({ ...p, last_name: e.target.value }))} placeholder="Last" style={inputStyle} />
+                </div>
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <label style={labelStyle}>Email</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input value={email} disabled style={{ ...inputStyle, flex: 1, background: T.bg, color: T.textTertiary }} />
+                  <span style={{ fontSize: 10, padding: '3px 8px', borderRadius: 6, background: 'rgba(52,199,89,0.1)', color: '#34C759', fontWeight: 500, flexShrink: 0 }}>Verified</span>
+                </div>
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <label style={labelStyle}>Role / Title</label>
+                <input value={settings.role_title || ''} onChange={e => setSettings(p => ({ ...p, role_title: e.target.value }))} placeholder="e.g. CEO, Account Executive" style={inputStyle} />
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <label style={labelStyle}>Phone</label>
+                <input value={settings.phone || ''} onChange={e => setSettings(p => ({ ...p, phone: e.target.value }))} placeholder="+44 7xxx xxx xxx" style={inputStyle} />
+              </div>
             </div>
-            <div>
-              <label style={labelStyle}>Email Signature</label>
+
+            {/* Timezone + Bio */}
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>About</h3>
+              <div>
+                <label style={labelStyle}>Time Zone</label>
+                <select value={settings.timezone || 'Europe/London'} onChange={e => setSettings(p => ({ ...p, timezone: e.target.value }))} style={{ ...inputStyle, height: 44, padding: '0 10px' }}>
+                  {['Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Europe/Rome', 'Europe/Madrid',
+                    'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
+                    'Asia/Dubai', 'Asia/Tokyo', 'Asia/Shanghai', 'Asia/Kolkata', 'Asia/Singapore',
+                    'Australia/Sydney', 'Pacific/Auckland', 'UTC'].map(tz => (
+                    <option key={tz} value={tz}>{tz.replace(/_/g, ' ')}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <label style={labelStyle}>Bio</label>
+                <textarea value={settings.bio || ''} onChange={e => setSettings(p => ({ ...p, bio: e.target.value }))} placeholder="A brief description or tagline..." rows={3}
+                  style={{ ...inputStyle, height: 'auto', minHeight: 80, padding: '10px 14px', resize: 'vertical' }} />
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <label style={labelStyle}>LinkedIn</label>
+                <input value={settings.linkedin_url || ''} onChange={e => setSettings(p => ({ ...p, linkedin_url: e.target.value }))} placeholder="https://linkedin.com/in/yourprofile" style={inputStyle} />
+              </div>
+            </div>
+
+            {/* Email Signature */}
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Email Signature</h3>
               <p style={{ fontSize: 11, color: T.textTertiary, marginBottom: 8, fontFamily: T.font }}>
-                Paste your HTML signature from Gmail or type one. This will be auto-appended to outgoing emails.
+                Paste your HTML signature from Gmail or type one. Auto-appended to outgoing emails.
               </p>
               <div
                 contentEditable
@@ -217,8 +285,10 @@ export default function Settings({ user }) {
                 }}
               />
             </div>
-            <div>
-              <label style={{ ...labelStyle, marginBottom: 10 }}>Notifications</label>
+
+            {/* Notifications */}
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Notifications</h3>
               {['Email notifications', 'Desktop notifications', 'Sound alerts'].map((n, i) => {
                 const key = ['email', 'desktop', 'sound'][i]
                 const on = settings.notification_prefs?.[key] ?? true
@@ -233,14 +303,15 @@ export default function Settings({ user }) {
                 )
               })}
             </div>
-            <button onClick={() => saveSettings({ display_name: settings.display_name, timezone: settings.timezone, email_signature: settings.email_signature, notification_prefs: settings.notification_prefs })}
+
+            <button onClick={() => saveSettings({
+              display_name: settings.display_name, first_name: settings.first_name, last_name: settings.last_name,
+              role_title: settings.role_title, phone: settings.phone, timezone: settings.timezone,
+              bio: settings.bio, linkedin_url: settings.linkedin_url, profile_photo_url: settings.profile_photo_url,
+              email_signature: settings.email_signature, notification_prefs: settings.notification_prefs,
+            })}
               style={{ height: 44, borderRadius: 12, background: T.accent, color: '#fff', border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
               {saved ? 'Saved!' : 'Save changes'}
-            </button>
-            <div style={{ height: 1, background: T.border, margin: '4px 0' }} />
-            <button onClick={async () => { await supabase.auth.signOut(); navigate('/login') }}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: '#C62828', fontFamily: T.font, padding: 0 }}>
-              <LogOut size={16} /> Sign out
             </button>
           </div>
         )}
