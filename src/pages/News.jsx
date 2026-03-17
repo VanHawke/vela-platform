@@ -150,7 +150,7 @@ export default function News() {
                       {article.intelligence?.is_partnership_announcement && (
                         <span style={{ fontSize: 9, fontWeight: 600, color: T.blue, background: 'rgba(0,122,255,0.08)', padding: '1px 5px', borderRadius: 4 }}>PARTNERSHIP</span>
                       )}
-                      {article.intelligence?.partnership_team && (
+                      {article.intelligence?.partnership_team && article.intelligence?.partnership_partner && (
                         <span style={{ fontSize: 9, fontWeight: 500, color: T.green, background: 'rgba(52,199,89,0.08)', padding: '1px 5px', borderRadius: 4 }}>{article.intelligence.partnership_team} ← {article.intelligence.partnership_partner}</span>
                       )}
                     </div>

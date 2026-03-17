@@ -175,6 +175,11 @@ async function classifyBatch(limit = 15) {
         deal_signal: intel.deal_signal || false, key_topics: intel.key_topics || [],
         sentiment: intel.sentiment, matched_companies: matchedCompanies,
         is_processed: true,
+        intelligence: {
+          is_partnership_announcement: intel.is_partnership_announcement || false,
+          partnership_team: intel.partnership_team || null,
+          partnership_partner: intel.partnership_partner || null,
+        },
       }).eq('id', article.id);
       // Create Kiko alert if high relevance deal signal
       if (intel.deal_signal && intel.relevance_score >= 7) {

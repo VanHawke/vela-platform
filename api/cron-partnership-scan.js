@@ -66,10 +66,13 @@ async function upsertPartnership(p, source) {
     // Log activity
     await supabase.from('kiko_alerts').insert({
       type: 'new_partnership',
+      severity: 'medium',
       title: `New: ${p.partner_name} → ${p.team_id}`,
-      body: `${p.partner_name} detected as ${p.tier || 'partner'} for ${p.team_id} (${p.category_id}). Source: ${source}`,
-      priority: 'medium',
-      data: { ...p, source },
+      detail: `${p.partner_name} detected as ${p.tier || 'partner'} for ${p.team_id} (${p.category_id}). Source: ${source}`,
+      entity_type: 'partnership',
+      entity_name: p.partner_name,
+      metadata: { ...p, source },
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     });
   }
   return isNew ? 'new' : 'existing';
@@ -83,7 +86,7 @@ export default async function handler(req, res) {
   // === PHASE 1: Scan unprocessed news_articles (deal signals) ===
   const { data: articles } = await supabase.from('news_articles')
     .select('id, title, summary, intelligence')
-    .or('intelligence->>is_deal_signal.eq.true,intelligence->>category.eq.f1_sponsorship')
+    .or('deal_signal.eq.true,category.eq.f1_sponsorship,category.eq.sports_sponsorship')
     .order('published_at', { ascending: false })
     .limit(30);
 
