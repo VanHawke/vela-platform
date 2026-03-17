@@ -87,3 +87,13 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); -web
 
 /* Voice overlay */
 .voice-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(250,250,250,0.92); backdrop-filter: blur(60px); -webkit-backdrop-filter: blur(60px); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+
+/* ── Login page animations ── */
+@keyframes loginVortexSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes loginVortexBreathe { 0%, 100% { transform: scale(1); opacity: 0.10; } 50% { transform: scale(1.06); opacity: 0.14; } }
+@keyframes loginFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes loginScaleIn { 0% { transform: scale(0.7); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes loginSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes loginSlideRight { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes loginFillBar { 0% { width: 0; } 100% { width: 100%; } }
