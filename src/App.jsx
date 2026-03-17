@@ -43,39 +43,12 @@ export default function App() {
   const [user, setUser] = useState(null)
 
   useEffect(() => {
-    // Is this an OAuth callback? (?code= means PKCE exchange is in progress)
-    const isOAuthCallback = new URLSearchParams(window.location.search).has('code')
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
-      if (event === 'INITIAL_SESSION') {
-        if (sess) {
-          // Returning user with valid stored session — load immediately
-          setSession(sess)
-          setUser(sess.user)
-        } else if (!isOAuthCallback) {
-          // No session and not an OAuth callback — show login
-          setSession(null)
-          setUser(null)
-        }
-        // If isOAuthCallback + no session: stay as undefined (spinner).
-        // Supabase is internally exchanging the ?code= via detectSessionInUrl.
-        // SIGNED_IN will fire when done — handled below.
-      } else if (event === 'SIGNED_IN') {
-        // Clean the ?code= from URL without reload
-        if (isOAuthCallback) {
-          window.history.replaceState({}, '', window.location.pathname)
-        }
-        setSession(sess)
-        setUser(sess?.user ?? null)
-      } else if (event === 'SIGNED_OUT') {
-        setSession(null)
-        setUser(null)
-      } else if (event === 'TOKEN_REFRESHED') {
-        setSession(sess)
+      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        setSession(sess ?? null)
         setUser(sess?.user ?? null)
       }
     })
-
     return () => subscription.unsubscribe()
   }, [])
 

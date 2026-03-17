@@ -50,14 +50,20 @@ export default function LoginPage() {
   const [brandLogo, setBrandLogo] = useState(null)
 
   useEffect(() => {
-    // Read brand logo from localStorage (written by Settings on upload)
+    // Check localStorage cache first
     try {
       const cached = localStorage.getItem('vela_brand_logo')
       if (cached) { setBrandLogo(cached); return }
     } catch {}
-    // Fallback: fetch from Supabase (admin user's settings, public-readable kiko_avatar_url)
-    supabase.from('user_settings').select('kiko_avatar_url').not('kiko_avatar_url', 'is', null).limit(1).single()
-      .then(({ data }) => { if (data?.kiko_avatar_url) { setBrandLogo(data.kiko_avatar_url); try { localStorage.setItem('vela_brand_logo', data.kiko_avatar_url) } catch {} } })
+    // Fetch from service-role API (bypasses RLS — works before login)
+    fetch('/api/brand-config')
+      .then(r => r.json())
+      .then(({ brandLogo }) => {
+        if (brandLogo) {
+          setBrandLogo(brandLogo)
+          try { localStorage.setItem('vela_brand_logo', brandLogo) } catch {}
+        }
+      })
       .catch(() => {})
   }, [])
 
