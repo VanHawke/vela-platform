@@ -4,6 +4,7 @@ const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
+const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5'
 
 export default async function handler(req, res) {
   // Lemlist sends GET for verification, POST for events
@@ -156,6 +157,7 @@ export default async function handler(req, res) {
           : event.campaignName?.includes('Alpine') ? 'Alpine F1' : 'Haas F1'
         await supabase.from('deals').insert({
           id: dealId,
+          org_id: ORG_ID,
           data: {
             title: `${company || name} — Inbound from ${event.campaignName || 'Lemlist'}`,
             stage: 'In Dialogue', pipeline,
