@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { Upload, X, Loader2, ZoomIn, ZoomOut, Check } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import ReactCrop from 'react-image-crop'
@@ -33,6 +33,11 @@ function getCroppedBlob(image, crop, zoom = 1) {
 
 export default function ImageUpload({ label, storageKey, folder = 'uploads', aspectHint, onUploaded, currentUrl }) {
   const [preview, setPreview] = useState(currentUrl || null)
+
+  // Sync preview when parent loads currentUrl async (settings fetch after mount)
+  useEffect(() => {
+    if (currentUrl) setPreview(currentUrl)
+  }, [currentUrl])
   const [rawFile, setRawFile] = useState(null) // original file for cropping
   const [rawUrl, setRawUrl] = useState(null) // object URL of raw file
   const [crop, setCrop] = useState(null)
