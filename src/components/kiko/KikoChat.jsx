@@ -66,7 +66,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [loadingAlerts, setLoadingAlerts] = useState(true)
   const scrollRef = useRef(null)
   const inputRef = useRef(null)
+  const fileInputRef = useRef(null)
   const transcribeRef = useRef({ media: null, recorder: null })
+  const dragCounterRef = useRef(0)
+  const [chatDragOver, setChatDragOver] = useState(false)
+  const [fileUploading, setFileUploading] = useState(false)
   const hasMessages = messages.length > 0 || streaming
 
   // Equalizer → opens voice mode overlay
@@ -246,6 +250,46 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     } finally { setStreaming(false) }
   }, [input, streaming, messages, user, activeConvId])
 
+  // File upload → analyse → inject into conversation
+  const processFileForKiko = async (file) => {
+    if (!file || !user?.email || fileUploading || streaming) return
+    setFileUploading(true)
+    const statusMsg = { role: 'user', content: `📎 Uploading: ${file.name}` }
+    setMessages(prev => [...prev, statusMsg])
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/__+/g, '_')
+      const safeEmail = (user.email || 'user').replace(/[^a-zA-Z0-9]/g, '_')
+      const path = `documents/${safeEmail}/${Date.now()}_${safeName}`
+      const { error: uploadError } = await supabase.storage.from('vela-assets').upload(path, file)
+      if (uploadError) throw new Error(`Storage: ${uploadError.message}`)
+      const { data: { publicUrl } } = supabase.storage.from('vela-assets').getPublicUrl(path)
+      const res = await fetch('/api/documents', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'process', storagePath: path, publicUrl, fileName: file.name, fileType: file.type, accessLevel: 'workspace', userEmail: user.email }),
+      })
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || 'Processing failed')
+      const intel = result.intelligence || {}
+      const summary = [
+        `Document "${file.name}" uploaded and analysed.`,
+        intel.summary || '',
+        intel.detected_entity ? `Entity: ${intel.detected_entity}` : '',
+        intel.detected_team ? `F1 Team: ${intel.detected_team}` : '',
+        result.chunks ? `${result.chunks} chunks indexed for search.` : '',
+      ].filter(Boolean).join(' ')
+      // Replace the status message and inject analysis, then let Kiko respond
+      setMessages(prev => prev.map(m => m === statusMsg ? { role: 'user', content: `📎 Uploaded: ${file.name} — ask me anything about it` } : m))
+      handleSubmit(`I just uploaded a document called "${file.name}". Here's the analysis: ${summary}. Key stats: ${(intel.key_stats || []).join(', ')}. Positioning: ${intel.positioning || 'N/A'}. Talking points: ${(intel.talking_points || []).join(', ')}. Give me a brief summary of what you learned from this document.`)
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'assistant', content: `Upload failed: ${err.message}. Try again or upload via the Knowledge Library page.` }])
+    } finally { setFileUploading(false) }
+  }
+
+  const handleFileDrop = (e) => { e.preventDefault(); e.stopPropagation(); dragCounterRef.current = 0; setChatDragOver(false); const file = e.dataTransfer.files?.[0]; if (file) processFileForKiko(file) }
+  const handleFileDragEnter = (e) => { e.preventDefault(); e.stopPropagation(); dragCounterRef.current++; setChatDragOver(true) }
+  const handleFileDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); dragCounterRef.current--; if (dragCounterRef.current <= 0) { dragCounterRef.current = 0; setChatDragOver(false) } }
+  const handleFileDragOver = (e) => { e.preventDefault(); e.stopPropagation() }
+
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 'Sunny'
 
   // ── WELCOME STATE (no messages yet) ──
@@ -348,7 +392,16 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   // ── CONVERSATION STATE ──
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: T.bg }}>
+    <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
+      style={{ display: 'flex', flexDirection: 'column', height: '100%', background: T.bg, position: 'relative' }}>
+      {/* Drop overlay */}
+      {chatDragOver && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed #1A1A1A', borderRadius: 16, margin: 8, pointerEvents: 'none' }}>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="1.5" style={{ marginBottom: 10, opacity: 0.7 }}><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          <p style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: T.font }}>Drop file for Kiko to analyse</p>
+          <p style={{ fontSize: 12, color: T.textTertiary, marginTop: 4, fontFamily: T.font }}>PDF, PPTX, DOCX, images — saved to Knowledge Library</p>
+        </div>
+      )}
       <div style={{ flex: 1, overflowY: 'auto', padding: compact ? 16 : 24 }}>
         <div style={{ maxWidth: compact ? '100%' : 680, margin: '0 auto', width: '100%' }}>
           {/* Pipeline notifications — always visible at top */}
@@ -445,10 +498,19 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       {/* Bottom input bar */}
       <div style={{ padding: compact ? 12 : 16, borderTop: `1px solid ${T.border}` }}>
         <div style={{ maxWidth: compact ? '100%' : 680, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: T.bg, borderRadius: 28, padding: '6px 6px 6px 16px', border: `1px solid ${T.border}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: T.bg, borderRadius: 28, padding: '6px 6px 6px 10px', border: `1px solid ${T.border}` }}>
+            <input ref={fileInputRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx" onChange={e => { const f = e.target.files?.[0]; if (f) processFileForKiko(f); e.target.value = '' }} style={{ display: 'none' }} />
+            <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} title="Attach document" style={{
+              width: 32, height: 32, borderRadius: '50%', border: 'none',
+              background: fileUploading ? T.accentSoft : 'transparent', color: fileUploading ? T.accent : T.textTertiary,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              {fileUploading ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'kikoVortexSpin 1s linear infinite' }}><circle cx="12" cy="12" r="10"/></svg>
+              : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>}
+            </button>
             <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSubmit()}
-              placeholder="Ask Kiko..." disabled={streaming} autoFocus
+              placeholder={fileUploading ? "Analysing document..." : "Ask Kiko or drop a file..."} disabled={streaming || fileUploading} autoFocus
               style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 13, color: T.text, fontFamily: T.font }}
             />
             {!compact && (

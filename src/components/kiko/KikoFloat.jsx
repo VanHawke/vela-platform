@@ -55,8 +55,10 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   const navigate = useNavigate()
   const inputRef = useRef(null)
   const scrollRef = useRef(null)
+  const fileInputRef = useRef(null)
   const mediaRef = useRef(null)
   const recorderRef = useRef(null)
+  const [fileUploading, setFileUploading] = useState(false)
 
   useEffect(() => {
     if (stage === 1) inputRef.current?.focus()
@@ -158,6 +160,35 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
       setStreamText('')
     } finally { setStreaming(false) }
   }, [input, streaming, messages, user, convId, stage])
+
+  // File upload → analyse → inject into conversation
+  const processFileForKiko = async (file) => {
+    if (!file || !user?.email || fileUploading || streaming) return
+    setFileUploading(true)
+    if (stage === 0) setStage(1)
+    const statusMsg = { role: 'user', content: `📎 Uploading: ${file.name}` }
+    setMessages(prev => [...prev, statusMsg])
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/__+/g, '_')
+      const safeEmail = (user.email || 'user').replace(/[^a-zA-Z0-9]/g, '_')
+      const path = `documents/${safeEmail}/${Date.now()}_${safeName}`
+      const { error: uploadError } = await supabase.storage.from('vela-assets').upload(path, file)
+      if (uploadError) throw new Error(`Storage: ${uploadError.message}`)
+      const { data: { publicUrl } } = supabase.storage.from('vela-assets').getPublicUrl(path)
+      const res = await fetch('/api/documents', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'process', storagePath: path, publicUrl, fileName: file.name, fileType: file.type, accessLevel: 'workspace', userEmail: user.email }),
+      })
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || 'Processing failed')
+      const intel = result.intelligence || {}
+      const summary = [intel.summary, intel.detected_entity ? `Entity: ${intel.detected_entity}` : '', result.chunks ? `${result.chunks} chunks indexed.` : ''].filter(Boolean).join(' ')
+      setMessages(prev => prev.map(m => m === statusMsg ? { role: 'user', content: `📎 Uploaded: ${file.name}` } : m))
+      handleSubmit(`I just uploaded "${file.name}". Analysis: ${summary}. Key stats: ${(intel.key_stats || []).join(', ')}. Positioning: ${intel.positioning || 'N/A'}. Talking points: ${(intel.talking_points || []).join(', ')}. Give me a brief summary of what you learned.`)
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'assistant', content: `Upload failed: ${err.message}` }])
+    } finally { setFileUploading(false) }
+  }
 
   // Mic: speech-to-text transcription into prompt bar
   async function startTranscribe() {
@@ -318,13 +349,19 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
       {/* Prompt bar — always visible in stage 1 & 2 */}
       <div className="glass animate-scale-in" style={{
         position: 'fixed', bottom: 24, right: 24, zIndex: 101,
-        borderRadius: 28, padding: '5px 5px 5px 16px',
+        borderRadius: 28, padding: '5px 5px 5px 10px',
         display: 'flex', alignItems: 'center', gap: 6,
         width: stage === 2 ? 400 : 380,
       }}>
+        <input ref={fileInputRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx" onChange={e => { const f = e.target.files?.[0]; if (f) processFileForKiko(f); e.target.value = '' }} style={{ display: 'none' }} />
+        <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} title="Attach document"
+          style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: fileUploading ? T.accentSoft : 'transparent', color: fileUploading ? T.accent : T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          {fileUploading ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'kikoVortexSpin 1s linear infinite' }}><circle cx="12" cy="12" r="10"/></svg>
+          : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>}
+        </button>
         <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && input.trim()) handleSubmit() }}
-          placeholder="Ask Kiko..." autoFocus={stage >= 1}
+          placeholder={fileUploading ? "Analysing document..." : "Ask Kiko or attach a file..."} autoFocus={stage >= 1}
           style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 13, color: T.text, fontFamily: T.font }} />
 
         {/* Mic — speech-to-text transcription */}
