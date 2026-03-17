@@ -101,15 +101,15 @@ export default function Sidebar({ brandLogo, user, onHomeClick }) {
       </nav>
       <div style={{ padding: '0 8px', display: 'flex', flexDirection: 'column', gap: 2 }}>
         {/* User profile mini-card */}
-        <button onClick={() => nav('/settings')} style={{ height: expanded ? 44 : 34, borderRadius: 8, border: 'none', padding: '0 7px', width: '100%', background: 'transparent', color: 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s', overflow: 'hidden', whiteSpace: 'nowrap', marginBottom: 4 }}
+        <button onClick={() => nav('/settings')} style={{ height: expanded ? 44 : 34, borderRadius: 8, border: 'none', padding: '0 7px', width: '100%', background: 'transparent', color: 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s', whiteSpace: 'nowrap', marginBottom: 4 }}
           onMouseOver={e => e.currentTarget.style.background = 'var(--accent-soft)'}
           onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
           {profile.profile_photo_url ? (
-            <div style={{ width: expanded ? 30 : 22, height: expanded ? 30 : 22, minWidth: expanded ? 30 : 22, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, transition: 'all 0.2s' }}>
+            <div style={{ width: expanded ? 28 : 20, height: expanded ? 28 : 20, minWidth: expanded ? 28 : 20, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, transition: 'all 0.2s' }}>
               <img src={profile.profile_photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             </div>
           ) : (
-            <div style={{ width: expanded ? 30 : 22, height: expanded ? 30 : 22, minWidth: expanded ? 30 : 22, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
+            <div style={{ width: expanded ? 28 : 20, height: expanded ? 28 : 20, minWidth: expanded ? 28 : 20, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
               <User size={expanded ? 14 : 11} color="#fff" strokeWidth={2} />
             </div>
           )}
