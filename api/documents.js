@@ -5,17 +5,22 @@ export const config = { api: { bodyParser: { sizeLimit: '4mb' } } }
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5'
 
 async function extractText(storagePath, fileType, publicUrl) {
+  console.log(`[Documents] Downloading: ${publicUrl?.slice(0, 100)}`)
   const fileRes = await fetch(publicUrl)
-  if (!fileRes.ok) throw new Error(`Failed to download file: ${fileRes.status}`)
+  if (!fileRes.ok) throw new Error(`Download failed (${fileRes.status}). Check the file URL is accessible.`)
 
   const buffer = Buffer.from(await fileRes.arrayBuffer())
-  const isImage = fileType?.includes('image') || /\.(png|jpg|jpeg|webp|gif)$/i.test(storagePath)
-  const isPPTX = fileType?.includes('presentation') || storagePath.endsWith('.pptx')
-  const isPDF = fileType === 'application/pdf' || storagePath.endsWith('.pdf')
-  const isDOCX = fileType?.includes('wordprocessingml') || storagePath.endsWith('.docx')
+  console.log(`[Documents] Downloaded ${buffer.length} bytes, type: ${fileType}, path: ${storagePath}`)
+  
+  const ext = (storagePath || '').split('.').pop()?.toLowerCase()
+  const isImage = fileType?.includes('image') || ['png','jpg','jpeg','webp','gif'].includes(ext)
+  const isPPTX = fileType?.includes('presentation') || ext === 'pptx'
+  const isPDF = fileType === 'application/pdf' || ext === 'pdf'
+  const isDOCX = fileType?.includes('wordprocessingml') || ext === 'docx' || ext === 'doc'
 
   // Images → Claude vision
   if (isImage) {
+    console.log('[Documents] Using Claude vision for image')
     const { default: Anthropic } = await import('@anthropic-ai/sdk')
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY })
     const base64 = buffer.toString('base64')
@@ -30,33 +35,65 @@ async function extractText(storagePath, fileType, publicUrl) {
     return r.content[0]?.text || ''
   }
 
-  // PPTX → officeparser
+  // PPTX → try officeparser, fallback to ZIP XML extraction
   if (isPPTX) {
+    // Method 1: officeparser
     try {
+      console.log('[Documents] Trying officeparser for PPTX')
       const { parseOffice } = await import('officeparser')
       const ast = await parseOffice(buffer)
-      return ast.toText() || ''
-    } catch (e) {
-      console.log('[Documents] officeparser PPTX failed, trying text extraction:', e.message)
-      return buffer.toString('utf-8').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
-    }
+      const text = ast.toText?.() || ''
+      if (text.trim().length > 20) { console.log(`[Documents] officeparser OK: ${text.length} chars`); return text }
+    } catch (e) { console.log('[Documents] officeparser failed:', e.message) }
+    
+    // Method 2: ZIP-based XML extraction (PPTX is a ZIP of XMLs)
+    try {
+      console.log('[Documents] Trying ZIP XML extraction for PPTX')
+      const JSZip = (await import('jszip')).default || (await import('jszip'))
+      const zip = await JSZip.loadAsync(buffer)
+      let allText = ''
+      const slideFiles = Object.keys(zip.files).filter(f => f.match(/ppt\/slides\/slide\d+\.xml/)).sort()
+      for (const sf of slideFiles) {
+        const xml = await zip.files[sf].async('text')
+        const texts = xml.match(/<a:t>([^<]*)<\/a:t>/g)?.map(m => m.replace(/<\/?a:t>/g, '')) || []
+        allText += texts.join(' ') + '\n'
+      }
+      if (allText.trim().length > 20) { console.log(`[Documents] ZIP extraction OK: ${allText.length} chars`); return allText }
+    } catch (e) { console.log('[Documents] ZIP extraction failed:', e.message) }
+    
+    // Method 3: Claude vision on first few KB (last resort)
+    console.log('[Documents] All PPTX methods failed, returning raw text filter')
+    return buffer.toString('utf-8').replace(/[^\x20-\x7E\n]/g, ' ').replace(/\s+/g, ' ').trim()
   }
 
   // PDF → pdf-parse
   if (isPDF) {
-    const { default: pdfParse } = await import('pdf-parse/lib/pdf-parse.js')
-    const data = await pdfParse(buffer)
-    return data.text || ''
+    try {
+      console.log('[Documents] Using pdf-parse')
+      const { default: pdfParse } = await import('pdf-parse/lib/pdf-parse.js')
+      const data = await pdfParse(buffer)
+      return data.text || ''
+    } catch (e) {
+      console.log('[Documents] pdf-parse failed:', e.message)
+      throw new Error(`PDF parsing failed: ${e.message}`)
+    }
   }
 
   // DOCX → mammoth
   if (isDOCX) {
-    const mammoth = await import('mammoth')
-    const result = await mammoth.extractRawText({ buffer })
-    return result.value || ''
+    try {
+      console.log('[Documents] Using mammoth for DOCX')
+      const mammoth = await import('mammoth')
+      const result = await mammoth.extractRawText({ buffer })
+      return result.value || ''
+    } catch (e) {
+      console.log('[Documents] mammoth failed:', e.message)
+      throw new Error(`DOCX parsing failed: ${e.message}`)
+    }
   }
 
   // Plain text fallback
+  console.log('[Documents] Using plain text extraction')
   return buffer.toString('utf-8')
 }
 

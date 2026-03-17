@@ -59,25 +59,27 @@ export default function Documents({ user }) {
 
   const processFile = async (file) => {
     if (!file || !user?.email) return
-    setUploading(true); setUploadStatus('Uploading...')
+    if (uploading) return
+    setUploading(true); setUploadStatus('Uploading to storage...')
     try {
       const path = `documents/${user.email}/${Date.now()}_${file.name}`
       const { error: uploadError } = await supabase.storage.from('vela-assets').upload(path, file)
-      if (uploadError) throw uploadError
+      if (uploadError) throw new Error(`Storage upload failed: ${uploadError.message}`)
       const { data: { publicUrl } } = supabase.storage.from('vela-assets').getPublicUrl(path)
-      setUploadStatus('Analysing with Kiko...')
+      setUploadStatus('Extracting and analysing...')
       const res = await fetch('/api/documents', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'process', storagePath: path, publicUrl, fileName: file.name, fileType: file.type, accessLevel: 'workspace', userEmail: user.email, category: uploadCategory, team: uploadTeam, tags: uploadTags }),
       })
       const result = await res.json()
-      if (!res.ok) throw new Error(result.error || 'Processing failed')
+      if (!res.ok) throw new Error(result.error || `Processing failed (${res.status})`)
       setUploadStatus(`Done — ${result.chunks} chunks indexed`)
       setTimeout(() => setUploadStatus(''), 3000)
       loadDocs()
     } catch (err) {
+      console.error('[Documents] Upload error:', err)
       setUploadStatus(`Error: ${err.message}`)
-      setTimeout(() => setUploadStatus(''), 5000)
+      setTimeout(() => setUploadStatus(''), 8000)
     } finally { setUploading(false); if (fileRef.current) fileRef.current.value = '' }
   }
 
@@ -169,9 +171,9 @@ export default function Documents({ user }) {
         </select>
         <input value={uploadTags} onChange={e => setUploadTags(e.target.value)} placeholder="Tags (comma separated)" style={{ ...inputStyle, width: 180 }} />
       </div>
-      {uploadStatus && !uploading && (
-        <div style={{ padding: '8px 24px', background: 'rgba(52,199,89,0.08)', borderRadius: 0 }}>
-          <p style={{ fontSize: 11, color: T.green, fontFamily: T.font, margin: 0 }}>{uploadStatus}</p>
+      {uploadStatus && (
+        <div style={{ padding: '8px 24px', background: uploadStatus.startsWith('Error') ? 'rgba(255,59,48,0.08)' : uploading ? 'rgba(0,122,255,0.06)' : 'rgba(52,199,89,0.08)' }}>
+          <p style={{ fontSize: 11, color: uploadStatus.startsWith('Error') ? T.red : uploading ? T.blue : T.green, fontFamily: T.font, margin: 0 }}>{uploadStatus}</p>
         </div>
       )}
 
