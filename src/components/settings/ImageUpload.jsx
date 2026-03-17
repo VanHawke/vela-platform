@@ -34,9 +34,9 @@ function getCroppedBlob(image, crop, zoom = 1) {
 export default function ImageUpload({ label, storageKey, folder = 'uploads', aspectHint, onUploaded, currentUrl }) {
   const [preview, setPreview] = useState(currentUrl || null)
 
-  // Sync preview when parent loads currentUrl async (settings fetch after mount)
+  // Sync preview whenever currentUrl changes — including removal (null)
   useEffect(() => {
-    if (currentUrl) setPreview(currentUrl)
+    setPreview(currentUrl || null)
   }, [currentUrl])
   const [rawFile, setRawFile] = useState(null) // original file for cropping
   const [rawUrl, setRawUrl] = useState(null) // object URL of raw file
