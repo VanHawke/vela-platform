@@ -62,7 +62,8 @@ export default function Documents({ user }) {
     if (uploading) return
     setUploading(true); setUploadStatus('Uploading to storage...')
     try {
-      const path = `documents/${user.email}/${Date.now()}_${file.name}`
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/__+/g, '_')
+      const path = `documents/${user.email}/${Date.now()}_${safeName}`
       const { error: uploadError } = await supabase.storage.from('vela-assets').upload(path, file)
       if (uploadError) throw new Error(`Storage upload failed: ${uploadError.message}`)
       const { data: { publicUrl } } = supabase.storage.from('vela-assets').getPublicUrl(path)
