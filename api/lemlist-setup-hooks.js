@@ -16,12 +16,20 @@ export default async function handler(req, res) {
   const listRes = await fetch('https://api.lemlist.com/api/hooks', {
     headers: { 'Authorization': `Basic ${Buffer.from(':' + LEMLIST_KEY).toString('base64')}` },
   });
-  const existing = listRes.ok ? await listRes.json() : [];
+  let existing = [];
+  if (listRes.ok) {
+    try { existing = await listRes.json(); } catch (e) { existing = []; }
+  }
+
+  // Return full details of existing hooks for debugging
+  const existingDetails = (Array.isArray(existing) ? existing : []).map(h => ({
+    id: h._id, url: h.targetUrl, type: h.type, created: h.createdAt
+  }));
 
   // Check which events already have our URL
   const existingUrls = (Array.isArray(existing) ? existing : [])
     .filter(h => h.targetUrl === TARGET_URL)
-    .map(h => h.type);
+    .map(h => h.type || 'unknown');
 
   const results = [];
   for (const eventType of EVENTS) {
@@ -38,8 +46,9 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({ targetUrl: TARGET_URL, type: eventType }),
       });
-      const data = await hookRes.json();
-      results.push({ event: eventType, status: hookRes.ok ? 'registered' : 'failed', response: data });
+      let data;
+      try { data = await hookRes.json(); } catch (e) { data = { raw: await hookRes.text?.() || hookRes.status }; }
+      results.push({ event: eventType, status: hookRes.ok ? 'registered' : `failed_${hookRes.status}`, response: data });
     } catch (e) {
       results.push({ event: eventType, status: 'error', message: e.message });
     }
@@ -47,7 +56,7 @@ export default async function handler(req, res) {
 
   return res.json({
     targetUrl: TARGET_URL,
-    existingHooks: existing?.length || 0,
+    existingHooks: existingDetails,
     results,
   });
 }
