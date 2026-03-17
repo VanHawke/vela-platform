@@ -18,7 +18,7 @@ const CLOSED_STAGES = [
   { id: 'Closed Lost', label: 'Lost' },
 ]
 
-export default function Pipeline() {
+export default function Pipeline({ user }) {
   const [deals, setDeals] = useState([])
   const [loading, setLoading] = useState(true)
   const [pipelineFilter, setPipelineFilter] = useState('Haas F1')
@@ -33,7 +33,7 @@ export default function Pipeline() {
   const [companyDomains, setCompanyDomains] = useState({})
   const nav = useNavigate()
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { if (user?.id) load() }, [user?.id])
 
   const load = async () => {
     setLoading(true)

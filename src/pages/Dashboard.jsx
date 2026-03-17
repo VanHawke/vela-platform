@@ -17,7 +17,7 @@ export default function Dashboard({ user }) {
   const [recentDeals, setRecentDeals] = useState([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { if (user?.id) load() }, [user?.id])
   const load = async () => {
     setLoading(true)
     const [dealsRes, contactsRes, companiesRes, tasksRes, dealCountRes] = await Promise.all([

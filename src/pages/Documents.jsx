@@ -46,7 +46,7 @@ export default function Documents({ user }) {
   const dragCounter = useRef(0)
   const fileRef = useRef(null)
 
-  useEffect(() => { loadDocs(); loadTeams() }, [])
+  useEffect(() => { if (user?.id) { loadDocs(); loadTeams() } }, [user?.id])
 
   const loadTeams = async () => {
     const { data } = await supabase.from('f1_teams').select('name').order('sort_order')

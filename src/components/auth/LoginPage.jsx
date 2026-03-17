@@ -8,14 +8,16 @@ const T = {
 }
 
 const KikoVortex = ({ size = 140, opacity = 0.10, spin = 22 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-    style={{ opacity, animation: `loginVortexSpin ${spin}s linear infinite, loginVortexBreathe 6s ease-in-out infinite` }}>
-    <circle cx="12" cy="12" r="3" fill={T.text} />
-    <path d="M12 2C12 2 17 5.5 17 8.5" stroke={T.text} strokeWidth="1.8" strokeLinecap="round" />
-    <path d="M22 12C22 12 18.5 17 15.5 17" stroke={T.text} strokeWidth="1.8" strokeLinecap="round" />
-    <path d="M12 22C12 22 7 18.5 7 15.5" stroke={T.text} strokeWidth="1.8" strokeLinecap="round" />
-    <path d="M2 12C2 12 5.5 7 8.5 7" stroke={T.text} strokeWidth="1.8" strokeLinecap="round" />
-  </svg>
+  <div style={{ animation: `loginVortexBreathe 6s ease-in-out infinite`, opacity }}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      style={{ animation: `loginVortexSpin ${spin}s linear infinite` }}>
+      <circle cx="12" cy="12" r="3" fill={T.text} />
+      <path d="M12 2C12 2 17 5.5 17 8.5" stroke={T.text} strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M22 12C22 12 18.5 17 15.5 17" stroke={T.text} strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M12 22C12 22 7 18.5 7 15.5" stroke={T.text} strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M2 12C2 12 5.5 7 8.5 7" stroke={T.text} strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  </div>
 )
 
 const KikoVortexWhite = ({ size = 24 }) => (

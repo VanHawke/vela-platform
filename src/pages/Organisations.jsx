@@ -29,7 +29,7 @@ function OrgLogo({ domain, name, size = 36 }) {
   )
 }
 
-export default function Organisations() {
+export default function Organisations({ user }) {
   const nav = useNavigate()
   const [searchParams] = useSearchParams()
   const [companies, setCompanies] = useState([])
@@ -55,7 +55,7 @@ export default function Organisations() {
   const [loadingPanel, setLoadingPanel] = useState(false)
   const [dealMap, setDealMap] = useState({})
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { if (user?.id) load() }, [user?.id])
 
   // Auto-open org from query param (e.g. from Pipeline or ContactDetail clickthrough)
   useEffect(() => {

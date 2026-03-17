@@ -62,7 +62,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={session ? <Navigate to="/" replace /> : <LoginPage />} />
         <Route path="/admin" element={session ? <AdminRoute><Admin /></AdminRoute> : <Navigate to="/login" replace />} />
-        <Route element={session ? <Layout user={user} /> : <Navigate to="/login" replace />}>
+        <Route element={session ? <Layout key={user?.id || 'auth'} user={user} /> : <Navigate to="/login" replace />}>
           <Route index element={<KikoChat user={user} />} />
           <Route path="home" element={<KikoChat user={user} />} />
           <Route path="dashboard" element={<Dashboard user={user} />} />
@@ -74,8 +74,8 @@ export default function App() {
           <Route path="deals" element={<Navigate to="/pipeline" replace />} />
           <Route path="tasks" element={<Tasks user={user} />} />
           <Route path="email" element={<Email user={user} />} />
-          <Route path="news" element={<News />} />
-          <Route path="partnership-matrix" element={<PartnershipMatrix />} />
+          <Route path="news" element={<News user={user} />} />
+          <Route path="partnership-matrix" element={<PartnershipMatrix user={user} />} />
           <Route path="calendar" element={<Calendar user={user} />} />
           <Route path="documents" element={<Documents user={user} />} />
           <Route path="velacode" element={<VelaCode user={user} />} />

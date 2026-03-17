@@ -43,7 +43,7 @@ function TeamLogo({ team, size = 20 }) {
   )
 }
 
-export default function PartnershipMatrix() {
+export default function PartnershipMatrix({ user }) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('heatmap')
@@ -53,7 +53,7 @@ export default function PartnershipMatrix() {
   const [showAdd, setShowAdd] = useState(false)
   const [addForm, setAddForm] = useState({ team_id: '', partner_name: '', category_id: '', tier: 'partner' })
 
-  useEffect(() => { fetchMatrix() }, [])
+  useEffect(() => { if (user?.id) fetchMatrix() }, [user?.id])
 
   const fetchMatrix = async () => {
     setLoading(true)

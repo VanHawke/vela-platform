@@ -5,7 +5,7 @@ import { Plus, Search, X, User, Mail, Phone, Linkedin, ChevronLeft, ChevronRight
 
 const PAGE_SIZE = 50
 
-export default function Contacts() {
+export default function Contacts({ user }) {
   const nav = useNavigate()
   const [contacts, setContacts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -16,7 +16,7 @@ export default function Contacts() {
   const [sortDir, setSortDir] = useState('asc')
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', company: '', title: '', notes: '' })
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { if (user?.id) load() }, [user?.id])
 
   const load = async () => {
     setLoading(true)
