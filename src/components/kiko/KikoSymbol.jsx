@@ -3,8 +3,12 @@
 // Animation states: 'idle' (static), 'thinking' (vortex spin), 'streaming' (pulsing core)
 
 export default function KikoSymbol({ size = 24, color = 'currentColor', className = '', animate = 'idle' }) {
-  const svgStyle = animate === 'thinking' ? { animation: 'kikoVortexSpin 2.5s linear infinite' } : {}
-  const coreStyle = animate === 'streaming' ? { animation: 'kikoCorePulse 1.5s ease-in-out infinite' } : {}
+  const svgStyle = animate === 'thinking'
+    ? { animation: 'kikoVortexSpin 2.5s linear infinite', transformOrigin: 'center' }
+    : {}
+  const coreStyle = animate === 'streaming'
+    ? { animation: 'kikoCorePulse 1.5s ease-in-out infinite', transformOrigin: '12px 12px' }
+    : {}
 
   return (
     <svg
