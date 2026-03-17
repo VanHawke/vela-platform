@@ -457,37 +457,84 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com')
   if (name === 'search_documents') {
     const { query: q, team, category } = input
     try {
-      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://vela-platform-one.vercel.app'
-      const searchRes = await fetch(`${baseUrl}/api/documents`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'search', query: q, team, category, userEmail }),
-      })
-      const data = await searchRes.json()
-      if (!data.results?.length) return `No documents found matching "${q}"${team ? ` for ${team}` : ''}. Upload relevant decks or briefs to build the knowledge base.`
-      // Group by document
-      const byDoc = {}
-      for (const r of data.results) {
-        if (!byDoc[r.documentId]) byDoc[r.documentId] = { name: r.documentName, team: r.team, category: r.category, intelligence: r.intelligence, passages: [] }
-        byDoc[r.documentId].passages.push(r.content)
-      }
-      let out = `DOCUMENT SEARCH: "${q}" — ${data.results.length} passages from ${Object.keys(byDoc).length} documents\n\n`
-      for (const [id, doc] of Object.entries(byDoc)) {
-        out += `📄 **${doc.name}**${doc.team ? ` (${doc.team})` : ''}${doc.category ? ` [${doc.category}]` : ''}\n`
-        if (doc.intelligence) {
-          const intel = doc.intelligence
-          if (intel.key_stats?.length) out += `   Key stats: ${intel.key_stats.join(', ')}\n`
-          if (intel.messaging_tone) out += `   Tone: ${intel.messaging_tone}\n`
-          if (intel.positioning) out += `   Positioning: ${intel.positioning}\n`
-          if (intel.talking_points?.length) out += `   Talking points: ${intel.talking_points.join(', ')}\n`
-          if (intel.partner_benefits?.length) out += `   Partner benefits: ${intel.partner_benefits.join(', ')}\n`
-          if (intel.unique_angles?.length) out += `   Unique angles: ${intel.unique_angles.join(', ')}\n`
+      // Embed the query
+      const { default: OpenAI } = await import('openai')
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY })
+      const embRes = await openai.embeddings.create({ model: 'text-embedding-3-small', input: q.slice(0, 8000) })
+      const embedding = embRes.data[0].embedding
+      const embeddingStr = `[${embedding.join(',')}]`
+
+      // Vector search via RPC
+      let results = []
+      try {
+        const rpcRes = await fetch(`${SB()}/rest/v1/rpc/match_document_chunks`, {
+          method: 'POST', headers: { apikey: SK(), Authorization: `Bearer ${SK()}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query_embedding: embeddingStr, match_threshold: 0.45, match_count: 8, p_user_email: userEmail }),
+        })
+        const rpcData = await rpcRes.json()
+        if (Array.isArray(rpcData) && rpcData.length > 0) results = rpcData
+      } catch (e) { console.log('[Kiko] Vector search failed:', e.message) }
+
+      // Fallback: text search on document content
+      if (results.length === 0) {
+        const words = q.toLowerCase().split(/\s+/).filter(w => w.length > 2).slice(0, 3)
+        if (words.length > 0) {
+          const textFilter = words.map(w => `content.ilike.*${encodeURIComponent(w)}*`).join('&')
+          const textDocs = await sbFetch(`documents?${textFilter}&select=id,name,linked_team,linked_entity,category,context,intelligence,summary,content&limit=5`)
+          if (textDocs?.length > 0) {
+            let out = `DOCUMENT SEARCH: "${q}" — ${textDocs.length} documents found (text match)\n\n`
+            for (const doc of textDocs) {
+              out += `📄 **${doc.name}**${doc.linked_team ? ` (${doc.linked_team})` : doc.linked_entity ? ` (${doc.linked_entity})` : ''}${doc.category ? ` [${doc.category}]` : ''}\n`
+              const intel = doc.intelligence || {}
+              if (intel.key_stats?.length) out += `   Key stats: ${intel.key_stats.join(', ')}\n`
+              if (intel.messaging_tone) out += `   Tone: ${intel.messaging_tone}\n`
+              if (intel.positioning) out += `   Positioning: ${intel.positioning}\n`
+              if (intel.talking_points?.length) out += `   Talking points: ${intel.talking_points.join(', ')}\n`
+              if (intel.partner_benefits?.length) out += `   Partner benefits: ${intel.partner_benefits.join(', ')}\n`
+              if (intel.unique_angles?.length) out += `   Unique angles: ${intel.unique_angles.join(', ')}\n`
+              if (doc.summary) out += `   Summary: ${doc.summary}\n`
+              out += `   Content preview: ${(doc.content || '').slice(0, 400)}...\n\n`
+            }
+            return out
+          }
         }
+      }
+
+      if (!results.length) return `No documents found matching "${q}"${team ? ` for ${team}` : ''}. Upload relevant decks or briefs to build the knowledge base.`
+
+      // Enrich vector results with document metadata
+      const docIds = [...new Set(results.map(r => r.document_id))].filter(Boolean)
+      let docMap = {}
+      if (docIds.length > 0) {
+        let filter = `id=in.(${docIds.join(',')})`
+        if (team) filter += `&linked_team=ilike.*${encodeURIComponent(team)}*`
+        const docs = await sbFetch(`documents?${filter}&select=id,name,linked_team,linked_entity,category,context,intelligence,summary`)
+        if (docs) docMap = Object.fromEntries(docs.map(d => [d.id, d]))
+      }
+
+      // Format output
+      const byDoc = {}
+      for (const r of results) {
+        if (!byDoc[r.document_id]) byDoc[r.document_id] = { ...(docMap[r.document_id] || {}), passages: [] }
+        byDoc[r.document_id].passages.push(r.content)
+      }
+      let out = `DOCUMENT SEARCH: "${q}" — ${results.length} passages from ${Object.keys(byDoc).length} documents\n\n`
+      for (const [id, doc] of Object.entries(byDoc)) {
+        out += `📄 **${doc.name || 'Unknown'}**${doc.linked_team ? ` (${doc.linked_team})` : doc.linked_entity ? ` (${doc.linked_entity})` : ''}${doc.category ? ` [${doc.category}]` : ''}\n`
+        const intel = doc.intelligence || {}
+        if (intel.key_stats?.length) out += `   Key stats: ${intel.key_stats.join(', ')}\n`
+        if (intel.messaging_tone) out += `   Tone: ${intel.messaging_tone}\n`
+        if (intel.positioning) out += `   Positioning: ${intel.positioning}\n`
+        if (intel.talking_points?.length) out += `   Talking points: ${intel.talking_points.join(', ')}\n`
+        if (intel.partner_benefits?.length) out += `   Partner benefits: ${intel.partner_benefits.join(', ')}\n`
+        if (intel.unique_angles?.length) out += `   Unique angles: ${intel.unique_angles.join(', ')}\n`
         out += `   Relevant passages:\n`
-        for (const p of doc.passages.slice(0, 3)) out += `   > ${p.slice(0, 300)}...\n`
+        for (const p of doc.passages.slice(0, 3)) out += `   > ${p.slice(0, 400)}...\n`
         out += '\n'
       }
       return out
     } catch (err) {
+      console.error('[Kiko] search_documents error:', err.message)
       return `Document search error: ${err.message}`
     }
   }
