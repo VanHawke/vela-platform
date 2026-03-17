@@ -128,6 +128,10 @@ export const TOOL_DEFINITIONS = [
       category: { type: 'string', description: 'Filter by category (e.g. "cybersecurity", "fintech", "cloud"). Optional.' },
       gaps_only: { type: 'boolean', description: 'Only show gaps (empty sponsorship slots). Default: false' },
     }, required: [] } },
+  { name: 'get_pipeline_notifications', description: 'Get recent pipeline activity notifications — prospect replies, interested signals, deal stage changes, engagement events from Lemlist campaigns. Use for "any pipeline updates", "who replied", "new leads", "what happened with outreach", "campaign activity".',
+    input_schema: { type: 'object', properties: {
+      unread_only: { type: 'boolean', description: 'Only show unread notifications. Default: false' },
+    }, required: [] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -426,6 +430,22 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com')
       return acc + filteredCats.filter(c => !filled.has(c.id)).length
     }, 0)
     return `F1 PARTNERSHIP MATRIX${team ? ` — ${team}` : ''}${category ? ` — ${category}` : ''}\n${filteredTeams.length} teams, ${(partnerships||[]).length} active partnerships, ${totalGaps} gaps\n${out}`
+  }
+
+  if (name === 'get_pipeline_notifications') {
+    const unreadOnly = input.unread_only ? '&is_read=eq.false' : ''
+    const notifs = await sbFetch(`pipeline_notifications?is_dismissed=eq.false${unreadOnly}&order=created_at.desc&limit=15`)
+    if (!notifs?.length) return 'No pipeline notifications. Campaigns may be quiet or no prospects have engaged yet.'
+    const unread = notifs.filter(n => !n.is_read).length
+    let out = `PIPELINE ACTIVITY — ${notifs.length} notifications (${unread} unread)\n\n`
+    for (const n of notifs) {
+      const icon = n.type === 'reply' ? '💬' : n.type === 'interested' ? '✅' : n.type === 'stage_change' ? '📈' : n.type === 'deal_won' ? '🏆' : '📧'
+      const readMark = n.is_read ? '' : ' 🔴'
+      out += `${icon} **${n.title}**${readMark}\n`
+      out += `   ${n.body || ''}\n`
+      out += `   ${n.pipeline ? n.pipeline : ''}${n.stage ? ' → ' + n.stage : ''} · ${n.source || ''} · ${n.priority} priority\n\n`
+    }
+    return out
   }
 
   return { error: `Unknown tool: ${name}` }
