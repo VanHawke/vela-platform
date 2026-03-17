@@ -25,12 +25,25 @@ export default function Layout({ user }) {
   const nav = useNavigate()
   const isHome = loc.pathname === '/' || loc.pathname === '/home'
 
-  // Branding
-  const [brandLogo, setBrandLogo] = useState(null)
+  // Branding — icon (collapsed) + wide logo (expanded)
+  const [logoIcon, setLogoIcon] = useState(null)
+  const [logoExpanded, setLogoExpanded] = useState(null)
   useEffect(() => {
     if (!user?.id) return
-    supabase.from('user_settings').select('platform_logo_url').eq('user_id', user.id).single()
-      .then(({ data }) => { if (data?.platform_logo_url) setBrandLogo(data.platform_logo_url) })
+    supabase.from('user_settings').select('platform_logo_url, sidebar_logo_url').eq('user_id', user.id).single()
+      .then(({ data }) => {
+        if (data?.platform_logo_url) setLogoIcon(data.platform_logo_url)
+        if (data?.sidebar_logo_url) setLogoExpanded(data.sidebar_logo_url)
+      })
+    const onUpdate = () => {
+      supabase.from('user_settings').select('platform_logo_url, sidebar_logo_url').eq('user_id', user.id).single()
+        .then(({ data }) => {
+          if (data?.platform_logo_url) setLogoIcon(data.platform_logo_url)
+          if (data?.sidebar_logo_url) setLogoExpanded(data.sidebar_logo_url)
+        })
+    }
+    window.addEventListener('vela_profile_updated', onUpdate)
+    return () => window.removeEventListener('vela_profile_updated', onUpdate)
   }, [user?.id])
 
   // Top nav config
@@ -97,7 +110,7 @@ export default function Layout({ user }) {
         })}
       </div>
 
-      <Sidebar brandLogo={brandLogo} user={user} onHomeClick={() => { setKikoMessages([]); setKikoConvId(null); setKikoResetKey(k => k + 1) }} />
+      <Sidebar logoIcon={logoIcon} logoExpanded={logoExpanded} user={user} onHomeClick={() => { setKikoMessages([]); setKikoConvId(null); setKikoResetKey(k => k + 1) }} />
 
       <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', paddingTop: 52 }}>
         <Outlet context={{ kikoMessages, setKikoMessages, kikoConvId, setKikoConvId, kikoNavigate, kikoResetKey }} />

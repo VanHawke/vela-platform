@@ -20,7 +20,7 @@ const NAV_DEFAULTS = [
 const W_COLLAPSED = 44
 const W_EXPANDED = 200
 
-export default function Sidebar({ brandLogo, user, onHomeClick }) {
+export default function Sidebar({ logoIcon, logoExpanded, user, onHomeClick }) {
   const nav = useNavigate()
   const loc = useLocation()
   const [expanded, setExpanded] = useState(false)
@@ -76,13 +76,25 @@ export default function Sidebar({ brandLogo, user, onHomeClick }) {
         overflow: 'hidden', zIndex: 50,
       }}>
       <div style={{ padding: '0 8px', marginBottom: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', height: 36 }} onClick={() => { if (onHomeClick) onHomeClick(); nav('/') }}>
-        {brandLogo ? (
-          <img src={brandLogo} alt="" style={{ height: 28, maxWidth: expanded ? 160 : 36, objectFit: 'contain', transition: 'max-width 0.2s', borderRadius: 6 }} />
+        {expanded ? (
+          // Expanded: show wide rectangle logo if set, else fall back to icon or V badge
+          logoExpanded ? (
+            <img src={logoExpanded} alt="" style={{ height: 26, maxWidth: 160, objectFit: 'contain', transition: 'opacity 0.2s' }} />
+          ) : logoIcon ? (
+            <img src={logoIcon} alt="" style={{ height: 28, width: 28, objectFit: 'contain', borderRadius: 6 }} />
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 7, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 700, fontFamily: 'var(--font)', flexShrink: 0 }}>V</div>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font)' }}>Vela</span>
+            </div>
+          )
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden', whiteSpace: 'nowrap' }}>
+          // Collapsed: show square icon logo if set, else V badge
+          logoIcon ? (
+            <img src={logoIcon} alt="" style={{ height: 28, width: 28, objectFit: 'contain', borderRadius: 6 }} />
+          ) : (
             <div style={{ width: 28, height: 28, borderRadius: 7, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 700, fontFamily: 'var(--font)', flexShrink: 0 }}>V</div>
-            {expanded && <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font)', opacity: expanded ? 1 : 0, transition: 'opacity 0.15s' }}>Vela</span>}
-          </div>
+          )
         )}
       </div>
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, padding: '0 8px' }}>
