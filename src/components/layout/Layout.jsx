@@ -30,16 +30,16 @@ export default function Layout({ user }) {
   const [logoExpanded, setLogoExpanded] = useState(null)
   useEffect(() => {
     if (!user?.id) return
-    supabase.from('user_settings').select('platform_logo_url, sidebar_logo_url').eq('user_id', user.id).single()
+    supabase.from('user_settings').select('platform_logo_url, sidebar_expanded_logo_url').eq('user_id', user.id).single()
       .then(({ data }) => {
         if (data?.platform_logo_url) setLogoIcon(data.platform_logo_url)
-        if (data?.sidebar_logo_url) setLogoExpanded(data.sidebar_logo_url)
+        if (data?.sidebar_expanded_logo_url) setLogoExpanded(data.sidebar_expanded_logo_url)
       })
     const onUpdate = () => {
-      supabase.from('user_settings').select('platform_logo_url, sidebar_logo_url').eq('user_id', user.id).single()
+      supabase.from('user_settings').select('platform_logo_url, sidebar_expanded_logo_url').eq('user_id', user.id).single()
         .then(({ data }) => {
           if (data?.platform_logo_url) setLogoIcon(data.platform_logo_url)
-          if (data?.sidebar_logo_url) setLogoExpanded(data.sidebar_logo_url)
+          if (data?.sidebar_expanded_logo_url) setLogoExpanded(data.sidebar_expanded_logo_url)
         })
     }
     window.addEventListener('vela_profile_updated', onUpdate)
