@@ -137,6 +137,61 @@ export default async function handler(req, res) {
       created_at: now,
     })
 
+    // === PIPELINE NOTIFICATIONS + AUTO-DEAL CREATION ===
+    const name = [contactData.firstName, contactData.lastName].filter(Boolean).join(' ') || email
+    const company = contactData.company || event.companyName || ''
+
+    // High-intent events → create "In Dialogue" deal + urgent notification
+    const highIntent = ['emailsReplied', 'emailsInterested', 'linkedinReplied', 'linkedinInterested', 'manualInterested']
+    if (highIntent.includes(type)) {
+      // Check if deal already exists for this contact
+      const { data: existingDeals } = await supabase.from('deals')
+        .select('id').filter('data->>contactEmail', 'eq', email).limit(1)
+
+      let dealId = existingDeals?.[0]?.id
+      if (!dealId) {
+        // Auto-create "In Dialogue" deal
+        dealId = `lem_deal_${Date.now()}`
+        const pipeline = event.campaignName?.includes('Haas') ? 'Haas F1'
+          : event.campaignName?.includes('Alpine') ? 'Alpine F1' : 'Haas F1'
+        await supabase.from('deals').insert({
+          id: dealId,
+          data: {
+            title: `${company || name} — Inbound from ${event.campaignName || 'Lemlist'}`,
+            stage: 'In Dialogue', pipeline,
+            contactEmail: email, contactName: name, company,
+            source: 'Lemlist', campaign: event.campaignName || '',
+            owner: 'Sunny Sidhu', createdAt: now, lastActivity: now,
+          },
+          updated_at: now,
+        })
+      }
+
+      // Create urgent notification
+      await supabase.from('pipeline_notifications').insert({
+        type: type.includes('Replied') ? 'reply' : 'interested',
+        title: `${name} ${type.includes('Replied') ? 'replied' : 'showed interest'}`,
+        body: `${name}${company ? ` (${company})` : ''} — ${event.campaignName || 'Campaign'}. Deal moved to In Dialogue.`,
+        deal_id: dealId, contact_id: contactId, contact_name: name, company_name: company,
+        pipeline: 'Haas F1', stage: 'In Dialogue',
+        source: 'lemlist', campaign_name: event.campaignName || null,
+        priority: 'high', metadata: { eventType: type, email },
+      })
+    }
+
+    // Medium-intent events → notification only (no deal)
+    const mediumIntent = ['emailsClicked', 'emailsOpened']
+    if (mediumIntent.includes(type) && event.isFirst) {
+      await supabase.from('pipeline_notifications').insert({
+        type: type === 'emailsClicked' ? 'engagement' : 'engagement',
+        title: `${name} ${type === 'emailsClicked' ? 'clicked a link' : 'opened email'}`,
+        body: `${name}${company ? ` (${company})` : ''} — ${event.campaignName || 'Campaign'}, Step ${event.sequenceStep || '?'}`,
+        contact_id: contactId, contact_name: name, company_name: company,
+        source: 'lemlist', campaign_name: event.campaignName || null,
+        priority: 'low', metadata: { eventType: type, email, step: event.sequenceStep },
+      })
+    }
+
     return res.status(200).json({ ok: true, type, email, contactId, isNew: !(rows && rows.length > 0) })
   } catch (e) {
     console.error('Lemlist webhook error:', e)
