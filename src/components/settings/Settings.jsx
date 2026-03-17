@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import ImageUpload from './ImageUpload'
-import { Check, ExternalLink, Unplug, UserPlus, Trash2, LogOut } from 'lucide-react'
+import { Check, ExternalLink, Unplug, UserPlus, Trash2, LogOut, X } from 'lucide-react'
 
 const VOICES = [
   { id: 'shimmer', label: 'Shimmer', desc: 'Warm, articulate female' },
@@ -520,11 +520,77 @@ export default function Settings({ user }) {
                 Upload logos and images. Click to upload, crop to fit, then save.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <ImageUpload label="Profile Picture" storageKey="profile_photo" folder="avatars" aspectHint="Square, shown in your profile" currentUrl={settings.profile_photo_url} onUploaded={(url) => saveSettings({ profile_photo_url: url })} />
-                <ImageUpload label="Login Brand Logo" storageKey="brand_logo" folder="logos" aspectHint="Shown on the login page above the sign-in form" currentUrl={settings.kiko_avatar_url} onUploaded={(url) => { saveSettings({ kiko_avatar_url: url }); try { localStorage.setItem('vela_brand_logo', url) } catch {} }} />
-                <ImageUpload label="Platform Logo (Sidebar Icon)" storageKey="sidebar_logo" folder="logos" aspectHint="Square icon, shown in sidebar when collapsed" currentUrl={settings.platform_logo_url} onUploaded={(url) => saveSettings({ platform_logo_url: url })} />
-                <ImageUpload label="Platform Logo (Sidebar Logo)" storageKey="sidebar_logo_expanded" folder="logos" aspectHint="Rectangle logo, shown when sidebar is expanded" currentUrl={settings.sidebar_expanded_logo_url} onUploaded={(url) => saveSettings({ sidebar_expanded_logo_url: url })} />
-                <ImageUpload label="Login Background Image" storageKey="login_bg" folder="backgrounds" aspectHint="16:9 landscape recommended" currentUrl={settings.login_bg_url} onUploaded={(url) => { saveSettings({ login_bg_url: url }); try { localStorage.setItem('vela_login_bg', url) } catch {} }} />
+
+                {/* Profile Picture */}
+                {(() => {
+                  const field = 'profile_photo_url'; const val = settings[field]
+                  return (
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: val ? 6 : 0 }}>
+                        <span />
+                        {val && <button onClick={() => saveSettings({ [field]: null })} title="Remove" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: T.textTertiary, padding: 0 }}><X size={12} /> Remove</button>}
+                      </div>
+                      <ImageUpload label="Profile Picture" storageKey="profile_photo" folder="avatars" aspectHint="Square, shown in your profile" currentUrl={val} onUploaded={(url) => saveSettings({ [field]: url })} />
+                    </div>
+                  )
+                })()}
+
+                {/* Login Brand Logo */}
+                {(() => {
+                  const field = 'kiko_avatar_url'; const val = settings[field]
+                  return (
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: val ? 6 : 0 }}>
+                        <span />
+                        {val && <button onClick={() => { saveSettings({ [field]: null }); try { localStorage.removeItem('vela_brand_logo') } catch {} }} title="Remove" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: T.textTertiary, padding: 0 }}><X size={12} /> Remove</button>}
+                      </div>
+                      <ImageUpload label="Login Brand Logo" storageKey="brand_logo" folder="logos" aspectHint="Shown on the login page above the sign-in form" currentUrl={val} onUploaded={(url) => { saveSettings({ [field]: url }); try { localStorage.setItem('vela_brand_logo', url) } catch {} }} />
+                    </div>
+                  )
+                })()}
+
+                {/* Sidebar Icon */}
+                {(() => {
+                  const field = 'platform_logo_url'; const val = settings[field]
+                  return (
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: val ? 6 : 0 }}>
+                        <span />
+                        {val && <button onClick={() => saveSettings({ [field]: null })} title="Remove" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: T.textTertiary, padding: 0 }}><X size={12} /> Remove</button>}
+                      </div>
+                      <ImageUpload label="Platform Logo (Sidebar Icon)" storageKey="sidebar_logo" folder="logos" aspectHint="Square icon, shown in sidebar when collapsed" currentUrl={val} onUploaded={(url) => saveSettings({ [field]: url })} />
+                    </div>
+                  )
+                })()}
+
+                {/* Sidebar Expanded Logo */}
+                {(() => {
+                  const field = 'sidebar_expanded_logo_url'; const val = settings[field]
+                  return (
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: val ? 6 : 0 }}>
+                        <span />
+                        {val && <button onClick={() => saveSettings({ [field]: null })} title="Remove" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: T.textTertiary, padding: 0 }}><X size={12} /> Remove</button>}
+                      </div>
+                      <ImageUpload label="Platform Logo (Sidebar Logo)" storageKey="sidebar_logo_expanded" folder="logos" aspectHint="Rectangle logo, shown when sidebar is expanded" currentUrl={val} onUploaded={(url) => saveSettings({ [field]: url })} />
+                    </div>
+                  )
+                })()}
+
+                {/* Login Background */}
+                {(() => {
+                  const field = 'login_bg_url'; const val = settings[field]
+                  return (
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: val ? 6 : 0 }}>
+                        <span />
+                        {val && <button onClick={() => { saveSettings({ [field]: null }); try { localStorage.removeItem('vela_login_bg') } catch {} }} title="Remove" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: T.textTertiary, padding: 0 }}><X size={12} /> Remove</button>}
+                      </div>
+                      <ImageUpload label="Login Background Image" storageKey="login_bg" folder="backgrounds" aspectHint="16:9 landscape recommended" currentUrl={val} onUploaded={(url) => { saveSettings({ [field]: url }); try { localStorage.setItem('vela_login_bg', url) } catch {} }} />
+                    </div>
+                  )
+                })()}
+
               </div>
             </div>
           </div>

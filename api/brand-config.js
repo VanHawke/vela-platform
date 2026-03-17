@@ -12,16 +12,16 @@ export default async function handler(req, res) {
   try {
     const { data, error } = await supabase
       .from('user_settings')
-      .select('kiko_avatar_url')
+      .select('kiko_avatar_url, login_bg_url')
       .not('kiko_avatar_url', 'is', null)
       .limit(1)
       .single()
 
     if (error || !data) {
-      return res.status(200).json({ brandLogo: null })
+      return res.status(200).json({ brandLogo: null, loginBg: null })
     }
 
-    return res.status(200).json({ brandLogo: data.kiko_avatar_url })
+    return res.status(200).json({ brandLogo: data.kiko_avatar_url, loginBg: data.login_bg_url || null })
   } catch (err) {
     return res.status(200).json({ brandLogo: null })
   }

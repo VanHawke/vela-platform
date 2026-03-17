@@ -48,21 +48,21 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [gLoading, setGLoading] = useState(false)
   const [brandLogo, setBrandLogo] = useState(null)
+  const [loginBg, setLoginBg] = useState(null)
 
   useEffect(() => {
-    // Check localStorage cache first
     try {
-      const cached = localStorage.getItem('vela_brand_logo')
-      if (cached) { setBrandLogo(cached); return }
+      const cachedLogo = localStorage.getItem('vela_brand_logo')
+      const cachedBg = localStorage.getItem('vela_login_bg')
+      if (cachedLogo) setBrandLogo(cachedLogo)
+      if (cachedBg) setLoginBg(cachedBg)
+      if (cachedLogo) return // skip API if logo already cached
     } catch {}
-    // Fetch from service-role API (bypasses RLS — works before login)
     fetch('/api/brand-config')
       .then(r => r.json())
-      .then(({ brandLogo }) => {
-        if (brandLogo) {
-          setBrandLogo(brandLogo)
-          try { localStorage.setItem('vela_brand_logo', brandLogo) } catch {}
-        }
+      .then(({ brandLogo, loginBg }) => {
+        if (brandLogo) { setBrandLogo(brandLogo); try { localStorage.setItem('vela_brand_logo', brandLogo) } catch {} }
+        if (loginBg) { setLoginBg(loginBg); try { localStorage.setItem('vela_login_bg', loginBg) } catch {} }
       })
       .catch(() => {})
   }, [])
@@ -155,12 +155,17 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* ── RIGHT: Ambient vortex panel ── */}
+      {/* ── RIGHT: Background image or ambient vortex ── */}
       <div style={{
         flex: '0 0 45%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: '#FAFAFA', overflow: 'hidden',
+        overflow: 'hidden', position: 'relative',
+        background: loginBg ? 'transparent' : '#FAFAFA',
       }}>
-        <KikoVortexAmbient size={140} />
+        {loginBg ? (
+          <img src={loginBg} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <KikoVortexAmbient size={140} />
+        )}
       </div>
 
     </div>
