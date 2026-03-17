@@ -4,12 +4,21 @@ import { supabase } from '@/lib/supabase'
 import Sidebar from './Sidebar'
 import KikoFloat from '../kiko/KikoFloat'
 
-const TOP_NAV = [
-  { label: 'Home', path: '/' },
-  { label: 'Contacts', path: '/contacts' },
-  { label: 'Deal Pipeline', path: '/pipeline' },
-  { label: 'Settings', path: '/settings' },
+const ALL_TOP_NAV = [
+  { id: 'home', label: 'Home', path: '/' },
+  { id: 'contacts', label: 'Contacts', path: '/contacts' },
+  { id: 'organisations', label: 'Organisations', path: '/organisations' },
+  { id: 'pipeline', label: 'Deal Pipeline', path: '/pipeline' },
+  { id: 'email', label: 'Email', path: '/email' },
+  { id: 'news', label: 'News', path: '/news' },
+  { id: 'partnership-matrix', label: 'Matrix', path: '/partnership-matrix' },
+  { id: 'calendar', label: 'Calendar', path: '/calendar' },
+  { id: 'documents', label: 'Documents', path: '/documents' },
+  { id: 'tasks', label: 'Tasks', path: '/tasks' },
+  { id: 'dashboard', label: 'Dashboard', path: '/dashboard' },
+  { id: 'settings', label: 'Settings', path: '/settings' },
 ]
+const DEFAULT_TOP_IDS = ['home', 'contacts', 'pipeline', 'settings']
 
 export default function Layout({ user }) {
   const loc = useLocation()
@@ -23,6 +32,21 @@ export default function Layout({ user }) {
     supabase.from('user_settings').select('platform_logo_url').eq('user_id', user.id).single()
       .then(({ data }) => { if (data?.platform_logo_url) setBrandLogo(data.platform_logo_url) })
   }, [user?.id])
+
+  // Top nav config
+  const [topNavIds, setTopNavIds] = useState(DEFAULT_TOP_IDS)
+  useEffect(() => {
+    const load = () => {
+      try {
+        const stored = localStorage.getItem('vela_top_nav')
+        if (stored) setTopNavIds(JSON.parse(stored))
+      } catch {}
+    }
+    load()
+    window.addEventListener('vela_top_nav_updated', load)
+    return () => window.removeEventListener('vela_top_nav_updated', load)
+  }, [])
+  const topNav = topNavIds.map(id => ALL_TOP_NAV.find(n => n.id === id)).filter(Boolean)
 
   // Kiko conversation state — persists across page navigation
   const [kikoMessages, setKikoMessages] = useState([])
@@ -56,7 +80,7 @@ export default function Layout({ user }) {
         border: '1px solid rgba(255,255,255,0.5)',
         boxShadow: '0 4px 24px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.03)',
       }}>
-        {TOP_NAV.map(item => {
+        {topNav.map(item => {
           const active = loc.pathname === item.path || (item.path === '/' && loc.pathname === '/home')
           return (
             <button key={item.path} onClick={() => {

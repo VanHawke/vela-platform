@@ -54,9 +54,28 @@ export default function Settings({ user }) {
   ]
   const [navOrder, setNavOrder] = useState(DEFAULT_NAV)
 
+  const ALL_TOP_NAV = [
+    { id: 'home', label: 'Home', path: '/' },
+    { id: 'contacts', label: 'Contacts', path: '/contacts' },
+    { id: 'organisations', label: 'Organisations', path: '/organisations' },
+    { id: 'pipeline', label: 'Deal Pipeline', path: '/pipeline' },
+    { id: 'email', label: 'Email', path: '/email' },
+    { id: 'news', label: 'News', path: '/news' },
+    { id: 'partnership-matrix', label: 'Matrix', path: '/partnership-matrix' },
+    { id: 'calendar', label: 'Calendar', path: '/calendar' },
+    { id: 'documents', label: 'Documents', path: '/documents' },
+    { id: 'tasks', label: 'Tasks', path: '/tasks' },
+    { id: 'dashboard', label: 'Dashboard', path: '/dashboard' },
+    { id: 'settings', label: 'Settings', path: '/settings' },
+  ]
+  const DEFAULT_TOP_NAV = ['home', 'contacts', 'pipeline', 'settings']
+  const [topNavItems, setTopNavItems] = useState(DEFAULT_TOP_NAV)
+
   useEffect(() => {
     const stored = localStorage.getItem('vela_nav_order')
     if (stored) try { setNavOrder(JSON.parse(stored)) } catch {}
+    const storedTop = localStorage.getItem('vela_top_nav')
+    if (storedTop) try { setTopNavItems(JSON.parse(storedTop)) } catch {}
   }, [])
 
   const email = user?.email || ''
@@ -316,6 +335,45 @@ export default function Settings({ user }) {
                 ))}
               </div>
               <button onClick={() => { setNavOrder(DEFAULT_NAV); localStorage.setItem('vela_nav_order', JSON.stringify(DEFAULT_NAV)); window.dispatchEvent(new Event('vela_nav_updated')) }}
+                style={{ marginTop: 12, fontSize: 11, padding: '6px 12px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font }}>Reset to Default</button>
+            </div>
+
+            {/* Top Navigation Bar */}
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Top Navigation Bar</h3>
+              <p style={{ fontSize: 12, color: T.textTertiary, margin: '0 0 16px', fontFamily: T.font }}>Choose which pages appear in the floating top navigation. Home is always shown.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {ALL_TOP_NAV.map(item => {
+                  const isOn = topNavItems.includes(item.id)
+                  const isHome = item.id === 'home'
+                  return (
+                    <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 8, background: isHome ? T.accentSoft : T.surface, border: `1px solid ${T.border}` }}>
+                      <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font }}>{item.label}</span>
+                      {isHome ? (
+                        <span style={{ fontSize: 9, color: T.textTertiary, padding: '2px 6px', borderRadius: 4, background: T.accentSoft }}>Always shown</span>
+                      ) : (
+                        <button onClick={() => {
+                          const next = isOn ? topNavItems.filter(id => id !== item.id) : [...topNavItems, item.id]
+                          setTopNavItems(next)
+                          localStorage.setItem('vela_top_nav', JSON.stringify(next))
+                          window.dispatchEvent(new Event('vela_top_nav_updated'))
+                        }} style={{
+                          width: 38, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer',
+                          background: isOn ? T.accent : 'rgba(0,0,0,0.1)',
+                          position: 'relative', transition: 'background 0.2s', padding: 0,
+                        }}>
+                          <div style={{
+                            width: 16, height: 16, borderRadius: '50%', background: '#fff',
+                            position: 'absolute', top: 2, left: isOn ? 20 : 2,
+                            transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                          }} />
+                        </button>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              <button onClick={() => { setTopNavItems(DEFAULT_TOP_NAV); localStorage.setItem('vela_top_nav', JSON.stringify(DEFAULT_TOP_NAV)); window.dispatchEvent(new Event('vela_top_nav_updated')) }}
                 style={{ marginTop: 12, fontSize: 11, padding: '6px 12px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font }}>Reset to Default</button>
             </div>
           </div>
