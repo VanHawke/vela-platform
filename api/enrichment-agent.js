@@ -279,5 +279,73 @@ ${list}`
     } catch (e) { return res.status(500).json({ error: e.message }) }
   }
 
-  return res.status(400).json({ error: 'Use "status", "enrich-contacts", "enrich-companies", "find-domains", or "enrich-funding"' })
+  // ENRICH-COMPETITORS: top 5 competitors per company via Haiku batch
+  if (action === 'enrich-competitors') {
+    try {
+      // Only fetch companies that don't yet have competitors cached
+      const { data: companies } = await supabase.from('companies').select('id, data')
+        .not('data->>name', 'is', null).not('data->>name', 'eq', '')
+        .order('id', { ascending: true }).range(OFFSET, OFFSET + BATCH - 1)
+
+      if (!companies || companies.length === 0) {
+        return res.json({ done: true, message: 'No more companies to enrich', offset: OFFSET })
+      }
+
+      // Skip already enriched
+      const toProcess = companies.filter(c => !c.data?.competitors?.length)
+      if (toProcess.length === 0) {
+        return res.json({ done: companies.length < BATCH, processed: 0, enriched: 0, skipped: companies.length, nextOffset: OFFSET + companies.length })
+      }
+
+      const list = toProcess.map(c => `${c.id}|${c.data?.name || ''}|${c.data?.industry || 'Unknown'}|${c.data?.country || ''}`).join('\n')
+
+      const prompt = `You are a competitive intelligence analyst for a sports sponsorship advisory firm. For each company below, identify the top 5 competitors.
+
+Return ONLY a JSON object mapping company IDs to competitor arrays. No other text, no markdown:
+{
+  "ID1": [
+    {"name":"Competitor Name","industry":"Sector","stage":"Series B","funding":"$200M","threat":"direct","reason":"Same product, same buyers"},
+    ...
+  ],
+  "ID2": [...]
+}
+
+Rules for "threat": "direct" (same product/buyers), "adjacent" (related space/overlapping), "indirect" (same problem/budget different approach)
+Sort each list: direct first, then adjacent, then indirect.
+Keep reason to one short sentence.
+If company is unknown, still provide 3-5 logical competitors based on their industry.
+
+Companies (ID|Name|Industry|Country):
+${list}`
+
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 8000, messages: [{ role: 'user', content: prompt }] })
+      })
+      const data = await r.json()
+      const rawText = data.content?.[0]?.text || ''
+
+      const clean = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+      const jsonStart = clean.indexOf('{')
+      const jsonEnd = clean.lastIndexOf('}')
+      if (jsonStart === -1) return res.json({ error: 'No JSON in response', raw: rawText.slice(0, 200) })
+
+      const result = JSON.parse(clean.slice(jsonStart, jsonEnd + 1))
+      let enriched = 0
+
+      for (const company of toProcess) {
+        const competitors = result[company.id]
+        if (!competitors?.length) continue
+        const updated = { ...company.data, competitors, competitorsUpdatedAt: new Date().toISOString() }
+        await supabase.from('companies').update({ data: updated, updated_at: new Date().toISOString() }).eq('id', company.id)
+        enriched++
+      }
+
+      const nextOffset = OFFSET + companies.length
+      return res.json({ done: companies.length < BATCH, processed: toProcess.length, enriched, skipped: companies.length - toProcess.length, nextOffset })
+    } catch (e) { return res.status(500).json({ error: e.message }) }
+  }
+
+  return res.status(400).json({ error: 'Use "status", "enrich-contacts", "enrich-companies", "find-domains", "enrich-funding", or "enrich-competitors"' })
 }

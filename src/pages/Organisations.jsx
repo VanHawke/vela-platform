@@ -52,6 +52,8 @@ export default function Organisations({ user }) {
   const [orgDeals, setOrgDeals] = useState([])
   const [orgSignals, setOrgSignals] = useState([])
   const [loadingSignals, setLoadingSignals] = useState(false)
+  const [orgCompetitors, setOrgCompetitors] = useState([])
+  const [loadingCompetitors, setLoadingCompetitors] = useState(false)
   const [loadingPanel, setLoadingPanel] = useState(false)
   const [dealMap, setDealMap] = useState({})
 
@@ -201,9 +203,26 @@ export default function Organisations({ user }) {
       setOrgSignals(data.signals || [])
       setLoadingSignals(false)
     }).catch(() => setLoadingSignals(false))
+
+    // Load competitors from cache, or research if missing
+    setOrgCompetitors(company.competitors || [])
+    if (!company.competitors?.length) {
+      setLoadingCompetitors(true)
+      fetch('/api/competitor-research', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyId: company.id, companyName: company.name, industry: company.industry, country: company.country })
+      }).then(r => r.json()).then(data => {
+        if (data.competitors?.length) {
+          setOrgCompetitors(data.competitors)
+          // Update local company state so it's cached in-memory too
+          setCompanies(prev => prev.map(c => c.id === company.id ? { ...c, competitors: data.competitors } : c))
+        }
+        setLoadingCompetitors(false)
+      }).catch(() => setLoadingCompetitors(false))
+    }
   }
 
-  const closePanel = () => { setSelectedOrg(null); setOrgContacts([]); setOrgLinkedin(null); setOrgDomain(null); setOrgCampaigns([]); setOrgLastComm({ sent: null, received: null }); setOrgDeals([]); setOrgSignals([]) }
+  const closePanel = () => { setSelectedOrg(null); setOrgContacts([]); setOrgLinkedin(null); setOrgDomain(null); setOrgCampaigns([]); setOrgLastComm({ sent: null, received: null }); setOrgDeals([]); setOrgSignals([]); setOrgCompetitors([]) }
 
   // Derive filter options from data
   const filterOptions = useMemo(() => {
@@ -597,6 +616,95 @@ export default function Organisations({ user }) {
                     )}
                   </div>
                 ) : <p style={emptyText}>No communications logged yet</p>}
+              </div>
+
+              {/* ── Competitors ─────────────────────────── */}
+              <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '16px 20px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <p style={{ ...sectionTitle, margin: 0 }}>Top Competitors</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {orgCompetitors.length > 0 && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#34C759' }} />
+                        <span style={{ fontSize: 9, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>enriched</span>
+                      </div>
+                    )}
+                    <button onClick={() => {
+                      setLoadingCompetitors(true)
+                      setOrgCompetitors([])
+                      fetch('/api/competitor-research', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ companyId: selectedOrg.id, companyName: selectedOrg.name, industry: selectedOrg.industry, country: selectedOrg.country, forceRefresh: true })
+                      }).then(r => r.json()).then(data => {
+                        if (data.competitors?.length) {
+                          setOrgCompetitors(data.competitors)
+                          setCompanies(prev => prev.map(c => c.id === selectedOrg.id ? { ...c, competitors: data.competitors } : c))
+                        }
+                        setLoadingCompetitors(false)
+                      }).catch(() => setLoadingCompetitors(false))
+                    }} style={{ fontSize: 10, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', padding: '2px 4px' }}>
+                      Refresh
+                    </button>
+                  </div>
+                </div>
+                {loadingCompetitors ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {[...Array(3)].map((_, i) => <div key={i} style={{ height: 58, background: 'rgba(0,0,0,0.03)', borderRadius: 8, animation: 'pulse 1.5s infinite' }} />)}
+                  </div>
+                ) : orgCompetitors.length === 0 ? (
+                  <p style={emptyText}>Researching competitors…</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {orgCompetitors.slice(0, 5).map((c, i) => {
+                      const threatColors = {
+                        direct: { color: '#C62828', bg: 'rgba(198,40,40,0.08)' },
+                        adjacent: { color: '#B86000', bg: 'rgba(255,149,0,0.1)' },
+                        indirect: { color: '#1a7a3a', bg: 'rgba(26,122,58,0.08)' },
+                      }
+                      const tc = threatColors[c.threat] || threatColors.indirect
+                      const compDomain = c.website ? c.website.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0] : null
+                      const alreadyInCrm = companies.some(org => org.name?.toLowerCase() === c.name?.toLowerCase())
+                      return (
+                        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 11px', borderRadius: 9, border: '1px solid rgba(0,0,0,0.06)', background: 'rgba(0,0,0,0.01)', cursor: 'default', transition: 'border-color 0.12s' }}
+                          onMouseOver={e => e.currentTarget.style.borderColor = 'rgba(0,0,0,0.12)'}
+                          onMouseOut={e => e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)'}>
+                          {/* Logo */}
+                          <div style={{ width: 28, height: 28, borderRadius: 7, background: '#fff', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                            {compDomain ? (
+                              <img src={`https://www.google.com/s2/favicons?domain=${compDomain}&sz=64`} alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
+                            ) : null}
+                            <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', display: compDomain ? 'none' : 'flex' }}>{c.name?.[0]?.toUpperCase()}</span>
+                          </div>
+                          {/* Info */}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', fontFamily: 'var(--font)', marginBottom: 1 }}>{c.name}</div>
+                            <div style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', marginBottom: 4 }}>
+                              {[c.industry, c.stage, c.funding].filter(Boolean).join(' · ')}
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: 9, fontWeight: 500, padding: '1px 5px', borderRadius: 4, background: tc.bg, color: tc.color, fontFamily: 'var(--font)' }}>{c.threat || 'competitor'}</span>
+                              {alreadyInCrm ? (
+                                <span style={{ fontSize: 9, fontWeight: 500, padding: '1px 5px', borderRadius: 4, background: 'rgba(0,85,204,0.08)', color: '#0055CC', fontFamily: 'var(--font)' }}>In CRM</span>
+                              ) : (
+                                <button onClick={async () => {
+                                  const id = `org${Date.now()}`
+                                  const data = { id, name: c.name, industry: c.industry, website: compDomain || '', notes: `Competitor of ${selectedOrg.name}. ${c.reason || ''}` }
+                                  await supabase.from('companies').upsert({ id, data, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+                                  setCompanies(prev => [{ id, ...data }, ...prev])
+                                  // re-render to show In CRM badge
+                                  setOrgCompetitors(p => [...p])
+                                }} style={{ fontSize: 9, fontWeight: 500, padding: '1px 5px', borderRadius: 4, background: 'rgba(0,0,0,0.04)', color: 'var(--text-secondary)', fontFamily: 'var(--font)', border: 'none', cursor: 'pointer' }}>
+                                  + Add to CRM
+                                </button>
+                              )}
+                            </div>
+                            {c.reason && <div style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', marginTop: 3, lineHeight: 1.35, fontStyle: 'italic' }}>{c.reason}</div>}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* News Signals */}
