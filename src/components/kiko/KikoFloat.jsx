@@ -7,8 +7,8 @@ import KikoVoice from './KikoVoice'
 import DOMPurify from 'dompurify'
 
 const T = {
-  bg: 'transparent', surface: 'rgba(255,255,255,0.65)', surfaceHover: 'rgba(255,255,255,0.8)',
-  border: 'rgba(255,255,255,0.5)', text: '#1A1A1A',
+  bg: '#FAFAFA', surface: '#FFFFFF', surfaceHover: '#F5F5F5',
+  border: 'rgba(0,0,0,0.06)', text: '#1A1A1A',
   textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
   accent: '#1A1A1A', accentSoft: 'rgba(0,0,0,0.04)',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
@@ -246,7 +246,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         <div className="animate-fade-in" style={{
           position: 'fixed', bottom: 72, right: 24, width: 400, maxHeight: 'calc(100vh - 140px)',
           zIndex: 100, borderRadius: 16, overflow: 'hidden',
-          background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(60px) saturate(2)',
+          background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(40px)',
           WebkitBackdropFilter: 'blur(40px)', border: `1px solid ${T.border}`,
           boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
           display: 'flex', flexDirection: 'column',

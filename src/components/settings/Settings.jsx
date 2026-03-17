@@ -24,8 +24,8 @@ const SPEEDS = [
 const TABS = ['Profile', 'Kiko', 'Navigation', 'Team', 'Appearance', 'Accounts']
 
 const T = {
-  bg: 'transparent', surface: 'rgba(255,255,255,0.65)', surfaceHover: 'rgba(255,255,255,0.8)',
-  border: 'rgba(255,255,255,0.5)', borderHover: 'rgba(255,255,255,0.7)',
+  bg: '#FAFAFA', surface: '#FFFFFF', surfaceHover: '#F5F5F5',
+  border: 'rgba(0,0,0,0.06)', borderHover: 'rgba(0,0,0,0.12)',
   text: '#1A1A1A', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
   accent: '#1A1A1A', accentSoft: 'rgba(0,0,0,0.04)',
   radius: 16, radiusSm: 10,
