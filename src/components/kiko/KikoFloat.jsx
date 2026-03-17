@@ -148,9 +148,19 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         if (convId) {
           await supabase.from('conversations').update({ messages: allMsgs, updated_at: new Date().toISOString() }).eq('id', convId)
         } else {
+          // Auto-generate title via Haiku for new conversations
+          let autoTitle = msg.slice(0, 60)
+          try {
+            const tr = await fetch('/api/kiko', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'title', message: msg, response: full.slice(0, 300) })
+            })
+            const tj = await tr.json()
+            if (tj.title) autoTitle = tj.title
+          } catch {}
           const { data } = await supabase.from('conversations').insert({
             user_id: user.id, org_id: orgId,
-            title: msg.slice(0, 60), messages: allMsgs
+            title: autoTitle, messages: allMsgs
           }).select('id').single()
           if (data?.id) setConvId(data.id)
         }
@@ -242,7 +252,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
     return (
       <button onClick={() => setStage(1)} style={{
         position: 'fixed', bottom: 24, right: 24, zIndex: 100,
-        width: 52, height: 52, borderRadius: '50%',
+        width: 52, height: 52, borderRadius: 14,
         background: T.accent, border: 'none', color: '#fff',
         cursor: 'pointer', boxShadow: '0 10px 40px rgba(0,0,0,0.22), 0 3px 10px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.08)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -296,7 +306,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
             {messages.map((msg, i) => (
               <div key={i} style={{ marginBottom: 8, display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                 {msg.role !== 'user' && (
-                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
+                  <div style={{ width: 20, height: 20, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
                     <KikoSymbol size={12} color="#fff" />
                   </div>
                 )}
@@ -314,7 +324,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
             {/* Kiko thinking indicator — compact Concept C */}
             {streaming && !streamText && (
               <div style={{ marginBottom: 8, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                <div style={{ width: 20, height: 20, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                <div style={{ width: 20, height: 20, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
                   <KikoSymbol size={12} color="#fff" animate="thinking" />
                 </div>
                 <div style={{ maxWidth: '85%' }}>
@@ -332,7 +342,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
             )}
             {streaming && streamText && (
               <div style={{ marginBottom: 8, display: 'flex' }}>
-                <div style={{ width: 20, height: 20, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
+                <div style={{ width: 20, height: 20, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
                   <KikoSymbol size={12} color="#fff" animate="streaming" />
                 </div>
                 <div style={{ maxWidth: '80%', padding: '8px 12px', borderRadius: 8, background: T.accentSoft, fontSize: 12, color: T.textSecondary, lineHeight: 1.5, fontFamily: T.font }}>

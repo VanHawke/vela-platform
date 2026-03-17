@@ -153,16 +153,26 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       .catch(() => setLoadingAlerts(false))
   }, [])
 
-  const saveConversation = async (allMsgs, convId, title) => {
+  const saveConversation = async (allMsgs, convId, userMsg, kikoResponse) => {
     if (!user?.id) return convId
     try {
       if (convId) {
         await supabase.from('conversations').update({ messages: allMsgs, updated_at: new Date().toISOString() }).eq('id', convId)
         return convId
       }
+      // Auto-generate a smart title for new conversations
+      let autoTitle = (userMsg || 'New conversation').slice(0, 60)
+      try {
+        const tr = await fetch('/api/kiko', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'title', message: userMsg, response: (kikoResponse || '').slice(0, 300) })
+        })
+        const tj = await tr.json()
+        if (tj.title) autoTitle = tj.title
+      } catch {}
       const { data } = await supabase.from('conversations').insert({
         user_id: user.id, org_id: user.app_metadata?.org_id,
-        title: (title || 'New conversation').slice(0, 60),
+        title: autoTitle.slice(0, 60),
         messages: allMsgs
       }).select('id').single()
       return data?.id || null
@@ -232,7 +242,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       setToolStatus(null)
       const newId = await saveConversation(
         updated.map(m => ({ role: m.role, content: m.content })),
-        activeConvId, msg
+        activeConvId, msg, full
       )
       if (newId && !activeConvId) setActiveConvId(newId)
       // If Kiko requested navigation, sync conversation to Layout and navigate
@@ -431,7 +441,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {messages.map((msg, i) => (
             <div key={i} style={{ marginBottom: 12, display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
               {msg.role !== 'user' && (
-                <div style={{ width: 24, height: 24, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 10, marginTop: 4 }}>
+                <div style={{ width: 24, height: 24, borderRadius: 7, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 10, marginTop: 4 }}>
                   <KikoSymbol size={13} color="#fff" />
                 </div>
               )}
@@ -455,7 +465,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {/* Kiko thinking indicator — Concept C: breathing dot + progress + expandable steps */}
           {streaming && !streamText && (
             <div style={{ marginBottom: 12, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-              <div style={{ width: 24, height: 24, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 4 }}>
+              <div style={{ width: 24, height: 24, borderRadius: 7, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 4 }}>
                 <KikoSymbol size={13} color="#fff" animate="thinking" />
               </div>
               <div style={{ maxWidth: 320 }}>
@@ -500,7 +510,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {/* Streaming response */}
           {streaming && streamText && (
             <div style={{ marginBottom: 12, display: 'flex' }}>
-              <div style={{ width: 24, height: 24, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 10, marginTop: 4 }}>
+              <div style={{ width: 24, height: 24, borderRadius: 7, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 10, marginTop: 4 }}>
                 <KikoSymbol size={13} color="#fff" animate="streaming" />
               </div>
               <div style={{ maxWidth: '75%', padding: '12px 16px', borderRadius: T.radiusSm, background: T.accentSoft, fontSize: 13, color: T.textSecondary, lineHeight: 1.5, fontFamily: T.font }}>

@@ -240,8 +240,27 @@ export default async function handler(req, res) {
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const { message, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null } = req.body;
-  if (!message) return res.status(400).json({ error: 'message required' });
+  const { message, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null } = req.body;
+  if (!message && action !== 'title') return res.status(400).json({ error: 'message required' });
+
+  // ── Title generation: lightweight Haiku call, returns JSON immediately ──
+  if (action === 'title') {
+    try {
+      const { response: kikoResp } = req.body
+      const titleRes = await anthropic.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 20,
+        messages: [{
+          role: 'user',
+          content: `Generate a 3-5 word title for a chat that started with: "${(message || '').slice(0, 200)}". Reply with ONLY the title, no punctuation, no quotes.`
+        }]
+      })
+      const title = titleRes.content?.[0]?.text?.trim() || message?.slice(0, 40)
+      return res.status(200).json({ title })
+    } catch {
+      return res.status(200).json({ title: message?.slice(0, 40) })
+    }
+  }
 
   // Inject datetime + page context into system prompt
   const now = new Date();
