@@ -32,26 +32,59 @@ function AdminRoute({ children }) {
   return children
 }
 
+// Detect PKCE OAuth callback — URL has ?code= param (Supabase PKCE flow)
+// or legacy implicit flow — URL hash has access_token
+function isOAuthCallback() {
+  const params = new URLSearchParams(window.location.search)
+  return params.has('code') || window.location.hash.includes('access_token')
+}
+
 export default function App() {
-  // undefined = not yet determined (show spinner)
-  // null = no session (show login)
-  // object = authenticated (show platform)
+  // undefined = resolving (show spinner)
+  // null      = no session (show login)
+  // object    = authenticated (show platform)
   const [session, setSession] = useState(undefined)
   const [user, setUser] = useState(null)
 
   useEffect(() => {
-    // onAuthStateChange is the single source of truth.
-    // It fires INITIAL_SESSION on mount (handles existing sessions + OAuth redirects),
-    // SIGNED_IN after OAuth completes, SIGNED_OUT on logout.
-    // This eliminates the getSession() + onAuthStateChange race condition.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
-      setSession(sess ?? null)
-      setUser(sess?.user ?? null)
+    const onCallback = isOAuthCallback()
+
+    if (!onCallback) {
+      // Normal load: getSession() is fast (reads from storage), use it to
+      // set initial state immediately, then onAuthStateChange handles updates.
+      supabase.auth.getSession().then(({ data: { session: s } }) => {
+        setSession(s ?? null)
+        setUser(s?.user ?? null)
+      }).catch(() => {
+        setSession(null)
+      })
+    }
+    // If onCallback: stay in undefined (spinner) until SIGNED_IN fires below.
+    // This prevents the router flashing to /login while the PKCE code exchange runs.
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setSession(sess)
+        setUser(sess?.user ?? null)
+      } else if (event === 'SIGNED_OUT') {
+        setSession(null)
+        setUser(null)
+      } else if (event === 'INITIAL_SESSION') {
+        // Only use INITIAL_SESSION to resolve spinner on non-callback loads
+        // (on callback loads getSession() is skipped and we wait for SIGNED_IN)
+        if (onCallback && sess) {
+          setSession(sess)
+          setUser(sess?.user ?? null)
+        } else if (onCallback && !sess) {
+          // PKCE exchange in progress — stay as undefined (spinner), SIGNED_IN will follow
+        }
+        // non-callback: getSession() already handled it above
+      }
     })
+
     return () => subscription.unsubscribe()
   }, [])
 
-  // Spinner until INITIAL_SESSION fires (typically <100ms)
   if (session === undefined) {
     return (
       <div className="flex items-center justify-center h-screen" style={{ background: '#fff' }}>
