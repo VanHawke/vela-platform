@@ -34,62 +34,46 @@ function AdminRoute({ children }) {
 
 const Spinner = () => (
   <div className="flex items-center justify-center h-screen" style={{ background: '#fff' }}>
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-      <div style={{ width: 32, height: 32, borderRadius: 9, background: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ animation: 'spin 1.5s linear infinite' }}>
-          <circle cx="12" cy="12" r="3" fill="#fff"/>
-          <path d="M12 2C12 2 17 5.5 17 8.5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round"/>
-          <path d="M22 12C22 12 18.5 17 15.5 17" stroke="#fff" strokeWidth="2.2" strokeLinecap="round"/>
-          <path d="M12 22C12 22 7 18.5 7 15.5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round"/>
-          <path d="M2 12C2 12 5.5 7 8.5 7" stroke="#fff" strokeWidth="2.2" strokeLinecap="round"/>
-        </svg>
-      </div>
-      <p style={{ fontSize: 13, color: '#ABABAB', fontFamily: "'DM Sans', -apple-system, sans-serif" }}>Signing you in…</p>
-    </div>
+    <div className="h-6 w-6 border-2 border-black/10 border-t-[#1A1A1A] rounded-full animate-spin" />
   </div>
 )
 
 export default function App() {
-  // undefined = resolving | null = unauthenticated | object = authenticated
   const [session, setSession] = useState(undefined)
   const [user, setUser] = useState(null)
 
   useEffect(() => {
-    const init = async () => {
-      const code = new URLSearchParams(window.location.search).get('code')
+    // Is this an OAuth callback? (?code= means PKCE exchange is in progress)
+    const isOAuthCallback = new URLSearchParams(window.location.search).has('code')
 
-      if (code) {
-        // PKCE callback: exchange the code FIRST, then set session.
-        // This runs before any React Router rendering, preventing the /login flash.
-        try {
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-          if (error) throw error
-          // Clean the ?code= from the URL without a page reload
-          window.history.replaceState({}, '', window.location.pathname)
-          setSession(data.session)
-          setUser(data.session?.user ?? null)
-        } catch (err) {
-          console.error('PKCE exchange failed:', err)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
+      if (event === 'INITIAL_SESSION') {
+        if (sess) {
+          // Returning user with valid stored session — load immediately
+          setSession(sess)
+          setUser(sess.user)
+        } else if (!isOAuthCallback) {
+          // No session and not an OAuth callback — show login
           setSession(null)
+          setUser(null)
         }
-      } else {
-        // Normal load: read existing session from storage
-        const { data: { session: s } } = await supabase.auth.getSession()
-        setSession(s ?? null)
-        setUser(s?.user ?? null)
+        // If isOAuthCallback + no session: stay as undefined (spinner).
+        // Supabase is internally exchanging the ?code= via detectSessionInUrl.
+        // SIGNED_IN will fire when done — handled below.
+      } else if (event === 'SIGNED_IN') {
+        // Clean the ?code= from URL without reload
+        if (isOAuthCallback) {
+          window.history.replaceState({}, '', window.location.pathname)
+        }
+        setSession(sess)
+        setUser(sess?.user ?? null)
+      } else if (event === 'SIGNED_OUT') {
+        setSession(null)
+        setUser(null)
+      } else if (event === 'TOKEN_REFRESHED') {
+        setSession(sess)
+        setUser(sess?.user ?? null)
       }
-    }
-
-    init()
-
-    // Keep session in sync for sign-out and token refresh
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
-      // Only update if we're already resolved (avoid overwriting during init)
-      setSession(prev => {
-        if (prev === undefined) return prev // still initialising, let init() handle it
-        return sess ?? null
-      })
-      setUser(sess?.user ?? null)
     })
 
     return () => subscription.unsubscribe()
@@ -101,7 +85,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={session ? <Navigate to="/" replace /> : <LoginPage />} />
-        <Route path="/auth/callback" element={session ? <Navigate to="/" replace /> : <Navigate to="/login" replace />} />
+        <Route path="/auth/callback" element={<Navigate to="/" replace />} />
         <Route path="/admin" element={session ? <AdminRoute><Admin /></AdminRoute> : <Navigate to="/login" replace />} />
         <Route element={session ? <Layout key={user?.id || 'auth'} user={user} /> : <Navigate to="/login" replace />}>
           <Route index element={<KikoChat user={user} />} />
