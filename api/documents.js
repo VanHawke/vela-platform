@@ -66,17 +66,46 @@ async function extractText(storagePath, fileType, publicUrl) {
     return buffer.toString('utf-8').replace(/[^\x20-\x7E\n]/g, ' ').replace(/\s+/g, ' ').trim()
   }
 
-  // PDF → pdf-parse
+  // PDF → multiple fallbacks
   if (isPDF) {
+    // Method 1: pdf-parse (standard import)
     try {
-      console.log('[Documents] Using pdf-parse')
-      const { default: pdfParse } = await import('pdf-parse/lib/pdf-parse.js')
+      console.log('[Documents] Trying pdf-parse for PDF')
+      const pdfParse = (await import('pdf-parse')).default
       const data = await pdfParse(buffer)
-      return data.text || ''
-    } catch (e) {
-      console.log('[Documents] pdf-parse failed:', e.message)
-      throw new Error(`PDF parsing failed: ${e.message}`)
-    }
+      if (data.text?.trim().length > 20) { console.log(`[Documents] pdf-parse OK: ${data.text.length} chars`); return data.text }
+    } catch (e) { console.log('[Documents] pdf-parse standard import failed:', e.message) }
+
+    // Method 2: pdf-parse deep import
+    try {
+      console.log('[Documents] Trying pdf-parse deep import')
+      const pdfParse = (await import('pdf-parse/lib/pdf-parse.js')).default
+      const data = await pdfParse(buffer)
+      if (data.text?.trim().length > 20) { console.log(`[Documents] pdf-parse deep OK: ${data.text.length} chars`); return data.text }
+    } catch (e) { console.log('[Documents] pdf-parse deep import failed:', e.message) }
+
+    // Method 3: officeparser (handles PDF too)
+    try {
+      console.log('[Documents] Trying officeparser for PDF')
+      const { parseOffice } = await import('officeparser')
+      const ast = await parseOffice(buffer)
+      const text = ast.toText?.() || ''
+      if (text.trim().length > 20) { console.log(`[Documents] officeparser PDF OK: ${text.length} chars`); return text }
+    } catch (e) { console.log('[Documents] officeparser PDF failed:', e.message) }
+
+    // Method 4: Claude vision (convert PDF concept to image-based extraction)
+    console.log('[Documents] All PDF parsers failed, using Claude vision on raw content')
+    const { default: Anthropic } = await import('@anthropic-ai/sdk')
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY })
+    const base64 = buffer.toString('base64')
+    const r = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001', max_tokens: 4096,
+      messages: [{ role: 'user', content: [
+        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } },
+        { type: 'text', text: 'Extract ALL text from this PDF document. Include every heading, paragraph, number, statistic, and data point. Be comprehensive.' }
+      ] }],
+    })
+    return r.content[0]?.text || ''
   }
 
   // DOCX → mammoth
