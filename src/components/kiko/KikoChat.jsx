@@ -55,6 +55,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [streaming, setStreaming] = useState(false)
   const [streamText, setStreamText] = useState('')
   const [toolStatus, setToolStatus] = useState(null)
+  const [thinkingSteps, setThinkingSteps] = useState([])
+  const [showSteps, setShowSteps] = useState(false)
   const [voiceOpen, setVoiceOpen] = useState(false)
   const [micStream, setMicStream] = useState(null)
   const [historyOpen, setHistoryOpen] = useState(false)
@@ -172,6 +174,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     setStreaming(true)
     setStreamText('')
     setToolStatus(null)
+    setThinkingSteps([])
+    setShowSteps(false)
     try {
       const res = await fetch('/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -206,7 +210,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           try {
             const j = JSON.parse(d)
             if (j.delta) { full += j.delta; setStreamText(full) }
-            if (j.toolStatus !== undefined) setToolStatus(j.toolStatus)
+            if (j.toolStatus !== undefined) {
+              setToolStatus(j.toolStatus)
+              if (j.toolStatus) setThinkingSteps(prev => [...prev, { label: j.toolStatus, time: Date.now() }])
+            }
             if (j.navigate) {
               // Store pending navigation, execute after stream completes
               pendingNav = j.navigate
@@ -374,11 +381,48 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             </div>
           ))}
 
-          {/* Tool status */}
-          {toolStatus && (
-            <div style={{ padding: '8px 0', color: T.textTertiary, fontSize: 12, fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: T.textTertiary, animation: 'pulse 1s infinite' }} />
-              {toolStatus}
+          {/* Kiko thinking indicator — Concept C: breathing dot + progress + expandable steps */}
+          {streaming && !streamText && (
+            <div style={{ marginBottom: 12, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <div style={{ width: 24, height: 24, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 4 }}>
+                <KikoSymbol size={13} color="#fff" />
+              </div>
+              <div style={{ maxWidth: 320 }}>
+                {/* Main thinking bubble */}
+                <div style={{ padding: '10px 14px', borderRadius: T.radiusSm, background: T.accentSoft }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: T.accent, flexShrink: 0, animation: 'kikoBreathe 2s ease-in-out infinite' }} />
+                    <span style={{ fontSize: 12, color: T.textSecondary, fontFamily: T.font }}>
+                      {toolStatus || 'Kiko is thinking...'}
+                    </span>
+                  </div>
+                  {/* Progress bar */}
+                  <div style={{ height: 3, borderRadius: 2, background: 'rgba(0,0,0,0.06)', marginTop: 8, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', borderRadius: 2, background: T.accent, animation: 'kikoProgress 3s ease-in-out infinite', backgroundSize: '200% 100%', backgroundImage: `linear-gradient(90deg, ${T.accent} 0%, ${T.textSecondary} 50%, ${T.accent} 100%)` }} />
+                  </div>
+                </div>
+                {/* Expandable steps */}
+                {thinkingSteps.length > 0 && (
+                  <div style={{ marginTop: 4 }}>
+                    <button onClick={() => setShowSteps(!showSteps)} style={{ fontSize: 10, color: T.textTertiary, background: 'none', border: 'none', cursor: 'pointer', fontFamily: T.font, padding: '2px 0', textDecoration: 'underline', textUnderlineOffset: 2 }}>
+                      {showSteps ? 'Hide process' : `Show process (${thinkingSteps.length} steps)`}
+                    </button>
+                    {showSteps && (
+                      <div style={{ padding: '6px 10px', borderRadius: 8, background: T.accentSoft, border: `1px solid ${T.border}`, marginTop: 4 }}>
+                        {thinkingSteps.map((step, i) => {
+                          const isLast = i === thinkingSteps.length - 1
+                          return (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 0', fontSize: 11, color: T.textTertiary, fontFamily: T.font }}>
+                              <span style={{ width: 5, height: 5, borderRadius: '50%', flexShrink: 0, background: isLast ? '#007AFF' : '#34C759', animation: isLast ? 'pulse 1s infinite' : 'none' }} />
+                              <span style={{ color: isLast ? T.textSecondary : T.textTertiary }}>{step.label}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

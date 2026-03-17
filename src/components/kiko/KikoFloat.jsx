@@ -45,6 +45,8 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   const messages = sharedMessages || []
   const setMessages = setSharedMessages || (() => {})
   const [streaming, setStreaming] = useState(false)
+  const [toolStatus, setToolStatus] = useState(null)
+  const [thinkingSteps, setThinkingSteps] = useState([])
   const [streamText, setStreamText] = useState('')
   const [transcribing, setTranscribing] = useState(false)
   const [voiceOpen, setVoiceOpen] = useState(false)
@@ -95,6 +97,8 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
     setMessages(prev => [...prev, userMsg])
     setStreaming(true)
     setStreamText('')
+    setToolStatus(null)
+    setThinkingSteps([])
     try {
       const res = await fetch('/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -126,7 +130,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           if (!line.startsWith('data: ')) continue
           const d = line.slice(6)
           if (d === '[DONE]') continue
-          try { const j = JSON.parse(d); if (j.delta) { full += j.delta; setStreamText(full) }; if (j.navigate) navigate('/' + (j.navigate === 'home' ? '' : j.navigate)) } catch {}
+          try { const j = JSON.parse(d); if (j.delta) { full += j.delta; setStreamText(full) }; if (j.navigate) navigate('/' + (j.navigate === 'home' ? '' : j.navigate)); if (j.toolStatus !== undefined) { setToolStatus(j.toolStatus); if (j.toolStatus) setThinkingSteps(prev => [...prev, { label: j.toolStatus }]) } } catch {}
         }
       }
 
@@ -276,6 +280,25 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                 </div>
               </div>
             ))}
+            {/* Kiko thinking indicator — compact Concept C */}
+            {streaming && !streamText && (
+              <div style={{ marginBottom: 8, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                <div style={{ width: 20, height: 20, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                  <KikoSymbol size={12} color="#fff" />
+                </div>
+                <div style={{ maxWidth: '85%' }}>
+                  <div style={{ padding: '8px 12px', borderRadius: 8, background: T.accentSoft }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: T.accent, flexShrink: 0, animation: 'kikoBreathe 2s ease-in-out infinite' }} />
+                      <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: T.font }}>{toolStatus || 'Thinking...'}</span>
+                    </div>
+                    <div style={{ height: 2, borderRadius: 1, background: 'rgba(0,0,0,0.06)', marginTop: 6, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', borderRadius: 1, background: T.accent, animation: 'kikoProgress 3s ease-in-out infinite' }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             {streaming && streamText && (
               <div style={{ marginBottom: 8, display: 'flex' }}>
                 <div style={{ width: 20, height: 20, borderRadius: '50%', background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>

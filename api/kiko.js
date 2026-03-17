@@ -317,6 +317,7 @@ export default async function handler(req, res) {
       return await stream.finalMessage();
     }
 
+    write({ toolStatus: 'Thinking...' });
     let response = await streamedCall(messages);
     let toolRounds = 0;
     const MAX_ROUNDS = 8;
@@ -324,9 +325,21 @@ export default async function handler(req, res) {
     while (response.stop_reason === 'tool_use' && toolRounds < MAX_ROUNDS) {
       toolRounds++;
       const toolResults = [];
+      const TOOL_LABELS = {
+        search_contacts: 'Searching contacts', search_companies: 'Searching companies',
+        search_deals: 'Searching deals', get_entity_detail: 'Loading record details',
+        search_emails: 'Searching emails', get_email_thread: 'Reading email thread',
+        draft_email: 'Drafting email', get_email_analytics: 'Analysing email data',
+        get_calendar: 'Checking calendar', create_calendar_event: 'Creating event',
+        get_stale_contacts: 'Finding stale contacts', generate_followup: 'Generating follow-up',
+        get_followup_queue: 'Loading follow-up queue', get_alerts: 'Checking alerts',
+        get_news: 'Scanning news feed', get_partnership_matrix: 'Querying partnership matrix',
+        get_pipeline_notifications: 'Loading pipeline activity', navigate_page: 'Navigating',
+        web_search: 'Searching the web', memory: 'Checking memory',
+      };
       for (const block of response.content) {
         if (block.type === 'tool_use') {
-          write({ toolStatus: `${block.name}...` });
+          write({ toolStatus: TOOL_LABELS[block.name] || `Running ${block.name}` });
           const result = block.name === 'memory'
             ? await handleMemory(block.input)
             : await executeTool(block.name, block.input, userEmail);
