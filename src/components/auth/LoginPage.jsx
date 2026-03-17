@@ -72,7 +72,7 @@ export default function LoginPage() {
     <div style={{ display: 'flex', width: '100vw', height: '100vh', overflow: 'hidden', background: '#fff', fontFamily: T.font, position: 'relative' }}>
 
       {/* ── LEFT: Frosted glass auth panel ── */}
-      <div ref={leftRef} style={{
+      <div style={{
         flex: '0 0 55%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 40px',
         background: 'rgba(255,255,255,0.88)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
         zIndex: 2,
@@ -133,7 +133,7 @@ export default function LoginPage() {
         </div>
       </div>
       {/* ── RIGHT: Ambient vortex panel ── */}
-      <div ref={rightRef} style={{
+      <div style={{
         flex: '0 0 45%', display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: '#FAFAFA', overflow: 'hidden',
       }}>
