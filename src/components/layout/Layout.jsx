@@ -74,7 +74,7 @@ export default function Layout({ user }) {
 
       <Sidebar brandLogo={brandLogo} />
 
-      <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+      <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', paddingTop: 52 }}>
         <Outlet context={{ kikoMessages, setKikoMessages, kikoConvId, setKikoConvId, kikoNavigate, kikoResetKey }} />
       </main>
 

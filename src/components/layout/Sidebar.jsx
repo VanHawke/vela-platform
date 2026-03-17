@@ -1,19 +1,20 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Home, Users, Building2, GitBranch, Diamond, Mail, Newspaper, Grid3X3, Calendar, FileText, CheckSquare, Settings } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { Home, Users, Building2, GitBranch, Diamond, Mail, Newspaper, Grid3X3, Calendar, FileText, CheckSquare, Settings, LogOut } from 'lucide-react'
 
-const NAV = [
-  { id: 'home', label: 'Home', icon: Home, path: '/' },
-  { id: 'contacts', label: 'Contacts', icon: Users, path: '/contacts' },
-  { id: 'organisations', label: 'Organisations', icon: Building2, path: '/organisations' },
-  { id: 'pipeline', label: 'Deal Pipeline', icon: GitBranch, path: '/pipeline' },
-  // { id: 'deals', label: 'Deals', icon: Diamond, path: '/deals' },
-  { id: 'email', label: 'Email', icon: Mail, path: '/email' },
-  { id: 'news', label: 'News', icon: Newspaper, path: '/news' },
-  { id: 'partnership-matrix', label: 'Matrix', icon: Grid3X3, path: '/partnership-matrix' },
-  { id: 'calendar', label: 'Calendar', icon: Calendar, path: '/calendar' },
-  { id: 'documents', label: 'Documents', icon: FileText, path: '/documents' },
-  { id: 'tasks', label: 'Tasks', icon: CheckSquare, path: '/tasks' },
+const ICON_MAP = { Home, Users, Building2, GitBranch, Diamond, Mail, Newspaper, Grid3X3, Calendar, FileText, CheckSquare }
+const NAV_DEFAULTS = [
+  { id: 'home', label: 'Home', icon: 'Home', path: '/' },
+  { id: 'contacts', label: 'Contacts', icon: 'Users', path: '/contacts' },
+  { id: 'organisations', label: 'Organisations', icon: 'Building2', path: '/organisations' },
+  { id: 'pipeline', label: 'Deal Pipeline', icon: 'GitBranch', path: '/pipeline' },
+  { id: 'email', label: 'Email', icon: 'Mail', path: '/email' },
+  { id: 'news', label: 'News', icon: 'Newspaper', path: '/news' },
+  { id: 'partnership-matrix', label: 'Matrix', icon: 'Grid3X3', path: '/partnership-matrix' },
+  { id: 'calendar', label: 'Calendar', icon: 'Calendar', path: '/calendar' },
+  { id: 'documents', label: 'Documents', icon: 'FileText', path: '/documents' },
+  { id: 'tasks', label: 'Tasks', icon: 'CheckSquare', path: '/tasks' },
 ]
 
 const W_COLLAPSED = 44
@@ -23,6 +24,24 @@ export default function Sidebar({ brandLogo }) {
   const nav = useNavigate()
   const loc = useLocation()
   const [expanded, setExpanded] = useState(false)
+  const [navItems, setNavItems] = useState(NAV_DEFAULTS)
+
+  useEffect(() => {
+    const loadOrder = () => {
+      try {
+        const stored = localStorage.getItem('vela_nav_order')
+        if (stored) {
+          const order = JSON.parse(stored)
+          const ordered = order.map(o => NAV_DEFAULTS.find(n => n.id === o.id)).filter(Boolean)
+          const missing = NAV_DEFAULTS.filter(n => !order.find(o => o.id === n.id))
+          setNavItems([...ordered, ...missing])
+        }
+      } catch {}
+    }
+    loadOrder()
+    window.addEventListener('vela_nav_updated', loadOrder)
+    return () => window.removeEventListener('vela_nav_updated', loadOrder)
+  }, [])
 
   const isActive = (path) => loc.pathname === path || (path === '/' && loc.pathname === '/home')
   const w = expanded ? W_EXPANDED : W_COLLAPSED
@@ -53,8 +72,9 @@ export default function Sidebar({ brandLogo }) {
         )}
       </div>
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, padding: '0 8px' }}>
-        {NAV.map(item => {
-          const Icon = item.icon
+        {navItems.map(item => {
+          const Icon = typeof item.icon === 'string' ? ICON_MAP[item.icon] : item.icon
+          if (!Icon) return null
           const active = isActive(item.path)
           return (
             <button key={item.id} onClick={() => nav(item.path)} style={{ height: 34, borderRadius: 8, border: 'none', padding: '0 7px', background: active ? 'var(--accent-soft)' : 'transparent', color: active ? 'var(--text)' : 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s', overflow: 'hidden', whiteSpace: 'nowrap' }}
@@ -66,10 +86,16 @@ export default function Sidebar({ brandLogo }) {
           )
         })}
       </nav>
-      <div style={{ padding: '0 8px' }}>
+      <div style={{ padding: '0 8px', display: 'flex', flexDirection: 'column', gap: 2 }}>
         <button onClick={() => nav('/settings')} style={{ height: 34, borderRadius: 8, border: 'none', padding: '0 7px', width: '100%', background: loc.pathname === '/settings' ? 'var(--accent-soft)' : 'transparent', color: loc.pathname === '/settings' ? 'var(--text)' : 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s', overflow: 'hidden', whiteSpace: 'nowrap' }}>
           <Settings size={17} strokeWidth={1.8} style={{ flexShrink: 0 }} />
           {expanded && <span style={{ fontSize: 13, fontFamily: 'var(--font)' }}>Settings</span>}
+        </button>
+        <button onClick={async () => { await supabase.auth.signOut(); window.location.href = '/' }} style={{ height: 34, borderRadius: 8, border: 'none', padding: '0 7px', width: '100%', background: 'transparent', color: 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s', overflow: 'hidden', whiteSpace: 'nowrap' }}
+          onMouseOver={e => e.currentTarget.style.background = 'rgba(255,59,48,0.06)'}
+          onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
+          <LogOut size={17} strokeWidth={1.8} style={{ flexShrink: 0 }} />
+          {expanded && <span style={{ fontSize: 13, fontFamily: 'var(--font)', color: '#FF3B30' }}>Sign Out</span>}
         </button>
       </div>
     </aside>

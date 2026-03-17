@@ -21,7 +21,7 @@ const SPEEDS = [
   { id: 1.1, label: 'Brisk' },
   { id: 1.2, label: 'Fast' },
 ]
-const TABS = ['Profile', 'Kiko', 'Team', 'Appearance', 'Accounts']
+const TABS = ['Profile', 'Kiko', 'Navigation', 'Team', 'Appearance', 'Accounts']
 
 const T = {
   bg: '#FAFAFA', surface: '#FFFFFF', surfaceHover: '#F5F5F5',
@@ -44,6 +44,20 @@ export default function Settings({ user }) {
   const [inviteRole, setInviteRole] = useState('member')
   const [previewingVoice, setPreviewingVoice] = useState(null)
   const previewAudioRef = useState(null)
+
+  const DEFAULT_NAV = [
+    { id: 'home', label: 'Home' }, { id: 'contacts', label: 'Contacts' },
+    { id: 'organisations', label: 'Organisations' }, { id: 'pipeline', label: 'Deal Pipeline' },
+    { id: 'email', label: 'Email' }, { id: 'news', label: 'News' },
+    { id: 'partnership-matrix', label: 'Matrix' }, { id: 'calendar', label: 'Calendar' },
+    { id: 'documents', label: 'Documents' }, { id: 'tasks', label: 'Tasks' },
+  ]
+  const [navOrder, setNavOrder] = useState(DEFAULT_NAV)
+
+  useEffect(() => {
+    const stored = localStorage.getItem('vela_nav_order')
+    if (stored) try { setNavOrder(JSON.parse(stored)) } catch {}
+  }, [])
 
   const email = user?.email || ''
 
@@ -269,6 +283,40 @@ export default function Settings({ user }) {
               <p style={{ fontSize: 13, color: T.textTertiary, lineHeight: 1.5, margin: 0, fontFamily: T.font }}>
                 Kiko remembers preferences, decisions, and context across sessions. Memories are automatically extracted from conversations.
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* Navigation */}
+        {tab === 'Navigation' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Sidebar Order</h3>
+              <p style={{ fontSize: 12, color: T.textTertiary, margin: '0 0 16px', fontFamily: T.font }}>Drag items or use arrows to reorder the left navigation. Home always stays first.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {navOrder.map((item, i) => (
+                  <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: i === 0 ? T.accentSoft : T.surface, border: `1px solid ${T.border}` }}>
+                    <span style={{ fontSize: 11, color: T.textTertiary, width: 18, textAlign: 'center', fontWeight: 500 }}>{i + 1}</span>
+                    <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font }}>{item.label}</span>
+                    {i === 0 ? (
+                      <span style={{ fontSize: 9, color: T.textTertiary, padding: '2px 6px', borderRadius: 4, background: T.accentSoft }}>Fixed</span>
+                    ) : (
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <button disabled={i <= 1} onClick={() => {
+                          const n = [...navOrder]; [n[i], n[i-1]] = [n[i-1], n[i]]; setNavOrder(n);
+                          localStorage.setItem('vela_nav_order', JSON.stringify(n)); window.dispatchEvent(new Event('vela_nav_updated'))
+                        }} style={{ width: 24, height: 24, borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, cursor: i <= 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: i <= 1 ? 0.3 : 1, fontSize: 11, color: T.textSecondary }}>↑</button>
+                        <button disabled={i >= navOrder.length - 1} onClick={() => {
+                          const n = [...navOrder]; [n[i], n[i+1]] = [n[i+1], n[i]]; setNavOrder(n);
+                          localStorage.setItem('vela_nav_order', JSON.stringify(n)); window.dispatchEvent(new Event('vela_nav_updated'))
+                        }} style={{ width: 24, height: 24, borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, cursor: i >= navOrder.length - 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: i >= navOrder.length - 1 ? 0.3 : 1, fontSize: 11, color: T.textSecondary }}>↓</button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => { setNavOrder(DEFAULT_NAV); localStorage.setItem('vela_nav_order', JSON.stringify(DEFAULT_NAV)); window.dispatchEvent(new Event('vela_nav_updated')) }}
+                style={{ marginTop: 12, fontSize: 11, padding: '6px 12px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font }}>Reset to Default</button>
             </div>
           </div>
         )}
