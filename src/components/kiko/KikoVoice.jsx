@@ -386,9 +386,9 @@ RULES:
       {/* Glass popup card */}
       <div onClick={e => e.stopPropagation()} style={{
         width: 360, padding: '48px 40px 40px', borderRadius: 28,
-        background: 'rgba(255,255,255,0.88)',
-        backdropFilter: 'blur(40px) saturate(1.8)',
-        WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
+        background: 'rgba(255,255,255,0.6)',
+        backdropFilter: 'blur(60px) saturate(2)',
+        WebkitBackdropFilter: 'blur(60px) saturate(2)',
         border: '1px solid rgba(255,255,255,0.5)',
         boxShadow: '0 24px 80px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.04)',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20,

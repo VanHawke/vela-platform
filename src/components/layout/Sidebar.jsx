@@ -65,10 +65,11 @@ export default function Sidebar({ brandLogo, user, onHomeClick }) {
       onMouseLeave={() => setExpanded(false)}
       style={{
         width: w, minWidth: w, height: '100%',
-        background: 'rgba(255,255,255,0.72)',
-        backdropFilter: 'blur(40px) saturate(1.8)',
-        WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
-        borderRight: '1px solid var(--border)',
+        background: 'var(--glass-nav-bg)',
+        backdropFilter: 'var(--glass-nav-blur)',
+        WebkitBackdropFilter: 'var(--glass-nav-blur)',
+        borderRight: '0.5px solid var(--glass-nav-border)',
+        boxShadow: '6px 0 40px rgba(0,0,0,0.04), inset -1px 0 0 rgba(255,255,255,0.1)',
         display: 'flex', flexDirection: 'column', padding: '16px 0',
         flexShrink: 0,
         transition: 'width 0.2s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.2s cubic-bezier(0.4, 0, 0.2, 1)',

@@ -3,8 +3,8 @@ import { Send, X, Bold, Italic, Underline, Link, List, Loader2, Paperclip, XCirc
 import { supabase } from '@/lib/supabase'
 
 const T = {
-  bg: '#FAFAFA', surface: '#FFFFFF',
-  border: 'rgba(0,0,0,0.06)', borderHover: 'rgba(0,0,0,0.12)',
+  bg: 'transparent', surface: 'rgba(255,255,255,0.65)',
+  border: 'rgba(255,255,255,0.5)', borderHover: 'rgba(255,255,255,0.7)',
   text: '#1A1A1A', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
   accent: '#1A1A1A', accentSoft: 'rgba(0,0,0,0.04)', blue: '#007AFF',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",

@@ -69,16 +69,16 @@ export default function Layout({ user }) {
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', background: 'var(--bg)' }}>
+    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', background: 'var(--bg-gradient)' }}>
       {/* Floating top nav bar — glass with drop shadow */}
       <div style={{
         position: 'fixed', top: 12, left: '50%', transform: 'translateX(-50%)', zIndex: 200,
         display: 'flex', gap: 4, borderRadius: 20, padding: 4,
-        background: 'rgba(255,255,255,0.72)',
-        backdropFilter: 'blur(40px) saturate(1.8)',
-        WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
-        border: '1px solid rgba(255,255,255,0.5)',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.03)',
+        background: 'var(--glass-nav-bg)',
+        backdropFilter: 'var(--glass-nav-blur)',
+        WebkitBackdropFilter: 'var(--glass-nav-blur)',
+        border: '0.5px solid var(--glass-nav-border)',
+        boxShadow: 'var(--glass-nav-shadow)',
       }}>
         {topNav.map(item => {
           const active = loc.pathname === item.path || (item.path === '/' && loc.pathname === '/home')

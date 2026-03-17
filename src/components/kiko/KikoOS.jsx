@@ -203,9 +203,10 @@ export default function KikoOS({ user, onOpenVoice }) {
       width: 420, maxHeight: 'calc(100vh - 100px)',
       display: 'flex', flexDirection: 'column',
       borderRadius: 20, overflow: 'hidden',
-      background: 'rgba(255,255,255,0.95)',
-      backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-      border: '1px solid var(--border)',
+      background: 'rgba(255,255,255,0.6)',
+      backdropFilter: 'blur(60px) saturate(2)', WebkitBackdropFilter: 'blur(60px) saturate(2)',
+      border: '0.5px solid var(--glass-border)',
+      boxShadow: 'var(--glass-shadow)',
       boxShadow: '0 8px 40px rgba(0,0,0,0.12)',
       animation: 'slideUpFade 0.25s ease-out',
     }}>
