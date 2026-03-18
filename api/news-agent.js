@@ -25,10 +25,18 @@ const FEEDS = [
   { name: 'RacingNews365', url: 'https://racingnews365.com/feed/news.xml', category: 'f1_general' },
   // FIA / FORMULA E
   { name: 'FIA', url: 'https://www.fia.com/rss/news', category: 'f1_general' },
-  // GOOGLE NEWS — targeted sponsorship queries (catches team press releases via aggregation)
-  { name: 'GNews: F1 Sponsor', url: 'https://news.google.com/rss/search?q=F1+team+sponsor+partner+deal+2026&hl=en&gl=GB&ceid=GB:en', category: 'f1_sponsorship' },
+  // GOOGLE NEWS — targeted per-team sponsorship queries (primary fix for missing team news)
+  { name: 'GNews: Haas Sponsor', url: 'https://news.google.com/rss/search?q=%22Haas%22+%22F1%22+%22partner%22+OR+%22sponsor%22+OR+%22deal%22&hl=en&gl=GB&ceid=GB:en', category: 'f1_sponsorship' },
+  { name: 'GNews: Alpine Sponsor', url: 'https://news.google.com/rss/search?q=%22Alpine+F1%22+%22partner%22+OR+%22sponsor%22+OR+%22deal%22&hl=en&gl=GB&ceid=GB:en', category: 'f1_sponsorship' },
+  { name: 'GNews: Ferrari Sponsor', url: 'https://news.google.com/rss/search?q=%22Ferrari%22+%22F1%22+%22sponsor%22+OR+%22partner%22+OR+%22deal%22+2026&hl=en&gl=GB&ceid=GB:en', category: 'f1_sponsorship' },
+  { name: 'GNews: McLaren Sponsor', url: 'https://news.google.com/rss/search?q=%22McLaren%22+%22F1%22+%22sponsor%22+OR+%22partner%22+2026&hl=en&gl=GB&ceid=GB:en', category: 'f1_sponsorship' },
+  { name: 'GNews: Mercedes Sponsor', url: 'https://news.google.com/rss/search?q=%22Mercedes%22+%22F1%22+%22sponsor%22+OR+%22partner%22+2026&hl=en&gl=GB&ceid=GB:en', category: 'f1_sponsorship' },
+  { name: 'GNews: Red Bull Sponsor', url: 'https://news.google.com/rss/search?q=%22Red+Bull+Racing%22+%22sponsor%22+OR+%22partner%22+2026&hl=en&gl=GB&ceid=GB:en', category: 'f1_sponsorship' },
   { name: 'GNews: F1 Partnership', url: 'https://news.google.com/rss/search?q=Formula+1+sponsorship+partnership+announcement&hl=en&gl=US&ceid=US:en', category: 'f1_sponsorship' },
   { name: 'GNews: F1 Commercial', url: 'https://news.google.com/rss/search?q=%22F1+team%22+%22new+partner%22+OR+%22title+sponsor%22+OR+%22official+partner%22&hl=en&gl=GB&ceid=GB:en', category: 'f1_sponsorship' },
+  // PR NEWSWIRE — press release wires where teams publish directly
+  { name: 'PRN: F1 Motorsport', url: 'https://www.prnewswire.com/rss/news-releases-list.rss?category=SPT&subjectCode=SPT_F1&pageSize=50', category: 'f1_sponsorship' },
+  { name: 'PRN: Sports Sponsorship', url: 'https://www.prnewswire.com/rss/news-releases-list.rss?category=SPT&subjectCode=SPT_EM&pageSize=50', category: 'sports_sponsorship' },
 ];
 
 // Simple XML RSS parser (no dependencies)
