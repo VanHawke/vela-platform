@@ -85,6 +85,7 @@ TOOLS:
 - get_email_thread: Get full email thread by thread ID. Use after search_emails to read the full conversation.
 - draft_email: Create a Gmail draft. Use when user asks to draft, compose, or write an email. Saves in Gmail Drafts for review before sending. Always write in Sunny's direct, board-level tone. Auto-appends signature.
 - get_email_analytics: Analyse email communication patterns with a contact or company. Shows frequency, recency, engagement, staleness. Use for "how active is communication with X", "when did I last email X", "who should I follow up with".
+- get_outreach_intelligence: Analyse outreach messaging effectiveness — reply rates by approach, timing, persona, company. Use for "what messaging works", "reply rates", "how should I approach X", "optimal send time", "draft intelligence". Focus options: patterns, timing, persona, company, draft-context, recommendations.
 - get_calendar: Get upcoming calendar events. Use when user asks about schedule, meetings, what's next, or availability.
 - create_calendar_event: Create a calendar event/meeting. Use when user asks to schedule or book something. Timezone is Europe/London.
 - get_stale_contacts: Get contacts needing follow-up based on email intelligence. Returns staleness scores, momentum, relationship health. Use for "who should I follow up with", "stale contacts", "who needs attention".
@@ -106,6 +107,9 @@ TOOL USAGE RULES:
 - When user wants to read a full email thread → get_email_thread with the thread ID from search_emails results
 - "Draft an email" / "Write an email to" / "Compose a message" → draft_email. First search_contacts to find their email if not provided. Write concise, direct, board-level copy. Never use generic openers like "I hope this finds you well."
 - "How's our communication with X" / "When did I last email X" / "Email frequency with X" → get_email_analytics. Provides data-driven engagement insights.
+- "What messaging works" / "Reply rates" / "What approach should I use" / "How are my emails performing" / "Outreach patterns" → get_outreach_intelligence with focus "patterns" or "recommendations".
+- "Best time to send" / "When should I email" / "Optimal send time" → get_outreach_intelligence with focus "timing".
+- "How should I draft this email to X" / "Help me write to X" → FIRST get_outreach_intelligence with focus "draft-context", THEN draft_email using the patterns returned.
 - "What's on my calendar" / "What meetings do I have" / "Am I free on" → get_calendar
 - "Schedule a meeting" / "Book a call" / "Set up time with" → create_calendar_event. Ask for details if not provided.
 - "Who should I follow up with" / "Stale contacts" / "Who needs attention" → get_stale_contacts. Returns pre-computed intelligence scores.

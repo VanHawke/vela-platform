@@ -206,7 +206,7 @@ async function autoLink(intelligence, SB, h) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' })
-  const { action, storagePath, publicUrl, fileName, fileType, accessLevel, userEmail, query, team, category, documentId } = req.body
+  const { action, storagePath, publicUrl, fileName, fileType, accessLevel, userEmail, query, team, category, documentId, linkedCompanyId, linkedDealId, linkedTeam } = req.body
   const SB = process.env.VITE_SUPABASE_URL
   const SK = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
   if (!SB || !SK) return res.status(500).json({ error: 'Supabase not configured' })
@@ -239,7 +239,8 @@ export default async function handler(req, res) {
         category: category || intelligence.suggested_category || 'other',
         context: intelligence.detected_context || 'general',
         linked_entity: intelligence.detected_entity || null,
-        linked_team: links.linked_team, linked_company_id: links.linked_company_id,
+        linked_team: linkedTeam || links.linked_team, linked_company_id: linkedCompanyId || links.linked_company_id,
+        linked_deal_id: linkedDealId || null,
         source: 'upload', created_at: new Date().toISOString(),
       }
       const docRes = await fetch(`${SB}/rest/v1/documents`, {

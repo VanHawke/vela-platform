@@ -14,10 +14,10 @@ import ContactDetail from '@/pages/ContactDetail'
 import Organisations from '@/pages/Organisations'
 import Tasks from '@/pages/Tasks'
 import Documents from '@/pages/Documents'
-import Email from '@/pages/Email'
+import OutreachIntelligence from '@/pages/OutreachIntelligence'
 import News from '@/pages/News'
 import PartnershipMatrix from '@/pages/PartnershipMatrix'
-import Calendar from '@/pages/Calendar'
+import CommercialCalendar from '@/pages/CommercialCalendar'
 import VelaCode from '@/pages/VelaCode'
 import Admin from '@/pages/Admin'
 import MemoryConsole from '@/pages/MemoryConsole'
@@ -87,6 +87,10 @@ export default function App() {
       if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setSession(sess ?? null)
         setUser(sess?.user ?? null)
+        // Clean up hash fragment left by implicit flow token detection
+        if (sess && window.location.hash.includes('access_token')) {
+          window.history.replaceState(null, '', window.location.pathname)
+        }
       }
     })
     return () => subscription.unsubscribe()
@@ -111,10 +115,10 @@ export default function App() {
           <Route path="companies" element={<Navigate to="/organisations" replace />} />
           <Route path="deals" element={<Navigate to="/pipeline" replace />} />
           <Route path="tasks" element={<Tasks user={user} />} />
-          <Route path="email" element={<Email user={user} />} />
+          <Route path="email" element={<OutreachIntelligence user={user} />} />
           <Route path="news" element={<News user={user} />} />
           <Route path="partnership-matrix" element={<PartnershipMatrix user={user} />} />
-          <Route path="calendar" element={<Calendar user={user} />} />
+          <Route path="calendar" element={<CommercialCalendar user={user} />} />
           <Route path="documents" element={<Documents user={user} />} />
           <Route path="velacode" element={<VelaCode user={user} />} />
           <Route path="settings" element={<Settings user={user} />} />

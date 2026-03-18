@@ -1,24 +1,23 @@
-// AuthCallback — handles both implicit (hash) and PKCE (code) flows.
-// With implicit flow, detectSessionInUrl processes #access_token automatically.
-// This page is a safety fallback — it redirects to login or home.
+// AuthCallback — implicit flow.
+// detectSessionInUrl: true processes the #access_token hash fragment automatically.
+// This page just waits for the session to appear, then redirects home.
 import { useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 
 export default function AuthCallback() {
   useEffect(() => {
-    const run = async () => {
-      const code = new URLSearchParams(window.location.search).get('code')
-      if (code) {
-        // PKCE flow — exchange code for session
-        try {
-          await supabase.auth.exchangeCodeForSession(code)
-        } catch {}
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || (event === 'INITIAL_SESSION' && session)) {
+        subscription.unsubscribe()
+        window.location.replace('/')
       }
-      // Let onAuthStateChange handle the session, then navigate
-      const { data: { session } } = await supabase.auth.getSession()
-      window.location.replace(session ? '/' : '/login')
-    }
-    run()
+    })
+    // Fallback: if no session after 5s, go to login
+    const timer = setTimeout(() => {
+      subscription.unsubscribe()
+      window.location.replace('/login')
+    }, 5000)
+    return () => { subscription.unsubscribe(); clearTimeout(timer) }
   }, [])
 
   return (

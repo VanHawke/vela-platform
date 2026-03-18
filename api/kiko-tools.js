@@ -88,6 +88,12 @@ export const TOOL_DEFINITIONS = [
       query: { type: 'string', description: 'Contact name, email, or company domain to analyse. E.g. "haas", "john@acme.com", "decagon.ai"' },
       direction: { type: 'string', enum: ['all', 'sent', 'received'], description: 'Filter direction (default: all)' },
     }, required: ['query'] } },
+  { name: 'get_outreach_intelligence', description: 'Get outreach effectiveness patterns and recommendations. Use when user asks about messaging performance, reply rates, what approaches work, how to improve outreach, optimal send times, or draft intelligence. Returns data-driven patterns from scored outreach history.',
+    input_schema: { type: 'object', properties: {
+      focus: { type: 'string', description: 'What to analyse: "patterns" for messaging approach effectiveness, "timing" for send time analysis, "persona" for target persona performance, "company" for company-specific insights, "recommendations" for actionable next steps, "draft-context" for pre-draft intelligence on a specific target' },
+      company: { type: 'string', description: 'Optional: filter to a specific company' },
+      pipeline: { type: 'string', description: 'Optional: filter to a specific pipeline (e.g. "Haas F1")' },
+    }, required: ['focus'] } },
   { name: 'get_calendar', description: 'Get upcoming calendar events. Use when user asks about schedule, meetings, what\'s next, availability, or "what\'s on my calendar".',
     input_schema: { type: 'object', properties: {
       days: { type: 'number', description: 'Number of days ahead to look (default: 7)' },
@@ -344,6 +350,90 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com')
       // Fallback: live Gmail search if no pre-computed scores
       return `No pre-computed intelligence for "${q}". Run email analysis first, or ask me to search emails directly.`
     } catch(e) { return `Analytics error: ${e.message}` }
+  }
+
+  if (name === 'get_outreach_intelligence') {
+    const { focus, company, pipeline } = input
+    try {
+      let query = `${SB}/rest/v1/outreach_scores?org_id=eq.${ORG_ID}&order=sent_at.desc&limit=200`
+      if (company) query += `&company=ilike.*${encodeURIComponent(company)}*`
+      if (pipeline) query += `&pipeline=eq.${encodeURIComponent(pipeline)}`
+      const r = await fetch(query, { headers: h })
+      const scores = await r.json()
+      if (!scores?.length) return 'No outreach scores yet. The scoring engine runs daily at 9am — data will appear after the first run.'
+
+      const total = scores.length
+      const replied = scores.filter(s => s.outcome === 'replied')
+      const silence = scores.filter(s => s.outcome === 'silence')
+      const replyRate = total > 0 ? Math.round(replied.length / total * 100) : 0
+      const avgTimeToReply = replied.filter(s => s.time_to_reply_hours).reduce((a, s) => a + s.time_to_reply_hours, 0) / (replied.filter(s => s.time_to_reply_hours).length || 1)
+
+      if (focus === 'patterns' || focus === 'recommendations') {
+        // Group by messaging approach
+        const byApproach = {}
+        scores.forEach(s => {
+          const a = s.messaging_approach || 'unknown'
+          if (!byApproach[a]) byApproach[a] = { total: 0, replied: 0 }
+          byApproach[a].total++
+          if (s.outcome === 'replied') byApproach[a].replied++
+        })
+        const approachStats = Object.entries(byApproach).map(([a, d]) => `${a}: ${d.replied}/${d.total} replied (${Math.round(d.replied/d.total*100)}%)`).join('\n')
+
+        // Group by CTA type
+        const byCta = {}
+        scores.forEach(s => {
+          const c = s.cta_type || 'unknown'
+          if (!byCta[c]) byCta[c] = { total: 0, replied: 0 }
+          byCta[c].total++
+          if (s.outcome === 'replied') byCta[c].replied++
+        })
+        const ctaStats = Object.entries(byCta).map(([c, d]) => `${c}: ${d.replied}/${d.total} (${Math.round(d.replied/d.total*100)}%)`).join('\n')
+
+        return `OUTREACH INTELLIGENCE — ${total} emails scored\n\nOverall reply rate: ${replyRate}%\nAvg time to reply: ${Math.round(avgTimeToReply)}h\n\nBy messaging approach:\n${approachStats}\n\nBy CTA type:\n${ctaStats}\n\nSilent: ${silence.length} | Replied: ${replied.length} | Pending: ${scores.filter(s => s.outcome === 'pending').length}`
+      }
+
+      if (focus === 'timing') {
+        const byDay = {}; const byHour = {}
+        scores.forEach(s => {
+          const d = s.sent_day_of_week || 'Unknown'; const hr = s.sent_hour ?? -1
+          if (!byDay[d]) byDay[d] = { total: 0, replied: 0 }; byDay[d].total++; if (s.outcome === 'replied') byDay[d].replied++
+          if (hr >= 0) { const bucket = hr < 9 ? 'Before 9am' : hr < 12 ? '9am-12pm' : hr < 15 ? '12-3pm' : hr < 18 ? '3-6pm' : 'After 6pm'
+            if (!byHour[bucket]) byHour[bucket] = { total: 0, replied: 0 }; byHour[bucket].total++; if (s.outcome === 'replied') byHour[bucket].replied++ }
+        })
+        const dayStats = Object.entries(byDay).map(([d, v]) => `${d}: ${v.replied}/${v.total} (${Math.round(v.replied/v.total*100)}%)`).join('\n')
+        const hourStats = Object.entries(byHour).map(([h, v]) => `${h}: ${v.replied}/${v.total} (${Math.round(v.replied/v.total*100)}%)`).join('\n')
+        return `SEND TIMING ANALYSIS\n\nBy day:\n${dayStats}\n\nBy time window (UTC):\n${hourStats}`
+      }
+
+      if (focus === 'persona') {
+        const bySeniority = {}
+        scores.forEach(s => {
+          const p = s.persona_seniority || 'Unknown'
+          if (!bySeniority[p]) bySeniority[p] = { total: 0, replied: 0 }; bySeniority[p].total++; if (s.outcome === 'replied') bySeniority[p].replied++
+        })
+        return `PERSONA ANALYSIS\n\n${Object.entries(bySeniority).map(([p, v]) => `${p}: ${v.replied}/${v.total} (${Math.round(v.replied/v.total*100)}%)`).join('\n')}`
+      }
+
+      if (focus === 'company') {
+        const byCompany = {}
+        scores.forEach(s => {
+          const c = s.company || 'Unknown'
+          if (!byCompany[c]) byCompany[c] = { total: 0, replied: 0, lastSent: s.sent_at, outcome: s.outcome }; byCompany[c].total++; if (s.outcome === 'replied') byCompany[c].replied++
+        })
+        const sorted = Object.entries(byCompany).sort((a, b) => b[1].total - a[1].total).slice(0, 20)
+        return `COMPANY-LEVEL OUTREACH\n\n${sorted.map(([c, v]) => `${c}: ${v.total} sent, ${v.replied} replied (${Math.round(v.replied/v.total*100)}%)`).join('\n')}`
+      }
+
+      if (focus === 'draft-context') {
+        const best = replied.slice(0, 5)
+        const approaches = [...new Set(best.map(s => s.messaging_approach))].join(', ')
+        const avgWords = Math.round(best.reduce((a, s) => a + (s.body_word_count || 100), 0) / (best.length || 1))
+        const bestCta = [...new Set(best.map(s => s.cta_type))].join(', ')
+        return `DRAFT INTELLIGENCE\n\nBased on ${replied.length} successful emails:\n- Best approaches: ${approaches}\n- Optimal length: ~${avgWords} words\n- Effective CTAs: ${bestCta}\n- Avg subject words: ${Math.round(best.reduce((a, s) => a + (s.subject_word_count || 5), 0) / (best.length || 1))}\n- Reply rate: ${replyRate}%`
+      }
+
+      return `Outreach data: ${total} scored, ${replyRate}% reply rate. Ask about "patterns", "timing", "persona", "company", or "draft-context" for specific analysis.`
+    } catch (err) { return `Outreach intelligence error: ${err.message}` }
   }
 
   if (name === 'get_calendar') return await getCalendar(input, userEmail)

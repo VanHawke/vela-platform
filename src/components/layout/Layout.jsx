@@ -9,10 +9,10 @@ const ALL_TOP_NAV = [
   { id: 'contacts', label: 'Contacts', path: '/contacts' },
   { id: 'organisations', label: 'Organisations', path: '/organisations' },
   { id: 'pipeline', label: 'Deal Pipeline', path: '/pipeline' },
-  { id: 'email', label: 'Email', path: '/email' },
+  { id: 'email', label: 'Outreach', path: '/email' },
   { id: 'news', label: 'News', path: '/news' },
   { id: 'partnership-matrix', label: 'Matrix', path: '/partnership-matrix' },
-  { id: 'calendar', label: 'Calendar', path: '/calendar' },
+  { id: 'calendar', label: 'Commercial Calendar', path: '/calendar' },
   { id: 'documents', label: 'Documents', path: '/documents' },
   { id: 'tasks', label: 'Tasks', path: '/tasks' },
   { id: 'dashboard', label: 'Dashboard', path: '/dashboard' },
@@ -30,20 +30,16 @@ export default function Layout({ user }) {
   const [logoExpanded, setLogoExpanded] = useState(null)
   useEffect(() => {
     if (!user?.id) return
-    supabase.from('user_settings').select('platform_logo_url, sidebar_expanded_logo_url').eq('user_id', user.id).single()
-      .then(({ data }) => {
-        if (data?.platform_logo_url) setLogoIcon(data.platform_logo_url)
-        if (data?.sidebar_expanded_logo_url) setLogoExpanded(data.sidebar_expanded_logo_url)
-      })
-    const onUpdate = () => {
-      supabase.from('user_settings').select('platform_logo_url, sidebar_expanded_logo_url').eq('user_id', user.id).single()
+    const fetchBranding = () => {
+      supabase.from('user_settings').select('platform_logo_url, sidebar_expanded_logo_url').single()
         .then(({ data }) => {
           if (data?.platform_logo_url) setLogoIcon(data.platform_logo_url)
           if (data?.sidebar_expanded_logo_url) setLogoExpanded(data.sidebar_expanded_logo_url)
         })
     }
-    window.addEventListener('vela_profile_updated', onUpdate)
-    return () => window.removeEventListener('vela_profile_updated', onUpdate)
+    fetchBranding()
+    window.addEventListener('vela_profile_updated', fetchBranding)
+    return () => window.removeEventListener('vela_profile_updated', fetchBranding)
   }, [user?.id])
 
   // Top nav config

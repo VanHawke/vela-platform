@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { Plus, Search, X, Building2, Globe, ChevronLeft, ChevronRight, Users, Linkedin, Send, ExternalLink, ChevronDown, RefreshCw } from 'lucide-react'
+import DocumentSection from '@/components/documents/DocumentSection'
 
 const PAGE_SIZE = 50
 
@@ -862,6 +863,11 @@ export default function Organisations({ user }) {
                   </div>
                 ) : <p style={emptyText}>No recent signals found</p>}
               </div>
+              <DocumentSection
+                linkedCompanyId={selectedOrg?.id}
+                companyName={selectedOrg?.name}
+                entityLabel="Documents"
+              />
             </div>
           )}
         </div>

@@ -73,7 +73,7 @@ export default function LoginPage() {
       provider: 'google',
       options: {
         scopes: 'openid email profile https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/calendar',
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/login`,
         queryParams: { access_type: 'offline', prompt: 'consent' },
       }
     })

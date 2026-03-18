@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Mail, Phone, Linkedin, Building2, Clock, Edit3, X, ExternalLink, Send, Inbox, CalendarCheck, ChevronRight } from 'lucide-react'
+import DocumentSection from '@/components/documents/DocumentSection'
 
 export default function ContactDetail() {
   const { id } = useParams()
@@ -368,6 +369,11 @@ export default function ContactDetail() {
               <p style={emptyText}>No correspondence logged yet — data will appear as emails and messages are sent</p>
             )}
           </div>
+          <DocumentSection
+            linkedCompanyId={orgId}
+            companyName={contact?.company}
+            entityLabel="Documents"
+          />
         </div>
       </div>
     </div>

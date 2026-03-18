@@ -10,10 +10,10 @@ const NAV_DEFAULTS = [
   { id: 'contacts', label: 'Contacts', icon: 'Users', path: '/contacts' },
   { id: 'organisations', label: 'Organisations', icon: 'Building2', path: '/organisations' },
   { id: 'pipeline', label: 'Deal Pipeline', icon: 'GitBranch', path: '/pipeline' },
-  { id: 'email', label: 'Email', icon: 'Mail', path: '/email' },
+  { id: 'email', label: 'Outreach', icon: 'Mail', path: '/email' },
   { id: 'news', label: 'News', icon: 'Newspaper', path: '/news' },
   { id: 'partnership-matrix', label: 'Matrix', icon: 'Grid3X3', path: '/partnership-matrix' },
-  { id: 'calendar', label: 'Calendar', icon: 'Calendar', path: '/calendar' },
+  { id: 'calendar', label: 'Commercial Cal.', icon: 'Calendar', path: '/calendar' },
   { id: 'documents', label: 'Library', icon: 'FileText', path: '/documents' },
   { id: 'tasks', label: 'Tasks', icon: 'CheckSquare', path: '/tasks' },
 ]

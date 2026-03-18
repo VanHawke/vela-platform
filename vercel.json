@@ -1,8 +1,8 @@
 {
   "crons": [
     { "path": "/api/cron-enrich", "schedule": "0 6 * * *" },
-    { "path": "/api/cron-email-sync", "schedule": "*/5 * * * *" },
-    { "path": "/api/news-agent", "schedule": "*/30 * * * *" },
+    { "path": "/api/news-agent", "schedule": "0 8 * * *" },
+    { "path": "/api/cron-outreach-score", "schedule": "0 9 * * *" },
     { "path": "/api/cron-partnership-scan", "schedule": "0 7 * * *" },
     { "path": "/api/cron-document-scan", "schedule": "0 6 * * 0" }
   ],
@@ -21,7 +21,8 @@
     "api/enrich-companies.js": { "maxDuration": 60 },
     "api/lemlist-find-email.js": { "maxDuration": 60 },
     "api/cron-enrich.js": { "maxDuration": 60 },
-    "api/cron-email-sync.js": { "maxDuration": 30 },
+    "api/cron-email-sync.js": { "maxDuration": 15 },
+    "api/cron-outreach-score.js": { "maxDuration": 60 },
     "api/cron-partnership-scan.js": { "maxDuration": 60 },
     "api/documents.js": { "maxDuration": 60 },
     "api/cron-document-scan.js": { "maxDuration": 60 }

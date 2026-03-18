@@ -61,10 +61,49 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   const dragCountRef    = useRef(0)
 
   useEffect(() => { listenModeRef.current = listenMode }, [listenMode])
-  useEffect(() => { connectRealtime(); return () => { cleanup(); stopKeyword() } }, [])
+  useEffect(() => { connectRealtime(); return () => { cleanup(); stopKeyword(); stopLiveTranscription() } }, [])
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [messages])
+
+  // ── Live browser-side transcription (Web Speech API) ──
+  const startLiveTranscription = useCallback(() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SR) return
+    stopLiveTranscription()
+    const sr = new SR()
+    sr.continuous = true
+    sr.interimResults = true
+    sr.lang = 'en-US'
+    liveSrRef.current = sr
+    let finalText = ''
+    sr.onresult = e => {
+      let interim = ''
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript
+        if (e.results[i].isFinal) {
+          finalText = t.trim()
+          if (finalText) addMessage('user', finalText)
+          setTranscript('')
+        } else {
+          interim += t
+        }
+      }
+      if (interim) setTranscript(interim)
+    }
+    sr.onerror = () => {} // ignore errors, will auto-restart
+    sr.onend = () => {
+      // Auto-restart if still in active mode
+      if (listenModeRef.current === 'active' && liveSrRef.current === sr) {
+        try { sr.start() } catch {}
+      }
+    }
+    try { sr.start() } catch {}
+  }, [])
+
+  const stopLiveTranscription = useCallback(() => {
+    if (liveSrRef.current) { try { liveSrRef.current.abort() } catch {} liveSrRef.current = null }
+  }, [])
 
   // ── Timers ───────────────────────────────────────────
   const clearTimers = useCallback(() => {
@@ -89,23 +128,26 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
       }))
     }
     startTimers()
-  }, [startTimers])
+    startLiveTranscription()
+  }, [startTimers, startLiveTranscription])
 
   const enterPassive = useCallback(() => {
     if (listenModeRef.current === 'off') return
     setListenMode('passive'); listenModeRef.current = 'passive'
     setTranscript(''); setKikoText(''); setSpeaking(false); setThinking(false)
+    stopLiveTranscription()
     if (dcRef.current?.readyState === 'open') {
       dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: { type: 'none' } } }))
     }
-  }, [])
+  }, [stopLiveTranscription])
 
   const enterOff = useCallback(() => {
     setListenMode('off'); listenModeRef.current = 'off'
     setTranscript(''); setKikoText(''); setSpeaking(false); setThinking(false)
+    stopLiveTranscription()
     if (streamRef.current) streamRef.current.getTracks().forEach(t => t.enabled = false)
     startKeyword()
-  }, [])
+  }, [stopLiveTranscription])
 
   const startKeyword = useCallback(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -136,7 +178,8 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
       }))
     }
     startTimers()
-  }, [startTimers, stopKeyword])
+    startLiveTranscription()
+  }, [startTimers, stopKeyword, startLiveTranscription])
 
   // ── Connect ──────────────────────────────────────────
   async function connectRealtime() {
@@ -196,6 +239,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
           }
         }))
         startTimers()
+        startLiveTranscription()
       }
       dc.onclose = () => setStatus('connecting')
       dc.onmessage = e => { try { handleEvent(JSON.parse(e.data)) } catch {} }
@@ -336,6 +380,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   async function handleFileAttach(file) {
     if (!file || uploading) return
     setUploading(true)
+    setAttachedFile({ name: file.name, status: 'uploading' })
     try {
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
       const safeEmail = (user?.email || 'user').replace(/[^a-zA-Z0-9]/g, '_')
@@ -343,19 +388,29 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
       const { error: upErr } = await supabase.storage.from('vela-assets').upload(path, file)
       if (upErr) throw new Error(upErr.message)
       const { data: { publicUrl } } = supabase.storage.from('vela-assets').getPublicUrl(path)
+      setAttachedFile({ name: file.name, status: 'analysing' })
       const res = await fetch('/api/documents', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'process', storagePath: path, publicUrl, fileName: file.name, fileType: file.type, accessLevel: 'workspace', userEmail: user?.email }) })
       const result = await res.json()
+      if (!res.ok) throw new Error(result.error || 'Processing failed')
       const intel = result.intelligence || {}
+      const category = intel.suggested_category || 'other'
+      const linkedTo = intel.detected_entity || intel.detected_team || intel.detected_company || null
       const summary = [intel.summary, intel.positioning].filter(Boolean).join(' ').slice(0, 500) || `File "${file.name}" uploaded.`
-      setAttachedFile({ name: file.name })
-      addMessage('user', `📎 Attached: ${file.name}`)
-      const contextMsg = `I've attached "${file.name}". Summary: ${summary}. Topics: ${(intel.key_topics || intel.talking_points || []).slice(0,5).join(', ')}. Discuss this document with me.`
+      // Update attachment state with result
+      setAttachedFile({ name: file.name, status: 'ready', category, linkedTo, summary: intel.summary })
+      // Add structured message to transcript
+      addMessage('user', `📎 ${file.name} — ${category}${linkedTo ? ` · ${linkedTo}` : ''}`)
+      // Inject rich context for Kiko to discuss
+      const contextMsg = `I've attached "${file.name}" (${category}). Summary: ${summary}. Key stats: ${(intel.key_stats || []).slice(0,5).join(', ')}. Topics: ${(intel.talking_points || []).slice(0,5).join(', ')}. Discuss this document with me.`
       if (dcRef.current?.readyState === 'open') {
         dcRef.current.send(JSON.stringify({ type: 'conversation.item.create', item: { type: 'message', role: 'user', content: [{ type: 'input_text', text: contextMsg }] } }))
         dcRef.current.send(JSON.stringify({ type: 'response.create' }))
       }
-    } catch (err) { addMessage('kiko', `Couldn't process that file: ${err.message}`) }
+    } catch (err) {
+      setAttachedFile(null)
+      addMessage('kiko', `Couldn't process that file: ${err.message}`)
+    }
     finally { setUploading(false) }
   }
 
@@ -367,6 +422,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
 
   function cleanup() {
     clearTimers()
+    stopLiveTranscription()
     if (dcRef.current)     { try { dcRef.current.close()  } catch {} }
     if (pcRef.current)     { try { pcRef.current.close()  } catch {} }
     if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()) }
@@ -470,10 +526,14 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
           </button>
 
           {attachedFile && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px 3px 7px', borderRadius: 20, background: 'rgba(0,0,0,0.06)', border: '0.5px solid rgba(0,0,0,0.09)', fontSize: 11, color: 'rgba(0,0,0,0.5)', maxWidth: 140, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 0 }}>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              {attachedFile.name}
-              <button onClick={() => setAttachedFile(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.3)', padding: 0, lineHeight: 1 }}>×</button>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px 3px 7px', borderRadius: 20, background: attachedFile.status === 'ready' ? 'rgba(52,199,89,0.08)' : 'rgba(0,0,0,0.06)', border: `0.5px solid ${attachedFile.status === 'ready' ? 'rgba(52,199,89,0.2)' : 'rgba(0,0,0,0.09)'}`, fontSize: 11, color: attachedFile.status === 'ready' ? '#34C759' : 'rgba(0,0,0,0.5)', maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 0 }}>
+              {attachedFile.status === 'uploading' && <Loader2 style={{ width: 10, height: 10, animation: 'spin 1s linear infinite', flexShrink: 0 }} />}
+              {attachedFile.status === 'analysing' && <Loader2 style={{ width: 10, height: 10, animation: 'spin 1s linear infinite', flexShrink: 0, color: '#007AFF' }} />}
+              {attachedFile.status === 'ready' && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+              {!attachedFile.status && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>}
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{attachedFile.status === 'uploading' ? 'Uploading…' : attachedFile.status === 'analysing' ? 'Analysing…' : attachedFile.name}</span>
+              {attachedFile.category && <span style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em', opacity: 0.7 }}>{attachedFile.category}</span>}
+              <button onClick={() => setAttachedFile(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: 0, lineHeight: 1, opacity: 0.5 }}>×</button>
             </div>
           )}
 

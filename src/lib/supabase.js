@@ -8,6 +8,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    flowType: 'pkce',
+    flowType: 'implicit',
+    // Bypass navigator.locks — prevents auth lock contention that blocks
+    // data queries from getting the Bearer token during initialization.
+    // Safe for single-user SPA (no cross-tab session sync needed).
+    lock: async (name, acquireTimeout, fn) => fn(),
   },
 })

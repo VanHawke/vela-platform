@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { ChevronDown, Clock, User, Building2, GripVertical, X, Send, Users, ExternalLink } from 'lucide-react'
+import DocumentSection from '@/components/documents/DocumentSection'
 
 const PIPELINES = ['Haas F1', 'Alpine F1', 'Formula E', 'ONE Championship', 'Esports']
 
@@ -363,6 +364,13 @@ export default function Pipeline({ user }) {
                 </div>
               ) : <p style={emptyText}>No campaigns linked</p>}
             </div>
+            <DocumentSection
+              linkedDealId={selectedDeal?._id}
+              linkedCompanyId={dealCompany?.id}
+              companyName={selectedDeal?.company}
+              linkedTeam={selectedDeal?.pipeline}
+              entityLabel="Documents"
+            />
           </div>
         )}
       </div>
