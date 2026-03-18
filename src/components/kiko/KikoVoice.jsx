@@ -158,6 +158,18 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
         }
       }
 
+      // Step 1: Get ephemeral token from server (keeps API key off the browser)
+      const tokenRes = await fetch('/api/voice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'realtime-token', voice: voiceId }),
+      })
+      const tokenData = await tokenRes.json()
+      if (!tokenRes.ok) throw new Error(tokenData.error?.message || 'Token failed')
+      // client_secrets returns { value: "ek_..." } at top level
+      const ephemeralKey = tokenData.value || tokenData.client_secret?.value
+      if (!ephemeralKey) throw new Error('No ephemeral key returned: ' + JSON.stringify(tokenData).slice(0, 200))
+
       const stream = micStream || await navigator.mediaDevices.getUserMedia({ audio: true })
       streamRef.current = stream
       const pc = new RTCPeerConnection(); pcRef.current = pc
@@ -190,19 +202,23 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
 
       const offer = await pc.createOffer(); await pc.setLocalDescription(offer)
 
-      // Route SDP through server proxy — server uses multipart form + standard API key.
-      // This is the correct architecture per OpenAI docs: browser never calls OpenAI directly for SDP.
-      const sdpRes = await fetch('/api/voice', {
+      // Step 2: Browser sends raw SDP directly to OpenAI using ephemeral key.
+      // Per OpenAI docs: ephemeral tokens are designed for browser use with Content-Type: application/sdp.
+      // No multipart needed — that's only for server-side standard API key calls.
+      const sdpRes = await fetch('https://api.openai.com/v1/realtime/calls', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'realtime-sdp', sdp: offer.sdp, voice: voiceId }),
+        headers: {
+          'Authorization': `Bearer ${ephemeralKey}`,
+          'Content-Type': 'application/sdp',
+        },
+        body: offer.sdp,
       })
       if (!sdpRes.ok) {
         const errText = await sdpRes.text()
         console.error('[Kiko Voice] SDP error:', sdpRes.status, errText)
         throw new Error(`SDP ${sdpRes.status}: ${errText}`)
       }
-      const { sdp: answerSdp } = await sdpRes.json()
+      const answerSdp = await sdpRes.text()
       await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp })
     } catch (err) { setError(err.message); setStatus('error') }
   }

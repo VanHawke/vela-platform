@@ -84,6 +84,9 @@ export default async function handler(req, res) {
   if (action === 'realtime-token') {
     const voiceId = req.body.voice || 'shimmer';
     try {
+      // POST /v1/realtime/client_secrets — returns { value: "ek_...", ... }
+      // The ephemeral key (value) is used by the browser to call /v1/realtime/calls directly
+      // with Content-Type: application/sdp. Ephemeral keys are designed for browser use.
       const response = await fetch('https://api.openai.com/v1/realtime/client_secrets', {
         method: 'POST',
         headers: {
@@ -95,16 +98,17 @@ export default async function handler(req, res) {
             type: 'realtime',
             model: 'gpt-realtime',
             audio: {
-              output: { voice: voiceId }
+              output: { voice: voiceId },
             },
           }
         })
       });
       const data = await response.json();
       if (!response.ok) {
-        console.error('[Voice] client_secrets error:', response.status, data);
+        console.error('[Voice] client_secrets error:', response.status, JSON.stringify(data));
         return res.status(response.status).json(data);
       }
+      console.log('[Voice] client_secrets success, key prefix:', data.value?.slice(0, 8));
       return res.status(200).json(data);
     } catch (err) {
       console.error('[Voice] Realtime token error:', err.message);
@@ -112,54 +116,12 @@ export default async function handler(req, res) {
     }
   }
 
-  // Mode 3b — SDP proxy for WebRTC call establishment
-  // Client sends raw SDP offer as text body, server uses multipart form to OpenAI.
-  // Per OpenAI docs: POST /v1/realtime/calls requires multipart with sdp + session fields.
-  // Standard API key is used server-side — never exposed to browser.
+  // Mode 3b — SDP proxy: NOT USED in current architecture.
+  // Current flow: browser gets ephemeral token via realtime-token, then calls
+  // OpenAI /v1/realtime/calls directly with Content-Type: application/sdp.
+  // This server-side proxy route is kept as a fallback only.
   if (action === 'realtime-sdp') {
-    const { sdp, voice } = req.body;
-    if (!sdp) return res.status(400).json({ error: 'sdp required' });
-
-    try {
-      // Build multipart form exactly as OpenAI API reference specifies:
-      // -F "sdp=<offer.sdp;type=application/sdp"
-      // -F 'session={"type":"realtime","model":"gpt-realtime"};type=application/json'
-      // Node 18+ has native FormData and Blob globally
-      const form = new FormData();
-      form.append('sdp', new Blob([sdp], { type: 'application/sdp' }), 'offer.sdp');
-
-      const sessionConfig = JSON.stringify({
-        type: 'realtime',
-        model: 'gpt-realtime',
-        audio: {
-          output: { voice: voice || 'shimmer' },
-          input: {
-            transcription: { model: 'whisper-1' },
-            turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
-          },
-        },
-      });
-      const sessionBlob = new Blob([sessionConfig], { type: 'application/json' });
-      form.append('session', sessionBlob, 'session.json');
-
-      const sdpResponse = await fetch('https://api.openai.com/v1/realtime/calls', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${process.env.OPENAI_KEY}` },
-        body: form,
-      });
-
-      if (!sdpResponse.ok) {
-        const errBody = await sdpResponse.text();
-        console.error('[Voice] SDP exchange error:', sdpResponse.status, errBody);
-        return res.status(sdpResponse.status).json({ error: `OpenAI ${sdpResponse.status}: ${errBody}` });
-      }
-
-      const answerSdp = await sdpResponse.text();
-      return res.status(200).json({ sdp: answerSdp });
-    } catch (err) {
-      console.error('[Voice] SDP exchange error:', err.message);
-      return res.status(500).json({ error: err.message });
-    }
+    return res.status(400).json({ error: 'Use realtime-token flow: get ephemeral key, call OpenAI directly from browser.' });
   }
 
   // Mem0 — store voice exchange in memory
