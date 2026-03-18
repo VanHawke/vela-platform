@@ -54,7 +54,8 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   const listenModeRef   = useRef('active')
   const passiveTimerRef = useRef(null)
   const offTimerRef     = useRef(null)
-  const srRef           = useRef(null)
+  const srRef           = useRef(null)   // keyword detection (off mode)
+  const liveSrRef       = useRef(null)   // live transcription (active mode)
   const scrollRef       = useRef(null)
   const fileInputRef    = useRef(null)
   const dragCountRef    = useRef(0)
@@ -84,7 +85,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     if (dcRef.current?.readyState === 'open') {
       dcRef.current.send(JSON.stringify({
         type: 'session.update',
-        session: { audio: { input: { transcription: { model: 'whisper-1' }, turn_detection: VAD_ON } } }
+        session: { input_audio_transcription: { model: 'whisper-1' }, turn_detection: VAD_ON }
       }))
     }
     startTimers()
@@ -131,7 +132,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     if (dcRef.current?.readyState === 'open') {
       dcRef.current.send(JSON.stringify({
         type: 'session.update',
-        session: { audio: { input: { transcription: { model: 'whisper-1' }, turn_detection: VAD_ON } } }
+        session: { input_audio_transcription: { model: 'whisper-1' }, turn_detection: VAD_ON }
       }))
     }
     startTimers()
@@ -172,19 +173,14 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
 
       dc.onopen = () => {
         setStatus('live')
-        // ── CRITICAL: GA Realtime API requires transcription nested under audio.input ──
-        // (top-level input_audio_transcription was the OLD beta format — does NOT work here)
+        // ── Session config: data channel accepts flat input_audio_transcription ──
         dc.send(JSON.stringify({
           type: 'session.update',
           session: {
             instructions: `You are Kiko — the intelligence layer of Vela for Van Hawke Group. Speaking with Sunny Sidhu, CEO, Weybridge UK. Sharp, warm, confident advisor. Speak naturally. Keep responses concise. All financials in USD. Use "intelligent age" not "AI generation". When hearing "Hey Kiko" in passive mode, acknowledge warmly and resume. Reference any attached documents when relevant.${memoriesContext}${platformContext}`,
-            audio: {
-              input: {
-                transcription: { model: 'whisper-1' },
-                turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
-              },
-              output: { voice: voiceId }
-            },
+            voice: voiceId,
+            input_audio_transcription: { model: 'whisper-1' },
+            turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
             tools: [
               { type: 'function', name: 'search_web', description: 'Search the internet.', parameters: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] } },
               { type: 'function', name: 'get_crm_data', description: 'Query CRM.', parameters: { type: 'object', properties: { entity: { type: 'string', enum: ['deals','contacts','companies','tasks'] }, filter: { type: 'string' } }, required: ['entity'] } }
@@ -198,8 +194,18 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
       dc.onmessage = e => { try { handleEvent(JSON.parse(e.data)) } catch {} }
 
       const offer = await pc.createOffer(); await pc.setLocalDescription(offer)
-      const sdp = await fetch('https://api.openai.com/v1/realtime/calls', { method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/sdp' }, body: offer.sdp })
-      if (!sdp.ok) throw new Error(`SDP ${sdp.status}`)
+      // GA Realtime API: SDP exchange requires raw SDP body with Content-Type: application/sdp
+      // Session config (transcription, VAD etc.) is sent separately via session.update on the data channel
+      const sdp = await fetch('https://api.openai.com/v1/realtime/calls', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/sdp' },
+        body: offer.sdp,
+      })
+      if (!sdp.ok) {
+        const errText = await sdp.text()
+        console.error('[Kiko Voice] SDP error:', sdp.status, errText)
+        throw new Error(`SDP ${sdp.status}: ${errText}`)
+      }
       await pc.setRemoteDescription({ type: 'answer', sdp: await sdp.text() })
     } catch (err) { setError(err.message); setStatus('error') }
   }
@@ -207,9 +213,13 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   // ── Events ───────────────────────────────────────────
   function handleEvent(ev) {
     const t = ev.type
-    // Debug: log all events so we can verify transcription events fire
-    if (t !== 'response.output_audio_transcript.delta') {
-      console.log('[Kiko Voice Event]', t, ev.transcript || ev.delta || '')
+    // Log session.updated with full detail to verify transcription config
+    if (t === 'session.updated' || t === 'session.created') {
+      console.log('[Kiko Voice]', t, 'input_audio_transcription:', JSON.stringify(ev.session?.input_audio_transcription))
+    }
+    // Debug: log all events except high-frequency audio deltas
+    if (t !== 'response.output_audio_transcript.delta' && t !== 'response.audio.delta') {
+      console.log('[Kiko Voice Event]', t, ev.transcript || ev.delta || ev.error || '')
     }
     if (t === 'input_audio_buffer.speech_started') {
       setTranscript(''); setKikoText(''); setSpeaking(false); setThinking(false)
@@ -218,7 +228,13 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     }
     if (t === 'input_audio_buffer.speech_stopped') startTimers()
 
-    // User speech → log to transcript pane immediately
+    // User speech — live delta (partial transcription as user speaks)
+    if (t === 'conversation.item.input_audio_transcription.delta') {
+      const delta = ev.delta || ''
+      if (delta) setTranscript(p => p + delta)
+    }
+
+    // User speech — completed (final transcription)
     if (t === 'conversation.item.input_audio_transcription.completed') {
       const text = ev.transcript?.trim() || ''
       if (text) {
@@ -229,6 +245,11 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
           addMessage('user', text)
         }
       }
+    }
+
+    // User speech transcription failed — log for debugging
+    if (t === 'conversation.item.input_audio_transcription.failed') {
+      console.error('[Kiko Voice] Transcription failed:', ev.error)
     }
 
     if (t === 'response.created') { setKikoText(''); setSpeaking(true); setThinking(false) }
