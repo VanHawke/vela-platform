@@ -8,7 +8,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    storageKey: 'vela-auth-token',
+    // Use Supabase default key — do NOT override storageKey,
+    // which was causing the app to look in the wrong localStorage slot.
     flowType: 'implicit',
   },
 })
