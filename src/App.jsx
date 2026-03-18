@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import LoginPage from '@/components/auth/LoginPage'
@@ -19,6 +19,10 @@ import Calendar from '@/pages/Calendar'
 import VelaCode from '@/pages/VelaCode'
 import Admin from '@/pages/Admin'
 import MemoryConsole from '@/pages/MemoryConsole'
+
+// ── 20-minute inactivity timeout (per browser tab, independent) ──
+const INACTIVITY_MS = 20 * 60 * 1000
+const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click']
 
 function AdminRoute({ children }) {
   const [allowed, setAllowed] = useState(null)
@@ -41,7 +45,38 @@ const Spinner = () => (
 export default function App() {
   const [session, setSession] = useState(undefined)
   const [user, setUser] = useState(null)
+  const inactivityTimer = useRef(null)
 
+  // ── Sign out this tab's session ──────────────────────
+  const signOutThisTab = useCallback(async () => {
+    clearTimeout(inactivityTimer.current)
+    await supabase.auth.signOut({ scope: 'local' }) // 'local' = only this tab, not other sessions
+  }, [])
+
+  // ── Reset the 20-min inactivity timer on any activity ─
+  const resetTimer = useCallback(() => {
+    clearTimeout(inactivityTimer.current)
+    inactivityTimer.current = setTimeout(signOutThisTab, INACTIVITY_MS)
+  }, [signOutThisTab])
+
+  // ── Start / stop inactivity tracking per session ─────
+  useEffect(() => {
+    if (!session) {
+      // Not logged in — clear timer, remove listeners
+      clearTimeout(inactivityTimer.current)
+      ACTIVITY_EVENTS.forEach(e => window.removeEventListener(e, resetTimer))
+      return
+    }
+    // Logged in — attach listeners and start timer
+    ACTIVITY_EVENTS.forEach(e => window.addEventListener(e, resetTimer, { passive: true }))
+    resetTimer() // start the first 20-min countdown
+    return () => {
+      clearTimeout(inactivityTimer.current)
+      ACTIVITY_EVENTS.forEach(e => window.removeEventListener(e, resetTimer))
+    }
+  }, [session, resetTimer])
+
+  // ── Auth state listener ───────────────────────────────
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
       if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
@@ -52,11 +87,13 @@ export default function App() {
         setSession(null)
         setUser(null)
       }
-      // Auto-logout when the refresh token expires or is revoked
+      // Token refresh failed (e.g. revoked by another session) — clear state only.
+      // Do NOT call signOut() here — it would cause an infinite loop.
       if (event === 'TOKEN_REFRESH_FAILED') {
         setSession(null)
         setUser(null)
-        supabase.auth.signOut()   // clears local storage
+        // Clear stale token from storage so next page load starts clean
+        try { localStorage.removeItem('vela-auth-token') } catch {}
       }
     })
     return () => subscription.unsubscribe()

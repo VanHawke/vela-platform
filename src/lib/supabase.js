@@ -12,11 +12,3 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     flowType: 'implicit',
   },
 })
-
-// Auto-logout on 401 — catches expired sessions that slip past token refresh
-supabase.auth.onAuthStateChange((event) => {
-  if (event === 'TOKEN_REFRESH_FAILED') {
-    // Clear stale token from storage so the next page load goes to /login cleanly
-    localStorage.removeItem('vela-auth-token')
-  }
-})
