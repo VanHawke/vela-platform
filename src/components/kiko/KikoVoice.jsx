@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { X, Send, ChevronRight, ChevronLeft, Mic, MicOff, Paperclip, Loader2 } from 'lucide-react'
+import { X, ChevronRight, ChevronLeft, Mic, MicOff, Paperclip, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import KikoSymbol from './KikoSymbol'
 
@@ -7,7 +7,6 @@ const PASSIVE_AFTER_MS = 45_000
 const OFF_AFTER_MS     = 120_000
 const KEYWORDS         = ['hey kiko', 'okay kiko', 'ok kiko', 'kiko']
 
-// Glass tokens — matches home page exactly
 const glass = {
   background: 'rgba(255,255,255,0.72)',
   backdropFilter: 'blur(40px) saturate(1.8)',
@@ -33,18 +32,19 @@ function Equalizer({ active }) {
 }
 
 export default function KikoVoice({ onClose, user, micStream, mini = false, onShowPrompt }) {
-  const [status, setStatus]         = useState('connecting')
-  const [listenMode, setListenMode] = useState('active')
-  const [speaking, setSpeaking]     = useState(false)
-  const [thinking, setThinking]     = useState(false)
-  const [transcript, setTranscript] = useState('')   // live user speech
-  const [kikoText, setKikoText]     = useState('')   // live kiko response
-  const [typeInput, setTypeInput]   = useState('')
-  const [showPane, setShowPane]     = useState(false)
-  const [messages, setMessages]     = useState([])   // full conversation log
-  const [attachedFile, setAttachedFile] = useState(null) // { name, summary }
-  const [uploading, setUploading]   = useState(false)
-  const [error, setError]           = useState('')
+  const [status, setStatus]             = useState('connecting')
+  const [listenMode, setListenMode]     = useState('active')
+  const [speaking, setSpeaking]         = useState(false)
+  const [thinking, setThinking]         = useState(false)
+  const [transcript, setTranscript]     = useState('')
+  const [kikoText, setKikoText]         = useState('')
+  const [typeInput, setTypeInput]       = useState('')
+  const [showPane, setShowPane]         = useState(false)
+  const [messages, setMessages]         = useState([])
+  const [attachedFile, setAttachedFile] = useState(null)
+  const [uploading, setUploading]       = useState(false)
+  const [dragOver, setDragOver]         = useState(false)
+  const [error, setError]               = useState('')
 
   const pcRef           = useRef(null)
   const dcRef           = useRef(null)
@@ -57,6 +57,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   const srRef           = useRef(null)
   const scrollRef       = useRef(null)
   const fileInputRef    = useRef(null)
+  const dragCountRef    = useRef(0)
 
   useEffect(() => { listenModeRef.current = listenMode }, [listenMode])
   useEffect(() => { connectRealtime(); return () => { cleanup(); stopKeyword() } }, [])
@@ -64,7 +65,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [messages])
 
-  // ── Timers ──────────────────────────────────────────
+  // ── Timers ───────────────────────────────────────────
   const clearTimers = useCallback(() => {
     if (passiveTimerRef.current) { clearTimeout(passiveTimerRef.current); passiveTimerRef.current = null }
     if (offTimerRef.current)     { clearTimeout(offTimerRef.current);     offTimerRef.current = null }
@@ -76,15 +77,17 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     offTimerRef.current     = setTimeout(enterOff,     OFF_AFTER_MS)
   }, [clearTimers])
 
+  const VAD_ON  = { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 }
+  const TRANSCRIPTION = { model: 'whisper-1' }
+
   const resetToActive = useCallback(() => {
     setListenMode('active'); listenModeRef.current = 'active'
     if (dcRef.current?.readyState === 'open') {
-      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 } } }))
+      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: VAD_ON, input_audio_transcription: TRANSCRIPTION } }))
     }
     startTimers()
   }, [startTimers])
 
-  // ── Passive ──────────────────────────────────────────
   const enterPassive = useCallback(() => {
     if (listenModeRef.current === 'off') return
     setListenMode('passive'); listenModeRef.current = 'passive'
@@ -94,7 +97,6 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     }
   }, [])
 
-  // ── Off ──────────────────────────────────────────────
   const enterOff = useCallback(() => {
     setListenMode('off'); listenModeRef.current = 'off'
     setTranscript(''); setKikoText(''); setSpeaking(false); setThinking(false)
@@ -102,14 +104,13 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     startKeyword()
   }, [])
 
-  // ── Keyword detection ─────────────────────────────────
   const startKeyword = useCallback(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SR) return
     stopKeyword()
     const sr = new SR(); sr.continuous = true; sr.interimResults = false; sr.lang = 'en-US'
     srRef.current = sr
-    sr.onresult = (e) => {
+    sr.onresult = e => {
       const heard = Array.from(e.results).map(r => r[0].transcript.toLowerCase()).join(' ')
       if (KEYWORDS.some(kw => heard.includes(kw))) reactivate()
     }
@@ -126,12 +127,12 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     if (streamRef.current) streamRef.current.getTracks().forEach(t => t.enabled = true)
     setListenMode('active'); listenModeRef.current = 'active'
     if (dcRef.current?.readyState === 'open') {
-      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 } } }))
+      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: VAD_ON, input_audio_transcription: TRANSCRIPTION } }))
     }
     startTimers()
   }, [startTimers, stopKeyword])
 
-  // ── Connect ───────────────────────────────────────────
+  // ── Connect ──────────────────────────────────────────
   async function connectRealtime() {
     try {
       setStatus('connecting'); setListenMode('active'); listenModeRef.current = 'active'; setError('')
@@ -166,11 +167,13 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
 
       dc.onopen = () => {
         setStatus('live')
+        // ── CRITICAL: input_audio_transcription must be TOP-LEVEL in session, not nested ──
         dc.send(JSON.stringify({
           type: 'session.update',
           session: {
-            instructions: `You are Kiko — the intelligence layer of Vela for Van Hawke Group. Speaking with Sunny Sidhu, CEO, Weybridge UK. Sharp, warm, confident advisor. Speak naturally and expressively. Keep responses concise. All financials in USD. Use "intelligent age" not "AI generation". When hearing "Hey Kiko" while passive, acknowledge warmly and resume. If a document has been shared, reference its contents when relevant.${memoriesContext}${platformContext}`,
-            audio: { input: { transcription: { model: 'whisper-1' }, turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 } }, output: { speed } },
+            instructions: `You are Kiko — the intelligence layer of Vela for Van Hawke Group. Speaking with Sunny Sidhu, CEO, Weybridge UK. Sharp, warm, confident advisor. Speak naturally. Keep responses concise. All financials in USD. Use "intelligent age" not "AI generation". When hearing "Hey Kiko" in passive mode, acknowledge warmly and resume. Reference any attached documents when relevant.${memoriesContext}${platformContext}`,
+            input_audio_transcription: { model: 'whisper-1' },
+            turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
             tools: [
               { type: 'function', name: 'search_web', description: 'Search the internet.', parameters: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] } },
               { type: 'function', name: 'get_crm_data', description: 'Query CRM.', parameters: { type: 'object', properties: { entity: { type: 'string', enum: ['deals','contacts','companies','tasks'] }, filter: { type: 'string' } }, required: ['entity'] } }
@@ -190,10 +193,9 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     } catch (err) { setError(err.message); setStatus('error') }
   }
 
-  // ── Event handler ─────────────────────────────────────
+  // ── Events ───────────────────────────────────────────
   function handleEvent(ev) {
     const t = ev.type
-
     if (t === 'input_audio_buffer.speech_started') {
       setTranscript(''); setKikoText(''); setSpeaking(false); setThinking(false)
       if (listenModeRef.current !== 'active') resetToActive()
@@ -201,7 +203,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     }
     if (t === 'input_audio_buffer.speech_stopped') startTimers()
 
-    // ── FIX: log user speech immediately when transcription arrives ──
+    // User speech → log to transcript pane immediately
     if (t === 'conversation.item.input_audio_transcription.completed') {
       const text = ev.transcript?.trim() || ''
       if (text) {
@@ -209,13 +211,12 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
         if (listenModeRef.current === 'passive') {
           if (KEYWORDS.some(kw => text.toLowerCase().includes(kw))) resetToActive()
         } else {
-          // Add to transcript pane immediately
           addMessage('user', text)
         }
       }
     }
 
-    if (t === 'response.created')  { setKikoText(''); setSpeaking(true); setThinking(false) }
+    if (t === 'response.created') { setKikoText(''); setSpeaking(true); setThinking(false) }
     if (t === 'response.output_audio_transcript.delta') setKikoText(p => p + (ev.delta || ''))
     if (t === 'response.output_audio_transcript.done') {
       const full = ev.transcript?.trim() || ''
@@ -226,7 +227,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   }
 
   function addMessage(role, content) {
-    setMessages(p => [...p, { role, content, time: new Date() }])
+    setMessages(p => [...p, { role, content }])
     conversationRef.current.messages.push({ role: role === 'kiko' ? 'assistant' : 'user', content })
     saveConversation()
   }
@@ -271,7 +272,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     } catch {}
   }
 
-  // ── Send typed message ────────────────────────────────
+  // ── Typed message ─────────────────────────────────────
   async function sendTyped() {
     const text = typeInput.trim(); if (!text) return
     setTypeInput(''); addMessage('user', text); setThinking(true)
@@ -292,31 +293,28 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
       const { error: upErr } = await supabase.storage.from('vela-assets').upload(path, file)
       if (upErr) throw new Error(upErr.message)
       const { data: { publicUrl } } = supabase.storage.from('vela-assets').getPublicUrl(path)
-
-      // Process via documents API
-      const res = await fetch('/api/documents', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'process', storagePath: path, publicUrl, fileName: file.name, fileType: file.type, accessLevel: 'workspace', userEmail: user?.email })
-      })
+      const res = await fetch('/api/documents', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'process', storagePath: path, publicUrl, fileName: file.name, fileType: file.type, accessLevel: 'workspace', userEmail: user?.email }) })
       const result = await res.json()
       const intel = result.intelligence || {}
       const summary = [intel.summary, intel.positioning].filter(Boolean).join(' ').slice(0, 500) || `File "${file.name}" uploaded.`
-
-      setAttachedFile({ name: file.name, summary })
-
-      // Inject file context into the voice session
-      const contextMsg = `I've just attached a document called "${file.name}". Here's a summary: ${summary}. Key topics: ${(intel.key_topics || intel.talking_points || []).slice(0,5).join(', ')}. You can now discuss this document with me.`
+      setAttachedFile({ name: file.name })
       addMessage('user', `📎 Attached: ${file.name}`)
+      const contextMsg = `I've attached "${file.name}". Summary: ${summary}. Topics: ${(intel.key_topics || intel.talking_points || []).slice(0,5).join(', ')}. Discuss this document with me.`
       if (dcRef.current?.readyState === 'open') {
         dcRef.current.send(JSON.stringify({ type: 'conversation.item.create', item: { type: 'message', role: 'user', content: [{ type: 'input_text', text: contextMsg }] } }))
         dcRef.current.send(JSON.stringify({ type: 'response.create' }))
       }
-    } catch (err) {
-      addMessage('kiko', `Sorry, I couldn't process that file: ${err.message}`)
-    } finally { setUploading(false) }
+    } catch (err) { addMessage('kiko', `Couldn't process that file: ${err.message}`) }
+    finally { setUploading(false) }
   }
 
-  // ── Cleanup ───────────────────────────────────────────
+  // ── Drag and drop ─────────────────────────────────────
+  const onDragEnter = e => { e.preventDefault(); dragCountRef.current++; setDragOver(true) }
+  const onDragLeave = e => { e.preventDefault(); dragCountRef.current--; if (dragCountRef.current <= 0) { dragCountRef.current = 0; setDragOver(false) } }
+  const onDragOver  = e => { e.preventDefault() }
+  const onDrop      = e => { e.preventDefault(); dragCountRef.current = 0; setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) handleFileAttach(f) }
+
   function cleanup() {
     clearTimers()
     if (dcRef.current)     { try { dcRef.current.close()  } catch {} }
@@ -325,24 +323,19 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     if (audioRef.current)  { audioRef.current.pause(); audioRef.current.srcObject = null }
     pcRef.current = null; dcRef.current = null; streamRef.current = null
   }
-
   function handleClose() { cleanup(); stopKeyword(); onClose() }
 
-  // ── Derived state ─────────────────────────────────────
+  // ── Derived ──────────────────────────────────────────
   const avatarAnimate = speaking ? 'none' : thinking ? 'thinking' : status === 'live' && listenMode === 'active' ? 'streaming' : 'idle'
-  const showRings     = status === 'live' && listenMode === 'active' && !speaking
-  const avBg          = listenMode === 'off' ? 'rgba(28,28,28,0.65)' : listenMode === 'passive' ? 'rgba(55,55,55,0.55)' : '#1A1A1A'
-  const avOpacity     = listenMode === 'passive' ? 0.35 : 1
-
+  const showRings = status === 'live' && listenMode === 'active' && !speaking
+  const avBg      = listenMode === 'off' ? 'rgba(28,28,28,0.65)' : listenMode === 'passive' ? 'rgba(55,55,55,0.55)' : '#1A1A1A'
+  const avOpacity = listenMode === 'passive' ? 0.35 : 1
   const modeLabel = listenMode === 'passive' ? 'Passive · Say "Hey Kiko" to resume'
     : listenMode === 'off' ? 'Mic off · Say "Hey Kiko" to restart'
-    : speaking ? 'Kiko is speaking…'
-    : thinking ? 'Thinking…'
-    : status === 'connecting' ? 'Connecting…'
-    : status === 'error' ? (error || 'Connection failed')
-    : 'Speak freely'
+    : speaking ? 'Kiko is speaking…' : thinking ? 'Thinking…'
+    : status === 'connecting' ? 'Connecting…' : status === 'error' ? (error || 'Failed') : 'Speak freely'
 
-  // ── MINI MODE ──────────────────────────────────────────
+  // ── Mini mode ─────────────────────────────────────────
   if (mini) {
     return (
       <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
@@ -350,9 +343,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
           <div style={{ position: 'absolute', transition: 'opacity 0.3s', opacity: speaking ? 0 : 1 }}>
             {listenMode === 'off' ? <MicOff size={20} color="var(--text-tertiary)" /> : <KikoSymbol size={26} color={status === 'live' && listenMode === 'active' ? '#fff' : 'var(--text-tertiary)'} animate={avatarAnimate} />}
           </div>
-          <div style={{ position: 'absolute', transition: 'opacity 0.3s', opacity: speaking ? 1 : 0 }}>
-            <Equalizer active={speaking} />
-          </div>
+          <div style={{ position: 'absolute', transition: 'opacity 0.3s', opacity: speaking ? 1 : 0 }}><Equalizer active={speaking} /></div>
         </button>
         {listenMode !== 'active' && <span style={{ fontSize: 9, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textAlign: 'center', maxWidth: 80 }}>{listenMode === 'off' ? 'Mic off' : 'Passive'}</span>}
         <button onClick={handleClose} style={{ position: 'absolute', top: -8, right: -8, width: 20, height: 20, borderRadius: '50%', background: 'var(--surface)', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--text-tertiary)' }}>×</button>
@@ -360,44 +351,49 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     )
   }
 
-  // ── FULL-SCREEN POPUP ──────────────────────────────────
+  // ── Full-screen ───────────────────────────────────────
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex' }}
+      onDragEnter={onDragEnter} onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDrop}
       onClick={e => e.target === e.currentTarget && handleClose()}>
 
-      {/* Platform-matched frosted glass — light, not dark */}
+      {/* Frosted glass — platform light style */}
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(250,250,250,0.82)', backdropFilter: 'blur(48px) saturate(1.8)', WebkitBackdropFilter: 'blur(48px) saturate(1.8)' }} />
-      {/* Sheen layer */}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.1) 50%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg,rgba(255,255,255,0.5) 0%,rgba(255,255,255,0.1) 50%)', pointerEvents: 'none' }} />
 
-      {/* Hidden file input */}
-      <input ref={fileInputRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx" onChange={e => { const f = e.target.files?.[0]; if (f) handleFileAttach(f); e.target.value = '' }} style={{ display: 'none' }} />
+      {/* Drag-over overlay */}
+      {dragOver && (
+        <div style={{ position: 'absolute', inset: 12, zIndex: 10, borderRadius: 16, border: '2px dashed #1A1A1A', background: 'rgba(255,255,255,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', gap: 8 }}>
+          <Paperclip size={28} color="#1A1A1A" style={{ opacity: 0.6 }} />
+          <p style={{ fontSize: 15, fontWeight: 600, color: '#1A1A1A', fontFamily: 'var(--font)' }}>Drop file for Kiko to analyse</p>
+          <p style={{ fontSize: 12, color: 'rgba(0,0,0,0.45)', fontFamily: 'var(--font)' }}>PDF, DOCX, PPTX, images</p>
+        </div>
+      )}
 
-      {/* ── Stage ── */}
+      <input ref={fileInputRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx"
+        onChange={e => { const f = e.target.files?.[0]; if (f) handleFileAttach(f); e.target.value = '' }} style={{ display: 'none' }} />
+
+      {/* Stage */}
       <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 40px 32px', zIndex: 1 }}>
 
-        {/* Close — platform style */}
         <button onClick={handleClose} style={{ position: 'absolute', top: 18, right: 18, width: 30, height: 30, borderRadius: 9, background: 'rgba(0,0,0,0.04)', border: '0.5px solid rgba(0,0,0,0.07)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(0,0,0,0.4)' }}>
           <X size={14} />
         </button>
 
-        {/* Mode pill */}
         <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', padding: '4px 14px', borderRadius: 20, background: 'rgba(0,0,0,0.04)', border: '0.5px solid rgba(0,0,0,0.07)', fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.4)', letterSpacing: '0.04em', whiteSpace: 'nowrap', fontFamily: 'var(--font)' }}>
           {modeLabel}
         </div>
 
-        {/* ── Avatar: rounded square ── */}
+        {/* Avatar */}
         <div style={{ position: 'relative', marginBottom: 28 }}>
           {showRings && <>
             <div style={{ position: 'absolute', inset: -13, borderRadius: 50, border: '1.5px solid rgba(0,0,0,0.08)', animation: 'pulse 2.2s ease-in-out infinite', pointerEvents: 'none' }} />
             <div style={{ position: 'absolute', inset: -26, borderRadius: 62, border: '1px solid rgba(0,0,0,0.04)', animation: 'pulse 2.2s ease-in-out infinite 0.5s', pointerEvents: 'none' }} />
           </>}
-          <div style={{ width: 156, height: 156, borderRadius: 38, background: avBg, border: '0.5px solid rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.5s', position: 'relative', overflow: 'hidden', boxShadow: '0 16px 48px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08)' }}>
-            {/* Symbol */}
+          <div style={{ width: 156, height: 156, borderRadius: 38, background: avBg, border: '0.5px solid rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', boxShadow: '0 16px 48px rgba(0,0,0,0.14)', transition: 'background 0.5s' }}>
             <div style={{ position: 'absolute', opacity: speaking ? 0 : avOpacity, transition: 'opacity 0.35s ease', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {listenMode === 'off' ? <MicOff size={44} color="rgba(255,255,255,0.25)" /> : <KikoSymbol size={68} color="rgba(255,255,255,0.92)" animate={avatarAnimate} />}
             </div>
-            {/* Equalizer */}
             <div style={{ position: 'absolute', opacity: speaking ? 1 : 0, transition: 'opacity 0.35s ease' }}>
               <Equalizer active={speaking} />
             </div>
@@ -407,46 +403,39 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
         {/* Live text */}
         <div style={{ textAlign: 'center', maxWidth: 360, minHeight: 60, marginBottom: 24 }}>
           {transcript && <p style={{ fontSize: 15, fontWeight: 500, color: 'rgba(0,0,0,0.8)', margin: '0 0 7px', fontFamily: 'var(--font)', lineHeight: 1.35 }}>{transcript}</p>}
-          {kikoText && <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.45)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.55 }}>{kikoText}</p>}
+          {kikoText   && <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.45)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.55 }}>{kikoText}</p>}
           {status === 'error' && !transcript && <p style={{ fontSize: 13, color: '#C62828', margin: 0, fontFamily: 'var(--font)' }}>{error}</p>}
         </div>
 
-        {/* Tap-to-resume */}
         {listenMode !== 'active' && status === 'live' && (
           <button onClick={() => listenMode === 'off' ? reactivate() : resetToActive()} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 500, color: 'rgba(0,0,0,0.5)', background: 'rgba(0,0,0,0.04)', border: '0.5px solid rgba(0,0,0,0.09)', borderRadius: 20, padding: '7px 16px', cursor: 'pointer', fontFamily: 'var(--font)', marginBottom: 24 }}>
             <Mic size={12} /> Tap to resume
           </button>
         )}
 
-        {/* ── Prompt bar — exact home page pill ── */}
+        {/* Prompt bar — exact home page pill */}
         <div style={{ ...glass, width: '100%', maxWidth: 520, borderRadius: 28, padding: '8px 8px 8px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
-
-          {/* Attach — paperclip, matches home page clip icon */}
-          <button onClick={() => fileInputRef.current?.click()} disabled={uploading} title="Attach file" style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', background: uploading ? 'rgba(0,0,0,0.06)' : 'transparent', color: uploading ? '#1A1A1A' : 'rgba(0,0,0,0.35)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background .12s, color .12s' }}>
+          <button onClick={() => fileInputRef.current?.click()} disabled={uploading} title="Attach file" style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', background: 'transparent', color: 'rgba(0,0,0,0.35)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             {uploading ? <Loader2 size={16} style={{ animation: 'kikoVortexSpin 1s linear infinite' }} /> : <Paperclip size={17} />}
           </button>
 
-          {/* File chip — appears when a file is attached */}
           {attachedFile && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px 3px 7px', borderRadius: 20, background: 'rgba(0,0,0,0.06)', border: '0.5px solid rgba(0,0,0,0.09)', fontSize: 11, color: 'rgba(0,0,0,0.5)', maxWidth: 130, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 0 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px 3px 7px', borderRadius: 20, background: 'rgba(0,0,0,0.06)', border: '0.5px solid rgba(0,0,0,0.09)', fontSize: 11, color: 'rgba(0,0,0,0.5)', maxWidth: 140, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 0 }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               {attachedFile.name}
-              <button onClick={() => setAttachedFile(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.3)', padding: 0, display: 'flex', lineHeight: 1 }}>×</button>
+              <button onClick={() => setAttachedFile(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.3)', padding: 0, lineHeight: 1 }}>×</button>
             </div>
           )}
 
-          {/* Text input */}
           <input value={typeInput} onChange={e => setTypeInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendTyped())}
-            placeholder="Or type a message to Kiko…"
+            placeholder="Ask anything or drop a file…"
             style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 15, color: '#1A1A1A', fontFamily: 'var(--font)', height: 40 }} />
 
-          {/* Dictate mic */}
           <button title="Dictate" style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', background: 'transparent', color: 'rgba(0,0,0,0.35)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
           </button>
 
-          {/* Submit — matches home page: dark filled circle + up arrow */}
           <button onClick={sendTyped} disabled={!typeInput.trim()} style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', background: typeInput.trim() ? '#1A1A1A' : 'rgba(0,0,0,0.06)', color: typeInput.trim() ? '#fff' : 'rgba(0,0,0,0.25)', cursor: typeInput.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
           </button>
@@ -457,14 +446,14 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
         )}
       </div>
 
-      {/* ── Transcript toggle tab ── */}
-      <div onClick={() => setShowPane(p => !p)} style={{ position: 'absolute', top: '50%', right: showPane ? 272 : 0, transform: 'translateY(-50%)', zIndex: 2, width: 20, height: 52, borderRadius: '9px 0 0 9px', background: 'rgba(0,0,0,0.05)', border: '0.5px solid rgba(0,0,0,0.08)', borderRight: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(0,0,0,0.3)', transition: 'right 0.3s cubic-bezier(0.4,0,0.2,1)', fontSize: 11 }}
+      {/* Transcript toggle */}
+      <div onClick={() => setShowPane(p => !p)} style={{ position: 'absolute', top: '50%', right: showPane ? 272 : 0, transform: 'translateY(-50%)', zIndex: 2, width: 20, height: 52, borderRadius: '9px 0 0 9px', background: 'rgba(0,0,0,0.05)', border: '0.5px solid rgba(0,0,0,0.08)', borderRight: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(0,0,0,0.3)', transition: 'right 0.3s cubic-bezier(0.4,0,0.2,1)' }}
         onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.09)'}
         onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}>
         {showPane ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
       </div>
 
-      {/* ── Transcript pane ── */}
+      {/* Transcript pane */}
       <div style={{ position: 'relative', zIndex: 1, width: showPane ? 272 : 0, flexShrink: 0, overflow: 'hidden', borderLeft: showPane ? '0.5px solid rgba(0,0,0,0.08)' : 'none', transition: 'width 0.3s cubic-bezier(0.4,0,0.2,1)', background: 'rgba(255,255,255,0.35)' }}>
         <div style={{ width: 272, height: '100%', display: 'flex', flexDirection: 'column', padding: '20px 14px 16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
@@ -472,16 +461,17 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
             <span style={{ fontSize: 9, color: 'rgba(0,0,0,0.2)', fontFamily: 'var(--font)' }}>{messages.length} messages</span>
           </div>
           <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 9 }}>
-            {messages.length === 0 ? (
-              <p style={{ fontSize: 11, color: 'rgba(0,0,0,0.25)', fontFamily: 'var(--font)', textAlign: 'center', marginTop: 40, lineHeight: 1.5 }}>Conversation will appear here as you speak</p>
-            ) : messages.map((m, i) => (
-              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.28)', fontFamily: 'var(--font)' }}>{m.role === 'user' ? 'You' : 'Kiko'}</span>
-                <div style={{ fontSize: 11, color: m.role === 'user' ? 'rgba(0,0,0,0.78)' : 'rgba(0,0,0,0.52)', lineHeight: 1.45, padding: '7px 10px', borderRadius: 10, background: m.role === 'user' ? '#1A1A1A' : 'rgba(0,0,0,0.05)', ...(m.role === 'user' ? { color: '#fff' } : {}), fontFamily: 'var(--font)' }}>
-                  {m.content}
+            {messages.length === 0
+              ? <p style={{ fontSize: 11, color: 'rgba(0,0,0,0.25)', fontFamily: 'var(--font)', textAlign: 'center', marginTop: 40, lineHeight: 1.5 }}>Conversation appears here as you speak</p>
+              : messages.map((m, i) => (
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.28)', fontFamily: 'var(--font)' }}>{m.role === 'user' ? 'You' : 'Kiko'}</span>
+                  <div style={{ fontSize: 11, lineHeight: 1.45, padding: '7px 10px', borderRadius: 10, fontFamily: 'var(--font)', background: m.role === 'user' ? '#1A1A1A' : 'rgba(0,0,0,0.05)', color: m.role === 'user' ? '#fff' : 'rgba(0,0,0,0.55)' }}>
+                    {m.content}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            }
           </div>
         </div>
       </div>
