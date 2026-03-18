@@ -113,19 +113,39 @@ export default async function handler(req, res) {
   }
 
   // Mode 3b — SDP proxy for WebRTC call establishment
-  // Client sends SDP offer, we forward to OpenAI and return the SDP answer.
+  // Client sends raw SDP offer as text body, server uses multipart form to OpenAI.
+  // Per OpenAI docs: POST /v1/realtime/calls requires multipart with sdp + session fields.
+  // Standard API key is used server-side — never exposed to browser.
   if (action === 'realtime-sdp') {
-    const { sdp, token } = req.body;
-    if (!sdp || !token) return res.status(400).json({ error: 'sdp and token required' });
+    const { sdp, voice } = req.body;
+    if (!sdp) return res.status(400).json({ error: 'sdp required' });
 
     try {
-      const sdpResponse = await fetch('https://api.openai.com/v1/realtime/calls?model=gpt-realtime', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/sdp',
+      // Build multipart form exactly as OpenAI API reference specifies:
+      // -F "sdp=<offer.sdp;type=application/sdp"
+      // -F 'session={"type":"realtime","model":"gpt-realtime"};type=application/json'
+      // Node 18+ has native FormData and Blob globally
+      const form = new FormData();
+      form.append('sdp', new Blob([sdp], { type: 'application/sdp' }), 'offer.sdp');
+
+      const sessionConfig = JSON.stringify({
+        type: 'realtime',
+        model: 'gpt-realtime',
+        audio: {
+          output: { voice: voice || 'shimmer' },
+          input: {
+            transcription: { model: 'whisper-1' },
+            turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
+          },
         },
-        body: sdp,
+      });
+      const sessionBlob = new Blob([sessionConfig], { type: 'application/json' });
+      form.append('session', sessionBlob, 'session.json');
+
+      const sdpResponse = await fetch('https://api.openai.com/v1/realtime/calls', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${process.env.OPENAI_KEY}` },
+        body: form,
       });
 
       if (!sdpResponse.ok) {

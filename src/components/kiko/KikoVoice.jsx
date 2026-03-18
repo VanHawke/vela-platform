@@ -158,11 +158,6 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
         }
       }
 
-      const tokenRes = await fetch('/api/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'realtime-token', voice: voiceId }) })
-      const tokenData = await tokenRes.json()
-      if (!tokenRes.ok || (!tokenData.client_secret?.value && !tokenData.value)) throw new Error(tokenData.error?.message || 'Token failed')
-      const key = tokenData.client_secret?.value || tokenData.value
-
       const stream = micStream || await navigator.mediaDevices.getUserMedia({ audio: true })
       streamRef.current = stream
       const pc = new RTCPeerConnection(); pcRef.current = pc
@@ -194,19 +189,21 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
       dc.onmessage = e => { try { handleEvent(JSON.parse(e.data)) } catch {} }
 
       const offer = await pc.createOffer(); await pc.setLocalDescription(offer)
-      // GA Realtime API: SDP exchange requires raw SDP body with Content-Type: application/sdp
-      // Session config (transcription, VAD etc.) is sent separately via session.update on the data channel
-      const sdp = await fetch('https://api.openai.com/v1/realtime/calls', {
+
+      // Route SDP through server proxy — server uses multipart form + standard API key.
+      // This is the correct architecture per OpenAI docs: browser never calls OpenAI directly for SDP.
+      const sdpRes = await fetch('/api/voice', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/sdp' },
-        body: offer.sdp,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'realtime-sdp', sdp: offer.sdp, voice: voiceId }),
       })
-      if (!sdp.ok) {
-        const errText = await sdp.text()
-        console.error('[Kiko Voice] SDP error:', sdp.status, errText)
-        throw new Error(`SDP ${sdp.status}: ${errText}`)
+      if (!sdpRes.ok) {
+        const errText = await sdpRes.text()
+        console.error('[Kiko Voice] SDP error:', sdpRes.status, errText)
+        throw new Error(`SDP ${sdpRes.status}: ${errText}`)
       }
-      await pc.setRemoteDescription({ type: 'answer', sdp: await sdp.text() })
+      const { sdp: answerSdp } = await sdpRes.json()
+      await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp })
     } catch (err) { setError(err.message); setStatus('error') }
   }
 
