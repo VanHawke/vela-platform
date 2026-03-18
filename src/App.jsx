@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { signOut } from '@/lib/auth'
 import LoginPage from '@/components/auth/LoginPage'
 import AuthCallback from '@/pages/AuthCallback'
 import Layout from '@/components/layout/Layout'
@@ -27,102 +28,65 @@ const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchst
 function AdminRoute({ children }) {
   const [allowed, setAllowed] = useState(null)
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setAllowed(user?.app_metadata?.role === 'super_admin')
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setAllowed(session?.user?.app_metadata?.role === 'super_admin')
     })
   }, [])
   if (allowed === null) return null
-  if (!allowed) return <div className="p-8 text-[#1A1A1A] text-sm">Access denied.</div>
+  if (!allowed) return <div style={{ padding: 32, fontSize: 13 }}>Access denied.</div>
   return children
 }
 
 const Spinner = () => (
-  <div className="flex items-center justify-center h-screen" style={{ background: '#fff' }}>
-    <div className="h-6 w-6 border-2 border-black/10 border-t-[#1A1A1A] rounded-full animate-spin" />
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#fff' }}>
+    <div style={{ width: 24, height: 24, border: '2px solid rgba(0,0,0,0.1)', borderTopColor: '#1A1A1A', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
   </div>
 )
 
-// Hard sign out — clears session storage and redirects to login
-export async function hardSignOut() {
-  try { await supabase.auth.signOut({ scope: 'global' }) } catch {}
-  // Remove Supabase session keys — but NOT code-verifier keys needed during active OAuth flows
-  try {
-    Object.keys(localStorage)
-      .filter(k => (k.startsWith('sb-') && k.endsWith('-auth-token')) || k === 'vela-auth-token')
-      .forEach(k => localStorage.removeItem(k))
-  } catch {}
-  window.location.replace('/login')
-}
-
 export default function App() {
-  // undefined = still resolving, null = no session, object = valid session
-  const [session, setSession] = useState(undefined)
+  const [session, setSession] = useState(undefined) // undefined=loading, null=no session
   const [user, setUser]       = useState(null)
-  const timerRef              = useRef(null)
-  const loggedInRef           = useRef(false)
+  const timerRef    = useRef(null)
+  const activeRef   = useRef(false)
 
-  // ── 20-min per-tab inactivity logout ──────────────────
-  const startInactivityTimer = useCallback(() => {
+  // ── 20-min inactivity timeout — per tab, independent ──
+  const resetTimer = useCallback(() => {
+    if (!activeRef.current) return
     clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(hardSignOut, INACTIVITY_MS)
+    timerRef.current = setTimeout(signOut, INACTIVITY_MS)
   }, [])
-
-  const resetInactivityTimer = useCallback(() => {
-    if (loggedInRef.current) startInactivityTimer()
-  }, [startInactivityTimer])
 
   useEffect(() => {
     if (!session) {
-      loggedInRef.current = false
+      activeRef.current = false
       clearTimeout(timerRef.current)
-      ACTIVITY_EVENTS.forEach(ev => window.removeEventListener(ev, resetInactivityTimer))
+      ACTIVITY_EVENTS.forEach(e => window.removeEventListener(e, resetTimer))
       return
     }
-    loggedInRef.current = true
-    ACTIVITY_EVENTS.forEach(ev => window.addEventListener(ev, resetInactivityTimer, { passive: true }))
-    startInactivityTimer()
+    activeRef.current = true
+    ACTIVITY_EVENTS.forEach(e => window.addEventListener(e, resetTimer, { passive: true }))
+    resetTimer()
     return () => {
       clearTimeout(timerRef.current)
-      ACTIVITY_EVENTS.forEach(ev => window.removeEventListener(ev, resetInactivityTimer))
+      ACTIVITY_EVENTS.forEach(e => window.removeEventListener(e, resetTimer))
     }
-  }, [session, startInactivityTimer, resetInactivityTimer])
+  }, [session, resetTimer])
 
-  // ── Auth — verified session only ──────────────────────
-  // Uses getUser() to make a live network request confirming the JWT is valid.
-  // Never trusts the cached session from localStorage alone.
+  // ── Auth listener — single source of truth ──
   useEffect(() => {
-    // Clean up old storageKey remnant
-    try { localStorage.removeItem('vela-auth-token') } catch {}
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, sess) => {
+    // onAuthStateChange fires INITIAL_SESSION immediately on mount with
+    // whatever is in localStorage (or null). For implicit flow, when Google
+    // redirects back with #access_token=... in the URL, detectSessionInUrl
+    // processes it and fires SIGNED_IN automatically.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
       if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESH_FAILED') {
         setSession(null)
         setUser(null)
         return
       }
-
       if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        if (!sess) {
-          setSession(null)
-          setUser(null)
-          return
-        }
-        // Verify the JWT is genuinely valid with a live network call.
-        // Skip for INITIAL_SESSION to avoid blocking page load — TOKEN_REFRESHED will re-validate.
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          const { data: { user: verifiedUser }, error } = await supabase.auth.getUser(sess.access_token)
-          if (error || !verifiedUser) {
-            setSession(null)
-            setUser(null)
-            return
-          }
-          setSession(sess)
-          setUser(verifiedUser)
-          return
-        }
-        // INITIAL_SESSION: trust the stored session, let autoRefreshToken handle expiry
-        setSession(sess)
-        setUser(sess.user)
+        setSession(sess ?? null)
+        setUser(sess?.user ?? null)
       }
     })
     return () => subscription.unsubscribe()
@@ -136,7 +100,7 @@ export default function App() {
         <Route path="/login" element={session ? <Navigate to="/" replace /> : <LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/admin" element={session ? <AdminRoute><Admin /></AdminRoute> : <Navigate to="/login" replace />} />
-        <Route element={session ? <Layout key={user?.id || 'auth'} user={user} /> : <Navigate to="/login" replace />}>
+        <Route element={session ? <Layout key={user?.id} user={user} /> : <Navigate to="/login" replace />}>
           <Route index element={<KikoChat user={user} />} />
           <Route path="home" element={<KikoChat user={user} />} />
           <Route path="dashboard" element={<Dashboard user={user} />} />
