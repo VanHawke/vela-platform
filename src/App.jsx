@@ -21,14 +21,14 @@ import VelaCode from '@/pages/VelaCode'
 import Admin from '@/pages/Admin'
 import MemoryConsole from '@/pages/MemoryConsole'
 
-const INACTIVITY_MS  = 20 * 60 * 1000
+const INACTIVITY_MS   = 20 * 60 * 1000
 const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click']
 
 function AdminRoute({ children }) {
   const [allowed, setAllowed] = useState(null)
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setAllowed(session?.user?.app_metadata?.role === 'super_admin')
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setAllowed(user?.app_metadata?.role === 'super_admin')
     })
   }, [])
   if (allowed === null) return null
@@ -42,8 +42,21 @@ const Spinner = () => (
   </div>
 )
 
+// Hard sign out — clears everything regardless of session state
+export async function hardSignOut() {
+  try { await supabase.auth.signOut({ scope: 'global' }) } catch {}
+  // Belt-and-braces: clear all Supabase auth keys from localStorage
+  try {
+    Object.keys(localStorage)
+      .filter(k => k.startsWith('sb-') || k.includes('supabase'))
+      .forEach(k => localStorage.removeItem(k))
+  } catch {}
+  window.location.replace('/login')
+}
+
 export default function App() {
-  const [session, setSession] = useState(undefined) // undefined = loading
+  // undefined = still resolving, null = no session, object = valid session
+  const [session, setSession] = useState(undefined)
   const [user, setUser]       = useState(null)
   const timerRef              = useRef(null)
   const loggedInRef           = useRef(false)
@@ -51,9 +64,7 @@ export default function App() {
   // ── 20-min per-tab inactivity logout ──────────────────
   const startInactivityTimer = useCallback(() => {
     clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(() => {
-      supabase.auth.signOut({ scope: 'local' })
-    }, INACTIVITY_MS)
+    timerRef.current = setTimeout(hardSignOut, INACTIVITY_MS)
   }, [])
 
   const resetInactivityTimer = useCallback(() => {
@@ -76,27 +87,36 @@ export default function App() {
     }
   }, [session, startInactivityTimer, resetInactivityTimer])
 
-  // ── Auth state — single source of truth ───────────────
-  // onAuthStateChange fires INITIAL_SESSION on mount with current session (or null).
-  // This means no separate getSession() call is needed — it handles both
-  // "already logged in on page load" and "just logged in" cases.
+  // ── Auth — verified session only ──────────────────────
+  // Uses getUser() to make a live network request confirming the JWT is valid.
+  // Never trusts the cached session from localStorage alone.
   useEffect(() => {
-    // One-time cleanup: remove stale vela-auth-token from the old storageKey era
-    // so it doesn't cause confusion. The real session is under sb-{ref}-auth-token.
+    // Clean up old storageKey remnant
     try { localStorage.removeItem('vela-auth-token') } catch {}
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
-      if (
-        event === 'INITIAL_SESSION' ||
-        event === 'SIGNED_IN'       ||
-        event === 'TOKEN_REFRESHED'
-      ) {
-        setSession(sess ?? null)
-        setUser(sess?.user ?? null)
-      }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, sess) => {
       if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESH_FAILED') {
         setSession(null)
         setUser(null)
+        return
+      }
+
+      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        if (!sess) {
+          setSession(null)
+          setUser(null)
+          return
+        }
+        // Verify JWT is genuinely valid with a live network call
+        const { data: { user: verifiedUser }, error } = await supabase.auth.getUser(sess.access_token)
+        if (error || !verifiedUser) {
+          // JWT invalid — clear everything
+          setSession(null)
+          setUser(null)
+          return
+        }
+        setSession(sess)
+        setUser(verifiedUser)
       }
     })
     return () => subscription.unsubscribe()

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { hardSignOut } from '@/App'
 import { Home, Users, Building2, GitBranch, Diamond, Mail, Newspaper, Grid3X3, Calendar, FileText, CheckSquare, Settings, LogOut, User } from 'lucide-react'
 
 const ICON_MAP = { Home, Users, Building2, GitBranch, Diamond, Mail, Newspaper, Grid3X3, Calendar, FileText, CheckSquare }
@@ -140,12 +141,7 @@ export default function Sidebar({ logoIcon, logoExpanded, user, onHomeClick }) {
           <Settings size={17} strokeWidth={1.8} style={{ flexShrink: 0 }} />
           {expanded && <span style={{ fontSize: 13, fontFamily: 'var(--font)' }}>Settings</span>}
         </button>
-        <button onClick={async () => {
-            try { await supabase.auth.signOut({ scope: 'global' }) } catch {}
-            // Clear any stale auth keys regardless of which storageKey was in use
-            Object.keys(localStorage).filter(k => k.includes('supabase') || k.includes('auth-token') || k.includes('sb-')).forEach(k => localStorage.removeItem(k))
-            window.location.replace('/login')
-          }} style={{ height: 34, borderRadius: 8, border: 'none', padding: '0 7px', width: '100%', background: 'transparent', color: 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s', overflow: 'hidden', whiteSpace: 'nowrap' }}
+        <button onClick={hardSignOut} style={{ height: 34, borderRadius: 8, border: 'none', padding: '0 7px', width: '100%', background: 'transparent', color: 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s', overflow: 'hidden', whiteSpace: 'nowrap' }}
           onMouseOver={e => e.currentTarget.style.background = 'rgba(255,59,48,0.06)'}
           onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
           <LogOut size={17} strokeWidth={1.8} style={{ flexShrink: 0 }} />
