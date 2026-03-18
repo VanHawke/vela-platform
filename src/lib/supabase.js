@@ -8,8 +8,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    // Use Supabase default key — do NOT override storageKey,
-    // which was causing the app to look in the wrong localStorage slot.
-    flowType: 'implicit',
+    flowType: 'pkce',  // Google OAuth uses PKCE — must match
   },
 })

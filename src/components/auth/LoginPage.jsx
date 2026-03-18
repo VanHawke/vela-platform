@@ -71,7 +71,8 @@ export default function LoginPage() {
     setGLoading(true); setError('')
     const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: {
       scopes: 'openid email profile https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/calendar',
-      redirectTo: `${window.location.origin}/`, queryParams: { access_type: 'offline', prompt: 'consent' } } })
+      redirectTo: `${window.location.origin}/auth/callback`,
+      queryParams: { access_type: 'offline', prompt: 'consent' } } })
     if (error) { setError(error.message); setGLoading(false) }
   }
 
