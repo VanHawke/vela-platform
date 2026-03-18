@@ -78,12 +78,14 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   }, [clearTimers])
 
   const VAD_ON  = { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 }
-  const TRANSCRIPTION = { model: 'whisper-1' }
 
   const resetToActive = useCallback(() => {
     setListenMode('active'); listenModeRef.current = 'active'
     if (dcRef.current?.readyState === 'open') {
-      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: VAD_ON, input_audio_transcription: TRANSCRIPTION } }))
+      dcRef.current.send(JSON.stringify({
+        type: 'session.update',
+        session: { audio: { input: { transcription: { model: 'whisper-1' }, turn_detection: VAD_ON } } }
+      }))
     }
     startTimers()
   }, [startTimers])
@@ -127,7 +129,10 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     if (streamRef.current) streamRef.current.getTracks().forEach(t => t.enabled = true)
     setListenMode('active'); listenModeRef.current = 'active'
     if (dcRef.current?.readyState === 'open') {
-      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: VAD_ON, input_audio_transcription: TRANSCRIPTION } }))
+      dcRef.current.send(JSON.stringify({
+        type: 'session.update',
+        session: { audio: { input: { transcription: { model: 'whisper-1' }, turn_detection: VAD_ON } } }
+      }))
     }
     startTimers()
   }, [startTimers, stopKeyword])
@@ -167,13 +172,19 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
 
       dc.onopen = () => {
         setStatus('live')
-        // ── CRITICAL: input_audio_transcription must be TOP-LEVEL in session, not nested ──
+        // ── CRITICAL: GA Realtime API requires transcription nested under audio.input ──
+        // (top-level input_audio_transcription was the OLD beta format — does NOT work here)
         dc.send(JSON.stringify({
           type: 'session.update',
           session: {
             instructions: `You are Kiko — the intelligence layer of Vela for Van Hawke Group. Speaking with Sunny Sidhu, CEO, Weybridge UK. Sharp, warm, confident advisor. Speak naturally. Keep responses concise. All financials in USD. Use "intelligent age" not "AI generation". When hearing "Hey Kiko" in passive mode, acknowledge warmly and resume. Reference any attached documents when relevant.${memoriesContext}${platformContext}`,
-            input_audio_transcription: { model: 'whisper-1' },
-            turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
+            audio: {
+              input: {
+                transcription: { model: 'whisper-1' },
+                turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
+              },
+              output: { voice: voiceId }
+            },
             tools: [
               { type: 'function', name: 'search_web', description: 'Search the internet.', parameters: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] } },
               { type: 'function', name: 'get_crm_data', description: 'Query CRM.', parameters: { type: 'object', properties: { entity: { type: 'string', enum: ['deals','contacts','companies','tasks'] }, filter: { type: 'string' } }, required: ['entity'] } }
@@ -196,6 +207,10 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   // ── Events ───────────────────────────────────────────
   function handleEvent(ev) {
     const t = ev.type
+    // Debug: log all events so we can verify transcription events fire
+    if (t !== 'response.output_audio_transcript.delta') {
+      console.log('[Kiko Voice Event]', t, ev.transcript || ev.delta || '')
+    }
     if (t === 'input_audio_buffer.speech_started') {
       setTranscript(''); setKikoText(''); setSpeaking(false); setThinking(false)
       if (listenModeRef.current !== 'active') resetToActive()
@@ -217,8 +232,9 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     }
 
     if (t === 'response.created') { setKikoText(''); setSpeaking(true); setThinking(false) }
-    if (t === 'response.output_audio_transcript.delta') setKikoText(p => p + (ev.delta || ''))
-    if (t === 'response.output_audio_transcript.done') {
+    // GA event names (beta used response.audio_transcript.delta)
+    if (t === 'response.audio_transcript.delta' || t === 'response.output_audio_transcript.delta') setKikoText(p => p + (ev.delta || ''))
+    if (t === 'response.audio_transcript.done' || t === 'response.output_audio_transcript.done') {
       const full = ev.transcript?.trim() || ''
       if (full) addMessage('kiko', full)
     }
