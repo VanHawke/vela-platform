@@ -44,9 +44,19 @@ export default function App() {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
-      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setSession(sess ?? null)
         setUser(sess?.user ?? null)
+      }
+      if (event === 'SIGNED_OUT') {
+        setSession(null)
+        setUser(null)
+      }
+      // Auto-logout when the refresh token expires or is revoked
+      if (event === 'TOKEN_REFRESH_FAILED') {
+        setSession(null)
+        setUser(null)
+        supabase.auth.signOut()   // clears local storage
       }
     })
     return () => subscription.unsubscribe()
