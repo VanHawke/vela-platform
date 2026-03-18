@@ -81,6 +81,10 @@ export default function App() {
   // This means no separate getSession() call is needed — it handles both
   // "already logged in on page load" and "just logged in" cases.
   useEffect(() => {
+    // One-time cleanup: remove stale vela-auth-token from the old storageKey era
+    // so it doesn't cause confusion. The real session is under sb-{ref}-auth-token.
+    try { localStorage.removeItem('vela-auth-token') } catch {}
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
       if (
         event === 'INITIAL_SESSION' ||
