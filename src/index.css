@@ -54,6 +54,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); -web
 @keyframes kikoProgress { 0% { width: 15%; } 50% { width: 70%; } 100% { width: 15%; } }
 @keyframes kikoVortexSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes kikoCorePulse { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.5); opacity: 1; } }
+@keyframes kikoEq { from { height: 6px; } to { height: 28px; } }
 
 .animate-fade-in { animation: fadeIn 0.3s ease-out; }
 .animate-slide-in { animation: slideInRight 0.3s ease-out; }

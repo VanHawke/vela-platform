@@ -1,363 +1,242 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { X, Mic, MicOff } from 'lucide-react'
+import { X, Send, ChevronRight, ChevronLeft, Mic, MicOff } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import KikoSymbol from './KikoSymbol'
 
-// ── Timing constants ──────────────────────────────────────
-const PASSIVE_AFTER_MS  = 45_000   // 45s silence → passive
-const OFF_AFTER_MS      = 120_000  // 2min silence → off
-const KEYWORDS          = ['hey kiko', 'okay kiko', 'ok kiko', 'kiko']
+const PASSIVE_AFTER_MS = 45_000
+const OFF_AFTER_MS     = 120_000
+const KEYWORDS         = ['hey kiko', 'okay kiko', 'ok kiko', 'kiko']
 
-// ── Equalizer bars ────────────────────────────────────────
-function Equalizer({ active, color = '#fff' }) {
+function Equalizer({ active }) {
+  const bars = [
+    { h: [6, 22], d: 0 }, { h: [14, 28], d: 0.1 },
+    { h: [10, 24], d: 0.05 }, { h: [18, 30], d: 0.15 }, { h: [8, 20], d: 0.08 },
+  ]
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 5, height: 48 }}>
-      {[0,1,2,3,4].map(i => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, height: 56 }}>
+      {bars.map((b, i) => (
         <div key={i} style={{
-          width: 3.5, borderRadius: 2, background: color,
-          animation: active ? `equalizerBar 0.8s ease-in-out ${i * 0.12}s infinite` : 'none',
-          height: active ? [14,22,18,24,12][i] : 4, minHeight: 4,
-          transition: 'height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s',
-          opacity: active ? 1 : 0.3,
+          width: 4.5, borderRadius: 2.5, background: 'rgba(255,255,255,0.9)',
+          height: active ? b.h[1] : b.h[0], minHeight: b.h[0],
+          animation: active ? `kikoEq 0.7s ease-in-out ${b.d}s infinite alternate` : 'none',
+          transition: 'height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         }} />
       ))}
     </div>
   )
 }
 
-// ── Passive ring: gentle pulse to show background listening ─
-function PassiveRing() {
-  return (
-    <div style={{ position: 'absolute', inset: -8, borderRadius: '50%',
-      border: '1.5px solid rgba(0,0,0,0.12)',
-      animation: 'pulse 3s ease-in-out infinite', pointerEvents: 'none' }} />
-  )
-}
-
 export default function KikoVoice({ onClose, user, micStream, mini = false, onShowPrompt }) {
-  // ── Core state ────────────────────────────────────────
-  const [status, setStatus]           = useState('connecting')
-  const [listenMode, setListenMode]   = useState('active') // 'active' | 'passive' | 'off'
-  const [transcript, setTranscript]   = useState('')
-  const [kikoText, setKikoText]       = useState('')
-  const [speaking, setSpeaking]       = useState(false)
-  const [error, setError]             = useState('')
+  const [status, setStatus]         = useState('connecting')
+  const [listenMode, setListenMode] = useState('active')
+  const [speaking, setSpeaking]     = useState(false)
+  const [thinking, setThinking]     = useState(false)
+  const [transcript, setTranscript] = useState('')
+  const [kikoText, setKikoText]     = useState('')
+  const [typeInput, setTypeInput]   = useState('')
+  const [showPane, setShowPane]     = useState(false)
+  const [messages, setMessages]     = useState([])
+  const [error, setError]           = useState('')
 
-  // ── Refs ──────────────────────────────────────────────
   const pcRef           = useRef(null)
   const dcRef           = useRef(null)
   const streamRef       = useRef(null)
   const audioRef        = useRef(null)
   const conversationRef = useRef({ id: null, messages: [] })
-  const listenModeRef   = useRef('active')   // mirror state for event handlers
-  const passiveTimerRef = useRef(null)       // active → passive (45s)
-  const offTimerRef     = useRef(null)       // passive → off (2min)
-  const srRef           = useRef(null)       // SpeechRecognition instance (off-mode)
-  const sessionBaseRef  = useRef(null)       // store session.update payload for reuse
+  const listenModeRef   = useRef('active')
+  const passiveTimerRef = useRef(null)
+  const offTimerRef     = useRef(null)
+  const srRef           = useRef(null)
+  const scrollRef       = useRef(null)
+  const inputRef        = useRef(null)
 
-  // Keep ref in sync
   useEffect(() => { listenModeRef.current = listenMode }, [listenMode])
+  useEffect(() => { connectRealtime(); return () => { cleanup(); stopKeyword() } }, [])
+  useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight }, [messages])
 
-  // ── Connect on mount ──────────────────────────────────
-  useEffect(() => {
-    connectRealtime()
-    return () => { cleanup(); stopKeywordDetection() }
-  }, [])
-
-  // ─────────────────────────────────────────────────────
-  // TIMER MANAGEMENT
-  // ─────────────────────────────────────────────────────
-  const clearSilenceTimers = useCallback(() => {
+  // ── Timers ──────────────────────────────────────────
+  const clearTimers = useCallback(() => {
     if (passiveTimerRef.current) { clearTimeout(passiveTimerRef.current); passiveTimerRef.current = null }
     if (offTimerRef.current)     { clearTimeout(offTimerRef.current);     offTimerRef.current = null }
   }, [])
 
-  const startSilenceTimers = useCallback(() => {
-    clearSilenceTimers()
-    passiveTimerRef.current = setTimeout(() => enterPassiveMode(), PASSIVE_AFTER_MS)
-    offTimerRef.current     = setTimeout(() => enterOffMode(),    OFF_AFTER_MS)
-  }, [clearSilenceTimers])
+  const startTimers = useCallback(() => {
+    clearTimers()
+    passiveTimerRef.current = setTimeout(enterPassive, PASSIVE_AFTER_MS)
+    offTimerRef.current     = setTimeout(enterOff,     OFF_AFTER_MS)
+  }, [clearTimers])
 
   const resetToActive = useCallback(() => {
-    if (listenModeRef.current !== 'active') {
-      setListenMode('active')
-      listenModeRef.current = 'active'
-      // Re-enable VAD in Realtime session
-      if (dcRef.current?.readyState === 'open') {
-        dcRef.current.send(JSON.stringify({
-          type: 'session.update',
-          session: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 } }
-        }))
-      }
-    }
-    startSilenceTimers()
-  }, [startSilenceTimers])
-
-  // ─────────────────────────────────────────────────────
-  // PASSIVE MODE — mic stays on, Kiko doesn't auto-respond
-  // ─────────────────────────────────────────────────────
-  const enterPassiveMode = useCallback(() => {
-    if (listenModeRef.current === 'off') return
-    setListenMode('passive')
-    listenModeRef.current = 'passive'
-    setTranscript('')
-    setKikoText('')
-    setSpeaking(false)
-    // Disable server VAD so Kiko stops auto-triggering responses
+    setListenMode('active'); listenModeRef.current = 'active'
     if (dcRef.current?.readyState === 'open') {
-      dcRef.current.send(JSON.stringify({
-        type: 'session.update',
-        session: { turn_detection: { type: 'none' } }
-      }))
+      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 } } }))
+    }
+    startTimers()
+  }, [startTimers])
+
+  // ── Passive ──────────────────────────────────────────
+  const enterPassive = useCallback(() => {
+    if (listenModeRef.current === 'off') return
+    setListenMode('passive'); listenModeRef.current = 'passive'
+    setTranscript(''); setKikoText(''); setSpeaking(false); setThinking(false)
+    if (dcRef.current?.readyState === 'open') {
+      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: { type: 'none' } } }))
     }
   }, [])
 
-  // ─────────────────────────────────────────────────────
-  // OFF MODE — mic stops, keyword detection starts
-  // ─────────────────────────────────────────────────────
-  const enterOffMode = useCallback(() => {
-    setListenMode('off')
-    listenModeRef.current = 'off'
-    setTranscript('')
-    setKikoText('')
-    setSpeaking(false)
-    // Stop mic tracks (leaves WebRTC peer alive but silent)
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.enabled = false)
-    }
-    startKeywordDetection()
+  // ── Off ──────────────────────────────────────────────
+  const enterOff = useCallback(() => {
+    setListenMode('off'); listenModeRef.current = 'off'
+    setTranscript(''); setKikoText(''); setSpeaking(false); setThinking(false)
+    if (streamRef.current) streamRef.current.getTracks().forEach(t => t.enabled = false)
+    startKeyword()
   }, [])
 
-  // ─────────────────────────────────────────────────────
-  // KEYWORD DETECTION via Web Speech API
-  // ─────────────────────────────────────────────────────
-  const startKeywordDetection = useCallback(() => {
+  // ── Keyword detection ─────────────────────────────────
+  const startKeyword = useCallback(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SR) return   // not supported — user must click to reactivate
-    stopKeywordDetection()
-
-    const sr = new SR()
-    sr.continuous      = true
-    sr.interimResults  = false
-    sr.lang            = 'en-US'
-    srRef.current      = sr
-
+    if (!SR) return
+    stopKeyword()
+    const sr = new SR(); sr.continuous = true; sr.interimResults = false; sr.lang = 'en-US'
+    srRef.current = sr
     sr.onresult = (e) => {
-      const heard = Array.from(e.results)
-        .map(r => r[0].transcript.toLowerCase().trim())
-        .join(' ')
-      if (KEYWORDS.some(kw => heard.includes(kw))) {
-        reactivateFromOff()
-      }
+      const heard = Array.from(e.results).map(r => r[0].transcript.toLowerCase()).join(' ')
+      if (KEYWORDS.some(kw => heard.includes(kw))) reactivate()
     }
-    sr.onend = () => {
-      // Auto-restart while still in off mode
-      if (listenModeRef.current === 'off' && srRef.current === sr) {
-        try { sr.start() } catch {}
-      }
-    }
+    sr.onend = () => { if (listenModeRef.current === 'off' && srRef.current === sr) { try { sr.start() } catch {} } }
     try { sr.start() } catch {}
   }, [])
 
-  const stopKeywordDetection = useCallback(() => {
-    if (srRef.current) {
-      try { srRef.current.abort() } catch {}
-      srRef.current = null
-    }
-  }, [])
+  const stopKeyword = useCallback(() => { if (srRef.current) { try { srRef.current.abort() } catch {} srRef.current = null } }, [])
 
-  // ─────────────────────────────────────────────────────
-  // REACTIVATE from off mode
-  // ─────────────────────────────────────────────────────
-  const reactivateFromOff = useCallback(() => {
-    stopKeywordDetection()
-    // Re-enable mic tracks
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.enabled = true)
-    }
-    setListenMode('active')
-    listenModeRef.current = 'active'
-    // Re-enable VAD
+  const reactivate = useCallback(() => {
+    stopKeyword()
+    if (streamRef.current) streamRef.current.getTracks().forEach(t => t.enabled = true)
+    setListenMode('active'); listenModeRef.current = 'active'
     if (dcRef.current?.readyState === 'open') {
-      dcRef.current.send(JSON.stringify({
-        type: 'session.update',
-        session: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 } }
-      }))
+      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 } } }))
     }
-    startSilenceTimers()
-  }, [startSilenceTimers, stopKeywordDetection])
+    startTimers()
+  }, [startTimers, stopKeyword])
 
-  // ─────────────────────────────────────────────────────
-  // CONNECT REALTIME
-  // ─────────────────────────────────────────────────────
+  // ── Connect ───────────────────────────────────────────
   async function connectRealtime() {
     try {
-      setStatus('connecting')
-      setListenMode('active')
-      listenModeRef.current = 'active'
-      setError('')
-
+      setStatus('connecting'); setListenMode('active'); listenModeRef.current = 'active'; setError('')
       let voiceId = 'shimmer', speed = 1.0, memoriesContext = '', platformContext = ''
       const orgId = user?.app_metadata?.org_id
 
       if (user?.id) {
-        const { data: settingsData } = await supabase.from('user_settings').select('kiko_voice, kiko_speed').eq('user_id', user.id).single()
-        if (settingsData) { voiceId = settingsData.kiko_voice || 'shimmer'; speed = parseFloat(settingsData.kiko_speed) || 1.0 }
-
+        const { data: s } = await supabase.from('user_settings').select('kiko_voice, kiko_speed').eq('user_id', user.id).single()
+        if (s) { voiceId = s.kiko_voice || 'shimmer'; speed = parseFloat(s.kiko_speed) || 1.0 }
         if (orgId) {
-          const { data: memories } = await supabase.from('kiko_memories').select('path, content').eq('org_id', orgId).eq('is_directory', false).order('updated_at', { ascending: false }).limit(10)
-          if (memories?.length) memoriesContext = '\n\nYOUR MEMORY:\n' + memories.map(m => m.content).join('\n---\n').slice(0, 3000)
-          const { count: dealCount }    = await supabase.from('deals').select('*', { count: 'exact', head: true }).eq('org_id', orgId)
-          const { count: contactCount } = await supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('org_id', orgId)
-          const { count: companyCount } = await supabase.from('companies').select('*', { count: 'exact', head: true }).eq('org_id', orgId)
-          platformContext = `\n\nPLATFORM DATA ACCESS: ${dealCount||0} deals, ${contactCount||0} contacts, ${companyCount||0} companies.`
+          const { data: mems } = await supabase.from('kiko_memories').select('content').eq('org_id', orgId).eq('is_directory', false).order('updated_at', { ascending: false }).limit(10)
+          if (mems?.length) memoriesContext = '\n\nYOUR MEMORY:\n' + mems.map(m => m.content).join('\n---\n').slice(0, 3000)
+          const { count: dc } = await supabase.from('deals').select('*', { count: 'exact', head: true }).eq('org_id', orgId)
+          const { count: cc } = await supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('org_id', orgId)
+          const { count: co } = await supabase.from('companies').select('*', { count: 'exact', head: true }).eq('org_id', orgId)
+          platformContext = `\n\nPLATFORM: ${dc||0} deals, ${cc||0} contacts, ${co||0} companies.`
         }
       }
 
       const tokenRes = await fetch('/api/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'realtime-token', voice: voiceId }) })
       const tokenData = await tokenRes.json()
-      if (!tokenRes.ok || (!tokenData.client_secret?.value && !tokenData.value)) throw new Error(tokenData.error?.message || 'Failed to get voice token')
-      const ephemeralKey = tokenData.client_secret?.value || tokenData.value
+      if (!tokenRes.ok || (!tokenData.client_secret?.value && !tokenData.value)) throw new Error(tokenData.error?.message || 'Token failed')
+      const key = tokenData.client_secret?.value || tokenData.value
 
       const stream = micStream || await navigator.mediaDevices.getUserMedia({ audio: true })
       streamRef.current = stream
+      const pc = new RTCPeerConnection(); pcRef.current = pc
+      const audio = document.createElement('audio'); audio.autoplay = true; audioRef.current = audio
+      pc.ontrack = e => { audio.srcObject = e.streams[0] }
+      stream.getTracks().forEach(t => pc.addTrack(t, stream))
+      const dc = pc.createDataChannel('oai-events'); dcRef.current = dc
 
-      const pc = new RTCPeerConnection()
-      pcRef.current = pc
-
-      const audioEl = document.createElement('audio')
-      audioEl.autoplay = true
-      audioRef.current = audioEl
-      pc.ontrack = (e) => { audioEl.srcObject = e.streams[0] }
-
-      stream.getTracks().forEach(track => pc.addTrack(track, stream))
-
-      const dc = pc.createDataChannel('oai-events')
-      dcRef.current = dc
-
-      const sessionPayload = {
-        type: 'session.update',
-        session: {
-          instructions: `You are Kiko — the intelligence layer of Vela, built for Van Hawke Group.
-Speaking with Sunny Sidhu, CEO, Weybridge UK. Sharp, warm, confident advisor. Speak naturally, expressively.
-React emotionally — genuine interest, concern, excitement, humour where appropriate.
-Keep responses concise — 2-3 sentences unless depth is warranted.
-All financials in USD. Use "intelligent age" not "AI generation".
-When you hear "Hey Kiko" while in passive/off mode, acknowledge warmly and resume active conversation.${memoriesContext}${platformContext}`,
-          audio: {
-            input: { transcription: { model: 'whisper-1' }, turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 } },
-            output: { speed }
-          },
-          tools: [
-            { type: 'function', name: 'search_web', description: 'Search the internet for current information.', parameters: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] } },
-            { type: 'function', name: 'get_crm_data', description: 'Query the Vela CRM for deals, contacts, companies, or tasks.', parameters: { type: 'object', properties: { entity: { type: 'string', enum: ['deals','contacts','companies','tasks'] }, filter: { type: 'string' } }, required: ['entity'] } }
-          ],
-          tool_choice: 'auto'
-        }
+      dc.onopen = () => {
+        setStatus('live')
+        dc.send(JSON.stringify({
+          type: 'session.update',
+          session: {
+            instructions: `You are Kiko — the intelligence layer of Vela for Van Hawke Group. Speaking with Sunny Sidhu, CEO, Weybridge UK. Sharp, warm, confident advisor. Speak naturally and expressively. Keep responses concise. All financials in USD. Use "intelligent age" not "AI generation". When you hear "Hey Kiko" while passive, acknowledge warmly and resume.${memoriesContext}${platformContext}`,
+            audio: { input: { transcription: { model: 'whisper-1' }, turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 } }, output: { speed } },
+            tools: [
+              { type: 'function', name: 'search_web', description: 'Search the internet.', parameters: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] } },
+              { type: 'function', name: 'get_crm_data', description: 'Query CRM.', parameters: { type: 'object', properties: { entity: { type: 'string', enum: ['deals','contacts','companies','tasks'] }, filter: { type: 'string' } }, required: ['entity'] } }
+            ],
+            tool_choice: 'auto',
+          }
+        }))
+        startTimers()
       }
-      sessionBaseRef.current = sessionPayload
-
-      dc.onopen = () => { setStatus('live'); dc.send(JSON.stringify(sessionPayload)); startSilenceTimers() }
       dc.onclose = () => setStatus('connecting')
-      dc.onmessage = (e) => { try { handleRealtimeEvent(JSON.parse(e.data)) } catch {} }
+      dc.onmessage = e => { try { handleEvent(JSON.parse(e.data)) } catch {} }
 
-      const offer = await pc.createOffer()
-      await pc.setLocalDescription(offer)
-
-      const sdpRes = await fetch('https://api.openai.com/v1/realtime/calls', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${ephemeralKey}`, 'Content-Type': 'application/sdp' },
-        body: offer.sdp,
-      })
-      if (!sdpRes.ok) throw new Error(`Realtime connection failed: ${sdpRes.status}`)
-      await pc.setRemoteDescription({ type: 'answer', sdp: await sdpRes.text() })
-
-    } catch (err) {
-      console.error('[Voice] Connection error:', err)
-      setError(err.message || 'Could not connect voice')
-      setStatus('error')
-    }
+      const offer = await pc.createOffer(); await pc.setLocalDescription(offer)
+      const sdp = await fetch('https://api.openai.com/v1/realtime/calls', { method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/sdp' }, body: offer.sdp })
+      if (!sdp.ok) throw new Error(`SDP ${sdp.status}`)
+      await pc.setRemoteDescription({ type: 'answer', sdp: await sdp.text() })
+    } catch (err) { setError(err.message); setStatus('error') }
   }
 
-  // ─────────────────────────────────────────────────────
-  // REALTIME EVENT HANDLER
-  // ─────────────────────────────────────────────────────
-  function handleRealtimeEvent(event) {
-    const t = event.type
-
-    // User started speaking — reset to active + restart timers
+  // ── Event handler ─────────────────────────────────────
+  function handleEvent(ev) {
+    const t = ev.type
     if (t === 'input_audio_buffer.speech_started') {
-      setTranscript(''); setKikoText(''); setSpeaking(false)
+      setTranscript(''); setKikoText(''); setSpeaking(false); setThinking(false)
       if (listenModeRef.current !== 'active') resetToActive()
-      else startSilenceTimers()
+      else startTimers()
     }
-
-    // User finished speaking — start silence countdown
-    if (t === 'input_audio_buffer.speech_stopped') {
-      startSilenceTimers()
-    }
-
-    // User transcript complete
+    if (t === 'input_audio_buffer.speech_stopped') startTimers()
     if (t === 'conversation.item.input_audio_transcription.completed') {
-      const text = event.transcript || ''
+      const text = ev.transcript || ''
       setTranscript(text)
       if (text.trim()) {
-        // If passive, check for keyword before responding
         if (listenModeRef.current === 'passive') {
-          const lower = text.toLowerCase()
-          if (KEYWORDS.some(kw => lower.includes(kw))) resetToActive()
-          // else: ignore — Kiko doesn't respond in passive mode
+          if (KEYWORDS.some(kw => text.toLowerCase().includes(kw))) resetToActive()
         } else {
-          conversationRef.current.messages.push({ role: 'user', content: text })
-          saveVoiceConversation()
+          addMessage('user', text)
         }
       }
     }
-
-    if (t === 'response.output_audio_transcript.delta') setKikoText(prev => prev + (event.delta || ''))
+    if (t === 'response.created')  { setKikoText(''); setSpeaking(true); setThinking(false) }
+    if (t === 'response.output_audio_transcript.delta') setKikoText(p => p + (ev.delta || ''))
     if (t === 'response.output_audio_transcript.done') {
-      const fullText = event.transcript || ''
-      if (fullText.trim()) {
-        conversationRef.current.messages.push({ role: 'assistant', content: fullText })
-        saveVoiceConversation()
-      }
+      const full = ev.transcript || ''
+      if (full.trim()) addMessage('kiko', full)
     }
-    if (t === 'response.created') { setKikoText(''); setSpeaking(true) }
-    if (t === 'response.done')    { setSpeaking(false) }
-    if (t === 'response.function_call_arguments.done') handleToolCall(event)
+    if (t === 'response.done') setSpeaking(false)
+    if (t === 'response.function_call_arguments.done') handleTool(ev)
   }
 
-  // ─────────────────────────────────────────────────────
-  // SAVE CONVERSATION
-  // ─────────────────────────────────────────────────────
-  async function saveVoiceConversation() {
+  function addMessage(role, content) {
+    const msg = { role, content, time: new Date() }
+    setMessages(p => [...p, msg])
+    conversationRef.current.messages.push({ role: role === 'kiko' ? 'assistant' : 'user', content })
+    saveConversation()
+  }
+
+  async function saveConversation() {
     if (!user?.id) return
     const orgId = user?.app_metadata?.org_id
-    const msgs  = conversationRef.current.messages
+    const msgs = conversationRef.current.messages
     if (!msgs.length) return
     try {
       if (conversationRef.current.id) {
         await supabase.from('conversations').update({ messages: msgs, updated_at: new Date().toISOString() }).eq('id', conversationRef.current.id)
       } else {
-        const title = (msgs[0]?.content || 'Voice conversation').slice(0, 60)
+        const title = (msgs[0]?.content || 'Voice').slice(0, 60)
         const { data } = await supabase.from('conversations').insert({ user_id: user.id, org_id: orgId, title: '🎤 ' + title, messages: msgs }).select('id').single()
         if (data?.id) conversationRef.current.id = data.id
       }
-    } catch (err) { console.error('[Voice] Save error:', err) }
+    } catch {}
   }
 
-  // ─────────────────────────────────────────────────────
-  // TOOL CALLS
-  // ─────────────────────────────────────────────────────
-  async function handleToolCall(event) {
-    const { name, arguments: argsStr, call_id } = event
+  async function handleTool(ev) {
+    const { name, arguments: a, call_id } = ev
     try {
-      const args = JSON.parse(argsStr)
-      const message = name === 'search_web'
-        ? `Search the web for: ${args.query}`
-        : `Query CRM ${args.entity}${args.filter ? ` filtered by: ${args.filter}` : ''}`
-
-      const res  = await fetch('/api/kiko', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message, currentPage: 'voice' }) })
+      const args = JSON.parse(a)
+      const msg = name === 'search_web' ? `Search: ${args.query}` : `CRM ${args.entity}${args.filter ? ` — ${args.filter}` : ''}`
+      const res = await fetch('/api/kiko', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg, currentPage: 'voice' }) })
       const reader = res.body.getReader(); const dec = new TextDecoder()
       let full = '', buf = ''
       while (true) {
@@ -374,14 +253,21 @@ When you hear "Hey Kiko" while in passive/off mode, acknowledge warmly and resum
         dcRef.current.send(JSON.stringify({ type: 'conversation.item.create', item: { type: 'function_call_output', call_id, output: (full || 'No results').slice(0, 4000) } }))
         dcRef.current.send(JSON.stringify({ type: 'response.create' }))
       }
-    } catch (err) { console.error('[Voice] Tool error:', err) }
+    } catch {}
   }
 
-  // ─────────────────────────────────────────────────────
-  // CLEANUP
-  // ─────────────────────────────────────────────────────
+  // ── Send typed message ────────────────────────────────
+  async function sendTyped() {
+    const text = typeInput.trim(); if (!text) return
+    setTypeInput(''); addMessage('user', text); setThinking(true)
+    if (dcRef.current?.readyState === 'open') {
+      dcRef.current.send(JSON.stringify({ type: 'conversation.item.create', item: { type: 'message', role: 'user', content: [{ type: 'input_text', text }] } }))
+      dcRef.current.send(JSON.stringify({ type: 'response.create' }))
+    }
+  }
+
   function cleanup() {
-    clearSilenceTimers()
+    clearTimers()
     if (dcRef.current)     { try { dcRef.current.close()  } catch {} }
     if (pcRef.current)     { try { pcRef.current.close()  } catch {} }
     if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()) }
@@ -389,132 +275,158 @@ When you hear "Hey Kiko" while in passive/off mode, acknowledge warmly and resum
     pcRef.current = null; dcRef.current = null; streamRef.current = null
   }
 
-  function handleClose() { cleanup(); stopKeywordDetection(); onClose() }
+  function handleClose() { cleanup(); stopKeyword(); onClose() }
 
-  // ─────────────────────────────────────────────────────
-  // RENDER HELPERS
-  // ─────────────────────────────────────────────────────
-  const isActive  = status === 'live'
-  const isTalking = isActive && speaking
+  // ── Avatar animation state ────────────────────────────
+  const avatarAnimate = speaking ? 'none' // eq shown instead
+    : thinking ? 'thinking'
+    : status === 'live' && listenMode === 'active' ? 'streaming'
+    : 'idle'
 
   const modeLabel = {
-    active:  speaking ? '' : 'Speak freely',
-    passive: 'Passive — say "Hey Kiko" to resume',
-    off:     'Mic off — say "Hey Kiko" to restart',
+    active:  speaking ? 'Speaking…' : thinking ? 'Thinking…' : status === 'connecting' ? 'Connecting…' : 'Speak freely',
+    passive: 'Passive · Say "Hey Kiko" to resume',
+    off:     'Mic off · Say "Hey Kiko" to restart',
   }[listenMode] || ''
+  const statusLabel = status === 'error' ? (error || 'Connection failed') : modeLabel
 
-  const statusLabel = status === 'connecting' ? 'Connecting…' : status === 'error' ? (error || 'Connection failed') : modeLabel
+  // Avatar opacity/bg per mode
+  const avBg = listenMode === 'off' ? 'rgba(28,28,28,0.6)' : listenMode === 'passive' ? 'rgba(40,40,40,0.5)' : '#111'
+  const avOpacity = listenMode === 'passive' ? 0.4 : 1
 
-  // Accent colour per mode
-  const modeAccent = listenMode === 'off' ? 'rgba(0,0,0,0.06)' : listenMode === 'passive' ? 'rgba(0,0,0,0.12)' : 'var(--accent)'
-  const symbolColor = listenMode === 'active' && status === 'live' ? '#fff' : 'var(--text-tertiary)'
+  // Pulse rings: only in active mode
+  const showRings = status === 'live' && listenMode === 'active' && !speaking
 
-  // ── MINI MODE ──────────────────────────────────────
+  // ── MINI MODE ──────────────────────────────────────────
   if (mini) {
     return (
       <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-        <button onClick={onShowPrompt} style={{
-          width: 52, height: 52, borderRadius: '50%', border: 'none', cursor: 'pointer',
-          background: modeAccent,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: isActive && listenMode === 'active' ? '0 4px 20px rgba(0,0,0,0.15)' : 'none',
-          transition: 'all 0.4s', position: 'relative',
-        }}>
-          <div style={{ position: 'absolute', transition: 'opacity 0.3s', opacity: isTalking ? 0 : 1 }}>
-            {listenMode === 'off' ? <MicOff size={20} color="var(--text-tertiary)" /> : <KikoSymbol size={26} color={symbolColor} />}
+        <button onClick={onShowPrompt} style={{ width: 52, height: 52, borderRadius: 14, border: 'none', cursor: 'pointer', background: listenMode === 'active' && status === 'live' ? 'var(--accent)' : 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', transition: 'all 0.3s' }}>
+          <div style={{ position: 'absolute', transition: 'opacity 0.3s', opacity: speaking ? 0 : 1 }}>
+            {listenMode === 'off' ? <MicOff size={20} color="var(--text-tertiary)" /> : <KikoSymbol size={26} color={status === 'live' && listenMode === 'active' ? '#fff' : 'var(--text-tertiary)'} animate={avatarAnimate} />}
           </div>
-          <div style={{ position: 'absolute', transition: 'opacity 0.3s', opacity: isTalking ? 1 : 0 }}>
-            <Equalizer active={isTalking} />
+          <div style={{ position: 'absolute', transition: 'opacity 0.3s', opacity: speaking ? 1 : 0 }}>
+            <Equalizer active={speaking} />
           </div>
-          {listenMode === 'passive' && <PassiveRing />}
-          {isActive && listenMode === 'active' && !isTalking && (
-            <div style={{ position: 'absolute', inset: -4, borderRadius: '50%', border: '2px solid var(--accent)', opacity: 0.3, animation: 'pulse 2s infinite' }} />
-          )}
         </button>
-        {status === 'connecting' && <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>Connecting…</span>}
-        {listenMode === 'passive' && <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textAlign: 'center', maxWidth: 90 }}>Passive</span>}
-        {listenMode === 'off'     && <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>Mic off</span>}
-        {status === 'error'       && <button onClick={connectRealtime} style={{ fontSize: 10, color: '#C62828', fontFamily: 'var(--font)', background: 'none', border: 'none', cursor: 'pointer' }}>Retry</button>}
+        {listenMode !== 'active' && <span style={{ fontSize: 9, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textAlign: 'center', maxWidth: 80 }}>{listenMode === 'off' ? 'Mic off' : 'Passive'}</span>}
         <button onClick={handleClose} style={{ position: 'absolute', top: -8, right: -8, width: 20, height: 20, borderRadius: '50%', background: 'var(--surface)', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--text-tertiary)' }}>×</button>
       </div>
     )
   }
 
-  // ── POPUP MODE ─────────────────────────────────────
+  // ── FULL-SCREEN POPUP ──────────────────────────────────
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      className="animate-fade-in" onClick={handleClose}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex' }}
+      onClick={e => e.target === e.currentTarget && handleClose()}>
 
-      <div onClick={e => e.stopPropagation()} style={{
-        width: 360, padding: '48px 40px 40px', borderRadius: 28,
-        background: 'rgba(255,255,255,0.88)', backdropFilter: 'blur(40px) saturate(1.8)', WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
-        border: '1px solid rgba(255,255,255,0.5)', boxShadow: '0 24px 80px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.04)',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, position: 'relative',
-      }}>
+      {/* Frosted overlay background */}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(12,12,12,0.75)', backdropFilter: 'blur(40px) saturate(1.3)', WebkitBackdropFilter: 'blur(40px) saturate(1.3)' }} />
+      {/* Subtle gradient sheen */}
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg, rgba(255,255,255,0.03) 0%, transparent 50%)', pointerEvents: 'none' }} />
+
+      {/* ── Main stage ── */}
+      <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0, padding: '48px 40px 32px', zIndex: 1 }}>
 
         {/* Close */}
-        <button onClick={handleClose} style={{ position: 'absolute', top: 16, right: 16, width: 32, height: 32, borderRadius: '50%', background: 'rgba(0,0,0,0.04)', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <X size={16} />
+        <button onClick={handleClose} style={{ position: 'absolute', top: 20, right: 20, width: 34, height: 34, borderRadius: 10, background: 'rgba(255,255,255,0.08)', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)' }}>
+          <X size={15} />
         </button>
 
-        {/* Mode indicator strip */}
-        {listenMode !== 'active' && status === 'live' && (
-          <div style={{
-            position: 'absolute', top: 0, left: 0, right: 0, height: 3, borderRadius: '28px 28px 0 0',
-            background: listenMode === 'off' ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.2)',
-            transition: 'background 0.4s',
-          }} />
-        )}
+        {/* Mode pill */}
+        <div style={{ position: 'absolute', top: 22, left: '50%', transform: 'translateX(-50%)', padding: '4px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.1)', fontSize: 10, fontWeight: 500, color: listenMode === 'active' ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.28)', letterSpacing: '0.04em', whiteSpace: 'nowrap', fontFamily: 'var(--font)' }}>
+          {statusLabel}
+        </div>
 
-        {/* Main avatar circle */}
-        <div style={{ width: 100, height: 100, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{
-            position: 'absolute', width: 100, height: 100, borderRadius: '50%',
-            background: modeAccent,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'background 0.4s, opacity 0.4s', opacity: speaking ? 0 : 1,
-            boxShadow: listenMode === 'active' && status === 'live' ? '0 0 40px rgba(0,0,0,0.08)' : 'none',
-          }}>
-            {listenMode === 'off'
-              ? <MicOff size={32} color="var(--text-tertiary)" />
-              : <KikoSymbol size={40} color={symbolColor} />
-            }
+        {/* ── AVATAR ── */}
+        <div style={{ position: 'relative', marginBottom: 30 }}>
+          {/* Outer pulse rings */}
+          {showRings && <>
+            <div style={{ position: 'absolute', inset: -14, borderRadius: 52, border: '1.5px solid rgba(255,255,255,0.12)', animation: 'pulse 2.2s ease-in-out infinite', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', inset: -28, borderRadius: 64, border: '1px solid rgba(255,255,255,0.05)', animation: 'pulse 2.2s ease-in-out infinite 0.5s', pointerEvents: 'none' }} />
+          </>}
+
+          {/* Rounded square avatar */}
+          <div style={{ width: 156, height: 156, borderRadius: 38, background: avBg, border: '0.5px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.5s', position: 'relative', overflow: 'hidden' }}>
+
+            {/* Kiko symbol layer */}
+            <div style={{ position: 'absolute', opacity: speaking ? 0 : avOpacity, transition: 'opacity 0.35s ease', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {listenMode === 'off'
+                ? <MicOff size={44} color="rgba(255,255,255,0.2)" />
+                : <KikoSymbol size={68} color="rgba(255,255,255,0.92)" animate={avatarAnimate} />
+              }
+            </div>
+
+            {/* Equalizer layer */}
+            <div style={{ position: 'absolute', opacity: speaking ? 1 : 0, transition: 'opacity 0.35s ease', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Equalizer active={speaking} />
+            </div>
           </div>
-          <div style={{ position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'opacity 0.4s', opacity: speaking ? 1 : 0 }}>
-            <Equalizer active={speaking} color="#1A1A1A" />
-          </div>
-          {listenMode === 'passive' && (
-            <div style={{ position: 'absolute', width: 116, height: 116, borderRadius: '50%', border: '1.5px solid rgba(0,0,0,0.12)', animation: 'pulse 3s ease-in-out infinite' }} />
+        </div>
+
+        {/* Live transcript text under avatar */}
+        <div style={{ textAlign: 'center', maxWidth: 380, minHeight: 64, marginBottom: 28 }}>
+          {transcript && (
+            <p style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.88)', margin: '0 0 8px', fontFamily: 'var(--font)', lineHeight: 1.35 }}>{transcript}</p>
+          )}
+          {kikoText && (
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.55 }}>{kikoText}</p>
+          )}
+          {!transcript && !kikoText && status === 'error' && (
+            <p style={{ fontSize: 13, color: '#C62828', margin: 0, fontFamily: 'var(--font)' }}>{error}</p>
           )}
         </div>
 
-        {/* Status label */}
-        <p style={{ fontSize: 13, fontFamily: 'var(--font)', textAlign: 'center', color: status === 'error' ? '#C62828' : listenMode === 'off' ? 'var(--text-tertiary)' : 'var(--text-secondary)', maxWidth: 240, lineHeight: 1.4 }}>
-          {statusLabel}
-        </p>
-
-        {/* Transcript + Kiko text */}
-        {(transcript || kikoText) && listenMode === 'active' && (
-          <div style={{ textAlign: 'center', maxWidth: 280 }}>
-            {transcript && <p style={{ fontSize: 14, color: 'var(--text)', fontFamily: 'var(--font)', fontWeight: 500, margin: 0 }}>{transcript}</p>}
-            {kikoText && <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)', lineHeight: 1.5, margin: '8px 0 0' }}>{kikoText}</p>}
-          </div>
-        )}
-
-        {/* Mode action hint */}
+        {/* Tap-to-resume button (passive/off only) */}
         {listenMode !== 'active' && status === 'live' && (
-          <button onClick={() => listenMode === 'off' ? reactivateFromOff() : resetToActive()} style={{
-            fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.04)',
-            border: '1px solid rgba(0,0,0,0.08)', borderRadius: 20, padding: '6px 16px',
-            cursor: 'pointer', fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', gap: 6,
-          }}>
+          <button onClick={() => listenMode === 'off' ? reactivate() : resetToActive()} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.07)', border: '0.5px solid rgba(255,255,255,0.14)', borderRadius: 20, padding: '7px 16px', cursor: 'pointer', fontFamily: 'var(--font)', marginBottom: 24 }}>
             <Mic size={12} /> Tap to resume
           </button>
         )}
 
+        {/* ── Prompt bar ── */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', maxWidth: 440, padding: '10px 12px 10px 16px', borderRadius: 16, background: 'rgba(255,255,255,0.07)', border: '0.5px solid rgba(255,255,255,0.12)' }}>
+          <input ref={inputRef} value={typeInput} onChange={e => setTypeInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendTyped())}
+            placeholder="Or type a message to Kiko…"
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: 'rgba(255,255,255,0.8)', fontFamily: 'var(--font)' }} />
+          <button onClick={sendTyped} disabled={!typeInput.trim()} style={{ width: 30, height: 30, borderRadius: 9, background: typeInput.trim() ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)', border: 'none', cursor: typeInput.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.6)', flexShrink: 0, transition: 'background 0.15s' }}>
+            <Send size={12} />
+          </button>
+        </div>
+
         {status === 'error' && (
-          <button onClick={connectRealtime} style={{ height: 32, padding: '0 16px', borderRadius: 8, background: 'var(--accent)', color: '#fff', border: 'none', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>Retry</button>
+          <button onClick={connectRealtime} style={{ marginTop: 14, padding: '7px 18px', borderRadius: 10, background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.8)', border: '0.5px solid rgba(255,255,255,0.2)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)' }}>Retry</button>
         )}
+      </div>
+
+      {/* ── Transcript toggle tab ── */}
+      <div onClick={() => setShowPane(p => !p)} style={{ position: 'absolute', top: '50%', right: showPane ? 280 : 0, transform: 'translateY(-50%)', zIndex: 2, width: 22, height: 52, borderRadius: '10px 0 0 10px', background: 'rgba(255,255,255,0.07)', border: '0.5px solid rgba(255,255,255,0.1)', borderRight: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)', transition: 'right 0.3s cubic-bezier(0.4,0,0.2,1), background 0.15s' }}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}>
+        {showPane ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
+      </div>
+
+      {/* ── Transcript pane ── */}
+      <div style={{ position: 'relative', zIndex: 1, width: showPane ? 280 : 0, flexShrink: 0, overflow: 'hidden', borderLeft: showPane ? '0.5px solid rgba(255,255,255,0.08)' : 'none', transition: 'width 0.3s cubic-bezier(0.4,0,0.2,1)', background: 'rgba(0,0,0,0.2)' }}>
+        <div style={{ width: 280, height: '100%', display: 'flex', flexDirection: 'column', padding: '20px 14px 16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.28)', fontFamily: 'var(--font)' }}>Transcript</span>
+            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.18)', fontFamily: 'var(--font)' }}>{messages.length} messages</span>
+          </div>
+          <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {messages.length === 0 ? (
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)', textAlign: 'center', marginTop: 40 }}>Conversation will appear here</p>
+            ) : messages.map((m, i) => (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: m.role === 'user' ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.25)', fontFamily: 'var(--font)' }}>{m.role === 'user' ? 'You' : 'Kiko'}</span>
+                <div style={{ fontSize: 11, color: m.role === 'user' ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.6)', lineHeight: 1.45, padding: '7px 10px', borderRadius: 10, background: m.role === 'user' ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)', fontFamily: 'var(--font)' }}>
+                  {m.content}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )
