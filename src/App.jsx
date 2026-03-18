@@ -100,7 +100,7 @@ export default function App() {
         <Route path="/login" element={session ? <Navigate to="/" replace /> : <LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/admin" element={session ? <AdminRoute><Admin /></AdminRoute> : <Navigate to="/login" replace />} />
-        <Route element={session ? <Layout key={user?.id} user={user} /> : <Navigate to="/login" replace />}>
+        <Route element={session ? <Layout key="app" user={user} /> : <Navigate to="/login" replace />}>
           <Route index element={<KikoChat user={user} />} />
           <Route path="home" element={<KikoChat user={user} />} />
           <Route path="dashboard" element={<Dashboard user={user} />} />
