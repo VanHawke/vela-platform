@@ -21,7 +21,7 @@ import VelaCode from '@/pages/VelaCode'
 import Admin from '@/pages/Admin'
 import MemoryConsole from '@/pages/MemoryConsole'
 
-const INACTIVITY_MS = 20 * 60 * 1000  // 20 minutes
+const INACTIVITY_MS  = 20 * 60 * 1000
 const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click']
 
 function AdminRoute({ children }) {
@@ -43,16 +43,15 @@ const Spinner = () => (
 )
 
 export default function App() {
-  const [session, setSession] = useState(undefined)
+  const [session, setSession] = useState(undefined) // undefined = loading
   const [user, setUser]       = useState(null)
   const timerRef              = useRef(null)
   const loggedInRef           = useRef(false)
 
-  // ── Per-tab inactivity sign-out ───────────────────────
+  // ── 20-min per-tab inactivity logout ──────────────────
   const startInactivityTimer = useCallback(() => {
     clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
-      // Only sign out this tab's local session
       supabase.auth.signOut({ scope: 'local' })
     }, INACTIVITY_MS)
   }, [])
@@ -61,7 +60,6 @@ export default function App() {
     if (loggedInRef.current) startInactivityTimer()
   }, [startInactivityTimer])
 
-  // Attach / detach activity listeners based on login state
   useEffect(() => {
     if (!session) {
       loggedInRef.current = false
@@ -78,25 +76,21 @@ export default function App() {
     }
   }, [session, startInactivityTimer, resetInactivityTimer])
 
-  // ── Auth state listener ───────────────────────────────
+  // ── Auth state — single source of truth ───────────────
+  // onAuthStateChange fires INITIAL_SESSION on mount with current session (or null).
+  // This means no separate getSession() call is needed — it handles both
+  // "already logged in on page load" and "just logged in" cases.
   useEffect(() => {
-    // Get current session immediately on mount
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s ?? null)
-      setUser(s?.user ?? null)
-    })
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        setSession(sess)
+      if (
+        event === 'INITIAL_SESSION' ||
+        event === 'SIGNED_IN'       ||
+        event === 'TOKEN_REFRESHED'
+      ) {
+        setSession(sess ?? null)
         setUser(sess?.user ?? null)
       }
-      if (event === 'SIGNED_OUT') {
-        setSession(null)
-        setUser(null)
-      }
-      // Token refresh failed — clear state only, never call signOut() here
-      if (event === 'TOKEN_REFRESH_FAILED') {
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESH_FAILED') {
         setSession(null)
         setUser(null)
       }

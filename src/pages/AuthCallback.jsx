@@ -1,35 +1,42 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 
 export default function AuthCallback() {
-  const navigate = useNavigate()
   const [error, setError] = useState(null)
 
   useEffect(() => {
     const handleCallback = async () => {
-      const code = new URLSearchParams(window.location.search).get('code')
-
-      if (!code) {
-        // No code — redirect to login
-        navigate('/login', { replace: true })
-        return
-      }
-
       try {
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        const code = new URLSearchParams(window.location.search).get('code')
+
+        if (!code) {
+          // No code param — go to login
+          window.location.replace('/login')
+          return
+        }
+
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
         if (error) throw error
-        // Session is now in storage — navigate to platform
-        navigate('/', { replace: true })
+
+        if (data?.session) {
+          // Full page reload — ensures App.jsx remounts with fresh session from localStorage.
+          // Never use React Router navigate here: App is already mounted, getSession()
+          // already ran (returned null before login), and client-side nav can miss the
+          // SIGNED_IN event. A hard redirect guarantees a clean init.
+          window.location.replace('/')
+        } else {
+          throw new Error('No session returned after code exchange')
+        }
       } catch (err) {
-        console.error('Auth callback error:', err)
-        setError(err.message)
-        setTimeout(() => navigate('/login', { replace: true }), 2000)
+        console.error('[AuthCallback] error:', err)
+        setError(err.message || 'Authentication failed')
+        setTimeout(() => window.location.replace('/login'), 2500)
       }
     }
 
     handleCallback()
-  }, [navigate])
+  }, [])
 
   const font = "'DM Sans', -apple-system, sans-serif"
 
@@ -37,8 +44,8 @@ export default function AuthCallback() {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#fff', fontFamily: font }}>
         <div style={{ textAlign: 'center' }}>
-          <p style={{ fontSize: 13, color: '#ef4444' }}>{error}</p>
-          <p style={{ fontSize: 12, color: '#ABABAB', marginTop: 4 }}>Redirecting to login…</p>
+          <p style={{ fontSize: 13, color: '#ef4444', marginBottom: 6 }}>Sign-in failed: {error}</p>
+          <p style={{ fontSize: 12, color: '#ABABAB' }}>Returning to login…</p>
         </div>
       </div>
     )
