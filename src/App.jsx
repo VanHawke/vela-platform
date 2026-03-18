@@ -42,13 +42,13 @@ const Spinner = () => (
   </div>
 )
 
-// Hard sign out — clears everything regardless of session state
+// Hard sign out — clears session storage and redirects to login
 export async function hardSignOut() {
   try { await supabase.auth.signOut({ scope: 'global' }) } catch {}
-  // Belt-and-braces: clear all Supabase auth keys from localStorage
+  // Remove Supabase session keys — but NOT code-verifier keys needed during active OAuth flows
   try {
     Object.keys(localStorage)
-      .filter(k => k.startsWith('sb-') || k.includes('supabase'))
+      .filter(k => (k.startsWith('sb-') && k.endsWith('-auth-token')) || k === 'vela-auth-token')
       .forEach(k => localStorage.removeItem(k))
   } catch {}
   window.location.replace('/login')
@@ -107,16 +107,22 @@ export default function App() {
           setUser(null)
           return
         }
-        // Verify JWT is genuinely valid with a live network call
-        const { data: { user: verifiedUser }, error } = await supabase.auth.getUser(sess.access_token)
-        if (error || !verifiedUser) {
-          // JWT invalid — clear everything
-          setSession(null)
-          setUser(null)
+        // Verify the JWT is genuinely valid with a live network call.
+        // Skip for INITIAL_SESSION to avoid blocking page load — TOKEN_REFRESHED will re-validate.
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          const { data: { user: verifiedUser }, error } = await supabase.auth.getUser(sess.access_token)
+          if (error || !verifiedUser) {
+            setSession(null)
+            setUser(null)
+            return
+          }
+          setSession(sess)
+          setUser(verifiedUser)
           return
         }
+        // INITIAL_SESSION: trust the stored session, let autoRefreshToken handle expiry
         setSession(sess)
-        setUser(verifiedUser)
+        setUser(sess.user)
       }
     })
     return () => subscription.unsubscribe()
