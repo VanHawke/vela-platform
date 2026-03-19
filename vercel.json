@@ -1,7 +1,7 @@
 {
   "crons": [
     { "path": "/api/cron-enrich", "schedule": "0 6 * * 1" },
-    { "path": "/api/news-agent", "schedule": "0 8 * * *" },
+    { "path": "/api/news-agent", "schedule": "0 8 * * 1-5" },
     { "path": "/api/cron-outreach-score", "schedule": "0 9 * * 1" },
     { "path": "/api/cron-partnership-scan", "schedule": "0 7 * * *" },
     { "path": "/api/cron-document-scan", "schedule": "0 6 * * 0" }
