@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import {
   ChevronDown, Clock, User, Building2, X, Send, Users, ExternalLink,
-  Plus, Settings, GripVertical, Eye, EyeOff, Check, Trash2, Loader2
+  Plus, Settings, GripVertical, Eye, EyeOff, Check, Trash2, Loader2, ArrowRight
 } from 'lucide-react'
 import DocumentSection from '@/components/documents/DocumentSection'
 
@@ -22,21 +23,50 @@ const CLOSED_STAGES = [
 ]
 
 // ── Pipeline Manager Dropdown ─────────────────────────────
+// Rendered via createPortal → escapes any parent overflow/backdrop-filter
+// stacking context that would clip an absolute-positioned child.
 function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
-  const [open, setOpen] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
-  const [newName, setNewName] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [dragging, setDragging] = useState(null)
-  const [dragOver, setDragOver] = useState(null)
-  const ref = useRef(null)
+  const [open, setOpen]               = useState(false)
+  const [showManage, setShowManage]   = useState(false)
+  const [addingNew, setAddingNew]     = useState(false)
+  const [newName, setNewName]         = useState('')
+  const [saving, setSaving]           = useState(false)
+  const [dragging, setDragging]       = useState(null)
+  const [dragOver, setDragOver]       = useState(null)
+  const [dropPos, setDropPos]         = useState({ top: 0, left: 0, width: 0 })
+  const triggerRef  = useRef(null)
+  const newInputRef = useRef(null)
 
-  // Close on outside click
+  // Measure trigger position each time we open
   useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setShowSettings(false) } }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
+    if (open && triggerRef.current) {
+      const r = triggerRef.current.getBoundingClientRect()
+      setDropPos({ top: r.bottom + 6, left: r.left, width: Math.max(r.width, 280) })
+    }
+  }, [open])
+
+  // Auto-focus input when add form opens
+  useEffect(() => {
+    if (addingNew) setTimeout(() => newInputRef.current?.focus(), 30)
+  }, [addingNew])
+
+  // Close on outside click or Escape
+  useEffect(() => {
+    if (!open) return
+    const onMouse = (e) => {
+      if (triggerRef.current?.contains(e.target)) return
+      // Check portal container
+      const portal = document.getElementById('pipeline-dropdown-portal')
+      if (portal?.contains(e.target)) return
+      closeAll()
+    }
+    const onKey = (e) => { if (e.key === 'Escape') closeAll() }
+    document.addEventListener('mousedown', onMouse)
+    document.addEventListener('keydown', onKey)
+    return () => { document.removeEventListener('mousedown', onMouse); document.removeEventListener('keydown', onKey) }
+  }, [open])
+
+  const closeAll = () => { setOpen(false); setShowManage(false); setAddingNew(false); setNewName('') }
 
   const addPipeline = async () => {
     const name = newName.trim()
@@ -49,7 +79,9 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
     if (!error && data) {
       onUpdate([...pipelines, data])
       setNewName('')
+      setAddingNew(false)
       onSelect(data.name)
+      setOpen(false)
     }
     setSaving(false)
   }
@@ -60,7 +92,7 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
   }
 
   const deletePipeline = async (pl) => {
-    if (!confirm(`Delete pipeline "${pl.name}"? All deals in this pipeline will remain but won't be reachable. This cannot be undone.`)) return
+    if (!confirm(`Delete "${pl.name}"? Deals will remain in the database but won't be reachable from the pipeline view.`)) return
     await supabase.from('pipelines').delete().eq('id', pl.id)
     const updated = pipelines.filter(p => p.id !== pl.id)
     onUpdate(updated)
@@ -68,133 +100,198 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
   }
 
   // Drag-to-reorder
-  const handleDragStart = (id) => setDragging(id)
-  const handleDragOver = (e, id) => { e.preventDefault(); setDragOver(id) }
-  const handleDrop = async (targetId) => {
+  const onDragStart = (id) => setDragging(id)
+  const onDragOver  = (e, id) => { e.preventDefault(); setDragOver(id) }
+  const onDrop = async (targetId) => {
     if (!dragging || dragging === targetId) { setDragging(null); setDragOver(null); return }
     const ordered = [...pipelines].sort((a, b) => a.sort_order - b.sort_order)
-    const fromIdx = ordered.findIndex(p => p.id === dragging)
-    const toIdx   = ordered.findIndex(p => p.id === targetId)
-    if (fromIdx === -1 || toIdx === -1) return
+    const fi = ordered.findIndex(p => p.id === dragging)
+    const ti = ordered.findIndex(p => p.id === targetId)
+    if (fi === -1 || ti === -1) return
     const reordered = [...ordered]
-    const [item] = reordered.splice(fromIdx, 1)
-    reordered.splice(toIdx, 0, item)
+    const [item] = reordered.splice(fi, 1)
+    reordered.splice(ti, 0, item)
     const updated = reordered.map((p, i) => ({ ...p, sort_order: i }))
     onUpdate(updated)
     setDragging(null); setDragOver(null)
-    // Persist order
-    for (const p of updated) {
-      await supabase.from('pipelines').update({ sort_order: p.sort_order }).eq('id', p.id)
-    }
+    for (const p of updated) await supabase.from('pipelines').update({ sort_order: p.sort_order }).eq('id', p.id)
   }
 
-  const sorted = [...pipelines].sort((a, b) => a.sort_order - b.sort_order)
-  const active = pipelines.find(p => p.name === activePipeline)
+  const sorted  = [...pipelines].sort((a, b) => a.sort_order - b.sort_order)
+  const visible = sorted.filter(p => p.visible)
 
-  return (
-    <div ref={ref} style={{ position: 'relative' }}>
-      <button
-        onClick={() => { setOpen(o => !o); setShowSettings(false) }}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px',
-          borderRadius: 8, border: '1px solid rgba(0,0,0,0.1)',
-          background: 'rgba(0,0,0,0.03)', cursor: 'pointer',
-          fontSize: 13, fontWeight: 500, color: 'var(--text)', fontFamily: 'var(--font)',
-        }}>
-        <span>{activePipeline}</span>
-        <ChevronDown size={14} color="var(--text-secondary)" />
-      </button>
+  // ── Shared text style (always DM Sans via var(--font)) ──
+  const tx = (extra = {}) => ({ fontFamily: 'var(--font)', ...extra })
 
-      {open && (
-        <div style={{
-          position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 200,
-          background: '#fff', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.12)', minWidth: 260, overflow: 'hidden',
-          fontFamily: 'var(--font)',
-        }}>
-          {/* Pipeline list */}
-          <div style={{ padding: '6px 0', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-            {sorted.filter(p => p.visible).map(pl => (
-              <button key={pl.id} onClick={() => { onSelect(pl.name); setOpen(false) }}
-                style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '9px 14px', background: 'transparent', border: 'none',
-                  cursor: 'pointer', textAlign: 'left',
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                <span style={{ flex: 1, fontSize: 14, color: 'var(--text)', fontWeight: pl.name === activePipeline ? 500 : 400 }}>{pl.name}</span>
-                {pl.name === activePipeline && <Check size={14} color="#1A1A1A" />}
+  const dropdown = open ? createPortal(
+    <div
+      id="pipeline-dropdown-portal"
+      style={{
+        position: 'fixed',
+        top: dropPos.top,
+        left: dropPos.left,
+        minWidth: dropPos.width,
+        zIndex: 9999,
+        background: 'var(--surface)',
+        borderRadius: 12,
+        border: '0.5px solid var(--border-hover)',
+        boxShadow: '0 8px 40px rgba(0,0,0,0.13), 0 2px 8px rgba(0,0,0,0.06)',
+        overflow: 'hidden',
+      }}
+    >
+      {/* ── Active pipelines ── */}
+      <div style={{ padding: '6px 0', borderBottom: '0.5px solid var(--border)' }}>
+        {visible.map(pl => (
+          <button key={pl.id}
+            onClick={() => { onSelect(pl.name); closeAll() }}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background 0.1s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-hover)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            <span style={tx({ flex: 1, fontSize: 14, color: 'var(--text)', fontWeight: pl.name === activePipeline ? 500 : 400 })}>{pl.name}</span>
+            {pl.name === activePipeline && <Check size={14} strokeWidth={2.5} color="var(--text)" />}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Manage toggle ── */}
+      <div style={{ padding: '4px 0', borderBottom: '0.5px solid var(--border)' }}>
+        <button
+          onClick={() => { setShowManage(s => !s); setAddingNew(false) }}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'background 0.1s' }}
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-hover)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+          <Settings size={14} color="var(--text-tertiary)" />
+          <span style={tx({ fontSize: 13, color: 'var(--text-secondary)' })}>Manage pipelines</span>
+          {showManage && <Check size={12} color="var(--text-tertiary)" style={{ marginLeft: 'auto' }} />}
+        </button>
+      </div>
+
+      {/* ── Manage panel (reorder / visibility / delete) ── */}
+      {showManage && (
+        <div style={{ padding: '10px 16px 8px', borderBottom: '0.5px solid var(--border)' }}>
+          <p style={tx({ fontSize: 9, fontWeight: 600, color: 'var(--text-tertiary)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 8 })}>
+            Drag to reorder
+          </p>
+          {sorted.map(pl => (
+            <div key={pl.id}
+              draggable
+              onDragStart={() => onDragStart(pl.id)}
+              onDragOver={e => onDragOver(e, pl.id)}
+              onDrop={() => onDrop(pl.id)}
+              onDragEnd={() => { setDragging(null); setDragOver(null) }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0',
+                borderRadius: 6, cursor: 'grab',
+                background: dragOver === pl.id ? 'var(--surface-hover)' : 'transparent',
+                opacity: dragging === pl.id ? 0.35 : 1,
+              }}>
+              <GripVertical size={13} color="var(--text-tertiary)" style={{ flexShrink: 0 }} />
+              <span style={tx({ flex: 1, fontSize: 13, color: pl.visible ? 'var(--text)' : 'var(--text-tertiary)' })}>{pl.name}</span>
+              <button onClick={() => toggleVisible(pl)} title={pl.visible ? 'Hide' : 'Show'}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 3, color: 'var(--text-tertiary)', display: 'flex', borderRadius: 4 }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-tertiary)'}>
+                {pl.visible ? <Eye size={13} /> : <EyeOff size={13} />}
               </button>
-            ))}
-          </div>
-
-          {/* Settings section */}
-          <div style={{ padding: '6px 0', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-            <button onClick={() => setShowSettings(s => !s)}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', background: 'transparent', border: 'none', cursor: 'pointer' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-              <Settings size={14} color="var(--text-secondary)" />
-              <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Manage pipelines</span>
-            </button>
-          </div>
-
-          {/* Manage panel */}
-          {showSettings && (
-            <div style={{ padding: '10px 14px 4px', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-              <p style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-tertiary)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>
-                Drag to reorder
-              </p>
-              {sorted.map(pl => (
-                <div key={pl.id}
-                  draggable
-                  onDragStart={() => handleDragStart(pl.id)}
-                  onDragOver={e => handleDragOver(e, pl.id)}
-                  onDrop={() => handleDrop(pl.id)}
-                  onDragEnd={() => { setDragging(null); setDragOver(null) }}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    padding: '6px 0', borderRadius: 6, cursor: 'grab',
-                    background: dragOver === pl.id ? 'rgba(0,0,0,0.04)' : 'transparent',
-                    opacity: dragging === pl.id ? 0.4 : 1,
-                  }}>
-                  <GripVertical size={13} color="var(--text-tertiary)" style={{ cursor: 'grab', flexShrink: 0 }} />
-                  <span style={{ flex: 1, fontSize: 13, color: pl.visible ? 'var(--text)' : 'var(--text-tertiary)' }}>{pl.name}</span>
-                  <button onClick={() => toggleVisible(pl)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: 'var(--text-tertiary)', display: 'flex' }}>
-                    {pl.visible ? <Eye size={13} /> : <EyeOff size={13} />}
-                  </button>
-                  <button onClick={() => deletePipeline(pl)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: '#ef4444', display: 'flex' }}>
-                    <Trash2 size={13} />
-                  </button>
-                </div>
-              ))}
+              <button onClick={() => deletePipeline(pl)} title="Delete"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 3, color: 'var(--text-tertiary)', display: 'flex', borderRadius: 4 }}
+                onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-tertiary)'}>
+                <Trash2 size={13} />
+              </button>
             </div>
-          )}
-
-          {/* Add new pipeline */}
-          <div style={{ padding: '8px 14px 10px' }}>
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              <Plus size={14} color="#0055CC" style={{ flexShrink: 0 }} />
-              <input
-                value={newName}
-                onChange={e => setNewName(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && addPipeline()}
-                placeholder="New pipeline name…"
-                style={{
-                  flex: 1, border: 'none', outline: 'none', fontSize: 14,
-                  color: 'var(--text)', fontFamily: 'var(--font)', background: 'transparent',
-                }}
-              />
-              {newName.trim() && (
-                <button onClick={addPipeline} disabled={saving} style={{ background: '#1A1A1A', border: 'none', borderRadius: 5, padding: '3px 8px', cursor: 'pointer', color: '#fff', fontSize: 11 }}>
-                  {saving ? <Loader2 size={11} style={{ animation: 'spin 1s linear infinite' }} /> : 'Add'}
-                </button>
-              )}
-            </div>
-          </div>
+          ))}
         </div>
       )}
+
+      {/* ── New pipeline ── */}
+      {!addingNew ? (
+        // Discovery affordance: visible button, not hidden input
+        <button
+          onClick={() => { setAddingNew(true); setShowManage(false) }}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'background 0.1s' }}
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-hover)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+          <div style={{ width: 22, height: 22, borderRadius: 6, background: 'var(--surface-hover)', border: '0.5px solid var(--border-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Plus size={13} color="var(--text-secondary)" strokeWidth={2} />
+          </div>
+          <span style={tx({ fontSize: 14, color: 'var(--text-secondary)' })}>New pipeline</span>
+        </button>
+      ) : (
+        // Expanded inline form — focused, labelled, keyboard-complete
+        <div style={{ padding: '12px 16px 14px' }}>
+          <p style={tx({ fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', marginBottom: 6 })}>Pipeline name</p>
+          <input
+            ref={newInputRef}
+            value={newName}
+            onChange={e => setNewName(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') { e.preventDefault(); addPipeline() }
+              if (e.key === 'Escape') { setAddingNew(false); setNewName('') }
+            }}
+            placeholder="e.g. McLaren F1, UEFA…"
+            style={{
+              width: '100%', padding: '8px 12px', borderRadius: 8,
+              border: '1px solid var(--border-hover)',
+              background: 'var(--bg)',
+              fontSize: 14, color: 'var(--text)',
+              fontFamily: 'var(--font)',
+              outline: 'none', boxSizing: 'border-box',
+              transition: 'border-color 0.15s',
+            }}
+            onFocus={e => e.target.style.borderColor = 'var(--text)'}
+            onBlur={e => e.target.style.borderColor = 'var(--border-hover)'}
+          />
+          <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+            <button
+              onClick={addPipeline}
+              disabled={!newName.trim() || saving}
+              style={{
+                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                padding: '8px 14px', borderRadius: 8,
+                background: newName.trim() ? 'var(--text)' : 'var(--surface-hover)',
+                border: 'none', cursor: newName.trim() ? 'pointer' : 'default',
+                fontSize: 13, fontWeight: 500, color: newName.trim() ? '#fff' : 'var(--text-tertiary)',
+                fontFamily: 'var(--font)', transition: 'all 0.15s',
+              }}>
+              {saving
+                ? <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} />
+                : <><ArrowRight size={13} /> Create pipeline</>}
+            </button>
+            <button
+              onClick={() => { setAddingNew(false); setNewName('') }}
+              style={{ padding: '8px 12px', borderRadius: 8, background: 'transparent', border: '0.5px solid var(--border-hover)', cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
+              Cancel
+            </button>
+          </div>
+          <p style={tx({ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 6 })}>
+            Press Enter to create · Escape to cancel
+          </p>
+        </div>
+      )}
+    </div>,
+    document.body
+  ) : null
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <button
+        ref={triggerRef}
+        onClick={() => setOpen(o => !o)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '7px 12px', borderRadius: 8,
+          border: open ? '1px solid var(--border-hover)' : '1px solid var(--border)',
+          background: open ? 'var(--surface-hover)' : 'var(--surface)',
+          cursor: 'pointer', transition: 'all 0.15s',
+          fontSize: 13, fontWeight: 500,
+          color: 'var(--text)', fontFamily: 'var(--font)',
+          boxShadow: open ? 'none' : 'var(--shadow-sm)',
+        }}>
+        <span>{activePipeline}</span>
+        <ChevronDown size={14} color="var(--text-tertiary)" style={{ transition: 'transform 0.15s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+      </button>
+      {dropdown}
     </div>
   )
 }
