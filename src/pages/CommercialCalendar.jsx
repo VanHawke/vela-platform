@@ -13,21 +13,14 @@ const T = {
   amber: '#B86000', amberLight: '#FFF7ED', amberBorder: '#FAC775',
 }
 
-// ── Official logos via public assets ─────────────────────
-// /public/f1-logo.png  — official F1 logo (red on black, seeklogo)
-// /public/fe-logo.png  — official Formula E logo (blue cursive e)
-
-const SeriesIcon = ({ series, size = 22 }) => {
-  const r = Math.round(size * 0.28)
-  const bg = series === 'f1' ? T.f1 : T.fe
-  const src = series === 'f1' ? '/f1-logo.png' : '/fe-logo.png'
-  const pad = Math.round(size * 0.12)
-  return (
-    <div style={{ width: size, height: size, borderRadius: r, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-      <img src={src} alt={series === 'f1' ? 'F1' : 'Formula E'} style={{ width: size - pad * 2, height: size - pad * 2, objectFit: 'contain', display: 'block' }} />
-    </div>
-  )
-}
+// ── Official logos — raw, no background box ───────────────
+const SeriesIcon = ({ series, size = 22 }) => (
+  <img
+    src={series === 'f1' ? '/f1-logo.png' : '/fe-logo.png'}
+    alt={series === 'f1' ? 'F1' : 'Formula E'}
+    style={{ width: size, height: size, objectFit: 'contain', display: 'block', flexShrink: 0 }}
+  />
+)
 
 // ── Race data (verified from formula1.com + fiaformulae.com) ─
 const F1_2026 = [
@@ -422,12 +415,10 @@ export default function CommercialCalendar() {
             { id: 'f1', label: 'F1',         on: showF1, set: setShowF1, bg: T.f1, rem: remF1 },
             { id: 'fe', label: 'Formula E',  on: showFE, set: setShowFE, bg: T.fe, rem: remFE },
           ].map(({ id, label, on, set, bg, rem }) => (
-            <button key={id} onClick={() => set(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 7px', borderRadius: 6, border: `0.5px solid ${on ? bg + '55' : T.border}`, background: on ? bg : 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}>
-              <div style={{ width: 18, height: 18, borderRadius: 4, background: on ? 'rgba(255,255,255,0.18)' : bg, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-                <img src={id === 'f1' ? '/f1-logo.png' : '/fe-logo.png'} alt={label} style={{ width: 12, height: 12, objectFit: 'contain', display: 'block' }} />
-              </div>
-              <span style={{ fontSize: 11, fontWeight: 500, color: on ? '#fff' : T.textSecondary, fontFamily: T.font }}>{label}</span>
-              {on && <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.65)', fontFamily: T.font }}>{rem}</span>}
+            <button key={id} onClick={() => set(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 7px', borderRadius: 6, border: `0.5px solid ${on ? T.border : T.border}`, background: on ? 'rgba(0,0,0,0.06)' : 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}>
+              <img src={id === 'f1' ? '/f1-logo.png' : '/fe-logo.png'} alt={label} style={{ width: 16, height: 16, objectFit: 'contain', display: 'block', flexShrink: 0 }} />
+              <span style={{ fontSize: 11, fontWeight: 500, color: T.textSecondary, fontFamily: T.font }}>{label}</span>
+              {on && <span style={{ fontSize: 9, color: T.textTertiary, fontFamily: T.font }}>{rem}</span>}
             </button>
           ))}
           <div style={{ width: '0.5px', height: 16, background: T.border, margin: '0 2px' }} />
