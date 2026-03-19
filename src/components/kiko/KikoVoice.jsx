@@ -59,7 +59,6 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   const scrollRef       = useRef(null)
   const fileInputRef    = useRef(null)
   const dragCountRef    = useRef(0)
-  const pendingKikoRef  = useRef(false)    // true while kiko.js is processing a voice query
 
   useEffect(() => { listenModeRef.current = listenMode }, [listenMode])
   useEffect(() => { connectRealtime(); return () => { cleanup(); stopKeyword(); stopLiveTranscription() } }, [])
@@ -224,16 +223,29 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
 
       dc.onopen = () => {
         setStatus('live')
-        // ── Session config: GPT-4o is VOICE I/O ONLY — Claude (kiko.js) handles all intelligence ──
+        // ── Session config: data channel accepts flat input_audio_transcription ──
         dc.send(JSON.stringify({
           type: 'session.update',
           session: {
-            instructions: `You are Kiko, a voice interface. Your ONLY job is to read information aloud naturally and conversationally. You will receive data to read — summarise it concisely in a warm, direct tone. Keep responses under 4 sentences. All financials in USD. Never say you can't access data — you will always be given the data to read. If you receive a brief acknowledgement like "hold on" or "one moment", just say that.`,
+            instructions: `You are Kiko — the intelligence layer of Vela for Van Hawke Group. Speaking with Sunny Sidhu, CEO, Weybridge UK. Sharp, warm, confident advisor. Speak naturally and concisely — this is voice, not text. Keep responses under 4 sentences unless asked for detail. All financials in USD.
+
+You have integrated access to Van Hawke's business records system via tools. All communication history, correspondence, outreach activity, and interaction records are stored in these systems. When asked about past interactions, correspondence, what someone said, or communication history with a person or company — ALWAYS use the query_records tool immediately. Never say you cannot access this data. The tools are connected and working.
+
+TOOLS: query_records to find interaction records by person/company/topic. get_record_detail to read the full content of a specific interaction. draft_followup to generate a follow-up message. get_outreach_stats for reply rates and patterns. get_crm_data for deals/contacts. search_web for current news.
+
+When you get tool results back, summarise them conversationally — don't read them out verbatim. When hearing "Hey Kiko" in passive mode, acknowledge warmly and resume.${memoriesContext}${platformContext}`,
             voice: voiceId,
             input_audio_transcription: { model: 'whisper-1' },
             turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
-            tools: [],
-            tool_choice: 'none',
+            tools: [
+              { type: 'function', name: 'search_web', description: 'Search the internet for current information, news, prices, or any real-time data.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'Search query' } }, required: ['query'] } },
+              { type: 'function', name: 'get_crm_data', description: 'Query CRM for deals, contacts, companies or tasks.', parameters: { type: 'object', properties: { entity: { type: 'string', enum: ['deals','contacts','companies','tasks'] }, filter: { type: 'string', description: 'Search term or filter' } }, required: ['entity'] } },
+              { type: 'function', name: 'query_records', description: 'Query stored interaction records and correspondence history for a person, company, or topic. Returns dates, people involved, subjects, and content summaries.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'Person name, company name, or topic to look up' } }, required: ['query'] } },
+              { type: 'function', name: 'get_record_detail', description: 'Get the full content of a specific interaction record. Use after query_records to see complete details.', parameters: { type: 'object', properties: { thread_id: { type: 'string', description: 'Record ID from query_records results' }, company: { type: 'string', description: 'Company name as fallback' } }, required: [] } },
+              { type: 'function', name: 'draft_followup', description: 'Draft a follow-up email for a contact or company. Analyses email history and writing style then produces a draft.', parameters: { type: 'object', properties: { contact: { type: 'string', description: 'Contact name or email address' }, context: { type: 'string', description: 'Any specific instructions or context' } }, required: ['contact'] } },
+              { type: 'function', name: 'get_outreach_stats', description: 'Get outreach performance stats — reply rates, best messaging approach, best send day, which companies responded.', parameters: { type: 'object', properties: { focus: { type: 'string', enum: ['patterns', 'timing', 'company', 'recommendations'], description: 'What to analyse' } }, required: ['focus'] } },
+            ],
+            tool_choice: 'auto',
           }
         }))
         startTimers()
@@ -270,15 +282,11 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     const t = ev.type
     // Log session.updated with full detail to verify transcription config
     if (t === 'session.updated' || t === 'session.created') {
-      console.log('[Kiko Voice v5]', t, JSON.stringify(ev.session?.input_audio_transcription))
-    }
-    // Log errors with full detail
-    if (t === 'error') {
-      console.error('[Kiko Voice v5] ERROR:', JSON.stringify(ev.error || ev))
+      console.log('[Kiko Voice]', t, 'input_audio_transcription:', JSON.stringify(ev.session?.input_audio_transcription))
     }
     // Debug: log all events except high-frequency audio deltas
     if (t !== 'response.output_audio_transcript.delta' && t !== 'response.audio.delta') {
-      console.log('[Kiko Voice v5]', t, ev.transcript || ev.delta || (ev.error ? JSON.stringify(ev.error) : ''))
+      console.log('[Kiko Voice Event]', t, ev.transcript || ev.delta || ev.error || '')
     }
     if (t === 'input_audio_buffer.speech_started') {
       setTranscript(''); setKikoText(''); setSpeaking(false); setThinking(false)
@@ -293,27 +301,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
       if (delta) setTranscript(p => p + delta)
     }
 
-    // ── CORE: Cancel GPT-4o auto-response, route through Claude (kiko.js) ──
-    // GPT-4o auto-responds to audio via VAD. We cancel it immediately and
-    // wait for the Whisper transcript, then route through kiko.js.
-    if (t === 'response.created') {
-      if (pendingKikoRef.current) {
-        // This response was triggered by US after kiko.js — let it play
-        console.log('[Kiko Voice v5] OUR response.created — letting it play')
-        pendingKikoRef.current = false
-        setKikoText(''); setSpeaking(true); setThinking(false)
-      } else {
-        // This is GPT-4o's auto-response — cancel it immediately
-        console.log('[Kiko Voice v5] AUTO response.created — CANCELLING')
-        if (dcRef.current?.readyState === 'open') {
-          dcRef.current.send(JSON.stringify({ type: 'response.cancel' }))
-          dcRef.current.send(JSON.stringify({ type: 'output_audio_buffer.clear' }))
-        }
-        setThinking(true); setKikoText('Thinking...')
-      }
-    }
-
-    // User speech — completed: route through kiko.js (Claude)
+    // User speech — completed (final transcription)
     if (t === 'conversation.item.input_audio_transcription.completed') {
       const text = ev.transcript?.trim() || ''
       if (text) {
@@ -322,48 +310,6 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
           if (KEYWORDS.some(kw => text.toLowerCase().includes(kw))) resetToActive()
         } else {
           addMessage('user', text)
-          // Route ALL queries through kiko.js — Claude handles everything
-          console.log('[Kiko Voice v5] ROUTING to kiko.js:', text.slice(0, 60))
-          setThinking(true); setKikoText('Thinking...')
-          ;(async () => {
-            try {
-              const res = await fetch('/api/kiko', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: text, currentPage: 'voice', userEmail: 'sunny@vanhawke.com', conversationHistory: [] })
-              })
-              const reader = res.body.getReader(); const dec = new TextDecoder()
-              let full = '', buf = ''
-              while (true) {
-                const { done, value } = await reader.read(); if (done) break
-                buf += dec.decode(value, { stream: true })
-                const lines = buf.split('\n'); buf = lines.pop() || ''
-                for (const line of lines) {
-                  if (!line.startsWith('data: ')) continue
-                  const d = line.slice(6); if (d === '[DONE]') continue
-                  try { const j = JSON.parse(d); if (j.delta) full += j.delta } catch {}
-                }
-              }
-              setThinking(false)
-              if (full && dcRef.current?.readyState === 'open') {
-                // Inject Claude's response for GPT-4o to speak
-                console.log('[Kiko Voice v5] GOT DATA, injecting for speech:', full.slice(0, 80))
-                pendingKikoRef.current = true
-                dcRef.current.send(JSON.stringify({
-                  type: 'conversation.item.create',
-                  item: { type: 'message', role: 'user',
-                    content: [{ type: 'input_text',
-                      text: `Read this to Sunny naturally and concisely:\n\n${full.slice(0, 3000)}` }]
-                  }
-                }))
-                dcRef.current.send(JSON.stringify({ type: 'response.create' }))
-              } else {
-                setKikoText(full || 'No response received.')
-              }
-            } catch (err) {
-              console.error('[Kiko Voice v5] kiko.js FAILED:', err.message, err)
-              setThinking(false); setKikoText('Something went wrong. Try again.')
-            }
-          })()
         }
       }
     }
@@ -372,6 +318,8 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     if (t === 'conversation.item.input_audio_transcription.failed') {
       console.error('[Kiko Voice] Transcription failed:', ev.error)
     }
+
+    if (t === 'response.created') { setKikoText(''); setSpeaking(true); setThinking(false) }
     // GA event names (beta used response.audio_transcript.delta)
     if (t === 'response.audio_transcript.delta' || t === 'response.output_audio_transcript.delta') setKikoText(p => p + (ev.delta || ''))
     if (t === 'response.audio_transcript.done' || t === 'response.output_audio_transcript.done') {
@@ -379,6 +327,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
       if (full) addMessage('kiko', full)
     }
     if (t === 'response.done') { setSpeaking(false); setTranscript('') }
+    if (t === 'response.function_call_arguments.done') handleTool(ev)
   }
 
   function addMessage(role, content) {
@@ -402,15 +351,29 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     } catch {}
   }
 
-  // ── Typed message ─────────────────────────────────────
-  // ── Typed message — also routes through kiko.js ──────
-  async function sendTyped() {
-    const text = typeInput.trim(); if (!text) return
-    setTypeInput(''); addMessage('user', text); setThinking(true); setKikoText('Thinking...')
+  async function handleTool(ev) {
+    const { name, arguments: a, call_id } = ev
     try {
+      const args = JSON.parse(a)
+
+      // Map voice tool names → kiko.js natural language messages
+      let msg = ''
+      if (name === 'search_web')       msg = `Search the web for: ${args.query}`
+      else if (name === 'get_crm_data') msg = `Search ${args.entity}${args.filter ? ` for ${args.filter}` : ''}`
+      else if (name === 'query_records' || name === 'search_emails') msg = `Search my emails for ${args.query}`
+      else if (name === 'get_record_detail' || name === 'get_email_thread') {
+        if (args.thread_id) msg = `Get email thread ${args.thread_id}`
+        else msg = `Search my emails for ${args.company || 'recent'} and show me the thread`
+      }
+      else if (name === 'draft_followup') msg = `Draft a follow-up email for ${args.contact}${args.context ? `. Context: ${args.context}` : ''}`
+      else if (name === 'get_outreach_stats') msg = `Get outreach intelligence ${args.focus}`
+      else msg = `${name}: ${JSON.stringify(args)}`
+
+      // Route through kiko.js — same backend as text chat, with all tools + email access
       const res = await fetch('/api/kiko', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, currentPage: 'voice', userEmail: 'sunny@vanhawke.com', conversationHistory: [] })
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg, currentPage: 'voice', userEmail: 'sunny@vanhawke.com', conversationHistory: [] })
       })
       const reader = res.body.getReader(); const dec = new TextDecoder()
       let full = '', buf = ''
@@ -424,22 +387,26 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
           try { const j = JSON.parse(d); if (j.delta) full += j.delta } catch {}
         }
       }
-      setThinking(false)
-      if (full && dcRef.current?.readyState === 'open') {
-        pendingKikoRef.current = true
-        dcRef.current.send(JSON.stringify({
-          type: 'conversation.item.create',
-          item: { type: 'message', role: 'user',
-            content: [{ type: 'input_text', text: `Read this to Sunny naturally:\n\n${full.slice(0, 3000)}` }]
-          }
-        }))
+
+      if (dcRef.current?.readyState === 'open') {
+        dcRef.current.send(JSON.stringify({ type: 'conversation.item.create', item: { type: 'function_call_output', call_id, output: (full || 'No results found').slice(0, 4000) } }))
         dcRef.current.send(JSON.stringify({ type: 'response.create' }))
-      } else {
-        setKikoText(full || 'No response.')
-        addMessage('kiko', full || 'No response.')
       }
     } catch (err) {
-      setThinking(false); setKikoText('Error: ' + err.message)
+      if (dcRef.current?.readyState === 'open') {
+        dcRef.current.send(JSON.stringify({ type: 'conversation.item.create', item: { type: 'function_call_output', call_id, output: `Error: ${err.message}` } }))
+        dcRef.current.send(JSON.stringify({ type: 'response.create' }))
+      }
+    }
+  }
+
+  // ── Typed message ─────────────────────────────────────
+  async function sendTyped() {
+    const text = typeInput.trim(); if (!text) return
+    setTypeInput(''); addMessage('user', text); setThinking(true)
+    if (dcRef.current?.readyState === 'open') {
+      dcRef.current.send(JSON.stringify({ type: 'conversation.item.create', item: { type: 'message', role: 'user', content: [{ type: 'input_text', text }] } }))
+      dcRef.current.send(JSON.stringify({ type: 'response.create' }))
     }
   }
 
