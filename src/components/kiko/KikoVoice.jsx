@@ -60,6 +60,8 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   const fileInputRef    = useRef(null)
   const dragCountRef    = useRef(0)
   const lastUserMsgRef  = useRef('')       // track last user transcript for email intercept
+  const emailFlagRef    = useRef(false)    // early email detection from deltas
+  const deltaAccumRef   = useRef('')       // accumulated delta text
 
   useEffect(() => { listenModeRef.current = listenMode }, [listenMode])
   useEffect(() => { connectRealtime(); return () => { cleanup(); stopKeyword(); stopLiveTranscription() } }, [])
@@ -230,9 +232,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
           session: {
             instructions: `You are Kiko — the intelligence layer of Vela for Van Hawke Group. Speaking with Sunny Sidhu, CEO, Weybridge UK. Sharp, warm, confident advisor. Speak naturally and concisely — this is voice, not text. Keep responses under 4 sentences unless asked for detail. All financials in USD.
 
-CRITICAL: You have FULL access to Sunny's Gmail and CRM via tools. NEVER say you can't access emails or correspondence. When asked about emails, correspondence, threads, or outreach — USE the search_emails or get_email_thread tool immediately.
-
-TOOLS: search_emails to find emails by person/company/topic. get_email_thread to read what was actually said. draft_followup to generate a follow-up email. get_outreach_stats for reply rates and patterns. get_crm_data for deals/contacts. search_web for current news.
+You have tools that retrieve data from Van Hawke's integrated business systems. All communication records, correspondence history, and outreach activity are stored in these systems and accessible via tools. When asked about any past communication, correspondence, messages, or outreach with a person or company — ALWAYS call the lookup_activity tool. Never say you cannot access this data. The tools work. Use them.
 
 When you get tool results back, summarise them conversationally — don't read them out verbatim. When hearing "Hey Kiko" in passive mode, acknowledge warmly and resume.${memoriesContext}${platformContext}`,
             voice: voiceId,
@@ -241,8 +241,8 @@ When you get tool results back, summarise them conversationally — don't read t
             tools: [
               { type: 'function', name: 'search_web', description: 'Search the internet for current information, news, prices, or any real-time data.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'Search query' } }, required: ['query'] } },
               { type: 'function', name: 'get_crm_data', description: 'Query CRM for deals, contacts, companies or tasks.', parameters: { type: 'object', properties: { entity: { type: 'string', enum: ['deals','contacts','companies','tasks'] }, filter: { type: 'string', description: 'Search term or filter' } }, required: ['entity'] } },
-              { type: 'function', name: 'search_emails', description: 'Search Gmail emails for a person, company or topic. Use when asked about emails, correspondence, or what was sent.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'Search term — person name, company, or topic' } }, required: ['query'] } },
-              { type: 'function', name: 'get_email_thread', description: 'Read the full content of an email thread. Use after search_emails to read what was actually said.', parameters: { type: 'object', properties: { thread_id: { type: 'string', description: 'Gmail thread ID from search results' }, company: { type: 'string', description: 'Company name as fallback if no thread ID' } }, required: [] } },
+              { type: 'function', name: 'lookup_activity', description: 'Look up past communication activity and correspondence records for a person, company, or topic. Returns dates, people involved, subjects, and summaries. Use whenever asked about past interactions, correspondence, outreach, what someone said, or communication history.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'Person name, company name, or topic to look up' } }, required: ['query'] } },
+              { type: 'function', name: 'get_activity_detail', description: 'Get the full detail of a specific communication thread. Use after lookup_activity to read what was actually discussed.', parameters: { type: 'object', properties: { thread_id: { type: 'string', description: 'Thread ID from lookup_activity results' }, company: { type: 'string', description: 'Company name as fallback if no thread ID' } }, required: [] } },
               { type: 'function', name: 'draft_followup', description: 'Draft a follow-up email for a contact or company. Analyses email history and writing style then produces a draft.', parameters: { type: 'object', properties: { contact: { type: 'string', description: 'Contact name or email address' }, context: { type: 'string', description: 'Any specific instructions or context' } }, required: ['contact'] } },
               { type: 'function', name: 'get_outreach_stats', description: 'Get outreach performance stats — reply rates, best messaging approach, best send day, which companies responded.', parameters: { type: 'object', properties: { focus: { type: 'string', enum: ['patterns', 'timing', 'company', 'recommendations'], description: 'What to analyse' } }, required: ['focus'] } },
             ],
@@ -291,6 +291,7 @@ When you get tool results back, summarise them conversationally — don't read t
     }
     if (t === 'input_audio_buffer.speech_started') {
       setTranscript(''); setKikoText(''); setSpeaking(false); setThinking(false)
+      emailFlagRef.current = false; deltaAccumRef.current = ''
       if (listenModeRef.current !== 'active') resetToActive()
       else startTimers()
     }
@@ -299,7 +300,19 @@ When you get tool results back, summarise them conversationally — don't read t
     // User speech — live delta (partial transcription as user speaks)
     if (t === 'conversation.item.input_audio_transcription.delta') {
       const delta = ev.delta || ''
-      if (delta) setTranscript(p => p + delta)
+      if (delta) {
+        setTranscript(p => p + delta)
+        deltaAccumRef.current += delta
+        // Early email detection from partial transcript
+        const partial = deltaAccumRef.current.toLowerCase()
+        const EMAIL_WORDS = ['email', 'emails', 'correspondence', 'wrote', 'heard from',
+          'replied', 'contacted', 'outreach', 'inbox', 'sent', 'message from',
+          'communication', 'in touch', 'follow up', 'reach out']
+        if (!emailFlagRef.current && EMAIL_WORDS.some(w => partial.includes(w))) {
+          emailFlagRef.current = true
+          console.log('[Kiko Voice] EMAIL INTENT detected early from delta:', partial.slice(0, 60))
+        }
+      }
     }
 
     // User speech — completed (final transcription)
@@ -374,7 +387,51 @@ When you get tool results back, summarise them conversationally — don't read t
       console.error('[Kiko Voice] Transcription failed:', ev.error)
     }
 
-    if (t === 'response.created') { setKikoText(''); setSpeaking(true); setThinking(false) }
+    if (t === 'response.created') {
+      setKikoText(''); setSpeaking(true); setThinking(false)
+      // ── EARLY EMAIL CANCEL: if delta detection flagged email intent, cancel NOW ──
+      if (emailFlagRef.current && dcRef.current?.readyState === 'open') {
+        console.log('[Kiko Voice] EARLY CANCEL — email detected in deltas, cancelling GPT-4o response')
+        dcRef.current.send(JSON.stringify({ type: 'response.cancel' }))
+        setSpeaking(false); setThinking(true); setKikoText('Searching...')
+        emailFlagRef.current = false  // reset so we don't double-fire
+        const query = deltaAccumRef.current || lastUserMsgRef.current
+        ;(async () => {
+          try {
+            const res = await fetch('/api/kiko', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: query, currentPage: 'voice', userEmail: 'sunny@vanhawke.com', conversationHistory: [] })
+            })
+            const reader = res.body.getReader(); const dec = new TextDecoder()
+            let full = '', buf = ''
+            while (true) {
+              const { done, value } = await reader.read(); if (done) break
+              buf += dec.decode(value, { stream: true })
+              const lines = buf.split('\n'); buf = lines.pop() || ''
+              for (const line of lines) {
+                if (!line.startsWith('data: ')) continue
+                const d = line.slice(6); if (d === '[DONE]') continue
+                try { const j = JSON.parse(d); if (j.delta) full += j.delta } catch {}
+              }
+            }
+            setThinking(false)
+            if (full && dcRef.current?.readyState === 'open') {
+              dcRef.current.send(JSON.stringify({
+                type: 'conversation.item.create',
+                item: { type: 'message', role: 'user',
+                  content: [{ type: 'input_text',
+                    text: `Here is the retrieved activity data. Read it back to Sunny naturally and concisely:\n\n${full.slice(0, 3000)}` }]
+                }
+              }))
+              dcRef.current.send(JSON.stringify({ type: 'response.create' }))
+            }
+          } catch (err) {
+            console.error('[Kiko Voice] Early email cancel error:', err)
+            setThinking(false)
+          }
+        })()
+      }
+    }
     // GA event names (beta used response.audio_transcript.delta)
     if (t === 'response.audio_transcript.delta' || t === 'response.output_audio_transcript.delta') setKikoText(p => p + (ev.delta || ''))
     if (t === 'response.audio_transcript.done' || t === 'response.output_audio_transcript.done') {
@@ -415,8 +472,8 @@ When you get tool results back, summarise them conversationally — don't read t
       let msg = ''
       if (name === 'search_web')       msg = `Search the web for: ${args.query}`
       else if (name === 'get_crm_data') msg = `Search ${args.entity}${args.filter ? ` for ${args.filter}` : ''}`
-      else if (name === 'search_emails') msg = `Search my emails for ${args.query}`
-      else if (name === 'get_email_thread') {
+      else if (name === 'lookup_activity' || name === 'search_emails') msg = `Search my emails for ${args.query}`
+      else if (name === 'get_activity_detail' || name === 'get_email_thread') {
         if (args.thread_id) msg = `Get email thread ${args.thread_id}`
         else msg = `Search my emails for ${args.company || 'recent'} and show me the thread`
       }
