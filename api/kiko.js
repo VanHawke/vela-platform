@@ -327,7 +327,19 @@ export default async function handler(req, res) {
     ]});
     messages.push({ role: 'assistant', content: 'Gmail, Google Calendar, CRM, and web search all connected and operational. Ready.' });
 
-    for (const m of conversationHistory.slice(-20)) {
+    // Build messages from history — filter out any poisoned "can't access email" responses
+    // These get baked into context and cause the refusal to repeat itself
+    const POISON_PHRASES = [
+      "can't access", "cannot access", "don't have access", "no access to",
+      "unable to access", "can't see", "cannot see", "limited to what we chat",
+      "I'm not able to access", "off-limits", "privacy and security"
+    ]
+    const cleanHistory = conversationHistory.slice(-20).filter(m => {
+      if (m.role !== 'assistant') return true
+      const text = (typeof m.content === 'string' ? m.content : JSON.stringify(m.content)).toLowerCase()
+      return !POISON_PHRASES.some(p => text.includes(p.toLowerCase()))
+    })
+    for (const m of cleanHistory) {
       if (m.role === 'user' || m.role === 'assistant') messages.push({ role: m.role, content: m.content || '' });
     }
     messages.push({ role: 'user', content: message });
