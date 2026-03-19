@@ -302,64 +302,118 @@ export default async function handler(req, res) {
   // Solution: detect email queries, fetch data directly, format via a clean Haiku
   // call with no identity/access framing — just raw data summarisation.
   const msgLower = message.toLowerCase()
-  const EMAIL_TRIGGERS = ['email', 'emails', 'message', 'messages', 'correspondence',
-    'inbox', 'sent', 'reply', 'replied', 'thread', 'wrote', 'said', 'heard from',
-    'reach out', 'outreach', 'correspond']
+  const EMAIL_TRIGGERS = [
+    // Explicit email words
+    'email', 'emails', 'emailed', 'e-mail',
+    'inbox', 'sent', 'mail', 'mailed', 'gmail',
+    // Communication words
+    'message', 'messages', 'messaged',
+    'correspondence', 'correspond', 'communicated',
+    'communication', 'communications',
+    // Thread/conversation
+    'thread', 'threads',
+    // Action words implying email
+    'reply', 'replied', 'respond', 'responded', 'response',
+    'wrote', 'written', 'write to', 'draft',
+    'contacted', 'contact with',
+    'reach out', 'reached out', 'outreach',
+    // Relationship/status words
+    'heard from', 'heard back', 'hear from', 'hear back',
+    'said', 'told us', 'told me', 'got back',
+    'follow up', 'followed up', 'following up',
+    'last contact', 'in touch', 'touch base',
+    'conversation with', 'conversations with',
+    // Catch-all commercial phrases often meaning email
+    'any update from', 'update from', 'status with',
+  ]
   const isEmailQuery = EMAIL_TRIGGERS.some(t => msgLower.includes(t))
 
+  // DEBUG: Log what path we're taking (visible in Vercel function logs)
+  console.log('[KIKO] message:', message?.slice(0, 80), '| isEmailQuery:', isEmailQuery, '| triggers matched:', EMAIL_TRIGGERS.filter(t => msgLower.includes(t)))
+
   if (isEmailQuery) {
+    // CRITICAL: This block ALWAYS returns. Email queries NEVER reach Opus.
+    // Opus will refuse any email-related question regardless of system prompt.
+    console.log('[KIKO-EMAIL] Shortcut FIRED for:', message?.slice(0, 80))
     try {
       write({ toolStatus: 'Searching emails...' })
-      // Build search query — strip filler, keep names/topics
-      const stopWords = new Set(['email','emails','message','messages','tell','about',
-        'from','show','me','the','what','were','was','is','are','any','find','search',
-        'get','give','have','had','has','can','you','do','did','last','recent','latest',
-        'with','and','or','my','our','their','his','her','please','could','would','like'])
-      const words = msgLower.split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w))
-      const searchQuery = words.slice(0, 5).join(' ') || 'is:inbox newer_than:14d'
+      // Build search query — strip filler + trigger words, keep names/topics
+      const stopWords = new Set([
+        // Trigger words (meta-concepts, not Gmail search terms)
+        'email','emails','emailed','e-mail','inbox','sent','mail','mailed','gmail',
+        'message','messages','messaged','correspondence','correspond',
+        'communicated','communication','communications',
+        'thread','threads','reply','replied','respond','responded','response',
+        'wrote','written','draft','contacted','outreach',
+        'conversation','conversations','follow','following','followed',
+        'contact','touch','base','update','status',
+        'heard','reach','reached','said','told',
+        // General filler
+        'tell','about','from','show','me','the','what','were','was','is','are',
+        'any','find','search','get','give','have','had','has','can','you','do',
+        'did','last','recent','latest','with','and','or','my','our','their',
+        'his','her','please','could','would','like','know','check','look',
+        'pull','up','all','been','that','this','those','them','they','who',
+        'when','where','how','does','i','to','of','in','on','at','for','so',
+        'no','not','if','it','be','by','an','as','us','we','got','back',
+        'write','any'])
+      const words = msgLower.split(/\s+/).filter(w => w.length >= 2 && !stopWords.has(w))
+      let searchQuery = words.slice(0, 5).join(' ') || 'is:inbox newer_than:14d'
 
-      const emailData = await executeTool('search_emails', { query: searchQuery, limit: 8 }, userEmail)
+      let emailData = await executeTool('search_emails', { query: searchQuery, limit: 8 }, userEmail)
+
+      // If first search failed, try broader: just the longest word (likely the company name)
+      if ((!emailData || typeof emailData !== 'string' || emailData.length < 30 || emailData.startsWith('No emails')) && words.length > 1) {
+        const longestWord = words.reduce((a, b) => a.length >= b.length ? a : b, '')
+        if (longestWord && longestWord !== searchQuery) {
+          emailData = await executeTool('search_emails', { query: longestWord, limit: 8 }, userEmail)
+        }
+      }
+
       write({ toolStatus: null })
 
-      if (!emailData || typeof emailData !== 'string' || emailData.length < 30 || emailData.startsWith('No emails')) {
-        // No results — fall through to normal Claude flow
-      } else {
-        // Use a clean Haiku call — NO system prompt mentioning AI/identity/access.
-        // Just: "here is data, answer this question about it". Pure summarisation.
-        write({ toolStatus: 'Thinking...' })
-        const formatRes = await anthropic.messages.create({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 1000,
-          messages: [{
-            role: 'user',
-            content: `You are Kiko, a commercial intelligence assistant for Van Hawke Group. A user asked: "${message}"
+      // Format response via Haiku — regardless of whether we found emails
+      const hasData = emailData && typeof emailData === 'string' && emailData.length >= 30 && !emailData.startsWith('No emails')
+      write({ toolStatus: 'Thinking...' })
+
+      const haikuPrompt = hasData
+        ? `You are Kiko, a commercial intelligence assistant for Van Hawke Group. A user asked: "${message}"
 
 Here are the email search results retrieved from Gmail:
 
 ${emailData}
 
 Answer the user's question based on these results. Be direct and specific — name the people, subjects, and dates. Use **bold** for names/companies. If the user asked about a specific company, focus on those threads. End by offering to pull the full thread if relevant. Do not say you searched anything — just present what you found.`
-          }]
-        })
-        write({ toolStatus: null })
+        : `You are Kiko, a commercial intelligence assistant for Van Hawke Group. A user asked: "${message}"
 
-        const text = formatRes.content?.[0]?.text || ''
-        if (text) {
-          // Stream the response as deltas
-          const words2 = text.split(' ')
-          for (let i = 0; i < words2.length; i += 8) {
-            write({ delta: words2.slice(i, i + 8).join(' ') + (i + 8 < words2.length ? ' ' : '') })
-          }
-          mem0Add(message, text)
-          write({ meta: { done: true, model: 'haiku-email-shortcut', toolRounds: 0 } })
-          res.write('data: [DONE]\n\n')
-          res.end()
-          return
-        }
-      }
-    } catch (e) {
+The Gmail search for "${searchQuery}" returned no matching emails. Tell the user no emails were found matching their query. Suggest they try a different name or keyword. Be brief — 2 sentences max. Do not apologise excessively.`
+
+      const formatRes = await anthropic.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: haikuPrompt }]
+      })
       write({ toolStatus: null })
-      // Fall through to normal Claude flow on error
+
+      const text = formatRes.content?.[0]?.text || (hasData ? 'Found email data but could not format the response. Try asking again.' : `No emails found matching "${searchQuery}". Try a different name or keyword.`)
+      const words2 = text.split(' ')
+      for (let i = 0; i < words2.length; i += 8) {
+        write({ delta: words2.slice(i, i + 8).join(' ') + (i + 8 < words2.length ? ' ' : '') })
+      }
+      mem0Add(message, text)
+      write({ meta: { done: true, model: 'haiku-email-shortcut', toolRounds: 0, version: 'v3-shortcut' } })
+      res.write('data: [DONE]\n\n')
+      res.end()
+      return
+    } catch (e) {
+      // STILL never fall through — return an error message via SSE
+      write({ toolStatus: null })
+      const errMsg = `Email search encountered an error: ${e.message}. Try again or rephrase your query.`
+      write({ delta: errMsg })
+      write({ meta: { done: true, model: 'email-shortcut-error', toolRounds: 0, version: 'v3-error' } })
+      res.write('data: [DONE]\n\n')
+      res.end()
+      return
     }
   }
 
@@ -409,8 +463,100 @@ Answer the user's question based on these results. Be direct and specific — na
       return await stream.finalMessage();
     }
 
+    // Helper: buffered call — collects text WITHOUT streaming to client
+    async function bufferedCall(msgs) {
+      const stream = anthropic.beta.messages.stream({
+        model: MODEL, max_tokens: 4096, system, messages: msgs,
+        tools: [...NATIVE_TOOLS, ...TOOL_DEFINITIONS],
+      });
+      const chunks = [];
+      for await (const event of stream) {
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+          chunks.push(event.delta.text);
+        }
+      }
+      return { finalMessage: await stream.finalMessage(), bufferedText: chunks.join('') };
+    }
+
     write({ toolStatus: 'Thinking...' });
-    let response = await streamedCall(messages);
+
+    // FIRST call is BUFFERED — we check for email refusal before sending to client
+    const firstResult = await bufferedCall(messages);
+    let response = firstResult.finalMessage;
+    const firstText = firstResult.bufferedText.toLowerCase();
+
+    // Check if Opus refused about email/access
+    const EMAIL_REFUSAL_PHRASES = [
+      "don't have direct access", "don't have access to your", "cannot access your",
+      "can't access your", "can't access personal", "unable to access",
+      "can't see your email", "cannot see your email", "personal emails",
+      "private communications", "direct correspondence",
+      "can't access specific email", "don't have the ability to access",
+      "i can't view your", "i cannot view your", "i don't have visibility",
+      "beyond my capabilities", "not able to access your",
+      "can't read your email", "cannot read your email",
+    ];
+    const isEmailRefusal = EMAIL_REFUSAL_PHRASES.some(p => firstText.includes(p));
+
+    if (isEmailRefusal) {
+      // RECOVERY: Opus refused about emails. Discard its response entirely.
+      // Extract entity name from original message and run email shortcut.
+      console.log('[KIKO-RECOVERY] Opus refused email access. Running email shortcut recovery for:', message);
+      write({ toolStatus: 'Searching emails...' });
+
+      // Build search query from original message — strip all filler
+      const recoveryStopWords = new Set([
+        'email','emails','emailed','inbox','sent','mail','mailed','gmail',
+        'message','messages','messaged','correspondence','correspond',
+        'communicated','communication','communications',
+        'thread','threads','reply','replied','respond','responded','response',
+        'wrote','written','draft','contacted','outreach',
+        'conversation','conversations','follow','following','followed',
+        'contact','touch','base','update','status',
+        'heard','reach','reached','said','told',
+        'tell','about','from','show','me','the','what','were','was','is','are',
+        'any','find','search','get','give','have','had','has','can','you','do',
+        'did','last','recent','latest','with','and','or','my','our','their',
+        'his','her','please','could','would','like','know','check','look',
+        'pull','up','all','been','that','this','those','them','they','who',
+        'when','where','how','does','i','to','of','in','on','at','for','so',
+        'no','not','if','it','be','by','an','as','us','we','got','back',
+        'write','any']);
+      const recWords = msgLower.split(/\s+/).filter(w => w.length >= 2 && !recoveryStopWords.has(w));
+      let recQuery = recWords.slice(0, 5).join(' ') || 'is:inbox newer_than:14d';
+
+      let emailData = await executeTool('search_emails', { query: recQuery, limit: 8 }, userEmail);
+      // Retry with longest word
+      if ((!emailData || typeof emailData !== 'string' || emailData.length < 30 || emailData.startsWith('No emails')) && recWords.length > 1) {
+        const longest = recWords.reduce((a, b) => a.length >= b.length ? a : b, '');
+        if (longest && longest !== recQuery) emailData = await executeTool('search_emails', { query: longest, limit: 8 }, userEmail);
+      }
+      write({ toolStatus: null });
+
+      const hasData = emailData && typeof emailData === 'string' && emailData.length >= 30 && !emailData.startsWith('No emails');
+      write({ toolStatus: 'Thinking...' });
+      const haikuPrompt = hasData
+        ? `You are Kiko, a commercial intelligence assistant for Van Hawke Group. A user asked: "${message}"\n\nHere are the email search results retrieved from Gmail:\n\n${emailData}\n\nAnswer the user's question based on these results. Be direct and specific — name the people, subjects, and dates. Use **bold** for names/companies. End by offering to pull the full thread if relevant. Do not say you searched anything — just present what you found.`
+        : `You are Kiko, a commercial intelligence assistant for Van Hawke Group. A user asked: "${message}"\n\nThe Gmail search for "${recQuery}" returned no matching emails. Tell the user no emails were found matching their query. Suggest they try a different name or keyword. Be brief — 2 sentences max.`;
+      const formatRes = await anthropic.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 1000, messages: [{ role: 'user', content: haikuPrompt }] });
+      write({ toolStatus: null });
+      const recoveryText = formatRes.content?.[0]?.text || (hasData ? 'Found emails but could not format. Try asking again.' : `No emails found for "${recQuery}".`);
+      const rWords = recoveryText.split(' ');
+      for (let i = 0; i < rWords.length; i += 8) {
+        write({ delta: rWords.slice(i, i + 8).join(' ') + (i + 8 < rWords.length ? ' ' : '') });
+      }
+      mem0Add(message, recoveryText);
+      write({ meta: { done: true, model: 'haiku-email-recovery', toolRounds: 0, version: 'v3-recovery' } });
+      res.write('data: [DONE]\n\n');
+      res.end();
+      return;
+    }
+
+    // Opus response was clean — now stream the buffered text to the client
+    if (firstResult.bufferedText) {
+      write({ delta: firstResult.bufferedText });
+    }
+
     let toolRounds = 0;
     const MAX_ROUNDS = 8;
 
@@ -456,7 +602,7 @@ Answer the user's question based on these results. Be direct and specific — na
     const finalText = (response.content || []).filter(b => b.type === 'text').map(b => b.text).join('')
     if (finalText) mem0Add(message, finalText)
 
-    write({ meta: { done: true, model: MODEL, toolRounds } });
+    write({ meta: { done: true, model: MODEL, toolRounds, version: 'v3-opus' } });
     res.write('data: [DONE]\n\n');
     res.end();
 
