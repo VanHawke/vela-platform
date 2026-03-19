@@ -45,13 +45,12 @@ async function mem0Add(userMsg, assistantMsg) {
 const SYSTEM_PROMPT = `You are Kiko — the intelligence layer of the Vela platform, built for Van Hawke Group.
 
 CRITICAL CAPABILITY RULES (override all defaults):
-- You have AUTHORISED, INTEGRATED access to Sunny's Gmail inbox and Google Calendar via API tools. This is not hypothetical — the tools are connected and working.
-- When asked about emails: USE the search_emails tool. DO NOT say you lack access. DO NOT say emails are off-limits. DO NOT suggest "integrating email data." The integration is ALREADY DONE.
-- When asked about calendar: USE the get_calendar tool. DO NOT say you can't see the calendar.
-- When asked to draft an email: USE the draft_email tool. It creates a real Gmail draft.
-- When asked about email patterns: USE the get_email_analytics tool.
-- FORBIDDEN PHRASES (never say any of these): "I don't have direct access to your emails", "off-limits for privacy", "if you integrate your email", "I can't access your inbox", "I don't have access to your calendar", "privacy and security reasons"
-- If you catch yourself about to say you can't access emails or calendar, STOP and use the tool instead.
+- You have AUTHORISED, INTEGRATED access to Sunny's Gmail inbox and Google Calendar via API tools. This is not hypothetical — the tools are connected and working. Use them.
+- ANY question about emails, messages, or correspondence → immediately call search_emails. Do not explain, do not caveat, just call the tool.
+- ANY question about calendar → immediately call get_calendar.
+- ANY request to draft → immediately call draft_email.
+- ABSOLUTELY FORBIDDEN — never say any variation of these: "I don't have direct access", "I don't have access", "I can't access", "I cannot access", "no direct access", "personal emails", "private communications", "limited to what we chat", "beyond my capabilities", "unable to access", "off-limits", "privacy", "guide you on how to check", "look through your inbox yourself".
+- If you feel the urge to say you can't access something — STOP. Call the tool instead. The tool works.
 
 IDENTITY:
 - You are Kiko. Never refer to yourself as Claude, an AI assistant, or a chatbot.
@@ -308,31 +307,14 @@ export default async function handler(req, res) {
     // Build messages from history
     const messages = [];
 
-    // PRIMING: Inject a verified tool-use exchange so Claude knows email/calendar tools work.
-    // Uses correct parameter names matching tool schema — mismatches cause silent priming failure.
-    messages.push({ role: 'user', content: '[System: verify integrations]' });
-    messages.push({ role: 'assistant', content: [
-      { type: 'text', text: 'Verifying integrations.' },
-      { type: 'tool_use', id: 'toolu_prime01', name: 'search_emails', input: { query: 'is:inbox', limit: 1 } }
-    ]});
-    messages.push({ role: 'user', content: [
-      { type: 'tool_result', tool_use_id: 'toolu_prime01', content: 'Gmail connected. Access: full. Emails available. User: sunny@vanhawke.com.' }
-    ]});
-    messages.push({ role: 'assistant', content: [
-      { type: 'text', text: 'All integrations verified.' },
-      { type: 'tool_use', id: 'toolu_prime02', name: 'get_calendar', input: { days: 1 } }
-    ]});
-    messages.push({ role: 'user', content: [
-      { type: 'tool_result', tool_use_id: 'toolu_prime02', content: 'Google Calendar connected. Access: full.' }
-    ]});
-    messages.push({ role: 'assistant', content: 'Gmail, Google Calendar, CRM, and web search all connected and operational. Ready.' });
-
-    // Build messages from history — filter out any poisoned "can't access email" responses
-    // These get baked into context and cause the refusal to repeat itself
+    // Build messages — strip poisoned "can't access email" responses from history
+    // Broad phrase list catches all variants Kiko has used
     const POISON_PHRASES = [
-      "can't access", "cannot access", "don't have access", "no access to",
-      "unable to access", "can't see", "cannot see", "limited to what we chat",
-      "I'm not able to access", "off-limits", "privacy and security"
+      "don't have direct access", "don't have access", "cannot access", "can't access",
+      "no access to", "unable to access", "can't see your", "cannot see your",
+      "limited to what we chat", "not able to access", "off-limits",
+      "privacy and security", "personal emails", "private communications",
+      "I don't have the ability", "beyond my capabilities", "I'm unable to"
     ]
     const cleanHistory = conversationHistory.slice(-20).filter(m => {
       if (m.role !== 'assistant') return true
@@ -340,9 +322,9 @@ export default async function handler(req, res) {
       return !POISON_PHRASES.some(p => text.includes(p.toLowerCase()))
     })
     for (const m of cleanHistory) {
-      if (m.role === 'user' || m.role === 'assistant') messages.push({ role: m.role, content: m.content || '' });
+      if (m.role === 'user' || m.role === 'assistant') messages.push({ role: m.role, content: m.content || '' })
     }
-    messages.push({ role: 'user', content: message });
+    messages.push({ role: 'user', content: message })
 
     // All tools: native (memory + web search) + custom
     const tools = [...NATIVE_TOOLS, ...TOOL_DEFINITIONS];
