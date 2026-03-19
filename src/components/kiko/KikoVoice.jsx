@@ -327,8 +327,13 @@ When you get tool results back, summarise them conversationally — don't read t
             'communication', 'in touch', 'follow up', 'reach out', 'mailed']
           const shouldFetchEmail = EMAIL_WORDS.some(w => tl.includes(w)) || needsEmailFetch.current
           if (shouldFetchEmail) {
-            needsEmailFetch.current = false  // consumed
-            console.log('[Kiko Voice] Fetching email data from kiko.js for:', text.slice(0, 60))
+            needsEmailFetch.current = false
+            console.log('[Kiko Voice] Fetching email data — pausing VAD + timers')
+            // PAUSE: disable VAD so background noise doesn't interrupt the fetch
+            if (dcRef.current?.readyState === 'open') {
+              dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: null } }))
+            }
+            clearTimers()  // prevent passive/off mode during fetch
             ;(async () => {
               try {
                 const res = await fetch('/api/kiko', {
@@ -350,9 +355,18 @@ When you get tool results back, summarise them conversationally — don't read t
                 if (full) {
                   addMessage('kiko', full)
                   setKikoText(full)
+                  setThinking(false)
                   console.log('[Kiko Voice] Email data loaded:', full.slice(0, 80))
                 }
-              } catch (err) { console.error('[Kiko Voice] Email fetch error:', err) }
+              } catch (err) { console.error('[Kiko Voice] Email fetch error:', err); setThinking(false) }
+              // RESUME: re-enable VAD + restart timers regardless of success/failure
+              if (dcRef.current?.readyState === 'open') {
+                dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 } } }))
+              }
+              if (audioRef.current) audioRef.current.muted = false
+              emailMuteRef.current = false
+              startTimers()
+              console.log('[Kiko Voice] VAD + timers resumed')
             })()
           }
         }
