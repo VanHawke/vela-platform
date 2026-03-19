@@ -270,11 +270,15 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     const t = ev.type
     // Log session.updated with full detail to verify transcription config
     if (t === 'session.updated' || t === 'session.created') {
-      console.log('[Kiko Voice]', t, 'input_audio_transcription:', JSON.stringify(ev.session?.input_audio_transcription))
+      console.log('[Kiko Voice v5]', t, JSON.stringify(ev.session?.input_audio_transcription))
+    }
+    // Log errors with full detail
+    if (t === 'error') {
+      console.error('[Kiko Voice v5] ERROR:', JSON.stringify(ev.error || ev))
     }
     // Debug: log all events except high-frequency audio deltas
     if (t !== 'response.output_audio_transcript.delta' && t !== 'response.audio.delta') {
-      console.log('[Kiko Voice Event]', t, ev.transcript || ev.delta || ev.error || '')
+      console.log('[Kiko Voice v5]', t, ev.transcript || ev.delta || (ev.error ? JSON.stringify(ev.error) : ''))
     }
     if (t === 'input_audio_buffer.speech_started') {
       setTranscript(''); setKikoText(''); setSpeaking(false); setThinking(false)
@@ -295,10 +299,12 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     if (t === 'response.created') {
       if (pendingKikoRef.current) {
         // This response was triggered by US after kiko.js — let it play
+        console.log('[Kiko Voice v5] OUR response.created — letting it play')
         pendingKikoRef.current = false
         setKikoText(''); setSpeaking(true); setThinking(false)
       } else {
         // This is GPT-4o's auto-response — cancel it immediately
+        console.log('[Kiko Voice v5] AUTO response.created — CANCELLING')
         if (dcRef.current?.readyState === 'open') {
           dcRef.current.send(JSON.stringify({ type: 'response.cancel' }))
           dcRef.current.send(JSON.stringify({ type: 'output_audio_buffer.clear' }))
@@ -317,7 +323,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
         } else {
           addMessage('user', text)
           // Route ALL queries through kiko.js — Claude handles everything
-          console.log('[Kiko Voice] Routing to kiko.js:', text.slice(0, 60))
+          console.log('[Kiko Voice v5] ROUTING to kiko.js:', text.slice(0, 60))
           setThinking(true); setKikoText('Thinking...')
           ;(async () => {
             try {
@@ -340,6 +346,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
               setThinking(false)
               if (full && dcRef.current?.readyState === 'open') {
                 // Inject Claude's response for GPT-4o to speak
+                console.log('[Kiko Voice v5] GOT DATA, injecting for speech:', full.slice(0, 80))
                 pendingKikoRef.current = true
                 dcRef.current.send(JSON.stringify({
                   type: 'conversation.item.create',
@@ -353,7 +360,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
                 setKikoText(full || 'No response received.')
               }
             } catch (err) {
-              console.error('[Kiko Voice] kiko.js error:', err)
+              console.error('[Kiko Voice v5] kiko.js FAILED:', err.message, err)
               setThinking(false); setKikoText('Something went wrong. Try again.')
             }
           })()
