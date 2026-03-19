@@ -13,22 +13,68 @@ const T = {
   amber: '#B86000', amberLight: '#FFF7ED', amberBorder: '#FAC775',
 }
 
-// ── SVG bolt (F1/FE icon shape) ───────────────────────────
-const Bolt = ({ fill = '#fff', size = 11 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <path d="M14 3L5 14h7l-1 7 9-11h-7l1-7z" fill={fill} />
-  </svg>
-)
-const SeriesIcon = ({ series, size = 22 }) => (
+// ── F1 logo mark — "F1" wordmark style, white on red ─────
+const F1Mark = ({ size = 16 }) => {
+  const s = size
+  return (
+    <svg width={s} height={s} viewBox="0 0 40 40" fill="none">
+      {/* F — vertical stroke */}
+      <rect x="4" y="8" width="5" height="24" fill="white"/>
+      {/* F — top bar */}
+      <rect x="4" y="8" width="15" height="5" fill="white"/>
+      {/* F — mid bar */}
+      <rect x="4" y="18" width="11" height="4" fill="white"/>
+      {/* Speed gap / white diagonal (negative space between F and 1) */}
+      {/* 1 — serif top */}
+      <polygon points="27,8 23,14 27,14" fill="white"/>
+      {/* 1 — vertical stroke */}
+      <rect x="25" y="8" width="5" height="24" fill="white"/>
+      {/* 1 — base */}
+      <rect x="21" y="29" width="13" height="3" fill="white"/>
+    </svg>
+  )
+}
+
+// ── Formula E logo mark — "E" with lightning cut ──────────
+const FEMark = ({ size = 16 }) => {
+  const s = size
+  return (
+    <svg width={s} height={s} viewBox="0 0 40 40" fill="none">
+      {/* E — vertical stroke */}
+      <rect x="6" y="8" width="5" height="24" fill="white"/>
+      {/* E — top bar */}
+      <rect x="6" y="8" width="17" height="5" fill="white"/>
+      {/* E — mid bar (shorter, with lightning notch) */}
+      <rect x="6" y="18" width="13" height="4" fill="white"/>
+      {/* E — bottom bar */}
+      <rect x="6" y="27" width="17" height="5" fill="white"/>
+      {/* Lightning bolt overlay (electric accent, blue bg shows through) */}
+      <polygon points="28,10 22,22 27,22 21,32 34,18 28,18" fill="white"/>
+    </svg>
+  )
+}
+
+// ── Pill-size series indicator (for calendar cells) ───────
+const SeriesDot = ({ series }) => (
   <div style={{
-    width: size, height: size,
-    borderRadius: Math.round(size * 0.28),
+    width: 7, height: 7, borderRadius: 2,
     background: series === 'f1' ? T.f1 : T.fe,
-    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-  }}>
-    <Bolt fill="#fff" size={Math.round(size * 0.52)} />
-  </div>
+    flexShrink: 0,
+  }} />
 )
+
+// ── Larger branded icon (for detail pane + toggles) ───────
+const SeriesIcon = ({ series, size = 22 }) => {
+  const r = Math.round(size * 0.28)
+  const bg = series === 'f1' ? T.f1 : T.fe
+  return (
+    <div style={{ width: size, height: size, borderRadius: r, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      {series === 'f1'
+        ? <F1Mark size={Math.round(size * 0.72)} />
+        : <FEMark size={Math.round(size * 0.72)} />}
+    </div>
+  )
+}
 
 // ── Race data (verified from formula1.com + fiaformulae.com) ─
 const F1_2026 = [
@@ -188,7 +234,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, onClick }) 
               {pill(
                 s.isSel || s.isRaceDay ? 'rgba(255,255,255,0.22)' : T.f1,
                 <>
-                  <Bolt fill="#fff" size={7} />
+                  <F1Mark size={8} />
                   <span style={{ fontSize: 8, color: '#fff', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
                     {s.isRaceDay ? 'Race day' : `${e.city.slice(0, 3).toUpperCase()}${e.sprint ? ' ⚡' : ''}`}
                   </span>
@@ -201,7 +247,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, onClick }) 
               {pill(
                 s.isSel ? 'rgba(255,255,255,0.22)' : T.fe,
                 <>
-                  <Bolt fill="#fff" size={7} />
+                  <FEMark size={8} />
                   <span style={{ fontSize: 8, color: '#fff', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
                     {e.city.slice(0, 3).toUpperCase()}
                   </span>
@@ -424,8 +470,8 @@ export default function CommercialCalendar() {
             { id: 'fe', label: 'Formula E',  on: showFE, set: setShowFE, bg: T.fe, rem: remFE },
           ].map(({ id, label, on, set, bg, rem }) => (
             <button key={id} onClick={() => set(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 7px', borderRadius: 6, border: `0.5px solid ${on ? bg + '55' : T.border}`, background: on ? bg : 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}>
-              <div style={{ width: 15, height: 15, borderRadius: 3, background: on ? 'rgba(255,255,255,0.22)' : bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Bolt fill="#fff" size={9} />
+              <div style={{ width: 18, height: 18, borderRadius: 4, background: on ? 'rgba(255,255,255,0.18)' : bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {id === 'f1' ? <F1Mark size={14} /> : <FEMark size={14} />}
               </div>
               <span style={{ fontSize: 11, fontWeight: 500, color: on ? '#fff' : T.textSecondary, fontFamily: T.font }}>{label}</span>
               {on && <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.65)', fontFamily: T.font }}>{rem}</span>}
