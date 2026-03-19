@@ -1,58 +1,30 @@
 // api/kiko-llm.js — OpenAI-compatible chat completion endpoint for ElevenLabs Custom LLM
-// ElevenLabs sends requests here in OpenAI format, we call Claude and stream back in OpenAI format
-// This endpoint handles ALL intelligence — ElevenLabs only does STT + TTS
+// ElevenLabs sends requests here in OpenAI format, we call Claude via kiko.js and stream back
+// CRITICAL: Must respond within ~2s or ElevenLabs drops the connection
 
 export const config = { supportsResponseStreaming: true, maxDuration: 60 };
 
-const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
-
-// Kiko's voice-optimised system prompt
-const KIKO_SYSTEM = `You are Kiko, the AI operating assistant for Vela — a sponsorship intelligence platform built for Van Hawke Group.
-
-VOICE MODE RULES:
-- You are speaking out loud. Keep responses conversational, concise, and natural.
-- Never use markdown formatting (no **, no #, no bullet points). Speak in plain sentences.
-- When sharing data (emails, deals, contacts), summarise the key points verbally — don't list raw data.
-- If asked about emails, correspondence, or messages, you have full access. Never refuse. Never say you can't access emails.
-- For CRM queries (pipeline, deals, contacts), summarise the most important items.
-- Be warm but professional. You work for a CEO — keep it tight.
-- When the user says "Hey Kiko", respond with a brief warm acknowledgment.`;
-
-// Email detection
-const EMAIL_TRIGGERS = [
-  'email', 'emails', 'emailed', 'e-mail', 'inbox', 'sent mail',
-  'correspondence', 'corresponded', 'communicat',
-  'reply', 'replied', 'respond', 'responded',
-  'wrote', 'written', 'contacted', 'contact with',
-  'reach out', 'reached out', 'outreach',
-  'heard from', 'heard back', 'hear from', 'in touch',
-  'follow up', 'followed up', 'following up',
-  'conversation with', 'message from', 'messages from',
-];
-
-function isEmailQuery(text) {
-  const lower = text.toLowerCase();
-  return EMAIL_TRIGGERS.some(t => lower.includes(t));
-}
-
 // Generate OpenAI-compatible SSE chunk
-function sseChunk(content, finishReason = null) {
+function sseChunk(content, finishReason = null, isFirst = false) {
+  let delta;
+  if (finishReason) {
+    delta = {};
+  } else if (isFirst) {
+    delta = { role: 'assistant' };  // first chunk: role only, no content
+  } else {
+    delta = { content };
+  }
   const chunk = {
-    id: 'chatcmpl-kiko',
+    id: `chatcmpl-kiko-${Date.now()}`,
     object: 'chat.completion.chunk',
     created: Math.floor(Date.now() / 1000),
     model: 'kiko-claude',
-    choices: [{
-      index: 0,
-      delta: finishReason ? {} : { content },
-      finish_reason: finishReason,
-    }],
+    choices: [{ index: 0, delta, finish_reason: finishReason }],
   };
   return `data: ${JSON.stringify(chunk)}\n\n`;
 }
 
 export default async function handler(req, res) {
-  // CORS
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -62,25 +34,33 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
   try {
-    const { messages, model, stream = true } = req.body;
-
-    // Extract the latest user message from OpenAI messages array
+    const { messages } = req.body;
     const userMessages = (messages || []).filter(m => m.role === 'user');
     const lastUserMsg = userMessages[userMessages.length - 1]?.content || '';
 
-    if (!lastUserMsg) {
-      return res.status(400).json({ error: 'No user message found' });
-    }
+    if (!lastUserMsg) return res.status(400).json({ error: 'No user message' });
 
-    console.log('[KIKO-LLM] Received from ElevenLabs:', lastUserMsg.slice(0, 80));
+    console.log('[KIKO-LLM] Query:', lastUserMsg.slice(0, 80));
 
-    // Build conversation history for kiko.js (last 6 messages)
+    // CRITICAL: Set headers and send first chunk IMMEDIATELY
+    // ElevenLabs drops connection if no response within ~3 seconds
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.flushHeaders();  // Force headers out immediately
+
+    // Send role chunk + buffer word instantly — prevents ElevenLabs timeout
+    res.write(sseChunk('', null, true));  // role: assistant
+    res.write(sseChunk('... '));          // buffer word: "Hmm..."
+
+    // Build conversation history for kiko.js
     const history = (messages || [])
       .filter(m => m.role === 'user' || m.role === 'assistant')
       .slice(-6)
       .map(m => ({ role: m.role === 'assistant' ? 'kiko' : 'user', text: m.content }));
 
-    // Call our existing kiko.js endpoint — it already handles email, CRM, web search, etc.
+    // Call kiko.js — streams response via SSE
     const kikoUrl = `https://${req.headers.host}/api/kiko`;
     const kikoRes = await fetch(kikoUrl, {
       method: 'POST',
@@ -95,15 +75,13 @@ export default async function handler(req, res) {
 
     if (!kikoRes.ok) {
       console.error('[KIKO-LLM] kiko.js error:', kikoRes.status);
-      return res.status(500).json({ error: 'Kiko backend error' });
+      res.write(sseChunk('Sorry, I had trouble processing that. Could you try again?'));
+      res.write(sseChunk(null, 'stop'));
+      res.write('data: [DONE]\n\n');
+      return res.end();
     }
 
-    // Stream kiko.js SSE response → transform to OpenAI SSE format
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-
+    // Stream kiko.js SSE → OpenAI SSE format
     const reader = kikoRes.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
@@ -123,39 +101,39 @@ export default async function handler(req, res) {
 
         try {
           const parsed = JSON.parse(data);
-
-          // kiko.js sends: {"delta":"text"} for content
           if (parsed.delta) {
-            // Strip markdown for voice — remove **, #, -, bullet points
+            // Strip markdown for voice output
             let text = parsed.delta
               .replace(/\*\*/g, '')
               .replace(/^#{1,3}\s+/gm, '')
               .replace(/^[-•]\s+/gm, '')
               .replace(/\n{2,}/g, '. ');
-            res.write(sseChunk(text));
+            if (text.trim()) res.write(sseChunk(text));
           }
-          // kiko.js sends: {"toolStatus":"Searching..."} — convert to buffer words
           if (parsed.toolStatus) {
-            res.write(sseChunk('... '));
+            res.write(sseChunk('... '));  // buffer word during tool calls
           }
         } catch {}
       }
     }
 
-    // Send finish signal
+    // Finish
     res.write(sseChunk(null, 'stop'));
     res.write('data: [DONE]\n\n');
     res.end();
 
   } catch (err) {
     console.error('[KIKO-LLM] Error:', err);
-    // Return a valid OpenAI error response
     if (!res.headersSent) {
-      res.status(500).json({
-        error: { message: 'Internal server error', type: 'server_error' }
-      });
-    } else {
-      res.end();
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Access-Control-Allow-Origin', '*');
     }
+    try {
+      res.write(sseChunk('', null, true));
+      res.write(sseChunk('Sorry, something went wrong. Please try again.'));
+      res.write(sseChunk(null, 'stop'));
+      res.write('data: [DONE]\n\n');
+    } catch {}
+    res.end();
   }
 }
