@@ -59,6 +59,8 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   const scrollRef       = useRef(null)
   const fileInputRef    = useRef(null)
   const dragCountRef    = useRef(0)
+  const lastUserMsgRef  = useRef('')       // track last user transcript for email recovery
+  const lastKikoTextRef = useRef('')       // track Kiko's full response for refusal detection
 
   useEffect(() => { listenModeRef.current = listenMode }, [listenMode])
   useEffect(() => { connectRealtime(); return () => { cleanup(); stopKeyword(); stopLiveTranscription() } }, [])
@@ -306,6 +308,7 @@ When you get tool results back, summarise them conversationally — don't read t
       const text = ev.transcript?.trim() || ''
       if (text) {
         setTranscript(text)
+        lastUserMsgRef.current = text  // store for email recovery
         if (listenModeRef.current === 'passive') {
           if (KEYWORDS.some(kw => text.toLowerCase().includes(kw))) resetToActive()
         } else {
@@ -324,9 +327,62 @@ When you get tool results back, summarise them conversationally — don't read t
     if (t === 'response.audio_transcript.delta' || t === 'response.output_audio_transcript.delta') setKikoText(p => p + (ev.delta || ''))
     if (t === 'response.audio_transcript.done' || t === 'response.output_audio_transcript.done') {
       const full = ev.transcript?.trim() || ''
-      if (full) addMessage('kiko', full)
+      if (full) {
+        lastKikoTextRef.current = full
+        addMessage('kiko', full)
+      }
     }
-    if (t === 'response.done') { setSpeaking(false); setTranscript('') }
+    if (t === 'response.done') {
+      setSpeaking(false); setTranscript('')
+      // ── EMAIL RECOVERY: detect GPT-4o email refusal and auto-correct ──
+      const kikoResp = lastKikoTextRef.current.toLowerCase()
+      const userMsg = lastUserMsgRef.current.toLowerCase()
+      const EMAIL_REFUSAL = ["can't access", "cannot access", "don't have access",
+        "don't have direct access", "personal emails", "private communication",
+        "can't see your email", "unable to access", "direct correspondence",
+        "can't view your", "beyond my capabilities", "not able to access"]
+      const EMAIL_INTENT = ['email', 'emails', 'correspondence', 'corresponded',
+        'message', 'messages', 'wrote', 'heard from', 'replied', 'sent',
+        'contacted', 'outreach', 'reach out', 'follow up', 'in touch',
+        'communication', 'said to us', 'told us']
+      const isRefusal = EMAIL_REFUSAL.some(p => kikoResp.includes(p))
+      const wasEmailQuery = EMAIL_INTENT.some(p => userMsg.includes(p))
+      if (isRefusal && wasEmailQuery && dcRef.current?.readyState === 'open') {
+        console.log('[Kiko Voice] EMAIL RECOVERY triggered for:', lastUserMsgRef.current)
+        // Fetch real email data via kiko.js (which has the working Haiku shortcut)
+        ;(async () => {
+          try {
+            const res = await fetch('/api/kiko', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: lastUserMsgRef.current, currentPage: 'voice', userEmail: 'sunny@vanhawke.com', conversationHistory: [] })
+            })
+            const reader = res.body.getReader(); const dec = new TextDecoder()
+            let full = '', buf = ''
+            while (true) {
+              const { done, value } = await reader.read(); if (done) break
+              buf += dec.decode(value, { stream: true })
+              const lines = buf.split('\n'); buf = lines.pop() || ''
+              for (const line of lines) {
+                if (!line.startsWith('data: ')) continue
+                const d = line.slice(6); if (d === '[DONE]') continue
+                try { const j = JSON.parse(d); if (j.delta) full += j.delta } catch {}
+              }
+            }
+            if (full && dcRef.current?.readyState === 'open') {
+              // Inject corrected data and ask GPT-4o to speak it
+              dcRef.current.send(JSON.stringify({
+                type: 'conversation.item.create',
+                item: { type: 'message', role: 'user',
+                  content: [{ type: 'input_text', text: `CORRECTION: Ignore your previous response. Here is the actual email data retrieved from Gmail:\n\n${full.slice(0, 3000)}\n\nRead this information to Sunny naturally and concisely. Do NOT say you can't access emails — the data is right here.` }]
+                }
+              }))
+              dcRef.current.send(JSON.stringify({ type: 'response.create' }))
+            }
+          } catch (err) { console.error('[Kiko Voice] Email recovery error:', err) }
+        })()
+      }
+      lastKikoTextRef.current = ''
+    }
     if (t === 'response.function_call_arguments.done') handleTool(ev)
   }
 
