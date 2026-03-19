@@ -122,6 +122,11 @@ export const TOOL_DEFINITIONS = [
     input_schema: { type: 'object', properties: {
       status: { type: 'string', enum: ['pending_review', 'approved', 'sent', 'all'], description: 'Filter by status (default: pending_review)' },
     }, required: [] } },
+  { name: 'get_recipient_style', description: 'Analyse the writing style, tone, and communication patterns of a specific recipient based on their past email replies. Use before drafting to Kiko — "how does X write?", "what tone does Y use?", "analyse how John responds". Returns vocabulary, length, formality, emotional tone, and key phrases to mirror.',
+    input_schema: { type: 'object', properties: {
+      email: { type: 'string', description: 'Recipient email address to analyse' },
+      name: { type: 'string', description: 'Recipient name (used if email not known)' },
+    }, required: [] } },
   { name: 'get_news', description: 'Get latest sports sponsorship and F1 news from the intelligence feed. Use for "what\'s the latest news", "F1 sponsorship deals", "any news about X company", "deal signals".',
     input_schema: { type: 'object', properties: {
       category: { type: 'string', enum: ['all', 'f1_sponsorship', 'sports_sponsorship', 'formula_e', 'f1_general', 'market_activity', 'brand_ambassador'], description: 'Filter by category (default: all)' },
@@ -279,17 +284,71 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com')
     try {
       const { getGoogleToken } = await import('./google-token.js')
       const token = await getGoogleToken(userEmail)
-      const threadRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/threads/${thread_id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject&metadataHeaders=Date`, {
+      // format=full gives us actual body content, not just snippets
+      const threadRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/threads/${thread_id}?format=full`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       const thread = await threadRes.json()
-      const msgs = (thread.messages || []).map(msg => {
+      if (!thread.messages?.length) return 'Thread not found.'
+
+      // Extract plain text body from a message part tree
+      function extractBody(payload) {
+        if (!payload) return ''
+        // Direct plain text body
+        if (payload.mimeType === 'text/plain' && payload.body?.data) {
+          return Buffer.from(payload.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8').trim()
+        }
+        // Walk parts recursively — prefer text/plain, fall back to text/html stripped
+        if (payload.parts) {
+          const plain = payload.parts.find(p => p.mimeType === 'text/plain')
+          if (plain?.body?.data) return Buffer.from(plain.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8').trim()
+          const html = payload.parts.find(p => p.mimeType === 'text/html')
+          if (html?.body?.data) {
+            const raw = Buffer.from(html.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8')
+            return raw.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+          }
+          // Nested multipart
+          for (const part of payload.parts) {
+            const nested = extractBody(part)
+            if (nested) return nested
+          }
+        }
+        return ''
+      }
+
+      const msgs = thread.messages.map(msg => {
         const h = msg.payload?.headers || []
         const getH = (n) => h.find(x => x.name.toLowerCase() === n.toLowerCase())?.value || ''
-        return { from: getH('From'), to: getH('To'), subject: getH('Subject'), date: getH('Date'), snippet: msg.snippet }
+        const body = extractBody(msg.payload)
+        // Strip quoted reply chains (lines starting with > or "On ... wrote:")
+        const cleanBody = body
+          .split('\n')
+          .filter(line => !line.trim().startsWith('>') && !line.match(/^On .+ wrote:$/))
+          .join('\n')
+          .replace(/\n{3,}/g, '\n\n')
+          .trim()
+          .slice(0, 1500) // cap per message
+        return {
+          from: getH('From'),
+          to: getH('To'),
+          subject: getH('Subject'),
+          date: getH('Date'),
+          body: cleanBody || msg.snippet || '',
+          isFromMe: getH('From').toLowerCase().includes(userEmail.toLowerCase()),
+        }
       })
-      if (!msgs.length) return 'Thread not found.'
-      return `EMAIL THREAD: "${msgs[0].subject}" (${msgs.length} messages)\n${msgs.map((m, i) => `\n[${i + 1}] ${m.from} → ${m.to} (${m.date ? new Date(m.date).toLocaleDateString('en-GB') : '?'})\n${m.snippet}`).join('\n')}`
+
+      const subject = msgs[0]?.subject || '(no subject)'
+      let out = `EMAIL THREAD: "${subject}" — ${msgs.length} message${msgs.length > 1 ? 's' : ''}\n`
+      for (let i = 0; i < msgs.length; i++) {
+        const m = msgs[i]
+        const dateStr = m.date ? new Date(m.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '?'
+        const dir = m.isFromMe ? '→ SENT' : '← RECEIVED'
+        out += `\n[${i + 1}] ${dir} | ${m.from} | ${dateStr}\n`
+        out += `${m.body}\n`
+        out += `${'─'.repeat(40)}\n`
+      }
+      return out
     } catch(e) { return `Thread fetch error: ${e.message}` }
   }
 
@@ -627,6 +686,93 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com')
       console.error('[Kiko] search_documents error:', err.message)
       return `Document search error: ${err.message}`
     }
+  }
+
+  if (name === 'get_recipient_style') {
+    const { email: recipientEmail, name: recipientName } = input
+    try {
+      const { getGoogleToken } = await import('./google-token.js')
+      const token = await getGoogleToken(userEmail)
+      const query = recipientEmail ? `from:${recipientEmail}` : `from:${recipientName}`
+      // Fetch up to 20 messages FROM this recipient to analyse their style
+      const searchRes = await fetch(
+        `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(query)}&maxResults=20`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      const searchData = await searchRes.json()
+      const ids = (searchData.messages || []).map(m => m.id)
+      if (!ids.length) return `No emails found from ${recipientEmail || recipientName}. Cannot analyse style yet.`
+
+      // Extract body text from each message
+      function extractBody(payload) {
+        if (!payload) return ''
+        if (payload.mimeType === 'text/plain' && payload.body?.data)
+          return Buffer.from(payload.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8').trim()
+        if (payload.parts) {
+          const plain = payload.parts.find(p => p.mimeType === 'text/plain')
+          if (plain?.body?.data) return Buffer.from(plain.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8').trim()
+          for (const part of payload.parts) { const n = extractBody(part); if (n) return n }
+        }
+        return ''
+      }
+
+      const bodies = []
+      for (const id of ids.slice(0, 12)) {
+        try {
+          const msgRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=full`, { headers: { Authorization: `Bearer ${token}` } })
+          const msg = await msgRes.json()
+          const body = extractBody(msg.payload)
+          if (body && body.length > 20) {
+            // Strip quoted lines
+            const clean = body.split('\n').filter(l => !l.trim().startsWith('>') && !l.match(/^On .+ wrote:$/)).join('\n').trim().slice(0, 600)
+            if (clean.length > 30) bodies.push(clean)
+          }
+        } catch {}
+      }
+      if (!bodies.length) return `Found emails from ${recipientEmail || recipientName} but could not extract body text.`
+
+      // Use Haiku to analyse style patterns across all their messages
+      const { default: Anthropic } = await import('@anthropic-ai/sdk')
+      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY })
+      const res = await client.messages.create({
+        model: 'claude-haiku-4-5-20251001', max_tokens: 600,
+        messages: [{ role: 'user', content: `Analyse the writing style of this person based on their emails. Return ONLY valid JSON.
+
+Emails (${bodies.length} messages):
+${bodies.map((b, i) => `[${i+1}] ${b}`).join('\n\n---\n\n')}
+
+Return JSON:
+{
+  "formality": "formal|semi-formal|casual",
+  "avg_length": "brief (1-3 lines)|medium (4-8 lines)|detailed (9+ lines)",
+  "greeting_style": "what they typically open with",
+  "sign_off_style": "how they close",
+  "tone": "warm|neutral|direct|terse|enthusiastic|guarded",
+  "response_speed_signals": "any patterns suggesting urgency or relaxed approach",
+  "key_phrases": ["phrases they repeat or favour"],
+  "punctuation_style": "heavy punctuation|minimal|balanced",
+  "uses_bullet_points": true or false,
+  "emotional_warmth": "high|medium|low",
+  "decision_language": "phrases they use when positive or interested",
+  "deflection_language": "phrases they use when uncertain or declining",
+  "draft_instructions": "2-3 sentence instruction on how to write TO this person to maximise engagement"
+}` }]
+      })
+      const raw = res.content[0]?.text || '{}'
+      let style = {}
+      try { style = JSON.parse(raw.replace(/```json|```/g, '').trim()) } catch {}
+
+      let out = `RECIPIENT STYLE PROFILE: ${recipientEmail || recipientName}\nBased on ${bodies.length} emails analysed\n\n`
+      out += `Formality: ${style.formality || '?'} | Tone: ${style.tone || '?'} | Warmth: ${style.emotional_warmth || '?'}\n`
+      out += `Typical length: ${style.avg_length || '?'} | Bullet points: ${style.uses_bullet_points ? 'Yes' : 'No'}\n`
+      if (style.greeting_style) out += `Opens with: "${style.greeting_style}"\n`
+      if (style.sign_off_style) out += `Closes with: "${style.sign_off_style}"\n`
+      if (style.key_phrases?.length) out += `Key phrases: ${style.key_phrases.join(', ')}\n`
+      if (style.decision_language) out += `When interested: "${style.decision_language}"\n`
+      if (style.deflection_language) out += `When declining: "${style.deflection_language}"\n`
+      if (style.draft_instructions) out += `\nHow to write to them:\n${style.draft_instructions}`
+      return out
+    } catch(e) { return `Style analysis error: ${e.message}` }
   }
 
   return { error: `Unknown tool: ${name}` }
