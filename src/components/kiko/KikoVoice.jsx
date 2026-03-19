@@ -227,13 +227,23 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
         dc.send(JSON.stringify({
           type: 'session.update',
           session: {
-            instructions: `You are Kiko — the intelligence layer of Vela for Van Hawke Group. Speaking with Sunny Sidhu, CEO, Weybridge UK. Sharp, warm, confident advisor. Speak naturally. Keep responses concise. All financials in USD. Use "intelligent age" not "AI generation". When hearing "Hey Kiko" in passive mode, acknowledge warmly and resume. Reference any attached documents when relevant.${memoriesContext}${platformContext}`,
+            instructions: `You are Kiko — the intelligence layer of Vela for Van Hawke Group. Speaking with Sunny Sidhu, CEO, Weybridge UK. Sharp, warm, confident advisor. Speak naturally and concisely — this is voice, not text. Keep responses under 4 sentences unless asked for detail. All financials in USD.
+
+CRITICAL: You have FULL access to Sunny's Gmail and CRM via tools. NEVER say you can't access emails or correspondence. When asked about emails, correspondence, threads, or outreach — USE the search_emails or get_email_thread tool immediately.
+
+TOOLS: search_emails to find emails by person/company/topic. get_email_thread to read what was actually said. draft_followup to generate a follow-up email. get_outreach_stats for reply rates and patterns. get_crm_data for deals/contacts. search_web for current news.
+
+When you get tool results back, summarise them conversationally — don't read them out verbatim. When hearing "Hey Kiko" in passive mode, acknowledge warmly and resume.${memoriesContext}${platformContext}`,
             voice: voiceId,
             input_audio_transcription: { model: 'whisper-1' },
             turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
             tools: [
-              { type: 'function', name: 'search_web', description: 'Search the internet.', parameters: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] } },
-              { type: 'function', name: 'get_crm_data', description: 'Query CRM.', parameters: { type: 'object', properties: { entity: { type: 'string', enum: ['deals','contacts','companies','tasks'] }, filter: { type: 'string' } }, required: ['entity'] } }
+              { type: 'function', name: 'search_web', description: 'Search the internet for current information, news, prices, or any real-time data.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'Search query' } }, required: ['query'] } },
+              { type: 'function', name: 'get_crm_data', description: 'Query CRM for deals, contacts, companies or tasks.', parameters: { type: 'object', properties: { entity: { type: 'string', enum: ['deals','contacts','companies','tasks'] }, filter: { type: 'string', description: 'Search term or filter' } }, required: ['entity'] } },
+              { type: 'function', name: 'search_emails', description: 'Search Gmail emails for a person, company or topic. Use when asked about emails, correspondence, or what was sent.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'Search term — person name, company, or topic' } }, required: ['query'] } },
+              { type: 'function', name: 'get_email_thread', description: 'Read the full content of an email thread. Use after search_emails to read what was actually said.', parameters: { type: 'object', properties: { thread_id: { type: 'string', description: 'Gmail thread ID from search results' }, company: { type: 'string', description: 'Company name as fallback if no thread ID' } }, required: [] } },
+              { type: 'function', name: 'draft_followup', description: 'Draft a follow-up email for a contact or company. Analyses email history and writing style then produces a draft.', parameters: { type: 'object', properties: { contact: { type: 'string', description: 'Contact name or email address' }, context: { type: 'string', description: 'Any specific instructions or context' } }, required: ['contact'] } },
+              { type: 'function', name: 'get_outreach_stats', description: 'Get outreach performance stats — reply rates, best messaging approach, best send day, which companies responded.', parameters: { type: 'object', properties: { focus: { type: 'string', enum: ['patterns', 'timing', 'company', 'recommendations'], description: 'What to analyse' } }, required: ['focus'] } },
             ],
             tool_choice: 'auto',
           }
@@ -345,8 +355,26 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     const { name, arguments: a, call_id } = ev
     try {
       const args = JSON.parse(a)
-      const msg = name === 'search_web' ? `Search: ${args.query}` : `CRM ${args.entity}${args.filter ? ` — ${args.filter}` : ''}`
-      const res = await fetch('/api/kiko', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg, currentPage: 'voice' }) })
+
+      // Map voice tool names → kiko.js natural language messages
+      let msg = ''
+      if (name === 'search_web')       msg = `Search the web for: ${args.query}`
+      else if (name === 'get_crm_data') msg = `Search ${args.entity}${args.filter ? ` for ${args.filter}` : ''}`
+      else if (name === 'search_emails') msg = `Search my emails for ${args.query}`
+      else if (name === 'get_email_thread') {
+        if (args.thread_id) msg = `Get email thread ${args.thread_id}`
+        else msg = `Search my emails for ${args.company || 'recent'} and show me the thread`
+      }
+      else if (name === 'draft_followup') msg = `Draft a follow-up email for ${args.contact}${args.context ? `. Context: ${args.context}` : ''}`
+      else if (name === 'get_outreach_stats') msg = `Get outreach intelligence ${args.focus}`
+      else msg = `${name}: ${JSON.stringify(args)}`
+
+      // Route through kiko.js — same backend as text chat, with all tools + email access
+      const res = await fetch('/api/kiko', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg, currentPage: 'voice', userEmail: 'sunny@vanhawke.com', conversationHistory: [] })
+      })
       const reader = res.body.getReader(); const dec = new TextDecoder()
       let full = '', buf = ''
       while (true) {
@@ -359,11 +387,17 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
           try { const j = JSON.parse(d); if (j.delta) full += j.delta } catch {}
         }
       }
+
       if (dcRef.current?.readyState === 'open') {
-        dcRef.current.send(JSON.stringify({ type: 'conversation.item.create', item: { type: 'function_call_output', call_id, output: (full || 'No results').slice(0, 4000) } }))
+        dcRef.current.send(JSON.stringify({ type: 'conversation.item.create', item: { type: 'function_call_output', call_id, output: (full || 'No results found').slice(0, 4000) } }))
         dcRef.current.send(JSON.stringify({ type: 'response.create' }))
       }
-    } catch {}
+    } catch (err) {
+      if (dcRef.current?.readyState === 'open') {
+        dcRef.current.send(JSON.stringify({ type: 'conversation.item.create', item: { type: 'function_call_output', call_id, output: `Error: ${err.message}` } }))
+        dcRef.current.send(JSON.stringify({ type: 'response.create' }))
+      }
+    }
   }
 
   // ── Typed message ─────────────────────────────────────
