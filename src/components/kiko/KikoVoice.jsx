@@ -64,6 +64,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   const kikoOutputRef   = useRef('')       // accumulated GPT-4o output transcript (for refusal detection)
   const userQueryRef    = useRef('')       // final user transcript for kiko.js query
   const needsEmailFetch = useRef(false)    // true = refusal detected, waiting for transcript
+  const startKeywordRef = useRef(null)     // ref to break circular useCallback dependency
 
   useEffect(() => { listenModeRef.current = listenMode }, [listenMode])
   useEffect(() => { connectRealtime(); return () => { cleanup(); stopKeyword(); stopLiveTranscription() } }, [])
@@ -146,8 +147,8 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
       dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: null } }))
     }
     // Start keyword detection so "Hey Kiko" can wake us up
-    startKeyword()
-  }, [stopLiveTranscription, startKeyword])
+    if (startKeywordRef.current) startKeywordRef.current()
+  }, [stopLiveTranscription])
 
   const enterOff = useCallback(() => {
     setListenMode('off'); listenModeRef.current = 'off'
@@ -170,6 +171,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     sr.onend = () => { if ((listenModeRef.current === 'off' || listenModeRef.current === 'passive') && srRef.current === sr) { try { sr.start() } catch {} } }
     try { sr.start() } catch {}
   }, [])
+  startKeywordRef.current = startKeyword
 
   const stopKeyword = useCallback(() => {
     if (srRef.current) { try { srRef.current.abort() } catch {} srRef.current = null }
