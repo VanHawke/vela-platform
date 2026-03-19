@@ -356,9 +356,15 @@ export default async function handler(req, res) {
         'pull','up','all','been','that','this','those','them','they','who',
         'when','where','how','does','i','to','of','in','on','at','for','so',
         'no','not','if','it','be','by','an','as','us','we','got','back',
-        'write','any'])
+        'write','any',
+        // Common verbs/nouns that pollute Gmail search
+        'speaking','spoke','talked','talking','called','calling',
+        'interaction','interactions','happened','occurred','discussed',
+        'discussing','took','place','went','going','came','come',
+        'also','just','really','very','need','want','wanted'])
       const words = msgLower.split(/\s+/).filter(w => w.length >= 2 && !stopWords.has(w))
-      let searchQuery = words.slice(0, 5).join(' ') || 'is:inbox newer_than:14d'
+      let searchQuery = words.slice(0, 3).join(' ') || 'is:inbox newer_than:14d'
+      console.log('[KIKO-EMAIL] Query extraction:', message?.slice(0, 60), '→ words:', JSON.stringify(words), '→ search:', searchQuery)
 
       let emailData = await executeTool('search_emails', { query: searchQuery, limit: 8 }, userEmail)
 
@@ -521,9 +527,13 @@ The Gmail search for "${searchQuery}" returned no matching emails. Tell the user
         'pull','up','all','been','that','this','those','them','they','who',
         'when','where','how','does','i','to','of','in','on','at','for','so',
         'no','not','if','it','be','by','an','as','us','we','got','back',
-        'write','any']);
+        'write','any',
+        'speaking','spoke','talked','talking','called','calling',
+        'interaction','interactions','happened','occurred','discussed',
+        'discussing','took','place','went','going','came','come',
+        'also','just','really','very','need','want','wanted']);
       const recWords = msgLower.split(/\s+/).filter(w => w.length >= 2 && !recoveryStopWords.has(w));
-      let recQuery = recWords.slice(0, 5).join(' ') || 'is:inbox newer_than:14d';
+      let recQuery = recWords.slice(0, 3).join(' ') || 'is:inbox newer_than:14d';
 
       let emailData = await executeTool('search_emails', { query: recQuery, limit: 8 }, userEmail);
       // Retry with longest word
