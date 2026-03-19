@@ -141,10 +141,13 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     setListenMode('passive'); listenModeRef.current = 'passive'
     setTranscript(''); setKikoText(''); setSpeaking(false); setThinking(false)
     stopLiveTranscription()
+    // Disable VAD completely — null is the correct way per OpenAI docs
     if (dcRef.current?.readyState === 'open') {
-      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: { type: 'none' } } }))
+      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: null } }))
     }
-  }, [stopLiveTranscription])
+    // Start keyword detection so "Hey Kiko" can wake us up
+    startKeyword()
+  }, [stopLiveTranscription, startKeyword])
 
   const enterOff = useCallback(() => {
     setListenMode('off'); listenModeRef.current = 'off'
@@ -164,7 +167,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
       const heard = Array.from(e.results).map(r => r[0].transcript.toLowerCase()).join(' ')
       if (KEYWORDS.some(kw => heard.includes(kw))) reactivate()
     }
-    sr.onend = () => { if (listenModeRef.current === 'off' && srRef.current === sr) { try { sr.start() } catch {} } }
+    sr.onend = () => { if ((listenModeRef.current === 'off' || listenModeRef.current === 'passive') && srRef.current === sr) { try { sr.start() } catch {} } }
     try { sr.start() } catch {}
   }, [])
 
@@ -294,13 +297,14 @@ When you get tool results back, summarise them conversationally — don't read t
       console.log('[Kiko Voice Event]', t, ev.transcript || ev.delta || ev.error || '')
     }
     if (t === 'input_audio_buffer.speech_started') {
+      // In passive/off mode, ignore speech events — only wake word should reset
+      if (listenModeRef.current !== 'active') return
       setTranscript(''); setKikoText(''); setSpeaking(false); setThinking(false)
       emailMuteRef.current = false; deltaAccumRef.current = ''
       kikoOutputRef.current = ''; userQueryRef.current = ''
       needsEmailFetch.current = false
       if (audioRef.current) audioRef.current.muted = false
-      if (listenModeRef.current !== 'active') resetToActive()
-      else startTimers()
+      startTimers()
     }
     if (t === 'input_audio_buffer.speech_stopped') startTimers()
 
