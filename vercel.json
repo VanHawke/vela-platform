@@ -1,14 +1,15 @@
 {
   "crons": [
-    { "path": "/api/cron-enrich", "schedule": "0 6 * * *" },
+    { "path": "/api/cron-enrich", "schedule": "0 6 * * 1" },
     { "path": "/api/news-agent", "schedule": "0 8 * * *" },
-    { "path": "/api/cron-outreach-score", "schedule": "0 9 * * *" },
+    { "path": "/api/cron-outreach-score", "schedule": "0 9 * * 1" },
     { "path": "/api/cron-partnership-scan", "schedule": "0 7 * * *" },
     { "path": "/api/cron-document-scan", "schedule": "0 6 * * 0" }
   ],
   "functions": {
     "api/kiko.js": { "maxDuration": 60 },
     "api/voice.js": { "maxDuration": 60 },
+    "api/news-agent.js": { "maxDuration": 45 },
     "api/health.js": { "maxDuration": 10 },
     "api/email.js": { "maxDuration": 60 },
     "api/calendar.js": { "maxDuration": 30 },
