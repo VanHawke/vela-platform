@@ -59,8 +59,10 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   const scrollRef       = useRef(null)
   const fileInputRef    = useRef(null)
   const dragCountRef    = useRef(0)
-  const emailMuteRef    = useRef(false)    // true = GPT-4o audio is muted (email query in progress)
-  const deltaAccumRef   = useRef('')       // accumulated delta transcript for early email detection
+  const emailMuteRef    = useRef(false)    // true = GPT-4o audio is muted (email refusal detected)
+  const deltaAccumRef   = useRef('')       // accumulated user delta transcript
+  const kikoOutputRef   = useRef('')       // accumulated GPT-4o output transcript (for refusal detection)
+  const userQueryRef    = useRef('')       // final user transcript for kiko.js query
 
   useEffect(() => { listenModeRef.current = listenMode }, [listenMode])
   useEffect(() => { connectRealtime(); return () => { cleanup(); stopKeyword(); stopLiveTranscription() } }, [])
@@ -293,7 +295,8 @@ When you get tool results back, summarise them conversationally — don't read t
     if (t === 'input_audio_buffer.speech_started') {
       setTranscript(''); setKikoText(''); setSpeaking(false); setThinking(false)
       emailMuteRef.current = false; deltaAccumRef.current = ''
-      if (audioRef.current) audioRef.current.muted = false  // ensure unmuted for new query
+      kikoOutputRef.current = ''; userQueryRef.current = ''
+      if (audioRef.current) audioRef.current.muted = false
       if (listenModeRef.current !== 'active') resetToActive()
       else startTimers()
     }
@@ -302,22 +305,7 @@ When you get tool results back, summarise them conversationally — don't read t
     // User speech — live delta (partial transcription as user speaks)
     if (t === 'conversation.item.input_audio_transcription.delta') {
       const delta = ev.delta || ''
-      if (delta) {
-        setTranscript(p => p + delta)
-        deltaAccumRef.current += delta
-        // Early email detection — flag it so we can mute GPT-4o's refusal
-        if (!emailMuteRef.current) {
-          const partial = deltaAccumRef.current.toLowerCase()
-          const EMAIL_WORDS = ['email', 'emails', 'correspondence', 'corresponded',
-            'wrote', 'heard from', 'replied', 'contacted', 'outreach', 'inbox',
-            'sent to', 'sent from', 'message from', 'messages from', 'communication',
-            'in touch', 'follow up', 'reach out', 'mailed', 'thread']
-          if (EMAIL_WORDS.some(w => partial.includes(w))) {
-            emailMuteRef.current = true
-            console.log('[Kiko Voice] EMAIL DETECTED in delta — will mute GPT-4o')
-          }
-        }
-      }
+      if (delta) { setTranscript(p => p + delta); deltaAccumRef.current += delta }
     }
 
     // User speech — completed (final transcription)
@@ -325,21 +313,18 @@ When you get tool results back, summarise them conversationally — don't read t
       const text = ev.transcript?.trim() || ''
       if (text) {
         setTranscript(text)
-        // Double-check email intent on final transcript (in case deltas missed it)
-        if (!emailMuteRef.current) {
-          const tl = text.toLowerCase()
-          const EMAIL_WORDS = ['email', 'emails', 'correspondence', 'wrote', 'heard from',
-            'replied', 'contacted', 'outreach', 'inbox', 'sent', 'message from',
-            'communication', 'in touch', 'follow up', 'reach out', 'mailed']
-          if (EMAIL_WORDS.some(w => tl.includes(w))) emailMuteRef.current = true
-        }
+        userQueryRef.current = text
         if (listenModeRef.current === 'passive') {
           if (KEYWORDS.some(kw => text.toLowerCase().includes(kw))) resetToActive()
         } else {
           addMessage('user', text)
-          // If email query detected, fire kiko.js to get real data for text display
-          if (emailMuteRef.current) {
-            console.log('[Kiko Voice] Fetching email data from kiko.js for:', text.slice(0, 60))
+          // Check if this is an email query — pre-fetch real data in background
+          const tl = text.toLowerCase()
+          const EMAIL_WORDS = ['email', 'emails', 'correspondence', 'wrote', 'heard from',
+            'replied', 'contacted', 'outreach', 'inbox', 'sent', 'message from',
+            'communication', 'in touch', 'follow up', 'reach out', 'mailed']
+          if (EMAIL_WORDS.some(w => tl.includes(w))) {
+            console.log('[Kiko Voice] Pre-fetching email data for:', text.slice(0, 60))
             ;(async () => {
               try {
                 const res = await fetch('/api/kiko', {
@@ -359,13 +344,11 @@ When you get tool results back, summarise them conversationally — don't read t
                   }
                 }
                 if (full) {
-                  // Add as a special "data card" message in the transcript
                   addMessage('kiko', full)
                   setKikoText(full)
+                  console.log('[Kiko Voice] Email data loaded:', full.slice(0, 80))
                 }
-              } catch (err) {
-                console.error('[Kiko Voice] Email fetch error:', err)
-              }
+              } catch (err) { console.error('[Kiko Voice] Email fetch error:', err) }
             })()
           }
         }
@@ -379,28 +362,78 @@ When you get tool results back, summarise them conversationally — don't read t
 
     if (t === 'response.created') {
       setKikoText(''); setSpeaking(true); setThinking(false)
-      // MUTE if email query — user won't hear GPT-4o's refusal
-      if (emailMuteRef.current && audioRef.current) {
-        audioRef.current.muted = true
-        console.log('[Kiko Voice] MUTED — email query, suppressing GPT-4o audio')
-      }
+      kikoOutputRef.current = ''  // reset output accumulator for new response
     }
-    // GA event names (beta used response.audio_transcript.delta)
+    // GPT-4o's output transcript streams as it speaks — DETECT REFUSALS HERE
     if (t === 'response.audio_transcript.delta' || t === 'response.output_audio_transcript.delta') {
-      // Don't show refusal text in transcript when muted
-      if (!emailMuteRef.current) setKikoText(p => p + (ev.delta || ''))
+      const delta = ev.delta || ''
+      kikoOutputRef.current += delta
+      if (!emailMuteRef.current) {
+        setKikoText(p => p + delta)
+        // Scan GPT-4o's own words for refusal phrases
+        const output = kikoOutputRef.current.toLowerCase()
+        const REFUSAL_PHRASES = [
+          "don't have access", "don't have direct access", "can't access",
+          "cannot access", "unable to access", "no access to",
+          "can't see your email", "can't read your email",
+          "personal emails", "personal correspondence", "private communication",
+          "personal chat history", "private messages",
+          "can't pull up", "can't view your",
+          "don't have the ability to access",
+          "i wish i could", "unfortunately i don't",
+          "i don't have direct memory",
+        ]
+        if (REFUSAL_PHRASES.some(p => output.includes(p))) {
+          // MUTE INSTANTLY — user stops hearing the refusal mid-word
+          emailMuteRef.current = true
+          if (audioRef.current) audioRef.current.muted = true
+          // Cancel GPT-4o's response and clear audio buffer
+          if (dcRef.current?.readyState === 'open') {
+            dcRef.current.send(JSON.stringify({ type: 'response.cancel' }))
+            dcRef.current.send(JSON.stringify({ type: 'output_audio_buffer.clear' }))
+          }
+          // Clear the refusal text from display
+          setKikoText('Pulling up that data...')
+          setSpeaking(false); setThinking(true)
+          console.log('[Kiko Voice] REFUSAL DETECTED & MUTED:', output.slice(0, 60))
+          // If kiko.js hasn't been fired yet (no email word in input), fire it now
+          const query = userQueryRef.current || deltaAccumRef.current || 'recent emails'
+          if (query) {
+            ;(async () => {
+              try {
+                const res = await fetch('/api/kiko', {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ message: query, currentPage: 'voice', userEmail: 'sunny@vanhawke.com', conversationHistory: [] })
+                })
+                const reader = res.body.getReader(); const dec = new TextDecoder()
+                let full = '', buf = ''
+                while (true) {
+                  const { done, value } = await reader.read(); if (done) break
+                  buf += dec.decode(value, { stream: true })
+                  const lines = buf.split('\n'); buf = lines.pop() || ''
+                  for (const line of lines) {
+                    if (!line.startsWith('data: ')) continue
+                    const d = line.slice(6); if (d === '[DONE]') continue
+                    try { const j = JSON.parse(d); if (j.delta) full += j.delta } catch {}
+                  }
+                }
+                setThinking(false)
+                if (full) { addMessage('kiko', full); setKikoText(full) }
+              } catch (err) { console.error('[Kiko Voice] Recovery fetch error:', err); setThinking(false) }
+            })()
+          }
+        }
+      }
     }
     if (t === 'response.audio_transcript.done' || t === 'response.output_audio_transcript.done') {
       const full = ev.transcript?.trim() || ''
-      // Don't add refusal to conversation history when muted
+      // Only add to history if it wasn't a muted refusal
       if (full && !emailMuteRef.current) addMessage('kiko', full)
     }
     if (t === 'response.done') {
       setSpeaking(false); setTranscript('')
-      // Unmute for next interaction
       if (emailMuteRef.current && audioRef.current) {
         audioRef.current.muted = false
-        emailMuteRef.current = false
         console.log('[Kiko Voice] UNMUTED — ready for next query')
       }
     }
