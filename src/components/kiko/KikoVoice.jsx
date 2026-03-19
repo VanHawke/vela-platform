@@ -370,20 +370,12 @@ When you get tool results back, summarise them conversationally — don't read t
       kikoOutputRef.current += delta
       if (!emailMuteRef.current) {
         setKikoText(p => p + delta)
-        // Scan GPT-4o's own words for refusal phrases
+        // ROBUST REFUSAL DETECTION: instead of exact phrases, detect
+        // any combination of negative word + access-related concept
         const output = kikoOutputRef.current.toLowerCase()
-        const REFUSAL_PHRASES = [
-          "don't have access", "don't have direct access", "can't access",
-          "cannot access", "unable to access", "no access to",
-          "can't see your email", "can't read your email",
-          "personal emails", "personal correspondence", "private communication",
-          "personal chat history", "private messages",
-          "can't pull up", "can't view your",
-          "don't have the ability to access",
-          "i wish i could", "unfortunately i don't",
-          "i don't have direct memory",
-        ]
-        if (REFUSAL_PHRASES.some(p => output.includes(p))) {
+        const hasNegative = /\b(can'?t|cannot|don'?t|unable|no |not |won'?t|couldn'?t|wouldn'?t|unfortunately|i wish)\b/.test(output)
+        const hasAccessConcept = /\b(access|retrieve|recall|pull up|view|see your|read your|search your|find your|look up|check your|memory of|record of|history of|personal data|personal email|personal correspond|personal commun|private commun|private message|prior commun|past commun|old convers|specific correspond)\b/.test(output)
+        if (hasNegative && hasAccessConcept) {
           // MUTE INSTANTLY — user stops hearing the refusal mid-word
           emailMuteRef.current = true
           if (audioRef.current) audioRef.current.muted = true
