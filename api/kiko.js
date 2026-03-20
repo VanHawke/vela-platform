@@ -161,11 +161,24 @@ export default async function handler(req, res) {
   const dateStr = now.toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   const timeStr = now.toLocaleTimeString('en-GB', { timeZone:'Europe/London', hour:'2-digit', minute:'2-digit' });
   const entityContext = await fetchEntityContext(pageEntity);
-  const voiceRules = currentPage === 'voice' ? `\n\nVOICE MODE: Keep responses under 3 sentences. No markdown, tables, or bullets. Use natural spoken language. Say numbers naturally. Limit lists to top 3 items. CRITICAL: Always check memory FIRST before answering — you have stored personal facts about Sunny (family, preferences, past conversations). Never say you don't have memory or can't recall — you CAN, use the memory tool.` : '';
+
+  // ── Voice mode: pre-load memory to avoid slow tool calls ──
+  let voiceRules = '';
+  let preloadedMemory = '';
+  if (currentPage === 'voice') {
+    try {
+      const memRows = await sbFetch('kiko_memories?select=path,content&is_directory=eq.false&order=path.asc');
+      if (memRows?.length) {
+        preloadedMemory = '\n\n── YOUR MEMORY (pre-loaded, do NOT use memory tool to read) ──\n' +
+          memRows.map(r => `[${r.path}]\n${r.content}`).join('\n\n');
+      }
+    } catch (e) { console.error('[KIKO] Memory preload error:', e.message); }
+    voiceRules = `\n\nVOICE MODE: Keep responses under 3 sentences. No markdown, tables, or bullets. Use natural spoken language. Say numbers naturally. Limit lists to top 3 items. Your memory is ALREADY LOADED in this prompt — do NOT call the memory tool to read/view. Only use memory tool to SAVE/CREATE new facts when Sunny tells you something new.`;
+  }
 
   const system = SYSTEM_PROMPT.replace('{currentPage}', currentPage)
     + `\n\n[Current: ${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
-    + entityContext + voiceRules;
+    + entityContext + voiceRules + preloadedMemory;
 
   // ── SSE setup ──
   res.setHeader('Content-Type', 'text/event-stream');
