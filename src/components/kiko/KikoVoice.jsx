@@ -265,7 +265,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: text, currentPage: 'voice',
-          userEmail: 'sunny@vanhawke.com',
+          userEmail: user?.email || 'sunny@vanhawke.com',
           conversationHistory: history
         })
       })
