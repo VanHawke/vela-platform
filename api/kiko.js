@@ -6,6 +6,7 @@ export const config = { supportsResponseStreaming: true };
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const MODEL = 'claude-sonnet-4-20250514';
+const VOICE_MODEL = 'claude-haiku-4-5-20251001'; // Faster model for voice — 3-5x quicker responses
 
 // ── System Prompt ────────────────────────────────────────
 const SYSTEM_PROMPT = `You are Kiko — the AI engine powering a sponsorship operations platform for Van Hawke Group. You work with Sunny Sidhu, CEO, who manages F1 and Formula E sponsorship advisory for clients including Haas F1 Team.
@@ -173,7 +174,14 @@ export default async function handler(req, res) {
           memRows.map(r => `[${r.path}]\n${r.content}`).join('\n\n');
       }
     } catch (e) { console.error('[KIKO] Memory preload error:', e.message); }
-    voiceRules = `\n\nVOICE MODE: Keep responses under 3 sentences. No markdown, tables, or bullets. Use natural spoken language. Say numbers naturally. Limit lists to top 3 items. Your memory is ALREADY LOADED in this prompt — do NOT call the memory tool to read/view. Only use memory tool to SAVE/CREATE new facts when Sunny tells you something new.`;
+    voiceRules = `\n\nVOICE MODE — STRICT RULES:
+- Maximum 2-3 sentences. NEVER more than 4 sentences.
+- NO markdown, NO bullet points, NO headers, NO formatting. Plain spoken language only.
+- Say numbers naturally ("two point five million" not "$2,500,000").
+- Limit lists to top 3 items only.
+- Your memory is ALREADY LOADED in this prompt — do NOT call the memory tool to read/view.
+- Only use memory tool to SAVE new facts when Sunny tells you something worth remembering.
+- Be conversational and warm, like a trusted colleague.`;
   }
 
   const system = SYSTEM_PROMPT.replace('{currentPage}', currentPage)
@@ -197,10 +205,12 @@ export default async function handler(req, res) {
 
     const allTools = [...NATIVE_TOOLS, ...TOOL_DEFINITIONS];
 
+    const activeModel = currentPage === 'voice' ? VOICE_MODEL : MODEL;
+
     // Stream helper
     async function streamCall(msgs) {
       const stream = anthropic.beta.messages.stream({
-        model: MODEL, max_tokens: 4096, system, messages: msgs, tools: allTools,
+        model: activeModel, max_tokens: currentPage === 'voice' ? 300 : 4096, system, messages: msgs, tools: allTools,
       });
       for await (const event of stream) {
         if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
