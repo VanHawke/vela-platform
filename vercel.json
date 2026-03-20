@@ -8,6 +8,7 @@
   ],
   "functions": {
     "api/kiko.js": { "maxDuration": 60 },
+    "api/tts.js": { "maxDuration": 30 },
     "api/voice.js": { "maxDuration": 60 },
     "api/news-agent.js": { "maxDuration": 45 },
     "api/health.js": { "maxDuration": 10 },
