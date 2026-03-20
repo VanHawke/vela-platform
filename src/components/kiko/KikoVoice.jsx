@@ -314,19 +314,6 @@ When you get tool results, summarise conversationally — never read verbatim. W
           setTranscript('')
           return
         }
-        // Block near-exact echoes of Kiko's last output
-        const lastKikoOutput = kikoOutputRef.current.toLowerCase().trim()
-        const textLower = text.toLowerCase().trim()
-        if (lastKikoOutput && textLower.length > 15) {
-          const userWords = textLower.split(/\s+/)
-          const kikoWords = new Set(lastKikoOutput.split(/\s+/))
-          const overlap = userWords.filter(w => w.length > 2 && kikoWords.has(w)).length
-          if (overlap > userWords.length * 0.8) {
-            console.log('[Kiko Voice] ECHO SUPPRESSED (word match):', text.slice(0, 60))
-            setTranscript('')
-            return
-          }
-        }
         
         setTranscript(text)
         userQueryRef.current = text
@@ -334,25 +321,52 @@ When you get tool results, summarise conversationally — never read verbatim. W
           if (KEYWORDS.some(kw => text.toLowerCase().includes(kw))) resetToActive()
         } else {
           addMessage('user', text)
-          // Fetch email data if: (a) email words in user query, OR (b) refusal was detected
+          
+          // ── CLAUDE BRIDGE: Route intelligence questions through Claude ──
+          // Claude has memory, CRM, email, web search, document analysis.
+          // GPT-4o handles voice only. Any question needing knowledge → Claude.
           const tl = text.toLowerCase()
-          const EMAIL_WORDS = ['email', 'emails', 'correspondence', 'wrote', 'heard from',
-            'replied', 'contacted', 'outreach', 'inbox', 'sent', 'message from',
-            'communication', 'in touch', 'follow up', 'reach out', 'mailed']
-          const shouldFetchEmail = EMAIL_WORDS.some(w => tl.includes(w)) || needsEmailFetch.current
-          if (shouldFetchEmail) {
+          const CLAUDE_TRIGGERS = [
+            // Memory / personal
+            'remember', 'recall', 'my daughter', 'my son', 'my wife', 'my child',
+            'my name', 'my age', 'my birthday', 'you know about me', 'what do you know',
+            'last time', 'we discussed', 'we talked', 'told you', 'i mentioned',
+            // Email / correspondence
+            'email', 'emails', 'correspondence', 'wrote', 'heard from', 'replied',
+            'contacted', 'outreach', 'inbox', 'sent', 'message from', 'communication',
+            'in touch', 'follow up', 'reach out', 'mailed',
+            // CRM / business
+            'pipeline', 'deals', 'contacts', 'companies', 'stage', 'qualified',
+            'how many', 'total value', 'revenue',
+            // Research / analysis
+            'search', 'look up', 'find out', 'what is', 'tell me about', 'news',
+            'latest', 'recent', 'update on', 'status of',
+            // Documents
+            'document', 'uploaded', 'file', 'report', 'presentation', 'deck',
+          ]
+          const shouldUseClaude = CLAUDE_TRIGGERS.some(w => tl.includes(w)) || needsEmailFetch.current
+          
+          if (shouldUseClaude) {
             needsEmailFetch.current = false
-            console.log('[Kiko Voice] Fetching email data — pausing VAD + timers')
-            // PAUSE: disable VAD so background noise doesn't interrupt the fetch
+            console.log('[Kiko Voice] Routing to Claude:', text.slice(0, 60))
+            // Pause VAD so background noise doesn't trigger new turn during fetch
             if (dcRef.current?.readyState === 'open') {
               dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: null } }))
             }
-            clearTimers()  // prevent passive/off mode during fetch
+            clearTimers()
+            setThinking(true)
             ;(async () => {
               try {
+                const history = conversationRef.current.messages.slice(-10).map(m => ({
+                  role: m.role === 'kiko' ? 'assistant' : 'user', content: m.content
+                }))
                 const res = await fetch('/api/kiko', {
                   method: 'POST', headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ message: text, currentPage: 'voice', userEmail: 'sunny@vanhawke.com', conversationHistory: [] })
+                  body: JSON.stringify({
+                    message: text, currentPage: 'voice',
+                    userEmail: 'sunny@vanhawke.com',
+                    conversationHistory: history
+                  })
                 })
                 const reader = res.body.getReader(); const dec = new TextDecoder()
                 let full = '', buf = ''
@@ -367,20 +381,27 @@ When you get tool results, summarise conversationally — never read verbatim. W
                   }
                 }
                 if (full) {
-                  addMessage('kiko', full)
-                  setKikoText(full)
-                  setThinking(false)
-                  console.log('[Kiko Voice] Email data loaded:', full.slice(0, 80))
+                  // Feed Claude's answer to GPT-4o so it SPEAKS it
+                  if (dcRef.current?.readyState === 'open') {
+                    dcRef.current.send(JSON.stringify({
+                      type: 'conversation.item.create',
+                      item: { type: 'message', role: 'user', content: [{ type: 'input_text', text: `[SYSTEM: Read this answer to the user naturally, do not add anything or modify it]\n\n${full.slice(0, 3000)}` }] }
+                    }))
+                    dcRef.current.send(JSON.stringify({ type: 'response.create' }))
+                  }
+                  console.log('[Kiko Voice] Claude response fed to GPT-4o:', full.slice(0, 80))
                 }
-              } catch (err) { console.error('[Kiko Voice] Email fetch error:', err); setThinking(false) }
-              // RESUME: re-enable VAD + restart timers regardless of success/failure
+              } catch (err) {
+                console.error('[Kiko Voice] Claude bridge error:', err)
+                setThinking(false)
+              }
+              // Resume VAD + timers
               if (dcRef.current?.readyState === 'open') {
                 dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 } } }))
               }
               if (audioRef.current) audioRef.current.muted = false
               emailMuteRef.current = false
               startTimers()
-              console.log('[Kiko Voice] VAD + timers resumed')
             })()
           }
         }
@@ -394,33 +415,29 @@ When you get tool results, summarise conversationally — never read verbatim. W
 
     if (t === 'response.created') {
       setKikoText(''); setSpeaking(true); setThinking(false)
-      speakingRef.current = true  // pause live transcription to prevent echo
-      kikoOutputRef.current = ''  // reset output accumulator for new response
+      speakingRef.current = true
+      kikoOutputRef.current = ''
     }
-    // GPT-4o's output transcript streams as it speaks — DETECT REFUSALS HERE
+    // GPT-4o's output transcript — detect refusals and mute
     if (t === 'response.audio_transcript.delta' || t === 'response.output_audio_transcript.delta') {
       const delta = ev.delta || ''
       kikoOutputRef.current += delta
       if (!emailMuteRef.current) {
         setKikoText(p => p + delta)
-        // ROBUST REFUSAL DETECTION: instead of exact phrases, detect
-        // any combination of negative word + access-related concept
+        // Detect ANY refusal (memory, email, data access)
         const output = kikoOutputRef.current.toLowerCase()
-        const hasNegative = /\b(can'?t|cannot|don'?t|unable|no |not |won'?t|couldn'?t|wouldn'?t|unfortunately|i wish)\b/.test(output)
-        const hasAccessConcept = /\b(access|retrieve|recall|pull up|view|see your|read your|search your|find your|look up|check your|memory of|record of|history of|personal data|personal email|personal correspond|personal commun|private commun|private message|prior commun|past commun|old convers|specific correspond)\b/.test(output)
-        if (hasNegative && hasAccessConcept) {
-          // MUTE INSTANTLY — user stops hearing the refusal mid-word
+        const hasNegative = /\b(can'?t|cannot|don'?t|unable|not |won'?t|couldn'?t|wouldn'?t|unfortunately|i wish|i don'?t have)\b/.test(output)
+        const hasRefusalConcept = /\b(access|retrieve|recall|pull up|view|memory|remember|past convers|long.term|carry over|retain|store|personal data|personal detail|previous session|future convers)\b/.test(output)
+        if (hasNegative && hasRefusalConcept && output.length > 30) {
           emailMuteRef.current = true
           needsEmailFetch.current = true
           if (audioRef.current) audioRef.current.muted = true
-          // Cancel GPT-4o's response and clear audio buffer
           if (dcRef.current?.readyState === 'open') {
             dcRef.current.send(JSON.stringify({ type: 'response.cancel' }))
-            dcRef.current.send(JSON.stringify({ type: 'output_audio_buffer.clear' }))
           }
-          setKikoText('Pulling up that data...')
+          setKikoText('Let me check...')
           setSpeaking(false); setThinking(true)
-          console.log('[Kiko Voice] REFUSAL DETECTED & MUTED — waiting for transcript to fetch data')
+          console.log('[Kiko Voice] REFUSAL DETECTED & MUTED — will route through Claude')
         }
       }
     }
