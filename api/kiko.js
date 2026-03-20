@@ -168,10 +168,10 @@ export default async function handler(req, res) {
   let preloadedMemory = '';
   if (currentPage === 'voice') {
     try {
-      const memRows = await sbFetch('kiko_memories?select=path,content&is_directory=eq.false&order=path.asc');
+      const memRows = await sbFetch('kiko_memories?select=path,content&is_directory=eq.false&path=in.(%22/memories/sunny_profile.md%22,%22/memories/identity.md%22)&order=path.asc');
       if (memRows?.length) {
-        preloadedMemory = '\n\n── YOUR MEMORY (pre-loaded, do NOT use memory tool to read) ──\n' +
-          memRows.map(r => `[${r.path}]\n${r.content}`).join('\n\n');
+        preloadedMemory = '\n\n── YOUR MEMORY ──\n' +
+          memRows.map(r => r.content).join('\n\n');
       }
     } catch (e) { console.error('[KIKO] Memory preload error:', e.message); }
     voiceRules = `\n\nVOICE MODE — STRICT RULES:

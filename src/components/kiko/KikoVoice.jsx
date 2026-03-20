@@ -111,10 +111,27 @@ export default function KikoVoice({ onClose, user, headless, mini, onVoiceState,
         signal: abortRef.current.signal,
       })
 
-      // Parse SSE stream from Claude
+      // Parse SSE stream from Claude — speak sentences as they arrive
       const reader = res.body.getReader()
       const dec = new TextDecoder()
-      let full = '', buf = ''
+      let full = '', buf = '', sentenceBuf = ''
+      const sentenceQueue = []
+      let speaking = false
+
+      // Play sentences from queue sequentially
+      async function playSentenceQueue() {
+        if (speaking) return
+        speaking = true
+        while (sentenceQueue.length > 0) {
+          const sentence = sentenceQueue.shift()
+          if (sentence && isMountedRef.current) {
+            setStatus('speaking')
+            await speakText(sentence)
+          }
+        }
+        speaking = false
+      }
+
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
@@ -123,17 +140,43 @@ export default function KikoVoice({ onClose, user, headless, mini, onVoiceState,
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue
           const d = line.slice(6); if (d === '[DONE]') continue
-          try { const j = JSON.parse(d); if (j.delta) full += j.delta } catch {}
+          try {
+            const j = JSON.parse(d)
+            if (j.delta) {
+              full += j.delta
+              sentenceBuf += j.delta
+              setKikoText(full)
+              // Check for sentence boundary
+              const match = sentenceBuf.match(/[.!?]\s/)
+              if (match) {
+                const idx = match.index + 1
+                const sentence = sentenceBuf.slice(0, idx).trim()
+                sentenceBuf = sentenceBuf.slice(idx)
+                if (sentence.length > 5) {
+                  sentenceQueue.push(sentence)
+                  playSentenceQueue() // fire and forget
+                }
+              }
+            }
+          } catch {}
         }
+      }
+      // Flush remaining text
+      if (sentenceBuf.trim().length > 3) {
+        sentenceQueue.push(sentenceBuf.trim())
+      }
+      // Wait for queue to finish
+      if (sentenceQueue.length > 0 || speaking) {
+        await playSentenceQueue()
+        // Wait for any in-progress playback
+        while (speaking) await new Promise(r => setTimeout(r, 100))
       }
 
       if (!full || !isMountedRef.current) return
       setKikoText(full)
       messagesRef.current.push({ role: 'kiko', content: full })
       onVoiceMessage?.({ role: 'kiko', content: full })
-
-      // ── SPEAK via OpenAI TTS ──
-      await speakText(full)
+      // Sentences already played via queue above
     } catch (err) {
       if (err.name === 'AbortError') return
       console.error('[Kiko Voice] Claude error:', err)
