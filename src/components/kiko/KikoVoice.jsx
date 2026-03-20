@@ -83,11 +83,6 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   // audio and creating duplicate/echo messages.
   const speakingRef = useRef(false)
   const startLiveTranscription = useCallback(() => {}, [])
-
-  const stopLiveTranscription = useCallback(() => {
-    if (liveSrRef.current) { try { liveSrRef.current.abort() } catch {} liveSrRef.current = null }
-  }, [])
-
   const stopLiveTranscription = useCallback(() => {
     if (liveSrRef.current) { try { liveSrRef.current.abort() } catch {} liveSrRef.current = null }
   }, [])

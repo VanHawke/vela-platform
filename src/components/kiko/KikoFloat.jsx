@@ -48,8 +48,8 @@ const STYLES = `
 }
 @keyframes kikoVortexSpin { to { transform: rotate(360deg); } }
 @keyframes kikoPulseRing {
-  0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
-  50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.03); }
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.03); }
 }
 @keyframes kikoBreatheScale {
   0%, 100% { transform: scale(1); }
