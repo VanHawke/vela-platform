@@ -250,12 +250,12 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     } catch (err) { setError(err.message); setStatus('error') }
   }
 
-  const claudeActiveRef = useRef(false) // true when we're waiting for/playing a Claude response
+  const claudeActiveRef = useRef(false) // true when Claude response is being spoken
+  const pendingCancelRef = useRef(false) // true = next response.created should be cancelled (auto-response)
 
   // ── Route user speech through Claude and make GPT-4o speak the answer ──
   async function routeThroughClaude(text) {
-    if (!text || claudeActiveRef.current) return
-    claudeActiveRef.current = true
+    if (!text) return
     setThinking(true)
     try {
       const history = conversationRef.current.messages.slice(-10).map(m => ({
@@ -282,18 +282,19 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
         }
       }
       if (full && dcRef.current?.readyState === 'open') {
-        // Inject Claude's answer and make GPT-4o speak it
+        // Mark that the NEXT response.created is ours — don't cancel it
+        claudeActiveRef.current = true
+        pendingCancelRef.current = false
         dcRef.current.send(JSON.stringify({
           type: 'conversation.item.create',
           item: { type: 'message', role: 'user', content: [{ type: 'input_text', text: `[KIKO_SAY] ${full.slice(0, 3000)}` }] }
         }))
         dcRef.current.send(JSON.stringify({ type: 'response.create' }))
         addMessage('kiko', full)
-        setKikoText(full)
         console.log('[Kiko Voice] Claude → GPT-4o:', full.slice(0, 80))
       }
     } catch (err) { console.error('[Kiko Voice] Claude bridge error:', err) }
-    finally { claudeActiveRef.current = false; setThinking(false) }
+    finally { setThinking(false) }
   }
 
   // ── Events ───────────────────────────────────────────
@@ -344,10 +345,8 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
         return
       }
 
-      // Cancel GPT-4o's auto-response (VAD triggers one automatically)
-      if (dcRef.current?.readyState === 'open') {
-        dcRef.current.send(JSON.stringify({ type: 'response.cancel' }))
-      }
+      // Cancel GPT-4o's auto-response — flag it so response.created handler knows
+      pendingCancelRef.current = true
 
       // Route through Claude — Claude is the brain, GPT-4o is the voice
       console.log('[Kiko Voice] → Claude:', text.slice(0, 60))
@@ -358,16 +357,18 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
       console.error('[Kiko Voice] Transcription failed:', ev.error)
     }
 
-    // ── GPT-4o response lifecycle (speaking Claude's words) ──
+    // ── GPT-4o response lifecycle ──
     if (t === 'response.created') {
-      // If Claude isn't active and GPT-4o auto-responded, cancel it
-      if (!claudeActiveRef.current && !speakingRef.current) {
+      // Cancel VAD auto-responses — only let Claude-injected responses through
+      if (pendingCancelRef.current) {
+        pendingCancelRef.current = false
         if (dcRef.current?.readyState === 'open') {
           dcRef.current.send(JSON.stringify({ type: 'response.cancel' }))
           console.log('[Kiko Voice] Cancelled GPT-4o auto-response')
         }
         return
       }
+      // This is a Claude-injected response — let it speak
       setSpeaking(true); setThinking(false)
       speakingRef.current = true
       kikoOutputRef.current = ''
@@ -382,6 +383,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     if (t === 'response.done') {
       setSpeaking(false); setTranscript('')
       speakingRef.current = false
+      claudeActiveRef.current = false
     }
   }
 
