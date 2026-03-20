@@ -449,8 +449,8 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
       <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 101, width: 48, height: 48 }}>
         {/* Pulse rings — centered with inset */}
         {!open && <>
-          <div style={{ position: 'absolute', inset: -8, borderRadius: 18, border: '1.5px solid rgba(26,26,26,0.08)', animation: 'kikoPulseRing 2.5s ease-in-out infinite', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', inset: -16, borderRadius: 22, border: '1px solid rgba(26,26,26,0.04)', animation: 'kikoPulseRing 2.5s ease-in-out 0.6s infinite', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: -8, left: -8, right: -8, bottom: -8, borderRadius: 18, border: '1.5px solid rgba(26,26,26,0.08)', animation: 'kikoPulseRing 2.5s ease-in-out infinite', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: -16, left: -16, right: -16, bottom: -16, borderRadius: 22, border: '1px solid rgba(26,26,26,0.04)', animation: 'kikoPulseRing 2.5s ease-in-out 0.6s infinite', pointerEvents: 'none' }} />
         </>}
         <button onClick={toggleOpen} className={fabClass} style={{
           width: 48, height: 48, borderRadius: 14,

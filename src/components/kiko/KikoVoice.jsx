@@ -73,47 +73,19 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   useEffect(() => {
     if (onVoiceState) onVoiceState({ status, speaking, thinking, transcript, kikoText, listenMode })
   }, [status, speaking, thinking, transcript, kikoText, listenMode])
-  useEffect(() => { connectRealtime(); return () => { cleanup(); stopKeyword(); stopLiveTranscription() } }, [])
+  useEffect(() => { connectRealtime(); return () => { saveVoiceMemory(); cleanup(); stopKeyword(); stopLiveTranscription() } }, [])
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [messages])
 
-  // ── Live browser-side transcription (Web Speech API) ──
-  // ONLY for visual interim transcript — NOT for adding messages.
-  // OpenAI's input_audio_transcription.completed handles authoritative user messages.
-  // Paused when Kiko is speaking to prevent echo/feedback loops.
+  // Live transcription DISABLED — OpenAI's own transcription.delta events
+  // handle interim text display. Web Speech API was picking up Kiko's speaker
+  // audio and creating duplicate/echo messages.
   const speakingRef = useRef(false)
-  const startLiveTranscription = useCallback(() => {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SR) return
-    stopLiveTranscription()
-    const sr = new SR()
-    sr.continuous = true
-    sr.interimResults = true
-    sr.lang = 'en-US'
-    liveSrRef.current = sr
-    sr.onresult = e => {
-      // Ignore results while Kiko is speaking (prevents echo loop)
-      if (speakingRef.current) return
-      let interim = ''
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const t = e.results[i][0].transcript
-        if (e.results[i].isFinal) {
-          // Don't addMessage — let OpenAI's own transcription handle it
-          setTranscript('')
-        } else {
-          interim += t
-        }
-      }
-      if (interim) setTranscript(interim)
-    }
-    sr.onerror = () => {}
-    sr.onend = () => {
-      if (listenModeRef.current === 'active' && liveSrRef.current === sr) {
-        try { sr.start() } catch {}
-      }
-    }
-    try { sr.start() } catch {}
+  const startLiveTranscription = useCallback(() => {}, [])
+
+  const stopLiveTranscription = useCallback(() => {
+    if (liveSrRef.current) { try { liveSrRef.current.abort() } catch {} liveSrRef.current = null }
   }, [])
 
   const stopLiveTranscription = useCallback(() => {
@@ -331,6 +303,8 @@ When you get tool results, summarise conversationally — never read verbatim. W
 
     // User speech — live delta (partial transcription as user speaks)
     if (t === 'conversation.item.input_audio_transcription.delta') {
+      // Ignore if Kiko is currently speaking — this is echo from the speaker
+      if (speakingRef.current) return
       const delta = ev.delta || ''
       if (delta) { setTranscript(p => p + delta); deltaAccumRef.current += delta }
     }
@@ -339,11 +313,15 @@ When you get tool results, summarise conversationally — never read verbatim. W
     if (t === 'conversation.item.input_audio_transcription.completed') {
       const text = ev.transcript?.trim() || ''
       if (text) {
-        // ── ECHO SUPPRESSION — only suppress near-exact echoes of Kiko's words ──
+        // Block transcription that arrived while Kiko was speaking — it's echo
+        if (speakingRef.current) {
+          console.log('[Kiko Voice] BLOCKED transcript during speaking (echo):', text.slice(0, 40))
+          setTranscript('')
+          return
+        }
+        // Block near-exact echoes of Kiko's last output
         const lastKikoOutput = kikoOutputRef.current.toLowerCase().trim()
         const textLower = text.toLowerCase().trim()
-        
-        // Only suppress if >80% word overlap with Kiko's last output (actual echo)
         if (lastKikoOutput && textLower.length > 15) {
           const userWords = textLower.split(/\s+/)
           const kikoWords = new Set(lastKikoOutput.split(/\s+/))
@@ -687,7 +665,7 @@ When you get tool results, summarise conversationally — never read verbatim. W
     return (
       <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
         {/* Pulse rings for mini mode */}
-        <div style={{ position: 'absolute', inset: -8, borderRadius: 18, border: `1.5px solid ${speaking ? 'rgba(34,197,94,0.15)' : 'rgba(26,26,26,0.08)'}`, animation: 'kikoPulseRing 2.5s ease-in-out infinite', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: -8, left: -8, right: -8, bottom: -8, borderRadius: 18, border: `1.5px solid ${speaking ? 'rgba(34,197,94,0.15)' : 'rgba(26,26,26,0.08)'}`, animation: 'kikoPulseRing 2.5s ease-in-out infinite', pointerEvents: 'none' }} />
         <button onClick={onShowPrompt} style={{ width: 52, height: 52, borderRadius: 14, border: 'none', cursor: 'pointer', background: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', transition: 'all 0.3s', boxShadow: '0 8px 32px rgba(0,0,0,0.20), 0 2px 8px rgba(0,0,0,0.08)', animation: 'kikoBreatheScale 4s ease-in-out infinite' }}>
           <div style={{ position: 'absolute', transition: 'opacity 0.3s', opacity: speaking ? 0 : 1 }}>
             {listenMode === 'off' ? <MicOff size={20} color="rgba(255,255,255,0.4)" /> : <KikoSymbol size={26} color="#fff" animate={avatarAnimate} />}

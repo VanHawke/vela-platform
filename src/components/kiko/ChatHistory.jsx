@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { MessageCircle, Mic, ChevronRight, ChevronLeft, Plus, Trash2, Pencil } from 'lucide-react'
 
@@ -26,6 +26,8 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
   const [renamingId, setRenamingId] = useState(null)
   const [renameValue, setRenameValue] = useState('')
 
+  // Track deleted IDs so they don't reappear on refetch
+  const deletedIdsRef = useRef(new Set())
   const orgId = user?.app_metadata?.org_id
 
   async function loadConversations() {
@@ -37,7 +39,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
       .eq('org_id', orgId)
       .order('updated_at', { ascending: false })
       .limit(50)
-    if (data) setConversations(data)
+    if (data) setConversations(data.filter(c => !deletedIdsRef.current.has(c.id)))
     setLoading(false)
   }
 
@@ -47,9 +49,8 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
 
   async function deleteConversation(id, e) {
     e.stopPropagation()
-    // Remove from local state immediately
+    deletedIdsRef.current.add(id)
     setConversations(prev => prev.filter(c => c.id !== id))
-    // Delete from database
     await supabase.from('conversations').delete().eq('id', id)
   }
 
@@ -97,7 +98,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
     <>
       {/* Collapse edge tab — mirrors the expand tab but faces opposite direction */}
       <button onClick={onToggle} style={{
-        position: 'fixed', right: 280, top: '50%', transform: 'translateY(-50%)',
+        position: 'fixed', right: 280, top: 'calc(50% + 28px)', transform: 'translateY(-50%)',
         zIndex: 201, width: 28, height: 80, borderRadius: '10px 0 0 10px',
         background: T.surface, border: `1px solid ${T.border}`, borderRight: 'none',
         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -107,7 +108,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
       </button>
 
       <div style={{
-      position: 'fixed', top: 0, right: 0, width: 280, height: '100%', zIndex: 200,
+      position: 'fixed', top: 56, right: 0, width: 280, height: 'calc(100% - 56px)', zIndex: 200,
       background: T.surface, borderLeft: `1px solid ${T.border}`,
       display: 'flex', flexDirection: 'column',
       boxShadow: '-4px 0 16px rgba(0,0,0,0.04)',

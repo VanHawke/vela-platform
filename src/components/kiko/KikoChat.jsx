@@ -500,9 +500,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
           {/* Avatar */}
           <div onClick={voiceActive ? stopVoice : startVoice} style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: voiceActive ? 12 : 28, cursor: 'pointer', transition: trans, flexShrink: 0, width: voiceActive ? 100 : 180, height: voiceActive ? 100 : 180 }}>
-            {/* Pulse rings — centered absolutely */}
-            <div style={{ position: 'absolute', inset: 0, borderRadius: voiceActive ? 26 : 42, border: `2px solid ${voiceActive ? 'rgba(34,197,94,0.15)' : 'rgba(26,26,26,0.08)'}`, animation: 'kikoPulseRing 2.5s ease-in-out infinite', transition: trans }} />
-            <div style={{ position: 'absolute', inset: voiceActive ? -6 : -10, borderRadius: voiceActive ? 30 : 48, border: `1.5px solid ${voiceActive ? 'rgba(34,197,94,0.08)' : 'rgba(26,26,26,0.04)'}`, animation: 'kikoPulseRing 2.5s ease-in-out 0.6s infinite', transition: trans }} />
+            {/* Pulse rings — use explicit top/left/width/height for cross-browser */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: voiceActive ? 26 : 42, border: `2px solid ${voiceActive ? 'rgba(34,197,94,0.15)' : 'rgba(26,26,26,0.08)'}`, animation: 'kikoPulseRing 2.5s ease-in-out infinite', transition: trans }} />
+            <div style={{ position: 'absolute', top: voiceActive ? -6 : -10, left: voiceActive ? -6 : -10, right: voiceActive ? -6 : -10, bottom: voiceActive ? -6 : -10, borderRadius: voiceActive ? 30 : 48, border: `1.5px solid ${voiceActive ? 'rgba(34,197,94,0.08)' : 'rgba(26,26,26,0.04)'}`, animation: 'kikoPulseRing 2.5s ease-in-out 0.6s infinite', transition: trans }} />
             {/* Avatar square */}
             <div style={{
               width: voiceActive ? 64 : 120, height: voiceActive ? 64 : 120,

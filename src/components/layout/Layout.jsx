@@ -114,7 +114,7 @@ export default function Layout({ user }) {
       <header style={{
         height: 56, minHeight: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 20px', borderBottom: '0.5px solid rgba(0,0,0,0.04)', background: 'rgba(255,255,255,0.7)',
-        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', flexShrink: 0, position: 'relative', zIndex: 100,
+        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', flexShrink: 0, position: 'relative', zIndex: 250,
       }}>
         {/* Left: Logo only */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
