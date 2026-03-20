@@ -21,7 +21,8 @@ export function OrgProvider({ children }) {
     if (error) { setLoading(false); return }
     if (data) {
       setOrg(data)
-      if (data.branding?.platform_name) document.title = data.branding.platform_name
+      if (data.branding?.platform_name && data.branding.platform_name !== 'Vela') document.title = data.branding.platform_name
+      else document.title = 'Kiko'
       if (data.branding?.primary_colour) {
         document.documentElement.style.setProperty('--brand-primary', data.branding.primary_colour)
       }
@@ -41,7 +42,7 @@ export function OrgProvider({ children }) {
   }, [])
 
   const hasModule = (key) => org?.modules?.[key] === true
-  const platformName = org?.branding?.platform_name || 'Vela'
+  const platformName = org?.branding?.platform_name || 'Kiko'
   const logoUrl = org?.branding?.logo_url || null
 
   return (

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { X, ArrowUp, Mic, MicOff } from 'lucide-react'
+import { X, ArrowUp, Mic } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import KikoSymbol from './KikoSymbol'
@@ -47,6 +47,18 @@ const STYLES = `
   100% { width: 0%; margin-left: 100%; }
 }
 @keyframes kikoVortexSpin { to { transform: rotate(360deg); } }
+@keyframes kikoPulseRing {
+  0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.03); }
+}
+@keyframes kikoBreatheScale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.015); }
+}
+@keyframes kikoDotPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
 .kiko-panel { transform-origin: bottom right; }
 .kiko-panel.entering { animation: kikoSpringIn 0.42s cubic-bezier(0.34,1.56,0.64,1) forwards; }
 .kiko-fab-open { animation: kikoFabSpin 0.3s cubic-bezier(0.34,1.3,0.64,1) forwards; }
@@ -223,44 +235,84 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   }
 
   async function startTranscribe() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      mediaRef.current = stream
-      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' })
-      const chunks = []
-      recorderRef.current = recorder
-      recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data) }
-      recorder.onstop = async () => {
-        stream.getTracks().forEach(t => t.stop())
-        const blob = new Blob(chunks, { type: 'audio/webm' })
-        if (blob.size < 500) { setTranscribing(false); return }
-        const base64 = await new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result.split(',')[1]); r.readAsDataURL(blob) })
-        const sttRes = await fetch('/api/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'transcribe', audio: base64 }) })
-        const stt = await sttRes.json()
-        if (stt.text) setInput(prev => prev + (prev ? ' ' : '') + stt.text)
-        setTranscribing(false)
-      }
-      recorder.start(); setTranscribing(true)
-      if (!open) { setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open') }
-    } catch { setTranscribing(false) }
+    if (transcribing) return
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (SR) {
+      try {
+        const sr = new SR()
+        sr.continuous = true; sr.interimResults = true; sr.lang = 'en-US'
+        recorderRef.current = sr
+        mediaRef.current = true
+        const baseInput = input
+        let accumulated = ''
+        setTranscribing(true)
+        sr.onresult = e => {
+          let interim = ''
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            if (e.results[i].isFinal) {
+              const text = e.results[i][0].transcript.trim()
+              if (text) accumulated += (accumulated ? ' ' : '') + text
+              interim = ''
+            } else { interim = e.results[i][0].transcript }
+          }
+          const display = baseInput + (baseInput && accumulated ? ' ' : '') + accumulated + (interim ? ' ' + interim : '')
+          setInput(display)
+        }
+        sr.onerror = (e) => {
+          console.error('[Float Dictate] error:', e.error)
+          if (e.error === 'not-allowed') { setTranscribing(false); mediaRef.current = null }
+        }
+        sr.onend = () => { if (recorderRef.current === sr && mediaRef.current) { try { sr.start() } catch {} } }
+        sr.start()
+        if (!open) { setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open') }
+      } catch { setTranscribing(false) }
+    } else {
+      // Fallback: Whisper
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        mediaRef.current = stream
+        const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' })
+        const chunks = []
+        recorderRef.current = recorder
+        recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data) }
+        recorder.onstop = async () => {
+          stream.getTracks().forEach(t => t.stop())
+          const blob = new Blob(chunks, { type: 'audio/webm' })
+          if (blob.size < 500) { setTranscribing(false); return }
+          const base64 = await new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result.split(',')[1]); r.readAsDataURL(blob) })
+          const sttRes = await fetch('/api/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'transcribe', audio: base64 }) })
+          const stt = await sttRes.json()
+          if (stt.text) setInput(prev => prev + (prev ? ' ' : '') + stt.text)
+          setTranscribing(false)
+        }
+        recorder.start(); setTranscribing(true)
+        if (!open) { setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open') }
+      } catch { setTranscribing(false) }
+    }
   }
 
   function stopTranscribe() {
-    if (recorderRef.current?.state === 'recording') recorderRef.current.stop()
-    if (mediaRef.current) { mediaRef.current.getTracks().forEach(t => t.stop()); mediaRef.current = null }
+    mediaRef.current = null
+    if (recorderRef.current) {
+      try { recorderRef.current.stop() } catch {}
+      recorderRef.current = null
+    }
+    setTranscribing(false)
   }
 
   async function openVoiceMode() {
-    try { const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); setVoiceOpen(stream) } catch {}
+    setVoiceOpen(true)
+    window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: true, speaking: false, thinking: false, status: 'connecting' } }))
   }
 
-  // Voice overlay
+  // Voice overlay — dispatch voice state for nav Listening pill
   if (voiceOpen) {
     return (
       <KikoVoice
-        onClose={() => { if (voiceOpen?.getTracks) voiceOpen.getTracks().forEach(t => t.stop()); setVoiceOpen(false) }}
-        user={user} micStream={voiceOpen} mini={true}
-        onShowPrompt={() => { if (voiceOpen?.getTracks) voiceOpen.getTracks().forEach(t => t.stop()); setVoiceOpen(false); setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open') }}
+        onClose={() => { setVoiceOpen(false); window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: false } })) }}
+        user={user} mini={true}
+        onVoiceState={(state) => window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: true, speaking: state.speaking, thinking: state.thinking, status: state.status } }))}
+        onShowPrompt={() => { setVoiceOpen(false); window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: false } })); setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open') }}
       />
     )
   }
@@ -291,7 +343,9 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           {/* Header */}
           <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: hasMessages ? '0.5px solid rgba(0,0,0,0.06)' : 'none' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <KikoSymbol size={17} color={T.accent} animate={streaming ? (streamText ? 'streaming' : 'thinking') : 'idle'} />
+              <div style={{ width: 22, height: 22, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <KikoSymbol size={12} color="#fff" animate={streaming ? (streamText ? 'streaming' : 'thinking') : 'idle'} />
+              </div>
               <span style={{ fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font }}>Kiko</span>
             </div>
             <button onClick={toggleOpen} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textTertiary, padding: 4, display: 'flex', borderRadius: 6, lineHeight: 1 }}>
@@ -376,8 +430,9 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && input.trim()) handleSubmit() }}
               placeholder="Ask anything…"
               style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 13, color: T.text, fontFamily: T.font }} />
-            <button onClick={transcribing ? stopTranscribe : startTranscribe} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: transcribing ? '#C62828' : 'transparent', color: transcribing ? '#fff' : T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              {transcribing ? <MicOff size={13} /> : <Mic size={13} />}
+            <button onClick={transcribing ? stopTranscribe : startTranscribe} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: transcribing ? 'rgba(34,197,94,0.12)' : 'transparent', color: transcribing ? 'rgba(34,197,94,0.9)' : T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
+              <Mic size={13} />
+              {transcribing && <span style={{ position: 'absolute', top: 2, right: 2, width: 6, height: 6, borderRadius: '50%', background: 'rgba(34,197,94,0.9)', animation: 'kikoBreathe 1s ease-in-out infinite' }} />}
             </button>
             <button onClick={openVoiceMode} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'transparent', color: T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <EqIcon size={14} color={T.textTertiary} />
@@ -390,26 +445,27 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         </div>
       )}
 
-      {/* ── FAB button ── */}
-      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 101 }}>
-        {/* Idle pulse ring — only when closed */}
-        {!open && (
-          <div style={{ position: 'absolute', inset: -7, borderRadius: 20, border: '1.5px solid rgba(26,26,26,0.18)', animation: 'kikoRipple 2.8s ease-out infinite', pointerEvents: 'none' }} />
-        )}
+      {/* ── FAB button — matches homepage Kiko avatar with breathing + pulse ── */}
+      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 101, width: 48, height: 48 }}>
+        {/* Pulse rings — centered with inset */}
+        {!open && <>
+          <div style={{ position: 'absolute', inset: -8, borderRadius: 18, border: '1.5px solid rgba(26,26,26,0.08)', animation: 'kikoPulseRing 2.5s ease-in-out infinite', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', inset: -16, borderRadius: 22, border: '1px solid rgba(26,26,26,0.04)', animation: 'kikoPulseRing 2.5s ease-in-out 0.6s infinite', pointerEvents: 'none' }} />
+        </>}
         <button onClick={toggleOpen} className={fabClass} style={{
-          width: 52, height: 52, borderRadius: 15,
-          background: T.accent, border: 'none', color: '#fff',
+          width: 48, height: 48, borderRadius: 14,
+          background: '#1A1A1A', border: 'none', color: '#fff',
           cursor: 'pointer',
-          boxShadow: open
-            ? '0 6px 24px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.08)'
-            : '0 10px 40px rgba(0,0,0,0.22), 0 3px 10px rgba(0,0,0,0.08)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.20), 0 2px 8px rgba(0,0,0,0.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'box-shadow 0.25s, border-radius 0.25s',
           transformOrigin: 'center',
+          animation: open ? undefined : 'kikoBreatheScale 4s ease-in-out infinite',
+          position: 'relative',
         }}>
           {open
-            ? <X size={20} />
-            : <KikoSymbol size={26} color="#fff" animate={streaming ? (streamText ? 'streaming' : 'thinking') : 'idle'} />
+            ? <X size={18} />
+            : <KikoSymbol size={20} color="#fff" animated />
           }
         </button>
       </div>

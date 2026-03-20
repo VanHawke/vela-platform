@@ -47,8 +47,10 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
 
   async function deleteConversation(id, e) {
     e.stopPropagation()
-    await supabase.from('conversations').delete().eq('id', id)
+    // Remove from local state immediately
     setConversations(prev => prev.filter(c => c.id !== id))
+    // Delete from database
+    await supabase.from('conversations').delete().eq('id', id)
   }
 
   async function renameConversation(id) {
@@ -80,7 +82,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
     return (
       <button onClick={onToggle} style={{
         position: 'fixed', right: 0, top: '50%', transform: 'translateY(-50%)',
-        zIndex: 90, width: 28, height: 80, borderRadius: '10px 0 0 10px',
+        zIndex: 200, width: 28, height: 80, borderRadius: '10px 0 0 10px',
         background: T.surface, border: `1px solid ${T.border}`, borderRight: 'none',
         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
         boxShadow: '-2px 0 8px rgba(0,0,0,0.04)', color: T.textTertiary,
@@ -92,8 +94,20 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
 
   // Expanded panel
   return (
-    <div style={{
-      position: 'fixed', top: 0, right: 0, width: 320, height: '100%', zIndex: 90,
+    <>
+      {/* Collapse edge tab — mirrors the expand tab but faces opposite direction */}
+      <button onClick={onToggle} style={{
+        position: 'fixed', right: 280, top: '50%', transform: 'translateY(-50%)',
+        zIndex: 201, width: 28, height: 80, borderRadius: '10px 0 0 10px',
+        background: T.surface, border: `1px solid ${T.border}`, borderRight: 'none',
+        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxShadow: '-2px 0 8px rgba(0,0,0,0.04)', color: T.textTertiary,
+      }}>
+        <ChevronRight size={14} />
+      </button>
+
+      <div style={{
+      position: 'fixed', top: 0, right: 0, width: 280, height: '100%', zIndex: 200,
       background: T.surface, borderLeft: `1px solid ${T.border}`,
       display: 'flex', flexDirection: 'column',
       boxShadow: '-4px 0 16px rgba(0,0,0,0.04)',
@@ -203,5 +217,6 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
         )}
       </div>
     </div>
+    </>
   )
 }

@@ -115,7 +115,7 @@ export default async function handler(req, res) {
     } catch (e) { return res.status(500).json({ error: e.message }) }
   }
 
-  // REGISTER-WEBHOOK: register the Vela webhook with Lemlist
+  // REGISTER-WEBHOOK: register the Kiko webhook with Lemlist
   if (action === 'register-webhook') {
     try {
       const auth = Buffer.from(':' + key).toString('base64')

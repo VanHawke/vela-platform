@@ -12,7 +12,7 @@ const LANG_MAP = {
   sql: 'sql', sh: 'shell', yml: 'yaml', yaml: 'yaml',
 }
 
-export default function VelaCode({ user }) {
+export default function KikoCode({ user }) {
   const [tree, setTree] = useState([])
   const [expandedDirs, setExpandedDirs] = useState(new Set(['src', 'api']))
   const [activeFile, setActiveFile] = useState(null)
@@ -35,11 +35,11 @@ export default function VelaCode({ user }) {
 
   const fetchTree = async () => {
     try {
-      const res = await fetch('/api/vela-code?action=files')
+      const res = await fetch('/api/kiko-code?action=files')
       const data = await res.json()
       if (data.tree) setTree(data.tree)
     } catch (err) {
-      console.error('[VelaCode] Tree fetch error:', err)
+      console.error('[KikoCode] Tree fetch error:', err)
     }
   }
 
@@ -47,12 +47,12 @@ export default function VelaCode({ user }) {
     setLoadingFile(true)
     setActiveFile(path)
     try {
-      const res = await fetch(`/api/vela-code?action=file&path=${encodeURIComponent(path)}`)
+      const res = await fetch(`/api/kiko-code?action=file&path=${encodeURIComponent(path)}`)
       const data = await res.json()
       setContent(data.content || '')
       setOriginalContent(data.content || '')
     } catch (err) {
-      console.error('[VelaCode] File fetch error:', err)
+      console.error('[KikoCode] File fetch error:', err)
     } finally {
       setLoadingFile(false)
     }
@@ -74,7 +74,7 @@ export default function VelaCode({ user }) {
     setChatStreaming(true)
 
     try {
-      const res = await fetch('/api/vela-code', {
+      const res = await fetch('/api/kiko-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -137,7 +137,7 @@ export default function VelaCode({ user }) {
     setDeploying(true)
     try {
       // Save file to GitHub
-      const res = await fetch('/api/vela-code', {
+      const res = await fetch('/api/kiko-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'save', path: activeFile, content }),

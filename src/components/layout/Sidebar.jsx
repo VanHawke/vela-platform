@@ -36,14 +36,14 @@ export default function Sidebar({ logoIcon, logoExpanded, user, onHomeClick }) {
         .then(({ data }) => { if (data) setProfile(data) })
     }
     load()
-    window.addEventListener('vela_profile_updated', load)
-    return () => window.removeEventListener('vela_profile_updated', load)
+    window.addEventListener('kiko_profile_updated', load)
+    return () => window.removeEventListener('kiko_profile_updated', load)
   }, [user?.id])
 
   useEffect(() => {
     const loadOrder = () => {
       try {
-        const stored = localStorage.getItem('vela_nav_order')
+        const stored = localStorage.getItem('kiko_nav_order')
         if (stored) {
           const order = JSON.parse(stored)
           const ordered = order.map(o => NAV_DEFAULTS.find(n => n.id === o.id)).filter(Boolean)
@@ -53,8 +53,8 @@ export default function Sidebar({ logoIcon, logoExpanded, user, onHomeClick }) {
       } catch {}
     }
     loadOrder()
-    window.addEventListener('vela_nav_updated', loadOrder)
-    return () => window.removeEventListener('vela_nav_updated', loadOrder)
+    window.addEventListener('kiko_nav_updated', loadOrder)
+    return () => window.removeEventListener('kiko_nav_updated', loadOrder)
   }, [])
 
   const isActive = (path) => loc.pathname === path || (path === '/' && loc.pathname === '/home')
@@ -85,8 +85,10 @@ export default function Sidebar({ logoIcon, logoExpanded, user, onHomeClick }) {
             <img src={logoIcon} alt="" style={{ height: 28, width: 28, objectFit: 'contain', borderRadius: 6 }} />
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 7, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 700, fontFamily: 'var(--font)', flexShrink: 0 }}>V</div>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font)' }}>Vela</span>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="5" cy="5" r="2" fill="#fff"/><circle cx="11" cy="5" r="2" fill="#fff"/><circle cx="5" cy="11" r="2" fill="#fff"/><circle cx="11" cy="11" r="2" fill="#fff"/></svg>
+              </div>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font)' }}>Kiko</span>
             </div>
           )
         ) : (
@@ -94,7 +96,9 @@ export default function Sidebar({ logoIcon, logoExpanded, user, onHomeClick }) {
           logoIcon ? (
             <img src={logoIcon} alt="" style={{ height: 28, width: 28, objectFit: 'contain', borderRadius: 6 }} />
           ) : (
-            <div style={{ width: 28, height: 28, borderRadius: 7, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 700, fontFamily: 'var(--font)', flexShrink: 0 }}>V</div>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="5" cy="5" r="2" fill="#fff"/><circle cx="11" cy="5" r="2" fill="#fff"/><circle cx="5" cy="11" r="2" fill="#fff"/><circle cx="11" cy="11" r="2" fill="#fff"/></svg>
+              </div>
           )
         )}
       </div>

@@ -126,27 +126,6 @@ async function extractText(storagePath, fileType, publicUrl) {
   return buffer.toString('utf-8')
 }
 
-function chunkText(text, chunkSize = 1000, overlap = 200) {
-  const chunks = []
-  const clean = text.replace(/\s+/g, ' ').trim()
-  let start = 0
-  while (start < clean.length) {
-    const end = Math.min(start + chunkSize, clean.length)
-    const chunk = clean.slice(start, end).trim()
-    if (chunk.length > 50) chunks.push(chunk)
-    start += chunkSize - overlap
-    if (start >= clean.length) break
-  }
-  return chunks
-}
-
-async function embedText(text) {
-  const { default: OpenAI } = await import('openai')
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY })
-  const r = await openai.embeddings.create({ model: 'text-embedding-3-small', input: text.slice(0, 8000) })
-  return r.data[0].embedding
-}
-
 async function deepAnalysis(text, fileName) {
   const { default: Anthropic } = await import('@anthropic-ai/sdk')
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY })
@@ -254,96 +233,31 @@ export default async function handler(req, res) {
       }
       console.log(`[Documents] Record created: ${docId}`)
 
-      // Chunk and embed
-      const chunks = chunkText(text)
-      console.log(`[Documents] Embedding ${chunks.length} chunks`)
-      for (let i = 0; i < chunks.length; i++) {
-        const embedding = await embedText(chunks[i])
-        await fetch(`${SB}/rest/v1/document_chunks`, {
-          method: 'POST', headers: { ...h, Prefer: 'return=minimal' },
-          body: JSON.stringify({ document_id: docId, content: chunks[i], chunk_index: i, embedding: JSON.stringify(embedding), org_id: ORG_ID, created_at: new Date().toISOString() }),
-        })
-      }
-
-      // Commit to Mem0 — structured intelligence, not just summary
-      const memKey = process.env.MEM0_API_KEY
-      if (memKey && intelligence) {
-        const teamLabel = intelligence.detected_team ? ` (${intelligence.detected_team})` : ''
-        const stats = (intelligence.key_stats || []).join(', ')
-        const points = (intelligence.talking_points || []).join(', ')
-        const benefits = (intelligence.partner_benefits || []).join(', ')
-        const memContent = `[DOCUMENT INTELLIGENCE] ${fileName}${teamLabel}: ${intelligence.summary || ''} | Key stats: ${stats} | Tone: ${intelligence.messaging_tone || 'N/A'} | Positioning: ${intelligence.positioning || 'N/A'} | Talking points: ${points} | Partner benefits: ${benefits} | Unique angles: ${(intelligence.unique_angles || []).join(', ')}`
-        fetch('https://api.mem0.ai/v1/memories/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Token ${memKey}` },
-          body: JSON.stringify({ messages: [{ role: 'system', content: memContent.slice(0, 2000) }], user_id: 'sunny' }),
-        }).catch(() => {})
-      }
-      console.log(`[Documents] Complete: ${chunks.length} chunks, team=${links.linked_team}`)
-      return res.status(200).json({ success: true, documentId: docId, chunks: chunks.length, summary: intelligence.summary, intelligence, links })
+      console.log(`[Documents] Complete: team=${links.linked_team}`)
+      return res.status(200).json({ success: true, documentId: docId, summary: intelligence.summary, intelligence, links })
     } catch (err) {
       console.error('[Documents] Process error:', err.message)
       return res.status(500).json({ error: err.message })
     }
   }
 
-  // ── SEARCH: embed query → match chunks → return with intelligence context ──
+  // ── SEARCH: text search on document content ──
   if (action === 'search') {
     if (!query) return res.status(400).json({ error: 'query required' })
     try {
-      const embedding = await embedText(query)
-      console.log(`[Documents] Search query: "${query}", embedding dims: ${embedding.length}`)
-
-      // Method 1: RPC vector search (pass embedding as string for Supabase)
-      let results = []
-      try {
-        const embeddingStr = `[${embedding.join(',')}]`
-        const rpcRes = await fetch(`${SB}/rest/v1/rpc/match_document_chunks`, {
-          method: 'POST', headers: h,
-          body: JSON.stringify({ query_embedding: embeddingStr, match_threshold: 0.5, match_count: 8, p_user_email: userEmail || 'sunny@vanhawke.com' }),
-        })
-        const rpcData = await rpcRes.json()
-        console.log(`[Documents] RPC response: ${rpcRes.status}, results: ${Array.isArray(rpcData) ? rpcData.length : 'not array'}, data: ${JSON.stringify(rpcData).slice(0, 200)}`)
-        if (Array.isArray(rpcData) && rpcData.length > 0) results = rpcData
-      } catch (e) { console.log('[Documents] RPC search failed:', e.message) }
-
-      // Method 2: Fallback — direct text search on document content if vector search returns nothing
-      if (results.length === 0) {
-        console.log('[Documents] Vector search returned 0 results, falling back to text search')
-        const words = query.toLowerCase().split(/\s+/).filter(w => w.length > 2).slice(0, 3)
-        const textFilter = words.map(w => `content.ilike.*${encodeURIComponent(w)}*`).join('&')
-        const textRes = await fetch(`${SB}/rest/v1/documents?${textFilter}&select=id,name,linked_team,category,context,linked_entity,intelligence,summary,content&limit=5`, { headers: h })
-        const textDocs = await textRes.json()
-        console.log(`[Documents] Text fallback: ${Array.isArray(textDocs) ? textDocs.length : 0} docs`)
-        if (Array.isArray(textDocs) && textDocs.length > 0) {
-          return res.status(200).json({
-            results: textDocs.map(d => ({
-              content: d.content?.slice(0, 500) || d.summary || '', similarity: 0.8,
-              documentId: d.id, documentName: d.name, team: d.linked_team,
-              category: d.category, intelligence: d.intelligence,
-            })),
-          })
-        }
-      }
-
-      if (!results.length) return res.status(200).json({ results: [] })
-
-      // Enrich with document metadata + intelligence
-      const docIds = [...new Set(results.map(r => r.document_id))].filter(Boolean)
-      let docMap = {}
-      if (docIds.length > 0) {
-        let filter = `id=in.(${docIds.join(',')})`
-        if (team) filter += `&linked_team=ilike.*${encodeURIComponent(team)}*`
-        if (category) filter += `&category=eq.${encodeURIComponent(category)}`
-        const docsRes = await fetch(`${SB}/rest/v1/documents?${filter}&select=id,name,linked_team,category,intelligence,summary`, { headers: h })
-        const docs = await docsRes.json()
-        docMap = Object.fromEntries((Array.isArray(docs) ? docs : []).map(d => [d.id, d]))
-      }
+      const words = query.toLowerCase().split(/\s+/).filter(w => w.length > 2).slice(0, 3)
+      let filter = 'select=id,name,linked_team,category,context,linked_entity,intelligence,summary,content&limit=8&order=created_at.desc'
+      if (words.length > 0) filter = words.map(w => `content.ilike.*${encodeURIComponent(w)}*`).join('&') + `&${filter}`
+      if (team) filter += `&linked_team=ilike.*${encodeURIComponent(team)}*`
+      if (category) filter += `&category=eq.${encodeURIComponent(category)}`
+      const docsRes = await fetch(`${SB}/rest/v1/documents?${filter}`, { headers: h })
+      const docs = await docsRes.json()
+      if (!Array.isArray(docs) || !docs.length) return res.status(200).json({ results: [] })
       return res.status(200).json({
-        results: results.filter(r => docMap[r.document_id]).map(r => ({
-          content: r.content, similarity: r.similarity, documentId: r.document_id,
-          documentName: docMap[r.document_id]?.name, team: docMap[r.document_id]?.linked_team,
-          category: docMap[r.document_id]?.category, intelligence: docMap[r.document_id]?.intelligence,
+        results: docs.map(d => ({
+          content: d.content?.slice(0, 500) || d.summary || '',
+          documentId: d.id, documentName: d.name, team: d.linked_team,
+          category: d.category, intelligence: d.intelligence,
         })),
       })
     } catch (err) {

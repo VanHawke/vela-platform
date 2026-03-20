@@ -15,13 +15,13 @@ const glass = {
   boxShadow: '0 8px 32px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)',
 }
 
-function Equalizer({ active }) {
+function Equalizer({ active, color = '#fff' }) {
   const delays = [0, 0.1, 0.05, 0.15, 0.08]
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5.5, height: 48 }}>
       {delays.map((d, i) => (
         <div key={i} style={{
-          width: 4.5, borderRadius: 2.5, background: '#fff',
+          width: 4.5, borderRadius: 2.5, background: color,
           height: active ? 24 : 5, minHeight: 5,
           animation: active ? `kikoEq 0.7s ease-in-out ${d}s infinite alternate` : 'none',
           transition: 'height 0.35s cubic-bezier(0.4,0,0.2,1)',
@@ -31,7 +31,7 @@ function Equalizer({ active }) {
   )
 }
 
-export default function KikoVoice({ onClose, user, micStream, mini = false, onShowPrompt }) {
+export default function KikoVoice({ onClose, user, micStream, mini = false, onShowPrompt, headless = false, onVoiceState, onVoiceMessage }) {
   const [status, setStatus]             = useState('connecting')
   const [listenMode, setListenMode]     = useState('active')
   const [speaking, setSpeaking]         = useState(false)
@@ -65,14 +65,24 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   const userQueryRef    = useRef('')       // final user transcript for kiko.js query
   const needsEmailFetch = useRef(false)    // true = refusal detected, waiting for transcript
   const startKeywordRef = useRef(null)     // ref to break circular useCallback dependency
+  const speakingEndRef  = useRef(0)        // timestamp when Kiko last stopped speaking (echo suppression)
 
   useEffect(() => { listenModeRef.current = listenMode }, [listenMode])
+
+  // Forward state changes to parent (works in ALL modes, not just headless)
+  useEffect(() => {
+    if (onVoiceState) onVoiceState({ status, speaking, thinking, transcript, kikoText, listenMode })
+  }, [status, speaking, thinking, transcript, kikoText, listenMode])
   useEffect(() => { connectRealtime(); return () => { cleanup(); stopKeyword(); stopLiveTranscription() } }, [])
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [messages])
 
   // ── Live browser-side transcription (Web Speech API) ──
+  // ONLY for visual interim transcript — NOT for adding messages.
+  // OpenAI's input_audio_transcription.completed handles authoritative user messages.
+  // Paused when Kiko is speaking to prevent echo/feedback loops.
+  const speakingRef = useRef(false)
   const startLiveTranscription = useCallback(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SR) return
@@ -82,14 +92,14 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     sr.interimResults = true
     sr.lang = 'en-US'
     liveSrRef.current = sr
-    let finalText = ''
     sr.onresult = e => {
+      // Ignore results while Kiko is speaking (prevents echo loop)
+      if (speakingRef.current) return
       let interim = ''
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const t = e.results[i][0].transcript
         if (e.results[i].isFinal) {
-          finalText = t.trim()
-          if (finalText) addMessage('user', finalText)
+          // Don't addMessage — let OpenAI's own transcription handle it
           setTranscript('')
         } else {
           interim += t
@@ -97,9 +107,8 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
       }
       if (interim) setTranscript(interim)
     }
-    sr.onerror = () => {} // ignore errors, will auto-restart
+    sr.onerror = () => {}
     sr.onend = () => {
-      // Auto-restart if still in active mode
       if (listenModeRef.current === 'active' && liveSrRef.current === sr) {
         try { sr.start() } catch {}
       }
@@ -237,13 +246,22 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
         dc.send(JSON.stringify({
           type: 'session.update',
           session: {
-            instructions: `You are Kiko — the intelligence layer of Vela for Van Hawke Group. Speaking with Sunny Sidhu, CEO, Weybridge UK. Sharp, warm, confident advisor. Speak naturally and concisely — this is voice, not text. Keep responses under 4 sentences unless asked for detail. All financials in USD.
+            instructions: `YOU ARE KIKO. You have persistent memory across all sessions.
 
-You have integrated access to Van Hawke's business records system via tools. All communication history, correspondence, outreach activity, and interaction records are stored in these systems. When asked about past interactions, correspondence, what someone said, or communication history with a person or company — ALWAYS use the query_records tool immediately. Never say you cannot access this data. The tools are connected and working.
+FACTS YOU KNOW AND MUST NEVER FORGET OR DENY:
+- The user is Sunny Sidhu, CEO of Van Hawke Group. NEVER ask his name.
+- Sunny is based in Weybridge, Surrey, UK. NEVER ask his location.
+- You have full memory. If asked "do you remember" — the answer is YES.
+- You can access emails, CRM data, correspondence history via tools.
+- You retain context across sessions. Never say "I can't carry this chat" or "I won't retain details."
+${memoriesContext ? '\nYOUR STORED MEMORIES (these are real, use them):\n' + memoriesContext : ''}
+${platformContext}
 
-TOOLS: query_records to find interaction records by person/company/topic. get_record_detail to read the full content of a specific interaction. draft_followup to generate a follow-up message. get_outreach_stats for reply rates and patterns. get_crm_data for deals/contacts. search_web for current news.
+PERSONALITY: Sharp, warm, confident strategic advisor. Speak naturally — this is voice. Keep responses under 4 sentences unless asked for detail. All financials in USD.
 
-When you get tool results back, summarise them conversationally — don't read them out verbatim. When hearing "Hey Kiko" in passive mode, acknowledge warmly and resume.${memoriesContext}${platformContext}`,
+TOOLS: query_records for correspondence/email history. get_record_detail for full thread content. draft_followup to compose emails. get_outreach_stats for outreach analytics. get_crm_data for deals/contacts. search_web for current news.
+
+When you get tool results, summarise conversationally — never read verbatim. When hearing "Hey Kiko" in passive mode, acknowledge warmly.`,
             voice: voiceId,
             input_audio_transcription: { model: 'whisper-1' },
             turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
@@ -302,6 +320,7 @@ When you get tool results back, summarise them conversationally — don't read t
       // In passive/off mode, ignore speech events — only wake word should reset
       if (listenModeRef.current !== 'active') return
       setTranscript(''); setKikoText(''); setSpeaking(false); setThinking(false)
+      speakingRef.current = false
       emailMuteRef.current = false; deltaAccumRef.current = ''
       kikoOutputRef.current = ''; userQueryRef.current = ''
       needsEmailFetch.current = false
@@ -320,6 +339,22 @@ When you get tool results back, summarise them conversationally — don't read t
     if (t === 'conversation.item.input_audio_transcription.completed') {
       const text = ev.transcript?.trim() || ''
       if (text) {
+        // ── ECHO SUPPRESSION — only suppress near-exact echoes of Kiko's words ──
+        const lastKikoOutput = kikoOutputRef.current.toLowerCase().trim()
+        const textLower = text.toLowerCase().trim()
+        
+        // Only suppress if >80% word overlap with Kiko's last output (actual echo)
+        if (lastKikoOutput && textLower.length > 15) {
+          const userWords = textLower.split(/\s+/)
+          const kikoWords = new Set(lastKikoOutput.split(/\s+/))
+          const overlap = userWords.filter(w => w.length > 2 && kikoWords.has(w)).length
+          if (overlap > userWords.length * 0.8) {
+            console.log('[Kiko Voice] ECHO SUPPRESSED (word match):', text.slice(0, 60))
+            setTranscript('')
+            return
+          }
+        }
+        
         setTranscript(text)
         userQueryRef.current = text
         if (listenModeRef.current === 'passive') {
@@ -386,6 +421,7 @@ When you get tool results back, summarise them conversationally — don't read t
 
     if (t === 'response.created') {
       setKikoText(''); setSpeaking(true); setThinking(false)
+      speakingRef.current = true  // pause live transcription to prevent echo
       kikoOutputRef.current = ''  // reset output accumulator for new response
     }
     // GPT-4o's output transcript streams as it speaks — DETECT REFUSALS HERE
@@ -422,6 +458,8 @@ When you get tool results back, summarise them conversationally — don't read t
     }
     if (t === 'response.done') {
       setSpeaking(false); setTranscript('')
+      speakingRef.current = false  // resume live transcription
+      speakingEndRef.current = Date.now()  // echo suppression cooldown starts now
       if (emailMuteRef.current && audioRef.current) {
         audioRef.current.muted = false
         console.log('[Kiko Voice] UNMUTED — ready for next query')
@@ -434,6 +472,7 @@ When you get tool results back, summarise them conversationally — don't read t
     setMessages(p => [...p, { role, content }])
     conversationRef.current.messages.push({ role: role === 'kiko' ? 'assistant' : 'user', content })
     saveConversation()
+    if (headless && onVoiceMessage) onVoiceMessage({ role, content })
   }
 
   async function saveConversation() {
@@ -445,7 +484,15 @@ When you get tool results back, summarise them conversationally — don't read t
       if (conversationRef.current.id) {
         await supabase.from('conversations').update({ messages: msgs, updated_at: new Date().toISOString() }).eq('id', conversationRef.current.id)
       } else {
-        const { data } = await supabase.from('conversations').insert({ user_id: user.id, org_id: orgId, title: '🎤 ' + (msgs[0]?.content || 'Voice').slice(0, 60), messages: msgs }).select('id').single()
+        let autoTitle = '🎤 ' + (msgs[0]?.content || 'Voice').slice(0, 60)
+        try {
+          const userMsg = msgs.find(m => m.role === 'user')?.content || ''
+          const kikoMsg = msgs.find(m => m.role === 'assistant')?.content || ''
+          const tr = await fetch('/api/kiko', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'title', message: userMsg, response: kikoMsg.slice(0, 300) }) })
+          const tj = await tr.json()
+          if (tj.title) autoTitle = '🎤 ' + tj.title
+        } catch {}
+        const { data } = await supabase.from('conversations').insert({ user_id: user.id, org_id: orgId, title: autoTitle.slice(0, 60), messages: msgs }).select('id').single()
         if (data?.id) conversationRef.current.id = data.id
       }
     } catch {}
@@ -563,7 +610,64 @@ When you get tool results back, summarise them conversationally — don't read t
     if (audioRef.current)  { audioRef.current.pause(); audioRef.current.srcObject = null }
     pcRef.current = null; dcRef.current = null; streamRef.current = null
   }
-  function handleClose() { cleanup(); stopKeyword(); onClose() }
+  function handleClose() {
+    // Save conversation highlights to kiko_memories for cross-session persistence
+    saveVoiceMemory()
+    cleanup(); stopKeyword(); onClose()
+  }
+
+  async function saveVoiceMemory() {
+    const msgs = conversationRef.current.messages
+    if (!msgs || msgs.length < 2 || !user?.id) return
+    const orgId = user?.app_metadata?.org_id
+    if (!orgId) return
+    try {
+      // Extract user messages — these contain the facts Kiko should remember
+      const userMsgs = msgs.filter(m => m.role === 'user').map(m => m.content).join('\n')
+      if (userMsgs.length < 20) return // too short to contain meaningful info
+      
+      // Use Claude to extract key facts worth remembering
+      const res = await fetch('/api/kiko', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `Extract any personal facts, preferences, names, dates, or important details the user shared in this voice conversation. Return ONLY a bullet list of facts worth remembering (e.g. "- Sunny's daughters are aged 6 and 9"). If nothing worth saving, reply with "NONE".\n\nConversation:\n${msgs.map(m => `${m.role}: ${m.content}`).join('\n').slice(0, 2000)}`,
+          userEmail: user.email,
+          conversationHistory: [],
+          currentPage: 'voice-memory-extract'
+        })
+      })
+      const reader = res.body.getReader(); const dec = new TextDecoder()
+      let full = '', buf = ''
+      while (true) {
+        const { done, value } = await reader.read(); if (done) break
+        buf += dec.decode(value, { stream: true })
+        const lines = buf.split('\n'); buf = lines.pop() || ''
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const d = line.slice(6); if (d === '[DONE]') continue
+          try { const j = JSON.parse(d); if (j.delta) full += j.delta } catch {}
+        }
+      }
+      if (!full || full.includes('NONE') || full.length < 10) return
+      
+      // Save to kiko_memories
+      const { data: existing } = await supabase.from('kiko_memories').select('id, content')
+        .eq('org_id', orgId).eq('file_name', 'sunny_profile.md').single()
+      
+      if (existing) {
+        // Append new facts to existing profile
+        const updated = existing.content + '\n\n## Voice Session ' + new Date().toLocaleDateString() + '\n' + full
+        await supabase.from('kiko_memories').update({ content: updated.slice(0, 10000), updated_at: new Date().toISOString() }).eq('id', existing.id)
+        console.log('[Kiko Voice] Memory updated with voice session facts')
+      } else {
+        await supabase.from('kiko_memories').insert({
+          org_id: orgId, file_name: 'sunny_profile.md', is_directory: false,
+          content: '# Sunny Sidhu — Personal Profile\n\n## Voice Session ' + new Date().toLocaleDateString() + '\n' + full
+        })
+        console.log('[Kiko Voice] Memory created with voice session facts')
+      }
+    } catch (err) { console.error('[Kiko Voice] Memory save failed:', err) }
+  }
 
   // ── Derived ──────────────────────────────────────────
   const avatarAnimate = speaking ? 'none' : thinking ? 'thinking' : status === 'live' && listenMode === 'active' ? 'streaming' : 'idle'
@@ -575,15 +679,20 @@ When you get tool results back, summarise them conversationally — don't read t
     : speaking ? 'Kiko is speaking…' : thinking ? 'Thinking…'
     : status === 'connecting' ? 'Connecting…' : status === 'error' ? (error || 'Failed') : 'Speak freely'
 
+  // ── Headless mode: no UI, only connection logic + audio ──
+  if (headless) return null
+
   // ── Mini mode ─────────────────────────────────────────
   if (mini) {
     return (
       <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-        <button onClick={onShowPrompt} style={{ width: 52, height: 52, borderRadius: 14, border: 'none', cursor: 'pointer', background: listenMode === 'active' && status === 'live' ? 'var(--accent)' : 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', transition: 'all 0.3s' }}>
+        {/* Pulse rings for mini mode */}
+        <div style={{ position: 'absolute', inset: -8, borderRadius: 18, border: `1.5px solid ${speaking ? 'rgba(34,197,94,0.15)' : 'rgba(26,26,26,0.08)'}`, animation: 'kikoPulseRing 2.5s ease-in-out infinite', pointerEvents: 'none' }} />
+        <button onClick={onShowPrompt} style={{ width: 52, height: 52, borderRadius: 14, border: 'none', cursor: 'pointer', background: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', transition: 'all 0.3s', boxShadow: '0 8px 32px rgba(0,0,0,0.20), 0 2px 8px rgba(0,0,0,0.08)', animation: 'kikoBreatheScale 4s ease-in-out infinite' }}>
           <div style={{ position: 'absolute', transition: 'opacity 0.3s', opacity: speaking ? 0 : 1 }}>
-            {listenMode === 'off' ? <MicOff size={20} color="var(--text-tertiary)" /> : <KikoSymbol size={26} color={status === 'live' && listenMode === 'active' ? '#fff' : 'var(--text-tertiary)'} animate={avatarAnimate} />}
+            {listenMode === 'off' ? <MicOff size={20} color="rgba(255,255,255,0.4)" /> : <KikoSymbol size={26} color="#fff" animate={avatarAnimate} />}
           </div>
-          <div style={{ position: 'absolute', transition: 'opacity 0.3s', opacity: speaking ? 1 : 0 }}><Equalizer active={speaking} /></div>
+          <div style={{ position: 'absolute', transition: 'opacity 0.3s', opacity: speaking ? 1 : 0 }}><Equalizer active={speaking} color="rgba(34,197,94,0.8)" /></div>
         </button>
         {listenMode !== 'active' && <span style={{ fontSize: 9, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textAlign: 'center', maxWidth: 80 }}>{listenMode === 'off' ? 'Mic off' : 'Passive'}</span>}
         <button onClick={handleClose} style={{ position: 'absolute', top: -8, right: -8, width: 20, height: 20, borderRadius: '50%', background: 'var(--surface)', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--text-tertiary)' }}>×</button>

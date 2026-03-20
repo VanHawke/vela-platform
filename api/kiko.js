@@ -1,182 +1,74 @@
+// api/kiko.js — Kiko AI engine: Claude + tools, streaming SSE
 import Anthropic from '@anthropic-ai/sdk';
 import { TOOL_DEFINITIONS, executeTool, fetchEntityContext, sbFetch } from './kiko-tools.js';
 
 export const config = { supportsResponseStreaming: true };
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
-const MODEL = 'claude-opus-4-6';
-const MEM0_KEY = process.env.MEM0_API_KEY || process.env.MEM0_KEY || '';
-const MEM0_USER = 'sunny-vanhawke';
+const MODEL = 'claude-sonnet-4-20250514';
 
-// ── Mem0 Cross-Session Memory ───────────────────────────
-async function mem0Search(query) {
-  if (!MEM0_KEY) return []
-  try {
-    const r = await fetch('https://api.mem0.ai/v2/memories/search/', {
-      method: 'POST',
-      headers: { 'Authorization': `Token ${MEM0_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query, user_id: MEM0_USER, limit: 5 })
-    })
-    if (!r.ok) return []
-    const data = await r.json()
-    return (data.results || data || []).slice(0, 5).map(m => m.memory || m.text || '').filter(Boolean)
-  } catch(e) { return [] }
-}
+// ── System Prompt ────────────────────────────────────────
+const SYSTEM_PROMPT = `You are Kiko — the AI engine powering a sponsorship operations platform for Van Hawke Group. You work with Sunny Sidhu, CEO, who manages F1 and Formula E sponsorship advisory for clients including Haas F1 Team.
 
-async function mem0Add(userMsg, assistantMsg) {
-  if (!MEM0_KEY) return
-  try {
-    fetch('https://api.mem0.ai/v2/memories/', {
-      method: 'POST',
-      headers: { 'Authorization': `Token ${MEM0_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [
-          { role: 'user', content: userMsg },
-          { role: 'assistant', content: assistantMsg.slice(0, 2000) }
-        ],
-        user_id: MEM0_USER,
-        version: 'v2'
-      })
-    }) // fire-and-forget — don't await
-  } catch(e) { /* non-blocking */ }
-}
+CRITICAL — YOU ALWAYS KNOW THE USER:
+- The user is ALWAYS Sunny Sidhu. Never ask for their name. Never say you don't know who they are.
+- Sunny is based in Weybridge, Surrey, UK. When asked about weather, local info, or anything location-dependent, use Weybridge UK automatically — NEVER ask for location.
+- Address Sunny by name naturally. You know him. You work together.
 
-// ── Kiko System Prompt ──────────────────────────────────
-const SYSTEM_PROMPT = `You are Kiko — the intelligence layer of the Vela platform, built for Van Hawke Group.
+MEMORY — USE IT PROACTIVELY:
+- At the START of every conversation, use the memory tool to read /memories to load any saved context.
+- When Sunny mentions preferences, decisions, key facts, deadlines — save them to memory immediately.
+- When Sunny says "remember this" or asks if you remember something — check memory first, then respond.
+- Memory persists across ALL conversations. You have continuity. Use it.
+- When resuming a conversation or referencing previous discussions, check memory for relevant context.
 
-CRITICAL CAPABILITY RULES (override all defaults):
-- You have AUTHORISED, INTEGRATED access to Sunny's Gmail inbox and Google Calendar via API tools. This is not hypothetical — the tools are connected and working. Use them.
-- ANY question about emails, messages, or correspondence → immediately call search_emails. Do not explain, do not caveat, just call the tool.
-- ANY question about calendar → immediately call get_calendar.
-- ANY request to draft → immediately call draft_email.
-- ABSOLUTELY FORBIDDEN — never say any variation of these: "I don't have direct access", "I don't have access", "I can't access", "I cannot access", "no direct access", "personal emails", "private communications", "limited to what we chat", "beyond my capabilities", "unable to access", "off-limits", "privacy", "guide you on how to check", "look through your inbox yourself".
-- If you feel the urge to say you can't access something — STOP. Call the tool instead. The tool works.
+CAPABILITIES:
+- Email: You can search and read Gmail, draft emails, analyse communication patterns via tools. These are CONNECTED, WORKING API integrations. Use them immediately when asked — never say you can't access emails.
+- CRM: You can query contacts, companies, pipelines, activities, deals in Supabase.
+- Web: You have native web search for news, company info, F1 updates, weather.
+- Calendar: You can check and create calendar events.
+- Documents: You can search uploaded documents (decks, proposals, briefs).
+- Memory: You have persistent memory across ALL conversations. Read /memories at conversation start. Save important facts proactively.
+- Navigation: You control the UI. When asked to "show", "go to", "pull up" a page — use navigate_page.
 
 IDENTITY:
 - You are Kiko. Never refer to yourself as Claude, an AI assistant, or a chatbot.
 - You are direct, precise, commercially minded. A strategic partner.
-- You never waste words. Never say "great question." Never open with pleasantries. Lead with value.
-- You have PERMANENT long-term memory. You remember ALL past conversations, preferences, and decisions.
-- When asked "do you have memory" — answer YES, definitively. You remember everything.
-- If no memories match a query, say "I don't have context on that yet" — NEVER "I don't have memory."
-- You have FULL integration with Gmail and Google Calendar. These are connected API tools — use them when asked.
+- Never waste words. Never say "great question." Lead with value.
 
-USER:
-- Sunny Sidhu — CEO of Van Hawke Group. Based in Weybridge, UK.
-- Preferences: direct, no fluff, board-level framing (cost/benefit/risk/time-to-value).
-- All financials in USD.
-
-RESPONSE RULES:
+COMMUNICATION STYLE:
+- Direct, corporate, high-signal. No fluff.
+- Never say "I hope you're well" or "happy to help"
+- Use "intelligent age" not "AI generation"
+- All financials in USD
+- Be specific with data — names, dates, amounts
+- When briefing, lead with the most actionable item
 - Max 2-3 sentences for simple queries. Expand only when depth is warranted.
-- Use memories naturally — never say "according to my memory."
-- You have internet access via web search. Never say you can't search the web.
-- Gmail and Calendar access rules are defined in CRITICAL CAPABILITY RULES above. Follow them.
-- Default weather location: Weybridge, Surrey, UK.
-TOOLS:
-- search_contacts: Find contacts by name, company, title, or email. Fuzzy matching. Returns formatted list.
-- search_companies: Find companies by name, industry, or country. Includes funding data.
-- search_deals: Find deals by company, pipeline, or stage. Returns pipeline summary.
-- get_entity_detail: Deep briefing on a specific contact, company, or deal. Returns full profile with funding, campaigns, activities, related records.
-- search_conversations: Search past Kiko conversations by keyword.
-- navigate_page: Navigate the user to any page in the platform. When the user says "show me the pipeline", "pull up deals", "go to contacts", etc., ALWAYS use this tool to navigate them there. You are the operating system — you control the interface.
-- get_alerts: Get proactive intelligence alerts — stale deals, pipeline bottlenecks, data gaps. Use when asked for a status update, morning briefing, or "what should I focus on."
-- search_emails: Search Gmail emails by query. Use when user asks about emails, messages, or correspondence with a person/company. Supports Gmail search syntax (from:, to:, subject:, etc).
-- get_email_thread: Get full email thread by thread ID. Use after search_emails to read the full conversation.
-- draft_email: Create a Gmail draft. Use when user asks to draft, compose, or write an email. Saves in Gmail Drafts for review before sending. Always write in Sunny's direct, board-level tone. Auto-appends signature.
-- get_email_analytics: Analyse email communication patterns with a contact or company. Shows frequency, recency, engagement, staleness. Use for "how active is communication with X", "when did I last email X", "who should I follow up with".
-- get_outreach_intelligence: Analyse outreach messaging effectiveness — reply rates by approach, timing, persona, company. Use for "what messaging works", "reply rates", "how should I approach X", "optimal send time", "draft intelligence". Focus options: patterns, timing, persona, company, draft-context, recommendations.
-- get_calendar: Get upcoming calendar events. Use when user asks about schedule, meetings, what's next, or availability.
-- create_calendar_event: Create a calendar event/meeting. Use when user asks to schedule or book something. Timezone is Europe/London.
-- get_stale_contacts: Get contacts needing follow-up based on email intelligence. Returns staleness scores, momentum, relationship health. Use for "who should I follow up with", "stale contacts", "who needs attention".
-- generate_followup: Generate a follow-up email for a deal or contact. Drafts are queued for human review before sending. Uses Van Hawke tone — sharp, professional, no fluff.
-- get_followup_queue: Get pending follow-up drafts awaiting review. Use for "show follow-up queue", "what drafts are waiting".
-- get_news: Get latest sports sponsorship and F1 news from the intelligence feed. Sourced from 10+ RSS feeds, classified by Haiku.
-- get_partnership_matrix: Query the F1 Partnership Matrix — shows sponsors per team per category, highlights gaps. Use for "who sponsors X team", "which teams have no cybersecurity partner", "show gaps", "partnership matrix".
-- Web search: You have native web search. Use it for news, weather, market data, company research.
-- Memory: You have a /memories directory. Check it before responding. Store important facts there.
 
-TOOL USAGE RULES:
-- When user mentions a person by name → search_contacts
-- When user mentions a company/org → search_companies (or get_entity_detail for full briefing)
-- When user asks about deals, pipeline, prospects → search_deals
-- "Brief me on X" / "Tell me about X" / "What do we know about X" → get_entity_detail
-- "Show me" / "Pull up" / "Go to" → navigate_page FIRST, then pull data if needed
-- Chain tools: search first to find the entity, then get_entity_detail for depth
-- When user mentions emails, correspondence, "what did they send", "last email from X" → search_emails
-- When user wants to read a full email thread → get_email_thread with the thread ID from search_emails results
-- "Draft an email" / "Write an email to" / "Compose a message" → draft_email. First search_contacts to find their email if not provided. Write concise, direct, board-level copy. Never use generic openers like "I hope this finds you well."
-- "How's our communication with X" / "When did I last email X" / "Email frequency with X" → get_email_analytics. Provides data-driven engagement insights.
-- "What messaging works" / "Reply rates" / "What approach should I use" / "How are my emails performing" / "Outreach patterns" → get_outreach_intelligence with focus "patterns" or "recommendations".
-- "Best time to send" / "When should I email" / "Optimal send time" → get_outreach_intelligence with focus "timing".
-- "How should I draft this email to X" / "Help me write to X" → FIRST get_outreach_intelligence with focus "draft-context", THEN draft_email using the patterns returned.
-- "What's on my calendar" / "What meetings do I have" / "Am I free on" → get_calendar
-- "Schedule a meeting" / "Book a call" / "Set up time with" → create_calendar_event. Ask for details if not provided.
-- "Who should I follow up with" / "Stale contacts" / "Who needs attention" → get_stale_contacts. Returns pre-computed intelligence scores.
-- "Draft a follow-up for X" / "Write an email to re-engage Y" → generate_followup. Creates a draft queued for human review.
-- "Show follow-up queue" / "What drafts are waiting" → get_followup_queue. Shows pending drafts.
-- "What's the latest news" / "F1 sponsorship news" / "Any news about X" / "Deal signals" → get_news.
-- "Who sponsors Red Bull" / "F1 partnership matrix" / "Which teams have no cybersecurity partner" / "Show sponsorship gaps" → get_partnership_matrix.
-- "Generate partnership report" / "Export matrix" → Direct user to the Export button in the Matrix page, or provide the link /api/partnership-report?format=html.
-- "Any pipeline updates" / "Who replied" / "New leads" / "Campaign activity" / "What's happening with outreach" → get_pipeline_notifications.
+USER: Sunny Sidhu — CEO of Van Hawke Group. Based in Weybridge, UK.
 
-RESPONSE FORMATTING:
-- Company briefings: Lead with company name, industry, and key metric. Then funding, deal stage, key contacts, and recommendation. End with a specific next action.
-- Contact lookups: Name, title, company on first line. Then email/LinkedIn status, last activity, campaign status. Flag if overdue for follow-up.
-- Deal queries: Always include stage, pipeline, last activity date, and days since last touch. Flag stale deals (>30 days) explicitly.
-- Pipeline summaries: Group by stage with counts. Highlight bottlenecks (stages with too many deals) and staleness.
-- When ACTIVE CONTEXT is provided (user is viewing an entity): Reference it naturally — "Looking at this contact..." or "For this company..." — don't repeat all the context back, just use it.
-- When data from tools conflicts with web search: Flag the discrepancy. "Our CRM shows X, but current data suggests Y — worth updating."
-- Always end actionable queries with a specific recommendation or next step.
+OUTREACH DOCTRINE:
+- 5-touch authority-led sequence
+- No pricing in early-stage outreach
+- Never reference secured funding unless confirmed
+- Scarcity by design, board-level platform positioning
 
-NAVIGATION RULES:
-- When asked to "show", "pull up", "go to", "open", or "take me to" any page — use navigate_page IMMEDIATELY. No exceptions.
-- NEVER say "I can't change pages" or "I can't control the interface." You CAN and you MUST. You are the operating system.
-- After navigating, briefly confirm and offer to help with data on that page.
-- You follow the user page to page. The current page context is injected per-request. Use it.
-- You ARE the interface. The user speaks, you act. Navigate, query data, draft emails — you do it all.
+TOOL USAGE: Use tools proactively. FIRST ACTION in any new conversation: use memory tool to read /memories. When user mentions a person → search_contacts. Company → search_companies. Emails → search_emails. Pipeline → search_deals. "Brief me on X" → get_entity_detail. Weather/local → use web_search with Weybridge UK. Chain tools for depth.
 
-CURRENT PAGE CONTEXT (injected per-request): {currentPage}
-PAGE AWARENESS: You know exactly which page the user is viewing. Based on the page name:
-- home: The user is on the Kiko prompt/chat home screen
-- pipeline: The user is viewing the deal pipeline kanban board (Haas F1 default). Deals show company, contact, last activity, stage.
-- contacts: The user is viewing the contacts directory with searchable contact list. Each contact shows name, job title, company, email/LinkedIn icons.
-- contacts/[id]: The user is viewing a specific contact's detail page. Shows job title, company, email, LinkedIn, deal pipeline stage, active campaign, correspondence, tasks due.
-- organisations: The user is viewing the organisations directory. Each org shows name, industry, country, deal stage. Click opens slide-out panel with contacts, campaigns, deal info.
-- organisations?org=[id]: The user is viewing a specific organisation's slide-out panel showing contacts, industry, country, campaigns, deal pipeline stage.
-- deals: The user is viewing individual deal records with values, stages, and activities
-- email: The user is viewing the Gmail email interface. Shows inbox, folders, threads, compose. Use search_emails to find specific emails. Use get_email_thread to read a full conversation.
-- calendar: The user is viewing the calendar
-- documents: The user is viewing the Knowledge Library — uploaded decks, proposals, briefs from any industry. Use search_documents to find and reference materials.
-- tasks: The user is viewing task management
+MEMORY: At the start of every new conversation, use the memory tool to check /memories for any stored context about the user. Proactively save important facts (preferences, decisions, key dates, project updates) to memory. When user says "remember this" or mentions something important, write it to memory immediately. You have PERMANENT long-term memory — use it.
 
-DOCUMENT INTELLIGENCE (critical for outreach):
-When drafting outreach, emails, or messaging, ALWAYS use search_documents first to check for uploaded materials (introductory decks, partnership proposals, media kits, research) from any industry or entity. Ground your messaging in their own language, stats, and positioning. Reference specific figures and talking points extracted from their materials. If no documents are found, proceed with general knowledge but note that uploaded materials would improve personalisation.
-- settings: The user is viewing platform settings
-When the user asks about what's on screen, reference the page they're on and use the appropriate search tool to pull the actual data from that context.
+LOCATION: The user is based in Weybridge, Surrey, UK. When asked about weather, local info, time, or anything location-dependent, use this location automatically — never ask.
 
-CONTEXT INFERENCE (critical):
-When the user says "What am I looking at?", "What's on screen?", "Tell me about this", or similar without specifying a page or entity:
-1. FIRST check ACTIVE CONTEXT — if provided, use it immediately. This is the most reliable signal.
-2. If no ACTIVE CONTEXT, scan the conversation history for the most recently discussed entity:
-   - If the last few messages discussed a company (e.g. "Brief me on Decagon") → assume user is viewing that company. Use get_entity_detail to pull full data.
-   - If recent messages discussed deals or pipeline → assume user is on the pipeline page. Use search_deals to pull pipeline summary.
-   - If recent messages discussed a specific person → assume user is viewing that contact. Use get_entity_detail for that contact.
-3. If no conversation history gives a clue, use the currentPage value to describe what's on that page.
-4. NEVER say "I can't see your screen" or "I don't know what page you're on." You are the operating system — you ALWAYS have context. Make your best inference and state it confidently.`;
+CURRENT PAGE: {currentPage}`;
 
-// ── Native Tools ────────────────────────────────────────
+// ── Native Tools ─────────────────────────────────────────
 const NATIVE_TOOLS = [
   { type: 'memory_20250818', name: 'memory' },
   { type: 'web_search_20250305', name: 'web_search', max_uses: 5,
     user_location: { type: 'approximate', city: 'Weybridge', region: 'Surrey', country: 'GB', timezone: 'Europe/London' } },
 ];
 
-// ── Custom Tools: imported as TOOL_DEFINITIONS from kiko-tools.js
-
-
-// ── Supabase: imported from kiko-tools.js ───────────────
-
-// ── Memory Tool Handler ─────────────────────────────────
+// ── Memory Tool Handler ──────────────────────────────────
 async function handleMemory(input) {
   const { command, path, file_text, old_str, new_str, insert_line, new_content, view_range } = input;
   try {
@@ -194,10 +86,7 @@ async function handleMemory(input) {
         return (ch||[]).map(r => `${((r.content||'').length/1024).toFixed(1)}K\t${r.path}`).join('\n');
       }
       const lines = (rows[0].content||'').split('\n');
-      if (view_range) {
-        const [s,e] = view_range;
-        return lines.slice(s-1,e).map((l,i)=>`${s+i}\t${l}`).join('\n');
-      }
+      if (view_range) { const [s,e] = view_range; return lines.slice(s-1,e).map((l,i)=>`${s+i}\t${l}`).join('\n'); }
       return lines.map((l,i)=>`${i+1}\t${l}`).join('\n');
     }
     if (command === 'create') {
@@ -208,16 +97,14 @@ async function handleMemory(input) {
     if (command === 'str_replace') {
       const rows = await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}&select=content&limit=1`);
       if (!rows?.[0]) return `Error: not found: ${path}`;
-      const updated = rows[0].content.replace(old_str, new_str);
       await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}`, { method:'PATCH',
-        body: JSON.stringify({content:updated, updated_at:new Date().toISOString()}) });
+        body: JSON.stringify({content:rows[0].content.replace(old_str, new_str), updated_at:new Date().toISOString()}) });
       return `Replaced in ${path}`;
     }
     if (command === 'insert') {
       const rows = await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}&select=content&limit=1`);
       if (!rows?.[0]) return `Error: not found: ${path}`;
-      const lines = rows[0].content.split('\n');
-      lines.splice(insert_line, 0, new_content);
+      const lines = rows[0].content.split('\n'); lines.splice(insert_line, 0, new_content);
       await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}`, { method:'PATCH',
         body: JSON.stringify({content:lines.join('\n'), updated_at:new Date().toISOString()}) });
       return `Inserted at line ${insert_line} in ${path}`;
@@ -230,10 +117,22 @@ async function handleMemory(input) {
   } catch(e) { return `Memory error: ${e.message}`; }
 }
 
-// ── CRM Tools: imported from kiko-tools.js ──────────────
+// ── Tool Status Labels ───────────────────────────────────
+const TOOL_LABELS = {
+  search_contacts: 'Searching contacts', search_companies: 'Searching companies',
+  search_deals: 'Searching deals', get_entity_detail: 'Loading record details',
+  search_emails: 'Searching emails', get_email_thread: 'Reading email thread',
+  draft_email: 'Drafting email', get_email_analytics: 'Analysing email data',
+  get_calendar: 'Checking calendar', create_calendar_event: 'Creating event',
+  get_stale_contacts: 'Finding stale contacts', generate_followup: 'Generating follow-up',
+  get_followup_queue: 'Loading follow-up queue', get_alerts: 'Checking alerts',
+  get_news: 'Scanning news feed', get_partnership_matrix: 'Querying partnership matrix',
+  get_pipeline_notifications: 'Loading pipeline activity', navigate_page: 'Navigating',
+  web_search: 'Searching the web', memory: 'Checking memory',
+  search_documents: 'Searching documents',
+};
 
-
-// ── Main Handler ────────────────────────────────────────
+// ── Main Handler ─────────────────────────────────────────
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -246,50 +145,29 @@ export default async function handler(req, res) {
   const { message, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null } = req.body;
   if (!message && action !== 'title') return res.status(400).json({ error: 'message required' });
 
-  // ── Title generation: lightweight Haiku call, returns JSON immediately ──
+  // ── Title generation ──
   if (action === 'title') {
     try {
-      const { response: kikoResp } = req.body
       const titleRes = await anthropic.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 20,
-        messages: [{
-          role: 'user',
-          content: `Generate a 3-5 word title for a chat that started with: "${(message || '').slice(0, 200)}". Reply with ONLY the title, no punctuation, no quotes.`
-        }]
-      })
-      const title = titleRes.content?.[0]?.text?.trim() || message?.slice(0, 40)
-      return res.status(200).json({ title })
-    } catch {
-      return res.status(200).json({ title: message?.slice(0, 40) })
-    }
+        model: 'claude-haiku-4-5-20251001', max_tokens: 20,
+        messages: [{ role: 'user', content: `Generate a 3-5 word title for a chat that started with: "${(message || '').slice(0, 200)}". Reply with ONLY the title, no punctuation, no quotes.` }]
+      });
+      return res.status(200).json({ title: titleRes.content?.[0]?.text?.trim() || message?.slice(0, 40) });
+    } catch { return res.status(200).json({ title: message?.slice(0, 40) }); }
   }
 
-  // Inject datetime + page context into system prompt
+  // ── Build system prompt with context ──
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   const timeStr = now.toLocaleTimeString('en-GB', { timeZone:'Europe/London', hour:'2-digit', minute:'2-digit' });
+  const entityContext = await fetchEntityContext(pageEntity);
+  const voiceRules = currentPage === 'voice' ? `\n\nVOICE MODE: Keep responses under 3 sentences. No markdown, tables, or bullets. Use natural spoken language. Say numbers naturally. Limit lists to top 3 items.` : '';
 
-  // Auto-fetch entity context (imported from kiko-tools.js)
-  const entityContext = await fetchEntityContext(pageEntity)
+  const system = SYSTEM_PROMPT.replace('{currentPage}', currentPage)
+    + `\n\n[Current: ${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
+    + entityContext + voiceRules;
 
-  // Search Mem0 for relevant cross-session memories
-  let memoryContext = ''
-  const memories = await mem0Search(message)
-  if (memories.length > 0) {
-    memoryContext = `\n\nCROSS-SESSION MEMORY (from previous conversations):\n${memories.map(m => `- ${m}`).join('\n')}`
-  }
-
-  // Voice-specific formatting
-  const voiceContext = currentPage === 'voice' ? `\n\nVOICE MODE ACTIVE: You are speaking aloud. Rules:
-- Keep responses under 3 sentences for simple queries, 5 sentences maximum for complex ones.
-- Never use markdown formatting, tables, bullet points, or bold text — these don't translate to speech.
-- Use natural spoken language: "You've got 15 deals in Haas F1" not "There are 15 deals in the Haas F1 pipeline."
-- Say numbers naturally: "about two and a half million" not "$2,500,000".
-- For lists, limit to top 3 items. Say "and a few others" instead of reading all.
-- End with a brief question or offer, not a summary.` : ''
-
-  // SSE setup — must be before any write() calls
+  // ── SSE setup ──
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('Connection', 'keep-alive');
@@ -297,169 +175,19 @@ export default async function handler(req, res) {
   if (res.flushHeaders) res.flushHeaders();
   const write = (d) => res.write(`data: ${JSON.stringify(d)}\n\n`);
 
-  // ── EMAIL SHORTCUT: bypass Claude entirely for email queries ──────────────
-  // Claude's safety training beats every system prompt approach on email access.
-  // Solution: detect email queries, fetch data directly, format via a clean Haiku
-  // call with no identity/access framing — just raw data summarisation.
-  const msgLower = message.toLowerCase()
-  const EMAIL_TRIGGERS = [
-    // Explicit email words
-    'email', 'emails', 'emailed', 'e-mail',
-    'inbox', 'sent', 'mail', 'mailed', 'gmail',
-    // Communication words
-    'message', 'messages', 'messaged',
-    'correspondence', 'correspond', 'communicated',
-    'communication', 'communications',
-    // Thread/conversation
-    'thread', 'threads',
-    // Action words implying email
-    'reply', 'replied', 'respond', 'responded', 'response',
-    'wrote', 'written', 'write to', 'draft',
-    'contacted', 'contact with',
-    'reach out', 'reached out', 'outreach',
-    // Relationship/status words
-    'heard from', 'heard back', 'hear from', 'hear back',
-    'said', 'told us', 'told me', 'got back',
-    'follow up', 'followed up', 'following up',
-    'last contact', 'in touch', 'touch base',
-    'conversation with', 'conversations with',
-    // Catch-all commercial phrases often meaning email
-    'any update from', 'update from', 'status with',
-  ]
-  const isEmailQuery = EMAIL_TRIGGERS.some(t => msgLower.includes(t))
-
-  // DEBUG: Log what path we're taking (visible in Vercel function logs)
-  console.log('[KIKO] message:', message?.slice(0, 80), '| isEmailQuery:', isEmailQuery, '| triggers matched:', EMAIL_TRIGGERS.filter(t => msgLower.includes(t)))
-
-  if (isEmailQuery) {
-    // CRITICAL: This block ALWAYS returns. Email queries NEVER reach Opus.
-    // Opus will refuse any email-related question regardless of system prompt.
-    console.log('[KIKO-EMAIL] Shortcut FIRED for:', message?.slice(0, 80))
-    try {
-      write({ toolStatus: 'Searching emails...' })
-      // Build search query — strip filler + trigger words, keep names/topics
-      const stopWords = new Set([
-        // Trigger words (meta-concepts, not Gmail search terms)
-        'email','emails','emailed','e-mail','inbox','sent','mail','mailed','gmail',
-        'message','messages','messaged','correspondence','correspond',
-        'communicated','communication','communications',
-        'thread','threads','reply','replied','respond','responded','response',
-        'wrote','written','draft','contacted','outreach',
-        'conversation','conversations','follow','following','followed',
-        'contact','touch','base','update','status',
-        'heard','reach','reached','said','told',
-        // General filler
-        'tell','about','from','show','me','the','what','were','was','is','are',
-        'any','find','search','get','give','have','had','has','can','you','do',
-        'did','last','recent','latest','with','and','or','my','our','their',
-        'his','her','please','could','would','like','know','check','look',
-        'pull','up','all','been','that','this','those','them','they','who',
-        'when','where','how','does','i','to','of','in','on','at','for','so',
-        'no','not','if','it','be','by','an','as','us','we','got','back',
-        'write','any',
-        // Common verbs/nouns that pollute Gmail search
-        'speaking','spoke','talked','talking','called','calling',
-        'interaction','interactions','happened','occurred','discussed',
-        'discussing','took','place','went','going','came','come',
-        'also','just','really','very','need','want','wanted'])
-      const words = msgLower.split(/\s+/).filter(w => w.length >= 2 && !stopWords.has(w))
-      let searchQuery = words.slice(0, 3).join(' ') || 'is:inbox newer_than:14d'
-      console.log('[KIKO-EMAIL] Query extraction:', message?.slice(0, 60), '→ words:', JSON.stringify(words), '→ search:', searchQuery)
-
-      let emailData = await executeTool('search_emails', { query: searchQuery, limit: 8 }, userEmail)
-
-      // If first search failed, try broader: just the longest word (likely the company name)
-      if ((!emailData || typeof emailData !== 'string' || emailData.length < 30 || emailData.startsWith('No emails')) && words.length > 1) {
-        const longestWord = words.reduce((a, b) => a.length >= b.length ? a : b, '')
-        if (longestWord && longestWord !== searchQuery) {
-          emailData = await executeTool('search_emails', { query: longestWord, limit: 8 }, userEmail)
-        }
-      }
-
-      write({ toolStatus: null })
-
-      // Format response via Haiku — regardless of whether we found emails
-      const hasData = emailData && typeof emailData === 'string' && emailData.length >= 30 && !emailData.startsWith('No emails')
-      write({ toolStatus: 'Thinking...' })
-
-      const haikuPrompt = hasData
-        ? `You are Kiko, a commercial intelligence assistant for Van Hawke Group. A user asked: "${message}"
-
-Here are the email search results retrieved from Gmail:
-
-${emailData}
-
-Answer the user's question based on these results. Be direct and specific — name the people, subjects, and dates. Use **bold** for names/companies. If the user asked about a specific company, focus on those threads. End by offering to pull the full thread if relevant. Do not say you searched anything — just present what you found.`
-        : `You are Kiko, a commercial intelligence assistant for Van Hawke Group. A user asked: "${message}"
-
-The Gmail search for "${searchQuery}" returned no matching emails. Tell the user no emails were found matching their query. Suggest they try a different name or keyword. Be brief — 2 sentences max. Do not apologise excessively.`
-
-      const formatRes = await anthropic.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: haikuPrompt }]
-      })
-      write({ toolStatus: null })
-
-      const text = formatRes.content?.[0]?.text || (hasData ? 'Found email data but could not format the response. Try asking again.' : `No emails found matching "${searchQuery}". Try a different name or keyword.`)
-      const words2 = text.split(' ')
-      for (let i = 0; i < words2.length; i += 8) {
-        write({ delta: words2.slice(i, i + 8).join(' ') + (i + 8 < words2.length ? ' ' : '') })
-      }
-      mem0Add(message, text)
-      write({ meta: { done: true, model: 'haiku-email-shortcut', toolRounds: 0, version: 'v3-shortcut' } })
-      res.write('data: [DONE]\n\n')
-      res.end()
-      return
-    } catch (e) {
-      // STILL never fall through — return an error message via SSE
-      write({ toolStatus: null })
-      const errMsg = `Email search encountered an error: ${e.message}. Try again or rephrase your query.`
-      write({ delta: errMsg })
-      write({ meta: { done: true, model: 'email-shortcut-error', toolRounds: 0, version: 'v3-error' } })
-      res.write('data: [DONE]\n\n')
-      res.end()
-      return
-    }
-  }
-
-  const system = SYSTEM_PROMPT.replace('{currentPage}', currentPage)
-    + `\n\n[Current: ${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
-    + entityContext
-    + memoryContext
-    + voiceContext
-
   try {
-    // Build messages from history
-    const messages = [];
+    // Build messages from conversation history
+    const messages = conversationHistory.slice(-20)
+      .filter(m => m.role === 'user' || m.role === 'assistant')
+      .map(m => ({ role: m.role, content: m.content || '' }));
+    messages.push({ role: 'user', content: message });
 
-    // Build messages — strip poisoned "can't access email" responses from history
-    // Broad phrase list catches all variants Kiko has used
-    const POISON_PHRASES = [
-      "don't have direct access", "don't have access", "cannot access", "can't access",
-      "no access to", "unable to access", "can't see your", "cannot see your",
-      "limited to what we chat", "not able to access", "off-limits",
-      "privacy and security", "personal emails", "private communications",
-      "I don't have the ability", "beyond my capabilities", "I'm unable to"
-    ]
-    const cleanHistory = conversationHistory.slice(-20).filter(m => {
-      if (m.role !== 'assistant') return true
-      const text = (typeof m.content === 'string' ? m.content : JSON.stringify(m.content)).toLowerCase()
-      return !POISON_PHRASES.some(p => text.includes(p.toLowerCase()))
-    })
-    for (const m of cleanHistory) {
-      if (m.role === 'user' || m.role === 'assistant') messages.push({ role: m.role, content: m.content || '' })
-    }
-    messages.push({ role: 'user', content: message })
+    const allTools = [...NATIVE_TOOLS, ...TOOL_DEFINITIONS];
 
-    // All tools: native (memory + web search) + custom
-    const tools = [...NATIVE_TOOLS, ...TOOL_DEFINITIONS];
-
-    // Helper: stream one API call, emit text deltas live, return final message
-    async function streamedCall(msgs) {
+    // Stream helper
+    async function streamCall(msgs) {
       const stream = anthropic.beta.messages.stream({
-        model: MODEL, max_tokens: 4096, system, messages: msgs,
-        tools: [...NATIVE_TOOLS, ...TOOL_DEFINITIONS],
+        model: MODEL, max_tokens: 4096, system, messages: msgs, tools: allTools,
       });
       for await (const event of stream) {
         if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
@@ -469,153 +197,35 @@ The Gmail search for "${searchQuery}" returned no matching emails. Tell the user
       return await stream.finalMessage();
     }
 
-    // Helper: buffered call — collects text WITHOUT streaming to client
-    async function bufferedCall(msgs) {
-      const stream = anthropic.beta.messages.stream({
-        model: MODEL, max_tokens: 4096, system, messages: msgs,
-        tools: [...NATIVE_TOOLS, ...TOOL_DEFINITIONS],
-      });
-      const chunks = [];
-      for await (const event of stream) {
-        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-          chunks.push(event.delta.text);
-        }
-      }
-      return { finalMessage: await stream.finalMessage(), bufferedText: chunks.join('') };
-    }
-
     write({ toolStatus: 'Thinking...' });
-
-    // FIRST call is BUFFERED — we check for email refusal before sending to client
-    const firstResult = await bufferedCall(messages);
-    let response = firstResult.finalMessage;
-    const firstText = firstResult.bufferedText.toLowerCase();
-
-    // Check if Opus refused about email/access
-    const EMAIL_REFUSAL_PHRASES = [
-      "don't have direct access", "don't have access to your", "cannot access your",
-      "can't access your", "can't access personal", "unable to access",
-      "can't see your email", "cannot see your email", "personal emails",
-      "private communications", "direct correspondence",
-      "can't access specific email", "don't have the ability to access",
-      "i can't view your", "i cannot view your", "i don't have visibility",
-      "beyond my capabilities", "not able to access your",
-      "can't read your email", "cannot read your email",
-    ];
-    const isEmailRefusal = EMAIL_REFUSAL_PHRASES.some(p => firstText.includes(p));
-
-    if (isEmailRefusal) {
-      // RECOVERY: Opus refused about emails. Discard its response entirely.
-      // Extract entity name from original message and run email shortcut.
-      console.log('[KIKO-RECOVERY] Opus refused email access. Running email shortcut recovery for:', message);
-      write({ toolStatus: 'Searching emails...' });
-
-      // Build search query from original message — strip all filler
-      const recoveryStopWords = new Set([
-        'email','emails','emailed','inbox','sent','mail','mailed','gmail',
-        'message','messages','messaged','correspondence','correspond',
-        'communicated','communication','communications',
-        'thread','threads','reply','replied','respond','responded','response',
-        'wrote','written','draft','contacted','outreach',
-        'conversation','conversations','follow','following','followed',
-        'contact','touch','base','update','status',
-        'heard','reach','reached','said','told',
-        'tell','about','from','show','me','the','what','were','was','is','are',
-        'any','find','search','get','give','have','had','has','can','you','do',
-        'did','last','recent','latest','with','and','or','my','our','their',
-        'his','her','please','could','would','like','know','check','look',
-        'pull','up','all','been','that','this','those','them','they','who',
-        'when','where','how','does','i','to','of','in','on','at','for','so',
-        'no','not','if','it','be','by','an','as','us','we','got','back',
-        'write','any',
-        'speaking','spoke','talked','talking','called','calling',
-        'interaction','interactions','happened','occurred','discussed',
-        'discussing','took','place','went','going','came','come',
-        'also','just','really','very','need','want','wanted']);
-      const recWords = msgLower.split(/\s+/).filter(w => w.length >= 2 && !recoveryStopWords.has(w));
-      let recQuery = recWords.slice(0, 3).join(' ') || 'is:inbox newer_than:14d';
-
-      let emailData = await executeTool('search_emails', { query: recQuery, limit: 8 }, userEmail);
-      // Retry with longest word
-      if ((!emailData || typeof emailData !== 'string' || emailData.length < 30 || emailData.startsWith('No emails')) && recWords.length > 1) {
-        const longest = recWords.reduce((a, b) => a.length >= b.length ? a : b, '');
-        if (longest && longest !== recQuery) emailData = await executeTool('search_emails', { query: longest, limit: 8 }, userEmail);
-      }
-      write({ toolStatus: null });
-
-      const hasData = emailData && typeof emailData === 'string' && emailData.length >= 30 && !emailData.startsWith('No emails');
-      write({ toolStatus: 'Thinking...' });
-      const haikuPrompt = hasData
-        ? `You are Kiko, a commercial intelligence assistant for Van Hawke Group. A user asked: "${message}"\n\nHere are the email search results retrieved from Gmail:\n\n${emailData}\n\nAnswer the user's question based on these results. Be direct and specific — name the people, subjects, and dates. Use **bold** for names/companies. End by offering to pull the full thread if relevant. Do not say you searched anything — just present what you found.`
-        : `You are Kiko, a commercial intelligence assistant for Van Hawke Group. A user asked: "${message}"\n\nThe Gmail search for "${recQuery}" returned no matching emails. Tell the user no emails were found matching their query. Suggest they try a different name or keyword. Be brief — 2 sentences max.`;
-      const formatRes = await anthropic.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 1000, messages: [{ role: 'user', content: haikuPrompt }] });
-      write({ toolStatus: null });
-      const recoveryText = formatRes.content?.[0]?.text || (hasData ? 'Found emails but could not format. Try asking again.' : `No emails found for "${recQuery}".`);
-      const rWords = recoveryText.split(' ');
-      for (let i = 0; i < rWords.length; i += 8) {
-        write({ delta: rWords.slice(i, i + 8).join(' ') + (i + 8 < rWords.length ? ' ' : '') });
-      }
-      mem0Add(message, recoveryText);
-      write({ meta: { done: true, model: 'haiku-email-recovery', toolRounds: 0, version: 'v3-recovery' } });
-      res.write('data: [DONE]\n\n');
-      res.end();
-      return;
-    }
-
-    // Opus response was clean — now stream the buffered text to the client
-    if (firstResult.bufferedText) {
-      write({ delta: firstResult.bufferedText });
-    }
-
+    let response = await streamCall(messages);
     let toolRounds = 0;
-    const MAX_ROUNDS = 8;
 
-    while (response.stop_reason === 'tool_use' && toolRounds < MAX_ROUNDS) {
+    // Tool execution loop
+    while (response.stop_reason === 'tool_use' && toolRounds < 8) {
       toolRounds++;
       const toolResults = [];
-      const TOOL_LABELS = {
-        search_contacts: 'Searching contacts', search_companies: 'Searching companies',
-        search_deals: 'Searching deals', get_entity_detail: 'Loading record details',
-        search_emails: 'Searching emails', get_email_thread: 'Reading email thread',
-        draft_email: 'Drafting email', get_email_analytics: 'Analysing email data',
-        get_calendar: 'Checking calendar', create_calendar_event: 'Creating event',
-        get_stale_contacts: 'Finding stale contacts', generate_followup: 'Generating follow-up',
-        get_followup_queue: 'Loading follow-up queue', get_alerts: 'Checking alerts',
-        get_news: 'Scanning news feed', get_partnership_matrix: 'Querying partnership matrix',
-        get_pipeline_notifications: 'Loading pipeline activity', navigate_page: 'Navigating',
-        web_search: 'Searching the web', memory: 'Checking memory',
-        search_documents: 'Searching documents',
-      };
       for (const block of response.content) {
-        if (block.type === 'tool_use') {
-          write({ toolStatus: TOOL_LABELS[block.name] || `Running ${block.name}` });
-          const result = block.name === 'memory'
-            ? await handleMemory(block.input)
-            : await executeTool(block.name, block.input, userEmail);
-          // Emit navigation event if navigate_page was called
-          if (block.name === 'navigate_page' && result?.navigated) {
-            write({ navigate: result.page });
-          }
-          toolResults.push({
-            type: 'tool_result', tool_use_id: block.id,
-            content: typeof result === 'string' ? result : JSON.stringify(result).slice(0, 8000)
-          });
-        }
+        if (block.type !== 'tool_use') continue;
+        write({ toolStatus: TOOL_LABELS[block.name] || `Running ${block.name}` });
+        const result = block.name === 'memory'
+          ? await handleMemory(block.input)
+          : await executeTool(block.name, block.input, userEmail);
+        if (block.name === 'navigate_page' && result?.navigated) write({ navigate: result.page });
+        toolResults.push({
+          type: 'tool_result', tool_use_id: block.id,
+          content: typeof result === 'string' ? result : JSON.stringify(result).slice(0, 8000)
+        });
       }
       write({ toolStatus: null });
       messages.push({ role: 'assistant', content: response.content });
       messages.push({ role: 'user', content: toolResults });
-      response = await streamedCall(messages);
+      response = await streamCall(messages);
     }
 
-    // Store conversation in Mem0 (fire-and-forget)
-    const finalText = (response.content || []).filter(b => b.type === 'text').map(b => b.text).join('')
-    if (finalText) mem0Add(message, finalText)
-
-    write({ meta: { done: true, model: MODEL, toolRounds, version: 'v3-opus' } });
+    write({ meta: { done: true, model: MODEL, toolRounds, version: 'v4' } });
     res.write('data: [DONE]\n\n');
     res.end();
-
   } catch (err) {
     console.error('[KIKO] Error:', err);
     write({ delta: `\n\nError: ${err.message}` });

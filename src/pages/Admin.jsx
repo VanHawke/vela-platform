@@ -12,7 +12,7 @@ const MODULE_KEYS = [
   { key: 'leaderboard', label: 'Leaderboard' },
   { key: 'outreach', label: 'Outreach' },
   { key: 'analytics', label: 'Analytics' },
-  { key: 'vela_code', label: 'Vela Code' },
+  { key: 'kiko_code', label: 'Kiko Code' },
 ]
 
 const DEFAULT_MODULES = Object.fromEntries(MODULE_KEYS.map(m => [m.key, true]))
@@ -144,7 +144,7 @@ export default function Admin() {
               <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-4">Branding</h3>
               <div className="space-y-3">
                 {[
-                  { key: 'platform_name', label: 'Platform Name', placeholder: 'Vela' },
+                  { key: 'platform_name', label: 'Platform Name', placeholder: 'Kiko' },
                   { key: 'logo_url', label: 'Logo URL', placeholder: 'https://...' },
                   { key: 'favicon_url', label: 'Favicon URL', placeholder: 'https://...' },
                   { key: 'primary_colour', label: 'Primary Colour', placeholder: '#ffffff' },

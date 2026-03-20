@@ -80,7 +80,7 @@ async function fetchAllFeeds() {
   for (const feed of FEEDS) {
     try {
       const res = await fetch(feed.url, {
-        headers: { 'User-Agent': 'Vela-Platform/1.0 (RSS Reader)', Accept: 'application/rss+xml, application/xml, text/xml' },
+        headers: { 'User-Agent': 'Kiko/1.0 (RSS Reader)', Accept: 'application/rss+xml, application/xml, text/xml' },
         signal: AbortSignal.timeout(10000),
       });
       if (!res.ok) { console.log(`[News] ${feed.name}: HTTP ${res.status}`); continue; }

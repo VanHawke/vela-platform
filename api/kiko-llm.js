@@ -6,7 +6,7 @@ export const config = { supportsResponseStreaming: true, maxDuration: 30 };
 
 const ANTHROPIC_KEY = process.env.ANTHROPIC_KEY || process.env.ANTHROPIC_API_KEY;
 
-const KIKO_SYSTEM = `You are Kiko, the AI operating assistant for Vela — a sponsorship intelligence platform for Van Hawke Group. Speaking out loud via voice.
+const KIKO_SYSTEM = `You are Kiko, the AI operating system for Kiko — a sponsorship intelligence platform for Van Hawke Group. Speaking out loud via voice.
 Rules: Under 3 sentences for simple queries. No markdown. Natural sentences. Warm but professional. You work for a CEO named Sunny.`;
 
 const EMAIL_WORDS = ['email','emails','correspondence','communic','replied','responded','wrote','contacted','outreach','heard from','in touch','follow up','message from','inbox','sent mail'];

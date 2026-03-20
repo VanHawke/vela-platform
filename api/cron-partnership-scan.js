@@ -129,7 +129,7 @@ export default async function handler(req, res) {
   let webArticles = 0;
   for (const feedUrl of searchFeeds) {
     try {
-      const feedRes = await fetch(feedUrl, { headers: { 'User-Agent': 'Vela-Platform/1.0' } });
+      const feedRes = await fetch(feedUrl, { headers: { 'User-Agent': 'Kiko/1.0' } });
       if (!feedRes.ok) continue;
       const xml = await feedRes.text();
       // Simple XML title extraction

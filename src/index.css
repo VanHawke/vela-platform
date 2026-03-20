@@ -55,6 +55,18 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); -web
 @keyframes kikoVortexSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes kikoCorePulse { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.5); opacity: 1; } }
 @keyframes kikoEq { from { height: 6px; } to { height: 28px; } }
+@keyframes eqBar0 { 0%,100% { height: 3px; } 50% { height: 14px; } }
+@keyframes eqBar1 { 0%,100% { height: 3px; } 50% { height: 28px; } }
+@keyframes eqBar2 { 0%,100% { height: 3px; } 50% { height: 18px; } }
+@keyframes eqBar3 { 0%,100% { height: 3px; } 50% { height: 34px; } }
+@keyframes eqBar4 { 0%,100% { height: 3px; } 50% { height: 22px; } }
+@keyframes eqBar5 { 0%,100% { height: 3px; } 50% { height: 12px; } }
+@keyframes eqBar6 { 0%,100% { height: 3px; } 50% { height: 26px; } }
+@keyframes eqBarS0 { 0%,100% { height: 3px; } 50% { height: 14px; } }
+@keyframes eqBarS1 { 0%,100% { height: 3px; } 50% { height: 24px; } }
+@keyframes eqBarS2 { 0%,100% { height: 3px; } 50% { height: 16px; } }
+@keyframes eqBarS3 { 0%,100% { height: 3px; } 50% { height: 20px; } }
+@keyframes eqBarS4 { 0%,100% { height: 3px; } 50% { height: 12px; } }
 
 .animate-fade-in { animation: fadeIn 0.3s ease-out; }
 .animate-slide-in { animation: slideInRight 0.3s ease-out; }
@@ -98,3 +110,20 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); -web
 @keyframes loginSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes loginSlideRight { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes loginFillBar { 0% { width: 0; } 100% { width: 100%; } }
+
+/* Kiko breathing and pulse animations */
+@keyframes kikoPulseRing { 0%, 100% { transform: scale(1); opacity: 0.3; } 50% { transform: scale(1.04); opacity: 0.8; } }
+@keyframes kikoBreatheScale { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.015); } }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes voiceGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(52,199,89,0.2), 0 0 20px rgba(52,199,89,0.1); }
+  50% { box-shadow: 0 0 14px rgba(52,199,89,0.4), 0 0 32px rgba(52,199,89,0.2); }
+}
+@keyframes voicePulseRing {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+@keyframes kikoDotPulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}

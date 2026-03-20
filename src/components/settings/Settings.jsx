@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import ImageUpload from './ImageUpload'
@@ -43,14 +43,15 @@ export default function Settings({ user }) {
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState('member')
   const [previewingVoice, setPreviewingVoice] = useState(null)
-  const previewAudioRef = useState(null)
+  const previewAudioRef = useRef(null)
+  const [navLogo, setNavLogo] = useState(() => { try { return localStorage.getItem('custom_logo_url') } catch { return null } })
 
   const DEFAULT_NAV = [
     { id: 'home', label: 'Home' }, { id: 'contacts', label: 'Contacts' },
     { id: 'organisations', label: 'Organisations' }, { id: 'pipeline', label: 'Deal Pipeline' },
-    { id: 'email', label: 'Email' }, { id: 'news', label: 'News' },
-    { id: 'partnership-matrix', label: 'Matrix' }, { id: 'calendar', label: 'Calendar' },
-    { id: 'documents', label: 'Documents' }, { id: 'tasks', label: 'Tasks' },
+    { id: 'email', label: 'Outreach Intelligence' }, { id: 'news', label: 'News Signals' },
+    { id: 'partnership-matrix', label: 'Partnership Matrix' }, { id: 'calendar', label: 'Calendar' },
+    { id: 'documents', label: 'Knowledge Library' }, { id: 'tasks', label: 'Tasks' },
   ]
   const [navOrder, setNavOrder] = useState(DEFAULT_NAV)
 
@@ -59,11 +60,11 @@ export default function Settings({ user }) {
     { id: 'contacts', label: 'Contacts', path: '/contacts' },
     { id: 'organisations', label: 'Organisations', path: '/organisations' },
     { id: 'pipeline', label: 'Deal Pipeline', path: '/pipeline' },
-    { id: 'email', label: 'Email', path: '/email' },
-    { id: 'news', label: 'News', path: '/news' },
-    { id: 'partnership-matrix', label: 'Matrix', path: '/partnership-matrix' },
+    { id: 'email', label: 'Outreach Intelligence', path: '/email' },
+    { id: 'news', label: 'News Signals', path: '/news' },
+    { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix' },
     { id: 'calendar', label: 'Calendar', path: '/calendar' },
-    { id: 'documents', label: 'Documents', path: '/documents' },
+    { id: 'documents', label: 'Knowledge Library', path: '/documents' },
     { id: 'tasks', label: 'Tasks', path: '/tasks' },
     { id: 'dashboard', label: 'Dashboard', path: '/dashboard' },
     { id: 'settings', label: 'Settings', path: '/settings' },
@@ -72,9 +73,9 @@ export default function Settings({ user }) {
   const [topNavItems, setTopNavItems] = useState(DEFAULT_TOP_NAV)
 
   useEffect(() => {
-    const stored = localStorage.getItem('vela_nav_order')
+    const stored = localStorage.getItem('kiko_nav_order')
     if (stored) try { setNavOrder(JSON.parse(stored)) } catch {}
-    const storedTop = localStorage.getItem('vela_top_nav')
+    const storedTop = localStorage.getItem('kiko_top_nav')
     if (storedTop) try { setTopNavItems(JSON.parse(storedTop)) } catch {}
   }, [])
 
@@ -82,7 +83,7 @@ export default function Settings({ user }) {
 
   async function previewVoice(voiceId) {
     // Stop any current preview
-    if (previewAudioRef[0]) { previewAudioRef[0].pause(); previewAudioRef[0] = null }
+    if (previewAudioRef.current) { previewAudioRef.current.pause(); previewAudioRef.current = null }
     setPreviewingVoice(voiceId)
     try {
       const res = await fetch('/api/voice', {
@@ -93,7 +94,7 @@ export default function Settings({ user }) {
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const audio = new Audio(url)
-      previewAudioRef[0] = audio
+      previewAudioRef.current = audio
       audio.onended = () => { setPreviewingVoice(null); URL.revokeObjectURL(url) }
       audio.onerror = () => { setPreviewingVoice(null); URL.revokeObjectURL(url) }
       await audio.play()
@@ -121,7 +122,7 @@ export default function Settings({ user }) {
       await supabase.from('user_settings').upsert({ user_id: user?.id, ...updates, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
       setSettings(prev => ({ ...prev, ...updates }))
       setSaved(true); setTimeout(() => setSaved(false), 2000)
-      window.dispatchEvent(new Event('vela_profile_updated'))
+      window.dispatchEvent(new Event('kiko_profile_updated'))
     } catch {}
   }
 
@@ -380,35 +381,6 @@ export default function Settings({ user }) {
         {/* Navigation */}
         {tab === 'Navigation' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div style={cardStyle}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Sidebar Order</h3>
-              <p style={{ fontSize: 12, color: T.textTertiary, margin: '0 0 16px', fontFamily: T.font }}>Drag items or use arrows to reorder the left navigation. Home always stays first.</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                {navOrder.map((item, i) => (
-                  <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: i === 0 ? T.accentSoft : T.surface, border: `1px solid ${T.border}` }}>
-                    <span style={{ fontSize: 11, color: T.textTertiary, width: 18, textAlign: 'center', fontWeight: 500 }}>{i + 1}</span>
-                    <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font }}>{item.label}</span>
-                    {i === 0 ? (
-                      <span style={{ fontSize: 9, color: T.textTertiary, padding: '2px 6px', borderRadius: 4, background: T.accentSoft }}>Fixed</span>
-                    ) : (
-                      <div style={{ display: 'flex', gap: 4 }}>
-                        <button disabled={i <= 1} onClick={() => {
-                          const n = [...navOrder]; [n[i], n[i-1]] = [n[i-1], n[i]]; setNavOrder(n);
-                          localStorage.setItem('vela_nav_order', JSON.stringify(n)); window.dispatchEvent(new Event('vela_nav_updated'))
-                        }} style={{ width: 24, height: 24, borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, cursor: i <= 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: i <= 1 ? 0.3 : 1, fontSize: 11, color: T.textSecondary }}>↑</button>
-                        <button disabled={i >= navOrder.length - 1} onClick={() => {
-                          const n = [...navOrder]; [n[i], n[i+1]] = [n[i+1], n[i]]; setNavOrder(n);
-                          localStorage.setItem('vela_nav_order', JSON.stringify(n)); window.dispatchEvent(new Event('vela_nav_updated'))
-                        }} style={{ width: 24, height: 24, borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, cursor: i >= navOrder.length - 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: i >= navOrder.length - 1 ? 0.3 : 1, fontSize: 11, color: T.textSecondary }}>↓</button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <button onClick={() => { setNavOrder(DEFAULT_NAV); localStorage.setItem('vela_nav_order', JSON.stringify(DEFAULT_NAV)); window.dispatchEvent(new Event('vela_nav_updated')) }}
-                style={{ marginTop: 12, fontSize: 11, padding: '6px 12px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font }}>Reset to Default</button>
-            </div>
-
             {/* Top Navigation Bar */}
             <div style={cardStyle}>
               <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Top Navigation Bar</h3>
@@ -426,8 +398,8 @@ export default function Settings({ user }) {
                         <button onClick={() => {
                           const next = isOn ? topNavItems.filter(id => id !== item.id) : [...topNavItems, item.id]
                           setTopNavItems(next)
-                          localStorage.setItem('vela_top_nav', JSON.stringify(next))
-                          window.dispatchEvent(new Event('vela_top_nav_updated'))
+                          localStorage.setItem('kiko_top_nav', JSON.stringify(next))
+                          window.dispatchEvent(new Event('kiko_top_nav_updated'))
                         }} style={{
                           width: 38, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer',
                           background: isOn ? T.accent : 'rgba(0,0,0,0.1)',
@@ -444,7 +416,7 @@ export default function Settings({ user }) {
                   )
                 })}
               </div>
-              <button onClick={() => { setTopNavItems(DEFAULT_TOP_NAV); localStorage.setItem('vela_top_nav', JSON.stringify(DEFAULT_TOP_NAV)); window.dispatchEvent(new Event('vela_top_nav_updated')) }}
+              <button onClick={() => { setTopNavItems(DEFAULT_TOP_NAV); localStorage.setItem('kiko_top_nav', JSON.stringify(DEFAULT_TOP_NAV)); window.dispatchEvent(new Event('kiko_top_nav_updated')) }}
                 style={{ marginTop: 12, fontSize: 11, padding: '6px 12px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font }}>Reset to Default</button>
             </div>
           </div>
@@ -521,75 +493,41 @@ export default function Settings({ user }) {
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
+                {/* Navigation Logo */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: navLogo ? 6 : 0 }}>
+                    <span />
+                    {navLogo && <button onClick={() => { try { localStorage.removeItem('custom_logo_url') } catch {}; setNavLogo(null); window.dispatchEvent(new Event('kiko_logo_updated')) }} title="Reset to default" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: T.textTertiary, padding: 0 }}><X size={12} /> Reset to default</button>}
+                  </div>
+                  <ImageUpload label="Navigation Logo" storageKey="nav_logo" folder="logos" aspectHint="Replaces the Kiko symbol in the top-left navigation bar" currentUrl={navLogo} onUploaded={(url) => { try { localStorage.setItem('custom_logo_url', url) } catch {}; setNavLogo(url); window.dispatchEvent(new Event('kiko_logo_updated')) }} />
+                </div>
+
                 {/* Profile Picture */}
-                {(() => {
-                  const field = 'profile_photo_url'; const val = settings[field]
-                  return (
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: val ? 6 : 0 }}>
-                        <span />
-                        {val && <button onClick={() => saveSettings({ [field]: null })} title="Remove" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: T.textTertiary, padding: 0 }}><X size={12} /> Remove</button>}
-                      </div>
-                      <ImageUpload label="Profile Picture" storageKey="profile_photo" folder="avatars" aspectHint="Square, shown in your profile" currentUrl={val} onUploaded={(url) => saveSettings({ [field]: url })} />
-                    </div>
-                  )
-                })()}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: settings.profile_photo_url ? 6 : 0 }}>
+                    <span />
+                    {settings.profile_photo_url && <button onClick={() => saveSettings({ profile_photo_url: null })} title="Remove" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: T.textTertiary, padding: 0 }}><X size={12} /> Remove</button>}
+                  </div>
+                  <ImageUpload label="Profile Picture" storageKey="profile_photo" folder="avatars" aspectHint="Square, shown in your profile" currentUrl={settings.profile_photo_url} onUploaded={(url) => saveSettings({ profile_photo_url: url })} />
+                </div>
 
                 {/* Login Brand Logo */}
-                {(() => {
-                  const field = 'kiko_avatar_url'; const val = settings[field]
-                  return (
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: val ? 6 : 0 }}>
-                        <span />
-                        {val && <button onClick={() => { saveSettings({ [field]: null }); try { localStorage.removeItem('vela_brand_logo') } catch {} }} title="Remove" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: T.textTertiary, padding: 0 }}><X size={12} /> Remove</button>}
-                      </div>
-                      <ImageUpload label="Login Brand Logo" storageKey="brand_logo" folder="logos" aspectHint="Shown on the login page above the sign-in form" currentUrl={val} onUploaded={(url) => { saveSettings({ [field]: url }); try { localStorage.setItem('vela_brand_logo', url) } catch {} }} />
-                    </div>
-                  )
-                })()}
-
-                {/* Sidebar Icon */}
-                {(() => {
-                  const field = 'platform_logo_url'; const val = settings[field]
-                  return (
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: val ? 6 : 0 }}>
-                        <span />
-                        {val && <button onClick={() => saveSettings({ [field]: null })} title="Remove" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: T.textTertiary, padding: 0 }}><X size={12} /> Remove</button>}
-                      </div>
-                      <ImageUpload label="Platform Logo (Sidebar Icon)" storageKey="sidebar_logo" folder="logos" aspectHint="Square icon, shown in sidebar when collapsed" currentUrl={val} onUploaded={(url) => saveSettings({ [field]: url })} />
-                    </div>
-                  )
-                })()}
-
-                {/* Sidebar Expanded Logo */}
-                {(() => {
-                  const field = 'sidebar_expanded_logo_url'; const val = settings[field]
-                  return (
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: val ? 6 : 0 }}>
-                        <span />
-                        {val && <button onClick={() => saveSettings({ [field]: null })} title="Remove" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: T.textTertiary, padding: 0 }}><X size={12} /> Remove</button>}
-                      </div>
-                      <ImageUpload label="Platform Logo (Sidebar Logo)" storageKey="sidebar_logo_expanded" folder="logos" aspectHint="Rectangle logo, shown when sidebar is expanded" currentUrl={val} onUploaded={(url) => saveSettings({ [field]: url })} />
-                    </div>
-                  )
-                })()}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: settings.kiko_avatar_url ? 6 : 0 }}>
+                    <span />
+                    {settings.kiko_avatar_url && <button onClick={() => { saveSettings({ kiko_avatar_url: null }); try { localStorage.removeItem('kiko_brand_logo') } catch {} }} title="Remove" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: T.textTertiary, padding: 0 }}><X size={12} /> Remove</button>}
+                  </div>
+                  <ImageUpload label="Login Brand Logo" storageKey="brand_logo" folder="logos" aspectHint="Shown on the login page above the sign-in form" currentUrl={settings.kiko_avatar_url} onUploaded={(url) => { saveSettings({ kiko_avatar_url: url }); try { localStorage.setItem('kiko_brand_logo', url) } catch {} }} />
+                </div>
 
                 {/* Login Background */}
-                {(() => {
-                  const field = 'login_bg_url'; const val = settings[field]
-                  return (
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: val ? 6 : 0 }}>
-                        <span />
-                        {val && <button onClick={() => { saveSettings({ [field]: null }); try { localStorage.removeItem('vela_login_bg') } catch {} }} title="Remove" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: T.textTertiary, padding: 0 }}><X size={12} /> Remove</button>}
-                      </div>
-                      <ImageUpload label="Login Background Image" storageKey="login_bg" folder="backgrounds" aspectHint="16:9 landscape recommended" currentUrl={val} onUploaded={(url) => { saveSettings({ [field]: url }); try { localStorage.setItem('vela_login_bg', url) } catch {} }} />
-                    </div>
-                  )
-                })()}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: settings.login_bg_url ? 6 : 0 }}>
+                    <span />
+                    {settings.login_bg_url && <button onClick={() => { saveSettings({ login_bg_url: null }); try { localStorage.removeItem('kiko_login_bg') } catch {} }} title="Remove" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: T.textTertiary, padding: 0 }}><X size={12} /> Remove</button>}
+                  </div>
+                  <ImageUpload label="Login Background Image" storageKey="login_bg" folder="backgrounds" aspectHint="16:9 landscape recommended" currentUrl={settings.login_bg_url} onUploaded={(url) => { saveSettings({ login_bg_url: url }); try { localStorage.setItem('kiko_login_bg', url) } catch {} }} />
+                </div>
 
               </div>
             </div>

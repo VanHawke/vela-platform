@@ -41,7 +41,15 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
   useEffect(() => {
     if (open && triggerRef.current) {
       const r = triggerRef.current.getBoundingClientRect()
-      setDropPos({ top: r.bottom + 6, left: r.left, width: Math.max(r.width, 280) })
+      const menuW = Math.max(r.width, 280)
+      // If dropdown would overflow right edge, anchor to right side of trigger
+      const wouldOverflow = r.left + menuW > window.innerWidth - 16
+      setDropPos({
+        top: r.bottom + 6,
+        left: wouldOverflow ? undefined : r.left,
+        right: wouldOverflow ? (window.innerWidth - r.right) : undefined,
+        width: menuW
+      })
     }
   }, [open])
 
@@ -130,6 +138,7 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
         position: 'fixed',
         top: dropPos.top,
         left: dropPos.left,
+        right: dropPos.right,
         minWidth: dropPos.width,
         zIndex: 9999,
         background: 'var(--surface)',

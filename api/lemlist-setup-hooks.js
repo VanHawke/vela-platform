@@ -1,4 +1,4 @@
-// api/lemlist-setup-hooks.js — One-time setup: registers Vela webhooks with Lemlist
+// api/lemlist-setup-hooks.js — One-time setup: registers Kiko webhooks with Lemlist
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {

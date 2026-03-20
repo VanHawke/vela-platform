@@ -1,4 +1,4 @@
-// api/pipedrive-import.js — Import Pipedrive CRM data into Vela Supabase tables
+// api/pipedrive-import.js — Import Pipedrive CRM data into Kiko Supabase tables
 // POST /api/pipedrive-import { entity: 'persons'|'organizations'|'deals'|'all' }
 // Tables use schema: id TEXT, data JSONB, updated_at TIMESTAMPTZ
 
@@ -12,7 +12,7 @@ const supabase = createClient(
 const PD_BASE = 'https://vanhawkeagency.pipedrive.com/api/v1';
 const BATCH = 500;
 
-// Pipedrive stage_id → Vela stage name
+// Pipedrive stage_id → stage name
 const STAGE_MAP = {
   12: 'Contact made', 24: 'In Dialogue', 13: 'Meeting arranged',
   14: 'Qualified', 15: 'Meeting arranged (brand x RH)', 16: 'Proposal made',
