@@ -6,7 +6,6 @@ export const config = { supportsResponseStreaming: true };
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const MODEL = 'claude-sonnet-4-20250514';
-const VOICE_MODEL = 'claude-haiku-4-5-20251001'; // Faster model for voice — 3-5x quicker responses
 
 // ── System Prompt ────────────────────────────────────────
 const SYSTEM_PROMPT = `You are Kiko — the AI engine powering a sponsorship operations platform for Van Hawke Group. You work with Sunny Sidhu, CEO, who manages F1 and Formula E sponsorship advisory for clients including Haas F1 Team.
@@ -205,12 +204,10 @@ export default async function handler(req, res) {
 
     const allTools = [...NATIVE_TOOLS, ...TOOL_DEFINITIONS];
 
-    const activeModel = currentPage === 'voice' ? VOICE_MODEL : MODEL;
-
     // Stream helper
     async function streamCall(msgs) {
       const stream = anthropic.beta.messages.stream({
-        model: activeModel, max_tokens: currentPage === 'voice' ? 300 : 4096, system, messages: msgs, tools: allTools,
+        model: MODEL, max_tokens: 4096, system, messages: msgs, tools: allTools,
       });
       for await (const event of stream) {
         if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
