@@ -199,7 +199,9 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
       const ephemeralKey = tokenData.value || tokenData.client_secret?.value
       if (!ephemeralKey) throw new Error('No ephemeral key returned: ' + JSON.stringify(tokenData).slice(0, 200))
 
-      const stream = micStream || await navigator.mediaDevices.getUserMedia({ audio: true })
+      const stream = micStream || await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      })
       streamRef.current = stream
       const pc = new RTCPeerConnection(); pcRef.current = pc
       const audio = document.createElement('audio'); audio.autoplay = true; audioRef.current = audio
@@ -213,34 +215,10 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
         dc.send(JSON.stringify({
           type: 'session.update',
           session: {
-            instructions: `YOU ARE KIKO. You have persistent memory across all sessions.
-
-FACTS YOU KNOW AND MUST NEVER FORGET OR DENY:
-- The user is Sunny Sidhu, CEO of Van Hawke Group. NEVER ask his name.
-- Sunny is based in Weybridge, Surrey, UK. NEVER ask his location.
-- You have full memory. If asked "do you remember" — the answer is YES.
-- You can access emails, CRM data, correspondence history via tools.
-- You retain context across sessions. Never say "I can't carry this chat" or "I won't retain details."
-${memoriesContext ? '\nYOUR STORED MEMORIES (these are real, use them):\n' + memoriesContext : ''}
-${platformContext}
-
-PERSONALITY: Sharp, warm, confident strategic advisor. Speak naturally — this is voice. Keep responses under 4 sentences unless asked for detail. All financials in USD.
-
-TOOLS: query_records for correspondence/email history. get_record_detail for full thread content. draft_followup to compose emails. get_outreach_stats for outreach analytics. get_crm_data for deals/contacts. search_web for current news.
-
-When you get tool results, summarise conversationally — never read verbatim. When hearing "Hey Kiko" in passive mode, acknowledge warmly.`,
+            instructions: `You are Kiko, a warm and confident voice assistant. You speak naturally and concisely. When you receive a message starting with [KIKO_SAY], read the content after it naturally as if it were your own thought. Do not add commentary, do not say "sure" or "here's what I found" — just speak the content naturally and conversationally. Keep the same warm, confident tone throughout.`,
             voice: voiceId,
             input_audio_transcription: { model: 'whisper-1' },
-            turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
-            tools: [
-              { type: 'function', name: 'search_web', description: 'Search the internet for current information, news, prices, or any real-time data.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'Search query' } }, required: ['query'] } },
-              { type: 'function', name: 'get_crm_data', description: 'Query CRM for deals, contacts, companies or tasks.', parameters: { type: 'object', properties: { entity: { type: 'string', enum: ['deals','contacts','companies','tasks'] }, filter: { type: 'string', description: 'Search term or filter' } }, required: ['entity'] } },
-              { type: 'function', name: 'query_records', description: 'Query stored interaction records and correspondence history for a person, company, or topic. Returns dates, people involved, subjects, and content summaries.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'Person name, company name, or topic to look up' } }, required: ['query'] } },
-              { type: 'function', name: 'get_record_detail', description: 'Get the full content of a specific interaction record. Use after query_records to see complete details.', parameters: { type: 'object', properties: { thread_id: { type: 'string', description: 'Record ID from query_records results' }, company: { type: 'string', description: 'Company name as fallback' } }, required: [] } },
-              { type: 'function', name: 'draft_followup', description: 'Draft a follow-up email for a contact or company. Analyses email history and writing style then produces a draft.', parameters: { type: 'object', properties: { contact: { type: 'string', description: 'Contact name or email address' }, context: { type: 'string', description: 'Any specific instructions or context' } }, required: ['contact'] } },
-              { type: 'function', name: 'get_outreach_stats', description: 'Get outreach performance stats — reply rates, best messaging approach, best send day, which companies responded.', parameters: { type: 'object', properties: { focus: { type: 'string', enum: ['patterns', 'timing', 'company', 'recommendations'], description: 'What to analyse' } }, required: ['focus'] } },
-            ],
-            tool_choice: 'auto',
+            turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 700 },
           }
         }))
         startTimers()
@@ -272,190 +250,139 @@ When you get tool results, summarise conversationally — never read verbatim. W
     } catch (err) { setError(err.message); setStatus('error') }
   }
 
+  const claudeActiveRef = useRef(false) // true when we're waiting for/playing a Claude response
+
+  // ── Route user speech through Claude and make GPT-4o speak the answer ──
+  async function routeThroughClaude(text) {
+    if (!text || claudeActiveRef.current) return
+    claudeActiveRef.current = true
+    setThinking(true)
+    try {
+      const history = conversationRef.current.messages.slice(-10).map(m => ({
+        role: m.role === 'kiko' ? 'assistant' : 'user', content: m.content
+      }))
+      const res = await fetch('/api/kiko', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text, currentPage: 'voice',
+          userEmail: 'sunny@vanhawke.com',
+          conversationHistory: history
+        })
+      })
+      const reader = res.body.getReader(); const dec = new TextDecoder()
+      let full = '', buf = ''
+      while (true) {
+        const { done, value } = await reader.read(); if (done) break
+        buf += dec.decode(value, { stream: true })
+        const lines = buf.split('\n'); buf = lines.pop() || ''
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const d = line.slice(6); if (d === '[DONE]') continue
+          try { const j = JSON.parse(d); if (j.delta) full += j.delta } catch {}
+        }
+      }
+      if (full && dcRef.current?.readyState === 'open') {
+        // Inject Claude's answer and make GPT-4o speak it
+        dcRef.current.send(JSON.stringify({
+          type: 'conversation.item.create',
+          item: { type: 'message', role: 'user', content: [{ type: 'input_text', text: `[KIKO_SAY] ${full.slice(0, 3000)}` }] }
+        }))
+        dcRef.current.send(JSON.stringify({ type: 'response.create' }))
+        addMessage('kiko', full)
+        setKikoText(full)
+        console.log('[Kiko Voice] Claude → GPT-4o:', full.slice(0, 80))
+      }
+    } catch (err) { console.error('[Kiko Voice] Claude bridge error:', err) }
+    finally { claudeActiveRef.current = false; setThinking(false) }
+  }
+
   // ── Events ───────────────────────────────────────────
   function handleEvent(ev) {
     const t = ev.type
-    // Log session.updated with full detail to verify transcription config
+
     if (t === 'session.updated' || t === 'session.created') {
-      console.log('[Kiko Voice]', t, 'input_audio_transcription:', JSON.stringify(ev.session?.input_audio_transcription))
+      console.log('[Kiko Voice]', t)
     }
-    // Debug: log all events except high-frequency audio deltas
-    if (t !== 'response.output_audio_transcript.delta' && t !== 'response.audio.delta') {
-      console.log('[Kiko Voice Event]', t, ev.transcript || ev.delta || ev.error || '')
-    }
+
+    // ── User starts speaking → cancel any GPT-4o auto-response ──
     if (t === 'input_audio_buffer.speech_started') {
-      // In passive/off mode, ignore speech events — only wake word should reset
       if (listenModeRef.current !== 'active') return
+      // Cancel whatever GPT-4o is saying — user interrupted
+      if (speakingRef.current && dcRef.current?.readyState === 'open') {
+        dcRef.current.send(JSON.stringify({ type: 'response.cancel' }))
+      }
       setTranscript(''); setKikoText(''); setSpeaking(false); setThinking(false)
       speakingRef.current = false
-      emailMuteRef.current = false; deltaAccumRef.current = ''
-      kikoOutputRef.current = ''; userQueryRef.current = ''
-      needsEmailFetch.current = false
-      if (audioRef.current) audioRef.current.muted = false
+      deltaAccumRef.current = ''
+      kikoOutputRef.current = ''
       startTimers()
     }
+
     if (t === 'input_audio_buffer.speech_stopped') startTimers()
 
-    // User speech — live delta (partial transcription as user speaks)
+    // ── User speech interim (show what they're saying) ──
     if (t === 'conversation.item.input_audio_transcription.delta') {
-      // Ignore if Kiko is currently speaking — this is echo from the speaker
-      if (speakingRef.current) return
+      if (speakingRef.current) return // ignore echo
       const delta = ev.delta || ''
-      if (delta) { setTranscript(p => p + delta); deltaAccumRef.current += delta }
+      if (delta) setTranscript(p => p + delta)
     }
 
-    // User speech — completed (final transcription)
+    // ── User speech FINAL → cancel GPT-4o auto-response, route through Claude ──
     if (t === 'conversation.item.input_audio_transcription.completed') {
       const text = ev.transcript?.trim() || ''
-      if (text) {
-        // Block transcription that arrived while Kiko was speaking — it's echo
-        if (speakingRef.current) {
-          console.log('[Kiko Voice] BLOCKED transcript during speaking (echo):', text.slice(0, 40))
-          setTranscript('')
-          return
-        }
-        
-        setTranscript(text)
-        userQueryRef.current = text
-        if (listenModeRef.current === 'passive') {
-          if (KEYWORDS.some(kw => text.toLowerCase().includes(kw))) resetToActive()
-        } else {
-          addMessage('user', text)
-          
-          // ── CLAUDE BRIDGE: Route intelligence questions through Claude ──
-          // Claude has memory, CRM, email, web search, document analysis.
-          // GPT-4o handles voice only. Any question needing knowledge → Claude.
-          const tl = text.toLowerCase()
-          const CLAUDE_TRIGGERS = [
-            // Memory / personal
-            'remember', 'recall', 'my daughter', 'my son', 'my wife', 'my child',
-            'my name', 'my age', 'my birthday', 'you know about me', 'what do you know',
-            'last time', 'we discussed', 'we talked', 'told you', 'i mentioned',
-            // Email / correspondence
-            'email', 'emails', 'correspondence', 'wrote', 'heard from', 'replied',
-            'contacted', 'outreach', 'inbox', 'sent', 'message from', 'communication',
-            'in touch', 'follow up', 'reach out', 'mailed',
-            // CRM / business
-            'pipeline', 'deals', 'contacts', 'companies', 'stage', 'qualified',
-            'how many', 'total value', 'revenue',
-            // Research / analysis
-            'search', 'look up', 'find out', 'what is', 'tell me about', 'news',
-            'latest', 'recent', 'update on', 'status of',
-            // Documents
-            'document', 'uploaded', 'file', 'report', 'presentation', 'deck',
-          ]
-          const shouldUseClaude = CLAUDE_TRIGGERS.some(w => tl.includes(w)) || needsEmailFetch.current
-          
-          if (shouldUseClaude) {
-            needsEmailFetch.current = false
-            console.log('[Kiko Voice] Routing to Claude:', text.slice(0, 60))
-            // Pause VAD so background noise doesn't trigger new turn during fetch
-            if (dcRef.current?.readyState === 'open') {
-              dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: null } }))
-            }
-            clearTimers()
-            setThinking(true)
-            ;(async () => {
-              try {
-                const history = conversationRef.current.messages.slice(-10).map(m => ({
-                  role: m.role === 'kiko' ? 'assistant' : 'user', content: m.content
-                }))
-                const res = await fetch('/api/kiko', {
-                  method: 'POST', headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    message: text, currentPage: 'voice',
-                    userEmail: 'sunny@vanhawke.com',
-                    conversationHistory: history
-                  })
-                })
-                const reader = res.body.getReader(); const dec = new TextDecoder()
-                let full = '', buf = ''
-                while (true) {
-                  const { done, value } = await reader.read(); if (done) break
-                  buf += dec.decode(value, { stream: true })
-                  const lines = buf.split('\n'); buf = lines.pop() || ''
-                  for (const line of lines) {
-                    if (!line.startsWith('data: ')) continue
-                    const d = line.slice(6); if (d === '[DONE]') continue
-                    try { const j = JSON.parse(d); if (j.delta) full += j.delta } catch {}
-                  }
-                }
-                if (full) {
-                  // Feed Claude's answer to GPT-4o so it SPEAKS it
-                  if (dcRef.current?.readyState === 'open') {
-                    dcRef.current.send(JSON.stringify({
-                      type: 'conversation.item.create',
-                      item: { type: 'message', role: 'user', content: [{ type: 'input_text', text: `[SYSTEM: Read this answer to the user naturally, do not add anything or modify it]\n\n${full.slice(0, 3000)}` }] }
-                    }))
-                    dcRef.current.send(JSON.stringify({ type: 'response.create' }))
-                  }
-                  console.log('[Kiko Voice] Claude response fed to GPT-4o:', full.slice(0, 80))
-                }
-              } catch (err) {
-                console.error('[Kiko Voice] Claude bridge error:', err)
-                setThinking(false)
-              }
-              // Resume VAD + timers
-              if (dcRef.current?.readyState === 'open') {
-                dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 } } }))
-              }
-              if (audioRef.current) audioRef.current.muted = false
-              emailMuteRef.current = false
-              startTimers()
-            })()
-          }
-        }
+      if (!text) return
+      if (speakingRef.current) {
+        console.log('[Kiko Voice] Echo blocked:', text.slice(0, 40))
+        setTranscript('')
+        return
       }
+      setTranscript(text)
+      addMessage('user', text)
+
+      if (listenModeRef.current === 'passive') {
+        if (KEYWORDS.some(kw => text.toLowerCase().includes(kw))) resetToActive()
+        return
+      }
+
+      // Cancel GPT-4o's auto-response (VAD triggers one automatically)
+      if (dcRef.current?.readyState === 'open') {
+        dcRef.current.send(JSON.stringify({ type: 'response.cancel' }))
+      }
+
+      // Route through Claude — Claude is the brain, GPT-4o is the voice
+      console.log('[Kiko Voice] → Claude:', text.slice(0, 60))
+      routeThroughClaude(text)
     }
 
-    // User speech transcription failed — log for debugging
     if (t === 'conversation.item.input_audio_transcription.failed') {
       console.error('[Kiko Voice] Transcription failed:', ev.error)
     }
 
+    // ── GPT-4o response lifecycle (speaking Claude's words) ──
     if (t === 'response.created') {
-      setKikoText(''); setSpeaking(true); setThinking(false)
+      // If Claude isn't active and GPT-4o auto-responded, cancel it
+      if (!claudeActiveRef.current && !speakingRef.current) {
+        if (dcRef.current?.readyState === 'open') {
+          dcRef.current.send(JSON.stringify({ type: 'response.cancel' }))
+          console.log('[Kiko Voice] Cancelled GPT-4o auto-response')
+        }
+        return
+      }
+      setSpeaking(true); setThinking(false)
       speakingRef.current = true
       kikoOutputRef.current = ''
     }
-    // GPT-4o's output transcript — detect refusals and mute
+
     if (t === 'response.audio_transcript.delta' || t === 'response.output_audio_transcript.delta') {
       const delta = ev.delta || ''
       kikoOutputRef.current += delta
-      if (!emailMuteRef.current) {
-        setKikoText(p => p + delta)
-        // Detect ANY refusal (memory, email, data access)
-        const output = kikoOutputRef.current.toLowerCase()
-        const hasNegative = /\b(can'?t|cannot|don'?t|unable|not |won'?t|couldn'?t|wouldn'?t|unfortunately|i wish|i don'?t have)\b/.test(output)
-        const hasRefusalConcept = /\b(access|retrieve|recall|pull up|view|memory|remember|past convers|long.term|carry over|retain|store|personal data|personal detail|previous session|future convers)\b/.test(output)
-        if (hasNegative && hasRefusalConcept && output.length > 30) {
-          emailMuteRef.current = true
-          needsEmailFetch.current = true
-          if (audioRef.current) audioRef.current.muted = true
-          if (dcRef.current?.readyState === 'open') {
-            dcRef.current.send(JSON.stringify({ type: 'response.cancel' }))
-          }
-          setKikoText('Let me check...')
-          setSpeaking(false); setThinking(true)
-          console.log('[Kiko Voice] REFUSAL DETECTED & MUTED — will route through Claude')
-        }
-      }
+      setKikoText(kikoOutputRef.current)
     }
-    if (t === 'response.audio_transcript.done' || t === 'response.output_audio_transcript.done') {
-      const full = ev.transcript?.trim() || ''
-      // Only add to history if it wasn't a muted refusal
-      if (full && !emailMuteRef.current) addMessage('kiko', full)
-    }
+
     if (t === 'response.done') {
       setSpeaking(false); setTranscript('')
-      speakingRef.current = false  // resume live transcription
-      speakingEndRef.current = Date.now()  // echo suppression cooldown starts now
-      if (emailMuteRef.current && audioRef.current) {
-        audioRef.current.muted = false
-        console.log('[Kiko Voice] UNMUTED — ready for next query')
-      }
+      speakingRef.current = false
     }
-    if (t === 'response.function_call_arguments.done') handleTool(ev)
   }
 
   function addMessage(role, content) {
