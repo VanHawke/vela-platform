@@ -3,8 +3,8 @@ import { supabase } from '@/lib/supabase'
 import { Loader2, Eye, EyeOff } from 'lucide-react'
 
 const T = {
-  text: '#1A1A1A', sub: '#ABABAB', border: 'rgba(0,0,0,0.08)', inputBg: 'rgba(255,255,255,0.5)',
-  font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  text: 'rgba(255,255,255,0.9)', sub: 'rgba(255,255,255,0.2)', border: 'rgba(255,255,255,0.06)', inputBg: 'rgba(255,255,255,0.03)',
+  font: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'DM Sans', 'Segoe UI', sans-serif",
 }
 
 // 4-dot Kiko symbol for the avatar
@@ -62,34 +62,31 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100vw', height: '100vh', background: '#FAFAFA', fontFamily: T.font }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100vw', height: '100vh', background: '#0A0A0C', fontFamily: T.font }}>
       <div style={{ width: '100%', maxWidth: 340, textAlign: 'center' }}>
 
-        {/* Kiko avatar — breathing animation with pulse rings */}
+        {/* Kiko avatar — gradient orb with pulse rings */}
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
-          {/* Pulse ring 1 */}
-          <div style={{ position: 'absolute', width: 100, height: 100, borderRadius: 24, border: '1px solid rgba(26,26,26,0.08)', animation: 'kikoPulseRing 3s ease-out infinite' }} />
-          {/* Pulse ring 2 */}
-          <div style={{ position: 'absolute', width: 100, height: 100, borderRadius: 24, border: '1px solid rgba(26,26,26,0.06)', animation: 'kikoPulseRing 3s ease-out 1s infinite' }} />
-          {/* Avatar */}
+          <div style={{ position: 'absolute', width: 100, height: 100, borderRadius: '50%', border: '1px solid rgba(124,92,252,0.1)', animation: 'kikoPulseRing 3s ease-out infinite' }} />
+          <div style={{ position: 'absolute', width: 100, height: 100, borderRadius: '50%', border: '1px solid rgba(0,212,170,0.06)', animation: 'kikoPulseRing 3s ease-out 1s infinite' }} />
           <div style={{
-            width: 72, height: 72, borderRadius: 20, background: T.text,
+            width: 72, height: 72, borderRadius: '50%',
+            background: 'linear-gradient(135deg, rgba(124,92,252,0.9), rgba(0,212,170,0.7))',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            animation: 'kikoBreatheScale 4s ease-in-out infinite',
+            boxShadow: '0 0 40px rgba(124,92,252,0.2), 0 0 80px rgba(0,212,170,0.1)',
+            position: 'relative',
           }}>
-            <KikoDots size={32} color="#fff" animated />
+            <div style={{ position: 'absolute', top: '12%', left: '18%', width: '35%', height: '28%', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(4px)' }} />
           </div>
         </div>
 
-        {/* Brand name */}
-        <h1 style={{ fontSize: 28, fontWeight: 500, color: T.text, letterSpacing: '-0.02em', margin: '0 0 32px' }}>Kiko</h1>
+        <h1 style={{ fontSize: 28, fontWeight: 300, color: 'rgba(255,255,255,0.9)', letterSpacing: '-0.02em', margin: '0 0 32px' }}>kiko</h1>
 
         {/* Google OAuth */}
         <button onClick={googleLogin} disabled={gLoading} style={{
-          width: '100%', height: 48, borderRadius: 12, border: `0.5px solid ${T.border}`, background: '#fff',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: 14, fontWeight: 500,
+          width: '100%', height: 48, borderRadius: 12, border: `0.5px solid ${T.border}`, background: 'rgba(255,255,255,0.03)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: 14, fontWeight: 400,
           color: T.text, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.15s',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
         }}>
           {gLoading ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> :
             <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>}
@@ -114,10 +111,11 @@ export default function LoginPage() {
               background: 'none', border: 'none', cursor: 'pointer', color: T.sub, padding: 0,
             }}>{showPw ? <EyeOff size={18} /> : <Eye size={18} />}</button>
           </div>
-          {error && <p style={{ fontSize: 13, color: '#ef4444', background: '#fef2f2', padding: '8px 12px', borderRadius: 12, margin: '0 0 10px' }}>{error}</p>}
+          {error && <p style={{ fontSize: 13, color: 'rgba(255,80,80,0.8)', background: 'rgba(255,80,80,0.06)', padding: '8px 12px', borderRadius: 12, margin: '0 0 10px', border: '0.5px solid rgba(255,80,80,0.1)' }}>{error}</p>}
           <button type="submit" disabled={loading} style={{
-            width: '100%', height: 48, borderRadius: 12, background: T.text, color: '#fff', border: 'none',
-            fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, transition: 'background 0.15s',
+            width: '100%', height: 48, borderRadius: 12,
+            background: 'linear-gradient(135deg, #7C5CFC, #00D4AA)', color: '#fff', border: 'none',
+            fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, transition: 'opacity 0.15s', opacity: loading ? 0.6 : 0.85,
           }}>{loading ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : 'Sign in'}</button>
         </form>
       </div>
