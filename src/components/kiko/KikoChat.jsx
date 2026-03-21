@@ -6,6 +6,7 @@ import T from '@/lib/theme'
 import KikoVoice from './KikoVoice'
 import ChatHistory from './ChatHistory'
 import KikoSymbol from './KikoSymbol'
+import SmokeTrailWave from './SmokeTrailWave'
 
 // Theme imported from @/lib/theme.js
 
@@ -473,18 +474,20 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     return (
       <div key={i} style={{ marginBottom: 24, display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', gap: 12 }}>
         {isKiko && (
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.accent, flexShrink: 0, marginTop: 8, boxShadow: `0 0 8px rgba(139,108,246,0.3)` }} />
+          <div style={{ width: 120, marginTop: 4, flexShrink: 0 }}>
+            <SmokeTrailWave width={120} height={20} mini />
+          </div>
         )}
         <div style={{
-          maxWidth: isUser ? '70%' : '100%',
-          padding: isUser ? '11px 18px' : '0',
-          borderRadius: isUser ? '18px 18px 4px 18px' : 0,
+          maxWidth: isUser ? '65%' : '100%',
+          padding: isUser ? '13px 20px' : '0',
+          borderRadius: isUser ? '20px 20px 6px 20px' : 0,
           background: isUser ? T.userMsg : 'transparent',
           backdropFilter: isUser ? 'blur(20px)' : 'none',
           WebkitBackdropFilter: isUser ? 'blur(20px)' : 'none',
           border: isUser ? `0.5px solid ${T.userMsgBorder}` : 'none',
-          color: isUser ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.6)',
-          fontSize: 14, lineHeight: 1.75, fontFamily: T.font, fontWeight: 300,
+          color: isUser ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.55)',
+          fontSize: 14, lineHeight: 1.8, fontFamily: T.font, fontWeight: 300,
         }}>
           {isUser ? msg.content : <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />}
         </div>
@@ -508,78 +511,85 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         )}
 
         {/* Center content — transitions between idle and voice-active */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: voiceActive ? 'flex-start' : 'center', paddingTop: voiceActive ? 16 : 0, transition: trans, overflow: 'hidden', minHeight: 0 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: voiceActive ? 'flex-start' : 'flex-start', paddingTop: voiceActive ? 16 : 30, transition: trans, overflow: 'auto', minHeight: 0, padding: '30px 24px 20px' }}>
 
-          {/* Avatar */}
-          <div onClick={voiceActive ? stopVoice : startVoice} style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: voiceActive ? 12 : 28, cursor: 'pointer', transition: trans, flexShrink: 0, width: voiceActive ? 100 : 180, height: voiceActive ? 100 : 180 }}>
-            {/* Pulse rings — use explicit top/left/width/height for cross-browser */}
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: '50%', border: `1px solid ${voiceActive ? 'rgba(34,197,94,0.15)' : 'rgba(139,108,246,0.1)'}`, animation: 'kikoPulseRing 2.5s ease-in-out infinite', transition: trans }} />
-            <div style={{ position: 'absolute', top: voiceActive ? -6 : -12, left: voiceActive ? -6 : -12, right: voiceActive ? -6 : -12, bottom: voiceActive ? -6 : -12, borderRadius: '50%', border: `0.5px solid ${voiceActive ? 'rgba(34,197,94,0.08)' : 'rgba(6,214,160,0.06)'}`, animation: 'kikoPulseRing 2.5s ease-in-out 0.6s infinite', transition: trans }} />
-            {/* Avatar square */}
-            <div style={{
-              width: voiceActive ? 64 : 100, height: voiceActive ? 64 : 100,
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, rgba(139,108,246,0.9), rgba(6,214,160,0.7))',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: trans, overflow: 'hidden', position: 'relative',
-              boxShadow: '0 0 60px rgba(139,108,246,0.2), 0 0 120px rgba(6,214,160,0.1)',
-            }}>
-              <div style={{ position: 'absolute', top: '12%', left: '18%', width: '35%', height: '28%', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(5px)' }} />
-              {/* Dots — show in idle AND when voice active but not speaking */}
-              <div style={{ position: 'absolute', opacity: (voiceActive && voiceState.speaking) ? 0 : 1, transition: `opacity 0.4s` }}>
-                <KikoDots size={voiceActive ? 28 : 36} color="#fff" animated />
-              </div>
-              {/* Equalizer bars — ONLY when Kiko is speaking */}
-              <div style={{ position: 'absolute', opacity: (voiceActive && voiceState.speaking) ? 1 : 0, transition: `opacity 0.4s` }}>
-                <AvatarEq />
-              </div>
-            </div>
-          </div>
-
-          {/* Greeting text — collapses when voice active */}
-          <div style={{ maxHeight: voiceActive ? 0 : 80, opacity: voiceActive ? 0 : 1, overflow: 'hidden', transition: trans, textAlign: 'center' }}>
-            <h1 style={{ fontSize: 36, fontWeight: 200, color: 'rgba(255,255,255,0.95)', margin: '0 0 8px', fontFamily: T.font, letterSpacing: '-0.03em' }}>
-              {getGreeting()}, {firstName}
-            </h1>
-            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.2)', margin: 0, fontFamily: T.font, fontWeight: 300, letterSpacing: '0.02em' }}>What would you like to work on?</p>
-          </div>
-
-          {/* Equalizer CTA — only in idle state */}
+          {/* Greeting + Wave — collapses when voice active */}
           {!voiceActive && (
-            <button onClick={startVoice} style={{
-              marginTop: 20, padding: '5px 16px', borderRadius: 20,
-              background: 'rgba(6,214,160,0.04)', border: '0.5px solid rgba(6,214,160,0.15)',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
-              transition: 'all 0.2s',
-            }}
-              onMouseOver={e => { e.currentTarget.style.background = 'rgba(6,214,160,0.08)'; e.currentTarget.style.borderColor = 'rgba(6,214,160,0.25)' }}
-              onMouseOut={e => { e.currentTarget.style.background = 'rgba(6,214,160,0.04)'; e.currentTarget.style.borderColor = 'rgba(6,214,160,0.15)' }}
-            >
-              <CtaEq />
-              <span style={{ fontSize: 12, fontWeight: 300, color: 'rgba(6,214,160,0.6)', fontFamily: T.font }}>Talk to Kiko</span>
-            </button>
-          )}
+            <>
+              <h1 style={{ fontSize: 36, fontWeight: 200, color: 'rgba(255,255,255,0.92)', margin: '0 0 4px', fontFamily: T.font, letterSpacing: '-0.04em', textAlign: 'center' }}>
+                {getGreeting()}, {firstName}
+              </h1>
+              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.15)', margin: '0 0 28px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
 
-          {/* Prompt bar + chips — inline in idle state, directly below CTA */}
-          {!voiceActive && (
-            <div style={{ width: '100%', maxWidth: 540, marginTop: 20, padding: '0 24px', transition: trans }}>
-              <PromptBar welcome />
-              {dictateError && (
-                <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,80,80,0.7)', fontFamily: T.font, margin: '8px 0 0', animation: 'fadeIn 0.2s' }}>{dictateError}</p>
-              )}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginTop: 12 }}>
+              {/* Smoke-trail wave */}
+              <div style={{ width: '100%', maxWidth: 400, marginBottom: 28 }}>
+                <SmokeTrailWave width={400} height={60} />
+              </div>
+
+              {/* Prompt bar */}
+              <div style={{ width: '100%', maxWidth: 520, marginBottom: 14 }}>
+                <PromptBar welcome />
+                {dictateError && (
+                  <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,80,80,0.7)', fontFamily: T.font, margin: '8px 0 0', animation: 'fadeIn 0.2s' }}>{dictateError}</p>
+                )}
+              </div>
+
+              {/* Chips */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', maxWidth: 520, marginBottom: 32 }}>
                 {CHIPS.map(c => (
                   <button key={c} onClick={() => handleSubmit(c)} style={{
-                    padding: '6px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.03)',
-                    border: `0.5px solid ${T.border}`, color: T.textTertiary,
-                    fontSize: 12, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.15s', fontWeight: 300,
+                    padding: '7px 16px', borderRadius: 12, background: 'rgba(255,255,255,0.03)',
+                    backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                    border: '0.5px solid rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.22)',
+                    fontSize: 12, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.3s', fontWeight: 300,
                   }}
-                    onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)' }}
-                    onMouseOut={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textTertiary }}
+                    onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(139,108,246,0.15)'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; e.currentTarget.style.background = 'rgba(139,108,246,0.06)' }}
+                    onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.22)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
                   >{c}</button>
                 ))}
               </div>
-            </div>
+
+              {/* Insight cards grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, width: '100%', maxWidth: 540, marginBottom: 12 }}>
+                {[
+                  { label: 'Pipeline', value: '3', detail: '$2.4M value', edge: '#F59E0B' },
+                  { label: 'Emails', value: '7', detail: '2 flagged', edge: '#8B6CF6' },
+                  { label: 'Calendar', value: '2', detail: 'Next 3pm', edge: '#06D6A0' },
+                ].map(card => (
+                  <div key={card.label} onClick={() => handleSubmit(`Brief me on ${card.label.toLowerCase()}`)} style={{
+                    borderRadius: 18, background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+                    border: '0.5px solid rgba(255,255,255,0.06)', padding: 18, cursor: 'pointer',
+                    transition: 'all 0.4s cubic-bezier(0.2,0,0,1)', position: 'relative', overflow: 'hidden',
+                  }}
+                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'translateY(-3px)' }}
+                    onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.transform = 'translateY(0)' }}
+                  >
+                    <div style={{ position: 'absolute', top: 0, left: 0, width: 2.5, height: '100%', borderRadius: 2, background: `linear-gradient(180deg, ${card.edge}, transparent)` }} />
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.15)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, marginBottom: 10, fontFamily: T.font }}>{card.label}</div>
+                    <div style={{ fontSize: 24, color: 'rgba(255,255,255,0.65)', fontWeight: 300, fontFamily: T.font }}>{card.value}</div>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.12)', fontWeight: 300, marginTop: 4, fontFamily: T.font }}>{card.detail}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Alert card */}
+              <div onClick={() => handleSubmit('Brief me on the Cloudflare ROI framework')} style={{
+                width: '100%', maxWidth: 540, borderRadius: 16, background: 'rgba(245,158,11,0.04)',
+                backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+                border: '0.5px solid rgba(245,158,11,0.08)', padding: '16px 18px',
+                display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', transition: 'all 0.4s',
+              }}
+                onMouseOver={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.07)'; e.currentTarget.style.borderColor = 'rgba(245,158,11,0.15)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                onMouseOut={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.04)'; e.currentTarget.style.borderColor = 'rgba(245,158,11,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}
+              >
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#F59E0B', flexShrink: 0, boxShadow: '0 0 10px rgba(245,158,11,0.4)', animation: 'kikoBreathe 1.5s ease-in-out infinite' }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.65)', fontWeight: 400, fontFamily: T.font }}>Cloudflare ROI framework due Thursday</div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', fontWeight: 300, marginTop: 3, fontFamily: T.font }}>Technical review — highest priority this week</div>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </>
           )}
 
           {/* Voice conversation area */}
@@ -649,10 +659,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div style={{ marginBottom: 24, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.accent, flexShrink: 0, marginTop: 8, boxShadow: '0 0 8px rgba(139,108,246,0.4)' }} />
               <div style={{ maxWidth: 360 }}>
-                <div style={{ padding: '12px 16px', borderRadius: 14, background: 'rgba(139,108,246,0.04)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '0.5px solid rgba(139,108,246,0.1)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: T.accent, flexShrink: 0, animation: 'kikoBreathe 1.5s ease-in-out infinite', boxShadow: '0 0 6px rgba(139,108,246,0.5)' }} />
-                    <span style={{ fontSize: 11, color: 'rgba(139,108,246,0.5)', fontFamily: T.font, fontWeight: 300 }}>{toolStatus || 'thinking'}</span>
+                <div style={{ padding: '16px 18px', borderRadius: 18, background: 'rgba(139,108,246,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '0.5px solid rgba(139,108,246,0.1)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                    <SmokeTrailWave width={60} height={12} mini thinking />
+                    <span style={{ fontSize: 11, color: 'rgba(139,108,246,0.45)', fontFamily: T.font, fontWeight: 300 }}>{toolStatus || 'Deep analysis'}</span>
+                    <div style={{ flex: 1, height: 0.5, background: 'rgba(139,108,246,0.06)' }} />
                   </div>
                 </div>
                 {thinkingSteps.length > 0 && (
