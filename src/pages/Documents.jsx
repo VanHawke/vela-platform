@@ -146,8 +146,8 @@ export default function Documents({ user }) {
     return true
   })
 
-  const cardStyle = { background: T.surface, borderRadius: 12, border: `0.5px solid rgba(0,0,0,0.05)`, boxShadow: '0 4px 16px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02), inset 0 1px 0 rgba(255,255,255,1)', padding: 16, transition: 'all 0.15s' }
-  const pillStyle = (color) => ({ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 12, fontSize: 10, fontWeight: 500, background: `${color}12`, color, fontFamily: T.font })
+  const cardStyle = { background: T.surface, borderRadius: 14, border: `0.5px solid rgba(0,0,0,0.05)`, boxShadow: '0 4px 16px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02), inset 0 1px 0 rgba(255,255,255,1)', padding: 16, transition: 'all 0.15s' }
+  const pillStyle = (color) => ({ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 14, fontSize: 10, fontWeight: 500, background: `${color}12`, color, fontFamily: T.font })
   const inputStyle = { height: 36, borderRadius: 8, border: `0.5px solid rgba(0,0,0,0.06)`, padding: '0 10px', fontSize: 12, color: T.text, fontFamily: T.font, outline: 'none', background: T.surface }
 
   return (
@@ -161,11 +161,11 @@ export default function Documents({ user }) {
           position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(255,255,255,0.85)',
           backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          border: '2px dashed #1A1A1A', borderRadius: 16, margin: 8,
+          border: '2px dashed #1A1A1A', borderRadius: 18, margin: 8,
           pointerEvents: 'none',
         }}>
           <Upload size={40} color="#1A1A1A" style={{ marginBottom: 12, opacity: 0.7 }} />
-          <p style={{ fontSize: 16, fontWeight: 600, color: T.text }}>Drop file to upload</p>
+          <p style={{ fontSize: 16, fontWeight: 400, color: T.text }}>Drop file to upload</p>
           <p style={{ fontSize: 12, color: T.textTertiary, marginTop: 4 }}>PDF, PPTX, DOCX, images, text files</p>
         </div>
       )}
@@ -173,7 +173,7 @@ export default function Documents({ user }) {
       {/* Header */}
       <div style={{ padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 600, color: T.text, margin: 0 }}>Knowledge Library</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 400, color: T.text, margin: 0 }}>Knowledge Library</h1>
           <p style={{ fontSize: 12, color: T.textTertiary, margin: '4px 0 0' }}>{documents.length} documents — Kiko analyses and learns from everything you upload</p>
         </div>
         <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ height: 36, padding: '0 16px', borderRadius: 10, background: T.accent, color: '#fff', border: 'none', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6, opacity: uploading ? 0.5 : 1 }}>
@@ -229,7 +229,7 @@ export default function Documents({ user }) {
           {CONTEXTS.filter(c => c !== 'all').map(c => <option key={c} value={c}>{CTX_LABELS[c] || c}</option>)}
         </select>
         {/* Category pills */}
-        <div style={{ display: 'flex', gap: 3, background: 'rgba(0,0,0,0.03)', borderRadius: 8, padding: 3 }}>
+        <div style={{ display: 'flex', gap: 3, background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: 3 }}>
           {CATEGORIES.map(c => (
             <button key={c} onClick={() => setCatFilter(c)} style={{ padding: '4px 10px', borderRadius: 6, border: 'none', fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, background: catFilter === c ? T.accent : 'transparent', color: catFilter === c ? '#fff' : T.textTertiary, transition: 'all 0.15s' }}>{c === 'all' ? 'All' : c.replace('_', ' ')}</button>
           ))}
@@ -279,7 +279,7 @@ export default function Documents({ user }) {
                         {editingTeam === doc.id ? (
                           <select autoFocus value={doc.linked_team || ''} onChange={e => reassignTeam(doc.id, e.target.value)} onBlur={() => setEditingTeam(null)}
                             onClick={e => e.stopPropagation()}
-                            style={{ fontSize: 10, padding: '1px 4px', borderRadius: 6, border: `1px solid ${T.blue}`, background: '#fff', color: T.text, outline: 'none', fontFamily: T.font }}>
+                            style={{ fontSize: 10, padding: '1px 4px', borderRadius: 6, border: `1px solid ${T.blue}`, background: 'rgba(255,255,255,0.035)', color: T.text, outline: 'none', fontFamily: T.font }}>
                             <option value="">No team</option>
                             {teams.map(t => <option key={t} value={t}>{t}</option>)}
                           </select>
@@ -311,7 +311,7 @@ export default function Documents({ user }) {
                       {doc.summary && <p style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.6, margin: '0 0 12px' }}>{doc.summary}</p>}
                       {intel.key_stats?.length > 0 && (
                         <div style={{ marginBottom: 10 }}>
-                          <span style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>Key stats</span>
+                          <span style={{ fontSize: 10, fontWeight: 400, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>Key stats</span>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
                             {intel.key_stats.map((s, i) => <span key={i} style={{ ...pillStyle(T.blue), fontSize: 11 }}>{s}</span>)}
                           </div>
@@ -319,20 +319,20 @@ export default function Documents({ user }) {
                       )}
                       {intel.messaging_tone && (
                         <div style={{ marginBottom: 10 }}>
-                          <span style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>Messaging tone</span>
+                          <span style={{ fontSize: 10, fontWeight: 400, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>Messaging tone</span>
                           <p style={{ fontSize: 12, color: T.text, margin: '4px 0 0' }}>{intel.messaging_tone}</p>
                         </div>
                       )}
                       {intel.positioning && (
                         <div style={{ marginBottom: 10 }}>
-                          <span style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>Positioning</span>
+                          <span style={{ fontSize: 10, fontWeight: 400, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>Positioning</span>
                           <p style={{ fontSize: 12, color: T.text, margin: '4px 0 0' }}>{intel.positioning}</p>
                         </div>
                       )}
 
                       {intel.talking_points?.length > 0 && (
                         <div style={{ marginBottom: 10 }}>
-                          <span style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>Talking points</span>
+                          <span style={{ fontSize: 10, fontWeight: 400, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>Talking points</span>
                           <ul style={{ margin: '4px 0 0', paddingLeft: 16 }}>
                             {intel.talking_points.map((p, i) => <li key={i} style={{ fontSize: 12, color: T.text, lineHeight: 1.6 }}>{p}</li>)}
                           </ul>
@@ -340,7 +340,7 @@ export default function Documents({ user }) {
                       )}
                       {intel.partner_benefits?.length > 0 && (
                         <div style={{ marginBottom: 10 }}>
-                          <span style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>Partner benefits</span>
+                          <span style={{ fontSize: 10, fontWeight: 400, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>Partner benefits</span>
                           <ul style={{ margin: '4px 0 0', paddingLeft: 16 }}>
                             {intel.partner_benefits.map((b, i) => <li key={i} style={{ fontSize: 12, color: T.text, lineHeight: 1.6 }}>{b}</li>)}
                           </ul>
@@ -348,7 +348,7 @@ export default function Documents({ user }) {
                       )}
                       {intel.unique_angles?.length > 0 && (
                         <div style={{ marginBottom: 10 }}>
-                          <span style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>Unique angles</span>
+                          <span style={{ fontSize: 10, fontWeight: 400, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>Unique angles</span>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
                             {intel.unique_angles.map((a, i) => <span key={i} style={{ ...pillStyle(T.purple), fontSize: 11 }}>{a}</span>)}
                           </div>
@@ -356,7 +356,7 @@ export default function Documents({ user }) {
                       )}
                       {intel.value_propositions?.length > 0 && (
                         <div style={{ marginBottom: 10 }}>
-                          <span style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>Value propositions</span>
+                          <span style={{ fontSize: 10, fontWeight: 400, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>Value propositions</span>
                           <ul style={{ margin: '4px 0 0', paddingLeft: 16 }}>
                             {intel.value_propositions.map((v, i) => <li key={i} style={{ fontSize: 12, color: T.text, lineHeight: 1.6 }}>{v}</li>)}
                           </ul>
@@ -365,7 +365,7 @@ export default function Documents({ user }) {
 
                       {intel.target_audience && (
                         <div>
-                          <span style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>Target audience</span>
+                          <span style={{ fontSize: 10, fontWeight: 400, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: 0.5 }}>Target audience</span>
                           <p style={{ fontSize: 12, color: T.text, margin: '4px 0 0' }}>{intel.target_audience}</p>
                         </div>
                       )}

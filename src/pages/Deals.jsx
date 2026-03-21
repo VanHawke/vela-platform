@@ -90,15 +90,15 @@ export default function Deals() {
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
       <div style={{
-        margin: '8px 16px 0', padding: '12px 20px', borderRadius: 16,
-        background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(40px) saturate(1.8)',
-        WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
-        border: '1px solid rgba(255,255,255,0.5)',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02)',
+        margin: '8px 16px 0', padding: '12px 20px', borderRadius: 18,
+        background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        border: '0.5px solid rgba(255,255,255,0.06)',
+        boxShadow: '0 8px 36px rgba(0,0,0,0.3)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div>
-          <h1 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Deals</h1>
+          <h1 style={{ fontSize: 18, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Deals</h1>
           <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{filtered.length.toLocaleString()} deal{filtered.length !== 1 ? 's' : ''}{totalValue > 0 ? ` · Pipeline: ${formatCurrency(totalValue)}` : ''}</p>
         </div>
         <button onClick={() => setShowForm(true)} style={{
@@ -113,7 +113,7 @@ export default function Deals() {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5" style={{ color: 'var(--text-tertiary)' }} />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search deals..." style={{
-            width: '100%', background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)',
+            width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)',
             borderRadius: 10, padding: '8px 12px 8px 34px', fontSize: 13, color: 'var(--text)',
             outline: 'none', fontFamily: 'var(--font)',
           }} />

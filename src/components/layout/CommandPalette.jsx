@@ -120,7 +120,7 @@ export default function CommandPalette({ open, onClose, onVoice }) {
             return (
               <div key={item.id}>
                 {showSection && (
-                  <div style={{ padding: '8px 10px 4px', fontSize: 10, fontWeight: 600, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.04em', fontFamily: T.font }}>{sectionLabel}</div>
+                  <div style={{ padding: '8px 10px 4px', fontSize: 10, fontWeight: 400, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.04em', fontFamily: T.font }}>{sectionLabel}</div>
                 )}
                 <button onClick={() => handleSelect(item)} style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 10,

@@ -159,7 +159,7 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '12px 16px', borderBottom: `1px solid ${T.border}`,
       }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{title}</span>
+        <span style={{ fontSize: 14, fontWeight: 400, color: T.text }}>{title}</span>
         <button onClick={onClose} style={{
           background: 'none', border: 'none', cursor: 'pointer', color: T.textTertiary, padding: 4,
         }}><X size={16} /></button>
@@ -260,7 +260,7 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
           height: 36, padding: '0 20px', borderRadius: 10, border: 'none',
           background: to.trim() ? T.accent : T.accentSoft,
           color: to.trim() ? '#fff' : T.textTertiary,
-          fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: T.font,
+          fontSize: 13, fontWeight: 400, cursor: 'pointer', fontFamily: T.font,
           display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s',
         }}>
           {sending ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Send size={14} />}

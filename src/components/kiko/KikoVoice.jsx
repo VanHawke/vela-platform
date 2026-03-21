@@ -8,10 +8,10 @@ const OFF_AFTER_MS     = 120_000
 const KEYWORDS         = ['hey kiko', 'okay kiko', 'ok kiko', 'kiko']
 
 const glass = {
-  background: 'rgba(255,255,255,0.72)',
-  backdropFilter: 'blur(40px) saturate(1.8)',
-  WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
-  border: '1px solid rgba(255,255,255,0.5)',
+  background: 'rgba(255,255,255,0.035)',
+  backdropFilter: 'blur(24px)',
+  WebkitBackdropFilter: 'blur(24px)',
+  border: '0.5px solid rgba(255,255,255,0.06)',
   boxShadow: '0 8px 32px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)',
 }
 
@@ -710,9 +710,9 @@ RULES:
 
       {/* Drag-over overlay */}
       {dragOver && (
-        <div style={{ position: 'absolute', inset: 12, zIndex: 10, borderRadius: 16, border: '2px dashed #1A1A1A', background: 'rgba(255,255,255,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', gap: 8 }}>
+        <div style={{ position: 'absolute', inset: 12, zIndex: 10, borderRadius: 18, border: '2px dashed #1A1A1A', background: 'rgba(255,255,255,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', gap: 8 }}>
           <Paperclip size={28} color="#1A1A1A" style={{ opacity: 0.6 }} />
-          <p style={{ fontSize: 15, fontWeight: 600, color: '#1A1A1A', fontFamily: 'var(--font)' }}>Drop file for Kiko to analyse</p>
+          <p style={{ fontSize: 15, fontWeight: 400, color: '#1A1A1A', fontFamily: 'var(--font)' }}>Drop file for Kiko to analyse</p>
           <p style={{ fontSize: 12, color: 'rgba(0,0,0,0.45)', fontFamily: 'var(--font)' }}>PDF, DOCX, PPTX, images</p>
         </div>
       )}
@@ -723,11 +723,11 @@ RULES:
       {/* Stage */}
       <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 40px 32px', zIndex: 1 }}>
 
-        <button onClick={handleClose} style={{ position: 'absolute', top: 18, right: 18, width: 30, height: 30, borderRadius: 9, background: 'rgba(0,0,0,0.04)', border: '0.5px solid rgba(0,0,0,0.07)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(0,0,0,0.4)' }}>
+        <button onClick={handleClose} style={{ position: 'absolute', top: 18, right: 18, width: 30, height: 30, borderRadius: 9, background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(0,0,0,0.07)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(0,0,0,0.4)' }}>
           <X size={14} />
         </button>
 
-        <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', padding: '4px 14px', borderRadius: 20, background: 'rgba(0,0,0,0.04)', border: '0.5px solid rgba(0,0,0,0.07)', fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.4)', letterSpacing: '0.04em', whiteSpace: 'nowrap', fontFamily: 'var(--font)' }}>
+        <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', padding: '4px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(0,0,0,0.07)', fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.4)', letterSpacing: '0.04em', whiteSpace: 'nowrap', fontFamily: 'var(--font)' }}>
           {modeLabel}
         </div>
 
@@ -735,7 +735,7 @@ RULES:
         <div style={{ position: 'relative', marginBottom: 28 }}>
           {showRings && <>
             <div style={{ position: 'absolute', inset: -13, borderRadius: 50, border: '1.5px solid rgba(0,0,0,0.08)', animation: 'pulse 2.2s ease-in-out infinite', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', inset: -26, borderRadius: 62, border: '1px solid rgba(0,0,0,0.04)', animation: 'pulse 2.2s ease-in-out infinite 0.5s', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', inset: -26, borderRadius: 62, border: '0.5px solid rgba(255,255,255,0.04)', animation: 'pulse 2.2s ease-in-out infinite 0.5s', pointerEvents: 'none' }} />
           </>}
           <div style={{ width: 156, height: 156, borderRadius: 38, background: avBg, border: '0.5px solid rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', boxShadow: '0 16px 48px rgba(0,0,0,0.14)', transition: 'background 0.5s' }}>
             <div style={{ position: 'absolute', opacity: speaking ? 0 : avOpacity, transition: 'opacity 0.35s ease', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -755,7 +755,7 @@ RULES:
         </div>
 
         {listenMode !== 'active' && status === 'live' && (
-          <button onClick={() => listenMode === 'off' ? reactivate() : resetToActive()} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 500, color: 'rgba(0,0,0,0.5)', background: 'rgba(0,0,0,0.04)', border: '0.5px solid rgba(0,0,0,0.09)', borderRadius: 20, padding: '7px 16px', cursor: 'pointer', fontFamily: 'var(--font)', marginBottom: 24 }}>
+          <button onClick={() => listenMode === 'off' ? reactivate() : resetToActive()} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 500, color: 'rgba(0,0,0,0.5)', background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(0,0,0,0.09)', borderRadius: 20, padding: '7px 16px', cursor: 'pointer', fontFamily: 'var(--font)', marginBottom: 24 }}>
             <Mic size={12} /> Tap to resume
           </button>
         )}
@@ -773,7 +773,7 @@ RULES:
               {attachedFile.status === 'ready' && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
               {!attachedFile.status && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>}
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{attachedFile.status === 'uploading' ? 'Uploading…' : attachedFile.status === 'analysing' ? 'Analysing…' : attachedFile.name}</span>
-              {attachedFile.category && <span style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em', opacity: 0.7 }}>{attachedFile.category}</span>}
+              {attachedFile.category && <span style={{ fontSize: 9, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.03em', opacity: 0.7 }}>{attachedFile.category}</span>}
               <button onClick={() => setAttachedFile(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: 0, lineHeight: 1, opacity: 0.5 }}>×</button>
             </div>
           )}
@@ -793,7 +793,7 @@ RULES:
         </div>
 
         {status === 'error' && (
-          <button onClick={connectRealtime} style={{ marginTop: 14, padding: '7px 18px', borderRadius: 10, background: 'rgba(0,0,0,0.06)', color: 'rgba(0,0,0,0.6)', border: '0.5px solid rgba(0,0,0,0.1)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)' }}>Retry</button>
+          <button onClick={connectRealtime} style={{ marginTop: 14, padding: '7px 18px', borderRadius: 10, background: 'rgba(255,255,255,0.06)', color: 'rgba(0,0,0,0.6)', border: '0.5px solid rgba(0,0,0,0.1)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)' }}>Retry</button>
         )}
       </div>
 
@@ -808,7 +808,7 @@ RULES:
       <div style={{ position: 'relative', zIndex: 1, width: showPane ? 272 : 0, flexShrink: 0, overflow: 'hidden', borderLeft: showPane ? '0.5px solid rgba(0,0,0,0.08)' : 'none', transition: 'width 0.3s cubic-bezier(0.4,0,0.2,1)', background: 'rgba(255,255,255,0.35)' }}>
         <div style={{ width: 272, height: '100%', display: 'flex', flexDirection: 'column', padding: '20px 14px 16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.3)', fontFamily: 'var(--font)' }}>Transcript</span>
+            <span style={{ fontSize: 9, fontWeight: 500, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.3)', fontFamily: 'var(--font)' }}>Transcript</span>
             <span style={{ fontSize: 9, color: 'rgba(0,0,0,0.2)', fontFamily: 'var(--font)' }}>{messages.length} messages</span>
           </div>
           <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 9 }}>
@@ -816,7 +816,7 @@ RULES:
               ? <p style={{ fontSize: 11, color: 'rgba(0,0,0,0.25)', fontFamily: 'var(--font)', textAlign: 'center', marginTop: 40, lineHeight: 1.5 }}>Conversation appears here as you speak</p>
               : messages.map((m, i) => (
                 <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.28)', fontFamily: 'var(--font)' }}>{m.role === 'user' ? 'You' : 'Kiko'}</span>
+                  <span style={{ fontSize: 8, fontWeight: 500, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.28)', fontFamily: 'var(--font)' }}>{m.role === 'user' ? 'You' : 'Kiko'}</span>
                   <div style={{ fontSize: 11, lineHeight: 1.45, padding: '7px 10px', borderRadius: 10, fontFamily: 'var(--font)', background: m.role === 'user' ? '#1A1A1A' : 'rgba(0,0,0,0.05)', color: m.role === 'user' ? '#fff' : 'rgba(0,0,0,0.55)' }}>
                     {m.content}
                   </div>

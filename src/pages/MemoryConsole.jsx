@@ -86,7 +86,7 @@ export default function MemoryConsole({ user }) {
       {/* Header */}
       <div style={{ padding: '24px 32px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 600, color: T.text, margin: 0, fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 400, color: T.text, margin: 0, fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 10 }}>
             <Brain size={22} /> Memory Console
           </h1>
           <p style={{ fontSize: 13, color: T.textTertiary, margin: '4px 0 0', fontFamily: T.font }}>
@@ -94,7 +94,7 @@ export default function MemoryConsole({ user }) {
           </p>
         </div>
         <button onClick={() => setCreating(true)} style={{
-          height: 40, padding: '0 20px', borderRadius: 12, background: T.accent,
+          height: 40, padding: '0 20px', borderRadius: 14, background: T.accent,
           color: '#fff', border: 'none', fontSize: 13, fontWeight: 500,
           cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6
         }}>
@@ -104,7 +104,7 @@ export default function MemoryConsole({ user }) {
 
       {/* Create form */}
       {creating && (
-        <div style={{ margin: '0 32px 16px', padding: 20, background: T.surface, borderRadius: 16, border: `1px solid ${T.border}` }}>
+        <div style={{ margin: '0 32px 16px', padding: 20, background: T.surface, borderRadius: 18, border: `1px solid ${T.border}` }}>
           <input value={newPath} onChange={e => setNewPath(e.target.value)}
             placeholder="Memory name (e.g. client_preferences.md)"
             style={{ width: '100%', height: 40, borderRadius: 10, border: `1px solid ${T.border}`, padding: '0 14px', fontSize: 13, color: T.text, fontFamily: T.font, outline: 'none', background: T.bg, marginBottom: 8 }} />
@@ -140,7 +140,7 @@ export default function MemoryConsole({ user }) {
               const size = ((mem.content || '').length / 1024).toFixed(1)
 
               return (
-                <div key={mem.id} style={{ background: T.surface, borderRadius: 16, border: `1px solid ${T.border}`, overflow: 'hidden', transition: 'border-color 0.15s' }}>
+                <div key={mem.id} style={{ background: T.surface, borderRadius: 18, border: `1px solid ${T.border}`, overflow: 'hidden', transition: 'border-color 0.15s' }}>
                   {/* Header row */}
                   <div onClick={() => { setExpanded(isExpanded ? null : mem.id); if (isEditing) setEditing(null) }}
                     style={{ display: 'flex', alignItems: 'center', padding: '14px 20px', cursor: 'pointer', gap: 12, transition: 'background 0.1s' }}

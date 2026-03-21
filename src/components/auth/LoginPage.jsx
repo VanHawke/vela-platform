@@ -56,7 +56,7 @@ export default function LoginPage() {
   }
 
   const inputStyle = {
-    width: '100%', height: 48, borderRadius: 12, border: `0.5px solid ${T.border}`,
+    width: '100%', height: 48, borderRadius: 14, border: `0.5px solid ${T.border}`,
     background: T.inputBg, padding: '0 16px', fontSize: 14, color: T.text, outline: 'none',
     fontFamily: T.font, transition: 'border-color 0.15s',
   }
@@ -67,13 +67,13 @@ export default function LoginPage() {
 
         {/* Kiko avatar — gradient orb with pulse rings */}
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
-          <div style={{ position: 'absolute', width: 100, height: 100, borderRadius: '50%', border: '1px solid rgba(124,92,252,0.1)', animation: 'kikoPulseRing 3s ease-out infinite' }} />
-          <div style={{ position: 'absolute', width: 100, height: 100, borderRadius: '50%', border: '1px solid rgba(0,212,170,0.06)', animation: 'kikoPulseRing 3s ease-out 1s infinite' }} />
+          <div style={{ position: 'absolute', width: 100, height: 100, borderRadius: '50%', border: '1px solid rgba(139,108,246,0.1)', animation: 'kikoPulseRing 3s ease-out infinite' }} />
+          <div style={{ position: 'absolute', width: 100, height: 100, borderRadius: '50%', border: '1px solid rgba(6,214,160,0.06)', animation: 'kikoPulseRing 3s ease-out 1s infinite' }} />
           <div style={{
             width: 72, height: 72, borderRadius: '50%',
-            background: 'linear-gradient(135deg, rgba(124,92,252,0.9), rgba(0,212,170,0.7))',
+            background: 'linear-gradient(135deg, rgba(139,108,246,0.9), rgba(6,214,160,0.7))',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 40px rgba(124,92,252,0.2), 0 0 80px rgba(0,212,170,0.1)',
+            boxShadow: '0 0 40px rgba(139,108,246,0.2), 0 0 80px rgba(6,214,160,0.1)',
             position: 'relative',
           }}>
             <div style={{ position: 'absolute', top: '12%', left: '18%', width: '35%', height: '28%', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(4px)' }} />
@@ -84,7 +84,7 @@ export default function LoginPage() {
 
         {/* Google OAuth */}
         <button onClick={googleLogin} disabled={gLoading} style={{
-          width: '100%', height: 48, borderRadius: 12, border: `0.5px solid ${T.border}`, background: 'rgba(255,255,255,0.03)',
+          width: '100%', height: 48, borderRadius: 14, border: `0.5px solid ${T.border}`, background: 'rgba(255,255,255,0.03)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: 14, fontWeight: 400,
           color: T.text, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.15s',
         }}>
@@ -111,9 +111,9 @@ export default function LoginPage() {
               background: 'none', border: 'none', cursor: 'pointer', color: T.sub, padding: 0,
             }}>{showPw ? <EyeOff size={18} /> : <Eye size={18} />}</button>
           </div>
-          {error && <p style={{ fontSize: 13, color: 'rgba(255,80,80,0.8)', background: 'rgba(255,80,80,0.06)', padding: '8px 12px', borderRadius: 12, margin: '0 0 10px', border: '0.5px solid rgba(255,80,80,0.1)' }}>{error}</p>}
+          {error && <p style={{ fontSize: 13, color: 'rgba(255,80,80,0.8)', background: 'rgba(255,80,80,0.06)', padding: '8px 12px', borderRadius: 14, margin: '0 0 10px', border: '0.5px solid rgba(255,80,80,0.1)' }}>{error}</p>}
           <button type="submit" disabled={loading} style={{
-            width: '100%', height: 48, borderRadius: 12,
+            width: '100%', height: 48, borderRadius: 14,
             background: 'linear-gradient(135deg, #7C5CFC, #00D4AA)', color: '#fff', border: 'none',
             fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, transition: 'opacity 0.15s', opacity: loading ? 0.6 : 0.85,
           }}>{loading ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : 'Sign in'}</button>

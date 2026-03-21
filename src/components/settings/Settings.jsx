@@ -24,12 +24,12 @@ const SPEEDS = [
 const TABS = ['Profile', 'Kiko', 'Navigation', 'Team', 'Appearance', 'Accounts']
 
 const T = {
-  bg: '#FAFAFA', surface: '#FFFFFF', surfaceHover: '#F5F5F5',
-  border: 'rgba(0,0,0,0.06)', borderHover: 'rgba(0,0,0,0.12)',
-  text: '#1A1A1A', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
-  accent: '#1A1A1A', accentSoft: 'rgba(0,0,0,0.04)',
+  bg: '#0A0A0C', surface: 'rgba(255,255,255,0.02)', surfaceHover: 'rgba(255,255,255,0.04)',
+  border: 'rgba(255,255,255,0.06)', borderHover: 'rgba(255,255,255,0.1)',
+  text: 'rgba(255,255,255,0.9)', textSecondary: 'rgba(255,255,255,0.5)', textTertiary: 'rgba(255,255,255,0.2)',
+  accent: '#8B6CF6', accentSoft: 'rgba(139,108,246,0.06)',
   radius: 16, radiusSm: 10,
-  font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  font: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'DM Sans', 'Segoe UI', sans-serif",
 }
 
 export default function Settings({ user }) {
@@ -161,7 +161,7 @@ export default function Settings({ user }) {
   }
 
   const inputStyle = {
-    width: '100%', height: 44, borderRadius: 12, border: `1px solid ${T.border}`,
+    width: '100%', height: 44, borderRadius: 14, border: `1px solid ${T.border}`,
     padding: '0 14px', fontSize: 14, color: T.text, fontFamily: T.font,
     outline: 'none', background: T.surface, boxSizing: 'border-box',
   }
@@ -172,7 +172,7 @@ export default function Settings({ user }) {
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: T.bg }}>
       {/* Header + Tabs */}
       <div style={{ padding: '24px 32px 0' }}>
-        <h1 style={{ fontSize: 24, fontWeight: 600, color: T.text, margin: '0 0 20px', fontFamily: T.font }}>Settings</h1>
+        <h1 style={{ fontSize: 24, fontWeight: 400, color: T.text, margin: '0 0 20px', fontFamily: T.font }}>Settings</h1>
         <div style={{ display: 'flex', gap: 4, borderBottom: `1px solid ${T.border}` }}>
           {TABS.map(t => (
             <button key={t} onClick={() => setTab(t)} style={{
@@ -193,13 +193,13 @@ export default function Settings({ user }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* Profile Photo */}
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Profile Photo</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 400, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Profile Photo</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                 <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', background: T.accentSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: `2px solid ${T.border}` }}>
                   {settings.profile_photo_url ? (
                     <img src={settings.profile_photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
-                    <span style={{ fontSize: 24, fontWeight: 600, color: T.textTertiary, fontFamily: T.font }}>
+                    <span style={{ fontSize: 24, fontWeight: 400, color: T.textTertiary, fontFamily: T.font }}>
                       {(settings.first_name || settings.display_name || email)?.[0]?.toUpperCase() || 'U'}
                     </span>
                   )}
@@ -212,7 +212,7 @@ export default function Settings({ user }) {
 
             {/* Name */}
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Personal Details</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 400, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Personal Details</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
                   <label style={labelStyle}>First Name</label>
@@ -242,7 +242,7 @@ export default function Settings({ user }) {
 
             {/* Timezone + Bio */}
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>About</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 400, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>About</h3>
               <div>
                 <label style={labelStyle}>Time Zone</label>
                 <select value={settings.timezone || 'Europe/London'} onChange={e => setSettings(p => ({ ...p, timezone: e.target.value }))} style={{ ...inputStyle, height: 44, padding: '0 10px' }}>
@@ -267,7 +267,7 @@ export default function Settings({ user }) {
 
             {/* Email Signature */}
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Email Signature</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 400, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Email Signature</h3>
               <p style={{ fontSize: 11, color: T.textTertiary, marginBottom: 8, fontFamily: T.font }}>
                 Paste your HTML signature from Gmail or type one. Auto-appended to outgoing emails.
               </p>
@@ -289,7 +289,7 @@ export default function Settings({ user }) {
 
             {/* Notifications */}
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Notifications</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 400, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Notifications</h3>
               {['Email notifications', 'Desktop notifications', 'Sound alerts'].map((n, i) => {
                 const key = ['email', 'desktop', 'sound'][i]
                 const on = settings.notification_prefs?.[key] ?? true
@@ -297,8 +297,8 @@ export default function Settings({ user }) {
                   <div key={n} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0' }}>
                     <span style={{ fontSize: 14, color: T.textSecondary, fontFamily: T.font }}>{n}</span>
                     <div onClick={() => setSettings(p => ({ ...p, notification_prefs: { ...(p.notification_prefs || {}), [key]: !on } }))}
-                      style={{ width: 44, height: 24, borderRadius: 12, background: on ? T.accent : T.border, position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}>
-                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#fff', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+                      style={{ width: 44, height: 24, borderRadius: 14, background: on ? T.accent : T.border, position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}>
+                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.035)', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
                     </div>
                   </div>
                 )
@@ -311,7 +311,7 @@ export default function Settings({ user }) {
               bio: settings.bio, linkedin_url: settings.linkedin_url, profile_photo_url: settings.profile_photo_url,
               email_signature: settings.email_signature, notification_prefs: settings.notification_prefs,
             })}
-              style={{ height: 44, borderRadius: 12, background: T.accent, color: '#fff', border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
+              style={{ height: 44, borderRadius: 14, background: T.accent, color: '#fff', border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
               {saved ? 'Saved!' : 'Save changes'}
             </button>
           </div>
@@ -321,7 +321,7 @@ export default function Settings({ user }) {
         {tab === 'Kiko' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Voice</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 400, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Voice</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
                 {VOICES.map(v => {
                   const isSelected = (settings.kiko_voice || 'shimmer') === v.id
@@ -335,7 +335,7 @@ export default function Settings({ user }) {
                       transition: 'all 0.15s',
                     }} onClick={() => saveSettings({ kiko_voice: v.id })}>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, fontFamily: T.font }}>{v.label}</div>
+                        <div style={{ fontSize: 13, fontWeight: 400, fontFamily: T.font }}>{v.label}</div>
                         <div style={{ fontSize: 11, opacity: 0.7, fontFamily: T.font }}>{v.desc}</div>
                       </div>
                       <button onClick={(e) => { e.stopPropagation(); previewVoice(v.id) }} style={{
@@ -351,7 +351,7 @@ export default function Settings({ user }) {
               </div>
             </div>
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Speech Speed</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 400, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Speech Speed</h3>
               <div style={{ display: 'flex', gap: 8 }}>
                 {SPEEDS.map(s => (
                   <button key={s.id} onClick={() => saveSettings({ kiko_speed: s.id })} style={{
@@ -364,13 +364,13 @@ export default function Settings({ user }) {
               </div>
             </div>
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 8px', fontFamily: T.font }}>Model Routing</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 400, color: T.text, margin: '0 0 8px', fontFamily: T.font }}>Model Routing</h3>
               <p style={{ fontSize: 13, color: T.textTertiary, lineHeight: 1.5, margin: 0, fontFamily: T.font }}>
                 Kiko automatically routes queries: simple greetings use Haiku (fast), standard queries use Sonnet, complex analysis uses Sonnet with full tools.
               </p>
             </div>
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 8px', fontFamily: T.font }}>Memory</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 400, color: T.text, margin: '0 0 8px', fontFamily: T.font }}>Memory</h3>
               <p style={{ fontSize: 13, color: T.textTertiary, lineHeight: 1.5, margin: 0, fontFamily: T.font }}>
                 Kiko remembers preferences, decisions, and context across sessions. Memories are automatically extracted from conversations.
               </p>
@@ -383,7 +383,7 @@ export default function Settings({ user }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* Top Navigation Bar */}
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Top Navigation Bar</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Top Navigation Bar</h3>
               <p style={{ fontSize: 12, color: T.textTertiary, margin: '0 0 16px', fontFamily: T.font }}>Choose which pages appear in the floating top navigation. Home is always shown.</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {ALL_TOP_NAV.map(item => {
@@ -406,7 +406,7 @@ export default function Settings({ user }) {
                           position: 'relative', transition: 'background 0.2s', padding: 0,
                         }}>
                           <div style={{
-                            width: 16, height: 16, borderRadius: '50%', background: '#fff',
+                            width: 16, height: 16, borderRadius: '50%', background: 'rgba(255,255,255,0.035)',
                             position: 'absolute', top: 2, left: isOn ? 20 : 2,
                             transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
                           }} />
@@ -426,7 +426,7 @@ export default function Settings({ user }) {
         {tab === 'Team' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Invite Team Member</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 400, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Invite Team Member</h3>
               <div style={{ display: 'flex', gap: 8 }}>
                 <input value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendInvite()}
                   placeholder="colleague@company.com" style={{ ...inputStyle, flex: 1 }} />
@@ -436,7 +436,7 @@ export default function Settings({ user }) {
                   <option value="admin">Admin</option>
                 </select>
                 <button onClick={sendInvite} style={{
-                  height: 44, padding: '0 16px', borderRadius: 12, background: T.accent, color: '#fff',
+                  height: 44, padding: '0 16px', borderRadius: 14, background: T.accent, color: '#fff',
                   border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
                   display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
                 }}><UserPlus size={14} /> Invite</button>
@@ -445,7 +445,7 @@ export default function Settings({ user }) {
 
             {invitations.length > 0 && (
               <div>
-                <h3 style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px', fontFamily: T.font }}>Pending Invitations</h3>
+                <h3 style={{ fontSize: 11, fontWeight: 400, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px', fontFamily: T.font }}>Pending Invitations</h3>
                 {invitations.map(inv => (
                   <div key={inv.id} style={{ ...cardStyle, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                     <div>
@@ -459,13 +459,13 @@ export default function Settings({ user }) {
             )}
 
             <div>
-              <h3 style={{ fontSize: 11, fontWeight: 600, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px', fontFamily: T.font }}>Team Members</h3>
+              <h3 style={{ fontSize: 11, fontWeight: 400, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px', fontFamily: T.font }}>Team Members</h3>
               {teamMembers.length === 0 ? (
                 <p style={{ fontSize: 13, color: T.textTertiary, fontFamily: T.font }}>No team members yet</p>
               ) : teamMembers.map(m => (
                 <div key={m.id} style={{ ...cardStyle, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: T.accentSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: T.text, fontFamily: T.font }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: T.accentSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 400, color: T.text, fontFamily: T.font }}>
                       {(m.full_name || m.email)?.[0]?.toUpperCase()}
                     </div>
                     <div>
@@ -487,7 +487,7 @@ export default function Settings({ user }) {
         {tab === 'Appearance' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Branding</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Branding</h3>
               <p style={{ fontSize: 12, color: T.textTertiary, lineHeight: 1.5, margin: '0 0 16px', fontFamily: T.font }}>
                 Upload logos and images. Click to upload, crop to fit, then save.
               </p>

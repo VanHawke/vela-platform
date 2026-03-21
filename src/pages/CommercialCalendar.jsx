@@ -250,7 +250,7 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
           {selected ? fmtLong(selected) : 'Select a date'}
         </span>
         {isSelectedToday && (
-          <span style={{ fontSize: 9, fontWeight: 600, color: '#1565C0', background: '#E3F2FD', border: '0.5px solid #B5D4F4', padding: '2px 9px', borderRadius: 4, fontFamily: T.font }}>Today</span>
+          <span style={{ fontSize: 9, fontWeight: 400, color: '#1565C0', background: '#E3F2FD', border: '0.5px solid #B5D4F4', padding: '2px 9px', borderRadius: 4, fontFamily: T.font }}>Today</span>
         )}
       </div>
 
@@ -298,7 +298,7 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
         {/* This month */}
         {monthEvents.length > 0 && (
           <div>
-            <p style={{ fontSize: 9, fontWeight: 600, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10, fontFamily: T.font }}>
+            <p style={{ fontSize: 9, fontWeight: 400, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10, fontFamily: T.font }}>
               {MONTHS_FULL[viewMonth]} {viewYear}
             </p>
             {monthEvents.map((e, i) => {
@@ -322,7 +322,7 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
         {/* Next up */}
         {upcoming.length > 0 && (
           <div>
-            <p style={{ fontSize: 9, fontWeight: 600, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10, fontFamily: T.font }}>Next up</p>
+            <p style={{ fontSize: 9, fontWeight: 400, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10, fontFamily: T.font }}>Next up</p>
             {upcoming.map((e, i) => {
               const days = daysUntil(e.date)
               return (

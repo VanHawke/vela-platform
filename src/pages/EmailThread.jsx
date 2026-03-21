@@ -79,7 +79,7 @@ export default function EmailThread({ threadId, userEmail, onReply, onReplyAll, 
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', fontFamily: T.font }}>
       {/* Thread header */}
       <div style={{ padding: '16px 20px', borderBottom: `1px solid ${T.border}` }}>
-        <h2 style={{ fontSize: 18, fontWeight: 600, color: T.text, margin: '0 0 6px', lineHeight: 1.3 }}>{subject}</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 400, color: T.text, margin: '0 0 6px', lineHeight: 1.3 }}>{subject}</h2>
         <span style={{ fontSize: 11, color: T.textTertiary }}>
           {messages.length} message{messages.length > 1 ? 's' : ''}
         </span>
@@ -124,7 +124,7 @@ export default function EmailThread({ threadId, userEmail, onReply, onReplyAll, 
           const dateStr = msg.date ? new Date(msg.date).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''
 
           return (
-            <div key={msg.gmail_id} style={{ marginBottom: 8, borderRadius: 12, border: `1px solid ${T.border}`, overflow: 'hidden', background: T.surface }}>
+            <div key={msg.gmail_id} style={{ marginBottom: 8, borderRadius: 14, border: `1px solid ${T.border}`, overflow: 'hidden', background: T.surface }}>
               {/* Message header — clickable to expand/collapse */}
               <button onClick={() => toggleExpand(msg.gmail_id)} style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px',
@@ -135,13 +135,13 @@ export default function EmailThread({ threadId, userEmail, onReply, onReplyAll, 
                 <div style={{
                   width: 32, height: 32, borderRadius: '50%', background: T.accentSoft,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  fontSize: 13, fontWeight: 600, color: T.textSecondary,
+                  fontSize: 13, fontWeight: 400, color: T.textSecondary,
                 }}>
                   {fromName.charAt(0).toUpperCase()}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{fromName}</span>
+                    <span style={{ fontSize: 13, fontWeight: 400, color: T.text }}>{fromName}</span>
                     <span style={{ fontSize: 11, color: T.textTertiary }}>{fromEmail}</span>
                   </div>
                   {!isExpanded && (

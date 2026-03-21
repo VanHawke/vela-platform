@@ -132,11 +132,11 @@ export default function ContactDetail() {
 
   const urgencyColor = (u) => u === 'overdue' ? '#ef4444' : u === 'high' ? '#f59e0b' : u === 'due' ? '#3b82f6' : 'var(--text-tertiary)'
 
-  const glass = { background: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(40px) saturate(1.8)', WebkitBackdropFilter: 'blur(40px) saturate(1.8)', border: '1px solid rgba(255,255,255,0.5)', boxShadow: '0 4px 24px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02)' }
-  const card = { background: '#FFFFFF', borderRadius: 16, padding: 24, border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }
-  const inputStyle = { width: '100%', background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
+  const glass = { background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '0.5px solid rgba(255,255,255,0.06)', boxShadow: '0 8px 36px rgba(0,0,0,0.3)' }
+  const card = { background: 'rgba(255,255,255,0.035)', borderRadius: 18, padding: 24, border: '0.5px solid rgba(255,255,255,0.06)', boxShadow: 'none' }
+  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
   const labelStyle = { fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }
-  const sectionTitle = { fontSize: 12, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font)', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.04em' }
+  const sectionTitle = { fontSize: 12, fontWeight: 400, color: 'var(--text)', fontFamily: 'var(--font)', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.04em' }
   const emptyText = { fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', fontStyle: 'italic' }
 
   if (loading) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 24, height: 24, border: '2px solid rgba(0,0,0,0.1)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /></div>
@@ -145,13 +145,13 @@ export default function ContactDetail() {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: 8 }}>
       {/* Glass toolbar */}
-      <div style={{ margin: '0 16px', padding: '10px 20px', borderRadius: 16, ...glass, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ margin: '0 16px', padding: '10px 20px', borderRadius: 18, ...glass, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={() => nav('/contacts')} style={{ background: 'rgba(0,0,0,0.04)', border: 'none', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+          <button onClick={() => nav('/contacts')} style={{ background: 'rgba(255,255,255,0.04)', border: 'none', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)' }}>
             <ArrowLeft style={{ width: 16, height: 16 }} />
           </button>
           <div>
-            <h1 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{displayName(contact)}</h1>
+            <h1 style={{ fontSize: 18, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{displayName(contact)}</h1>
             {contact.title && <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{contact.title}</p>}
           </div>
         </div>
@@ -168,14 +168,14 @@ export default function ContactDetail() {
           <div style={card}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
               {contact.picture ? (
-                <img src={contact.picture} alt="" style={{ width: 56, height: 56, borderRadius: 16, objectFit: 'cover' }} />
+                <img src={contact.picture} alt="" style={{ width: 56, height: 56, borderRadius: 18, objectFit: 'cover' }} />
               ) : (
-                <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{(contact.firstName || contact.lastName || '?')[0]?.toUpperCase()}</span>
+                <div style={{ width: 56, height: 56, borderRadius: 18, background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: 22, fontWeight: 400, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{(contact.firstName || contact.lastName || '?')[0]?.toUpperCase()}</span>
                 </div>
               )}
               <div>
-                <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{displayName(contact)}</p>
+                <p style={{ fontSize: 16, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{displayName(contact)}</p>
                 {contact.title && <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '4px 0 0', fontFamily: 'var(--font)' }}>{contact.title}</p>}
                 {contact.company && (
                   <p onClick={() => orgId && nav(`/organisations?org=${orgId}`)} style={{ fontSize: 12, color: orgId ? 'var(--accent)' : 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', gap: 4, cursor: orgId ? 'pointer' : 'default' }}>
@@ -186,9 +186,9 @@ export default function ContactDetail() {
             </div>
             {/* Quick actions */}
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {contact.email && <a href={`mailto:${contact.email}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.03)', padding: '6px 12px', borderRadius: 8, textDecoration: 'none', fontFamily: 'var(--font)', border: '1px solid rgba(0,0,0,0.04)' }}><Mail style={{ width: 13, height: 13 }} /> Email</a>}
-              {contact.phone && <a href={`tel:${contact.phone}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.03)', padding: '6px 12px', borderRadius: 8, textDecoration: 'none', fontFamily: 'var(--font)', border: '1px solid rgba(0,0,0,0.04)' }}><Phone style={{ width: 13, height: 13 }} /> Call</a>}
-              {contact.linkedin && <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.03)', padding: '6px 12px', borderRadius: 8, textDecoration: 'none', fontFamily: 'var(--font)', border: '1px solid rgba(0,0,0,0.04)' }}><Linkedin style={{ width: 13, height: 13 }} /> LinkedIn</a>}
+              {contact.email && <a href={`mailto:${contact.email}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.03)', padding: '6px 12px', borderRadius: 8, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(255,255,255,0.04)' }}><Mail style={{ width: 13, height: 13 }} /> Email</a>}
+              {contact.phone && <a href={`tel:${contact.phone}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.03)', padding: '6px 12px', borderRadius: 8, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(255,255,255,0.04)' }}><Phone style={{ width: 13, height: 13 }} /> Call</a>}
+              {contact.linkedin && <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.03)', padding: '6px 12px', borderRadius: 8, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(255,255,255,0.04)' }}><Linkedin style={{ width: 13, height: 13 }} /> LinkedIn</a>}
             </div>
           </div>
 

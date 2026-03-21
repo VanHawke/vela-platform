@@ -97,8 +97,8 @@ export default function ImageUpload({ label, storageKey, folder = 'uploads', asp
       {/* Crop modal */}
       {showCrop && rawUrl && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: T.surface, borderRadius: 16, padding: 24, maxWidth: 520, width: '90%', boxShadow: '0 24px 80px rgba(0,0,0,0.15)' }}>
-            <p style={{ fontSize: 15, fontWeight: 600, color: T.text, margin: '0 0 16px' }}>Crop {label}</p>
+          <div style={{ background: T.surface, borderRadius: 18, padding: 24, maxWidth: 520, width: '90%', boxShadow: '0 24px 80px rgba(0,0,0,0.15)' }}>
+            <p style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 16px' }}>Crop {label}</p>
             <div style={{ maxHeight: 400, overflow: 'auto', borderRadius: 8, background: T.bg, display: 'flex', justifyContent: 'center' }}>
               <ReactCrop crop={crop} onChange={setCrop} onComplete={setCompletedCrop}>
                 <img ref={imgRef} src={rawUrl} alt="" style={{ maxHeight: 380, maxWidth: '100%', objectFit: 'contain' }} />
@@ -116,7 +116,7 @@ export default function ImageUpload({ label, storageKey, folder = 'uploads', asp
 
       {/* Upload zone */}
       <div onClick={() => fileRef.current?.click()} style={{
-        border: `1px dashed ${T.border}`, borderRadius: 12, padding: 16, cursor: 'pointer',
+        border: `1px dashed ${T.border}`, borderRadius: 14, padding: 16, cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 90,
         transition: 'border-color 0.15s', background: T.bg,
       }}
@@ -132,7 +132,7 @@ export default function ImageUpload({ label, storageKey, folder = 'uploads', asp
           </div>
         )}
         {uploading && (
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.8)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.8)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Loader2 size={20} className="animate-spin" color={T.accent} />
           </div>
         )}

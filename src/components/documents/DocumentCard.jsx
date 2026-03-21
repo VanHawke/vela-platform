@@ -35,15 +35,15 @@ export default function DocumentCard({ doc, compact = false, onView }) {
   }
 
   return (
-    <div style={{ background: '#FFFFFF', borderRadius: 12, padding: 14, border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
+    <div style={{ background: 'rgba(255,255,255,0.035)', borderRadius: 14, padding: 14, border: '0.5px solid rgba(255,255,255,0.06)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
         <div style={{ width: 36, height: 36, borderRadius: 9, background: `${catColor}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <Icon style={{ width: 17, height: 17, color: catColor }} />
         </div>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.3 }}>{doc.name}</p>
+          <p style={{ fontSize: 13, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.3 }}>{doc.name}</p>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 4, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: catColor, background: `${catColor}12`, padding: '2px 6px', borderRadius: 4 }}>{doc.category || 'document'}</span>
+            <span style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.04em', textTransform: 'uppercase', color: catColor, background: `${catColor}12`, padding: '2px 6px', borderRadius: 4 }}>{doc.category || 'document'}</span>
             {doc.linked_team && <span style={{ fontSize: 9, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>· {doc.linked_team}</span>}
             <span style={{ fontSize: 9, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>· {date}</span>
           </div>
@@ -53,7 +53,7 @@ export default function DocumentCard({ doc, compact = false, onView }) {
       {(intel.key_stats?.length > 0) && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 }}>
           {intel.key_stats.slice(0, 3).map((s, i) => (
-            <span key={i} style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(0,0,0,0.04)', color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{s}</span>
+            <span key={i} style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.04)', color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{s}</span>
           ))}
         </div>
       )}

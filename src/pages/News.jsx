@@ -84,7 +84,7 @@ function ArticleCard({ article, onStar, featured = false }) {
   const cardStyle = {
     background: featured ? sig.bg : T.surface,
     border: `0.5px solid ${featured ? sig.border : T.border}`,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: '14px 16px',
     display: 'flex',
     flexDirection: 'column',
@@ -102,7 +102,7 @@ function ArticleCard({ article, onStar, featured = false }) {
       {/* Top row: badges + time + star */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
         {sig.label && (
-          <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: sig.text, background: sig.bg, border: `0.5px solid ${sig.border}`, padding: '2px 6px', borderRadius: 4 }}>
+          <span style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.04em', textTransform: 'uppercase', color: sig.text, background: sig.bg, border: `0.5px solid ${sig.border}`, padding: '2px 6px', borderRadius: 4 }}>
             {sig.label}
           </span>
         )}
@@ -112,7 +112,7 @@ function ArticleCard({ article, onStar, featured = false }) {
           </span>
         )}
         {score >= 7 && (
-          <span style={{ fontSize: 9, fontWeight: 600, color: sig.text || T.textTertiary, background: 'transparent', marginLeft: 2 }}>
+          <span style={{ fontSize: 9, fontWeight: 400, color: sig.text || T.textTertiary, background: 'transparent', marginLeft: 2 }}>
             {score}/10
           </span>
         )}
@@ -149,7 +149,7 @@ function ArticleCard({ article, onStar, featured = false }) {
           {crm.map((c, i) => {
             const name = c.name || c
             return (
-              <span key={i} style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(0,0,0,0.04)', border: `0.5px solid ${T.border}`, color: T.textSecondary, fontFamily: T.font }}>
+              <span key={i} style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.04)', border: `0.5px solid ${T.border}`, color: T.textSecondary, fontFamily: T.font }}>
                 {name} · CRM
               </span>
             )
@@ -324,7 +324,7 @@ export default function News() {
             {/* Featured row — deal signals & partnerships */}
             {featured.length > 0 && (
               <>
-                <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.textTertiary, marginBottom: 8 }}>
+                <div style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.textTertiary, marginBottom: 8 }}>
                   Signals
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: featured.length === 1 ? '1fr' : '1fr 1fr', gap: 10, marginBottom: 16 }}>
@@ -336,7 +336,7 @@ export default function News() {
             {/* All articles grid */}
             {rest.length > 0 && (
               <>
-                <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.textTertiary, marginBottom: 8, marginTop: featured.length > 0 ? 8 : 0 }}>
+                <div style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.textTertiary, marginBottom: 8, marginTop: featured.length > 0 ? 8 : 0 }}>
                   {featured.length > 0 ? 'More' : 'Articles'} · {rest.length}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>

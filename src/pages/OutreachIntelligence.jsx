@@ -95,8 +95,8 @@ export default function OutreachIntelligence({ user }) {
     if (s.sent_at > byCompany[c].lastSent) byCompany[c].lastSent = s.sent_at
   })
 
-  const card = { background: '#FFFFFF', borderRadius: 16, padding: '20px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }
-  const sectionTitle = { fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: T.textTertiary, margin: '0 0 14px', fontFamily: T.font }
+  const card = { background: 'rgba(255,255,255,0.035)', borderRadius: 18, padding: '20px', border: '0.5px solid rgba(255,255,255,0.06)', boxShadow: 'none' }
+  const sectionTitle = { fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: T.textTertiary, margin: '0 0 14px', fontFamily: T.font }
   const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
   if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}><Loader2 style={{ width: 24, height: 24, animation: 'spin 1s linear infinite', color: T.textTertiary }} /></div>
@@ -106,7 +106,7 @@ export default function OutreachIntelligence({ user }) {
     <div style={{ padding: '32px 28px', maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
       <div style={{ ...card, padding: 40 }}>
         <BarChart3 style={{ width: 40, height: 40, color: T.textTertiary, margin: '0 auto 16px' }} />
-        <h2 style={{ fontSize: 18, fontWeight: 600, color: T.text, margin: '0 0 8px', fontFamily: T.font }}>Outreach Intelligence</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 400, color: T.text, margin: '0 0 8px', fontFamily: T.font }}>Outreach Intelligence</h2>
         <p style={{ fontSize: 13, color: T.textSecondary, margin: '0 0 20px', fontFamily: T.font, lineHeight: 1.5 }}>Score your outbound emails to discover which messaging approaches, send times, and CTAs generate the most replies.</p>
         <button onClick={runScoring} disabled={scoring} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 10, background: T.accent, color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font }}>
           {scoring ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} /> : <Zap style={{ width: 14, height: 14 }} />}
@@ -122,15 +122,15 @@ export default function OutreachIntelligence({ user }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 600, color: T.text, margin: 0, fontFamily: T.font }}>Outreach Intelligence</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 400, color: T.text, margin: 0, fontFamily: T.font }}>Outreach Intelligence</h1>
           <p style={{ fontSize: 12, color: T.textTertiary, margin: '4px 0 0', fontFamily: T.font }}>{total} emails scored · Updated {scores[0]?.scored_at ? new Date(scores[0].scored_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'never'}</p>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <select value={pipelineFilter} onChange={e => setPipelineFilter(e.target.value)} style={{ fontSize: 12, padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.1)', background: '#fff', fontFamily: T.font, color: T.text }}>
+          <select value={pipelineFilter} onChange={e => setPipelineFilter(e.target.value)} style={{ fontSize: 12, padding: '6px 10px', borderRadius: 8, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.035)', fontFamily: T.font, color: T.text }}>
             <option value="all">All pipelines</option>
             {pipelines.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
-          <button onClick={runScoring} disabled={scoring} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.1)', background: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, color: T.text }}>
+          <button onClick={runScoring} disabled={scoring} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 8, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.035)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, color: T.text }}>
             {scoring ? <Loader2 style={{ width: 12, height: 12, animation: 'spin 1s linear infinite' }} /> : <RefreshCw style={{ width: 12, height: 12 }} />}
             {scoring ? 'Scoring…' : 'Score now'}
           </button>
@@ -149,9 +149,9 @@ export default function OutreachIntelligence({ user }) {
           <div key={i} style={{ ...card, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 6 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <s.icon style={{ width: 13, height: 13, color: s.color }} />
-              <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.03em', textTransform: 'uppercase', color: T.textTertiary, fontFamily: T.font }}>{s.label}</span>
+              <span style={{ fontSize: 10, fontWeight: 400, letterSpacing: '0.03em', textTransform: 'uppercase', color: T.textTertiary, fontFamily: T.font }}>{s.label}</span>
             </div>
-            <span style={{ fontSize: 22, fontWeight: 700, color: s.color, fontFamily: T.font }}>{s.value}</span>
+            <span style={{ fontSize: 22, fontWeight: 500, color: s.color, fontFamily: T.font }}>{s.value}</span>
           </div>
         ))}
       </div>
@@ -167,10 +167,10 @@ export default function OutreachIntelligence({ user }) {
               return (
                 <div key={approach} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontSize: 11, fontWeight: 500, color: T.text, fontFamily: T.font, width: 120, flexShrink: 0 }}>{approach}</span>
-                  <div style={{ flex: 1, height: 20, background: 'rgba(0,0,0,0.04)', borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
+                  <div style={{ flex: 1, height: 20, background: 'rgba(255,255,255,0.04)', borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
                     <div style={{ height: '100%', width: `${Math.min(rate * 2, 100)}%`, background: APPROACH_COLORS[approach] || '#ABABAB', borderRadius: 4, transition: 'width 0.5s ease' }} />
                   </div>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: rate > 15 ? '#34C759' : T.textSecondary, fontFamily: T.font, width: 50, textAlign: 'right' }}>{rate}%</span>
+                  <span style={{ fontSize: 11, fontWeight: 400, color: rate > 15 ? '#34C759' : T.textSecondary, fontFamily: T.font, width: 50, textAlign: 'right' }}>{rate}%</span>
                   <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font, width: 30, textAlign: 'right' }}>({data.total})</span>
                 </div>
               )
@@ -187,10 +187,10 @@ export default function OutreachIntelligence({ user }) {
               return (
                 <div key={cta} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontSize: 11, fontWeight: 500, color: T.text, fontFamily: T.font, width: 100, flexShrink: 0 }}>{cta}</span>
-                  <div style={{ flex: 1, height: 20, background: 'rgba(0,0,0,0.04)', borderRadius: 4, overflow: 'hidden' }}>
+                  <div style={{ flex: 1, height: 20, background: 'rgba(255,255,255,0.04)', borderRadius: 4, overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${Math.min(rate * 2, 100)}%`, background: CTA_COLORS[cta] || '#ABABAB', borderRadius: 4, transition: 'width 0.5s ease' }} />
                   </div>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: rate > 15 ? '#34C759' : T.textSecondary, fontFamily: T.font, width: 50, textAlign: 'right' }}>{rate}%</span>
+                  <span style={{ fontSize: 11, fontWeight: 400, color: rate > 15 ? '#34C759' : T.textSecondary, fontFamily: T.font, width: 50, textAlign: 'right' }}>{rate}%</span>
                   <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font, width: 30, textAlign: 'right' }}>({data.total})</span>
                 </div>
               )
@@ -210,7 +210,7 @@ export default function OutreachIntelligence({ user }) {
             const barH = data.total > 0 ? Math.max((data.total / maxTotal) * 90, 8) : 4
             return (
               <div key={day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <span style={{ fontSize: 9, fontWeight: 600, color: rate > 15 ? '#34C759' : T.textTertiary, fontFamily: T.font }}>{rate > 0 ? `${rate}%` : ''}</span>
+                <span style={{ fontSize: 9, fontWeight: 400, color: rate > 15 ? '#34C759' : T.textTertiary, fontFamily: T.font }}>{rate > 0 ? `${rate}%` : ''}</span>
                 <div style={{ width: '100%', maxWidth: 48, height: barH, borderRadius: 4, background: data.total > 0 ? (rate > 15 ? '#34C759' : rate > 8 ? '#FF9500' : 'rgba(0,0,0,0.12)') : 'rgba(0,0,0,0.04)', transition: 'height 0.4s ease' }} />
                 <span style={{ fontSize: 9, fontWeight: 500, color: T.textTertiary, fontFamily: T.font }}>{day.slice(0, 3)}</span>
                 <span style={{ fontSize: 8, color: T.textTertiary, fontFamily: T.font }}>{data.total}</span>

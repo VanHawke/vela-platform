@@ -216,7 +216,7 @@ export default function KikoOS({ user, onOpenVoice }) {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <KikoSymbol size={18} color="var(--text)" />
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font)' }}>Kiko</span>
+          <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--text)', fontFamily: 'var(--font)' }}>Kiko</span>
           <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>· {currentPage}</span>
         </div>
         <button onClick={() => setStage(0)} style={{

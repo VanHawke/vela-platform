@@ -2,10 +2,12 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
+import T from '@/lib/theme'
 import { Settings, LogOut, Search, ChevronDown, BarChart3, Newspaper, Grid3X3, FileText } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
 import KikoSymbol from '../kiko/KikoSymbol'
 import CommandPalette from './CommandPalette'
+import AuroraCanvas from '../AuroraCanvas'
 
 const TABS = [
   { label: 'Home', path: '/' },
@@ -109,11 +111,15 @@ export default function Layout({ user }) {
   const isTabActive = (path) => path === '/' ? isHome : loc.pathname === path
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden', background: '#0A0A0C' }}>
-      {/* Top bar */}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden', background: T.bg }}>
+      {/* Aurora gradient orbs */}
+      <AuroraCanvas extraOrb={loc.pathname === '/pipeline' ? 'amber' : null} />
+
+      {/* Top bar — frosted glass */}
       <header style={{
         height: 48, minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 20px', borderBottom: '1px solid rgba(255,255,255,0.04)', background: '#0A0A0C',
+        padding: '0 20px', borderBottom: `0.5px solid ${T.glassBorder}`,
+        background: 'rgba(7,7,11,0.7)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
         flexShrink: 0, position: 'relative', zIndex: 250,
       }}>
         {/* Left: Logo only */}
@@ -125,8 +131,8 @@ export default function Layout({ user }) {
               <img src={customLogo} alt="Logo" style={{ height: 28, borderRadius: 7, maxWidth: 120, objectFit: 'contain' }} />
             ) : (
               <>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'linear-gradient(135deg, #7C5CFC, #00D4AA)', boxShadow: '0 0 8px rgba(124,92,252,0.4)' }} />
-                <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.9)', fontFamily: 'var(--font)', letterSpacing: '0.02em' }}>kiko</span>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: T.accentGradient, boxShadow: `0 0 8px rgba(139,108,246,0.4)` }} />
+                <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.8)', fontFamily: T.font, letterSpacing: '0.02em' }}>kiko</span>
               </>
             )}
           </button>
@@ -142,7 +148,7 @@ export default function Layout({ user }) {
 
         {/* Center: Pill tab group — absolutely centered to prevent shift */}
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: 1, background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: 3 }}>
+          <div style={{ display: 'flex', gap: 1, background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderRadius: 14, padding: 3, border: '0.5px solid rgba(255,255,255,0.04)' }}>
             {TABS.map(tab => {
               const active = isTabActive(tab.path)
               return (
@@ -150,10 +156,10 @@ export default function Layout({ user }) {
                   if (tab.path === '/') { setKikoMessages([]); setKikoConvId(null); setKikoResetKey(k => k + 1) }
                   nav(tab.path)
                 }} style={{
-                  padding: '5px 14px', borderRadius: 8, border: 'none',
-                  background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
+                  padding: '5px 14px', borderRadius: 10, border: 'none',
+                  background: active ? 'rgba(255,255,255,0.07)' : 'transparent',
                   color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)',
-                  fontSize: 11, fontWeight: active ? 500 : 400, cursor: 'pointer', fontFamily: 'var(--font)',
+                  fontSize: 11, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: T.font,
                   transition: 'all 0.15s', letterSpacing: '0.02em',
                 }}>{tab.label}</button>
               )
@@ -161,9 +167,9 @@ export default function Layout({ user }) {
             {/* More tab with dropdown */}
             <div ref={moreRef} style={{ position: 'relative' }}>
               <button onClick={() => setMoreOpen(!moreOpen)} style={{
-                padding: '5px 14px', borderRadius: 8, border: 'none',
+                padding: '5px 14px', borderRadius: 10, border: 'none',
                 background: moreOpen ? 'rgba(255,255,255,0.06)' : 'transparent',
-                color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 400, cursor: 'pointer', fontFamily: 'var(--font)',
+                color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
                 display: 'flex', alignItems: 'center', gap: 3, transition: 'all 0.15s', letterSpacing: '0.02em',
               }}>
                 More <ChevronDown size={11} style={{ transition: 'transform 0.2s', transform: moreOpen ? 'rotate(180deg)' : 'none' }} />
@@ -171,8 +177,9 @@ export default function Layout({ user }) {
               {moreOpen && (
                 <div style={{
                   position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-                  width: 200, background: '#111114', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)',
-                  boxShadow: '0 4px 24px rgba(0,0,0,0.4)', padding: '4px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
+                  width: 200, background: 'rgba(14,14,20,0.85)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
+                  borderRadius: 14, border: `0.5px solid ${T.glassBorder}`,
+                  boxShadow: '0 8px 40px rgba(0,0,0,0.5)', padding: '4px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
                 }}>
                   {[
                     { label: 'Outreach Intelligence', path: '/email', Icon: BarChart3 },
@@ -181,10 +188,10 @@ export default function Layout({ user }) {
                     { label: 'Documents', path: '/documents', Icon: FileText },
                   ].map(item => (
                     <button key={item.label} onClick={() => { nav(item.path); setMoreOpen(false) }} style={{
-                      width: '100%', padding: '8px 10px', borderRadius: 8, border: 'none',
+                      width: '100%', padding: '8px 10px', borderRadius: 10, border: 'none',
                       background: loc.pathname === item.path ? 'rgba(255,255,255,0.06)' : 'transparent',
                       color: loc.pathname === item.path ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.35)', textAlign: 'left',
-                      fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)',
+                      fontSize: 12, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
                       display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s',
                     }}
                       onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
@@ -211,9 +218,9 @@ export default function Layout({ user }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {/* Listening pill — only when voice is active */}
           {voiceActive && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 20, background: 'rgba(0,212,170,0.04)', border: '0.5px solid rgba(0,212,170,0.1)', animation: 'fadeIn 0.3s ease-out' }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(0,212,170,0.7)', animation: 'kikoBreathe 1.5s ease-in-out infinite' }} />
-              <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(0,212,170,0.6)', fontFamily: 'var(--font)' }}>{voiceStatus}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 20, background: 'rgba(6,214,160,0.04)', border: '0.5px solid rgba(6,214,160,0.1)', animation: 'fadeIn 0.3s ease-out' }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(6,214,160,0.7)', animation: 'kikoBreathe 1.5s ease-in-out infinite' }} />
+              <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(6,214,160,0.6)', fontFamily: 'var(--font)' }}>{voiceStatus}</span>
             </div>
           )}
           {/* Command palette trigger */}
@@ -247,8 +254,9 @@ export default function Layout({ user }) {
             {avatarOpen && (
               <div style={{
                 position: 'absolute', top: '100%', right: 0, marginTop: 6,
-                width: 200, background: '#111114', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                width: 200, background: 'rgba(14,14,20,0.85)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
+                borderRadius: 14, border: '0.5px solid rgba(255,255,255,0.06)',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
                 padding: '6px', zIndex: 400, animation: 'fadeIn 0.15s ease-out',
               }}>
                 <div style={{ padding: '8px 12px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.04)', marginBottom: 4 }}>
@@ -281,7 +289,7 @@ export default function Layout({ user }) {
         </div>
       </header>
 
-      <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+      <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1 }}>
         <Outlet context={{ kikoMessages, setKikoMessages, kikoConvId, setKikoConvId, kikoNavigate, kikoResetKey, openPalette: () => setPaletteOpen(true) }} />
       </main>
 

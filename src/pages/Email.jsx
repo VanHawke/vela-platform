@@ -154,8 +154,8 @@ export default function Email({ user }) {
       {/* Left — Folders */}
       <div style={{ width: 200, borderRight: `1px solid ${T.border}`, padding: 12, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
         <button onClick={() => setComposing('new')} style={{
-          width: '100%', height: 40, borderRadius: 12, border: 'none', background: T.accent, color: '#fff',
-          fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+          width: '100%', height: 40, borderRadius: 14, border: 'none', background: T.accent, color: '#fff',
+          fontSize: 13, fontWeight: 400, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           marginBottom: 12, fontFamily: T.font,
         }}>
           <Plus size={14} /> Compose
@@ -175,7 +175,7 @@ export default function Email({ user }) {
               <Icon size={15} style={{ flexShrink: 0 }} />
               <span style={{ flex: 1 }}>{f.label}</span>
               {f.id === 'INBOX' && unreadCount > 0 && (
-                <span style={{ fontSize: 10, background: T.blue, color: '#fff', padding: '1px 6px', borderRadius: 8, fontWeight: 600 }}>{unreadCount}</span>
+                <span style={{ fontSize: 10, background: T.blue, color: '#fff', padding: '1px 6px', borderRadius: 8, fontWeight: 400 }}>{unreadCount}</span>
               )}
             </button>
           )
@@ -185,7 +185,7 @@ export default function Email({ user }) {
         {userLabels.length > 0 && (
           <>
             <div style={{ height: 1, background: T.border, margin: '8px 0' }} />
-            <div style={{ fontSize: 10, fontWeight: 600, color: T.textTertiary, padding: '4px 12px', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: T.font }}>Labels</div>
+            <div style={{ fontSize: 10, fontWeight: 400, color: T.textTertiary, padding: '4px 12px', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: T.font }}>Labels</div>
             {userLabels.map(l => {
               const active = folder === l.id
               return (
