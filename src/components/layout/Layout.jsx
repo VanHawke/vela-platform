@@ -144,7 +144,7 @@ export default function Layout({ user }) {
 
         {/* Center: Pill tab group — absolutely centered to prevent shift */}
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: 2, background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 16, padding: 4, border: '0.5px solid rgba(255,255,255,0.8)', boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.6)' }}>
+          <div style={{ display: 'flex', gap: 2, background: 'rgba(0,0,0,0.04)', borderRadius: 12, padding: 3 }}>
             {TABS.map(tab => {
               const active = isTabActive(tab.path)
               return (

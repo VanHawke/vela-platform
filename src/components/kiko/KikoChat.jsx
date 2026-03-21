@@ -476,19 +476,20 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     const isUser = msg.role === 'user'
     const isKiko = isVoice ? msg.role === 'kiko' : msg.role === 'assistant'
     return (
-      <div key={i} style={{ marginBottom: 10, display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
+      <div key={i} style={{ marginBottom: 16, display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', gap: 10 }}>
         {isKiko && (
-          <div style={{ width: 26, height: 26, borderRadius: 7, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 10, marginTop: 4 }}>
-            <KikoSymbol size={14} color="#fff" />
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+            <KikoSymbol size={13} color="#fff" />
           </div>
         )}
         <div style={{
-          maxWidth: '75%', padding: '10px 14px',
-          borderRadius: 14,
-          background: isUser ? 'rgba(0,0,0,0.04)' : '#fff',
-          color: isUser ? T.text : T.textSecondary,
-          border: isKiko ? `0.5px solid ${T.border}` : 'none',
-          fontSize: 13, lineHeight: 1.5, fontFamily: T.font,
+          maxWidth: isUser ? '75%' : '100%',
+          padding: isUser ? '11px 16px' : '0',
+          borderRadius: isUser ? '18px 18px 4px 18px' : 0,
+          background: isUser ? T.accent : 'transparent',
+          color: isUser ? '#FFFFFF' : T.text,
+          border: 'none',
+          fontSize: 14, lineHeight: 1.7, fontFamily: T.font,
         }}>
           {isUser ? msg.content : <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />}
         </div>
@@ -517,19 +518,19 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {/* Avatar */}
           <div onClick={voiceActive ? stopVoice : startVoice} style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: voiceActive ? 12 : 28, cursor: 'pointer', transition: trans, flexShrink: 0, width: voiceActive ? 100 : 180, height: voiceActive ? 100 : 180 }}>
             {/* Pulse rings — use explicit top/left/width/height for cross-browser */}
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: voiceActive ? 26 : 42, border: `2px solid ${voiceActive ? 'rgba(34,197,94,0.15)' : 'rgba(26,26,26,0.08)'}`, animation: 'kikoPulseRing 2.5s ease-in-out infinite', transition: trans }} />
-            <div style={{ position: 'absolute', top: voiceActive ? -6 : -10, left: voiceActive ? -6 : -10, right: voiceActive ? -6 : -10, bottom: voiceActive ? -6 : -10, borderRadius: voiceActive ? 30 : 48, border: `1.5px solid ${voiceActive ? 'rgba(34,197,94,0.08)' : 'rgba(26,26,26,0.04)'}`, animation: 'kikoPulseRing 2.5s ease-in-out 0.6s infinite', transition: trans }} />
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: voiceActive ? 26 : 28, border: `2px solid ${voiceActive ? 'rgba(34,197,94,0.15)' : 'rgba(26,26,26,0.08)'}`, animation: 'kikoPulseRing 2.5s ease-in-out infinite', transition: trans }} />
+            <div style={{ position: 'absolute', top: voiceActive ? -6 : -10, left: voiceActive ? -6 : -10, right: voiceActive ? -6 : -10, bottom: voiceActive ? -6 : -10, borderRadius: voiceActive ? 30 : 34, border: `1.5px solid ${voiceActive ? 'rgba(34,197,94,0.08)' : 'rgba(26,26,26,0.04)'}`, animation: 'kikoPulseRing 2.5s ease-in-out 0.6s infinite', transition: trans }} />
             {/* Avatar square */}
             <div style={{
-              width: voiceActive ? 64 : 120, height: voiceActive ? 64 : 120,
-              borderRadius: voiceActive ? 18 : 30, background: T.accent,
+              width: voiceActive ? 64 : 80, height: voiceActive ? 64 : 80,
+              borderRadius: voiceActive ? 18 : 22, background: T.accent,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               animation: 'kikoBreatheScale 4s ease-in-out infinite',
               transition: trans, overflow: 'hidden', position: 'relative',
             }}>
               {/* Dots — show in idle AND when voice active but not speaking */}
               <div style={{ position: 'absolute', opacity: (voiceActive && voiceState.speaking) ? 0 : 1, transition: `opacity 0.4s` }}>
-                <KikoDots size={voiceActive ? 28 : 52} color="#fff" animated />
+                <KikoDots size={voiceActive ? 28 : 36} color="#fff" animated />
               </div>
               {/* Equalizer bars — ONLY when Kiko is speaking */}
               <div style={{ position: 'absolute', opacity: (voiceActive && voiceState.speaking) ? 1 : 0, transition: `opacity 0.4s` }}>
@@ -540,10 +541,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
           {/* Greeting text — collapses when voice active */}
           <div style={{ maxHeight: voiceActive ? 0 : 80, opacity: voiceActive ? 0 : 1, overflow: 'hidden', transition: trans, textAlign: 'center' }}>
-            <h1 style={{ fontSize: 28, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font, letterSpacing: '-0.02em' }}>
+            <h1 style={{ fontSize: 28, fontWeight: 400, color: T.text, margin: '0 0 6px', fontFamily: T.font, letterSpacing: '-0.02em' }}>
               {getGreeting()}, {firstName}
             </h1>
-            <p style={{ fontSize: 14, color: 'rgba(0,0,0,0.3)', margin: 0, fontFamily: T.font }}>What would you like to do?</p>
+            <p style={{ fontSize: 15, color: T.textTertiary, margin: 0, fontFamily: T.font }}>What would you like to work on?</p>
           </div>
 
           {/* Equalizer CTA — only in idle state */}
@@ -572,14 +573,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginTop: 12 }}>
                 {CHIPS.map(c => (
                   <button key={c} onClick={() => handleSubmit(c)} style={{
-                    padding: '8px 16px', borderRadius: 20, background: 'rgba(255,255,255,0.6)',
-                    backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-                    border: '0.5px solid rgba(255,255,255,0.7)', color: T.textSecondary,
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
+                    padding: '7px 16px', borderRadius: 20, background: T.surface,
+                    border: `0.5px solid ${T.border}`, color: T.textSecondary,
                     fontSize: 12, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.15s'
                   }}
-                    onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.8)' }}
-                    onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.7)'; e.currentTarget.style.background = 'rgba(255,255,255,0.6)' }}
+                    onMouseOver={e => { e.currentTarget.style.borderColor = T.borderHover; e.currentTarget.style.color = T.text }}
+                    onMouseOut={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.textSecondary }}
                   >{c}</button>
                 ))}
               </div>
@@ -650,8 +649,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {renderMessages(messages)}
           {/* Thinking indicator */}
           {streaming && !streamText && (
-            <div style={{ marginBottom: 12, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-              <div style={{ width: 24, height: 24, borderRadius: 7, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 4 }}>
+            <div style={{ marginBottom: 16, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
                 <KikoSymbol size={13} color="#fff" animate="thinking" />
               </div>
               <div style={{ maxWidth: 320 }}>
@@ -689,13 +688,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           )}
           {/* Streaming response */}
           {streaming && streamText && (
-            <div style={{ marginBottom: 12, display: 'flex' }}>
-              <div style={{ width: 24, height: 24, borderRadius: 7, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 10, marginTop: 4 }}>
+            <div style={{ marginBottom: 16, display: 'flex', gap: 10 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
                 <KikoSymbol size={13} color="#fff" animate="streaming" />
               </div>
-              <div style={{ maxWidth: '75%', padding: '12px 16px', borderRadius: T.radiusSm, background: '#fff', border: `0.5px solid ${T.border}`, fontSize: 13, color: T.textSecondary, lineHeight: 1.5, fontFamily: T.font }}>
+              <div style={{ flex: 1, fontSize: 14, color: T.text, lineHeight: 1.7, fontFamily: T.font }}>
                 <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
-                <span style={{ animation: 'pulse 1s infinite', marginLeft: 2 }}>|</span>
+                <span style={{ animation: 'pulse 1s infinite', marginLeft: 2, color: T.textTertiary }}>|</span>
               </div>
             </div>
           )}
