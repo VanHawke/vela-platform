@@ -391,9 +391,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     return (
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-        borderRadius: 28, padding: welcome ? '6px 6px 6px 20px' : '4px 4px 4px 14px',
-        border: `0.5px solid ${T.border}`,
+        background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
+        borderRadius: 18, padding: welcome ? '5px 5px 5px 22px' : '4px 4px 4px 14px',
+        border: '0.5px solid rgba(255,255,255,0.1)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)',
         maxWidth: welcome ? 520 : (compact ? '100%' : 640),
         width: '100%', margin: '0 auto',
       }}>
@@ -557,12 +558,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   { label: 'Calendar', value: '2', detail: 'Next 3pm', edge: '#06D6A0' },
                 ].map(card => (
                   <div key={card.label} onClick={() => handleSubmit(`Brief me on ${card.label.toLowerCase()}`)} style={{
-                    borderRadius: 18, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-                    border: '0.5px solid rgba(255,255,255,0.08)', padding: 18, cursor: 'pointer',
+                    borderRadius: 18, background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
+                    border: '0.5px solid rgba(255,255,255,0.1)', padding: 18, cursor: 'pointer',
                     transition: 'all 0.4s cubic-bezier(0.2,0,0,1)', position: 'relative', overflow: 'hidden',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
                   }}
-                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'translateY(-3px)' }}
-                    onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.transform = 'translateY(0)' }}
+                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 16px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12)' }}
+                    onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)' }}
                   >
                     <div style={{ position: 'absolute', top: 0, left: 0, width: 2.5, height: '100%', borderRadius: 2, background: `linear-gradient(180deg, ${card.edge}, transparent)` }} />
                     <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.15)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, marginBottom: 10, fontFamily: T.font }}>{card.label}</div>
@@ -574,10 +576,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
               {/* Alert card */}
               <div onClick={() => handleSubmit('Brief me on the Cloudflare ROI framework')} style={{
-                width: '100%', maxWidth: 540, borderRadius: 16, background: 'rgba(245,158,11,0.04)',
+                width: '100%', maxWidth: 540, borderRadius: 16, background: 'rgba(245,158,11,0.06)',
                 backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-                border: '0.5px solid rgba(245,158,11,0.08)', padding: '16px 18px',
+                border: '0.5px solid rgba(245,158,11,0.12)', padding: '16px 18px',
                 display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', transition: 'all 0.4s',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(245,158,11,0.06)',
               }}
                 onMouseOver={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.07)'; e.currentTarget.style.borderColor = 'rgba(245,158,11,0.15)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
                 onMouseOut={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.04)'; e.currentTarget.style.borderColor = 'rgba(245,158,11,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}
