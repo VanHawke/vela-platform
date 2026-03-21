@@ -3,11 +3,11 @@ import { supabase } from '@/lib/supabase'
 import { MessageCircle, Mic, ChevronRight, ChevronLeft, Plus, Trash2, Pencil } from 'lucide-react'
 
 const T = {
-  bg: '#FAFAFA', surface: '#FFFFFF', surfaceHover: '#F5F5F5',
-  border: 'rgba(0,0,0,0.06)', borderHover: 'rgba(0,0,0,0.12)',
-  text: '#1A1A1A', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
-  accent: '#1A1A1A', accentSoft: 'rgba(0,0,0,0.04)',
-  font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  bg: '#0A0A0C', surface: 'rgba(255,255,255,0.02)', surfaceHover: 'rgba(255,255,255,0.04)',
+  border: 'rgba(255,255,255,0.06)', borderHover: 'rgba(255,255,255,0.1)',
+  text: 'rgba(255,255,255,0.9)', textSecondary: 'rgba(255,255,255,0.5)', textTertiary: 'rgba(255,255,255,0.2)',
+  accent: '#7C5CFC', accentSoft: 'rgba(124,92,252,0.06)',
+  font: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'DM Sans', 'Segoe UI', sans-serif",
 }
 
 function timeAgo(d) {
@@ -86,7 +86,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
         zIndex: 200, width: 28, height: 80, borderRadius: '10px 0 0 10px',
         background: T.surface, border: `1px solid ${T.border}`, borderRight: 'none',
         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '-2px 0 8px rgba(0,0,0,0.04)', color: T.textTertiary,
+        boxShadow: '-2px 0 8px rgba(0,0,0,0.2)', color: T.textTertiary,
       }}>
         <ChevronLeft size={14} />
       </button>
@@ -102,16 +102,16 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
         zIndex: 201, width: 28, height: 80, borderRadius: '10px 0 0 10px',
         background: T.surface, border: `1px solid ${T.border}`, borderRight: 'none',
         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '-2px 0 8px rgba(0,0,0,0.04)', color: T.textTertiary,
+        boxShadow: '-2px 0 8px rgba(0,0,0,0.2)', color: T.textTertiary,
       }}>
         <ChevronRight size={14} />
       </button>
 
       <div style={{
-      position: 'fixed', top: 56, right: 0, width: 280, height: 'calc(100% - 56px)', zIndex: 200,
-      background: T.surface, borderLeft: `1px solid ${T.border}`,
+      position: 'fixed', top: 48, right: 0, width: 280, height: 'calc(100% - 48px)', zIndex: 200,
+      background: '#111114', borderLeft: `1px solid ${T.border}`,
       display: 'flex', flexDirection: 'column',
-      boxShadow: '-4px 0 16px rgba(0,0,0,0.04)',
+      boxShadow: '-4px 0 16px rgba(0,0,0,0.3)',
       animation: 'slideInRight 0.2s ease-out',
     }}>
       {/* Header */}
@@ -119,7 +119,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
         padding: '16px 16px 12px', display: 'flex', alignItems: 'center',
         justifyContent: 'space-between', borderBottom: `1px solid ${T.border}`,
       }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: T.font }}>Chats</span>
+        <span style={{ fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font }}>Chats</span>
         <div style={{ display: 'flex', gap: 4 }}>
           <button onClick={() => { onNewChat(); }} style={{
             width: 32, height: 32, borderRadius: 8, border: 'none',
@@ -158,7 +158,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
                 <div style={{
                   width: 28, height: 28, borderRadius: 7, flexShrink: 0, marginTop: 1,
                   background: active ? T.accent : T.accentSoft,
-                  color: active ? '#fff' : T.textTertiary,
+                  color: active ? 'rgba(255,255,255,0.9)' : T.textTertiary,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   {voice ? <Mic size={13} /> : <MessageCircle size={13} />}

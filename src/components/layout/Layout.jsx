@@ -109,12 +109,12 @@ export default function Layout({ user }) {
   const isTabActive = (path) => path === '/' ? isHome : loc.pathname === path
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden', background: 'var(--bg)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden', background: '#0A0A0C' }}>
       {/* Top bar */}
       <header style={{
-        height: 56, minHeight: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 20px', borderBottom: '0.5px solid rgba(0,0,0,0.04)', background: 'rgba(255,255,255,0.7)',
-        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', flexShrink: 0, position: 'relative', zIndex: 250,
+        height: 48, minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 20px', borderBottom: '1px solid rgba(255,255,255,0.04)', background: '#0A0A0C',
+        flexShrink: 0, position: 'relative', zIndex: 250,
       }}>
         {/* Left: Logo only */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
@@ -125,10 +125,8 @@ export default function Layout({ user }) {
               <img src={customLogo} alt="Logo" style={{ height: 28, borderRadius: 7, maxWidth: 120, objectFit: 'contain' }} />
             ) : (
               <>
-                <div style={{ width: 28, height: 28, borderRadius: 7, background: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <KikoSymbol size={14} color="#fff" />
-                </div>
-                <span style={{ fontSize: 15, fontWeight: 500, color: '#1A1A1A', fontFamily: 'var(--font)', letterSpacing: '-0.01em' }}>Kiko</span>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'linear-gradient(135deg, #7C5CFC, #00D4AA)', boxShadow: '0 0 8px rgba(124,92,252,0.4)' }} />
+                <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.9)', fontFamily: 'var(--font)', letterSpacing: '0.02em' }}>kiko</span>
               </>
             )}
           </button>
@@ -136,15 +134,15 @@ export default function Layout({ user }) {
           {/* Breadcrumb — show on non-tab pages */}
           {!isHome && pageLabel && !TABS.find(t => t.path === loc.pathname) && (
             <>
-              <div style={{ width: 1, height: 20, background: 'rgba(0,0,0,0.08)', margin: '0 12px' }} />
-              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{pageLabel}</span>
+              <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.06)', margin: '0 10px' }} />
+              <span style={{ fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font)' }}>{pageLabel}</span>
             </>
           )}
         </div>
 
         {/* Center: Pill tab group — absolutely centered to prevent shift */}
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: 2, background: 'rgba(0,0,0,0.04)', borderRadius: 12, padding: 3 }}>
+          <div style={{ display: 'flex', gap: 1, background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: 3 }}>
             {TABS.map(tab => {
               const active = isTabActive(tab.path)
               return (
@@ -152,30 +150,29 @@ export default function Layout({ user }) {
                   if (tab.path === '/') { setKikoMessages([]); setKikoConvId(null); setKikoResetKey(k => k + 1) }
                   nav(tab.path)
                 }} style={{
-                  padding: '7px 16px', borderRadius: 12, border: 'none',
-                  background: active ? 'rgba(0,0,0,0.85)' : 'transparent',
-                  color: active ? '#fff' : 'rgba(0,0,0,0.45)',
-                  fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)',
-                  transition: 'all 0.15s',
-                  boxShadow: active ? '0 1px 4px rgba(0,0,0,0.12)' : 'none',
+                  padding: '5px 14px', borderRadius: 8, border: 'none',
+                  background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
+                  color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)',
+                  fontSize: 11, fontWeight: active ? 500 : 400, cursor: 'pointer', fontFamily: 'var(--font)',
+                  transition: 'all 0.15s', letterSpacing: '0.02em',
                 }}>{tab.label}</button>
               )
             })}
             {/* More tab with dropdown */}
             <div ref={moreRef} style={{ position: 'relative' }}>
               <button onClick={() => setMoreOpen(!moreOpen)} style={{
-                padding: '7px 14px', borderRadius: 12, border: 'none',
-                background: moreOpen ? 'rgba(0,0,0,0.06)' : 'transparent',
-                color: 'rgba(0,0,0,0.45)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)',
-                display: 'flex', alignItems: 'center', gap: 3, transition: 'all 0.15s',
+                padding: '5px 14px', borderRadius: 8, border: 'none',
+                background: moreOpen ? 'rgba(255,255,255,0.06)' : 'transparent',
+                color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 400, cursor: 'pointer', fontFamily: 'var(--font)',
+                display: 'flex', alignItems: 'center', gap: 3, transition: 'all 0.15s', letterSpacing: '0.02em',
               }}>
                 More <ChevronDown size={11} style={{ transition: 'transform 0.2s', transform: moreOpen ? 'rotate(180deg)' : 'none' }} />
               </button>
               {moreOpen && (
                 <div style={{
                   position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-                  width: 200, background: '#fff', borderRadius: 12, border: '0.5px solid rgba(0,0,0,0.08)',
-                  boxShadow: '0 4px 24px rgba(0,0,0,0.08)', padding: '4px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
+                  width: 200, background: '#111114', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)',
+                  boxShadow: '0 4px 24px rgba(0,0,0,0.4)', padding: '4px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
                 }}>
                   {[
                     { label: 'Outreach Intelligence', path: '/email', Icon: BarChart3 },
@@ -185,23 +182,23 @@ export default function Layout({ user }) {
                   ].map(item => (
                     <button key={item.label} onClick={() => { nav(item.path); setMoreOpen(false) }} style={{
                       width: '100%', padding: '8px 10px', borderRadius: 8, border: 'none',
-                      background: loc.pathname === item.path ? 'rgba(0,0,0,0.04)' : 'transparent',
-                      color: loc.pathname === item.path ? '#1A1A1A' : '#6B6B6B', textAlign: 'left',
+                      background: loc.pathname === item.path ? 'rgba(255,255,255,0.06)' : 'transparent',
+                      color: loc.pathname === item.path ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.35)', textAlign: 'left',
                       fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)',
                       display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s',
                     }}
-                      onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
-                      onMouseOut={e => e.currentTarget.style.background = loc.pathname === item.path ? 'rgba(0,0,0,0.04)' : 'transparent'}
+                      onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                      onMouseOut={e => e.currentTarget.style.background = loc.pathname === item.path ? 'rgba(255,255,255,0.06)' : 'transparent'}
                     ><item.Icon size={14} />{item.label}</button>
                   ))}
-                  <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '4px 8px' }} />
+                  <div style={{ height: 1, background: 'rgba(255,255,255,0.04)', margin: '4px 8px' }} />
                   <button onClick={() => { nav('/settings'); setMoreOpen(false) }} style={{
                     width: '100%', padding: '8px 10px', borderRadius: 8, border: 'none',
-                    background: 'transparent', color: '#6B6B6B', textAlign: 'left',
+                    background: 'transparent', color: 'rgba(255,255,255,0.35)', textAlign: 'left',
                     fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)',
                     display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s',
                   }}
-                    onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
+                    onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
                     onMouseOut={e => e.currentTarget.style.background = 'transparent'}
                   ><Settings size={14} />Settings</button>
                 </div>
@@ -214,22 +211,21 @@ export default function Layout({ user }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {/* Listening pill — only when voice is active */}
           {voiceActive && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 20, background: 'rgba(34,197,94,0.06)', border: '0.5px solid rgba(34,197,94,0.12)', animation: 'fadeIn 0.3s ease-out' }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(34,197,94,0.7)', animation: 'kikoBreathe 1.5s ease-in-out infinite' }} />
-              <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(34,197,94,0.8)', fontFamily: 'var(--font)' }}>{voiceStatus}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 20, background: 'rgba(0,212,170,0.04)', border: '0.5px solid rgba(0,212,170,0.1)', animation: 'fadeIn 0.3s ease-out' }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(0,212,170,0.7)', animation: 'kikoBreathe 1.5s ease-in-out infinite' }} />
+              <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(0,212,170,0.6)', fontFamily: 'var(--font)' }}>{voiceStatus}</span>
             </div>
           )}
           {/* Command palette trigger */}
           <button onClick={() => setPaletteOpen(true)} style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            padding: '6px 11px', borderRadius: 12, border: '0.5px solid rgba(255,255,255,0.7)',
-            background: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.5)',
+            padding: '5px 10px', borderRadius: 8, border: '0.5px solid rgba(255,255,255,0.06)',
+            background: 'transparent',
             cursor: 'pointer', fontFamily: 'var(--font)',
-            color: 'rgba(0,0,0,0.35)', fontSize: 12, transition: 'all 0.15s',
+            color: 'rgba(255,255,255,0.2)', fontSize: 11, transition: 'all 0.15s',
           }}
-            onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.12)'; e.currentTarget.style.background = 'rgba(0,0,0,0.05)' }}
-            onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)'; e.currentTarget.style.background = 'rgba(0,0,0,0.03)' }}
+            onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
+            onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.background = 'transparent' }}
           >
             <Search size={13} />
             <span style={{ fontSize: 11, fontWeight: 500, opacity: 0.6 }}>&#8984;K</span>
@@ -238,45 +234,45 @@ export default function Layout({ user }) {
           {/* User avatar dropdown */}
           <div ref={avatarRef} style={{ position: 'relative' }}>
             <button onClick={() => setAvatarOpen(!avatarOpen)} style={{
-              width: 32, height: 32, borderRadius: '50%', border: 'none', cursor: 'pointer',
-              background: profile.profile_photo_url ? 'transparent' : '#1A1A1A',
+              width: 28, height: 28, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer',
+              background: profile.profile_photo_url ? 'transparent' : 'transparent',
               display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, overflow: 'hidden',
             }}>
               {profile.profile_photo_url ? (
-                <img src={profile.profile_photo_url} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+                <img src={profile.profile_photo_url} alt="" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
               ) : (
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#fff', fontFamily: 'var(--font)' }}>{initials}</span>
+                <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font)' }}>{initials}</span>
               )}
             </button>
             {avatarOpen && (
               <div style={{
                 position: 'absolute', top: '100%', right: 0, marginTop: 6,
-                width: 200, background: '#fff', borderRadius: 12, border: '0.5px solid rgba(0,0,0,0.08)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.04)',
+                width: 200, background: '#111114', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
                 padding: '6px', zIndex: 400, animation: 'fadeIn 0.15s ease-out',
               }}>
-                <div style={{ padding: '8px 12px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.06)', marginBottom: 4 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: '#1A1A1A', fontFamily: 'var(--font)' }}>
+                <div style={{ padding: '8px 12px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.04)', marginBottom: 4 }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.8)', fontFamily: 'var(--font)' }}>
                     {profile.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : user?.email?.split('@')[0] || 'User'}
                   </div>
-                  <div style={{ fontSize: 11, color: '#ABABAB', fontFamily: 'var(--font)', marginTop: 2 }}>{user?.email}</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)', marginTop: 2 }}>{user?.email}</div>
                 </div>
                 <button onClick={() => { nav('/settings'); setAvatarOpen(false) }} style={{
                   width: '100%', padding: '9px 12px', borderRadius: 8, border: 'none',
-                  background: 'transparent', color: '#6B6B6B', textAlign: 'left',
+                  background: 'transparent', color: 'rgba(255,255,255,0.4)', textAlign: 'left',
                   fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font)',
                   display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s',
                 }}
-                  onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
+                  onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
                   onMouseOut={e => e.currentTarget.style.background = 'transparent'}
                 ><Settings size={14} /> Settings</button>
                 <button onClick={() => { signOut(); setAvatarOpen(false) }} style={{
                   width: '100%', padding: '9px 12px', borderRadius: 8, border: 'none',
-                  background: 'transparent', color: '#FF3B30', textAlign: 'left',
+                  background: 'transparent', color: 'rgba(255,80,80,0.7)', textAlign: 'left',
                   fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font)',
                   display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s',
                 }}
-                  onMouseOver={e => e.currentTarget.style.background = 'rgba(255,59,48,0.04)'}
+                  onMouseOver={e => e.currentTarget.style.background = 'rgba(255,80,80,0.06)'}
                   onMouseOut={e => e.currentTarget.style.background = 'transparent'}
                 ><LogOut size={14} /> Sign Out</button>
               </div>
