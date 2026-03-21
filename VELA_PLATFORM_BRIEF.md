@@ -15,7 +15,7 @@
 **User:** sunny@vanhawke.com · user_id `9f486437-4bf5-4111-abfe-fe19bfa76063` · role: super_admin
 **Deploy command:** `cd /Users/sunny/Desktop/vela-platform && rm -rf dist && npm run build && git add -A && git commit -m "..." && git tag <tag> && VERCEL_FORCE_NO_BUILD_CACHE=1 npx vercel --prod --yes --force`
 
-**Current bundle:** `index-DTqDVGwl.js` | **Current tag:** `glassmorphism-v1` | **Deployment files:** 153
+**Current bundle:** `index-Docdc-0P.js` | **Current tag:** `glassmorphism-v3` | **Deployment files:** 154
 
 ---
 
@@ -220,6 +220,8 @@ Currently deployed: **Glassmorphism v1** (Aurora canvas + frosted glass).
 | `backup-before-polish` | Before any UI changes |
 | `dark-ambient-v1` | Full dark ambient theme (Option A) |
 | `glassmorphism-v1` | Aurora canvas + frosted glass panels across all pages |
+| `glassmorphism-v2` | Smoke-trail wave, insight cards, alert card, mini wave |
+| `glassmorphism-v3` | Dribbble-grade glass — 2x brighter orbs, inner glow, blur(40px) |
 
 ---
 
