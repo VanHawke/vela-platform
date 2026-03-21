@@ -16,7 +16,6 @@
     "api/email.js": { "maxDuration": 30 },
     "api/calendar.js": { "maxDuration": 20 },
     "api/enrichment-agent.js": { "maxDuration": 45 },
-    "api/lemlist-find-email.js": { "maxDuration": 20 },
     "api/cron-enrich.js": { "maxDuration": 45 },
     "api/cron-email-sync.js": { "maxDuration": 15 },
     "api/cron-outreach-score.js": { "maxDuration": 45 },
