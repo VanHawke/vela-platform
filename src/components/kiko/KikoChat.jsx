@@ -292,18 +292,20 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     } catch { return convId }
   }
 
-  const handleSubmit = useCallback(async (text) => {
+  const handleSubmit = useCallback(async (text, fileAttachments = []) => {
     const msg = (text || input).trim()
-    if (!msg || streaming) return
+    if ((!msg && !fileAttachments.length) || streaming) return
     setInput('')
-    const userMsg = { role: 'user', content: msg }
+    const displayMsg = msg || (fileAttachments.length ? `Uploaded ${fileAttachments.length} file(s)` : '')
+    const userMsg = { role: 'user', content: displayMsg }
     setMessages(prev => [...prev, userMsg])
     setStreaming(true); setStreamText(''); setToolStatus(null); setThinkingSteps([]); setShowSteps(false)
     try {
       const res = await fetch('/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: msg, userEmail: user?.email,
+          message: msg || 'Analyse this file.', userEmail: user?.email,
+          attachments: fileAttachments,
           conversationHistory: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
           currentPage: (window.location.pathname.replace('/', '') || 'home') + (window.location.search || ''),
           pageEntity: (() => {
@@ -346,26 +348,34 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   }, [input, streaming, messages, user, activeConvId])
 
   const processFileForKiko = async (file) => {
-    if (!file || !user?.email || fileUploading || streaming) return
+    if (!file || fileUploading || streaming) return
     setFileUploading(true)
-    const statusMsg = { role: 'user', content: `Uploading: ${file.name}` }
-    setMessages(prev => [...prev, statusMsg])
     try {
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/__+/g, '_')
-      const safeEmail = (user.email || 'user').replace(/[^a-zA-Z0-9]/g, '_')
-      const path = `documents/${safeEmail}/${Date.now()}_${safeName}`
-      const { error: uploadError } = await supabase.storage.from('vela-assets').upload(path, file)
-      if (uploadError) throw new Error(`Storage: ${uploadError.message}`)
-      const { data: { publicUrl } } = supabase.storage.from('vela-assets').getPublicUrl(path)
-      const res = await fetch('/api/documents', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'process', storagePath: path, publicUrl, fileName: file.name, fileType: file.type, accessLevel: 'workspace', userEmail: user.email }) })
-      const result = await res.json()
-      if (!res.ok) throw new Error(result.error || 'Processing failed')
-      const intel = result.intelligence || {}
-      const summary = [intel.summary, intel.detected_entity ? `Entity: ${intel.detected_entity}` : '', intel.detected_team ? `F1 Team: ${intel.detected_team}` : ''].filter(Boolean).join(' ')
-      setMessages(prev => prev.map(m => m === statusMsg ? { role: 'user', content: `Uploaded: ${file.name}` } : m))
-      handleSubmit(`I just uploaded "${file.name}". Analysis: ${summary}. Key stats: ${(intel.key_stats || []).join(', ')}. Positioning: ${intel.positioning || 'N/A'}. Talking points: ${(intel.talking_points || []).join(', ')}. Give me a brief summary.`)
-    } catch (err) { setMessages(prev => [...prev, { role: 'assistant', content: `Upload failed: ${err.message}` }]) }
-    finally { setFileUploading(false) }
+      const base64 = await new Promise((res, rej) => {
+        const r = new FileReader()
+        r.onload = () => res(r.result.split(',')[1])
+        r.onerror = () => rej(new Error('Failed to read file'))
+        r.readAsDataURL(file)
+      })
+      const isImage = file.type.startsWith('image/')
+      const isPdf = file.type === 'application/pdf'
+      const attachment = {
+        type: isImage ? 'image' : 'document',
+        mediaType: file.type || (isPdf ? 'application/pdf' : 'application/octet-stream'),
+        data: base64,
+      }
+      // For text files, just read as text and send as message
+      if (file.type.startsWith('text/') || file.name.match(/\.(txt|md|csv|json|js|jsx|ts|py)$/i)) {
+        const text = await file.text()
+        handleSubmit(`Here's the contents of "${file.name}":\n\n${text.slice(0, 50000)}\n\nAnalyse this.`)
+      } else if (isImage || isPdf) {
+        handleSubmit(`I've uploaded "${file.name}". Analyse it.`, [attachment])
+      } else {
+        handleSubmit(`I've uploaded "${file.name}" (${file.type}). It's a ${file.type} file, ${(file.size/1024).toFixed(0)}KB.`)
+      }
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'assistant', content: `Upload failed: ${err.message}` }])
+    } finally { setFileUploading(false) }
   }
 
   const handleFileDrop = (e) => { e.preventDefault(); e.stopPropagation(); dragCounterRef.current = 0; setChatDragOver(false); const file = e.dataTransfer.files?.[0]; if (file) processFileForKiko(file) }

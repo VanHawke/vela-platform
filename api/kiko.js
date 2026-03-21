@@ -142,7 +142,7 @@ export default async function handler(req, res) {
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const { message, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null } = req.body;
+  const { message, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null, attachments = [] } = req.body;
   if (!message && action !== 'title') return res.status(400).json({ error: 'message required' });
 
   // ── Title generation ──
@@ -200,7 +200,22 @@ export default async function handler(req, res) {
     const messages = conversationHistory.slice(-20)
       .filter(m => m.role === 'user' || m.role === 'assistant')
       .map(m => ({ role: m.role, content: m.content || '' }));
-    messages.push({ role: 'user', content: message });
+
+    // Build user message — with file attachments if present
+    if (attachments.length > 0) {
+      const contentBlocks = [];
+      for (const att of attachments) {
+        if (att.type === 'image') {
+          contentBlocks.push({ type: 'image', source: { type: 'base64', media_type: att.mediaType, data: att.data } });
+        } else if (att.type === 'document') {
+          contentBlocks.push({ type: 'document', source: { type: 'base64', media_type: att.mediaType, data: att.data } });
+        }
+      }
+      contentBlocks.push({ type: 'text', text: message || 'Analyse this file.' });
+      messages.push({ role: 'user', content: contentBlocks });
+    } else {
+      messages.push({ role: 'user', content: message });
+    }
 
     const allTools = [...NATIVE_TOOLS, ...TOOL_DEFINITIONS];
 
