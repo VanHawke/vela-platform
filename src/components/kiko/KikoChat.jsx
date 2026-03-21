@@ -350,27 +350,30 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     if (!file || fileUploading || streaming) return
     setFileUploading(true)
     try {
-      const base64 = await new Promise((res, rej) => {
-        const r = new FileReader()
-        r.onload = () => res(r.result.split(',')[1])
-        r.onerror = () => rej(new Error('Failed to read file'))
-        r.readAsDataURL(file)
-      })
       const isImage = file.type.startsWith('image/')
       const isPdf = file.type === 'application/pdf'
-      const attachment = {
-        type: isImage ? 'image' : 'document',
-        mediaType: file.type || (isPdf ? 'application/pdf' : 'application/octet-stream'),
-        data: base64,
-      }
-      // For text files, just read as text and send as message
-      if (file.type.startsWith('text/') || file.name.match(/\.(txt|md|csv|json|js|jsx|ts|py)$/i)) {
+      const isText = file.type.startsWith('text/') || file.name.match(/\.(txt|md|csv|json|js|jsx|ts|py|html|css|xml|yaml|yml)$/i)
+
+      if (isText) {
+        // Text files: read as text, send directly
         const text = await file.text()
-        handleSubmit(`Here's the contents of "${file.name}":\n\n${text.slice(0, 50000)}\n\nAnalyse this.`)
-      } else if (isImage || isPdf) {
-        handleSubmit(`I've uploaded "${file.name}". Analyse it.`, [attachment])
+        handleSubmit(`I've uploaded "${file.name}". Here are the contents:\n\n${text.slice(0, 50000)}\n\nAnalyse this.`)
       } else {
-        handleSubmit(`I've uploaded "${file.name}" (${file.type}). It's a ${file.type} file, ${(file.size/1024).toFixed(0)}KB.`)
+        // Binary files: convert to base64
+        const base64 = await new Promise((res, rej) => {
+          const r = new FileReader()
+          r.onload = () => res(r.result.split(',')[1])
+          r.onerror = () => rej(new Error('Failed to read file'))
+          r.readAsDataURL(file)
+        })
+        if (isImage) {
+          handleSubmit(`I've uploaded an image: "${file.name}". Analyse it.`, [{ type: 'image', mediaType: file.type, data: base64 }])
+        } else if (isPdf) {
+          handleSubmit(`I've uploaded a PDF: "${file.name}". Analyse it thoroughly.`, [{ type: 'document', mediaType: 'application/pdf', data: base64 }])
+        } else {
+          // Unsupported binary — just acknowledge
+          handleSubmit(`I've uploaded "${file.name}" (${file.type}, ${(file.size/1024).toFixed(0)}KB). This file type can't be directly analysed. Try PDF, images, or text files.`)
+        }
       }
     } catch (err) {
       setMessages(prev => [...prev, { role: 'assistant', content: `Upload failed: ${err.message}` }])

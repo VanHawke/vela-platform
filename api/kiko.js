@@ -272,8 +272,11 @@ export default async function handler(req, res) {
       for (const att of attachments) {
         if (att.type === 'image') {
           contentBlocks.push({ type: 'image', source: { type: 'base64', media_type: att.mediaType, data: att.data } });
-        } else if (att.type === 'document') {
-          contentBlocks.push({ type: 'document', source: { type: 'base64', media_type: att.mediaType, data: att.data } });
+        } else if (att.type === 'document' && att.mediaType === 'application/pdf') {
+          contentBlocks.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: att.data } });
+        } else if (att.type === 'text') {
+          // Text content decoded from base64 and sent as text
+          contentBlocks.push({ type: 'text', text: `[File: ${att.fileName || 'uploaded file'}]\n${Buffer.from(att.data, 'base64').toString('utf-8')}` });
         }
       }
       contentBlocks.push({ type: 'text', text: message || 'Analyse this file.' });
