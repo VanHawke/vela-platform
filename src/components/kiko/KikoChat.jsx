@@ -151,12 +151,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const handleVoiceState = useCallback((state) => setVoiceState(state), [])
   const handleVoiceMessage = useCallback((msg) => {
     setVoiceMessages(prev => [...prev, msg])
-    // In conversation state, also add to main messages so they appear in the chat
-    if (messages.length > 0) {
-      const mapped = { role: msg.role === 'kiko' ? 'assistant' : 'user', content: msg.content }
-      setMessages(prev => [...prev, mapped])
-    }
-  }, [messages.length])
+    // Always add voice messages to main chat so they appear as transcript
+    const mapped = { role: msg.role === 'kiko' ? 'assistant' : 'user', content: msg.content }
+    setMessages(prev => [...prev, mapped])
+  }, [])
 
   // Dictation (speech-to-text into input field) — uses Web Speech API for instant results
   const startTranscribe = async () => {

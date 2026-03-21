@@ -82,6 +82,7 @@ export default function CommandPalette({ open, onClose, onVoice }) {
   }, [nav, onClose, onVoice])
 
   const handleKeyDown = (e) => {
+    e.stopPropagation() // prevent ALL keystrokes from reaching chat behind palette
     if (e.key === 'Escape') { onClose(); return }
     if (e.key === 'ArrowDown') { e.preventDefault(); setSelected(s => Math.min(s + 1, allItems.length - 1)) }
     if (e.key === 'ArrowUp') { e.preventDefault(); setSelected(s => Math.max(s - 1, 0)) }

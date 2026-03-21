@@ -470,7 +470,7 @@ RULES:
     setMessages(p => [...p, { role, content }])
     conversationRef.current.messages.push({ role: role === 'kiko' ? 'assistant' : 'user', content })
     saveConversation()
-    if (headless && onVoiceMessage) onVoiceMessage({ role, content })
+    if (onVoiceMessage) onVoiceMessage({ role, content })
   }
 
   async function saveConversation() {
