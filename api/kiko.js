@@ -71,6 +71,19 @@ LOCATION: The user is based in Weybridge, Surrey, UK. When asked about weather, 
 
 CURRENT PAGE: {currentPage}`;
 
+// ── Page-specific role identity ──────────────────────────
+const PAGE_ROLES = {
+  pipeline: '\n\nROLE: Sales Strategist. Prioritise deals by momentum and timing. Flag stale opportunities. Recommend next actions per deal stage. Think like a VP of Sales.',
+  email: '\n\nROLE: Communications Advisor. Analyse email patterns, draft responses that match Sunny\'s voice (direct, board-level, no fluff). Flag unanswered threads. Recommend outreach timing.',
+  contacts: '\n\nROLE: Relationship Manager. Surface connection history, last touchpoints, engagement scores. Recommend who to contact and why. Think like a Chief of Staff.',
+  calendar: '\n\nROLE: Chief of Staff. Optimise schedule, flag conflicts, suggest prep for upcoming meetings. Think about what Sunny needs to know before each meeting.',
+  news: '\n\nROLE: Intelligence Analyst. Connect news signals to sponsorship opportunities. Identify companies in expansion mode, leadership changes, funding rounds that create partnership windows.',
+  documents: '\n\nROLE: Research Analyst. Extract insights from uploaded materials. Cross-reference with existing knowledge. Identify strategic implications and actionable takeaways.',
+  'partnership-matrix': '\n\nROLE: Strategic Advisor. Analyse partnership fit, competitive positioning, market gaps. Recommend high-value targets based on category alignment and timing.',
+  organisations: '\n\nROLE: Due Diligence Analyst. Assess company profiles, funding history, market position. Identify sponsorship readiness signals and decision-maker access points.',
+  home: '\n\nROLE: Strategic Partner. Brief Sunny on what matters most today. Proactively surface the top 3 priorities across pipeline, email, and calendar.',
+};
+
 // ── Native Tools ─────────────────────────────────────────
 const NATIVE_TOOLS = [
   { type: 'memory_20250818', name: 'memory' },
@@ -152,7 +165,7 @@ export default async function handler(req, res) {
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const { message, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null, attachments = [] } = req.body;
+  const { message, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null, attachments = [], deepThink = false } = req.body;
   if (!message && action !== 'title') return res.status(400).json({ error: 'message required' });
 
   // ── Title generation ──
@@ -193,9 +206,11 @@ export default async function handler(req, res) {
 - Be conversational and warm, like a trusted colleague.`;
   }
 
+  const pageRole = PAGE_ROLES[currentPage] || PAGE_ROLES[currentPage.split('?')[0]] || '';
+
   const system = SYSTEM_PROMPT.replace('{currentPage}', currentPage)
     + `\n\n[Current: ${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
-    + entityContext + voiceRules + preloadedMemory;
+    + pageRole + entityContext + voiceRules + preloadedMemory;
 
   // ── SSE setup ──
   res.setHeader('Content-Type', 'text/event-stream');
@@ -229,14 +244,26 @@ export default async function handler(req, res) {
 
     const allTools = [...NATIVE_TOOLS, ...TOOL_DEFINITIONS];
 
+    // Detect if deep thinking is needed
+    const DEEP_THINK_TRIGGERS = ['analyse', 'analyze', 'deep dive', 'think through', 'strategic', 'evaluate', 'compare', 'assess', 'due diligence', 'comprehensive', 'thorough']
+    const needsDeepThink = deepThink || (message && DEEP_THINK_TRIGGERS.some(t => message.toLowerCase().includes(t)))
+
     // Stream helper
     async function streamCall(msgs) {
-      const stream = anthropic.beta.messages.stream({
-        model: MODEL, max_tokens: 4096, system, messages: msgs, tools: allTools,
-      });
+      const params = {
+        model: MODEL, max_tokens: needsDeepThink ? 16000 : 4096, system, messages: msgs, tools: allTools,
+      }
+      if (needsDeepThink) {
+        params.thinking = { type: 'enabled', budget_tokens: 10000 }
+        write({ toolStatus: 'Deep analysis...' })
+      }
+      const stream = anthropic.beta.messages.stream(params);
       for await (const event of stream) {
         if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
           write({ delta: event.delta.text });
+        }
+        if (event.type === 'content_block_delta' && event.delta?.type === 'thinking_delta') {
+          write({ thinking: event.delta.thinking });
         }
       }
       return await stream.finalMessage();

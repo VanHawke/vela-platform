@@ -326,6 +326,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           try {
             const j = JSON.parse(d)
             if (j.delta) { full += j.delta; setStreamText(full) }
+            if (j.thinking) { setThinkingSteps(prev => [...prev, { label: 'Reasoning...', time: Date.now() }]) }
             if (j.toolStatus !== undefined) { setToolStatus(j.toolStatus); if (j.toolStatus) setThinkingSteps(prev => [...prev, { label: j.toolStatus, time: Date.now() }]) }
             if (j.navigate) pendingNav = j.navigate
           } catch {}
