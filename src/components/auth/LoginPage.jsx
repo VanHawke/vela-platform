@@ -82,7 +82,7 @@ export default function LoginPage() {
 
         {/* Google OAuth */}
         <button onClick={googleLogin} disabled={gLoading} style={{
-          width: '100%', height: 48, borderRadius: 14, border: `0.5px solid ${T.border}`, background: 'rgba(255,255,255,0.03)',
+          width: '100%', height: 48, borderRadius: 14, border: `0.5px solid ${T.border}`, background: 'rgba(255,255,255,0.05)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: 14, fontWeight: 400,
           color: T.text, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.15s',
         }}>

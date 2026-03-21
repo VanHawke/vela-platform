@@ -413,9 +413,9 @@ export default function Pipeline({ user }) {
       {/* Toolbar */}
       <div style={{
         margin: '0 16px', padding: '12px 20px', borderRadius: 18,
-        background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
-        border: '0.5px solid rgba(255,255,255,0.06)',
+        background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(40px)',
+        WebkitBackdropFilter: 'blur(40px)',
+        border: '0.5px solid rgba(255,255,255,0.08)',
         boxShadow: '0 8px 36px rgba(0,0,0,0.3)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
@@ -454,11 +454,11 @@ export default function Pipeline({ user }) {
                   style={{
                     width: 260, flexShrink: 0, display: 'flex', flexDirection: 'column',
                     background: isOver ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)',
-                    backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                    borderRadius: 18, border: isOver ? '1px dashed rgba(139,108,246,0.3)' : '0.5px solid rgba(255,255,255,0.04)',
+                    backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
+                    borderRadius: 18, border: isOver ? '1px dashed rgba(139,108,246,0.3)' : '0.5px solid rgba(255,255,255,0.06)',
                     transition: 'all 0.15s ease',
                   }}>
-                  <div style={{ padding: '12px 14px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ padding: '12px 14px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{stage.label}</span>
                       <span style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)', background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '1px 7px' }}>{stageDeals.length}</span>
@@ -475,7 +475,7 @@ export default function Pipeline({ user }) {
                         onDragStart={e => handleDragStart(e, deal)}
                         onDragEnd={handleDragEnd}
                         onClick={() => selectDeal(deal)}
-                        style={{ background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 14, padding: '12px 14px', border: '0.5px solid rgba(255,255,255,0.06)', cursor: 'grab', transition: 'all 0.2s ease', position: 'relative', overflow: 'hidden' }}
+                        style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(32px)', WebkitBackdropFilter: 'blur(32px)', borderRadius: 14, padding: '12px 14px', border: '0.5px solid rgba(255,255,255,0.08)', cursor: 'grab', transition: 'all 0.2s ease', position: 'relative', overflow: 'hidden' }}
                         onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.transform = 'translateY(0)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -515,7 +515,7 @@ export default function Pipeline({ user }) {
         <div style={{ width: panelOpen ? 380 : 0, minWidth: panelOpen ? 380 : 0, transition: 'width 0.3s ease, min-width 0.3s ease, opacity 0.2s ease', opacity: panelOpen ? 1 : 0, overflow: 'hidden', marginLeft: panelOpen ? 16 : 0 }}>
           {selectedDeal && (
             <div style={{ width: 380, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 16 }}>
-              <div style={{ background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderRadius: 18, padding: '20px 20px 16px', border: '0.5px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '20px 20px 16px', border: '0.5px solid rgba(255,255,255,0.08)' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     {companyDomains[selectedDeal.company] ? (
@@ -532,7 +532,7 @@ export default function Pipeline({ user }) {
                       {dealCompany?.industry && <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: '3px 0 0', fontFamily: 'var(--font)', fontWeight: 300 }}>{dealCompany.industry}{dealCompany.country ? ` · ${dealCompany.country}` : ''}</p>}
                     </div>
                   </div>
-                  <button onClick={closePanel} style={{ background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.06)', borderRadius: 8, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}><X style={{ width: 14, height: 14 }} /></button>
+                  <button onClick={closePanel} style={{ background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: 8, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}><X style={{ width: 14, height: 14 }} /></button>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
@@ -548,7 +548,7 @@ export default function Pipeline({ user }) {
                   </button>
                 )}
               </div>
-              <div style={{ background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.08)' }}>
                 <p style={sectionTitle}><Users style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Contacts ({dealContacts.length})</p>
                 {loadingPanel ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{[...Array(2)].map((_, i) => <div key={i} style={{ height: 40, background: 'rgba(255,255,255,0.02)', borderRadius: 8 }} />)}</div>
@@ -573,7 +573,7 @@ export default function Pipeline({ user }) {
                   </div>
                 )}
               </div>
-              <div style={{ background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.08)' }}>
                 <p style={sectionTitle}><Send style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Lemlist Campaigns</p>
                 {dealCampaigns.length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

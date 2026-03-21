@@ -118,8 +118,8 @@ export default function Layout({ user }) {
       {/* Top bar — frosted glass */}
       <header style={{
         height: 48, minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 20px', borderBottom: `0.5px solid ${T.glassBorder}`,
-        background: 'rgba(7,7,11,0.7)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
+        padding: '0 20px', borderBottom: `0.5px solid rgba(255,255,255,0.06)`,
+        background: 'rgba(7,7,11,0.6)', backdropFilter: 'blur(60px)', WebkitBackdropFilter: 'blur(60px)',
         flexShrink: 0, position: 'relative', zIndex: 250,
       }}>
         {/* Left: Logo only */}
@@ -148,7 +148,7 @@ export default function Layout({ user }) {
 
         {/* Center: Pill tab group — absolutely centered to prevent shift */}
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: 1, background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderRadius: 14, padding: 3, border: '0.5px solid rgba(255,255,255,0.04)' }}>
+          <div style={{ display: 'flex', gap: 1, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)', borderRadius: 12, padding: 4, border: '0.5px solid rgba(255,255,255,0.08)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)' }}>
             {TABS.map(tab => {
               const active = isTabActive(tab.path)
               return (
@@ -177,7 +177,7 @@ export default function Layout({ user }) {
               {moreOpen && (
                 <div style={{
                   position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-                  width: 200, background: 'rgba(14,14,20,0.85)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
+                  width: 200, background: 'rgba(14,14,20,0.75)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
                   borderRadius: 14, border: `0.5px solid ${T.glassBorder}`,
                   boxShadow: '0 8px 40px rgba(0,0,0,0.5)', padding: '4px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
                 }}>
@@ -226,12 +226,12 @@ export default function Layout({ user }) {
           {/* Command palette trigger */}
           <button onClick={() => setPaletteOpen(true)} style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            padding: '5px 10px', borderRadius: 8, border: '0.5px solid rgba(255,255,255,0.06)',
+            padding: '5px 10px', borderRadius: 8, border: '0.5px solid rgba(255,255,255,0.08)',
             background: 'transparent',
             cursor: 'pointer', fontFamily: 'var(--font)',
             color: 'rgba(255,255,255,0.2)', fontSize: 11, transition: 'all 0.15s',
           }}
-            onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
+            onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
             onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.background = 'transparent' }}
           >
             <Search size={13} />
@@ -254,12 +254,12 @@ export default function Layout({ user }) {
             {avatarOpen && (
               <div style={{
                 position: 'absolute', top: '100%', right: 0, marginTop: 6,
-                width: 200, background: 'rgba(14,14,20,0.85)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-                borderRadius: 14, border: '0.5px solid rgba(255,255,255,0.06)',
+                width: 200, background: 'rgba(14,14,20,0.75)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
+                borderRadius: 14, border: '0.5px solid rgba(255,255,255,0.08)',
                 boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
                 padding: '6px', zIndex: 400, animation: 'fadeIn 0.15s ease-out',
               }}>
-                <div style={{ padding: '8px 12px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.04)', marginBottom: 4 }}>
+                <div style={{ padding: '8px 12px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.06)', marginBottom: 4 }}>
                   <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.8)', fontFamily: 'var(--font)' }}>
                     {profile.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : user?.email?.split('@')[0] || 'User'}
                   </div>

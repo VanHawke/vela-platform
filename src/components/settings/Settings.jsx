@@ -292,7 +292,7 @@ export default function Settings({ user }) {
                     <span style={{ fontSize: 14, color: T.textSecondary, fontFamily: T.font }}>{n}</span>
                     <div onClick={() => setSettings(p => ({ ...p, notification_prefs: { ...(p.notification_prefs || {}), [key]: !on } }))}
                       style={{ width: 44, height: 24, borderRadius: 14, background: on ? T.accent : T.border, position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}>
-                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.035)', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
                     </div>
                   </div>
                 )
@@ -400,7 +400,7 @@ export default function Settings({ user }) {
                           position: 'relative', transition: 'background 0.2s', padding: 0,
                         }}>
                           <div style={{
-                            width: 16, height: 16, borderRadius: '50%', background: 'rgba(255,255,255,0.035)',
+                            width: 16, height: 16, borderRadius: '50%', background: 'rgba(255,255,255,0.06)',
                             position: 'absolute', top: 2, left: isOn ? 20 : 2,
                             transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
                           }} />

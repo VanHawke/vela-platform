@@ -159,7 +159,7 @@ export default function Documents({ user }) {
       {dragOver && (
         <div style={{
           position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(255,255,255,0.85)',
-          backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+          backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           border: '2px dashed #1A1A1A', borderRadius: 18, margin: 8,
           pointerEvents: 'none',
@@ -229,7 +229,7 @@ export default function Documents({ user }) {
           {CONTEXTS.filter(c => c !== 'all').map(c => <option key={c} value={c}>{CTX_LABELS[c] || c}</option>)}
         </select>
         {/* Category pills */}
-        <div style={{ display: 'flex', gap: 3, background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: 3 }}>
+        <div style={{ display: 'flex', gap: 3, background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: 3 }}>
           {CATEGORIES.map(c => (
             <button key={c} onClick={() => setCatFilter(c)} style={{ padding: '4px 10px', borderRadius: 6, border: 'none', fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, background: catFilter === c ? T.accent : 'transparent', color: catFilter === c ? '#fff' : T.textTertiary, transition: 'all 0.15s' }}>{c === 'all' ? 'All' : c.replace('_', ' ')}</button>
           ))}
@@ -279,7 +279,7 @@ export default function Documents({ user }) {
                         {editingTeam === doc.id ? (
                           <select autoFocus value={doc.linked_team || ''} onChange={e => reassignTeam(doc.id, e.target.value)} onBlur={() => setEditingTeam(null)}
                             onClick={e => e.stopPropagation()}
-                            style={{ fontSize: 10, padding: '1px 4px', borderRadius: 6, border: `1px solid ${T.blue}`, background: 'rgba(255,255,255,0.035)', color: T.text, outline: 'none', fontFamily: T.font }}>
+                            style={{ fontSize: 10, padding: '1px 4px', borderRadius: 6, border: `1px solid ${T.blue}`, background: 'rgba(255,255,255,0.06)', color: T.text, outline: 'none', fontFamily: T.font }}>
                             <option value="">No team</option>
                             {teams.map(t => <option key={t} value={t}>{t}</option>)}
                           </select>

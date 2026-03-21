@@ -70,7 +70,7 @@ function md(text) {
   if (!text) return ''
   let h = text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(255,255,255,0.03);padding:8px;border-radius:8px;font-size:11px;overflow-x:auto;margin:4px 0;border:0.5px solid rgba(255,255,255,0.06)"><code>$1</code></pre>')
+    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(255,255,255,0.05);padding:8px;border-radius:8px;font-size:11px;overflow-x:auto;margin:4px 0;border:0.5px solid rgba(255,255,255,0.08)"><code>$1</code></pre>')
     .replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.05);padding:1px 4px;border-radius:3px;font-size:11px">$1</code>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
@@ -325,9 +325,9 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         <div key={panelKey} className={`kiko-panel ${open ? 'entering' : ''}`} style={{
           position: 'fixed', bottom: 88, right: 24, width: panelW,
           zIndex: 100, borderRadius: 18,
-          background: 'rgba(14,14,20,0.85)',
+          background: 'rgba(14,14,20,0.75)',
           backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-          border: '0.5px solid rgba(255,255,255,0.06)',
+          border: '0.5px solid rgba(255,255,255,0.08)',
           boxShadow: '0 12px 48px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)',
           display: 'flex', flexDirection: 'column',
           maxHeight: 'calc(100vh - 160px)',
@@ -336,7 +336,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           pointerEvents: open ? 'all' : 'none',
         }}>
           {/* Header */}
-          <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: hasMessages ? '0.5px solid rgba(255,255,255,0.04)' : 'none' }}>
+          <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: hasMessages ? '0.5px solid rgba(255,255,255,0.06)' : 'none' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 22, height: 22, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <KikoSymbol size={12} color="#fff" animate={streaming ? (streamText ? 'streaming' : 'thinking') : 'idle'} />
@@ -400,13 +400,13 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               {CHIPS.map((chip, i) => (
                 <button key={chip} onClick={() => handleSubmit(chip)} style={{
                   fontSize: 11, padding: '5px 10px', borderRadius: 20,
-                  border: '0.5px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)',
+                  border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.05)',
                   color: T.textSecondary, cursor: 'pointer', fontFamily: T.font,
                   animation: `kikoChipIn 0.3s ease ${0.08 + i * 0.05}s both`,
                   transition: 'background 0.15s, border-color 0.15s',
                 }}
                   onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}
-                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}
                 >
                   {chip}
                 </button>
@@ -415,7 +415,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           )}
 
           {/* Input bar inside panel */}
-          <div style={{ padding: '8px 10px 10px', display: 'flex', alignItems: 'center', gap: 6, borderTop: hasMessages ? '0.5px solid rgba(255,255,255,0.04)' : 'none', marginTop: hasMessages ? 0 : 8 }}>
+          <div style={{ padding: '8px 10px 10px', display: 'flex', alignItems: 'center', gap: 6, borderTop: hasMessages ? '0.5px solid rgba(255,255,255,0.06)' : 'none', marginTop: hasMessages ? 0 : 8 }}>
             <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} style={{ width: 26, height: 26, borderRadius: '50%', border: 'none', background: 'transparent', color: T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {fileUploading
                 ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'kikoVortexSpin 1s linear infinite' }}><circle cx="12" cy="12" r="10"/></svg>

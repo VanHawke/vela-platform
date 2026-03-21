@@ -35,7 +35,7 @@ export default function DocumentCard({ doc, compact = false, onView }) {
   }
 
   return (
-    <div style={{ background: 'rgba(255,255,255,0.035)', borderRadius: 14, padding: 14, border: '0.5px solid rgba(255,255,255,0.06)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
+    <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 14, padding: 14, border: '0.5px solid rgba(255,255,255,0.08)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
         <div style={{ width: 36, height: 36, borderRadius: 9, background: `${catColor}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <Icon style={{ width: 17, height: 17, color: catColor }} />
