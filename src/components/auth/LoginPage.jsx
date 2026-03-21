@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Loader2, Eye, EyeOff } from 'lucide-react'
+import TBase from '@/lib/theme'
 
-const T = {
-  text: 'rgba(255,255,255,0.9)', sub: 'rgba(255,255,255,0.2)', border: 'rgba(255,255,255,0.06)', inputBg: 'rgba(255,255,255,0.03)',
-  font: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'DM Sans', 'Segoe UI', sans-serif",
-}
+const T = { ...TBase, sub: TBase.textTertiary, inputBg: TBase.surface }
 
 // 4-dot Kiko symbol for the avatar
 const KikoDots = ({ size = 40, color = '#fff', animated = false }) => {
@@ -62,7 +60,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100vw', height: '100vh', background: '#0A0A0C', fontFamily: T.font }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100vw', height: '100vh', background: T.bg, fontFamily: T.font }}>
       <div style={{ width: '100%', maxWidth: 340, textAlign: 'center' }}>
 
         {/* Kiko avatar — gradient orb with pulse rings */}

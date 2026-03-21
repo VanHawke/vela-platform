@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useNavigate } from 'react-router-dom'
+import T from '@/lib/theme'
 import ImageUpload from './ImageUpload'
 import { Check, ExternalLink, Unplug, UserPlus, Trash2, LogOut, X } from 'lucide-react'
 
@@ -23,14 +24,7 @@ const SPEEDS = [
 ]
 const TABS = ['Profile', 'Kiko', 'Navigation', 'Team', 'Appearance', 'Accounts']
 
-const T = {
-  bg: '#0A0A0C', surface: 'rgba(255,255,255,0.02)', surfaceHover: 'rgba(255,255,255,0.04)',
-  border: 'rgba(255,255,255,0.06)', borderHover: 'rgba(255,255,255,0.1)',
-  text: 'rgba(255,255,255,0.9)', textSecondary: 'rgba(255,255,255,0.5)', textTertiary: 'rgba(255,255,255,0.2)',
-  accent: '#8B6CF6', accentSoft: 'rgba(139,108,246,0.06)',
-  radius: 16, radiusSm: 10,
-  font: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'DM Sans', 'Segoe UI', sans-serif",
-}
+// Theme imported from @/lib/theme.js
 
 export default function Settings({ user }) {
   const navigate = useNavigate()

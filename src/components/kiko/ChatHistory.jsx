@@ -1,14 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
+import T from '@/lib/theme'
 import { MessageCircle, Mic, ChevronRight, ChevronLeft, Plus, Trash2, Pencil } from 'lucide-react'
 
-const T = {
-  bg: '#0A0A0C', surface: 'rgba(255,255,255,0.02)', surfaceHover: 'rgba(255,255,255,0.04)',
-  border: 'rgba(255,255,255,0.06)', borderHover: 'rgba(255,255,255,0.1)',
-  text: 'rgba(255,255,255,0.9)', textSecondary: 'rgba(255,255,255,0.5)', textTertiary: 'rgba(255,255,255,0.2)',
-  accent: '#8B6CF6', accentSoft: 'rgba(139,108,246,0.06)',
-  font: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'DM Sans', 'Segoe UI', sans-serif",
-}
+// Theme imported from @/lib/theme.js
 
 function timeAgo(d) {
   if (!d) return ''
