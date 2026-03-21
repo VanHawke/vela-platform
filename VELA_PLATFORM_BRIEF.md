@@ -15,7 +15,7 @@
 **User:** sunny@vanhawke.com · user_id `9f486437-4bf5-4111-abfe-fe19bfa76063` · role: super_admin
 **Deploy command:** `cd /Users/sunny/Desktop/vela-platform && rm -rf dist && npm run build && git add -A && git commit -m "..." && git tag <tag> && VERCEL_FORCE_NO_BUILD_CACHE=1 npx vercel --prod --yes --force`
 
-**Current bundle:** `index-7mt8jgHB.js` | **Current tag:** `dark-ambient-v1` | **Deployment files:** 151
+**Current bundle:** `index-DTqDVGwl.js` | **Current tag:** `glassmorphism-v1` | **Deployment files:** 153
 
 ---
 
@@ -183,14 +183,21 @@ Smoke-trail ribbon chosen (V7 from 10 variants explored). Key characteristics:
 - Scales down further to micro indicator in thinking state
 
 ### 5.4 Implementation Status
-Currently deployed: partial dark ambient theme (Option A basic). 
-**NEEDS FULL REBUILD** to match the final glassmorphism renders with:
-- Canvas-rendered animated gradient orbs on every page
-- Proper backdrop-filter blur on all cards/panels
-- Smoke-trail wave animation as Kiko avatar
-- All remaining pages themed (Pipeline, Contacts, Settings, etc.)
-- Glassmorphism deal cards with gradient edge indicators
+Currently deployed: **Glassmorphism v1** (Aurora canvas + frosted glass).
+**COMPLETED:**
+- Canvas-rendered animated gradient orbs on every page (+ amber on Pipeline)
+- Backdrop-filter blur on all cards/panels across 32 files
 - Frosted glass nav, dropdowns, command palette
+- Glassmorphism deal cards on Pipeline with hover lift
+- Frosted purple glass user messages, plain text Kiko responses
+- Unified theme.js (all local T constants removed)
+- FullCalendar dark glassmorphism CSS overrides
+- Ultra-thin typography (weight 200-300) throughout
+
+**REMAINING:**
+- Smoke-trail wave animation as Kiko avatar
+- Mobile responsive bottom tab bar
+- Login page animated gradient orb
 
 ---
 
@@ -211,7 +218,8 @@ Currently deployed: partial dark ambient theme (Option A basic).
 | `polish-v1` | Apple UI pass (pre-dark theme) |
 | `apple-ui-v1` | Last light theme version |
 | `backup-before-polish` | Before any UI changes |
-| `dark-ambient-v1` | Current: full dark ambient theme |
+| `dark-ambient-v1` | Full dark ambient theme (Option A) |
+| `glassmorphism-v1` | Aurora canvas + frosted glass panels across all pages |
 
 ---
 
@@ -285,12 +293,12 @@ Supabase service key: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 ## 11. Outstanding Work
 
-### IMMEDIATE — UI Build (Next Session)
-- [ ] Implement full glassmorphism design across all pages (canvas gradient orbs, backdrop-filter glass panels)
+### IMMEDIATE — UI Polish (Next Session)
+- [x] Implement full glassmorphism design across all pages ✅ glassmorphism-v1
+- [x] Theme all remaining pages ✅ 32 files updated
+- [x] Implement glassmorphism deal cards on Pipeline page ✅
+- [x] Frosted glass conversation messages ✅
 - [ ] Build Kiko smoke-trail wave animation component (canvas-based)
-- [ ] Theme all remaining pages: Pipeline, Contacts, Dashboard, Deals, Documents, Organisations, OutreachIntelligence, ContactDetail, Email, EmailCompose, EmailThread, News, PartnershipMatrix, MemoryConsole, CommercialCalendar, Settings
-- [ ] Implement glassmorphism deal cards on Pipeline page
-- [ ] Frosted glass conversation messages
 - [ ] Mobile responsive design with bottom tab bar
 - [ ] Login page with animated gradient orb + wave
 
