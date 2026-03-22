@@ -44,12 +44,12 @@ function AuroraCanvas({ extraOrb = null }) {
         const dx = Math.sin(t * orb.speed + orb.phase) * 80
         const dy = Math.cos(t * orb.speed * 0.7 + orb.phase) * 60
         const px = orb.cx + dx, py = orb.cy + dy
-        const pulse = 0.30 + Math.sin(t * 0.0004 + orb.phase) * 0.08
+        const pulse = 0.18 + Math.sin(t * 0.0004 + orb.phase) * 0.04
         const [r, g, b] = orb.color
         const grad = ctx.createRadialGradient(px, py, 0, px, py, orb.r)
         grad.addColorStop(0, `rgba(${r},${g},${b},${pulse})`)
-        grad.addColorStop(0.3, `rgba(${r},${g},${b},${pulse * 0.6})`)
-        grad.addColorStop(0.6, `rgba(${r},${g},${b},${pulse * 0.25})`)
+        grad.addColorStop(0.3, `rgba(${r},${g},${b},${pulse * 0.5})`)
+        grad.addColorStop(0.6, `rgba(${r},${g},${b},${pulse * 0.2})`)
         grad.addColorStop(1, `rgba(${r},${g},${b},0)`)
         ctx.fillStyle = grad
         ctx.fillRect(0, 0, w, h)

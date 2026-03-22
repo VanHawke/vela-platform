@@ -9,12 +9,25 @@ import KikoSymbol from '../kiko/KikoSymbol'
 import CommandPalette from './CommandPalette'
 import AuroraCanvas from '../AuroraCanvas'
 
-const TABS = [
-  { label: 'Home', path: '/' },
-  { label: 'Pipeline', path: '/pipeline' },
-  { label: 'Calendar', path: '/calendar' },
-  { label: 'Contacts', path: '/contacts' },
+// All navigable pages
+const ALL_NAV = [
+  { id: 'home', label: 'Home', path: '/' },
+  { id: 'pipeline', label: 'Pipeline', path: '/pipeline' },
+  { id: 'calendar', label: 'Calendar', path: '/calendar' },
+  { id: 'contacts', label: 'Contacts', path: '/contacts' },
+  { id: 'organisations', label: 'Organisations', path: '/organisations', Icon: Building2 },
+  { id: 'email', label: 'Outreach Intelligence', path: '/email', Icon: BarChart3 },
+  { id: 'news', label: 'News Signals', path: '/news', Icon: Newspaper },
+  { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
+  { id: 'documents', label: 'Knowledge Library', path: '/documents', Icon: FileText },
+  { id: 'tasks', label: 'Tasks', path: '/tasks', Icon: CheckSquare },
 ]
+const DEFAULT_TOP_IDS = ['home', 'pipeline', 'calendar', 'contacts']
+
+function getTopNavIds() {
+  try { const s = localStorage.getItem('kiko_top_nav'); if (s) return JSON.parse(s) } catch {}
+  return DEFAULT_TOP_IDS
+}
 
 const PAGE_LABELS = {
   '/pipeline': 'Pipeline', '/calendar': 'Calendar', '/contacts': 'Contacts',
@@ -35,6 +48,17 @@ export default function Layout({ user }) {
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [voiceActive, setVoiceActive] = useState(false)
   const [voiceStatus, setVoiceStatus] = useState('Listening')
+  const [topNavIds, setTopNavIds] = useState(getTopNavIds)
+  
+  // Listen for Settings nav changes
+  useEffect(() => {
+    const handler = () => setTopNavIds(getTopNavIds())
+    window.addEventListener('kiko_top_nav_updated', handler)
+    return () => window.removeEventListener('kiko_top_nav_updated', handler)
+  }, [])
+
+  const TABS = ALL_NAV.filter(n => topNavIds.includes(n.id))
+  const MORE_ITEMS = ALL_NAV.filter(n => !topNavIds.includes(n.id))
   const moreRef = useRef(null)
   const [customLogo, setCustomLogo] = useState(() => { try { return localStorage.getItem('custom_logo_url') } catch { return null } })
   const avatarRef = useRef(null)
@@ -191,14 +215,9 @@ export default function Layout({ user }) {
                   borderRadius: 18, border: `1.5px solid ${T.glassBorder}`,
                   boxShadow: T.glassShadow, padding: '6px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
                 }}>
-                  {[
-                    { label: 'Organisations', path: '/organisations', Icon: Building2 },
-                    { label: 'Outreach Intelligence', path: '/email', Icon: BarChart3 },
-                    { label: 'News Signals', path: '/news', Icon: Newspaper },
-                    { label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
-                    { label: 'Knowledge Library', path: '/documents', Icon: FileText },
-                    { label: 'Tasks', path: '/tasks', Icon: CheckSquare },
-                  ].filter(item => !TABS.find(t => t.path === item.path)).map(item => (
+                  {MORE_ITEMS.map(item => {
+                    const Icon = item.Icon || FileText
+                    return (
                     <button key={item.label} onClick={() => { nav(item.path); setMoreOpen(false) }} style={{
                       width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none',
                       background: loc.pathname === item.path ? 'rgba(255,255,255,0.08)' : 'transparent',
@@ -208,9 +227,9 @@ export default function Layout({ user }) {
                     }}
                       onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)' }}
                       onMouseOut={e => { e.currentTarget.style.background = loc.pathname === item.path ? 'rgba(255,255,255,0.08)' : 'transparent'; e.currentTarget.style.color = loc.pathname === item.path ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.4)' }}
-                    ><item.Icon size={14} />{item.label}</button>
-                  ))}
-                  <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '4px 8px' }} />
+                    ><Icon size={14} />{item.label}</button>
+                  )})}
+                  {MORE_ITEMS.length > 0 && <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '4px 8px' }} />}
                   <button onClick={() => { nav('/settings'); setMoreOpen(false) }} style={{
                     width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none',
                     background: 'transparent', color: 'rgba(255,255,255,0.4)', textAlign: 'left',
