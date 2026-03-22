@@ -446,27 +446,39 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         </div>
       )}
 
-      {/* ── FAB button — matches homepage Kiko avatar with breathing + pulse ── */}
-      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 101, width: 48, height: 48 }}>
-        {/* Pulse rings — centered with inset */}
-        {!open && <>
-          <div style={{ position: 'absolute', top: -8, left: -8, right: -8, bottom: -8, borderRadius: 18, border: '1.5px solid rgba(139,108,246,0.12)', animation: 'kikoPulseRing 2.5s ease-in-out infinite', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', top: -16, left: -16, right: -16, bottom: -16, borderRadius: 22, border: '1px solid rgba(6,214,160,0.06)', animation: 'kikoPulseRing 2.5s ease-in-out 0.6s infinite', pointerEvents: 'none' }} />
+      {/* ── FAB button — Glass Sphere with DoubleHelix, teal aura when speaking ── */}
+      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 101, width: 56, height: 56 }}>
+        {/* Teal aura ring — visible when voice is active */}
+        {voiceOpen && <>
+          <div style={{ position: 'absolute', inset: -4, borderRadius: '50%', border: '2px solid rgba(6,214,160,0.2)', animation: 'kikoPulseRing 2s ease-in-out infinite', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', inset: -10, borderRadius: '50%', border: '1.5px solid rgba(6,214,160,0.08)', animation: 'kikoPulseRing 2s ease-in-out 0.5s infinite', pointerEvents: 'none' }} />
+        </>}
+        {/* Subtle idle pulse — when closed and not in voice */}
+        {!open && !voiceOpen && <>
+          <div style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: '1px solid rgba(139,108,246,0.06)', animation: 'kikoPulseRing 3s ease-in-out infinite', pointerEvents: 'none' }} />
         </>}
         <button onClick={toggleOpen} className={fabClass} style={{
-          width: 48, height: 48, borderRadius: 50,
-          background: 'linear-gradient(135deg, #8B6CF6, #06D6A0)', border: 'none', color: 'rgba(255,255,255,0.9)',
+          width: 56, height: 56, borderRadius: '50%',
+          background: 'rgba(255,255,255,0.03)',
+          backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
+          border: voiceOpen ? '1.5px solid rgba(6,214,160,0.2)' : '1.5px solid rgba(255,255,255,0.08)',
+          color: 'rgba(255,255,255,0.9)',
           cursor: 'pointer',
-          boxShadow: '0 8px 32px rgba(139,108,246,0.2), inset 0 1px 0 rgba(255,255,255,0.15), 0 0 20px rgba(139,108,246,0.05)',
+          boxShadow: voiceOpen
+            ? 'inset 0 1px 0 rgba(255,255,255,0.1), 0 0 0 3px rgba(6,214,160,0.1), 0 0 28px rgba(6,214,160,0.12), 0 8px 24px rgba(0,0,0,0.3)'
+            : 'inset 0 1px 0 rgba(255,255,255,0.08), 0 0 16px rgba(139,108,246,0.06), 0 8px 24px rgba(0,0,0,0.3)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'box-shadow 0.25s, border-radius 0.25s',
+          overflow: 'hidden',
+          transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
           transformOrigin: 'center',
-          animation: open ? undefined : 'kikoBreatheScale 4s ease-in-out infinite',
           position: 'relative',
-        }}>
+        }}
+          onMouseEnter={e => { if (!open) { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.3)' : 'rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'scale(1.06)' }}}
+          onMouseLeave={e => { if (!open) { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.2)' : 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'scale(1)' }}}
+        >
           {open
             ? <X size={18} />
-            : <DoubleHelix width={28} height={28} mini />
+            : <DoubleHelix width={36} height={36} mini />
           }
         </button>
       </div>
