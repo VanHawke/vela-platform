@@ -330,7 +330,7 @@ export default function Organisations({ user }) {
           <h1 style={{ fontSize: 18, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Organisations</h1>
           <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{filtered.length.toLocaleString()} organisation{filtered.length !== 1 ? 's' : ''}</p>
         </div>
-        <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, background: 'var(--accent)', color: 'rgba(255,255,255,0.06)', padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+        <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, background: 'var(--accent)', color: 'rgba(255,255,255,0.9)', padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
           <Plus style={{ width: 14, height: 14 }} /> Add Organisation
         </button>
       </div>
@@ -491,7 +491,7 @@ export default function Organisations({ user }) {
                   if (openPopover === 'round') setFilters(p => ({ ...p, lastRound: '' }))
                   if (openPopover === 'revenue') setFilters(p => ({ ...p, revenueMin: '', revenueMax: '' }))
                 }} style={{ fontSize: 11, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Reset</button>
-                <button onClick={() => setOpenPopover(null)} style={{ fontSize: 12, fontWeight: 500, padding: '6px 16px', borderRadius: 50, background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                <button onClick={() => setOpenPopover(null)} style={{ fontSize: 12, fontWeight: 500, padding: '6px 16px', borderRadius: 50, background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.9)', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
                   Show {filtered.length.toLocaleString()}
                 </button>
               </div>
@@ -889,7 +889,7 @@ export default function Organisations({ user }) {
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
               <button onClick={reset} style={{ flex: 1, padding: '10px 0', fontSize: 13, color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 50, background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font)' }}>Cancel</button>
-              <button onClick={save} style={{ flex: 1, padding: '10px 0', fontSize: 13, color: 'rgba(255,255,255,0.06)', background: 'var(--accent)', border: 'none', borderRadius: 50, cursor: 'pointer', fontWeight: 500, fontFamily: 'var(--font)' }}>Save</button>
+              <button onClick={save} style={{ flex: 1, padding: '10px 0', fontSize: 13, color: 'rgba(255,255,255,0.9)', background: 'var(--accent)', border: 'none', borderRadius: 50, cursor: 'pointer', fontWeight: 500, fontFamily: 'var(--font)' }}>Save</button>
             </div>
           </div>
         </div>

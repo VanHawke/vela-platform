@@ -6,8 +6,8 @@ import EmailCompose from './EmailCompose'
 
 const T = {
   bg: '#07070B', surface: 'rgba(255,255,255,0.04)', surfaceHover: 'rgba(255,255,255,0.06)',
-  border: 'rgba(255,255,255,0.04)', borderHover: 'rgba(255,255,255,0.1)',
-  text: 'rgba(255,255,255,0.12)', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
+  border: 'rgba(255,255,255,0.08)', borderHover: 'rgba(255,255,255,0.1)',
+  text: 'rgba(255,255,255,0.85)', textSecondary: 'rgba(255,255,255,0.45)', textTertiary: 'rgba(255,255,255,0.25)',
   accent: 'rgba(255,255,255,0.12)', accentSoft: 'rgba(255,255,255,0.04)',
   blue: '#007AFF', red: '#FF3B30', yellow: '#FF9500',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
@@ -154,7 +154,7 @@ export default function Email({ user }) {
       {/* Left — Folders */}
       <div style={{ width: 200, borderRight: `1px solid ${T.border}`, padding: 12, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
         <button onClick={() => setComposing('new')} style={{
-          width: '100%', height: 40, borderRadius: 50, border: 'none', background: T.accent, color: 'rgba(255,255,255,0.06)',
+          width: '100%', height: 40, borderRadius: 50, border: 'none', background: T.accent, color: 'rgba(255,255,255,0.9)',
           fontSize: 13, fontWeight: 400, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           marginBottom: 12, fontFamily: T.font,
         }}>
@@ -175,7 +175,7 @@ export default function Email({ user }) {
               <Icon size={15} style={{ flexShrink: 0 }} />
               <span style={{ flex: 1 }}>{f.label}</span>
               {f.id === 'INBOX' && unreadCount > 0 && (
-                <span style={{ fontSize: 10, background: T.blue, color: 'rgba(255,255,255,0.06)', padding: '1px 6px', borderRadius: 50, fontWeight: 400 }}>{unreadCount}</span>
+                <span style={{ fontSize: 10, background: T.blue, color: 'rgba(255,255,255,0.9)', padding: '1px 6px', borderRadius: 50, fontWeight: 400 }}>{unreadCount}</span>
               )}
             </button>
           )

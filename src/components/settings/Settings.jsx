@@ -315,7 +315,7 @@ export default function Settings({ user }) {
               bio: settings.bio, linkedin_url: settings.linkedin_url, profile_photo_url: settings.profile_photo_url,
               email_signature: settings.email_signature, notification_prefs: settings.notification_prefs,
             })}
-              style={{ height: 44, borderRadius: 50, background: T.accent, color: 'rgba(255,255,255,0.06)', border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
+              style={{ height: 44, borderRadius: 50, background: T.accent, color: 'rgba(255,255,255,0.9)', border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
               {saved ? 'Saved!' : 'Save changes'}
             </button>
           </div>
@@ -440,7 +440,7 @@ export default function Settings({ user }) {
                   <option value="admin">Admin</option>
                 </select>
                 <button onClick={sendInvite} style={{
-                  height: 44, padding: '0 16px', borderRadius: 50, background: T.accent, color: 'rgba(255,255,255,0.06)',
+                  height: 44, padding: '0 16px', borderRadius: 50, background: T.accent, color: 'rgba(255,255,255,0.9)',
                   border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
                   display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
                 }}><UserPlus size={14} /> Invite</button>
@@ -566,7 +566,7 @@ export default function Settings({ user }) {
                   </div>
                 ) : (
                   <button onClick={connectGoogle} style={{
-                    height: 36, padding: '0 16px', borderRadius: T.radiusSm, background: T.accent, color: 'rgba(255,255,255,0.06)',
+                    height: 36, padding: '0 16px', borderRadius: T.radiusSm, background: T.accent, color: 'rgba(255,255,255,0.9)',
                     border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
                     display: 'flex', alignItems: 'center', gap: 6,
                   }}><ExternalLink size={12} /> Connect</button>

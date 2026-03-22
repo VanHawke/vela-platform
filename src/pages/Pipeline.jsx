@@ -460,7 +460,7 @@ export default function Pipeline({ user }) {
                   }}>
                   <div style={{ padding: '12px 14px 10px', borderBottom: '1.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.04)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{stage.label}</span>
+                      <span style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.9)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{stage.label}</span>
                       <span style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)', background: 'rgba(255,255,255,0.04)', borderRadius: 50, padding: '1px 7px' }}>{stageDeals.length}</span>
                     </div>
                   </div>
@@ -528,7 +528,7 @@ export default function Pipeline({ user }) {
                       </div>
                     )}
                     <div>
-                      <h2 style={{ fontSize: 16, fontWeight: 400, color: 'rgba(255,255,255,0.06)', margin: 0, fontFamily: 'var(--font)' }}>{selectedDeal.company || selectedDeal.title}</h2>
+                      <h2 style={{ fontSize: 16, fontWeight: 400, color: 'rgba(255,255,255,0.9)', margin: 0, fontFamily: 'var(--font)' }}>{selectedDeal.company || selectedDeal.title}</h2>
                       {dealCompany?.industry && <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: '3px 0 0', fontFamily: 'var(--font)', fontWeight: 300 }}>{dealCompany.industry}{dealCompany.country ? ` · ${dealCompany.country}` : ''}</p>}
                     </div>
                   </div>

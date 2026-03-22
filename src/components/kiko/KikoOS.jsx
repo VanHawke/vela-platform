@@ -146,7 +146,7 @@ export default function KikoOS({ user, onOpenVoice }) {
     return (
       <button onClick={() => setStage(1)} style={{
         position: 'fixed', bottom: 24, right: 24, zIndex: 100, width: 52, height: 52,
-        borderRadius: '50%', background: 'var(--accent)', border: 'none', color: 'rgba(255,255,255,0.06)',
+        borderRadius: '50%', background: 'var(--accent)', border: 'none', color: 'rgba(255,255,255,0.9)',
         cursor: 'pointer', boxShadow: '0 4px 20px rgba(255,255,255,0.12)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'transform 0.2s',
@@ -234,7 +234,7 @@ export default function KikoOS({ user, onOpenVoice }) {
               </div>
             )}
             {msg.role === 'user' ? (
-              <div style={{ maxWidth: '80%', padding: '8px 14px', borderRadius: '14px 14px 4px 14px', background: 'var(--accent)', color: 'rgba(255,255,255,0.06)', fontSize: 13, lineHeight: 1.5, fontFamily: 'var(--font)' }}>{msg.content}</div>
+              <div style={{ maxWidth: '80%', padding: '8px 14px', borderRadius: '14px 14px 4px 14px', background: 'var(--accent)', color: 'rgba(255,255,255,0.9)', fontSize: 13, lineHeight: 1.5, fontFamily: 'var(--font)' }}>{msg.content}</div>
             ) : (
               <div style={{ maxWidth: '80%', padding: '10px 14px', borderRadius: 50, background: 'var(--accent-soft)', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, fontFamily: 'var(--font)' }}>
                 <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />

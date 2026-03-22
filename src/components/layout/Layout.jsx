@@ -263,7 +263,7 @@ export default function Layout({ user }) {
               {profile.profile_photo_url ? (
                 <img src={profile.profile_photo_url} alt="" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
               ) : (
-                <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.04)', fontFamily: 'var(--font)' }}>{initials}</span>
+                <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.9)', fontFamily: 'var(--font)' }}>{initials}</span>
               )}
             </button>
             {avatarOpen && (

@@ -3,12 +3,12 @@ import { RefreshCw, Loader2, AlertTriangle, Plus, X, ExternalLink, FileDown, Che
 
 const T = {
   bg: '#07070B', surface: 'rgba(255,255,255,0.04)', surfaceHover: 'rgba(255,255,255,0.06)',
-  border: 'rgba(255,255,255,0.04)', borderHover: 'rgba(255,255,255,0.1)',
-  text: 'rgba(255,255,255,0.12)', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
-  accent: 'rgba(255,255,255,0.12)', accentSoft: 'rgba(255,255,255,0.04)',
+  border: 'rgba(255,255,255,0.08)', borderHover: 'rgba(255,255,255,0.1)',
+  text: 'rgba(255,255,255,0.85)', textSecondary: 'rgba(255,255,255,0.45)', textTertiary: 'rgba(255,255,255,0.25)',
+  accent: '#8B6CF6', accentSoft: 'rgba(139,108,246,0.08)',
   blue: '#007AFF', red: '#FF3B30', yellow: '#FF9500', green: '#34C759',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-  gap: '#FEF2F2', gapBorder: '#FECACA', filled: '#F0FDF4', filledBorder: '#BBF7D0',
+  gap: 'rgba(255,59,48,0.06)', gapBorder: 'rgba(255,59,48,0.15)', filled: 'rgba(52,199,89,0.06)', filledBorder: 'rgba(52,199,89,0.15)',
 }
 
 const TIER_BADGE = {
@@ -35,7 +35,7 @@ function TeamLogo({ team, size = 20 }) {
         <img src={team.logo_url} alt={team.name} style={{ width: size * 0.7, height: size * 0.7, objectFit: 'contain', filter: 'brightness(10)' }}
           onError={() => setImgError(true)} />
       ) : (
-        <span style={{ fontSize: Math.max(size * 0.35, 8), fontWeight: 500, color: 'rgba(255,255,255,0.06)', letterSpacing: '-0.02em' }}>
+        <span style={{ fontSize: Math.max(size * 0.35, 8), fontWeight: 500, color: 'rgba(255,255,255,0.9)', letterSpacing: '-0.02em' }}>
           {team.name?.slice(0,2).toUpperCase()}
         </span>
       )}
@@ -150,7 +150,7 @@ export default function PartnershipMatrix({ user }) {
               </select>
               <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                 <button onClick={() => setShowAdd(false)} style={{ flex: 1, fontSize: 12, padding: '6px 0', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
-                <button onClick={addPartnership} style={{ flex: 1, fontSize: 12, padding: '6px 0', borderRadius: 6, border: 'none', background: T.accent, color: 'rgba(255,255,255,0.06)', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>Add</button>
+                <button onClick={addPartnership} style={{ flex: 1, fontSize: 12, padding: '6px 0', borderRadius: 6, border: 'none', background: T.accent, color: 'rgba(255,255,255,0.9)', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>Add</button>
               </div>
             </div>
           </div>

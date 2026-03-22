@@ -455,7 +455,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         </>}
         <button onClick={toggleOpen} className={fabClass} style={{
           width: 48, height: 48, borderRadius: 50,
-          background: 'linear-gradient(135deg, #8B6CF6, #06D6A0)', border: 'none', color: 'rgba(255,255,255,0.06)',
+          background: 'linear-gradient(135deg, #8B6CF6, #06D6A0)', border: 'none', color: 'rgba(255,255,255,0.9)',
           cursor: 'pointer',
           boxShadow: '0 8px 32px rgba(139,108,246,0.2), inset 0 1px 0 rgba(255,255,255,0.15), 0 0 20px rgba(139,108,246,0.05)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',

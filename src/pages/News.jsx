@@ -4,8 +4,8 @@ import { supabase } from '@/lib/supabase'
 
 const T = {
   bg: '#07070B', surface: 'rgba(255,255,255,0.04)',
-  border: 'rgba(255,255,255,0.04)', borderHover: 'rgba(255,255,255,0.1)',
-  text: 'rgba(255,255,255,0.12)', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
+  border: 'rgba(255,255,255,0.08)', borderHover: 'rgba(255,255,255,0.12)',
+  text: 'rgba(255,255,255,0.85)', textSecondary: 'rgba(255,255,255,0.45)', textTertiary: 'rgba(255,255,255,0.25)',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   yellow: '#FF9500',
 }
@@ -28,11 +28,11 @@ const WINDOWS = [
 
 // Signal config: color + label per type
 const SIGNAL = {
-  deal:    { bg: '#FCEBEB', border: '#F09595', text: '#791F1F', badge: '#E24B4A', label: 'Deal signal' },
-  partner: { bg: '#E6F1FB', border: '#85B7EB', text: '#0C447C', badge: '#378ADD', label: 'Partnership' },
-  official:{ bg: '#EAF3DE', border: '#97C459', text: '#27500A', badge: '#639922', label: 'Official' },
-  market:  { bg: '#FAEEDA', border: '#EF9F27', text: '#633806', badge: '#BA7517', label: 'Market' },
-  fe:      { bg: '#EEEDFE', border: '#AFA9EC', text: '#3C3489', badge: '#7F77DD', label: 'Formula E' },
+  deal:    { bg: 'rgba(225,6,0,0.08)', border: 'rgba(225,6,0,0.2)', text: '#FF6B6B', badge: '#E24B4A', label: 'Deal signal' },
+  partner: { bg: 'rgba(55,138,221,0.08)', border: 'rgba(55,138,221,0.2)', text: '#85B7EB', badge: '#378ADD', label: 'Partnership' },
+  official:{ bg: 'rgba(99,153,34,0.08)', border: 'rgba(99,153,34,0.2)', text: '#97C459', badge: '#639922', label: 'Official' },
+  market:  { bg: 'rgba(239,159,39,0.08)', border: 'rgba(239,159,39,0.2)', text: '#EF9F27', badge: '#BA7517', label: 'Market' },
+  fe:      { bg: 'rgba(127,119,221,0.08)', border: 'rgba(127,119,221,0.2)', text: '#AFA9EC', badge: '#7F77DD', label: 'Formula E' },
   general: { bg: T.bg,      border: T.border,  text: T.textSecondary, badge: T.textTertiary, label: '' },
 }
 
@@ -107,7 +107,7 @@ function ArticleCard({ article, onStar, featured = false }) {
           </span>
         )}
         {isOfficial && !sig.label.includes('Official') && (
-          <span style={{ fontSize: 9, fontWeight: 500, color: '#27500A', background: '#EAF3DE', border: '1.5px solid #97C459', padding: '2px 6px', borderRadius: 4 }}>
+          <span style={{ fontSize: 9, fontWeight: 500, color: '#97C459', background: 'rgba(99,153,34,0.08)', border: '1.5px solid rgba(99,153,34,0.2)', padding: '2px 6px', borderRadius: 4 }}>
             Official
           </span>
         )}

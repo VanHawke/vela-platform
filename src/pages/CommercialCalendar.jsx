@@ -5,12 +5,12 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 // ── Platform tokens ───────────────────────────────────────
 const T = {
   bg: '#07070B', surface: 'rgba(255,255,255,0.04)', surfaceHover: 'rgba(255,255,255,0.06)',
-  border: 'rgba(255,255,255,0.04)', borderHover: 'rgba(255,255,255,0.1)',
-  text: 'rgba(255,255,255,0.12)', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
+  border: 'rgba(255,255,255,0.08)', borderHover: 'rgba(255,255,255,0.12)',
+  text: 'rgba(255,255,255,0.85)', textSecondary: 'rgba(255,255,255,0.45)', textTertiary: 'rgba(255,255,255,0.25)',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-  f1: '#E10600', f1Light: '#FEF2F2', f1Border: '#F7C1C1', f1Dark: '#791F1F',
-  fe: '#0055CC', feLight: '#EBF3FF', feBorder: '#B5D4F4', feDark: '#0C447C',
-  amber: '#B86000', amberLight: '#FFF7ED', amberBorder: '#FAC775',
+  f1: '#E10600', f1Light: 'rgba(225,6,0,0.08)', f1Border: 'rgba(225,6,0,0.2)', f1Dark: '#FF4444',
+  fe: '#0055CC', feLight: 'rgba(0,85,204,0.08)', feBorder: 'rgba(0,85,204,0.2)', feDark: '#6CB4FF',
+  amber: '#F59E0B', amberLight: 'rgba(245,158,11,0.08)', amberBorder: 'rgba(245,158,11,0.2)',
 }
 
 // ── Official logos — raw, no background box ───────────────
@@ -181,7 +181,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, onClick }) 
                 s.isSel || s.isRaceDay ? 'rgba(255,255,255,0.22)' : T.f1,
                 <>
                   <img src="/f1-logo.png" alt="F1" style={{ width: 8, height: 8, objectFit: 'contain', display: 'block' }} />
-                  <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.06)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
+                  <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.9)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
                     {s.isRaceDay ? 'Race day' : `${e.city.slice(0, 3).toUpperCase()}${e.sprint ? ' ⚡' : ''}`}
                   </span>
                 </>
@@ -194,7 +194,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, onClick }) 
                 s.isSel ? 'rgba(255,255,255,0.22)' : T.fe,
                 <>
                   <img src="/fe-logo.png" alt="FE" style={{ width: 8, height: 8, objectFit: 'contain', display: 'block' }} />
-                  <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.06)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
+                  <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.9)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
                     {e.city.slice(0, 3).toUpperCase()}
                   </span>
                 </>

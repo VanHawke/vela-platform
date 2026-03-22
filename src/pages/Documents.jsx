@@ -4,8 +4,8 @@ import { Upload, FileText, Image, File, X, Loader2, Eye, RefreshCw, Search, Filt
 
 const T = {
   bg: 'transparent', surface: 'rgba(255,255,255,0.65)', surfaceHover: 'rgba(255,255,255,0.8)',
-  border: 'rgba(255,255,255,0.04)', borderHover: 'rgba(255,255,255,0.7)', borderSubtle: 'rgba(255,255,255,0.04)',
-  text: 'rgba(255,255,255,0.12)', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
+  border: 'rgba(255,255,255,0.08)', borderHover: 'rgba(255,255,255,0.7)', borderSubtle: 'rgba(255,255,255,0.04)',
+  text: 'rgba(255,255,255,0.85)', textSecondary: 'rgba(255,255,255,0.45)', textTertiary: 'rgba(255,255,255,0.25)',
   accent: 'rgba(255,255,255,0.12)', accentSoft: 'rgba(255,255,255,0.04)',
   blue: '#007AFF', red: '#FF3B30', green: '#34C759', yellow: '#FF9500', purple: '#AF52DE',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
@@ -176,7 +176,7 @@ export default function Documents({ user }) {
           <h1 style={{ fontSize: 22, fontWeight: 400, color: T.text, margin: 0 }}>Knowledge Library</h1>
           <p style={{ fontSize: 12, color: T.textTertiary, margin: '4px 0 0' }}>{documents.length} documents — Kiko analyses and learns from everything you upload</p>
         </div>
-        <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ height: 36, padding: '0 16px', borderRadius: 50, background: T.accent, color: 'rgba(255,255,255,0.06)', border: 'none', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6, opacity: uploading ? 0.5 : 1 }}>
+        <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ height: 36, padding: '0 16px', borderRadius: 50, background: T.accent, color: 'rgba(255,255,255,0.9)', border: 'none', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6, opacity: uploading ? 0.5 : 1 }}>
           {uploading ? <><Loader2 size={14} style={{ animation: 'kikoVortexSpin 1s linear infinite' }} />{uploadStatus}</> : <><Upload size={14} />Upload</>}
         </button>
         <input ref={fileRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx" onChange={handleUpload} style={{ display: 'none' }} />
@@ -209,7 +209,7 @@ export default function Documents({ user }) {
             {lastUploaded.detectedContext && <> · <span style={{ color: CTX_COLORS[lastUploaded.detectedContext] || T.textTertiary }}>{CTX_LABELS[lastUploaded.detectedContext] || lastUploaded.detectedContext}</span></>}
           </span>
           <button onClick={() => { if (lastUploaded.confirmedTeam) reassignTeam(lastUploaded.id, lastUploaded.confirmedTeam); setLastUploaded(null) }}
-            style={{ fontSize: 11, padding: '4px 12px', borderRadius: 6, border: 'none', background: T.accent, color: 'rgba(255,255,255,0.06)', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>
+            style={{ fontSize: 11, padding: '4px 12px', borderRadius: 6, border: 'none', background: T.accent, color: 'rgba(255,255,255,0.9)', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>
             Confirm
           </button>
           <select value={lastUploaded.confirmedTeam || ''} onChange={e => setLastUploaded(prev => ({ ...prev, confirmedTeam: e.target.value }))}

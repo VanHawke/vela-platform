@@ -487,7 +487,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           width: welcome ? 42 : sz, height: welcome ? 42 : sz, borderRadius: 50,
           background: input.trim() ? T.accentGradient : 'rgba(255,255,255,0.04)',
           border: input.trim() ? 'none' : '1.5px solid rgba(255,255,255,0.1)',
-          color: 'rgba(255,255,255,0.06)',
+          color: 'rgba(255,255,255,0.9)',
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'all 0.15s', flexShrink: 0, opacity: input.trim() ? 0.9 : 0.5,
           boxShadow: input.trim() ? '0 4px 16px rgba(139,108,246,0.3)' : 'none',
@@ -579,7 +579,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             </div>
             <button onClick={stopVoice} style={{
               marginTop: 24, padding: '10px 28px', borderRadius: 50,
-              background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.1)',
+              background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)',
               fontSize: 12, color: 'rgba(255,255,255,0.25)', cursor: 'pointer', fontFamily: T.font,
               fontWeight: 300, transition: 'all 0.3s',
             }}
