@@ -38,6 +38,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   const [speaking, setSpeaking]         = useState(false)
   const [thinking, setThinking]         = useState(false)
   const [transcript, setTranscript]     = useState('')
+  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 'there'
   const [kikoText, setKikoText]         = useState('')
   const [typeInput, setTypeInput]       = useState('')
   const [showPane, setShowPane]         = useState(false)
@@ -84,13 +85,18 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   // audio and creating duplicate/echo messages.
   const speakingRef = useRef(false)
   const closeRef = useRef(null) // ref to handleClose for bye-kiko from inside useEffect
+  const sayByeRef = useRef(null) // ref to sayByeAndClose for bye-kiko from inside useEffect
+  const greetedRef = useRef(false) // ensure greeting only fires once per session
   
-  // Bye Kiko detection — phonetic variants Whisper might produce
+  // Bye Kiko detection — includes standalone "bye" and "goodbye"
   const isByeKiko = (text) => {
     const c = text.toLowerCase().replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim()
+    // Exact standalone matches
+    if (['bye', 'goodbye', 'good bye', 'bye bye'].includes(c)) return true
+    // Phrase matches
     return ['bye kiko', 'bye keeko', 'by kiko', 'buy kiko', 'bikiko', 'bye keiko', 
             'bye kyko', 'bye kico', 'by keeko', 'bye keko', 'bai kiko', 'bye kiku',
-            'goodbye kiko', 'good bye kiko', 'bye bye kiko', 'see you kiko',
+            'goodbye kiko', 'good bye kiko', 'goodbye keeko', 'bye bye kiko', 'see you kiko',
             'bye kyco', 'bye keeco', 'bye chico'].some(v => c.includes(v))
   }
   const startLiveTranscription = useCallback(() => {}, [])
@@ -392,6 +398,15 @@ RULES:
 
     if (t === 'session.updated' || t === 'session.created') {
       console.log('[Kiko Voice]', t)
+      // Greet user on first session.updated (config acknowledged)
+      if (t === 'session.updated' && !greetedRef.current && dcRef.current?.readyState === 'open') {
+        greetedRef.current = true
+        dcRef.current.send(JSON.stringify({
+          type: 'conversation.item.create',
+          item: { type: 'message', role: 'user', content: [{ type: 'input_text', text: `[KIKO_SAY] Hi ${firstName}, how can I help you?` }] }
+        }))
+        dcRef.current.send(JSON.stringify({ type: 'response.create' }))
+      }
     }
 
     // ── User starts speaking → interrupt Kiko ──
@@ -423,7 +438,7 @@ RULES:
           // Bye-kiko check runs EVEN during speaking (bypasses echo block)
           if (isByeKiko(full)) {
             console.log('[Kiko Voice] Bye Kiko detected in delta:', full)
-            setTimeout(() => { if (closeRef.current) closeRef.current() }, 300)
+            setTimeout(() => { if (sayByeRef.current) sayByeRef.current() }, 300)
           }
           return speakingRef.current ? p : full // don't update transcript display during echo, but still check bye-kiko
         })
@@ -439,7 +454,7 @@ RULES:
       if (isByeKiko(text)) {
         console.log('[Kiko Voice] Bye Kiko detected in final transcript:', text)
         addMessage('user', text)
-        setTimeout(() => { if (closeRef.current) closeRef.current() }, 300)
+        setTimeout(() => { if (sayByeRef.current) sayByeRef.current() }, 300)
         return
       }
 
@@ -682,7 +697,25 @@ RULES:
     saveVoiceMemory()
     cleanup(); stopKeyword(); onClose()
   }
-  closeRef.current = handleClose // keep ref updated for bye-kiko inside useEffect
+  closeRef.current = handleClose
+  sayByeRef.current = sayByeAndClose
+
+  // Say "Bye, {name}" then close after Kiko speaks
+  const closingRef = useRef(false)
+  function sayByeAndClose() {
+    if (closingRef.current) return
+    closingRef.current = true
+    // Make Kiko say goodbye
+    if (dcRef.current?.readyState === 'open') {
+      dcRef.current.send(JSON.stringify({
+        type: 'conversation.item.create',
+        item: { type: 'message', role: 'user', content: [{ type: 'input_text', text: `[KIKO_SAY] Bye, ${firstName}!` }] }
+      }))
+      dcRef.current.send(JSON.stringify({ type: 'response.create' }))
+    }
+    // Close after Kiko speaks (2s fallback)
+    setTimeout(() => { if (closeRef.current) closeRef.current() }, 2000)
+  }
 
   async function saveVoiceMemory() {
     const msgs = conversationRef.current.messages
