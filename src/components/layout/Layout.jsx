@@ -126,8 +126,8 @@ export default function Layout({ user }) {
       {/* Top bar — frosted glass */}
       <header style={{
         height: 56, minHeight: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 24px', borderBottom: '0.5px solid rgba(255,255,255,0.07)',
-        background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(60px) saturate(1.4)', WebkitBackdropFilter: 'blur(60px) saturate(1.4)',
+        padding: '0 24px', borderBottom: 'none',
+        background: 'transparent',
         flexShrink: 0, position: 'relative', zIndex: 250,
         transition: 'all 0.6s cubic-bezier(0.4,0,0,1)',
         opacity: voiceFullscreen ? 0 : 1,
@@ -135,17 +135,15 @@ export default function Layout({ user }) {
         marginBottom: voiceFullscreen ? -56 : 0,
         pointerEvents: voiceFullscreen ? 'none' : 'auto',
       }}>
-        {/* Left: Logo pill */}
+        {/* Left: Brand logo — plain text, not a pill */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
-          {/* Kiko logo */}
           <button onClick={() => { setKikoMessages([]); setKikoConvId(null); setKikoResetKey(k => k + 1); nav('/') }}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.07)', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', padding: '0 14px', height: 34, borderRadius: 50, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
             {customLogo ? (
               <img src={customLogo} alt="Logo" style={{ height: 28, borderRadius: 7, maxWidth: 120, objectFit: 'contain' }} />
             ) : (
               <>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: T.accentGradient, boxShadow: `0 0 8px rgba(139,108,246,0.4)` }} />
-                <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.8)', fontFamily: T.font, letterSpacing: '0.02em' }}>kiko</span>
+                <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.4)', fontFamily: T.font, letterSpacing: '0.1em' }}>VAN HAWKE</span>
               </>
             )}
           </button>

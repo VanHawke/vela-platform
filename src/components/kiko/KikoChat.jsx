@@ -119,6 +119,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   // Voice mode state — inline, no overlay
   const [voiceActive, setVoiceActive] = useState(false)
+  const [alertDismissed, setAlertDismissed] = useState(false)
+  const alertSwipeRef = useRef({ startX: 0, currentX: 0 })
   const [voiceMicStream, setVoiceMicStream] = useState(null)
   const [voiceState, setVoiceState] = useState({})
   const [voiceMessages, setVoiceMessages] = useState([])
@@ -527,17 +529,17 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {/* IDLE STATE — wave above greeting */}
           {!voiceActive && (
             <>
-              {/* Wave — hero element, prominent and centered */}
-              <div id="kikoWaveHome" style={{ width: '85%', maxWidth: 800, marginBottom: 44, transition: 'all 1s cubic-bezier(0.4,0,0,1)', overflow: 'visible', padding: '10px 0' }}>
+              {/* Wave — hero element, edge-faded, prominent */}
+              <div id="kikoWaveHome" style={{ width: '85%', maxWidth: 800, marginBottom: 32, transition: 'all 1s cubic-bezier(0.4,0,0,1)', overflow: 'visible', padding: '10px 0', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
                 <SmokeTrailWave width={800} height={90} />
               </div>
 
-              {/* Greeting — below wave */}
+              {/* Greeting — compact, close to prompt */}
               <div id="kikoGreeting" style={{ transition: 'all 0.6s cubic-bezier(0.4,0,0,1)' }}>
-                <h1 style={{ fontSize: 36, fontWeight: 200, color: 'rgba(255,255,255,0.92)', margin: '0 0 6px', fontFamily: T.font, letterSpacing: '-0.04em', textAlign: 'center' }}>
+                <h1 style={{ fontSize: 28, fontWeight: 200, color: 'rgba(255,255,255,0.85)', margin: '0 0 4px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
                   {getGreeting()}, {firstName}
                 </h1>
-                <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.15)', margin: '0 0 32px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.12)', margin: '0 0 24px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
               </div>
 
               {/* Prompt bar */}
@@ -564,48 +566,33 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 ))}
               </div>
 
-              {/* Insight cards */}
-              <div id="kikoCardsWrap" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, width: '100%', maxWidth: 560, marginBottom: 14, transition: 'all 0.6s cubic-bezier(0.4,0,0,1)' }}>
-                {[
-                  { label: 'Pipeline', value: '3', detail: '$2.4M value', edge: '#F59E0B' },
-                  { label: 'Emails', value: '7', detail: '2 flagged', edge: '#8B6CF6' },
-                  { label: 'Calendar', value: '2', detail: 'Next 3pm', edge: '#06D6A0' },
-                ].map(card => (
-                  <div key={card.label} onClick={() => handleSubmit(`Brief me on ${card.label.toLowerCase()}`)} style={{
-                    borderRadius: 20, background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(40px) saturate(1.3)', WebkitBackdropFilter: 'blur(40px) saturate(1.3)',
-                    border: '0.5px solid rgba(255,255,255,0.12)', padding: 20, cursor: 'pointer',
-                    transition: 'all 0.4s cubic-bezier(0.2,0,0,1)', position: 'relative', overflow: 'hidden',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.35)',
+              {/* Alert pill — swipe to dismiss */}
+              {!alertDismissed && (
+                <div id="kikoAlertWrap"
+                  onTouchStart={e => { alertSwipeRef.current.startX = e.touches[0].clientX }}
+                  onTouchMove={e => { const dx = e.touches[0].clientX - alertSwipeRef.current.startX; e.currentTarget.style.transform = `translateX(${dx}px)`; e.currentTarget.style.opacity = Math.max(0, 1 - Math.abs(dx) / 200) }}
+                  onTouchEnd={e => { const dx = parseFloat(e.currentTarget.style.transform?.match(/translateX\((.+)px\)/)?.[1] || 0); if (Math.abs(dx) > 80) { e.currentTarget.style.transition = 'all 0.3s'; e.currentTarget.style.transform = `translateX(${dx > 0 ? 300 : -300}px)`; e.currentTarget.style.opacity = '0'; setTimeout(() => setAlertDismissed(true), 300) } else { e.currentTarget.style.transition = 'all 0.3s'; e.currentTarget.style.transform = 'translateX(0)'; e.currentTarget.style.opacity = '1' }}}
+                  onMouseDown={e => { alertSwipeRef.current.startX = e.clientX; alertSwipeRef.current.dragging = true }}
+                  onMouseMove={e => { if (!alertSwipeRef.current.dragging) return; const dx = e.clientX - alertSwipeRef.current.startX; e.currentTarget.style.transform = `translateX(${dx}px)`; e.currentTarget.style.opacity = Math.max(0, 1 - Math.abs(dx) / 200) }}
+                  onMouseUp={e => { alertSwipeRef.current.dragging = false; const dx = parseFloat(e.currentTarget.style.transform?.match(/translateX\((.+)px\)/)?.[1] || 0); if (Math.abs(dx) > 80) { e.currentTarget.style.transition = 'all 0.3s'; e.currentTarget.style.transform = `translateX(${dx > 0 ? 300 : -300}px)`; e.currentTarget.style.opacity = '0'; setTimeout(() => setAlertDismissed(true), 300) } else { e.currentTarget.style.transition = 'all 0.3s'; e.currentTarget.style.transform = 'translateX(0)'; e.currentTarget.style.opacity = '1' }}}
+                  onMouseLeave={e => { if (alertSwipeRef.current.dragging) { alertSwipeRef.current.dragging = false; e.currentTarget.style.transition = 'all 0.3s'; e.currentTarget.style.transform = 'translateX(0)'; e.currentTarget.style.opacity = '1' }}}
+                  style={{
+                    width: '100%', maxWidth: 540, borderRadius: 50, background: 'rgba(245,158,11,0.06)',
+                    backdropFilter: 'blur(40px) saturate(1.3)', WebkitBackdropFilter: 'blur(40px) saturate(1.3)',
+                    border: '0.5px solid rgba(245,158,11,0.14)', padding: '14px 22px',
+                    display: 'flex', alignItems: 'center', gap: 14, cursor: 'grab',
+                    boxShadow: 'inset 0 1px 0 rgba(245,158,11,0.06), 0 4px 20px rgba(0,0,0,0.2)',
+                    userSelect: 'none', touchAction: 'pan-y',
                   }}
-                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.15), 0 16px 48px rgba(0,0,0,0.45)' }}
-                    onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.35)' }}
-                  >
-                    <div style={{ position: 'absolute', top: 0, left: 0, width: 3, height: '100%', borderRadius: 2, background: `linear-gradient(180deg, ${card.edge}, transparent)` }} />
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.18)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, marginBottom: 10, fontFamily: T.font }}>{card.label}</div>
-                    <div style={{ fontSize: 24, color: 'rgba(255,255,255,0.7)', fontWeight: 300, fontFamily: T.font }}>{card.value}</div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.14)', fontWeight: 300, marginTop: 4, fontFamily: T.font }}>{card.detail}</div>
+                >
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#F59E0B', flexShrink: 0, boxShadow: '0 0 12px rgba(245,158,11,0.5)', animation: 'kikoBreathe 1.5s ease-in-out infinite' }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', fontWeight: 400, fontFamily: T.font }}>Cloudflare ROI framework due Thursday</div>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontWeight: 300, marginTop: 2, fontFamily: T.font }}>Technical review — highest priority this week</div>
                   </div>
-                ))}
-              </div>
-
-              {/* Alert pill */}
-              <div id="kikoAlertWrap" onClick={() => handleSubmit('Brief me on the Cloudflare ROI framework')} style={{
-                width: '100%', maxWidth: 560, borderRadius: 50, background: 'rgba(245,158,11,0.06)',
-                backdropFilter: 'blur(40px) saturate(1.3)', WebkitBackdropFilter: 'blur(40px) saturate(1.3)',
-                border: '0.5px solid rgba(245,158,11,0.14)', padding: '14px 22px',
-                display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', transition: 'all 0.4s',
-                boxShadow: 'inset 0 1px 0 rgba(245,158,11,0.06), 0 4px 20px rgba(0,0,0,0.2)',
-              }}
-                onMouseOver={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                onMouseOut={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.06)'; e.currentTarget.style.transform = 'translateY(0)' }}
-              >
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#F59E0B', flexShrink: 0, boxShadow: '0 0 12px rgba(245,158,11,0.5)', animation: 'kikoBreathe 1.5s ease-in-out infinite' }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', fontWeight: 400, fontFamily: T.font }}>Cloudflare ROI framework due Thursday</div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontWeight: 300, marginTop: 2, fontFamily: T.font }}>Technical review — highest priority this week</div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5"><polyline points="9 18 15 12 9 6"/></svg>
-              </div>
+              )}
             </>
           )}
 
@@ -620,17 +607,17 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               )}
 
               {/* Large speaking wave — visible when Kiko is speaking */}
-              <div style={{ width: '85%', maxWidth: 900, height: 120, opacity: voiceState.status === 'speaking' ? 1 : 0, transition: 'opacity 0.5s', marginBottom: 20 }}>
-                <SmokeTrailWave width={900} height={120} scale={1.5} thinking={voiceState.status === 'speaking'} />
+              <div style={{ width: '85%', maxWidth: 900, height: 120, opacity: voiceState.speaking ? 1 : 0, transition: 'opacity 0.5s', marginBottom: 20, WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
+                <SmokeTrailWave width={900} height={120} scale={1.5} thinking={voiceState.speaking} />
               </div>
 
               {/* Idle wave — visible when listening (not speaking) */}
-              <div style={{ width: '85%', maxWidth: 900, opacity: voiceState.status === 'speaking' ? 0 : 1, transition: 'opacity 0.5s' }}>
+              <div style={{ width: '85%', maxWidth: 900, opacity: voiceState.speaking ? 0 : 1, transition: 'opacity 0.5s', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
                 <SmokeTrailWave width={900} height={70} />
               </div>
 
               {/* Listening bar — subtle green pulsating line */}
-              <div style={{ width: 280, height: 3, borderRadius: 50, overflow: 'hidden', marginTop: 24, opacity: voiceState.status === 'speaking' ? 0 : 1, transition: 'opacity 0.5s' }}>
+              <div style={{ width: 280, height: 3, borderRadius: 50, overflow: 'hidden', marginTop: 24, opacity: voiceState.speaking ? 0 : 1, transition: 'opacity 0.5s' }}>
                 <div style={{
                   width: '100%', height: '100%', borderRadius: 50,
                   background: 'linear-gradient(90deg, transparent, rgba(6,214,160,0.5), transparent)',
@@ -639,8 +626,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               </div>
 
               {/* Status label */}
-              <div style={{ marginTop: 18, fontSize: 13, fontWeight: 300, fontFamily: T.font, color: voiceState.status === 'speaking' ? 'rgba(139,108,246,0.25)' : 'rgba(255,255,255,0.12)', transition: 'color 0.3s' }}>
-                {voiceState.status === 'speaking' ? 'Kiko is speaking...' : 'Listening...'}
+              <div style={{ marginTop: 18, fontSize: 13, fontWeight: 300, fontFamily: T.font, color: voiceState.speaking ? 'rgba(139,108,246,0.25)' : 'rgba(255,255,255,0.12)', transition: 'color 0.3s' }}>
+                {voiceState.speaking ? 'Kiko is speaking...' : 'Listening...'}
               </div>
 
               {/* Stop button */}

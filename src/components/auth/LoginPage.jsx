@@ -56,13 +56,11 @@ export default function LoginPage() {
 
         {/* Brand logo — VAN HAWKE pill */}
         <div style={{ marginBottom: 48, ...fadeUp(0) }}>
-          <div style={{ display: 'inline-flex', height: 38, padding: '0 18px', borderRadius: 50, background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.1)', alignItems: 'center', gap: 8, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)' }}>
-            <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em' }}>VAN HAWKE</span>
-          </div>
+          <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', fontFamily: T.font }}>VAN HAWKE</span>
         </div>
 
         {/* Kiko avatar — smoke trail wave */}
-        <div style={{ width: '100%', maxWidth: 340, margin: '0 auto 16px', overflow: 'visible', padding: '10px 0', ...fadeUp(0.15) }}>
+        <div style={{ width: '100%', maxWidth: 340, margin: '0 auto 16px', overflow: 'visible', padding: '10px 0', ...fadeUp(0.15), WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)' }}>
           <SmokeTrailWave width={340} height={60} />
         </div>
 
