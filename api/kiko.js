@@ -2,7 +2,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { TOOL_DEFINITIONS, executeTool, fetchEntityContext, sbFetch } from './kiko-tools.js';
 
-export const config = { supportsResponseStreaming: true };
+export const config = { supportsResponseStreaming: true, maxDuration: 60 };
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const MODEL = 'claude-sonnet-4-20250514';
