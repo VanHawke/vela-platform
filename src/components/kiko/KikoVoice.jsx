@@ -279,7 +279,8 @@ RULES:
 - Keep responses under 3 sentences unless asked for detail.
 - Never say "I don't have long-term memory" or "I can't retain" — you CAN and DO.
 - When you receive a message starting with [KIKO_SAY], read the content naturally as your own words. Do not add commentary.
-- For emails, pipeline data, CRM queries, web searches — say "Let me check that for you" and wait. The system will provide data.`,
+- For emails, pipeline data, CRM queries, web searches — say "Let me check that for you" and wait. The system will provide data.
+- FAREWELL: If the user says "bye", "goodbye", "bye kiko", or any farewell, respond ONLY with "Bye, ${firstName}!" and nothing else.`,
             audio: {
               input: {
                 transcription: { model: 'whisper-1' },
@@ -291,7 +292,7 @@ RULES:
         }))
         startTimers()
         startLiveTranscription()
-        // Greet user after session is configured (1.5s delay for config to settle)
+        // Greet user immediately after session config
         if (!greetedRef.current) {
           greetedRef.current = true
           setTimeout(() => {
@@ -302,7 +303,7 @@ RULES:
                 response: { modalities: ['audio', 'text'], instructions: `Say only: "Hi ${firstName}, how can I help you?" — nothing more, just that short greeting.` }
               }))
             }
-          }, 1500)
+          }, 700)
         }
       }
       dc.onclose = () => setStatus('connecting')
@@ -714,28 +715,19 @@ RULES:
   closeRef.current = handleClose
   sayByeRef.current = sayByeAndClose
 
-  // Say "Bye, {name}" then close after Kiko finishes speaking
+  // Farewell: let the model say "Bye, {name}" naturally then close after it finishes
   const closingRef = useRef(false)
   function sayByeAndClose() {
     if (closingRef.current) return
     closingRef.current = true
-    if (dcRef.current?.readyState === 'open') {
-      // 1. Cancel any in-progress response
-      dcRef.current.send(JSON.stringify({ type: 'response.cancel' }))
-      // 2. Disable VAD so user voice doesn't trigger more responses
-      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: null } } } }))
-      // 3. Send farewell after a beat (let cancel settle)
-      setTimeout(() => {
-        if (dcRef.current?.readyState === 'open') {
-          dcRef.current.send(JSON.stringify({
-            type: 'response.create',
-            response: { modalities: ['audio', 'text'], instructions: `Say only: "Bye, ${firstName}!" — nothing more.` }
-          }))
-        }
-      }, 300)
-    }
+    console.log('[Kiko Voice] Bye detected — closing after model responds')
+    // Don't cancel — let the model respond to "bye" naturally (system instructions tell it to say "Bye, {name}!")
+    // closingRef blocks all further event processing except response.done
     // Fallback close if response.done doesn't fire within 4s
-    setTimeout(() => { if (closeRef.current) closeRef.current() }, 4000)
+    setTimeout(() => {
+      console.log('[Kiko Voice] Farewell fallback timeout — closing now')
+      if (closeRef.current) closeRef.current()
+    }, 4000)
   }
 
   async function saveVoiceMemory() {
