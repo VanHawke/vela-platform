@@ -36,7 +36,7 @@ function DoubleHelix({ width = 400, height = 60, speaking = false, energy = 0, p
 
       const layers = sp ? Math.round(3 + e * 3) : (mini ? 2 : 3)
       const speed = sp ? 2 + p * 1.5 : 1.0
-      const ampBase = sp ? 0.4 + e * 0.5 : (mini ? 0.18 : 0.22)
+      const ampBase = sp ? 0.4 + e * 0.5 : (mini ? 0.2 : 0.3)
       const freqMod = sp ? 1 + p * 0.8 : 1
 
       for (let l = 0; l < layers; l++) {
@@ -53,9 +53,9 @@ function DoubleHelix({ width = 400, height = 60, speaking = false, energy = 0, p
             + (sp ? Math.sin(i * (25 * freqMod / width) + t * 5 + l) * env * (height * 0.04 + e * height * 0.06) * am : 0)
           i === 0 ? ctx.moveTo(i, y) : ctx.lineTo(i, y)
         }
-        const la = sp ? 0.04 + l * 0.025 + e * 0.03 : (mini ? 0.012 + l * 0.008 : 0.018 + l * 0.012)
+        const la = sp ? 0.04 + l * 0.025 + e * 0.03 : (mini ? 0.03 + l * 0.02 : 0.06 + l * 0.04)
         ctx.strokeStyle = `rgba(139,108,246,${la})`
-        ctx.lineWidth = sp ? (8 + e * 6 - l * 1.2) : (mini ? 3 - l * 0.6 : 5 - l * 1)
+        ctx.lineWidth = sp ? (8 + e * 6 - l * 1.2) : (mini ? 3 - l * 0.6 : 8 - l * 1.5)
         ctx.lineCap = 'round'
         ctx.stroke()
 
@@ -69,9 +69,9 @@ function DoubleHelix({ width = 400, height = 60, speaking = false, energy = 0, p
             - (sp ? Math.sin(i * (25 * freqMod / width) + t * 5 + l + 1) * env * (height * 0.04 + e * height * 0.06) * am : 0)
           i === 0 ? ctx.moveTo(i, y) : ctx.lineTo(i, y)
         }
-        const la2 = sp ? 0.035 + l * 0.02 + e * 0.025 : (mini ? 0.01 + l * 0.006 : 0.014 + l * 0.009)
+        const la2 = sp ? 0.035 + l * 0.02 + e * 0.025 : (mini ? 0.025 + l * 0.015 : 0.05 + l * 0.035)
         ctx.strokeStyle = `rgba(6,214,160,${la2})`
-        ctx.lineWidth = sp ? (8 + e * 6 - l * 1.2) : (mini ? 3 - l * 0.6 : 5 - l * 1)
+        ctx.lineWidth = sp ? (8 + e * 6 - l * 1.2) : (mini ? 3 - l * 0.6 : 8 - l * 1.5)
         ctx.stroke()
 
         // Pink shimmer on high energy
@@ -91,15 +91,15 @@ function DoubleHelix({ width = 400, height = 60, speaking = false, energy = 0, p
       // White centre thread
       ctx.beginPath()
       const wg = ctx.createLinearGradient(0, 0, width, 0)
-      const wa = sp ? 0.15 + e * 0.55 : (mini ? 0.1 : 0.15)
+      const wa = sp ? 0.15 + e * 0.55 : (mini ? 0.2 : 0.35)
       wg.addColorStop(0, 'transparent')
-      wg.addColorStop(0.08, `rgba(255,255,255,${wa * 0.5})`)
-      wg.addColorStop(0.3, `rgba(255,255,255,${0.3 + e * 0.5})`)
-      wg.addColorStop(0.5, `rgba(255,255,255,${sp ? 0.4 + e * 0.5 : (mini ? 0.2 : 0.3)})`)
-      wg.addColorStop(0.7, `rgba(255,255,255,${(0.25 + e * 0.4) * 0.85})`)
-      wg.addColorStop(0.92, `rgba(255,255,255,${wa * 0.4})`)
+      wg.addColorStop(0.08, `rgba(255,255,255,${wa * 0.6})`)
+      wg.addColorStop(0.3, `rgba(255,255,255,${sp ? 0.3 + e * 0.5 : (mini ? 0.35 : 0.55)})`)
+      wg.addColorStop(0.5, `rgba(255,255,255,${sp ? 0.4 + e * 0.5 : (mini ? 0.4 : 0.65)})`)
+      wg.addColorStop(0.7, `rgba(255,255,255,${sp ? (0.25 + e * 0.4) * 0.85 : (mini ? 0.3 : 0.5)})`)
+      wg.addColorStop(0.92, `rgba(255,255,255,${wa * 0.5})`)
       wg.addColorStop(1, 'transparent')
-      const wAm = sp ? 0.4 + e * 0.45 + Math.sin(t * 2.8) * (0.05 + e * 0.15) : (mini ? 0.18 : 0.22)
+      const wAm = sp ? 0.4 + e * 0.45 + Math.sin(t * 2.8) * (0.05 + e * 0.15) : (mini ? 0.2 : 0.3)
       const wF = sp ? 1 + p * 0.8 : 1
       for (let i = 0; i < width; i++) {
         const d = (i - cx) / cx, env = Math.max(0, 1 - d * d * 1.3)
@@ -110,7 +110,7 @@ function DoubleHelix({ width = 400, height = 60, speaking = false, energy = 0, p
         i === 0 ? ctx.moveTo(i, y) : ctx.lineTo(i, y)
       }
       ctx.strokeStyle = wg
-      ctx.lineWidth = sp ? 0.8 + e * 0.8 : (mini ? 0.5 : 0.7)
+      ctx.lineWidth = sp ? 0.8 + e * 0.8 : (mini ? 0.6 : 1.2)
       ctx.stroke()
 
       animRef.current = requestAnimationFrame(draw)
