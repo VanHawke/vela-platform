@@ -336,8 +336,8 @@ export default async function handler(req, res) {
     let response = await streamCall(messages);
     let toolRounds = 0;
 
-    // Tool execution loop
-    while (response.stop_reason === 'tool_use' && toolRounds < 8) {
+    // Tool execution loop — up to 12 rounds for complex multi-tool queries
+    while (response.stop_reason === 'tool_use' && toolRounds < 12) {
       toolRounds++;
       const toolResults = [];
       for (const block of response.content) {
