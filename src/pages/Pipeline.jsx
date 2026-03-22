@@ -425,6 +425,8 @@ export default function Pipeline({ user }) {
     'Closed Won': 'rgba(6,214,160,0.7)',
     'Closed Lost': 'rgba(226,75,74,0.6)',
   }
+  const sectionTitle = { fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }
+  const emptyText = { fontSize: 12, color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font)', fontStyle: 'italic', fontWeight: 300 }
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: 8 }}>

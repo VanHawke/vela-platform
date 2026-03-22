@@ -407,7 +407,7 @@ RULES:
 
     // DEBUG: Log all transcription events to diagnose bye-kiko
     if (t.includes('transcription') || t.includes('speech')) {
-      console.log('[Kiko Voice DEBUG]', t, JSON.stringify(ev).slice(0, 200))
+      // Transcription events logged for diagnostics
     }
 
     if (t === 'session.updated' || t === 'session.created') {
@@ -800,13 +800,24 @@ RULES:
   if (mini) {
     return (
       <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-        {/* Pulse rings for mini mode */}
-        <div style={{ position: 'absolute', top: -8, left: -8, right: -8, bottom: -8, borderRadius: 18, border: `1.5px solid ${speaking ? 'rgba(34,197,94,0.15)' : 'rgba(26,26,26,0.08)'}`, animation: 'kikoPulseRing 2.5s ease-in-out infinite', pointerEvents: 'none' }} />
-        <button onClick={onShowPrompt} style={{ width: 52, height: 52, borderRadius: 50, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg,#8B6CF6,#06D6A0)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', transition: 'all 0.3s', boxShadow: '0 8px 32px rgba(139,108,246,0.3), inset 0 1px 0 rgba(255,255,255,0.2)', overflow: 'hidden' }}>
+        {/* Teal aura rings when speaking */}
+        {speaking && <>
+          <div style={{ position: 'absolute', inset: -5, borderRadius: '50%', border: '2px solid rgba(6,214,160,0.25)', animation: 'kikoPulseRing 2s ease-in-out infinite', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', inset: -12, borderRadius: '50%', border: '1.5px solid rgba(6,214,160,0.12)', animation: 'kikoPulseRing 2s ease-in-out 0.5s infinite', pointerEvents: 'none' }} />
+        </>}
+        {!speaking && <div style={{ position: 'absolute', inset: -5, borderRadius: '50%', border: '1.5px solid rgba(139,108,246,0.1)', animation: 'kikoPulseRing 3s ease-in-out infinite', pointerEvents: 'none' }} />}
+        <button onClick={onShowPrompt} style={{
+          width: 60, height: 60, borderRadius: '50%', border: speaking ? '2px solid rgba(6,214,160,0.25)' : '2px solid rgba(139,108,246,0.18)',
+          cursor: 'pointer',
+          background: speaking ? 'radial-gradient(circle at 40% 35%, rgba(10,28,24,1), rgba(8,8,12,1))' : 'radial-gradient(circle at 40% 35%, rgba(22,20,32,1), rgba(10,10,14,1))',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', transition: 'all 0.3s',
+          boxShadow: speaking ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)' : '0 0 0 3px rgba(139,108,246,0.05), 0 0 20px rgba(139,108,246,0.08), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
+          overflow: 'hidden',
+        }}>
           <DoubleHelix width={40} height={40} mini speaking={speaking} energy={window.__kikoAudioEnergy || 0} pitch={window.__kikoAudioPitch || 0} />
         </button>
         {listenMode !== 'active' && <span style={{ fontSize: 9, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textAlign: 'center', maxWidth: 80 }}>{listenMode === 'off' ? 'Mic off' : 'Passive'}</span>}
-        <button onClick={handleClose} style={{ position: 'absolute', top: -8, right: -8, width: 20, height: 20, borderRadius: '50%', background: 'var(--surface)', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--text-tertiary)' }}>×</button>
+        <button onClick={handleClose} style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: 'rgba(14,14,20,0.9)', border: '1.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>×</button>
       </div>
     )
   }
