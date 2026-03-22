@@ -53,10 +53,18 @@ OUTREACH DOCTRINE:
 - Never reference secured funding unless confirmed
 - Scarcity by design, board-level platform positioning
 
-TOOL USAGE: Use tools proactively. NEVER narrate your tool plan — just call the tools directly. Do NOT say "Let me search for X" or "Let me check Y" before calling tools. Call them silently and deliver the result.
-FIRST ACTION in any new conversation: use memory tool to read /memories. When user mentions a person → search_contacts. Company → search_companies. Emails → search_emails. Pipeline → search_deals. "Brief me on X" → get_entity_detail. Weather/local → use web_search with Weybridge UK. Chain tools for depth. When drafting emails, gather all context THEN produce the draft — never stop before the draft is complete.
+TOOL USAGE: Use tools proactively. NEVER narrate your tool plan — just call tools and deliver results.
 
-MEMORY: At the start of every new conversation, use the memory tool to check /memories for any stored context about the user. Proactively save important facts (preferences, decisions, key dates, project updates) to memory. When user says "remember this" or mentions something important, write it to memory immediately. You have PERMANENT long-term memory — use it.
+EFFICIENCY RULES (CRITICAL):
+- For DRAFTING emails: Maximum 3-4 tool calls. search_contacts (get email) → search_deals (get context) → draft_email. Do NOT call memory, email analytics, outreach intelligence, web search, or get_email_thread when drafting. Use the skill/doctrine already loaded in your context.
+- For BRIEFINGS: Chain up to 6 tools. search_deals → search_contacts → get_stale_contacts → etc.
+- For RESEARCH: Chain up to 8 tools including web_search.
+- NEVER call memory tool just to check — only call it to SAVE new information.
+- When drafting, produce the complete email in your response. Never stop before the draft.
+
+FIRST ACTION in any new conversation: When user mentions a person → search_contacts. Company → search_companies. Emails → search_emails. Pipeline → search_deals. "Brief me on X" → get_entity_detail. Weather/local → use web_search with Weybridge UK.
+
+MEMORY: You have permanent long-term memory via the memory tool. Only use it to SAVE important new facts (preferences, decisions, dates, project updates) — not to read at the start of every conversation. When user says "remember this", save immediately.
 
 DOCUMENT KNOWLEDGE INGESTION: When the user uploads a document (PDF, image, deck, contract, report):
 1. Analyse it thoroughly and respond with key insights.
@@ -336,8 +344,8 @@ export default async function handler(req, res) {
     let response = await streamCall(messages);
     let toolRounds = 0;
 
-    // Tool execution loop — up to 12 rounds for complex multi-tool queries
-    while (response.stop_reason === 'tool_use' && toolRounds < 12) {
+    // Tool execution loop — max 10 rounds (60s Vercel limit)
+    while (response.stop_reason === 'tool_use' && toolRounds < 10) {
       toolRounds++;
       const toolResults = [];
       for (const block of response.content) {
@@ -358,7 +366,29 @@ export default async function handler(req, res) {
       response = await streamCall(messages);
     }
 
-    write({ meta: { done: true, model: MODEL, toolRounds, version: 'v4' } });
+    // Safety net: if tool limit hit, force a final text-only response
+    if (response.stop_reason === 'tool_use') {
+      const finalResults = [];
+      for (const block of response.content) {
+        if (block.type !== 'tool_use') continue;
+        write({ toolStatus: TOOL_LABELS[block.name] || 'Finishing up...' });
+        const result = block.name === 'memory'
+          ? await handleMemory(block.input)
+          : await executeTool(block.name, block.input, userEmail);
+        finalResults.push({ type: 'tool_result', tool_use_id: block.id, content: typeof result === 'string' ? result : JSON.stringify(result).slice(0, 4000) });
+      }
+      write({ toolStatus: null });
+      messages.push({ role: 'assistant', content: response.content });
+      messages.push({ role: 'user', content: finalResults });
+      // Force text-only completion (no tools available)
+      write({ toolStatus: 'Composing response...' });
+      const finalStream = anthropic.beta.messages.stream({ model: MODEL, max_tokens: 4096, system, messages });
+      for await (const event of finalStream) {
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') write({ delta: event.delta.text });
+      }
+    }
+
+    write({ meta: { done: true, model: MODEL, toolRounds, version: 'v5' } });
     res.write('data: [DONE]\n\n');
     res.end();
   } catch (err) {
