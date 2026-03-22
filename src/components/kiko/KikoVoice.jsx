@@ -401,15 +401,14 @@ RULES:
       // Greet user on first session.updated
       if (t === 'session.updated' && !greetedRef.current && dcRef.current?.readyState === 'open') {
         greetedRef.current = true
-        // Short delay to ensure session is fully ready
         setTimeout(() => {
           if (dcRef.current?.readyState === 'open') {
             dcRef.current.send(JSON.stringify({
               type: 'response.create',
-              response: { instructions: `Say exactly: "Hi ${firstName}, how can I help you?" — nothing else, just that greeting.` }
+              response: { modalities: ['audio', 'text'], instructions: `Say only: "Hi ${firstName}, how can I help you?" — nothing more.` }
             }))
           }
-        }, 500)
+        }, 600)
       }
     }
 
@@ -716,13 +715,22 @@ RULES:
     if (closingRef.current) return
     closingRef.current = true
     if (dcRef.current?.readyState === 'open') {
-      dcRef.current.send(JSON.stringify({
-        type: 'response.create',
-        response: { instructions: `Say exactly: "Bye, ${firstName}!" — nothing else, just that farewell.` }
-      }))
+      // 1. Cancel any in-progress response
+      dcRef.current.send(JSON.stringify({ type: 'response.cancel' }))
+      // 2. Disable VAD so user voice doesn't trigger more responses
+      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: null } } } }))
+      // 3. Send farewell after a beat (let cancel settle)
+      setTimeout(() => {
+        if (dcRef.current?.readyState === 'open') {
+          dcRef.current.send(JSON.stringify({
+            type: 'response.create',
+            response: { modalities: ['audio', 'text'], instructions: `Say only: "Bye, ${firstName}!" — nothing more.` }
+          }))
+        }
+      }, 300)
     }
-    // Fallback close if response.done doesn't fire within 5s
-    setTimeout(() => { if (closeRef.current) closeRef.current() }, 5000)
+    // Fallback close if response.done doesn't fire within 4s
+    setTimeout(() => { if (closeRef.current) closeRef.current() }, 4000)
   }
 
   async function saveVoiceMemory() {
