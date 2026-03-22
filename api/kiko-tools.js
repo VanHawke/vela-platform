@@ -171,9 +171,40 @@ export const TOOL_DEFINITIONS = [
       campaign_id: { type: 'string', description: 'Filter to specific campaign ID (optional)' },
       type: { type: 'string', description: 'Activity type filter: emailsSent, emailsOpened, emailsClicked, emailsReplied, emailsBounced (optional)' },
     }, required: [] } },
+  { name: 'search_past_conversations', description: 'Search across ALL past Kiko conversations for relevant context. This is your MEMORY — use it when user references past discussions, asks "do you remember", "what did we discuss about", "last time we talked about", or when you need context from previous sessions. Also use proactively when drafting or analysing to check if there is relevant prior context.',
+    input_schema: { type: 'object', properties: {
+      query: { type: 'string', description: 'Search keywords — company names, topics, decisions, dates, anything discussed previously' },
+      limit: { type: 'number', description: 'Max conversations to return (default 5)' },
+    }, required: ['query'] } },
+  { name: 'get_recent_conversations', description: 'Get the most recent Kiko conversations. Use when user asks "what did we last talk about", "recent chats", "conversation history", or needs context from the latest sessions.',
+    input_schema: { type: 'object', properties: {
+      limit: { type: 'number', description: 'Number of recent conversations (default 5, max 10)' },
+    }, required: [] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
+// ── Conversation Memory Helper ──
+function formatConversationResults(rows, query) {
+  let out = `PAST CONVERSATIONS matching "${query}" (${rows.length} found):\n\n`
+  for (const r of rows) {
+    const date = new Date(r.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    const msgs = r.messages || []
+    out += `─── "${r.title || 'Untitled'}" (${date}, ${msgs.length} messages) ───\n`
+    // Extract relevant messages (trim to key exchanges)
+    const qLower = query.toLowerCase()
+    const relevant = msgs.filter(m => (m.content || '').toLowerCase().includes(qLower))
+    const toShow = relevant.length > 0 ? relevant.slice(0, 4) : msgs.slice(0, 4)
+    for (const m of toShow) {
+      const role = m.role === 'user' ? 'Sunny' : 'Kiko'
+      const content = (m.content || '').slice(0, 300)
+      out += `  ${role}: ${content}${m.content?.length > 300 ? '...' : ''}\n`
+    }
+    if (msgs.length > toShow.length) out += `  [+${msgs.length - toShow.length} more messages]\n`
+    out += '\n'
+  }
+  return out
+}
+
 export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com') {
   if (name === 'search_contacts') {
     const { query, limit = 10 } = input
@@ -839,6 +870,53 @@ Return JSON:
       }
       return out
     } catch (err) { return `Lemlist activities error: ${err.message}` }
+  }
+
+  // ── Conversation Memory (cross-session) ──
+  if (name === 'search_past_conversations') {
+    const { query: q, limit: lim = 5 } = input
+    try {
+      // Step 1: Fetch all conversation titles (lightweight)
+      const allConvos = await sbFetch('conversations?select=id,title,updated_at,messages&order=updated_at.desc&limit=50')
+      if (!allConvos?.length) return 'No past conversations found.'
+      
+      // Step 2: Search by keyword matching on title + message content
+      const qLower = q.toLowerCase()
+      const keywords = qLower.split(/\s+/).filter(w => w.length > 2)
+      
+      const scored = allConvos.map(conv => {
+        const titleText = (conv.title || '').toLowerCase()
+        const msgText = JSON.stringify(conv.messages || []).toLowerCase()
+        let score = 0
+        for (const kw of keywords) {
+          if (titleText.includes(kw)) score += 3
+          if (msgText.includes(kw)) score += 1
+        }
+        return { ...conv, score }
+      }).filter(c => c.score > 0).sort((a, b) => b.score - a.score).slice(0, Math.min(lim, 8))
+      
+      if (!scored.length) return `No past conversations found matching "${q}".`
+      return formatConversationResults(scored, q)
+    } catch (err) { return `Conversation search error: ${err.message}` }
+  }
+
+  if (name === 'get_recent_conversations') {
+    const { limit: lim = 5 } = input
+    try {
+      const rows = await sbFetch(`conversations?select=id,title,messages,updated_at&order=updated_at.desc&limit=${Math.min(lim, 10)}`)
+      if (!rows?.length) return 'No conversations found.'
+      let out = `RECENT CONVERSATIONS (${rows.length}):\n\n`
+      for (const r of rows) {
+        const date = new Date(r.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+        const msgs = r.messages || []
+        const msgCount = msgs.length
+        const firstUser = msgs.find(m => m.role === 'user')
+        out += `• "${r.title || 'Untitled'}" (${date}, ${msgCount} msgs)\n`
+        if (firstUser) out += `  You asked: "${(firstUser.content || '').slice(0, 120)}"\n`
+        out += '\n'
+      }
+      return out
+    } catch (err) { return `Recent conversations error: ${err.message}` }
   }
 
   return { error: `Unknown tool: ${name}` }

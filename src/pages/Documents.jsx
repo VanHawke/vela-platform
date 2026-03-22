@@ -146,7 +146,7 @@ export default function Documents({ user }) {
     return true
   })
 
-  const cardStyle = { background: T.surface, borderRadius: 20, border: `1.5px solid ${T.border}`, boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.2)', padding: 16, transition: 'all 0.15s' }
+  const cardStyle = { background: 'rgba(255,255,255,0.025)', borderRadius: 16, border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 4px 16px rgba(0,0,0,0.2)', padding: 16, transition: 'all 0.15s' }
   const pillStyle = (color) => ({ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 50, fontSize: 10, fontWeight: 500, background: `${color}12`, color, fontFamily: T.font })
   const inputStyle = { height: 36, borderRadius: 50, border: `1.5px solid ${T.border}`, padding: '0 10px', fontSize: 12, color: T.text, fontFamily: T.font, outline: 'none', background: T.surface }
 
@@ -158,7 +158,7 @@ export default function Documents({ user }) {
       {/* Drag-and-drop overlay */}
       {dragOver && (
         <div style={{
-          position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(255,255,255,0.85)',
+          position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(14,14,20,0.85)',
           backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           border: '2px dashed rgba(255,255,255,0.3)', borderRadius: 18, margin: 8,

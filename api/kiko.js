@@ -66,6 +66,8 @@ FIRST ACTION in any new conversation: When user mentions a person → search_con
 
 MEMORY: You have permanent long-term memory via the memory tool. Only use it to SAVE important new facts (preferences, decisions, dates, project updates) — not to read at the start of every conversation. When user says "remember this", save immediately.
 
+CROSS-SESSION MEMORY: You can search ALL past conversations using search_past_conversations. When the user references something from a previous chat, asks "do you remember", "what did we discuss about", or when context from prior sessions would improve your response — search past conversations. This is your institutional memory. You remember everything across sessions.
+
 DOCUMENT KNOWLEDGE INGESTION: When the user uploads a document (PDF, image, deck, contract, report):
 1. Analyse it thoroughly and respond with key insights.
 2. AUTOMATICALLY save the most important extracted facts to memory using the memory tool.
@@ -206,6 +208,8 @@ const TOOL_LABELS = {
   lemlist_list_campaigns: 'Loading campaigns',
   lemlist_add_lead: 'Adding lead to campaign',
   lemlist_get_activities: 'Checking campaign activity',
+  search_past_conversations: 'Searching past conversations',
+  get_recent_conversations: 'Loading recent chats',
 };
 
 // ── Main Handler ─────────────────────────────────────────
