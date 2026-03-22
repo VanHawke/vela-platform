@@ -77,115 +77,45 @@ function isInWindow(dateStr, windowId) {
 function ArticleCard({ article, onStar, featured = false }) {
   const sig = getSignal(article)
   const score = article.relevance_score || 0
-  const crm = (article.matched_companies || []).slice(0, 2)
-  const isOfficial = (article.source_name || '').includes('Official')
   const summary = article.summary?.replace(/^Official news from [^:]+:\s*/i, '').slice(0, 160)
 
-  const cardStyle = {
-    background: featured ? sig.bg : T.surface,
-    border: `1.5px solid ${featured ? sig.border : T.border}`,
-    borderRadius: 50,
-    padding: '14px 16px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 8,
-    cursor: 'default',
-    transition: 'border-color 0.15s',
-    position: 'relative',
+  if (featured) {
+    // Hero card for deal signals
+    return (
+      <div style={{ background: T.surface, border: `1.5px solid ${T.border}`, borderLeft: `3px solid ${sig.text || 'rgba(255,255,255,0.1)'}`, borderRadius: 16, padding: '20px 24px', cursor: 'default', transition: 'border-color 0.15s' }}
+        onMouseEnter={e => e.currentTarget.style.borderColor = T.borderHover}
+        onMouseLeave={e => e.currentTarget.style.borderColor = T.border}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          {sig.label && <span style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.04em', textTransform: 'uppercase', color: sig.text, background: sig.bg, border: `1px solid ${sig.border}`, padding: '2px 8px', borderRadius: 6 }}>{sig.label}</span>}
+          {score >= 7 && <span style={{ fontSize: 10, color: sig.text || T.textTertiary }}>{score}/10</span>}
+          <span style={{ fontSize: 10, color: T.textTertiary, marginLeft: 'auto' }}>{timeAgo(article.published_at)}</span>
+          <button onClick={() => onStar(article)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: article.is_starred ? T.yellow : 'rgba(255,255,255,0.08)' }}><Star size={13} fill={article.is_starred ? T.yellow : 'none'} /></button>
+        </div>
+        <div style={{ fontSize: 16, fontWeight: 300, lineHeight: 1.45, color: T.text, marginBottom: 6, letterSpacing: '-0.01em' }}>{article.title}</div>
+        {summary && <div style={{ fontSize: 12, color: T.textTertiary, lineHeight: 1.5, marginBottom: 8 }}>{summary}</div>}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.12)' }}>{article.source_name}</span>
+          {article.url && <a href={article.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: sig.text || T.textSecondary, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, opacity: 0.6, transition: 'opacity 0.15s' }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}>Read <ExternalLink size={9} /></a>}
+        </div>
+      </div>
+    )
   }
 
+  // Compact row for general articles
   return (
-    <div style={cardStyle}
-      onMouseEnter={e => e.currentTarget.style.borderColor = featured ? sig.border : T.borderHover}
-      onMouseLeave={e => e.currentTarget.style.borderColor = featured ? sig.border : T.border}>
-
-      {/* Top row: badges + time + star */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
-        {sig.label && (
-          <span style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.04em', textTransform: 'uppercase', color: sig.text, background: sig.bg, border: `1.5px solid ${sig.border}`, padding: '2px 6px', borderRadius: 4 }}>
-            {sig.label}
-          </span>
-        )}
-        {isOfficial && !sig.label.includes('Official') && (
-          <span style={{ fontSize: 9, fontWeight: 500, color: '#97C459', background: 'rgba(99,153,34,0.08)', border: '1.5px solid rgba(99,153,34,0.2)', padding: '2px 6px', borderRadius: 4 }}>
-            Official
-          </span>
-        )}
-        {score >= 7 && (
-          <span style={{ fontSize: 9, fontWeight: 400, color: sig.text || T.textTertiary, background: 'transparent', marginLeft: 2 }}>
-            {score}/10
-          </span>
-        )}
-        <span style={{ fontSize: 10, color: T.textTertiary, marginLeft: 'auto' }}>
-          {timeAgo(article.published_at)}
-        </span>
-        <button onClick={e => { e.stopPropagation(); onStar(article) }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: article.is_starred ? T.yellow : T.textTertiary, display: 'flex', lineHeight: 1 }}>
-          <Star size={12} fill={article.is_starred ? T.yellow : 'none'} />
-        </button>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 18px', borderRadius: 12, background: T.surface, border: `1px solid rgba(255,255,255,0.05)`, cursor: 'default', transition: 'all 0.15s' }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = T.border }}
+      onMouseLeave={e => { e.currentTarget.style.background = T.surface; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)' }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 400, color: T.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.4 }}>{article.title}</div>
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.12)', marginTop: 2 }}>{article.source_name} · {timeAgo(article.published_at)}</div>
       </div>
-
-      {/* Title */}
-      <p style={{
-        fontSize: featured ? 14 : 13, fontWeight: featured ? 500 : 400,
-        color: featured ? sig.text : T.text, lineHeight: 1.4,
-        margin: 0, fontFamily: T.font,
-        display: '-webkit-box', WebkitLineClamp: featured ? 3 : 2,
-        WebkitBoxOrient: 'vertical', overflow: 'hidden',
-      }}>
-        {article.title}
-      </p>
-
-      {/* Summary — only on featured or if has meaningful content */}
-      {featured && summary && (
-        <p style={{ fontSize: 11, color: sig.text, lineHeight: 1.5, margin: 0, opacity: 0.8 }}>
-          {summary}
-        </p>
-      )}
-
-      {/* CRM match chips */}
-      {crm.length > 0 && (
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-          {crm.map((c, i) => {
-            const name = c.name || c
-            return (
-              <span key={i} style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.04)', border: `1.5px solid ${T.border}`, color: T.textSecondary, fontFamily: T.font }}>
-                {name} · CRM
-              </span>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Bottom row: source + READ CTA */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 }}>
-        <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font }}>
-          {article.source_name?.replace(' (Official)', '') || '—'}
-        </span>
-        <a
-          href={article.article_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={e => e.stopPropagation()}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 4,
-            fontSize: 11, fontWeight: 500,
-            color: featured ? sig.text : T.textSecondary,
-            background: featured ? `rgba(255,255,255,0.5)` : 'rgba(255,255,255,0.04)',
-            border: `1.5px solid ${featured ? sig.border : T.border}`,
-            padding: '4px 10px', borderRadius: 6,
-            textDecoration: 'none',
-            transition: 'all 0.15s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = featured ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.07)' }}
-          onMouseLeave={e => { e.currentTarget.style.background = featured ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.04)' }}
-        >
-          Read <ExternalLink size={9} />
-        </a>
-      </div>
+      <button onClick={() => onStar(article)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: article.is_starred ? T.yellow : 'rgba(255,255,255,0.06)', flexShrink: 0 }}><Star size={12} fill={article.is_starred ? T.yellow : 'none'} /></button>
+      {article.url && <a href={article.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: T.textTertiary, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0, opacity: 0.5, transition: 'opacity 0.15s', padding: '4px 10px', borderRadius: 50, border: `1px solid rgba(255,255,255,0.06)` }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}>Read <ExternalLink size={9} /></a>}
     </div>
   )
 }
+
 
 // ── Main export ───────────────────────────────────────────
 export default function News() {
@@ -339,7 +269,7 @@ export default function News() {
                 <div style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.textTertiary, marginBottom: 8, marginTop: featured.length > 0 ? 8 : 0 }}>
                   {featured.length > 0 ? 'More' : 'Articles'} · {rest.length}
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   {rest.map(a => <ArticleCard key={a.id} article={a} onStar={handleStar} featured={false} />)}
                 </div>
               </>

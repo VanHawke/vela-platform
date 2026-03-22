@@ -108,12 +108,19 @@ export default function Contacts({ user }) {
         </div>
       </div>
 
-      {/* Main content — list + sidebar */}
-      <div style={{ flex: 1, padding: '16px 24px', display: 'flex', gap: 16, overflow: 'hidden' }}>
-        {/* Contact list */}
-        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
+      {/* Main content — clean list, no sidebar */}
+      <div style={{ flex: 1, padding: '16px 24px', overflow: 'hidden' }}>
+        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3, height: '100%' }}>
+          {/* Column headers */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 18px 8px', fontSize: 10, color: 'rgba(255,255,255,0.12)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, fontFamily: 'var(--font)' }}>
+            <div style={{ width: 32 }}></div>
+            <div style={{ width: 180 }}>Name</div>
+            <div style={{ width: 150 }}>Company</div>
+            <div style={{ width: 180 }}>Title</div>
+            <div style={{ flex: 1 }}>Email</div>
+          </div>
           {loading ? (
-            [...Array(8)].map((_, i) => <div key={i} style={{ height: 64, background: 'rgba(255,255,255,0.03)', borderRadius: 16, animation: 'shimmer 1.5s infinite' }} />)
+            [...Array(8)].map((_, i) => <div key={i} style={{ height: 48, background: 'rgba(255,255,255,0.03)', borderRadius: 12, animation: 'shimmer 1.5s infinite' }} />)
           ) : paged.length === 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'rgba(255,255,255,0.15)' }}>
               <User style={{ width: 32, height: 32, marginBottom: 12, opacity: 0.3 }} />
@@ -123,36 +130,33 @@ export default function Contacts({ user }) {
             <>
               {paged.map(contact => {
                 const [abg, atc] = getAvatarColor(contact.firstName || contact.lastName)
-                const stage = getStage(contact)
-                const sc = stageColors[stage]
+                const domain = contact.email?.includes('@') ? contact.email.split('@')[1] : null
+                const showLogo = domain && !['gmail.com','yahoo.com','hotmail.com','outlook.com','icloud.com','aol.com','protonmail.com','me.com'].includes(domain)
                 return (
                   <div key={contact.id} onClick={() => nav(`/contacts/${contact.id}`)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', borderRadius: 16, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', border: '1.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', transition: 'all 0.3s', boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(255,255,255,0.08)' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}>
-                    {/* Avatar */}
-                    <div style={{ width: 40, height: 40, borderRadius: 50, background: abg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(255,255,255,0.08)' }}>
-                      <span style={{ fontSize: 13, fontWeight: 400, color: atc, fontFamily: 'var(--font)' }}>{(contact.firstName || '?')[0]?.toUpperCase()}{(contact.lastName || '')[0]?.toUpperCase() || ''}</span>
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 18px', borderRadius: 12, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'all 0.15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.025)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)' }}>
+                    {/* Avatar with company favicon */}
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: showLogo ? 'rgba(255,255,255,0.04)' : abg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                      {showLogo ? (
+                        <img src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} onError={e => { e.target.style.display = 'none'; e.target.parentElement.style.background = abg; e.target.parentElement.innerHTML = `<span style="font-size:10px;font-weight:500;color:${atc};font-family:var(--font)">${(contact.firstName || '?')[0]?.toUpperCase()}${(contact.lastName || '')[0]?.toUpperCase() || ''}</span>` }} />
+                      ) : (
+                        <span style={{ fontSize: 10, fontWeight: 500, color: atc, fontFamily: 'var(--font)' }}>{(contact.firstName || '?')[0]?.toUpperCase()}{(contact.lastName || '')[0]?.toUpperCase() || ''}</span>
+                      )}
                     </div>
-                    {/* Info */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.82)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName(contact)}</div>
-                      <div style={{ fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>{[contact.title, contact.company].filter(Boolean).join(' · ') || '—'}</div>
-                    </div>
-                    {/* Stage pill */}
-                    {stage && sc && (
-                      <div style={{ fontSize: 10, padding: '4px 12px', borderRadius: 50, background: sc[0], border: `1.5px solid ${sc[1]}`, color: sc[2], fontWeight: 400, backdropFilter: 'blur(12px)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)', whiteSpace: 'nowrap', flexShrink: 0 }}>{stage}</div>
-                    )}
+                    <div style={{ width: 180, fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.82)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName(contact)}</div>
+                    <div style={{ width: 150, fontSize: 11, color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.company || '—'}</div>
+                    <div style={{ width: 180, fontSize: 11, color: 'rgba(255,255,255,0.15)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.title || '—'}</div>
+                    <div style={{ flex: 1, fontSize: 11, color: 'rgba(255,255,255,0.1)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.email || ''}</div>
                     {/* Quick actions */}
-                    <div style={{ display: 'flex', gap: 4, flexShrink: 0, marginLeft: 8 }}>
-                      {contact.email && <a href={`mailto:${contact.email}`} onClick={e => e.stopPropagation()} style={actionBtn} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,108,246,0.12)'; e.currentTarget.style.borderColor = 'rgba(139,108,246,0.2)'; e.currentTarget.style.color = 'rgba(139,108,246,0.6)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.15)' }}><Mail style={{ width: 14, height: 14 }} /></a>}
-                      {contact.linkedin && <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={actionBtn} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,108,246,0.12)'; e.currentTarget.style.borderColor = 'rgba(139,108,246,0.2)'; e.currentTarget.style.color = 'rgba(139,108,246,0.6)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.15)' }}><Linkedin style={{ width: 14, height: 14 }} /></a>}
-                      {contact.phone && <a href={`tel:${contact.phone}`} onClick={e => e.stopPropagation()} style={actionBtn} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,108,246,0.12)'; e.currentTarget.style.borderColor = 'rgba(139,108,246,0.2)'; e.currentTarget.style.color = 'rgba(139,108,246,0.6)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.15)' }}><Phone style={{ width: 14, height: 14 }} /></a>}
+                    <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                      {contact.email && <a href={`mailto:${contact.email}`} onClick={e => e.stopPropagation()} style={actionBtn}><Mail style={{ width: 13, height: 13 }} /></a>}
+                      {contact.linkedin && <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={actionBtn}><Linkedin style={{ width: 13, height: 13 }} /></a>}
                     </div>
                   </div>
                 )
               })}
-              {/* Pagination */}
               {totalPages > 1 && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 0', fontSize: 12, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)' }}>
                   <button disabled={page === 0} onClick={() => setPage(p => p - 1)} style={{ background: 'none', border: 'none', cursor: page === 0 ? 'default' : 'pointer', opacity: page === 0 ? 0.3 : 1, color: 'rgba(255,255,255,0.3)', padding: 4 }}><ChevronLeft style={{ width: 16, height: 16 }} /></button>
@@ -163,38 +167,11 @@ export default function Contacts({ user }) {
             </>
           )}
         </div>
-
-        {/* Right sidebar */}
-        <div style={{ width: 200, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto' }}>
-          {/* Overview stats */}
-          <div style={{ ...glass, flexDirection: 'column', alignItems: 'stretch', padding: 18 }}>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.15)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, marginBottom: 12, fontFamily: 'var(--font)' }}>Overview</div>
-            {[
-              ['Total', filtered.length.toLocaleString(), 'rgba(255,255,255,0.6)'],
-              ['With email', contacts.filter(c => c.email).length.toLocaleString(), 'rgba(6,214,160,0.6)'],
-              ['With company', contacts.filter(c => c.company).length.toLocaleString(), 'rgba(139,108,246,0.6)'],
-            ].map(([label, val, col]) => (
-              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontWeight: 300, fontFamily: 'var(--font)' }}>{label}</span>
-                <span style={{ fontSize: 12, color: col, fontWeight: 400, fontFamily: 'var(--font)' }}>{val}</span>
-              </div>
-            ))}
-          </div>
-          {/* Alphabet nav */}
-          <div style={{ borderRadius: 20, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px) saturate(1.6)', border: '1.5px solid rgba(255,255,255,0.1)', padding: 14, boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(255,255,255,0.08)', display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
-            {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(l => (
-              <button key={l} onClick={() => setSearch(l)} style={{ width: 24, height: 24, borderRadius: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'rgba(255,255,255,0.15)', cursor: 'pointer', fontWeight: 300, transition: 'all 0.2s', background: 'transparent', border: 'none', fontFamily: 'var(--font)' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,108,246,0.12)'; e.currentTarget.style.color = 'rgba(139,108,246,0.6)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.15)' }}
-              >{l}</button>
-            ))}
-          </div>
-        </div>
       </div>
 
       {showForm && (
-        <div onClick={e => e.target === e.currentTarget && reset()} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(24px)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div style={{ background: 'rgba(14,14,20,0.9)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 24, border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 24px 80px rgba(255,255,255,0.35)', width: '100%', maxWidth: 420, padding: 24 }}>
+        <div onClick={e => e.target === e.currentTarget && reset()} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ background: 'rgba(14,14,20,0.95)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 24, border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 24px 80px rgba(0,0,0,0.5)', width: '100%', maxWidth: 420, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <h2 style={{ fontSize: 16, fontWeight: 200, color: 'rgba(255,255,255,0.9)', margin: 0, fontFamily: 'var(--font)' }}>{editing ? 'Edit Contact' : 'Add Contact'}</h2>
               <button onClick={reset} style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer' }}><X style={{ width: 16, height: 16 }} /></button>

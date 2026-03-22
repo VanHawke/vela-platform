@@ -510,25 +510,25 @@ export default function Organisations({ user }) {
             ))}
             {filters.countries.map(cty => (
               <span key={cty} onClick={() => setFilters(p => ({ ...p, countries: p.countries.filter(c => c !== cty) }))}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: '#E1F5EE', color: '#085041', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: 'rgba(6,214,160,0.08)', color: 'rgba(6,214,160,0.6)', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
                 {cty} <X style={{ width: 11, height: 11, opacity: 0.7 }} />
               </span>
             ))}
             {(filters.fundingMin || filters.fundingMax) && (
               <span onClick={() => setFilters(p => ({ ...p, fundingMin: '', fundingMax: '' }))}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: '#FAEEDA', color: '#633806', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: 'rgba(245,158,11,0.08)', color: 'rgba(245,158,11,0.6)', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
                 Funding: {filters.fundingMin || '—'} → {filters.fundingMax || '—'} <X style={{ width: 11, height: 11, opacity: 0.7 }} />
               </span>
             )}
             {filters.lastRound && (
               <span onClick={() => setFilters(p => ({ ...p, lastRound: '' }))}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: '#EEEDFE', color: '#3C3489', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: 'rgba(139,108,246,0.08)', color: 'rgba(139,108,246,0.6)', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
                 {filters.lastRound} <X style={{ width: 11, height: 11, opacity: 0.7 }} />
               </span>
             )}
             {(filters.revenueMin || filters.revenueMax) && (
               <span onClick={() => setFilters(p => ({ ...p, revenueMin: '', revenueMax: '' }))}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: '#EAF3DE', color: '#27500A', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: 'rgba(6,214,160,0.08)', color: 'rgba(6,214,160,0.6)', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
                 Revenue: {filters.revenueMin || '—'} → {filters.revenueMax || '—'} <X style={{ width: 11, height: 11, opacity: 0.7 }} />
               </span>
             )}
@@ -548,30 +548,31 @@ export default function Organisations({ user }) {
               <p style={{ fontSize: 13, fontFamily: 'var(--font)' }}>{search ? 'No organisations match' : 'No organisations yet'}</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {/* Column headers */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 18px 8px', fontSize: 10, color: 'rgba(255,255,255,0.12)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, fontFamily: 'var(--font)' }}>
+                <div style={{ width: 28 }}></div>
+                <div style={{ width: 200 }}>Company</div>
+                <div style={{ width: 130 }}>Industry</div>
+                <div style={{ width: 120 }}>Country</div>
+                <div style={{ width: 100, textAlign: 'right' }}>Funding</div>
+                <div style={{ flex: 1, textAlign: 'right' }}>Contacts</div>
+                <div style={{ width: 60 }}></div>
+              </div>
               {paged.map(company => (
-                <div key={company.id} style={{ ...listCard, background: selectedOrg?.id === company.id ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)', borderColor: selectedOrg?.id === company.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)' }}
+                <div key={company.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 18px', borderRadius: 12, background: selectedOrg?.id === company.id ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.025)', border: `1px solid ${selectedOrg?.id === company.id ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.05)'}`, cursor: 'pointer', transition: 'all 0.15s' }}
                   onClick={() => selectOrg(company)}
-                  onMouseEnter={e => { if (selectedOrg?.id !== company.id) e.currentTarget.style.boxShadow = '0 2px 8px rgba(255,255,255,0.06)' }}
-                  onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(255,255,255,0.04)'}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, flex: 1 }}>
-                    <OrgLogo domain={listDomainCache[company.id]} name={company.name} size={36} />
-                    <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: 13, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.name}</p>
-                      <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {company.industry || '—'}{company.country ? ` · ${company.country}` : ''}
-                        {sortField === 'funding' && company.totalFunding ? ` · 💰 ${company.totalFunding}` : ''}
-                        {sortField === 'revenue' && company.revenueEst ? ` · 📊 ${company.revenueEst}` : ''}
-                        {sortField === 'employees' && company.employees ? ` · 👥 ${company.employees}` : ''}
-                        {sortField === 'name' && dealMap[company.name] ? ` · ${dealMap[company.name].pipeline} — ${dealMap[company.name].stage}` : ''}
-                      </p>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, marginLeft: 16 }}>
-                    {company.openDeals > 0 && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 50, background: 'rgba(59,130,246,0.08)', color: '#3b82f6', fontWeight: 500, fontFamily: 'var(--font)' }}>{company.openDeals} open</span>}
-                    {company.wonDeals > 0 && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 50, background: 'rgba(16,185,129,0.08)', color: '#10b981', fontWeight: 500, fontFamily: 'var(--font)' }}>{company.wonDeals} won</span>}
-                    <button onClick={(e) => { e.stopPropagation(); edit(company) }} style={{ fontSize: 11, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', opacity: 0.5, transition: 'opacity 0.15s' }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}>Edit</button>
-                    <button onClick={(e) => { e.stopPropagation(); remove(company.id) }} style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', opacity: 0.3, transition: 'all 0.15s', padding: 2 }} onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = '#ef4444' }} onMouseLeave={e => { e.currentTarget.style.opacity = '0.3'; e.currentTarget.style.color = 'var(--text-tertiary)' }}><X style={{ width: 14, height: 14 }} /></button>
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = selectedOrg?.id === company.id ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.025)'; e.currentTarget.style.borderColor = selectedOrg?.id === company.id ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.05)' }}>
+                  <OrgLogo domain={listDomainCache[company.id]} name={company.name} size={28} />
+                  <div style={{ width: 200, fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.82)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.name}</div>
+                  <div style={{ width: 130, fontSize: 11, color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.industry || '—'}</div>
+                  <div style={{ width: 120, fontSize: 11, color: 'rgba(255,255,255,0.15)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.country || '—'}</div>
+                  <div style={{ width: 100, fontSize: 11, color: company.totalFunding ? 'rgba(6,214,160,0.5)' : 'rgba(255,255,255,0.08)', fontFamily: 'var(--font)', textAlign: 'right' }}>{company.totalFunding || '—'}</div>
+                  <div style={{ flex: 1, fontSize: 11, color: 'rgba(255,255,255,0.12)', fontFamily: 'var(--font)', textAlign: 'right' }}>{company.contactCount || 0}</div>
+                  <div style={{ width: 60, display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
+                    <button onClick={(e) => { e.stopPropagation(); edit(company) }} style={{ fontSize: 10, color: 'rgba(255,255,255,0.15)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.15)'}>Edit</button>
+                    <button onClick={(e) => { e.stopPropagation(); remove(company.id) }} style={{ color: 'rgba(255,255,255,0.1)', background: 'none', border: 'none', cursor: 'pointer', padding: 2, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = '#ef4444'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.1)'}><X style={{ width: 12, height: 12 }} /></button>
                   </div>
                 </div>
               ))}
