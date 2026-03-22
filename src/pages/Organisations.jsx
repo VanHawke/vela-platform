@@ -377,7 +377,7 @@ export default function Organisations({ user }) {
               <button key={chip.id} onClick={() => setOpenPopover(isOpen ? null : chip.id)} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 5,
                 padding: '5px 10px', borderRadius: 50,
-                border: isActive ? '1px solid #1A1A1A' : '1px solid rgba(255,255,255,0.08)',
+                border: isActive ? '1.5px solid rgba(255,255,255,0.2)' : '1px solid rgba(255,255,255,0.08)',
                 background: isActive ? 'rgba(255,255,255,0.12)' : isOpen ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.04)',
                 color: isActive ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
                 fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: isActive ? 500 : 400,
@@ -398,7 +398,7 @@ export default function Organisations({ user }) {
 
           {/* ── Popovers ── */}
           {openPopover && (
-            <div style={{ position: 'absolute', top: 36, left: 0, zIndex: 200, background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 50, padding: 14, boxShadow: '0 8px 24px rgba(255,255,255,0.06)', minWidth: 280, maxWidth: 360 }}
+            <div style={{ position: 'absolute', top: 36, left: 0, zIndex: 200, background: 'rgba(14,14,20,0.9)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 18, padding: 14, boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.4)', minWidth: 280, maxWidth: 360 }}
               onMouseDown={e => e.stopPropagation()}>
 
               {/* Industry */}

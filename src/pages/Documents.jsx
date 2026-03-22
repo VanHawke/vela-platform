@@ -161,7 +161,7 @@ export default function Documents({ user }) {
           position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(255,255,255,0.85)',
           backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          border: '2px dashed #1A1A1A', borderRadius: 18, margin: 8,
+          border: '2px dashed rgba(255,255,255,0.3)', borderRadius: 18, margin: 8,
           pointerEvents: 'none',
         }}>
           <Upload size={40} color="rgba(255,255,255,0.12)" style={{ marginBottom: 12, opacity: 0.7 }} />

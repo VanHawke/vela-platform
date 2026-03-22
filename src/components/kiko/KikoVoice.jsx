@@ -117,7 +117,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     if (dcRef.current?.readyState === 'open') {
       dcRef.current.send(JSON.stringify({
         type: 'session.update',
-        session: { input_audio_transcription: { model: 'whisper-1' }, turn_detection: VAD_ON }
+        session: { audio: { input: { transcription: { model: 'whisper-1' }, turn_detection: VAD_ON } } }
       }))
     }
     startTimers()
@@ -131,7 +131,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     stopLiveTranscription()
     // Disable VAD completely — null is the correct way per OpenAI docs
     if (dcRef.current?.readyState === 'open') {
-      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: null } }))
+      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: null } } } }))
     }
     // Start keyword detection so "Hey Kiko" can wake us up
     if (startKeywordRef.current) startKeywordRef.current()
@@ -171,7 +171,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     if (dcRef.current?.readyState === 'open') {
       dcRef.current.send(JSON.stringify({
         type: 'session.update',
-        session: { input_audio_transcription: { model: 'whisper-1' }, turn_detection: VAD_ON }
+        session: { audio: { input: { transcription: { model: 'whisper-1' }, turn_detection: VAD_ON } } }
       }))
     }
     startTimers()
@@ -253,7 +253,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
 
       dc.onopen = () => {
         setStatus('live')
-        // ── Session config: data channel accepts flat input_audio_transcription ──
+        // ── Session config: GA API format (audio.input.transcription, audio.output.voice) ──
         dc.send(JSON.stringify({
           type: 'session.update',
           session: {
@@ -274,9 +274,13 @@ RULES:
 - Never say "I don't have long-term memory" or "I can't retain" — you CAN and DO.
 - When you receive a message starting with [KIKO_SAY], read the content naturally as your own words. Do not add commentary.
 - For emails, pipeline data, CRM queries, web searches — say "Let me check that for you" and wait. The system will provide data.`,
-            voice: voiceId,
-            input_audio_transcription: { model: 'whisper-1' },
-            turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 700 },
+            audio: {
+              input: {
+                transcription: { model: 'whisper-1' },
+                turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 700 },
+              },
+              output: { voice: voiceId },
+            },
           }
         }))
         startTimers()
@@ -373,7 +377,7 @@ RULES:
     suppressAutoRef.current = false
     setThinking(false)
     if (dcRef.current?.readyState === 'open') {
-      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 700 } } }))
+      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 700 } } } } }))
     }
   }
 
@@ -403,7 +407,7 @@ RULES:
       suppressAutoRef.current = false
       // Re-enable VAD if it was disabled
       if (dcRef.current?.readyState === 'open') {
-        dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 700 } } }))
+        dcRef.current.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 700 } } } } }))
       }
       startTimers()
     }
@@ -459,7 +463,7 @@ RULES:
         // IMMEDIATELY disable VAD + cancel auto-response + suppress future auto-responses
         suppressAutoRef.current = true
         if (dcRef.current?.readyState === 'open') {
-          dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: null } }))
+          dcRef.current.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: null } } } }))
           dcRef.current.send(JSON.stringify({ type: 'response.cancel' }))
         }
         console.log('[Kiko Voice] → Claude (keyword):', text.slice(0, 60))
@@ -525,7 +529,7 @@ RULES:
         claudeActiveRef.current = false
         // Re-enable VAD after Claude response spoken
         if (dcRef.current?.readyState === 'open') {
-          dcRef.current.send(JSON.stringify({ type: 'session.update', session: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 700 } } }))
+          dcRef.current.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 700 } } } } }))
         }
       }
     }
