@@ -550,7 +550,7 @@ export default function Organisations({ user }) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {paged.map(company => (
-                <div key={company.id} style={{ ...listCard, background: selectedOrg?.id === company.id ? 'rgba(26,26,26,0.04)' : '#FFFFFF', borderColor: selectedOrg?.id === company.id ? 'rgba(26,26,26,0.12)' : 'rgba(255,255,255,0.04)' }}
+                <div key={company.id} style={{ ...listCard, background: selectedOrg?.id === company.id ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)', borderColor: selectedOrg?.id === company.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)' }}
                   onClick={() => selectOrg(company)}
                   onMouseEnter={e => { if (selectedOrg?.id !== company.id) e.currentTarget.style.boxShadow = '0 2px 8px rgba(255,255,255,0.06)' }}
                   onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(255,255,255,0.04)'}>

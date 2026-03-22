@@ -8,7 +8,7 @@ const MAX_SIZE = 5 * 1024 * 1024
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
 const T = {
-  bg: '#FAFAFA', surface: '#FFFFFF', border: 'rgba(255,255,255,0.04)',
+  bg: '#07070B', surface: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.04)',
   borderHover: 'rgba(255,255,255,0.1)', text: 'rgba(255,255,255,0.12)',
   textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
   accent: 'rgba(255,255,255,0.12)', font: "'DM Sans', sans-serif",

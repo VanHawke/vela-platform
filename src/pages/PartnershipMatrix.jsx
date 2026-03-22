@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { RefreshCw, Loader2, AlertTriangle, Plus, X, ExternalLink, FileDown, Check, Grid3X3, Target, Users } from 'lucide-react'
 
 const T = {
-  bg: '#FAFAFA', surface: '#FFFFFF', surfaceHover: '#F5F5F5',
+  bg: '#07070B', surface: 'rgba(255,255,255,0.04)', surfaceHover: 'rgba(255,255,255,0.06)',
   border: 'rgba(255,255,255,0.04)', borderHover: 'rgba(255,255,255,0.1)',
   text: 'rgba(255,255,255,0.12)', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
   accent: 'rgba(255,255,255,0.12)', accentSoft: 'rgba(255,255,255,0.04)',
@@ -30,7 +30,7 @@ function TeamLogo({ team, size = 20 }) {
   const [imgError, setImgError] = useState(false)
   const showImg = team.logo_url && !imgError
   return (
-    <div style={{ width: size, height: size, borderRadius: size * 0.3, background: team.color || '#333', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+    <div style={{ width: size, height: size, borderRadius: size * 0.3, background: team.color || 'rgba(255,255,255,0.7)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
       {showImg ? (
         <img src={team.logo_url} alt={team.name} style={{ width: size * 0.7, height: size * 0.7, objectFit: 'contain', filter: 'brightness(10)' }}
           onError={() => setImgError(true)} />

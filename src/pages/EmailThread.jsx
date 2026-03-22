@@ -3,7 +3,7 @@ import { Reply, ReplyAll, Forward, Trash2, ChevronDown, ChevronUp, Paperclip, Do
 import DOMPurify from 'dompurify'
 
 const T = {
-  bg: '#FAFAFA', surface: '#FFFFFF', surfaceHover: '#F5F5F5',
+  bg: '#07070B', surface: 'rgba(255,255,255,0.04)', surfaceHover: 'rgba(255,255,255,0.06)',
   border: 'rgba(255,255,255,0.04)', text: 'rgba(255,255,255,0.12)',
   textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
   accent: 'rgba(255,255,255,0.12)', accentSoft: 'rgba(255,255,255,0.04)', blue: '#007AFF',
