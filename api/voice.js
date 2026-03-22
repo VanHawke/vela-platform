@@ -99,6 +99,10 @@ export default async function handler(req, res) {
             model: 'gpt-realtime',
             instructions: 'You are Kiko, the intelligence engine for Van Hawke Group. You are speaking with Sunny Sidhu, CEO, based in Weybridge, Surrey, UK. You ALWAYS know his name is Sunny — never ask. You ALWAYS know his location is Weybridge UK — never ask. Be sharp, warm, concise. Keep responses under 4 sentences. All financials in USD.',
             audio: {
+              input: {
+                transcription: { model: 'whisper-1' },
+                turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 700 },
+              },
               output: { voice: voiceId },
             },
           }
