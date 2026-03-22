@@ -291,6 +291,19 @@ RULES:
         }))
         startTimers()
         startLiveTranscription()
+        // Greet user after session is configured (1.5s delay for config to settle)
+        if (!greetedRef.current) {
+          greetedRef.current = true
+          setTimeout(() => {
+            if (dcRef.current?.readyState === 'open') {
+              console.log('[Kiko Voice] Sending greeting')
+              dcRef.current.send(JSON.stringify({
+                type: 'response.create',
+                response: { modalities: ['audio', 'text'], instructions: `Say only: "Hi ${firstName}, how can I help you?" — nothing more, just that short greeting.` }
+              }))
+            }
+          }, 1500)
+        }
       }
       dc.onclose = () => setStatus('connecting')
       dc.onmessage = e => { try { handleEvent(JSON.parse(e.data)) } catch {} }
@@ -398,25 +411,17 @@ RULES:
 
     if (t === 'session.updated' || t === 'session.created') {
       console.log('[Kiko Voice]', t)
-      // Greet user on first session.updated
-      if (t === 'session.updated' && !greetedRef.current && dcRef.current?.readyState === 'open') {
-        greetedRef.current = true
-        setTimeout(() => {
-          if (dcRef.current?.readyState === 'open') {
-            dcRef.current.send(JSON.stringify({
-              type: 'response.create',
-              response: { modalities: ['audio', 'text'], instructions: `Say only: "Hi ${firstName}, how can I help you?" — nothing more.` }
-            }))
-          }
-        }, 600)
-      }
     }
 
     // ── Farewell done → close session ──
     if (t === 'response.done' && closingRef.current) {
-      console.log('[Kiko Voice] Farewell response done, closing')
+      console.log('[Kiko Voice] Farewell done, closing in 1.5s')
       setTimeout(() => { if (closeRef.current) closeRef.current() }, 1500)
+      return // don't process anything else
     }
+
+    // ── If closing, ignore all other events ──
+    if (closingRef.current) return
 
     // ── User starts speaking → interrupt Kiko ──
     if (t === 'input_audio_buffer.speech_started') {
