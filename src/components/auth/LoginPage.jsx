@@ -132,7 +132,7 @@ export default function LoginPage() {
             }}>{showPw ? <EyeOff size={18} /> : <Eye size={18} />}</button>
           </div>
 
-          {error && <p style={{ fontSize: 13, color: 'rgba(255,80,80,0.8)', background: 'rgba(255,80,80,0.06)', padding: '8px 14px', borderRadius: 50, margin: '0 0 10px', border: '0.5px solid rgba(255,80,80,0.1)', fontFamily: T.font }}>{error}</p>}
+          {error && <p style={{ fontSize: 13, color: 'rgba(255,80,80,0.8)', background: 'rgba(255,80,80,0.06)', padding: '8px 14px', borderRadius: 50, margin: '0 0 10px', border: '1.5px solid rgba(255,80,80,0.1)', fontFamily: T.font }}>{error}</p>}
 
           {/* Sign in — gradient pill */}
           <div style={fadeUp(0.7)}>

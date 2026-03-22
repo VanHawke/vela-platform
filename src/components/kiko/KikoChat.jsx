@@ -14,14 +14,14 @@ function md(text) {
   if (!text) return ''
   let h = text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(255,255,255,0.07);padding:12px;border-radius:8px;font-size:12px;overflow-x:auto;margin:8px 0;border:0.5px solid rgba(255,255,255,0.1)"><code>$1</code></pre>')
+    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(255,255,255,0.07);padding:12px;border-radius:8px;font-size:12px;overflow-x:auto;margin:8px 0;border:1.5px solid rgba(255,255,255,0.1)"><code>$1</code></pre>')
     .replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.07);padding:2px 6px;border-radius:4px;font-size:12px">$1</code>')
     .replace(/\*\*(.+?)\*\*/g, '<strong style="color:rgba(255,255,255,0.85);font-weight:500">$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/^[-\u2013\u2022] (.+)$/gm, '<li style="margin-left:16px;list-style:disc">$1</li>')
     .replace(/^(\d+)\. (.+)$/gm, '<li style="margin-left:16px;list-style:decimal">$2</li>')
     .replace(/^## (.+)$/gm, '<div style="font-size:15px;font-weight:500;color:rgba(255,255,255,0.85);margin:16px 0 8px">$1</div>')
-    .replace(/^---$/gm, '<hr style="border:none;border-top:0.5px solid rgba(255,255,255,0.1);margin:16px 0"/>')
+    .replace(/^---$/gm, '<hr style="border:none;border-top:1.5px solid rgba(255,255,255,0.1);margin:16px 0"/>')
     .replace(/\n/g, '<br/>')
   return DOMPurify.sanitize(h)
 }
@@ -463,7 +463,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {/* Voice CTA — teal equalizer */}
           {!voiceActive && (
             <button onClick={startVoice} title="Talk to Kiko" style={{
-              width: sz, height: sz, borderRadius: 50, border: '0.5px solid rgba(6,214,160,0.15)',
+              width: sz, height: sz, borderRadius: 50, border: '1.5px solid rgba(6,214,160,0.15)',
               background: 'rgba(6,214,160,0.08)', color: 'rgba(6,214,160,0.7)',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               boxShadow: 'inset 0 1px 0 rgba(6,214,160,0.06)', transition: 'all 0.3s',
@@ -486,7 +486,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         <button onClick={() => handleSubmit()} disabled={!input.trim() || streaming} style={{
           width: welcome ? 42 : sz, height: welcome ? 42 : sz, borderRadius: 50,
           background: input.trim() ? T.accentGradient : 'rgba(255,255,255,0.04)',
-          border: input.trim() ? 'none' : '0.5px solid rgba(255,255,255,0.08)',
+          border: input.trim() ? 'none' : '1.5px solid rgba(255,255,255,0.1)',
           color: '#fff',
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'all 0.15s', flexShrink: 0, opacity: input.trim() ? 0.9 : 0.5,
@@ -517,7 +517,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           background: isUser ? T.userMsg : 'transparent',
           backdropFilter: isUser ? 'blur(40px)' : 'none',
           WebkitBackdropFilter: isUser ? 'blur(40px)' : 'none',
-          border: isUser ? `0.5px solid ${T.userMsgBorder}` : 'none',
+          border: isUser ? `1.5px solid ${T.userMsgBorder}` : 'none',
           color: isUser ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.55)',
           fontSize: 14, lineHeight: 1.8, fontFamily: T.font, fontWeight: 300,
         }}>
@@ -579,7 +579,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             </div>
             <button onClick={stopVoice} style={{
               marginTop: 24, padding: '10px 28px', borderRadius: 50,
-              background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.1)',
+              background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.1)',
               fontSize: 12, color: 'rgba(255,255,255,0.25)', cursor: 'pointer', fontFamily: T.font,
               fontWeight: 300, transition: 'all 0.3s',
             }}
@@ -698,7 +698,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div style={{ marginBottom: 24, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.accent, flexShrink: 0, marginTop: 8, boxShadow: '0 0 8px rgba(139,108,246,0.4)' }} />
               <div style={{ maxWidth: 360 }}>
-                <div style={{ padding: '16px 18px', borderRadius: 18, background: 'rgba(139,108,246,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: '0.5px solid rgba(139,108,246,0.1)' }}>
+                <div style={{ padding: '16px 18px', borderRadius: 18, background: 'rgba(139,108,246,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: '1.5px solid rgba(139,108,246,0.1)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                     <DoubleHelix width={60} height={12} mini />
                     <span style={{ fontSize: 11, color: 'rgba(139,108,246,0.45)', fontFamily: T.font, fontWeight: 300 }}>{toolStatus || 'Deep analysis'}</span>
@@ -711,7 +711,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                       {showSteps ? 'Hide process' : `Show process (${thinkingSteps.length} steps)`}
                     </button>
                     {showSteps && (
-                      <div style={{ padding: '6px 10px', borderRadius: 50, background: T.accentSoft, border: `0.5px solid ${T.border}`, marginTop: 4 }}>
+                      <div style={{ padding: '6px 10px', borderRadius: 50, background: T.accentSoft, border: `1.5px solid ${T.border}`, marginTop: 4 }}>
                         {thinkingSteps.map((step, si) => {
                           const isLast = si === thinkingSteps.length - 1
                           return (
@@ -741,7 +741,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <div ref={scrollRef} />
         </div>
       </div>
-      <div style={{ padding: compact ? 12 : 16, borderTop: `0.5px solid ${T.border}` }}>
+      <div style={{ padding: compact ? 12 : 16, borderTop: `1.5px solid ${T.border}` }}>
         <div style={{ maxWidth: compact ? '100%' : 680, margin: '0 auto' }}>
           <PromptBar />
           {dictateError && (

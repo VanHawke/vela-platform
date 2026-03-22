@@ -83,7 +83,7 @@ function ArticleCard({ article, onStar, featured = false }) {
 
   const cardStyle = {
     background: featured ? sig.bg : T.surface,
-    border: `0.5px solid ${featured ? sig.border : T.border}`,
+    border: `1.5px solid ${featured ? sig.border : T.border}`,
     borderRadius: 50,
     padding: '14px 16px',
     display: 'flex',
@@ -102,12 +102,12 @@ function ArticleCard({ article, onStar, featured = false }) {
       {/* Top row: badges + time + star */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
         {sig.label && (
-          <span style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.04em', textTransform: 'uppercase', color: sig.text, background: sig.bg, border: `0.5px solid ${sig.border}`, padding: '2px 6px', borderRadius: 4 }}>
+          <span style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.04em', textTransform: 'uppercase', color: sig.text, background: sig.bg, border: `1.5px solid ${sig.border}`, padding: '2px 6px', borderRadius: 4 }}>
             {sig.label}
           </span>
         )}
         {isOfficial && !sig.label.includes('Official') && (
-          <span style={{ fontSize: 9, fontWeight: 500, color: '#27500A', background: '#EAF3DE', border: '0.5px solid #97C459', padding: '2px 6px', borderRadius: 4 }}>
+          <span style={{ fontSize: 9, fontWeight: 500, color: '#27500A', background: '#EAF3DE', border: '1.5px solid #97C459', padding: '2px 6px', borderRadius: 4 }}>
             Official
           </span>
         )}
@@ -149,7 +149,7 @@ function ArticleCard({ article, onStar, featured = false }) {
           {crm.map((c, i) => {
             const name = c.name || c
             return (
-              <span key={i} style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.04)', border: `0.5px solid ${T.border}`, color: T.textSecondary, fontFamily: T.font }}>
+              <span key={i} style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(255,255,255,0.04)', border: `1.5px solid ${T.border}`, color: T.textSecondary, fontFamily: T.font }}>
                 {name} · CRM
               </span>
             )
@@ -172,7 +172,7 @@ function ArticleCard({ article, onStar, featured = false }) {
             fontSize: 11, fontWeight: 500,
             color: featured ? sig.text : T.textSecondary,
             background: featured ? `rgba(255,255,255,0.5)` : 'rgba(0,0,0,0.04)',
-            border: `0.5px solid ${featured ? sig.border : T.border}`,
+            border: `1.5px solid ${featured ? sig.border : T.border}`,
             padding: '4px 10px', borderRadius: 6,
             textDecoration: 'none',
             transition: 'all 0.15s',

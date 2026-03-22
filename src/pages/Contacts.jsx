@@ -78,10 +78,10 @@ export default function Contacts({ user }) {
 
   const displayName = (c) => [c.firstName, c.lastName].filter(Boolean).join(' ') || 'Unnamed'
 
-  const glass = { padding: '12px 20px', borderRadius: 20, background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(40px) saturate(1.3)', WebkitBackdropFilter: 'blur(40px) saturate(1.3)', border: '0.5px solid rgba(255,255,255,0.12)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
-  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: 50, padding: '10px 14px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
-  const pillBtn = (bg, bc, col) => ({ padding: '8px 18px', borderRadius: 50, background: bg, border: `0.5px solid ${bc}`, fontSize: 11, color: col, fontWeight: 400, cursor: 'pointer', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)', fontFamily: 'var(--font)' })
-  const actionBtn = { width: 30, height: 30, borderRadius: 50, background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.15)', cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)', flexShrink: 0 }
+  const glass = { padding: '12px 20px', borderRadius: 20, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
+  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 50, padding: '10px 14px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
+  const pillBtn = (bg, bc, col) => ({ padding: '8px 18px', borderRadius: 50, background: bg, border: `1.5px solid ${bc}`, fontSize: 11, color: col, fontWeight: 400, cursor: 'pointer', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)', fontFamily: 'var(--font)' })
+  const actionBtn = { width: 30, height: 30, borderRadius: 50, background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.15)', cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)', flexShrink: 0 }
   const stageColors = { 'To revisit': ['rgba(255,255,255,0.04)','rgba(255,255,255,0.08)','rgba(255,255,255,0.2)'], 'Contact made': ['rgba(139,108,246,0.08)','rgba(139,108,246,0.15)','rgba(139,108,246,0.55)'], 'In Dialogue': ['rgba(245,158,11,0.08)','rgba(245,158,11,0.15)','rgba(245,158,11,0.6)'], 'Qualified': ['rgba(6,214,160,0.08)','rgba(6,214,160,0.15)','rgba(6,214,160,0.55)'], 'Meeting arranged (brand x RH)': ['rgba(59,130,246,0.08)','rgba(59,130,246,0.15)','rgba(59,130,246,0.55)'] }
   const avatarColors = ['rgba(139,108,246,0.15)', 'rgba(6,214,160,0.15)', 'rgba(236,72,153,0.15)', 'rgba(59,130,246,0.15)', 'rgba(245,158,11,0.15)']
   const avatarTextColors = ['rgba(139,108,246,0.7)', 'rgba(6,214,160,0.7)', 'rgba(236,72,153,0.7)', 'rgba(59,130,246,0.7)', 'rgba(245,158,11,0.7)']
@@ -97,7 +97,7 @@ export default function Contacts({ user }) {
           <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.2)', fontWeight: 300, marginTop: 2, fontFamily: 'var(--font)' }}>{filtered.length.toLocaleString()} contacts</div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', width: 260, background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(30px)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: 50, padding: '0 16px', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', width: 260, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px) saturate(1.6)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 50, padding: '0 16px', boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.1)' }}>
             <Search style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.2)', flexShrink: 0, marginRight: 8 }} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search contacts..." style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 13, color: 'rgba(255,255,255,0.7)', fontFamily: 'var(--font)', height: 38, fontWeight: 300 }} />
           </div>
@@ -127,11 +127,11 @@ export default function Contacts({ user }) {
                 const sc = stageColors[stage]
                 return (
                   <div key={contact.id} onClick={() => nav(`/contacts/${contact.id}`)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', borderRadius: 16, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)', border: '0.5px solid rgba(255,255,255,0.08)', cursor: 'pointer', transition: 'all 0.3s', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', borderRadius: 16, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', border: '1.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', transition: 'all 0.3s', boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.1)' }}
                     onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}>
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}>
                     {/* Avatar */}
-                    <div style={{ width: 40, height: 40, borderRadius: 50, background: abg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)' }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 50, background: abg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.1)' }}>
                       <span style={{ fontSize: 13, fontWeight: 400, color: atc, fontFamily: 'var(--font)' }}>{(contact.firstName || '?')[0]?.toUpperCase()}{(contact.lastName || '')[0]?.toUpperCase() || ''}</span>
                     </div>
                     {/* Info */}
@@ -141,7 +141,7 @@ export default function Contacts({ user }) {
                     </div>
                     {/* Stage pill */}
                     {stage && sc && (
-                      <div style={{ fontSize: 10, padding: '4px 12px', borderRadius: 50, background: sc[0], border: `0.5px solid ${sc[1]}`, color: sc[2], fontWeight: 400, backdropFilter: 'blur(12px)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)', whiteSpace: 'nowrap', flexShrink: 0 }}>{stage}</div>
+                      <div style={{ fontSize: 10, padding: '4px 12px', borderRadius: 50, background: sc[0], border: `1.5px solid ${sc[1]}`, color: sc[2], fontWeight: 400, backdropFilter: 'blur(12px)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)', whiteSpace: 'nowrap', flexShrink: 0 }}>{stage}</div>
                     )}
                     {/* Quick actions */}
                     <div style={{ display: 'flex', gap: 4, flexShrink: 0, marginLeft: 8 }}>
@@ -181,7 +181,7 @@ export default function Contacts({ user }) {
             ))}
           </div>
           {/* Alphabet nav */}
-          <div style={{ borderRadius: 20, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(30px)', border: '0.5px solid rgba(255,255,255,0.08)', padding: 14, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)', display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
+          <div style={{ borderRadius: 20, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px) saturate(1.6)', border: '1.5px solid rgba(255,255,255,0.1)', padding: 14, boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.1)', display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
             {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(l => (
               <button key={l} onClick={() => setSearch(l)} style={{ width: 24, height: 24, borderRadius: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'rgba(255,255,255,0.15)', cursor: 'pointer', fontWeight: 300, transition: 'all 0.2s', background: 'transparent', border: 'none', fontFamily: 'var(--font)' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,108,246,0.12)'; e.currentTarget.style.color = 'rgba(139,108,246,0.6)' }}
@@ -194,7 +194,7 @@ export default function Contacts({ user }) {
 
       {showForm && (
         <div onClick={e => e.target === e.currentTarget && reset()} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(24px)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div style={{ background: 'rgba(14,14,20,0.9)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 24, border: '0.5px solid rgba(255,255,255,0.12)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 24px 80px rgba(0,0,0,0.5)', width: '100%', maxWidth: 420, padding: 24 }}>
+          <div style={{ background: 'rgba(14,14,20,0.9)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 24, border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 24px 80px rgba(0,0,0,0.5)', width: '100%', maxWidth: 420, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <h2 style={{ fontSize: 16, fontWeight: 200, color: 'rgba(255,255,255,0.9)', margin: 0, fontFamily: 'var(--font)' }}>{editing ? 'Edit Contact' : 'Add Contact'}</h2>
               <button onClick={reset} style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer' }}><X style={{ width: 16, height: 16 }} /></button>

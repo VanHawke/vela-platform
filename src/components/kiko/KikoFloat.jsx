@@ -70,7 +70,7 @@ function md(text) {
   if (!text) return ''
   let h = text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(255,255,255,0.07);padding:8px;border-radius:8px;font-size:11px;overflow-x:auto;margin:4px 0;border:0.5px solid rgba(255,255,255,0.1)"><code>$1</code></pre>')
+    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(255,255,255,0.07);padding:8px;border-radius:8px;font-size:11px;overflow-x:auto;margin:4px 0;border:1.5px solid rgba(255,255,255,0.1)"><code>$1</code></pre>')
     .replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.07);padding:1px 4px;border-radius:3px;font-size:11px">$1</code>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
@@ -342,7 +342,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           pointerEvents: open ? 'all' : 'none',
         }}>
           {/* Header */}
-          <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: hasMessages ? '0.5px solid rgba(255,255,255,0.07)' : 'none' }}>
+          <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: hasMessages ? '1.5px solid rgba(255,255,255,0.07)' : 'none' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 24, height: 12, overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)', maskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)' }}>
                 <DoubleHelix width={24} height={12} mini />
@@ -406,7 +406,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               {CHIPS.map((chip, i) => (
                 <button key={chip} onClick={() => handleSubmit(chip)} style={{
                   fontSize: 11, padding: '5px 10px', borderRadius: 50,
-                  border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)',
+                  border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)',
                   color: T.textSecondary, cursor: 'pointer', fontFamily: T.font,
                   animation: `kikoChipIn 0.3s ease ${0.08 + i * 0.05}s both`,
                   transition: 'background 0.15s, border-color 0.15s',
@@ -421,7 +421,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           )}
 
           {/* Input bar inside panel */}
-          <div style={{ padding: '8px 10px 10px', display: 'flex', alignItems: 'center', gap: 6, borderTop: hasMessages ? '0.5px solid rgba(255,255,255,0.07)' : 'none', marginTop: hasMessages ? 0 : 8 }}>
+          <div style={{ padding: '8px 10px 10px', display: 'flex', alignItems: 'center', gap: 6, borderTop: hasMessages ? '1.5px solid rgba(255,255,255,0.07)' : 'none', marginTop: hasMessages ? 0 : 8 }}>
             <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} style={{ width: 26, height: 26, borderRadius: '50%', border: 'none', background: 'transparent', color: T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {fileUploading
                 ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'kikoVortexSpin 1s linear infinite' }}><circle cx="12" cy="12" r="10"/></svg>
@@ -435,7 +435,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               <Mic size={13} />
               {transcribing && <span style={{ position: 'absolute', top: 2, right: 2, width: 6, height: 6, borderRadius: '50%', background: 'rgba(34,197,94,0.9)', animation: 'kikoBreathe 1s ease-in-out infinite' }} />}
             </button>
-            <button onClick={openVoiceMode} style={{ width: 28, height: 28, borderRadius: 50, border: '0.5px solid rgba(6,214,160,0.15)', background: 'rgba(6,214,160,0.08)', color: 'rgba(6,214,160,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.3s' }}>
+            <button onClick={openVoiceMode} style={{ width: 28, height: 28, borderRadius: 50, border: '1.5px solid rgba(6,214,160,0.15)', background: 'rgba(6,214,160,0.08)', color: 'rgba(6,214,160,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.3s' }}>
               <EqIcon size={14} color="rgba(6,214,160,0.7)" />
             </button>
             <button onClick={() => handleSubmit()} disabled={!input.trim() || streaming}

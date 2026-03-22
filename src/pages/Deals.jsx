@@ -91,9 +91,9 @@ export default function Deals() {
     <div className="flex-1 overflow-hidden flex flex-col">
       <div style={{
         margin: '8px 16px 0', padding: '12px 20px', borderRadius: 18,
-        background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(40px)',
+        background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)',
         WebkitBackdropFilter: 'blur(40px)',
-        border: '0.5px solid rgba(255,255,255,0.1)',
+        border: '1.5px solid rgba(255,255,255,0.1)',
         boxShadow: '0 8px 36px rgba(0,0,0,0.3)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
@@ -113,7 +113,7 @@ export default function Deals() {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5" style={{ color: 'var(--text-tertiary)' }} />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search deals..." style={{
-            width: '100%', background: 'rgba(255,255,255,0.07)', border: '1px solid var(--border)',
+            width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)',
             borderRadius: 50, padding: '8px 12px 8px 34px', fontSize: 13, color: 'var(--text)',
             outline: 'none', fontFamily: 'var(--font)',
           }} />

@@ -233,7 +233,7 @@ export default function Layout({ user }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {/* Listening pill — only when voice is active */}
           {voiceActive && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 50, background: 'rgba(6,214,160,0.04)', border: '0.5px solid rgba(6,214,160,0.1)', animation: 'fadeIn 0.3s ease-out' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 50, background: 'rgba(6,214,160,0.04)', border: '1.5px solid rgba(6,214,160,0.1)', animation: 'fadeIn 0.3s ease-out' }}>
               <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(6,214,160,0.7)', animation: 'kikoBreathe 1.5s ease-in-out infinite' }} />
               <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(6,214,160,0.6)', fontFamily: 'var(--font)' }}>{voiceStatus}</span>
             </div>
@@ -241,7 +241,7 @@ export default function Layout({ user }) {
           {/* Command palette trigger */}
           <button onClick={() => setPaletteOpen(true)} style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            padding: '5px 10px', borderRadius: 50, border: '0.5px solid rgba(255,255,255,0.1)',
+            padding: '5px 10px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)',
             background: 'transparent',
             cursor: 'pointer', fontFamily: 'var(--font)',
             color: 'rgba(255,255,255,0.2)', fontSize: 11, transition: 'all 0.15s',
@@ -270,11 +270,11 @@ export default function Layout({ user }) {
               <div style={{
                 position: 'absolute', top: '100%', right: 0, marginTop: 6,
                 width: 200, background: 'rgba(14,14,20,0.75)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-                borderRadius: 50, border: '0.5px solid rgba(255,255,255,0.1)',
+                borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)',
                 boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
                 padding: '6px', zIndex: 400, animation: 'fadeIn 0.15s ease-out',
               }}>
-                <div style={{ padding: '8px 12px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.07)', marginBottom: 4 }}>
+                <div style={{ padding: '8px 12px 10px', borderBottom: '1.5px solid rgba(255,255,255,0.07)', marginBottom: 4 }}>
                   <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.8)', fontFamily: 'var(--font)' }}>
                     {profile.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : user?.email?.split('@')[0] || 'User'}
                   </div>

@@ -95,7 +95,7 @@ export default function OutreachIntelligence({ user }) {
     if (s.sent_at > byCompany[c].lastSent) byCompany[c].lastSent = s.sent_at
   })
 
-  const card = { background: 'rgba(255,255,255,0.07)', borderRadius: 18, padding: '20px', border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }
+  const card = { background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '20px', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }
   const sectionTitle = { fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: T.textTertiary, margin: '0 0 14px', fontFamily: T.font }
   const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
@@ -126,11 +126,11 @@ export default function OutreachIntelligence({ user }) {
           <p style={{ fontSize: 12, color: T.textTertiary, margin: '4px 0 0', fontFamily: T.font }}>{total} emails scored · Updated {scores[0]?.scored_at ? new Date(scores[0].scored_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'never'}</p>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <select value={pipelineFilter} onChange={e => setPipelineFilter(e.target.value)} style={{ fontSize: 12, padding: '6px 10px', borderRadius: 50, border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)', fontFamily: T.font, color: T.text }}>
+          <select value={pipelineFilter} onChange={e => setPipelineFilter(e.target.value)} style={{ fontSize: 12, padding: '6px 10px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', fontFamily: T.font, color: T.text }}>
             <option value="all">All pipelines</option>
             {pipelines.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
-          <button onClick={runScoring} disabled={scoring} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 50, border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, color: T.text }}>
+          <button onClick={runScoring} disabled={scoring} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, color: T.text }}>
             {scoring ? <Loader2 style={{ width: 12, height: 12, animation: 'spin 1s linear infinite' }} /> : <RefreshCw style={{ width: 12, height: 12 }} />}
             {scoring ? 'Scoring…' : 'Score now'}
           </button>

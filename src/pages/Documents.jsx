@@ -146,9 +146,9 @@ export default function Documents({ user }) {
     return true
   })
 
-  const cardStyle = { background: T.surface, borderRadius: 50, border: `0.5px solid rgba(0,0,0,0.05)`, boxShadow: '0 4px 16px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02), inset 0 1px 0 rgba(255,255,255,1)', padding: 16, transition: 'all 0.15s' }
+  const cardStyle = { background: T.surface, borderRadius: 50, border: `1.5px solid rgba(0,0,0,0.05)`, boxShadow: '0 4px 16px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02), inset 0 1px 0 rgba(255,255,255,1)', padding: 16, transition: 'all 0.15s' }
   const pillStyle = (color) => ({ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 50, fontSize: 10, fontWeight: 500, background: `${color}12`, color, fontFamily: T.font })
-  const inputStyle = { height: 36, borderRadius: 50, border: `0.5px solid rgba(0,0,0,0.06)`, padding: '0 10px', fontSize: 12, color: T.text, fontFamily: T.font, outline: 'none', background: T.surface }
+  const inputStyle = { height: 36, borderRadius: 50, border: `1.5px solid rgba(0,0,0,0.06)`, padding: '0 10px', fontSize: 12, color: T.text, fontFamily: T.font, outline: 'none', background: T.surface }
 
   return (
     <div
@@ -229,7 +229,7 @@ export default function Documents({ user }) {
           {CONTEXTS.filter(c => c !== 'all').map(c => <option key={c} value={c}>{CTX_LABELS[c] || c}</option>)}
         </select>
         {/* Category pills */}
-        <div style={{ display: 'flex', gap: 3, background: 'rgba(255,255,255,0.07)', borderRadius: 50, padding: 3 }}>
+        <div style={{ display: 'flex', gap: 3, background: 'rgba(255,255,255,0.04)', borderRadius: 50, padding: 3 }}>
           {CATEGORIES.map(c => (
             <button key={c} onClick={() => setCatFilter(c)} style={{ padding: '4px 10px', borderRadius: 6, border: 'none', fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, background: catFilter === c ? T.accent : 'transparent', color: catFilter === c ? '#fff' : T.textTertiary, transition: 'all 0.15s' }}>{c === 'all' ? 'All' : c.replace('_', ' ')}</button>
           ))}
@@ -279,7 +279,7 @@ export default function Documents({ user }) {
                         {editingTeam === doc.id ? (
                           <select autoFocus value={doc.linked_team || ''} onChange={e => reassignTeam(doc.id, e.target.value)} onBlur={() => setEditingTeam(null)}
                             onClick={e => e.stopPropagation()}
-                            style={{ fontSize: 10, padding: '1px 4px', borderRadius: 6, border: `1px solid ${T.blue}`, background: 'rgba(255,255,255,0.07)', color: T.text, outline: 'none', fontFamily: T.font }}>
+                            style={{ fontSize: 10, padding: '1px 4px', borderRadius: 6, border: `1px solid ${T.blue}`, background: 'rgba(255,255,255,0.04)', color: T.text, outline: 'none', fontFamily: T.font }}>
                             <option value="">No team</option>
                             {teams.map(t => <option key={t} value={t}>{t}</option>)}
                           </select>
@@ -307,7 +307,7 @@ export default function Documents({ user }) {
 
                   {/* Expanded intelligence panel */}
                   {isExpanded && (
-                    <div style={{ marginTop: 12, padding: 14, borderRadius: 50, background: 'rgba(0,0,0,0.02)', border: `0.5px solid rgba(0,0,0,0.04)` }}>
+                    <div style={{ marginTop: 12, padding: 14, borderRadius: 50, background: 'rgba(0,0,0,0.02)', border: `1.5px solid rgba(0,0,0,0.04)` }}>
                       {doc.summary && <p style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.6, margin: '0 0 12px' }}>{doc.summary}</p>}
                       {intel.key_stats?.length > 0 && (
                         <div style={{ marginBottom: 10 }}>
@@ -369,7 +369,7 @@ export default function Documents({ user }) {
                           <p style={{ fontSize: 12, color: T.text, margin: '4px 0 0' }}>{intel.target_audience}</p>
                         </div>
                       )}
-                      <div style={{ marginTop: 10, paddingTop: 10, borderTop: `0.5px solid rgba(0,0,0,0.04)`, display: 'flex', gap: 12, fontSize: 10, color: T.textTertiary }}>
+                      <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1.5px solid rgba(0,0,0,0.04)`, display: 'flex', gap: 12, fontSize: 10, color: T.textTertiary }}>
                         <span>Scanned: {doc.last_scanned_at ? new Date(doc.last_scanned_at).toLocaleDateString() : 'Never'}</span>
                         <span>Version: {doc.scan_version || 0}</span>
                         {doc.linked_company_id && <span>Linked to CRM</span>}

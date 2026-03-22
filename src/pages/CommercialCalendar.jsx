@@ -158,7 +158,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, onClick }) 
         borderRadius: 7,
         padding: '7px 8px',
         background: s.bg,
-        border: s.isToday ? `1.5px solid ${T.text}` : `0.5px solid ${s.border}`,
+        border: s.isToday ? `1.5px solid ${T.text}` : `1.5px solid ${s.border}`,
         display: 'flex', flexDirection: 'column', gap: 4,
         cursor: isCurrent ? 'pointer' : 'default',
         opacity: isCurrent ? 1 : 0.2,
@@ -245,12 +245,12 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: T.surface }}>
       {/* Header */}
-      <div style={{ padding: '11px 18px', borderBottom: `0.5px solid ${T.border}`, background: T.bg, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+      <div style={{ padding: '11px 18px', borderBottom: `1.5px solid ${T.border}`, background: T.bg, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <span style={{ fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font }}>
           {selected ? fmtLong(selected) : 'Select a date'}
         </span>
         {isSelectedToday && (
-          <span style={{ fontSize: 9, fontWeight: 400, color: '#1565C0', background: '#E3F2FD', border: '0.5px solid #B5D4F4', padding: '2px 9px', borderRadius: 4, fontFamily: T.font }}>Today</span>
+          <span style={{ fontSize: 9, fontWeight: 400, color: '#1565C0', background: '#E3F2FD', border: '1.5px solid #B5D4F4', padding: '2px 9px', borderRadius: 4, fontFamily: T.font }}>Today</span>
         )}
       </div>
 
@@ -260,7 +260,7 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
         {selected && selEvents.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {selEvents.map((event, i) => (
-              <div key={i} style={{ padding: '12px 14px', borderRadius: 50, background: event.series === 'f1' ? T.f1Light : T.feLight, border: `0.5px solid ${event.series === 'f1' ? T.f1Border : T.feBorder}`, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <div key={i} style={{ padding: '12px 14px', borderRadius: 50, background: event.series === 'f1' ? T.f1Light : T.feLight, border: `1.5px solid ${event.series === 'f1' ? T.f1Border : T.feBorder}`, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                 <SeriesIcon series={event.series} size={36} />
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 14, fontWeight: 500, color: event.series === 'f1' ? T.f1Dark : T.feDark, margin: 0, fontFamily: T.font }}>{event.name}</p>
@@ -282,7 +282,7 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
 
         {/* Outreach nudge */}
         {outreach && (
-          <div style={{ padding: '12px 14px', borderRadius: 50, background: T.amberLight, border: `0.5px solid ${T.amberBorder}` }}>
+          <div style={{ padding: '12px 14px', borderRadius: 50, background: T.amberLight, border: `1.5px solid ${T.amberBorder}` }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
               <div style={{ width: 6, height: 6, borderRadius: 1, background: T.amber, flexShrink: 0 }} />
               <p style={{ fontSize: 11, fontWeight: 500, color: T.amber, margin: 0, fontFamily: T.font }}>
@@ -305,7 +305,7 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
               const isPast   = e.end < today
               const isActive = selected && e.date <= selected && e.end >= selected
               return (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: `0.5px solid ${T.border}`, opacity: isPast ? 0.38 : 1 }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: `1.5px solid ${T.border}`, opacity: isPast ? 0.38 : 1 }}>
                   <SeriesIcon series={e.series} size={22} />
                   <span style={{ flex: 1, fontSize: 12, fontWeight: isActive ? 500 : 400, color: T.text, fontFamily: T.font, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {e.name}{e.sprint ? ' ⚡' : ''}
@@ -326,7 +326,7 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
             {upcoming.map((e, i) => {
               const days = daysUntil(e.date)
               return (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: `0.5px solid ${T.border}` }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: `1.5px solid ${T.border}` }}>
                   <SeriesIcon series={e.series} size={28} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: 12, fontWeight: 500, color: T.text, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: T.font }}>{e.name}</p>
@@ -396,17 +396,17 @@ export default function CommercialCalendar() {
     <div style={{ display: 'flex', height: '100%', fontFamily: T.font, background: T.bg, overflow: 'hidden' }}>
 
       {/* ── Left: grid (55%) ── */}
-      <div style={{ width: '55%', flexShrink: 0, display: 'flex', flexDirection: 'column', borderRight: `0.5px solid ${T.border}`, background: T.bg }}>
+      <div style={{ width: '55%', flexShrink: 0, display: 'flex', flexDirection: 'column', borderRight: `1.5px solid ${T.border}`, background: T.bg }}>
 
         {/* Top nav */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', background: T.surface, borderBottom: `0.5px solid ${T.border}`, flexShrink: 0 }}>
-          <button onClick={prevMonth} style={{ width: 28, height: 28, borderRadius: 7, border: `0.5px solid ${T.border}`, background: T.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.textSecondary, cursor: 'pointer' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', background: T.surface, borderBottom: `1.5px solid ${T.border}`, flexShrink: 0 }}>
+          <button onClick={prevMonth} style={{ width: 28, height: 28, borderRadius: 7, border: `1.5px solid ${T.border}`, background: T.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.textSecondary, cursor: 'pointer' }}>
             <ChevronLeft size={13} />
           </button>
           <span style={{ flex: 1, textAlign: 'center', fontSize: 15, fontWeight: 500, color: T.text, fontFamily: T.font }}>
             {MONTHS_FULL[viewMonth]} {viewYear}
           </span>
-          <button onClick={nextMonth} style={{ width: 28, height: 28, borderRadius: 7, border: `0.5px solid ${T.border}`, background: T.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.textSecondary, cursor: 'pointer' }}>
+          <button onClick={nextMonth} style={{ width: 28, height: 28, borderRadius: 7, border: `1.5px solid ${T.border}`, background: T.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.textSecondary, cursor: 'pointer' }}>
             <ChevronRight size={13} />
           </button>
           <div style={{ width: '0.5px', height: 16, background: T.border, margin: '0 2px' }} />
@@ -415,14 +415,14 @@ export default function CommercialCalendar() {
             { id: 'f1', label: 'F1',         on: showF1, set: setShowF1, bg: T.f1, rem: remF1 },
             { id: 'fe', label: 'Formula E',  on: showFE, set: setShowFE, bg: T.fe, rem: remFE },
           ].map(({ id, label, on, set, bg, rem }) => (
-            <button key={id} onClick={() => set(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 7px', borderRadius: 6, border: `0.5px solid ${on ? T.border : T.border}`, background: on ? 'rgba(0,0,0,0.06)' : 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}>
+            <button key={id} onClick={() => set(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 7px', borderRadius: 6, border: `1.5px solid ${on ? T.border : T.border}`, background: on ? 'rgba(0,0,0,0.06)' : 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}>
               <img src={id === 'f1' ? '/f1-logo.png' : '/fe-logo.png'} alt={label} style={{ width: 16, height: 16, objectFit: 'contain', display: 'block', flexShrink: 0 }} />
               <span style={{ fontSize: 11, fontWeight: 500, color: T.textSecondary, fontFamily: T.font }}>{label}</span>
               {on && <span style={{ fontSize: 9, color: T.textTertiary, fontFamily: T.font }}>{rem}</span>}
             </button>
           ))}
           <div style={{ width: '0.5px', height: 16, background: T.border, margin: '0 2px' }} />
-          <button onClick={goToday} style={{ fontSize: 10, padding: '4px 10px', borderRadius: 6, border: `0.5px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font }}>Today</button>
+          <button onClick={goToday} style={{ fontSize: 10, padding: '4px 10px', borderRadius: 6, border: `1.5px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font }}>Today</button>
           {/* Next race stat */}
           {nextD !== null && (
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
@@ -435,7 +435,7 @@ export default function CommercialCalendar() {
         </div>
 
         {/* Day headers — full names */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', padding: '8px 12px 4px', gap: 3, background: T.surface, borderBottom: `0.5px solid ${T.border}`, flexShrink: 0 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', padding: '8px 12px 4px', gap: 3, background: T.surface, borderBottom: `1.5px solid ${T.border}`, flexShrink: 0 }}>
           {DAYS_FULL.map(d => (
             <div key={d} style={{ textAlign: 'center', fontSize: 9, color: T.textTertiary, letterSpacing: '0.02em', fontFamily: T.font }}>{d}</div>
           ))}
@@ -449,7 +449,7 @@ export default function CommercialCalendar() {
         </div>
 
         {/* Legend */}
-        <div style={{ display: 'flex', gap: 14, padding: '8px 16px', borderTop: `0.5px solid ${T.border}`, background: T.surface, flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: 14, padding: '8px 16px', borderTop: `1.5px solid ${T.border}`, background: T.surface, flexShrink: 0 }}>
           {[
             { bg: T.f1,    label: 'F1 weekend' },
             { bg: T.fe,    label: 'Formula E' },
