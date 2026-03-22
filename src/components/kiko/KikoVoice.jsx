@@ -84,6 +84,15 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   // audio and creating duplicate/echo messages.
   const speakingRef = useRef(false)
   const closeRef = useRef(null) // ref to handleClose for bye-kiko from inside useEffect
+  
+  // Bye Kiko detection — phonetic variants Whisper might produce
+  const isByeKiko = (text) => {
+    const c = text.toLowerCase().replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim()
+    return ['bye kiko', 'bye keeko', 'by kiko', 'buy kiko', 'bikiko', 'bye keiko', 
+            'bye kyko', 'bye kico', 'by keeko', 'bye keko', 'bai kiko', 'bye kiku',
+            'goodbye kiko', 'good bye kiko', 'bye bye kiko', 'see you kiko',
+            'bye kyco', 'bye keeco', 'bye chico'].some(v => c.includes(v))
+  }
   const startLiveTranscription = useCallback(() => {}, [])
   const stopLiveTranscription = useCallback(() => {
     if (liveSrRef.current) { try { liveSrRef.current.abort() } catch {} liveSrRef.current = null }
@@ -398,18 +407,16 @@ RULES:
 
     // ── User speech interim ──
     if (t === 'conversation.item.input_audio_transcription.delta') {
-      if (speakingRef.current) return
       const delta = ev.delta || ''
       if (delta) {
         setTranscript(p => {
           const full = p + delta
-          // Check for bye kiko in running transcript
-          const clean = full.toLowerCase().replace(/[^a-z ]/g, '')
-          if (clean.includes('bye kiko') || clean.includes('bye keeko') || clean.includes('by kiko') || clean.includes('buy kiko')) {
-            console.log('[Kiko Voice] Bye Kiko detected in delta')
+          // Bye-kiko check runs EVEN during speaking (bypasses echo block)
+          if (isByeKiko(full)) {
+            console.log('[Kiko Voice] Bye Kiko detected in delta:', full)
             setTimeout(() => { if (closeRef.current) closeRef.current() }, 300)
           }
-          return full
+          return speakingRef.current ? p : full // don't update transcript display during echo, but still check bye-kiko
         })
       }
     }
@@ -420,8 +427,7 @@ RULES:
       if (!text) return
 
       // "Bye Kiko" voice command — ALWAYS check before echo blocking
-      const cleanText = text.toLowerCase().replace(/[^a-z ]/g, '')
-      if (cleanText.includes('bye kiko') || cleanText.includes('bye keeko') || cleanText.includes('by kiko') || cleanText.includes('buy kiko') || cleanText.includes('bikiko')) {
+      if (isByeKiko(text)) {
         console.log('[Kiko Voice] Bye Kiko detected in final transcript:', text)
         addMessage('user', text)
         setTimeout(() => { if (closeRef.current) closeRef.current() }, 300)
