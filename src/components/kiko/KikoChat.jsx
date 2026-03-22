@@ -135,12 +135,16 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const startVoice = async () => {
     setVoiceActive(true)
     setVoiceMessages([])
+    // Tell Layout to hide header for full-screen voice
+    window.dispatchEvent(new CustomEvent('kiko_voice_fullscreen', { detail: { active: true } }))
   }
 
   // Stop voice mode
   const stopVoice = () => {
     setVoiceActive(false)
     if (voiceMicStream) { voiceMicStream.getTracks().forEach(t => t.stop()); setVoiceMicStream(null) }
+    // Tell Layout to restore header
+    window.dispatchEvent(new CustomEvent('kiko_voice_fullscreen', { detail: { active: false } }))
   }
 
   // Voice state callback from headless KikoVoice
@@ -524,8 +528,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {!voiceActive && (
             <>
               {/* Wave — hero element, prominent and centered */}
-              <div id="kikoWaveHome" style={{ width: '85%', maxWidth: 800, marginBottom: 48, transition: 'all 1s cubic-bezier(0.4,0,0,1)' }}>
-                <SmokeTrailWave width={800} height={70} />
+              <div id="kikoWaveHome" style={{ width: '85%', maxWidth: 800, marginBottom: 44, transition: 'all 1s cubic-bezier(0.4,0,0,1)', overflow: 'visible', padding: '10px 0' }}>
+                <SmokeTrailWave width={800} height={90} />
               </div>
 
               {/* Greeting — below wave */}

@@ -100,6 +100,14 @@ export default function Layout({ user }) {
   const [kikoMessages, setKikoMessages] = useState([])
   const [kikoConvId, setKikoConvId] = useState(null)
   const [kikoResetKey, setKikoResetKey] = useState(0)
+  const [voiceFullscreen, setVoiceFullscreen] = useState(false)
+
+  // Listen for voice fullscreen toggle from KikoChat
+  useEffect(() => {
+    const handler = (e) => setVoiceFullscreen(e.detail?.active || false)
+    window.addEventListener('kiko_voice_fullscreen', handler)
+    return () => window.removeEventListener('kiko_voice_fullscreen', handler)
+  }, [])
 
   const kikoNavigate = useCallback((page) => nav(page === 'home' ? '/' : `/${page}`), [nav])
 
@@ -121,6 +129,11 @@ export default function Layout({ user }) {
         padding: '0 24px', borderBottom: '0.5px solid rgba(255,255,255,0.07)',
         background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(60px) saturate(1.4)', WebkitBackdropFilter: 'blur(60px) saturate(1.4)',
         flexShrink: 0, position: 'relative', zIndex: 250,
+        transition: 'all 0.6s cubic-bezier(0.4,0,0,1)',
+        opacity: voiceFullscreen ? 0 : 1,
+        transform: voiceFullscreen ? 'translateY(-56px)' : 'translateY(0)',
+        marginBottom: voiceFullscreen ? -56 : 0,
+        pointerEvents: voiceFullscreen ? 'none' : 'auto',
       }}>
         {/* Left: Logo pill */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>

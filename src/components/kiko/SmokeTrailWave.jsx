@@ -36,8 +36,8 @@ function SmokeTrailWave({ width = 400, height = 60, scale = 1, mini = false, thi
         const la = 0.035 + layer * 0.025
 
         for (let i = 0; i < w; i++) {
-          const y = cy + Math.sin(i * 0.012 + t * speed + layer * 0.3) * (h * 0.35)
-                      + Math.sin(i * 0.005 + t * (speed + 0.7) + layer * 0.5) * (h * 0.22)
+          const y = cy + Math.sin(i * 0.012 + t * speed + layer * 0.3) * (h * 0.25)
+                      + Math.sin(i * 0.005 + t * (speed + 0.7) + layer * 0.5) * (h * 0.15)
                       + (thinking ? Math.random() * 1 : 0)
           i === 0 ? ctx.moveTo(i, y) : ctx.lineTo(i, y)
         }
@@ -64,8 +64,8 @@ function SmokeTrailWave({ width = 400, height = 60, scale = 1, mini = false, thi
       ctx.lineWidth = mini ? 0.5 : 1
 
       for (let i = 0; i < w; i++) {
-        const y = cy + Math.sin(i * 0.012 + t * speed) * (h * 0.35)
-                    + Math.sin(i * 0.005 + t * (speed + 0.7)) * (h * 0.22)
+        const y = cy + Math.sin(i * 0.012 + t * speed) * (h * 0.25)
+                    + Math.sin(i * 0.005 + t * (speed + 0.7)) * (h * 0.15)
                     + (thinking ? Math.random() * 1 : 0)
         i === 0 ? ctx.moveTo(i, y) : ctx.lineTo(i, y)
       }
