@@ -361,7 +361,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                 <div key={i} style={{ marginBottom: 8, display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                   {msg.role !== 'user' && (
                     <div style={{ width: 20, height: 20, borderRadius: 50, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
-                      <KikoSymbol size={12} color="#fff" />
+                      <DoubleHelix width={18} height={10} mini />
                     </div>
                   )}
                   <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : 8, background: msg.role === 'user' ? T.accent : T.accentSoft, color: msg.role === 'user' ? '#fff' : T.textSecondary, fontSize: 12, lineHeight: 1.55, fontFamily: T.font }}>
@@ -372,7 +372,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               {streaming && !streamText && (
                 <div style={{ marginBottom: 8, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                   <div style={{ width: 20, height: 20, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
-                    <KikoSymbol size={12} color="#fff" animate="thinking" />
+                    <DoubleHelix width={18} height={10} mini />
                   </div>
                   <div style={{ padding: '7px 11px', borderRadius: 50, background: T.accentSoft }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -388,7 +388,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               {streaming && streamText && (
                 <div style={{ marginBottom: 8, display: 'flex' }}>
                   <div style={{ width: 20, height: 20, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
-                    <KikoSymbol size={12} color="#fff" animate="streaming" />
+                    <DoubleHelix width={18} height={10} mini />
                   </div>
                   <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: 50, background: T.accentSoft, fontSize: 12, color: T.textSecondary, lineHeight: 1.55, fontFamily: T.font }}>
                     <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />

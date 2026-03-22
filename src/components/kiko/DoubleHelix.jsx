@@ -27,13 +27,18 @@ function DoubleHelix({ width = 400, height = 60, speaking = false, energy = 0, p
       if (!running) return
       tRef.current += 0.016
       const t = tRef.current
-      const { speaking: sp, energy: propE, pitch: propP, mini: m } = propsRef.current
+      const { speaking: spProp, energy: propE, pitch: propP, mini: m } = propsRef.current
 
-      // Read real-time audio from window globals when Kiko is speaking
-      const realE = sp ? (window.__kikoAudioEnergy || propE || 0) : 0
-      const realP = sp ? (window.__kikoAudioPitch || propP || 0) : 0
-      eRef.current += (realE - eRef.current) * 0.12
-      pRef.current += (realP - pRef.current) * 0.08
+      // Read real-time audio — detect speaking from audio energy even if prop lags
+      const rawE = window.__kikoAudioEnergy || 0
+      const rawP = window.__kikoAudioPitch || 0
+      const sp = spProp || rawE > 0.05
+      const eTarget = sp ? (rawE || propE || 0) : 0
+      const pTarget = sp ? (rawP || propP || 0) : 0
+      const eSpeed = eTarget > eRef.current ? 0.3 : 0.08
+      const pSpeed = pTarget > pRef.current ? 0.25 : 0.06
+      eRef.current += (eTarget - eRef.current) * eSpeed
+      pRef.current += (pTarget - pRef.current) * pSpeed
       const e = eRef.current, p = pRef.current
 
       ctx.clearRect(0, 0, width, height)

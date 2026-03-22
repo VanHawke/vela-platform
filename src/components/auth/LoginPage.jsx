@@ -15,16 +15,14 @@ export default function LoginPage() {
   const [customLogo, setCustomLogo] = useState(null)
   const [brandName, setBrandName] = useState('VAN HAWKE')
 
-  // Load branding from settings table
+  // Load branding from organisations table (anon-accessible for login page)
   useEffect(() => {
-    supabase.from('settings').select('key, value').in('key', ['custom_logo', 'brand_name', 'login_logo_url'])
-      .then(({ data }) => {
-        if (data) {
-          data.forEach(row => {
-            if ((row.key === 'custom_logo' || row.key === 'login_logo_url') && row.value) setCustomLogo(row.value)
-            if (row.key === 'brand_name' && row.value) setBrandName(row.value)
-          })
-        }
+    supabase.from('organisations').select('name, branding').limit(1).maybeSingle()
+      .then(({ data, error }) => {
+        console.log('[LoginPage] Org branding:', data, error)
+        if (data?.branding?.logo_url) setCustomLogo(data.branding.logo_url)
+        if (data?.branding?.platform_name) setBrandName(data.branding.platform_name)
+        if (data?.name && !data?.branding?.platform_name) setBrandName(data.name)
       })
   }, [])
 

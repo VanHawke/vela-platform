@@ -398,13 +398,34 @@ RULES:
     if (t === 'conversation.item.input_audio_transcription.delta') {
       if (speakingRef.current) return
       const delta = ev.delta || ''
-      if (delta) setTranscript(p => p + delta)
+      if (delta) {
+        setTranscript(p => {
+          const full = p + delta
+          // Check for bye kiko in running transcript
+          const clean = full.toLowerCase().replace(/[^a-z ]/g, '')
+          if (clean.includes('bye kiko') || clean.includes('bye keeko') || clean.includes('by kiko') || clean.includes('buy kiko')) {
+            console.log('[Kiko Voice] Bye Kiko detected in delta')
+            if (onClose) setTimeout(() => onClose(), 300)
+          }
+          return full
+        })
+      }
     }
 
     // ── User speech FINAL → decide: GPT-4o direct or Claude ──
     if (t === 'conversation.item.input_audio_transcription.completed') {
       const text = ev.transcript?.trim() || ''
       if (!text) return
+
+      // "Bye Kiko" voice command — ALWAYS check before echo blocking
+      const cleanText = text.toLowerCase().replace(/[^a-z ]/g, '')
+      if (cleanText.includes('bye kiko') || cleanText.includes('bye keeko') || cleanText.includes('by kiko') || cleanText.includes('buy kiko') || cleanText.includes('bikiko')) {
+        console.log('[Kiko Voice] Bye Kiko detected in final transcript:', text)
+        addMessage('user', text)
+        if (onClose) setTimeout(() => onClose(), 300)
+        return
+      }
+
       if (speakingRef.current) {
         console.log('[Kiko Voice] Echo blocked:', text.slice(0, 40))
         setTranscript('')
@@ -412,13 +433,6 @@ RULES:
       }
       setTranscript(text)
       addMessage('user', text)
-
-      // "Bye Kiko" voice command — end session
-      if (text.toLowerCase().replace(/[^a-z ]/g, '').includes('bye kiko') || text.toLowerCase().replace(/[^a-z ]/g, '').includes('bye keeko')) {
-        console.log('[Kiko Voice] Bye Kiko detected — closing session')
-        if (onClose) setTimeout(() => onClose(), 500)
-        return
-      }
 
       if (listenModeRef.current === 'passive') {
         if (KEYWORDS.some(kw => text.toLowerCase().includes(kw))) resetToActive()

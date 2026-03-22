@@ -146,6 +146,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     setVoiceActive(false)
     if (voiceMicStream) { voiceMicStream.getTracks().forEach(t => t.stop()); setVoiceMicStream(null) }
     window.dispatchEvent(new CustomEvent('kiko_voice_fullscreen', { detail: { active: false } }))
+    // Clear audio globals so helix stops reacting
+    window.__kikoAudioEnergy = 0
+    window.__kikoAudioPitch = 0
 
     // Save voice conversation to chat history if there are messages
     if (voiceMessages.length > 0) {
