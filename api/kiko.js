@@ -203,6 +203,9 @@ const TOOL_LABELS = {
   web_search: 'Searching the web', memory: 'Checking memory',
   search_documents: 'Searching documents', get_deal_history: 'Loading deal history',
   get_skills: 'Loading expertise',
+  lemlist_list_campaigns: 'Loading campaigns',
+  lemlist_add_lead: 'Adding lead to campaign',
+  lemlist_get_activities: 'Checking campaign activity',
 };
 
 // ── Main Handler ─────────────────────────────────────────

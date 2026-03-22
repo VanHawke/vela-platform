@@ -155,6 +155,22 @@ export const TOOL_DEFINITIONS = [
     }, required: ['company'] } },
   { name: 'get_skills', description: 'List all available Kiko skills/expertise domains. Use when user asks "what can you do", "what skills do you have", "what do you know about", or to explain your capabilities.',
     input_schema: { type: 'object', properties: {}, required: [] } },
+  { name: 'lemlist_list_campaigns', description: 'List all Lemlist campaigns. Use when user asks about campaigns, outreach sequences, or "what campaigns do we have".',
+    input_schema: { type: 'object', properties: {}, required: [] } },
+  { name: 'lemlist_add_lead', description: 'Add a lead to a Lemlist campaign. Use when user says "add [person] to [campaign]", "start outreach for [company]", or "enrol in campaign".',
+    input_schema: { type: 'object', properties: {
+      campaign_id: { type: 'string', description: 'Lemlist campaign ID (get from lemlist_list_campaigns)' },
+      email: { type: 'string', description: 'Lead email address' },
+      first_name: { type: 'string', description: 'Lead first name' },
+      last_name: { type: 'string', description: 'Lead last name (optional)' },
+      company_name: { type: 'string', description: 'Lead company name (optional)' },
+      job_title: { type: 'string', description: 'Lead job title (optional)' },
+    }, required: ['campaign_id', 'email', 'first_name'] } },
+  { name: 'lemlist_get_activities', description: 'Get recent Lemlist campaign activities — opens, clicks, replies, bounces. Use when user asks about campaign performance, "who opened", "any replies", "campaign stats".',
+    input_schema: { type: 'object', properties: {
+      campaign_id: { type: 'string', description: 'Filter to specific campaign ID (optional)' },
+      type: { type: 'string', description: 'Activity type filter: emailsSent, emailsOpened, emailsClicked, emailsReplied, emailsBounced (optional)' },
+    }, required: [] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -770,6 +786,59 @@ Return JSON:
     } catch (err) {
       return `Skills error: ${err.message}`
     }
+  }
+
+  // ── Lemlist Tools ──
+  const LEMLIST_KEY = process.env.LEMLIST_KEY
+  const lemlistHeaders = { 'Authorization': `Basic ${Buffer.from(`:${LEMLIST_KEY}`).toString('base64')}`, 'Content-Type': 'application/json' }
+
+  if (name === 'lemlist_list_campaigns') {
+    try {
+      const res = await fetch('https://api.lemlist.com/api/campaigns', { headers: lemlistHeaders })
+      if (!res.ok) return `Lemlist API error: ${res.status}`
+      const campaigns = await res.json()
+      if (!campaigns?.length) return 'No Lemlist campaigns found.'
+      let out = `LEMLIST CAMPAIGNS (${campaigns.length}):\n\n`
+      for (const c of campaigns) {
+        out += `• ${c.name} (ID: ${c._id}) — Status: ${c.status || 'unknown'}\n`
+      }
+      return out
+    } catch (err) { return `Lemlist error: ${err.message}` }
+  }
+
+  if (name === 'lemlist_add_lead') {
+    const { campaign_id, email, first_name, last_name, company_name, job_title } = input
+    try {
+      const body = { email, firstName: first_name }
+      if (last_name) body.lastName = last_name
+      if (company_name) body.companyName = company_name
+      if (job_title) body.jobTitle = job_title
+      const res = await fetch(`https://api.lemlist.com/api/campaigns/${campaign_id}/leads/`, {
+        method: 'POST', headers: lemlistHeaders, body: JSON.stringify(body)
+      })
+      if (!res.ok) { const err = await res.text(); return `Lemlist add lead failed (${res.status}): ${err}` }
+      const result = await res.json()
+      return `Lead added to campaign "${result.campaignName || campaign_id}": ${first_name} ${last_name || ''} (${email}). Lead ID: ${result._id}`
+    } catch (err) { return `Lemlist add lead error: ${err.message}` }
+  }
+
+  if (name === 'lemlist_get_activities') {
+    const { campaign_id, type } = input
+    try {
+      let url = 'https://api.lemlist.com/api/activities?limit=25'
+      if (campaign_id) url += `&campaignId=${campaign_id}`
+      if (type) url += `&type=${type}`
+      const res = await fetch(url, { headers: lemlistHeaders })
+      if (!res.ok) return `Lemlist API error: ${res.status}`
+      const activities = await res.json()
+      if (!activities?.length) return 'No recent Lemlist activities found.'
+      let out = `LEMLIST ACTIVITIES (${activities.length} most recent):\n\n`
+      for (const a of activities) {
+        const date = new Date(a.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+        out += `${date} — ${a.type}: ${a.firstName || ''} ${a.lastName || ''} (${a.email || '?'})${a.campaignName ? ` [${a.campaignName}]` : ''}\n`
+      }
+      return out
+    } catch (err) { return `Lemlist activities error: ${err.message}` }
   }
 
   return { error: `Unknown tool: ${name}` }
