@@ -15,7 +15,7 @@
 **User:** sunny@vanhawke.com · user_id `9f486437-4bf5-4111-abfe-fe19bfa76063` · role: super_admin
 **Deploy command:** `cd /Users/sunny/Desktop/vela-platform && rm -rf dist && npm run build && git add -A && git commit -m "..." && git tag <tag> && VERCEL_FORCE_NO_BUILD_CACHE=1 npx vercel --prod --yes --force`
 
-**Current bundle:** `index-Docdc-0P.js` | **Current tag:** `glassmorphism-v3` | **Deployment files:** 154
+**Current bundle:** `index-CAoLhI05.js` | **Current tag:** `glassmorphism-v4.1` | **Deployment files:** 154
 
 ---
 
@@ -131,55 +131,71 @@ Backend (Vercel Serverless — /api/) — 32 files
 
 ## 5. UI Design Direction — LOCKED
 
-### 5.1 Chosen Direction: Dark Glassmorphism (Aurora + Dribbble-inspired)
-The final design combines elements from multiple explored concepts:
+### 5.1 Chosen Direction: Dark Glassmorphism v4 (Dribbble Hotel Booking Grade)
+The final design combines aurora orbs with Dribbble-grade frosted glass, pill shapes, and luminous borders.
 
-**Background:** #07070B near-black void with 4-5 animated gradient orbs (canvas-rendered, 60fps):
-- Purple (#8B6CF6) — top-left
-- Teal (#06D6A0) — bottom-right
-- Pink (#EC4899) — scattered
-- Blue (#3B82F6) — scattered
-- Amber (#F59E0B) — on pipeline page
+**Background:** #07070B near-black void with 5 animated gradient orbs (canvas-rendered, 60fps):
+- Purple (#8B6CF6) — top-left, r=550, alpha 0.22 peak
+- Teal (#06D6A0) — bottom-right, r=500
+- Pink (#EC4899) — scattered, r=380
+- Blue (#3B82F6) — scattered, r=420
+- Amber (#F59E0B) — pipeline page only, r=340
 
-**Glass panels:** `rgba(255,255,255,0.035)` + `backdrop-filter: blur(24px)` + `0.5px border rgba(255,255,255,0.06)`. The ambient gradient orbs bleed through the frosted glass, creating living refraction that changes based on panel position.
+**Glass panels (v4 — Dribbble grade):**
+- Background: `rgba(255,255,255,0.07)` (milky white tint visible against dark bg)
+- Blur: `backdrop-filter: blur(40px) saturate(1.3)` (saturate adds colour richness)
+- Border: `0.5px solid rgba(255,255,255,0.12)` (luminous edge catch)
+- Shadow: `inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.35)` (inner glow + depth)
+- Hover: bg→0.12, border→0.2, translateY(-3px), stronger inset glow (0.15)
 
-**Kiko's Avatar:** Smoke-trail voice ribbon (V7 variant) — multiple translucent gradient layers (purple, teal, pink) with a bright white edge thread. Animates continuously. Shrinks to compact wave indicator in conversation mode.
+**Shape language — ALL PILL (v4):**
+- Nav tabs: borderRadius 50px
+- Buttons/chips: borderRadius 50px
+- Prompt bar: borderRadius 50px
+- Status pills: borderRadius 50px
+- Insight cards: borderRadius 20px
+- Alert card: borderRadius 50px
+- Modal panels: borderRadius 24px
 
-**Typography:** -apple-system / SF Pro Display / DM Sans. Weight 200-300 throughout. Ultra-thin. 
-- Greeting: 36px weight 200
+**Header:** 56px height, `blur(60px) saturate(1.4)`, logo pill (radius 50, inner glow), nav pill container (radius 50, padding 4px, inner glow)
+
+**Kiko's Avatar:** Smoke-trail voice ribbon — multiple translucent gradient layers (purple, teal, pink) with bright white edge thread. Animates continuously. On homepage: 85% width, 800px max, positioned ABOVE greeting text with 48px breathing room.
+
+**Homepage layout (v5):** Wave → Greeting → Prompt bar → 4 chips → 3 insight cards → Alert pill
+
+**Prompt bar:** 📎 Attachment → text input → 🎤 mic → 🎵 voice CTA (green equalizer, teal pill) → ▶ gradient send (purple→teal)
+
+**Typography:** -apple-system / SF Pro Display / DM Sans. Weight 200-300.
+- Greeting: 36px weight 200, -0.04em tracking
 - Body: 14px weight 300
-- Labels: 11px weight 300 uppercase with letter-spacing
-- All text: rgba(255,255,255, 0.15-0.9) depending on hierarchy
+- Labels: 11px weight 300 uppercase, 0.06em letter-spacing
 
-**Cards:** 18px border-radius, gradient edge indicators (vertical bars fading from colour to transparent), lift 3px + border brighten on hover. Glass status pills with semantic colour tints.
+**Cards:** 20px border-radius, gradient edge indicators (3px), glass with inner glow, lift 3px + border brighten on hover.
 
-**Nav:** Frosted glass pill tabs in header (12px border-radius). Active tab: rgba white 0.07. Kiko logo: 7px gradient dot inside 28px frosted glass square + "kiko" lowercase text.
+**Nav:** Frosted glass pill tabs in header (50px radius). Active tab: rgba(255,255,255,0.1) + inner glow. Kiko logo: 7px gradient dot + "kiko" in 34px frosted pill.
 
-**Colour language:**
-- Purple #8B6CF6 — intelligence, thinking, Kiko identity
-- Teal #06D6A0 — action, data, opportunity, voice
-- Amber #F59E0B — urgency, warnings, attention needed
-- Pink #EC4899 — accent, secondary warmth
-- Blue #3B82F6 — informational
+**User messages:** Frosted purple glass (rgba(139,108,246,0.12) + blur(40px) + purple border 0.2)
+**Kiko responses:** Plain text, no bubble, 300-weight, with compact wave indicator
 
-**User messages:** Frosted purple glass (rgba(139,108,246,0.1) + blur + purple border)
-**Kiko responses:** Plain text, no bubble, 300-weight, with a compact wave indicator
-**Thinking state:** Purple glow dot with "Deep analysis" label + live mini wave
+### 5.2 Kiko Voice Mode — Option A: Ripple Expand (LOCKED)
+**Activation:** User taps teal equalizer CTA in prompt bar
+**Entry animation:**
+1. Greeting, prompt, chips, cards, alert dissolve outward with blur(4px) + scale(0.96), staggered 40ms
+2. Header slides up and blurs out
+3. Wave expands from homepage position (85%, 800px) to full voice position (85%, 900px) centered
+4. Green listening bar fades in below wave (280px wide, `kikoListenPulse` 2s infinite)
+5. "Listening..." status label appears
 
-### 5.2 Design Options Explored (Saved for Reference)
-- **Option A:** Dark ambient void — #0A0A0C, gradient orb, ultra-thin borders. User approved.
-- **Option B:** Liquid glass (light mode) — frosted panels over gradient wash. Approved as potential light mode toggle.
-- **Option C:** Zero UI / Spatial — no nav, orb IS the interface. Radical departure.
-- **Option D:** Dark glassmorphism with ambient gradient orbs behind frosted glass. Evolved from A. User approved.
-- **Final (Concept 3 — Aurora):** Dark void + animated aurora canvas + glassmorphism cards from Dribbble hotel booking reference. LOCKED AS BUILD TARGET.
+**Listening state:** Idle wave (gentle amplitude) + green pulsating bar. No transcript. No text.
+**Speaking state:** Large SmokeTrailWave (900px, scale 1.5, high amplitude) replaces idle wave. Status: "Kiko is speaking..."
+**Deactivation:** User says "Bye, Kiko" OR taps stop button
+**Exit animation:** Reverse — wave contracts back, elements un-blur and scale back in with spring easing, header returns
 
-### 5.3 Kiko Voice Animation
-Smoke-trail ribbon chosen (V7 from 10 variants explored). Key characteristics:
-- Multiple thick soft gradient layers (like aurora bands)
-- Single bright white thread running through centre
-- Purple → teal → pink colour gradient
-- Continuous undulation with randomised amplitudes
-- Scales down to compact version in conversation mode
+### 5.3 Design Options History
+- **Option A:** Dark ambient void — approved
+- **Option B:** Liquid glass (light mode) — saved
+- **Option D:** Dark glassmorphism — evolved to final
+- **Dribbble reference:** Hotel Booking App UI by Bhautik Domadiya (pill shapes, milky frosted glass, luminous borders)
 - Scales down further to micro indicator in thinking state
 
 ### 5.4 Implementation Status
@@ -221,7 +237,7 @@ Currently deployed: **Glassmorphism v1** (Aurora canvas + frosted glass).
 | `dark-ambient-v1` | Full dark ambient theme (Option A) |
 | `glassmorphism-v1` | Aurora canvas + frosted glass panels across all pages |
 | `glassmorphism-v2` | Smoke-trail wave, insight cards, alert card, mini wave |
-| `glassmorphism-v3` | Dribbble-grade glass — 2x brighter orbs, inner glow, blur(40px) |
+| `glassmorphism-v4.1` | Dribbble-grade glass — 2x brighter orbs, inner glow, blur(40px) |
 
 ---
 
@@ -300,7 +316,11 @@ Supabase service key: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 - [x] Theme all remaining pages ✅ 32 files updated
 - [x] Implement glassmorphism deal cards on Pipeline page ✅
 - [x] Frosted glass conversation messages ✅
-- [ ] Build Kiko smoke-trail wave animation component (canvas-based)
+- [x] Build Kiko smoke-trail wave animation component (canvas-based)
+- [x] Dribbble-grade glass (pill shapes, milky frosted, luminous borders) — v4
+- [x] Homepage v5 layout (wave above greeting, 4 chips, attachment + voice CTA)
+- [x] Option A voice animation (ripple expand, listening bar, no transcript)
+- [x] Contacts page redesign (glass cards, quick actions, sidebar, alphabet nav)
 - [ ] Mobile responsive design with bottom tab bar
 - [ ] Login page with animated gradient orb + wave
 
