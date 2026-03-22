@@ -146,9 +146,9 @@ export default function Documents({ user }) {
     return true
   })
 
-  const cardStyle = { background: T.surface, borderRadius: 50, border: `1.5px solid rgba(0,0,0,0.05)`, boxShadow: '0 4px 16px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02), inset 0 1px 0 rgba(255,255,255,1)', padding: 16, transition: 'all 0.15s' }
+  const cardStyle = { background: T.surface, borderRadius: 20, border: `1.5px solid ${T.border}`, boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.2)', padding: 16, transition: 'all 0.15s' }
   const pillStyle = (color) => ({ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 50, fontSize: 10, fontWeight: 500, background: `${color}12`, color, fontFamily: T.font })
-  const inputStyle = { height: 36, borderRadius: 50, border: `1.5px solid rgba(255,255,255,0.04)`, padding: '0 10px', fontSize: 12, color: T.text, fontFamily: T.font, outline: 'none', background: T.surface }
+  const inputStyle = { height: 36, borderRadius: 50, border: `1.5px solid ${T.border}`, padding: '0 10px', fontSize: 12, color: T.text, fontFamily: T.font, outline: 'none', background: T.surface }
 
   return (
     <div
