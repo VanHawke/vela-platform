@@ -16,7 +16,7 @@ const glass = {
   boxShadow: '0 8px 32px rgba(255,255,255,0.04), 0 1px 4px rgba(255,255,255,0.04)',
 }
 
-function Equalizer({ active, color = '#fff' }) {
+function Equalizer({ active, color = 'rgba(255,255,255,0.04)' }) {
   const delays = [0, 0.1, 0.05, 0.15, 0.08]
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5.5, height: 48 }}>
@@ -731,7 +731,7 @@ RULES:
   // ── Derived ──────────────────────────────────────────
   const avatarAnimate = speaking ? 'none' : thinking ? 'thinking' : status === 'live' && listenMode === 'active' ? 'streaming' : 'idle'
   const showRings = status === 'live' && listenMode === 'active' && !speaking
-  const avBg      = listenMode === 'off' ? 'rgba(28,28,28,0.65)' : listenMode === 'passive' ? 'rgba(55,55,55,0.55)' : '#1A1A1A'
+  const avBg      = listenMode === 'off' ? 'rgba(28,28,28,0.65)' : listenMode === 'passive' ? 'rgba(55,55,55,0.55)' : 'rgba(255,255,255,0.12)'
   const avOpacity = listenMode === 'passive' ? 0.35 : 1
   const modeLabel = listenMode === 'passive' ? 'Passive · Say "Hey Kiko" to resume'
     : listenMode === 'off' ? 'Mic off · Say "Hey Kiko" to restart'
@@ -769,7 +769,7 @@ RULES:
       {/* Drag-over overlay */}
       {dragOver && (
         <div style={{ position: 'absolute', inset: 12, zIndex: 10, borderRadius: 18, border: '2px dashed #1A1A1A', background: 'rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', gap: 8 }}>
-          <Paperclip size={28} color="#1A1A1A" style={{ opacity: 0.6 }} />
+          <Paperclip size={28} color="rgba(255,255,255,0.12)" style={{ opacity: 0.6 }} />
           <p style={{ fontSize: 15, fontWeight: 400, color: 'rgba(255,255,255,0.85)', fontFamily: 'var(--font)' }}>Drop file for Kiko to analyse</p>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--font)' }}>PDF, DOCX, PPTX, images</p>
         </div>
@@ -840,7 +840,7 @@ RULES:
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
           </button>
 
-          <button onClick={sendTyped} disabled={!typeInput.trim()} style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', background: typeInput.trim() ? '#1A1A1A' : 'rgba(255,255,255,0.04)', color: typeInput.trim() ? '#fff' : 'rgba(0,0,0,0.25)', cursor: typeInput.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+          <button onClick={sendTyped} disabled={!typeInput.trim()} style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', background: typeInput.trim() ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)', color: typeInput.trim() ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.25)', cursor: typeInput.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
           </button>
         </div>
@@ -870,7 +870,7 @@ RULES:
               : messages.map((m, i) => (
                 <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <span style={{ fontSize: 8, fontWeight: 500, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.28)', fontFamily: 'var(--font)' }}>{m.role === 'user' ? 'You' : 'Kiko'}</span>
-                  <div style={{ fontSize: 11, lineHeight: 1.45, padding: '7px 10px', borderRadius: 50, fontFamily: 'var(--font)', background: m.role === 'user' ? '#1A1A1A' : 'rgba(0,0,0,0.05)', color: m.role === 'user' ? '#fff' : 'rgba(0,0,0,0.55)' }}>
+                  <div style={{ fontSize: 11, lineHeight: 1.45, padding: '7px 10px', borderRadius: 50, fontFamily: 'var(--font)', background: m.role === 'user' ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.05)', color: m.role === 'user' ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.55)' }}>
                     {m.content}
                   </div>
                 </div>

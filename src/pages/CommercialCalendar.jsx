@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 const T = {
   bg: '#FAFAFA', surface: '#FFFFFF', surfaceHover: '#F5F5F5',
   border: 'rgba(255,255,255,0.04)', borderHover: 'rgba(255,255,255,0.1)',
-  text: '#1A1A1A', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
+  text: 'rgba(255,255,255,0.12)', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   f1: '#E10600', f1Light: '#FEF2F2', f1Border: '#F7C1C1', f1Dark: '#791F1F',
   fe: '#0055CC', feLight: '#EBF3FF', feBorder: '#B5D4F4', feDark: '#0C447C',
@@ -138,8 +138,8 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, onClick }) 
   const day = parseInt(dateStr.slice(8))
   const s   = cellStyle(dateStr, selected, today, showF1, showFE)
 
-  const numColor = s.isSel ? '#fff'
-    : s.isRaceDay ? '#fff'
+  const numColor = s.isSel ? 'rgba(255,255,255,0.04)'
+    : s.isRaceDay ? 'rgba(255,255,255,0.04)'
     : s.hasF1  ? T.f1Dark
     : s.hasFE  ? T.feDark
     : s.isWindow ? T.amber

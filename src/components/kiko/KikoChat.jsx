@@ -34,7 +34,7 @@ function getGreeting() {
 const CHIPS = ['Brief me', 'Pipeline update', 'Check emails', 'F1 calendar']
 
 // Kiko 4-dot symbol (asymmetric diamond) with optional staggered animation
-const KikoDots = ({ size = 40, color = '#fff', animated = false }) => {
+const KikoDots = ({ size = 40, color = 'rgba(255,255,255,0.04)', animated = false }) => {
   const dots = [
     { cx: 15, cy: 17, delay: '0s' },
     { cx: 33, cy: 17, delay: '0.3s' },

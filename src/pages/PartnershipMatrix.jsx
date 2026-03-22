@@ -4,8 +4,8 @@ import { RefreshCw, Loader2, AlertTriangle, Plus, X, ExternalLink, FileDown, Che
 const T = {
   bg: '#FAFAFA', surface: '#FFFFFF', surfaceHover: '#F5F5F5',
   border: 'rgba(255,255,255,0.04)', borderHover: 'rgba(255,255,255,0.1)',
-  text: '#1A1A1A', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
-  accent: '#1A1A1A', accentSoft: 'rgba(255,255,255,0.04)',
+  text: 'rgba(255,255,255,0.12)', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
+  accent: 'rgba(255,255,255,0.12)', accentSoft: 'rgba(255,255,255,0.04)',
   blue: '#007AFF', red: '#FF3B30', yellow: '#FF9500', green: '#34C759',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   gap: '#FEF2F2', gapBorder: '#FECACA', filled: '#F0FDF4', filledBorder: '#BBF7D0',
@@ -126,7 +126,7 @@ export default function PartnershipMatrix({ user }) {
           {TABS.map(t => { const I = t.icon; return (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
               display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: T.font, fontSize: 12, fontWeight: tab === t.id ? 600 : 400, transition: 'all 0.15s',
-              background: tab === t.id ? T.accent : 'transparent', color: tab === t.id ? '#fff' : T.textSecondary,
+              background: tab === t.id ? T.accent : 'transparent', color: tab === t.id ? 'rgba(255,255,255,0.04)' : T.textSecondary,
             }}><I size={13} />{t.label}</button>
           )})}
         </div>

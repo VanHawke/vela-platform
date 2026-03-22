@@ -5,8 +5,8 @@ import { Upload, FileText, Image, File, X, Loader2, Eye, RefreshCw, Search, Filt
 const T = {
   bg: 'transparent', surface: 'rgba(255,255,255,0.65)', surfaceHover: 'rgba(255,255,255,0.8)',
   border: 'rgba(255,255,255,0.04)', borderHover: 'rgba(255,255,255,0.7)', borderSubtle: 'rgba(255,255,255,0.04)',
-  text: '#1A1A1A', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
-  accent: '#1A1A1A', accentSoft: 'rgba(255,255,255,0.04)',
+  text: 'rgba(255,255,255,0.12)', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
+  accent: 'rgba(255,255,255,0.12)', accentSoft: 'rgba(255,255,255,0.04)',
   blue: '#007AFF', red: '#FF3B30', green: '#34C759', yellow: '#FF9500', purple: '#AF52DE',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 }
@@ -164,7 +164,7 @@ export default function Documents({ user }) {
           border: '2px dashed #1A1A1A', borderRadius: 18, margin: 8,
           pointerEvents: 'none',
         }}>
-          <Upload size={40} color="#1A1A1A" style={{ marginBottom: 12, opacity: 0.7 }} />
+          <Upload size={40} color="rgba(255,255,255,0.12)" style={{ marginBottom: 12, opacity: 0.7 }} />
           <p style={{ fontSize: 16, fontWeight: 400, color: T.text }}>Drop file to upload</p>
           <p style={{ fontSize: 12, color: T.textTertiary, marginTop: 4 }}>PDF, PPTX, DOCX, images, text files</p>
         </div>
@@ -231,7 +231,7 @@ export default function Documents({ user }) {
         {/* Category pills */}
         <div style={{ display: 'flex', gap: 3, background: 'rgba(255,255,255,0.04)', borderRadius: 50, padding: 3 }}>
           {CATEGORIES.map(c => (
-            <button key={c} onClick={() => setCatFilter(c)} style={{ padding: '4px 10px', borderRadius: 6, border: 'none', fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, background: catFilter === c ? T.accent : 'transparent', color: catFilter === c ? '#fff' : T.textTertiary, transition: 'all 0.15s' }}>{c === 'all' ? 'All' : c.replace('_', ' ')}</button>
+            <button key={c} onClick={() => setCatFilter(c)} style={{ padding: '4px 10px', borderRadius: 6, border: 'none', fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, background: catFilter === c ? T.accent : 'transparent', color: catFilter === c ? 'rgba(255,255,255,0.04)' : T.textTertiary, transition: 'all 0.15s' }}>{c === 'all' ? 'All' : c.replace('_', ' ')}</button>
           ))}
         </div>
         {/* Search */}

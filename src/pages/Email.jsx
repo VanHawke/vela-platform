@@ -7,8 +7,8 @@ import EmailCompose from './EmailCompose'
 const T = {
   bg: '#FAFAFA', surface: '#FFFFFF', surfaceHover: '#F5F5F5',
   border: 'rgba(255,255,255,0.04)', borderHover: 'rgba(255,255,255,0.1)',
-  text: '#1A1A1A', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
-  accent: '#1A1A1A', accentSoft: 'rgba(255,255,255,0.04)',
+  text: 'rgba(255,255,255,0.12)', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
+  accent: 'rgba(255,255,255,0.12)', accentSoft: 'rgba(255,255,255,0.04)',
   blue: '#007AFF', red: '#FF3B30', yellow: '#FF9500',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 }

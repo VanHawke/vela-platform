@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 const T = {
   bg: '#FAFAFA', surface: '#FFFFFF',
   border: 'rgba(255,255,255,0.04)', borderHover: 'rgba(255,255,255,0.1)',
-  text: '#1A1A1A', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
+  text: 'rgba(255,255,255,0.12)', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   yellow: '#FF9500',
 }
@@ -270,7 +270,7 @@ export default function News() {
                 fontWeight: filter === f.id ? 500 : 400, whiteSpace: 'nowrap', transition: 'all 0.1s',
                 border: filter === f.id ? `1px solid ${T.text}` : `1px solid ${T.border}`,
                 background: filter === f.id ? T.text : T.surface,
-                color: filter === f.id ? '#fff' : T.textSecondary,
+                color: filter === f.id ? 'rgba(255,255,255,0.04)' : T.textSecondary,
               }}>{f.label}</button>
             ))}
           </div>
@@ -282,7 +282,7 @@ export default function News() {
                 padding: '5px 9px', borderRadius: 6, fontSize: 10, fontFamily: T.font, cursor: 'pointer',
                 border: window === w.id ? `1px solid ${T.text}` : `1px solid ${T.border}`,
                 background: window === w.id ? T.text : 'transparent',
-                color: window === w.id ? '#fff' : T.textSecondary, transition: 'all 0.1s',
+                color: window === w.id ? 'rgba(255,255,255,0.04)' : T.textSecondary, transition: 'all 0.1s',
               }}>{w.label}</button>
             ))}
           </div>

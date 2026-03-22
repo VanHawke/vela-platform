@@ -260,7 +260,7 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
                 padding: '8px 14px', borderRadius: 50,
                 background: newName.trim() ? 'var(--text)' : 'var(--surface-hover)',
                 border: 'none', cursor: newName.trim() ? 'pointer' : 'default',
-                fontSize: 13, fontWeight: 500, color: newName.trim() ? '#fff' : 'var(--text-tertiary)',
+                fontSize: 13, fontWeight: 500, color: newName.trim() ? 'rgba(255,255,255,0.04)' : 'var(--text-tertiary)',
                 fontFamily: 'var(--font)', transition: 'all 0.15s',
               }}>
               {saving
@@ -427,7 +427,7 @@ export default function Pipeline({ user }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
-            <input type="checkbox" checked={showClosed} onChange={e => setShowClosed(e.target.checked)} style={{ width: 14, height: 14, accentColor: '#1A1A1A' }} />
+            <input type="checkbox" checked={showClosed} onChange={e => setShowClosed(e.target.checked)} style={{ width: 14, height: 14, accentColor: 'rgba(255,255,255,0.12)' }} />
             <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>Show closed</span>
           </label>
           <PipelineManager
