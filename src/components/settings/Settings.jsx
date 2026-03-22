@@ -117,6 +117,16 @@ export default function Settings({ user }) {
       setSettings(prev => ({ ...prev, ...updates }))
       setSaved(true); setTimeout(() => setSaved(false), 2000)
       window.dispatchEvent(new Event('kiko_profile_updated'))
+      // Sync brand logo to organisations table for login page (anon-accessible)
+      if (updates.kiko_avatar_url !== undefined) {
+        const orgId = user?.app_metadata?.org_id
+        if (orgId) {
+          const { data: org } = await supabase.from('organisations').select('branding').eq('id', orgId).maybeSingle()
+          if (org) {
+            await supabase.from('organisations').update({ branding: { ...(org.branding || {}), logo_url: updates.kiko_avatar_url } }).eq('id', orgId)
+          }
+        }
+      }
     } catch {}
   }
 
