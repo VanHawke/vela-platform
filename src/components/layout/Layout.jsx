@@ -169,9 +169,9 @@ export default function Layout({ user }) {
                 }} style={{
                   padding: '9px 24px', borderRadius: 50, border: 'none',
                   background: active ? 'rgba(255,255,255,0.1)' : 'transparent',
-                  color: active ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.3)',
+                  color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)',
                   fontSize: 12, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: T.font,
-                  boxShadow: active ? 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 8px rgba(255,255,255,0.15)' : 'none',
+                  boxShadow: active ? 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 8px rgba(0,0,0,0.2)' : 'none',
                   transition: 'all 0.2s',
                 }}
                   onMouseOver={e => { if (!active) { e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}}

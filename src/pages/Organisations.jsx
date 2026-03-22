@@ -379,7 +379,7 @@ export default function Organisations({ user }) {
                 padding: '5px 10px', borderRadius: 50,
                 border: isActive ? '1px solid #1A1A1A' : '1px solid rgba(255,255,255,0.08)',
                 background: isActive ? 'rgba(255,255,255,0.12)' : isOpen ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.04)',
-                color: isActive ? 'rgba(255,255,255,0.04)' : 'var(--text-secondary)',
+                color: isActive ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
                 fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: isActive ? 500 : 400,
                 transition: 'all 0.12s',
               }}>
@@ -411,7 +411,7 @@ export default function Organisations({ user }) {
                       return (
                         <button key={ind} onClick={() => setFilters(p => ({ ...p, industries: sel ? p.industries.filter(i => i !== ind) : [...p.industries, ind] }))} style={{
                           padding: '4px 10px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)',
-                          background: sel ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)', color: sel ? 'rgba(255,255,255,0.04)' : 'var(--text-secondary)',
+                          background: sel ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)', color: sel ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
                           fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
                         }}>{ind}</button>
                       )
@@ -430,7 +430,7 @@ export default function Organisations({ user }) {
                       return (
                         <button key={cty} onClick={() => setFilters(p => ({ ...p, countries: sel ? p.countries.filter(c => c !== cty) : [...p.countries, cty] }))} style={{
                           padding: '4px 10px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)',
-                          background: sel ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)', color: sel ? 'rgba(255,255,255,0.04)' : 'var(--text-secondary)',
+                          background: sel ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)', color: sel ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
                           fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
                         }}>{cty}</button>
                       )
@@ -461,7 +461,7 @@ export default function Organisations({ user }) {
                       return (
                         <button key={r} onClick={() => setFilters(p => ({ ...p, lastRound: sel ? '' : r }))} style={{
                           padding: '4px 10px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)',
-                          background: sel ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)', color: sel ? 'rgba(255,255,255,0.04)' : 'var(--text-secondary)',
+                          background: sel ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)', color: sel ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
                           fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
                         }}>{r}</button>
                       )

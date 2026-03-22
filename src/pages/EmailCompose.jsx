@@ -259,7 +259,7 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
         <button onClick={handleSend} disabled={sending || !to.trim()} style={{
           height: 36, padding: '0 20px', borderRadius: 50, border: 'none',
           background: to.trim() ? T.accent : T.accentSoft,
-          color: to.trim() ? 'rgba(255,255,255,0.04)' : T.textTertiary,
+          color: to.trim() ? 'rgba(255,255,255,0.9)' : T.textTertiary,
           fontSize: 13, fontWeight: 400, cursor: 'pointer', fontFamily: T.font,
           display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s',
         }}>

@@ -334,7 +334,7 @@ export default function Settings({ user }) {
                     <div key={v.id} style={{
                       padding: '10px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
                       background: isSelected ? T.accent : T.surface,
-                      color: isSelected ? 'rgba(255,255,255,0.04)' : T.text,
+                      color: isSelected ? 'rgba(255,255,255,0.9)' : T.text,
                       display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
                       transition: 'all 0.15s',
                     }} onClick={() => saveSettings({ kiko_voice: v.id })}>
@@ -345,7 +345,7 @@ export default function Settings({ user }) {
                       <button onClick={(e) => { e.stopPropagation(); previewVoice(v.id) }} style={{
                         width: 30, height: 30, borderRadius: '50%', border: 'none',
                         background: isSelected ? 'rgba(255,255,255,0.2)' : T.accentSoft,
-                        color: isSelected ? 'rgba(255,255,255,0.04)' : T.textSecondary,
+                        color: isSelected ? 'rgba(255,255,255,0.9)' : T.textSecondary,
                         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 14, flexShrink: 0,
                       }}>{isPreviewing ? '■' : '▶'}</button>
@@ -361,7 +361,7 @@ export default function Settings({ user }) {
                   <button key={s.id} onClick={() => saveSettings({ kiko_speed: s.id })} style={{
                     padding: '8px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
                     background: parseFloat(settings.kiko_speed || 1.0) === s.id ? T.accent : T.surface,
-                    color: parseFloat(settings.kiko_speed || 1.0) === s.id ? 'rgba(255,255,255,0.04)' : T.textSecondary,
+                    color: parseFloat(settings.kiko_speed || 1.0) === s.id ? 'rgba(255,255,255,0.9)' : T.textSecondary,
                     fontSize: 12, cursor: 'pointer', fontFamily: T.font,
                   }}>{s.label}</button>
                 ))}

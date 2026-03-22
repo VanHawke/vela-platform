@@ -153,7 +153,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
                 <div style={{
                   width: 28, height: 28, borderRadius: 7, flexShrink: 0, marginTop: 1,
                   background: active ? T.accent : T.accentSoft,
-                  color: active ? 'rgba(255,255,255,0.06)' : T.textTertiary,
+                  color: active ? 'rgba(255,255,255,0.9)' : T.textTertiary,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   {voice ? <Mic size={13} /> : <MessageCircle size={13} />}

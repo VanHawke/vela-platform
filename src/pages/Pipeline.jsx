@@ -260,7 +260,7 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
                 padding: '8px 14px', borderRadius: 50,
                 background: newName.trim() ? 'var(--text)' : 'var(--surface-hover)',
                 border: 'none', cursor: newName.trim() ? 'pointer' : 'default',
-                fontSize: 13, fontWeight: 500, color: newName.trim() ? 'rgba(255,255,255,0.04)' : 'var(--text-tertiary)',
+                fontSize: 13, fontWeight: 500, color: newName.trim() ? 'rgba(255,255,255,0.9)' : 'var(--text-tertiary)',
                 fontFamily: 'var(--font)', transition: 'all 0.15s',
               }}>
               {saving

@@ -126,7 +126,7 @@ export default function PartnershipMatrix({ user }) {
           {TABS.map(t => { const I = t.icon; return (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
               display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: T.font, fontSize: 12, fontWeight: tab === t.id ? 600 : 400, transition: 'all 0.15s',
-              background: tab === t.id ? T.accent : 'transparent', color: tab === t.id ? 'rgba(255,255,255,0.04)' : T.textSecondary,
+              background: tab === t.id ? T.accent : 'transparent', color: tab === t.id ? 'rgba(255,255,255,0.9)' : T.textSecondary,
             }}><I size={13} />{t.label}</button>
           )})}
         </div>

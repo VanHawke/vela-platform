@@ -185,7 +185,7 @@ export default function KikoOS({ user, onOpenVoice }) {
         {/* Submit */}
         <button onClick={() => handleSubmit()} disabled={!input.trim()} style={{
           width: 36, height: 36, borderRadius: '50%', background: input.trim() ? 'var(--accent)' : 'var(--accent-soft)',
-          border: 'none', color: input.trim() ? 'rgba(255,255,255,0.04)' : 'var(--text-tertiary)',
+          border: 'none', color: input.trim() ? 'rgba(255,255,255,0.9)' : 'var(--text-tertiary)',
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         }}><ArrowUp size={16} /></button>
         <button onClick={() => setStage(0)} style={{
@@ -273,7 +273,7 @@ export default function KikoOS({ user, onOpenVoice }) {
           <button onClick={onOpenVoice} title="Voice mode" style={{ width: 28, height: 28, borderRadius: '50%', background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><AudioLines size={14} /></button>
           <button onClick={() => handleSubmit()} disabled={!input.trim() || streaming} style={{
             width: 30, height: 30, borderRadius: '50%', background: input.trim() ? 'var(--accent)' : 'var(--accent-soft)',
-            border: 'none', color: input.trim() ? 'rgba(255,255,255,0.04)' : 'var(--text-tertiary)',
+            border: 'none', color: input.trim() ? 'rgba(255,255,255,0.9)' : 'var(--text-tertiary)',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}><ArrowUp size={14} /></button>
         </div>
