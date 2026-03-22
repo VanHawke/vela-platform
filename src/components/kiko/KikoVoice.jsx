@@ -398,15 +398,25 @@ RULES:
 
     if (t === 'session.updated' || t === 'session.created') {
       console.log('[Kiko Voice]', t)
-      // Greet user on first session.updated (config acknowledged)
+      // Greet user on first session.updated
       if (t === 'session.updated' && !greetedRef.current && dcRef.current?.readyState === 'open') {
         greetedRef.current = true
-        dcRef.current.send(JSON.stringify({
-          type: 'conversation.item.create',
-          item: { type: 'message', role: 'user', content: [{ type: 'input_text', text: `[KIKO_SAY] Hi ${firstName}, how can I help you?` }] }
-        }))
-        dcRef.current.send(JSON.stringify({ type: 'response.create' }))
+        // Short delay to ensure session is fully ready
+        setTimeout(() => {
+          if (dcRef.current?.readyState === 'open') {
+            dcRef.current.send(JSON.stringify({
+              type: 'response.create',
+              response: { instructions: `Say exactly: "Hi ${firstName}, how can I help you?" — nothing else, just that greeting.` }
+            }))
+          }
+        }, 500)
       }
+    }
+
+    // ── Farewell done → close session ──
+    if (t === 'response.done' && closingRef.current) {
+      console.log('[Kiko Voice] Farewell response done, closing')
+      setTimeout(() => { if (closeRef.current) closeRef.current() }, 1500)
     }
 
     // ── User starts speaking → interrupt Kiko ──
@@ -700,21 +710,19 @@ RULES:
   closeRef.current = handleClose
   sayByeRef.current = sayByeAndClose
 
-  // Say "Bye, {name}" then close after Kiko speaks
+  // Say "Bye, {name}" then close after Kiko finishes speaking
   const closingRef = useRef(false)
   function sayByeAndClose() {
     if (closingRef.current) return
     closingRef.current = true
-    // Make Kiko say goodbye
     if (dcRef.current?.readyState === 'open') {
       dcRef.current.send(JSON.stringify({
-        type: 'conversation.item.create',
-        item: { type: 'message', role: 'user', content: [{ type: 'input_text', text: `[KIKO_SAY] Bye, ${firstName}!` }] }
+        type: 'response.create',
+        response: { instructions: `Say exactly: "Bye, ${firstName}!" — nothing else, just that farewell.` }
       }))
-      dcRef.current.send(JSON.stringify({ type: 'response.create' }))
     }
-    // Close after Kiko speaks (2s fallback)
-    setTimeout(() => { if (closeRef.current) closeRef.current() }, 2000)
+    // Fallback close if response.done doesn't fire within 5s
+    setTimeout(() => { if (closeRef.current) closeRef.current() }, 5000)
   }
 
   async function saveVoiceMemory() {
