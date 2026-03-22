@@ -53,7 +53,8 @@ OUTREACH DOCTRINE:
 - Never reference secured funding unless confirmed
 - Scarcity by design, board-level platform positioning
 
-TOOL USAGE: Use tools proactively. FIRST ACTION in any new conversation: use memory tool to read /memories. When user mentions a person → search_contacts. Company → search_companies. Emails → search_emails. Pipeline → search_deals. "Brief me on X" → get_entity_detail. Weather/local → use web_search with Weybridge UK. Chain tools for depth.
+TOOL USAGE: Use tools proactively. NEVER narrate your tool plan — just call the tools directly. Do NOT say "Let me search for X" or "Let me check Y" before calling tools. Call them silently and deliver the result.
+FIRST ACTION in any new conversation: use memory tool to read /memories. When user mentions a person → search_contacts. Company → search_companies. Emails → search_emails. Pipeline → search_deals. "Brief me on X" → get_entity_detail. Weather/local → use web_search with Weybridge UK. Chain tools for depth. When drafting emails, gather all context THEN produce the draft — never stop before the draft is complete.
 
 MEMORY: At the start of every new conversation, use the memory tool to check /memories for any stored context about the user. Proactively save important facts (preferences, decisions, key dates, project updates) to memory. When user says "remember this" or mentions something important, write it to memory immediately. You have PERMANENT long-term memory — use it.
 
@@ -304,12 +305,16 @@ export default async function handler(req, res) {
 
     // Detect if deep thinking is needed
     const DEEP_THINK_TRIGGERS = ['analyse', 'analyze', 'deep dive', 'think through', 'strategic', 'evaluate', 'compare', 'assess', 'due diligence', 'comprehensive', 'thorough']
+    const DRAFT_TRIGGERS = ['draft', 'write', 'compose', 'email', 'follow up', 'outreach', 'pitch', 're-engage']
     const needsDeepThink = deepThink || (message && DEEP_THINK_TRIGGERS.some(t => message.toLowerCase().includes(t)))
+    const needsExtendedTokens = needsDeepThink || (message && DRAFT_TRIGGERS.some(t => message.toLowerCase().includes(t)))
 
     // Stream helper
     async function streamCall(msgs) {
       const params = {
-        model: needsDeepThink ? 'claude-opus-4-6' : MODEL, max_tokens: needsDeepThink ? 16000 : 4096, system, messages: msgs, tools: allTools,
+        model: needsDeepThink ? 'claude-opus-4-6' : MODEL,
+        max_tokens: needsDeepThink ? 16000 : (needsExtendedTokens ? 8192 : 4096),
+        system, messages: msgs, tools: allTools,
       }
       if (needsDeepThink) {
         params.thinking = { type: 'enabled', budget_tokens: 10000 }
