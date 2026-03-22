@@ -436,7 +436,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             {transcribing && <span style={{ position: 'absolute', top: welcome ? 2 : 1, right: welcome ? 2 : 1, width: 7, height: 7, borderRadius: '50%', background: 'rgba(34,197,94,0.9)', animation: 'kikoBreathe 1s ease-in-out infinite' }} />}
           </button>
           {/* Voice CTA — teal equalizer */}
-          {!welcome && !voiceActive && (
+          {!voiceActive && (
             <button onClick={startVoice} title="Talk to Kiko" style={{
               width: sz, height: sz, borderRadius: 50, border: '0.5px solid rgba(6,214,160,0.15)',
               background: 'rgba(6,214,160,0.08)', color: 'rgba(6,214,160,0.7)',
