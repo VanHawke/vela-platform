@@ -159,7 +159,7 @@ export default function Layout({ user }) {
 
         {/* Center: Pill tab group — absolutely centered to prevent shift */}
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: 3, background: T.glass, backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur, borderRadius: 50, padding: 5, border: `1.5px solid ${T.glassBorder}`, boxShadow: T.glassShadow }}>
+          <div style={{ display: 'flex', gap: 3, background: T.glass, backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur, borderRadius: 50, padding: 4, border: `1.5px solid ${T.glassBorder}`, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 16px rgba(0,0,0,0.2)' }}>
             {TABS.map(tab => {
               const active = isTabActive(tab.path)
               return (
@@ -167,7 +167,7 @@ export default function Layout({ user }) {
                   if (tab.path === '/') { setKikoMessages([]); setKikoConvId(null); setKikoResetKey(k => k + 1) }
                   nav(tab.path)
                 }} style={{
-                  padding: '9px 24px', borderRadius: 50, border: 'none',
+                  padding: '7px 22px', borderRadius: 50, border: 'none',
                   background: active ? 'rgba(255,255,255,0.1)' : 'transparent',
                   color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)',
                   fontSize: 12, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: T.font,
@@ -182,11 +182,14 @@ export default function Layout({ user }) {
             {/* More tab with dropdown */}
             <div ref={moreRef} style={{ position: 'relative' }}>
               <button onClick={() => setMoreOpen(!moreOpen)} style={{
-                padding: '7px 20px', borderRadius: 50, border: 'none',
+                padding: '7px 22px', borderRadius: 50, border: 'none',
                 background: moreOpen ? 'rgba(255,255,255,0.07)' : 'transparent',
-                color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
-                display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.15s',
-              }}>
+                color: moreOpen ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
+                display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.2s',
+              }}
+                onMouseOver={e => { if (!moreOpen) { e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}}
+                onMouseOut={e => { if (!moreOpen) { e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; e.currentTarget.style.background = 'transparent' }}}
+              >
                 More <ChevronDown size={11} style={{ transition: 'transform 0.2s', transform: moreOpen ? 'rotate(180deg)' : 'none' }} />
               </button>
               {moreOpen && (
@@ -269,31 +272,31 @@ export default function Layout({ user }) {
             {avatarOpen && (
               <div style={{
                 position: 'absolute', top: '100%', right: 0, marginTop: 6,
-                width: 200, background: 'rgba(14,14,20,0.75)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-                borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)',
-                boxShadow: '0 8px 40px rgba(255,255,255,0.35)',
+                width: 200, background: 'rgba(14,14,20,0.9)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
+                borderRadius: 18, border: '1.5px solid rgba(255,255,255,0.1)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 40px rgba(0,0,0,0.5)',
                 padding: '6px', zIndex: 400, animation: 'fadeIn 0.15s ease-out',
               }}>
-                <div style={{ padding: '8px 12px 10px', borderBottom: '1.5px solid rgba(255,255,255,0.07)', marginBottom: 4 }}>
+                <div style={{ padding: '8px 12px 10px', borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: 4 }}>
                   <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.8)', fontFamily: 'var(--font)' }}>
                     {profile.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : user?.email?.split('@')[0] || 'User'}
                   </div>
                   <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)', marginTop: 2 }}>{user?.email}</div>
                 </div>
                 <button onClick={() => { nav('/settings'); setAvatarOpen(false) }} style={{
-                  width: '100%', padding: '9px 12px', borderRadius: 50, border: 'none',
+                  width: '100%', padding: '9px 12px', borderRadius: 10, border: 'none',
                   background: 'transparent', color: 'rgba(255,255,255,0.4)', textAlign: 'left',
                   fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font)',
-                  display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s',
+                  display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.15s',
                 }}
-                  onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
-                  onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)' }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)' }}
                 ><Settings size={14} /> Settings</button>
                 <button onClick={() => { signOut(); setAvatarOpen(false) }} style={{
-                  width: '100%', padding: '9px 12px', borderRadius: 50, border: 'none',
+                  width: '100%', padding: '9px 12px', borderRadius: 10, border: 'none',
                   background: 'transparent', color: 'rgba(255,80,80,0.7)', textAlign: 'left',
                   fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font)',
-                  display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s',
+                  display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.15s',
                 }}
                   onMouseOver={e => e.currentTarget.style.background = 'rgba(255,80,80,0.06)'}
                   onMouseOut={e => e.currentTarget.style.background = 'transparent'}

@@ -4,8 +4,8 @@ import { supabase } from '@/lib/supabase'
 import { Search, FileText, BarChart3, Newspaper, Grid3X3, Building2, CheckSquare, Mic, Settings, Users, GitBranch, Calendar } from 'lucide-react'
 
 const T = {
-  text: 'rgba(255,255,255,0.06)', sub: 'rgba(255,255,255,0.04)', muted: 'rgba(255,255,255,0.2)',
-  border: 'rgba(255,255,255,0.07)', soft: 'rgba(255,255,255,0.07)',
+  text: 'rgba(255,255,255,0.85)', sub: 'rgba(255,255,255,0.45)', muted: 'rgba(255,255,255,0.25)',
+  border: 'rgba(255,255,255,0.08)', soft: 'rgba(255,255,255,0.04)',
   font: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'DM Sans', 'Segoe UI', sans-serif",
 }
 
@@ -96,9 +96,9 @@ export default function CommandPalette({ open, onClose, onVoice }) {
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 'min(20vh, 160px)' }}>
       <div onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()} style={{
-        width: 440, background: '#111114', borderRadius: 50,
-        boxShadow: '0 8px 40px rgba(255,255,255,0.35)',
-        border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden',
+        width: 480, background: 'rgba(14,14,20,0.95)', borderRadius: 20,
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 16px 64px rgba(0,0,0,0.5)',
+        border: '1.5px solid rgba(255,255,255,0.1)', overflow: 'hidden',
         animation: 'scaleIn 0.15s ease-out',
       }}>
         {/* Search input */}
