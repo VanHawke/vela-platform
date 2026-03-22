@@ -192,7 +192,8 @@ const TOOL_LABELS = {
   get_news: 'Scanning news feed', get_partnership_matrix: 'Querying partnership matrix',
   get_pipeline_notifications: 'Loading pipeline activity', navigate_page: 'Navigating',
   web_search: 'Searching the web', memory: 'Checking memory',
-  search_documents: 'Searching documents',
+  search_documents: 'Searching documents', get_deal_history: 'Loading deal history',
+  get_skills: 'Loading expertise',
 };
 
 // ── Main Handler ─────────────────────────────────────────

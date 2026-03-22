@@ -149,6 +149,12 @@ export const TOOL_DEFINITIONS = [
       team: { type: 'string', description: 'Filter by F1 team name (optional). E.g. Alpine, Haas, Mercedes' },
       category: { type: 'string', description: 'Filter by category: deck, proposal, contract, brief, report, media_kit (optional)' },
     }, required: ['query'] } },
+  { name: 'get_deal_history', description: 'Get stage change history for a deal. Use when user asks "what happened with [company] deal", "deal timeline", "stage history", "when did [company] move stages".',
+    input_schema: { type: 'object', properties: {
+      company: { type: 'string', description: 'Company name to look up deal history for' },
+    }, required: ['company'] } },
+  { name: 'get_skills', description: 'List all available Kiko skills/expertise domains. Use when user asks "what can you do", "what skills do you have", "what do you know about", or to explain your capabilities.',
+    input_schema: { type: 'object', properties: {}, required: [] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -718,6 +724,52 @@ Return JSON:
       if (style.draft_instructions) out += `\nHow to write to them:\n${style.draft_instructions}`
       return out
     } catch(e) { return `Style analysis error: ${e.message}` }
+  }
+
+  if (name === 'get_deal_history') {
+    const { company } = input
+    try {
+      // Find the deal first
+      const deals = await sbFetch(`deals?select=id,data&data->>company=ilike.*${encodeURIComponent(company)}*&limit=5`)
+      if (!deals?.length) return `No deals found for "${company}".`
+      let out = `DEAL HISTORY FOR "${company}":\n\n`
+      for (const deal of deals) {
+        const d = deal.data || {}
+        out += `📋 ${d.company || d.title} — Current stage: ${d.stage} (Pipeline: ${d.pipeline})\n`
+        // Fetch stage history
+        const history = await sbFetch(`deal_stage_history?deal_id=eq.${deal.id}&order=changed_at.desc&limit=20`)
+        if (history?.length) {
+          out += `   Stage changes (${history.length}):\n`
+          for (const h of history) {
+            const date = new Date(h.changed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+            out += `   ${date}: ${h.from_stage || '(new)'} → ${h.to_stage} (by ${h.changed_by})\n`
+          }
+        } else {
+          out += `   No stage changes recorded yet.\n`
+        }
+        if (d.contactName) out += `   Contact: ${d.contactName}\n`
+        if (d.lastActivity) out += `   Last activity: ${d.lastActivity}\n`
+        out += '\n'
+      }
+      return out
+    } catch (err) {
+      return `Deal history error: ${err.message}`
+    }
+  }
+
+  if (name === 'get_skills') {
+    try {
+      const skills = await sbFetch('kiko_skills?is_active=eq.true&select=name,category,trigger_keywords')
+      if (!skills?.length) return 'No skills loaded.'
+      let out = 'KIKO EXPERTISE DOMAINS:\n\n'
+      for (const s of skills) {
+        out += `• ${s.name} (${s.category}) — triggers: ${(s.trigger_keywords || []).join(', ')}\n`
+      }
+      out += '\nThese skills are automatically loaded into my context when relevant keywords are detected in your query.'
+      return out
+    } catch (err) {
+      return `Skills error: ${err.message}`
+    }
   }
 
   return { error: `Unknown tool: ${name}` }
