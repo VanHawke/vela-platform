@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { Search, FileText, BarChart3, Newspaper, Grid3X3, Building2, CheckSquare, Mic, Settings, Users, GitBranch, Calendar } from 'lucide-react'
 
 const T = {
-  text: 'rgba(255,255,255,0.9)', sub: 'rgba(255,255,255,0.5)', muted: 'rgba(255,255,255,0.2)',
+  text: 'rgba(255,255,255,0.06)', sub: 'rgba(255,255,255,0.04)', muted: 'rgba(255,255,255,0.2)',
   border: 'rgba(255,255,255,0.07)', soft: 'rgba(255,255,255,0.07)',
   font: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'DM Sans', 'Segoe UI', sans-serif",
 }
@@ -97,7 +97,7 @@ export default function CommandPalette({ open, onClose, onVoice }) {
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 'min(20vh, 160px)' }}>
       <div onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()} style={{
         width: 440, background: '#111114', borderRadius: 50,
-        boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+        boxShadow: '0 8px 40px rgba(255,255,255,0.35)',
         border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden',
         animation: 'scaleIn 0.15s ease-out',
       }}>

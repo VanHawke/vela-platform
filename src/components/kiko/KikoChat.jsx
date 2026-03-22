@@ -487,7 +487,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           width: welcome ? 42 : sz, height: welcome ? 42 : sz, borderRadius: 50,
           background: input.trim() ? T.accentGradient : 'rgba(255,255,255,0.04)',
           border: input.trim() ? 'none' : '1.5px solid rgba(255,255,255,0.1)',
-          color: '#fff',
+          color: 'rgba(255,255,255,0.06)',
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'all 0.15s', flexShrink: 0, opacity: input.trim() ? 0.9 : 0.5,
           boxShadow: input.trim() ? '0 4px 16px rgba(139,108,246,0.3)' : 'none',
@@ -652,7 +652,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                     backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
                     border: '1.5px solid rgba(245,158,11,0.14)', padding: '10px 18px',
                     display: 'flex', alignItems: 'center', gap: 12, cursor: 'grab',
-                    boxShadow: 'inset 0 2px 0 rgba(245,158,11,0.06), inset 0 -1px 0 rgba(0,0,0,0.1), 0 8px 32px rgba(0,0,0,0.25)',
+                    boxShadow: 'inset 0 2px 0 rgba(245,158,11,0.06), inset 0 -1px 0 rgba(255,255,255,0.08), 0 8px 32px rgba(0,0,0,0.25)',
                     userSelect: 'none', touchAction: 'pan-y',
                   }}
                 >

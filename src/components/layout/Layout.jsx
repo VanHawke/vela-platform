@@ -169,9 +169,9 @@ export default function Layout({ user }) {
                 }} style={{
                   padding: '9px 24px', borderRadius: 50, border: 'none',
                   background: active ? 'rgba(255,255,255,0.1)' : 'transparent',
-                  color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)',
+                  color: active ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.3)',
                   fontSize: 12, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: T.font,
-                  boxShadow: active ? 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 8px rgba(0,0,0,0.2)' : 'none',
+                  boxShadow: active ? 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 8px rgba(255,255,255,0.15)' : 'none',
                   transition: 'all 0.2s',
                 }}
                   onMouseOver={e => { if (!active) { e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}}
@@ -263,7 +263,7 @@ export default function Layout({ user }) {
               {profile.profile_photo_url ? (
                 <img src={profile.profile_photo_url} alt="" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
               ) : (
-                <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font)' }}>{initials}</span>
+                <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.04)', fontFamily: 'var(--font)' }}>{initials}</span>
               )}
             </button>
             {avatarOpen && (
@@ -271,7 +271,7 @@ export default function Layout({ user }) {
                 position: 'absolute', top: '100%', right: 0, marginTop: 6,
                 width: 200, background: 'rgba(14,14,20,0.75)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
                 borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)',
-                boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+                boxShadow: '0 8px 40px rgba(255,255,255,0.35)',
                 padding: '6px', zIndex: 400, animation: 'fadeIn 0.15s ease-out',
               }}>
                 <div style={{ padding: '8px 12px 10px', borderBottom: '1.5px solid rgba(255,255,255,0.07)', marginBottom: 4 }}>

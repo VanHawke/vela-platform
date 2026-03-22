@@ -81,7 +81,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
         zIndex: 200, width: 28, height: 80, borderRadius: '10px 0 0 10px',
         background: T.surface, border: `1px solid ${T.border}`, borderRight: 'none',
         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '-2px 0 8px rgba(0,0,0,0.2)', color: T.textTertiary,
+        boxShadow: '-2px 0 8px rgba(255,255,255,0.15)', color: T.textTertiary,
       }}>
         <ChevronLeft size={14} />
       </button>
@@ -97,7 +97,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
         zIndex: 201, width: 28, height: 80, borderRadius: '10px 0 0 10px',
         background: T.surface, border: `1px solid ${T.border}`, borderRight: 'none',
         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '-2px 0 8px rgba(0,0,0,0.2)', color: T.textTertiary,
+        boxShadow: '-2px 0 8px rgba(255,255,255,0.15)', color: T.textTertiary,
       }}>
         <ChevronRight size={14} />
       </button>
@@ -153,7 +153,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
                 <div style={{
                   width: 28, height: 28, borderRadius: 7, flexShrink: 0, marginTop: 1,
                   background: active ? T.accent : T.accentSoft,
-                  color: active ? 'rgba(255,255,255,0.9)' : T.textTertiary,
+                  color: active ? 'rgba(255,255,255,0.06)' : T.textTertiary,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   {voice ? <Mic size={13} /> : <MessageCircle size={13} />}

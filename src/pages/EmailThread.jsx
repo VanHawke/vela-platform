@@ -4,9 +4,9 @@ import DOMPurify from 'dompurify'
 
 const T = {
   bg: '#FAFAFA', surface: '#FFFFFF', surfaceHover: '#F5F5F5',
-  border: 'rgba(0,0,0,0.06)', text: '#1A1A1A',
+  border: 'rgba(255,255,255,0.04)', text: '#1A1A1A',
   textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
-  accent: '#1A1A1A', accentSoft: 'rgba(0,0,0,0.04)', blue: '#007AFF',
+  accent: '#1A1A1A', accentSoft: 'rgba(255,255,255,0.04)', blue: '#007AFF',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 }
 
@@ -235,7 +235,7 @@ function MessageBody({ html, text }) {
   }, [html])
 
   if (!html) {
-    return <div style={{ fontSize: 13, color: '#1A1A1A', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{text || ''}</div>
+    return <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{text || ''}</div>
   }
 
   return <iframe ref={iframeRef} title="Email" style={{ width: '100%', border: 'none', minHeight: 100 }} sandbox="allow-same-origin" />

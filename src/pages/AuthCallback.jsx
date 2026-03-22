@@ -23,7 +23,7 @@ export default function AuthCallback() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'rgba(255,255,255,0.04)' }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-        <div style={{ width: 32, height: 32, border: '2px solid rgba(0,0,0,0.08)', borderTopColor: '#1A1A1A', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ width: 32, height: 32, border: '2px solid rgba(255,255,255,0.06)', borderTopColor: '#1A1A1A', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
         <p style={{ fontSize: 13, color: '#ABABAB', fontFamily: "'DM Sans', sans-serif" }}>Signing you in…</p>
       </div>
     </div>

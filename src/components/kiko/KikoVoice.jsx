@@ -13,7 +13,7 @@ const glass = {
   backdropFilter: 'blur(40px)',
   WebkitBackdropFilter: 'blur(40px)',
   border: '1.5px solid rgba(255,255,255,0.1)',
-  boxShadow: '0 8px 32px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)',
+  boxShadow: '0 8px 32px rgba(255,255,255,0.04), 0 1px 4px rgba(255,255,255,0.04)',
 }
 
 function Equalizer({ active, color = '#fff' }) {
@@ -763,15 +763,15 @@ RULES:
       onClick={e => e.target === e.currentTarget && handleClose()}>
 
       {/* Frosted glass — platform light style */}
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(250,250,250,0.82)', backdropFilter: 'blur(48px) saturate(1.8)', WebkitBackdropFilter: 'blur(48px) saturate(1.8)' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(14,14,20,0.85)', backdropFilter: 'blur(48px) saturate(1.8)', WebkitBackdropFilter: 'blur(48px) saturate(1.8)' }} />
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg,rgba(255,255,255,0.5) 0%,rgba(255,255,255,0.1) 50%)', pointerEvents: 'none' }} />
 
       {/* Drag-over overlay */}
       {dragOver && (
-        <div style={{ position: 'absolute', inset: 12, zIndex: 10, borderRadius: 18, border: '2px dashed #1A1A1A', background: 'rgba(255,255,255,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', gap: 8 }}>
+        <div style={{ position: 'absolute', inset: 12, zIndex: 10, borderRadius: 18, border: '2px dashed #1A1A1A', background: 'rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', gap: 8 }}>
           <Paperclip size={28} color="#1A1A1A" style={{ opacity: 0.6 }} />
-          <p style={{ fontSize: 15, fontWeight: 400, color: '#1A1A1A', fontFamily: 'var(--font)' }}>Drop file for Kiko to analyse</p>
-          <p style={{ fontSize: 12, color: 'rgba(0,0,0,0.45)', fontFamily: 'var(--font)' }}>PDF, DOCX, PPTX, images</p>
+          <p style={{ fontSize: 15, fontWeight: 400, color: 'rgba(255,255,255,0.85)', fontFamily: 'var(--font)' }}>Drop file for Kiko to analyse</p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--font)' }}>PDF, DOCX, PPTX, images</p>
         </div>
       )}
 
@@ -792,10 +792,10 @@ RULES:
         {/* Avatar */}
         <div style={{ position: 'relative', marginBottom: 28 }}>
           {showRings && <>
-            <div style={{ position: 'absolute', inset: -13, borderRadius: 50, border: '1.5px solid rgba(0,0,0,0.08)', animation: 'pulse 2.2s ease-in-out infinite', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', inset: -13, borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.06)', animation: 'pulse 2.2s ease-in-out infinite', pointerEvents: 'none' }} />
             <div style={{ position: 'absolute', inset: -26, borderRadius: 62, border: '1.5px solid rgba(255,255,255,0.07)', animation: 'pulse 2.2s ease-in-out infinite 0.5s', pointerEvents: 'none' }} />
           </>}
-          <div style={{ width: 156, height: 156, borderRadius: 38, background: avBg, border: '1.5px solid rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', boxShadow: '0 16px 48px rgba(0,0,0,0.14)', transition: 'background 0.5s' }}>
+          <div style={{ width: 156, height: 156, borderRadius: 38, background: avBg, border: '1.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', boxShadow: '0 16px 48px rgba(0,0,0,0.14)', transition: 'background 0.5s' }}>
             <DoubleHelix width={140} height={80} speaking={speaking} energy={window.__kikoAudioEnergy || 0} pitch={window.__kikoAudioPitch || 0} />
           </div>
         </div>
@@ -803,12 +803,12 @@ RULES:
         {/* Live text */}
         <div style={{ textAlign: 'center', maxWidth: 360, minHeight: 60, marginBottom: 24 }}>
           {transcript && <p style={{ fontSize: 15, fontWeight: 500, color: 'rgba(0,0,0,0.8)', margin: '0 0 7px', fontFamily: 'var(--font)', lineHeight: 1.35 }}>{transcript}</p>}
-          {kikoText   && <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.45)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.55 }}>{kikoText}</p>}
+          {kikoText   && <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.55 }}>{kikoText}</p>}
           {status === 'error' && !transcript && <p style={{ fontSize: 13, color: '#C62828', margin: 0, fontFamily: 'var(--font)' }}>{error}</p>}
         </div>
 
         {listenMode !== 'active' && status === 'live' && (
-          <button onClick={() => listenMode === 'off' ? reactivate() : resetToActive()} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 500, color: 'rgba(0,0,0,0.5)', background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(0,0,0,0.09)', borderRadius: 50, padding: '7px 16px', cursor: 'pointer', fontFamily: 'var(--font)', marginBottom: 24 }}>
+          <button onClick={() => listenMode === 'off' ? reactivate() : resetToActive()} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(0,0,0,0.09)', borderRadius: 50, padding: '7px 16px', cursor: 'pointer', fontFamily: 'var(--font)', marginBottom: 24 }}>
             <Mic size={12} /> Tap to resume
           </button>
         )}
@@ -820,7 +820,7 @@ RULES:
           </button>
 
           {attachedFile && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px 3px 7px', borderRadius: 50, background: attachedFile.status === 'ready' ? 'rgba(52,199,89,0.08)' : 'rgba(0,0,0,0.06)', border: `1.5px solid ${attachedFile.status === 'ready' ? 'rgba(52,199,89,0.2)' : 'rgba(0,0,0,0.09)'}`, fontSize: 11, color: attachedFile.status === 'ready' ? '#34C759' : 'rgba(0,0,0,0.5)', maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 0 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px 3px 7px', borderRadius: 50, background: attachedFile.status === 'ready' ? 'rgba(52,199,89,0.08)' : 'rgba(255,255,255,0.04)', border: `1.5px solid ${attachedFile.status === 'ready' ? 'rgba(52,199,89,0.2)' : 'rgba(0,0,0,0.09)'}`, fontSize: 11, color: attachedFile.status === 'ready' ? '#34C759' : 'rgba(255,255,255,0.35)', maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 0 }}>
               {attachedFile.status === 'uploading' && <Loader2 style={{ width: 10, height: 10, animation: 'spin 1s linear infinite', flexShrink: 0 }} />}
               {attachedFile.status === 'analysing' && <Loader2 style={{ width: 10, height: 10, animation: 'spin 1s linear infinite', flexShrink: 0, color: '#007AFF' }} />}
               {attachedFile.status === 'ready' && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
@@ -834,35 +834,35 @@ RULES:
           <input value={typeInput} onChange={e => setTypeInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendTyped())}
             placeholder="Ask anything or drop a file…"
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 15, color: '#1A1A1A', fontFamily: 'var(--font)', height: 40 }} />
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 15, color: 'rgba(255,255,255,0.85)', fontFamily: 'var(--font)', height: 40 }} />
 
           <button title="Dictate" style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', background: 'transparent', color: 'rgba(0,0,0,0.35)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
           </button>
 
-          <button onClick={sendTyped} disabled={!typeInput.trim()} style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', background: typeInput.trim() ? '#1A1A1A' : 'rgba(0,0,0,0.06)', color: typeInput.trim() ? '#fff' : 'rgba(0,0,0,0.25)', cursor: typeInput.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+          <button onClick={sendTyped} disabled={!typeInput.trim()} style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', background: typeInput.trim() ? '#1A1A1A' : 'rgba(255,255,255,0.04)', color: typeInput.trim() ? '#fff' : 'rgba(0,0,0,0.25)', cursor: typeInput.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
           </button>
         </div>
 
         {status === 'error' && (
-          <button onClick={connectRealtime} style={{ marginTop: 14, padding: '7px 18px', borderRadius: 50, background: 'rgba(255,255,255,0.07)', color: 'rgba(0,0,0,0.6)', border: '1.5px solid rgba(0,0,0,0.1)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)' }}>Retry</button>
+          <button onClick={connectRealtime} style={{ marginTop: 14, padding: '7px 18px', borderRadius: 50, background: 'rgba(255,255,255,0.07)', color: 'rgba(0,0,0,0.6)', border: '1.5px solid rgba(255,255,255,0.08)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)' }}>Retry</button>
         )}
       </div>
 
       {/* Transcript toggle */}
-      <div onClick={() => setShowPane(p => !p)} style={{ position: 'absolute', top: '50%', right: showPane ? 272 : 0, transform: 'translateY(-50%)', zIndex: 2, width: 20, height: 52, borderRadius: '9px 0 0 9px', background: 'rgba(0,0,0,0.05)', border: '1.5px solid rgba(0,0,0,0.08)', borderRight: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(0,0,0,0.3)', transition: 'right 0.3s cubic-bezier(0.4,0,0.2,1)' }}
+      <div onClick={() => setShowPane(p => !p)} style={{ position: 'absolute', top: '50%', right: showPane ? 272 : 0, transform: 'translateY(-50%)', zIndex: 2, width: 20, height: 52, borderRadius: '9px 0 0 9px', background: 'rgba(0,0,0,0.05)', border: '1.5px solid rgba(255,255,255,0.06)', borderRight: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(0,0,0,0.3)', transition: 'right 0.3s cubic-bezier(0.4,0,0.2,1)' }}
         onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.09)'}
         onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}>
         {showPane ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
       </div>
 
       {/* Transcript pane */}
-      <div style={{ position: 'relative', zIndex: 1, width: showPane ? 272 : 0, flexShrink: 0, overflow: 'hidden', borderLeft: showPane ? '1.5px solid rgba(0,0,0,0.08)' : 'none', transition: 'width 0.3s cubic-bezier(0.4,0,0.2,1)', background: 'rgba(255,255,255,0.35)' }}>
+      <div style={{ position: 'relative', zIndex: 1, width: showPane ? 272 : 0, flexShrink: 0, overflow: 'hidden', borderLeft: showPane ? '1.5px solid rgba(255,255,255,0.06)' : 'none', transition: 'width 0.3s cubic-bezier(0.4,0,0.2,1)', background: 'rgba(255,255,255,0.35)' }}>
         <div style={{ width: 272, height: '100%', display: 'flex', flexDirection: 'column', padding: '20px 14px 16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <span style={{ fontSize: 9, fontWeight: 500, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.3)', fontFamily: 'var(--font)' }}>Transcript</span>
-            <span style={{ fontSize: 9, color: 'rgba(0,0,0,0.2)', fontFamily: 'var(--font)' }}>{messages.length} messages</span>
+            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', fontFamily: 'var(--font)' }}>{messages.length} messages</span>
           </div>
           <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 9 }}>
             {messages.length === 0

@@ -103,7 +103,7 @@ export default function Deals() {
         </div>
         <button onClick={() => setShowForm(true)} style={{
           display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500,
-          background: 'var(--accent)', color: '#fff', padding: '6px 14px', borderRadius: 50,
+          background: 'var(--accent)', color: 'rgba(255,255,255,0.06)', padding: '6px 14px', borderRadius: 50,
           border: 'none', cursor: 'pointer', fontFamily: 'var(--font)',
         }}>
           <Plus className="h-3.5 w-3.5" /> Add Deal

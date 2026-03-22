@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 
 const T = {
   bg: '#FAFAFA', surface: '#FFFFFF',
-  border: 'rgba(0,0,0,0.06)', borderHover: 'rgba(0,0,0,0.12)',
+  border: 'rgba(255,255,255,0.04)', borderHover: 'rgba(255,255,255,0.1)',
   text: '#1A1A1A', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   yellow: '#FF9500',
@@ -171,14 +171,14 @@ function ArticleCard({ article, onStar, featured = false }) {
             display: 'inline-flex', alignItems: 'center', gap: 4,
             fontSize: 11, fontWeight: 500,
             color: featured ? sig.text : T.textSecondary,
-            background: featured ? `rgba(255,255,255,0.5)` : 'rgba(0,0,0,0.04)',
+            background: featured ? `rgba(255,255,255,0.5)` : 'rgba(255,255,255,0.04)',
             border: `1.5px solid ${featured ? sig.border : T.border}`,
             padding: '4px 10px', borderRadius: 6,
             textDecoration: 'none',
             transition: 'all 0.15s',
           }}
           onMouseEnter={e => { e.currentTarget.style.background = featured ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.07)' }}
-          onMouseLeave={e => { e.currentTarget.style.background = featured ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.04)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = featured ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.04)' }}
         >
           Read <ExternalLink size={9} />
         </a>

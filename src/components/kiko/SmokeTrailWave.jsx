@@ -58,7 +58,7 @@ function SmokeTrailWave({ width = 400, height = 60, scale = 1, mini = false, thi
       const cg = ctx.createLinearGradient(0, 0, w, 0)
       cg.addColorStop(0, 'rgba(255,255,255,0.55)')
       cg.addColorStop(0.3, 'rgba(255,255,255,0.7)')
-      cg.addColorStop(0.6, 'rgba(255,255,255,0.5)')
+      cg.addColorStop(0.6, 'rgba(255,255,255,0.04)')
       cg.addColorStop(1, 'rgba(255,255,255,0.4)')
       ctx.strokeStyle = cg
       ctx.lineWidth = mini ? 0.5 : 1

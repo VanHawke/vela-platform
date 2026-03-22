@@ -139,7 +139,7 @@ export default function ContactDetail() {
   const sectionTitle = { fontSize: 12, fontWeight: 400, color: 'var(--text)', fontFamily: 'var(--font)', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.04em' }
   const emptyText = { fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', fontStyle: 'italic' }
 
-  if (loading) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 24, height: 24, border: '2px solid rgba(0,0,0,0.1)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /></div>
+  if (loading) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 24, height: 24, border: '2px solid rgba(255,255,255,0.08)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /></div>
   if (!contact) return <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}><p style={{ fontSize: 14, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>Contact not found</p><button onClick={() => nav('/contacts')} style={{ fontSize: 13, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Back to Contacts</button></div>
 
   return (
@@ -259,7 +259,7 @@ export default function ContactDetail() {
                     <div key={f.key}><p style={labelStyle}>{f.label}</p><input value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} style={inputStyle} /></div>
                   ))}
                   <div><p style={labelStyle}>Notes</p><textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} rows={3} style={{ ...inputStyle, resize: 'none' }} /></div>
-                  <button onClick={save} style={{ alignSelf: 'flex-end', fontSize: 13, fontWeight: 500, background: 'var(--accent)', color: '#fff', padding: '8px 20px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Save Changes</button>
+                  <button onClick={save} style={{ alignSelf: 'flex-end', fontSize: 13, fontWeight: 500, background: 'var(--accent)', color: 'rgba(255,255,255,0.06)', padding: '8px 20px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Save Changes</button>
                 </div>
               </>
             ) : (
@@ -289,7 +289,7 @@ export default function ContactDetail() {
                   ))}
                 </div>
                 {contact.notes && contact.notes !== '[]' && (
-                  <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                  <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                     <p style={{ ...labelStyle, marginBottom: 8 }}>Notes</p>
                     <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>{contact.notes}</p>
                   </div>

@@ -4,9 +4,9 @@ import { Upload, FileText, Image, File, X, Loader2, Eye, RefreshCw, Search, Filt
 
 const T = {
   bg: 'transparent', surface: 'rgba(255,255,255,0.65)', surfaceHover: 'rgba(255,255,255,0.8)',
-  border: 'rgba(255,255,255,0.5)', borderHover: 'rgba(255,255,255,0.7)', borderSubtle: 'rgba(0,0,0,0.06)',
+  border: 'rgba(255,255,255,0.04)', borderHover: 'rgba(255,255,255,0.7)', borderSubtle: 'rgba(255,255,255,0.04)',
   text: '#1A1A1A', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
-  accent: '#1A1A1A', accentSoft: 'rgba(0,0,0,0.04)',
+  accent: '#1A1A1A', accentSoft: 'rgba(255,255,255,0.04)',
   blue: '#007AFF', red: '#FF3B30', green: '#34C759', yellow: '#FF9500', purple: '#AF52DE',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 }
@@ -148,7 +148,7 @@ export default function Documents({ user }) {
 
   const cardStyle = { background: T.surface, borderRadius: 50, border: `1.5px solid rgba(0,0,0,0.05)`, boxShadow: '0 4px 16px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02), inset 0 1px 0 rgba(255,255,255,1)', padding: 16, transition: 'all 0.15s' }
   const pillStyle = (color) => ({ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 50, fontSize: 10, fontWeight: 500, background: `${color}12`, color, fontFamily: T.font })
-  const inputStyle = { height: 36, borderRadius: 50, border: `1.5px solid rgba(0,0,0,0.06)`, padding: '0 10px', fontSize: 12, color: T.text, fontFamily: T.font, outline: 'none', background: T.surface }
+  const inputStyle = { height: 36, borderRadius: 50, border: `1.5px solid rgba(255,255,255,0.04)`, padding: '0 10px', fontSize: 12, color: T.text, fontFamily: T.font, outline: 'none', background: T.surface }
 
   return (
     <div
@@ -176,7 +176,7 @@ export default function Documents({ user }) {
           <h1 style={{ fontSize: 22, fontWeight: 400, color: T.text, margin: 0 }}>Knowledge Library</h1>
           <p style={{ fontSize: 12, color: T.textTertiary, margin: '4px 0 0' }}>{documents.length} documents — Kiko analyses and learns from everything you upload</p>
         </div>
-        <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ height: 36, padding: '0 16px', borderRadius: 50, background: T.accent, color: '#fff', border: 'none', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6, opacity: uploading ? 0.5 : 1 }}>
+        <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ height: 36, padding: '0 16px', borderRadius: 50, background: T.accent, color: 'rgba(255,255,255,0.06)', border: 'none', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6, opacity: uploading ? 0.5 : 1 }}>
           {uploading ? <><Loader2 size={14} style={{ animation: 'kikoVortexSpin 1s linear infinite' }} />{uploadStatus}</> : <><Upload size={14} />Upload</>}
         </button>
         <input ref={fileRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx" onChange={handleUpload} style={{ display: 'none' }} />
@@ -209,7 +209,7 @@ export default function Documents({ user }) {
             {lastUploaded.detectedContext && <> · <span style={{ color: CTX_COLORS[lastUploaded.detectedContext] || T.textTertiary }}>{CTX_LABELS[lastUploaded.detectedContext] || lastUploaded.detectedContext}</span></>}
           </span>
           <button onClick={() => { if (lastUploaded.confirmedTeam) reassignTeam(lastUploaded.id, lastUploaded.confirmedTeam); setLastUploaded(null) }}
-            style={{ fontSize: 11, padding: '4px 12px', borderRadius: 6, border: 'none', background: T.accent, color: '#fff', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>
+            style={{ fontSize: 11, padding: '4px 12px', borderRadius: 6, border: 'none', background: T.accent, color: 'rgba(255,255,255,0.06)', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>
             Confirm
           </button>
           <select value={lastUploaded.confirmedTeam || ''} onChange={e => setLastUploaded(prev => ({ ...prev, confirmedTeam: e.target.value }))}
@@ -307,7 +307,7 @@ export default function Documents({ user }) {
 
                   {/* Expanded intelligence panel */}
                   {isExpanded && (
-                    <div style={{ marginTop: 12, padding: 14, borderRadius: 50, background: 'rgba(0,0,0,0.02)', border: `1.5px solid rgba(0,0,0,0.04)` }}>
+                    <div style={{ marginTop: 12, padding: 14, borderRadius: 50, background: 'rgba(0,0,0,0.02)', border: `1.5px solid rgba(255,255,255,0.04)` }}>
                       {doc.summary && <p style={{ fontSize: 12, color: T.textSecondary, lineHeight: 1.6, margin: '0 0 12px' }}>{doc.summary}</p>}
                       {intel.key_stats?.length > 0 && (
                         <div style={{ marginBottom: 10 }}>
@@ -369,7 +369,7 @@ export default function Documents({ user }) {
                           <p style={{ fontSize: 12, color: T.text, margin: '4px 0 0' }}>{intel.target_audience}</p>
                         </div>
                       )}
-                      <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1.5px solid rgba(0,0,0,0.04)`, display: 'flex', gap: 12, fontSize: 10, color: T.textTertiary }}>
+                      <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1.5px solid rgba(255,255,255,0.04)`, display: 'flex', gap: 12, fontSize: 10, color: T.textTertiary }}>
                         <span>Scanned: {doc.last_scanned_at ? new Date(doc.last_scanned_at).toLocaleDateString() : 'Never'}</span>
                         <span>Version: {doc.scan_version || 0}</span>
                         {doc.linked_company_id && <span>Linked to CRM</span>}

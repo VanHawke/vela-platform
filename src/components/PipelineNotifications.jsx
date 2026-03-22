@@ -3,9 +3,9 @@ import { Bell, BellRing, X, Mail, MessageSquare, Zap, UserCheck, ChevronRight, C
 
 const T = {
   bg: '#FAFAFA', surface: '#FFFFFF',
-  border: 'rgba(0,0,0,0.06)', borderHover: 'rgba(0,0,0,0.12)',
+  border: 'rgba(255,255,255,0.04)', borderHover: 'rgba(255,255,255,0.1)',
   text: '#1A1A1A', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
-  accent: '#1A1A1A', accentSoft: 'rgba(0,0,0,0.04)',
+  accent: '#1A1A1A', accentSoft: 'rgba(255,255,255,0.04)',
   blue: '#007AFF', red: '#FF3B30', yellow: '#FF9500', green: '#34C759',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 }
@@ -86,7 +86,7 @@ export default function PipelineNotifications() {
           {unread > 0 ? <BellRing size={15} style={{ color: T.red }} /> : <Bell size={15} style={{ color: T.textTertiary }} />}
           <span style={{ fontSize: 13, fontWeight: 400, color: T.text }}>Pipeline Activity</span>
           {unread > 0 && (
-            <span style={{ fontSize: 10, fontWeight: 500, color: '#fff', background: T.red, borderRadius: 50, padding: '1px 6px', minWidth: 18, textAlign: 'center' }}>{unread}</span>
+            <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.06)', background: T.red, borderRadius: 50, padding: '1px 6px', minWidth: 18, textAlign: 'center' }}>{unread}</span>
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

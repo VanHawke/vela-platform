@@ -138,7 +138,7 @@ export default function LoginPage() {
           <div style={fadeUp(0.7)}>
             <button type="submit" disabled={loading} style={{
               width: '100%', height: 52, borderRadius: 50,
-              background: T.accentGradient, color: '#fff', border: 'none',
+              background: T.accentGradient, color: 'rgba(255,255,255,0.06)', border: 'none',
               fontSize: 14, fontWeight: 400, cursor: 'pointer', fontFamily: T.font,
               letterSpacing: '0.01em', transition: 'all 0.3s',
               boxShadow: '0 8px 32px rgba(139,108,246,0.25), inset 0 1px 0 rgba(255,255,255,0.15)',

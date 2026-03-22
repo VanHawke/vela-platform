@@ -8,8 +8,8 @@ const MAX_SIZE = 5 * 1024 * 1024
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
 const T = {
-  bg: '#FAFAFA', surface: '#FFFFFF', border: 'rgba(0,0,0,0.06)',
-  borderHover: 'rgba(0,0,0,0.12)', text: '#1A1A1A',
+  bg: '#FAFAFA', surface: '#FFFFFF', border: 'rgba(255,255,255,0.04)',
+  borderHover: 'rgba(255,255,255,0.1)', text: '#1A1A1A',
   textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
   accent: '#1A1A1A', font: "'DM Sans', sans-serif",
 }
@@ -97,7 +97,7 @@ export default function ImageUpload({ label, storageKey, folder = 'uploads', asp
       {/* Crop modal */}
       {showCrop && rawUrl && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(24px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: T.surface, borderRadius: 18, padding: 24, maxWidth: 520, width: '90%', boxShadow: '0 24px 80px rgba(0,0,0,0.15)' }}>
+          <div style={{ background: T.surface, borderRadius: 18, padding: 24, maxWidth: 520, width: '90%', boxShadow: '0 24px 80px rgba(255,255,255,0.12)' }}>
             <p style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 16px' }}>Crop {label}</p>
             <div style={{ maxHeight: 400, overflow: 'auto', borderRadius: 50, background: T.bg, display: 'flex', justifyContent: 'center' }}>
               <ReactCrop crop={crop} onChange={setCrop} onComplete={setCompletedCrop}>
@@ -106,7 +106,7 @@ export default function ImageUpload({ label, storageKey, folder = 'uploads', asp
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
               <button onClick={cancelCrop} style={{ height: 36, padding: '0 16px', borderRadius: 50, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, fontSize: 13, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
-              <button onClick={saveCrop} disabled={uploading} style={{ height: 36, padding: '0 20px', borderRadius: 50, border: 'none', background: T.accent, color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <button onClick={saveCrop} disabled={uploading} style={{ height: 36, padding: '0 20px', borderRadius: 50, border: 'none', background: T.accent, color: 'rgba(255,255,255,0.06)', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
                 {uploading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Save
               </button>
             </div>

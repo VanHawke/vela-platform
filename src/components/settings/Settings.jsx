@@ -302,7 +302,7 @@ export default function Settings({ user }) {
                     <span style={{ fontSize: 14, color: T.textSecondary, fontFamily: T.font }}>{n}</span>
                     <div onClick={() => setSettings(p => ({ ...p, notification_prefs: { ...(p.notification_prefs || {}), [key]: !on } }))}
                       style={{ width: 44, height: 24, borderRadius: 50, background: on ? T.accent : T.border, position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}>
-                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px rgba(255,255,255,0.12)' }} />
                     </div>
                   </div>
                 )
@@ -315,7 +315,7 @@ export default function Settings({ user }) {
               bio: settings.bio, linkedin_url: settings.linkedin_url, profile_photo_url: settings.profile_photo_url,
               email_signature: settings.email_signature, notification_prefs: settings.notification_prefs,
             })}
-              style={{ height: 44, borderRadius: 50, background: T.accent, color: '#fff', border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
+              style={{ height: 44, borderRadius: 50, background: T.accent, color: 'rgba(255,255,255,0.06)', border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
               {saved ? 'Saved!' : 'Save changes'}
             </button>
           </div>
@@ -406,13 +406,13 @@ export default function Settings({ user }) {
                           window.dispatchEvent(new Event('kiko_top_nav_updated'))
                         }} style={{
                           width: 38, height: 20, borderRadius: 50, border: 'none', cursor: 'pointer',
-                          background: isOn ? T.accent : 'rgba(0,0,0,0.1)',
+                          background: isOn ? T.accent : 'rgba(255,255,255,0.08)',
                           position: 'relative', transition: 'background 0.2s', padding: 0,
                         }}>
                           <div style={{
                             width: 16, height: 16, borderRadius: '50%', background: 'rgba(255,255,255,0.07)',
                             position: 'absolute', top: 2, left: isOn ? 20 : 2,
-                            transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                            transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(255,255,255,0.12)',
                           }} />
                         </button>
                       )}
@@ -440,7 +440,7 @@ export default function Settings({ user }) {
                   <option value="admin">Admin</option>
                 </select>
                 <button onClick={sendInvite} style={{
-                  height: 44, padding: '0 16px', borderRadius: 50, background: T.accent, color: '#fff',
+                  height: 44, padding: '0 16px', borderRadius: 50, background: T.accent, color: 'rgba(255,255,255,0.06)',
                   border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
                   display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
                 }}><UserPlus size={14} /> Invite</button>
@@ -566,7 +566,7 @@ export default function Settings({ user }) {
                   </div>
                 ) : (
                   <button onClick={connectGoogle} style={{
-                    height: 36, padding: '0 16px', borderRadius: T.radiusSm, background: T.accent, color: '#fff',
+                    height: 36, padding: '0 16px', borderRadius: T.radiusSm, background: T.accent, color: 'rgba(255,255,255,0.06)',
                     border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
                     display: 'flex', alignItems: 'center', gap: 6,
                   }}><ExternalLink size={12} /> Connect</button>

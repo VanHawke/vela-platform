@@ -330,7 +330,7 @@ export default function Organisations({ user }) {
           <h1 style={{ fontSize: 18, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Organisations</h1>
           <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{filtered.length.toLocaleString()} organisation{filtered.length !== 1 ? 's' : ''}</p>
         </div>
-        <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, background: 'var(--accent)', color: '#fff', padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+        <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, background: 'var(--accent)', color: 'rgba(255,255,255,0.06)', padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
           <Plus style={{ width: 14, height: 14 }} /> Add Organisation
         </button>
       </div>
@@ -377,8 +377,8 @@ export default function Organisations({ user }) {
               <button key={chip.id} onClick={() => setOpenPopover(isOpen ? null : chip.id)} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 5,
                 padding: '5px 10px', borderRadius: 50,
-                border: isActive ? '1px solid #1A1A1A' : '1px solid rgba(0,0,0,0.1)',
-                background: isActive ? '#1A1A1A' : isOpen ? 'rgba(0,0,0,0.04)' : '#fff',
+                border: isActive ? '1px solid #1A1A1A' : '1px solid rgba(255,255,255,0.08)',
+                background: isActive ? '#1A1A1A' : isOpen ? 'rgba(255,255,255,0.04)' : '#fff',
                 color: isActive ? '#fff' : 'var(--text-secondary)',
                 fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: isActive ? 500 : 400,
                 transition: 'all 0.12s',
@@ -398,7 +398,7 @@ export default function Organisations({ user }) {
 
           {/* ── Popovers ── */}
           {openPopover && (
-            <div style={{ position: 'absolute', top: 36, left: 0, zIndex: 200, background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 50, padding: 14, boxShadow: '0 8px 24px rgba(0,0,0,0.08)', minWidth: 280, maxWidth: 360 }}
+            <div style={{ position: 'absolute', top: 36, left: 0, zIndex: 200, background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 50, padding: 14, boxShadow: '0 8px 24px rgba(255,255,255,0.06)', minWidth: 280, maxWidth: 360 }}
               onMouseDown={e => e.stopPropagation()}>
 
               {/* Industry */}
@@ -483,7 +483,7 @@ export default function Organisations({ user }) {
                 </>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                 <button onClick={() => {
                   if (openPopover === 'industry') setFilters(p => ({ ...p, industries: [] }))
                   if (openPopover === 'country') setFilters(p => ({ ...p, countries: [] }))
@@ -491,7 +491,7 @@ export default function Organisations({ user }) {
                   if (openPopover === 'round') setFilters(p => ({ ...p, lastRound: '' }))
                   if (openPopover === 'revenue') setFilters(p => ({ ...p, revenueMin: '', revenueMax: '' }))
                 }} style={{ fontSize: 11, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Reset</button>
-                <button onClick={() => setOpenPopover(null)} style={{ fontSize: 12, fontWeight: 500, padding: '6px 16px', borderRadius: 50, background: '#1A1A1A', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                <button onClick={() => setOpenPopover(null)} style={{ fontSize: 12, fontWeight: 500, padding: '6px 16px', borderRadius: 50, background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
                   Show {filtered.length.toLocaleString()}
                 </button>
               </div>
@@ -550,10 +550,10 @@ export default function Organisations({ user }) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {paged.map(company => (
-                <div key={company.id} style={{ ...listCard, background: selectedOrg?.id === company.id ? 'rgba(26,26,26,0.04)' : '#FFFFFF', borderColor: selectedOrg?.id === company.id ? 'rgba(26,26,26,0.12)' : 'rgba(0,0,0,0.06)' }}
+                <div key={company.id} style={{ ...listCard, background: selectedOrg?.id === company.id ? 'rgba(26,26,26,0.04)' : '#FFFFFF', borderColor: selectedOrg?.id === company.id ? 'rgba(26,26,26,0.12)' : 'rgba(255,255,255,0.04)' }}
                   onClick={() => selectOrg(company)}
-                  onMouseEnter={e => { if (selectedOrg?.id !== company.id) e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)' }}
-                  onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'}>
+                  onMouseEnter={e => { if (selectedOrg?.id !== company.id) e.currentTarget.style.boxShadow = '0 2px 8px rgba(255,255,255,0.06)' }}
+                  onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(255,255,255,0.04)'}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, flex: 1 }}>
                     <OrgLogo domain={listDomainCache[company.id]} name={company.name} size={36} />
                     <div style={{ minWidth: 0 }}>
@@ -681,7 +681,7 @@ export default function Organisations({ user }) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {orgContacts.map(c => (
                       <div key={c.id} onClick={() => nav(`/contacts/${c.id}`)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 50, cursor: 'pointer', transition: 'background 0.15s' }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                         {c.picture ? (
                           <img src={c.picture} alt="" style={{ width: 28, height: 28, borderRadius: 50, objectFit: 'cover' }} />
@@ -799,8 +799,8 @@ export default function Organisations({ user }) {
                       const alreadyInCrm = companies.some(org => org.name?.toLowerCase() === c.name?.toLowerCase())
                       return (
                         <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 11px', borderRadius: 9, border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.01)', cursor: 'default', transition: 'border-color 0.12s' }}
-                          onMouseOver={e => e.currentTarget.style.borderColor = 'rgba(0,0,0,0.12)'}
-                          onMouseOut={e => e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)'}>
+                          onMouseOver={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+                          onMouseOut={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)'}>
                           {/* Logo */}
                           <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
                             {compDomain ? (
@@ -876,7 +876,7 @@ export default function Organisations({ user }) {
       {/* Modal form */}
       {showForm && (
         <div onClick={e => e.target === e.currentTarget && reset()} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(8px)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: '0 24px 80px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.06)', width: '100%', maxWidth: 420, padding: 24 }}>
+          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: '0 24px 80px rgba(255,255,255,0.1), 0 8px 24px rgba(255,255,255,0.04)', width: '100%', maxWidth: 420, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <h2 style={{ fontSize: 16, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{editing ? 'Edit Organisation' : 'Add Organisation'}</h2>
               <button onClick={reset} style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer' }}><X style={{ width: 16, height: 16 }} /></button>
@@ -889,7 +889,7 @@ export default function Organisations({ user }) {
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
               <button onClick={reset} style={{ flex: 1, padding: '10px 0', fontSize: 13, color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 50, background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font)' }}>Cancel</button>
-              <button onClick={save} style={{ flex: 1, padding: '10px 0', fontSize: 13, color: '#fff', background: 'var(--accent)', border: 'none', borderRadius: 50, cursor: 'pointer', fontWeight: 500, fontFamily: 'var(--font)' }}>Save</button>
+              <button onClick={save} style={{ flex: 1, padding: '10px 0', fontSize: 13, color: 'rgba(255,255,255,0.06)', background: 'var(--accent)', border: 'none', borderRadius: 50, cursor: 'pointer', fontWeight: 500, fontFamily: 'var(--font)' }}>Save</button>
             </div>
           </div>
         </div>

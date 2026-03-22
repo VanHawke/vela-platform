@@ -10,7 +10,7 @@ function md(text) {
   if (!text) return ''
   let h = text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(0,0,0,0.04);padding:12px;border-radius:8px;font-size:12px;overflow-x:auto;margin:8px 0"><code>$1</code></pre>')
+    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(255,255,255,0.04);padding:12px;border-radius:8px;font-size:12px;overflow-x:auto;margin:8px 0"><code>$1</code></pre>')
     .replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.05);padding:2px 6px;border-radius:4px;font-size:12px">$1</code>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
@@ -146,8 +146,8 @@ export default function KikoOS({ user, onOpenVoice }) {
     return (
       <button onClick={() => setStage(1)} style={{
         position: 'fixed', bottom: 24, right: 24, zIndex: 100, width: 52, height: 52,
-        borderRadius: '50%', background: 'var(--accent)', border: 'none', color: '#fff',
-        cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+        borderRadius: '50%', background: 'var(--accent)', border: 'none', color: 'rgba(255,255,255,0.06)',
+        cursor: 'pointer', boxShadow: '0 4px 20px rgba(255,255,255,0.12)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'transform 0.2s',
       }}
@@ -206,7 +206,7 @@ export default function KikoOS({ user, onOpenVoice }) {
       background: 'rgba(255,255,255,0.95)',
       backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
       border: '1px solid var(--border)',
-      boxShadow: '0 8px 40px rgba(0,0,0,0.12)',
+      boxShadow: '0 8px 40px rgba(255,255,255,0.1)',
       animation: 'slideUpFade 0.25s ease-out',
     }}>
       {/* Header */}
@@ -234,7 +234,7 @@ export default function KikoOS({ user, onOpenVoice }) {
               </div>
             )}
             {msg.role === 'user' ? (
-              <div style={{ maxWidth: '80%', padding: '8px 14px', borderRadius: '14px 14px 4px 14px', background: 'var(--accent)', color: '#fff', fontSize: 13, lineHeight: 1.5, fontFamily: 'var(--font)' }}>{msg.content}</div>
+              <div style={{ maxWidth: '80%', padding: '8px 14px', borderRadius: '14px 14px 4px 14px', background: 'var(--accent)', color: 'rgba(255,255,255,0.06)', fontSize: 13, lineHeight: 1.5, fontFamily: 'var(--font)' }}>{msg.content}</div>
             ) : (
               <div style={{ maxWidth: '80%', padding: '10px 14px', borderRadius: 50, background: 'var(--accent-soft)', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, fontFamily: 'var(--font)' }}>
                 <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />

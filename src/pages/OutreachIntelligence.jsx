@@ -108,7 +108,7 @@ export default function OutreachIntelligence({ user }) {
         <BarChart3 style={{ width: 40, height: 40, color: T.textTertiary, margin: '0 auto 16px' }} />
         <h2 style={{ fontSize: 18, fontWeight: 400, color: T.text, margin: '0 0 8px', fontFamily: T.font }}>Outreach Intelligence</h2>
         <p style={{ fontSize: 13, color: T.textSecondary, margin: '0 0 20px', fontFamily: T.font, lineHeight: 1.5 }}>Score your outbound emails to discover which messaging approaches, send times, and CTAs generate the most replies.</p>
-        <button onClick={runScoring} disabled={scoring} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 50, background: T.accent, color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font }}>
+        <button onClick={runScoring} disabled={scoring} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 50, background: T.accent, color: 'rgba(255,255,255,0.06)', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font }}>
           {scoring ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} /> : <Zap style={{ width: 14, height: 14 }} />}
           {scoring ? 'Scoring…' : 'Score my outreach now'}
         </button>
@@ -211,7 +211,7 @@ export default function OutreachIntelligence({ user }) {
             return (
               <div key={day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                 <span style={{ fontSize: 9, fontWeight: 400, color: rate > 15 ? '#34C759' : T.textTertiary, fontFamily: T.font }}>{rate > 0 ? `${rate}%` : ''}</span>
-                <div style={{ width: '100%', maxWidth: 48, height: barH, borderRadius: 4, background: data.total > 0 ? (rate > 15 ? '#34C759' : rate > 8 ? '#FF9500' : 'rgba(0,0,0,0.12)') : 'rgba(0,0,0,0.04)', transition: 'height 0.4s ease' }} />
+                <div style={{ width: '100%', maxWidth: 48, height: barH, borderRadius: 4, background: data.total > 0 ? (rate > 15 ? '#34C759' : rate > 8 ? '#FF9500' : 'rgba(255,255,255,0.1)') : 'rgba(255,255,255,0.04)', transition: 'height 0.4s ease' }} />
                 <span style={{ fontSize: 9, fontWeight: 500, color: T.textTertiary, fontFamily: T.font }}>{day.slice(0, 3)}</span>
                 <span style={{ fontSize: 8, color: T.textTertiary, fontFamily: T.font }}>{data.total}</span>
               </div>

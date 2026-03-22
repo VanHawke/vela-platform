@@ -3,9 +3,9 @@ import { RefreshCw, Loader2, AlertTriangle, Plus, X, ExternalLink, FileDown, Che
 
 const T = {
   bg: '#FAFAFA', surface: '#FFFFFF', surfaceHover: '#F5F5F5',
-  border: 'rgba(0,0,0,0.06)', borderHover: 'rgba(0,0,0,0.12)',
+  border: 'rgba(255,255,255,0.04)', borderHover: 'rgba(255,255,255,0.1)',
   text: '#1A1A1A', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
-  accent: '#1A1A1A', accentSoft: 'rgba(0,0,0,0.04)',
+  accent: '#1A1A1A', accentSoft: 'rgba(255,255,255,0.04)',
   blue: '#007AFF', red: '#FF3B30', yellow: '#FF9500', green: '#34C759',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   gap: '#FEF2F2', gapBorder: '#FECACA', filled: '#F0FDF4', filledBorder: '#BBF7D0',
@@ -35,7 +35,7 @@ function TeamLogo({ team, size = 20 }) {
         <img src={team.logo_url} alt={team.name} style={{ width: size * 0.7, height: size * 0.7, objectFit: 'contain', filter: 'brightness(10)' }}
           onError={() => setImgError(true)} />
       ) : (
-        <span style={{ fontSize: Math.max(size * 0.35, 8), fontWeight: 500, color: '#fff', letterSpacing: '-0.02em' }}>
+        <span style={{ fontSize: Math.max(size * 0.35, 8), fontWeight: 500, color: 'rgba(255,255,255,0.06)', letterSpacing: '-0.02em' }}>
           {team.name?.slice(0,2).toUpperCase()}
         </span>
       )}
@@ -135,7 +135,7 @@ export default function PartnershipMatrix({ user }) {
       {/* Add Modal */}
       {showAdd && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowAdd(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: T.surface, borderRadius: 50, padding: 20, width: 360, boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: T.surface, borderRadius: 50, padding: 20, width: 360, boxShadow: '0 8px 32px rgba(255,255,255,0.1)' }}>
             <h3 style={{ fontSize: 14, fontWeight: 400, margin: '0 0 12px' }}>Add Partnership</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <select value={addForm.team_id} onChange={e => setAddForm(p => ({ ...p, team_id: e.target.value }))} style={{ fontSize: 12, padding: '6px 8px', borderRadius: 6, border: `1px solid ${T.border}`, fontFamily: T.font }}>
@@ -150,7 +150,7 @@ export default function PartnershipMatrix({ user }) {
               </select>
               <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                 <button onClick={() => setShowAdd(false)} style={{ flex: 1, fontSize: 12, padding: '6px 0', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
-                <button onClick={addPartnership} style={{ flex: 1, fontSize: 12, padding: '6px 0', borderRadius: 6, border: 'none', background: T.accent, color: '#fff', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>Add</button>
+                <button onClick={addPartnership} style={{ flex: 1, fontSize: 12, padding: '6px 0', borderRadius: 6, border: 'none', background: T.accent, color: 'rgba(255,255,255,0.06)', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>Add</button>
               </div>
             </div>
           </div>

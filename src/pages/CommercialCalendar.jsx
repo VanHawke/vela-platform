@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 // ── Platform tokens ───────────────────────────────────────
 const T = {
   bg: '#FAFAFA', surface: '#FFFFFF', surfaceHover: '#F5F5F5',
-  border: 'rgba(0,0,0,0.06)', borderHover: 'rgba(0,0,0,0.12)',
+  border: 'rgba(255,255,255,0.04)', borderHover: 'rgba(255,255,255,0.1)',
   text: '#1A1A1A', textSecondary: '#6B6B6B', textTertiary: '#ABABAB',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   f1: '#E10600', f1Light: '#FEF2F2', f1Border: '#F7C1C1', f1Dark: '#791F1F',
@@ -181,7 +181,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, onClick }) 
                 s.isSel || s.isRaceDay ? 'rgba(255,255,255,0.22)' : T.f1,
                 <>
                   <img src="/f1-logo.png" alt="F1" style={{ width: 8, height: 8, objectFit: 'contain', display: 'block' }} />
-                  <span style={{ fontSize: 8, color: '#fff', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
+                  <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.06)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
                     {s.isRaceDay ? 'Race day' : `${e.city.slice(0, 3).toUpperCase()}${e.sprint ? ' ⚡' : ''}`}
                   </span>
                 </>
@@ -194,7 +194,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, onClick }) 
                 s.isSel ? 'rgba(255,255,255,0.22)' : T.fe,
                 <>
                   <img src="/fe-logo.png" alt="FE" style={{ width: 8, height: 8, objectFit: 'contain', display: 'block' }} />
-                  <span style={{ fontSize: 8, color: '#fff', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
+                  <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.06)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
                     {e.city.slice(0, 3).toUpperCase()}
                   </span>
                 </>
@@ -415,7 +415,7 @@ export default function CommercialCalendar() {
             { id: 'f1', label: 'F1',         on: showF1, set: setShowF1, bg: T.f1, rem: remF1 },
             { id: 'fe', label: 'Formula E',  on: showFE, set: setShowFE, bg: T.fe, rem: remFE },
           ].map(({ id, label, on, set, bg, rem }) => (
-            <button key={id} onClick={() => set(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 7px', borderRadius: 6, border: `1.5px solid ${on ? T.border : T.border}`, background: on ? 'rgba(0,0,0,0.06)' : 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}>
+            <button key={id} onClick={() => set(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 7px', borderRadius: 6, border: `1.5px solid ${on ? T.border : T.border}`, background: on ? 'rgba(255,255,255,0.04)' : 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}>
               <img src={id === 'f1' ? '/f1-logo.png' : '/fe-logo.png'} alt={label} style={{ width: 16, height: 16, objectFit: 'contain', display: 'block', flexShrink: 0 }} />
               <span style={{ fontSize: 11, fontWeight: 500, color: T.textSecondary, fontFamily: T.font }}>{label}</span>
               {on && <span style={{ fontSize: 9, color: T.textTertiary, fontFamily: T.font }}>{rem}</span>}
