@@ -446,39 +446,40 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         </div>
       )}
 
-      {/* ── FAB button — Glass Sphere with DoubleHelix, teal aura when speaking ── */}
-      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 101, width: 56, height: 56 }}>
-        {/* Teal aura ring — visible when voice is active */}
+      {/* ── FAB button — Dark sphere with DoubleHelix, teal aura when speaking ── */}
+      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 101, width: 60, height: 60 }}>
+        {/* Teal aura rings — visible when voice is active */}
         {voiceOpen && <>
-          <div style={{ position: 'absolute', inset: -4, borderRadius: '50%', border: '2px solid rgba(6,214,160,0.2)', animation: 'kikoPulseRing 2s ease-in-out infinite', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', inset: -10, borderRadius: '50%', border: '1.5px solid rgba(6,214,160,0.08)', animation: 'kikoPulseRing 2s ease-in-out 0.5s infinite', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', inset: -5, borderRadius: '50%', border: '2px solid rgba(6,214,160,0.25)', animation: 'kikoPulseRing 2s ease-in-out infinite', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', inset: -12, borderRadius: '50%', border: '1.5px solid rgba(6,214,160,0.12)', animation: 'kikoPulseRing 2s ease-in-out 0.5s infinite', pointerEvents: 'none' }} />
         </>}
-        {/* Subtle idle pulse — when closed and not in voice */}
+        {/* Idle breathing ring — subtle purple */}
         {!open && !voiceOpen && <>
-          <div style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: '1px solid rgba(139,108,246,0.06)', animation: 'kikoPulseRing 3s ease-in-out infinite', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', inset: -5, borderRadius: '50%', border: '1.5px solid rgba(139,108,246,0.1)', animation: 'kikoPulseRing 3s ease-in-out infinite', pointerEvents: 'none' }} />
         </>}
         <button onClick={toggleOpen} className={fabClass} style={{
-          width: 56, height: 56, borderRadius: '50%',
-          background: 'rgba(255,255,255,0.03)',
-          backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
-          border: voiceOpen ? '1.5px solid rgba(6,214,160,0.2)' : '1.5px solid rgba(255,255,255,0.08)',
+          width: 60, height: 60, borderRadius: '50%',
+          background: voiceOpen
+            ? 'radial-gradient(circle at 40% 35%, rgba(10,28,24,1), rgba(8,8,12,1))'
+            : 'radial-gradient(circle at 40% 35%, rgba(22,20,32,1), rgba(10,10,14,1))',
+          border: voiceOpen ? '2px solid rgba(6,214,160,0.25)' : '2px solid rgba(139,108,246,0.18)',
           color: 'rgba(255,255,255,0.9)',
           cursor: 'pointer',
           boxShadow: voiceOpen
-            ? 'inset 0 1px 0 rgba(255,255,255,0.1), 0 0 0 3px rgba(6,214,160,0.1), 0 0 28px rgba(6,214,160,0.12), 0 8px 24px rgba(0,0,0,0.3)'
-            : 'inset 0 1px 0 rgba(255,255,255,0.08), 0 0 16px rgba(139,108,246,0.06), 0 8px 24px rgba(0,0,0,0.3)',
+            ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)'
+            : '0 0 0 3px rgba(139,108,246,0.05), 0 0 20px rgba(139,108,246,0.08), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           overflow: 'hidden',
           transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
           transformOrigin: 'center',
           position: 'relative',
         }}
-          onMouseEnter={e => { if (!open) { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.3)' : 'rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'scale(1.06)' }}}
-          onMouseLeave={e => { if (!open) { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.2)' : 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'scale(1)' }}}
+          onMouseEnter={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.4)' : 'rgba(139,108,246,0.35)'; e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 5px rgba(6,214,160,0.12), 0 0 40px rgba(6,214,160,0.2), 0 12px 36px rgba(0,0,0,0.5)' : '0 0 0 4px rgba(139,108,246,0.08), 0 0 32px rgba(139,108,246,0.12), 0 12px 36px rgba(0,0,0,0.5)' }}}
+          onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'rgba(139,108,246,0.18)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4)' : '0 0 0 3px rgba(139,108,246,0.05), 0 0 20px rgba(139,108,246,0.08), 0 8px 28px rgba(0,0,0,0.4)' }}}
         >
           {open
             ? <X size={18} />
-            : <DoubleHelix width={36} height={36} mini />
+            : <DoubleHelix width={40} height={40} mini />
           }
         </button>
       </div>
