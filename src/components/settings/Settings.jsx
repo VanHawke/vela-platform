@@ -173,7 +173,7 @@ export default function Settings({ user }) {
   const cardStyle = { background: T.surface, borderRadius: T.radius, border: `1px solid ${T.border}`, padding: 20 }
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: T.bg }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'transparent' }}>
       {/* Header + Tabs */}
       <div style={{ padding: '24px 32px 0' }}>
         <h1 style={{ fontSize: 24, fontWeight: 400, color: T.text, margin: '0 0 20px', fontFamily: T.font }}>Settings</h1>

@@ -393,7 +393,7 @@ export default function CommercialCalendar() {
   const handleClick = (dateStr) => setSelected(s => s === dateStr ? null : dateStr)
 
   return (
-    <div style={{ display: 'flex', height: '100%', fontFamily: T.font, background: T.bg, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100%', fontFamily: T.font, background: 'transparent', overflow: 'hidden' }}>
 
       {/* ── Left: grid (55%) ── */}
       <div style={{ width: '55%', flexShrink: 0, display: 'flex', flexDirection: 'column', borderRight: `1.5px solid ${T.border}`, background: T.bg }}>

@@ -178,14 +178,14 @@ export default function News() {
   const rest = displayed.filter(a => !featured.includes(a))
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', fontFamily: T.font, background: T.bg, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', fontFamily: T.font, background: 'transparent', overflow: 'hidden' }}>
 
       {/* ── Header ── */}
       <div style={{ padding: '10px 16px', borderBottom: `1px solid ${T.border}`, background: T.surface, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
 
           {/* Search */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 50, border: `1px solid ${T.border}`, background: T.bg, width: 200 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 50, border: `1px solid ${T.border}`, background: 'transparent', width: 200 }}>
             <Search size={12} color={T.textTertiary} style={{ flexShrink: 0 }} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…"
               style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 12, color: T.text, width: '100%', fontFamily: T.font }} />
@@ -218,7 +218,7 @@ export default function News() {
           </div>
 
           {/* Sync */}
-          <button onClick={handleSync} disabled={syncing} style={{ width: 28, height: 28, borderRadius: 7, border: `1px solid ${T.border}`, background: T.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: T.textSecondary, flexShrink: 0 }}>
+          <button onClick={handleSync} disabled={syncing} style={{ width: 28, height: 28, borderRadius: 7, border: `1px solid ${T.border}`, background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: T.textSecondary, flexShrink: 0 }}>
             {syncing ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <RefreshCw size={12} />}
           </button>
         </div>

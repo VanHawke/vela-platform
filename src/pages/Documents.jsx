@@ -153,7 +153,7 @@ export default function Documents({ user }) {
   return (
     <div
       onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={handleDragOver} onDrop={handleDrop}
-      style={{ flex: 1, display: 'flex', flexDirection: 'column', fontFamily: T.font, background: T.bg, overflow: 'hidden', position: 'relative' }}>
+      style={{ flex: 1, display: 'flex', flexDirection: 'column', fontFamily: T.font, background: 'transparent', overflow: 'hidden', position: 'relative' }}>
 
       {/* Drag-and-drop overlay */}
       {dragOver && (

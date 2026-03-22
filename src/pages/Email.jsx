@@ -150,7 +150,7 @@ export default function Email({ user }) {
   const threadList = Object.values(threadMap).sort((a, b) => new Date(b.date) - new Date(a.date))
 
   return (
-    <div style={{ display: 'flex', height: '100%', fontFamily: T.font, background: T.bg }}>
+    <div style={{ display: 'flex', height: '100%', fontFamily: T.font, background: 'transparent' }}>
       {/* Left — Folders */}
       <div style={{ width: 200, borderRight: `1px solid ${T.border}`, padding: 12, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
         <button onClick={() => setComposing('new')} style={{

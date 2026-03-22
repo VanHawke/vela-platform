@@ -97,7 +97,7 @@ export default function PartnershipMatrix({ user }) {
   if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontFamily: T.font }}><Loader2 size={20} style={{ animation: 'spin 1s linear infinite', color: T.textTertiary }} /></div>
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', fontFamily: T.font, background: T.bg, color: T.text, overflow: 'hidden' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', fontFamily: T.font, background: 'transparent', color: T.text, overflow: 'hidden' }}>
       {/* Header */}
       <div style={{ padding: '12px 20px', borderBottom: `1px solid ${T.border}`, background: T.surface, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>

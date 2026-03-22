@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
 import T from '@/lib/theme'
-import { Settings, LogOut, Search, ChevronDown, BarChart3, Newspaper, Grid3X3, FileText } from 'lucide-react'
+import { Settings, LogOut, Search, ChevronDown, BarChart3, Newspaper, Grid3X3, FileText, Building2, CheckSquare } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
 import KikoSymbol from '../kiko/KikoSymbol'
 import CommandPalette from './CommandPalette'
@@ -147,14 +147,6 @@ export default function Layout({ user }) {
               </>
             )}
           </button>
-
-          {/* Breadcrumb — show on non-tab pages */}
-          {!isHome && pageLabel && !TABS.find(t => t.path === loc.pathname) && (
-            <>
-              <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.07)', margin: '0 10px' }} />
-              <span style={{ fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font)' }}>{pageLabel}</span>
-            </>
-          )}
         </div>
 
         {/* Center: Pill tab group — absolutely centered to prevent shift */}
@@ -200,11 +192,13 @@ export default function Layout({ user }) {
                   boxShadow: T.glassShadow, padding: '6px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
                 }}>
                   {[
+                    { label: 'Organisations', path: '/organisations', Icon: Building2 },
                     { label: 'Outreach Intelligence', path: '/email', Icon: BarChart3 },
                     { label: 'News Signals', path: '/news', Icon: Newspaper },
-                    { label: 'Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
-                    { label: 'Documents', path: '/documents', Icon: FileText },
-                  ].map(item => (
+                    { label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
+                    { label: 'Knowledge Library', path: '/documents', Icon: FileText },
+                    { label: 'Tasks', path: '/tasks', Icon: CheckSquare },
+                  ].filter(item => !TABS.find(t => t.path === item.path)).map(item => (
                     <button key={item.label} onClick={() => { nav(item.path); setMoreOpen(false) }} style={{
                       width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none',
                       background: loc.pathname === item.path ? 'rgba(255,255,255,0.08)' : 'transparent',
