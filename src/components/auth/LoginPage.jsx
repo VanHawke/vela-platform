@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Loader2, Eye, EyeOff } from 'lucide-react'
 import T from '@/lib/theme'
@@ -12,6 +12,13 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [gLoading, setGLoading] = useState(false)
+  const [customLogo, setCustomLogo] = useState(null)
+
+  // Load custom logo from settings
+  useEffect(() => {
+    supabase.from('settings').select('value').eq('key', 'custom_logo').maybeSingle()
+      .then(({ data }) => { if (data?.value) setCustomLogo(data.value) })
+  }, [])
 
   const googleLogin = async () => {
     setGLoading(true); setError('')
@@ -55,8 +62,13 @@ export default function LoginPage() {
       <div style={{ width: '100%', maxWidth: 400, textAlign: 'center', position: 'relative', zIndex: 5, padding: '0 24px' }}>
 
         {/* Brand logo — VAN HAWKE pill */}
+        {/* Brand logo — custom or default to Kiko */}
         <div style={{ marginBottom: 48, ...fadeUp(0) }}>
-          <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', fontFamily: T.font }}>VAN HAWKE</span>
+          {customLogo ? (
+            <img src={customLogo} alt="Logo" style={{ height: 32, maxWidth: 160, objectFit: 'contain' }} />
+          ) : (
+            <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', fontFamily: T.font }}>VAN HAWKE</span>
+          )}
         </div>
 
         {/* Kiko avatar — smoke trail wave */}
@@ -65,7 +77,7 @@ export default function LoginPage() {
         </div>
 
         {/* kiko label */}
-        <h1 style={{ fontSize: 28, fontWeight: 200, color: 'rgba(255,255,255,0.85)', letterSpacing: '-0.03em', margin: '0 0 6px', ...fadeUp(0.3) }}>kiko</h1>
+        <h1 style={{ fontSize: 28, fontWeight: 200, color: 'rgba(255,255,255,0.85)', letterSpacing: '-0.03em', margin: '0 0 6px', ...fadeUp(0.3) }}>Kiko</h1>
         <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.15)', fontWeight: 300, margin: '0 0 40px', ...fadeUp(0.4) }}>Your AI operating system</p>
 
         {/* Google OAuth — frosted glass pill */}

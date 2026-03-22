@@ -141,21 +141,37 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     window.dispatchEvent(new CustomEvent('kiko_voice_fullscreen', { detail: { active: true } }))
   }
 
-  // Stop voice mode
-  const stopVoice = () => {
+  // Stop voice mode — save transcript to history, return to homepage
+  const stopVoice = async () => {
     setVoiceActive(false)
     if (voiceMicStream) { voiceMicStream.getTracks().forEach(t => t.stop()); setVoiceMicStream(null) }
-    // Tell Layout to restore header
     window.dispatchEvent(new CustomEvent('kiko_voice_fullscreen', { detail: { active: false } }))
+
+    // Save voice conversation to chat history if there are messages
+    if (voiceMessages.length > 0) {
+      try {
+        const convId = `voice_${Date.now()}`
+        const mapped = voiceMessages.map(m => ({ role: m.role === 'kiko' ? 'assistant' : 'user', content: m.content }))
+        // Auto-rename from first user message
+        const firstUserMsg = voiceMessages.find(m => m.role === 'user')
+        const title = firstUserMsg ? firstUserMsg.content.slice(0, 60) + (firstUserMsg.content.length > 60 ? '...' : '') : 'Voice conversation'
+        await supabase.from('conversations').insert({
+          user_id: user?.id, org_id: user?.app_metadata?.org_id, title,
+          messages: mapped,
+        })
+      } catch (e) { console.warn('Failed to save voice transcript:', e) }
+    }
+
+    // Clear messages to return to homepage
+    setMessages([])
+    setVoiceMessages([])
   }
 
   // Voice state callback from headless KikoVoice
   const handleVoiceState = useCallback((state) => setVoiceState(state), [])
   const handleVoiceMessage = useCallback((msg) => {
+    // Only save to voiceMessages — NOT to main messages (prevents transcript from showing)
     setVoiceMessages(prev => [...prev, msg])
-    // Always add voice messages to main chat so they appear as transcript
-    const mapped = { role: msg.role === 'kiko' ? 'assistant' : 'user', content: msg.content }
-    setMessages(prev => [...prev, mapped])
   }, [])
 
   // Dictation (speech-to-text into input field) — uses Web Speech API for instant results
@@ -580,17 +596,17 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {/* IDLE STATE — wave above greeting */}
           {!voiceActive && (
             <>
-              {/* Wave — hero element, edge-faded, prominent */}
-              <div id="kikoWaveHome" style={{ width: '85%', maxWidth: 800, marginBottom: 32, transition: 'all 1s cubic-bezier(0.4,0,0,1)', overflow: 'visible', padding: '10px 0', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
-                <SmokeTrailWave width={800} height={90} />
+              {/* Wave — hero, large and centered */}
+              <div id="kikoWaveHome" style={{ width: '90%', maxWidth: 900, marginBottom: 56, transition: 'all 1s cubic-bezier(0.4,0,0,1)', overflow: 'visible', padding: '16px 0', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
+                <SmokeTrailWave width={900} height={100} />
               </div>
 
-              {/* Greeting — compact, close to prompt */}
+              {/* Greeting — compact */}
               <div id="kikoGreeting" style={{ transition: 'all 0.6s cubic-bezier(0.4,0,0,1)' }}>
-                <h1 style={{ fontSize: 28, fontWeight: 200, color: 'rgba(255,255,255,0.85)', margin: '0 0 4px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
+                <h1 style={{ fontSize: 26, fontWeight: 200, color: 'rgba(255,255,255,0.8)', margin: '0 0 4px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
                   {getGreeting()}, {firstName}
                 </h1>
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.12)', margin: '0 0 24px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.1)', margin: '0 0 20px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
               </div>
 
               {/* Prompt bar */}
