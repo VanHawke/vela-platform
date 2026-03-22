@@ -225,6 +225,20 @@ export default async function handler(req, res) {
   const timeStr = now.toLocaleTimeString('en-GB', { timeZone:'Europe/London', hour:'2-digit', minute:'2-digit' });
   const entityContext = await fetchEntityContext(pageEntity);
 
+  // ── Load relevant skills based on message keywords ──
+  let skillsContext = '';
+  try {
+    const skills = await sbFetch('kiko_skills?is_active=eq.true&select=name,trigger_keywords,content');
+    if (skills?.length) {
+      const msgLower = (message || '').toLowerCase();
+      const matched = skills.filter(s => s.trigger_keywords?.some(kw => msgLower.includes(kw)));
+      if (matched.length > 0) {
+        skillsContext = '\n\n── DOMAIN EXPERTISE (loaded for this query) ──\n' +
+          matched.map(s => `[${s.name}]\n${s.content}`).join('\n\n');
+      }
+    }
+  } catch (e) { console.error('[KIKO] Skills load error:', e.message); }
+
   // ── Voice mode: pre-load memory to avoid slow tool calls ──
   let voiceRules = '';
   let preloadedMemory = '';
@@ -250,7 +264,7 @@ export default async function handler(req, res) {
 
   const system = SYSTEM_PROMPT.replace('{currentPage}', currentPage)
     + `\n\n[Current: ${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
-    + pageRole + entityContext + voiceRules + preloadedMemory;
+    + pageRole + entityContext + skillsContext + voiceRules + preloadedMemory;
 
   // ── SSE setup ──
   res.setHeader('Content-Type', 'text/event-stream');
@@ -294,7 +308,7 @@ export default async function handler(req, res) {
     // Stream helper
     async function streamCall(msgs) {
       const params = {
-        model: MODEL, max_tokens: needsDeepThink ? 16000 : 4096, system, messages: msgs, tools: allTools,
+        model: needsDeepThink ? 'claude-opus-4-6' : MODEL, max_tokens: needsDeepThink ? 16000 : 4096, system, messages: msgs, tools: allTools,
       }
       if (needsDeepThink) {
         params.thinking = { type: 'enabled', budget_tokens: 10000 }

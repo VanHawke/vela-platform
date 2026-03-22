@@ -381,6 +381,8 @@ export default function Pipeline({ user }) {
     else if (newStage === 'Closed Lost') { updated.status = 'lost'; updated.lostDate = now.split('T')[0] }
     else updated.status = 'open'
     await supabase.from('deals').upsert({ id: deal._id, data: updated, updated_at: now }, { onConflict: 'id' })
+    // Log stage change for audit trail
+    await supabase.from('deal_stage_history').insert({ deal_id: deal._id, from_stage: deal.stage, to_stage: newStage, changed_by: 'user', changed_at: now })
     setDeals(prev => prev.map(d => d._id === deal._id ? { ...updated, _id: deal._id, updated_at: now } : d))
   }
 
