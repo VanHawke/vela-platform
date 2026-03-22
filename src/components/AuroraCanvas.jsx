@@ -1,12 +1,13 @@
 import { useEffect, useRef, memo } from 'react'
 
-// Aurora orbs — MUCH brighter for visible glass refraction
+// Aurora orbs — balanced colour palette (less purple dominance, more teal/amber warmth)
 const ORBS = [
-  { x: 0.12, y: 0.1, r: 500, color: [139, 108, 246], speed: 0.0003, phase: 0 },
-  { x: 0.88, y: 0.75, r: 450, color: [6, 214, 160], speed: 0.00025, phase: 2 },
-  { x: 0.7, y: 0.15, r: 350, color: [236, 72, 153], speed: 0.00035, phase: 4 },
-  { x: 0.25, y: 0.8, r: 380, color: [59, 130, 246], speed: 0.0002, phase: 1 },
-  { x: 0.5, y: 0.45, r: 420, color: [139, 108, 246], speed: 0.00015, phase: 3 },
+  { x: 0.08, y: 0.04, r: 600, color: [139, 108, 246], speed: 0.00025, phase: 0 },
+  { x: 0.85, y: 0.65, r: 580, color: [6, 214, 160], speed: 0.0002, phase: 2 },
+  { x: 0.65, y: 0.08, r: 400, color: [236, 72, 153], speed: 0.0003, phase: 4 },
+  { x: 0.18, y: 0.75, r: 500, color: [59, 130, 246], speed: 0.00018, phase: 1 },
+  { x: 0.5, y: 0.4, r: 350, color: [245, 158, 11], speed: 0.00015, phase: 3 },
+  { x: 0.35, y: 0.2, r: 280, color: [6, 214, 160], speed: 0.00022, phase: 5 },
 ]
 const AMBER_ORB = { x: 0.5, y: 0.35, r: 400, color: [245, 158, 11], speed: 0.0003, phase: 2.0 }
 
@@ -40,15 +41,15 @@ function AuroraCanvas({ extraOrb = null }) {
       const w = window.innerWidth, h = window.innerHeight
       ctx.clearRect(0, 0, w, h)
       for (const orb of orbsRef.current) {
-        const dx = Math.sin(t * orb.speed + orb.phase) * 60
-        const dy = Math.cos(t * orb.speed * 0.7 + orb.phase) * 45
+        const dx = Math.sin(t * orb.speed + orb.phase) * 80
+        const dy = Math.cos(t * orb.speed * 0.7 + orb.phase) * 60
         const px = orb.cx + dx, py = orb.cy + dy
-        const pulse = 0.18 + Math.sin(t * 0.0004 + orb.phase) * 0.06
+        const pulse = 0.30 + Math.sin(t * 0.0004 + orb.phase) * 0.08
         const [r, g, b] = orb.color
         const grad = ctx.createRadialGradient(px, py, 0, px, py, orb.r)
         grad.addColorStop(0, `rgba(${r},${g},${b},${pulse})`)
-        grad.addColorStop(0.4, `rgba(${r},${g},${b},${pulse * 0.5})`)
-        grad.addColorStop(0.7, `rgba(${r},${g},${b},${pulse * 0.15})`)
+        grad.addColorStop(0.3, `rgba(${r},${g},${b},${pulse * 0.6})`)
+        grad.addColorStop(0.6, `rgba(${r},${g},${b},${pulse * 0.25})`)
         grad.addColorStop(1, `rgba(${r},${g},${b},0)`)
         ctx.fillStyle = grad
         ctx.fillRect(0, 0, w, h)

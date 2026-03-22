@@ -416,10 +416,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     return (
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(40px) saturate(1.3)', WebkitBackdropFilter: 'blur(40px) saturate(1.3)',
-        borderRadius: 50, padding: welcome ? '6px 6px 6px 20px' : '4px 4px 4px 14px',
-        border: '0.5px solid rgba(255,255,255,0.12)',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 32px rgba(0,0,0,0.3)',
+        background: T.glass, backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
+        borderRadius: 50, padding: welcome ? '7px 7px 7px 24px' : '4px 4px 4px 14px',
+        border: `1.5px solid ${T.glassBorder}`,
+        boxShadow: T.glassShadow,
         maxWidth: welcome ? 520 : (compact ? '100%' : 640),
         width: '100%', margin: '0 auto',
       }}>
@@ -625,14 +625,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               }}>
                 {CHIPS.map(c => (
                   <button key={c} onClick={() => handleSubmit(c)} style={{
-                    padding: '8px 18px', borderRadius: 50, background: 'rgba(255,255,255,0.05)',
-                    backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                    border: '0.5px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.22)',
-                    fontSize: 12, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.3s', fontWeight: 300,
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+                    padding: '11px 26px', borderRadius: 50, background: T.glass,
+                    backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
+                    border: `1.5px solid ${T.glassBorder}`, color: 'rgba(255,255,255,0.45)',
+                    fontSize: 12, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.2s', fontWeight: 300,
+                    boxShadow: T.glassShadow,
                   }}
-                    onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(139,108,246,0.25)'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; e.currentTarget.style.background = 'rgba(139,108,246,0.1)' }}
-                    onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.22)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+                    onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = T.glassShadowHover }}
+                    onMouseOut={e => { e.currentTarget.style.borderColor = T.glassBorder; e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; e.currentTarget.style.background = T.glass; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = T.glassShadow }}
                   >{c}</button>
                 ))}
               </div>
@@ -648,11 +648,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   onMouseUp={e => { alertSwipeRef.current.dragging = false; const dx = parseFloat(e.currentTarget.style.transform?.match(/translateX\((.+)px\)/)?.[1] || 0); if (Math.abs(dx) > 80) { e.currentTarget.style.transition = 'all 0.3s'; e.currentTarget.style.transform = `translateX(${dx > 0 ? 300 : -300}px)`; e.currentTarget.style.opacity = '0'; setTimeout(() => setAlertDismissed(true), 300) } else { e.currentTarget.style.transition = 'all 0.3s'; e.currentTarget.style.transform = 'translateX(0)'; e.currentTarget.style.opacity = '1' }}}
                   onMouseLeave={e => { if (alertSwipeRef.current.dragging) { alertSwipeRef.current.dragging = false; e.currentTarget.style.transition = 'all 0.3s'; e.currentTarget.style.transform = 'translateX(0)'; e.currentTarget.style.opacity = '1' }}}
                   style={{
-                    width: '100%', maxWidth: 540, borderRadius: 50, background: 'rgba(245,158,11,0.06)',
-                    backdropFilter: 'blur(40px) saturate(1.3)', WebkitBackdropFilter: 'blur(40px) saturate(1.3)',
-                    border: '0.5px solid rgba(245,158,11,0.14)', padding: '10px 18px',
+                    width: '100%', maxWidth: 540, borderRadius: 50, background: 'rgba(245,158,11,0.04)',
+                    backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
+                    border: '1.5px solid rgba(245,158,11,0.14)', padding: '10px 18px',
                     display: 'flex', alignItems: 'center', gap: 12, cursor: 'grab',
-                    boxShadow: 'inset 0 1px 0 rgba(245,158,11,0.06)',
+                    boxShadow: 'inset 0 2px 0 rgba(245,158,11,0.06), inset 0 -1px 0 rgba(0,0,0,0.1), 0 8px 32px rgba(0,0,0,0.25)',
                     userSelect: 'none', touchAction: 'pan-y',
                   }}
                 >

@@ -52,12 +52,12 @@ export default function LoginPage() {
   })
 
   const inputStyle = {
-    width: '100%', height: 48, borderRadius: 50,
-    border: '0.5px solid rgba(255,255,255,0.08)',
-    background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)',
-    padding: '0 20px', fontSize: 14, color: T.text, outline: 'none',
-    fontFamily: T.font, fontWeight: 300, transition: 'border-color 0.3s',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+    width: '100%', height: 54, borderRadius: 50,
+    border: `1.5px solid ${T.glassBorder}`,
+    background: T.glass, backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
+    padding: '0 22px', fontSize: 14, color: T.text, outline: 'none',
+    fontFamily: T.font, fontWeight: 300, transition: 'all 0.2s',
+    boxShadow: T.glassShadow,
   }
 
   return (
@@ -88,9 +88,9 @@ export default function LoginPage() {
 
         {/* Google OAuth — frosted glass pill */}
         <button onClick={googleLogin} disabled={gLoading} style={{
-          width: '100%', height: 52, borderRadius: 50,
-          border: '0.5px solid rgba(255,255,255,0.12)',
-          background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(40px) saturate(1.3)',
+          width: '100%', height: 54, borderRadius: 50,
+          border: `1.5px solid ${T.glassBorder}`,
+          background: T.glass, backdropFilter: T.glassBlur,
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
           fontSize: 14, fontWeight: 400, color: T.text, cursor: 'pointer', fontFamily: T.font,
           transition: 'all 0.3s',

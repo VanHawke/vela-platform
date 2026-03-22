@@ -159,7 +159,7 @@ export default function Layout({ user }) {
 
         {/* Center: Pill tab group — absolutely centered to prevent shift */}
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: 3, background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)', borderRadius: 50, padding: 4, border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07)' }}>
+          <div style={{ display: 'flex', gap: 3, background: T.glass, backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur, borderRadius: 50, padding: 5, border: `1.5px solid ${T.glassBorder}`, boxShadow: T.glassShadow }}>
             {TABS.map(tab => {
               const active = isTabActive(tab.path)
               return (
@@ -167,13 +167,16 @@ export default function Layout({ user }) {
                   if (tab.path === '/') { setKikoMessages([]); setKikoConvId(null); setKikoResetKey(k => k + 1) }
                   nav(tab.path)
                 }} style={{
-                  padding: '7px 20px', borderRadius: 50, border: 'none',
+                  padding: '9px 24px', borderRadius: 50, border: 'none',
                   background: active ? 'rgba(255,255,255,0.1)' : 'transparent',
-                  color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.25)',
+                  color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)',
                   fontSize: 12, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: T.font,
-                  transition: 'all 0.15s', letterSpacing: '0.01em',
-                  boxShadow: active ? 'inset 0 1px 0 rgba(255,255,255,0.08)' : 'none',
-                }}>{tab.label}</button>
+                  boxShadow: active ? 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 8px rgba(0,0,0,0.2)' : 'none',
+                  transition: 'all 0.2s',
+                }}
+                  onMouseOver={e => { if (!active) { e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}}
+                  onMouseOut={e => { if (!active) { e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; e.currentTarget.style.background = 'transparent' }}}
+                >{tab.label}</button>
               )
             })}
             {/* More tab with dropdown */}
@@ -189,9 +192,9 @@ export default function Layout({ user }) {
               {moreOpen && (
                 <div style={{
                   position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-                  width: 220, background: 'rgba(14,14,20,0.85)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-                  borderRadius: 16, border: `0.5px solid ${T.glassBorder}`,
-                  boxShadow: '0 8px 40px rgba(0,0,0,0.5)', padding: '6px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
+                  width: 240, background: 'rgba(14,14,20,0.85)', backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
+                  borderRadius: 18, border: `1.5px solid ${T.glassBorder}`,
+                  boxShadow: T.glassShadow, padding: '6px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
                 }}>
                   {[
                     { label: 'Outreach Intelligence', path: '/email', Icon: BarChart3 },
