@@ -132,9 +132,9 @@ export default function ContactDetail() {
 
   const urgencyColor = (u) => u === 'overdue' ? '#ef4444' : u === 'high' ? '#f59e0b' : u === 'due' ? '#3b82f6' : 'var(--text-tertiary)'
 
-  const glass = { background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: '0.5px solid rgba(255,255,255,0.08)', boxShadow: '0 8px 36px rgba(0,0,0,0.3)' }
-  const card = { background: 'rgba(255,255,255,0.06)', borderRadius: 18, padding: 24, border: '0.5px solid rgba(255,255,255,0.08)', boxShadow: 'none' }
-  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
+  const glass = { background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 36px rgba(0,0,0,0.3)' }
+  const card = { background: 'rgba(255,255,255,0.07)', borderRadius: 18, padding: 24, border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }
+  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.07)', border: '1px solid var(--border)', borderRadius: 50, padding: '10px 14px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
   const labelStyle = { fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }
   const sectionTitle = { fontSize: 12, fontWeight: 400, color: 'var(--text)', fontFamily: 'var(--font)', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.04em' }
   const emptyText = { fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', fontStyle: 'italic' }
@@ -147,7 +147,7 @@ export default function ContactDetail() {
       {/* Glass toolbar */}
       <div style={{ margin: '0 16px', padding: '10px 20px', borderRadius: 18, ...glass, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={() => nav('/contacts')} style={{ background: 'rgba(255,255,255,0.04)', border: 'none', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+          <button onClick={() => nav('/contacts')} style={{ background: 'rgba(255,255,255,0.04)', border: 'none', borderRadius: 50, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)' }}>
             <ArrowLeft style={{ width: 16, height: 16 }} />
           </button>
           <div>
@@ -155,7 +155,7 @@ export default function ContactDetail() {
             {contact.title && <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{contact.title}</p>}
           </div>
         </div>
-        <button onClick={() => setEditing(!editing)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, background: editing ? 'transparent' : 'var(--accent)', color: editing ? 'var(--text-secondary)' : '#fff', padding: '6px 14px', borderRadius: 8, border: editing ? '1px solid var(--border)' : 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+        <button onClick={() => setEditing(!editing)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, background: editing ? 'transparent' : 'var(--accent)', color: editing ? 'var(--text-secondary)' : '#fff', padding: '6px 14px', borderRadius: 50, border: editing ? '1px solid var(--border)' : 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
           {editing ? <><X style={{ width: 14, height: 14 }} /> Cancel</> : <><Edit3 style={{ width: 14, height: 14 }} /> Edit</>}
         </button>
       </div>
@@ -170,7 +170,7 @@ export default function ContactDetail() {
               {contact.picture ? (
                 <img src={contact.picture} alt="" style={{ width: 56, height: 56, borderRadius: 18, objectFit: 'cover' }} />
               ) : (
-                <div style={{ width: 56, height: 56, borderRadius: 18, background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 56, height: 56, borderRadius: 18, background: 'rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ fontSize: 22, fontWeight: 400, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{(contact.firstName || contact.lastName || '?')[0]?.toUpperCase()}</span>
                 </div>
               )}
@@ -186,9 +186,9 @@ export default function ContactDetail() {
             </div>
             {/* Quick actions */}
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {contact.email && <a href={`mailto:${contact.email}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: 8, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(255,255,255,0.06)' }}><Mail style={{ width: 13, height: 13 }} /> Email</a>}
-              {contact.phone && <a href={`tel:${contact.phone}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: 8, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(255,255,255,0.06)' }}><Phone style={{ width: 13, height: 13 }} /> Call</a>}
-              {contact.linkedin && <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: 8, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(255,255,255,0.06)' }}><Linkedin style={{ width: 13, height: 13 }} /> LinkedIn</a>}
+              {contact.email && <a href={`mailto:${contact.email}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.07)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(255,255,255,0.07)' }}><Mail style={{ width: 13, height: 13 }} /> Email</a>}
+              {contact.phone && <a href={`tel:${contact.phone}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.07)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(255,255,255,0.07)' }}><Phone style={{ width: 13, height: 13 }} /> Call</a>}
+              {contact.linkedin && <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.07)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(255,255,255,0.07)' }}><Linkedin style={{ width: 13, height: 13 }} /> LinkedIn</a>}
             </div>
           </div>
 
@@ -196,7 +196,7 @@ export default function ContactDetail() {
           <div style={card}>
             <p style={sectionTitle}>Tasks Due</p>
             {nextTask ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'rgba(0,0,0,0.02)', borderRadius: 10, border: `1px solid ${urgencyColor(nextTask.urgency)}20` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'rgba(0,0,0,0.02)', borderRadius: 50, border: `1px solid ${urgencyColor(nextTask.urgency)}20` }}>
                 <CalendarCheck style={{ width: 16, height: 16, color: urgencyColor(nextTask.urgency), flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{nextTask.label}</p>
@@ -235,9 +235,9 @@ export default function ContactDetail() {
           {dealInfo && (
             <div style={card}>
               <p style={sectionTitle}>Deal Pipeline</p>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(0,0,0,0.02)', borderRadius: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(0,0,0,0.02)', borderRadius: 50 }}>
                 <p style={{ fontSize: 12, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{dealInfo.pipeline || '—'}</p>
-                <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, background: dealInfo.stage === 'Closed Won' ? 'rgba(16,185,129,0.08)' : dealInfo.stage === 'Closed Lost' ? 'rgba(239,68,68,0.08)' : 'rgba(59,130,246,0.08)', color: dealInfo.stage === 'Closed Won' ? '#10b981' : dealInfo.stage === 'Closed Lost' ? '#ef4444' : '#3b82f6', fontWeight: 500, fontFamily: 'var(--font)' }}>{dealInfo.stage || '—'}</span>
+                <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 50, background: dealInfo.stage === 'Closed Won' ? 'rgba(16,185,129,0.08)' : dealInfo.stage === 'Closed Lost' ? 'rgba(239,68,68,0.08)' : 'rgba(59,130,246,0.08)', color: dealInfo.stage === 'Closed Won' ? '#10b981' : dealInfo.stage === 'Closed Lost' ? '#ef4444' : '#3b82f6', fontWeight: 500, fontFamily: 'var(--font)' }}>{dealInfo.stage || '—'}</span>
               </div>
             </div>
           )}
@@ -259,7 +259,7 @@ export default function ContactDetail() {
                     <div key={f.key}><p style={labelStyle}>{f.label}</p><input value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} style={inputStyle} /></div>
                   ))}
                   <div><p style={labelStyle}>Notes</p><textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} rows={3} style={{ ...inputStyle, resize: 'none' }} /></div>
-                  <button onClick={save} style={{ alignSelf: 'flex-end', fontSize: 13, fontWeight: 500, background: 'var(--accent)', color: '#fff', padding: '8px 20px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Save Changes</button>
+                  <button onClick={save} style={{ alignSelf: 'flex-end', fontSize: 13, fontWeight: 500, background: 'var(--accent)', color: '#fff', padding: '8px 20px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Save Changes</button>
                 </div>
               </>
             ) : (
@@ -304,7 +304,7 @@ export default function ContactDetail() {
             {campaigns.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {campaigns.slice(0, 1).map(c => (
-                  <div key={c.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'rgba(59,130,246,0.04)', borderRadius: 10, border: '1px solid rgba(59,130,246,0.1)' }}>
+                  <div key={c.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'rgba(59,130,246,0.04)', borderRadius: 50, border: '1px solid rgba(59,130,246,0.1)' }}>
                     <Send style={{ width: 14, height: 14, color: '#3b82f6', flexShrink: 0 }} />
                     <div>
                       <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{c.name}</p>
@@ -326,7 +326,7 @@ export default function ContactDetail() {
             {campaigns.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {campaigns.map(c => (
-                  <div key={c.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(0,0,0,0.02)', borderRadius: 8 }}>
+                  <div key={c.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(0,0,0,0.02)', borderRadius: 50 }}>
                     <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0, fontFamily: 'var(--font)' }}>{c.name}</p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       {c.events > 0 && <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>{c.events} events</span>}
@@ -356,7 +356,7 @@ export default function ContactDetail() {
                   </div>
                 )}
                 {lastReceived && (
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', background: 'rgba(16,185,129,0.04)', borderRadius: 10, border: '1px solid rgba(16,185,129,0.1)' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', background: 'rgba(16,185,129,0.04)', borderRadius: 50, border: '1px solid rgba(16,185,129,0.1)' }}>
                     <Inbox style={{ width: 14, height: 14, color: '#10b981', flexShrink: 0, marginTop: 2 }} />
                     <div>
                       <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Last received: {activityLabel(lastReceived.type)}</p>

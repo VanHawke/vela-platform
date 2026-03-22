@@ -86,7 +86,7 @@ export default function PipelineNotifications() {
           {unread > 0 ? <BellRing size={15} style={{ color: T.red }} /> : <Bell size={15} style={{ color: T.textTertiary }} />}
           <span style={{ fontSize: 13, fontWeight: 400, color: T.text }}>Pipeline Activity</span>
           {unread > 0 && (
-            <span style={{ fontSize: 10, fontWeight: 500, color: '#fff', background: T.red, borderRadius: 8, padding: '1px 6px', minWidth: 18, textAlign: 'center' }}>{unread}</span>
+            <span style={{ fontSize: 10, fontWeight: 500, color: '#fff', background: T.red, borderRadius: 50, padding: '1px 6px', minWidth: 18, textAlign: 'center' }}>{unread}</span>
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -115,7 +115,7 @@ export default function PipelineNotifications() {
               }} onMouseOver={e => e.currentTarget.style.background = T.accentSoft}
                  onMouseOut={e => e.currentTarget.style.background = n.is_read ? 'transparent' : 'rgba(0,122,255,0.02)'}>
                 {/* Icon */}
-                <div style={{ width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: config.bg, flexShrink: 0, marginTop: 2 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: config.bg, flexShrink: 0, marginTop: 2 }}>
                   <Icon size={13} style={{ color: config.color }} />
                 </div>
                 {/* Content */}

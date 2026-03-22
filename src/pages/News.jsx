@@ -84,7 +84,7 @@ function ArticleCard({ article, onStar, featured = false }) {
   const cardStyle = {
     background: featured ? sig.bg : T.surface,
     border: `0.5px solid ${featured ? sig.border : T.border}`,
-    borderRadius: 14,
+    borderRadius: 50,
     padding: '14px 16px',
     display: 'flex',
     flexDirection: 'column',
@@ -255,7 +255,7 @@ export default function News() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
 
           {/* Search */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 8, border: `1px solid ${T.border}`, background: T.bg, width: 200 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 50, border: `1px solid ${T.border}`, background: T.bg, width: 200 }}>
             <Search size={12} color={T.textTertiary} style={{ flexShrink: 0 }} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…"
               style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 12, color: T.text, width: '100%', fontFamily: T.font }} />
@@ -266,7 +266,7 @@ export default function News() {
           <div style={{ display: 'flex', gap: 4, flex: 1, flexWrap: 'wrap' }}>
             {FILTERS.map(f => (
               <button key={f.id} onClick={() => setFilter(f.id)} style={{
-                padding: '5px 11px', borderRadius: 20, fontSize: 11, fontFamily: T.font, cursor: 'pointer',
+                padding: '5px 11px', borderRadius: 50, fontSize: 11, fontFamily: T.font, cursor: 'pointer',
                 fontWeight: filter === f.id ? 500 : 400, whiteSpace: 'nowrap', transition: 'all 0.1s',
                 border: filter === f.id ? `1px solid ${T.text}` : `1px solid ${T.border}`,
                 background: filter === f.id ? T.text : T.surface,

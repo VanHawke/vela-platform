@@ -257,7 +257,7 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
       {/* Send bar */}
       <div style={{ padding: '10px 16px', borderTop: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
         <button onClick={handleSend} disabled={sending || !to.trim()} style={{
-          height: 36, padding: '0 20px', borderRadius: 10, border: 'none',
+          height: 36, padding: '0 20px', borderRadius: 50, border: 'none',
           background: to.trim() ? T.accent : T.accentSoft,
           color: to.trim() ? '#fff' : T.textTertiary,
           fontSize: 13, fontWeight: 400, cursor: 'pointer', fontFamily: T.font,

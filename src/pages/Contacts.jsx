@@ -78,79 +78,125 @@ export default function Contacts({ user }) {
 
   const displayName = (c) => [c.firstName, c.lastName].filter(Boolean).join(' ') || 'Unnamed'
 
-  const glass = { margin: '0 16px', padding: '12px 20px', borderRadius: 18, background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: '0.5px solid rgba(255,255,255,0.08)', boxShadow: '0 8px 36px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
-  const card = { background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(32px)', WebkitBackdropFilter: 'blur(32px)', borderRadius: 14, padding: '14px 18px', border: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.2s ease', cursor: 'pointer' }
-  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid var(--border)', borderRadius: 14, padding: '10px 14px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
+  const glass = { padding: '12px 20px', borderRadius: 20, background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(40px) saturate(1.3)', WebkitBackdropFilter: 'blur(40px) saturate(1.3)', border: '0.5px solid rgba(255,255,255,0.12)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
+  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: 50, padding: '10px 14px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
+  const pillBtn = (bg, bc, col) => ({ padding: '8px 18px', borderRadius: 50, background: bg, border: `0.5px solid ${bc}`, fontSize: 11, color: col, fontWeight: 400, cursor: 'pointer', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)', fontFamily: 'var(--font)' })
+  const actionBtn = { width: 30, height: 30, borderRadius: 50, background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.15)', cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)', flexShrink: 0 }
+  const stageColors = { 'To revisit': ['rgba(255,255,255,0.04)','rgba(255,255,255,0.08)','rgba(255,255,255,0.2)'], 'Contact made': ['rgba(139,108,246,0.08)','rgba(139,108,246,0.15)','rgba(139,108,246,0.55)'], 'In Dialogue': ['rgba(245,158,11,0.08)','rgba(245,158,11,0.15)','rgba(245,158,11,0.6)'], 'Qualified': ['rgba(6,214,160,0.08)','rgba(6,214,160,0.15)','rgba(6,214,160,0.55)'], 'Meeting arranged (brand x RH)': ['rgba(59,130,246,0.08)','rgba(59,130,246,0.15)','rgba(59,130,246,0.55)'] }
+  const avatarColors = ['rgba(139,108,246,0.15)', 'rgba(6,214,160,0.15)', 'rgba(236,72,153,0.15)', 'rgba(59,130,246,0.15)', 'rgba(245,158,11,0.15)']
+  const avatarTextColors = ['rgba(139,108,246,0.7)', 'rgba(6,214,160,0.7)', 'rgba(236,72,153,0.7)', 'rgba(59,130,246,0.7)', 'rgba(245,158,11,0.7)']
+  const getAvatarColor = (name) => { const i = (name || '').charCodeAt(0) % 5; return [avatarColors[i], avatarTextColors[i]] }
+  const getStage = (c) => { const s = c.stage || c.dealStage || ''; return stageColors[s] ? s : '' }
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: 8 }}>
-      <div style={glass}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* Toolbar */}
+      <div style={{ padding: '20px 24px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h1 style={{ fontSize: 18, fontWeight: 300, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Contacts</h1>
-          <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{filtered.length.toLocaleString()} contact{filtered.length !== 1 ? 's' : ''}</p>
+          <div style={{ fontSize: 22, fontWeight: 200, color: 'rgba(255,255,255,0.88)', letterSpacing: '-0.03em', fontFamily: 'var(--font)' }}>Contacts</div>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.2)', fontWeight: 300, marginTop: 2, fontFamily: 'var(--font)' }}>{filtered.length.toLocaleString()} contacts</div>
         </div>
-        <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, background: 'var(--accent)', color: '#fff', padding: '6px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
-          <Plus style={{ width: 14, height: 14 }} /> Add Contact
-        </button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', width: 260, background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(30px)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: 50, padding: '0 16px', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)' }}>
+            <Search style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.2)', flexShrink: 0, marginRight: 8 }} />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search contacts..." style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 13, color: 'rgba(255,255,255,0.7)', fontFamily: 'var(--font)', height: 38, fontWeight: 300 }} />
+          </div>
+          <select value={sortDir} onChange={e => setSortDir(e.target.value)} style={pillBtn('rgba(139,108,246,0.08)','rgba(139,108,246,0.18)','rgba(139,108,246,0.65)')}>
+            <option value="asc">A → Z</option><option value="desc">Z → A</option>
+          </select>
+          <button onClick={() => setShowForm(true)} style={pillBtn('rgba(6,214,160,0.08)','rgba(6,214,160,0.15)','rgba(6,214,160,0.6)')}>+ Add</button>
+        </div>
       </div>
 
-      <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ position: 'relative', flex: 1, maxWidth: 320 }}>
-          <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: 'var(--text-tertiary)' }} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search contacts..." style={{ ...inputStyle, padding: '8px 12px 8px 34px' }} />
+      {/* Main content — list + sidebar */}
+      <div style={{ flex: 1, padding: '16px 24px', display: 'flex', gap: 16, overflow: 'hidden' }}>
+        {/* Contact list */}
+        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {loading ? (
+            [...Array(8)].map((_, i) => <div key={i} style={{ height: 64, background: 'rgba(255,255,255,0.03)', borderRadius: 16, animation: 'shimmer 1.5s infinite' }} />)
+          ) : paged.length === 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'rgba(255,255,255,0.15)' }}>
+              <User style={{ width: 32, height: 32, marginBottom: 12, opacity: 0.3 }} />
+              <p style={{ fontSize: 13, fontFamily: 'var(--font)', fontWeight: 300 }}>{search ? 'No contacts match' : 'No contacts yet'}</p>
+            </div>
+          ) : (
+            <>
+              {paged.map(contact => {
+                const [abg, atc] = getAvatarColor(contact.firstName || contact.lastName)
+                const stage = getStage(contact)
+                const sc = stageColors[stage]
+                return (
+                  <div key={contact.id} onClick={() => nav(`/contacts/${contact.id}`)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', borderRadius: 16, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)', border: '0.5px solid rgba(255,255,255,0.08)', cursor: 'pointer', transition: 'all 0.3s', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}>
+                    {/* Avatar */}
+                    <div style={{ width: 40, height: 40, borderRadius: 50, background: abg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)' }}>
+                      <span style={{ fontSize: 13, fontWeight: 400, color: atc, fontFamily: 'var(--font)' }}>{(contact.firstName || '?')[0]?.toUpperCase()}{(contact.lastName || '')[0]?.toUpperCase() || ''}</span>
+                    </div>
+                    {/* Info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.82)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName(contact)}</div>
+                      <div style={{ fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 1 }}>{[contact.title, contact.company].filter(Boolean).join(' · ') || '—'}</div>
+                    </div>
+                    {/* Stage pill */}
+                    {stage && sc && (
+                      <div style={{ fontSize: 10, padding: '4px 12px', borderRadius: 50, background: sc[0], border: `0.5px solid ${sc[1]}`, color: sc[2], fontWeight: 400, backdropFilter: 'blur(12px)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)', whiteSpace: 'nowrap', flexShrink: 0 }}>{stage}</div>
+                    )}
+                    {/* Quick actions */}
+                    <div style={{ display: 'flex', gap: 4, flexShrink: 0, marginLeft: 8 }}>
+                      {contact.email && <a href={`mailto:${contact.email}`} onClick={e => e.stopPropagation()} style={actionBtn} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,108,246,0.12)'; e.currentTarget.style.borderColor = 'rgba(139,108,246,0.2)'; e.currentTarget.style.color = 'rgba(139,108,246,0.6)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.15)' }}><Mail style={{ width: 14, height: 14 }} /></a>}
+                      {contact.linkedin && <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={actionBtn} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,108,246,0.12)'; e.currentTarget.style.borderColor = 'rgba(139,108,246,0.2)'; e.currentTarget.style.color = 'rgba(139,108,246,0.6)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.15)' }}><Linkedin style={{ width: 14, height: 14 }} /></a>}
+                      {contact.phone && <a href={`tel:${contact.phone}`} onClick={e => e.stopPropagation()} style={actionBtn} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,108,246,0.12)'; e.currentTarget.style.borderColor = 'rgba(139,108,246,0.2)'; e.currentTarget.style.color = 'rgba(139,108,246,0.6)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.15)' }}><Phone style={{ width: 14, height: 14 }} /></a>}
+                    </div>
+                  </div>
+                )
+              })}
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 0', fontSize: 12, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)' }}>
+                  <button disabled={page === 0} onClick={() => setPage(p => p - 1)} style={{ background: 'none', border: 'none', cursor: page === 0 ? 'default' : 'pointer', opacity: page === 0 ? 0.3 : 1, color: 'rgba(255,255,255,0.3)', padding: 4 }}><ChevronLeft style={{ width: 16, height: 16 }} /></button>
+                  <span>{page + 1} / {totalPages}</span>
+                  <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} style={{ background: 'none', border: 'none', cursor: page >= totalPages - 1 ? 'default' : 'pointer', opacity: page >= totalPages - 1 ? 0.3 : 1, color: 'rgba(255,255,255,0.3)', padding: 4 }}><ChevronRight style={{ width: 16, height: 16 }} /></button>
+                </div>
+              )}
+            </>
+          )}
         </div>
-        <select value={sortDir} onChange={e => setSortDir(e.target.value)} style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid var(--border)', borderRadius: 10, padding: '6px 10px', fontSize: 11, color: 'var(--text-secondary)', outline: 'none', fontFamily: 'var(--font)', cursor: 'pointer' }}>
-          <option value="asc">A → Z</option>
-          <option value="desc">Z → A</option>
-        </select>
-        {totalPages > 1 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>
-            <button disabled={page === 0} onClick={() => setPage(p => p - 1)} style={{ background: 'none', border: 'none', cursor: page === 0 ? 'default' : 'pointer', opacity: page === 0 ? 0.3 : 1, color: 'var(--text-secondary)', padding: 2 }}><ChevronLeft style={{ width: 16, height: 16 }} /></button>
-            <span>{page + 1} / {totalPages}</span>
-            <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} style={{ background: 'none', border: 'none', cursor: page >= totalPages - 1 ? 'default' : 'pointer', opacity: page >= totalPages - 1 ? 0.3 : 1, color: 'var(--text-secondary)', padding: 2 }}><ChevronRight style={{ width: 16, height: 16 }} /></button>
-          </div>
-        )}
-      </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 16px' }}>
-        {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{[...Array(8)].map((_, i) => <div key={i} style={{ height: 64, background: 'rgba(255,255,255,0.02)', borderRadius: 14, animation: 'pulse 1.5s infinite' }} />)}</div>
-        ) : paged.length === 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-tertiary)' }}>
-            <User style={{ width: 32, height: 32, marginBottom: 12, opacity: 0.4 }} />
-            <p style={{ fontSize: 13, fontFamily: 'var(--font)' }}>{search ? 'No contacts match' : 'No contacts yet'}</p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {paged.map(contact => (
-              <div key={contact.id} style={card} onClick={() => nav(`/contacts/${contact.id}`)} onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'translateY(-1px)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.transform = 'translateY(0)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, flex: 1 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 18, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font)' }}>{(contact.firstName || contact.lastName || '?')[0]?.toUpperCase()}</span>
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.85)', margin: 0, fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName(contact)}</p>
-                    <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[contact.title, contact.company].filter(Boolean).join(' · ') || '—'}</p>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, marginLeft: 16 }}>
-                  {contact.email && <a href={`mailto:${contact.email}`} onClick={e => e.stopPropagation()} style={{ color: 'var(--text-tertiary)', transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-tertiary)'}><Mail style={{ width: 15, height: 15 }} /></a>}
-                  {contact.linkedin && <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ color: 'var(--text-tertiary)', transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = '#0a66c2'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-tertiary)'}><Linkedin style={{ width: 15, height: 15 }} /></a>}
-                  {contact.phone && <a href={`tel:${contact.phone}`} onClick={e => e.stopPropagation()} style={{ color: 'var(--text-tertiary)', transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-tertiary)'}><Phone style={{ width: 15, height: 15 }} /></a>}
-                  <button onClick={(e) => { e.stopPropagation(); edit(contact) }} style={{ fontSize: 11, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', opacity: 0.5, transition: 'opacity 0.15s' }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}>Edit</button>
-                  <button onClick={(e) => { e.stopPropagation(); remove(contact.id) }} style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', opacity: 0.3, transition: 'all 0.15s', padding: 2 }} onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = '#ef4444' }} onMouseLeave={e => { e.currentTarget.style.opacity = '0.3'; e.currentTarget.style.color = 'var(--text-tertiary)' }}><X style={{ width: 14, height: 14 }} /></button>
-                </div>
+        {/* Right sidebar */}
+        <div style={{ width: 200, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto' }}>
+          {/* Overview stats */}
+          <div style={{ ...glass, flexDirection: 'column', alignItems: 'stretch', padding: 18 }}>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.15)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, marginBottom: 12, fontFamily: 'var(--font)' }}>Overview</div>
+            {[
+              ['Total', filtered.length.toLocaleString(), 'rgba(255,255,255,0.6)'],
+              ['With email', contacts.filter(c => c.email).length.toLocaleString(), 'rgba(6,214,160,0.6)'],
+              ['With company', contacts.filter(c => c.company).length.toLocaleString(), 'rgba(139,108,246,0.6)'],
+            ].map(([label, val, col]) => (
+              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontWeight: 300, fontFamily: 'var(--font)' }}>{label}</span>
+                <span style={{ fontSize: 12, color: col, fontWeight: 400, fontFamily: 'var(--font)' }}>{val}</span>
               </div>
             ))}
           </div>
-        )}
+          {/* Alphabet nav */}
+          <div style={{ borderRadius: 20, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(30px)', border: '0.5px solid rgba(255,255,255,0.08)', padding: 14, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)', display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
+            {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(l => (
+              <button key={l} onClick={() => setSearch(l)} style={{ width: 24, height: 24, borderRadius: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'rgba(255,255,255,0.15)', cursor: 'pointer', fontWeight: 300, transition: 'all 0.2s', background: 'transparent', border: 'none', fontFamily: 'var(--font)' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,108,246,0.12)'; e.currentTarget.style.color = 'rgba(139,108,246,0.6)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.15)' }}
+              >{l}</button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {showForm && (
         <div onClick={e => e.target === e.currentTarget && reset()} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(24px)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div style={{ background: 'rgba(14,14,20,0.9)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 20, border: '0.5px solid rgba(255,255,255,0.08)', boxShadow: '0 24px 80px rgba(0,0,0,0.5)', width: '100%', maxWidth: 420, padding: 24 }}>
+          <div style={{ background: 'rgba(14,14,20,0.9)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 24, border: '0.5px solid rgba(255,255,255,0.12)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 24px 80px rgba(0,0,0,0.5)', width: '100%', maxWidth: 420, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-              <h2 style={{ fontSize: 16, fontWeight: 300, color: 'rgba(255,255,255,0.9)', margin: 0, fontFamily: 'var(--font)' }}>{editing ? 'Edit Contact' : 'Add Contact'}</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 200, color: 'rgba(255,255,255,0.9)', margin: 0, fontFamily: 'var(--font)' }}>{editing ? 'Edit Contact' : 'Add Contact'}</h2>
               <button onClick={reset} style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer' }}><X style={{ width: 16, height: 16 }} /></button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -164,8 +210,8 @@ export default function Contacts({ user }) {
               <textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Notes" rows={2} style={{ ...inputStyle, resize: 'none' }} />
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-              <button onClick={reset} style={{ flex: 1, padding: '10px 0', fontSize: 13, color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 10, background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font)' }}>Cancel</button>
-              <button onClick={save} style={{ flex: 1, padding: '10px 0', fontSize: 13, color: '#fff', background: 'var(--accent)', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 500, fontFamily: 'var(--font)' }}>Save</button>
+              <button onClick={reset} style={{ flex: 1, padding: '10px 0', fontSize: 13, color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 50, background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font)' }}>Cancel</button>
+              <button onClick={save} style={{ flex: 1, padding: '10px 0', fontSize: 13, color: '#fff', background: 'var(--accent)', border: 'none', borderRadius: 50, cursor: 'pointer', fontWeight: 500, fontFamily: 'var(--font)' }}>Save</button>
             </div>
           </div>
         </div>

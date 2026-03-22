@@ -5,7 +5,7 @@ import { Search, FileText, BarChart3, Newspaper, Grid3X3, Building2, CheckSquare
 
 const T = {
   text: 'rgba(255,255,255,0.9)', sub: 'rgba(255,255,255,0.5)', muted: 'rgba(255,255,255,0.2)',
-  border: 'rgba(255,255,255,0.06)', soft: 'rgba(255,255,255,0.05)',
+  border: 'rgba(255,255,255,0.07)', soft: 'rgba(255,255,255,0.07)',
   font: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'DM Sans', 'Segoe UI', sans-serif",
 }
 
@@ -96,13 +96,13 @@ export default function CommandPalette({ open, onClose, onVoice }) {
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 'min(20vh, 160px)' }}>
       <div onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()} style={{
-        width: 440, background: '#111114', borderRadius: 14,
+        width: 440, background: '#111114', borderRadius: 50,
         boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
-        border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden',
+        border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden',
         animation: 'scaleIn 0.15s ease-out',
       }}>
         {/* Search input */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '0.5px solid rgba(255,255,255,0.07)' }}>
           <Search size={16} color={T.muted} />
           <input ref={inputRef} value={query} onChange={e => setQuery(e.target.value)} onKeyDown={handleKeyDown}
             placeholder="Search pages, contacts, deals..." autoFocus
@@ -124,8 +124,8 @@ export default function CommandPalette({ open, onClose, onVoice }) {
                 )}
                 <button onClick={() => handleSelect(item)} style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '9px 10px', borderRadius: 8, border: 'none', textAlign: 'left',
-                  background: i === selected ? 'rgba(255,255,255,0.05)' : 'transparent',
+                  padding: '9px 10px', borderRadius: 50, border: 'none', textAlign: 'left',
+                  background: i === selected ? 'rgba(255,255,255,0.07)' : 'transparent',
                   cursor: 'pointer', fontFamily: T.font, transition: 'background 0.1s',
                 }}
                   onMouseEnter={() => setSelected(i)}
@@ -146,10 +146,10 @@ export default function CommandPalette({ open, onClose, onVoice }) {
         </div>
 
         {/* Keyboard hints */}
-        <div style={{ padding: '8px 16px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', gap: 16, justifyContent: 'center' }}>
+        <div style={{ padding: '8px 16px', borderTop: '0.5px solid rgba(255,255,255,0.07)', display: 'flex', gap: 16, justifyContent: 'center' }}>
           {[['↑↓', 'navigate'], ['↵', 'open'], ['esc', 'close']].map(([key, label]) => (
             <span key={key} style={{ fontSize: 10, color: T.muted, fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}>
-              <kbd style={{ padding: '1px 5px', borderRadius: 4, background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)', fontSize: 10, fontFamily: 'inherit' }}>{key}</kbd>
+              <kbd style={{ padding: '1px 5px', borderRadius: 4, background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.1)', fontSize: 10, fontFamily: 'inherit' }}>{key}</kbd>
               {label}
             </span>
           ))}

@@ -70,8 +70,8 @@ function md(text) {
   if (!text) return ''
   let h = text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(255,255,255,0.05);padding:8px;border-radius:8px;font-size:11px;overflow-x:auto;margin:4px 0;border:0.5px solid rgba(255,255,255,0.08)"><code>$1</code></pre>')
-    .replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.05);padding:1px 4px;border-radius:3px;font-size:11px">$1</code>')
+    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(255,255,255,0.07);padding:8px;border-radius:8px;font-size:11px;overflow-x:auto;margin:4px 0;border:0.5px solid rgba(255,255,255,0.1)"><code>$1</code></pre>')
+    .replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.07);padding:1px 4px;border-radius:3px;font-size:11px">$1</code>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/\n/g, '<br/>')
@@ -327,7 +327,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           zIndex: 100, borderRadius: 18,
           background: 'rgba(14,14,20,0.75)',
           backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-          border: '0.5px solid rgba(255,255,255,0.08)',
+          border: '0.5px solid rgba(255,255,255,0.1)',
           boxShadow: '0 12px 48px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)',
           display: 'flex', flexDirection: 'column',
           maxHeight: 'calc(100vh - 160px)',
@@ -336,7 +336,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           pointerEvents: open ? 'all' : 'none',
         }}>
           {/* Header */}
-          <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: hasMessages ? '0.5px solid rgba(255,255,255,0.06)' : 'none' }}>
+          <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: hasMessages ? '0.5px solid rgba(255,255,255,0.07)' : 'none' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 22, height: 22, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <KikoSymbol size={12} color="#fff" animate={streaming ? (streamText ? 'streaming' : 'thinking') : 'idle'} />
@@ -368,7 +368,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                   <div style={{ width: 20, height: 20, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
                     <KikoSymbol size={12} color="#fff" animate="thinking" />
                   </div>
-                  <div style={{ padding: '7px 11px', borderRadius: 8, background: T.accentSoft }}>
+                  <div style={{ padding: '7px 11px', borderRadius: 50, background: T.accentSoft }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <span style={{ width: 5, height: 5, borderRadius: '50%', background: T.accent, flexShrink: 0, animation: 'kikoBreathe 2s ease-in-out infinite' }} />
                       <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: T.font }}>{toolStatus || 'Thinking…'}</span>
@@ -384,7 +384,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                   <div style={{ width: 20, height: 20, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
                     <KikoSymbol size={12} color="#fff" animate="streaming" />
                   </div>
-                  <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: 8, background: T.accentSoft, fontSize: 12, color: T.textSecondary, lineHeight: 1.55, fontFamily: T.font }}>
+                  <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: 50, background: T.accentSoft, fontSize: 12, color: T.textSecondary, lineHeight: 1.55, fontFamily: T.font }}>
                     <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
                     <span style={{ animation: 'kikoBreathe 1s infinite' }}>▍</span>
                   </div>
@@ -399,14 +399,14 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
             <div style={{ padding: '10px 12px 4px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {CHIPS.map((chip, i) => (
                 <button key={chip} onClick={() => handleSubmit(chip)} style={{
-                  fontSize: 11, padding: '5px 10px', borderRadius: 20,
-                  border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.05)',
+                  fontSize: 11, padding: '5px 10px', borderRadius: 50,
+                  border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)',
                   color: T.textSecondary, cursor: 'pointer', fontFamily: T.font,
                   animation: `kikoChipIn 0.3s ease ${0.08 + i * 0.05}s both`,
                   transition: 'background 0.15s, border-color 0.15s',
                 }}
-                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}
-                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)' }}
                 >
                   {chip}
                 </button>
@@ -415,7 +415,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           )}
 
           {/* Input bar inside panel */}
-          <div style={{ padding: '8px 10px 10px', display: 'flex', alignItems: 'center', gap: 6, borderTop: hasMessages ? '0.5px solid rgba(255,255,255,0.06)' : 'none', marginTop: hasMessages ? 0 : 8 }}>
+          <div style={{ padding: '8px 10px 10px', display: 'flex', alignItems: 'center', gap: 6, borderTop: hasMessages ? '0.5px solid rgba(255,255,255,0.07)' : 'none', marginTop: hasMessages ? 0 : 8 }}>
             <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} style={{ width: 26, height: 26, borderRadius: '50%', border: 'none', background: 'transparent', color: T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {fileUploading
                 ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'kikoVortexSpin 1s linear infinite' }}><circle cx="12" cy="12" r="10"/></svg>
@@ -448,7 +448,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           <div style={{ position: 'absolute', top: -16, left: -16, right: -16, bottom: -16, borderRadius: 22, border: '1px solid rgba(6,214,160,0.06)', animation: 'kikoPulseRing 2.5s ease-in-out 0.6s infinite', pointerEvents: 'none' }} />
         </>}
         <button onClick={toggleOpen} className={fabClass} style={{
-          width: 48, height: 48, borderRadius: 14,
+          width: 48, height: 48, borderRadius: 50,
           background: 'linear-gradient(135deg, #8B6CF6, #06D6A0)', border: 'none', color: '#fff',
           cursor: 'pointer',
           boxShadow: '0 8px 32px rgba(0,0,0,0.20), 0 2px 8px rgba(0,0,0,0.08)',

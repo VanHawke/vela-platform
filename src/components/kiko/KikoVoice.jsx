@@ -8,10 +8,10 @@ const OFF_AFTER_MS     = 120_000
 const KEYWORDS         = ['hey kiko', 'okay kiko', 'ok kiko', 'kiko']
 
 const glass = {
-  background: 'rgba(255,255,255,0.06)',
+  background: 'rgba(255,255,255,0.07)',
   backdropFilter: 'blur(40px)',
   WebkitBackdropFilter: 'blur(40px)',
-  border: '0.5px solid rgba(255,255,255,0.08)',
+  border: '0.5px solid rgba(255,255,255,0.1)',
   boxShadow: '0 8px 32px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)',
 }
 
@@ -686,7 +686,7 @@ RULES:
       <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
         {/* Pulse rings for mini mode */}
         <div style={{ position: 'absolute', top: -8, left: -8, right: -8, bottom: -8, borderRadius: 18, border: `1.5px solid ${speaking ? 'rgba(34,197,94,0.15)' : 'rgba(26,26,26,0.08)'}`, animation: 'kikoPulseRing 2.5s ease-in-out infinite', pointerEvents: 'none' }} />
-        <button onClick={onShowPrompt} style={{ width: 52, height: 52, borderRadius: 14, border: 'none', cursor: 'pointer', background: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', transition: 'all 0.3s', boxShadow: '0 8px 32px rgba(0,0,0,0.20), 0 2px 8px rgba(0,0,0,0.08)', animation: 'kikoBreatheScale 4s ease-in-out infinite' }}>
+        <button onClick={onShowPrompt} style={{ width: 52, height: 52, borderRadius: 50, border: 'none', cursor: 'pointer', background: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', transition: 'all 0.3s', boxShadow: '0 8px 32px rgba(0,0,0,0.20), 0 2px 8px rgba(0,0,0,0.08)', animation: 'kikoBreatheScale 4s ease-in-out infinite' }}>
           <div style={{ position: 'absolute', transition: 'opacity 0.3s', opacity: speaking ? 0 : 1 }}>
             {listenMode === 'off' ? <MicOff size={20} color="rgba(255,255,255,0.4)" /> : <KikoSymbol size={26} color="#fff" animate={avatarAnimate} />}
           </div>
@@ -727,7 +727,7 @@ RULES:
           <X size={14} />
         </button>
 
-        <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', padding: '4px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(0,0,0,0.07)', fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.4)', letterSpacing: '0.04em', whiteSpace: 'nowrap', fontFamily: 'var(--font)' }}>
+        <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', padding: '4px 14px', borderRadius: 50, background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(0,0,0,0.07)', fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.4)', letterSpacing: '0.04em', whiteSpace: 'nowrap', fontFamily: 'var(--font)' }}>
           {modeLabel}
         </div>
 
@@ -735,7 +735,7 @@ RULES:
         <div style={{ position: 'relative', marginBottom: 28 }}>
           {showRings && <>
             <div style={{ position: 'absolute', inset: -13, borderRadius: 50, border: '1.5px solid rgba(0,0,0,0.08)', animation: 'pulse 2.2s ease-in-out infinite', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', inset: -26, borderRadius: 62, border: '0.5px solid rgba(255,255,255,0.06)', animation: 'pulse 2.2s ease-in-out infinite 0.5s', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', inset: -26, borderRadius: 62, border: '0.5px solid rgba(255,255,255,0.07)', animation: 'pulse 2.2s ease-in-out infinite 0.5s', pointerEvents: 'none' }} />
           </>}
           <div style={{ width: 156, height: 156, borderRadius: 38, background: avBg, border: '0.5px solid rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', boxShadow: '0 16px 48px rgba(0,0,0,0.14)', transition: 'background 0.5s' }}>
             <div style={{ position: 'absolute', opacity: speaking ? 0 : avOpacity, transition: 'opacity 0.35s ease', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -755,7 +755,7 @@ RULES:
         </div>
 
         {listenMode !== 'active' && status === 'live' && (
-          <button onClick={() => listenMode === 'off' ? reactivate() : resetToActive()} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 500, color: 'rgba(0,0,0,0.5)', background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(0,0,0,0.09)', borderRadius: 20, padding: '7px 16px', cursor: 'pointer', fontFamily: 'var(--font)', marginBottom: 24 }}>
+          <button onClick={() => listenMode === 'off' ? reactivate() : resetToActive()} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 500, color: 'rgba(0,0,0,0.5)', background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(0,0,0,0.09)', borderRadius: 50, padding: '7px 16px', cursor: 'pointer', fontFamily: 'var(--font)', marginBottom: 24 }}>
             <Mic size={12} /> Tap to resume
           </button>
         )}
@@ -767,7 +767,7 @@ RULES:
           </button>
 
           {attachedFile && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px 3px 7px', borderRadius: 20, background: attachedFile.status === 'ready' ? 'rgba(52,199,89,0.08)' : 'rgba(0,0,0,0.06)', border: `0.5px solid ${attachedFile.status === 'ready' ? 'rgba(52,199,89,0.2)' : 'rgba(0,0,0,0.09)'}`, fontSize: 11, color: attachedFile.status === 'ready' ? '#34C759' : 'rgba(0,0,0,0.5)', maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 0 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px 3px 7px', borderRadius: 50, background: attachedFile.status === 'ready' ? 'rgba(52,199,89,0.08)' : 'rgba(0,0,0,0.06)', border: `0.5px solid ${attachedFile.status === 'ready' ? 'rgba(52,199,89,0.2)' : 'rgba(0,0,0,0.09)'}`, fontSize: 11, color: attachedFile.status === 'ready' ? '#34C759' : 'rgba(0,0,0,0.5)', maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 0 }}>
               {attachedFile.status === 'uploading' && <Loader2 style={{ width: 10, height: 10, animation: 'spin 1s linear infinite', flexShrink: 0 }} />}
               {attachedFile.status === 'analysing' && <Loader2 style={{ width: 10, height: 10, animation: 'spin 1s linear infinite', flexShrink: 0, color: '#007AFF' }} />}
               {attachedFile.status === 'ready' && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
@@ -793,7 +793,7 @@ RULES:
         </div>
 
         {status === 'error' && (
-          <button onClick={connectRealtime} style={{ marginTop: 14, padding: '7px 18px', borderRadius: 10, background: 'rgba(255,255,255,0.06)', color: 'rgba(0,0,0,0.6)', border: '0.5px solid rgba(0,0,0,0.1)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)' }}>Retry</button>
+          <button onClick={connectRealtime} style={{ marginTop: 14, padding: '7px 18px', borderRadius: 50, background: 'rgba(255,255,255,0.07)', color: 'rgba(0,0,0,0.6)', border: '0.5px solid rgba(0,0,0,0.1)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)' }}>Retry</button>
         )}
       </div>
 
@@ -817,7 +817,7 @@ RULES:
               : messages.map((m, i) => (
                 <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <span style={{ fontSize: 8, fontWeight: 500, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.28)', fontFamily: 'var(--font)' }}>{m.role === 'user' ? 'You' : 'Kiko'}</span>
-                  <div style={{ fontSize: 11, lineHeight: 1.45, padding: '7px 10px', borderRadius: 10, fontFamily: 'var(--font)', background: m.role === 'user' ? '#1A1A1A' : 'rgba(0,0,0,0.05)', color: m.role === 'user' ? '#fff' : 'rgba(0,0,0,0.55)' }}>
+                  <div style={{ fontSize: 11, lineHeight: 1.45, padding: '7px 10px', borderRadius: 50, fontFamily: 'var(--font)', background: m.role === 'user' ? '#1A1A1A' : 'rgba(0,0,0,0.05)', color: m.role === 'user' ? '#fff' : 'rgba(0,0,0,0.55)' }}>
                     {m.content}
                   </div>
                 </div>

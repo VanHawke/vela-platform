@@ -94,7 +94,7 @@ export default function MemoryConsole({ user }) {
           </p>
         </div>
         <button onClick={() => setCreating(true)} style={{
-          height: 40, padding: '0 20px', borderRadius: 14, background: T.accent,
+          height: 40, padding: '0 20px', borderRadius: 50, background: T.accent,
           color: '#fff', border: 'none', fontSize: 13, fontWeight: 500,
           cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6
         }}>
@@ -107,17 +107,17 @@ export default function MemoryConsole({ user }) {
         <div style={{ margin: '0 32px 16px', padding: 20, background: T.surface, borderRadius: 18, border: `1px solid ${T.border}` }}>
           <input value={newPath} onChange={e => setNewPath(e.target.value)}
             placeholder="Memory name (e.g. client_preferences.md)"
-            style={{ width: '100%', height: 40, borderRadius: 10, border: `1px solid ${T.border}`, padding: '0 14px', fontSize: 13, color: T.text, fontFamily: T.font, outline: 'none', background: T.bg, marginBottom: 8 }} />
+            style={{ width: '100%', height: 40, borderRadius: 50, border: `1px solid ${T.border}`, padding: '0 14px', fontSize: 13, color: T.text, fontFamily: T.font, outline: 'none', background: T.bg, marginBottom: 8 }} />
           <textarea value={newContent} onChange={e => setNewContent(e.target.value)}
             placeholder="Memory content..."
-            style={{ width: '100%', height: 120, borderRadius: 10, border: `1px solid ${T.border}`, padding: 14, fontSize: 13, color: T.text, fontFamily: T.font, outline: 'none', background: T.bg, resize: 'vertical', lineHeight: 1.5 }} />
+            style={{ width: '100%', height: 120, borderRadius: 50, border: `1px solid ${T.border}`, padding: 14, fontSize: 13, color: T.text, fontFamily: T.font, outline: 'none', background: T.bg, resize: 'vertical', lineHeight: 1.5 }} />
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             <button onClick={handleCreate} disabled={saving} style={{
-              height: 36, padding: '0 16px', borderRadius: 10, background: T.accent, color: '#fff',
+              height: 36, padding: '0 16px', borderRadius: 50, background: T.accent, color: '#fff',
               border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font
             }}>{saving ? 'Saving...' : 'Create'}</button>
             <button onClick={() => { setCreating(false); setNewPath(''); setNewContent('') }} style={{
-              height: 36, padding: '0 16px', borderRadius: 10, background: T.surface, color: T.textSecondary,
+              height: 36, padding: '0 16px', borderRadius: 50, background: T.surface, color: T.textSecondary,
               border: `1px solid ${T.border}`, fontSize: 13, cursor: 'pointer', fontFamily: T.font
             }}>Cancel</button>
           </div>
@@ -161,14 +161,14 @@ export default function MemoryConsole({ user }) {
                       {isEditing ? (
                         <div style={{ paddingTop: 12 }}>
                           <textarea value={editContent} onChange={e => setEditContent(e.target.value)}
-                            style={{ width: '100%', minHeight: 200, borderRadius: 10, border: `1px solid ${T.border}`, padding: 14, fontSize: 13, color: T.text, fontFamily: 'monospace', outline: 'none', background: T.bg, resize: 'vertical', lineHeight: 1.6 }} />
+                            style={{ width: '100%', minHeight: 200, borderRadius: 50, border: `1px solid ${T.border}`, padding: 14, fontSize: 13, color: T.text, fontFamily: 'monospace', outline: 'none', background: T.bg, resize: 'vertical', lineHeight: 1.6 }} />
                           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                             <button onClick={() => handleSave(mem.id)} disabled={saving} style={{
-                              height: 32, padding: '0 14px', borderRadius: 8, background: T.accent, color: '#fff',
+                              height: 32, padding: '0 14px', borderRadius: 50, background: T.accent, color: '#fff',
                               border: 'none', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4
                             }}><Save size={12} /> {saving ? 'Saving...' : 'Save'}</button>
                             <button onClick={() => setEditing(null)} style={{
-                              height: 32, padding: '0 14px', borderRadius: 8, background: T.surface, color: T.textSecondary,
+                              height: 32, padding: '0 14px', borderRadius: 50, background: T.surface, color: T.textSecondary,
                               border: `1px solid ${T.border}`, fontSize: 12, cursor: 'pointer', fontFamily: T.font
                             }}>Cancel</button>
                           </div>
@@ -180,11 +180,11 @@ export default function MemoryConsole({ user }) {
                           </pre>
                           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                             <button onClick={() => { setEditing(mem.id); setEditContent(mem.content) }} style={{
-                              height: 32, padding: '0 14px', borderRadius: 8, background: T.accentSoft, color: T.text,
+                              height: 32, padding: '0 14px', borderRadius: 50, background: T.accentSoft, color: T.text,
                               border: 'none', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font
                             }}>Edit</button>
                             <button onClick={() => handleDelete(mem.id, mem.path)} style={{
-                              height: 32, padding: '0 14px', borderRadius: 8, background: '#FFF0F0', color: '#C62828',
+                              height: 32, padding: '0 14px', borderRadius: 50, background: '#FFF0F0', color: '#C62828',
                               border: 'none', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4
                             }}><Trash2 size={12} /> Delete</button>
                           </div>

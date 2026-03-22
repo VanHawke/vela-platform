@@ -54,7 +54,7 @@ export default function LoginPage() {
   }
 
   const inputStyle = {
-    width: '100%', height: 48, borderRadius: 14, border: `0.5px solid ${T.border}`,
+    width: '100%', height: 48, borderRadius: 50, border: `0.5px solid ${T.border}`,
     background: T.inputBg, padding: '0 16px', fontSize: 14, color: T.text, outline: 'none',
     fontFamily: T.font, transition: 'border-color 0.15s',
   }
@@ -82,7 +82,7 @@ export default function LoginPage() {
 
         {/* Google OAuth */}
         <button onClick={googleLogin} disabled={gLoading} style={{
-          width: '100%', height: 48, borderRadius: 14, border: `0.5px solid ${T.border}`, background: 'rgba(255,255,255,0.05)',
+          width: '100%', height: 48, borderRadius: 50, border: `0.5px solid ${T.border}`, background: 'rgba(255,255,255,0.07)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: 14, fontWeight: 400,
           color: T.text, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.15s',
         }}>
@@ -109,9 +109,9 @@ export default function LoginPage() {
               background: 'none', border: 'none', cursor: 'pointer', color: T.sub, padding: 0,
             }}>{showPw ? <EyeOff size={18} /> : <Eye size={18} />}</button>
           </div>
-          {error && <p style={{ fontSize: 13, color: 'rgba(255,80,80,0.8)', background: 'rgba(255,80,80,0.06)', padding: '8px 12px', borderRadius: 14, margin: '0 0 10px', border: '0.5px solid rgba(255,80,80,0.1)' }}>{error}</p>}
+          {error && <p style={{ fontSize: 13, color: 'rgba(255,80,80,0.8)', background: 'rgba(255,80,80,0.06)', padding: '8px 12px', borderRadius: 50, margin: '0 0 10px', border: '0.5px solid rgba(255,80,80,0.1)' }}>{error}</p>}
           <button type="submit" disabled={loading} style={{
-            width: '100%', height: 48, borderRadius: 14,
+            width: '100%', height: 48, borderRadius: 50,
             background: 'linear-gradient(135deg, #7C5CFC, #00D4AA)', color: '#fff', border: 'none',
             fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, transition: 'opacity 0.15s', opacity: loading ? 0.6 : 0.85,
           }}>{loading ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : 'Sign in'}</button>

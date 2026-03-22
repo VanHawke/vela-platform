@@ -95,7 +95,7 @@ export default function OutreachIntelligence({ user }) {
     if (s.sent_at > byCompany[c].lastSent) byCompany[c].lastSent = s.sent_at
   })
 
-  const card = { background: 'rgba(255,255,255,0.06)', borderRadius: 18, padding: '20px', border: '0.5px solid rgba(255,255,255,0.08)', boxShadow: 'none' }
+  const card = { background: 'rgba(255,255,255,0.07)', borderRadius: 18, padding: '20px', border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }
   const sectionTitle = { fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: T.textTertiary, margin: '0 0 14px', fontFamily: T.font }
   const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
@@ -108,7 +108,7 @@ export default function OutreachIntelligence({ user }) {
         <BarChart3 style={{ width: 40, height: 40, color: T.textTertiary, margin: '0 auto 16px' }} />
         <h2 style={{ fontSize: 18, fontWeight: 400, color: T.text, margin: '0 0 8px', fontFamily: T.font }}>Outreach Intelligence</h2>
         <p style={{ fontSize: 13, color: T.textSecondary, margin: '0 0 20px', fontFamily: T.font, lineHeight: 1.5 }}>Score your outbound emails to discover which messaging approaches, send times, and CTAs generate the most replies.</p>
-        <button onClick={runScoring} disabled={scoring} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 10, background: T.accent, color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font }}>
+        <button onClick={runScoring} disabled={scoring} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 50, background: T.accent, color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font }}>
           {scoring ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} /> : <Zap style={{ width: 14, height: 14 }} />}
           {scoring ? 'Scoring…' : 'Score my outreach now'}
         </button>
@@ -126,11 +126,11 @@ export default function OutreachIntelligence({ user }) {
           <p style={{ fontSize: 12, color: T.textTertiary, margin: '4px 0 0', fontFamily: T.font }}>{total} emails scored · Updated {scores[0]?.scored_at ? new Date(scores[0].scored_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'never'}</p>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <select value={pipelineFilter} onChange={e => setPipelineFilter(e.target.value)} style={{ fontSize: 12, padding: '6px 10px', borderRadius: 8, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.06)', fontFamily: T.font, color: T.text }}>
+          <select value={pipelineFilter} onChange={e => setPipelineFilter(e.target.value)} style={{ fontSize: 12, padding: '6px 10px', borderRadius: 50, border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)', fontFamily: T.font, color: T.text }}>
             <option value="all">All pipelines</option>
             {pipelines.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
-          <button onClick={runScoring} disabled={scoring} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 8, border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.06)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, color: T.text }}>
+          <button onClick={runScoring} disabled={scoring} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 50, border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, color: T.text }}>
             {scoring ? <Loader2 style={{ width: 12, height: 12, animation: 'spin 1s linear infinite' }} /> : <RefreshCw style={{ width: 12, height: 12 }} />}
             {scoring ? 'Scoring…' : 'Score now'}
           </button>
@@ -228,7 +228,7 @@ export default function OutreachIntelligence({ user }) {
             const rate = data.total > 0 ? Math.round(data.replied / data.total * 100) : 0
             const daysSince = Math.round((Date.now() - new Date(data.lastSent).getTime()) / 86400000)
             return (
-              <div key={company} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 10px', borderRadius: 8, background: rate > 0 ? 'rgba(52,199,89,0.04)' : daysSince > 14 ? 'rgba(255,59,48,0.04)' : 'transparent' }}>
+              <div key={company} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 10px', borderRadius: 50, background: rate > 0 ? 'rgba(52,199,89,0.04)' : daysSince > 14 ? 'rgba(255,59,48,0.04)' : 'transparent' }}>
                 <span style={{ fontSize: 12, fontWeight: 500, color: T.text, fontFamily: T.font, width: 140, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company}</span>
                 <div style={{ display: 'flex', gap: 3, flex: 1 }}>
                   {data.outcomes.slice(0, 10).map((o, i) => (

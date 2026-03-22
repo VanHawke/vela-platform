@@ -202,7 +202,7 @@ export default function KikoOS({ user, onOpenVoice }) {
       position: 'fixed', bottom: 24, right: 24, zIndex: 100,
       width: 420, maxHeight: 'calc(100vh - 100px)',
       display: 'flex', flexDirection: 'column',
-      borderRadius: 20, overflow: 'hidden',
+      borderRadius: 50, overflow: 'hidden',
       background: 'rgba(255,255,255,0.95)',
       backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
       border: '1px solid var(--border)',
@@ -236,7 +236,7 @@ export default function KikoOS({ user, onOpenVoice }) {
             {msg.role === 'user' ? (
               <div style={{ maxWidth: '80%', padding: '8px 14px', borderRadius: '14px 14px 4px 14px', background: 'var(--accent)', color: '#fff', fontSize: 13, lineHeight: 1.5, fontFamily: 'var(--font)' }}>{msg.content}</div>
             ) : (
-              <div style={{ maxWidth: '80%', padding: '10px 14px', borderRadius: 10, background: 'var(--accent-soft)', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, fontFamily: 'var(--font)' }}>
+              <div style={{ maxWidth: '80%', padding: '10px 14px', borderRadius: 50, background: 'var(--accent-soft)', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, fontFamily: 'var(--font)' }}>
                 <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />
               </div>
             )}
@@ -253,7 +253,7 @@ export default function KikoOS({ user, onOpenVoice }) {
             <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 3 }}>
               <KikoSymbol size={12} color="#fff" />
             </div>
-            <div style={{ maxWidth: '80%', padding: '10px 14px', borderRadius: 10, background: 'var(--accent-soft)', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, fontFamily: 'var(--font)' }}>
+            <div style={{ maxWidth: '80%', padding: '10px 14px', borderRadius: 50, background: 'var(--accent-soft)', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, fontFamily: 'var(--font)' }}>
               <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
               <span style={{ animation: 'pulse 1s infinite', marginLeft: 2 }}>▍</span>
             </div>

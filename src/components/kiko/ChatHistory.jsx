@@ -117,12 +117,12 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
         <span style={{ fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font }}>Chats</span>
         <div style={{ display: 'flex', gap: 4 }}>
           <button onClick={() => { onNewChat(); }} style={{
-            width: 32, height: 32, borderRadius: 8, border: 'none',
+            width: 32, height: 32, borderRadius: 50, border: 'none',
             background: T.accentSoft, cursor: 'pointer', display: 'flex',
             alignItems: 'center', justifyContent: 'center', color: T.text,
           }}><Plus size={16} /></button>
           <button onClick={onToggle} style={{
-            width: 32, height: 32, borderRadius: 8, border: 'none',
+            width: 32, height: 32, borderRadius: 50, border: 'none',
             background: T.accentSoft, cursor: 'pointer', display: 'flex',
             alignItems: 'center', justifyContent: 'center', color: T.textTertiary,
           }}><ChevronRight size={16} /></button>
@@ -142,7 +142,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
             return (
               <div key={conv.id} onClick={() => onSelectConversation(conv)}
                 style={{
-                  padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
+                  padding: '10px 12px', borderRadius: 50, cursor: 'pointer',
                   marginBottom: 2, transition: 'background 0.1s',
                   background: active ? T.accentSoft : 'transparent',
                   display: 'flex', alignItems: 'flex-start', gap: 10,

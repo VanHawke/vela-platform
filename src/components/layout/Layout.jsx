@@ -117,16 +117,16 @@ export default function Layout({ user }) {
 
       {/* Top bar — frosted glass */}
       <header style={{
-        height: 48, minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 20px', borderBottom: `0.5px solid rgba(255,255,255,0.06)`,
-        background: 'rgba(7,7,11,0.6)', backdropFilter: 'blur(60px)', WebkitBackdropFilter: 'blur(60px)',
+        height: 56, minHeight: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 24px', borderBottom: '0.5px solid rgba(255,255,255,0.07)',
+        background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(60px) saturate(1.4)', WebkitBackdropFilter: 'blur(60px) saturate(1.4)',
         flexShrink: 0, position: 'relative', zIndex: 250,
       }}>
-        {/* Left: Logo only */}
+        {/* Left: Logo pill */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
           {/* Kiko logo */}
           <button onClick={() => { setKikoMessages([]); setKikoConvId(null); setKikoResetKey(k => k + 1); nav('/') }}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: '0 12px 0 0' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.07)', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', padding: '0 14px', height: 34, borderRadius: 50, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)' }}>
             {customLogo ? (
               <img src={customLogo} alt="Logo" style={{ height: 28, borderRadius: 7, maxWidth: 120, objectFit: 'contain' }} />
             ) : (
@@ -140,7 +140,7 @@ export default function Layout({ user }) {
           {/* Breadcrumb — show on non-tab pages */}
           {!isHome && pageLabel && !TABS.find(t => t.path === loc.pathname) && (
             <>
-              <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.06)', margin: '0 10px' }} />
+              <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.07)', margin: '0 10px' }} />
               <span style={{ fontSize: 12, fontWeight: 300, color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font)' }}>{pageLabel}</span>
             </>
           )}
@@ -148,7 +148,7 @@ export default function Layout({ user }) {
 
         {/* Center: Pill tab group — absolutely centered to prevent shift */}
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: 1, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)', borderRadius: 12, padding: 4, border: '0.5px solid rgba(255,255,255,0.08)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)' }}>
+          <div style={{ display: 'flex', gap: 3, background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)', borderRadius: 50, padding: 4, border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07)' }}>
             {TABS.map(tab => {
               const active = isTabActive(tab.path)
               return (
@@ -156,19 +156,20 @@ export default function Layout({ user }) {
                   if (tab.path === '/') { setKikoMessages([]); setKikoConvId(null); setKikoResetKey(k => k + 1) }
                   nav(tab.path)
                 }} style={{
-                  padding: '5px 14px', borderRadius: 10, border: 'none',
-                  background: active ? 'rgba(255,255,255,0.07)' : 'transparent',
-                  color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)',
-                  fontSize: 11, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: T.font,
-                  transition: 'all 0.15s', letterSpacing: '0.02em',
+                  padding: '7px 20px', borderRadius: 50, border: 'none',
+                  background: active ? 'rgba(255,255,255,0.1)' : 'transparent',
+                  color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.25)',
+                  fontSize: 12, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: T.font,
+                  transition: 'all 0.15s', letterSpacing: '0.01em',
+                  boxShadow: active ? 'inset 0 1px 0 rgba(255,255,255,0.08)' : 'none',
                 }}>{tab.label}</button>
               )
             })}
             {/* More tab with dropdown */}
             <div ref={moreRef} style={{ position: 'relative' }}>
               <button onClick={() => setMoreOpen(!moreOpen)} style={{
-                padding: '5px 14px', borderRadius: 10, border: 'none',
-                background: moreOpen ? 'rgba(255,255,255,0.06)' : 'transparent',
+                padding: '5px 14px', borderRadius: 50, border: 'none',
+                background: moreOpen ? 'rgba(255,255,255,0.07)' : 'transparent',
                 color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
                 display: 'flex', alignItems: 'center', gap: 3, transition: 'all 0.15s', letterSpacing: '0.02em',
               }}>
@@ -178,7 +179,7 @@ export default function Layout({ user }) {
                 <div style={{
                   position: 'absolute', top: 'calc(100% + 8px)', right: 0,
                   width: 200, background: 'rgba(14,14,20,0.75)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-                  borderRadius: 14, border: `0.5px solid ${T.glassBorder}`,
+                  borderRadius: 50, border: `0.5px solid ${T.glassBorder}`,
                   boxShadow: '0 8px 40px rgba(0,0,0,0.5)', padding: '4px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
                 }}>
                   {[
@@ -188,19 +189,19 @@ export default function Layout({ user }) {
                     { label: 'Documents', path: '/documents', Icon: FileText },
                   ].map(item => (
                     <button key={item.label} onClick={() => { nav(item.path); setMoreOpen(false) }} style={{
-                      width: '100%', padding: '8px 10px', borderRadius: 10, border: 'none',
-                      background: loc.pathname === item.path ? 'rgba(255,255,255,0.06)' : 'transparent',
+                      width: '100%', padding: '8px 10px', borderRadius: 50, border: 'none',
+                      background: loc.pathname === item.path ? 'rgba(255,255,255,0.07)' : 'transparent',
                       color: loc.pathname === item.path ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.35)', textAlign: 'left',
                       fontSize: 12, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
                       display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s',
                     }}
                       onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
-                      onMouseOut={e => e.currentTarget.style.background = loc.pathname === item.path ? 'rgba(255,255,255,0.06)' : 'transparent'}
+                      onMouseOut={e => e.currentTarget.style.background = loc.pathname === item.path ? 'rgba(255,255,255,0.07)' : 'transparent'}
                     ><item.Icon size={14} />{item.label}</button>
                   ))}
                   <div style={{ height: 1, background: 'rgba(255,255,255,0.04)', margin: '4px 8px' }} />
                   <button onClick={() => { nav('/settings'); setMoreOpen(false) }} style={{
-                    width: '100%', padding: '8px 10px', borderRadius: 8, border: 'none',
+                    width: '100%', padding: '8px 10px', borderRadius: 50, border: 'none',
                     background: 'transparent', color: 'rgba(255,255,255,0.35)', textAlign: 'left',
                     fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)',
                     display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s',
@@ -218,7 +219,7 @@ export default function Layout({ user }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {/* Listening pill — only when voice is active */}
           {voiceActive && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 20, background: 'rgba(6,214,160,0.04)', border: '0.5px solid rgba(6,214,160,0.1)', animation: 'fadeIn 0.3s ease-out' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 50, background: 'rgba(6,214,160,0.04)', border: '0.5px solid rgba(6,214,160,0.1)', animation: 'fadeIn 0.3s ease-out' }}>
               <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(6,214,160,0.7)', animation: 'kikoBreathe 1.5s ease-in-out infinite' }} />
               <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(6,214,160,0.6)', fontFamily: 'var(--font)' }}>{voiceStatus}</span>
             </div>
@@ -226,13 +227,13 @@ export default function Layout({ user }) {
           {/* Command palette trigger */}
           <button onClick={() => setPaletteOpen(true)} style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            padding: '5px 10px', borderRadius: 8, border: '0.5px solid rgba(255,255,255,0.08)',
+            padding: '5px 10px', borderRadius: 50, border: '0.5px solid rgba(255,255,255,0.1)',
             background: 'transparent',
             cursor: 'pointer', fontFamily: 'var(--font)',
             color: 'rgba(255,255,255,0.2)', fontSize: 11, transition: 'all 0.15s',
           }}
-            onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-            onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.background = 'transparent' }}
+            onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
+            onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; e.currentTarget.style.background = 'transparent' }}
           >
             <Search size={13} />
             <span style={{ fontSize: 11, fontWeight: 500, opacity: 0.6 }}>&#8984;K</span>
@@ -255,18 +256,18 @@ export default function Layout({ user }) {
               <div style={{
                 position: 'absolute', top: '100%', right: 0, marginTop: 6,
                 width: 200, background: 'rgba(14,14,20,0.75)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-                borderRadius: 14, border: '0.5px solid rgba(255,255,255,0.08)',
+                borderRadius: 50, border: '0.5px solid rgba(255,255,255,0.1)',
                 boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
                 padding: '6px', zIndex: 400, animation: 'fadeIn 0.15s ease-out',
               }}>
-                <div style={{ padding: '8px 12px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.06)', marginBottom: 4 }}>
+                <div style={{ padding: '8px 12px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.07)', marginBottom: 4 }}>
                   <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.8)', fontFamily: 'var(--font)' }}>
                     {profile.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : user?.email?.split('@')[0] || 'User'}
                   </div>
                   <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)', marginTop: 2 }}>{user?.email}</div>
                 </div>
                 <button onClick={() => { nav('/settings'); setAvatarOpen(false) }} style={{
-                  width: '100%', padding: '9px 12px', borderRadius: 8, border: 'none',
+                  width: '100%', padding: '9px 12px', borderRadius: 50, border: 'none',
                   background: 'transparent', color: 'rgba(255,255,255,0.4)', textAlign: 'left',
                   fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font)',
                   display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s',
@@ -275,7 +276,7 @@ export default function Layout({ user }) {
                   onMouseOut={e => e.currentTarget.style.background = 'transparent'}
                 ><Settings size={14} /> Settings</button>
                 <button onClick={() => { signOut(); setAvatarOpen(false) }} style={{
-                  width: '100%', padding: '9px 12px', borderRadius: 8, border: 'none',
+                  width: '100%', padding: '9px 12px', borderRadius: 50, border: 'none',
                   background: 'transparent', color: 'rgba(255,80,80,0.7)', textAlign: 'left',
                   fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font)',
                   display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s',

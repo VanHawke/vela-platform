@@ -125,7 +125,7 @@ export default function PartnershipMatrix({ user }) {
         <div style={{ display: 'flex', gap: 4 }}>
           {TABS.map(t => { const I = t.icon; return (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
-              display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: T.font, fontSize: 12, fontWeight: tab === t.id ? 600 : 400, transition: 'all 0.15s',
+              display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: T.font, fontSize: 12, fontWeight: tab === t.id ? 600 : 400, transition: 'all 0.15s',
               background: tab === t.id ? T.accent : 'transparent', color: tab === t.id ? '#fff' : T.textSecondary,
             }}><I size={13} />{t.label}</button>
           )})}
@@ -135,7 +135,7 @@ export default function PartnershipMatrix({ user }) {
       {/* Add Modal */}
       {showAdd && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowAdd(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: T.surface, borderRadius: 14, padding: 20, width: 360, boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: T.surface, borderRadius: 50, padding: 20, width: 360, boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}>
             <h3 style={{ fontSize: 14, fontWeight: 400, margin: '0 0 12px' }}>Add Partnership</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <select value={addForm.team_id} onChange={e => setAddForm(p => ({ ...p, team_id: e.target.value }))} style={{ fontSize: 12, padding: '6px 8px', borderRadius: 6, border: `1px solid ${T.border}`, fontFamily: T.font }}>
@@ -160,7 +160,7 @@ export default function PartnershipMatrix({ user }) {
       {/* ═══ TAB: HEATMAP ═══ */}
       {tab === 'heatmap' && (
         <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
-          <div style={{ background: T.surface, borderRadius: 14, border: `1px solid ${T.border}`, overflow: 'auto' }}>
+          <div style={{ background: T.surface, borderRadius: 50, border: `1px solid ${T.border}`, overflow: 'auto' }}>
             <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 10, fontFamily: T.font, minWidth: 800 }}>
               <thead>
                 <tr>
@@ -224,7 +224,7 @@ export default function PartnershipMatrix({ user }) {
                 }}>
                   <TeamLogo team={t} size={20} />
                   <span style={{ flex: 1 }}>{t.name}</span>
-                  {gaps > 0 && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 8, background: `${T.red}12`, color: T.red, fontWeight: 400 }}>{gaps}</span>}
+                  {gaps > 0 && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 50, background: `${T.red}12`, color: T.red, fontWeight: 400 }}>{gaps}</span>}
                 </button>
               )
             })}
@@ -254,16 +254,16 @@ export default function PartnershipMatrix({ user }) {
                       </p>
                     </div>
                     <div style={{ display: 'flex', gap: 6 }}>
-                      <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 8, background: T.filled, color: '#166534', fontWeight: 500 }}>{tp.length} partners</span>
-                      <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 8, background: T.accentSoft, color: T.textSecondary, fontWeight: 500 }}>{filled.length}/{categories.length} categories</span>
-                      {gaps.length > 0 && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 8, background: T.gap, color: '#991B1B', fontWeight: 500 }}>{gaps.length} gaps</span>}
+                      <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 50, background: T.filled, color: '#166534', fontWeight: 500 }}>{tp.length} partners</span>
+                      <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 50, background: T.accentSoft, color: T.textSecondary, fontWeight: 500 }}>{filled.length}/{categories.length} categories</span>
+                      {gaps.length > 0 && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 50, background: T.gap, color: '#991B1B', fontWeight: 500 }}>{gaps.length} gaps</span>}
                     </div>
                   </div>
 
                   {/* Filled categories */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8, marginBottom: 16 }}>
                     {filled.map(({ cat, partners }) => (
-                      <div key={cat.id} style={{ padding: '10px 12px', borderRadius: 10, background: T.surface, border: `1px solid ${T.border}`, borderLeft: `3px solid ${cat.color || T.blue}` }}>
+                      <div key={cat.id} style={{ padding: '10px 12px', borderRadius: 50, background: T.surface, border: `1px solid ${T.border}`, borderLeft: `3px solid ${cat.color || T.blue}` }}>
                         <p style={{ fontSize: 9, fontWeight: 400, color: cat.color || T.textTertiary, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{cat.name}</p>
                         {partners.map(p => { const badge = TIER_BADGE[p.tier] || TIER_BADGE.partner; return (
                           <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
@@ -278,7 +278,7 @@ export default function PartnershipMatrix({ user }) {
 
                   {/* Gaps section */}
                   {gaps.length > 0 && (
-                    <div style={{ background: T.gap, borderRadius: 10, padding: 14, border: `1px solid ${T.gapBorder}` }}>
+                    <div style={{ background: T.gap, borderRadius: 50, padding: 14, border: `1px solid ${T.gapBorder}` }}>
                       <p style={{ fontSize: 10, fontWeight: 400, color: '#991B1B', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 8px' }}>
                         {gaps.length} open categories — Van Hawke targeting opportunity
                       </p>
@@ -301,7 +301,7 @@ export default function PartnershipMatrix({ user }) {
         <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
           <div style={{ maxWidth: 900 }}>
             {/* Team legend with logos */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', marginBottom: 8, background: T.surface, borderRadius: 10, border: `1px solid ${T.border}`, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', marginBottom: 8, background: T.surface, borderRadius: 50, border: `1px solid ${T.border}`, flexWrap: 'wrap' }}>
               {filteredTeams.map(t => (
                 <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: T.textSecondary }}>
                   <TeamLogo team={t} size={16} />
@@ -328,7 +328,7 @@ export default function PartnershipMatrix({ user }) {
                   <div style={{ width: 180, flexShrink: 0, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8, borderRight: `1px solid ${T.border}` }}>
                     <div style={{ width: 3, height: 24, borderRadius: 2, background: cat.color || T.textTertiary, flexShrink: 0 }} />
                     <span style={{ fontSize: 12, fontWeight: 500, flex: 1 }}>{cat.name}</span>
-                    <span style={{ fontSize: 10, fontWeight: 400, padding: '1px 6px', borderRadius: 8,
+                    <span style={{ fontSize: 10, fontWeight: 400, padding: '1px 6px', borderRadius: 50,
                       background: gapCount >= 6 ? `${T.red}15` : gapCount >= 3 ? `${T.yellow}15` : `${T.green}15`,
                       color: gapCount >= 6 ? T.red : gapCount >= 3 ? T.yellow : T.green,
                     }}>{gapCount}</span>

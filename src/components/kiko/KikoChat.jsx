@@ -14,14 +14,14 @@ function md(text) {
   if (!text) return ''
   let h = text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(255,255,255,0.05);padding:12px;border-radius:8px;font-size:12px;overflow-x:auto;margin:8px 0;border:0.5px solid rgba(255,255,255,0.08)"><code>$1</code></pre>')
-    .replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px;font-size:12px">$1</code>')
+    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(255,255,255,0.07);padding:12px;border-radius:8px;font-size:12px;overflow-x:auto;margin:8px 0;border:0.5px solid rgba(255,255,255,0.1)"><code>$1</code></pre>')
+    .replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.07);padding:2px 6px;border-radius:4px;font-size:12px">$1</code>')
     .replace(/\*\*(.+?)\*\*/g, '<strong style="color:rgba(255,255,255,0.85);font-weight:500">$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/^[-\u2013\u2022] (.+)$/gm, '<li style="margin-left:16px;list-style:disc">$1</li>')
     .replace(/^(\d+)\. (.+)$/gm, '<li style="margin-left:16px;list-style:decimal">$2</li>')
     .replace(/^## (.+)$/gm, '<div style="font-size:15px;font-weight:500;color:rgba(255,255,255,0.85);margin:16px 0 8px">$1</div>')
-    .replace(/^---$/gm, '<hr style="border:none;border-top:0.5px solid rgba(255,255,255,0.08);margin:16px 0"/>')
+    .replace(/^---$/gm, '<hr style="border:none;border-top:0.5px solid rgba(255,255,255,0.1);margin:16px 0"/>')
     .replace(/\n/g, '<br/>')
   return DOMPurify.sanitize(h)
 }
@@ -31,7 +31,7 @@ function getGreeting() {
   return h >= 5 && h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'
 }
 
-const CHIPS = ['Brief me on today', 'What needs my attention?', "What's happening in F1", 'Analyse my pipeline', 'Check my emails', 'Who should I follow up with?']
+const CHIPS = ['Brief me', 'Pipeline update', 'Check emails', 'F1 calendar']
 
 // Kiko 4-dot symbol (asymmetric diamond) with optional staggered animation
 const KikoDots = ({ size = 40, color = '#fff', animated = false }) => {
@@ -391,10 +391,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     return (
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-        borderRadius: 18, padding: welcome ? '5px 5px 5px 22px' : '4px 4px 4px 14px',
-        border: '0.5px solid rgba(255,255,255,0.1)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)',
+        background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(40px) saturate(1.3)', WebkitBackdropFilter: 'blur(40px) saturate(1.3)',
+        borderRadius: 50, padding: welcome ? '6px 6px 6px 20px' : '4px 4px 4px 14px',
+        border: '0.5px solid rgba(255,255,255,0.12)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 32px rgba(0,0,0,0.3)',
         maxWidth: welcome ? 520 : (compact ? '100%' : 640),
         width: '100%', margin: '0 auto',
       }}>
@@ -435,32 +435,38 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <svg width={ic + 1} height={ic + 1} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
             {transcribing && <span style={{ position: 'absolute', top: welcome ? 2 : 1, right: welcome ? 2 : 1, width: 7, height: 7, borderRadius: '50%', background: 'rgba(34,197,94,0.9)', animation: 'kikoBreathe 1s ease-in-out infinite' }} />}
           </button>
-          {/* Voice mode — equalizer icon */}
+          {/* Voice CTA — teal equalizer */}
           {!welcome && !voiceActive && (
             <button onClick={startVoice} title="Talk to Kiko" style={{
-              width: sz, height: sz, borderRadius: '50%', border: 'none',
-              background: 'transparent', color: T.textTertiary,
+              width: sz, height: sz, borderRadius: 50, border: '0.5px solid rgba(6,214,160,0.15)',
+              background: 'rgba(6,214,160,0.08)', color: 'rgba(6,214,160,0.7)',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>
+              boxShadow: 'inset 0 1px 0 rgba(6,214,160,0.06)', transition: 'all 0.3s',
+            }}
+              onMouseOver={e => { e.currentTarget.style.background = 'rgba(6,214,160,0.15)'; e.currentTarget.style.borderColor = 'rgba(6,214,160,0.25)' }}
+              onMouseOut={e => { e.currentTarget.style.background = 'rgba(6,214,160,0.08)'; e.currentTarget.style.borderColor = 'rgba(6,214,160,0.15)' }}
+            >
               <svg width={ic} height={ic} viewBox="0 0 24 24" fill="none">
-                <rect x="4" y="8" width="2" height="8" rx="1" fill="currentColor" opacity="0.6" />
-                <rect x="8" y="5" width="2" height="14" rx="1" fill="currentColor" opacity="0.8" />
-                <rect x="12" y="7" width="2" height="10" rx="1" fill="currentColor" />
-                <rect x="16" y="4" width="2" height="16" rx="1" fill="currentColor" opacity="0.8" />
-                <rect x="20" y="9" width="2" height="6" rx="1" fill="currentColor" opacity="0.6" />
+                <rect x="4" y="8" width="2" height="8" rx="1" fill="rgba(6,214,160,0.6)" />
+                <rect x="8" y="5" width="2" height="14" rx="1" fill="rgba(6,214,160,0.8)" />
+                <rect x="12" y="7" width="2" height="10" rx="1" fill="rgba(6,214,160,1)" />
+                <rect x="16" y="4" width="2" height="16" rx="1" fill="rgba(6,214,160,0.8)" />
+                <rect x="20" y="9" width="2" height="6" rx="1" fill="rgba(6,214,160,0.6)" />
               </svg>
             </button>
           )}
           </>
         )}
-        {/* Send */}
+        {/* Send — gradient pill */}
         <button onClick={() => handleSubmit()} disabled={!input.trim() || streaming} style={{
-          width: welcome ? 40 : sz, height: welcome ? 40 : sz, borderRadius: '50%',
-          background: input.trim() ? T.accent : 'rgba(255,255,255,0.04)',
-          border: input.trim() ? 'none' : `0.5px solid ${T.border}`,
+          width: welcome ? 42 : sz, height: welcome ? 42 : sz, borderRadius: 50,
+          background: input.trim() ? T.accentGradient : 'rgba(255,255,255,0.04)',
+          border: input.trim() ? 'none' : '0.5px solid rgba(255,255,255,0.08)',
           color: '#fff',
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'all 0.15s', flexShrink: 0, opacity: input.trim() ? 0.85 : 0.5,
+          transition: 'all 0.15s', flexShrink: 0, opacity: input.trim() ? 0.9 : 0.5,
+          boxShadow: input.trim() ? '0 4px 16px rgba(139,108,246,0.3)' : 'none',
+          marginLeft: 3,
         }}>
           <svg width={welcome ? 15 : 13} height={welcome ? 15 : 13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         </button>
@@ -503,7 +509,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'transparent', position: 'relative', overflow: 'hidden' }}>
         {chatDragOver && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(26,26,26,0.3)', borderRadius: 18, margin: 8, pointerEvents: 'none' }}>
-            <div style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+            <div style={{ width: 48, height: 48, borderRadius: 50, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={T.textSecondary} strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
             </div>
             <p style={{ fontSize: 15, fontWeight: 500, color: T.text, fontFamily: T.font, margin: '0 0 4px' }}>Drop file for Kiko to analyse</p>
@@ -511,86 +517,90 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           </div>
         )}
 
-        {/* Center content — transitions between idle and voice-active */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: voiceActive ? 'flex-start' : 'flex-start', paddingTop: voiceActive ? 16 : 30, transition: trans, overflow: 'auto', minHeight: 0, padding: '30px 24px 20px' }}>
+        {/* Center content */}
+        <div id="kikoHomeContent" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: trans, overflow: 'auto', minHeight: 0, padding: '0 24px 20px' }}>
 
-          {/* Greeting + Wave — collapses when voice active */}
+          {/* IDLE STATE — wave above greeting */}
           {!voiceActive && (
             <>
-              <h1 style={{ fontSize: 36, fontWeight: 200, color: 'rgba(255,255,255,0.92)', margin: '0 0 4px', fontFamily: T.font, letterSpacing: '-0.04em', textAlign: 'center' }}>
-                {getGreeting()}, {firstName}
-              </h1>
-              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.15)', margin: '0 0 28px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
+              {/* Wave — hero element, prominent and centered */}
+              <div id="kikoWaveHome" style={{ width: '85%', maxWidth: 800, marginBottom: 48, transition: 'all 1s cubic-bezier(0.4,0,0,1)' }}>
+                <SmokeTrailWave width={800} height={70} />
+              </div>
 
-              {/* Smoke-trail wave */}
-              <div style={{ width: '100%', maxWidth: 400, marginBottom: 28 }}>
-                <SmokeTrailWave width={400} height={60} />
+              {/* Greeting — below wave */}
+              <div id="kikoGreeting" style={{ transition: 'all 0.6s cubic-bezier(0.4,0,0,1)' }}>
+                <h1 style={{ fontSize: 36, fontWeight: 200, color: 'rgba(255,255,255,0.92)', margin: '0 0 6px', fontFamily: T.font, letterSpacing: '-0.04em', textAlign: 'center' }}>
+                  {getGreeting()}, {firstName}
+                </h1>
+                <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.15)', margin: '0 0 32px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
               </div>
 
               {/* Prompt bar */}
-              <div style={{ width: '100%', maxWidth: 520, marginBottom: 14 }}>
+              <div id="kikoPromptWrap" style={{ width: '100%', maxWidth: 540, marginBottom: 14, transition: 'all 0.6s cubic-bezier(0.4,0,0,1)' }}>
                 <PromptBar welcome />
                 {dictateError && (
                   <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,80,80,0.7)', fontFamily: T.font, margin: '8px 0 0', animation: 'fadeIn 0.2s' }}>{dictateError}</p>
                 )}
               </div>
 
-              {/* Chips */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', maxWidth: 520, marginBottom: 32 }}>
+              {/* 4 chips only — below prompt bar */}
+              <div id="kikoChipsWrap" style={{ display: 'flex', gap: 8, justifyContent: 'center', maxWidth: 540, marginBottom: 36, transition: 'all 0.6s cubic-bezier(0.4,0,0,1)' }}>
                 {CHIPS.map(c => (
                   <button key={c} onClick={() => handleSubmit(c)} style={{
-                    padding: '7px 16px', borderRadius: 12, background: 'rgba(255,255,255,0.05)',
-                    backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
-                    border: '0.5px solid rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.22)',
+                    padding: '8px 18px', borderRadius: 50, background: 'rgba(255,255,255,0.05)',
+                    backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+                    border: '0.5px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.22)',
                     fontSize: 12, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.3s', fontWeight: 300,
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
                   }}
-                    onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(139,108,246,0.15)'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; e.currentTarget.style.background = 'rgba(139,108,246,0.06)' }}
-                    onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.22)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+                    onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(139,108,246,0.25)'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; e.currentTarget.style.background = 'rgba(139,108,246,0.1)' }}
+                    onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.22)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
                   >{c}</button>
                 ))}
               </div>
 
-              {/* Insight cards grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, width: '100%', maxWidth: 540, marginBottom: 12 }}>
+              {/* Insight cards */}
+              <div id="kikoCardsWrap" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, width: '100%', maxWidth: 560, marginBottom: 14, transition: 'all 0.6s cubic-bezier(0.4,0,0,1)' }}>
                 {[
                   { label: 'Pipeline', value: '3', detail: '$2.4M value', edge: '#F59E0B' },
                   { label: 'Emails', value: '7', detail: '2 flagged', edge: '#8B6CF6' },
                   { label: 'Calendar', value: '2', detail: 'Next 3pm', edge: '#06D6A0' },
                 ].map(card => (
                   <div key={card.label} onClick={() => handleSubmit(`Brief me on ${card.label.toLowerCase()}`)} style={{
-                    borderRadius: 18, background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-                    border: '0.5px solid rgba(255,255,255,0.1)', padding: 18, cursor: 'pointer',
+                    borderRadius: 20, background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(40px) saturate(1.3)', WebkitBackdropFilter: 'blur(40px) saturate(1.3)',
+                    border: '0.5px solid rgba(255,255,255,0.12)', padding: 20, cursor: 'pointer',
                     transition: 'all 0.4s cubic-bezier(0.2,0,0,1)', position: 'relative', overflow: 'hidden',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.35)',
                   }}
-                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 16px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12)' }}
-                    onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)' }}
+                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.15), 0 16px 48px rgba(0,0,0,0.45)' }}
+                    onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.35)' }}
                   >
-                    <div style={{ position: 'absolute', top: 0, left: 0, width: 2.5, height: '100%', borderRadius: 2, background: `linear-gradient(180deg, ${card.edge}, transparent)` }} />
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.15)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, marginBottom: 10, fontFamily: T.font }}>{card.label}</div>
-                    <div style={{ fontSize: 24, color: 'rgba(255,255,255,0.65)', fontWeight: 300, fontFamily: T.font }}>{card.value}</div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.12)', fontWeight: 300, marginTop: 4, fontFamily: T.font }}>{card.detail}</div>
+                    <div style={{ position: 'absolute', top: 0, left: 0, width: 3, height: '100%', borderRadius: 2, background: `linear-gradient(180deg, ${card.edge}, transparent)` }} />
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.18)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, marginBottom: 10, fontFamily: T.font }}>{card.label}</div>
+                    <div style={{ fontSize: 24, color: 'rgba(255,255,255,0.7)', fontWeight: 300, fontFamily: T.font }}>{card.value}</div>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.14)', fontWeight: 300, marginTop: 4, fontFamily: T.font }}>{card.detail}</div>
                   </div>
                 ))}
               </div>
 
-              {/* Alert card */}
-              <div onClick={() => handleSubmit('Brief me on the Cloudflare ROI framework')} style={{
-                width: '100%', maxWidth: 540, borderRadius: 16, background: 'rgba(245,158,11,0.06)',
-                backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-                border: '0.5px solid rgba(245,158,11,0.12)', padding: '16px 18px',
+              {/* Alert pill */}
+              <div id="kikoAlertWrap" onClick={() => handleSubmit('Brief me on the Cloudflare ROI framework')} style={{
+                width: '100%', maxWidth: 560, borderRadius: 50, background: 'rgba(245,158,11,0.06)',
+                backdropFilter: 'blur(40px) saturate(1.3)', WebkitBackdropFilter: 'blur(40px) saturate(1.3)',
+                border: '0.5px solid rgba(245,158,11,0.14)', padding: '14px 22px',
                 display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', transition: 'all 0.4s',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(245,158,11,0.06)',
+                boxShadow: 'inset 0 1px 0 rgba(245,158,11,0.06), 0 4px 20px rgba(0,0,0,0.2)',
               }}
-                onMouseOver={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.07)'; e.currentTarget.style.borderColor = 'rgba(245,158,11,0.15)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                onMouseOut={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.04)'; e.currentTarget.style.borderColor = 'rgba(245,158,11,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}
+                onMouseOver={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                onMouseOut={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.06)'; e.currentTarget.style.transform = 'translateY(0)' }}
               >
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#F59E0B', flexShrink: 0, boxShadow: '0 0 10px rgba(245,158,11,0.4)', animation: 'kikoBreathe 1.5s ease-in-out infinite' }} />
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#F59E0B', flexShrink: 0, boxShadow: '0 0 12px rgba(245,158,11,0.5)', animation: 'kikoBreathe 1.5s ease-in-out infinite' }} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.65)', fontWeight: 400, fontFamily: T.font }}>Cloudflare ROI framework due Thursday</div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', fontWeight: 300, marginTop: 3, fontFamily: T.font }}>Technical review — highest priority this week</div>
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', fontWeight: 400, fontFamily: T.font }}>Cloudflare ROI framework due Thursday</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontWeight: 300, marginTop: 2, fontFamily: T.font }}>Technical review — highest priority this week</div>
                 </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5"><polyline points="9 18 15 12 9 6"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
             </>
           )}
@@ -601,13 +611,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               {voiceState.status === 'error' && (
                 <div style={{ textAlign: 'center', padding: '20px 0' }}>
                   <p style={{ fontSize: 13, color: 'rgba(255,80,80,0.7)', fontFamily: T.font, margin: '0 0 8px' }}>Mic not available — check browser permissions</p>
-                  <button onClick={stopVoice} style={{ fontSize: 12, padding: '6px 16px', borderRadius: 20, background: 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', fontFamily: T.font, color: T.textSecondary }}>Close</button>
+                  <button onClick={stopVoice} style={{ fontSize: 12, padding: '6px 16px', borderRadius: 50, background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', fontFamily: T.font, color: T.textSecondary }}>Close</button>
                 </div>
               )}
               {renderMessages(voiceMessages, true)}
               {voiceState.transcript && (
                 <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'flex-end' }}>
-                  <div style={{ maxWidth: '75%', padding: '10px 14px', borderRadius: '14px 14px 4px 14px', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.08)', fontSize: 13, color: T.textSecondary, fontFamily: T.font, fontStyle: 'italic' }}>
+                  <div style={{ maxWidth: '75%', padding: '10px 14px', borderRadius: '14px 14px 4px 14px', background: 'rgba(255,255,255,0.07)', border: '0.5px solid rgba(255,255,255,0.1)', fontSize: 13, color: T.textSecondary, fontFamily: T.font, fontStyle: 'italic' }}>
                     {voiceState.transcript}
                   </div>
                 </div>
@@ -647,7 +657,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', position: 'relative', overflow: 'hidden' }}>
       {chatDragOver && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(26,26,26,0.3)', borderRadius: 18, margin: 8, pointerEvents: 'none' }}>
-          <div style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 50, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={T.textSecondary} strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
           </div>
           <p style={{ fontSize: 15, fontWeight: 500, color: T.text, fontFamily: T.font, margin: '0 0 4px' }}>Drop file for Kiko to analyse</p>
@@ -675,7 +685,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                       {showSteps ? 'Hide process' : `Show process (${thinkingSteps.length} steps)`}
                     </button>
                     {showSteps && (
-                      <div style={{ padding: '6px 10px', borderRadius: 8, background: T.accentSoft, border: `0.5px solid ${T.border}`, marginTop: 4 }}>
+                      <div style={{ padding: '6px 10px', borderRadius: 50, background: T.accentSoft, border: `0.5px solid ${T.border}`, marginTop: 4 }}>
                         {thinkingSteps.map((step, si) => {
                           const isLast = si === thinkingSteps.length - 1
                           return (

@@ -142,7 +142,7 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
         minWidth: dropPos.width,
         zIndex: 9999,
         background: 'var(--surface)',
-        borderRadius: 14,
+        borderRadius: 50,
         border: '0.5px solid var(--border-hover)',
         boxShadow: '0 8px 40px rgba(0,0,0,0.13), 0 2px 8px rgba(0,0,0,0.06)',
         overflow: 'hidden',
@@ -240,7 +240,7 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
             }}
             placeholder="e.g. McLaren F1, UEFA…"
             style={{
-              width: '100%', padding: '8px 12px', borderRadius: 8,
+              width: '100%', padding: '8px 12px', borderRadius: 50,
               border: '1px solid var(--border-hover)',
               background: 'var(--bg)',
               fontSize: 14, color: 'var(--text)',
@@ -257,7 +257,7 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
               disabled={!newName.trim() || saving}
               style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                padding: '8px 14px', borderRadius: 8,
+                padding: '8px 14px', borderRadius: 50,
                 background: newName.trim() ? 'var(--text)' : 'var(--surface-hover)',
                 border: 'none', cursor: newName.trim() ? 'pointer' : 'default',
                 fontSize: 13, fontWeight: 500, color: newName.trim() ? '#fff' : 'var(--text-tertiary)',
@@ -269,7 +269,7 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
             </button>
             <button
               onClick={() => { setAddingNew(false); setNewName('') }}
-              style={{ padding: '8px 12px', borderRadius: 8, background: 'transparent', border: '0.5px solid var(--border-hover)', cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
+              style={{ padding: '8px 12px', borderRadius: 50, background: 'transparent', border: '0.5px solid var(--border-hover)', cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
               Cancel
             </button>
           </div>
@@ -289,7 +289,7 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
         onClick={() => setOpen(o => !o)}
         style={{
           display: 'flex', alignItems: 'center', gap: 8,
-          padding: '7px 12px', borderRadius: 8,
+          padding: '7px 12px', borderRadius: 50,
           border: open ? '1px solid var(--border-hover)' : '1px solid var(--border)',
           background: open ? 'var(--surface-hover)' : 'var(--surface)',
           cursor: 'pointer', transition: 'all 0.15s',
@@ -413,9 +413,9 @@ export default function Pipeline({ user }) {
       {/* Toolbar */}
       <div style={{
         margin: '0 16px', padding: '12px 20px', borderRadius: 18,
-        background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(40px)',
+        background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(40px)',
         WebkitBackdropFilter: 'blur(40px)',
-        border: '0.5px solid rgba(255,255,255,0.08)',
+        border: '0.5px solid rgba(255,255,255,0.1)',
         boxShadow: '0 8px 36px rgba(0,0,0,0.3)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
@@ -453,15 +453,15 @@ export default function Pipeline({ user }) {
                   onDrop={e => handleDrop(e, stage.id)}
                   style={{
                     width: 260, flexShrink: 0, display: 'flex', flexDirection: 'column',
-                    background: isOver ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)',
+                    background: isOver ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.02)',
                     backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-                    borderRadius: 18, border: isOver ? '1px dashed rgba(139,108,246,0.3)' : '0.5px solid rgba(255,255,255,0.06)',
+                    borderRadius: 18, border: isOver ? '1px dashed rgba(139,108,246,0.3)' : '0.5px solid rgba(255,255,255,0.07)',
                     transition: 'all 0.15s ease',
                   }}>
-                  <div style={{ padding: '12px 14px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ padding: '12px 14px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{stage.label}</span>
-                      <span style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)', background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '1px 7px' }}>{stageDeals.length}</span>
+                      <span style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)', background: 'rgba(255,255,255,0.04)', borderRadius: 50, padding: '1px 7px' }}>{stageDeals.length}</span>
                     </div>
                   </div>
                   <div style={{ flex: 1, overflowY: 'auto', padding: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -475,12 +475,12 @@ export default function Pipeline({ user }) {
                         onDragStart={e => handleDragStart(e, deal)}
                         onDragEnd={handleDragEnd}
                         onClick={() => selectDeal(deal)}
-                        style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(32px)', WebkitBackdropFilter: 'blur(32px)', borderRadius: 14, padding: '12px 14px', border: '0.5px solid rgba(255,255,255,0.08)', cursor: 'grab', transition: 'all 0.2s ease', position: 'relative', overflow: 'hidden' }}
+                        style={{ background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(32px)', WebkitBackdropFilter: 'blur(32px)', borderRadius: 50, padding: '12px 14px', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'grab', transition: 'all 0.2s ease', position: 'relative', overflow: 'hidden' }}
                         onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.transform = 'translateY(0)' }}>
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; e.currentTarget.style.transform = 'translateY(0)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           {companyDomains[deal.company] ? (
-                            <div style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                            <div style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(255,255,255,0.07)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
                               <img src={`https://www.google.com/s2/favicons?domain=${companyDomains[deal.company]}&sz=64`} alt="" style={{ width: 15, height: 15, objectFit: 'contain' }} />
                             </div>
                           ) : (
@@ -515,15 +515,15 @@ export default function Pipeline({ user }) {
         <div style={{ width: panelOpen ? 380 : 0, minWidth: panelOpen ? 380 : 0, transition: 'width 0.3s ease, min-width 0.3s ease, opacity 0.2s ease', opacity: panelOpen ? 1 : 0, overflow: 'hidden', marginLeft: panelOpen ? 16 : 0 }}>
           {selectedDeal && (
             <div style={{ width: 380, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 16 }}>
-              <div style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '20px 20px 16px', border: '0.5px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '20px 20px 16px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     {companyDomains[selectedDeal.company] ? (
-                      <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 50, background: 'rgba(255,255,255,0.07)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
                         <img src={`https://www.google.com/s2/favicons?domain=${companyDomains[selectedDeal.company]}&sz=128`} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
                       </div>
                     ) : (
-                      <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 50, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Building2 style={{ width: 18, height: 18, color: 'rgba(255,255,255,0.2)' }} />
                       </div>
                     )}
@@ -532,7 +532,7 @@ export default function Pipeline({ user }) {
                       {dealCompany?.industry && <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: '3px 0 0', fontFamily: 'var(--font)', fontWeight: 300 }}>{dealCompany.industry}{dealCompany.country ? ` · ${dealCompany.country}` : ''}</p>}
                     </div>
                   </div>
-                  <button onClick={closePanel} style={{ background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: 8, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}><X style={{ width: 14, height: 14 }} /></button>
+                  <button onClick={closePanel} style={{ background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: 50, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}><X style={{ width: 14, height: 14 }} /></button>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
@@ -543,24 +543,24 @@ export default function Pipeline({ user }) {
                   </div>
                 </div>
                 {dealCompany && (
-                  <button onClick={() => nav(`/organisations?org=${dealCompany.id}`)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--accent)', background: 'rgba(139,108,246,0.06)', padding: '6px 12px', borderRadius: 10, border: '0.5px solid rgba(139,108,246,0.12)', cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: 300 }}>
+                  <button onClick={() => nav(`/organisations?org=${dealCompany.id}`)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--accent)', background: 'rgba(139,108,246,0.06)', padding: '6px 12px', borderRadius: 50, border: '0.5px solid rgba(139,108,246,0.12)', cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: 300 }}>
                     <ExternalLink style={{ width: 12, height: 12 }} /> View Organisation
                   </button>
                 )}
               </div>
-              <div style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
                 <p style={sectionTitle}><Users style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Contacts ({dealContacts.length})</p>
                 {loadingPanel ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{[...Array(2)].map((_, i) => <div key={i} style={{ height: 40, background: 'rgba(255,255,255,0.02)', borderRadius: 8 }} />)}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{[...Array(2)].map((_, i) => <div key={i} style={{ height: 40, background: 'rgba(255,255,255,0.02)', borderRadius: 50 }} />)}</div>
                 ) : dealContacts.length === 0 ? <p style={emptyText}>No contacts linked</p> : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {dealContacts.map((ct, i) => (
                       <div key={ct.id} onClick={() => nav(`/contacts/${ct.id}`)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, cursor: 'pointer', transition: 'background 0.15s', background: i === 0 ? 'rgba(59,130,246,0.06)' : 'transparent', border: i === 0 ? '0.5px solid rgba(59,130,246,0.12)' : '0.5px solid transparent' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 50, cursor: 'pointer', transition: 'background 0.15s', background: i === 0 ? 'rgba(59,130,246,0.06)' : 'transparent', border: i === 0 ? '0.5px solid rgba(59,130,246,0.12)' : '0.5px solid transparent' }}
                         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
                         onMouseLeave={e => e.currentTarget.style.background = i === 0 ? 'rgba(59,130,246,0.06)' : 'transparent'}>
-                        {ct.picture ? <img src={ct.picture} alt="" style={{ width: 28, height: 28, borderRadius: 14, objectFit: 'cover' }} /> : (
-                          <div style={{ width: 28, height: 28, borderRadius: 14, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {ct.picture ? <img src={ct.picture} alt="" style={{ width: 28, height: 28, borderRadius: 50, objectFit: 'cover' }} /> : (
+                          <div style={{ width: 28, height: 28, borderRadius: 50, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font)' }}>{(ct.firstName || '?')[0]?.toUpperCase()}</span>
                           </div>
                         )}
@@ -573,12 +573,12 @@ export default function Pipeline({ user }) {
                   </div>
                 )}
               </div>
-              <div style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
                 <p style={sectionTitle}><Send style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Lemlist Campaigns</p>
                 {dealCampaigns.length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {dealCampaigns.map(camp => (
-                      <div key={camp.name} style={{ padding: '8px 10px', background: 'rgba(59,130,246,0.06)', borderRadius: 10, border: '0.5px solid rgba(59,130,246,0.12)' }}>
+                      <div key={camp.name} style={{ padding: '8px 10px', background: 'rgba(59,130,246,0.06)', borderRadius: 50, border: '0.5px solid rgba(59,130,246,0.12)' }}>
                         <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.8)', margin: 0, fontFamily: 'var(--font)' }}>{camp.name}</p>
                         <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', margin: '2px 0 0', fontFamily: 'var(--font)', fontWeight: 300 }}>{camp.contacts} contact{camp.contacts !== 1 ? 's' : ''}</p>
                       </div>

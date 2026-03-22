@@ -99,14 +99,14 @@ export default function ImageUpload({ label, storageKey, folder = 'uploads', asp
         <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(24px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: T.surface, borderRadius: 18, padding: 24, maxWidth: 520, width: '90%', boxShadow: '0 24px 80px rgba(0,0,0,0.15)' }}>
             <p style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 16px' }}>Crop {label}</p>
-            <div style={{ maxHeight: 400, overflow: 'auto', borderRadius: 8, background: T.bg, display: 'flex', justifyContent: 'center' }}>
+            <div style={{ maxHeight: 400, overflow: 'auto', borderRadius: 50, background: T.bg, display: 'flex', justifyContent: 'center' }}>
               <ReactCrop crop={crop} onChange={setCrop} onComplete={setCompletedCrop}>
                 <img ref={imgRef} src={rawUrl} alt="" style={{ maxHeight: 380, maxWidth: '100%', objectFit: 'contain' }} />
               </ReactCrop>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
-              <button onClick={cancelCrop} style={{ height: 36, padding: '0 16px', borderRadius: 8, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, fontSize: 13, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
-              <button onClick={saveCrop} disabled={uploading} style={{ height: 36, padding: '0 20px', borderRadius: 8, border: 'none', background: T.accent, color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <button onClick={cancelCrop} style={{ height: 36, padding: '0 16px', borderRadius: 50, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, fontSize: 13, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
+              <button onClick={saveCrop} disabled={uploading} style={{ height: 36, padding: '0 20px', borderRadius: 50, border: 'none', background: T.accent, color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
                 {uploading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Save
               </button>
             </div>
@@ -116,7 +116,7 @@ export default function ImageUpload({ label, storageKey, folder = 'uploads', asp
 
       {/* Upload zone */}
       <div onClick={() => fileRef.current?.click()} style={{
-        border: `1px dashed ${T.border}`, borderRadius: 14, padding: 16, cursor: 'pointer',
+        border: `1px dashed ${T.border}`, borderRadius: 50, padding: 16, cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 90,
         transition: 'border-color 0.15s', background: T.bg,
       }}
@@ -124,7 +124,7 @@ export default function ImageUpload({ label, storageKey, folder = 'uploads', asp
         onMouseOut={e => e.currentTarget.style.borderColor = T.border}
       >
         {preview ? (
-          <img src={preview} alt="" style={{ maxHeight: 100, borderRadius: 8, objectFit: 'contain' }} />
+          <img src={preview} alt="" style={{ maxHeight: 100, borderRadius: 50, objectFit: 'contain' }} />
         ) : (
           <div style={{ textAlign: 'center' }}>
             <Upload size={20} color={T.textTertiary} style={{ margin: '0 auto 6px' }} />
@@ -132,7 +132,7 @@ export default function ImageUpload({ label, storageKey, folder = 'uploads', asp
           </div>
         )}
         {uploading && (
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.8)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.8)', borderRadius: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Loader2 size={20} className="animate-spin" color={T.accent} />
           </div>
         )}

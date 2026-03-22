@@ -155,7 +155,7 @@ export default function Settings({ user }) {
   }
 
   const inputStyle = {
-    width: '100%', height: 44, borderRadius: 14, border: `1px solid ${T.border}`,
+    width: '100%', height: 44, borderRadius: 50, border: `1px solid ${T.border}`,
     padding: '0 14px', fontSize: 14, color: T.text, fontFamily: T.font,
     outline: 'none', background: T.surface, boxSizing: 'border-box',
   }
@@ -291,8 +291,8 @@ export default function Settings({ user }) {
                   <div key={n} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0' }}>
                     <span style={{ fontSize: 14, color: T.textSecondary, fontFamily: T.font }}>{n}</span>
                     <div onClick={() => setSettings(p => ({ ...p, notification_prefs: { ...(p.notification_prefs || {}), [key]: !on } }))}
-                      style={{ width: 44, height: 24, borderRadius: 14, background: on ? T.accent : T.border, position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}>
-                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+                      style={{ width: 44, height: 24, borderRadius: 50, background: on ? T.accent : T.border, position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}>
+                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
                     </div>
                   </div>
                 )
@@ -305,7 +305,7 @@ export default function Settings({ user }) {
               bio: settings.bio, linkedin_url: settings.linkedin_url, profile_photo_url: settings.profile_photo_url,
               email_signature: settings.email_signature, notification_prefs: settings.notification_prefs,
             })}
-              style={{ height: 44, borderRadius: 14, background: T.accent, color: '#fff', border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
+              style={{ height: 44, borderRadius: 50, background: T.accent, color: '#fff', border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
               {saved ? 'Saved!' : 'Save changes'}
             </button>
           </div>
@@ -384,7 +384,7 @@ export default function Settings({ user }) {
                   const isOn = topNavItems.includes(item.id)
                   const isHome = item.id === 'home'
                   return (
-                    <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 8, background: isHome ? T.accentSoft : T.surface, border: `1px solid ${T.border}` }}>
+                    <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 50, background: isHome ? T.accentSoft : T.surface, border: `1px solid ${T.border}` }}>
                       <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font }}>{item.label}</span>
                       {isHome ? (
                         <span style={{ fontSize: 9, color: T.textTertiary, padding: '2px 6px', borderRadius: 4, background: T.accentSoft }}>Always shown</span>
@@ -395,12 +395,12 @@ export default function Settings({ user }) {
                           localStorage.setItem('kiko_top_nav', JSON.stringify(next))
                           window.dispatchEvent(new Event('kiko_top_nav_updated'))
                         }} style={{
-                          width: 38, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer',
+                          width: 38, height: 20, borderRadius: 50, border: 'none', cursor: 'pointer',
                           background: isOn ? T.accent : 'rgba(0,0,0,0.1)',
                           position: 'relative', transition: 'background 0.2s', padding: 0,
                         }}>
                           <div style={{
-                            width: 16, height: 16, borderRadius: '50%', background: 'rgba(255,255,255,0.06)',
+                            width: 16, height: 16, borderRadius: '50%', background: 'rgba(255,255,255,0.07)',
                             position: 'absolute', top: 2, left: isOn ? 20 : 2,
                             transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
                           }} />
@@ -430,7 +430,7 @@ export default function Settings({ user }) {
                   <option value="admin">Admin</option>
                 </select>
                 <button onClick={sendInvite} style={{
-                  height: 44, padding: '0 16px', borderRadius: 14, background: T.accent, color: '#fff',
+                  height: 44, padding: '0 16px', borderRadius: 50, background: T.accent, color: '#fff',
                   border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
                   display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
                 }}><UserPlus size={14} /> Invite</button>
@@ -467,7 +467,7 @@ export default function Settings({ user }) {
                       <p style={{ fontSize: 11, color: T.textTertiary, margin: '2px 0 0', fontFamily: T.font }}>{m.email}</p>
                     </div>
                   </div>
-                  <span style={{ fontSize: 11, padding: '4px 10px', borderRadius: 20, fontWeight: 500,
+                  <span style={{ fontSize: 11, padding: '4px 10px', borderRadius: 50, fontWeight: 500,
                     background: m.role === 'super_admin' ? '#F3E5F5' : m.role === 'admin' ? '#E3F2FD' : T.accentSoft,
                     color: m.role === 'super_admin' ? '#6A1B9A' : m.role === 'admin' ? '#1565C0' : T.textSecondary,
                   }}>{m.role}</span>

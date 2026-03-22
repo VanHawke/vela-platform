@@ -18,10 +18,10 @@ export default function DocumentCard({ doc, compact = false, onView }) {
 
   if (compact) {
     return (
-      <div onClick={() => onView?.(doc)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', transition: 'background 0.15s', background: 'transparent' }}
+      <div onClick={() => onView?.(doc)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 50, cursor: 'pointer', transition: 'background 0.15s', background: 'transparent' }}
         onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-        <div style={{ width: 32, height: 32, borderRadius: 8, background: `${catColor}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 50, background: `${catColor}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <Icon style={{ width: 15, height: 15, color: catColor }} />
         </div>
         <div style={{ minWidth: 0, flex: 1 }}>
@@ -35,7 +35,7 @@ export default function DocumentCard({ doc, compact = false, onView }) {
   }
 
   return (
-    <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 14, padding: 14, border: '0.5px solid rgba(255,255,255,0.08)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
+    <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 50, padding: 14, border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
         <div style={{ width: 36, height: 36, borderRadius: 9, background: `${catColor}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <Icon style={{ width: 17, height: 17, color: catColor }} />

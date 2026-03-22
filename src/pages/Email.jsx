@@ -154,7 +154,7 @@ export default function Email({ user }) {
       {/* Left — Folders */}
       <div style={{ width: 200, borderRight: `1px solid ${T.border}`, padding: 12, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
         <button onClick={() => setComposing('new')} style={{
-          width: '100%', height: 40, borderRadius: 14, border: 'none', background: T.accent, color: '#fff',
+          width: '100%', height: 40, borderRadius: 50, border: 'none', background: T.accent, color: '#fff',
           fontSize: 13, fontWeight: 400, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           marginBottom: 12, fontFamily: T.font,
         }}>
@@ -167,7 +167,7 @@ export default function Email({ user }) {
           return (
             <button key={f.id} onClick={() => { setFolder(f.id); setSelectedThread(null) }} style={{
               width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px',
-              borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left',
+              borderRadius: 50, border: 'none', cursor: 'pointer', textAlign: 'left',
               background: active ? T.accentSoft : 'transparent', fontFamily: T.font,
               color: active ? T.text : T.textSecondary, fontSize: 13, fontWeight: active ? 600 : 400,
               transition: 'all 0.1s',
@@ -175,7 +175,7 @@ export default function Email({ user }) {
               <Icon size={15} style={{ flexShrink: 0 }} />
               <span style={{ flex: 1 }}>{f.label}</span>
               {f.id === 'INBOX' && unreadCount > 0 && (
-                <span style={{ fontSize: 10, background: T.blue, color: '#fff', padding: '1px 6px', borderRadius: 8, fontWeight: 400 }}>{unreadCount}</span>
+                <span style={{ fontSize: 10, background: T.blue, color: '#fff', padding: '1px 6px', borderRadius: 50, fontWeight: 400 }}>{unreadCount}</span>
               )}
             </button>
           )
@@ -191,7 +191,7 @@ export default function Email({ user }) {
               return (
                 <button key={l.id} onClick={() => { setFolder(l.id); setSelectedThread(null) }} style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '6px 12px',
-                  borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left',
+                  borderRadius: 50, border: 'none', cursor: 'pointer', textAlign: 'left',
                   background: active ? T.accentSoft : 'transparent', fontFamily: T.font,
                   color: active ? T.text : T.textSecondary, fontSize: 12, fontWeight: active ? 600 : 400,
                 }}>
@@ -212,13 +212,13 @@ export default function Email({ user }) {
             <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: T.textTertiary }} />
             <input value={search} onChange={e => setSearch(e.target.value)} onKeyDown={handleSearch}
               placeholder="Search emails..." style={{
-                width: '100%', height: 34, borderRadius: 10, border: `1px solid ${T.border}`,
+                width: '100%', height: 34, borderRadius: 50, border: `1px solid ${T.border}`,
                 background: T.bg, paddingLeft: 32, paddingRight: 10, fontSize: 12,
                 fontFamily: T.font, color: T.text, outline: 'none',
               }} />
           </div>
           <button onClick={() => { handleSync().then(fetchEmails) }} disabled={syncing} style={{
-            width: 30, height: 30, borderRadius: 8, border: 'none', background: 'transparent',
+            width: 30, height: 30, borderRadius: 50, border: 'none', background: 'transparent',
             color: T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <RefreshCw size={14} style={{ animation: syncing ? 'spin 1s linear infinite' : 'none' }} />

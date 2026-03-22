@@ -260,7 +260,7 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
         {selected && selEvents.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {selEvents.map((event, i) => (
-              <div key={i} style={{ padding: '12px 14px', borderRadius: 10, background: event.series === 'f1' ? T.f1Light : T.feLight, border: `0.5px solid ${event.series === 'f1' ? T.f1Border : T.feBorder}`, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <div key={i} style={{ padding: '12px 14px', borderRadius: 50, background: event.series === 'f1' ? T.f1Light : T.feLight, border: `0.5px solid ${event.series === 'f1' ? T.f1Border : T.feBorder}`, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                 <SeriesIcon series={event.series} size={36} />
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 14, fontWeight: 500, color: event.series === 'f1' ? T.f1Dark : T.feDark, margin: 0, fontFamily: T.font }}>{event.name}</p>
@@ -282,7 +282,7 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
 
         {/* Outreach nudge */}
         {outreach && (
-          <div style={{ padding: '12px 14px', borderRadius: 8, background: T.amberLight, border: `0.5px solid ${T.amberBorder}` }}>
+          <div style={{ padding: '12px 14px', borderRadius: 50, background: T.amberLight, border: `0.5px solid ${T.amberBorder}` }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
               <div style={{ width: 6, height: 6, borderRadius: 1, background: T.amber, flexShrink: 0 }} />
               <p style={{ fontSize: 11, fontWeight: 500, color: T.amber, margin: 0, fontFamily: T.font }}>

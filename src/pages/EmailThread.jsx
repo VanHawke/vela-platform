@@ -93,7 +93,7 @@ export default function EmailThread({ threadId, userEmail, onReply, onReplyAll, 
           { label: 'Forward', icon: Forward, action: () => onForward(lastMsg) },
         ].map(btn => (
           <button key={btn.label} onClick={btn.action} style={{
-            display: 'flex', alignItems: 'center', gap: 5, padding: '6px 10px', borderRadius: 8,
+            display: 'flex', alignItems: 'center', gap: 5, padding: '6px 10px', borderRadius: 50,
             border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 12, color: T.textSecondary,
             fontFamily: T.font, transition: 'background 0.1s',
           }}
@@ -104,7 +104,7 @@ export default function EmailThread({ threadId, userEmail, onReply, onReplyAll, 
         ))}
         <div style={{ flex: 1 }} />
         <button onClick={onTrash} style={{
-          display: 'flex', alignItems: 'center', gap: 5, padding: '6px 10px', borderRadius: 8,
+          display: 'flex', alignItems: 'center', gap: 5, padding: '6px 10px', borderRadius: 50,
           border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 12, color: T.textTertiary,
           fontFamily: T.font,
         }}
@@ -124,7 +124,7 @@ export default function EmailThread({ threadId, userEmail, onReply, onReplyAll, 
           const dateStr = msg.date ? new Date(msg.date).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''
 
           return (
-            <div key={msg.gmail_id} style={{ marginBottom: 8, borderRadius: 14, border: `1px solid ${T.border}`, overflow: 'hidden', background: T.surface }}>
+            <div key={msg.gmail_id} style={{ marginBottom: 8, borderRadius: 50, border: `1px solid ${T.border}`, overflow: 'hidden', background: T.surface }}>
               {/* Message header — clickable to expand/collapse */}
               <button onClick={() => toggleExpand(msg.gmail_id)} style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px',
@@ -171,7 +171,7 @@ export default function EmailThread({ threadId, userEmail, onReply, onReplyAll, 
                           download={att.filename} target="_blank" rel="noopener"
                           style={{
                             display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px',
-                            borderRadius: 8, background: T.accentSoft, fontSize: 11, color: T.textSecondary,
+                            borderRadius: 50, background: T.accentSoft, fontSize: 11, color: T.textSecondary,
                             textDecoration: 'none', border: `1px solid ${T.border}`, fontFamily: T.font,
                           }}
                           onMouseOver={e => e.currentTarget.style.borderColor = T.blue}
