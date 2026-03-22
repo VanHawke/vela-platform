@@ -324,11 +324,11 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
       {hasPanel && (
         <div key={panelKey} className={`kiko-panel ${open ? 'entering' : ''}`} style={{
           position: 'fixed', bottom: 88, right: 24, width: panelW,
-          zIndex: 100, borderRadius: 18,
+          zIndex: 100, borderRadius: 24,
           background: 'rgba(14,14,20,0.75)',
-          backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-          border: '0.5px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 12px 48px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)',
+          backdropFilter: 'blur(40px) saturate(1.3)', WebkitBackdropFilter: 'blur(40px) saturate(1.3)',
+          border: '0.5px solid rgba(255,255,255,0.12)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 48px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)',
           display: 'flex', flexDirection: 'column',
           maxHeight: 'calc(100vh - 160px)',
           opacity: open ? 1 : 0,
@@ -338,7 +338,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           {/* Header */}
           <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: hasMessages ? '0.5px solid rgba(255,255,255,0.07)' : 'none' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 22, height: 22, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ width: 22, height: 22, borderRadius: 50, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <KikoSymbol size={12} color="#fff" animate={streaming ? (streamText ? 'streaming' : 'thinking') : 'idle'} />
               </div>
               <span style={{ fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font }}>Kiko</span>
@@ -354,7 +354,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               {messages.map((msg, i) => (
                 <div key={i} style={{ marginBottom: 8, display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                   {msg.role !== 'user' && (
-                    <div style={{ width: 20, height: 20, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
+                    <div style={{ width: 20, height: 20, borderRadius: 50, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
                       <KikoSymbol size={12} color="#fff" />
                     </div>
                   )}
@@ -429,11 +429,11 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               <Mic size={13} />
               {transcribing && <span style={{ position: 'absolute', top: 2, right: 2, width: 6, height: 6, borderRadius: '50%', background: 'rgba(34,197,94,0.9)', animation: 'kikoBreathe 1s ease-in-out infinite' }} />}
             </button>
-            <button onClick={openVoiceMode} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'transparent', color: T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <EqIcon size={14} color={T.textTertiary} />
+            <button onClick={openVoiceMode} style={{ width: 28, height: 28, borderRadius: 50, border: '0.5px solid rgba(6,214,160,0.15)', background: 'rgba(6,214,160,0.08)', color: 'rgba(6,214,160,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.3s' }}>
+              <EqIcon size={14} color="rgba(6,214,160,0.7)" />
             </button>
             <button onClick={() => handleSubmit()} disabled={!input.trim() || streaming}
-              style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: input.trim() && !streaming ? T.accent : 'rgba(255,255,255,0.04)', color: input.trim() && !streaming ? '#fff' : T.textTertiary, cursor: input.trim() && !streaming ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s' }}>
+              style={{ width: 28, height: 28, borderRadius: 50, border: 'none', background: input.trim() && !streaming ? T.accentGradient : 'rgba(255,255,255,0.04)', color: input.trim() && !streaming ? '#fff' : T.textTertiary, cursor: input.trim() && !streaming ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s', boxShadow: input.trim() ? '0 2px 8px rgba(139,108,246,0.2)' : 'none' }}>
               <ArrowUp size={13} />
             </button>
           </div>
