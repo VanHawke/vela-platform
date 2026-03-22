@@ -13,11 +13,19 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [gLoading, setGLoading] = useState(false)
   const [customLogo, setCustomLogo] = useState(null)
+  const [brandName, setBrandName] = useState('VAN HAWKE')
 
-  // Load custom logo from settings
+  // Load branding from settings table
   useEffect(() => {
-    supabase.from('settings').select('value').eq('key', 'custom_logo').maybeSingle()
-      .then(({ data }) => { if (data?.value) setCustomLogo(data.value) })
+    supabase.from('settings').select('key, value').in('key', ['custom_logo', 'brand_name', 'login_logo_url'])
+      .then(({ data }) => {
+        if (data) {
+          data.forEach(row => {
+            if ((row.key === 'custom_logo' || row.key === 'login_logo_url') && row.value) setCustomLogo(row.value)
+            if (row.key === 'brand_name' && row.value) setBrandName(row.value)
+          })
+        }
+      })
   }, [])
 
   const googleLogin = async () => {
@@ -67,7 +75,7 @@ export default function LoginPage() {
           {customLogo ? (
             <img src={customLogo} alt="Logo" style={{ height: 32, maxWidth: 160, objectFit: 'contain' }} />
           ) : (
-            <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', fontFamily: T.font }}>VAN HAWKE</span>
+            <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', fontFamily: T.font }}>{brandName}</span>
           )}
         </div>
 

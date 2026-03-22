@@ -413,6 +413,13 @@ RULES:
       setTranscript(text)
       addMessage('user', text)
 
+      // "Bye Kiko" voice command — end session
+      if (text.toLowerCase().replace(/[^a-z ]/g, '').includes('bye kiko') || text.toLowerCase().replace(/[^a-z ]/g, '').includes('bye keeko')) {
+        console.log('[Kiko Voice] Bye Kiko detected — closing session')
+        if (onClose) setTimeout(() => onClose(), 500)
+        return
+      }
+
       if (listenModeRef.current === 'passive') {
         if (KEYWORDS.some(kw => text.toLowerCase().includes(kw))) resetToActive()
         return

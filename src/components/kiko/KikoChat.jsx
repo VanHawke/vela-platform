@@ -524,57 +524,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     )
   })
 
-  // ── VOICE FULLSCREEN MODE — takes priority over everything ──
-  if (voiceActive && !compact) {
-    return (
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'transparent', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '0 24px' }}>
-
-          {voiceState.status === 'error' && (
-            <div style={{ textAlign: 'center', padding: '20px 0' }}>
-              <p style={{ fontSize: 13, color: 'rgba(255,80,80,0.7)', fontFamily: T.font, margin: '0 0 8px' }}>Mic not available — check browser permissions</p>
-              <button onClick={stopVoice} style={{ fontSize: 12, padding: '8px 20px', borderRadius: 50, background: 'rgba(255,255,255,0.07)', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontFamily: T.font, color: T.textSecondary }}>Close</button>
-            </div>
-          )}
-
-          {/* Large speaking wave — visible when Kiko is speaking */}
-          <div style={{ width: '85%', maxWidth: 900, height: 120, opacity: voiceState.speaking ? 1 : 0, transition: 'opacity 0.6s', marginBottom: 20, position: 'absolute', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
-            <DoubleHelix width={900} height={120} speaking={voiceState.speaking} energy={voiceState.energy || 0} pitch={voiceState.pitch || 0} />
-          </div>
-
-          {/* Idle wave — visible when listening (not speaking) */}
-          <div style={{ width: '85%', maxWidth: 900, opacity: voiceState.speaking ? 0 : 1, transition: 'opacity 0.6s', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
-            <DoubleHelix width={900} height={90} />
-          </div>
-
-          {/* Listening bar — subtle green pulse */}
-          <div style={{ width: 280, height: 3, borderRadius: 50, overflow: 'hidden', marginTop: 32, opacity: voiceState.speaking ? 0 : 1, transition: 'opacity 0.5s' }}>
-            <div style={{ width: '100%', height: '100%', borderRadius: 50, background: 'linear-gradient(90deg, transparent, rgba(6,214,160,0.5), transparent)', animation: 'kikoListenPulse 2s ease-in-out infinite' }} />
-          </div>
-
-          {/* Status */}
-          <div style={{ marginTop: 18, fontSize: 13, fontWeight: 300, fontFamily: T.font, color: voiceState.speaking ? 'rgba(139,108,246,0.25)' : 'rgba(255,255,255,0.12)', transition: 'color 0.3s' }}>
-            {voiceState.status === 'connecting' ? 'Connecting...' : voiceState.speaking ? 'Kiko is speaking...' : 'Listening...'}
-          </div>
-
-          {/* Bye, Kiko button */}
-          <button onClick={stopVoice} style={{
-            marginTop: 32, padding: '10px 28px', borderRadius: 50,
-            background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.1)',
-            fontSize: 12, color: 'rgba(255,255,255,0.25)', cursor: 'pointer', fontFamily: T.font,
-            fontWeight: 300, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)', transition: 'all 0.3s',
-          }}
-            onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,80,80,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,80,80,0.15)'; e.currentTarget.style.color = 'rgba(255,80,80,0.5)' }}
-            onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.25)' }}
-          >Bye, Kiko</button>
-        </div>
-
-        {/* Headless KikoVoice — WebRTC only, no UI */}
-        <KikoVoice headless onClose={stopVoice} user={user} micStream={voiceMicStream} onVoiceState={handleVoiceState} onVoiceMessage={handleVoiceMessage} />
-      </div>
-    )
-  }
-
   // ── WELCOME STATE (no text messages, not in voice mode) ──
   if (!hasMessages && !compact) {
     return (
@@ -593,26 +542,67 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         {/* Center content */}
         <div id="kikoHomeContent" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: trans, overflow: 'auto', minHeight: 0, padding: '0 24px 20px' }}>
 
-          {/* IDLE STATE — wave above greeting */}
-          {!voiceActive && (
-            <>
-              {/* Wave — hero, large and centered */}
-              <div id="kikoWaveHome" style={{ width: '90%', maxWidth: 900, marginBottom: 56, transition: 'all 0.4s cubic-bezier(0.4,0,0,1)', overflow: 'visible', padding: '16px 0', cursor: 'pointer', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-                <DoubleHelix width={900} height={100} onClick={() => startVoice()} />
-              </div>
+          {/* Wave — always visible, scales up in voice mode */}
+          <div id="kikoWaveHome" style={{
+            width: '90%', maxWidth: 900, marginBottom: voiceActive ? 0 : 48, overflow: 'visible', padding: '16px 0',
+            cursor: voiceActive ? 'default' : 'pointer',
+            transform: voiceActive ? 'scale(1.15)' : 'scale(1)',
+            transition: 'all 0.7s cubic-bezier(0.34,1.56,0.64,1)',
+            WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+            maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+          }}
+            onMouseEnter={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1.02)' }}
+            onMouseLeave={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1)' }}>
+            <DoubleHelix width={900} height={100} speaking={voiceActive && voiceState.speaking} energy={voiceState.energy || 0} pitch={voiceState.pitch || 0} onClick={voiceActive ? undefined : () => startVoice()} />
+          </div>
 
-              {/* Greeting — compact */}
-              <div id="kikoGreeting" style={{ transition: 'all 0.6s cubic-bezier(0.4,0,0,1)' }}>
-                <h1 style={{ fontSize: 26, fontWeight: 200, color: 'rgba(255,255,255,0.8)', margin: '0 0 4px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
-                  {getGreeting()}, {firstName}
-                </h1>
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.1)', margin: '0 0 20px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
-              </div>
+          {/* Voice controls — visible only in voice mode */}
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            opacity: voiceActive ? 1 : 0, maxHeight: voiceActive ? 200 : 0,
+            transform: voiceActive ? 'translateY(0)' : 'translateY(-20px)',
+            transition: 'all 0.6s cubic-bezier(0.34,1.56,0.64,1)',
+            overflow: 'hidden', pointerEvents: voiceActive ? 'auto' : 'none',
+          }}>
+            {/* Status bar — amber connecting, green live, red error */}
+            <div style={{ width: 280, height: 3, borderRadius: 50, overflow: 'hidden', opacity: voiceState.speaking ? 0 : 1, transition: 'opacity 0.5s' }}>
+              <div style={{ width: '100%', height: '100%', borderRadius: 50, background: voiceState.status === 'error' ? 'linear-gradient(90deg, transparent, rgba(255,80,80,0.5), transparent)' : voiceState.status === 'connecting' ? 'linear-gradient(90deg, transparent, rgba(245,158,11,0.5), transparent)' : 'linear-gradient(90deg, transparent, rgba(6,214,160,0.5), transparent)', animation: 'kikoListenPulse 2s ease-in-out infinite' }} />
+            </div>
+            <div style={{ marginTop: 16, fontSize: 13, fontWeight: 300, fontFamily: T.font, color: voiceState.status === 'error' ? 'rgba(255,80,80,0.4)' : voiceState.status === 'connecting' ? 'rgba(245,158,11,0.3)' : voiceState.speaking ? 'rgba(139,108,246,0.25)' : 'rgba(255,255,255,0.12)', transition: 'color 0.3s' }}>
+              {voiceState.status === 'error' ? 'Connection failed' : voiceState.status === 'connecting' ? 'Connecting...' : voiceState.speaking ? 'Kiko is speaking...' : 'Listening...'}
+            </div>
+            <button onClick={stopVoice} style={{
+              marginTop: 24, padding: '10px 28px', borderRadius: 50,
+              background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.1)',
+              fontSize: 12, color: 'rgba(255,255,255,0.25)', cursor: 'pointer', fontFamily: T.font,
+              fontWeight: 300, transition: 'all 0.3s',
+            }}
+              onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,80,80,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,80,80,0.15)'; e.currentTarget.style.color = 'rgba(255,80,80,0.5)' }}
+              onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.25)' }}
+            >Bye, Kiko</button>
+          </div>
 
-              {/* Prompt bar */}
-              <div id="kikoPromptWrap" style={{ width: '100%', maxWidth: 540, marginBottom: 14, transition: 'all 0.6s cubic-bezier(0.4,0,0,1)' }}>
+          {/* Greeting — slides down and fades in voice mode */}
+          <div id="kikoGreeting" style={{
+            opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 100,
+            transform: voiceActive ? 'translateY(40px)' : 'translateY(0)',
+            transition: 'all 0.5s cubic-bezier(0.4,0,0,1)',
+            overflow: 'hidden',
+          }}>
+            <h1 style={{ fontSize: 24, fontWeight: 200, color: 'rgba(255,255,255,0.7)', margin: '0 0 4px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
+              {getGreeting()}, {firstName}
+            </h1>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.08)', margin: '0 0 18px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
+          </div>
+
+          {/* Prompt bar — slides down in voice mode */}
+          <div id="kikoPromptWrap" style={{
+            width: '100%', maxWidth: 540, marginBottom: 14,
+            opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 100,
+            transform: voiceActive ? 'translateY(40px)' : 'translateY(0)',
+            transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.05s',
+            overflow: 'hidden', pointerEvents: voiceActive ? 'none' : 'auto',
+          }}>
                 <PromptBar welcome />
                 {dictateError && (
                   <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,80,80,0.7)', fontFamily: T.font, margin: '8px 0 0', animation: 'fadeIn 0.2s' }}>{dictateError}</p>
@@ -620,7 +610,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               </div>
 
               {/* 4 chips only — below prompt bar */}
-              <div id="kikoChipsWrap" style={{ display: 'flex', gap: 8, justifyContent: 'center', maxWidth: 540, marginBottom: 36, transition: 'all 0.6s cubic-bezier(0.4,0,0,1)' }}>
+              <div id="kikoChipsWrap" style={{
+                display: 'flex', gap: 8, justifyContent: 'center', maxWidth: 540, marginBottom: voiceActive ? 0 : 20,
+                opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 60,
+                transform: voiceActive ? 'translateY(30px)' : 'translateY(0)',
+                transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.1s',
+                overflow: 'hidden', pointerEvents: voiceActive ? 'none' : 'auto',
+              }}>
                 {CHIPS.map(c => (
                   <button key={c} onClick={() => handleSubmit(c)} style={{
                     padding: '8px 18px', borderRadius: 50, background: 'rgba(255,255,255,0.05)',
@@ -636,7 +632,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               </div>
 
               {/* Alert pill — swipe to dismiss */}
-              {!alertDismissed && (
+              {!alertDismissed && !voiceActive && (
                 <div id="kikoAlertWrap"
                   onTouchStart={e => { alertSwipeRef.current.startX = e.touches[0].clientX }}
                   onTouchMove={e => { const dx = e.touches[0].clientX - alertSwipeRef.current.startX; e.currentTarget.style.transform = `translateX(${dx}px)`; e.currentTarget.style.opacity = Math.max(0, 1 - Math.abs(dx) / 200) }}
@@ -648,24 +644,25 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   style={{
                     width: '100%', maxWidth: 540, borderRadius: 50, background: 'rgba(245,158,11,0.06)',
                     backdropFilter: 'blur(40px) saturate(1.3)', WebkitBackdropFilter: 'blur(40px) saturate(1.3)',
-                    border: '0.5px solid rgba(245,158,11,0.14)', padding: '14px 22px',
-                    display: 'flex', alignItems: 'center', gap: 14, cursor: 'grab',
-                    boxShadow: 'inset 0 1px 0 rgba(245,158,11,0.06), 0 4px 20px rgba(0,0,0,0.2)',
+                    border: '0.5px solid rgba(245,158,11,0.14)', padding: '10px 18px',
+                    display: 'flex', alignItems: 'center', gap: 12, cursor: 'grab',
+                    boxShadow: 'inset 0 1px 0 rgba(245,158,11,0.06)',
                     userSelect: 'none', touchAction: 'pan-y',
                   }}
                 >
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#F59E0B', flexShrink: 0, boxShadow: '0 0 12px rgba(245,158,11,0.5)', animation: 'kikoBreathe 1.5s ease-in-out infinite' }} />
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#F59E0B', flexShrink: 0, boxShadow: '0 0 10px rgba(245,158,11,0.4)', animation: 'kikoBreathe 1.5s ease-in-out infinite' }} />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', fontWeight: 400, fontFamily: T.font }}>Cloudflare ROI framework due Thursday</div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontWeight: 300, marginTop: 2, fontFamily: T.font }}>Technical review — highest priority this week</div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', fontWeight: 400, fontFamily: T.font }}>Cloudflare ROI framework due Thursday</div>
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.15)', fontWeight: 300, marginTop: 1, fontFamily: T.font }}>Technical review — highest priority this week</div>
                   </div>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
               )}
-            </>
-          )}
 
         </div>
+
+        {/* Headless KikoVoice — runs WebRTC connection when active */}
+        {voiceActive && <KikoVoice headless onClose={stopVoice} user={user} micStream={voiceMicStream} onVoiceState={handleVoiceState} onVoiceMessage={handleVoiceMessage} />}
 
         {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} />}
       </div>
