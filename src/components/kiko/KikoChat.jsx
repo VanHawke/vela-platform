@@ -598,7 +598,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <h1 style={{ fontSize: 24, fontWeight: 200, color: 'rgba(255,255,255,0.7)', margin: '0 0 4px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
               {getGreeting()}, {firstName}
             </h1>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.08)', margin: '0 0 18px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', margin: '0 0 18px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
           </div>
 
           {/* Prompt bar — slides down in voice mode */}

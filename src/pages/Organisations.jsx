@@ -550,7 +550,7 @@ export default function Organisations({ user }) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {/* Column headers */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 18px 8px', fontSize: 10, color: 'rgba(255,255,255,0.12)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, fontFamily: 'var(--font)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 18px 8px', fontSize: 10, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, fontFamily: 'var(--font)' }}>
                 <div style={{ width: 28 }}></div>
                 <div style={{ width: 200 }}>Company</div>
                 <div style={{ width: 130 }}>Industry</div>
@@ -567,11 +567,11 @@ export default function Organisations({ user }) {
                   <OrgLogo domain={listDomainCache[company.id]} name={company.name} size={28} />
                   <div style={{ width: 200, fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.82)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.name}</div>
                   <div style={{ width: 130, fontSize: 11, color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.industry || '—'}</div>
-                  <div style={{ width: 120, fontSize: 11, color: 'rgba(255,255,255,0.15)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.country || '—'}</div>
+                  <div style={{ width: 120, fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.country || '—'}</div>
                   <div style={{ width: 100, fontSize: 11, color: company.totalFunding ? 'rgba(6,214,160,0.5)' : 'rgba(255,255,255,0.08)', fontFamily: 'var(--font)', textAlign: 'right' }}>{company.totalFunding || '—'}</div>
-                  <div style={{ flex: 1, fontSize: 11, color: 'rgba(255,255,255,0.12)', fontFamily: 'var(--font)', textAlign: 'right' }}>{company.contactCount || 0}</div>
+                  <div style={{ flex: 1, fontSize: 11, color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font)', textAlign: 'right' }}>{company.contactCount || 0}</div>
                   <div style={{ width: 60, display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
-                    <button onClick={(e) => { e.stopPropagation(); edit(company) }} style={{ fontSize: 10, color: 'rgba(255,255,255,0.15)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.15)'}>Edit</button>
+                    <button onClick={(e) => { e.stopPropagation(); edit(company) }} style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.15)'}>Edit</button>
                     <button onClick={(e) => { e.stopPropagation(); remove(company.id) }} style={{ color: 'rgba(255,255,255,0.1)', background: 'none', border: 'none', cursor: 'pointer', padding: 2, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = '#ef4444'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.1)'}><X style={{ width: 12, height: 12 }} /></button>
                   </div>
                 </div>

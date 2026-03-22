@@ -84,7 +84,7 @@ export default function LoginPage() {
 
         {/* kiko label */}
         <h1 style={{ fontSize: 28, fontWeight: 200, color: 'rgba(255,255,255,0.85)', letterSpacing: '-0.03em', margin: '0 0 6px', ...fadeUp(0.3) }}>Kiko</h1>
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.15)', fontWeight: 300, margin: '0 0 40px', ...fadeUp(0.4) }}>Your AI operating system</p>
+        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)', fontWeight: 300, margin: '0 0 40px', ...fadeUp(0.4) }}>Your AI operating system</p>
 
         {/* Google OAuth — frosted glass pill */}
         <button onClick={googleLogin} disabled={gLoading} style={{
@@ -108,7 +108,7 @@ export default function LoginPage() {
         {/* Divider */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18, ...fadeUp(0.55) }}>
           <div style={{ flex: 1, height: '0.5px', background: 'rgba(255,255,255,0.04)' }} />
-          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.1)', fontWeight: 300 }}>or</span>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: 300 }}>or</span>
           <div style={{ flex: 1, height: '0.5px', background: 'rgba(255,255,255,0.04)' }} />
         </div>
 

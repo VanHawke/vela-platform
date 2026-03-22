@@ -112,7 +112,7 @@ export default function Contacts({ user }) {
       <div style={{ flex: 1, padding: '16px 24px', overflow: 'hidden' }}>
         <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3, height: '100%' }}>
           {/* Column headers */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 18px 8px', fontSize: 10, color: 'rgba(255,255,255,0.12)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, fontFamily: 'var(--font)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 18px 8px', fontSize: 10, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, fontFamily: 'var(--font)' }}>
             <div style={{ width: 32 }}></div>
             <div style={{ width: 180 }}>Name</div>
             <div style={{ width: 150 }}>Company</div>
@@ -147,8 +147,8 @@ export default function Contacts({ user }) {
                     </div>
                     <div style={{ width: 180, fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.82)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName(contact)}</div>
                     <div style={{ width: 150, fontSize: 11, color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.company || '—'}</div>
-                    <div style={{ width: 180, fontSize: 11, color: 'rgba(255,255,255,0.15)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.title || '—'}</div>
-                    <div style={{ flex: 1, fontSize: 11, color: 'rgba(255,255,255,0.1)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.email || ''}</div>
+                    <div style={{ width: 180, fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.title || '—'}</div>
+                    <div style={{ flex: 1, fontSize: 11, color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.email || ''}</div>
                     {/* Quick actions */}
                     <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                       {contact.email && <a href={`mailto:${contact.email}`} onClick={e => e.stopPropagation()} style={actionBtn}><Mail style={{ width: 13, height: 13 }} /></a>}

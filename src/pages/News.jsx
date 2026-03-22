@@ -94,7 +94,7 @@ function ArticleCard({ article, onStar, featured = false }) {
         <div style={{ fontSize: 16, fontWeight: 300, lineHeight: 1.45, color: T.text, marginBottom: 6, letterSpacing: '-0.01em' }}>{article.title}</div>
         {summary && <div style={{ fontSize: 12, color: T.textTertiary, lineHeight: 1.5, marginBottom: 8 }}>{summary}</div>}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.12)' }}>{article.source_name}</span>
+          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)' }}>{article.source_name}</span>
           {article.url && <a href={article.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: sig.text || T.textSecondary, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, opacity: 0.6, transition: 'opacity 0.15s' }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}>Read <ExternalLink size={9} /></a>}
         </div>
       </div>
@@ -108,7 +108,7 @@ function ArticleCard({ article, onStar, featured = false }) {
       onMouseLeave={e => { e.currentTarget.style.background = T.surface; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)' }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 13, fontWeight: 400, color: T.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.4 }}>{article.title}</div>
-        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.12)', marginTop: 2 }}>{article.source_name} · {timeAgo(article.published_at)}</div>
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>{article.source_name} · {timeAgo(article.published_at)}</div>
       </div>
       <button onClick={() => onStar(article)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: article.is_starred ? T.yellow : 'rgba(255,255,255,0.06)', flexShrink: 0 }}><Star size={12} fill={article.is_starred ? T.yellow : 'none'} /></button>
       {article.url && <a href={article.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: T.textTertiary, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0, opacity: 0.5, transition: 'opacity 0.15s', padding: '4px 10px', borderRadius: 50, border: `1px solid rgba(255,255,255,0.06)` }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}>Read <ExternalLink size={9} /></a>}
@@ -181,7 +181,7 @@ export default function News() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', fontFamily: T.font, background: 'transparent', overflow: 'hidden' }}>
 
       {/* ── Header ── */}
-      <div style={{ padding: '10px 16px', borderBottom: `1px solid ${T.border}`, background: T.surface, flexShrink: 0 }}>
+      <div style={{ padding: '10px 16px', borderBottom: `1px solid ${T.border}`, background: 'transparent', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
 
           {/* Search */}

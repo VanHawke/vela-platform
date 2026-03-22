@@ -406,7 +406,7 @@ export default function Pipeline({ user }) {
 
   const activeDealCount = useMemo(() => filteredDeals.filter(d => d.stage !== 'Closed Won' && d.stage !== 'Closed Lost').length, [filteredDeals])
   const sectionTitle = { fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }
-  const emptyText = { fontSize: 12, color: 'rgba(255,255,255,0.15)', fontFamily: 'var(--font)', fontStyle: 'italic', fontWeight: 300 }
+  const emptyText = { fontSize: 12, color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font)', fontStyle: 'italic', fontWeight: 300 }
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: 8 }}>

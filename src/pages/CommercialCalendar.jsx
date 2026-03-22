@@ -245,7 +245,7 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: T.surface }}>
       {/* Header */}
-      <div style={{ padding: '11px 18px', borderBottom: `1.5px solid ${T.border}`, background: T.bg, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+      <div style={{ padding: '11px 18px', borderBottom: `1.5px solid ${T.border}`, background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <span style={{ fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font }}>
           {selected ? fmtLong(selected) : 'Select a date'}
         </span>
@@ -396,7 +396,7 @@ export default function CommercialCalendar() {
     <div style={{ display: 'flex', height: '100%', fontFamily: T.font, background: 'transparent', overflow: 'hidden' }}>
 
       {/* ── Left: grid (55%) ── */}
-      <div style={{ width: '55%', flexShrink: 0, display: 'flex', flexDirection: 'column', borderRight: `1.5px solid ${T.border}`, background: T.bg }}>
+      <div style={{ width: '55%', flexShrink: 0, display: 'flex', flexDirection: 'column', borderRight: `1.5px solid ${T.border}`, background: 'transparent' }}>
 
         {/* Top nav */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', background: T.surface, borderBottom: `1.5px solid ${T.border}`, flexShrink: 0 }}>
