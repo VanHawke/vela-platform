@@ -543,11 +543,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         )}
 
         {/* Center content */}
-        <div id="kikoHomeContent" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: trans, overflow: 'auto', minHeight: 0, padding: '0 24px 20px' }}>
+        <div id="kikoHomeContent" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', transition: trans, overflow: 'auto', minHeight: 0, padding: '0 24px 20px' }}>
+
+          {/* Top spacer — pushes avatar to visual centre */}
+          <div style={{ flex: voiceActive ? 1 : 0.8, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
 
           {/* Wave — always visible, scales up in voice mode */}
           <div id="kikoWaveHome" style={{
-            width: '90%', maxWidth: 900, marginBottom: voiceActive ? 0 : 48, overflow: 'visible', padding: '16px 0',
+            width: '90%', maxWidth: 900, marginBottom: voiceActive ? 0 : 28, overflow: 'visible', padding: '16px 0',
             cursor: voiceActive ? 'default' : 'pointer',
             transform: voiceActive ? 'scale(1.15)' : 'scale(1)',
             transition: 'all 0.7s cubic-bezier(0.34,1.56,0.64,1)',
@@ -662,6 +665,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 </div>
               )}
 
+          {/* Bottom spacer */}
+          <div style={{ flex: voiceActive ? 1 : 0.3, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
         </div>
 
         {/* Headless KikoVoice — runs WebRTC connection when active */}

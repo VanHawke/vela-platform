@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { X, ChevronRight, ChevronLeft, Mic, MicOff, Paperclip, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import KikoSymbol from './KikoSymbol'
+import DoubleHelix from './DoubleHelix'
 
 const PASSIVE_AFTER_MS = 45_000
 const OFF_AFTER_MS     = 120_000
@@ -82,6 +83,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   // handle interim text display. Web Speech API was picking up Kiko's speaker
   // audio and creating duplicate/echo messages.
   const speakingRef = useRef(false)
+  const closeRef = useRef(null) // ref to handleClose for bye-kiko from inside useEffect
   const startLiveTranscription = useCallback(() => {}, [])
   const stopLiveTranscription = useCallback(() => {
     if (liveSrRef.current) { try { liveSrRef.current.abort() } catch {} liveSrRef.current = null }
@@ -405,7 +407,7 @@ RULES:
           const clean = full.toLowerCase().replace(/[^a-z ]/g, '')
           if (clean.includes('bye kiko') || clean.includes('bye keeko') || clean.includes('by kiko') || clean.includes('buy kiko')) {
             console.log('[Kiko Voice] Bye Kiko detected in delta')
-            if (onClose) setTimeout(() => onClose(), 300)
+            setTimeout(() => { if (closeRef.current) closeRef.current() }, 300)
           }
           return full
         })
@@ -422,7 +424,7 @@ RULES:
       if (cleanText.includes('bye kiko') || cleanText.includes('bye keeko') || cleanText.includes('by kiko') || cleanText.includes('buy kiko') || cleanText.includes('bikiko')) {
         console.log('[Kiko Voice] Bye Kiko detected in final transcript:', text)
         addMessage('user', text)
-        if (onClose) setTimeout(() => onClose(), 300)
+        setTimeout(() => { if (closeRef.current) closeRef.current() }, 300)
         return
       }
 
@@ -665,6 +667,7 @@ RULES:
     saveVoiceMemory()
     cleanup(); stopKeyword(); onClose()
   }
+  closeRef.current = handleClose // keep ref updated for bye-kiko inside useEffect
 
   async function saveVoiceMemory() {
     const msgs = conversationRef.current.messages
@@ -738,11 +741,8 @@ RULES:
       <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
         {/* Pulse rings for mini mode */}
         <div style={{ position: 'absolute', top: -8, left: -8, right: -8, bottom: -8, borderRadius: 18, border: `1.5px solid ${speaking ? 'rgba(34,197,94,0.15)' : 'rgba(26,26,26,0.08)'}`, animation: 'kikoPulseRing 2.5s ease-in-out infinite', pointerEvents: 'none' }} />
-        <button onClick={onShowPrompt} style={{ width: 52, height: 52, borderRadius: 50, border: 'none', cursor: 'pointer', background: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', transition: 'all 0.3s', boxShadow: '0 8px 32px rgba(0,0,0,0.20), 0 2px 8px rgba(0,0,0,0.08)', animation: 'kikoBreatheScale 4s ease-in-out infinite' }}>
-          <div style={{ position: 'absolute', transition: 'opacity 0.3s', opacity: speaking ? 0 : 1 }}>
-            {listenMode === 'off' ? <MicOff size={20} color="rgba(255,255,255,0.4)" /> : <KikoSymbol size={26} color="#fff" animate={avatarAnimate} />}
-          </div>
-          <div style={{ position: 'absolute', transition: 'opacity 0.3s', opacity: speaking ? 1 : 0 }}><Equalizer active={speaking} color="rgba(34,197,94,0.8)" /></div>
+        <button onClick={onShowPrompt} style={{ width: 52, height: 52, borderRadius: 50, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg,#8B6CF6,#06D6A0)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', transition: 'all 0.3s', boxShadow: '0 8px 32px rgba(139,108,246,0.3), inset 0 1px 0 rgba(255,255,255,0.2)', overflow: 'hidden' }}>
+          <DoubleHelix width={40} height={40} mini speaking={speaking} energy={window.__kikoAudioEnergy || 0} pitch={window.__kikoAudioPitch || 0} />
         </button>
         {listenMode !== 'active' && <span style={{ fontSize: 9, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textAlign: 'center', maxWidth: 80 }}>{listenMode === 'off' ? 'Mic off' : 'Passive'}</span>}
         <button onClick={handleClose} style={{ position: 'absolute', top: -8, right: -8, width: 20, height: 20, borderRadius: '50%', background: 'var(--surface)', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--text-tertiary)' }}>×</button>
@@ -790,12 +790,7 @@ RULES:
             <div style={{ position: 'absolute', inset: -26, borderRadius: 62, border: '0.5px solid rgba(255,255,255,0.07)', animation: 'pulse 2.2s ease-in-out infinite 0.5s', pointerEvents: 'none' }} />
           </>}
           <div style={{ width: 156, height: 156, borderRadius: 38, background: avBg, border: '0.5px solid rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', boxShadow: '0 16px 48px rgba(0,0,0,0.14)', transition: 'background 0.5s' }}>
-            <div style={{ position: 'absolute', opacity: speaking ? 0 : avOpacity, transition: 'opacity 0.35s ease', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {listenMode === 'off' ? <MicOff size={44} color="rgba(255,255,255,0.25)" /> : <KikoSymbol size={68} color="rgba(255,255,255,0.92)" animate={avatarAnimate} />}
-            </div>
-            <div style={{ position: 'absolute', opacity: speaking ? 1 : 0, transition: 'opacity 0.35s ease' }}>
-              <Equalizer active={speaking} />
-            </div>
+            <DoubleHelix width={140} height={80} speaking={speaking} energy={window.__kikoAudioEnergy || 0} pitch={window.__kikoAudioPitch || 0} />
           </div>
         </div>
 

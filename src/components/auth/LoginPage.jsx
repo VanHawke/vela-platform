@@ -69,9 +69,9 @@ export default function LoginPage() {
 
         {/* Brand logo — VAN HAWKE pill */}
         {/* Brand logo — custom or default to Kiko */}
-        <div style={{ marginBottom: 48, ...fadeUp(0) }}>
+        <div style={{ marginBottom: 48, textAlign: 'center', ...fadeUp(0) }}>
           {customLogo ? (
-            <img src={customLogo} alt="Logo" style={{ height: 32, maxWidth: 160, objectFit: 'contain' }} />
+            <img src={customLogo} alt="Logo" style={{ height: 32, maxWidth: 180, objectFit: 'contain', display: 'block', margin: '0 auto' }} />
           ) : (
             <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', fontFamily: T.font }}>{brandName}</span>
           )}

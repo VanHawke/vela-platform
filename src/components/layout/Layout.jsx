@@ -179,19 +179,19 @@ export default function Layout({ user }) {
             {/* More tab with dropdown */}
             <div ref={moreRef} style={{ position: 'relative' }}>
               <button onClick={() => setMoreOpen(!moreOpen)} style={{
-                padding: '5px 14px', borderRadius: 50, border: 'none',
+                padding: '7px 20px', borderRadius: 50, border: 'none',
                 background: moreOpen ? 'rgba(255,255,255,0.07)' : 'transparent',
-                color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
-                display: 'flex', alignItems: 'center', gap: 3, transition: 'all 0.15s', letterSpacing: '0.02em',
+                color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
+                display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.15s',
               }}>
                 More <ChevronDown size={11} style={{ transition: 'transform 0.2s', transform: moreOpen ? 'rotate(180deg)' : 'none' }} />
               </button>
               {moreOpen && (
                 <div style={{
                   position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-                  width: 200, background: 'rgba(14,14,20,0.75)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-                  borderRadius: 50, border: `0.5px solid ${T.glassBorder}`,
-                  boxShadow: '0 8px 40px rgba(0,0,0,0.5)', padding: '4px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
+                  width: 220, background: 'rgba(14,14,20,0.85)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
+                  borderRadius: 16, border: `0.5px solid ${T.glassBorder}`,
+                  boxShadow: '0 8px 40px rgba(0,0,0,0.5)', padding: '6px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
                 }}>
                   {[
                     { label: 'Outreach Intelligence', path: '/email', Icon: BarChart3 },
@@ -200,25 +200,25 @@ export default function Layout({ user }) {
                     { label: 'Documents', path: '/documents', Icon: FileText },
                   ].map(item => (
                     <button key={item.label} onClick={() => { nav(item.path); setMoreOpen(false) }} style={{
-                      width: '100%', padding: '8px 10px', borderRadius: 50, border: 'none',
-                      background: loc.pathname === item.path ? 'rgba(255,255,255,0.07)' : 'transparent',
-                      color: loc.pathname === item.path ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.35)', textAlign: 'left',
+                      width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none',
+                      background: loc.pathname === item.path ? 'rgba(255,255,255,0.08)' : 'transparent',
+                      color: loc.pathname === item.path ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.4)', textAlign: 'left',
                       fontSize: 12, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
-                      display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s',
+                      display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
                     }}
-                      onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
-                      onMouseOut={e => e.currentTarget.style.background = loc.pathname === item.path ? 'rgba(255,255,255,0.07)' : 'transparent'}
+                      onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)' }}
+                      onMouseOut={e => { e.currentTarget.style.background = loc.pathname === item.path ? 'rgba(255,255,255,0.08)' : 'transparent'; e.currentTarget.style.color = loc.pathname === item.path ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.4)' }}
                     ><item.Icon size={14} />{item.label}</button>
                   ))}
-                  <div style={{ height: 1, background: 'rgba(255,255,255,0.04)', margin: '4px 8px' }} />
+                  <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '4px 8px' }} />
                   <button onClick={() => { nav('/settings'); setMoreOpen(false) }} style={{
-                    width: '100%', padding: '8px 10px', borderRadius: 50, border: 'none',
-                    background: 'transparent', color: 'rgba(255,255,255,0.35)', textAlign: 'left',
-                    fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)',
-                    display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s',
+                    width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none',
+                    background: 'transparent', color: 'rgba(255,255,255,0.4)', textAlign: 'left',
+                    fontSize: 12, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
+                    display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
                   }}
-                    onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
-                    onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)' }}
+                    onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)' }}
                   ><Settings size={14} />Settings</button>
                 </div>
               )}

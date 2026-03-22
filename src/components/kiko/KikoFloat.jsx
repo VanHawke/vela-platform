@@ -3,7 +3,6 @@ import { X, ArrowUp, Mic } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useNavigate, useLocation } from 'react-router-dom'
 import T from '@/lib/theme'
-import KikoSymbol from './KikoSymbol'
 import DoubleHelix from './DoubleHelix'
 import KikoVoice from './KikoVoice'
 import DOMPurify from 'dompurify'
@@ -112,6 +111,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   const [streamText, setStreamText] = useState('')
   const [transcribing, setTranscribing] = useState(false)
   const [voiceOpen, setVoiceOpen] = useState(false)
+  const [floatVoiceState, setFloatVoiceState] = useState({ speaking: false, status: 'connecting', energy: 0, pitch: 0 })
   const [fileUploading, setFileUploading] = useState(false)
   const [fabClass, setFabClass] = useState('')
   const convId = sharedConvId || null
