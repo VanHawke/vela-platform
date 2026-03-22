@@ -508,6 +508,57 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     )
   })
 
+  // ── VOICE FULLSCREEN MODE — takes priority over everything ──
+  if (voiceActive && !compact) {
+    return (
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'transparent', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '0 24px' }}>
+
+          {voiceState.status === 'error' && (
+            <div style={{ textAlign: 'center', padding: '20px 0' }}>
+              <p style={{ fontSize: 13, color: 'rgba(255,80,80,0.7)', fontFamily: T.font, margin: '0 0 8px' }}>Mic not available — check browser permissions</p>
+              <button onClick={stopVoice} style={{ fontSize: 12, padding: '8px 20px', borderRadius: 50, background: 'rgba(255,255,255,0.07)', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontFamily: T.font, color: T.textSecondary }}>Close</button>
+            </div>
+          )}
+
+          {/* Large speaking wave — visible when Kiko is speaking */}
+          <div style={{ width: '85%', maxWidth: 900, height: 120, opacity: voiceState.speaking ? 1 : 0, transition: 'opacity 0.6s', marginBottom: 20, position: 'absolute', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
+            <SmokeTrailWave width={900} height={120} scale={1.5} thinking={voiceState.speaking} />
+          </div>
+
+          {/* Idle wave — visible when listening (not speaking) */}
+          <div style={{ width: '85%', maxWidth: 900, opacity: voiceState.speaking ? 0 : 1, transition: 'opacity 0.6s', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
+            <SmokeTrailWave width={900} height={90} />
+          </div>
+
+          {/* Listening bar — subtle green pulse */}
+          <div style={{ width: 280, height: 3, borderRadius: 50, overflow: 'hidden', marginTop: 32, opacity: voiceState.speaking ? 0 : 1, transition: 'opacity 0.5s' }}>
+            <div style={{ width: '100%', height: '100%', borderRadius: 50, background: 'linear-gradient(90deg, transparent, rgba(6,214,160,0.5), transparent)', animation: 'kikoListenPulse 2s ease-in-out infinite' }} />
+          </div>
+
+          {/* Status */}
+          <div style={{ marginTop: 18, fontSize: 13, fontWeight: 300, fontFamily: T.font, color: voiceState.speaking ? 'rgba(139,108,246,0.25)' : 'rgba(255,255,255,0.12)', transition: 'color 0.3s' }}>
+            {voiceState.status === 'connecting' ? 'Connecting...' : voiceState.speaking ? 'Kiko is speaking...' : 'Listening...'}
+          </div>
+
+          {/* Bye, Kiko button */}
+          <button onClick={stopVoice} style={{
+            marginTop: 32, padding: '10px 28px', borderRadius: 50,
+            background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.1)',
+            fontSize: 12, color: 'rgba(255,255,255,0.25)', cursor: 'pointer', fontFamily: T.font,
+            fontWeight: 300, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)', transition: 'all 0.3s',
+          }}
+            onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,80,80,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,80,80,0.15)'; e.currentTarget.style.color = 'rgba(255,80,80,0.5)' }}
+            onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.25)' }}
+          >Bye, Kiko</button>
+        </div>
+
+        {/* Headless KikoVoice — WebRTC only, no UI */}
+        <KikoVoice headless onClose={stopVoice} user={user} micStream={voiceMicStream} onVoiceState={handleVoiceState} onVoiceMessage={handleVoiceMessage} />
+      </div>
+    )
+  }
+
   // ── WELCOME STATE (no text messages, not in voice mode) ──
   if (!hasMessages && !compact) {
     return (
@@ -596,65 +647,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             </>
           )}
 
-          {/* Voice mode — Option A: Ripple Expand */}
-          {voiceActive && (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', transition: trans }}>
-              {voiceState.status === 'error' && (
-                <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                  <p style={{ fontSize: 13, color: 'rgba(255,80,80,0.7)', fontFamily: T.font, margin: '0 0 8px' }}>Mic not available — check browser permissions</p>
-                  <button onClick={stopVoice} style={{ fontSize: 12, padding: '8px 20px', borderRadius: 50, background: 'rgba(255,255,255,0.07)', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontFamily: T.font, color: T.textSecondary }}>Close</button>
-                </div>
-              )}
-
-              {/* Large speaking wave — visible when Kiko is speaking */}
-              <div style={{ width: '85%', maxWidth: 900, height: 120, opacity: voiceState.speaking ? 1 : 0, transition: 'opacity 0.5s', marginBottom: 20, WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
-                <SmokeTrailWave width={900} height={120} scale={1.5} thinking={voiceState.speaking} />
-              </div>
-
-              {/* Idle wave — visible when listening (not speaking) */}
-              <div style={{ width: '85%', maxWidth: 900, opacity: voiceState.speaking ? 0 : 1, transition: 'opacity 0.5s', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
-                <SmokeTrailWave width={900} height={70} />
-              </div>
-
-              {/* Listening bar — subtle green pulsating line */}
-              <div style={{ width: 280, height: 3, borderRadius: 50, overflow: 'hidden', marginTop: 24, opacity: voiceState.speaking ? 0 : 1, transition: 'opacity 0.5s' }}>
-                <div style={{
-                  width: '100%', height: '100%', borderRadius: 50,
-                  background: 'linear-gradient(90deg, transparent, rgba(6,214,160,0.5), transparent)',
-                  animation: 'kikoListenPulse 2s ease-in-out infinite',
-                }} />
-              </div>
-
-              {/* Status label */}
-              <div style={{ marginTop: 18, fontSize: 13, fontWeight: 300, fontFamily: T.font, color: voiceState.speaking ? 'rgba(139,108,246,0.25)' : 'rgba(255,255,255,0.12)', transition: 'color 0.3s' }}>
-                {voiceState.speaking ? 'Kiko is speaking...' : 'Listening...'}
-              </div>
-
-              {/* Stop button */}
-              <button onClick={stopVoice} style={{
-                marginTop: 32, padding: '10px 28px', borderRadius: 50,
-                background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.1)',
-                fontSize: 12, color: 'rgba(255,255,255,0.25)', cursor: 'pointer', fontFamily: T.font,
-                fontWeight: 300, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)', transition: 'all 0.3s',
-              }}
-                onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,80,80,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,80,80,0.15)'; e.currentTarget.style.color = 'rgba(255,80,80,0.5)' }}
-                onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.25)' }}
-              >Bye, Kiko</button>
-            </div>
-          )}
         </div>
-
-        {/* Headless KikoVoice — runs WebRTC connection, no UI */}
-        {voiceActive && (
-          <KikoVoice
-            headless
-            onClose={stopVoice}
-            user={user}
-            micStream={voiceMicStream}
-            onVoiceState={handleVoiceState}
-            onVoiceMessage={handleVoiceMessage}
-          />
-        )}
 
         {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} />}
       </div>
