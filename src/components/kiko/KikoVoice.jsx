@@ -71,7 +71,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
 
   // Forward state changes to parent (works in ALL modes, not just headless)
   useEffect(() => {
-    if (onVoiceState) onVoiceState({ status, speaking, thinking, transcript, kikoText, listenMode })
+    if (onVoiceState) onVoiceState({ status, speaking, thinking, transcript, kikoText, listenMode, energy: window.__kikoAudioEnergy || 0, pitch: window.__kikoAudioPitch || 0 })
   }, [status, speaking, thinking, transcript, kikoText, listenMode])
   useEffect(() => { connectRealtime(); return () => { saveVoiceMemory(); cleanup(); stopKeyword(); stopLiveTranscription() } }, [])
   useEffect(() => {
@@ -205,7 +205,38 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
       streamRef.current = stream
       const pc = new RTCPeerConnection(); pcRef.current = pc
       const audio = document.createElement('audio'); audio.autoplay = true; audioRef.current = audio
-      pc.ontrack = e => { audio.srcObject = e.streams[0] }
+      // Audio analysis for real-time energy/pitch
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+      const analyser = audioCtx.createAnalyser()
+      analyser.fftSize = 256
+      analyser.smoothingTimeConstant = 0.8
+      pc.ontrack = e => {
+        audio.srcObject = e.streams[0]
+        try {
+          const source = audioCtx.createMediaStreamSource(e.streams[0])
+          source.connect(analyser)
+          // Start analysis loop
+          const freqData = new Uint8Array(analyser.frequencyBinCount)
+          const analyseLoop = () => {
+            analyser.getByteFrequencyData(freqData)
+            // Energy: RMS of all frequency bins normalized 0-1
+            let sum = 0
+            for (let i = 0; i < freqData.length; i++) sum += freqData[i] * freqData[i]
+            const rms = Math.sqrt(sum / freqData.length) / 255
+            // Pitch: weighted centroid of frequency bins normalized 0-1
+            let weightedSum = 0, totalWeight = 0
+            for (let i = 0; i < freqData.length; i++) { weightedSum += i * freqData[i]; totalWeight += freqData[i] }
+            const centroid = totalWeight > 0 ? (weightedSum / totalWeight) / freqData.length : 0
+            // Dispatch to parent
+            if (onVoiceState) {
+              window.__kikoAudioEnergy = rms
+              window.__kikoAudioPitch = centroid
+            }
+            if (audioCtx.state !== 'closed') requestAnimationFrame(analyseLoop)
+          }
+          analyseLoop()
+        } catch (e) { console.warn('Audio analysis setup failed:', e) }
+      }
       stream.getTracks().forEach(t => pc.addTrack(t, stream))
       const dc = pc.createDataChannel('oai-events'); dcRef.current = dc
 

@@ -6,7 +6,7 @@ import T from '@/lib/theme'
 import KikoVoice from './KikoVoice'
 import ChatHistory from './ChatHistory'
 import KikoSymbol from './KikoSymbol'
-import SmokeTrailWave from './SmokeTrailWave'
+import DoubleHelix from './DoubleHelix'
 
 // Theme imported from @/lib/theme.js
 
@@ -504,7 +504,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       <div key={i} style={{ marginBottom: 24, display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', gap: 12 }}>
         {isKiko && (
           <div style={{ width: 120, marginTop: 4, flexShrink: 0 }}>
-            <SmokeTrailWave width={120} height={20} mini />
+            <DoubleHelix width={120} height={20} mini />
           </div>
         )}
         <div style={{
@@ -539,12 +539,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
           {/* Large speaking wave — visible when Kiko is speaking */}
           <div style={{ width: '85%', maxWidth: 900, height: 120, opacity: voiceState.speaking ? 1 : 0, transition: 'opacity 0.6s', marginBottom: 20, position: 'absolute', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
-            <SmokeTrailWave width={900} height={120} scale={1.5} thinking={voiceState.speaking} />
+            <DoubleHelix width={900} height={120} speaking={voiceState.speaking} energy={voiceState.energy || 0} pitch={voiceState.pitch || 0} />
           </div>
 
           {/* Idle wave — visible when listening (not speaking) */}
           <div style={{ width: '85%', maxWidth: 900, opacity: voiceState.speaking ? 0 : 1, transition: 'opacity 0.6s', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
-            <SmokeTrailWave width={900} height={90} />
+            <DoubleHelix width={900} height={90} />
           </div>
 
           {/* Listening bar — subtle green pulse */}
@@ -597,8 +597,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {!voiceActive && (
             <>
               {/* Wave — hero, large and centered */}
-              <div id="kikoWaveHome" style={{ width: '90%', maxWidth: 900, marginBottom: 56, transition: 'all 1s cubic-bezier(0.4,0,0,1)', overflow: 'visible', padding: '16px 0', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
-                <SmokeTrailWave width={900} height={100} />
+              <div id="kikoWaveHome" style={{ width: '90%', maxWidth: 900, marginBottom: 56, transition: 'all 0.4s cubic-bezier(0.4,0,0,1)', overflow: 'visible', padding: '16px 0', cursor: 'pointer', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+                <DoubleHelix width={900} height={100} onClick={() => startVoice()} />
               </div>
 
               {/* Greeting — compact */}
@@ -693,7 +695,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               <div style={{ maxWidth: 360 }}>
                 <div style={{ padding: '16px 18px', borderRadius: 18, background: 'rgba(139,108,246,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: '0.5px solid rgba(139,108,246,0.1)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                    <SmokeTrailWave width={60} height={12} mini thinking />
+                    <DoubleHelix width={60} height={12} mini />
                     <span style={{ fontSize: 11, color: 'rgba(139,108,246,0.45)', fontFamily: T.font, fontWeight: 300 }}>{toolStatus || 'Deep analysis'}</span>
                     <div style={{ flex: 1, height: 0.5, background: 'rgba(139,108,246,0.06)' }} />
                   </div>

@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { Loader2, Eye, EyeOff } from 'lucide-react'
 import T from '@/lib/theme'
 import AuroraCanvas from '@/components/AuroraCanvas'
-import SmokeTrailWave from '@/components/kiko/SmokeTrailWave'
+import DoubleHelix from '@/components/kiko/DoubleHelix'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -73,7 +73,7 @@ export default function LoginPage() {
 
         {/* Kiko avatar — smoke trail wave */}
         <div style={{ width: '100%', maxWidth: 340, margin: '0 auto 16px', overflow: 'visible', padding: '10px 0', ...fadeUp(0.15), WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)' }}>
-          <SmokeTrailWave width={340} height={60} />
+          <DoubleHelix width={340} height={60} />
         </div>
 
         {/* kiko label */}

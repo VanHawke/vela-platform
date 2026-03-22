@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { X, ArrowUp, Mic } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import T from '@/lib/theme'
 import KikoSymbol from './KikoSymbol'
+import DoubleHelix from './DoubleHelix'
 import KikoVoice from './KikoVoice'
 import DOMPurify from 'dompurify'
 
@@ -98,6 +99,8 @@ const CHIPS = [
 ]
 
 export default function KikoFloat({ user, messages: sharedMessages, setMessages: setSharedMessages, convId: sharedConvId, setConvId: setSharedConvId, onNavigate }) {
+  const loc = useLocation()
+  const isHome = loc.pathname === '/'
   const [open, setOpen] = useState(sharedMessages?.length > 0)
   const [hasPanel, setHasPanel] = useState(sharedMessages?.length > 0)
   const [panelKey, setPanelKey] = useState(0)
@@ -300,6 +303,9 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
     window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: true, speaking: false, thinking: false, status: 'connecting' } }))
   }
 
+  // Hide KikoFloat entirely on homepage — Kiko IS the wave there
+  if (isHome && !voiceOpen) return null
+
   // Voice overlay — dispatch voice state for nav Listening pill
   if (voiceOpen) {
     return (
@@ -338,8 +344,8 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           {/* Header */}
           <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: hasMessages ? '0.5px solid rgba(255,255,255,0.07)' : 'none' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 22, height: 22, borderRadius: 50, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <KikoSymbol size={12} color="#fff" animate={streaming ? (streamText ? 'streaming' : 'thinking') : 'idle'} />
+              <div style={{ width: 24, height: 12, overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)', maskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)' }}>
+                <DoubleHelix width={24} height={12} mini />
               </div>
               <span style={{ fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font }}>Kiko</span>
             </div>
@@ -460,7 +466,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         }}>
           {open
             ? <X size={18} />
-            : <KikoSymbol size={20} color="#fff" animated />
+            : <DoubleHelix width={28} height={28} mini />
           }
         </button>
       </div>
