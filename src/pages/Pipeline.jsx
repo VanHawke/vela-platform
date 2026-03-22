@@ -405,8 +405,26 @@ export default function Pipeline({ user }) {
   }
 
   const activeDealCount = useMemo(() => filteredDeals.filter(d => d.stage !== 'Closed Won' && d.stage !== 'Closed Lost').length, [filteredDeals])
-  const sectionTitle = { fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }
-  const emptyText = { fontSize: 12, color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font)', fontStyle: 'italic', fontWeight: 300 }
+
+  // Stage accent colours for left-border + header
+  const stageAccent = {
+    'To revisit': 'rgba(255,255,255,0.1)',
+    'Contact made': 'rgba(139,108,246,0.3)',
+    'In Dialogue': 'rgba(245,158,11,0.35)',
+    'Qualified': 'rgba(6,214,160,0.35)',
+    'Meeting arranged (brand x RH)': 'rgba(59,130,246,0.35)',
+    'Closed Won': 'rgba(6,214,160,0.4)',
+    'Closed Lost': 'rgba(226,75,74,0.3)',
+  }
+  const stageTextColor = {
+    'To revisit': 'rgba(255,255,255,0.3)',
+    'Contact made': 'rgba(139,108,246,0.6)',
+    'In Dialogue': 'rgba(245,158,11,0.7)',
+    'Qualified': 'rgba(6,214,160,0.7)',
+    'Meeting arranged (brand x RH)': 'rgba(59,130,246,0.7)',
+    'Closed Won': 'rgba(6,214,160,0.7)',
+    'Closed Lost': 'rgba(226,75,74,0.6)',
+  }
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: 8 }}>
@@ -452,54 +470,56 @@ export default function Pipeline({ user }) {
                   onDragLeave={handleDragLeave}
                   onDrop={e => handleDrop(e, stage.id)}
                   style={{
-                    width: 260, flexShrink: 0, display: 'flex', flexDirection: 'column',
-                    background: isOver ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)',
-                    backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-                    borderRadius: 18, border: isOver ? '1px dashed rgba(139,108,246,0.3)' : '1.5px solid rgba(255,255,255,0.08)',
+                    width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column',
+                    background: isOver ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.015)',
+                    borderRadius: 16, border: isOver ? '1px dashed rgba(139,108,246,0.3)' : '1px solid rgba(255,255,255,0.05)',
                     transition: 'all 0.15s ease',
                   }}>
-                  <div style={{ padding: '12px 14px 10px', borderBottom: '1.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 11, fontWeight: 300, color: 'rgba(255,255,255,0.9)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{stage.label}</span>
-                      <span style={{ fontSize: 10, fontWeight: 300, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)', background: 'rgba(255,255,255,0.04)', borderRadius: 50, padding: '1px 7px' }}>{stageDeals.length}</span>
+                      <span style={{ fontSize: 10, fontWeight: 400, color: stageTextColor[stage.id] || 'rgba(255,255,255,0.3)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{stage.label}</span>
+                      <span style={{ fontSize: 9, fontWeight: 300, color: stageTextColor[stage.id] || 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)', background: `${stageAccent[stage.id] || 'rgba(255,255,255,0.04)'}33`, borderRadius: 50, padding: '2px 6px' }}>{stageDeals.length}</span>
                     </div>
                   </div>
-                  <div style={{ flex: 1, overflowY: 'auto', padding: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ flex: 1, overflowY: 'auto', padding: '4px 8px 8px', display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {loading ? (
-                      [...Array(2)].map((_, i) => <div key={i} style={{ height: 80, background: 'rgba(255,255,255,0.02)', borderRadius: 14 }} />)
+                      [...Array(2)].map((_, i) => <div key={i} style={{ height: 70, background: 'rgba(255,255,255,0.02)', borderRadius: 12 }} />)
                     ) : stageDeals.length === 0 ? (
-                      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.15)', textAlign: 'center', padding: '20px 0', fontFamily: 'var(--font)', fontWeight: 300 }}>No deals</p>
+                      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.12)', textAlign: 'center', padding: '20px 0', fontFamily: 'var(--font)', fontWeight: 300 }}>No deals</p>
                     ) : stageDeals.map(deal => (
                       <div key={deal._id}
                         draggable
                         onDragStart={e => handleDragStart(e, deal)}
                         onDragEnd={handleDragEnd}
                         onClick={() => selectDeal(deal)}
-                        style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(32px)', WebkitBackdropFilter: 'blur(32px)', borderRadius: 50, padding: '12px 14px', border: '1.5px solid rgba(255,255,255,0.1)', cursor: 'grab', transition: 'all 0.2s ease', position: 'relative', overflow: 'hidden' }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)'; e.currentTarget.style.transform = 'translateY(0)' }}>
+                        style={{ background: 'rgba(255,255,255,0.025)', borderRadius: 12, padding: '12px 14px', border: '1px solid rgba(255,255,255,0.05)', borderLeft: `3px solid ${stageAccent[stage.id] || 'rgba(255,255,255,0.1)'}`, cursor: 'grab', transition: 'all 0.15s ease', position: 'relative' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderLeftColor = stageAccent[stage.id] || 'rgba(255,255,255,0.1)' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.025)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderLeftColor = stageAccent[stage.id] || 'rgba(255,255,255,0.1)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           {companyDomains[deal.company] ? (
-                            <div style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-                              <img src={`https://www.google.com/s2/favicons?domain=${companyDomains[deal.company]}&sz=64`} alt="" style={{ width: 15, height: 15, objectFit: 'contain' }} />
+                            <div style={{ width: 18, height: 18, borderRadius: 4, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                              <img src={`https://www.google.com/s2/favicons?domain=${companyDomains[deal.company]}&sz=64`} alt="" style={{ width: 14, height: 14, objectFit: 'contain' }} />
                             </div>
                           ) : (
-                            <div style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                              <Building2 style={{ width: 11, height: 11, color: 'rgba(255,255,255,0.2)' }} />
+                            <div style={{ width: 18, height: 18, borderRadius: 4, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              <Building2 style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.15)' }} />
                             </div>
                           )}
-                          <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.85)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <p style={{ fontSize: 12, fontWeight: 400, color: 'rgba(255,255,255,0.82)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {deal.company || deal.title}
                           </p>
                         </div>
                         {deal.contactName && (
-                          <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '4px 0 0', fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <User style={{ width: 10, height: 10, opacity: 0.4 }} />{deal.contactName}
+                          <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', margin: '4px 0 0', fontFamily: 'var(--font)' }}>
+                            {deal.contactName}{deal.industry ? ` · ${deal.industry}` : ''}
                           </p>
                         )}
-                        <div style={{ display: 'flex', alignItems: 'center', marginTop: 8 }}>
-                          <span style={{ fontSize: 10, fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', gap: 3, ...staleStyle(deal.lastActivity) }}>
-                            <Clock style={{ width: 9, height: 9 }} />{daysAgo(deal.lastActivity) || 'No activity'}
+                        {!deal.contactName && deal.industry && (
+                          <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', margin: '4px 0 0', fontFamily: 'var(--font)' }}>{deal.industry}</p>
+                        )}
+                        <div style={{ marginTop: 6 }}>
+                          <span style={{ fontSize: 10, fontFamily: 'var(--font)', ...staleStyle(deal.lastActivity) }}>
+                            {daysAgo(deal.lastActivity) ? (staleStyle(deal.lastActivity).color === '#ef4444' ? '⏱ ' : staleStyle(deal.lastActivity).color === '#f59e0b' ? '⏱ ' : '✓ ') : ''}{daysAgo(deal.lastActivity) || 'No activity'}
                           </span>
                         </div>
                       </div>
