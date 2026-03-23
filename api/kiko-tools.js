@@ -229,6 +229,19 @@ export const TOOL_DEFINITIONS = [
       content: { type: 'string', description: 'The fact or insight to remember' },
       entity_name: { type: 'string', description: 'Related person/company name (optional)' },
     }, required: ['category', 'content'] } },
+
+  // ── Document + Bookmark Tools ──
+  { name: 'generate_document', description: 'Generate a structured document (one-pager, brief, proposal outline, research summary). Use when user says "create a one-pager", "write a brief", "generate a document about [X]". Returns formatted content in the Draft Preview Panel.',
+    input_schema: { type: 'object', properties: {
+      title: { type: 'string', description: 'Document title' },
+      type: { type: 'string', description: 'Document type: one_pager, brief, proposal, research_summary, talking_points' },
+      company: { type: 'string', description: 'Company name if relevant (optional)' },
+      context: { type: 'string', description: 'Key context/requirements for the document' },
+    }, required: ['title', 'type', 'context'] } },
+  { name: 'bookmark_conversation', description: 'Star/bookmark the current conversation for priority recall. Use when user says "bookmark this", "save this chat", "star this conversation", or when a conversation contains important decisions.',
+    input_schema: { type: 'object', properties: {
+      reason: { type: 'string', description: 'Why this conversation is bookmarked (optional)' },
+    }, required: [] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -928,7 +941,7 @@ Return JSON:
     const { query: q, limit: lim = 5 } = input
     try {
       // Step 1: Fetch all conversation titles (lightweight)
-      const allConvos = await sbFetch('conversations?select=id,title,updated_at,messages&order=updated_at.desc&limit=50')
+      const allConvos = await sbFetch('conversations?select=id,title,updated_at,messages,bookmarked&order=updated_at.desc&limit=50')
       if (!allConvos?.length) return 'No past conversations found.'
       
       // Step 2: Search by keyword matching on title + message content
@@ -939,6 +952,7 @@ Return JSON:
         const titleText = (conv.title || '').toLowerCase()
         const msgText = JSON.stringify(conv.messages || []).toLowerCase()
         let score = 0
+        if (conv.bookmarked) score += 5 // Bookmarked conversations get priority
         for (const kw of keywords) {
           if (titleText.includes(kw)) score += 3
           if (msgText.includes(kw)) score += 1
@@ -1078,6 +1092,40 @@ Return JSON:
       }) })
       return `✅ Saved to learning log: [${category}]${entity_name ? ` ${entity_name}:` : ''} ${content}`
     } catch(e) { return `Error saving to learning log: ${e.message}` }
+  }
+
+  // ── Document Generation Handler ──
+  if (name === 'generate_document') {
+    const { title, type, company, context } = input
+    // Return instructions for Kiko to generate the document inline using the ---DRAFT--- format
+    return `DOCUMENT REQUEST RECEIVED. Now generate the full document with this specification:
+Title: ${title}
+Type: ${type}
+${company ? `Company: ${company}` : ''}
+Context: ${context}
+
+FORMAT YOUR RESPONSE AS:
+---DRAFT---
+To: [leave blank for documents]
+Subject: ${title}
+
+[Full document content with clear sections, using **bold** for headers]
+---END DRAFT---
+
+Make it authoritative, data-driven, and board-level. For one-pagers: keep to ~400 words with clear sections (Overview, Value Proposition, Key Metrics, Next Steps). For briefs: structured with executive summary + body + recommendations.`
+  }
+
+  // ── Bookmark Conversation Handler ──
+  if (name === 'bookmark_conversation') {
+    const { reason } = input
+    // This needs the conversation ID passed from kiko.js context
+    try {
+      // Get most recent conversation for this user
+      const convs = await sbFetch('conversations?select=id,title&order=updated_at.desc&limit=1')
+      if (!convs?.length) return 'No conversation found to bookmark.'
+      await sbFetch(`conversations?id=eq.${convs[0].id}`, { method: 'PATCH', body: JSON.stringify({ bookmarked: true, bookmark_reason: reason || 'Manually bookmarked' }) })
+      return `✅ Bookmarked conversation "${convs[0].title}".${reason ? ` Reason: ${reason}` : ''} Bookmarked conversations get priority in memory recall.`
+    } catch(e) { return `Error bookmarking: ${e.message}` }
   }
 
   return { error: `Unknown tool: ${name}` }

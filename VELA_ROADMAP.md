@@ -1,5 +1,5 @@
 # VELA PLATFORM — COMPREHENSIVE ROADMAP & CHECKLIST
-## Last Updated: 23 March 2026 | v10.6
+## Last Updated: 23 March 2026 | v11.0
 
 ---
 
@@ -99,7 +99,7 @@ negotiation_psychology, meeting_preparation
 - [x] Tone adjustment shortcuts ✅ v10.1
 - [x] Send to Gmail / Copy buttons on draft panel ✅ v10.1
 - [x] Strip raw draft markers from chat display ✅ v10.2
-- [ ] Inline edit — highlight text in draft → instruction input → Kiko rewrites section
+- [ ] Inline edit — highlight text in draft → instruction input → Kiko rewrites section ✅ v11.0 (free-form edit input)
 
 ### 🔲 PENDING — TIER 2 (Intelligence Layer)
 - [x] Deep Research mode — multi-search orchestration (5-8 web searches → synthesised brief) ✅ v10.6
