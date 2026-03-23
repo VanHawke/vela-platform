@@ -98,11 +98,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [streaming, setStreaming] = useState(false)
   const [streamText, setStreamText] = useState('')
   const [toolStatus, setToolStatus] = useState(null)
-
-  // Edit mode: pre-fill input when edit button clicked
-  useEffect(() => {
-    if (editingIdx !== null) { setInput(editText); inputRef.current?.focus(); setEditingIdx(null) }
-  }, [editingIdx])
+  const [hoveredMsg, setHoveredMsg] = useState(null)
+  const [editingIdx, setEditingIdx] = useState(null)
+  const [editText, setEditText] = useState('')
   const [thinkingSteps, setThinkingSteps] = useState([])
   const [showSteps, setShowSteps] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
@@ -136,6 +134,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: voiceActive, speaking: voiceState.speaking, thinking: voiceState.thinking, status: voiceState.status } }))
   }, [voiceActive, voiceState.speaking, voiceState.thinking, voiceState.status])
+
+  // Edit mode: pre-fill input when edit button clicked
+  useEffect(() => {
+    if (editingIdx !== null) { setInput(editText); inputRef.current?.focus(); setEditingIdx(null) }
+  }, [editingIdx])
   const hasVoiceMessages = voiceMessages.length > 0
 
   // Start voice mode — don't pre-acquire mic, let KikoVoice handle it
@@ -505,16 +508,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   }
 
   // ── Render message bubbles (shared between text and voice) ──
-  const [hoveredMsg, setHoveredMsg] = useState(null)
-  const [editingIdx, setEditingIdx] = useState(null)
-  const [editText, setEditText] = useState('')
-
   const copyToClipboard = (text) => { navigator.clipboard.writeText(text.replace(/<[^>]+>/g, '')); }
   const editAndResend = (idx) => { setEditingIdx(idx); setEditText(messages[idx]?.content || ''); }
   const regenerateResponse = (idx) => {
     // Find the user message before this kiko message
     const userIdx = messages.slice(0, idx).findLastIndex(m => m.role === 'user')
-    if (userIdx >= 0) handleSend(messages[userIdx].content)
+    if (userIdx >= 0) handleSubmit(messages[userIdx].content)
   }
 
   const renderMessages = (msgs, isVoice = false) => msgs.map((msg, i) => {
