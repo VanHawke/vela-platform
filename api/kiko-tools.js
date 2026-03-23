@@ -3,6 +3,8 @@
 import { getCalendar, createCalendarEvent } from './kiko-calendar.js';
 import { generateFollowup, getFollowupQueue } from './kiko-followup.js';
 
+const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
+
 // ── Supabase Helper ─────────────────────────────────────
 const SB = () => process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SK = () => process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
@@ -192,6 +194,28 @@ export const TOOL_DEFINITIONS = [
       limit: { type: 'number', description: 'Number of activities (default 15)' },
       type_filter: { type: 'string', description: 'Filter by type: stage_change, email_drafted, call, meeting, note, lemlist_* (optional)' },
     }, required: [] } },
+
+  // ── Page Action Tools ──
+  { name: 'update_deal_stage', description: 'Move a deal to a different pipeline stage. Use when user says "move [company] to [stage]", "advance [deal]", "update [company] stage to [stage]". Logs to deal_stage_history and activities.',
+    input_schema: { type: 'object', properties: {
+      deal_name: { type: 'string', description: 'Company/deal name to search for' },
+      new_stage: { type: 'string', description: 'Target stage: To Revisit, Contact Made, In Dialogue, Qualified, Meeting Arranged, Proposal Sent, Won, Lost' },
+      reason: { type: 'string', description: 'Reason for stage change (optional)' },
+    }, required: ['deal_name', 'new_stage'] } },
+  { name: 'update_contact', description: 'Update a contact record — job title, email, phone, company, notes. Use when user says "update [person]\'s title", "change [person]\'s email", "add notes to [person]".',
+    input_schema: { type: 'object', properties: {
+      contact_name: { type: 'string', description: 'Contact name to search for' },
+      updates: { type: 'object', description: 'Fields to update: { title, email, phone, company, notes }' },
+    }, required: ['contact_name', 'updates'] } },
+  { name: 'create_deal', description: 'Create a new deal in the pipeline. Use when user says "create a deal for [company]", "add [company] to pipeline", "start tracking [company]".',
+    input_schema: { type: 'object', properties: {
+      company_name: { type: 'string', description: 'Company name' },
+      contact_name: { type: 'string', description: 'Primary contact name (optional)' },
+      pipeline: { type: 'string', description: 'Pipeline name (default: Haas F1)' },
+      stage: { type: 'string', description: 'Initial stage (default: To Revisit)' },
+      value: { type: 'number', description: 'Deal value in USD (optional)' },
+      notes: { type: 'string', description: 'Initial notes (optional)' },
+    }, required: ['company_name'] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -956,6 +980,61 @@ Return JSON:
       }
       return out
     } catch(e) { return `Activity feed error: ${e.message}` }
+  }
+
+  // ── PAGE ACTION HANDLERS ──
+
+  if (name === 'update_deal_stage') {
+    const { deal_name, new_stage, reason } = input
+    try {
+      const deals = await sbFetch(`deals?select=id,data&order=updated_at.desc&limit=500`)
+      const match = deals?.find(d => d.data?.company?.toLowerCase().includes(deal_name.toLowerCase()))
+      if (!match) return `No deal found matching "${deal_name}". Try a more specific name.`
+      const oldStage = match.data.stage || 'Unknown'
+      const updated = { ...match.data, stage: new_stage, status: ['Won','Lost'].includes(new_stage) ? new_stage.toLowerCase() : 'active' }
+      await sbFetch(`deals?id=eq.${match.id}`, { method: 'PATCH', body: JSON.stringify({ data: updated }) })
+      // Log to deal_stage_history
+      await sbFetch('deal_stage_history', { method: 'POST', body: JSON.stringify({ deal_id: match.id, from_stage: oldStage, to_stage: new_stage, changed_by: ORG_ID, org_id: ORG_ID }) }).catch(() => {})
+      // Log to activities
+      await sbFetch('activities', { method: 'POST', body: JSON.stringify({ org_id: ORG_ID, deal_id: match.id, type: 'stage_change', entity_name: match.data.company, subject: `${oldStage} → ${new_stage}`, body: reason || '', created_by: ORG_ID }) }).catch(() => {})
+      return `✅ Moved "${match.data.company}" from ${oldStage} → ${new_stage}.${reason ? ` Reason: ${reason}` : ''} Logged to deal history and activities.`
+    } catch(e) { return `Error updating deal: ${e.message}` }
+  }
+
+  if (name === 'update_contact') {
+    const { contact_name, updates } = input
+    try {
+      const contacts = await sbFetch(`contacts?select=id,data&order=updated_at.desc&limit=500`)
+      const match = contacts?.find(c => {
+        const full = `${c.data?.firstName || ''} ${c.data?.lastName || ''}`.toLowerCase()
+        return full.includes(contact_name.toLowerCase())
+      })
+      if (!match) return `No contact found matching "${contact_name}". Try a more specific name.`
+      const updated = { ...match.data }
+      if (updates.title) updated.title = updates.title
+      if (updates.email) updated.email = updates.email
+      if (updates.phone) updated.phone = updates.phone
+      if (updates.company) updated.company = updates.company
+      if (updates.notes) updated.notes = (updated.notes || '') + '\n' + updates.notes
+      await sbFetch(`contacts?id=eq.${match.id}`, { method: 'PATCH', body: JSON.stringify({ data: updated }) })
+      const changes = Object.keys(updates).join(', ')
+      return `✅ Updated ${match.data.firstName} ${match.data.lastName}: ${changes}. Changes saved.`
+    } catch(e) { return `Error updating contact: ${e.message}` }
+  }
+
+  if (name === 'create_deal') {
+    const { company_name, contact_name, pipeline = 'Haas F1', stage = 'To Revisit', value, notes } = input
+    try {
+      const dealData = {
+        company: company_name, contact: contact_name || '', pipeline, stage, status: 'active',
+        value: value || 0, notes: notes || '', source: 'kiko',
+        created_at: new Date().toISOString()
+      }
+      const result = await sbFetch('deals', { method: 'POST', body: JSON.stringify({ data: dealData, org_id: ORG_ID }), headers: { Prefer: 'return=representation' } })
+      // Log to activities
+      await sbFetch('activities', { method: 'POST', body: JSON.stringify({ org_id: ORG_ID, deal_id: result?.[0]?.id, type: 'stage_change', entity_name: company_name, subject: `New deal created at ${stage}`, body: notes || '', created_by: ORG_ID }) }).catch(() => {})
+      return `✅ Created deal for "${company_name}" in ${pipeline} pipeline at ${stage} stage.${value ? ` Value: $${value.toLocaleString()}.` : ''}${contact_name ? ` Contact: ${contact_name}.` : ''}`
+    } catch(e) { return `Error creating deal: ${e.message}` }
   }
 
   return { error: `Unknown tool: ${name}` }
