@@ -317,14 +317,34 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         taskManager.dismissTask(task.id)
       })
     }
-    // On unmount: if streaming, save partial response to task manager
+    // On mount: check for interrupted tasks in localStorage
+    try {
+      const interrupted = localStorage.getItem('kiko_interrupted_task')
+      if (interrupted) {
+        const task = JSON.parse(interrupted)
+        if (Date.now() - task.timestamp < 300000) { // within 5 minutes
+          setMessages(prev => [...prev,
+            { role: 'user', content: task.query },
+            { role: 'assistant', content: task.partial + '\n\n*[Interrupted — type "continue" to resume]*' }
+          ])
+        }
+        localStorage.removeItem('kiko_interrupted_task')
+      }
+    } catch {}
+    // On unmount: if streaming, save partial response
     return () => {
       if (streamingRef.current && streamTextRef.current) {
+        // Save to localStorage for resume
+        try {
+          localStorage.setItem('kiko_interrupted_task', JSON.stringify({
+            query: lastQueryRef.current, partial: streamTextRef.current, timestamp: Date.now()
+          }))
+        } catch {}
+        // Also save to task manager for toast notification
         const taskId = 'task_' + Date.now()
-        const ctrl = taskManager.startTask(taskId, lastQueryRef.current, activeConvId)
+        taskManager.startTask(taskId, lastQueryRef.current, activeConvId)
         taskManager.appendToTask(taskId, streamTextRef.current)
         taskManager.completeTask(taskId)
-        // Abort the active fetch so it doesn't leak
         if (abortRef.current) abortRef.current.abort()
       }
     }
