@@ -129,8 +129,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   // Voice mode state — inline, no overlay
   const [voiceActive, setVoiceActive] = useState(false)
-  const [alertDismissed, setAlertDismissed] = useState(false)
-  const alertSwipeRef = useRef({ startX: 0, currentX: 0 })
   const [voiceMicStream, setVoiceMicStream] = useState(null)
   const [voiceState, setVoiceState] = useState({})
   const [voiceMessages, setVoiceMessages] = useState([])
@@ -770,35 +768,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 ))}
               </div>
 
-              {/* Alert pill — swipe to dismiss */}
-              {!alertDismissed && !voiceActive && (
-                <div id="kikoAlertWrap"
-                  onTouchStart={e => { alertSwipeRef.current.startX = e.touches[0].clientX }}
-                  onTouchMove={e => { const dx = e.touches[0].clientX - alertSwipeRef.current.startX; e.currentTarget.style.transform = `translateX(${dx}px)`; e.currentTarget.style.opacity = Math.max(0, 1 - Math.abs(dx) / 200) }}
-                  onTouchEnd={e => { const dx = parseFloat(e.currentTarget.style.transform?.match(/translateX\((.+)px\)/)?.[1] || 0); if (Math.abs(dx) > 80) { e.currentTarget.style.transition = 'all 0.3s'; e.currentTarget.style.transform = `translateX(${dx > 0 ? 300 : -300}px)`; e.currentTarget.style.opacity = '0'; setTimeout(() => setAlertDismissed(true), 300) } else { e.currentTarget.style.transition = 'all 0.3s'; e.currentTarget.style.transform = 'translateX(0)'; e.currentTarget.style.opacity = '1' }}}
-                  onMouseDown={e => { alertSwipeRef.current.startX = e.clientX; alertSwipeRef.current.dragging = true }}
-                  onMouseMove={e => { if (!alertSwipeRef.current.dragging) return; const dx = e.clientX - alertSwipeRef.current.startX; e.currentTarget.style.transform = `translateX(${dx}px)`; e.currentTarget.style.opacity = Math.max(0, 1 - Math.abs(dx) / 200) }}
-                  onMouseUp={e => { alertSwipeRef.current.dragging = false; const dx = parseFloat(e.currentTarget.style.transform?.match(/translateX\((.+)px\)/)?.[1] || 0); if (Math.abs(dx) > 80) { e.currentTarget.style.transition = 'all 0.3s'; e.currentTarget.style.transform = `translateX(${dx > 0 ? 300 : -300}px)`; e.currentTarget.style.opacity = '0'; setTimeout(() => setAlertDismissed(true), 300) } else { e.currentTarget.style.transition = 'all 0.3s'; e.currentTarget.style.transform = 'translateX(0)'; e.currentTarget.style.opacity = '1' }}}
-                  onMouseLeave={e => { if (alertSwipeRef.current.dragging) { alertSwipeRef.current.dragging = false; e.currentTarget.style.transition = 'all 0.3s'; e.currentTarget.style.transform = 'translateX(0)'; e.currentTarget.style.opacity = '1' }}}
-                  style={{
-                    width: '100%', maxWidth: 540, borderRadius: 50, background: 'rgba(245,158,11,0.04)',
-                    backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
-                    border: '1.5px solid rgba(245,158,11,0.14)', padding: '10px 18px',
-                    display: 'flex', alignItems: 'center', gap: 12, cursor: 'grab',
-                    boxShadow: 'inset 0 2px 0 rgba(245,158,11,0.06), inset 0 -1px 0 rgba(255,255,255,0.08), 0 8px 32px rgba(0,0,0,0.25)',
-                    userSelect: 'none', touchAction: 'pan-y',
-                  }}
-                >
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#F59E0B', flexShrink: 0, boxShadow: '0 0 10px rgba(245,158,11,0.4)', animation: 'kikoBreathe 1.5s ease-in-out infinite' }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', fontWeight: 400, fontFamily: T.font }}>Cloudflare ROI framework due Thursday</div>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.15)', fontWeight: 300, marginTop: 1, fontFamily: T.font }}>Technical review — highest priority this week</div>
-                  </div>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5"><polyline points="9 18 15 12 9 6"/></svg>
-                </div>
-              )}
-
-          {/* Kiko Insights — pipeline health, next race, recent activity */}
+          {/* Urgent alerts only — dismissible */}
           {!voiceActive && <KikoInsights onAction={(text) => handleSubmit(text)} />}
 
           {/* Bottom spacer */}
