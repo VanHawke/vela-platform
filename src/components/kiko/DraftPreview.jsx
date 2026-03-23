@@ -62,15 +62,15 @@ export default function DraftPreview({ draft, onToneAdjust, onCopy, onSendToGmai
   const toneChips = ['More direct', 'Add urgency', 'Soften', 'Shorten 25%', 'Make formal', 'Add scarcity']
 
   return (
-    <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, overflow: 'hidden', marginTop: 12, maxWidth: 560 }}>
+    <div style={{ background: 'rgba(255,255,255,0.025)', border: '1.5px solid rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden', marginTop: 12, maxWidth: 580, backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.2)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-        <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.4)', fontFamily: T.font }}>
+        <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.55)', fontFamily: T.font }}>
           {draft.type === 'email' ? '✉️ Email Draft' : '💬 Message Draft'}
         </span>
         <div style={{ display: 'flex', gap: 5 }}>
-          <button onClick={handleCopy} style={{ padding: '4px 10px', borderRadius: 7, border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', color: 'rgba(255,255,255,0.3)', fontSize: 10, cursor: 'pointer', fontFamily: T.font, fontWeight: 300 }}>{copied ? '✓ Copied' : 'Copy'}</button>
-          {draft.type === 'email' && <button onClick={onSendToGmail} style={{ padding: '4px 10px', borderRadius: 7, border: '1px solid rgba(6,214,160,0.12)', background: 'rgba(6,214,160,0.06)', color: 'rgba(6,214,160,0.6)', fontSize: 10, cursor: 'pointer', fontFamily: T.font, fontWeight: 300 }}>Send to Gmail ↗</button>}
+          <button onClick={handleCopy} style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.4)', fontSize: 11, cursor: 'pointer', fontFamily: T.font, fontWeight: 400 }}>{copied ? '✓ Copied' : 'Copy'}</button>
+          {draft.type === 'email' && <button onClick={onSendToGmail} style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(6,214,160,0.14)', background: 'rgba(6,214,160,0.06)', color: 'rgba(6,214,160,0.6)', fontSize: 11, cursor: 'pointer', fontFamily: T.font, fontWeight: 400 }}>Send to Gmail ↗</button>}
         </div>
       </div>
 
@@ -79,17 +79,17 @@ export default function DraftPreview({ draft, onToneAdjust, onCopy, onSendToGmai
         <div style={{ padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.03)', display: 'flex', flexDirection: 'column', gap: 5 }}>
           {draft.to && <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.15)', width: 42, textAlign: 'right', fontFamily: T.font }}>To:</span>
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontFamily: T.font, fontWeight: 300 }}>{draft.to}</span>
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', fontFamily: T.font, fontWeight: 300 }}>{draft.to}</span>
           </div>}
           {draft.subject && <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.15)', width: 42, textAlign: 'right', fontFamily: T.font }}>Subject:</span>
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontFamily: T.font, fontWeight: 300 }}>{draft.subject}</span>
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', fontFamily: T.font, fontWeight: 300 }}>{draft.subject}</span>
           </div>}
         </div>
       )}
 
       {/* Body */}
-      <div style={{ padding: '12px 14px', fontSize: 13, lineHeight: 1.7, color: 'rgba(255,255,255,0.6)', fontFamily: T.font, fontWeight: 300, whiteSpace: 'pre-wrap' }}>
+      <div style={{ padding: '12px 14px', fontSize: 14, lineHeight: 1.85, color: 'rgba(255,255,255,0.85)', fontFamily: T.font, fontWeight: 400, whiteSpace: 'pre-wrap' }}>
         {draft.body}
       </div>
 
@@ -97,9 +97,9 @@ export default function DraftPreview({ draft, onToneAdjust, onCopy, onSendToGmai
       <div style={{ display: 'flex', gap: 5, padding: '10px 14px', borderTop: '1px solid rgba(255,255,255,0.03)', flexWrap: 'wrap' }}>
         {toneChips.map(tone => (
           <button key={tone} onClick={() => onToneAdjust?.(tone)} style={{
-            padding: '3px 9px', borderRadius: 50, border: '1px solid rgba(255,255,255,0.05)',
-            background: 'rgba(255,255,255,0.015)', color: 'rgba(255,255,255,0.2)',
-            fontSize: 9, cursor: 'pointer', fontFamily: T.font, fontWeight: 300, transition: 'all 0.15s',
+            padding: '3px 9px', borderRadius: 50, border: '1px solid rgba(255,255,255,0.06)',
+            background: 'rgba(255,255,255,0.03)', color: 'rgba(255,255,255,0.32)',
+            fontSize: 10, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, transition: 'all 0.15s',
           }}>{tone}</button>
         ))}
       </div>

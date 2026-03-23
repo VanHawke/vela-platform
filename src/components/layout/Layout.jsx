@@ -5,6 +5,7 @@ import { signOut } from '@/lib/auth'
 import T from '@/lib/theme'
 import { Settings, LogOut, Search, ChevronDown, BarChart3, Newspaper, Grid3X3, FileText, Building2, CheckSquare } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
+import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
 import CommandPalette from './CommandPalette'
 import AuroraCanvas from '../AuroraCanvas'
@@ -335,6 +336,7 @@ export default function Layout({ user }) {
           onNavigate={kikoNavigate}
         />
       )}
+      <KikoToast />
 
       {/* Command palette */}
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />

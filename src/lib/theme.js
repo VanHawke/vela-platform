@@ -27,10 +27,10 @@ export const T = {
   borderStrong: 'rgba(255,255,255,0.25)',
 
   // Text
-  text: 'rgba(255,255,255,0.9)',
-  textSecondary: 'rgba(255,255,255,0.5)',
-  textTertiary: 'rgba(255,255,255,0.22)',
-  textMuted: 'rgba(255,255,255,0.12)',
+  text: 'rgba(255,255,255,0.95)',
+  textSecondary: 'rgba(255,255,255,0.55)',
+  textTertiary: 'rgba(255,255,255,0.32)',
+  textMuted: 'rgba(255,255,255,0.18)',
 
   // Accents
   purple: '#8B6CF6', teal: '#06D6A0', pink: '#EC4899', blue: '#3B82F6', amber: '#F59E0B',

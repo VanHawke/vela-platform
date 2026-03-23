@@ -3,6 +3,7 @@ import { useNavigate, useOutletContext } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import DOMPurify from 'dompurify'
 import T from '@/lib/theme'
+import taskManager from '@/lib/kikoTaskManager'
 import KikoVoice from './KikoVoice'
 import ChatHistory from './ChatHistory'
 import KikoSymbol from './KikoSymbol'
@@ -466,7 +467,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSubmit()}
           placeholder={fileUploading ? "Analysing document..." : "Ask anything"} autoFocus
-          style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: welcome ? 15 : 14, color: 'rgba(255,255,255,0.7)', fontFamily: T.font, height: welcome ? 44 : 36, fontWeight: 300 }}
+          style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: welcome ? 15 : 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font, height: welcome ? 44 : 36, fontWeight: 300 }}
         />
         {/* Mic / Stop */}
         {voiceActive ? (
@@ -573,8 +574,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           backdropFilter: isUser ? 'blur(40px)' : 'none',
           WebkitBackdropFilter: isUser ? 'blur(40px)' : 'none',
           border: isUser ? `1.5px solid ${T.userMsgBorder}` : 'none',
-          color: isUser ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.55)',
-          fontSize: 14, lineHeight: 1.8, fontFamily: T.font, fontWeight: 300,
+          color: isUser ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.88)',
+          fontSize: 15, lineHeight: 1.85, fontFamily: T.font, fontWeight: isUser ? 400 : 400,
         }}>
           {isUser ? msg.content : (() => {
             // Strip ---DRAFT--- block from display text (rendered separately in DraftPreview)
@@ -671,10 +672,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             transition: 'all 0.5s cubic-bezier(0.4,0,0,1)',
             overflow: 'hidden',
           }}>
-            <h1 style={{ fontSize: 24, fontWeight: 200, color: 'rgba(255,255,255,0.7)', margin: '0 0 4px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
+            <h1 style={{ fontSize: 24, fontWeight: 200, color: 'rgba(255,255,255,0.95)', margin: '0 0 4px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
               {getGreeting()}, {firstName}
             </h1>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', margin: '0 0 18px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.32)', margin: '0 0 18px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
           </div>
 
           {/* Prompt bar — slides down in voice mode */}
@@ -703,12 +704,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   <button key={c} onClick={() => handleSubmit(c)} style={{
                     padding: '11px 26px', borderRadius: 50, background: T.glass,
                     backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
-                    border: `1.5px solid ${T.glassBorder}`, color: 'rgba(255,255,255,0.45)',
-                    fontSize: 12, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.2s', fontWeight: 300,
+                    border: `1.5px solid ${T.glassBorder}`, color: 'rgba(255,255,255,0.55)',
+                    fontSize: 13, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.2s', fontWeight: 400,
                     boxShadow: T.glassShadow,
                   }}
-                    onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = T.glassShadowHover }}
-                    onMouseOut={e => { e.currentTarget.style.borderColor = T.glassBorder; e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; e.currentTarget.style.background = T.glass; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = T.glassShadow }}
+                    onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = 'rgba(255,255,255,0.85)'; e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = T.glassShadowHover }}
+                    onMouseOut={e => { e.currentTarget.style.borderColor = T.glassBorder; e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; e.currentTarget.style.background = T.glass; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = T.glassShadow }}
                   >{c}</button>
                 ))}
               </div>
