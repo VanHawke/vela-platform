@@ -210,6 +210,8 @@ const TOOL_LABELS = {
   lemlist_get_activities: 'Checking campaign activity',
   search_past_conversations: 'Searching past conversations',
   get_recent_conversations: 'Loading recent chats',
+  log_activity: 'Logging activity',
+  get_activity_feed: 'Loading activity feed',
 };
 
 // ── Main Handler ─────────────────────────────────────────

@@ -138,6 +138,13 @@ export default async function handler(req, res) {
       created_at: now,
     })
 
+    // Log to universal activities feed
+    await supabase.from('activities').insert({
+      type: `lemlist_${type}`, entity_name: [contactData.firstName, contactData.lastName].filter(Boolean).join(' ') || email,
+      subject: event.subject || event.campaignName || type, status: 'completed', completed_at: now,
+      metadata: { campaign: event.campaignName, campaignId: event.campaignId, email, step: event.sequenceStep }
+    }).catch(() => {}) // non-blocking
+
     // === PIPELINE NOTIFICATIONS + AUTO-DEAL CREATION ===
     const name = [contactData.firstName, contactData.lastName].filter(Boolean).join(' ') || email
     const company = contactData.company || event.companyName || ''

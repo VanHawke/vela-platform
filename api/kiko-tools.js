@@ -180,6 +180,18 @@ export const TOOL_DEFINITIONS = [
     input_schema: { type: 'object', properties: {
       limit: { type: 'number', description: 'Number of recent conversations (default 5, max 10)' },
     }, required: [] } },
+  { name: 'log_activity', description: 'Log a business activity — call, meeting, note, task. Use when user says "log a call with", "note that", "record meeting with", "I just spoke to".',
+    input_schema: { type: 'object', properties: {
+      type: { type: 'string', description: 'Activity type: call, meeting, note, task, email_sent' },
+      entity_name: { type: 'string', description: 'Person or company name' },
+      description: { type: 'string', description: 'What happened / key notes' },
+      deal_id: { type: 'string', description: 'Associated deal ID if known (optional)' },
+    }, required: ['type', 'entity_name', 'description'] } },
+  { name: 'get_activity_feed', description: 'Get recent activities across the platform — stage changes, emails, calls, meetings, Lemlist events. Use when user asks "what happened recently", "activity log", "latest actions", "what did we do this week".',
+    input_schema: { type: 'object', properties: {
+      limit: { type: 'number', description: 'Number of activities (default 15)' },
+      type_filter: { type: 'string', description: 'Filter by type: stage_change, email_drafted, call, meeting, note, lemlist_* (optional)' },
+    }, required: [] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -434,6 +446,8 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com')
       })
       const draft = await draftRes.json()
       if (!draftRes.ok) return `Failed to create draft: ${JSON.stringify(draft)}`
+      // Log to activities feed
+      try { await sbFetch('activities', { method: 'POST', body: JSON.stringify({ type: 'email_drafted', entity_name: to, subject: subject || 'No subject', status: 'draft', metadata: { to, subject, draft_id: draft?.id } }) }) } catch(e) {}
       return `Draft created successfully. To: ${to}${subject ? `, Subject: "${subject}"` : ''}. It's saved in Gmail Drafts — Sunny can review and send from the Email page.`
     } catch(e) { return `Draft error: ${e.message}` }
   }
@@ -917,6 +931,31 @@ Return JSON:
       }
       return out
     } catch (err) { return `Recent conversations error: ${err.message}` }
+  }
+
+  // ── Activity Logging ──
+  if (name === 'log_activity') {
+    const { type, entity_name, description, deal_id } = input
+    try {
+      await sbFetch('activities', { method: 'POST', body: JSON.stringify({ type, entity_name, subject: description, deal_id: deal_id || null, status: 'completed', completed_at: new Date().toISOString(), metadata: { logged_by: 'kiko' } }) })
+      return `Activity logged: ${type} — ${entity_name}: ${description}`
+    } catch(e) { return `Activity log error: ${e.message}` }
+  }
+
+  if (name === 'get_activity_feed') {
+    const { limit: lim = 15, type_filter } = input
+    try {
+      let url = `activities?select=*&order=created_at.desc&limit=${Math.min(lim, 30)}`
+      if (type_filter) url += `&type=eq.${type_filter}`
+      const rows = await sbFetch(url)
+      if (!rows?.length) return 'No activities found yet. Activities are logged automatically when you move deals, draft emails, or receive Lemlist events.'
+      let out = `ACTIVITY FEED (${rows.length}):\n\n`
+      for (const a of rows) {
+        const date = new Date(a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+        out += `${date} — [${a.type}] ${a.entity_name || ''}: ${a.subject || a.body?.slice(0,80) || ''}\n`
+      }
+      return out
+    } catch(e) { return `Activity feed error: ${e.message}` }
   }
 
   return { error: `Unknown tool: ${name}` }

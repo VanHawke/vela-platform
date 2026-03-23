@@ -383,6 +383,8 @@ export default function Pipeline({ user }) {
     await supabase.from('deals').upsert({ id: deal._id, data: updated, updated_at: now }, { onConflict: 'id' })
     // Log stage change for audit trail
     await supabase.from('deal_stage_history').insert({ deal_id: deal._id, from_stage: deal.stage, to_stage: newStage, changed_by: 'user', changed_at: now })
+    // Log to activities feed
+    await supabase.from('activities').insert({ type: 'stage_change', deal_id: deal._id, entity_name: deal.company || deal.name, subject: `${deal.stage} → ${newStage}`, status: 'completed', completed_at: now, metadata: { from_stage: deal.stage, to_stage: newStage, contact: deal.contact } })
     setDeals(prev => prev.map(d => d._id === deal._id ? { ...updated, _id: deal._id, updated_at: now } : d))
   }
 
