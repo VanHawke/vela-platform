@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { setPageContext } from '@/lib/pageContext'
 import { Plus, X, CheckSquare, Square, Calendar } from 'lucide-react'
 
 const PRIORITIES = ['low', 'medium', 'high']
@@ -19,6 +20,8 @@ export default function Tasks({ user }) {
     const { data } = await supabase.from('tasks').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
     setTasks(data || [])
     setLoading(false)
+    const todo = (data || []).filter(t => !t.completed).length
+    setPageContext({ page: 'tasks', summary: `Tasks: ${todo} pending, ${(data || []).length} total` })
   }
 
   const save = async () => {

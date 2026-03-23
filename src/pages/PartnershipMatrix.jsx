@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import { setPageContext } from '@/lib/pageContext'
 import { RefreshCw, Loader2, AlertTriangle, Plus, X, ExternalLink, FileDown, Check, Grid3X3, Target, Users } from 'lucide-react'
 
 const T = {
@@ -64,6 +65,7 @@ export default function PartnershipMatrix({ user }) {
       if (!selectedTeam && d.teams?.length) setSelectedTeam(d.teams[0].id)
     } catch (e) { console.error('[Matrix]', e) }
     finally { setLoading(false) }
+    setPageContext({ page: 'partnership-matrix', summary: `Partnership Matrix: ${data?.partnerships?.length || 0} partnerships, ${data?.gaps?.length || 0} gaps` })
   }
 
   const addPartnership = async () => {

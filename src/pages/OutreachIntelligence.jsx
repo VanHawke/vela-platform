@@ -2,6 +2,7 @@
 // Scorecard + Pattern Cards + Timing + Company Timeline
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { setPageContext } from '@/lib/pageContext'
 import { TrendingUp, Clock, Users, Building2, Send, Zap, RefreshCw, Loader2, BarChart3, Target, Mail } from 'lucide-react'
 
 const T = {
@@ -36,6 +37,7 @@ export default function OutreachIntelligence({ user }) {
     const pipes = [...new Set((data || []).map(s => s.pipeline).filter(Boolean))]
     setPipelines(pipes)
     setLoading(false)
+    setPageContext({ page: 'outreach-intelligence', summary: `Outreach Intelligence: ${(data || []).length} scored emails across ${pipes.length} pipelines` })
   }
 
   const runScoring = async () => {
@@ -95,7 +97,7 @@ export default function OutreachIntelligence({ user }) {
     if (s.sent_at > byCompany[c].lastSent) byCompany[c].lastSent = s.sent_at
   })
 
-  const card = { background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '20px', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }
+  const card = { background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', borderRadius: 18, padding: '20px', border: '1.5px solid rgba(255,255,255,0.08)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 24px rgba(0,0,0,0.15)' }
   const sectionTitle = { fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: T.textTertiary, margin: '0 0 14px', fontFamily: T.font }
   const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
