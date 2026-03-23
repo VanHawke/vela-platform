@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { TrendingUp, Clock, Users, Building2, Send, Zap, RefreshCw, Loader2, BarChart3, Target, Mail } from 'lucide-react'
 
 const T = {
-  text: 'rgba(255,255,255,0.85)', textSecondary: 'rgba(255,255,255,0.45)', textTertiary: 'rgba(255,255,255,0.25)',
+  text: 'rgba(255,255,255,0.95)', textSecondary: 'rgba(255,255,255,0.55)', textTertiary: 'rgba(255,255,255,0.32)',
   accent: 'rgba(255,255,255,0.12)', font: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
 }
 

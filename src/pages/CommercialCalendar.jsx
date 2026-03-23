@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 const T = {
   bg: '#07070B', surface: 'rgba(255,255,255,0.04)', surfaceHover: 'rgba(255,255,255,0.06)',
   border: 'rgba(255,255,255,0.08)', borderHover: 'rgba(255,255,255,0.12)',
-  text: 'rgba(255,255,255,0.85)', textSecondary: 'rgba(255,255,255,0.45)', textTertiary: 'rgba(255,255,255,0.25)',
+  text: 'rgba(255,255,255,0.95)', textSecondary: 'rgba(255,255,255,0.55)', textTertiary: 'rgba(255,255,255,0.32)',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   f1: '#E10600', f1Light: 'rgba(225,6,0,0.08)', f1Border: 'rgba(225,6,0,0.2)', f1Dark: '#FF4444',
   fe: '#0055CC', feLight: 'rgba(0,85,204,0.08)', feBorder: 'rgba(0,85,204,0.2)', feDark: '#6CB4FF',
@@ -178,7 +178,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, onClick }) 
           {s.hasF1 && s.f1.slice(0, 1).map((e, i) => (
             <div key={i}>
               {pill(
-                s.isSel || s.isRaceDay ? 'rgba(255,255,255,0.22)' : T.f1,
+                s.isSel || s.isRaceDay ? 'rgba(255,255,255,0.32)' : T.f1,
                 <>
                   <img src="/f1-logo.png" alt="F1" style={{ width: 8, height: 8, objectFit: 'contain', display: 'block' }} />
                   <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.9)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
@@ -191,7 +191,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, onClick }) 
           {s.hasFE && s.fe.slice(0, 1).map((e, i) => (
             <div key={i}>
               {pill(
-                s.isSel ? 'rgba(255,255,255,0.22)' : T.fe,
+                s.isSel ? 'rgba(255,255,255,0.32)' : T.fe,
                 <>
                   <img src="/fe-logo.png" alt="FE" style={{ width: 8, height: 8, objectFit: 'contain', display: 'block' }} />
                   <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.9)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>

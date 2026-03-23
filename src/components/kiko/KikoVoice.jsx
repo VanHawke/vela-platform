@@ -936,7 +936,7 @@ RULES:
               : messages.map((m, i) => (
                 <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <span style={{ fontSize: 8, fontWeight: 500, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.28)', fontFamily: 'var(--font)' }}>{m.role === 'user' ? 'You' : 'Kiko'}</span>
-                  <div style={{ fontSize: 11, lineHeight: 1.45, padding: '7px 10px', borderRadius: 50, fontFamily: 'var(--font)', background: m.role === 'user' ? 'rgba(139,108,246,0.12)' : 'rgba(255,255,255,0.04)', color: m.role === 'user' ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.45)' }}>
+                  <div style={{ fontSize: 11, lineHeight: 1.45, padding: '7px 10px', borderRadius: 50, fontFamily: 'var(--font)', background: m.role === 'user' ? 'rgba(139,108,246,0.12)' : 'rgba(255,255,255,0.04)', color: m.role === 'user' ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.55)' }}>
                     {m.content}
                   </div>
                 </div>

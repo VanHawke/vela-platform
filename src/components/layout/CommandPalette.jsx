@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { Search, FileText, BarChart3, Newspaper, Grid3X3, Building2, CheckSquare, Mic, Settings, Users, GitBranch, Calendar } from 'lucide-react'
 
 const T = {
-  text: 'rgba(255,255,255,0.85)', sub: 'rgba(255,255,255,0.45)', muted: 'rgba(255,255,255,0.25)',
+  text: 'rgba(255,255,255,0.95)', sub: 'rgba(255,255,255,0.55)', muted: 'rgba(255,255,255,0.32)',
   border: 'rgba(255,255,255,0.08)', soft: 'rgba(255,255,255,0.04)',
   font: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'DM Sans', 'Segoe UI', sans-serif",
 }

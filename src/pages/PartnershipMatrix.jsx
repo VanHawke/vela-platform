@@ -4,7 +4,7 @@ import { RefreshCw, Loader2, AlertTriangle, Plus, X, ExternalLink, FileDown, Che
 const T = {
   bg: '#07070B', surface: 'rgba(255,255,255,0.04)', surfaceHover: 'rgba(255,255,255,0.06)',
   border: 'rgba(255,255,255,0.08)', borderHover: 'rgba(255,255,255,0.1)',
-  text: 'rgba(255,255,255,0.85)', textSecondary: 'rgba(255,255,255,0.45)', textTertiary: 'rgba(255,255,255,0.25)',
+  text: 'rgba(255,255,255,0.95)', textSecondary: 'rgba(255,255,255,0.55)', textTertiary: 'rgba(255,255,255,0.32)',
   accent: '#8B6CF6', accentSoft: 'rgba(139,108,246,0.08)',
   blue: '#007AFF', red: '#FF3B30', yellow: '#FF9500', green: '#34C759',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
