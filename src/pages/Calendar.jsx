@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { setPageContext } from '@/lib/pageContext'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -51,6 +52,7 @@ export default function Calendar({ user }) {
           backgroundColor: classifyEventColor(e),
           borderColor: classifyEventColor(e),
         })))
+        setPageContext({ page: 'calendar', summary: `Calendar: ${data.events.length} events` })
       }
     } catch (err) {
       console.error('[Calendar] Fetch error:', err)

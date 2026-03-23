@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
+import { setPageContext } from '@/lib/pageContext'
 import { Upload, FileText, Image, File, X, Loader2, Eye, RefreshCw, Search, Filter, ChevronDown, ChevronUp, Building2, Tag, Brain } from 'lucide-react'
 
 const T = {
@@ -62,6 +63,7 @@ export default function Documents({ user }) {
     const data = await res.json()
     setDocuments(data.documents || [])
     setLoading(false)
+    setPageContext({ page: 'documents', summary: `Documents: ${(data.documents || []).length} files` })
   }
 
   const processFile = async (file) => {

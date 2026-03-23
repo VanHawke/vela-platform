@@ -123,6 +123,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [chatDragOver, setChatDragOver] = useState(false)
   const [fileUploading, setFileUploading] = useState(false)
   const abortRef = useRef(null)
+  const streamTextRef = useRef('')
+  const lastQueryRef = useRef('')
+  const streamingRef = useRef(false)
 
   // Voice mode state — inline, no overlay
   const [voiceActive, setVoiceActive] = useState(false)
@@ -301,6 +304,32 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const resetKey = outletCtx.kikoResetKey
   useEffect(() => { if (resetKey > 0) startNewChat() }, [resetKey])
 
+  // Background task persistence — save streaming on unmount, restore on mount
+  useEffect(() => {
+    // On mount: check for completed background tasks
+    const completed = taskManager.getCompletedTasks()
+    if (completed.length > 0) {
+      completed.forEach(task => {
+        setMessages(prev => [...prev,
+          { role: 'user', content: task.query },
+          { role: 'assistant', content: task.response + '\n\n*[Completed in background]*' }
+        ])
+        taskManager.dismissTask(task.id)
+      })
+    }
+    // On unmount: if streaming, save partial response to task manager
+    return () => {
+      if (streamingRef.current && streamTextRef.current) {
+        const taskId = 'task_' + Date.now()
+        const ctrl = taskManager.startTask(taskId, lastQueryRef.current, activeConvId)
+        taskManager.appendToTask(taskId, streamTextRef.current)
+        taskManager.completeTask(taskId)
+        // Abort the active fetch so it doesn't leak
+        if (abortRef.current) abortRef.current.abort()
+      }
+    }
+  }, [])
+
   const saveConversation = async (allMsgs, convId, userMsg, kikoResponse) => {
     if (!user?.id) return convId
     try {
@@ -331,6 +360,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     const userMsg = { role: 'user', content: displayMsg }
     setMessages(prev => [...prev, userMsg])
     setStreaming(true); setStreamText(''); setToolStatus(null); setThinkingSteps([]); setShowSteps(false)
+    streamingRef.current = true; streamTextRef.current = ''; lastQueryRef.current = msg || ''
 
     // AbortController for stop/halt
     const controller = new AbortController()
@@ -368,7 +398,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           const d = line.slice(6); if (d === '[DONE]') continue
           try {
             const j = JSON.parse(d)
-            if (j.delta) { full += j.delta; setStreamText(full) }
+            if (j.delta) { full += j.delta; setStreamText(full); streamTextRef.current = full }
             if (j.thinking) { setThinkingSteps(prev => [...prev, { label: 'Reasoning...', time: Date.now() }]) }
             if (j.toolStatus !== undefined) { setToolStatus(j.toolStatus); if (j.toolStatus) setThinkingSteps(prev => [...prev, { label: j.toolStatus, time: Date.now() }]) }
             if (j.navigate) pendingNav = j.navigate
@@ -394,7 +424,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       }
       setStreamText('')
     }
-    finally { setStreaming(false) }
+    finally { setStreaming(false); streamingRef.current = false }
   }, [input, streaming, messages, user, activeConvId])
 
   const processFileForKiko = async (file) => {
