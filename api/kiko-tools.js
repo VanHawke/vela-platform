@@ -1,7 +1,5 @@
 // Kiko Tool Registry — modular, MCP-ready tool definitions and handlers
 // Each tool exports { definition, handler } — kiko.js imports and orchestrates
-// Calendar tools replaced by MCP Google Calendar server (v12.2)
-// import { getCalendar, createCalendarEvent } from './kiko-calendar.js';
 import { generateFollowup, getFollowupQueue } from './kiko-followup.js';
 
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
@@ -69,7 +67,6 @@ export const TOOL_DEFINITIONS = [
     }, required: ['page'] } },
   { name: 'get_alerts', description: 'Get proactive intelligence alerts — stale deals, pipeline bottlenecks, data quality issues.',
     input_schema: { type: 'object', properties: {}, required: [] } },
-  // search_emails + get_email_thread → REPLACED BY MCP Gmail server (v12.2)
   { name: 'draft_email', description: 'Create a Gmail draft email. Use when user asks to draft, compose, or write an email. The draft is saved in Gmail Drafts — user can review and send.',
     input_schema: { type: 'object', properties: {
       to: { type: 'string', description: 'Recipient email(s), comma-separated' },
@@ -89,7 +86,6 @@ export const TOOL_DEFINITIONS = [
       company: { type: 'string', description: 'Optional: filter to a specific company' },
       pipeline: { type: 'string', description: 'Optional: filter to a specific pipeline (e.g. "Haas F1")' },
     }, required: ['focus'] } },
-  // get_calendar + create_calendar_event → REPLACED BY MCP Google Calendar server (v12.2)
   { name: 'get_stale_contacts', description: 'Get contacts who need follow-up based on email intelligence. Use for "who should I follow up with", "stale contacts", "who am I losing touch with".',
     input_schema: { type: 'object', properties: {
       min_staleness: { type: 'number', description: 'Minimum staleness score 0-100 (default: 40)' },
@@ -356,8 +352,6 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com')
     return `${alerts.length} active alert${alerts.length > 1 ? 's' : ''}:\n${alerts.map(a => `[${a.severity?.toUpperCase()}] ${a.title}\n  ${a.detail}`).join('\n\n')}`
   }
 
-  // search_emails → REPLACED BY MCP Gmail server (v12.2)
-  // get_email_thread → REPLACED BY MCP Gmail server (v12.2)
 
   if (name === 'draft_email') {
     const { to, subject, body, cc, thread_id } = input
@@ -502,8 +496,6 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com')
       return `Outreach data: ${total} scored, ${replyRate}% reply rate. Ask about "patterns", "timing", "persona", "company", or "draft-context" for specific analysis.`
     } catch (err) { return `Outreach intelligence error: ${err.message}` }
   }
-
-  // get_calendar + create_calendar_event → REPLACED BY MCP Google Calendar server (v12.2)
 
   if (name === 'get_stale_contacts') {
     const minStaleness = input.min_staleness || 40
