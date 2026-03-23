@@ -225,6 +225,25 @@ export const TOOL_DEFINITIONS = [
       company: { type: 'string', description: 'Company name to analyse timing for (optional — analyses all if blank)' },
       contact_email: { type: 'string', description: 'Specific contact email to analyse (optional)' },
     }, required: [] } },
+  // ── File Generation Tools ──
+  { name: 'generate_docx', description: 'Create a Word document (.docx). Use when user says "create a document", "write a one-pager", "make a Word doc", "generate a brief", "export as Word". Returns a download link.',
+    input_schema: { type: 'object', properties: { filename: { type: 'string', description: 'Filename without extension' }, content: { type: 'string', description: 'Document content. Use # for headings, ## for subheadings, **bold**, - for bullets.' } }, required: ['filename', 'content'] } },
+  { name: 'generate_xlsx', description: 'Create a spreadsheet (.xlsx). Use when user says "create a spreadsheet", "export as Excel", "make a tracker", "export pipeline/contacts/deals". Returns a download link.',
+    input_schema: { type: 'object', properties: { filename: { type: 'string' }, sheets: { type: 'array', items: { type: 'object', properties: { name: { type: 'string' }, headers: { type: 'array', items: { type: 'string' } }, rows: { type: 'array', items: { type: 'array' } } } } } }, required: ['filename', 'sheets'] } },
+  { name: 'generate_pptx', description: 'Create a presentation (.pptx). Use when user says "create a deck", "make a presentation", "build slides", "pitch deck". Returns a download link.',
+    input_schema: { type: 'object', properties: { filename: { type: 'string' }, slides: { type: 'array', items: { type: 'object', properties: { title: { type: 'string' }, body: { type: 'string' } } } } }, required: ['filename', 'slides'] } },
+  { name: 'generate_csv', description: 'Create a CSV file. Use when user says "export as CSV", "download as CSV". Returns a download link.',
+    input_schema: { type: 'object', properties: { filename: { type: 'string' }, content: { type: 'string', description: 'CSV content with comma-separated values and newlines' } }, required: ['filename', 'content'] } },
+  { name: 'generate_image', description: 'Create an AI-generated image using DALL-E 3. Use when user says "create an image", "generate a graphic", "design an image of", "visualise". Returns a download link.',
+    input_schema: { type: 'object', properties: { prompt: { type: 'string', description: 'Detailed image description.' }, size: { type: 'string', description: '1024x1024, 1792x1024, or 1024x1792' }, style: { type: 'string', description: 'natural or vivid' } }, required: ['prompt'] } },
+  { name: 'read_url', description: 'Fetch and read any webpage or article URL. Use when user pastes a URL or says "read this", "summarise this article", "check this website". Returns the page text.',
+    input_schema: { type: 'object', properties: { url: { type: 'string', description: 'Full URL including https://' } }, required: ['url'] } },
+  { name: 'generate_qr', description: 'Generate a QR code for any URL or text. Use when user says "QR code for", "generate a QR".',
+    input_schema: { type: 'object', properties: { text: { type: 'string' }, size: { type: 'number', description: 'Size in pixels (default 400)' } }, required: ['text'] } },
+  { name: 'export_pipeline', description: 'Export deal pipeline as a spreadsheet. Use when user says "export pipeline", "download deals", "pipeline as Excel".',
+    input_schema: { type: 'object', properties: { pipeline: { type: 'string', description: 'Pipeline name filter (optional)' } }, required: [] } },
+  { name: 'export_contacts', description: 'Export contacts as a spreadsheet. Use when user says "export contacts", "download contacts".',
+    input_schema: { type: 'object', properties: { limit: { type: 'number', description: 'Max contacts (default 500)' }, filter: { type: 'string', description: 'Filter by company/industry' } }, required: [] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -1060,6 +1079,84 @@ Make it authoritative, data-driven, and board-level. For one-pagers: keep to ~40
       if (!bestDay && !bestHour) out += `Not enough reply data yet to determine optimal timing. Continue sending and scoring outreach to build patterns.`
       return out
     } catch(e) { return `Timing analysis error: ${e.message}` }
+  }
+
+  // ── File Generation & Utility Handlers ──
+  const BASE_URL = `https://${process.env.VERCEL_URL || 'vela-platform-one.vercel.app'}`;
+
+  if (name === 'generate_docx') {
+    try {
+      const r = await fetch(`${BASE_URL}/api/generate-doc`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ format: 'docx', filename: input.filename, content: input.content }) });
+      const data = await r.json();
+      return data.url ? `✅ Document created: [${data.filename}](${data.url})\nSize: ${(data.size / 1024).toFixed(1)}KB` : `Error: ${data.error}`;
+    } catch(e) { return `Error: ${e.message}` }
+  }
+  if (name === 'generate_xlsx') {
+    try {
+      const r = await fetch(`${BASE_URL}/api/generate-doc`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ format: 'xlsx', filename: input.filename, sheets: input.sheets }) });
+      const data = await r.json();
+      return data.url ? `✅ Spreadsheet created: [${data.filename}](${data.url})\nSize: ${(data.size / 1024).toFixed(1)}KB` : `Error: ${data.error}`;
+    } catch(e) { return `Error: ${e.message}` }
+  }
+  if (name === 'generate_pptx') {
+    try {
+      const r = await fetch(`${BASE_URL}/api/generate-doc`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ format: 'pptx', filename: input.filename, content: input.slides }) });
+      const data = await r.json();
+      return data.url ? `✅ Presentation created: [${data.filename}](${data.url})\nSize: ${(data.size / 1024).toFixed(1)}KB` : `Error: ${data.error}`;
+    } catch(e) { return `Error: ${e.message}` }
+  }
+  if (name === 'generate_csv') {
+    try {
+      const r = await fetch(`${BASE_URL}/api/generate-doc`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ format: 'csv', filename: input.filename, content: input.content }) });
+      const data = await r.json();
+      return data.url ? `✅ CSV exported: [${data.filename}](${data.url})` : `Error: ${data.error}`;
+    } catch(e) { return `Error: ${e.message}` }
+  }
+  if (name === 'generate_image') {
+    try {
+      const r = await fetch(`${BASE_URL}/api/generate-image`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: input.prompt, size: input.size || '1024x1024', style: input.style || 'natural' }) });
+      const data = await r.json();
+      return data.url ? `✅ Image generated: [View/Download](${data.url})${data.revised_prompt ? `\nPrompt: ${data.revised_prompt}` : ''}` : `Error: ${data.error}`;
+    } catch(e) { return `Error: ${e.message}` }
+  }
+  if (name === 'read_url') {
+    try {
+      const r = await fetch(`${BASE_URL}/api/fetch-url`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: input.url }) });
+      const data = await r.json();
+      if (data.content) return `PAGE: ${data.title || input.url}\n${data.description ? `DESCRIPTION: ${data.description}\n` : ''}\nCONTENT (${data.contentLength} chars${data.truncated ? ', truncated' : ''}):\n${data.content}`;
+      return `Error: ${data.error}`;
+    } catch(e) { return `Error: ${e.message}` }
+  }
+  if (name === 'generate_qr') {
+    try {
+      const r = await fetch(`${BASE_URL}/api/generate-qr`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: input.text, size: input.size || 400 }) });
+      const data = await r.json();
+      return data.url ? `✅ QR code: [View/Download](${data.url})\nEncodes: ${input.text}` : `Error: ${data.error}`;
+    } catch(e) { return `Error: ${e.message}` }
+  }
+  if (name === 'export_pipeline') {
+    try {
+      const deals = await sbFetch('deals?select=id,data&order=updated_at.desc&limit=500');
+      if (!deals?.length) return 'No deals to export.';
+      const filtered = input.pipeline ? deals.filter(d => d.data?.pipeline?.toLowerCase().includes(input.pipeline.toLowerCase())) : deals;
+      const headers = ['Company', 'Contact', 'Stage', 'Pipeline', 'Value (USD)', 'Status', 'Source', 'Notes'];
+      const rows = filtered.map(d => [d.data?.company||'', d.data?.contact||'', d.data?.stage||'', d.data?.pipeline||'', d.data?.value||0, d.data?.status||'', d.data?.source||'', (d.data?.notes||'').slice(0,100)]);
+      const r = await fetch(`${BASE_URL}/api/generate-doc`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ format: 'xlsx', filename: `Pipeline_Export_${new Date().toISOString().split('T')[0]}`, sheets: [{ name: 'Pipeline', headers, rows }] }) });
+      const data = await r.json();
+      return data.url ? `✅ Pipeline exported: [${data.filename}](${data.url})\n${filtered.length} deals.` : `Error: ${data.error}`;
+    } catch(e) { return `Error: ${e.message}` }
+  }
+  if (name === 'export_contacts') {
+    try {
+      const contacts = await sbFetch(`contacts?select=id,data&order=updated_at.desc&limit=${input.limit || 500}`);
+      if (!contacts?.length) return 'No contacts to export.';
+      const filtered = input.filter ? contacts.filter(c => { const d = c.data||{}; return (d.company||'').toLowerCase().includes(input.filter.toLowerCase()) || (d.industry||'').toLowerCase().includes(input.filter.toLowerCase()); }) : contacts;
+      const headers = ['First Name', 'Last Name', 'Company', 'Title', 'Email', 'Phone', 'LinkedIn', 'Industry'];
+      const rows = filtered.map(c => { const d = c.data||{}; return [d.firstName||'', d.lastName||'', d.company||'', d.title||'', d.email||'', d.phone||'', d.linkedin?'Yes':'', d.industry||'']; });
+      const r = await fetch(`${BASE_URL}/api/generate-doc`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ format: 'xlsx', filename: `Contacts_Export_${new Date().toISOString().split('T')[0]}`, sheets: [{ name: 'Contacts', headers, rows }] }) });
+      const data = await r.json();
+      return data.url ? `✅ Contacts exported: [${data.filename}](${data.url})\n${filtered.length} contacts.` : `Error: ${data.error}`;
+    } catch(e) { return `Error: ${e.message}` }
   }
 
   return { error: `Unknown tool: ${name}` }
