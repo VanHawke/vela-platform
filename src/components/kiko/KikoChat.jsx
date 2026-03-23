@@ -7,6 +7,7 @@ import KikoVoice from './KikoVoice'
 import ChatHistory from './ChatHistory'
 import KikoSymbol from './KikoSymbol'
 import DoubleHelix from './DoubleHelix'
+import DraftPreview, { detectDraft } from './DraftPreview'
 
 // Theme imported from @/lib/theme.js
 
@@ -540,6 +541,15 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           fontSize: 14, lineHeight: 1.8, fontFamily: T.font, fontWeight: 300,
         }}>
           {isUser ? msg.content : <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />}
+          {/* Draft Preview Panel — renders below Kiko's message if a draft is detected */}
+          {isKiko && !streaming && (() => {
+            const draft = detectDraft(msg.content)
+            if (!draft) return null
+            return <DraftPreview draft={draft}
+              onToneAdjust={(tone) => handleSubmit(`${tone} the draft you just wrote. Keep everything else the same.`)}
+              onCopy={() => {}}
+              onSendToGmail={() => handleSubmit(`Send the email draft you just wrote to Gmail. Use draft_email tool.`)} />
+          })()}
         </div>
         {/* Hover actions */}
         {isHovered && !streaming && (
