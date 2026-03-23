@@ -1,114 +1,127 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
-import { Plus, X, CheckSquare, Square, Calendar } from 'lucide-react'
-
-const PRIORITIES = ['low', 'medium', 'high']
-const priorityColor = (p) => ({ low: 'text-white/30', medium: 'text-amber-400/70', high: 'text-red-400/70' }[p] || 'text-white/30')
+import { Plus, X, CheckSquare, Square, Calendar, ChevronRight } from 'lucide-react'
+import T from '@/lib/theme'
 
 export default function Tasks({ user }) {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('todo')
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ title: '', description: '', priority: 'medium', due_date: '' })
+  const [form, setForm] = useState({ type: '', notes: '', dueDate: '' })
 
-  useEffect(() => { if (user?.id) load() }, [user?.id])
+  useEffect(() => { load() }, [])
 
   const load = async () => {
     setLoading(true)
-    const { data } = await supabase.from('tasks').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+    const { data } = await supabase.from('tasks').select('*').order('updated_at', { ascending: false })
     setTasks(data || [])
     setLoading(false)
-    const todo = (data || []).filter(t => !t.completed).length
+    const todo = (data || []).filter(t => !t.data?.completed).length
     setPageContext({ page: 'tasks', summary: `Tasks: ${todo} pending, ${(data || []).length} total` })
   }
 
   const save = async () => {
-    if (!form.title.trim()) return
-    await supabase.from('tasks').insert({ ...form, user_id: user.id, org_id: user.app_metadata?.org_id, status: 'todo', created_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    if (!form.type.trim()) return
+    const newTask = { type: form.type, notes: form.notes, dueDate: form.dueDate || null, completed: false, createdAt: new Date().toISOString(), createdBy: 'Sunny Sidhu', assignedTo: 'Sunny Sidhu' }
+    await supabase.from('tasks').insert({ id: `t${Date.now()}`, data: newTask, user_id: user?.id, org_id: user?.app_metadata?.org_id, updated_at: new Date().toISOString() })
     setShowForm(false)
-    setForm({ title: '', description: '', priority: 'medium', due_date: '' })
+    setForm({ type: '', notes: '', dueDate: '' })
     load()
   }
 
   const toggle = async (task) => {
-    const newStatus = task.status === 'done' ? 'todo' : 'done'
-    await supabase.from('tasks').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', task.id)
-    setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: newStatus } : t))
+    const updated = { ...task.data, completed: !task.data?.completed, completedAt: !task.data?.completed ? new Date().toISOString() : null }
+    await supabase.from('tasks').update({ data: updated, updated_at: new Date().toISOString() }).eq('id', task.id)
+    setTasks(prev => prev.map(t => t.id === task.id ? { ...t, data: updated } : t))
   }
 
-  const remove = async (id) => {
+  const deleteTask = async (id) => {
     await supabase.from('tasks').delete().eq('id', id)
     setTasks(prev => prev.filter(t => t.id !== id))
   }
 
-  const filtered = tasks.filter(t => filter === 'all' ? true : filter === 'todo' ? t.status !== 'done' : t.status === 'done')
+  const filtered = tasks.filter(t => {
+    if (filter === 'todo') return !t.data?.completed
+    if (filter === 'done') return t.data?.completed
+    return true
+  })
+
+  const priorityColor = { high: 'rgba(255,59,48,0.6)', medium: 'rgba(245,158,11,0.5)', low: 'rgba(139,108,246,0.3)' }
+
+  if (loading) return <div style={{ padding: 40, textAlign: 'center', color: 'rgba(255,255,255,0.2)', fontFamily: T.font, fontWeight: 300 }}>Loading tasks...</div>
+
+  const card = { background: 'rgba(255,255,255,0.02)', border: `1px solid rgba(255,255,255,0.04)`, borderRadius: 12, padding: '14px 16px', marginBottom: 8, cursor: 'pointer', display: 'flex', gap: 12, alignItems: 'flex-start', transition: 'all 0.15s' }
 
   return (
-    <div className="flex-1 overflow-hidden flex flex-col">
-      <div className="px-6 py-4 border-b border-white/8 flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-white">Tasks</h1>
-        <button onClick={() => setShowForm(true)} className="flex items-center gap-2 text-xs bg-white text-black px-3 py-1.5 rounded-lg font-medium hover:bg-white/90 transition-colors">
-          <Plus className="h-3.5 w-3.5" /> Add Task
-        </button>
+    <div style={{ padding: 20, maxWidth: 800 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div>
+          <h1 style={{ fontSize: 20, fontWeight: 400, color: T.text, fontFamily: T.font, margin: 0 }}>Tasks</h1>
+          <p style={{ fontSize: 11, color: T.textTertiary, fontFamily: T.font, fontWeight: 300, marginTop: 2 }}>
+            {filtered.length} {filter === 'done' ? 'completed' : 'outstanding'}
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {['todo', 'done', 'all'].map(f => (
+            <button key={f} onClick={() => setFilter(f)} style={{
+              padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 400,
+              border: `1px solid ${filter === f ? 'rgba(139,108,246,0.2)' : 'rgba(255,255,255,0.06)'}`,
+              background: filter === f ? 'rgba(139,108,246,0.08)' : 'transparent',
+              color: filter === f ? 'rgba(139,108,246,0.8)' : 'rgba(255,255,255,0.3)',
+              cursor: 'pointer', fontFamily: T.font,
+            }}>{f === 'todo' ? 'Outstanding' : f === 'done' ? 'Completed' : 'All'}</button>
+          ))}
+          <button onClick={() => setShowForm(!showForm)} style={{
+            padding: '5px 14px', borderRadius: 20, background: 'rgba(139,108,246,0.08)',
+            border: '1px solid rgba(139,108,246,0.15)', color: 'rgba(139,108,246,0.7)',
+            fontSize: 11, cursor: 'pointer', fontFamily: T.font,
+          }}>+ New</button>
+        </div>
       </div>
-      <div className="px-6 py-3 border-b border-white/8 flex gap-1">
-        {['todo', 'done', 'all'].map(f => (
-          <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1 text-xs rounded-md transition-colors capitalize ${filter === f ? 'bg-white/10 text-white' : 'text-white/35 hover:text-white/60'}`}>{f}</button>
-        ))}
-      </div>
-      <div className="flex-1 overflow-y-auto">
-        {loading ? (
-          <div className="p-6 space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-white/5 rounded-xl animate-pulse" />)}</div>
-        ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-white/25">
-            <CheckSquare className="h-8 w-8 mb-3 opacity-50" />
-            <p className="text-sm">No {filter === 'all' ? '' : filter} tasks</p>
-          </div>
-        ) : (
-          <div className="p-6 space-y-2">
-            {filtered.map(task => (
-              <div key={task.id} className={`glass rounded-xl border border-white/8 px-5 py-3.5 flex items-center gap-4 group hover:border-white/15 transition-colors ${task.status === 'done' ? 'opacity-50' : ''}`}>
-                <button onClick={() => toggle(task)} className="flex-shrink-0 text-white/40 hover:text-white/70 transition-colors">
-                  {task.status === 'done' ? <CheckSquare className="h-4 w-4 text-emerald-400" /> : <Square className="h-4 w-4" />}
-                </button>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium ${task.status === 'done' ? 'line-through text-white/40' : 'text-white/85'}`}>{task.title}</p>
-                  {task.description && <p className="text-xs text-white/30 mt-0.5 truncate">{task.description}</p>}
-                </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  {task.due_date && <span className="text-xs text-white/30 flex items-center gap-1"><Calendar className="h-3 w-3" />{new Date(task.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>}
-                  <span className={`text-xs font-medium ${priorityColor(task.priority)}`}>{task.priority}</span>
-                  <button onClick={() => remove(task.id)} className="text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"><X className="h-3.5 w-3.5" /></button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+
       {showForm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && setShowForm(false)}>
-          <div className="glass rounded-2xl border border-white/15 w-full max-w-md p-6">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-semibold text-white">Add Task</h2>
-              <button onClick={() => setShowForm(false)} className="text-white/30 hover:text-white/60"><X className="h-4 w-4" /></button>
-            </div>
-            <div className="space-y-3">
-              <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Task name *" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/25 transition-colors" />
-              <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Description" rows={2} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/25 transition-colors resize-none" />
-              <select value={form.priority} onChange={e => setForm(p => ({ ...p, priority: e.target.value }))} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-white/25 transition-colors">
-                {PRIORITIES.map(p => <option key={p} value={p} className="bg-[#1a1a1a] capitalize">{p}</option>)}
-              </select>
-              <input value={form.due_date} onChange={e => setForm(p => ({ ...p, due_date: e.target.value }))} type="date" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-white/25 transition-colors" />
-            </div>
-            <div className="flex gap-3 mt-5">
-              <button onClick={() => setShowForm(false)} className="flex-1 py-2 text-sm text-white/50 border border-white/10 rounded-lg hover:bg-white/5 transition-colors">Cancel</button>
-              <button onClick={save} className="flex-1 py-2 text-sm bg-white text-black rounded-lg font-medium hover:bg-white/90 transition-colors">Save</button>
-            </div>
+        <div style={{ ...card, flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+          <input value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))} placeholder="Task type (e.g. Email Follow-up, Schedule Call)" style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: `1px solid rgba(255,255,255,0.06)`, borderRadius: 8, padding: '8px 12px', fontSize: 13, color: T.text, fontFamily: T.font, fontWeight: 300, outline: 'none' }} />
+          <input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Notes" style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: `1px solid rgba(255,255,255,0.06)`, borderRadius: 8, padding: '8px 12px', fontSize: 13, color: T.text, fontFamily: T.font, fontWeight: 300, outline: 'none' }} />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input type="date" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} style={{ flex: 1, background: 'rgba(255,255,255,0.03)', border: `1px solid rgba(255,255,255,0.06)`, borderRadius: 8, padding: '8px 12px', fontSize: 12, color: T.text, fontFamily: T.font, outline: 'none' }} />
+            <button onClick={save} style={{ padding: '8px 20px', borderRadius: 8, background: 'rgba(139,108,246,0.12)', border: '1px solid rgba(139,108,246,0.2)', color: 'rgba(139,108,246,0.8)', fontSize: 12, cursor: 'pointer', fontFamily: T.font }}>Save</button>
+            <button onClick={() => setShowForm(false)} style={{ padding: '8px 14px', borderRadius: 8, background: 'transparent', border: `1px solid rgba(255,255,255,0.06)`, color: T.textTertiary, fontSize: 12, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
           </div>
         </div>
       )}
+
+      {filtered.length === 0 && (
+        <div style={{ textAlign: 'center', padding: 40, color: T.textTertiary, fontFamily: T.font, fontWeight: 300, fontSize: 13 }}>
+          {filter === 'done' ? 'No completed tasks yet.' : 'No outstanding tasks. Nice work.'}
+        </div>
+      )}
+
+      {filtered.map(task => {
+        const d = task.data || {}
+        const isOverdue = d.dueDate && new Date(d.dueDate) < new Date() && !d.completed
+        return (
+          <div key={task.id} style={card}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)' }}
+          >
+            <button onClick={() => toggle(task)} style={{ marginTop: 2, background: 'none', border: 'none', cursor: 'pointer', color: d.completed ? 'rgba(6,214,160,0.5)' : T.textTertiary, flexShrink: 0 }}>
+              {d.completed ? <CheckSquare size={16} /> : <Square size={16} />}
+            </button>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 9, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 2 }}>{d.type || 'Task'}</div>
+              <div style={{ fontSize: 13, fontWeight: 400, color: d.completed ? T.textTertiary : T.text, fontFamily: T.font, textDecoration: d.completed ? 'line-through' : 'none', marginBottom: 4 }}>{d.notes || d.type || 'Untitled'}</div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                {d.assignedTo && <span style={{ fontSize: 10, color: T.textTertiary, fontWeight: 300 }}>{d.assignedTo}</span>}
+                {d.dueDate && <span style={{ fontSize: 10, color: isOverdue ? 'rgba(255,59,48,0.6)' : T.textTertiary, fontWeight: 300, display: 'flex', alignItems: 'center', gap: 3 }}><Calendar size={10} /> {new Date(d.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}{isOverdue ? ' · Overdue' : ''}</span>}
+              </div>
+            </div>
+            <button onClick={() => deleteTask(task.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.1)', flexShrink: 0 }}><X size={14} /></button>
+          </div>
+        )
+      })}
     </div>
   )
 }

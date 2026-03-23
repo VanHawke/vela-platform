@@ -504,7 +504,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         borderRadius: 50, padding: welcome ? '7px 7px 7px 24px' : '4px 4px 4px 14px',
         border: `1.5px solid ${T.glassBorder}`,
         boxShadow: T.glassShadow,
-        maxWidth: welcome ? 520 : (compact ? '100%' : 640),
+        maxWidth: welcome ? 540 : (compact ? '100%' : 640),
         width: '100%', margin: '0 auto',
       }}>
         <input ref={fileInputRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx" onChange={e => { const f = e.target.files?.[0]; if (f) processFileForKiko(f); e.target.value = '' }} style={{ display: 'none' }} />

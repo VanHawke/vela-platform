@@ -40,8 +40,14 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
   }
 
   useEffect(() => { loadConversations() }, [user?.id, orgId])
-  // Refresh when panel opens
-  useEffect(() => { if (open) loadConversations() }, [open])
+  // Refresh when panel opens or active conversation changes
+  useEffect(() => { if (open) loadConversations() }, [open, activeConvId])
+  // Poll for title updates when panel is open (catches auto-rename)
+  useEffect(() => {
+    if (!open) return
+    const iv = setInterval(loadConversations, 5000)
+    return () => clearInterval(iv)
+  }, [open])
 
   async function deleteConversation(id, e) {
     e.stopPropagation()
@@ -118,7 +124,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
       }}>
         <span style={{ fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font }}>Chats</span>
         <div style={{ display: 'flex', gap: 4 }}>
-          <button onClick={() => { onNewChat(); }} style={{
+          <button onClick={() => { onNewChat(); onToggle(); }} style={{
             width: 32, height: 32, borderRadius: 50, border: 'none',
             background: T.accentSoft, cursor: 'pointer', display: 'flex',
             alignItems: 'center', justifyContent: 'center', color: T.text,
