@@ -8,22 +8,22 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const MODEL = 'claude-sonnet-4-20250514';
 
 // ── MCP Server Registry ──────────────────────────────────
-// Remote MCP servers that Kiko connects to for extended capabilities
-// Claude handles MCP tool discovery and execution automatically
-const MCP_SERVERS = [
-  {
-    type: 'url',
-    url: 'https://gmail.mcp.claude.com/mcp',
-    name: 'gmail',
-    authorization_token: process.env.GOOGLE_MCP_TOKEN || undefined,
-  },
-  {
-    type: 'url',
-    url: 'https://gcal.mcp.claude.com/mcp',
-    name: 'google-calendar',
-    authorization_token: process.env.GOOGLE_MCP_TOKEN || undefined,
-  },
-].filter(s => s.authorization_token); // Only include servers with valid tokens
+// Dynamically builds MCP server list using the user's live Google OAuth token
+// Token is auto-refreshed by google-token.js (same one used by custom Gmail/Calendar tools)
+async function getMcpServers(userEmail) {
+  try {
+    const { getGoogleToken } = await import('./google-token.js');
+    const token = await getGoogleToken(userEmail);
+    if (!token) return [];
+    return [
+      { type: 'url', url: 'https://gmail.mcp.claude.com/mcp', name: 'gmail', authorization_token: token },
+      { type: 'url', url: 'https://gcal.mcp.claude.com/mcp', name: 'google-calendar', authorization_token: token },
+    ];
+  } catch (err) {
+    console.log('[MCP] Google token unavailable, falling back to custom tools:', err.message);
+    return [];
+  }
+}
 
 // ── System Prompt ────────────────────────────────────────
 const SYSTEM_PROMPT = `You are Kiko — the AI engine powering a sponsorship operations platform for Van Hawke Group. You work with Sunny Sidhu, CEO, who manages F1 and Formula E sponsorship advisory for clients including Haas F1 Team.
@@ -370,6 +370,10 @@ export default async function handler(req, res) {
     const needsDeepThink = deepThink || (message && DEEP_THINK_TRIGGERS.some(t => message.toLowerCase().includes(t)))
     const needsExtendedTokens = needsDeepThink || (message && DRAFT_TRIGGERS.some(t => message.toLowerCase().includes(t)))
 
+    // Fetch MCP servers with live Google OAuth token
+    const mcpServers = await getMcpServers(userEmail);
+    if (mcpServers.length > 0) write({ toolStatus: `MCP: ${mcpServers.length} external servers connected` });
+
     // Stream helper
     async function streamCall(msgs, opts = {}) {
       const params = {
@@ -378,14 +382,14 @@ export default async function handler(req, res) {
         system, messages: msgs, tools: opts.noTools ? undefined : allTools,
       }
       // Add MCP servers if available
-      if (MCP_SERVERS.length > 0 && !opts.noTools) {
-        params.mcp_servers = MCP_SERVERS;
+      if (mcpServers.length > 0 && !opts.noTools) {
+        params.mcp_servers = mcpServers;
       }
       if (needsDeepThink) {
         params.thinking = { type: 'enabled', budget_tokens: 10000 }
         write({ toolStatus: 'Deep analysis...' })
       }
-      const stream = MCP_SERVERS.length > 0
+      const stream = mcpServers.length > 0
         ? anthropic.beta.messages.stream({ ...params, betas: ['mcp-client-2025-11-20'] })
         : anthropic.beta.messages.stream(params);
       for await (const event of stream) {
