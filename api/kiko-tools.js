@@ -242,6 +242,13 @@ export const TOOL_DEFINITIONS = [
     input_schema: { type: 'object', properties: {
       reason: { type: 'string', description: 'Why this conversation is bookmarked (optional)' },
     }, required: [] } },
+
+  // ── Predictive Outreach Timing ──
+  { name: 'get_outreach_timing', description: 'Analyse email open/reply patterns to recommend optimal send day and time for a contact or company. Use when user asks "best time to email [person]", "when should I reach out", "optimal send time", "outreach timing".',
+    input_schema: { type: 'object', properties: {
+      company: { type: 'string', description: 'Company name to analyse timing for (optional — analyses all if blank)' },
+      contact_email: { type: 'string', description: 'Specific contact email to analyse (optional)' },
+    }, required: [] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -1126,6 +1133,57 @@ Make it authoritative, data-driven, and board-level. For one-pagers: keep to ~40
       await sbFetch(`conversations?id=eq.${convs[0].id}`, { method: 'PATCH', body: JSON.stringify({ bookmarked: true, bookmark_reason: reason || 'Manually bookmarked' }) })
       return `✅ Bookmarked conversation "${convs[0].title}".${reason ? ` Reason: ${reason}` : ''} Bookmarked conversations get priority in memory recall.`
     } catch(e) { return `Error bookmarking: ${e.message}` }
+  }
+
+  // ── Predictive Outreach Timing Handler ──
+  if (name === 'get_outreach_timing') {
+    const { company, contact_email } = input
+    try {
+      let url = 'outreach_scores?select=sent_day_of_week,sent_hour,outcome,company,recipient_email&order=sent_at.desc&limit=200'
+      if (company) url += `&company=ilike.*${company}*`
+      if (contact_email) url += `&recipient_email=eq.${contact_email}`
+      const rows = await sbFetch(url)
+      if (!rows?.length) return `No outreach data found${company ? ` for "${company}"` : ''}. Score your outreach first from the Outreach Intelligence page, then I can analyse timing patterns.`
+
+      // Analyse by day
+      const byDay = {}
+      rows.forEach(r => {
+        const d = r.sent_day_of_week || 'Unknown'
+        if (!byDay[d]) byDay[d] = { total: 0, replied: 0 }
+        byDay[d].total++
+        if (r.outcome === 'replied') byDay[d].replied++
+      })
+
+      // Analyse by hour
+      const byHour = {}
+      rows.forEach(r => {
+        const h = r.sent_hour != null ? `${r.sent_hour}:00` : 'Unknown'
+        if (!byHour[h]) byHour[h] = { total: 0, replied: 0 }
+        byHour[h].total++
+        if (r.outcome === 'replied') byHour[h].replied++
+      })
+
+      // Find best day and hour
+      const bestDay = Object.entries(byDay).filter(([,v]) => v.total >= 2).sort((a,b) => (b[1].replied/b[1].total) - (a[1].replied/a[1].total))[0]
+      const bestHour = Object.entries(byHour).filter(([,v]) => v.total >= 2).sort((a,b) => (b[1].replied/b[1].total) - (a[1].replied/a[1].total))[0]
+
+      let out = `OUTREACH TIMING ANALYSIS${company ? ` — ${company}` : ''} (${rows.length} emails analysed):\n\n`
+      out += `BY DAY OF WEEK:\n`
+      const dayOrder = ['Monday','Tuesday','Wednesday','Thursday','Friday']
+      dayOrder.forEach(d => {
+        const data = byDay[d]
+        if (data) out += `  ${d}: ${data.total} sent, ${data.replied} replied (${data.total > 0 ? Math.round(data.replied/data.total*100) : 0}%)\n`
+      })
+      out += `\nBY HOUR (UK time):\n`
+      Object.entries(byHour).sort((a,b) => parseInt(a[0]) - parseInt(b[0])).forEach(([h, data]) => {
+        if (h !== 'Unknown') out += `  ${h}: ${data.total} sent, ${data.replied} replied (${data.total > 0 ? Math.round(data.replied/data.total*100) : 0}%)\n`
+      })
+      out += `\nRECOMMENDATION: `
+      if (bestDay) out += `Best day: ${bestDay[0]} (${Math.round(bestDay[1].replied/bestDay[1].total*100)}% reply rate). `
+      if (bestHour) out += `Best time: ${bestHour[0]} UK (${Math.round(bestHour[1].replied/bestHour[1].total*100)}% reply rate). `
+      if (!bestDay && !bestHour) out += `Not enough reply data yet to determine optimal timing. Continue sending and scoring outreach to build patterns.`
+      return out
+    } catch(e) { return `Timing analysis error: ${e.message}` }
   }
 
   return { error: `Unknown tool: ${name}` }
