@@ -121,6 +121,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const dragCounterRef = useRef(0)
   const [chatDragOver, setChatDragOver] = useState(false)
   const [fileUploading, setFileUploading] = useState(false)
+  const abortRef = useRef(null)
 
   // Voice mode state — inline, no overlay
   const [voiceActive, setVoiceActive] = useState(false)
@@ -329,14 +330,24 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     const userMsg = { role: 'user', content: displayMsg }
     setMessages(prev => [...prev, userMsg])
     setStreaming(true); setStreamText(''); setToolStatus(null); setThinkingSteps([]); setShowSteps(false)
+
+    // AbortController for stop/halt
+    const controller = new AbortController()
+    abortRef.current = controller
+
     try {
+      // Page context — tells Kiko what page user is viewing
+      const pageCtx = window.kikoPageContext || { page: window.location.pathname.replace('/', '') || 'home' }
+
       const res = await fetch('/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           message: msg || 'Analyse this file.', userEmail: user?.email,
           attachments: fileAttachments,
           conversationHistory: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
-          currentPage: (window.location.pathname.replace('/', '') || 'home') + (window.location.search || ''),
+          currentPage: pageCtx.page || (window.location.pathname.replace('/', '') || 'home'),
+          pageContext: pageCtx,
           pageEntity: (() => {
             const path = window.location.pathname; const params = new URLSearchParams(window.location.search)
             if (path.startsWith('/contacts/')) return { type: 'contact', id: path.split('/contacts/')[1] }
@@ -373,7 +384,15 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         if (outletCtx.setKikoConvId) outletCtx.setKikoConvId(newId || activeConvId)
         setTimeout(() => { if (outletCtx.kikoNavigate) outletCtx.kikoNavigate(pendingNav); else navigate('/' + (pendingNav === 'home' ? '' : pendingNav)) }, 100)
       }
-    } catch (err) { setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message}` }]); setStreamText('') }
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        // User stopped Kiko — save partial response
+        if (streamText) setMessages(prev => [...prev, { role: 'assistant', content: streamText + '\n\n*[Stopped by user]*' }])
+      } else {
+        setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message}` }])
+      }
+      setStreamText('')
+    }
     finally { setStreaming(false) }
   }, [input, streaming, messages, user, activeConvId])
 
@@ -492,19 +511,34 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           )}
           </>
         )}
-        {/* Send — gradient pill */}
-        <button onClick={() => handleSubmit()} disabled={!input.trim() || streaming} style={{
-          width: welcome ? 42 : sz, height: welcome ? 42 : sz, borderRadius: 50,
-          background: input.trim() ? T.accentGradient : 'rgba(255,255,255,0.04)',
-          border: input.trim() ? 'none' : '1.5px solid rgba(255,255,255,0.1)',
-          color: 'rgba(255,255,255,0.9)',
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'all 0.15s', flexShrink: 0, opacity: input.trim() ? 0.9 : 0.5,
-          boxShadow: input.trim() ? '0 4px 16px rgba(139,108,246,0.3)' : 'none',
-          marginLeft: 3,
-        }}>
-          <svg width={welcome ? 15 : 13} height={welcome ? 15 : 13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </button>
+        {/* Send / Stop button */}
+        {streaming ? (
+          <button onClick={stopKiko} title="Stop Kiko" style={{
+            width: welcome ? 42 : sz, height: welcome ? 42 : sz, borderRadius: 50,
+            background: 'rgba(239,68,68,0.08)', border: '1.5px solid rgba(239,68,68,0.15)',
+            color: 'rgba(239,68,68,0.7)', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all 0.15s', flexShrink: 0, marginLeft: 3,
+          }}
+            onMouseOver={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)' }}
+            onMouseOut={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.15)' }}
+          >
+            <div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} />
+          </button>
+        ) : (
+          <button onClick={() => handleSubmit()} disabled={!input.trim()} style={{
+            width: welcome ? 42 : sz, height: welcome ? 42 : sz, borderRadius: 50,
+            background: input.trim() ? T.accentGradient : 'rgba(255,255,255,0.04)',
+            border: input.trim() ? 'none' : '1.5px solid rgba(255,255,255,0.1)',
+            color: 'rgba(255,255,255,0.9)',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all 0.15s', flexShrink: 0, opacity: input.trim() ? 0.9 : 0.5,
+            boxShadow: input.trim() ? '0 4px 16px rgba(139,108,246,0.3)' : 'none',
+            marginLeft: 3,
+          }}>
+            <svg width={welcome ? 15 : 13} height={welcome ? 15 : 13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        )}
       </div>
     )
   }
@@ -512,6 +546,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   // ── Render message bubbles (shared between text and voice) ──
   const copyToClipboard = (text) => { navigator.clipboard.writeText(text.replace(/<[^>]+>/g, '')); }
   const editAndResend = (idx) => { setEditingIdx(idx); setEditText(messages[idx]?.content || ''); }
+  const stopKiko = () => { if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; setStreaming(false); setToolStatus(null) } }
   const regenerateResponse = (idx) => {
     // Find the user message before this kiko message
     const userIdx = messages.slice(0, idx).findLastIndex(m => m.role === 'user')

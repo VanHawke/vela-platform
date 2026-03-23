@@ -233,7 +233,7 @@ export default async function handler(req, res) {
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const { message, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null, attachments = [], deepThink = false } = req.body;
+  const { message, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null, pageContext = null, attachments = [], deepThink = false } = req.body;
   if (!message && action !== 'title') return res.status(400).json({ error: 'message required' });
 
   // ── Title generation ──
@@ -292,6 +292,7 @@ export default async function handler(req, res) {
 
   const system = SYSTEM_PROMPT.replace('{currentPage}', currentPage)
     + `\n\n[Current: ${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
+    + (pageContext?.summary ? `\n[Page context: ${pageContext.summary}${pageContext.stageDistribution ? ` | Stages: ${JSON.stringify(pageContext.stageDistribution)}` : ''}${pageContext.contactCount ? ` | ${pageContext.contactCount} contacts` : ''}${pageContext.articleCount ? ` | ${pageContext.articleCount} articles, ${pageContext.signalCount || 0} signals` : ''}]` : '')
     + pageRole + entityContext + skillsContext + voiceRules + preloadedMemory;
 
   // ── SSE setup ──

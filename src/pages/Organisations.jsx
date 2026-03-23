@@ -109,6 +109,7 @@ export default function Organisations({ user }) {
     })
     setDealMap(dm)
     setLoading(false)
+    setPageContext({ page: 'organisations', summary: `Organisations: ${companies.length || 0} companies` })
   }
 
   const save = async () => {
