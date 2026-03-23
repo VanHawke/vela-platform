@@ -1,5 +1,5 @@
 # VELA PLATFORM — COMPREHENSIVE ROADMAP & CHECKLIST
-## Last Updated: 23 March 2026 | v11.1
+## Last Updated: 23 March 2026 | v11.3
 
 ---
 
@@ -114,11 +114,11 @@ negotiation_psychology, meeting_preparation
 
 ### 🔲 PENDING — TIER 3 (Personality + Growth)
 - [x] Skills management UI in Settings (create/edit skills, not just Supabase) ✅ v11.0
-- [ ] Kiko personality tuning (concise/analytical/warm saved as preference)
+- [x] Kiko personality tuning (concise/analytical/warm/executive saved as preference) ✅ v11.2
 - [x] Document generation (one-pagers, briefs rendered in preview panel) ✅ v11.1
-- [ ] Predictive outreach timing (analyse email patterns → optimal send time)
-- [ ] Multi-agent research (parallel Claude instances)
-- [ ] MCP standard migration (replace custom tool registry)
+- [ ] Predictive outreach timing (analyse email patterns → optimal send time) — DEFERRED (needs data)
+- [ ] Multi-agent research (parallel Claude instances) — DEFERRED (complex)
+- [ ] MCP standard migration (replace custom tool registry) — DEFERRED
 
 ### 🔲 PENDING — PLATFORM / UI
 - [x] Stop/Halt button during streaming ✅ v10.4
@@ -130,17 +130,17 @@ negotiation_psychology, meeting_preparation
 - [x] Kiko page actions (move deals, update contacts, create deals from chat) ✅ v10.8
 - [x] Mobile responsive bottom tab bar ✅ v10.7
 - [x] Login page redesign (futuristic minimal) ✅ v10.0
-- [ ] KikoVoice teal aura verification during active voice mode
-- [ ] Documents page further styling refinement
-- [ ] Outreach Intelligence page redesign (match v9 glassmorphism)
-- [ ] Email page / Outreach Intelligence page renders
+- [ ] KikoVoice teal aura verification during active voice mode — NEEDS MANUAL TEST
+- [ ] Documents page further styling refinement — COSMETIC
+- [x] Outreach Intelligence page redesign (match v9 glassmorphism) ✅ v11.3
+- [ ] Email page / Outreach Intelligence page renders — COSMETIC
 
 ### 🔲 PENDING — INFRASTRUCTURE
-- [ ] Lemlist webhook full audit (verify all event types registered)
+- [x] Lemlist webhook full audit (verify all event types registered) ✅ v11.2
 - [ ] Activity table population (calls, meetings, notes)
-- [ ] Google token auto-refresh verification
-- [ ] Pipedrive full decommission checklist
-- [ ] Additional skills: negotiation_psychology, meeting_preparation
+- [x] Google token auto-refresh verification ✅ v11.2
+- [x] Pipedrive full decommission checklist ✅ v11.3 (zero code refs, env var removed)
+- [ ] Additional skills: negotiation_psychology, meeting_preparation ✅ v9.9
 
 ---
 
@@ -179,6 +179,8 @@ negotiation_psychology, meeting_preparation
 | v10.9 | 23 Mar | Resume interrupted tasks (localStorage save/restore, 5-min window) |
 | v11.0 | 23 Mar | Learning Log (search + save), Skills management UI, inline edit on drafts, morning brief alerts — 38 tools |
 | v11.1 | 23 Mar | Document generation, conversation bookmarks — 40 tools |
+| v11.2 | 23 Mar | Kiko personality tuning, Lemlist audit, Google token verified |
+| v11.3 | 23 Mar | OutreachIntelligence glassmorphism, all pages context-aware, Pipedrive decommissioned |
 
 ---
 
