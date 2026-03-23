@@ -80,9 +80,9 @@ platform_knowledge, investor_relations, competitive_intelligence, financial_anal
 - [x] Bye-Kiko detection (24 phonetic variants)
 
 ### 🔲 PENDING — TIER 1 (Chat UX — Pure Frontend)
-- [ ] Copy button on every Kiko message (hover action)
-- [ ] Edit & Resend on user messages (hover action)
-- [ ] Regenerate on Kiko messages (hover action)
+- [x] Copy button on every Kiko message (hover action) ✅ v9.8
+- [x] Edit & Resend on user messages (hover action) ✅ v9.8
+- [x] Regenerate on Kiko messages (hover action) ✅ v9.8
 - [ ] Draft Preview Panel — emails render in styled side panel (To/Subject/Body)
 - [ ] Draft Preview Panel — texts/messages compact variant
 - [ ] Tone adjustment shortcuts (More direct, Add urgency, Soften, Shorten 25%, Make formal, Add scarcity)
