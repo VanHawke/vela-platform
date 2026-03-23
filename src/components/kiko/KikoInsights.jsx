@@ -32,7 +32,10 @@ export default function KikoInsights({ onAction }) {
       const { data: races } = await supabase.from('race_calendar').select('name, date, circuit').gt('date', now.toISOString().split('T')[0]).order('date').limit(1)
       const nextRace = races?.[0] || null
 
-      setData({ activeDeals, staleDeals, recentActivities, totalConversations, nextRace })
+      // Recent alerts
+      const { data: alerts } = await supabase.from('kiko_alerts').select('title, severity, type, created_at').eq('dismissed', false).order('created_at', { ascending: false }).limit(3)
+
+      setData({ activeDeals, staleDeals, recentActivities, totalConversations, nextRace, alerts: alerts || [] })
     } catch (e) {
       console.error('[KikoInsights]', e)
     } finally { setLoading(false) }
@@ -40,7 +43,7 @@ export default function KikoInsights({ onAction }) {
 
   if (loading || !data) return null
 
-  const { activeDeals, staleDeals, recentActivities, nextRace } = data
+  const { activeDeals, staleDeals, recentActivities, nextRace, alerts } = data
   const daysToRace = nextRace ? Math.ceil((new Date(nextRace.date) - new Date()) / (1000 * 60 * 60 * 24)) : null
 
   const stat = (label, value, color = 'rgba(255,255,255,0.6)') => (
@@ -63,16 +66,24 @@ export default function KikoInsights({ onAction }) {
         {nextRace && stat('Next race', `${daysToRace}d`, daysToRace <= 7 ? 'rgba(6,214,160,0.7)' : 'rgba(255,255,255,0.5)')}
       </div>
 
-      {/* Next race + recent activity */}
+      {/* Next race + alerts + recent activity */}
       <div style={{ padding: '10px 16px' }}>
         {nextRace && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: recentActivities.length > 0 ? 8 : 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
             <span style={{ fontSize: 12, fontFamily: T.font }}>🏎️</span>
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontWeight: 300, fontFamily: T.font }}>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontWeight: 300, fontFamily: T.font }}>
               {nextRace.name} — {new Date(nextRace.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
             </span>
           </div>
         )}
+        {alerts?.length > 0 && alerts.slice(0, 2).map((a, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0' }}>
+            <span style={{ fontSize: 10, width: 14, textAlign: 'center' }}>🔔</span>
+            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', fontWeight: 300, fontFamily: T.font, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {a.title}
+            </span>
+          </div>
+        ))}
         {recentActivities.length > 0 && recentActivities.slice(0, 3).map((a, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0' }}>
             <span style={{ fontSize: 10, width: 14, textAlign: 'center' }}>

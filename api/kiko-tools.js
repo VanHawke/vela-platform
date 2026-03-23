@@ -216,6 +216,19 @@ export const TOOL_DEFINITIONS = [
       value: { type: 'number', description: 'Deal value in USD (optional)' },
       notes: { type: 'string', description: 'Initial notes (optional)' },
     }, required: ['company_name'] } },
+
+  // ── Learning Log Tools ──
+  { name: 'search_learning_log', description: 'Search Kiko\'s learning log — extracted facts, decisions, preferences, patterns from past conversations. Use when you need context about past decisions, user preferences, or deal patterns.',
+    input_schema: { type: 'object', properties: {
+      query: { type: 'string', description: 'Search keywords' },
+      category: { type: 'string', description: 'Filter by: decision, preference, deadline, contact_note, deal_update, pattern, instruction (optional)' },
+    }, required: ['query'] } },
+  { name: 'save_learning', description: 'Save an important fact, decision, or pattern to Kiko\'s learning log. Use proactively when user makes a key decision, states a preference, sets a deadline, or you notice a pattern.',
+    input_schema: { type: 'object', properties: {
+      category: { type: 'string', description: 'One of: decision, preference, deadline, contact_note, deal_update, pattern, instruction' },
+      content: { type: 'string', description: 'The fact or insight to remember' },
+      entity_name: { type: 'string', description: 'Related person/company name (optional)' },
+    }, required: ['category', 'content'] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -1035,6 +1048,36 @@ Return JSON:
       await sbFetch('activities', { method: 'POST', body: JSON.stringify({ org_id: ORG_ID, deal_id: result?.[0]?.id, type: 'stage_change', entity_name: company_name, subject: `New deal created at ${stage}`, body: notes || '', created_by: ORG_ID }) }).catch(() => {})
       return `✅ Created deal for "${company_name}" in ${pipeline} pipeline at ${stage} stage.${value ? ` Value: $${value.toLocaleString()}.` : ''}${contact_name ? ` Contact: ${contact_name}.` : ''}`
     } catch(e) { return `Error creating deal: ${e.message}` }
+  }
+
+  // ── Learning Log Handlers ──
+  if (name === 'search_learning_log') {
+    const { query, category } = input
+    try {
+      let url = `kiko_learning_log?select=*&order=created_at.desc&limit=20`
+      if (category) url += `&category=eq.${category}`
+      const rows = await sbFetch(url)
+      if (!rows?.length) return `No learning log entries found${category ? ` for category "${category}"` : ''}. The learning log builds over time as Kiko extracts facts from conversations.`
+      // Filter by keyword match
+      const matches = query ? rows.filter(r => r.content?.toLowerCase().includes(query.toLowerCase()) || r.entity_name?.toLowerCase().includes(query.toLowerCase())) : rows
+      if (!matches.length) return `No entries matching "${query}". ${rows.length} total entries in log.`
+      let out = `LEARNING LOG (${matches.length} matches):\n\n`
+      for (const r of matches.slice(0, 10)) {
+        const date = new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+        out += `[${r.category}] ${date}${r.entity_name ? ` — ${r.entity_name}` : ''}: ${r.content}\n`
+      }
+      return out
+    } catch(e) { return `Learning log error: ${e.message}` }
+  }
+
+  if (name === 'save_learning') {
+    const { category, content, entity_name } = input
+    try {
+      await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({
+        org_id: ORG_ID, category, content, entity_name: entity_name || null
+      }) })
+      return `✅ Saved to learning log: [${category}]${entity_name ? ` ${entity_name}:` : ''} ${content}`
+    } catch(e) { return `Error saving to learning log: ${e.message}` }
   }
 
   return { error: `Unknown tool: ${name}` }

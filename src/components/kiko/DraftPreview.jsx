@@ -47,6 +47,7 @@ export function detectDraft(text) {
 
 export default function DraftPreview({ draft, onToneAdjust, onCopy, onSendToGmail }) {
   const [copied, setCopied] = useState(false)
+  const [editInput, setEditInput] = useState('')
   if (!draft) return null
 
   const handleCopy = () => {
@@ -102,6 +103,18 @@ export default function DraftPreview({ draft, onToneAdjust, onCopy, onSendToGmai
             fontSize: 10, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, transition: 'all 0.15s',
           }}>{tone}</button>
         ))}
+      </div>
+
+      {/* Free-form edit input */}
+      <div style={{ display: 'flex', gap: 6, padding: '8px 14px', borderTop: '1px solid rgba(255,255,255,0.03)' }}>
+        <input value={editInput} onChange={e => setEditInput(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && editInput.trim()) { onToneAdjust?.(editInput.trim()); setEditInput('') } }}
+          placeholder="Edit instruction... (e.g. change CTA to phone call)"
+          style={{ flex: 1, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8, padding: '6px 10px', fontSize: 11, color: 'rgba(255,255,255,0.65)', fontFamily: T.font, fontWeight: 300, outline: 'none' }} />
+        {editInput.trim() && <button onClick={() => { onToneAdjust?.(editInput.trim()); setEditInput('') }} style={{
+          padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(139,108,246,0.15)', background: 'rgba(139,108,246,0.06)',
+          color: 'rgba(139,108,246,0.6)', fontSize: 10, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, flexShrink: 0,
+        }}>Apply</button>}
       </div>
     </div>
   )
