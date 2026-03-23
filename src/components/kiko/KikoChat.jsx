@@ -405,6 +405,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             if (params.get('org')) return { type: 'company', id: params.get('org') }
             return null
           })(),
+          personality: (() => { try { const s = JSON.parse(localStorage.getItem('kiko_settings') || '{}'); return s.kiko_personality || 'executive' } catch { return 'executive' } })(),
         }),
       })
       const reader = res.body.getReader(); const dec = new TextDecoder()

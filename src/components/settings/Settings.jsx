@@ -380,10 +380,33 @@ export default function Settings({ user }) {
                 Kiko remembers preferences, decisions, and context across sessions. Memories are automatically extracted from conversations.
               </p>
             </div>
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 14, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Personality</h3>
+              <p style={{ fontSize: 11, color: T.textTertiary, margin: '0 0 12px', fontFamily: T.font }}>How Kiko communicates with you</p>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {[
+                  { id: 'concise', label: 'Concise', desc: 'Short, direct answers' },
+                  { id: 'analytical', label: 'Analytical', desc: 'Detailed with reasoning' },
+                  { id: 'warm', label: 'Warm', desc: 'Friendly and encouraging' },
+                  { id: 'executive', label: 'Executive', desc: 'Board-level, strategic' },
+                ].map(p => {
+                  const sel = (settings.kiko_personality || 'executive') === p.id
+                  return (
+                    <button key={p.id} onClick={() => saveSettings({ kiko_personality: p.id })} style={{
+                      padding: '8px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
+                      background: sel ? T.accent : T.surface,
+                      color: sel ? 'rgba(255,255,255,0.9)' : T.textSecondary,
+                      fontSize: 12, cursor: 'pointer', fontFamily: T.font, textAlign: 'left',
+                    }}>
+                      <div style={{ fontWeight: 400 }}>{p.label}</div>
+                      <div style={{ fontSize: 10, opacity: 0.6, marginTop: 2 }}>{p.desc}</div>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
           </div>
         )}
-
-        {/* Navigation */}
         {tab === 'Navigation' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* Top Navigation Bar */}

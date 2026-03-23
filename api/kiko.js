@@ -241,7 +241,7 @@ export default async function handler(req, res) {
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const { message, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null, pageContext = null, attachments = [], deepThink = false } = req.body;
+  const { message, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null, pageContext = null, attachments = [], deepThink = false, personality = 'executive' } = req.body;
   if (!message && action !== 'title') return res.status(400).json({ error: 'message required' });
 
   // ── Title generation ──
@@ -298,10 +298,18 @@ export default async function handler(req, res) {
 
   const pageRole = PAGE_ROLES[currentPage] || PAGE_ROLES[currentPage.split('?')[0]] || '';
 
+  const PERSONALITY_STYLES = {
+    concise: '\n\nCOMMUNICATION STYLE: Ultra-concise. Max 2-3 sentences per point. No filler. Bullet points preferred. Get to the answer immediately.',
+    analytical: '\n\nCOMMUNICATION STYLE: Analytical and thorough. Show your reasoning. Include data points, comparisons, and evidence. Structure with clear sections.',
+    warm: '\n\nCOMMUNICATION STYLE: Warm and encouraging. Acknowledge efforts, celebrate wins, frame challenges constructively. Still direct but with positive energy.',
+    executive: '\n\nCOMMUNICATION STYLE: Board-level executive communication. Direct, strategic, no fluff. Lead with the conclusion, support with evidence, end with clear next steps.',
+  }
+  const personalityStyle = PERSONALITY_STYLES[personality] || PERSONALITY_STYLES.executive
+
   const system = SYSTEM_PROMPT.replace('{currentPage}', currentPage)
     + `\n\n[Current: ${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
     + (pageContext?.summary ? `\n[Page context: ${pageContext.summary}${pageContext.stageDistribution ? ` | Stages: ${JSON.stringify(pageContext.stageDistribution)}` : ''}${pageContext.contactCount ? ` | ${pageContext.contactCount} contacts` : ''}${pageContext.articleCount ? ` | ${pageContext.articleCount} articles, ${pageContext.signalCount || 0} signals` : ''}]` : '')
-    + pageRole + entityContext + skillsContext + voiceRules + preloadedMemory;
+    + personalityStyle + pageRole + entityContext + skillsContext + voiceRules + preloadedMemory;
 
   // ── SSE setup ──
   res.setHeader('Content-Type', 'text/event-stream');
