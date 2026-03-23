@@ -88,16 +88,12 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
   const sayByeRef = useRef(null) // ref to sayByeAndClose for bye-kiko from inside useEffect
   const greetedRef = useRef(false) // ensure greeting only fires once per session
   
-  // Bye Kiko detection — includes standalone "bye" and "goodbye"
+  // Bye Kiko detection — ONLY triggers on "goodbye" or "goodbye kiko"
   const isByeKiko = (text) => {
     const c = text.toLowerCase().replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim()
-    // Exact standalone matches
-    if (['bye', 'goodbye', 'good bye', 'bye bye'].includes(c)) return true
-    // Phrase matches
-    return ['bye kiko', 'bye keeko', 'by kiko', 'buy kiko', 'bikiko', 'bye keiko', 
-            'bye kyko', 'bye kico', 'by keeko', 'bye keko', 'bai kiko', 'bye kiku',
-            'goodbye kiko', 'good bye kiko', 'goodbye keeko', 'bye bye kiko', 'see you kiko',
-            'bye kyco', 'bye keeco', 'bye chico'].some(v => c.includes(v))
+    if (c === 'goodbye') return true
+    return ['goodbye kiko', 'goodbye keeko', 'goodbye keiko', 'goodbye kyko', 'goodbye kico',
+            'good bye kiko', 'good bye keeko'].some(v => c.includes(v))
   }
   const startLiveTranscription = useCallback(() => {}, [])
   const stopLiveTranscription = useCallback(() => {
@@ -280,7 +276,7 @@ RULES:
 - Never say "I don't have long-term memory" or "I can't retain" — you CAN and DO.
 - When you receive a message starting with [KIKO_SAY], read the content naturally as your own words. Do not add commentary.
 - For emails, pipeline data, CRM queries, web searches — say "Let me check that for you" and wait. The system will provide data.
-- FAREWELL: If the user says "bye", "goodbye", "bye kiko", or any farewell, respond ONLY with "Bye, ${firstName}!" and nothing else.`,
+- FAREWELL: ONLY if the user says "goodbye" or "goodbye kiko", respond with "Goodbye, ${firstName}!" and nothing else. Do NOT treat "bye", "see you", "later", "thanks", "that's all" or any other phrase as a farewell. Only the word "goodbye" ends the conversation.`,
             audio: {
               input: {
                 transcription: { model: 'whisper-1' },
