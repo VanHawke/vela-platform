@@ -1,5 +1,5 @@
 # VELA PLATFORM — COMPREHENSIVE ROADMAP & CHECKLIST
-## Last Updated: 23 March 2026 | v9.7
+## Last Updated: 23 March 2026 | v10.2
 
 ---
 
@@ -13,7 +13,7 @@
 - **Bundle:** index-BpdMDMj9.js (860KB JS + 89KB CSS)
 - **Rollback:** git checkout backup-pre-v9-build
 
-### Kiko — 31 Tools
+### Kiko — 33 Tools
 | Category | Tools |
 |---|---|
 | CRM (5) | search_contacts, search_companies, search_deals, get_entity_detail, search_conversations |
@@ -24,11 +24,13 @@
 | Memory (3) | search_past_conversations, get_recent_conversations, memory (native) |
 | Content (4) | search_documents, get_news, get_partnership_matrix, get_pipeline_notifications |
 | Platform (4) | navigate_page, get_alerts, get_deal_history, get_skills |
+| Activities (2) | log_activity, get_activity_feed |
 | Web (1) | web_search (native) |
 
-### Kiko — 8 Domain Skills (auto-injected by keyword)
+### Kiko — 10 Domain Skills (auto-injected by keyword)
 sponsorship_outreach, deal_qualification, legal_framework, brand_doctrine,
-platform_knowledge, investor_relations, competitive_intelligence, financial_analysis
+platform_knowledge, investor_relations, competitive_intelligence, financial_analysis,
+negotiation_psychology, meeting_preparation
 
 ### Data
 - 5,006 contacts | 2,243 companies | 308 deals | 2,069 news articles
@@ -60,11 +62,20 @@ platform_knowledge, investor_relations, competitive_intelligence, financial_anal
 - [x] 8192 tokens for drafting, draft triggers
 - [x] Lemlist write-back (list campaigns, add lead, get activities)
 - [x] Cross-session memory via conversation search (search_past_conversations)
+- [x] Cross-session memory tested live — confirmed working
 - [x] get_recent_conversations tool
 - [x] Documents page dark cards fix
 - [x] Stale .bak file removed
 - [x] Auto-conversation titling (Haiku)
 - [x] Debug logging removed from KikoVoice
+- [x] Activity auto-logging wired (Pipeline + Lemlist + Gmail → activities table)
+- [x] log_activity + get_activity_feed tools (33 total)
+- [x] negotiation_psychology + meeting_preparation skills (10 total)
+- [x] Voice noise rejection (VAD 0.65, silence 800ms, sampleRate 24000)
+- [x] Login page redesign (futuristic minimal, Google OAuth primary)
+- [x] Draft Preview Panel (To/Subject/Body, tone shortcuts, Copy + Gmail)
+- [x] Strip raw draft markers from chat display
+- [x] Message hover actions (copy/edit/regenerate)
 - [x] Breadcrumb removed from all pages
 - [x] More dropdown dynamically shows non-tab pages
 - [x] Text readability pass (minimum 0.25 opacity)
@@ -83,11 +94,12 @@ platform_knowledge, investor_relations, competitive_intelligence, financial_anal
 - [x] Copy button on every Kiko message (hover action) ✅ v9.8
 - [x] Edit & Resend on user messages (hover action) ✅ v9.8
 - [x] Regenerate on Kiko messages (hover action) ✅ v9.8
-- [ ] Draft Preview Panel — emails render in styled side panel (To/Subject/Body)
-- [ ] Draft Preview Panel — texts/messages compact variant
-- [ ] Tone adjustment shortcuts (More direct, Add urgency, Soften, Shorten 25%, Make formal, Add scarcity)
+- [x] Draft Preview Panel — emails render in styled panel (To/Subject/Body) ✅ v10.1
+- [x] Draft Preview Panel — texts/messages compact variant ✅ v10.1
+- [x] Tone adjustment shortcuts ✅ v10.1
+- [x] Send to Gmail / Copy buttons on draft panel ✅ v10.1
+- [x] Strip raw draft markers from chat display ✅ v10.2
 - [ ] Inline edit — highlight text in draft → instruction input → Kiko rewrites section
-- [ ] Send to Gmail / Copy buttons on draft panel
 
 ### 🔲 PENDING — TIER 2 (Intelligence Layer)
 - [ ] Deep Research mode — multi-search orchestration (5-10 web searches → synthesised brief)
@@ -95,7 +107,7 @@ platform_knowledge, investor_relations, competitive_intelligence, financial_anal
 - [ ] Kiko Insights home widget (pipeline health, stale deals, next race, recent activity)
 - [ ] Kiko Learning Log — auto-extract key decisions from each conversation
 - [ ] Conversation bookmarks (star key conversations for priority recall)
-- [ ] Activity auto-logging (stage change, email, Lemlist event → activities table)
+- [ ] Activity auto-logging (stage change, email, Lemlist event → activities table) ✅ v9.9
 
 ### 🔲 PENDING — TIER 3 (Personality + Growth)
 - [ ] Skills management UI in Settings (create/edit skills, not just Supabase)
@@ -107,7 +119,7 @@ platform_knowledge, investor_relations, competitive_intelligence, financial_anal
 
 ### 🔲 PENDING — PLATFORM / UI
 - [ ] Mobile responsive bottom tab bar
-- [ ] Login page redesign (futuristic minimal)
+- [x] Login page redesign (futuristic minimal) ✅ v10.0
 - [ ] KikoVoice teal aura verification during active voice mode
 - [ ] Documents page further styling refinement
 - [ ] Outreach Intelligence page redesign (match v9 glassmorphism)

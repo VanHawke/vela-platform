@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { setPageContext } from '@/lib/pageContext'
 import {
   ChevronDown, Clock, User, Building2, X, Send, Users, ExternalLink,
   Plus, Settings, GripVertical, Eye, EyeOff, Check, Trash2, Loader2, ArrowRight
@@ -339,6 +340,12 @@ export default function Pipeline({ user }) {
     ;(orgs || []).forEach(o => { if (o.name && o.website) domainMap[o.name] = o.website.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0] })
     setCompanyDomains(domainMap)
     setLoading(false)
+
+    // Register page context for Kiko
+    const activeDeals = (dealsData || []).filter(d => !['won','lost'].includes(d.data?.status))
+    const stageCount = {}
+    activeDeals.forEach(d => { const s = d.data?.stage || 'Unknown'; stageCount[s] = (stageCount[s] || 0) + 1 })
+    setPageContext({ page: 'pipeline', summary: `Pipeline: ${activeDeals.length} active deals`, stageDistribution: stageCount, dealCount: activeDeals.length })
   }
 
   const activeStages = useMemo(() => showClosed ? [...STAGES, ...CLOSED_STAGES] : STAGES, [showClosed])

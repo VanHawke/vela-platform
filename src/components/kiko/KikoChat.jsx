@@ -8,6 +8,7 @@ import ChatHistory from './ChatHistory'
 import KikoSymbol from './KikoSymbol'
 import DoubleHelix from './DoubleHelix'
 import DraftPreview, { detectDraft } from './DraftPreview'
+import KikoInsights from './KikoInsights'
 
 // Theme imported from @/lib/theme.js
 
@@ -704,6 +705,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
               )}
+
+          {/* Kiko Insights — pipeline health, next race, recent activity */}
+          {!voiceActive && <KikoInsights onAction={(text) => handleSubmit(text)} />}
 
           {/* Bottom spacer */}
           <div style={{ flex: voiceActive ? 1 : 0.3, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />

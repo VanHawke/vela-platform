@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { RefreshCw, Loader2, Search, X, ExternalLink, Star } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { setPageContext } from '@/lib/pageContext'
 
 const T = {
   bg: '#07070B', surface: 'rgba(255,255,255,0.04)',
@@ -136,6 +137,7 @@ export default function News() {
       // Sort chronologically — newest first
       const sorted = (data.articles || []).sort((a, b) => new Date(b.published_at) - new Date(a.published_at))
       setArticles(sorted)
+      setPageContext({ page: 'news', summary: `News: ${sorted.length} articles`, articleCount: sorted.length, signalCount: sorted.filter(a => a.relevance >= 7).length })
     } catch (e) { console.error('[News]', e) }
     finally { setLoading(false) }
   }

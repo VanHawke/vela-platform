@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { setPageContext } from '@/lib/pageContext'
 import { Plus, Search, X, User, Mail, Phone, Linkedin, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const PAGE_SIZE = 50
@@ -32,6 +33,7 @@ export default function Contacts({ user }) {
     }
     setContacts(allData.map(row => ({ id: row.id, ...row.data, updated_at: row.updated_at })))
     setLoading(false)
+    setPageContext({ page: 'contacts', summary: `Contacts: ${allData.length} total`, contactCount: allData.length })
   }
 
   const save = async () => {
