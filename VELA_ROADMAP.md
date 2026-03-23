@@ -1,5 +1,5 @@
 # VELA PLATFORM — COMPREHENSIVE ROADMAP & CHECKLIST
-## Last Updated: 23 March 2026 | v10.2
+## Last Updated: 23 March 2026 | v10.6
 
 ---
 
@@ -102,12 +102,12 @@ negotiation_psychology, meeting_preparation
 - [ ] Inline edit — highlight text in draft → instruction input → Kiko rewrites section
 
 ### 🔲 PENDING — TIER 2 (Intelligence Layer)
-- [ ] Deep Research mode — multi-search orchestration (5-10 web searches → synthesised brief)
+- [x] Deep Research mode — multi-search orchestration (5-8 web searches → synthesised brief) ✅ v10.6
 - [ ] Proactive morning brief (kiko_alerts cron → surface on homepage widget)
-- [ ] Kiko Insights home widget (pipeline health, stale deals, next race, recent activity)
+- [x] Kiko Insights home widget (pipeline health, stale deals, next race, recent activity) ✅ v10.3
 - [ ] Kiko Learning Log — auto-extract key decisions from each conversation
 - [ ] Conversation bookmarks (star key conversations for priority recall)
-- [ ] Activity auto-logging (stage change, email, Lemlist event → activities table) ✅ v9.9
+- [x] Activity auto-logging (stage change, email, Lemlist event → activities table) ✅ v9.9
 
 ### 🔲 PENDING — TIER 3 (Personality + Growth)
 - [ ] Skills management UI in Settings (create/edit skills, not just Supabase)
@@ -118,6 +118,13 @@ negotiation_psychology, meeting_preparation
 - [ ] MCP standard migration (replace custom tool registry)
 
 ### 🔲 PENDING — PLATFORM / UI
+- [x] Stop/Halt button during streaming ✅ v10.4
+- [x] Page context awareness (Pipeline/Contacts/News/Orgs/Docs/Calendar → system prompt) ✅ v10.4/v10.6
+- [x] Background task persistence (save on unmount, restore on mount) ✅ v10.6
+- [x] Text readability upgrade (consistent styles across all 13 pages) ✅ v10.5/v10.5.1
+- [ ] Simultaneous tasks (task queue with IDs, sidebar showing active tasks)
+- [ ] Resume interrupted tasks (localStorage + "Continue where we left off?")
+- [ ] Kiko page actions (move deals, update contacts from chat)
 - [ ] Mobile responsive bottom tab bar
 - [x] Login page redesign (futuristic minimal) ✅ v10.0
 - [ ] KikoVoice teal aura verification during active voice mode
@@ -152,6 +159,18 @@ negotiation_psychology, meeting_preparation
 | v9.5 | 22 Mar | Safety net forces text when tools exhausted, efficiency rules |
 | v9.6 | 22 Mar | Lemlist write-back (3 tools), 3 new skills (8 total) |
 | v9.7 | 22 Mar | Cross-session memory, Documents dark cards, .bak cleanup |
+| v9.8 | 23 Mar | Message hover actions (copy/edit/regenerate) |
+| v9.8.1 | 23 Mar | HOTFIX — hooks to top level, blank screen fix |
+| v9.9 | 23 Mar | Activity auto-logging, log_activity + get_activity_feed tools, 10 skills, 33 tools |
+| v9.9.1 | 23 Mar | Voice noise rejection (VAD 0.65, silence 800ms) |
+| v10.0 | 23 Mar | Login page redesign (futuristic minimal, Google OAuth primary) |
+| v10.1 | 23 Mar | Draft Preview Panel (To/Subject/Body, tone shortcuts, Copy + Gmail) |
+| v10.2 | 23 Mar | Strip raw draft markers from chat display |
+| v10.3 | 23 Mar | Kiko Insights home widget, page context system (4 pages) |
+| v10.4 | 23 Mar | Stop/Halt button (AbortController), page context into system prompt |
+| v10.5 | 23 Mar | Text readability upgrade (theme.js + KikoChat + DraftPreview) |
+| v10.5.1 | 23 Mar | Consistent text styles across ALL 13 pages |
+| v10.6 | 23 Mar | Background task persistence, Deep Research mode, Calendar + Documents page context |
 
 ---
 
