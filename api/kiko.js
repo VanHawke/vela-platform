@@ -381,9 +381,15 @@ export default async function handler(req, res) {
         max_tokens: needsDeepThink ? 16000 : (needsExtendedTokens ? 8192 : 4096),
         system, messages: msgs, tools: opts.noTools ? undefined : allTools,
       }
-      // Add MCP servers if available
+      // Add MCP servers + toolset references
       if (mcpServers.length > 0 && !opts.noTools) {
         params.mcp_servers = mcpServers;
+        // Each MCP server needs a matching mcp_toolset in tools array
+        const mcpToolsets = mcpServers.map(s => ({
+          type: 'mcp_toolset',
+          mcp_server_name: s.name,
+        }));
+        params.tools = [...(params.tools || []), ...mcpToolsets];
       }
       if (needsDeepThink) {
         params.thinking = { type: 'enabled', budget_tokens: 10000 }
