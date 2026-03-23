@@ -1,6 +1,7 @@
 // Kiko Tool Registry — modular, MCP-ready tool definitions and handlers
 // Each tool exports { definition, handler } — kiko.js imports and orchestrates
-import { getCalendar, createCalendarEvent } from './kiko-calendar.js';
+// Calendar tools replaced by MCP Google Calendar server (v12.2)
+// import { getCalendar, createCalendarEvent } from './kiko-calendar.js';
 import { generateFollowup, getFollowupQueue } from './kiko-followup.js';
 
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
@@ -68,15 +69,7 @@ export const TOOL_DEFINITIONS = [
     }, required: ['page'] } },
   { name: 'get_alerts', description: 'Get proactive intelligence alerts — stale deals, pipeline bottlenecks, data quality issues.',
     input_schema: { type: 'object', properties: {}, required: [] } },
-  { name: 'search_emails', description: 'Search Gmail emails by query. Use when user asks about emails, messages, or correspondence with a person/company.',
-    input_schema: { type: 'object', properties: {
-      query: { type: 'string', description: 'Gmail search query — e.g. "from:john@company.com", "subject:sponsorship", "to:haas", or freetext' },
-      limit: { type: 'number', description: 'Max results (default 10)' },
-    }, required: ['query'] } },
-  { name: 'get_email_thread', description: 'Get a full email thread/conversation by thread ID. Use when user asks for details of a specific email thread.',
-    input_schema: { type: 'object', properties: {
-      thread_id: { type: 'string', description: 'Gmail thread ID' },
-    }, required: ['thread_id'] } },
+  // search_emails + get_email_thread → REPLACED BY MCP Gmail server (v12.2)
   { name: 'draft_email', description: 'Create a Gmail draft email. Use when user asks to draft, compose, or write an email. The draft is saved in Gmail Drafts — user can review and send.',
     input_schema: { type: 'object', properties: {
       to: { type: 'string', description: 'Recipient email(s), comma-separated' },
@@ -96,20 +89,7 @@ export const TOOL_DEFINITIONS = [
       company: { type: 'string', description: 'Optional: filter to a specific company' },
       pipeline: { type: 'string', description: 'Optional: filter to a specific pipeline (e.g. "Haas F1")' },
     }, required: ['focus'] } },
-  { name: 'get_calendar', description: 'Get upcoming calendar events. Use when user asks about schedule, meetings, what\'s next, availability, or "what\'s on my calendar".',
-    input_schema: { type: 'object', properties: {
-      days: { type: 'number', description: 'Number of days ahead to look (default: 7)' },
-      query: { type: 'string', description: 'Search term to filter events (optional)' },
-    }, required: [] } },
-  { name: 'create_calendar_event', description: 'Create a calendar event. Use when user asks to schedule, book, or set up a meeting/call.',
-    input_schema: { type: 'object', properties: {
-      summary: { type: 'string', description: 'Event title' },
-      start: { type: 'string', description: 'Start time in ISO format (e.g. 2026-03-20T10:00:00)' },
-      end: { type: 'string', description: 'End time in ISO format (e.g. 2026-03-20T11:00:00)' },
-      description: { type: 'string', description: 'Event description (optional)' },
-      attendees: { type: 'string', description: 'Comma-separated attendee emails (optional)' },
-      location: { type: 'string', description: 'Location (optional)' },
-    }, required: ['summary', 'start', 'end'] } },
+  // get_calendar + create_calendar_event → REPLACED BY MCP Google Calendar server (v12.2)
   { name: 'get_stale_contacts', description: 'Get contacts who need follow-up based on email intelligence. Use for "who should I follow up with", "stale contacts", "who am I losing touch with".',
     input_schema: { type: 'object', properties: {
       min_staleness: { type: 'number', description: 'Minimum staleness score 0-100 (default: 40)' },
@@ -376,103 +356,8 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com')
     return `${alerts.length} active alert${alerts.length > 1 ? 's' : ''}:\n${alerts.map(a => `[${a.severity?.toUpperCase()}] ${a.title}\n  ${a.detail}`).join('\n\n')}`
   }
 
-  if (name === 'search_emails') {
-    const { query: q, limit = 10 } = input
-    try {
-      const { getGoogleToken } = await import('./google-token.js')
-      const token = await getGoogleToken(userEmail)
-      const searchRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(q)}&maxResults=${limit}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      const searchData = await searchRes.json()
-      const ids = (searchData.messages || []).map(m => m.id)
-      if (!ids.length) return `No emails found matching "${q}".`
-      const emails = []
-      for (const id of ids.slice(0, limit)) {
-        const msgRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject&metadataHeaders=Date`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        const msg = await msgRes.json()
-        const h = msg.payload?.headers || []
-        const getH = (n) => h.find(x => x.name.toLowerCase() === n.toLowerCase())?.value || ''
-        emails.push({ id: msg.id, threadId: msg.threadId, from: getH('From'), subject: getH('Subject'), date: getH('Date'), snippet: msg.snippet })
-      }
-      return `Found ${emails.length} email${emails.length > 1 ? 's' : ''} matching "${q}":\n${emails.map(e => `• ${e.from} — "${e.subject}" (${e.date ? new Date(e.date).toLocaleDateString('en-GB') : '?'}) [thread:${e.threadId}]\n  ${(e.snippet || '').slice(0, 120)}`).join('\n')}`
-    } catch(e) { return `Email search error: ${e.message}` }
-  }
-
-  if (name === 'get_email_thread') {
-    const { thread_id } = input
-    try {
-      const { getGoogleToken } = await import('./google-token.js')
-      const token = await getGoogleToken(userEmail)
-      // format=full gives us actual body content, not just snippets
-      const threadRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/threads/${thread_id}?format=full`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      const thread = await threadRes.json()
-      if (!thread.messages?.length) return 'Thread not found.'
-
-      // Extract plain text body from a message part tree
-      function extractBody(payload) {
-        if (!payload) return ''
-        // Direct plain text body
-        if (payload.mimeType === 'text/plain' && payload.body?.data) {
-          return Buffer.from(payload.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8').trim()
-        }
-        // Walk parts recursively — prefer text/plain, fall back to text/html stripped
-        if (payload.parts) {
-          const plain = payload.parts.find(p => p.mimeType === 'text/plain')
-          if (plain?.body?.data) return Buffer.from(plain.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8').trim()
-          const html = payload.parts.find(p => p.mimeType === 'text/html')
-          if (html?.body?.data) {
-            const raw = Buffer.from(html.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8')
-            return raw.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
-          }
-          // Nested multipart
-          for (const part of payload.parts) {
-            const nested = extractBody(part)
-            if (nested) return nested
-          }
-        }
-        return ''
-      }
-
-      const msgs = thread.messages.map(msg => {
-        const h = msg.payload?.headers || []
-        const getH = (n) => h.find(x => x.name.toLowerCase() === n.toLowerCase())?.value || ''
-        const body = extractBody(msg.payload)
-        // Strip quoted reply chains (lines starting with > or "On ... wrote:")
-        const cleanBody = body
-          .split('\n')
-          .filter(line => !line.trim().startsWith('>') && !line.match(/^On .+ wrote:$/))
-          .join('\n')
-          .replace(/\n{3,}/g, '\n\n')
-          .trim()
-          .slice(0, 1500) // cap per message
-        return {
-          from: getH('From'),
-          to: getH('To'),
-          subject: getH('Subject'),
-          date: getH('Date'),
-          body: cleanBody || msg.snippet || '',
-          isFromMe: getH('From').toLowerCase().includes(userEmail.toLowerCase()),
-        }
-      })
-
-      const subject = msgs[0]?.subject || '(no subject)'
-      let out = `EMAIL THREAD: "${subject}" — ${msgs.length} message${msgs.length > 1 ? 's' : ''}\n`
-      for (let i = 0; i < msgs.length; i++) {
-        const m = msgs[i]
-        const dateStr = m.date ? new Date(m.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '?'
-        const dir = m.isFromMe ? '→ SENT' : '← RECEIVED'
-        out += `\n[${i + 1}] ${dir} | ${m.from} | ${dateStr}\n`
-        out += `${m.body}\n`
-        out += `${'─'.repeat(40)}\n`
-      }
-      return out
-    } catch(e) { return `Thread fetch error: ${e.message}` }
-  }
+  // search_emails → REPLACED BY MCP Gmail server (v12.2)
+  // get_email_thread → REPLACED BY MCP Gmail server (v12.2)
 
   if (name === 'draft_email') {
     const { to, subject, body, cc, thread_id } = input
@@ -618,8 +503,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com')
     } catch (err) { return `Outreach intelligence error: ${err.message}` }
   }
 
-  if (name === 'get_calendar') return await getCalendar(input, userEmail)
-  if (name === 'create_calendar_event') return await createCalendarEvent(input, userEmail)
+  // get_calendar + create_calendar_event → REPLACED BY MCP Google Calendar server (v12.2)
 
   if (name === 'get_stale_contacts') {
     const minStaleness = input.min_staleness || 40
