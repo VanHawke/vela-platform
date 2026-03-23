@@ -98,6 +98,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [streaming, setStreaming] = useState(false)
   const [streamText, setStreamText] = useState('')
   const [toolStatus, setToolStatus] = useState(null)
+
+  // Edit mode: pre-fill input when edit button clicked
+  useEffect(() => {
+    if (editingIdx !== null) { setInput(editText); inputRef.current?.focus(); setEditingIdx(null) }
+  }, [editingIdx])
   const [thinkingSteps, setThinkingSteps] = useState([])
   const [showSteps, setShowSteps] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
@@ -500,11 +505,25 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   }
 
   // ── Render message bubbles (shared between text and voice) ──
+  const [hoveredMsg, setHoveredMsg] = useState(null)
+  const [editingIdx, setEditingIdx] = useState(null)
+  const [editText, setEditText] = useState('')
+
+  const copyToClipboard = (text) => { navigator.clipboard.writeText(text.replace(/<[^>]+>/g, '')); }
+  const editAndResend = (idx) => { setEditingIdx(idx); setEditText(messages[idx]?.content || ''); }
+  const regenerateResponse = (idx) => {
+    // Find the user message before this kiko message
+    const userIdx = messages.slice(0, idx).findLastIndex(m => m.role === 'user')
+    if (userIdx >= 0) handleSend(messages[userIdx].content)
+  }
+
   const renderMessages = (msgs, isVoice = false) => msgs.map((msg, i) => {
     const isUser = msg.role === 'user'
     const isKiko = isVoice ? msg.role === 'kiko' : msg.role === 'assistant'
+    const isHovered = hoveredMsg === i
     return (
-      <div key={i} style={{ marginBottom: 24, display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', gap: 12 }}>
+      <div key={i} style={{ marginBottom: 24, display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', gap: 12, position: 'relative' }}
+        onMouseEnter={() => setHoveredMsg(i)} onMouseLeave={() => setHoveredMsg(null)}>
         {isKiko && (
           <div style={{ width: 120, marginTop: 4, flexShrink: 0 }}>
             <DoubleHelix width={120} height={20} mini />
@@ -523,6 +542,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         }}>
           {isUser ? msg.content : <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />}
         </div>
+        {/* Hover actions */}
+        {isHovered && !streaming && (
+          <div style={{ position: 'absolute', bottom: -16, right: isUser ? 0 : 'auto', left: isUser ? 'auto' : 132, display: 'flex', gap: 3, zIndex: 5 }}>
+            <button onClick={() => copyToClipboard(msg.content)} title="Copy" style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 11, color: 'rgba(255,255,255,0.3)', transition: 'all 0.15s' }}>📋</button>
+            {isUser && <button onClick={() => editAndResend(i)} title="Edit & Resend" style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 11, color: 'rgba(255,255,255,0.3)', transition: 'all 0.15s' }}>✏️</button>}
+            {isKiko && <button onClick={() => regenerateResponse(i)} title="Regenerate" style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 11, color: 'rgba(255,255,255,0.3)', transition: 'all 0.15s' }}>🔄</button>}
+          </div>
+        )}
       </div>
     )
   })
