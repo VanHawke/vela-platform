@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { setPageContext } from '@/lib/pageContext'
 import { Mail, Star, Send, FileText, AlertTriangle, Trash2, Search, RefreshCw, Loader2, Plus, Inbox, Tag } from 'lucide-react'
 import EmailThread from './EmailThread'
 import EmailCompose from './EmailCompose'
@@ -83,6 +84,7 @@ export default function Email({ user }) {
       const data = await res.json()
       setEmails(data.emails || [])
       if (data.unread !== undefined) setUnreadCount(data.unread)
+      setPageContext({ page: 'email', summary: `Email: ${(data.emails || []).length} emails, ${data.unread || 0} unread` })
     } catch (err) {
       console.error('[Email] Fetch error:', err)
     } finally { setLoading(false) }
