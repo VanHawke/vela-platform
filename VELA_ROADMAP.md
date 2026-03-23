@@ -1,5 +1,5 @@
 # VELA PLATFORM — COMPREHENSIVE ROADMAP & CHECKLIST
-## Last Updated: 23 March 2026 | v11.3
+## Last Updated: 23 March 2026 | v11.4
 
 ---
 
@@ -13,13 +13,13 @@
 - **Bundle:** index-BpdMDMj9.js (860KB JS + 89KB CSS)
 - **Rollback:** git checkout backup-pre-v9-build
 
-### Kiko — 40 Tools
+### Kiko — 41 Tools
 | Category | Tools |
 |---|---|
 | CRM (5) | search_contacts, search_companies, search_deals, get_entity_detail, search_conversations |
 | Gmail (5) | search_emails, get_email_thread, draft_email, get_email_analytics, get_recipient_style |
 | Calendar (2) | get_calendar, create_calendar_event |
-| Outreach (4) | get_outreach_intelligence, get_stale_contacts, generate_followup, get_followup_queue |
+| Outreach (5) | get_outreach_intelligence, get_stale_contacts, generate_followup, get_followup_queue, get_outreach_timing |
 | Lemlist (3) | lemlist_list_campaigns, lemlist_add_lead, lemlist_get_activities |
 | Memory (3) | search_past_conversations, get_recent_conversations, memory (native) |
 | Content (4) | search_documents, get_news, get_partnership_matrix, get_pipeline_notifications |
@@ -116,9 +116,9 @@ negotiation_psychology, meeting_preparation
 - [x] Skills management UI in Settings (create/edit skills, not just Supabase) ✅ v11.0
 - [x] Kiko personality tuning (concise/analytical/warm/executive saved as preference) ✅ v11.2
 - [x] Document generation (one-pagers, briefs rendered in preview panel) ✅ v11.1
-- [ ] Predictive outreach timing (analyse email patterns → optimal send time) — DEFERRED (needs data)
-- [ ] Multi-agent research (parallel Claude instances) — DEFERRED (complex)
-- [ ] MCP standard migration (replace custom tool registry) — DEFERRED
+- [x] Predictive outreach timing (analyse email patterns → optimal send time) ✅ v11.4
+- [ ] Multi-agent research (parallel Claude instances) — DEFERRED (complex architecture, future phase)
+- [ ] MCP standard migration (replace custom tool registry) — DEFERRED (current 41-tool registry works)
 
 ### 🔲 PENDING — PLATFORM / UI
 - [x] Stop/Halt button during streaming ✅ v10.4
@@ -130,8 +130,8 @@ negotiation_psychology, meeting_preparation
 - [x] Kiko page actions (move deals, update contacts, create deals from chat) ✅ v10.8
 - [x] Mobile responsive bottom tab bar ✅ v10.7
 - [x] Login page redesign (futuristic minimal) ✅ v10.0
-- [ ] KikoVoice teal aura verification during active voice mode — NEEDS MANUAL TEST
-- [ ] Documents page further styling refinement — COSMETIC
+- [x] KikoVoice teal aura verification during active voice mode ✅ v11.4 (user confirmed)
+- [x] Documents page further styling refinement ✅ v11.4 (frosted glass cards)
 - [x] Outreach Intelligence page redesign (match v9 glassmorphism) ✅ v11.3
 - [ ] Email page / Outreach Intelligence page renders — COSMETIC
 
@@ -181,6 +181,7 @@ negotiation_psychology, meeting_preparation
 | v11.1 | 23 Mar | Document generation, conversation bookmarks — 40 tools |
 | v11.2 | 23 Mar | Kiko personality tuning, Lemlist audit, Google token verified |
 | v11.3 | 23 Mar | OutreachIntelligence glassmorphism, all pages context-aware, Pipedrive decommissioned |
+| v11.4 | 23 Mar | Predictive outreach timing, Documents frosted glass, cleanup — 41 tools |
 
 ---
 
