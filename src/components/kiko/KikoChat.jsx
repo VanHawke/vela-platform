@@ -359,12 +359,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       }
       let autoTitle = (userMsg || 'New conversation').slice(0, 60)
       try {
-        console.log('[KikoChat] Generating title for:', userMsg?.slice(0, 60))
         const tr = await fetch('/api/kiko', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'title', message: userMsg, response: (kikoResponse || '').slice(0, 300) }) })
-        const tj = await tr.json()
-        console.log('[KikoChat] Title result:', tj)
-        if (tj.title) autoTitle = tj.title
-      } catch (e) { console.error('[KikoChat] Title generation failed:', e) }
+        if (tr.ok) {
+          const tj = await tr.json()
+          if (tj.title) autoTitle = tj.title
+        }
+      } catch (e) { /* title gen failed, use truncated message */ }
       const { data } = await supabase.from('conversations').insert({
         user_id: user.id, org_id: user.app_metadata?.org_id, title: autoTitle.slice(0, 60), messages: allMsgs
       }).select('id').single()
@@ -829,31 +829,41 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       <div style={{ flex: 1, overflowY: 'auto', padding: compact ? 16 : 24 }}>
         <div style={{ maxWidth: compact ? '100%' : 680, margin: '0 auto', width: '100%' }}>
           {renderMessages(messages)}
-          {/* Thinking indicator */}
+          {/* Thinking indicator — prominent pulsing orb */}
           {streaming && !streamText && (
-            <div style={{ marginBottom: 24, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.accent, flexShrink: 0, marginTop: 8, boxShadow: '0 0 8px rgba(139,108,246,0.4)' }} />
-              <div style={{ maxWidth: 360 }}>
-                <div style={{ padding: '16px 18px', borderRadius: 18, background: 'rgba(139,108,246,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: '1.5px solid rgba(139,108,246,0.1)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                    <DoubleHelix width={60} height={12} mini />
-                    <span style={{ fontSize: 11, color: 'rgba(139,108,246,0.45)', fontFamily: T.font, fontWeight: 300 }}>{toolStatus || 'Deep analysis'}</span>
-                    <div style={{ flex: 1, height: 0.5, background: 'rgba(139,108,246,0.06)' }} />
+            <div style={{ marginBottom: 24, display: 'flex', gap: 14, alignItems: 'center', padding: '12px 0' }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                background: 'radial-gradient(circle, rgba(139,108,246,0.5) 0%, rgba(0,212,170,0.3) 60%, transparent 100%)',
+                boxShadow: '0 0 24px rgba(139,108,246,0.4), 0 0 48px rgba(0,212,170,0.15), inset 0 0 12px rgba(139,108,246,0.3)',
+                animation: 'kikoThink 1.5s ease-in-out infinite',
+              }} />
+              <div style={{ flex: 1, maxWidth: 400 }}>
+                <div style={{
+                  padding: '14px 18px', borderRadius: 16,
+                  background: 'rgba(139,108,246,0.06)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
+                  border: '1.5px solid rgba(139,108,246,0.15)',
+                  boxShadow: '0 0 20px rgba(139,108,246,0.08)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 14, color: 'rgba(139,108,246,0.8)', fontFamily: T.font, fontWeight: 400 }}>
+                      {toolStatus || 'Kiko is thinking...'}
+                    </span>
                   </div>
                 </div>
                 {thinkingSteps.length > 0 && (
-                  <div style={{ marginTop: 4 }}>
-                    <button onClick={() => setShowSteps(!showSteps)} style={{ fontSize: 10, color: T.textTertiary, background: 'none', border: 'none', cursor: 'pointer', fontFamily: T.font, padding: '2px 0', textDecoration: 'underline', textUnderlineOffset: 2 }}>
+                  <div style={{ marginTop: 6 }}>
+                    <button onClick={() => setShowSteps(!showSteps)} style={{ fontSize: 11, color: 'rgba(139,108,246,0.5)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: T.font, padding: '2px 0' }}>
                       {showSteps ? 'Hide process' : `Show process (${thinkingSteps.length} steps)`}
                     </button>
                     {showSteps && (
-                      <div style={{ padding: '6px 10px', borderRadius: 50, background: T.accentSoft, border: `1.5px solid ${T.border}`, marginTop: 4 }}>
+                      <div style={{ padding: '8px 12px', borderRadius: 12, background: 'rgba(139,108,246,0.03)', border: `1px solid rgba(139,108,246,0.08)`, marginTop: 4 }}>
                         {thinkingSteps.map((step, si) => {
                           const isLast = si === thinkingSteps.length - 1
                           return (
-                            <div key={si} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 0', fontSize: 11, color: T.textTertiary, fontFamily: T.font, fontWeight: 300 }}>
-                              <span style={{ width: 4, height: 4, borderRadius: '50%', flexShrink: 0, background: isLast ? T.accent : T.accentTeal, animation: isLast ? 'pulse 1s infinite' : 'none' }} />
-                              <span style={{ color: isLast ? 'rgba(139,108,246,0.5)' : T.textTertiary }}>{step.label}</span>
+                            <div key={si} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', fontSize: 12, color: T.textTertiary, fontFamily: T.font, fontWeight: 300 }}>
+                              <span style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: isLast ? 'rgba(139,108,246,0.7)' : 'rgba(0,212,170,0.5)', animation: isLast ? 'pulse 1s infinite' : 'none' }} />
+                              <span style={{ color: isLast ? 'rgba(139,108,246,0.7)' : T.textTertiary }}>{step.label}</span>
                             </div>
                           )
                         })}

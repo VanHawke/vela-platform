@@ -32,6 +32,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
       .from('conversations')
       .select('id, title, messages, updated_at')
       .eq('org_id', orgId)
+      .neq('archived', true)
       .order('updated_at', { ascending: false })
       .limit(50)
     if (data) setConversations(data.filter(c => !deletedIdsRef.current.has(c.id)))
@@ -46,7 +47,8 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
     e.stopPropagation()
     deletedIdsRef.current.add(id)
     setConversations(prev => prev.filter(c => c.id !== id))
-    await supabase.from('conversations').delete().eq('id', id)
+    // Soft-delete: archive the conversation so Kiko retains memory access
+    await supabase.from('conversations').update({ archived: true }).eq('id', id)
   }
 
   async function renameConversation(id) {
@@ -73,17 +75,17 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
     return conv.title?.startsWith('🎤')
   }
 
-  // Collapsed state — just a toggle tab on the right edge
+  // Collapsed state — toggle tab on the LEFT edge
   if (!open) {
     return (
       <button onClick={onToggle} style={{
-        position: 'fixed', right: 0, top: '50%', transform: 'translateY(-50%)',
-        zIndex: 200, width: 28, height: 80, borderRadius: '10px 0 0 10px',
-        background: T.surface, border: `1px solid ${T.border}`, borderRight: 'none',
+        position: 'fixed', left: 0, top: '50%', transform: 'translateY(-50%)',
+        zIndex: 200, width: 28, height: 80, borderRadius: '0 10px 10px 0',
+        background: T.surface, border: `1px solid ${T.border}`, borderLeft: 'none',
         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '-2px 0 8px rgba(255,255,255,0.15)', color: T.textTertiary,
+        boxShadow: '2px 0 8px rgba(255,255,255,0.15)', color: T.textTertiary,
       }}>
-        <ChevronLeft size={14} />
+        <ChevronRight size={14} />
       </button>
     )
   }
@@ -91,23 +93,23 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
   // Expanded panel
   return (
     <>
-      {/* Collapse edge tab — mirrors the expand tab but faces opposite direction */}
+      {/* Collapse edge tab — left side, faces left to close */}
       <button onClick={onToggle} style={{
-        position: 'fixed', right: 280, top: 'calc(50% + 28px)', transform: 'translateY(-50%)',
-        zIndex: 201, width: 28, height: 80, borderRadius: '10px 0 0 10px',
-        background: T.surface, border: `1px solid ${T.border}`, borderRight: 'none',
+        position: 'fixed', left: 280, top: 'calc(50% + 28px)', transform: 'translateY(-50%)',
+        zIndex: 201, width: 28, height: 80, borderRadius: '0 10px 10px 0',
+        background: T.surface, border: `1px solid ${T.border}`, borderLeft: 'none',
         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '-2px 0 8px rgba(255,255,255,0.15)', color: T.textTertiary,
+        boxShadow: '2px 0 8px rgba(255,255,255,0.15)', color: T.textTertiary,
       }}>
-        <ChevronRight size={14} />
+        <ChevronLeft size={14} />
       </button>
 
       <div style={{
-      position: 'fixed', top: 48, right: 0, width: 280, height: 'calc(100% - 48px)', zIndex: 200,
-      background: '#111114', borderLeft: `1px solid ${T.border}`,
+      position: 'fixed', top: 48, left: 0, width: 280, height: 'calc(100% - 48px)', zIndex: 200,
+      background: '#111114', borderRight: `1px solid ${T.border}`,
       display: 'flex', flexDirection: 'column',
-      boxShadow: '-4px 0 16px rgba(0,0,0,0.3)',
-      animation: 'slideInRight 0.2s ease-out',
+      boxShadow: '4px 0 16px rgba(0,0,0,0.3)',
+      animation: 'slideInLeft 0.2s ease-out',
     }}>
       {/* Header */}
       <div style={{
@@ -125,7 +127,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
             width: 32, height: 32, borderRadius: 50, border: 'none',
             background: T.accentSoft, cursor: 'pointer', display: 'flex',
             alignItems: 'center', justifyContent: 'center', color: T.textTertiary,
-          }}><ChevronRight size={16} /></button>
+          }}><ChevronLeft size={16} /></button>
         </div>
       </div>
 
