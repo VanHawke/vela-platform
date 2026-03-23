@@ -540,7 +540,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           color: isUser ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.55)',
           fontSize: 14, lineHeight: 1.8, fontFamily: T.font, fontWeight: 300,
         }}>
-          {isUser ? msg.content : <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />}
+          {isUser ? msg.content : (() => {
+            // Strip ---DRAFT--- block from display text (rendered separately in DraftPreview)
+            const displayText = msg.content.replace(/---DRAFT---[\s\S]*?---END DRAFT---/gi, '').trim()
+            return displayText ? <span dangerouslySetInnerHTML={{ __html: md(displayText) }} /> : null
+          })()}
           {/* Draft Preview Panel — renders below Kiko's message if a draft is detected */}
           {isKiko && !streaming && (() => {
             const draft = detectDraft(msg.content)
