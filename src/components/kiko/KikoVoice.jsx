@@ -116,7 +116,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
     offTimerRef.current     = setTimeout(enterOff,     OFF_AFTER_MS)
   }, [clearTimers])
 
-  const VAD_ON  = { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 }
+  const VAD_ON  = { type: 'server_vad', threshold: 0.65, prefix_padding_ms: 250, silence_duration_ms: 600 }
 
   const resetToActive = useCallback(() => {
     setListenMode('active'); listenModeRef.current = 'active'
@@ -217,7 +217,7 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
       if (!ephemeralKey) throw new Error('No ephemeral key returned: ' + JSON.stringify(tokenData).slice(0, 200))
 
       const stream = micStream || await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, sampleRate: 24000 }
       })
       streamRef.current = stream
       const pc = new RTCPeerConnection(); pcRef.current = pc
@@ -284,7 +284,7 @@ RULES:
             audio: {
               input: {
                 transcription: { model: 'whisper-1' },
-                turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 700 },
+                turn_detection: { type: 'server_vad', threshold: 0.65, prefix_padding_ms: 250, silence_duration_ms: 800 },
               },
               output: { voice: voiceId },
             },
@@ -397,7 +397,7 @@ RULES:
     suppressAutoRef.current = false
     setThinking(false)
     if (dcRef.current?.readyState === 'open') {
-      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 700 } } } } }))
+      dcRef.current.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: { type: 'server_vad', threshold: 0.65, prefix_padding_ms: 250, silence_duration_ms: 800 } } } } }))
     }
   }
 
@@ -437,7 +437,7 @@ RULES:
       suppressAutoRef.current = false
       // Re-enable VAD if it was disabled
       if (dcRef.current?.readyState === 'open') {
-        dcRef.current.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 700 } } } } }))
+        dcRef.current.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: { type: 'server_vad', threshold: 0.65, prefix_padding_ms: 250, silence_duration_ms: 800 } } } } }))
       }
       startTimers()
     }
@@ -559,7 +559,7 @@ RULES:
         claudeActiveRef.current = false
         // Re-enable VAD after Claude response spoken
         if (dcRef.current?.readyState === 'open') {
-          dcRef.current.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 700 } } } } }))
+          dcRef.current.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: { type: 'server_vad', threshold: 0.65, prefix_padding_ms: 250, silence_duration_ms: 800 } } } } }))
         }
       }
     }
