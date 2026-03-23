@@ -1,5 +1,5 @@
 # VELA PLATFORM — COMPREHENSIVE ROADMAP & CHECKLIST
-## Last Updated: 23 March 2026 | v11.0
+## Last Updated: 23 March 2026 | v11.1
 
 ---
 
@@ -13,7 +13,7 @@
 - **Bundle:** index-BpdMDMj9.js (860KB JS + 89KB CSS)
 - **Rollback:** git checkout backup-pre-v9-build
 
-### Kiko — 33 Tools
+### Kiko — 40 Tools
 | Category | Tools |
 |---|---|
 | CRM (5) | search_contacts, search_companies, search_deals, get_entity_detail, search_conversations |
@@ -25,6 +25,9 @@
 | Content (4) | search_documents, get_news, get_partnership_matrix, get_pipeline_notifications |
 | Platform (4) | navigate_page, get_alerts, get_deal_history, get_skills |
 | Activities (2) | log_activity, get_activity_feed |
+| Page Actions (3) | update_deal_stage, update_contact, create_deal |
+| Learning (2) | search_learning_log, save_learning |
+| Documents (2) | generate_document, bookmark_conversation |
 | Web (1) | web_search (native) |
 
 ### Kiko — 10 Domain Skills (auto-injected by keyword)
@@ -103,16 +106,16 @@ negotiation_psychology, meeting_preparation
 
 ### 🔲 PENDING — TIER 2 (Intelligence Layer)
 - [x] Deep Research mode — multi-search orchestration (5-8 web searches → synthesised brief) ✅ v10.6
-- [ ] Proactive morning brief (kiko_alerts cron → surface on homepage widget)
+- [x] Proactive morning brief (kiko_alerts cron → surface on homepage widget) ✅ v11.0
 - [x] Kiko Insights home widget (pipeline health, stale deals, next race, recent activity) ✅ v10.3
-- [ ] Kiko Learning Log — auto-extract key decisions from each conversation
-- [ ] Conversation bookmarks (star key conversations for priority recall)
+- [x] Kiko Learning Log — auto-extract key decisions from each conversation ✅ v11.0
+- [x] Conversation bookmarks (star key conversations for priority recall) ✅ v11.1
 - [x] Activity auto-logging (stage change, email, Lemlist event → activities table) ✅ v9.9
 
 ### 🔲 PENDING — TIER 3 (Personality + Growth)
-- [ ] Skills management UI in Settings (create/edit skills, not just Supabase)
+- [x] Skills management UI in Settings (create/edit skills, not just Supabase) ✅ v11.0
 - [ ] Kiko personality tuning (concise/analytical/warm saved as preference)
-- [ ] Document generation (one-pagers, briefs rendered in preview panel)
+- [x] Document generation (one-pagers, briefs rendered in preview panel) ✅ v11.1
 - [ ] Predictive outreach timing (analyse email patterns → optimal send time)
 - [ ] Multi-agent research (parallel Claude instances)
 - [ ] MCP standard migration (replace custom tool registry)
@@ -123,9 +126,9 @@ negotiation_psychology, meeting_preparation
 - [x] Background task persistence (save on unmount, restore on mount) ✅ v10.6
 - [x] Text readability upgrade (consistent styles across all 13 pages) ✅ v10.5/v10.5.1
 - [ ] Simultaneous tasks (task queue with IDs, sidebar showing active tasks)
-- [ ] Resume interrupted tasks (localStorage + "Continue where we left off?")
-- [ ] Kiko page actions (move deals, update contacts from chat)
-- [ ] Mobile responsive bottom tab bar
+- [x] Resume interrupted tasks (localStorage + "Continue where we left off?") ✅ v10.9
+- [x] Kiko page actions (move deals, update contacts, create deals from chat) ✅ v10.8
+- [x] Mobile responsive bottom tab bar ✅ v10.7
 - [x] Login page redesign (futuristic minimal) ✅ v10.0
 - [ ] KikoVoice teal aura verification during active voice mode
 - [ ] Documents page further styling refinement
@@ -171,6 +174,11 @@ negotiation_psychology, meeting_preparation
 | v10.5 | 23 Mar | Text readability upgrade (theme.js + KikoChat + DraftPreview) |
 | v10.5.1 | 23 Mar | Consistent text styles across ALL 13 pages |
 | v10.6 | 23 Mar | Background task persistence, Deep Research mode, Calendar + Documents page context |
+| v10.7 | 23 Mar | Mobile bottom tab bar (icon nav, frosted glass, safe-area-inset) |
+| v10.8 | 23 Mar | Kiko page actions (update_deal_stage, update_contact, create_deal) — 36 tools |
+| v10.9 | 23 Mar | Resume interrupted tasks (localStorage save/restore, 5-min window) |
+| v11.0 | 23 Mar | Learning Log (search + save), Skills management UI, inline edit on drafts, morning brief alerts — 38 tools |
+| v11.1 | 23 Mar | Document generation, conversation bookmarks — 40 tools |
 
 ---
 
