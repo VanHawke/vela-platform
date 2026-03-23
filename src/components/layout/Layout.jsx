@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
 import T from '@/lib/theme'
-import { Settings, LogOut, Search, ChevronDown, BarChart3, Newspaper, Grid3X3, FileText, Building2, CheckSquare } from 'lucide-react'
+import { Settings, LogOut, Search, ChevronDown, BarChart3, Newspaper, Grid3X3, FileText, Building2, CheckSquare, Home, GitBranch, Calendar, Users, MoreHorizontal } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
 import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
@@ -12,10 +12,10 @@ import AuroraCanvas from '../AuroraCanvas'
 
 // All navigable pages
 const ALL_NAV = [
-  { id: 'home', label: 'Home', path: '/' },
-  { id: 'pipeline', label: 'Pipeline', path: '/pipeline' },
-  { id: 'calendar', label: 'Calendar', path: '/calendar' },
-  { id: 'contacts', label: 'Contacts', path: '/contacts' },
+  { id: 'home', label: 'Home', path: '/', Icon: Home },
+  { id: 'pipeline', label: 'Pipeline', path: '/pipeline', Icon: GitBranch },
+  { id: 'calendar', label: 'Calendar', path: '/calendar', Icon: Calendar },
+  { id: 'contacts', label: 'Contacts', path: '/contacts', Icon: Users },
   { id: 'organisations', label: 'Organisations', path: '/organisations', Icon: Building2 },
   { id: 'email', label: 'Outreach Intelligence', path: '/email', Icon: BarChart3 },
   { id: 'news', label: 'News Signals', path: '/news', Icon: Newspaper },
@@ -175,7 +175,7 @@ export default function Layout({ user }) {
         </div>
 
         {/* Center: Pill tab group — absolutely centered to prevent shift */}
-        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center' }}>
+        <div className="desktop-top-nav" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: 3, background: T.glass, backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur, borderRadius: 50, padding: 4, border: `1.5px solid ${T.glassBorder}`, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 16px rgba(0,0,0,0.2)' }}>
             {TABS.map(tab => {
               const active = isTabActive(tab.path)
@@ -340,6 +340,53 @@ export default function Layout({ user }) {
 
       {/* Command palette */}
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+
+      {/* Mobile bottom tab bar — visible only below 768px */}
+      <nav className="mobile-bottom-nav" style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
+        background: 'rgba(7,7,11,0.92)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
+        borderTop: '1px solid rgba(255,255,255,0.06)',
+        display: 'none', // shown via CSS media query
+        justifyContent: 'space-around', alignItems: 'center',
+        padding: '6px 0 env(safe-area-inset-bottom, 8px)',
+        boxShadow: '0 -4px 24px rgba(0,0,0,0.3)',
+      }}>
+        {TABS.slice(0, 4).map(tab => {
+          const active = isTabActive(tab.path)
+          const Icon = tab.Icon || Home
+          return (
+            <button key={tab.path} onClick={() => {
+              if (tab.path === '/') { setKikoMessages([]); setKikoConvId(null); setKikoResetKey(k => k + 1) }
+              nav(tab.path)
+            }} style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+              background: 'none', border: 'none', cursor: 'pointer', padding: '6px 16px',
+              color: active ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.32)',
+              transition: 'color 0.15s', fontFamily: T.font,
+            }}>
+              <Icon size={20} strokeWidth={active ? 2 : 1.5} />
+              <span style={{ fontSize: 9, fontWeight: active ? 500 : 300, letterSpacing: '0.01em' }}>{tab.label}</span>
+            </button>
+          )
+        })}
+        <button onClick={() => setMoreOpen(!moreOpen)} style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+          background: 'none', border: 'none', cursor: 'pointer', padding: '6px 16px',
+          color: 'rgba(255,255,255,0.32)', fontFamily: T.font,
+        }}>
+          <MoreHorizontal size={20} strokeWidth={1.5} />
+          <span style={{ fontSize: 9, fontWeight: 300 }}>More</span>
+        </button>
+      </nav>
+
+      {/* Mobile responsive styles */}
+      <style>{`
+        @media (max-width: 768px) {
+          .mobile-bottom-nav { display: flex !important; }
+          .desktop-top-nav { display: none !important; }
+          main { padding-bottom: 72px !important; }
+        }
+      `}</style>
     </div>
   )
 }
