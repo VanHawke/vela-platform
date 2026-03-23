@@ -7,6 +7,24 @@ export const config = { supportsResponseStreaming: true, maxDuration: 60 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const MODEL = 'claude-sonnet-4-20250514';
 
+// ── MCP Server Registry ──────────────────────────────────
+// Remote MCP servers that Kiko connects to for extended capabilities
+// Claude handles MCP tool discovery and execution automatically
+const MCP_SERVERS = [
+  {
+    type: 'url',
+    url: 'https://gmail.mcp.claude.com/mcp',
+    name: 'gmail',
+    authorization_token: process.env.GOOGLE_MCP_TOKEN || undefined,
+  },
+  {
+    type: 'url',
+    url: 'https://gcal.mcp.claude.com/mcp',
+    name: 'google-calendar',
+    authorization_token: process.env.GOOGLE_MCP_TOKEN || undefined,
+  },
+].filter(s => s.authorization_token); // Only include servers with valid tokens
+
 // ── System Prompt ────────────────────────────────────────
 const SYSTEM_PROMPT = `You are Kiko — the AI engine powering a sponsorship operations platform for Van Hawke Group. You work with Sunny Sidhu, CEO, who manages F1 and Formula E sponsorship advisory for clients including Haas F1 Team.
 
@@ -353,23 +371,36 @@ export default async function handler(req, res) {
     const needsExtendedTokens = needsDeepThink || (message && DRAFT_TRIGGERS.some(t => message.toLowerCase().includes(t)))
 
     // Stream helper
-    async function streamCall(msgs) {
+    async function streamCall(msgs, opts = {}) {
       const params = {
         model: needsDeepThink ? 'claude-opus-4-6' : MODEL,
         max_tokens: needsDeepThink ? 16000 : (needsExtendedTokens ? 8192 : 4096),
-        system, messages: msgs, tools: allTools,
+        system, messages: msgs, tools: opts.noTools ? undefined : allTools,
+      }
+      // Add MCP servers if available
+      if (MCP_SERVERS.length > 0 && !opts.noTools) {
+        params.mcp_servers = MCP_SERVERS;
       }
       if (needsDeepThink) {
         params.thinking = { type: 'enabled', budget_tokens: 10000 }
         write({ toolStatus: 'Deep analysis...' })
       }
-      const stream = anthropic.beta.messages.stream(params);
+      const stream = MCP_SERVERS.length > 0
+        ? anthropic.beta.messages.stream({ ...params, betas: ['mcp-client-2025-11-20'] })
+        : anthropic.beta.messages.stream(params);
       for await (const event of stream) {
         if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
           write({ delta: event.delta.text });
         }
         if (event.type === 'content_block_delta' && event.delta?.type === 'thinking_delta') {
           write({ thinking: event.delta.thinking });
+        }
+        // MCP tool status — show user what MCP tools are being called
+        if (event.type === 'content_block_start' && event.content_block?.type === 'mcp_tool_use') {
+          write({ toolStatus: `MCP: ${event.content_block.name || 'calling external tool'}...` });
+        }
+        if (event.type === 'content_block_start' && event.content_block?.type === 'mcp_tool_result') {
+          write({ toolStatus: null });
         }
       }
       return await stream.finalMessage();

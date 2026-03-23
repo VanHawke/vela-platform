@@ -390,10 +390,15 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       // Page context — tells Kiko what page user is viewing
       const pageCtx = window.kikoPageContext || { page: window.location.pathname.replace('/', '') || 'home' }
 
-      const res = await fetch('/api/kiko', {
+      // Detect deep research queries — route to parallel multi-agent endpoint
+      const RESEARCH_TRIGGERS = ['deep research', 'research ', 'deep dive on', 'full research', 'investigate ', 'intel on ', 'intelligence on ']
+      const isResearch = msg && RESEARCH_TRIGGERS.some(t => msg.toLowerCase().startsWith(t) || msg.toLowerCase().includes(t))
+      const apiUrl = isResearch ? '/api/kiko-research' : '/api/kiko'
+
+      const res = await fetch(apiUrl, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
-        body: JSON.stringify({
+        body: JSON.stringify(isResearch ? { query: msg, userEmail: user?.email } : {
           message: msg || 'Analyse this file.', userEmail: user?.email,
           attachments: fileAttachments,
           conversationHistory: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
