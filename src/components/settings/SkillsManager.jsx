@@ -18,7 +18,7 @@ export default function SkillsManager() {
 
   const startEdit = (skill) => {
     setEditing(skill.id)
-    setForm({ name: skill.name, keywords: (skill.keywords || []).join(', '), content: skill.content || '', active: skill.active !== false })
+    setForm({ name: skill.name, keywords: (skill.trigger_keywords || []).join(', '), content: skill.content || '', active: skill.is_active !== false })
   }
 
   const startNew = () => {
@@ -28,8 +28,8 @@ export default function SkillsManager() {
 
   const save = async () => {
     const payload = {
-      name: form.name, content: form.content, active: form.active,
-      keywords: form.keywords.split(',').map(k => k.trim()).filter(Boolean),
+      name: form.name, content: form.content, is_active: form.active,
+      trigger_keywords: form.keywords.split(',').map(k => k.trim()).filter(Boolean),
       org_id: '35975d96-c2c9-4b6c-b4d4-bb947ae817d5',
     }
     if (editing === 'new') {
@@ -42,7 +42,7 @@ export default function SkillsManager() {
   }
 
   const toggleActive = async (skill) => {
-    await supabase.from('kiko_skills').update({ active: !skill.active }).eq('id', skill.id)
+    await supabase.from('kiko_skills').update({ is_active: !skill.is_active }).eq('id', skill.id)
     load()
   }
 
@@ -78,14 +78,14 @@ export default function SkillsManager() {
 
       {/* Skill cards */}
       {skills.map(skill => (
-        <div key={skill.id} style={{ ...card, opacity: skill.active !== false ? 1 : 0.5, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+        <div key={skill.id} style={{ ...card, opacity: skill.is_active !== false ? 1 : 0.5, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font, marginBottom: 3 }}>{skill.name}</div>
-            <div style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font, marginBottom: 6 }}>{(skill.keywords || []).join(', ')}</div>
+            <div style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font, marginBottom: 6 }}>{(skill.trigger_keywords || []).join(', ')}</div>
             <div style={{ fontSize: 11, color: T.textSecondary, fontFamily: T.font, fontWeight: 300, lineHeight: 1.5, maxHeight: 48, overflow: 'hidden', textOverflow: 'ellipsis' }}>{skill.content?.slice(0, 150)}...</div>
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-            <button onClick={() => toggleActive(skill)} style={{ padding: '4px 10px', borderRadius: 50, border: `1px solid ${T.border}`, background: 'transparent', color: skill.active !== false ? 'rgba(6,214,160,0.6)' : T.textTertiary, fontSize: 10, cursor: 'pointer', fontFamily: T.font }}>{skill.active !== false ? 'Active' : 'Off'}</button>
+            <button onClick={() => toggleActive(skill)} style={{ padding: '4px 10px', borderRadius: 50, border: `1px solid ${T.border}`, background: 'transparent', color: skill.is_active !== false ? 'rgba(6,214,160,0.6)' : T.textTertiary, fontSize: 10, cursor: 'pointer', fontFamily: T.font }}>{skill.is_active !== false ? 'Active' : 'Off'}</button>
             <button onClick={() => startEdit(skill)} style={{ padding: '4px 10px', borderRadius: 50, border: `1px solid ${T.border}`, background: 'transparent', color: T.textTertiary, fontSize: 10, cursor: 'pointer', fontFamily: T.font }}>Edit</button>
           </div>
         </div>
