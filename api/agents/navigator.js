@@ -116,31 +116,37 @@ export async function callNavigator(instruction, pageContext = {}) {
 
     const text = response.content?.find(b => b.type === 'text')?.text || 'Navigator could not process this request.';
 
-    // Detect if the response implies navigation
-    const navPages = ['home','pipeline','contacts','organisations','email','calendar','documents','tasks','settings','news','partnership-matrix','lemlist'];
+    // Detect navigation intent — check instruction AND Haiku response for page references
     const lowerInstruction = instruction.toLowerCase();
+    const lowerResponse = text.toLowerCase();
+    const combined = lowerInstruction + ' ' + lowerResponse;
     let navigateTo = null;
 
-    // Check for explicit navigation intent
-    const navTriggers = ['take me to', 'go to', 'show me', 'open', 'navigate to', 'pull up', 'switch to'];
-    if (navTriggers.some(t => lowerInstruction.includes(t))) {
-      // Map common names to page IDs
-      const pageAliases = {
-        'pipeline': 'pipeline', 'deals': 'pipeline', 'deal pipeline': 'pipeline',
-        'command centre': 'email', 'command center': 'email', 'outreach': 'email',
-        'contacts': 'contacts', 'people': 'contacts',
-        'organisations': 'organisations', 'organizations': 'organisations', 'companies': 'organisations',
-        'tasks': 'tasks', 'to do': 'tasks', 'todo': 'tasks',
-        'calendar': 'calendar', 'schedule': 'calendar',
-        'news': 'news', 'news signals': 'news',
-        'partnership matrix': 'partnership-matrix', 'matrix': 'partnership-matrix', 'partnerships': 'partnership-matrix',
-        'documents': 'documents', 'knowledge library': 'documents', 'docs': 'documents',
-        'lemlist': 'lemlist', 'campaigns': 'lemlist',
-        'home': 'home', 'dashboard': 'home',
-        'settings': 'settings',
-      };
-      for (const [alias, pageId] of Object.entries(pageAliases)) {
-        if (lowerInstruction.includes(alias)) { navigateTo = pageId; break; }
+    // Page alias map
+    const pageAliases = {
+      'pipeline': 'pipeline', 'deals': 'pipeline', 'deal pipeline': 'pipeline',
+      'command centre': 'email', 'command center': 'email', 'outreach intelligence': 'email',
+      'contacts': 'contacts', 'people': 'contacts',
+      'organisations': 'organisations', 'organizations': 'organisations', 'companies': 'organisations',
+      'tasks': 'tasks', 'to do': 'tasks', 'todo': 'tasks', 'task list': 'tasks',
+      'calendar': 'calendar', 'schedule': 'calendar',
+      'news': 'news', 'news signals': 'news',
+      'partnership matrix': 'partnership-matrix', 'matrix': 'partnership-matrix', 'partnerships': 'partnership-matrix',
+      'documents': 'documents', 'knowledge library': 'documents', 'docs': 'documents',
+      'lemlist': 'lemlist', 'campaigns': 'lemlist',
+      'home': 'home', 'dashboard': 'home', 'homepage': 'home',
+      'settings': 'settings',
+    };
+
+    // Navigation triggers in either the instruction or response
+    const navTriggers = ['take me', 'go to', 'show me', 'open', 'navigate', 'pull up', 'switch to', 'navigating to', 'taking you'];
+    const hasNavIntent = navTriggers.some(t => combined.includes(t));
+
+    if (hasNavIntent) {
+      // Sort by alias length descending to match longer phrases first ("command centre" before "contacts")
+      const sorted = Object.entries(pageAliases).sort((a, b) => b[0].length - a[0].length);
+      for (const [alias, pageId] of sorted) {
+        if (combined.includes(alias)) { navigateTo = pageId; break; }
       }
     }
 
