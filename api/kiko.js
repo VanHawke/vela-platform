@@ -1,8 +1,9 @@
-// api/kiko.js — Kiko Prime: Clean Coordinator (v15.0)
-// Routes to specialist agents. Does NOT execute tools directly.
-// Down from 4000-token prompt to ~600 tokens. No competing instructions.
+// api/kiko.js — Kiko Prime: Coordinator with Intent Classification (Phase 1)
+// Step 1: Haiku classifies intent (~100ms)
+// Step 2: Deterministic navigation OR agent dispatch OR full tool loop
 import Anthropic from '@anthropic-ai/sdk';
 import { TOOL_DEFINITIONS, executeTool, fetchEntityContext, sbFetch } from './kiko-tools.js';
+import { classifyIntent, INTENT_TO_AGENT } from './agents/intent-classifier.js';
 
 export const config = { supportsResponseStreaming: true, maxDuration: 60 };
 
@@ -291,6 +292,30 @@ export default async function handler(req, res) {
 
     const allTools = [...NATIVE_TOOLS, ...TOOL_DEFINITIONS];
 
+    // ── PHASE 1: Intent Classification ──
+    const classification = await classifyIntent(message, currentPage);
+    const { intent, target } = classification;
+
+    // Handle deterministic navigation — no Claude needed
+    if (intent === 'navigate' && target) {
+      write({ navigate: target });
+      write({ delta: `Opening ${target.replace(/-/g, ' ')}.` });
+      write({ meta: { done: true, model: 'classifier', intent: 'navigate', version: 'v16.0' } });
+      res.write('data: [DONE]\n\n');
+      res.end();
+      return;
+    }
+
+    // Inject routing hint into system prompt for non-trivial intents
+    const agentMapping = INTENT_TO_AGENT[intent];
+    let routingHint = '';
+    if (agentMapping?.tool) {
+      routingHint = `\n\n[ROUTING HINT: This message was classified as "${intent}". Use the ${agentMapping.tool} tool to handle it. Call it immediately — do not deliberate.]`;
+    } else if (intent === 'general') {
+      routingHint = '\n\n[ROUTING HINT: This is a general question. Answer directly from your knowledge. Do not call any tools unless the user explicitly asks for data.]';
+    }
+    const systemWithHint = system + routingHint;
+
     // Deep think detection
     const DEEP_TRIGGERS = ['analyse', 'analyze', 'deep dive', 'think through', 'strategic', 'evaluate', 'comprehensive'];
     const needsDeepThink = deepThink || (message && DEEP_TRIGGERS.some(t => message.toLowerCase().includes(t)));
@@ -304,7 +329,7 @@ export default async function handler(req, res) {
       const params = {
         model: needsDeepThink ? 'claude-opus-4-6' : MODEL,
         max_tokens: needsDeepThink ? 16000 : 4096,
-        system, messages: msgs, tools: opts.noTools ? undefined : allTools,
+        system: systemWithHint, messages: msgs, tools: opts.noTools ? undefined : allTools,
       };
       if (mcpServers.length > 0 && !opts.noTools) {
         params.mcp_servers = mcpServers;
@@ -326,7 +351,7 @@ export default async function handler(req, res) {
       return await stream.finalMessage();
     }
 
-    write({ toolStatus: 'Thinking...' });
+    write({ toolStatus: intent !== 'general' ? `Intent: ${intent}` : 'Thinking...' });
     let response = await streamCall(messages);
     let toolRounds = 0;
 
@@ -366,13 +391,13 @@ export default async function handler(req, res) {
       messages.push({ role: 'assistant', content: response.content });
       messages.push({ role: 'user', content: finalResults });
       write({ toolStatus: 'Composing response...' });
-      const finalStream = anthropic.beta.messages.stream({ model: MODEL, max_tokens: 4096, system, messages });
+      const finalStream = anthropic.beta.messages.stream({ model: MODEL, max_tokens: 4096, system: systemWithHint, messages });
       for await (const event of finalStream) {
         if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') write({ delta: event.delta.text });
       }
     }
 
-    write({ meta: { done: true, model: needsDeepThink ? 'claude-opus-4-6' : MODEL, toolRounds, version: 'v15.3' } });
+    write({ meta: { done: true, model: needsDeepThink ? 'claude-opus-4-6' : MODEL, toolRounds, intent, version: 'v16.0' } });
     res.write('data: [DONE]\n\n');
     res.end();
 
