@@ -46,17 +46,19 @@ export default function OutreachIntelligence({ user }) {
         const d = deal.data || {}
         const daysSinceUpdate = Math.floor((now - new Date(deal.updated_at)) / 86400000)
         const stage = d.stage || 'Unknown'
-        const stageProb = { 'Initial identification': 5, 'Contact Made': 15, 'First Meeting': 25, 'Proposal Sent': 40, 'Negotiation': 60, 'Verbal Agreement': 80, 'Contract Review': 90 }
+        const stageProb = { 'To revisit': 10, 'Contact made': 20, 'Qualified': 35, 'In Dialogue': 50, 'Meeting arranged (brand x RH)': 55, 'Proposal Sent': 60, 'Negotiation': 70, 'Verbal Agreement': 85, 'Contract Review': 92 }
         const prob = stageProb[stage] || 10
         const value = parseFloat(d.value) || 0
         const weightedValue = value * (prob / 100)
         // Urgency: stale deals get higher urgency
         const urgency = daysSinceUpdate > 30 ? 3 : daysSinceUpdate > 14 ? 2 : daysSinceUpdate > 7 ? 1 : 0
         const isStale = daysSinceUpdate > 30
-        const actionType = stage === 'Initial identification' ? 'First outreach' :
-          stage === 'Contact Made' ? 'Follow-up email' :
-          stage === 'First Meeting' ? 'Send proposal' :
-          stage === 'Proposal Sent' ? 'Follow up on proposal' :
+        const actionType = stage === 'To revisit' ? 'Re-engage' :
+          stage === 'Contact made' ? 'Follow-up' :
+          stage === 'Qualified' ? 'Schedule meeting' :
+          stage === 'In Dialogue' ? 'Advance conversation' :
+          stage === 'Meeting arranged (brand x RH)' ? 'Prepare meeting' :
+          stage === 'Proposal Sent' ? 'Chase proposal' :
           stage === 'Negotiation' ? 'Close negotiation' :
           stage === 'Verbal Agreement' ? 'Finalise contract' :
           stage === 'Contract Review' ? 'Chase signature' : 'Review'
@@ -114,7 +116,7 @@ Be direct. Use web search for current company intelligence if needed.`
 
   // Computed metrics
   const now = new Date()
-  const stageProb = { 'Initial identification': 5, 'Contact Made': 15, 'First Meeting': 25, 'Proposal Sent': 40, 'Negotiation': 60, 'Verbal Agreement': 80, 'Contract Review': 90 }
+  const stageProb = { 'To revisit': 10, 'Contact made': 20, 'Qualified': 35, 'In Dialogue': 50, 'Meeting arranged (brand x RH)': 55, 'Proposal Sent': 60, 'Negotiation': 70, 'Verbal Agreement': 85, 'Contract Review': 92 }
   const priorityActions = deals.map(deal => {
     const d = deal.data || {}
     const daysSinceUpdate = Math.floor((now - new Date(deal.updated_at)) / 86400000)
@@ -124,7 +126,7 @@ Be direct. Use web search for current company intelligence if needed.`
     const weightedValue = value * (prob / 100)
     const isStale = daysSinceUpdate > 30
     const urgency = daysSinceUpdate > 30 ? 3 : daysSinceUpdate > 14 ? 2 : daysSinceUpdate > 7 ? 1 : 0
-    const actionType = stage === 'Initial identification' ? 'First outreach' : stage === 'Contact Made' ? 'Follow-up' : stage === 'First Meeting' ? 'Send proposal' : stage === 'Proposal Sent' ? 'Chase proposal' : stage === 'Negotiation' ? 'Close' : stage === 'Verbal Agreement' ? 'Finalise contract' : 'Review'
+    const actionType = stage === 'To revisit' ? 'Re-engage' : stage === 'Contact made' ? 'Follow-up' : stage === 'Qualified' ? 'Schedule meeting' : stage === 'In Dialogue' ? 'Advance' : stage === 'Meeting arranged (brand x RH)' ? 'Prepare meeting' : stage === 'Proposal Sent' ? 'Chase proposal' : stage === 'Negotiation' ? 'Close' : stage === 'Verbal Agreement' ? 'Finalise contract' : 'Review'
     const priorityScore = weightedValue * (1 + urgency * 0.5) + (isStale ? 50 : 0)
     return { ...deal, daysSinceUpdate, stage, prob, value, weightedValue, isStale, urgency, actionType, priorityScore }
   }).sort((a, b) => b.priorityScore - a.priorityScore)

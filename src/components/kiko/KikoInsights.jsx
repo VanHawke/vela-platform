@@ -48,7 +48,7 @@ export default function KikoInsights({ onAction }) {
         }} />
         <div style={{ flex: 1, minWidth: 0, cursor: 'pointer' }} onClick={() => onAction?.('Brief me on outstanding tasks')}>
           <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 400, fontFamily: T.font }}>
-            {alertCount} outstanding task{alertCount !== 1 ? 's' : ''} require{alertCount === 1 ? 's' : ''} attention
+            {alertCount} new alert{alertCount !== 1 ? 's' : ''} — partnership signals &amp; updates
           </span>
         </div>
         <button onClick={dismiss} style={{
