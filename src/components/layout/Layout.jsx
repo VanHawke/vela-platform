@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
 import T from '@/lib/theme'
-import { Settings, LogOut, Search, ChevronDown, BarChart3, Newspaper, Grid3X3, FileText, Building2, CheckSquare, Home, GitBranch, Calendar, Users, MoreHorizontal } from 'lucide-react'
+import { Settings, LogOut, Search, ChevronDown, BarChart3, Newspaper, Grid3X3, FileText, Building2, CheckSquare, Home, GitBranch, Calendar, Users, MoreHorizontal, Send } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
 import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
@@ -22,6 +22,7 @@ const ALL_NAV = [
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
   { id: 'documents', label: 'Knowledge Library', path: '/documents', Icon: FileText },
   { id: 'tasks', label: 'Tasks', path: '/tasks', Icon: CheckSquare },
+  { id: 'lemlist', label: 'Lemlist', path: '/lemlist', Icon: Send },
 ]
 const DEFAULT_TOP_IDS = ['home', 'pipeline', 'calendar', 'contacts']
 
@@ -34,7 +35,7 @@ const PAGE_LABELS = {
   '/pipeline': 'Pipeline', '/calendar': 'Calendar', '/contacts': 'Contacts',
   '/partnership-matrix': 'Partnership Matrix', '/email': 'Outreach Intelligence',
   '/news': 'News Signals', '/documents': 'Knowledge Library',
-  '/organisations': 'Organisations', '/tasks': 'Tasks',
+  '/organisations': 'Organisations', '/tasks': 'Tasks', '/lemlist': 'Lemlist',
   '/settings': 'Settings', '/dashboard': 'Dashboard',
 }
 
