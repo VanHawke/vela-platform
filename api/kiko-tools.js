@@ -56,6 +56,38 @@ export const TOOL_DEFINITIONS = [
     }, required: ['operation'] },
   },
   {
+    name: 'ask_memory_engine',
+    description: 'Cross-session intelligence. Use for: recalling everything about a company/person (before drafting or meetings), getting draft context (before writing emails), relationship summaries, auto-extracting facts from conversation.',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['recall', 'draft_context', 'relationship_summary', 'extract_and_store'], description: 'recall: full context for entity. draft_context: pre-draft intelligence. relationship_summary: concise relationship status. extract_and_store: auto-extract facts from messages.' },
+      params: { type: 'object', description: 'entity_name or query (string). For extract_and_store: messages (array), entityContext (string).' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'ask_strategy_agent',
+    description: 'Strategic decisions. Use when user asks: should we pursue X, where is leverage, kill or continue, prioritise deals, capital allocation, what matters most, evaluate this opportunity.',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['evaluate', 'prioritise'], description: 'evaluate: strategic verdict on a question. prioritise: rank items by revenue × urgency.' },
+      params: { type: 'object', description: 'evaluate: question (string), context (string). prioritise: items (array), criteria (string).' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'ask_negotiation_agent',
+    description: 'Active negotiation support. Use when user discusses: counter-offers, pricing pushback, concession strategy, deal pressure, walk-away analysis, "they came back at X".',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['analyse', 'counter'], description: 'analyse: full negotiation position analysis. counter: build counter-offer to their proposal.' },
+      params: { type: 'object', description: 'analyse: situation (string), context (string). counter: their_offer (string), our_position (string), context (string).' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'ask_category_agent',
+    description: 'Sponsorship category availability and conflicts. Use when user asks: is X category open, what gaps does Y team have, can we sell Z category, check for conflicts.',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['check', 'conflict'], description: 'check: category availability (team, category, or both). conflict: check if company already sponsors elsewhere.' },
+      params: { type: 'object', description: 'check: team (string), category (string). conflict: company (string), team (string), category (string).' },
+    }, required: ['operation'] },
+  },
+  {
     name: 'navigate_page',
     description: 'Direct page navigation. Use as fallback if ask_navigator is unavailable.',
     input_schema: { type: 'object', properties: {
@@ -123,6 +155,38 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       const { callDocumentAgent } = await import('./agents/document.js');
       return await callDocumentAgent(input.operation, input.params || {});
     } catch (e) { return `Document Agent error: ${e.message}`; }
+  }
+
+  // ── Memory Engine ──
+  if (name === 'ask_memory_engine') {
+    try {
+      const { callMemoryEngine } = await import('./agents/memory-engine.js');
+      return await callMemoryEngine(input.operation, input.params || {});
+    } catch (e) { return `Memory Engine error: ${e.message}`; }
+  }
+
+  // ── Strategy Agent ──
+  if (name === 'ask_strategy_agent') {
+    try {
+      const { callStrategyAgent } = await import('./agents/strategy.js');
+      return await callStrategyAgent(input.operation, input.params || {});
+    } catch (e) { return `Strategy Agent error: ${e.message}`; }
+  }
+
+  // ── Negotiation Agent ──
+  if (name === 'ask_negotiation_agent') {
+    try {
+      const { callNegotiationAgent } = await import('./agents/negotiation.js');
+      return await callNegotiationAgent(input.operation, input.params || {});
+    } catch (e) { return `Negotiation Agent error: ${e.message}`; }
+  }
+
+  // ── Category Control Agent ──
+  if (name === 'ask_category_agent') {
+    try {
+      const { callCategoryControlAgent } = await import('./agents/category-control.js');
+      return await callCategoryControlAgent(input.operation, input.params || {});
+    } catch (e) { return `Category Control error: ${e.message}`; }
   }
 
   // ── Direct tools (kept for backwards compatibility) ──

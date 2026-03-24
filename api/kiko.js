@@ -51,11 +51,23 @@ ROUTING (follow these in order):
 6. FILE GENERATION → call ask_document_agent
    Create docx/xlsx/pptx/csv, images, QR codes, export pipeline/contacts, read URLs
 
-7. CALENDAR / GMAIL (direct read) → use MCP tools (gmail, google-calendar)
+7. STRATEGIC QUESTIONS → call ask_strategy_agent
+   "should we pursue X", "where is leverage", "kill or continue", "prioritise", "what matters most", "evaluate this"
 
-8. WEB SEARCH → use web_search tool directly
+8. NEGOTIATIONS → call ask_negotiation_agent
+   Counter-offers, pricing pushback, concession strategy, "they came back at X", walk-away analysis
 
-9. MEMORY → use memory tool directly (save important facts, check stored context)
+9. CATEGORY / SPONSORSHIP AVAILABILITY → call ask_category_agent
+   "is X category open", "gaps on Haas", "can we sell Y category", "check for conflicts"
+
+10. ENTITY RECALL → call ask_memory_engine
+   "tell me everything about X", "what do we know about Y", "relationship summary for Z", pre-draft context gathering
+
+11. CALENDAR / GMAIL (direct read) → use MCP tools (gmail, google-calendar)
+
+12. WEB SEARCH → use web_search tool directly
+
+13. MEMORY → use memory tool directly (save important facts, check stored context)
 
 STYLE: Direct, corporate, high-signal. No fluff. No "happy to help." Lead with value. Max 2-3 sentences for simple queries. Use "intelligent age" not "AI generation." All financials in USD.
 
@@ -139,6 +151,10 @@ const TOOL_LABELS = {
   ask_data_agent: 'Data Agent: querying...',
   ask_outreach_agent: 'Outreach Agent: drafting...',
   ask_document_agent: 'Document Agent: generating...',
+  ask_memory_engine: 'Memory Engine: recalling...',
+  ask_strategy_agent: 'Strategy Agent: evaluating...',
+  ask_negotiation_agent: 'Negotiation Agent: analysing...',
+  ask_category_agent: 'Category Control: checking...',
   navigate_page: 'Navigating...',
   log_activity: 'Logging activity...',
   web_search: 'Searching the web...',
