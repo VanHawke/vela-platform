@@ -7,7 +7,7 @@
 Kiko is not a chatbot. Kiko is an AI operating system for Van Hawke Group.
 She manages deals, runs operations, protects capital, generates content, and advises on strategy.
 
-Architecture: 1 Execution Controller + 1 Memory Engine + 18 Specialist Agents across 6 layers.
+Architecture: 1 Execution Controller + 1 Memory Engine + 21 Specialist Agents across 6 layers.
 
 Everything routes through Kiko Prime. No agent talks to the user directly.
 All 35 skills stay. All 47 tools stay. All memory stays. This is a restructuring, not a rebuild.
@@ -360,11 +360,32 @@ Owns:
 Tools: web_search, MCP Google Calendar
 Data: race_calendar table (Supabase), F1 2026 + FE Season 12 schedules
 
+
+### 19. DOCUMENT AGENT
+**File:** `api/agents/document-agent.js` (wraps existing `api/generate-doc.js`)
+**Model:** claude-sonnet-4-20250514
+**Purpose:** Creates structured files from data. Deterministic formatting.
+
+Owns:
+- Docx generation (proposals, one-pagers, reports, memos)
+- Xlsx generation (pipeline exports, financial models, contact lists)
+- Pptx generation (pitch decks, presentation slides)
+- CSV generation (data exports, Lemlist imports)
+- DALL-E image generation (brand assets, concept art)
+- QR code generation
+- URL content reading and summarisation
+- Pipeline and contacts export to file
+
+Tools: generate_docx, generate_xlsx, generate_pptx, generate_csv, generate_image, generate_qr, read_url, export_pipeline, export_contacts
+Dependencies: docx, exceljs, qrcode, openai (DALL-E)
+
+Different execution model from conversational agents — takes structured input, produces a file, returns download URL.
+
 ---
 
 ## LAYER 6 — BRAND & PRODUCT
 
-### 19. CONTENT AGENT
+### 20. CONTENT AGENT
 **File:** `api/agents/content-agent.js`
 **Model:** claude-sonnet-4-20250514
 **Purpose:** Generates authority content + manages distribution.
@@ -383,7 +404,7 @@ Skills loaded: content_authority, marketing_strategy, brand_doctrine, van_hawke_
 Van Hawke Viewpoint section included by default. Board-level language. No hashtag spam.
 
 
-### 20. WEBSITE & PRODUCT AGENT
+### 21. WEBSITE & PRODUCT AGENT
 **File:** `api/agents/website-agent.js`
 **Model:** claude-sonnet-4-20250514
 **Purpose:** Manages Van Hawke digital presence + conversion.
@@ -399,7 +420,7 @@ Owns:
 Future: Integrates with Vela platform for real-time content updates.
 
 
-### 21. PRODUCT DEVELOPMENT AGENT (Van Hawke Maison)
+### 22. PRODUCT DEVELOPMENT AGENT (Van Hawke Maison)
 **File:** `api/agents/product-dev-agent.js`
 **Model:** claude-sonnet-4-20250514
 **Purpose:** Manages eyewear product lifecycle.
@@ -417,7 +438,7 @@ Skills loaded: van_hawke_maison
 Key team: Giacomo (Lead Product Designer), Temi (Visual Director)
 
 
-### 22. IP & LICENSING AGENT
+### 23. IP & LICENSING AGENT
 **File:** `api/agents/ip-agent.js`
 **Model:** claude-sonnet-4-20250514
 **Purpose:** Manages IP portfolio + licensing opportunities.
@@ -530,7 +551,7 @@ Aligns with: Micro-ABG Model under Van Hawke Group Inc.
 | Model | Agents | Why |
 |---|---|---|
 | claude-opus-4-6 | Kiko Prime, Strategy, Negotiation, Dispute | Highest reasoning for routing, decisions, adversarial thinking |
-| claude-sonnet-4-20250514 | Deal, Outreach, Data, Finance, Legal, Pricing, Investment, EA, Travel, Content, Website, Product Dev, IP, Category Control, Research (3×) | Best balance of quality + speed + cost |
+| claude-sonnet-4-20250514 | Deal, Outreach, Data, Finance, Legal, Pricing, Investment, EA, Travel, Content, Website, Product Dev, IP, Category Control, Document, Research (3×) | Best balance of quality + speed + cost |
 | claude-haiku-4-5-20251001 | Memory Engine, Navigator, Signal Detection | Speed-critical, high-frequency, deterministic |
 
 Estimated marginal cost per agent: $0.50-3/day depending on call volume.

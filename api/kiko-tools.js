@@ -62,7 +62,7 @@ export const TOOL_DEFINITIONS = [
     }, required: ['query'] } },
   { name: 'navigate_page', description: 'Navigate user to a Kiko page. ALWAYS use when asked to show/open/go to a page.',
     input_schema: { type: 'object', properties: {
-      page: { type: 'string', enum: ['home', 'pipeline', 'contacts', 'organisations', 'deals', 'email', 'calendar', 'documents', 'tasks', 'settings', 'dashboard', 'news', 'partnership-matrix'], description: 'Page to navigate to' },
+      page: { type: 'string', enum: ['home', 'pipeline', 'contacts', 'organisations', 'email', 'calendar', 'documents', 'tasks', 'settings', 'news', 'partnership-matrix', 'lemlist'], description: 'Page to navigate to' },
       reason: { type: 'string', description: 'Brief reason for navigation' },
     }, required: ['page'] } },
   { name: 'get_alerts', description: 'Get proactive intelligence alerts — stale deals, pipeline bottlenecks, data quality issues.',
@@ -192,6 +192,14 @@ export const TOOL_DEFINITIONS = [
       value: { type: 'number', description: 'Deal value in USD (optional)' },
       notes: { type: 'string', description: 'Initial notes (optional)' },
     }, required: ['company_name'] } },
+  { name: 'create_task', description: 'Create a task. Use when user says "add a task", "remind me to", "create a task to", "follow up with [person] in [X] days", "schedule a call with". Creates in the tasks table.',
+    input_schema: { type: 'object', properties: {
+      type: { type: 'string', enum: ['Email Follow-up', 'LinkedIn Follow-up', 'Schedule Call', 'Send Proposal', 'Contract Review', 'Internal Review', 'Other'], description: 'Task type' },
+      notes: { type: 'string', description: 'Task description/notes' },
+      company: { type: 'string', description: 'Company name (optional)' },
+      contact: { type: 'string', description: 'Contact name (optional)' },
+      due_date: { type: 'string', description: 'Due date in YYYY-MM-DD format (optional)' },
+    }, required: ['type', 'notes'] } },
 
   // ── Learning Log Tools ──
   { name: 'search_learning_log', description: 'Search Kiko\'s learning log — extracted facts, decisions, preferences, patterns from past conversations. Use when you need context about past decisions, user preferences, or deal patterns.',
@@ -964,6 +972,15 @@ Return JSON:
       await sbFetch('activities', { method: 'POST', body: JSON.stringify({ org_id: ORG_ID, deal_id: result?.[0]?.id, type: 'stage_change', entity_name: company_name, subject: `New deal created at ${stage}`, body: notes || '', created_by: ORG_ID }) }).catch(() => {})
       return `✅ Created deal for "${company_name}" in ${pipeline} pipeline at ${stage} stage.${value ? ` Value: $${value.toLocaleString()}.` : ''}${contact_name ? ` Contact: ${contact_name}.` : ''}`
     } catch(e) { return `Error creating deal: ${e.message}` }
+  }
+
+  if (name === 'create_task') {
+    const { type, notes, company, contact, due_date } = input
+    try {
+      const taskData = { type, notes, company: company || '', contact: contact || '', dueDate: due_date || null, completed: false, createdAt: new Date().toISOString(), assignedTo: 'Sunny Sidhu' }
+      await sbFetch('tasks', { method: 'POST', body: JSON.stringify({ id: `t${Date.now()}`, data: taskData, org_id: ORG_ID, updated_at: new Date().toISOString() }) })
+      return `✅ Task created: ${type}${company ? ` for ${company}` : ''}${contact ? ` (${contact})` : ''}${due_date ? ` — due ${due_date}` : ''}. Notes: ${notes}`
+    } catch(e) { return `Error creating task: ${e.message}` }
   }
 
   // ── Learning Log Handlers ──
