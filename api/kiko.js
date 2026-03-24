@@ -4,6 +4,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { TOOL_DEFINITIONS, executeTool, fetchEntityContext, sbFetch } from './kiko-tools.js';
 import { classifyIntent, INTENT_TO_AGENT } from './agents/intent-classifier.js';
+import { describeScreen } from './agents/screen-reader.js';
 
 export const config = { supportsResponseStreaming: true, maxDuration: 60 };
 
@@ -300,7 +301,26 @@ export default async function handler(req, res) {
     if (intent === 'navigate' && target) {
       write({ navigate: target });
       write({ delta: `Opening ${target.replace(/-/g, ' ')}.` });
-      write({ meta: { done: true, model: 'classifier', intent: 'navigate', version: 'v16.0' } });
+      write({ meta: { done: true, model: 'classifier', intent: 'navigate', version: 'v16.1' } });
+      res.write('data: [DONE]\n\n');
+      res.end();
+      return;
+    }
+
+    // Handle screen description — live Supabase data, no stale pageContext
+    if (intent === 'screen') {
+      write({ toolStatus: 'Reading screen data...' });
+      const screenData = await describeScreen(currentPage);
+      write({ toolStatus: null });
+      // Inject live data and let Claude compose a natural response
+      const screenSystem = system + `\n\n[LIVE SCREEN DATA — describe this naturally to Sunny, highlight what matters most]:\n${screenData}`;
+      const screenStream = anthropic.beta.messages.stream({
+        model: MODEL, max_tokens: 600, system: screenSystem, messages,
+      });
+      for await (const event of screenStream) {
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') write({ delta: event.delta.text });
+      }
+      write({ meta: { done: true, model: MODEL, intent: 'screen', version: 'v16.1' } });
       res.write('data: [DONE]\n\n');
       res.end();
       return;
