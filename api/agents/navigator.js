@@ -116,10 +116,9 @@ export async function callNavigator(instruction, pageContext = {}) {
 
     const text = response.content?.find(b => b.type === 'text')?.text || 'Navigator could not process this request.';
 
-    // Detect navigation intent — check instruction AND Haiku response for page references
-    const lowerInstruction = instruction.toLowerCase();
-    const lowerResponse = text.toLowerCase();
-    const combined = lowerInstruction + ' ' + lowerResponse;
+    // Detect navigation intent — ONLY match against user's original instruction, not page context or response
+    // The instruction may contain appended [PAGE CONTEXT: ...] — strip it before matching
+    const rawInstruction = instruction.split('\n\n[PAGE CONTEXT')[0].toLowerCase();
     let navigateTo = null;
 
     // Page alias map
@@ -138,15 +137,15 @@ export async function callNavigator(instruction, pageContext = {}) {
       'settings': 'settings',
     };
 
-    // Navigation triggers in either the instruction or response
-    const navTriggers = ['take me', 'go to', 'show me', 'open', 'navigate', 'pull up', 'switch to', 'navigating to', 'taking you'];
-    const hasNavIntent = navTriggers.some(t => combined.includes(t));
+    // Navigation triggers — match only against the user's raw instruction
+    const navTriggers = ['take me', 'go to', 'show me', 'open', 'navigate', 'pull up', 'switch to'];
+    const hasNavIntent = navTriggers.some(t => rawInstruction.includes(t));
 
     if (hasNavIntent) {
       // Sort by alias length descending to match longer phrases first ("command centre" before "contacts")
       const sorted = Object.entries(pageAliases).sort((a, b) => b[0].length - a[0].length);
       for (const [alias, pageId] of sorted) {
-        if (combined.includes(alias)) { navigateTo = pageId; break; }
+        if (rawInstruction.includes(alias)) { navigateTo = pageId; break; }
       }
     }
 
