@@ -443,7 +443,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       if (pendingNav) {
         if (outletCtx.setKikoMessages) outletCtx.setKikoMessages(updated)
         if (outletCtx.setKikoConvId) outletCtx.setKikoConvId(newId || activeConvId)
-        setTimeout(() => { if (outletCtx.kikoNavigate) outletCtx.kikoNavigate(pendingNav); else navigate('/' + (pendingNav === 'home' ? '' : pendingNav)) }, 100)
+        console.log('[KikoChat] Executing post-stream navigation:', pendingNav)
+        requestAnimationFrame(() => {
+          const target = pendingNav === 'home' ? '/' : `/${pendingNav}`
+          if (outletCtx.kikoNavigate) { outletCtx.kikoNavigate(pendingNav) }
+          else { try { navigate(target) } catch (e) { console.error('[KikoChat] navigate failed:', e); window.location.href = target } }
+        })
       }
     } catch (err) {
       if (err.name === 'AbortError') {
