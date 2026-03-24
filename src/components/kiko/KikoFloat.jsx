@@ -114,6 +114,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   const [floatVoiceState, setFloatVoiceState] = useState({ speaking: false, status: 'connecting', energy: 0, pitch: 0 })
   const [fileUploading, setFileUploading] = useState(false)
   const [fabClass, setFabClass] = useState('')
+  const pendingNavRef = useRef(null) // Navigation queued during stream, executed after
   const convId = sharedConvId || null
   const setConvId = setSharedConvId || (() => {})
   const navigate = useNavigate()
@@ -146,18 +147,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
     }
   }
 
-  function checkNavigation(text) {
-    const routes = { 'pipeline': '/pipeline', 'deal pipeline': '/pipeline', 'contacts': '/contacts', 'organisations': '/organisations', 'organizations': '/organisations', 'companies': '/organisations', 'email': '/email', 'command centre': '/email', 'command center': '/email', 'calendar': '/calendar', 'documents': '/documents', 'knowledge library': '/documents', 'tasks': '/tasks', 'settings': '/settings', 'home': '/', 'news': '/news', 'partnership matrix': '/partnership-matrix', 'partnerships': '/partnership-matrix', 'lemlist': '/lemlist', 'campaigns': '/lemlist' }
-    const lower = text.toLowerCase()
-    for (const [key, path] of Object.entries(routes)) {
-      if (lower.includes(`navigating to ${key}`) || lower.includes(`opening ${key}`) || lower.includes(`pulling up ${key}`) || lower.includes(`taking you to ${key}`) || lower.includes(`[navigate:${key}]`)) {
-        console.log('[KikoFloat] Text-based navigation:', key, '→', path)
-        setTimeout(() => { try { navigate(path) } catch { window.location.href = path } }, 100)
-        return true
-      }
-    }
-    return false
-  }
+  // Navigation is handled via pendingNavRef — queued during SSE stream, executed post-stream
 
   const handleSubmit = useCallback(async (text) => {
     const msg = (text || input).trim()
@@ -196,19 +186,26 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
             const j = JSON.parse(d)
             if (j.delta) { full += j.delta; setStreamText(full) }
             if (j.navigate) {
-              const target = '/' + (j.navigate === 'home' ? '' : j.navigate)
-              console.log('[KikoFloat] Navigate event:', j.navigate, '→', target)
-              // Use setTimeout to escape React's batch update cycle
-              setTimeout(() => {
-                try { navigate(target) } catch { window.location.href = target }
-              }, 100)
+              console.log('[KikoFloat] Navigate queued:', j.navigate)
+              pendingNavRef.current = j.navigate
             }
             if (j.toolStatus !== undefined) setToolStatus(j.toolStatus)
           } catch {}
         }
       }
       const kikoMsg = { role: 'assistant', content: full }
-      setMessages(prev => [...prev, kikoMsg]); setStreamText(''); checkNavigation(full)
+      setMessages(prev => [...prev, kikoMsg]); setStreamText('')
+      // Execute queued navigation AFTER React commits state
+      if (pendingNavRef.current) {
+        const navTarget = pendingNavRef.current
+        pendingNavRef.current = null
+        console.log('[KikoFloat] Executing post-stream navigation:', navTarget)
+        // requestAnimationFrame ensures React has painted before we navigate
+        requestAnimationFrame(() => {
+          const target = '/' + (navTarget === 'home' ? '' : navTarget)
+          try { navigate(target) } catch (e) { console.error('[KikoFloat] navigate() failed, using href:', e); window.location.href = target }
+        })
+      }
       const allMsgs = [...messages, userMsg, kikoMsg]
       if (user?.id) {
         const orgId = user?.app_metadata?.org_id
