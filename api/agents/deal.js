@@ -70,13 +70,23 @@ export async function callDealAgent(instruction, userEmail = 'sunny@vanhawke.com
     });
 
     const text = response.content?.find(b => b.type === 'text')?.text || '';
+    if (!text || text.trim().length < 5) {
+      return { success: false, result: `Deal Agent received empty response from parser. Instruction was: "${instruction}"` };
+    }
+
     let operation;
     try {
-      // Extract JSON from response (handle markdown code blocks)
-      const jsonStr = text.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+      // Extract JSON from response (handle markdown code blocks, leading text)
+      let jsonStr = text.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+      // If there's leading text before the JSON, extract just the JSON object
+      const jsonStart = jsonStr.indexOf('{');
+      const jsonEnd = jsonStr.lastIndexOf('}');
+      if (jsonStart >= 0 && jsonEnd > jsonStart) {
+        jsonStr = jsonStr.slice(jsonStart, jsonEnd + 1);
+      }
       operation = JSON.parse(jsonStr);
-    } catch {
-      return { success: false, result: `Deal Agent could not parse instruction: "${instruction}". Raw: ${text}` };
+    } catch (parseErr) {
+      return { success: false, result: `Deal Agent could not parse instruction: "${instruction}". Parser returned: ${text.slice(0, 200)}` };
     }
 
     // Execute the operation

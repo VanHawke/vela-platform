@@ -12,7 +12,11 @@ export const sbFetch = async (path, opts = {}) => {
     ...opts,
     headers: { apikey: SK(), Authorization: `Bearer ${SK()}`, 'Content-Type': 'application/json', ...opts.headers },
   });
-  return res.json();
+  // Guard against non-JSON responses (errors, empty bodies)
+  const text = await res.text();
+  if (!text || text.trim().length === 0) return opts.method && opts.method !== 'GET' ? {} : [];
+  try { return JSON.parse(text); }
+  catch { console.error(`[sbFetch] Non-JSON response for ${path}: ${text.slice(0, 200)}`); return opts.method && opts.method !== 'GET' ? {} : []; }
 };
 
 // ── Agent Tool Definitions (6 agents — down from 49 tools) ──
