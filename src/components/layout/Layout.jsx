@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
 import T from '@/lib/theme'
-import { Settings, LogOut, Search, ChevronDown, BarChart3, Newspaper, Grid3X3, FileText, Building2, CheckSquare, Home, GitBranch, Calendar, Users, MoreHorizontal, Send } from 'lucide-react'
+import { Settings, LogOut, Search, ChevronDown, BarChart3, Newspaper, Grid3X3, FileText, Building2, CheckSquare, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
 import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
@@ -17,7 +17,7 @@ const ALL_NAV = [
   { id: 'calendar', label: 'Calendar', path: '/calendar', Icon: Calendar },
   { id: 'contacts', label: 'Contacts', path: '/contacts', Icon: Users },
   { id: 'organisations', label: 'Organisations', path: '/organisations', Icon: Building2 },
-  { id: 'email', label: 'Outreach Intelligence', path: '/email', Icon: BarChart3 },
+  { id: 'email', label: 'Command Centre', path: '/email', Icon: Target },
   { id: 'news', label: 'News Signals', path: '/news', Icon: Newspaper },
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
   { id: 'documents', label: 'Knowledge Library', path: '/documents', Icon: FileText },
@@ -33,7 +33,7 @@ function getTopNavIds() {
 
 const PAGE_LABELS = {
   '/pipeline': 'Pipeline', '/calendar': 'Calendar', '/contacts': 'Contacts',
-  '/partnership-matrix': 'Partnership Matrix', '/email': 'Outreach Intelligence',
+  '/partnership-matrix': 'Partnership Matrix', '/email': 'Command Centre',
   '/news': 'News Signals', '/documents': 'Knowledge Library',
   '/organisations': 'Organisations', '/tasks': 'Tasks', '/lemlist': 'Lemlist',
   '/settings': 'Settings', '/dashboard': 'Dashboard',

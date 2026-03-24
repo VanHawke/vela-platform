@@ -1,248 +1,287 @@
-// OutreachIntelligence.jsx — replaces Email page
-// Scorecard + Pattern Cards + Timing + Company Timeline
-import { useState, useEffect } from 'react'
+// OutreachIntelligence.jsx — Predictive Command Centre
+// Surfaces: Today's priority actions, pipeline health, timing intelligence, activity stream
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
-import { TrendingUp, Clock, Users, Building2, Send, Zap, RefreshCw, Loader2, BarChart3, Target, Mail } from 'lucide-react'
+import { Target, TrendingUp, Clock, Users, Building2, Send, Zap, RefreshCw, Loader2, AlertTriangle, Calendar, ChevronRight, CheckSquare, Mail } from 'lucide-react'
+import T from '@/lib/theme'
+import DOMPurify from 'dompurify'
+import DoubleHelix from '@/components/kiko/DoubleHelix'
 
-const T = {
-  text: 'rgba(255,255,255,0.95)', textSecondary: 'rgba(255,255,255,0.55)', textTertiary: 'rgba(255,255,255,0.32)',
-  accent: 'rgba(255,255,255,0.12)', font: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
-}
-
-const APPROACH_COLORS = {
-  'authority-led': '#007AFF', 'data-led': '#5856D6', 'scarcity-led': '#FF9500',
-  'relationship-led': '#34C759', 'intelligence-led': '#AF52DE', 'competitive-led': '#FF2D55',
-  'value-led': '#00C7BE', 'unknown': '#ABABAB',
-}
-
-const CTA_COLORS = {
-  'meeting-ask': '#007AFF', 'reply-ask': '#34C759', 'info-share': '#FF9500',
-  'soft-close': '#AF52DE', 'no-cta': '#ABABAB', 'unknown': '#ABABAB',
+function md(text) {
+  if (!text) return ''
+  let h = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*(.+?)\*\*/g, '<strong style="color:rgba(255,255,255,0.85);font-weight:500">$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br/>')
+  return DOMPurify.sanitize(h)
 }
 
 export default function OutreachIntelligence({ user }) {
-  const [scores, setScores] = useState([])
   const [loading, setLoading] = useState(true)
-  const [scoring, setScoring] = useState(false)
-  const [pipelineFilter, setPipelineFilter] = useState('all')
-  const [pipelines, setPipelines] = useState([])
+  const [deals, setDeals] = useState([])
+  const [activities, setActivities] = useState([])
+  const [nextRace, setNextRace] = useState(null)
+  const [selectedAction, setSelectedAction] = useState(null)
+  const [kikoLoading, setKikoLoading] = useState(false)
+  const [kikoRec, setKikoRec] = useState(null)
 
-  useEffect(() => { if (user?.id) loadScores() }, [user?.id])
+  useEffect(() => { loadData() }, [])
 
-  const loadScores = async () => {
+  const loadData = async () => {
     setLoading(true)
-    const { data } = await supabase.from('outreach_scores').select('*').order('sent_at', { ascending: false }).limit(500)
-    setScores(data || [])
-    const pipes = [...new Set((data || []).map(s => s.pipeline).filter(Boolean))]
-    setPipelines(pipes)
-    setLoading(false)
-    setPageContext({ page: 'outreach-intelligence', summary: `Outreach Intelligence: ${(data || []).length} scored emails across ${pipes.length} pipelines` })
-  }
-
-  const runScoring = async () => {
-    setScoring(true)
     try {
-      await fetch('/api/cron-outreach-score', { method: 'POST' })
-      await loadScores()
-    } catch {}
-    setScoring(false)
+      const [dealsRes, actRes, raceRes] = await Promise.all([
+        supabase.from('deals').select('id, data, updated_at').not('data->>status', 'in', '("won","lost")').order('updated_at', { ascending: false }),
+        supabase.from('activities').select('*').order('created_at', { ascending: false }).limit(20),
+        supabase.from('race_calendar').select('name, date, circuit').gt('date', new Date().toISOString().split('T')[0]).order('date').limit(1),
+      ])
+      setDeals(dealsRes.data || [])
+      setActivities(actRes.data || [])
+      setNextRace(raceRes.data?.[0] || null)
+
+      // Build priority actions from deals
+      const now = new Date()
+      const actions = (dealsRes.data || []).map(deal => {
+        const d = deal.data || {}
+        const daysSinceUpdate = Math.floor((now - new Date(deal.updated_at)) / 86400000)
+        const stage = d.stage || 'Unknown'
+        const stageProb = { 'Initial identification': 5, 'Contact Made': 15, 'First Meeting': 25, 'Proposal Sent': 40, 'Negotiation': 60, 'Verbal Agreement': 80, 'Contract Review': 90 }
+        const prob = stageProb[stage] || 10
+        const value = parseFloat(d.value) || 0
+        const weightedValue = value * (prob / 100)
+        // Urgency: stale deals get higher urgency
+        const urgency = daysSinceUpdate > 30 ? 3 : daysSinceUpdate > 14 ? 2 : daysSinceUpdate > 7 ? 1 : 0
+        const isStale = daysSinceUpdate > 30
+        const actionType = stage === 'Initial identification' ? 'First outreach' :
+          stage === 'Contact Made' ? 'Follow-up email' :
+          stage === 'First Meeting' ? 'Send proposal' :
+          stage === 'Proposal Sent' ? 'Follow up on proposal' :
+          stage === 'Negotiation' ? 'Close negotiation' :
+          stage === 'Verbal Agreement' ? 'Finalise contract' :
+          stage === 'Contract Review' ? 'Chase signature' : 'Review'
+        // Priority score: weighted value × urgency multiplier
+        const priorityScore = weightedValue * (1 + urgency * 0.5) + (isStale ? 50 : 0)
+        return { ...deal, daysSinceUpdate, stage, prob, value, weightedValue, urgency, isStale, actionType, priorityScore }
+      }).sort((a, b) => b.priorityScore - a.priorityScore)
+
+      setPageContext({ page: 'outreach-intelligence', summary: `Command Centre: ${actions.length} active deals, ${actions.filter(a => a.isStale).length} stale` })
+    } catch (e) { console.error('[CommandCentre]', e) }
+    finally { setLoading(false) }
   }
 
-  const filtered = pipelineFilter === 'all' ? scores : scores.filter(s => s.pipeline === pipelineFilter)
-  const total = filtered.length
-  const replied = filtered.filter(s => s.outcome === 'replied')
-  const silence = filtered.filter(s => s.outcome === 'silence')
-  const pending = filtered.filter(s => s.outcome === 'pending')
-  const replyRate = total > 0 ? Math.round(replied.length / total * 100) : 0
-  const avgReplyTime = replied.filter(s => s.time_to_reply_hours).length > 0
-    ? Math.round(replied.filter(s => s.time_to_reply_hours).reduce((a, s) => a + s.time_to_reply_hours, 0) / replied.filter(s => s.time_to_reply_hours).length)
-    : 0
-  const avgEffectiveness = filtered.filter(s => s.effectiveness_score).length > 0
-    ? Math.round(filtered.filter(s => s.effectiveness_score).reduce((a, s) => a + s.effectiveness_score, 0) / filtered.filter(s => s.effectiveness_score).length)
-    : 0
+  // Kiko recommendation for selected action
+  const getKikoRec = useCallback(async (deal) => {
+    setSelectedAction(deal)
+    setKikoLoading(true)
+    setKikoRec(null)
+    try {
+      const d = deal.data || {}
+      const prompt = `PRIORITY ACTION for: ${d.company || 'Unknown'} (${d.contact || 'no contact'})
+Stage: ${deal.stage} | Value: $${(deal.value || 0).toLocaleString()} | Days since activity: ${deal.daysSinceUpdate}
+Pipeline: ${d.pipeline || 'Unknown'} | ${deal.isStale ? 'STALE — needs immediate attention' : ''}
 
-  // Compute patterns
-  const byApproach = {}
-  filtered.forEach(s => {
-    const a = s.messaging_approach || 'unknown'
-    if (!byApproach[a]) byApproach[a] = { total: 0, replied: 0 }
-    byApproach[a].total++
-    if (s.outcome === 'replied') byApproach[a].replied++
-  })
+Provide a concise recommendation:
+1. DIAGNOSIS — What's the situation? Why has this stalled or what's the next logical step?
+2. RECOMMENDED ACTION — Specific next move (email, call, LinkedIn, meeting).
+3. SUGGESTED DRAFT — If email/LinkedIn, write a 100-word max message. Authority tone, no pricing, no pleasantries.
+4. TIMING — When to execute and why (reference calendar, budget cycles, or patterns).
 
-  const byCta = {}
-  filtered.forEach(s => {
-    const c = s.cta_type || 'unknown'
-    if (!byCta[c]) byCta[c] = { total: 0, replied: 0 }
-    byCta[c].total++
-    if (s.outcome === 'replied') byCta[c].replied++
-  })
+Be direct. Use web search for current company intelligence if needed.`
 
-  const byDay = {}
-  filtered.forEach(s => {
-    const d = s.sent_day_of_week || 'Unknown'
-    if (!byDay[d]) byDay[d] = { total: 0, replied: 0 }
-    byDay[d].total++
-    if (s.outcome === 'replied') byDay[d].replied++
-  })
+      const res = await fetch('/api/kiko', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: prompt, currentPage: 'outreach-intelligence', userEmail: user?.email || 'sunny@vanhawke.com', conversationHistory: [] })
+      })
+      const reader = res.body.getReader()
+      const dec = new TextDecoder()
+      let full = '', buf = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buf += dec.decode(value, { stream: true })
+        const lines = buf.split('\n'); buf = lines.pop() || ''
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const raw = line.slice(6); if (raw === '[DONE]') continue
+          try { const j = JSON.parse(raw); if (j.delta) { full += j.delta; setKikoRec(full) } } catch {}
+        }
+      }
+      if (full) setKikoRec(full)
+    } catch (e) { setKikoRec('Error: ' + e.message) }
+    finally { setKikoLoading(false) }
+  }, [user])
 
-  const byCompany = {}
-  filtered.forEach(s => {
-    const c = s.company || 'Unknown'
-    if (!byCompany[c]) byCompany[c] = { total: 0, replied: 0, lastSent: s.sent_at, outcomes: [] }
-    byCompany[c].total++
-    if (s.outcome === 'replied') byCompany[c].replied++
-    byCompany[c].outcomes.push(s.outcome)
-    if (s.sent_at > byCompany[c].lastSent) byCompany[c].lastSent = s.sent_at
-  })
+  // Computed metrics
+  const now = new Date()
+  const stageProb = { 'Initial identification': 5, 'Contact Made': 15, 'First Meeting': 25, 'Proposal Sent': 40, 'Negotiation': 60, 'Verbal Agreement': 80, 'Contract Review': 90 }
+  const priorityActions = deals.map(deal => {
+    const d = deal.data || {}
+    const daysSinceUpdate = Math.floor((now - new Date(deal.updated_at)) / 86400000)
+    const stage = d.stage || 'Unknown'
+    const prob = stageProb[stage] || 10
+    const value = parseFloat(d.value) || 0
+    const weightedValue = value * (prob / 100)
+    const isStale = daysSinceUpdate > 30
+    const urgency = daysSinceUpdate > 30 ? 3 : daysSinceUpdate > 14 ? 2 : daysSinceUpdate > 7 ? 1 : 0
+    const actionType = stage === 'Initial identification' ? 'First outreach' : stage === 'Contact Made' ? 'Follow-up' : stage === 'First Meeting' ? 'Send proposal' : stage === 'Proposal Sent' ? 'Chase proposal' : stage === 'Negotiation' ? 'Close' : stage === 'Verbal Agreement' ? 'Finalise contract' : 'Review'
+    const priorityScore = weightedValue * (1 + urgency * 0.5) + (isStale ? 50 : 0)
+    return { ...deal, daysSinceUpdate, stage, prob, value, weightedValue, isStale, urgency, actionType, priorityScore }
+  }).sort((a, b) => b.priorityScore - a.priorityScore)
 
-  const card = { background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', borderRadius: 18, padding: '20px', border: '1.5px solid rgba(255,255,255,0.08)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 24px rgba(0,0,0,0.15)' }
-  const sectionTitle = { fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: T.textTertiary, margin: '0 0 14px', fontFamily: T.font }
-  const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+  const totalPipeline = deals.reduce((s, d) => s + (parseFloat(d.data?.value) || 0), 0)
+  const weightedPipeline = priorityActions.reduce((s, a) => s + a.weightedValue, 0)
+  const staleCount = priorityActions.filter(a => a.isStale).length
+  const daysToRace = nextRace ? Math.ceil((new Date(nextRace.date) - now) / 86400000) : null
+
+  const urgencyColor = (u) => u >= 3 ? 'rgba(255,59,48,0.6)' : u >= 2 ? 'rgba(245,158,11,0.5)' : u >= 1 ? 'rgba(139,108,246,0.4)' : 'rgba(255,255,255,0.1)'
+  const card = { background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 14, padding: 16 }
 
   if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}><Loader2 style={{ width: 24, height: 24, animation: 'spin 1s linear infinite', color: T.textTertiary }} /></div>
 
-  // Empty state
-  if (total === 0) return (
-    <div style={{ padding: '32px 28px', maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
-      <div style={{ ...card, padding: 40 }}>
-        <BarChart3 style={{ width: 40, height: 40, color: T.textTertiary, margin: '0 auto 16px' }} />
-        <h2 style={{ fontSize: 18, fontWeight: 400, color: T.text, margin: '0 0 8px', fontFamily: T.font }}>Outreach Intelligence</h2>
-        <p style={{ fontSize: 13, color: T.textSecondary, margin: '0 0 20px', fontFamily: T.font, lineHeight: 1.5 }}>Score your outbound emails to discover which messaging approaches, send times, and CTAs generate the most replies.</p>
-        <button onClick={runScoring} disabled={scoring} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 50, background: T.accent, color: 'rgba(255,255,255,0.9)', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font }}>
-          {scoring ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} /> : <Zap style={{ width: 14, height: 14 }} />}
-          {scoring ? 'Scoring…' : 'Score my outreach now'}
-        </button>
-        <p style={{ fontSize: 11, color: T.textTertiary, margin: '12px 0 0', fontFamily: T.font }}>Analyses your last 7 days of sent emails</p>
-      </div>
-    </div>
-  )
-
   return (
-    <div style={{ padding: '24px 28px', maxWidth: 1100, margin: '0 auto' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-        <div>
-          <h1 style={{ fontSize: 20, fontWeight: 400, color: T.text, margin: 0, fontFamily: T.font }}>Outreach Intelligence</h1>
-          <p style={{ fontSize: 12, color: T.textTertiary, margin: '4px 0 0', fontFamily: T.font }}>{total} emails scored · Updated {scores[0]?.scored_at ? new Date(scores[0].scored_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'never'}</p>
-        </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <select value={pipelineFilter} onChange={e => setPipelineFilter(e.target.value)} style={{ fontSize: 12, padding: '6px 10px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', fontFamily: T.font, color: T.text }}>
-            <option value="all">All pipelines</option>
-            {pipelines.map(p => <option key={p} value={p}>{p}</option>)}
-          </select>
-          <button onClick={runScoring} disabled={scoring} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, color: T.text }}>
-            {scoring ? <Loader2 style={{ width: 12, height: 12, animation: 'spin 1s linear infinite' }} /> : <RefreshCw style={{ width: 12, height: 12 }} />}
-            {scoring ? 'Scoring…' : 'Score now'}
-          </button>
-        </div>
-      </div>
-
-      {/* Scorecard */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 20 }}>
-        {[
-          { label: 'Reply Rate', value: `${replyRate}%`, icon: TrendingUp, color: replyRate > 15 ? '#34C759' : replyRate > 8 ? '#FF9500' : '#FF3B30' },
-          { label: 'Replies', value: replied.length, icon: Mail, color: '#007AFF' },
-          { label: 'Silent', value: silence.length, icon: Clock, color: '#FF9500' },
-          { label: 'Avg Reply Time', value: avgReplyTime > 0 ? `${avgReplyTime}h` : '—', icon: Clock, color: '#5856D6' },
-          { label: 'Effectiveness', value: avgEffectiveness > 0 ? `${avgEffectiveness}/100` : '—', icon: Target, color: '#007AFF' },
-        ].map((s, i) => (
-          <div key={i} style={{ ...card, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <s.icon style={{ width: 13, height: 13, color: s.color }} />
-              <span style={{ fontSize: 10, fontWeight: 400, letterSpacing: '0.03em', textTransform: 'uppercase', color: T.textTertiary, fontFamily: T.font }}>{s.label}</span>
+    <div style={{ display: 'flex', height: 'calc(100vh - 56px)', fontFamily: T.font }}>
+      {/* LEFT — Priority Actions */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+        {/* Header */}
+        <div style={{ padding: '16px 20px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div>
+              <h1 style={{ fontSize: 20, fontWeight: 400, color: T.text, margin: 0 }}>Command Centre</h1>
+              <p style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300, marginTop: 2 }}>Priority actions ranked by deal value × urgency</p>
             </div>
-            <span style={{ fontSize: 22, fontWeight: 500, color: s.color, fontFamily: T.font }}>{s.value}</span>
+            <button onClick={loadData} style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', color: T.textTertiary, fontSize: 11, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Refresh</button>
           </div>
-        ))}
-      </div>
 
-      {/* Pattern Cards Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
-        {/* Messaging Approach */}
-        <div style={card}>
-          <p style={sectionTitle}><Zap style={{ width: 12, height: 12, display: 'inline', verticalAlign: -2, marginRight: 6 }} />Messaging Approach</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {Object.entries(byApproach).sort((a, b) => b[1].total - a[1].total).map(([approach, data]) => {
-              const rate = data.total > 0 ? Math.round(data.replied / data.total * 100) : 0
-              return (
-                <div key={approach} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 11, fontWeight: 500, color: T.text, fontFamily: T.font, width: 120, flexShrink: 0 }}>{approach}</span>
-                  <div style={{ flex: 1, height: 20, background: 'rgba(255,255,255,0.04)', borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
-                    <div style={{ height: '100%', width: `${Math.min(rate * 2, 100)}%`, background: APPROACH_COLORS[approach] || '#ABABAB', borderRadius: 4, transition: 'width 0.5s ease' }} />
-                  </div>
-                  <span style={{ fontSize: 11, fontWeight: 400, color: rate > 15 ? '#34C759' : T.textSecondary, fontFamily: T.font, width: 50, textAlign: 'right' }}>{rate}%</span>
-                  <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font, width: 30, textAlign: 'right' }}>({data.total})</span>
+          {/* Stats bar */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+            <div style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
+              <Target size={14} style={{ color: 'rgba(139,108,246,0.5)', flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 300, color: 'rgba(139,108,246,0.7)' }}>{deals.length}</div>
+                <div style={{ fontSize: 9, color: T.textTertiary, fontWeight: 300 }}>Active deals</div>
+              </div>
+            </div>
+            <div style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
+              <TrendingUp size={14} style={{ color: 'rgba(0,212,170,0.5)', flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 300, color: 'rgba(0,212,170,0.6)' }}>${(weightedPipeline / 1000000).toFixed(1)}M</div>
+                <div style={{ fontSize: 9, color: T.textTertiary, fontWeight: 300 }}>Weighted pipeline</div>
+              </div>
+            </div>
+            <div style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
+              <AlertTriangle size={14} style={{ color: staleCount > 0 ? 'rgba(255,59,48,0.5)' : 'rgba(6,214,160,0.4)', flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 300, color: staleCount > 0 ? 'rgba(255,59,48,0.6)' : 'rgba(6,214,160,0.5)' }}>{staleCount}</div>
+                <div style={{ fontSize: 9, color: T.textTertiary, fontWeight: 300 }}>Stale (30d+)</div>
+              </div>
+            </div>
+            {nextRace && (
+              <div style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
+                <Calendar size={14} style={{ color: daysToRace <= 14 ? 'rgba(0,212,170,0.5)' : 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 300, color: daysToRace <= 14 ? 'rgba(0,212,170,0.6)' : 'rgba(255,255,255,0.4)' }}>{daysToRace}d</div>
+                  <div style={{ fontSize: 9, color: T.textTertiary, fontWeight: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80 }}>{nextRace.name}</div>
                 </div>
-              )
-            })}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* CTA Type */}
-        <div style={card}>
-          <p style={sectionTitle}><Target style={{ width: 12, height: 12, display: 'inline', verticalAlign: -2, marginRight: 6 }} />CTA Type</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {Object.entries(byCta).sort((a, b) => b[1].total - a[1].total).map(([cta, data]) => {
-              const rate = data.total > 0 ? Math.round(data.replied / data.total * 100) : 0
-              return (
-                <div key={cta} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 11, fontWeight: 500, color: T.text, fontFamily: T.font, width: 100, flexShrink: 0 }}>{cta}</span>
-                  <div style={{ flex: 1, height: 20, background: 'rgba(255,255,255,0.04)', borderRadius: 4, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${Math.min(rate * 2, 100)}%`, background: CTA_COLORS[cta] || '#ABABAB', borderRadius: 4, transition: 'width 0.5s ease' }} />
-                  </div>
-                  <span style={{ fontSize: 11, fontWeight: 400, color: rate > 15 ? '#34C759' : T.textSecondary, fontFamily: T.font, width: 50, textAlign: 'right' }}>{rate}%</span>
-                  <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font, width: 30, textAlign: 'right' }}>({data.total})</span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
+        {/* Priority action list */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px' }}>
+          <div style={{ fontSize: 10, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>Priority Actions</div>
 
-      {/* Send Timing */}
-      <div style={{ ...card, marginBottom: 20 }}>
-        <p style={sectionTitle}><Clock style={{ width: 12, height: 12, display: 'inline', verticalAlign: -2, marginRight: 6 }} />Send Timing — Day of Week</p>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 120, padding: '0 8px' }}>
-          {dayOrder.map(day => {
-            const data = byDay[day] || { total: 0, replied: 0 }
-            const rate = data.total > 0 ? Math.round(data.replied / data.total * 100) : 0
-            const maxTotal = Math.max(...Object.values(byDay).map(d => d.total), 1)
-            const barH = data.total > 0 ? Math.max((data.total / maxTotal) * 90, 8) : 4
+          {priorityActions.length === 0 && (
+            <div style={{ textAlign: 'center', padding: 40, color: T.textTertiary, fontWeight: 300, fontSize: 13 }}>No active deals in pipeline.</div>
+          )}
+
+          {priorityActions.slice(0, 30).map((action, i) => {
+            const d = action.data || {}
+            const isSelected = selectedAction?.id === action.id
             return (
-              <div key={day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <span style={{ fontSize: 9, fontWeight: 400, color: rate > 15 ? '#34C759' : T.textTertiary, fontFamily: T.font }}>{rate > 0 ? `${rate}%` : ''}</span>
-                <div style={{ width: '100%', maxWidth: 48, height: barH, borderRadius: 4, background: data.total > 0 ? (rate > 15 ? '#34C759' : rate > 8 ? '#FF9500' : 'rgba(255,255,255,0.1)') : 'rgba(255,255,255,0.04)', transition: 'height 0.4s ease' }} />
-                <span style={{ fontSize: 9, fontWeight: 500, color: T.textTertiary, fontFamily: T.font }}>{day.slice(0, 3)}</span>
-                <span style={{ fontSize: 8, color: T.textTertiary, fontFamily: T.font }}>{data.total}</span>
+              <div key={action.id} onClick={() => getKikoRec(action)} style={{
+                display: 'flex', gap: 10, alignItems: 'flex-start', padding: '11px 12px', borderRadius: 10, marginBottom: 4, cursor: 'pointer', transition: 'all 0.15s',
+                background: isSelected ? 'rgba(139,108,246,0.03)' : 'rgba(255,255,255,0.015)',
+                border: `1px solid ${isSelected ? 'rgba(139,108,246,0.2)' : 'rgba(255,255,255,0.03)'}`,
+              }}
+                onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}}
+                onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.background = 'rgba(255,255,255,0.015)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.03)' }}}
+              >
+                {/* Rank */}
+                <span style={{ fontSize: 10, color: i < 3 ? 'rgba(139,108,246,0.6)' : T.textTertiary, fontWeight: 500, width: 16, textAlign: 'center', flexShrink: 0, marginTop: 3 }}>{i + 1}</span>
+                {/* Urgency bar */}
+                <div style={{ width: 3, height: 32, borderRadius: 2, flexShrink: 0, marginTop: 2, background: urgencyColor(action.urgency) }} />
+                {/* Content */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                    <span style={{ fontSize: 9, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{action.actionType}</span>
+                    {action.isStale && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 6, background: 'rgba(255,59,48,0.08)', color: 'rgba(255,59,48,0.6)', fontWeight: 500 }}>STALE</span>}
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.75)', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.company || 'Unknown'}{d.contact ? ` — ${d.contact}` : ''}</div>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                    <span style={{ fontSize: 10, color: T.textTertiary, fontWeight: 300 }}>{action.stage}</span>
+                    {action.value > 0 && <span style={{ fontSize: 10, color: 'rgba(0,212,170,0.4)', fontWeight: 300 }}>${(action.value / 1000000).toFixed(1)}M</span>}
+                    <span style={{ fontSize: 10, color: action.daysSinceUpdate > 30 ? 'rgba(255,59,48,0.5)' : T.textTertiary, fontWeight: 300 }}>{action.daysSinceUpdate}d ago</span>
+                    <span style={{ fontSize: 10, color: 'rgba(139,108,246,0.3)', fontWeight: 300 }}>{action.prob}%</span>
+                  </div>
+                </div>
+                <ChevronRight size={12} style={{ color: 'rgba(255,255,255,0.08)', flexShrink: 0, marginTop: 8 }} />
               </div>
             )
           })}
         </div>
       </div>
 
-      {/* Company Outreach Timeline */}
-      <div style={card}>
-        <p style={sectionTitle}><Building2 style={{ width: 12, height: 12, display: 'inline', verticalAlign: -2, marginRight: 6 }} />Company Outreach Timeline</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {Object.entries(byCompany).sort((a, b) => b[1].total - a[1].total).slice(0, 25).map(([company, data]) => {
-            const rate = data.total > 0 ? Math.round(data.replied / data.total * 100) : 0
-            const daysSince = Math.round((Date.now() - new Date(data.lastSent).getTime()) / 86400000)
-            return (
-              <div key={company} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 10px', borderRadius: 50, background: rate > 0 ? 'rgba(52,199,89,0.04)' : daysSince > 14 ? 'rgba(255,59,48,0.04)' : 'transparent' }}>
-                <span style={{ fontSize: 12, fontWeight: 500, color: T.text, fontFamily: T.font, width: 140, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company}</span>
-                <div style={{ display: 'flex', gap: 3, flex: 1 }}>
-                  {data.outcomes.slice(0, 10).map((o, i) => (
-                    <div key={i} style={{ width: 8, height: 8, borderRadius: 2, background: o === 'replied' ? '#34C759' : o === 'silence' ? '#FF3B30' : o === 'pending' ? '#FF9500' : '#ABABAB' }} title={o} />
-                  ))}
-                </div>
-                <span style={{ fontSize: 10, fontWeight: 500, color: rate > 0 ? '#34C759' : T.textTertiary, fontFamily: T.font, width: 40, textAlign: 'right' }}>{rate}%</span>
-                <span style={{ fontSize: 10, color: daysSince > 14 ? '#FF3B30' : T.textTertiary, fontFamily: T.font, width: 50, textAlign: 'right' }}>{daysSince}d ago</span>
-              </div>
-            )
-          })}
+      {/* RIGHT — Kiko Intelligence Panel */}
+      <div style={{ width: 370, borderLeft: '1px solid rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.01)', flexShrink: 0 }}>
+        <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 40, height: 12, overflow: 'hidden' }}><DoubleHelix width={40} height={12} mini /></div>
+          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(139,108,246,0.6)', letterSpacing: '0.04em' }}>Kiko Intelligence</span>
         </div>
+
+        <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+          {!selectedAction && !kikoLoading && (
+            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+              <Target size={20} style={{ color: 'rgba(255,255,255,0.08)', margin: '0 auto 10px', display: 'block' }} />
+              <p style={{ fontSize: 12, color: T.textTertiary, fontWeight: 300, lineHeight: 1.5 }}>Select a deal to get Kiko's recommendation — analysis, timing, and draft message.</p>
+            </div>
+          )}
+
+          {kikoLoading && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '40px 0' }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,108,246,0.45) 0%, rgba(0,212,170,0.25) 60%, transparent 100%)', boxShadow: '0 0 18px rgba(139,108,246,0.35)', animation: 'kikoThink 1.5s ease-in-out infinite' }} />
+              <span style={{ fontSize: 12, color: 'rgba(139,108,246,0.6)', fontWeight: 400 }}>Analysing deal...</span>
+            </div>
+          )}
+
+          {kikoRec && selectedAction && (
+            <div>
+              {/* Context header */}
+              <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                <div style={{ fontSize: 10, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 }}>{selectedAction.actionType}</div>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: 400 }}>{selectedAction.data?.company}{selectedAction.data?.contact ? ` · ${selectedAction.data.contact}` : ''}</div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                  <span style={{ fontSize: 10, color: T.textTertiary }}>{selectedAction.stage}</span>
+                  {selectedAction.value > 0 && <span style={{ fontSize: 10, color: 'rgba(0,212,170,0.4)' }}>${(selectedAction.value / 1000000).toFixed(1)}M</span>}
+                  <span style={{ fontSize: 10, color: selectedAction.isStale ? 'rgba(255,59,48,0.5)' : T.textTertiary }}>{selectedAction.daysSinceUpdate}d since activity</span>
+                </div>
+              </div>
+              {/* Kiko's analysis */}
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.72)', fontWeight: 300, lineHeight: 1.65 }}>
+                <span dangerouslySetInnerHTML={{ __html: md(kikoRec) }} />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Action buttons */}
+        {selectedAction && kikoRec && !kikoLoading && (
+          <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(255,255,255,0.04)', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <button onClick={() => getKikoRec(selectedAction)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 400, border: '1px solid rgba(139,108,246,0.15)', background: 'rgba(139,108,246,0.04)', color: 'rgba(139,108,246,0.7)', cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Regenerate</button>
+            <button onClick={() => navigator.clipboard.writeText(kikoRec)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 400, border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', color: T.textTertiary, cursor: 'pointer', fontFamily: T.font }}>Copy</button>
+          </div>
+        )}
       </div>
     </div>
   )
