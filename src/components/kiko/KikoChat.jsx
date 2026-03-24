@@ -150,6 +150,24 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   useEffect(() => {
     if (editingIdx !== null) { setInput(editText); inputRef.current?.focus(); setEditingIdx(null) }
   }, [editingIdx])
+
+  // Auto-load conversation after navigation (page reload preserves state via sessionStorage)
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('kiko_reopen')
+      if (!raw) return
+      sessionStorage.removeItem('kiko_reopen')
+      const { convId: savedConvId, timestamp } = JSON.parse(raw)
+      if (Date.now() - timestamp > 10000) return
+      if (savedConvId) {
+        console.log('[KikoChat] Auto-loading conversation after navigation, convId:', savedConvId)
+        setActiveConvId(savedConvId)
+        supabase.from('conversations').select('messages').eq('id', savedConvId).single().then(({ data }) => {
+          if (data?.messages?.length) setMessages(data.messages)
+        })
+      }
+    } catch {}
+  }, [])
   const hasVoiceMessages = voiceMessages.length > 0
 
   // Start voice mode — don't pre-acquire mic, let KikoVoice handle it
@@ -443,9 +461,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       if (pendingNav) {
         if (outletCtx.setKikoMessages) outletCtx.setKikoMessages(updated)
         if (outletCtx.setKikoConvId) outletCtx.setKikoConvId(newId || activeConvId)
-        console.log('[KikoChat] Navigating to:', pendingNav)
+        const savedId = newId || activeConvId
+        console.log('[KikoChat] Navigating to:', pendingNav, '| convId:', savedId)
+        sessionStorage.setItem('kiko_reopen', JSON.stringify({ convId: savedId, timestamp: Date.now() }))
         const target = pendingNav === 'home' ? '/' : `/${pendingNav}`
         window.location.href = target
+        return // Stop execution — page is reloading
       }
     } catch (err) {
       if (err.name === 'AbortError') {

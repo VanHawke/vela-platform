@@ -134,6 +134,30 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, streamText])
 
+  // Auto-reopen after navigation (page reload preserves state via sessionStorage)
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('kiko_reopen')
+      if (!raw) return
+      sessionStorage.removeItem('kiko_reopen')
+      const { convId: savedConvId, timestamp } = JSON.parse(raw)
+      if (Date.now() - timestamp > 10000) return // Stale (>10s old), ignore
+      console.log('[KikoFloat] Auto-reopening after navigation, convId:', savedConvId)
+      if (savedConvId) {
+        setConvId(savedConvId)
+        // Load conversation from Supabase
+        supabase.from('conversations').select('messages').eq('id', savedConvId).single().then(({ data }) => {
+          if (data?.messages?.length) {
+            setMessages(data.messages)
+            setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open')
+          }
+        })
+      } else {
+        setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open')
+      }
+    } catch {}
+  }, [])
+
   function toggleOpen() {
     if (!open) {
       setOpen(true)
@@ -195,15 +219,9 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
       }
       const kikoMsg = { role: 'assistant', content: full }
       setMessages(prev => [...prev, kikoMsg]); setStreamText('')
-      // Execute queued navigation AFTER React commits state
-      if (pendingNavRef.current) {
-        const navTarget = pendingNavRef.current
-        pendingNavRef.current = null
-        console.log('[KikoFloat] Navigating to:', navTarget)
-        const target = '/' + (navTarget === 'home' ? '' : navTarget)
-        window.location.href = target
-      }
       const allMsgs = [...messages, userMsg, kikoMsg]
+      // Save conversation BEFORE navigation (navigation reloads the page)
+      let savedConvId = convId
       if (user?.id) {
         const orgId = user?.app_metadata?.org_id
         if (convId) {
@@ -212,8 +230,17 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           let autoTitle = msg.slice(0, 60)
           try { const tr = await fetch('/api/kiko', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'title', message: msg, response: full.slice(0, 300) }) }); const tj = await tr.json(); if (tj.title) autoTitle = tj.title } catch {}
           const { data } = await supabase.from('conversations').insert({ user_id: user.id, org_id: orgId, title: autoTitle, messages: allMsgs }).select('id').single()
-          if (data?.id) setConvId(data.id)
+          if (data?.id) { setConvId(data.id); savedConvId = data.id }
         }
+      }
+      // Navigate AFTER conversation is saved
+      if (pendingNavRef.current) {
+        const navTarget = pendingNavRef.current
+        pendingNavRef.current = null
+        console.log('[KikoFloat] Navigating to:', navTarget, '| convId:', savedConvId)
+        sessionStorage.setItem('kiko_reopen', JSON.stringify({ convId: savedConvId, timestamp: Date.now() }))
+        window.location.href = '/' + (navTarget === 'home' ? '' : navTarget)
+        return // Stop execution — page is reloading
       }
     } catch (err) { setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message}` }]); setStreamText('') }
     finally { setStreaming(false) }
