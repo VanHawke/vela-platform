@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
-import { Target, TrendingUp, Clock, Users, Building2, Send, Zap, RefreshCw, Loader2, AlertTriangle, Calendar, ChevronRight, CheckSquare, Mail } from 'lucide-react'
+import { Target, TrendingUp, Clock, Building2, Send, RefreshCw, Loader2, AlertTriangle, Calendar, ChevronRight } from 'lucide-react'
 import T from '@/lib/theme'
 import DOMPurify from 'dompurify'
 import DoubleHelix from '@/components/kiko/DoubleHelix'
