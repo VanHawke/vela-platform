@@ -346,6 +346,22 @@ async function bookmarkConversation({ reason }) {
   return `✅ Bookmarked "${convs[0].title}".`;
 }
 
+async function getOutreachTiming({ company, contact_email }, userEmail) {
+  let url = 'outreach_scores?select=sent_day_of_week,sent_hour,outcome,company,recipient_email&order=sent_at.desc&limit=200';
+  if (company) url += `&company=ilike.*${company}*`;
+  if (contact_email) url += `&recipient_email=eq.${contact_email}`;
+  const rows = await sbFetch(url);
+  if (!rows?.length) return `No outreach data found${company ? ` for "${company}"` : ''}.`;
+  const byDay = {};
+  rows.forEach(r => { const d = r.sent_day_of_week || 'Unknown'; if (!byDay[d]) byDay[d] = { total: 0, replied: 0 }; byDay[d].total++; if (r.outcome === 'replied') byDay[d].replied++; });
+  const bestDay = Object.entries(byDay).filter(([,v]) => v.total >= 2).sort((a,b) => (b[1].replied/b[1].total) - (a[1].replied/a[1].total))[0];
+  let out = `OUTREACH TIMING${company ? ` — ${company}` : ''} (${rows.length} emails):\n\n`;
+  const dayOrder = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+  dayOrder.forEach(d => { const data = byDay[d]; if (data) out += `  ${d}: ${data.total} sent, ${data.replied} replied (${data.total > 0 ? Math.round(data.replied/data.total*100) : 0}%)\n`; });
+  if (bestDay) out += `\nBest day: ${bestDay[0]} (${Math.round(bestDay[1].replied/bestDay[1].total*100)}% reply rate)`;
+  return out;
+}
+
 // ── Main Dispatch ──
 // Called by Kiko Prime. Routes to the correct handler based on operation.
 export async function callDataAgent(operation, params = {}, userEmail = 'sunny@vanhawke.com') {
@@ -371,7 +387,8 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
       case 'learning_save': return await saveLearning(params);
       case 'skills': return await getSkills();
       case 'bookmark': return await bookmarkConversation(params);
-      default: return `Unknown data operation: ${operation}. Available: search_contacts, search_companies, search_deals, entity_detail, alerts, email_analytics, outreach_intelligence, stale_contacts, news, partnership_matrix, pipeline_notifications, deal_history, activity_feed, search_documents, past_conversations, recent_conversations, learning_search, learning_save, skills, bookmark`;
+      case 'outreach_timing': return await getOutreachTiming(params, userEmail);
+      default: return `Unknown data operation: ${operation}. Available: search_contacts, search_companies, search_deals, entity_detail, alerts, email_analytics, outreach_intelligence, outreach_timing, stale_contacts, news, partnership_matrix, pipeline_notifications, deal_history, activity_feed, search_documents, past_conversations, recent_conversations, learning_search, learning_save, skills, bookmark`;
     }
   } catch (err) {
     return `Data Agent error (${operation}): ${err.message}`;

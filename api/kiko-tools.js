@@ -35,7 +35,7 @@ export const TOOL_DEFINITIONS = [
     name: 'ask_data_agent',
     description: 'CRM reads + analytics. Use for: searching contacts/companies/deals, entity details, pipeline stats, stale contacts, email analytics, outreach intelligence, news, partnership matrix, activity feed, deal history, document search, past conversations, learning log.',
     input_schema: { type: 'object', properties: {
-      operation: { type: 'string', enum: ['search_contacts', 'search_companies', 'search_deals', 'entity_detail', 'alerts', 'email_analytics', 'outreach_intelligence', 'stale_contacts', 'news', 'partnership_matrix', 'pipeline_notifications', 'deal_history', 'activity_feed', 'search_documents', 'past_conversations', 'recent_conversations', 'learning_search', 'learning_save', 'skills', 'bookmark'], description: 'Which data operation to run' },
+      operation: { type: 'string', enum: ['search_contacts', 'search_companies', 'search_deals', 'entity_detail', 'alerts', 'email_analytics', 'outreach_intelligence', 'outreach_timing', 'stale_contacts', 'news', 'partnership_matrix', 'pipeline_notifications', 'deal_history', 'activity_feed', 'search_documents', 'past_conversations', 'recent_conversations', 'learning_search', 'learning_save', 'skills', 'bookmark'], description: 'Which data operation to run' },
       params: { type: 'object', description: 'Operation params. Common: query (string), limit (number), company (string), category (string), entity_type (string), name (string), focus (string)' },
     }, required: ['operation'] },
   },
@@ -187,6 +187,11 @@ export const TOOL_DEFINITIONS = [
 ];
 
 // ── Tool Executor — Routes to agents ──
+function agentError(agentName, err) {
+  console.error(`[KIKO] ${agentName} FAILED:`, err.message);
+  return `AGENT UNAVAILABLE: ${agentName} failed — ${err.message}. Tell Sunny this agent hit an error. Do NOT attempt to handle the task yourself.`;
+}
+
 export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com', pageContext = null) {
 
   // ── Navigator Agent ──
@@ -200,7 +205,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       const result = await callNavigator(enrichedInstruction, pageContext || {});
       if (result.navigateTo) return { navigated: true, page: result.navigateTo, description: result.description };
       return result.description;
-    } catch (e) { return `Navigator error: ${e.message}`; }
+    } catch (e) { return agentError('Navigator', e); }
   }
 
   // ── Deal Agent ──
@@ -209,7 +214,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       const { callDealAgent } = await import('./agents/deal.js');
       const result = await callDealAgent(input.instruction, userEmail);
       return result.success ? result.result : `Deal Agent failed: ${result.result}`;
-    } catch (e) { return `Deal Agent error: ${e.message}`; }
+    } catch (e) { return agentError('Deal Agent', e); }
   }
 
   // ── Data Agent ──
@@ -217,7 +222,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       const { callDataAgent } = await import('./agents/data.js');
       return await callDataAgent(input.operation, input.params || {}, userEmail);
-    } catch (e) { return `Data Agent error: ${e.message}`; }
+    } catch (e) { return agentError('Data Agent', e); }
   }
 
   // ── Outreach Agent ──
@@ -225,7 +230,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       const { callOutreachAgent } = await import('./agents/outreach.js');
       return await callOutreachAgent(input.operation, input.params || {}, userEmail);
-    } catch (e) { return `Outreach Agent error: ${e.message}`; }
+    } catch (e) { return agentError('Outreach Agent', e); }
   }
 
   // ── Document Agent ──
@@ -233,7 +238,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       const { callDocumentAgent } = await import('./agents/document.js');
       return await callDocumentAgent(input.operation, input.params || {});
-    } catch (e) { return `Document Agent error: ${e.message}`; }
+    } catch (e) { return agentError('Document Agent', e); }
   }
 
   // ── Memory Engine ──
@@ -241,7 +246,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       const { callMemoryEngine } = await import('./agents/memory-engine.js');
       return await callMemoryEngine(input.operation, input.params || {});
-    } catch (e) { return `Memory Engine error: ${e.message}`; }
+    } catch (e) { return agentError('Memory Engine', e); }
   }
 
   // ── Strategy Agent ──
@@ -249,7 +254,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       const { callStrategyAgent } = await import('./agents/strategy.js');
       return await callStrategyAgent(input.operation, input.params || {});
-    } catch (e) { return `Strategy Agent error: ${e.message}`; }
+    } catch (e) { return agentError('Strategy Agent', e); }
   }
 
   // ── Negotiation Agent ──
@@ -257,7 +262,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       const { callNegotiationAgent } = await import('./agents/negotiation.js');
       return await callNegotiationAgent(input.operation, input.params || {});
-    } catch (e) { return `Negotiation Agent error: ${e.message}`; }
+    } catch (e) { return agentError('Negotiation Agent', e); }
   }
 
   // ── Category Control Agent ──
@@ -265,7 +270,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       const { callCategoryControlAgent } = await import('./agents/category-control.js');
       return await callCategoryControlAgent(input.operation, input.params || {});
-    } catch (e) { return `Category Control error: ${e.message}`; }
+    } catch (e) { return agentError('Category Control', e); }
   }
 
   // ── Finance Agent ──
@@ -273,7 +278,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       const { callFinanceAgent } = await import('./agents/finance.js');
       return await callFinanceAgent(input.operation, input.params || {});
-    } catch (e) { return `Finance Agent error: ${e.message}`; }
+    } catch (e) { return agentError('Finance Agent', e); }
   }
 
   // ── EA Agent ──
@@ -281,7 +286,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       const { callEAAgent } = await import('./agents/ea.js');
       return await callEAAgent(input.operation, input.params || {});
-    } catch (e) { return `EA Agent error: ${e.message}`; }
+    } catch (e) { return agentError('EA Agent', e); }
   }
 
   // ── Legal Agent ──
@@ -289,7 +294,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       const { callLegalAgent } = await import('./agents/legal.js');
       return await callLegalAgent(input.operation, input.params || {});
-    } catch (e) { return `Legal Agent error: ${e.message}`; }
+    } catch (e) { return agentError('Legal Agent', e); }
   }
 
   // ── Dispute Agent ──
@@ -297,7 +302,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       const { callDisputeAgent } = await import('./agents/dispute.js');
       return await callDisputeAgent(input.operation, input.params || {});
-    } catch (e) { return `Dispute Agent error: ${e.message}`; }
+    } catch (e) { return agentError('Dispute Agent', e); }
   }
 
   // ── Content Agent ──
@@ -305,7 +310,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       const { callContentAgent } = await import('./agents/content.js');
       return await callContentAgent(input.operation, input.params || {});
-    } catch (e) { return `Content Agent error: ${e.message}`; }
+    } catch (e) { return agentError('Content Agent', e); }
   }
 
   // ── Investment Agent ──
@@ -313,7 +318,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       const { callInvestmentAgent } = await import('./agents/investment.js');
       return await callInvestmentAgent(input.operation, input.params || {});
-    } catch (e) { return `Investment Agent error: ${e.message}`; }
+    } catch (e) { return agentError('Investment Agent', e); }
   }
 
   // ── Pricing Agent ──
@@ -321,7 +326,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       const { callPricingAgent } = await import('./agents/pricing.js');
       return await callPricingAgent(input.operation, input.params || {});
-    } catch (e) { return `Pricing Agent error: ${e.message}`; }
+    } catch (e) { return agentError('Pricing Agent', e); }
   }
 
   // ── Signal Agent ──
@@ -329,7 +334,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       const { callSignalAgent } = await import('./agents/signal.js');
       return await callSignalAgent(input.operation, input.params || {});
-    } catch (e) { return `Signal Agent error: ${e.message}`; }
+    } catch (e) { return agentError('Signal Agent', e); }
   }
 
   // ── Travel Agent ──
@@ -337,7 +342,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       const { callTravelAgent } = await import('./agents/travel.js');
       return await callTravelAgent(input.operation, input.params || {});
-    } catch (e) { return `Travel Agent error: ${e.message}`; }
+    } catch (e) { return agentError('Travel Agent', e); }
   }
 
   // ── Specialist Agents (Website, Product Dev, IP) ──
@@ -356,7 +361,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
         return await callIPAgent('analyse', input.params || {});
       }
       return `Unknown specialist domain: ${input.domain}. Available: website, product_dev, ip`;
-    } catch (e) { return `Specialist Agent error: ${e.message}`; }
+    } catch (e) { return agentError('Specialist Agent', e); }
   }
 
   // ── Direct tools (kept for backwards compatibility) ──

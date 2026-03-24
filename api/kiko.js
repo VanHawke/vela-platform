@@ -93,17 +93,22 @@ ROUTING (follow these in order):
 20. SPECIALIST (website/product/IP) → call ask_specialist_agent
    Digital presence, Maison product lifecycle, IP/licensing questions
 
-21. CALENDAR / GMAIL (direct read) → use MCP tools (gmail, google-calendar)
+21. DEEP RESEARCH → use web_search tool directly (run 5-8 searches, synthesise)
+   "research [company]", "deep dive on [X]", "deep research". Run multiple web searches systematically: company overview, funding, leadership, news, competitors, partnerships. Synthesise into structured brief with sections: OVERVIEW, KEY PEOPLE, RECENT DEVELOPMENTS, FINANCIAL POSITION, PARTNERSHIP SIGNALS, RECOMMENDED APPROACH.
 
-22. WEB SEARCH → use web_search tool directly
+22. CALENDAR / GMAIL (direct read) → use MCP tools (gmail, google-calendar)
 
-23. MEMORY → use memory tool directly (save important facts, check stored context)
+23. WEB SEARCH → use web_search tool directly
+
+24. MEMORY → use memory tool directly (save important facts, check stored context)
 
 STYLE: Direct, corporate, high-signal. No fluff. No "happy to help." Lead with value. Max 2-3 sentences for simple queries. Use "intelligent age" not "AI generation." All financials in USD.
 
 OUTREACH DOCTRINE: 5-touch authority-led. No pricing in early outreach. No pleasantries. Board-level positioning. Scarcity by design.
 
 PROACTIVE: When briefing, flag stale deals, recommend next actions, connect signals to opportunities. When you spot something important, save it to memory via ask_data_agent (operation: learning_save).
+
+ERROR HANDLING: If an agent returns an error, tell Sunny the agent failed and what went wrong. Do NOT attempt to handle the task yourself — you are a coordinator, not an executor. Say "The [Agent Name] hit an error: [details]. Let me know if you want me to try again."
 
 CURRENT PAGE: {currentPage}`;
 
@@ -229,18 +234,8 @@ export default async function handler(req, res) {
   const entityContext = await fetchEntityContext(pageEntity);
   const pageRole = PAGE_ROLES[currentPage] || '';
 
-  // Load relevant skills
-  let skillsContext = '';
-  try {
-    const skills = await sbFetch('kiko_skills?is_active=eq.true&select=name,trigger_keywords,content');
-    if (skills?.length) {
-      const msgLower = (message || '').toLowerCase();
-      const matched = skills.filter(s => s.trigger_keywords?.some(kw => msgLower.includes(kw)));
-      if (matched.length > 0) {
-        skillsContext = '\n\n── DOMAIN EXPERTISE ──\n' + matched.map(s => `[${s.name}]\n${s.content}`).join('\n\n');
-      }
-    }
-  } catch {}
+  // Skills removed from Prime — domain expertise lives inside specialist agents.
+  // Loading skills here caused Prime to attempt tasks directly instead of routing to agents.
 
   // Voice mode adjustments
   let voiceRules = '';
@@ -264,7 +259,7 @@ export default async function handler(req, res) {
     + `\n[${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
     + (pageContext?.summary ? `\n[Context: ${pageContext.summary}${pageContext.stageDistribution ? ` | Stages: ${JSON.stringify(pageContext.stageDistribution)}` : ''}${pageContext.visibleItems ? `\nVisible: ${pageContext.visibleItems}` : ''}]` : '')
     + (PERSONALITIES[personality] || PERSONALITIES.executive)
-    + pageRole + entityContext + skillsContext + voiceRules + preloadedMemory;
+    + pageRole + entityContext + voiceRules + preloadedMemory;
 
   // ── SSE setup ──
   res.setHeader('Content-Type', 'text/event-stream');
@@ -377,9 +372,20 @@ export default async function handler(req, res) {
       }
     }
 
-    write({ meta: { done: true, model: needsDeepThink ? 'claude-opus-4-6' : MODEL, toolRounds, version: 'v15.0' } });
+    write({ meta: { done: true, model: needsDeepThink ? 'claude-opus-4-6' : MODEL, toolRounds, version: 'v15.3' } });
     res.write('data: [DONE]\n\n');
     res.end();
+
+    // ── Memory Engine: auto-extract facts (non-blocking, fire-and-forget) ──
+    // Only extract from conversations with 3+ user messages to avoid noise
+    const userMsgCount = messages.filter(m => m.role === 'user' && typeof m.content === 'string').length;
+    if (userMsgCount >= 2) {
+      try {
+        const { callMemoryEngine } = await import('./agents/memory-engine.js');
+        const recentMsgs = messages.slice(-8).filter(m => typeof m.content === 'string').map(m => ({ role: m.role, content: m.content }));
+        callMemoryEngine('extract_and_store', { messages: recentMsgs, entityContext: entityContext || '' }).catch(() => {});
+      } catch {}
+    }
   } catch (err) {
     console.error('[KIKO] Error:', err);
     write({ delta: `\n\nError: ${err.message}` });
