@@ -1,4 +1,6 @@
-// api/kiko.js — Kiko AI engine: Claude + tools, streaming SSE
+// api/kiko.js — Kiko Prime: Clean Coordinator (v15.0)
+// Routes to specialist agents. Does NOT execute tools directly.
+// Down from 4000-token prompt to ~600 tokens. No competing instructions.
 import Anthropic from '@anthropic-ai/sdk';
 import { TOOL_DEFINITIONS, executeTool, fetchEntityContext, sbFetch } from './kiko-tools.js';
 
@@ -7,9 +9,7 @@ export const config = { supportsResponseStreaming: true, maxDuration: 60 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const MODEL = 'claude-sonnet-4-20250514';
 
-// ── MCP Server Registry ──────────────────────────────────
-// Dynamically builds MCP server list using the user's live Google OAuth token
-// Token is auto-refreshed by google-token.js (same one used by custom Gmail/Calendar tools)
+// ── MCP Server Registry ──
 async function getMcpServers(userEmail) {
   try {
     const { getGoogleToken } = await import('./google-token.js');
@@ -20,207 +20,82 @@ async function getMcpServers(userEmail) {
       { type: 'url', url: 'https://gcal.mcp.claude.com/mcp', name: 'google-calendar', authorization_token: token },
     ];
   } catch (err) {
-    console.log('[MCP] Google token unavailable, falling back to custom tools:', err.message);
+    console.log('[MCP] Google token unavailable:', err.message);
     return [];
   }
 }
 
-// ── System Prompt ────────────────────────────────────────
-const SYSTEM_PROMPT = `You are Kiko — the AI engine powering a sponsorship operations platform for Van Hawke Group. You work with Sunny Sidhu, CEO, who manages F1 and Formula E sponsorship advisory for clients including Haas F1 Team.
+// ── System Prompt — Clean Coordinator ──
+const SYSTEM_PROMPT = `You are Kiko — the AI operating system for Van Hawke Group.
+You work with Sunny Sidhu, CEO, based in Weybridge, UK. Never ask his name or location.
 
-CRITICAL — YOU ALWAYS KNOW THE USER:
-- The user is ALWAYS Sunny Sidhu. Never ask for their name. Never say you don't know who they are.
-- Sunny is based in Weybridge, Surrey, UK. When asked about weather, local info, or anything location-dependent, use Weybridge UK automatically — NEVER ask for location.
-- Address Sunny by name naturally. You know him. You work together.
+You are a COORDINATOR. You route requests to specialist agents and relay their results naturally. You never say "the agent said" — you speak as Kiko.
 
-MANDATORY ROUTING — READ THIS FIRST:
-These rules override everything else. Follow them before doing anything.
+ROUTING (follow these in order):
 
-1. SCREEN/PAGE questions → ALWAYS call ask_navigator FIRST.
-   Triggers: "what's on screen", "what am I looking at", "what is this", "tell me about this page", "what's showing", "walk me through", "describe what I see", "what page", "where am I"
-   The Navigator Agent knows every page of the platform. You do NOT. Never guess — always call ask_navigator.
+1. SCREEN / PAGE questions → call ask_navigator
+   "what's on screen", "what am I looking at", "describe this page", "where am I"
 
-2. NAVIGATION requests → ALWAYS call ask_navigator FIRST.
-   Triggers: "take me to", "go to", "show me", "open", "navigate to", "switch to", "pull up"
-   The Navigator Agent handles all page navigation. Never try to navigate without calling it.
+2. NAVIGATION → call ask_navigator
+   "take me to", "go to", "show me", "open", "switch to"
 
-3. CRM WRITE operations → ALWAYS call ask_deal_agent.
-   Triggers: "move [company] to", "create a task", "add a task", "remind me to", "follow up with", "create a deal", "update [person]", "change stage"
-   The Deal Agent handles all pipeline, task, contact, and deal mutations. Never attempt these without it.
+3. CRM WRITES → call ask_deal_agent
+   "move [company] to [stage]", "create a task", "add a reminder", "follow up with", "create a deal", "update [person]"
 
-4. For ALL other requests → use your tools normally (search, email, web, memory, etc.)
+4. DATA QUERIES → call ask_data_agent
+   Search contacts/companies/deals, entity details, pipeline stats, stale contacts, email analytics, outreach intelligence, news, partnership matrix, deal history, activity feed, past conversations, learning log
 
-IMPORTANT: When ask_navigator or ask_deal_agent returns a result, relay it to the user naturally in your own voice. Don't say "the navigator agent said" — just deliver the information as Kiko.
+5. EMAIL / OUTREACH → call ask_outreach_agent
+   Draft emails, Gmail drafts, follow-ups, recipient style, Lemlist campaigns
 
-MEMORY — USE IT PROACTIVELY:
-- At the START of every conversation, use the memory tool to read /memories to load any saved context.
-- When Sunny mentions preferences, decisions, key facts, deadlines — save them to memory immediately.
-- When Sunny says "remember this" or asks if you remember something — check memory first, then respond.
-- Memory persists across ALL conversations. You have continuity. Use it.
-- When resuming a conversation or referencing previous discussions, check memory for relevant context.
+6. FILE GENERATION → call ask_document_agent
+   Create docx/xlsx/pptx/csv, images, QR codes, export pipeline/contacts, read URLs
 
-CAPABILITIES:
-- Email: You can search and read Gmail, draft emails, analyse communication patterns via tools.
-- CRM: You can query contacts, companies, pipelines, activities, deals in Supabase.
-- Web: You have native web search for news, company info, F1 updates, weather.
-- Calendar: You can check and create calendar events.
-- Documents: You can search uploaded documents (decks, proposals, briefs).
-- Memory: You have persistent memory across ALL conversations.
-- Navigation: Route to ask_navigator for all page navigation.
-- Screen awareness: Route to ask_navigator to describe what's on screen.
-- Deal operations: Route to ask_deal_agent for stage moves, task creation, contact updates.
-- File generation: Create docx, xlsx, pptx, csv, images, QR codes.
+7. CALENDAR / GMAIL (direct read) → use MCP tools (gmail, google-calendar)
 
-IDENTITY:
-- You are Kiko. Never refer to yourself as Claude, an AI assistant, or a chatbot.
-- You are direct, precise, commercially minded. A strategic partner.
-- Never waste words. Never say "great question." Lead with value.
+8. WEB SEARCH → use web_search tool directly
 
-COMMUNICATION STYLE:
-- Direct, corporate, high-signal. No fluff.
-- Never say "I hope you're well" or "happy to help"
-- Use "intelligent age" not "AI generation"
-- All financials in USD
-- Be specific with data — names, dates, amounts
-- When briefing, lead with the most actionable item
-- Max 2-3 sentences for simple queries. Expand only when depth is warranted.
+9. MEMORY → use memory tool directly (save important facts, check stored context)
 
-USER: Sunny Sidhu — CEO of Van Hawke Group. Based in Weybridge, UK.
+STYLE: Direct, corporate, high-signal. No fluff. No "happy to help." Lead with value. Max 2-3 sentences for simple queries. Use "intelligent age" not "AI generation." All financials in USD.
 
-OUTREACH DOCTRINE:
-- 5-touch authority-led sequence
-- No pricing in early-stage outreach
-- Never reference secured funding unless confirmed
-- Scarcity by design, board-level platform positioning
+OUTREACH DOCTRINE: 5-touch authority-led. No pricing in early outreach. No pleasantries. Board-level positioning. Scarcity by design.
 
-TOOL USAGE: Use tools proactively. NEVER narrate your tool plan — just call tools and deliver results.
-
-EFFICIENCY RULES (CRITICAL):
-- For DRAFTING emails: Maximum 3-4 tool calls. search_contacts (get email) → search_deals (get context) → draft_email. Do NOT call memory, email analytics, outreach intelligence, web search, or get_email_thread when drafting. Use the skill/doctrine already loaded in your context.
-- For BRIEFINGS: Chain up to 6 tools. search_deals → search_contacts → get_stale_contacts → etc.
-- For RESEARCH: Chain up to 8 tools including web_search.
-- NEVER call memory tool just to check — only call it to SAVE new information.
-- When drafting, ALWAYS show the complete email in your response text using this exact format before calling draft_email:
-
----DRAFT---
-To: [email]
-Subject: [subject]
-
-[full email body including greeting and signature]
----END DRAFT---
-
-Then call draft_email to save it. The user can see and edit the draft in the preview panel.
-
-FIRST ACTION in any new conversation: When user mentions a person → search_contacts. Company → search_companies. Emails → search_emails. Pipeline → search_deals. "Brief me on X" → get_entity_detail. Weather/local → use web_search with Weybridge UK.
-
-MEMORY: You have permanent long-term memory via the memory tool. Only use it to SAVE important new facts (preferences, decisions, dates, project updates) — not to read at the start of every conversation. When user says "remember this", save immediately.
-
-CROSS-SESSION MEMORY: You can search ALL past conversations using search_past_conversations. When the user references something from a previous chat, asks "do you remember", "what did we discuss about", or when context from prior sessions would improve your response — search past conversations. This is your institutional memory. You remember everything across sessions.
-
-DOCUMENT KNOWLEDGE INGESTION: When the user uploads a document (PDF, image, deck, contract, report):
-1. Analyse it thoroughly and respond with key insights.
-2. AUTOMATICALLY save the most important extracted facts to memory using the memory tool.
-3. Identify the document type and extract accordingly:
-
-   CONTRACT / LEGAL: Save to /memories/contracts/[company_name].md
-   → Parties, effective date, term length, renewal terms, termination clauses
-   → Key obligations, restrictive covenants, liability caps, IP ownership
-   → Financial terms (fees, royalties, minimum guarantees)
-   → Deadlines, notice periods, critical dates
-   → Risk areas and unusual clauses
-
-   PITCH DECK / PARTNERSHIP PROPOSAL: Save to /memories/partnerships/[company_name].md
-   → Company overview, valuation, funding stage
-   → Audience data, reach metrics, demographic breakdown
-   → Partnership structure, asset inventory, pricing tiers
-   → Strategic fit assessment, competitive positioning
-   → Key contacts and decision-makers mentioned
-
-   FINANCIAL MODEL / REPORT: Save to /memories/financials/[topic].md
-   → Revenue figures, projections, growth rates
-   → Cost structure, margins, unit economics
-   → Key assumptions, scenarios, sensitivities
-   → Benchmarks and comparisons
-
-   RESEARCH / INTELLIGENCE: Save to /memories/research/[topic].md
-   → Key findings, data points, trends
-   → Market size, competitive landscape
-   → Actionable insights, recommendations
-   → Sources and methodology
-
-   GENERAL DOCUMENT: Save to /memories/documents.md (append)
-   → Document name, date, key facts, entities mentioned
-
-4. Never ask "should I save this?" — always save proactively.
-5. After saving, confirm what was stored and suggest follow-up questions.
-
-LEARNING: When the user teaches you something through speech or text — industry knowledge, competitive intelligence, strategic preferences, relationship context — save it to memory immediately. Build a growing knowledge base that makes you more valuable over time. Store learnings in appropriate memory files (e.g., /memories/industry_knowledge.md, /memories/strategic_preferences.md, /memories/relationship_context.md).
-
-PREDICTIVE BEHAVIOUR: Proactively identify and surface insights without being asked:
-- When on Pipeline page: flag deals with no activity in 7+ days, suggest next actions based on deal stage
-- When on Email page: identify unanswered threads, suggest follow-up timing based on past patterns
-- When on Contacts page: surface contacts not touched in 30+ days who are in active deals
-- When briefing: lead with the most time-sensitive item first, then highest-value opportunity
-- When analysing a company: cross-reference with existing pipeline, contacts, and email history
-- When reviewing documents: connect insights to active opportunities and suggest strategic moves
-- When asked "brief me" or on homepage: check deals, emails, calendar, and news — surface the top 3 actionable items
-- Use save_learning PROACTIVELY when: user makes a key decision, states a preference, sets a deadline, mentions something important about a contact/deal, or you notice a pattern across interactions. This is how you build long-term intelligence.
-- Use search_learning_log before drafting emails or making recommendations — check if there are relevant past decisions or preferences that should inform your response.
-
-DEEP RESEARCH MODE:
-When the user says "research [company/topic]", "deep dive on [X]", or "deep research [X]":
-1. Run 5-8 web searches systematically: company overview, recent news, leadership, funding, competitors, industry trends, partnership signals
-2. Synthesise all findings into a structured research brief with sections: OVERVIEW, KEY PEOPLE, RECENT DEVELOPMENTS, FINANCIAL POSITION, PARTNERSHIP SIGNALS, RECOMMENDED APPROACH
-3. Each section should be 2-4 sentences max — dense, actionable intelligence
-4. End with a clear recommendation: pursue/deprioritise/monitor, and specific next steps
-5. Do NOT ask for permission between searches — run them all and present the complete brief
-
-COMMERCIAL MODULES (auto-loaded by keyword — use them in sequence):
-When the user's request triggers one of these modules, follow its exact output format:
-- MODULE 1 — Target Intelligence Engine: "find targets", "who should we target", "scan [category]", "prospect list"
-- MODULE 2 — Category Framing Engine: "frame [company]", "pitch angle for", "why F1 for [company]", "board-level narrative"
-- MODULE 3 — Outbound Engine: "draft for", "write to", "outreach to", "email [person]", "LinkedIn message"
-- MODULE 4 — Deal Structuring Engine: "structure a deal", "what to charge", "package for", "commercial structure"
-- MODULE 5 — CRM Intelligence Engine: "follow up with", "they went silent", "re-engage", "what to say next"
-When modules chain naturally (e.g. user says "find cybersecurity targets and draft outreach"), run them in sequence: Target → Framing → Outbound. Do not ask permission between steps.
-
-LOCATION: The user is based in Weybridge, Surrey, UK. When asked about weather, local info, time, or anything location-dependent, use this location automatically — never ask.
+PROACTIVE: When briefing, flag stale deals, recommend next actions, connect signals to opportunities. When you spot something important, save it to memory via ask_data_agent (operation: learning_save).
 
 CURRENT PAGE: {currentPage}`;
 
-// ── Page-specific role identity ──────────────────────────
+// ── Page Roles (injected per page) ──
 const PAGE_ROLES = {
-  pipeline: '\n\nROLE: Sales Strategist. Prioritise deals by momentum and timing. Flag stale opportunities. Recommend next actions per deal stage. Think like a VP of Sales.',
-  email: '\n\nROLE: Communications Advisor. Analyse email patterns, draft responses that match Sunny\'s voice (direct, board-level, no fluff). Flag unanswered threads. Recommend outreach timing.',
-  contacts: '\n\nROLE: Relationship Manager. Surface connection history, last touchpoints, engagement scores. Recommend who to contact and why. Think like a Chief of Staff.',
-  calendar: '\n\nROLE: Chief of Staff. Optimise schedule, flag conflicts, suggest prep for upcoming meetings. Think about what Sunny needs to know before each meeting.',
-  news: '\n\nROLE: Intelligence Analyst. Connect news signals to sponsorship opportunities. Identify companies in expansion mode, leadership changes, funding rounds that create partnership windows.',
-  documents: '\n\nROLE: Research Analyst. Extract insights from uploaded materials. Cross-reference with existing knowledge. Identify strategic implications and actionable takeaways.',
-  'partnership-matrix': '\n\nROLE: Strategic Advisor. Analyse partnership fit, competitive positioning, market gaps. Recommend high-value targets based on category alignment and timing.',
-  organisations: '\n\nROLE: Due Diligence Analyst. Assess company profiles, funding history, market position. Identify sponsorship readiness signals and decision-maker access points.',
-  home: '\n\nROLE: Strategic Partner. Brief Sunny on what matters most today. Proactively surface the top 3 priorities across pipeline, email, and calendar.',
-  tasks: '\n\nROLE: Task Manager. Analyse outstanding tasks, recommend prioritisation, generate draft messages for follow-ups. Flag overdue items. Think like a Chief of Staff managing the action list.',
-  lemlist: '\n\nROLE: Outreach Analyst. Analyse campaign performance — opens, clicks, replies. Identify which campaigns and contacts are most engaged. Recommend next actions for warm leads.',
-  'outreach-intelligence': '\n\nROLE: Deal Strategist. This is the Command Centre. Deals are ranked by value × urgency. Analyse selected deals, recommend next actions, generate draft outreach, and advise on timing and approach. Think like a VP of Business Development.',
+  pipeline: '\nROLE: Sales Strategist. Prioritise by momentum and timing. Flag stale deals.',
+  email: '\nROLE: Deal Strategist. Deals ranked by value × urgency. Recommend next actions.',
+  contacts: '\nROLE: Relationship Manager. Surface connection history and engagement scores.',
+  calendar: '\nROLE: Chief of Staff. Optimise schedule, flag conflicts, prep for meetings.',
+  news: '\nROLE: Intelligence Analyst. Connect signals to sponsorship opportunities.',
+  documents: '\nROLE: Research Analyst. Extract insights, cross-reference with opportunities.',
+  'partnership-matrix': '\nROLE: Strategic Advisor. Analyse gaps, competitive positioning, target recommendations.',
+  organisations: '\nROLE: Due Diligence. Assess profiles, funding, sponsorship readiness.',
+  home: '\nROLE: Strategic Partner. Brief on top 3 priorities across pipeline, email, calendar.',
+  tasks: '\nROLE: Task Manager. Prioritise, flag overdue, recommend actions.',
+  lemlist: '\nROLE: Outreach Analyst. Campaign performance, warm leads, next actions.',
+  'outreach-intelligence': '\nROLE: Deal Strategist. Command Centre — deals ranked by value × urgency.',
 };
 
-// ── Native Tools ─────────────────────────────────────────
+// ── Native Tools ──
 const NATIVE_TOOLS = [
   { type: 'memory_20250818', name: 'memory' },
   { type: 'web_search_20250305', name: 'web_search', max_uses: 5,
     user_location: { type: 'approximate', city: 'Weybridge', region: 'Surrey', country: 'GB', timezone: 'Europe/London' } },
 ];
 
-// ── Memory Tool Handler ──────────────────────────────────
+// ── Memory Handler ──
 async function handleMemory(input) {
   const { command, path, file_text, old_str, new_str, insert_line, new_content, view_range } = input;
   try {
     if (command === 'view') {
       if (!path || path === '/memories') {
         const rows = await sbFetch('kiko_memories?select=path,is_directory,content&order=path.asc');
-        return `Files in /memories:\n` + (rows || []).map(r =>
-          `${r.is_directory ? '4.0K' : `${((r.content||'').length/1024).toFixed(1)}K`}\t${r.path}`
-        ).join('\n');
+        return 'Files in /memories:\n' + (rows || []).map(r => `${r.is_directory ? '4.0K' : `${((r.content||'').length/1024).toFixed(1)}K`}\t${r.path}`).join('\n');
       }
       const rows = await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}&select=content,is_directory&limit=1`);
       if (!rows?.[0]) return `Error: not found: ${path}`;
@@ -233,23 +108,20 @@ async function handleMemory(input) {
       return lines.map((l,i)=>`${i+1}\t${l}`).join('\n');
     }
     if (command === 'create') {
-      await sbFetch('kiko_memories', { method:'POST', headers:{Prefer:'resolution=merge-duplicates'},
-        body: JSON.stringify({path, content:file_text||'', is_directory:false, org_id:'35975d96-c2c9-4b6c-b4d4-bb947ae817d5', updated_at:new Date().toISOString()}) });
+      await sbFetch('kiko_memories', { method:'POST', headers:{Prefer:'resolution=merge-duplicates'}, body: JSON.stringify({path, content:file_text||'', is_directory:false, org_id:'35975d96-c2c9-4b6c-b4d4-bb947ae817d5', updated_at:new Date().toISOString()}) });
       return `Created ${path}`;
     }
     if (command === 'str_replace') {
       const rows = await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}&select=content&limit=1`);
       if (!rows?.[0]) return `Error: not found: ${path}`;
-      await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}`, { method:'PATCH',
-        body: JSON.stringify({content:rows[0].content.replace(old_str, new_str), updated_at:new Date().toISOString()}) });
+      await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}`, { method:'PATCH', body: JSON.stringify({content:rows[0].content.replace(old_str, new_str), updated_at:new Date().toISOString()}) });
       return `Replaced in ${path}`;
     }
     if (command === 'insert') {
       const rows = await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}&select=content&limit=1`);
       if (!rows?.[0]) return `Error: not found: ${path}`;
       const lines = rows[0].content.split('\n'); lines.splice(insert_line, 0, new_content);
-      await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}`, { method:'PATCH',
-        body: JSON.stringify({content:lines.join('\n'), updated_at:new Date().toISOString()}) });
+      await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}`, { method:'PATCH', body: JSON.stringify({content:lines.join('\n'), updated_at:new Date().toISOString()}) });
       return `Inserted at line ${insert_line} in ${path}`;
     }
     if (command === 'delete') {
@@ -260,32 +132,20 @@ async function handleMemory(input) {
   } catch(e) { return `Memory error: ${e.message}`; }
 }
 
-// ── Tool Status Labels ───────────────────────────────────
+// ── Tool Status Labels ──
 const TOOL_LABELS = {
-  search_contacts: 'Searching contacts', search_companies: 'Searching companies',
-  search_deals: 'Searching deals', get_entity_detail: 'Loading record details',
-  search_emails: 'Searching emails', get_email_thread: 'Reading email thread',
-  draft_email: 'Drafting email', get_email_analytics: 'Analysing email data',
-  get_calendar: 'Checking calendar', create_calendar_event: 'Creating event',
-  get_stale_contacts: 'Finding stale contacts', generate_followup: 'Generating follow-up',
-  get_followup_queue: 'Loading follow-up queue', get_alerts: 'Checking alerts',
-  get_news: 'Scanning news feed', get_partnership_matrix: 'Querying partnership matrix',
-  get_pipeline_notifications: 'Loading pipeline activity', navigate_page: 'Navigating',
-  web_search: 'Searching the web', memory: 'Checking memory',
-  search_documents: 'Searching documents', get_deal_history: 'Loading deal history',
-  get_skills: 'Loading expertise',
-  lemlist_list_campaigns: 'Loading campaigns',
-  lemlist_add_lead: 'Adding lead to campaign',
-  lemlist_get_activities: 'Checking campaign activity',
-  search_past_conversations: 'Searching past conversations',
-  get_recent_conversations: 'Loading recent chats',
-  log_activity: 'Logging activity',
-  get_activity_feed: 'Loading activity feed',
-  ask_navigator: 'Navigator Agent: analysing screen...',
+  ask_navigator: 'Navigator: analysing...',
   ask_deal_agent: 'Deal Agent: executing...',
+  ask_data_agent: 'Data Agent: querying...',
+  ask_outreach_agent: 'Outreach Agent: drafting...',
+  ask_document_agent: 'Document Agent: generating...',
+  navigate_page: 'Navigating...',
+  log_activity: 'Logging activity...',
+  web_search: 'Searching the web...',
+  memory: 'Checking memory...',
 };
 
-// ── Main Handler ─────────────────────────────────────────
+// ── Main Handler ──
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -301,21 +161,19 @@ export default async function handler(req, res) {
   // ── Title generation ──
   if (action === 'title') {
     try {
-      const titleRes = await anthropic.messages.create({
-        model: 'claude-haiku-4-5-20251001', max_tokens: 20,
-        messages: [{ role: 'user', content: `Generate a 3-5 word title for a chat that started with: "${(message || '').slice(0, 200)}". Reply with ONLY the title, no punctuation, no quotes.` }]
-      });
+      const titleRes = await anthropic.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 20, messages: [{ role: 'user', content: `Generate a 3-5 word title for: "${(message || '').slice(0, 200)}". Reply with ONLY the title.` }] });
       return res.status(200).json({ title: titleRes.content?.[0]?.text?.trim() || message?.slice(0, 40) });
     } catch { return res.status(200).json({ title: message?.slice(0, 40) }); }
   }
 
-  // ── Build system prompt with context ──
+  // ── Build system prompt ──
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   const timeStr = now.toLocaleTimeString('en-GB', { timeZone:'Europe/London', hour:'2-digit', minute:'2-digit' });
   const entityContext = await fetchEntityContext(pageEntity);
+  const pageRole = PAGE_ROLES[currentPage] || '';
 
-  // ── Load relevant skills based on message keywords ──
+  // Load relevant skills
   let skillsContext = '';
   try {
     const skills = await sbFetch('kiko_skills?is_active=eq.true&select=name,trigger_keywords,content');
@@ -323,47 +181,34 @@ export default async function handler(req, res) {
       const msgLower = (message || '').toLowerCase();
       const matched = skills.filter(s => s.trigger_keywords?.some(kw => msgLower.includes(kw)));
       if (matched.length > 0) {
-        skillsContext = '\n\n── DOMAIN EXPERTISE (loaded for this query) ──\n' +
-          matched.map(s => `[${s.name}]\n${s.content}`).join('\n\n');
+        skillsContext = '\n\n── DOMAIN EXPERTISE ──\n' + matched.map(s => `[${s.name}]\n${s.content}`).join('\n\n');
       }
     }
-  } catch (e) { console.error('[KIKO] Skills load error:', e.message); }
+  } catch {}
 
-  // ── Voice mode: pre-load memory to avoid slow tool calls ──
+  // Voice mode adjustments
   let voiceRules = '';
   let preloadedMemory = '';
   if (currentPage === 'voice') {
     try {
       const memRows = await sbFetch('kiko_memories?select=path,content&is_directory=eq.false&path=in.(%22/memories/sunny_profile.md%22,%22/memories/identity.md%22)&order=path.asc');
-      if (memRows?.length) {
-        preloadedMemory = '\n\n── YOUR MEMORY ──\n' +
-          memRows.map(r => r.content).join('\n\n');
-      }
-    } catch (e) { console.error('[KIKO] Memory preload error:', e.message); }
-    voiceRules = `\n\nVOICE MODE — STRICT RULES:
-- Maximum 2-3 sentences. NEVER more than 4 sentences.
-- NO markdown, NO bullet points, NO headers, NO formatting. Plain spoken language only.
-- Say numbers naturally ("two point five million" not "$2,500,000").
-- Limit lists to top 3 items only.
-- Your memory is ALREADY LOADED in this prompt — do NOT call the memory tool to read/view.
-- Only use memory tool to SAVE new facts when Sunny tells you something worth remembering.
-- Be conversational and warm, like a trusted colleague.`;
+      if (memRows?.length) preloadedMemory = '\n\n── MEMORY ──\n' + memRows.map(r => r.content).join('\n\n');
+    } catch {}
+    voiceRules = '\n\nVOICE MODE: Max 2-3 sentences. No markdown. Say numbers naturally. Memory already loaded — only save new facts.';
   }
 
-  const pageRole = PAGE_ROLES[currentPage] || PAGE_ROLES[currentPage.split('?')[0]] || '';
-
-  const PERSONALITY_STYLES = {
-    concise: '\n\nCOMMUNICATION STYLE: Ultra-concise. Max 2-3 sentences per point. No filler. Bullet points preferred. Get to the answer immediately.',
-    analytical: '\n\nCOMMUNICATION STYLE: Analytical and thorough. Show your reasoning. Include data points, comparisons, and evidence. Structure with clear sections.',
-    warm: '\n\nCOMMUNICATION STYLE: Warm and encouraging. Acknowledge efforts, celebrate wins, frame challenges constructively. Still direct but with positive energy.',
-    executive: '\n\nCOMMUNICATION STYLE: Board-level executive communication. Direct, strategic, no fluff. Lead with the conclusion, support with evidence, end with clear next steps.',
-  }
-  const personalityStyle = PERSONALITY_STYLES[personality] || PERSONALITY_STYLES.executive
+  const PERSONALITIES = {
+    concise: '\nSTYLE: Ultra-concise. Max 2-3 sentences. Bullet points preferred.',
+    analytical: '\nSTYLE: Analytical. Show reasoning. Include data, comparisons, evidence.',
+    warm: '\nSTYLE: Warm and encouraging. Acknowledge efforts, frame challenges constructively.',
+    executive: '\nSTYLE: Board-level. Direct, strategic. Lead with conclusion, support with evidence.',
+  };
 
   const system = SYSTEM_PROMPT.replace('{currentPage}', currentPage)
-    + `\n\n[Current: ${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
-    + (pageContext?.summary ? `\n[Page context: ${pageContext.summary}${pageContext.stageDistribution ? ` | Stages: ${JSON.stringify(pageContext.stageDistribution)}` : ''}${pageContext.contactCount ? ` | ${pageContext.contactCount} contacts` : ''}${pageContext.articleCount ? ` | ${pageContext.articleCount} articles, ${pageContext.signalCount || 0} signals` : ''}${pageContext.visibleItems ? `\nVisible on screen: ${pageContext.visibleItems}` : ''}]` : '')
-    + personalityStyle + pageRole + entityContext + skillsContext + voiceRules + preloadedMemory;
+    + `\n[${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
+    + (pageContext?.summary ? `\n[Context: ${pageContext.summary}${pageContext.stageDistribution ? ` | Stages: ${JSON.stringify(pageContext.stageDistribution)}` : ''}${pageContext.visibleItems ? `\nVisible: ${pageContext.visibleItems}` : ''}]` : '')
+    + (PERSONALITIES[personality] || PERSONALITIES.executive)
+    + pageRole + entityContext + skillsContext + voiceRules + preloadedMemory;
 
   // ── SSE setup ──
   res.setHeader('Content-Type', 'text/event-stream');
@@ -374,23 +219,18 @@ export default async function handler(req, res) {
   const write = (d) => res.write(`data: ${JSON.stringify(d)}\n\n`);
 
   try {
-    // Build messages from conversation history
+    // Build messages
     const messages = conversationHistory.slice(-20)
       .filter(m => m.role === 'user' || m.role === 'assistant')
       .map(m => ({ role: m.role, content: m.content || '' }));
 
-    // Build user message — with file attachments if present
+    // File attachments
     if (attachments.length > 0) {
       const contentBlocks = [];
       for (const att of attachments) {
-        if (att.type === 'image') {
-          contentBlocks.push({ type: 'image', source: { type: 'base64', media_type: att.mediaType, data: att.data } });
-        } else if (att.type === 'document' && att.mediaType === 'application/pdf') {
-          contentBlocks.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: att.data } });
-        } else if (att.type === 'text') {
-          // Text content decoded from base64 and sent as text
-          contentBlocks.push({ type: 'text', text: `[File: ${att.fileName || 'uploaded file'}]\n${Buffer.from(att.data, 'base64').toString('utf-8')}` });
-        }
+        if (att.type === 'image') contentBlocks.push({ type: 'image', source: { type: 'base64', media_type: att.mediaType, data: att.data } });
+        else if (att.type === 'document' && att.mediaType === 'application/pdf') contentBlocks.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: att.data } });
+        else if (att.type === 'text') contentBlocks.push({ type: 'text', text: `[File: ${att.fileName || 'uploaded'}]\n${Buffer.from(att.data, 'base64').toString('utf-8')}` });
       }
       contentBlocks.push({ type: 'text', text: message || 'Analyse this file.' });
       messages.push({ role: 'user', content: contentBlocks });
@@ -400,54 +240,37 @@ export default async function handler(req, res) {
 
     const allTools = [...NATIVE_TOOLS, ...TOOL_DEFINITIONS];
 
-    // Detect if deep thinking is needed
-    const DEEP_THINK_TRIGGERS = ['analyse', 'analyze', 'deep dive', 'think through', 'strategic', 'evaluate', 'compare', 'assess', 'due diligence', 'comprehensive', 'thorough']
-    const DRAFT_TRIGGERS = ['draft', 'write', 'compose', 'email', 'follow up', 'outreach', 'pitch', 're-engage']
-    const needsDeepThink = deepThink || (message && DEEP_THINK_TRIGGERS.some(t => message.toLowerCase().includes(t)))
-    const needsExtendedTokens = needsDeepThink || (message && DRAFT_TRIGGERS.some(t => message.toLowerCase().includes(t)))
+    // Deep think detection
+    const DEEP_TRIGGERS = ['analyse', 'analyze', 'deep dive', 'think through', 'strategic', 'evaluate', 'comprehensive'];
+    const needsDeepThink = deepThink || (message && DEEP_TRIGGERS.some(t => message.toLowerCase().includes(t)));
 
-    // Fetch MCP servers with live Google OAuth token
+    // MCP servers
     const mcpServers = await getMcpServers(userEmail);
-    if (mcpServers.length > 0) write({ toolStatus: `MCP: ${mcpServers.length} external servers connected` });
+    if (mcpServers.length > 0) write({ toolStatus: `MCP: ${mcpServers.length} servers connected` });
 
     // Stream helper
     async function streamCall(msgs, opts = {}) {
       const params = {
         model: needsDeepThink ? 'claude-opus-4-6' : MODEL,
-        max_tokens: needsDeepThink ? 16000 : (needsExtendedTokens ? 8192 : 4096),
+        max_tokens: needsDeepThink ? 16000 : 4096,
         system, messages: msgs, tools: opts.noTools ? undefined : allTools,
-      }
-      // Add MCP servers + toolset references
+      };
       if (mcpServers.length > 0 && !opts.noTools) {
         params.mcp_servers = mcpServers;
-        // Each MCP server needs a matching mcp_toolset in tools array
-        const mcpToolsets = mcpServers.map(s => ({
-          type: 'mcp_toolset',
-          mcp_server_name: s.name,
-        }));
-        params.tools = [...(params.tools || []), ...mcpToolsets];
+        params.tools = [...(params.tools || []), ...mcpServers.map(s => ({ type: 'mcp_toolset', mcp_server_name: s.name }))];
       }
       if (needsDeepThink) {
-        params.thinking = { type: 'enabled', budget_tokens: 10000 }
-        write({ toolStatus: 'Deep analysis...' })
+        params.thinking = { type: 'enabled', budget_tokens: 10000 };
+        write({ toolStatus: 'Deep analysis...' });
       }
       const stream = mcpServers.length > 0
         ? anthropic.beta.messages.stream({ ...params, betas: ['mcp-client-2025-11-20'] })
         : anthropic.beta.messages.stream(params);
       for await (const event of stream) {
-        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-          write({ delta: event.delta.text });
-        }
-        if (event.type === 'content_block_delta' && event.delta?.type === 'thinking_delta') {
-          write({ thinking: event.delta.thinking });
-        }
-        // MCP tool status — show user what MCP tools are being called
-        if (event.type === 'content_block_start' && event.content_block?.type === 'mcp_tool_use') {
-          write({ toolStatus: `MCP: ${event.content_block.name || 'calling external tool'}...` });
-        }
-        if (event.type === 'content_block_start' && event.content_block?.type === 'mcp_tool_result') {
-          write({ toolStatus: null });
-        }
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') write({ delta: event.delta.text });
+        if (event.type === 'content_block_delta' && event.delta?.type === 'thinking_delta') write({ thinking: event.delta.thinking });
+        if (event.type === 'content_block_start' && event.content_block?.type === 'mcp_tool_use') write({ toolStatus: `MCP: ${event.content_block.name || 'calling'}...` });
+        if (event.type === 'content_block_start' && event.content_block?.type === 'mcp_tool_result') write({ toolStatus: null });
       }
       return await stream.finalMessage();
     }
@@ -456,16 +279,17 @@ export default async function handler(req, res) {
     let response = await streamCall(messages);
     let toolRounds = 0;
 
-    // Tool execution loop — max 10 rounds (60s Vercel limit)
+    // Tool execution loop — max 10 rounds
     while (response.stop_reason === 'tool_use' && toolRounds < 10) {
       toolRounds++;
       const toolResults = [];
       for (const block of response.content) {
         if (block.type !== 'tool_use') continue;
-        write({ toolStatus: TOOL_LABELS[block.name] || `Running ${block.name}` });
+        write({ toolStatus: TOOL_LABELS[block.name] || `Running ${block.name}...` });
         const result = block.name === 'memory'
           ? await handleMemory(block.input)
           : await executeTool(block.name, block.input, userEmail, pageContext);
+        // Handle navigation from any tool
         if ((block.name === 'navigate_page' || block.name === 'ask_navigator') && result?.navigated) write({ navigate: result.page });
         toolResults.push({
           type: 'tool_result', tool_use_id: block.id,
@@ -478,21 +302,18 @@ export default async function handler(req, res) {
       response = await streamCall(messages);
     }
 
-    // Safety net: if tool limit hit, force a final text-only response
+    // Safety: if tool limit hit, force text-only
     if (response.stop_reason === 'tool_use') {
       const finalResults = [];
       for (const block of response.content) {
         if (block.type !== 'tool_use') continue;
-        write({ toolStatus: TOOL_LABELS[block.name] || 'Finishing up...' });
-        const result = block.name === 'memory'
-          ? await handleMemory(block.input)
-          : await executeTool(block.name, block.input, userEmail, pageContext);
+        write({ toolStatus: TOOL_LABELS[block.name] || 'Finishing...' });
+        const result = block.name === 'memory' ? await handleMemory(block.input) : await executeTool(block.name, block.input, userEmail, pageContext);
         finalResults.push({ type: 'tool_result', tool_use_id: block.id, content: typeof result === 'string' ? result : JSON.stringify(result).slice(0, 4000) });
       }
       write({ toolStatus: null });
       messages.push({ role: 'assistant', content: response.content });
       messages.push({ role: 'user', content: finalResults });
-      // Force text-only completion (no tools available)
       write({ toolStatus: 'Composing response...' });
       const finalStream = anthropic.beta.messages.stream({ model: MODEL, max_tokens: 4096, system, messages });
       for await (const event of finalStream) {
@@ -500,7 +321,7 @@ export default async function handler(req, res) {
       }
     }
 
-    write({ meta: { done: true, model: MODEL, toolRounds, version: 'v5' } });
+    write({ meta: { done: true, model: needsDeepThink ? 'claude-opus-4-6' : MODEL, toolRounds, version: 'v15.0' } });
     res.write('data: [DONE]\n\n');
     res.end();
   } catch (err) {

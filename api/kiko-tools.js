@@ -1,10 +1,10 @@
-// Kiko Tool Registry — modular, MCP-ready tool definitions and handlers
-// Each tool exports { definition, handler } — kiko.js imports and orchestrates
-import { generateFollowup, getFollowupQueue } from './kiko-followup.js';
+// kiko-tools.js — CLEAN REBUILD v15.0
+// Agent routing layer. Kiko Prime calls agents, agents execute operations.
+// All CRM/email/file operations live inside agents. This file is routing only.
 
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
 
-// ── Supabase Helper ─────────────────────────────────────
+// ── Supabase Helper (shared by all agents) ──
 const SB = () => process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SK = () => process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 export const sbFetch = async (path, opts = {}) => {
@@ -15,1232 +15,156 @@ export const sbFetch = async (path, opts = {}) => {
   return res.json();
 };
 
-// ── Format Helpers ──────────────────────────────────────
-function fmtContact(c) {
-  const d = c.data || c
-  return `• ${d.firstName || ''} ${d.lastName || ''} — ${d.title || 'No title'}${d.company ? ` @ ${d.company}` : ''}${d.email ? ` | ${d.email}` : ''}${d.linkedin ? ' | LinkedIn ✓' : ''}`
-}
-function fmtCompany(c) {
-  const d = c.data || c
-  return `• ${d.name || 'Unknown'} — ${d.industry || '?'}${d.country ? ` | ${d.country}` : ''}${d.lastRound ? ` | ${d.lastRound}` : ''}${d.totalFunding ? ` (${d.totalFunding} total)` : ''}${d.employees ? ` | ${d.employees} emp` : ''}`
-}
-function fmtDeal(d) {
-  const data = d.data || d
-  return `• ${data.company || data.title} — ${data.pipeline || '?'} → ${data.stage || '?'}${data.contactName ? ` | ${data.contactName}` : ''}${data.lastActivity ? ` | Last: ${new Date(data.lastActivity).toLocaleDateString('en-GB')}` : ''}`
-}
-
-
-// ── Tool Definitions ────────────────────────────────────
+// ── Agent Tool Definitions (6 agents — down from 49 tools) ──
 export const TOOL_DEFINITIONS = [
-  { name: 'search_contacts', description: 'Search CRM contacts by name, company, title, or email. Use when user asks about a person, who works at a company, or references a contact.',
+  {
+    name: 'ask_navigator',
+    description: 'Screen awareness + navigation. Use when user asks: what is on screen, what page am I on, what am I looking at, take me to [page], go to [page], show me [page], open [page], walk me through this.',
     input_schema: { type: 'object', properties: {
-      query: { type: 'string', description: 'Search term — name, company, job title, or email fragment' },
-      limit: { type: 'number', description: 'Max results (default 10)' },
-    }, required: ['query'] } },
-  { name: 'search_companies', description: 'Search CRM companies/organisations by name, industry, or country. Use when user asks about a company, org, or industry.',
+      instruction: { type: 'string', description: 'What the user wants — describe screen, navigate to page, explain page' },
+    }, required: ['instruction'] },
+  },
+  {
+    name: 'ask_deal_agent',
+    description: 'CRM write operations. Use when user asks to: move a deal stage, create a task, add a reminder, create a deal, update a contact, follow up with someone in X days.',
     input_schema: { type: 'object', properties: {
-      query: { type: 'string', description: 'Search term — company name, industry, or country' },
-      limit: { type: 'number', description: 'Max results (default 10)' },
-    }, required: ['query'] } },
-  { name: 'search_deals', description: 'Search deals by company name, pipeline, or stage. Use when user asks about deals, pipeline status, or prospects.',
+      instruction: { type: 'string', description: 'Full instruction — e.g. "move Decagon to Qualified", "create a task to call Ryan in 2 days"' },
+    }, required: ['instruction'] },
+  },
+  {
+    name: 'ask_data_agent',
+    description: 'CRM reads + analytics. Use for: searching contacts/companies/deals, entity details, pipeline stats, stale contacts, email analytics, outreach intelligence, news, partnership matrix, activity feed, deal history, document search, past conversations, learning log.',
     input_schema: { type: 'object', properties: {
-      query: { type: 'string', description: 'Search term — company name, pipeline name, or stage' },
-      pipeline: { type: 'string', description: 'Filter to specific pipeline (e.g. "Haas F1", "Formula E")' },
-      stage: { type: 'string', description: 'Filter to specific stage (e.g. "Qualified", "Contact made")' },
-      limit: { type: 'number', description: 'Max results (default 15)' },
-    }, required: [] } },
-  { name: 'get_entity_detail', description: 'Get full detail on a specific contact, company, or deal by ID or exact name. Returns all available data including funding, campaigns, activities, and related records.',
+      operation: { type: 'string', enum: ['search_contacts', 'search_companies', 'search_deals', 'entity_detail', 'alerts', 'email_analytics', 'outreach_intelligence', 'stale_contacts', 'news', 'partnership_matrix', 'pipeline_notifications', 'deal_history', 'activity_feed', 'search_documents', 'past_conversations', 'recent_conversations', 'learning_search', 'learning_save', 'skills', 'bookmark'], description: 'Which data operation to run' },
+      params: { type: 'object', description: 'Operation params. Common: query (string), limit (number), company (string), category (string), entity_type (string), name (string), focus (string)' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'ask_outreach_agent',
+    description: 'Email drafting + campaigns. Use for: drafting emails, Gmail drafts, follow-ups, recipient style analysis, Lemlist campaigns, adding leads to campaigns, campaign activities.',
     input_schema: { type: 'object', properties: {
-      entity_type: { type: 'string', enum: ['contact', 'company', 'deal'], description: 'Type of entity' },
-      id: { type: 'string', description: 'Entity ID (e.g. c3416, org100)' },
-      name: { type: 'string', description: 'Entity name — will fuzzy match' },
-    }, required: ['entity_type'] } },
-  { name: 'search_conversations', description: 'Search past Kiko conversations by keyword.',
+      operation: { type: 'string', enum: ['draft_email', 'recipient_style', 'generate_followup', 'get_followup_queue', 'lemlist_campaigns', 'lemlist_add_lead', 'lemlist_activities'], description: 'Which outreach operation' },
+      params: { type: 'object', description: 'Operation params. draft_email: to, subject, body, cc. recipient_style: email, name. lemlist_add_lead: campaign_id, email, first_name.' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'ask_document_agent',
+    description: 'File generation + exports. Use for: creating Word docs, spreadsheets, presentations, CSVs, images (DALL-E), QR codes, reading URLs, exporting pipeline or contacts.',
     input_schema: { type: 'object', properties: {
-      query: { type: 'string', description: 'Keywords to search' },
-      limit: { type: 'number', description: 'Max results (default 5)' },
-    }, required: ['query'] } },
-  { name: 'navigate_page', description: 'Navigate user to a Kiko page. ALWAYS use when asked to show/open/go to a page.',
+      operation: { type: 'string', enum: ['generate_docx', 'generate_xlsx', 'generate_pptx', 'generate_csv', 'generate_image', 'generate_qr', 'read_url', 'export_pipeline', 'export_contacts'], description: 'Which document operation' },
+      params: { type: 'object', description: 'Operation params. generate_docx: filename, content. generate_xlsx: filename, sheets. generate_image: prompt, size. export_pipeline: pipeline.' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'navigate_page',
+    description: 'Direct page navigation. Use as fallback if ask_navigator is unavailable.',
     input_schema: { type: 'object', properties: {
-      page: { type: 'string', enum: ['home', 'pipeline', 'contacts', 'organisations', 'email', 'calendar', 'documents', 'tasks', 'settings', 'news', 'partnership-matrix', 'lemlist'], description: 'Page to navigate to' },
-      reason: { type: 'string', description: 'Brief reason for navigation' },
-    }, required: ['page'] } },
-  { name: 'get_alerts', description: 'Get proactive intelligence alerts — stale deals, pipeline bottlenecks, data quality issues.',
-    input_schema: { type: 'object', properties: {}, required: [] } },
-  { name: 'draft_email', description: 'Create a Gmail draft email. Use when user asks to draft, compose, or write an email. The draft is saved in Gmail Drafts — user can review and send.',
-    input_schema: { type: 'object', properties: {
-      to: { type: 'string', description: 'Recipient email(s), comma-separated' },
-      subject: { type: 'string', description: 'Email subject line' },
-      body: { type: 'string', description: 'Email body — can be HTML or plain text. Write in Sunny\'s direct, board-level tone.' },
-      cc: { type: 'string', description: 'CC recipients (optional)' },
-      thread_id: { type: 'string', description: 'Thread ID to reply within (optional — makes it a reply draft)' },
-    }, required: ['to', 'body'] } },
-  { name: 'get_email_analytics', description: 'Analyse email communication patterns for a contact or company. Shows frequency, recency, response patterns, engagement score. Use for "how active is our communication with X", "when did I last email X", "who am I most in touch with at X".',
-    input_schema: { type: 'object', properties: {
-      query: { type: 'string', description: 'Contact name, email, or company domain to analyse. E.g. "haas", "john@acme.com", "decagon.ai"' },
-      direction: { type: 'string', enum: ['all', 'sent', 'received'], description: 'Filter direction (default: all)' },
-    }, required: ['query'] } },
-  { name: 'get_outreach_intelligence', description: 'Get outreach effectiveness patterns and recommendations. Use when user asks about messaging performance, reply rates, what approaches work, how to improve outreach, optimal send times, or draft intelligence. Returns data-driven patterns from scored outreach history.',
-    input_schema: { type: 'object', properties: {
-      focus: { type: 'string', description: 'What to analyse: "patterns" for messaging approach effectiveness, "timing" for send time analysis, "persona" for target persona performance, "company" for company-specific insights, "recommendations" for actionable next steps, "draft-context" for pre-draft intelligence on a specific target' },
-      company: { type: 'string', description: 'Optional: filter to a specific company' },
-      pipeline: { type: 'string', description: 'Optional: filter to a specific pipeline (e.g. "Haas F1")' },
-    }, required: ['focus'] } },
-  { name: 'get_stale_contacts', description: 'Get contacts who need follow-up based on email intelligence. Use for "who should I follow up with", "stale contacts", "who am I losing touch with".',
-    input_schema: { type: 'object', properties: {
-      min_staleness: { type: 'number', description: 'Minimum staleness score 0-100 (default: 40)' },
-    }, required: [] } },
-  { name: 'generate_followup', description: 'Generate a follow-up email draft for a deal or contact, queue it for review. Use for "draft a follow-up for X", "write a re-engagement email for Y deal".',
-    input_schema: { type: 'object', properties: {
-      contact_email: { type: 'string', description: 'Recipient email address' },
-      deal_name: { type: 'string', description: 'Deal name for context (optional)' },
-      context: { type: 'string', description: 'Any additional context — last touchpoint, deal stage, tone instructions' },
-    }, required: ['contact_email'] } },
-  { name: 'get_followup_queue', description: 'Get pending follow-up drafts awaiting review. Use for "show follow-up queue", "what drafts are waiting".',
-    input_schema: { type: 'object', properties: {
-      status: { type: 'string', enum: ['pending_review', 'approved', 'sent', 'all'], description: 'Filter by status (default: pending_review)' },
-    }, required: [] } },
-  { name: 'get_recipient_style', description: 'Analyse the writing style, tone, and communication patterns of a specific recipient based on their past email replies. Use before drafting to Kiko — "how does X write?", "what tone does Y use?", "analyse how John responds". Returns vocabulary, length, formality, emotional tone, and key phrases to mirror.',
-    input_schema: { type: 'object', properties: {
-      email: { type: 'string', description: 'Recipient email address to analyse' },
-      name: { type: 'string', description: 'Recipient name (used if email not known)' },
-    }, required: [] } },
-  { name: 'get_news', description: 'Get latest sports sponsorship and F1 news from the intelligence feed. Use for "what\'s the latest news", "F1 sponsorship deals", "any news about X company", "deal signals".',
-    input_schema: { type: 'object', properties: {
-      category: { type: 'string', enum: ['all', 'f1_sponsorship', 'sports_sponsorship', 'formula_e', 'f1_general', 'market_activity', 'brand_ambassador'], description: 'Filter by category (default: all)' },
-      company: { type: 'string', description: 'Search for news mentioning a specific company (optional)' },
-      deals_only: { type: 'boolean', description: 'Only return deal signal articles (default: false)' },
-    }, required: [] } },
-  { name: 'get_partnership_matrix', description: 'Query the F1 Partnership Matrix. Shows which teams have sponsors in which categories, and highlights gaps. Use for "who sponsors Red Bull", "which F1 teams have no cybersecurity partner", "show me the partnership matrix", "gaps in F1 sponsorship".',
-    input_schema: { type: 'object', properties: {
-      team: { type: 'string', description: 'Filter by team name (e.g. "Red Bull", "Ferrari", "Haas"). Optional.' },
-      category: { type: 'string', description: 'Filter by category (e.g. "cybersecurity", "fintech", "cloud"). Optional.' },
-      gaps_only: { type: 'boolean', description: 'Only show gaps (empty sponsorship slots). Default: false' },
-    }, required: [] } },
-  { name: 'get_pipeline_notifications', description: 'Get recent pipeline activity notifications — prospect replies, interested signals, deal stage changes, engagement events from Lemlist campaigns. Use for "any pipeline updates", "who replied", "new leads", "what happened with outreach", "campaign activity".',
-    input_schema: { type: 'object', properties: {
-      unread_only: { type: 'boolean', description: 'Only show unread notifications. Default: false' },
-    }, required: [] } },
-  { name: 'search_documents', description: 'Search uploaded documents (decks, proposals, briefs) by content or team. Use when user asks about a deck, document, what a team said, team positioning, partnership benefits, or references uploaded materials. Returns relevant passages with extracted intelligence (stats, tone, positioning, talking points).',
-    input_schema: { type: 'object', properties: {
-      query: { type: 'string', description: 'Search query — what to look for in documents' },
-      team: { type: 'string', description: 'Filter by F1 team name (optional). E.g. Alpine, Haas, Mercedes' },
-      category: { type: 'string', description: 'Filter by category: deck, proposal, contract, brief, report, media_kit (optional)' },
-    }, required: ['query'] } },
-  { name: 'get_deal_history', description: 'Get stage change history for a deal. Use when user asks "what happened with [company] deal", "deal timeline", "stage history", "when did [company] move stages".',
-    input_schema: { type: 'object', properties: {
-      company: { type: 'string', description: 'Company name to look up deal history for' },
-    }, required: ['company'] } },
-  { name: 'get_skills', description: 'List all available Kiko skills/expertise domains. Use when user asks "what can you do", "what skills do you have", "what do you know about", or to explain your capabilities.',
-    input_schema: { type: 'object', properties: {}, required: [] } },
-  { name: 'lemlist_list_campaigns', description: 'List all Lemlist campaigns. Use when user asks about campaigns, outreach sequences, or "what campaigns do we have".',
-    input_schema: { type: 'object', properties: {}, required: [] } },
-  { name: 'lemlist_add_lead', description: 'Add a lead to a Lemlist campaign. Use when user says "add [person] to [campaign]", "start outreach for [company]", or "enrol in campaign".',
-    input_schema: { type: 'object', properties: {
-      campaign_id: { type: 'string', description: 'Lemlist campaign ID (get from lemlist_list_campaigns)' },
-      email: { type: 'string', description: 'Lead email address' },
-      first_name: { type: 'string', description: 'Lead first name' },
-      last_name: { type: 'string', description: 'Lead last name (optional)' },
-      company_name: { type: 'string', description: 'Lead company name (optional)' },
-      job_title: { type: 'string', description: 'Lead job title (optional)' },
-    }, required: ['campaign_id', 'email', 'first_name'] } },
-  { name: 'lemlist_get_activities', description: 'Get recent Lemlist campaign activities — opens, clicks, replies, bounces. Use when user asks about campaign performance, "who opened", "any replies", "campaign stats".',
-    input_schema: { type: 'object', properties: {
-      campaign_id: { type: 'string', description: 'Filter to specific campaign ID (optional)' },
-      type: { type: 'string', description: 'Activity type filter: emailsSent, emailsOpened, emailsClicked, emailsReplied, emailsBounced (optional)' },
-    }, required: [] } },
-  { name: 'search_past_conversations', description: 'Search across ALL past Kiko conversations for relevant context. This is your MEMORY — use it when user references past discussions, asks "do you remember", "what did we discuss about", "last time we talked about", or when you need context from previous sessions. Also use proactively when drafting or analysing to check if there is relevant prior context.',
-    input_schema: { type: 'object', properties: {
-      query: { type: 'string', description: 'Search keywords — company names, topics, decisions, dates, anything discussed previously' },
-      limit: { type: 'number', description: 'Max conversations to return (default 5)' },
-    }, required: ['query'] } },
-  { name: 'get_recent_conversations', description: 'Get the most recent Kiko conversations. Use when user asks "what did we last talk about", "recent chats", "conversation history", or needs context from the latest sessions.',
-    input_schema: { type: 'object', properties: {
-      limit: { type: 'number', description: 'Number of recent conversations (default 5, max 10)' },
-    }, required: [] } },
-  { name: 'log_activity', description: 'Log a business activity — call, meeting, note, task. Use when user says "log a call with", "note that", "record meeting with", "I just spoke to".',
+      page: { type: 'string', enum: ['home', 'pipeline', 'contacts', 'organisations', 'email', 'calendar', 'documents', 'tasks', 'settings', 'news', 'partnership-matrix', 'lemlist'], description: 'Page ID' },
+      reason: { type: 'string', description: 'Brief reason' },
+    }, required: ['page'] },
+  },
+  {
+    name: 'log_activity',
+    description: 'Log a business activity — call, meeting, note, task.',
     input_schema: { type: 'object', properties: {
       type: { type: 'string', description: 'Activity type: call, meeting, note, task, email_sent' },
       entity_name: { type: 'string', description: 'Person or company name' },
-      description: { type: 'string', description: 'What happened / key notes' },
-      deal_id: { type: 'string', description: 'Associated deal ID if known (optional)' },
-    }, required: ['type', 'entity_name', 'description'] } },
-  { name: 'get_activity_feed', description: 'Get recent activities across the platform — stage changes, emails, calls, meetings, Lemlist events. Use when user asks "what happened recently", "activity log", "latest actions", "what did we do this week".',
-    input_schema: { type: 'object', properties: {
-      limit: { type: 'number', description: 'Number of activities (default 15)' },
-      type_filter: { type: 'string', description: 'Filter by type: stage_change, email_drafted, call, meeting, note, lemlist_* (optional)' },
-    }, required: [] } },
-
-  // ── Page Action Tools ──
-  { name: 'update_deal_stage', description: 'Move a deal to a different pipeline stage. Use when user says "move [company] to [stage]", "advance [deal]", "update [company] stage to [stage]". Logs to deal_stage_history and activities.',
-    input_schema: { type: 'object', properties: {
-      deal_name: { type: 'string', description: 'Company/deal name to search for' },
-      new_stage: { type: 'string', description: 'Target stage: To Revisit, Contact Made, In Dialogue, Qualified, Meeting Arranged, Proposal Sent, Won, Lost' },
-      reason: { type: 'string', description: 'Reason for stage change (optional)' },
-    }, required: ['deal_name', 'new_stage'] } },
-  { name: 'update_contact', description: 'Update a contact record — job title, email, phone, company, notes. Use when user says "update [person]\'s title", "change [person]\'s email", "add notes to [person]".',
-    input_schema: { type: 'object', properties: {
-      contact_name: { type: 'string', description: 'Contact name to search for' },
-      updates: { type: 'object', description: 'Fields to update: { title, email, phone, company, notes }' },
-    }, required: ['contact_name', 'updates'] } },
-  { name: 'create_deal', description: 'Create a new deal in the pipeline. Use when user says "create a deal for [company]", "add [company] to pipeline", "start tracking [company]".',
-    input_schema: { type: 'object', properties: {
-      company_name: { type: 'string', description: 'Company name' },
-      contact_name: { type: 'string', description: 'Primary contact name (optional)' },
-      pipeline: { type: 'string', description: 'Pipeline name (default: Haas F1)' },
-      stage: { type: 'string', description: 'Initial stage (default: To Revisit)' },
-      value: { type: 'number', description: 'Deal value in USD (optional)' },
-      notes: { type: 'string', description: 'Initial notes (optional)' },
-    }, required: ['company_name'] } },
-  { name: 'create_task', description: 'Create a task. Use when user says "add a task", "remind me to", "create a task to", "follow up with [person] in [X] days", "schedule a call with". Creates in the tasks table.',
-    input_schema: { type: 'object', properties: {
-      type: { type: 'string', enum: ['Email Follow-up', 'LinkedIn Follow-up', 'Schedule Call', 'Send Proposal', 'Contract Review', 'Internal Review', 'Other'], description: 'Task type' },
-      notes: { type: 'string', description: 'Task description/notes' },
-      company: { type: 'string', description: 'Company name (optional)' },
-      contact: { type: 'string', description: 'Contact name (optional)' },
-      due_date: { type: 'string', description: 'Due date in YYYY-MM-DD format (optional)' },
-    }, required: ['type', 'notes'] } },
-
-  // ── Learning Log Tools ──
-  { name: 'search_learning_log', description: 'Search Kiko\'s learning log — extracted facts, decisions, preferences, patterns from past conversations. Use when you need context about past decisions, user preferences, or deal patterns.',
-    input_schema: { type: 'object', properties: {
-      query: { type: 'string', description: 'Search keywords' },
-      category: { type: 'string', description: 'Filter by: decision, preference, deadline, contact_note, deal_update, pattern, instruction (optional)' },
-    }, required: ['query'] } },
-  { name: 'save_learning', description: 'Save an important fact, decision, or pattern to Kiko\'s learning log. Use proactively when user makes a key decision, states a preference, sets a deadline, or you notice a pattern.',
-    input_schema: { type: 'object', properties: {
-      category: { type: 'string', description: 'One of: decision, preference, deadline, contact_note, deal_update, pattern, instruction' },
-      content: { type: 'string', description: 'The fact or insight to remember' },
-      entity_name: { type: 'string', description: 'Related person/company name (optional)' },
-    }, required: ['category', 'content'] } },
-
-  // ── Document + Bookmark Tools ──
-  { name: 'generate_document', description: 'Generate a structured document (one-pager, brief, proposal outline, research summary). Use when user says "create a one-pager", "write a brief", "generate a document about [X]". Returns formatted content in the Draft Preview Panel.',
-    input_schema: { type: 'object', properties: {
-      title: { type: 'string', description: 'Document title' },
-      type: { type: 'string', description: 'Document type: one_pager, brief, proposal, research_summary, talking_points' },
-      company: { type: 'string', description: 'Company name if relevant (optional)' },
-      context: { type: 'string', description: 'Key context/requirements for the document' },
-    }, required: ['title', 'type', 'context'] } },
-  { name: 'bookmark_conversation', description: 'Star/bookmark the current conversation for priority recall. Use when user says "bookmark this", "save this chat", "star this conversation", or when a conversation contains important decisions.',
-    input_schema: { type: 'object', properties: {
-      reason: { type: 'string', description: 'Why this conversation is bookmarked (optional)' },
-    }, required: [] } },
-
-  // ── Predictive Outreach Timing ──
-  { name: 'get_outreach_timing', description: 'Analyse email open/reply patterns to recommend optimal send day and time for a contact or company. Use when user asks "best time to email [person]", "when should I reach out", "optimal send time", "outreach timing".',
-    input_schema: { type: 'object', properties: {
-      company: { type: 'string', description: 'Company name to analyse timing for (optional — analyses all if blank)' },
-      contact_email: { type: 'string', description: 'Specific contact email to analyse (optional)' },
-    }, required: [] } },
-  // ── File Generation Tools ──
-  { name: 'generate_docx', description: 'Create a Word document (.docx). Use when user says "create a document", "write a one-pager", "make a Word doc", "generate a brief", "export as Word". Returns a download link.',
-    input_schema: { type: 'object', properties: { filename: { type: 'string', description: 'Filename without extension' }, content: { type: 'string', description: 'Document content. Use # for headings, ## for subheadings, **bold**, - for bullets.' } }, required: ['filename', 'content'] } },
-  { name: 'generate_xlsx', description: 'Create a spreadsheet (.xlsx). Use when user says "create a spreadsheet", "export as Excel", "make a tracker", "export pipeline/contacts/deals". Returns a download link.',
-    input_schema: { type: 'object', properties: { filename: { type: 'string' }, sheets: { type: 'array', items: { type: 'object', properties: { name: { type: 'string' }, headers: { type: 'array', items: { type: 'string' } }, rows: { type: 'array', items: { type: 'array' } } } } } }, required: ['filename', 'sheets'] } },
-  { name: 'generate_pptx', description: 'Create a presentation (.pptx). Use when user says "create a deck", "make a presentation", "build slides", "pitch deck". Returns a download link.',
-    input_schema: { type: 'object', properties: { filename: { type: 'string' }, slides: { type: 'array', items: { type: 'object', properties: { title: { type: 'string' }, body: { type: 'string' } } } } }, required: ['filename', 'slides'] } },
-  { name: 'generate_csv', description: 'Create a CSV file. Use when user says "export as CSV", "download as CSV". Returns a download link.',
-    input_schema: { type: 'object', properties: { filename: { type: 'string' }, content: { type: 'string', description: 'CSV content with comma-separated values and newlines' } }, required: ['filename', 'content'] } },
-  { name: 'generate_image', description: 'Create an AI-generated image using DALL-E 3. Use when user says "create an image", "generate a graphic", "design an image of", "visualise". Returns a download link.',
-    input_schema: { type: 'object', properties: { prompt: { type: 'string', description: 'Detailed image description.' }, size: { type: 'string', description: '1024x1024, 1792x1024, or 1024x1792' }, style: { type: 'string', description: 'natural or vivid' } }, required: ['prompt'] } },
-  { name: 'read_url', description: 'Fetch and read any webpage or article URL. Use when user pastes a URL or says "read this", "summarise this article", "check this website". Returns the page text.',
-    input_schema: { type: 'object', properties: { url: { type: 'string', description: 'Full URL including https://' } }, required: ['url'] } },
-  { name: 'generate_qr', description: 'Generate a QR code for any URL or text. Use when user says "QR code for", "generate a QR".',
-    input_schema: { type: 'object', properties: { text: { type: 'string' }, size: { type: 'number', description: 'Size in pixels (default 400)' } }, required: ['text'] } },
-  { name: 'export_pipeline', description: 'Export deal pipeline as a spreadsheet. Use when user says "export pipeline", "download deals", "pipeline as Excel".',
-    input_schema: { type: 'object', properties: { pipeline: { type: 'string', description: 'Pipeline name filter (optional)' } }, required: [] } },
-  { name: 'export_contacts', description: 'Export contacts as a spreadsheet. Use when user says "export contacts", "download contacts".',
-    input_schema: { type: 'object', properties: { limit: { type: 'number', description: 'Max contacts (default 500)' }, filter: { type: 'string', description: 'Filter by company/industry' } }, required: [] } },
-
-  // ── AGENT TOOLS — Route to specialist agents ──
-  { name: 'ask_navigator', description: 'ALWAYS use this tool when the user asks about what is on their screen, what page they are viewing, asks to be taken to a page, asks to navigate, says "show me", "go to", "take me to", "what am I looking at", "what is on screen", "tell me about this page", "walk me through this". The Navigator Agent knows every page of the Vela platform and can describe exactly what the user sees.',
-    input_schema: { type: 'object', properties: {
-      instruction: { type: 'string', description: 'What the user wants — e.g. "describe what is on screen", "take me to pipeline", "what page am I on"' },
-    }, required: ['instruction'] } },
-  { name: 'ask_deal_agent', description: 'ALWAYS use this tool when the user asks to: move a deal to a different stage, create a task, add a reminder, update a contact, create a new deal, or any CRM write operation. Examples: "move Decagon to Qualified", "add a task to call Ryan in 2 days", "create a deal for COMSOL", "update Johns email".',
-    input_schema: { type: 'object', properties: {
-      instruction: { type: 'string', description: 'The full user instruction — e.g. "move Decagon from Contact made to Qualified", "create a task to follow up with Ryan at Decagon in 2 days"' },
-    }, required: ['instruction'] } },
+      description: { type: 'string', description: 'What happened' },
+      deal_id: { type: 'string', description: 'Associated deal ID (optional)' },
+    }, required: ['type', 'entity_name', 'description'] },
+  },
 ];
 
-// ── Tool Executor ────────────────────────────────────────
-// ── Conversation Memory Helper ──
-function formatConversationResults(rows, query) {
-  let out = `PAST CONVERSATIONS matching "${query}" (${rows.length} found):\n\n`
-  for (const r of rows) {
-    const date = new Date(r.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-    const msgs = r.messages || []
-    out += `─── "${r.title || 'Untitled'}" (${date}, ${msgs.length} messages) ───\n`
-    // Extract relevant messages (trim to key exchanges)
-    const qLower = query.toLowerCase()
-    const relevant = msgs.filter(m => (m.content || '').toLowerCase().includes(qLower))
-    const toShow = relevant.length > 0 ? relevant.slice(0, 4) : msgs.slice(0, 4)
-    for (const m of toShow) {
-      const role = m.role === 'user' ? 'Sunny' : 'Kiko'
-      const content = (m.content || '').slice(0, 300)
-      out += `  ${role}: ${content}${m.content?.length > 300 ? '...' : ''}\n`
-    }
-    if (msgs.length > toShow.length) out += `  [+${msgs.length - toShow.length} more messages]\n`
-    out += '\n'
-  }
-  return out
-}
-
+// ── Tool Executor — Routes to agents ──
 export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com', pageContext = null) {
-  if (name === 'search_contacts') {
-    const { query, limit = 10 } = input
-    const q = query.trim()
-    const data = await sbFetch(`contacts?select=id,data&or=(data->>firstName.ilike.*${q}*,data->>lastName.ilike.*${q}*,data->>company.ilike.*${q}*,data->>title.ilike.*${q}*,data->>email.ilike.*${q}*)&limit=${limit}&order=updated_at.desc`)
-    if (!data || data.length === 0) return `No contacts found matching "${q}".`
-    return `Found ${data.length} contact${data.length > 1 ? 's' : ''} matching "${q}":\n${data.map(c => fmtContact(c)).join('\n')}`
-  }
 
-  if (name === 'search_companies') {
-    const { query, limit = 10 } = input
-    const q = query.trim()
-    const data = await sbFetch(`companies?select=id,data&or=(data->>name.ilike.*${q}*,data->>industry.ilike.*${q}*,data->>country.ilike.*${q}*)&limit=${limit}&order=updated_at.desc`)
-    if (!data || data.length === 0) return `No companies found matching "${q}".`
-    return `Found ${data.length} compan${data.length > 1 ? 'ies' : 'y'} matching "${q}":\n${data.map(c => fmtCompany(c)).join('\n')}`
-  }
-
-  if (name === 'search_deals') {
-    const { query, pipeline, stage, limit = 15 } = input
-    let path = `deals?select=id,data&order=updated_at.desc&limit=${limit}`
-    if (pipeline) path += `&data->>pipeline=eq.${pipeline}`
-    if (stage) path += `&data->>stage=eq.${stage}`
-    const data = await sbFetch(path)
-    let results = data || []
-    if (query) { const q = query.toLowerCase(); results = results.filter(d => JSON.stringify(d.data || {}).toLowerCase().includes(q)) }
-    if (results.length === 0) return `No deals found${query ? ` matching "${query}"` : ''}${pipeline ? ` in ${pipeline}` : ''}${stage ? ` at ${stage}` : ''}.`
-    const byStage = {}; results.forEach(d => { const s = d.data?.stage || 'Unknown'; byStage[s] = (byStage[s] || 0) + 1 })
-    const summary = Object.entries(byStage).map(([s, c]) => `${s}: ${c}`).join(', ')
-    return `Found ${results.length} deal${results.length > 1 ? 's' : ''} (${summary}):\n${results.map(d => fmtDeal(d)).join('\n')}`
-  }
-
-  if (name === 'get_entity_detail') {
-    const { entity_type, id, name: entityName } = input
-    try {
-      if (entity_type === 'contact') {
-        let row
-        if (id) { const res = await sbFetch(`contacts?id=eq.${id}&select=id,data&limit=1`); row = res?.[0] }
-        else if (entityName) { const q = entityName.trim(); const res = await sbFetch(`contacts?select=id,data&or=(data->>firstName.ilike.*${q}*,data->>lastName.ilike.*${q}*)&limit=1`); row = res?.[0] }
-        if (!row) return `Contact not found.`
-        const d = row.data || {}
-        const acts = await sbFetch(`contact_activities?contact_id=eq.${row.id}&select=type,campaign_name,created_at&order=created_at.desc&limit=5`)
-        let dealInfo = ''
-        if (d.company) {
-          const deals = await sbFetch(`deals?select=data&data->>company=eq.${encodeURIComponent(d.company)}&limit=3`)
-          if (deals?.length) dealInfo = deals.map(dl => `  ${dl.data.pipeline} → ${dl.data.stage}`).join('\n')
-        }
-        let out = `CONTACT: ${d.firstName || ''} ${d.lastName || ''}\nTitle: ${d.title || '—'}\nCompany: ${d.company || '—'}\nEmail: ${d.email || '—'}\nLinkedIn: ${d.linkedin ? 'Yes' : 'No'}\nPhone: ${d.phone || '—'}\n`
-        if (d.lemlistCampaigns?.length) out += `Campaigns: ${d.lemlistCampaigns.map(c => c.name).join(', ')}\n`
-        if (acts?.length) out += `Recent Activity:\n${acts.map(a => `  ${a.type} — ${a.campaign_name || ''} (${new Date(a.created_at).toLocaleDateString('en-GB')})`).join('\n')}\n`
-        if (dealInfo) out += `Deal Pipeline:\n${dealInfo}\n`
-        return out
-      }
-      if (entity_type === 'company') {
-        let row
-        if (id) { const res = await sbFetch(`companies?id=eq.${id}&select=id,data&limit=1`); row = res?.[0] }
-        else if (entityName) { const q = entityName.trim(); const res = await sbFetch(`companies?select=id,data&data->>name=ilike.*${q}*&limit=1`); row = res?.[0] }
-        if (!row) return `Company not found.`
-        const d = row.data || {}
-        const contacts = await sbFetch(`contacts?select=data&data->>company=eq.${encodeURIComponent(d.name)}&limit=10&order=updated_at.desc`)
-        const deals = await sbFetch(`deals?select=data&data->>company=eq.${encodeURIComponent(d.name)}&limit=5`)
-        let out = `COMPANY: ${d.name}\nIndustry: ${d.industry || '—'}\nCountry: ${d.country || '—'}\nWebsite: ${d.website || '—'}\nLinkedIn: ${d.linkedin ? 'Yes' : 'No'}\n`
-        if (d.lastRound) out += `Last Round: ${d.lastRound}\n`
-        if (d.totalFunding) out += `Total Funding: ${d.totalFunding}\n`
-        if (d.valuation) out += `Valuation: ${d.valuation}\n`
-        if (d.employees) out += `Employees: ${d.employees}\n`
-        if (d.revenueEst) out += `Revenue Est: ${d.revenueEst}\n`
-        if (d.founded) out += `Founded: ${d.founded}\n`
-        if (contacts?.length) out += `Key Contacts (${contacts.length}):\n${contacts.slice(0, 5).map(c => `  ${c.data.firstName} ${c.data.lastName || ''} — ${c.data.title || '?'}`).join('\n')}\n`
-        if (deals?.length) out += `Deals:\n${deals.map(dl => `  ${dl.data.pipeline} → ${dl.data.stage}${dl.data.contactName ? ` (${dl.data.contactName})` : ''}`).join('\n')}\n`
-        return out
-      }
-      if (entity_type === 'deal') {
-        let row
-        if (id) { const res = await sbFetch(`deals?id=eq.${id}&select=id,data&limit=1`); row = res?.[0] }
-        else if (entityName) { const q = entityName.trim(); const res = await sbFetch(`deals?select=id,data&data->>company=ilike.*${q}*&limit=1`); row = res?.[0] }
-        if (!row) return `Deal not found.`
-        const d = row.data || {}
-        return `DEAL: ${d.company || d.title}\nPipeline: ${d.pipeline || '—'}\nStage: ${d.stage || '—'}\nContact: ${d.contactName || '—'}\nOwner: ${d.owner || '—'}\nLast Activity: ${d.lastActivity ? new Date(d.lastActivity).toLocaleDateString('en-GB') : '—'}\nStatus: ${d.status || '—'}\n`
-      }
-      return `Unknown entity type: ${entity_type}`
-    } catch(e) { return `Error fetching ${entity_type}: ${e.message}` }
-  }
-
-  if (name === 'search_conversations') {
-    const { query: q, limit = 5 } = input
-    const all = await sbFetch('conversations?select=id,title,messages,updated_at&order=updated_at.desc&limit=50')
-    const matches = (all || []).filter(c => JSON.stringify(c.messages || []).toLowerCase().includes(q.toLowerCase())).slice(0, limit)
-    if (!matches.length) return { found: false }
-    return { found: true, conversations: matches.map(c => ({ title: c.title, date: c.updated_at, excerpt: (c.messages || []).filter(m => JSON.stringify(m).toLowerCase().includes(q.toLowerCase())).slice(0, 3).map(m => ({ role: m.role, content: (m.content || '').slice(0, 200) })) })) }
-  }
-
-  if (name === 'navigate_page') {
-    const { page, reason } = input
-    return { navigated: true, page, reason: reason || `Opening ${page}`, instruction: `NAVIGATION: Navigating to ${page}. Tell the user you're taking them there.` }
-  }
-
-  if (name === 'get_alerts') {
-    const alerts = await sbFetch('kiko_alerts?dismissed=eq.false&expires_at=gt.' + new Date().toISOString() + '&select=type,severity,title,detail,entity_name&order=created_at.desc&limit=10')
-    if (!alerts || alerts.length === 0) return 'No active alerts. Pipeline is clean.'
-    return `${alerts.length} active alert${alerts.length > 1 ? 's' : ''}:\n${alerts.map(a => `[${a.severity?.toUpperCase()}] ${a.title}\n  ${a.detail}`).join('\n\n')}`
-  }
-
-
-  if (name === 'draft_email') {
-    const { to, subject, body, cc, thread_id } = input
-    try {
-      const { getGoogleToken } = await import('./google-token.js')
-      const token = await getGoogleToken(userEmail)
-      // Fetch signature from user_settings
-      let sig = ''
-      try {
-        const sigRows = await sbFetch(`user_settings?select=email_signature&limit=1`)
-        if (sigRows?.[0]?.email_signature) sig = `<br><div style="margin-top:16px;padding-top:12px;border-top:1px solid #e0e0e0">${sigRows[0].email_signature}</div>`
-      } catch {}
-      const htmlBody = `<div style="font-family:-apple-system,system-ui,sans-serif;font-size:14px">${body.replace(/\n/g, '<br>')}${sig}</div>`
-      const boundary = `b_${Date.now()}`
-      let mime = `To: ${to}\r\nFrom: ${userEmail}\r\n`
-      if (cc) mime += `Cc: ${cc}\r\n`
-      if (subject) mime += `Subject: ${subject}\r\n`
-      mime += `MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary="${boundary}"\r\n\r\n`
-      mime += `--${boundary}\r\nContent-Type: text/plain; charset="UTF-8"\r\n\r\n${body}\r\n`
-      mime += `--${boundary}\r\nContent-Type: text/html; charset="UTF-8"\r\n\r\n${htmlBody}\r\n`
-      mime += `--${boundary}--`
-      const raw = Buffer.from(mime).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-      const draftBody = { message: { raw } }
-      if (thread_id) draftBody.message.threadId = thread_id
-      const draftRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/drafts', {
-        method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(draftBody)
-      })
-      const draft = await draftRes.json()
-      if (!draftRes.ok) return `Failed to create draft: ${JSON.stringify(draft)}`
-      // Log to activities feed
-      try { await sbFetch('activities', { method: 'POST', body: JSON.stringify({ type: 'email_drafted', entity_name: to, subject: subject || 'No subject', status: 'draft', metadata: { to, subject, draft_id: draft?.id } }) }) } catch(e) {}
-      return `Draft created successfully. To: ${to}${subject ? `, Subject: "${subject}"` : ''}. It's saved in Gmail Drafts — Sunny can review and send from the Email page.`
-    } catch(e) { return `Draft error: ${e.message}` }
-  }
-
-  if (name === 'get_email_analytics') {
-    const { query: q, direction = 'all' } = input
-    try {
-      // Try pre-computed scores first (instant)
-      const { data: scores } = await sbFetch(`email_scores?user_email=eq.${encodeURIComponent(userEmail)}&or=(contact_email.ilike.*${encodeURIComponent(q)}*,contact_name.ilike.*${encodeURIComponent(q)}*,company.ilike.*${encodeURIComponent(q)}*)&limit=5`)
-      if (scores?.length) {
-        const s = scores[0]
-        let out = `EMAIL INTELLIGENCE: ${s.contact_name || s.contact_email}\n`
-        out += `Total emails: ${s.total_emails} (Sent: ${s.sent_count} | Received: ${s.received_count})\n`
-        out += `Last contact: ${s.days_since_last_contact} days ago\n`
-        out += `Avg response time: ${s.avg_response_hours ? Math.round(s.avg_response_hours) + ' hours' : 'N/A'}\n`
-        out += `Relationship health: ${s.relationship_health}/100\n`
-        out += `Engagement: ${s.engagement_score}/100\n`
-        out += `Momentum: ${s.momentum}\n`
-        out += `Tone trend: ${s.tone_trend}\n`
-        if (s.staleness_score > 40) out += `⚠️ STALE (${s.staleness_score}/100) — ${s.followup_reason || 'Follow-up recommended'}\n`
-        if (s.next_followup_recommended) out += `Next follow-up: ${new Date(s.next_followup_recommended).toLocaleDateString('en-GB')}\n`
-        if (s.last_action_items?.length) out += `Open action items: ${s.last_action_items.join('; ')}\n`
-        if (scores.length > 1) out += `\n(${scores.length - 1} more matches found)`
-        return out
-      }
-      // Fallback: live Gmail search if no pre-computed scores
-      return `No pre-computed intelligence for "${q}". Run email analysis first, or ask me to search emails directly.`
-    } catch(e) { return `Analytics error: ${e.message}` }
-  }
-
-  if (name === 'get_outreach_intelligence') {
-    const { focus, company, pipeline } = input
-    try {
-      let path = 'outreach_scores?order=sent_at.desc&limit=200'
-      if (company) path += `&company=ilike.*${encodeURIComponent(company)}*`
-      if (pipeline) path += `&pipeline=eq.${encodeURIComponent(pipeline)}`
-      const scores = await sbFetch(path)
-      if (!scores?.length) return 'No outreach scores yet. The scoring engine runs daily at 9am — data will appear after the first run.'
-
-      const total = scores.length
-      const replied = scores.filter(s => s.outcome === 'replied')
-      const silence = scores.filter(s => s.outcome === 'silence')
-      const replyRate = total > 0 ? Math.round(replied.length / total * 100) : 0
-      const avgTimeToReply = replied.filter(s => s.time_to_reply_hours).reduce((a, s) => a + s.time_to_reply_hours, 0) / (replied.filter(s => s.time_to_reply_hours).length || 1)
-
-      if (focus === 'patterns' || focus === 'recommendations') {
-        // Group by messaging approach
-        const byApproach = {}
-        scores.forEach(s => {
-          const a = s.messaging_approach || 'unknown'
-          if (!byApproach[a]) byApproach[a] = { total: 0, replied: 0 }
-          byApproach[a].total++
-          if (s.outcome === 'replied') byApproach[a].replied++
-        })
-        const approachStats = Object.entries(byApproach).map(([a, d]) => `${a}: ${d.replied}/${d.total} replied (${Math.round(d.replied/d.total*100)}%)`).join('\n')
-
-        // Group by CTA type
-        const byCta = {}
-        scores.forEach(s => {
-          const c = s.cta_type || 'unknown'
-          if (!byCta[c]) byCta[c] = { total: 0, replied: 0 }
-          byCta[c].total++
-          if (s.outcome === 'replied') byCta[c].replied++
-        })
-        const ctaStats = Object.entries(byCta).map(([c, d]) => `${c}: ${d.replied}/${d.total} (${Math.round(d.replied/d.total*100)}%)`).join('\n')
-
-        return `OUTREACH INTELLIGENCE — ${total} emails scored\n\nOverall reply rate: ${replyRate}%\nAvg time to reply: ${Math.round(avgTimeToReply)}h\n\nBy messaging approach:\n${approachStats}\n\nBy CTA type:\n${ctaStats}\n\nSilent: ${silence.length} | Replied: ${replied.length} | Pending: ${scores.filter(s => s.outcome === 'pending').length}`
-      }
-
-      if (focus === 'timing') {
-        const byDay = {}; const byHour = {}
-        scores.forEach(s => {
-          const d = s.sent_day_of_week || 'Unknown'; const hr = s.sent_hour ?? -1
-          if (!byDay[d]) byDay[d] = { total: 0, replied: 0 }; byDay[d].total++; if (s.outcome === 'replied') byDay[d].replied++
-          if (hr >= 0) { const bucket = hr < 9 ? 'Before 9am' : hr < 12 ? '9am-12pm' : hr < 15 ? '12-3pm' : hr < 18 ? '3-6pm' : 'After 6pm'
-            if (!byHour[bucket]) byHour[bucket] = { total: 0, replied: 0 }; byHour[bucket].total++; if (s.outcome === 'replied') byHour[bucket].replied++ }
-        })
-        const dayStats = Object.entries(byDay).map(([d, v]) => `${d}: ${v.replied}/${v.total} (${Math.round(v.replied/v.total*100)}%)`).join('\n')
-        const hourStats = Object.entries(byHour).map(([h, v]) => `${h}: ${v.replied}/${v.total} (${Math.round(v.replied/v.total*100)}%)`).join('\n')
-        return `SEND TIMING ANALYSIS\n\nBy day:\n${dayStats}\n\nBy time window (UTC):\n${hourStats}`
-      }
-
-      if (focus === 'persona') {
-        const bySeniority = {}
-        scores.forEach(s => {
-          const p = s.persona_seniority || 'Unknown'
-          if (!bySeniority[p]) bySeniority[p] = { total: 0, replied: 0 }; bySeniority[p].total++; if (s.outcome === 'replied') bySeniority[p].replied++
-        })
-        return `PERSONA ANALYSIS\n\n${Object.entries(bySeniority).map(([p, v]) => `${p}: ${v.replied}/${v.total} (${Math.round(v.replied/v.total*100)}%)`).join('\n')}`
-      }
-
-      if (focus === 'company') {
-        const byCompany = {}
-        scores.forEach(s => {
-          const c = s.company || 'Unknown'
-          if (!byCompany[c]) byCompany[c] = { total: 0, replied: 0, lastSent: s.sent_at, outcome: s.outcome }; byCompany[c].total++; if (s.outcome === 'replied') byCompany[c].replied++
-        })
-        const sorted = Object.entries(byCompany).sort((a, b) => b[1].total - a[1].total).slice(0, 20)
-        return `COMPANY-LEVEL OUTREACH\n\n${sorted.map(([c, v]) => `${c}: ${v.total} sent, ${v.replied} replied (${Math.round(v.replied/v.total*100)}%)`).join('\n')}`
-      }
-
-      if (focus === 'draft-context') {
-        const best = replied.slice(0, 5)
-        const approaches = [...new Set(best.map(s => s.messaging_approach))].join(', ')
-        const avgWords = Math.round(best.reduce((a, s) => a + (s.body_word_count || 100), 0) / (best.length || 1))
-        const bestCta = [...new Set(best.map(s => s.cta_type))].join(', ')
-        return `DRAFT INTELLIGENCE\n\nBased on ${replied.length} successful emails:\n- Best approaches: ${approaches}\n- Optimal length: ~${avgWords} words\n- Effective CTAs: ${bestCta}\n- Avg subject words: ${Math.round(best.reduce((a, s) => a + (s.subject_word_count || 5), 0) / (best.length || 1))}\n- Reply rate: ${replyRate}%`
-      }
-
-      return `Outreach data: ${total} scored, ${replyRate}% reply rate. Ask about "patterns", "timing", "persona", "company", or "draft-context" for specific analysis.`
-    } catch (err) { return `Outreach intelligence error: ${err.message}` }
-  }
-
-  if (name === 'get_stale_contacts') {
-    const minStaleness = input.min_staleness || 40
-    const scores = await sbFetch(`email_scores?user_email=eq.${encodeURIComponent(userEmail)}&staleness_score=gte.${minStaleness}&order=staleness_score.desc&limit=15`)
-    if (!scores?.length) return 'No stale contacts found. All relationships are healthy.'
-    let out = `${scores.length} contacts need follow-up:\n`
-    for (const s of scores) {
-      out += `\n• **${s.contact_name || s.contact_email}**${s.company ? ` (${s.company})` : ''}\n`
-      out += `  Health: ${s.relationship_health}/100 | Staleness: ${s.staleness_score}/100 | Momentum: ${s.momentum}\n`
-      out += `  Last contact: ${s.days_since_last_contact} days ago | Emails: ${s.total_emails}\n`
-      if (s.followup_reason) out += `  → ${s.followup_reason}\n`
-    }
-    return out
-  }
-
-  if (name === 'generate_followup') return await generateFollowup(input, userEmail)
-
-  if (name === 'get_followup_queue') return await getFollowupQueue(input, userEmail)
-
-  if (name === 'get_news') {
-    const { category, company, deals_only } = input
-    let filter = 'is_processed=eq.true&order=published_at.desc&limit=15'
-    if (category && category !== 'all') filter += `&category=eq.${category}`
-    if (deals_only) filter += '&deal_signal=eq.true'
-    let articles = await sbFetch(`news_articles?${filter}&select=title,source_name,article_url,published_at,category,relevance_score,deal_signal,matched_companies,key_topics`)
-    // If company search, filter client-side (more flexible matching)
-    if (company && articles?.length) {
-      const q = company.toLowerCase()
-      articles = articles.filter(a =>
-        a.title?.toLowerCase().includes(q) ||
-        (a.matched_companies || []).some(c => (c.name || c).toLowerCase().includes(q)) ||
-        (a.key_topics || []).some(t => t.toLowerCase().includes(q))
-      )
-    }
-    if (!articles?.length) return `No news found${category ? ` in ${category}` : ''}${company ? ` about "${company}"` : ''}.`
-    let out = `${articles.length} article${articles.length > 1 ? 's' : ''}${company ? ` mentioning "${company}"` : ''}:\n`
-    for (const a of articles.slice(0, 10)) {
-      const date = new Date(a.published_at)
-      const ago = Math.floor((Date.now() - date) / 3600000)
-      const timeStr = ago < 24 ? `${ago}h ago` : `${Math.floor(ago / 24)}d ago`
-      out += `\n• **${a.title}** (${a.source_name}, ${timeStr})`
-      if (a.deal_signal) out += ` 🔴 DEAL SIGNAL`
-      if (a.relevance_score >= 7) out += ` ⭐ High relevance`
-      if (a.matched_companies?.length) out += ` — Companies: ${a.matched_companies.map(c => c.name || c).join(', ')}`
-      out += `\n  ${a.article_url}\n`
-    }
-    return out
-  }
-
-  if (name === 'get_partnership_matrix') {
-    const { team, category, gaps_only } = input
-    const teams = await sbFetch('f1_teams?order=sort_order&select=id,name,full_name,engine,color')
-    const categories = await sbFetch('sponsor_categories?order=sort_order&select=id,name')
-    const partnerships = await sbFetch('f1_partnerships?status=eq.active&select=team_id,partner_name,category_id,tier')
-    if (!teams?.length) return 'Partnership matrix data not loaded.'
-
-    // Filter
-    let filteredTeams = teams
-    if (team) filteredTeams = teams.filter(t => t.name.toLowerCase().includes(team.toLowerCase()) || t.id.includes(team.toLowerCase()))
-    let filteredCats = categories || []
-    if (category) filteredCats = filteredCats.filter(c => c.name.toLowerCase().includes(category.toLowerCase()) || c.id.includes(category.toLowerCase()))
-
-    // Build response
-    let out = ''
-    for (const t of filteredTeams) {
-      const teamPartners = (partnerships || []).filter(p => p.team_id === t.id)
-      const filledCats = new Set(teamPartners.map(p => p.category_id))
-      const gaps = filteredCats.filter(c => !filledCats.has(c.id))
-      if (gaps_only && gaps.length === 0) continue
-
-      out += `\n**${t.name}** (${t.full_name || ''}) — ${teamPartners.length} partners\n`
-      if (!gaps_only) {
-        for (const c of filteredCats) {
-          const catPartners = teamPartners.filter(p => p.category_id === c.id)
-          if (catPartners.length) out += `  ✅ ${c.name}: ${catPartners.map(p => `${p.partner_name} [${p.tier}]`).join(', ')}\n`
-          else out += `  ❌ ${c.name}: **GAP** — no partner\n`
-        }
-      } else {
-        out += `  Gaps: ${gaps.map(g => g.name).join(', ')}\n`
-      }
-    }
-
-    if (!out) return gaps_only ? 'No gaps found for the specified criteria.' : 'No matching teams or categories.'
-    const totalGaps = filteredTeams.reduce((acc, t) => {
-      const filled = new Set((partnerships || []).filter(p => p.team_id === t.id).map(p => p.category_id))
-      return acc + filteredCats.filter(c => !filled.has(c.id)).length
-    }, 0)
-    return `F1 PARTNERSHIP MATRIX${team ? ` — ${team}` : ''}${category ? ` — ${category}` : ''}\n${filteredTeams.length} teams, ${(partnerships||[]).length} active partnerships, ${totalGaps} gaps\n${out}`
-  }
-
-  if (name === 'get_pipeline_notifications') {
-    const unreadOnly = input.unread_only ? '&is_read=eq.false' : ''
-    const notifs = await sbFetch(`pipeline_notifications?is_dismissed=eq.false${unreadOnly}&order=created_at.desc&limit=15`)
-    if (!notifs?.length) return 'No pipeline notifications. Campaigns may be quiet or no prospects have engaged yet.'
-    const unread = notifs.filter(n => !n.is_read).length
-    let out = `PIPELINE ACTIVITY — ${notifs.length} notifications (${unread} unread)\n\n`
-    for (const n of notifs) {
-      const icon = n.type === 'reply' ? '💬' : n.type === 'interested' ? '✅' : n.type === 'stage_change' ? '📈' : n.type === 'deal_won' ? '🏆' : '📧'
-      const readMark = n.is_read ? '' : ' 🔴'
-      out += `${icon} **${n.title}**${readMark}\n`
-      out += `   ${n.body || ''}\n`
-      out += `   ${n.pipeline ? n.pipeline : ''}${n.stage ? ' → ' + n.stage : ''} · ${n.source || ''} · ${n.priority} priority\n\n`
-    }
-    return out
-  }
-
-  if (name === 'search_documents') {
-    const { query: q, team, category } = input
-    try {
-      // Text search on document content and metadata
-      const words = q.toLowerCase().split(/\s+/).filter(w => w.length > 2).slice(0, 3)
-      let filter = 'select=id,name,linked_team,linked_entity,category,context,intelligence,summary,content&limit=8&order=created_at.desc'
-      if (words.length > 0) filter = words.map(w => `content.ilike.*${encodeURIComponent(w)}*`).join('&') + `&${filter}`
-      if (team) filter += `&linked_team=ilike.*${encodeURIComponent(team)}*`
-      if (category) filter += `&category=eq.${encodeURIComponent(category)}`
-      const docs = await sbFetch(`documents?${filter}`)
-      if (!docs?.length) return `No documents found matching "${q}"${team ? ` for ${team}` : ''}. Upload relevant decks or briefs to build the knowledge base.`
-      let out = `DOCUMENT SEARCH: "${q}" — ${docs.length} documents found\n\n`
-      for (const doc of docs) {
-        out += `📄 **${doc.name}**${doc.linked_team ? ` (${doc.linked_team})` : doc.linked_entity ? ` (${doc.linked_entity})` : ''}${doc.category ? ` [${doc.category}]` : ''}\n`
-        const intel = doc.intelligence || {}
-        if (intel.key_stats?.length) out += `   Key stats: ${intel.key_stats.join(', ')}\n`
-        if (intel.messaging_tone) out += `   Tone: ${intel.messaging_tone}\n`
-        if (intel.positioning) out += `   Positioning: ${intel.positioning}\n`
-        if (intel.talking_points?.length) out += `   Talking points: ${intel.talking_points.join(', ')}\n`
-        if (intel.partner_benefits?.length) out += `   Partner benefits: ${intel.partner_benefits.join(', ')}\n`
-        if (intel.unique_angles?.length) out += `   Unique angles: ${intel.unique_angles.join(', ')}\n`
-        if (doc.summary) out += `   Summary: ${doc.summary}\n`
-        out += `   Content preview: ${(doc.content || '').slice(0, 400)}...\n\n`
-      }
-      return out
-    } catch (err) {
-      console.error('[Kiko] search_documents error:', err.message)
-      return `Document search error: ${err.message}`
-    }
-  }
-
-  if (name === 'get_recipient_style') {
-    const { email: recipientEmail, name: recipientName } = input
-    try {
-      const { getGoogleToken } = await import('./google-token.js')
-      const token = await getGoogleToken(userEmail)
-      const query = recipientEmail ? `from:${recipientEmail}` : `from:${recipientName}`
-      // Fetch up to 20 messages FROM this recipient to analyse their style
-      const searchRes = await fetch(
-        `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(query)}&maxResults=20`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      const searchData = await searchRes.json()
-      const ids = (searchData.messages || []).map(m => m.id)
-      if (!ids.length) return `No emails found from ${recipientEmail || recipientName}. Cannot analyse style yet.`
-
-      // Extract body text from each message
-      function extractBody(payload) {
-        if (!payload) return ''
-        if (payload.mimeType === 'text/plain' && payload.body?.data)
-          return Buffer.from(payload.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8').trim()
-        if (payload.parts) {
-          const plain = payload.parts.find(p => p.mimeType === 'text/plain')
-          if (plain?.body?.data) return Buffer.from(plain.body.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8').trim()
-          for (const part of payload.parts) { const n = extractBody(part); if (n) return n }
-        }
-        return ''
-      }
-
-      const bodies = []
-      for (const id of ids.slice(0, 12)) {
-        try {
-          const msgRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=full`, { headers: { Authorization: `Bearer ${token}` } })
-          const msg = await msgRes.json()
-          const body = extractBody(msg.payload)
-          if (body && body.length > 20) {
-            // Strip quoted lines
-            const clean = body.split('\n').filter(l => !l.trim().startsWith('>') && !l.match(/^On .+ wrote:$/)).join('\n').trim().slice(0, 600)
-            if (clean.length > 30) bodies.push(clean)
-          }
-        } catch {}
-      }
-      if (!bodies.length) return `Found emails from ${recipientEmail || recipientName} but could not extract body text.`
-
-      // Use Haiku to analyse style patterns across all their messages
-      const { default: Anthropic } = await import('@anthropic-ai/sdk')
-      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY })
-      const res = await client.messages.create({
-        model: 'claude-haiku-4-5-20251001', max_tokens: 600,
-        messages: [{ role: 'user', content: `Analyse the writing style of this person based on their emails. Return ONLY valid JSON.
-
-Emails (${bodies.length} messages):
-${bodies.map((b, i) => `[${i+1}] ${b}`).join('\n\n---\n\n')}
-
-Return JSON:
-{
-  "formality": "formal|semi-formal|casual",
-  "avg_length": "brief (1-3 lines)|medium (4-8 lines)|detailed (9+ lines)",
-  "greeting_style": "what they typically open with",
-  "sign_off_style": "how they close",
-  "tone": "warm|neutral|direct|terse|enthusiastic|guarded",
-  "response_speed_signals": "any patterns suggesting urgency or relaxed approach",
-  "key_phrases": ["phrases they repeat or favour"],
-  "punctuation_style": "heavy punctuation|minimal|balanced",
-  "uses_bullet_points": true or false,
-  "emotional_warmth": "high|medium|low",
-  "decision_language": "phrases they use when positive or interested",
-  "deflection_language": "phrases they use when uncertain or declining",
-  "draft_instructions": "2-3 sentence instruction on how to write TO this person to maximise engagement"
-}` }]
-      })
-      const raw = res.content[0]?.text || '{}'
-      let style = {}
-      try { style = JSON.parse(raw.replace(/```json|```/g, '').trim()) } catch {}
-
-      let out = `RECIPIENT STYLE PROFILE: ${recipientEmail || recipientName}\nBased on ${bodies.length} emails analysed\n\n`
-      out += `Formality: ${style.formality || '?'} | Tone: ${style.tone || '?'} | Warmth: ${style.emotional_warmth || '?'}\n`
-      out += `Typical length: ${style.avg_length || '?'} | Bullet points: ${style.uses_bullet_points ? 'Yes' : 'No'}\n`
-      if (style.greeting_style) out += `Opens with: "${style.greeting_style}"\n`
-      if (style.sign_off_style) out += `Closes with: "${style.sign_off_style}"\n`
-      if (style.key_phrases?.length) out += `Key phrases: ${style.key_phrases.join(', ')}\n`
-      if (style.decision_language) out += `When interested: "${style.decision_language}"\n`
-      if (style.deflection_language) out += `When declining: "${style.deflection_language}"\n`
-      if (style.draft_instructions) out += `\nHow to write to them:\n${style.draft_instructions}`
-      return out
-    } catch(e) { return `Style analysis error: ${e.message}` }
-  }
-
-  if (name === 'get_deal_history') {
-    const { company } = input
-    try {
-      // Find the deal first
-      const deals = await sbFetch(`deals?select=id,data&data->>company=ilike.*${encodeURIComponent(company)}*&limit=5`)
-      if (!deals?.length) return `No deals found for "${company}".`
-      let out = `DEAL HISTORY FOR "${company}":\n\n`
-      for (const deal of deals) {
-        const d = deal.data || {}
-        out += `📋 ${d.company || d.title} — Current stage: ${d.stage} (Pipeline: ${d.pipeline})\n`
-        // Fetch stage history
-        const history = await sbFetch(`deal_stage_history?deal_id=eq.${deal.id}&order=changed_at.desc&limit=20`)
-        if (history?.length) {
-          out += `   Stage changes (${history.length}):\n`
-          for (const h of history) {
-            const date = new Date(h.changed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-            out += `   ${date}: ${h.from_stage || '(new)'} → ${h.to_stage} (by ${h.changed_by})\n`
-          }
-        } else {
-          out += `   No stage changes recorded yet.\n`
-        }
-        if (d.contactName) out += `   Contact: ${d.contactName}\n`
-        if (d.lastActivity) out += `   Last activity: ${d.lastActivity}\n`
-        out += '\n'
-      }
-      return out
-    } catch (err) {
-      return `Deal history error: ${err.message}`
-    }
-  }
-
-  if (name === 'get_skills') {
-    try {
-      const skills = await sbFetch('kiko_skills?is_active=eq.true&select=name,category,trigger_keywords')
-      if (!skills?.length) return 'No skills loaded.'
-      let out = 'KIKO EXPERTISE DOMAINS:\n\n'
-      for (const s of skills) {
-        out += `• ${s.name} (${s.category}) — triggers: ${(s.trigger_keywords || []).join(', ')}\n`
-      }
-      out += '\nThese skills are automatically loaded into my context when relevant keywords are detected in your query.'
-      return out
-    } catch (err) {
-      return `Skills error: ${err.message}`
-    }
-  }
-
-  // ── Lemlist Tools ──
-  const LEMLIST_KEY = process.env.LEMLIST_KEY
-  const lemlistHeaders = { 'Authorization': `Basic ${Buffer.from(`:${LEMLIST_KEY}`).toString('base64')}`, 'Content-Type': 'application/json' }
-
-  if (name === 'lemlist_list_campaigns') {
-    try {
-      const res = await fetch('https://api.lemlist.com/api/campaigns', { headers: lemlistHeaders })
-      if (!res.ok) return `Lemlist API error: ${res.status}`
-      const campaigns = await res.json()
-      if (!campaigns?.length) return 'No Lemlist campaigns found.'
-      let out = `LEMLIST CAMPAIGNS (${campaigns.length}):\n\n`
-      for (const c of campaigns) {
-        out += `• ${c.name} (ID: ${c._id}) — Status: ${c.status || 'unknown'}\n`
-      }
-      return out
-    } catch (err) { return `Lemlist error: ${err.message}` }
-  }
-
-  if (name === 'lemlist_add_lead') {
-    const { campaign_id, email, first_name, last_name, company_name, job_title } = input
-    try {
-      const body = { email, firstName: first_name }
-      if (last_name) body.lastName = last_name
-      if (company_name) body.companyName = company_name
-      if (job_title) body.jobTitle = job_title
-      const res = await fetch(`https://api.lemlist.com/api/campaigns/${campaign_id}/leads/`, {
-        method: 'POST', headers: lemlistHeaders, body: JSON.stringify(body)
-      })
-      if (!res.ok) { const err = await res.text(); return `Lemlist add lead failed (${res.status}): ${err}` }
-      const result = await res.json()
-      return `Lead added to campaign "${result.campaignName || campaign_id}": ${first_name} ${last_name || ''} (${email}). Lead ID: ${result._id}`
-    } catch (err) { return `Lemlist add lead error: ${err.message}` }
-  }
-
-  if (name === 'lemlist_get_activities') {
-    const { campaign_id, type } = input
-    try {
-      let url = 'https://api.lemlist.com/api/activities?limit=25'
-      if (campaign_id) url += `&campaignId=${campaign_id}`
-      if (type) url += `&type=${type}`
-      const res = await fetch(url, { headers: lemlistHeaders })
-      if (!res.ok) return `Lemlist API error: ${res.status}`
-      const activities = await res.json()
-      if (!activities?.length) return 'No recent Lemlist activities found.'
-      let out = `LEMLIST ACTIVITIES (${activities.length} most recent):\n\n`
-      for (const a of activities) {
-        const date = new Date(a.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-        out += `${date} — ${a.type}: ${a.firstName || ''} ${a.lastName || ''} (${a.email || '?'})${a.campaignName ? ` [${a.campaignName}]` : ''}\n`
-      }
-      return out
-    } catch (err) { return `Lemlist activities error: ${err.message}` }
-  }
-
-  // ── Conversation Memory (cross-session) ──
-  if (name === 'search_past_conversations') {
-    const { query: q, limit: lim = 5 } = input
-    try {
-      // Step 1: Fetch all conversation titles (lightweight)
-      const allConvos = await sbFetch('conversations?select=id,title,updated_at,messages,bookmarked&order=updated_at.desc&limit=50')
-      if (!allConvos?.length) return 'No past conversations found.'
-      
-      // Step 2: Search by keyword matching on title + message content
-      const qLower = q.toLowerCase()
-      const keywords = qLower.split(/\s+/).filter(w => w.length > 2)
-      
-      const scored = allConvos.map(conv => {
-        const titleText = (conv.title || '').toLowerCase()
-        const msgText = JSON.stringify(conv.messages || []).toLowerCase()
-        let score = 0
-        if (conv.bookmarked) score += 5 // Bookmarked conversations get priority
-        for (const kw of keywords) {
-          if (titleText.includes(kw)) score += 3
-          if (msgText.includes(kw)) score += 1
-        }
-        return { ...conv, score }
-      }).filter(c => c.score > 0).sort((a, b) => b.score - a.score).slice(0, Math.min(lim, 8))
-      
-      if (!scored.length) return `No past conversations found matching "${q}".`
-      return formatConversationResults(scored, q)
-    } catch (err) { return `Conversation search error: ${err.message}` }
-  }
-
-  if (name === 'get_recent_conversations') {
-    const { limit: lim = 5 } = input
-    try {
-      const rows = await sbFetch(`conversations?select=id,title,messages,updated_at&order=updated_at.desc&limit=${Math.min(lim, 10)}`)
-      if (!rows?.length) return 'No conversations found.'
-      let out = `RECENT CONVERSATIONS (${rows.length}):\n\n`
-      for (const r of rows) {
-        const date = new Date(r.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-        const msgs = r.messages || []
-        const msgCount = msgs.length
-        const firstUser = msgs.find(m => m.role === 'user')
-        out += `• "${r.title || 'Untitled'}" (${date}, ${msgCount} msgs)\n`
-        if (firstUser) out += `  You asked: "${(firstUser.content || '').slice(0, 120)}"\n`
-        out += '\n'
-      }
-      return out
-    } catch (err) { return `Recent conversations error: ${err.message}` }
-  }
-
-  // ── Activity Logging ──
-  if (name === 'log_activity') {
-    const { type, entity_name, description, deal_id } = input
-    try {
-      await sbFetch('activities', { method: 'POST', body: JSON.stringify({ type, entity_name, subject: description, deal_id: deal_id || null, status: 'completed', completed_at: new Date().toISOString(), metadata: { logged_by: 'kiko' } }) })
-      return `Activity logged: ${type} — ${entity_name}: ${description}`
-    } catch(e) { return `Activity log error: ${e.message}` }
-  }
-
-  if (name === 'get_activity_feed') {
-    const { limit: lim = 15, type_filter } = input
-    try {
-      let url = `activities?select=*&order=created_at.desc&limit=${Math.min(lim, 30)}`
-      if (type_filter) url += `&type=eq.${type_filter}`
-      const rows = await sbFetch(url)
-      if (!rows?.length) return 'No activities found yet. Activities are logged automatically when you move deals, draft emails, or receive Lemlist events.'
-      let out = `ACTIVITY FEED (${rows.length}):\n\n`
-      for (const a of rows) {
-        const date = new Date(a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-        out += `${date} — [${a.type}] ${a.entity_name || ''}: ${a.subject || a.body?.slice(0,80) || ''}\n`
-      }
-      return out
-    } catch(e) { return `Activity feed error: ${e.message}` }
-  }
-
-  // ── PAGE ACTION HANDLERS ──
-
-  if (name === 'update_deal_stage') {
-    const { deal_name, new_stage, reason } = input
-    try {
-      const deals = await sbFetch(`deals?select=id,data&order=updated_at.desc&limit=500`)
-      const match = deals?.find(d => d.data?.company?.toLowerCase().includes(deal_name.toLowerCase()))
-      if (!match) return `No deal found matching "${deal_name}". Try a more specific name.`
-      const oldStage = match.data.stage || 'Unknown'
-      const updated = { ...match.data, stage: new_stage, status: ['Won','Lost'].includes(new_stage) ? new_stage.toLowerCase() : 'active' }
-      await sbFetch(`deals?id=eq.${match.id}`, { method: 'PATCH', body: JSON.stringify({ data: updated }) })
-      // Log to deal_stage_history
-      await sbFetch('deal_stage_history', { method: 'POST', body: JSON.stringify({ deal_id: match.id, from_stage: oldStage, to_stage: new_stage, changed_by: ORG_ID, org_id: ORG_ID }) }).catch(() => {})
-      // Log to activities
-      await sbFetch('activities', { method: 'POST', body: JSON.stringify({ org_id: ORG_ID, deal_id: match.id, type: 'stage_change', entity_name: match.data.company, subject: `${oldStage} → ${new_stage}`, body: reason || '', created_by: ORG_ID }) }).catch(() => {})
-      return `✅ Moved "${match.data.company}" from ${oldStage} → ${new_stage}.${reason ? ` Reason: ${reason}` : ''} Logged to deal history and activities.`
-    } catch(e) { return `Error updating deal: ${e.message}` }
-  }
-
-  if (name === 'update_contact') {
-    const { contact_name, updates } = input
-    try {
-      const contacts = await sbFetch(`contacts?select=id,data&order=updated_at.desc&limit=500`)
-      const match = contacts?.find(c => {
-        const full = `${c.data?.firstName || ''} ${c.data?.lastName || ''}`.toLowerCase()
-        return full.includes(contact_name.toLowerCase())
-      })
-      if (!match) return `No contact found matching "${contact_name}". Try a more specific name.`
-      const updated = { ...match.data }
-      if (updates.title) updated.title = updates.title
-      if (updates.email) updated.email = updates.email
-      if (updates.phone) updated.phone = updates.phone
-      if (updates.company) updated.company = updates.company
-      if (updates.notes) updated.notes = (updated.notes || '') + '\n' + updates.notes
-      await sbFetch(`contacts?id=eq.${match.id}`, { method: 'PATCH', body: JSON.stringify({ data: updated }) })
-      const changes = Object.keys(updates).join(', ')
-      return `✅ Updated ${match.data.firstName} ${match.data.lastName}: ${changes}. Changes saved.`
-    } catch(e) { return `Error updating contact: ${e.message}` }
-  }
-
-  if (name === 'create_deal') {
-    const { company_name, contact_name, pipeline = 'Haas F1', stage = 'To Revisit', value, notes } = input
-    try {
-      const dealData = {
-        company: company_name, contact: contact_name || '', pipeline, stage, status: 'active',
-        value: value || 0, notes: notes || '', source: 'kiko',
-        created_at: new Date().toISOString()
-      }
-      const result = await sbFetch('deals', { method: 'POST', body: JSON.stringify({ data: dealData, org_id: ORG_ID }), headers: { Prefer: 'return=representation' } })
-      // Log to activities
-      await sbFetch('activities', { method: 'POST', body: JSON.stringify({ org_id: ORG_ID, deal_id: result?.[0]?.id, type: 'stage_change', entity_name: company_name, subject: `New deal created at ${stage}`, body: notes || '', created_by: ORG_ID }) }).catch(() => {})
-      return `✅ Created deal for "${company_name}" in ${pipeline} pipeline at ${stage} stage.${value ? ` Value: $${value.toLocaleString()}.` : ''}${contact_name ? ` Contact: ${contact_name}.` : ''}`
-    } catch(e) { return `Error creating deal: ${e.message}` }
-  }
-
-  if (name === 'create_task') {
-    const { type, notes, company, contact, due_date } = input
-    try {
-      const taskData = { type, notes, company: company || '', contact: contact || '', dueDate: due_date || null, completed: false, createdAt: new Date().toISOString(), assignedTo: 'Sunny Sidhu' }
-      await sbFetch('tasks', { method: 'POST', body: JSON.stringify({ id: `t${Date.now()}`, data: taskData, org_id: ORG_ID, updated_at: new Date().toISOString() }) })
-      return `✅ Task created: ${type}${company ? ` for ${company}` : ''}${contact ? ` (${contact})` : ''}${due_date ? ` — due ${due_date}` : ''}. Notes: ${notes}`
-    } catch(e) { return `Error creating task: ${e.message}` }
-  }
-
-  // ── Learning Log Handlers ──
-  if (name === 'search_learning_log') {
-    const { query, category } = input
-    try {
-      let url = `kiko_learning_log?select=*&order=created_at.desc&limit=20`
-      if (category) url += `&category=eq.${category}`
-      const rows = await sbFetch(url)
-      if (!rows?.length) return `No learning log entries found${category ? ` for category "${category}"` : ''}. The learning log builds over time as Kiko extracts facts from conversations.`
-      // Filter by keyword match
-      const matches = query ? rows.filter(r => r.content?.toLowerCase().includes(query.toLowerCase()) || r.entity_name?.toLowerCase().includes(query.toLowerCase())) : rows
-      if (!matches.length) return `No entries matching "${query}". ${rows.length} total entries in log.`
-      let out = `LEARNING LOG (${matches.length} matches):\n\n`
-      for (const r of matches.slice(0, 10)) {
-        const date = new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-        out += `[${r.category}] ${date}${r.entity_name ? ` — ${r.entity_name}` : ''}: ${r.content}\n`
-      }
-      return out
-    } catch(e) { return `Learning log error: ${e.message}` }
-  }
-
-  if (name === 'save_learning') {
-    const { category, content, entity_name } = input
-    try {
-      await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({
-        org_id: ORG_ID, category, content, entity_name: entity_name || null
-      }) })
-      return `✅ Saved to learning log: [${category}]${entity_name ? ` ${entity_name}:` : ''} ${content}`
-    } catch(e) { return `Error saving to learning log: ${e.message}` }
-  }
-
-  // ── Document Generation Handler ──
-  if (name === 'generate_document') {
-    const { title, type, company, context } = input
-    // Return instructions for Kiko to generate the document inline using the ---DRAFT--- format
-    return `DOCUMENT REQUEST RECEIVED. Now generate the full document with this specification:
-Title: ${title}
-Type: ${type}
-${company ? `Company: ${company}` : ''}
-Context: ${context}
-
-FORMAT YOUR RESPONSE AS:
----DRAFT---
-To: [leave blank for documents]
-Subject: ${title}
-
-[Full document content with clear sections, using **bold** for headers]
----END DRAFT---
-
-Make it authoritative, data-driven, and board-level. For one-pagers: keep to ~400 words with clear sections (Overview, Value Proposition, Key Metrics, Next Steps). For briefs: structured with executive summary + body + recommendations.`
-  }
-
-  // ── Bookmark Conversation Handler ──
-  if (name === 'bookmark_conversation') {
-    const { reason } = input
-    // This needs the conversation ID passed from kiko.js context
-    try {
-      // Get most recent conversation for this user
-      const convs = await sbFetch('conversations?select=id,title&order=updated_at.desc&limit=1')
-      if (!convs?.length) return 'No conversation found to bookmark.'
-      await sbFetch(`conversations?id=eq.${convs[0].id}`, { method: 'PATCH', body: JSON.stringify({ bookmarked: true, bookmark_reason: reason || 'Manually bookmarked' }) })
-      return `✅ Bookmarked conversation "${convs[0].title}".${reason ? ` Reason: ${reason}` : ''} Bookmarked conversations get priority in memory recall.`
-    } catch(e) { return `Error bookmarking: ${e.message}` }
-  }
-
-  // ── Predictive Outreach Timing Handler ──
-  if (name === 'get_outreach_timing') {
-    const { company, contact_email } = input
-    try {
-      let url = 'outreach_scores?select=sent_day_of_week,sent_hour,outcome,company,recipient_email&order=sent_at.desc&limit=200'
-      if (company) url += `&company=ilike.*${company}*`
-      if (contact_email) url += `&recipient_email=eq.${contact_email}`
-      const rows = await sbFetch(url)
-      if (!rows?.length) return `No outreach data found${company ? ` for "${company}"` : ''}. Score your outreach first from the Outreach Intelligence page, then I can analyse timing patterns.`
-
-      // Analyse by day
-      const byDay = {}
-      rows.forEach(r => {
-        const d = r.sent_day_of_week || 'Unknown'
-        if (!byDay[d]) byDay[d] = { total: 0, replied: 0 }
-        byDay[d].total++
-        if (r.outcome === 'replied') byDay[d].replied++
-      })
-
-      // Analyse by hour
-      const byHour = {}
-      rows.forEach(r => {
-        const h = r.sent_hour != null ? `${r.sent_hour}:00` : 'Unknown'
-        if (!byHour[h]) byHour[h] = { total: 0, replied: 0 }
-        byHour[h].total++
-        if (r.outcome === 'replied') byHour[h].replied++
-      })
-
-      // Find best day and hour
-      const bestDay = Object.entries(byDay).filter(([,v]) => v.total >= 2).sort((a,b) => (b[1].replied/b[1].total) - (a[1].replied/a[1].total))[0]
-      const bestHour = Object.entries(byHour).filter(([,v]) => v.total >= 2).sort((a,b) => (b[1].replied/b[1].total) - (a[1].replied/a[1].total))[0]
-
-      let out = `OUTREACH TIMING ANALYSIS${company ? ` — ${company}` : ''} (${rows.length} emails analysed):\n\n`
-      out += `BY DAY OF WEEK:\n`
-      const dayOrder = ['Monday','Tuesday','Wednesday','Thursday','Friday']
-      dayOrder.forEach(d => {
-        const data = byDay[d]
-        if (data) out += `  ${d}: ${data.total} sent, ${data.replied} replied (${data.total > 0 ? Math.round(data.replied/data.total*100) : 0}%)\n`
-      })
-      out += `\nBY HOUR (UK time):\n`
-      Object.entries(byHour).sort((a,b) => parseInt(a[0]) - parseInt(b[0])).forEach(([h, data]) => {
-        if (h !== 'Unknown') out += `  ${h}: ${data.total} sent, ${data.replied} replied (${data.total > 0 ? Math.round(data.replied/data.total*100) : 0}%)\n`
-      })
-      out += `\nRECOMMENDATION: `
-      if (bestDay) out += `Best day: ${bestDay[0]} (${Math.round(bestDay[1].replied/bestDay[1].total*100)}% reply rate). `
-      if (bestHour) out += `Best time: ${bestHour[0]} UK (${Math.round(bestHour[1].replied/bestHour[1].total*100)}% reply rate). `
-      if (!bestDay && !bestHour) out += `Not enough reply data yet to determine optimal timing. Continue sending and scoring outreach to build patterns.`
-      return out
-    } catch(e) { return `Timing analysis error: ${e.message}` }
-  }
-
-  // ── File Generation & Utility Handlers ──
-  const BASE_URL = `https://${process.env.VERCEL_URL || 'vela-platform-one.vercel.app'}`;
-
-  if (name === 'generate_docx') {
-    try {
-      const r = await fetch(`${BASE_URL}/api/generate-doc`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ format: 'docx', filename: input.filename, content: input.content }) });
-      const data = await r.json();
-      return data.url ? `✅ Document created: [${data.filename}](${data.url})\nSize: ${(data.size / 1024).toFixed(1)}KB` : `Error: ${data.error}`;
-    } catch(e) { return `Error: ${e.message}` }
-  }
-  if (name === 'generate_xlsx') {
-    try {
-      const r = await fetch(`${BASE_URL}/api/generate-doc`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ format: 'xlsx', filename: input.filename, sheets: input.sheets }) });
-      const data = await r.json();
-      return data.url ? `✅ Spreadsheet created: [${data.filename}](${data.url})\nSize: ${(data.size / 1024).toFixed(1)}KB` : `Error: ${data.error}`;
-    } catch(e) { return `Error: ${e.message}` }
-  }
-  if (name === 'generate_pptx') {
-    try {
-      const r = await fetch(`${BASE_URL}/api/generate-doc`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ format: 'pptx', filename: input.filename, content: input.slides }) });
-      const data = await r.json();
-      return data.url ? `✅ Presentation created: [${data.filename}](${data.url})\nSize: ${(data.size / 1024).toFixed(1)}KB` : `Error: ${data.error}`;
-    } catch(e) { return `Error: ${e.message}` }
-  }
-  if (name === 'generate_csv') {
-    try {
-      const r = await fetch(`${BASE_URL}/api/generate-doc`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ format: 'csv', filename: input.filename, content: input.content }) });
-      const data = await r.json();
-      return data.url ? `✅ CSV exported: [${data.filename}](${data.url})` : `Error: ${data.error}`;
-    } catch(e) { return `Error: ${e.message}` }
-  }
-  if (name === 'generate_image') {
-    try {
-      const r = await fetch(`${BASE_URL}/api/generate-image`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: input.prompt, size: input.size || '1024x1024', style: input.style || 'natural' }) });
-      const data = await r.json();
-      return data.url ? `✅ Image generated: [View/Download](${data.url})${data.revised_prompt ? `\nPrompt: ${data.revised_prompt}` : ''}` : `Error: ${data.error}`;
-    } catch(e) { return `Error: ${e.message}` }
-  }
-  if (name === 'read_url') {
-    try {
-      const r = await fetch(`${BASE_URL}/api/fetch-url`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: input.url }) });
-      const data = await r.json();
-      if (data.content) return `PAGE: ${data.title || input.url}\n${data.description ? `DESCRIPTION: ${data.description}\n` : ''}\nCONTENT (${data.contentLength} chars${data.truncated ? ', truncated' : ''}):\n${data.content}`;
-      return `Error: ${data.error}`;
-    } catch(e) { return `Error: ${e.message}` }
-  }
-  if (name === 'generate_qr') {
-    try {
-      const r = await fetch(`${BASE_URL}/api/generate-qr`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: input.text, size: input.size || 400 }) });
-      const data = await r.json();
-      return data.url ? `✅ QR code: [View/Download](${data.url})\nEncodes: ${input.text}` : `Error: ${data.error}`;
-    } catch(e) { return `Error: ${e.message}` }
-  }
-  if (name === 'export_pipeline') {
-    try {
-      const deals = await sbFetch('deals?select=id,data&order=updated_at.desc&limit=500');
-      if (!deals?.length) return 'No deals to export.';
-      const filtered = input.pipeline ? deals.filter(d => d.data?.pipeline?.toLowerCase().includes(input.pipeline.toLowerCase())) : deals;
-      const headers = ['Company', 'Contact', 'Stage', 'Pipeline', 'Value (USD)', 'Status', 'Source', 'Notes'];
-      const rows = filtered.map(d => [d.data?.company||'', d.data?.contact||'', d.data?.stage||'', d.data?.pipeline||'', d.data?.value||0, d.data?.status||'', d.data?.source||'', (d.data?.notes||'').slice(0,100)]);
-      const r = await fetch(`${BASE_URL}/api/generate-doc`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ format: 'xlsx', filename: `Pipeline_Export_${new Date().toISOString().split('T')[0]}`, sheets: [{ name: 'Pipeline', headers, rows }] }) });
-      const data = await r.json();
-      return data.url ? `✅ Pipeline exported: [${data.filename}](${data.url})\n${filtered.length} deals.` : `Error: ${data.error}`;
-    } catch(e) { return `Error: ${e.message}` }
-  }
-  if (name === 'export_contacts') {
-    try {
-      const contacts = await sbFetch(`contacts?select=id,data&order=updated_at.desc&limit=${input.limit || 500}`);
-      if (!contacts?.length) return 'No contacts to export.';
-      const filtered = input.filter ? contacts.filter(c => { const d = c.data||{}; return (d.company||'').toLowerCase().includes(input.filter.toLowerCase()) || (d.industry||'').toLowerCase().includes(input.filter.toLowerCase()); }) : contacts;
-      const headers = ['First Name', 'Last Name', 'Company', 'Title', 'Email', 'Phone', 'LinkedIn', 'Industry'];
-      const rows = filtered.map(c => { const d = c.data||{}; return [d.firstName||'', d.lastName||'', d.company||'', d.title||'', d.email||'', d.phone||'', d.linkedin?'Yes':'', d.industry||'']; });
-      const r = await fetch(`${BASE_URL}/api/generate-doc`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ format: 'xlsx', filename: `Contacts_Export_${new Date().toISOString().split('T')[0]}`, sheets: [{ name: 'Contacts', headers, rows }] }) });
-      const data = await r.json();
-      return data.url ? `✅ Contacts exported: [${data.filename}](${data.url})\n${filtered.length} contacts.` : `Error: ${data.error}`;
-    } catch(e) { return `Error: ${e.message}` }
-  }
-
-  // ── AGENT HANDLERS ──
+  // ── Navigator Agent ──
   if (name === 'ask_navigator') {
     try {
       const { callNavigator } = await import('./agents/navigator.js');
-      // Embed pageContext directly into instruction so it can't be lost
       let enrichedInstruction = input.instruction;
       if (pageContext?.page) {
         enrichedInstruction += `\n\n[PAGE CONTEXT: page=${pageContext.page}, path=${pageContext.path || '/'}, summary=${pageContext.summary || 'none'}${pageContext.stageDistribution ? `, stages=${JSON.stringify(pageContext.stageDistribution)}` : ''}${pageContext.visibleItems ? `, visibleItems=${pageContext.visibleItems}` : ''}]`;
       }
       const result = await callNavigator(enrichedInstruction, pageContext || {});
-      if (result.navigateTo) {
-        return { navigated: true, page: result.navigateTo, description: result.description };
-      }
+      if (result.navigateTo) return { navigated: true, page: result.navigateTo, description: result.description };
       return result.description;
-    } catch(e) { return `Navigator error: ${e.message}` }
+    } catch (e) { return `Navigator error: ${e.message}`; }
   }
 
+  // ── Deal Agent ──
   if (name === 'ask_deal_agent') {
     try {
       const { callDealAgent } = await import('./agents/deal.js');
       const result = await callDealAgent(input.instruction, userEmail);
       return result.success ? result.result : `Deal Agent failed: ${result.result}`;
-    } catch(e) { return `Deal Agent error: ${e.message}` }
+    } catch (e) { return `Deal Agent error: ${e.message}`; }
   }
 
-  return { error: `Unknown tool: ${name}` }
+  // ── Data Agent ──
+  if (name === 'ask_data_agent') {
+    try {
+      const { callDataAgent } = await import('./agents/data.js');
+      return await callDataAgent(input.operation, input.params || {}, userEmail);
+    } catch (e) { return `Data Agent error: ${e.message}`; }
+  }
+
+  // ── Outreach Agent ──
+  if (name === 'ask_outreach_agent') {
+    try {
+      const { callOutreachAgent } = await import('./agents/outreach.js');
+      return await callOutreachAgent(input.operation, input.params || {}, userEmail);
+    } catch (e) { return `Outreach Agent error: ${e.message}`; }
+  }
+
+  // ── Document Agent ──
+  if (name === 'ask_document_agent') {
+    try {
+      const { callDocumentAgent } = await import('./agents/document.js');
+      return await callDocumentAgent(input.operation, input.params || {});
+    } catch (e) { return `Document Agent error: ${e.message}`; }
+  }
+
+  // ── Direct tools (kept for backwards compatibility) ──
+  if (name === 'navigate_page') {
+    const { page, reason } = input;
+    return { navigated: true, page, reason: reason || `Opening ${page}` };
+  }
+
+  if (name === 'log_activity') {
+    const { type, entity_name, description, deal_id } = input;
+    try {
+      await sbFetch('activities', { method: 'POST', body: JSON.stringify({ type, entity_name, subject: description, deal_id: deal_id || null, status: 'completed', completed_at: new Date().toISOString(), metadata: { logged_by: 'kiko' } }) });
+      return `Activity logged: ${type} — ${entity_name}: ${description}`;
+    } catch (e) { return `Activity log error: ${e.message}`; }
+  }
+
+  return { error: `Unknown tool: ${name}` };
 }
 
-// ── Entity Context Helper ───────────────────────────────
+// ── Entity Context Helper (used by kiko.js for page-specific context) ──
 export async function fetchEntityContext(pageEntity) {
-  if (!pageEntity?.type || !pageEntity?.id) return ''
+  if (!pageEntity?.type || !pageEntity?.id) return '';
   try {
     if (pageEntity.type === 'contact') {
-      const rows = await sbFetch(`contacts?id=eq.${pageEntity.id}&select=data&limit=1`)
+      const rows = await sbFetch(`contacts?id=eq.${pageEntity.id}&select=data&limit=1`);
       if (rows?.[0]?.data) {
-        const d = rows[0].data
-        let ctx = `\n\nACTIVE CONTEXT — User is viewing contact: ${d.firstName || ''} ${d.lastName || ''}, ${d.title || '?'} at ${d.company || '?'}. Email: ${d.email || '—'}. LinkedIn: ${d.linkedin ? 'Yes' : 'No'}. Phone: ${d.phone || '—'}.`
-        if (d.lastCampaign) ctx += ` Last campaign: ${d.lastCampaign}.`
-        if (d.outreachStatus) ctx += ` Outreach status: ${d.outreachStatus}.`
-        ctx += ` When user asks to draft/email this person, use their email (${d.email || 'not available'}) as the recipient.`
-        return ctx
+        const d = rows[0].data;
+        let ctx = `\n\nVIEWING CONTACT: ${d.firstName || ''} ${d.lastName || ''}, ${d.title || '?'} at ${d.company || '?'}. Email: ${d.email || '—'}.`;
+        if (d.linkedin) ctx += ' LinkedIn: Yes.';
+        ctx += ` Use their email (${d.email || 'not available'}) when drafting.`;
+        return ctx;
       }
     } else if (pageEntity.type === 'company') {
-      const rows = await sbFetch(`companies?id=eq.${pageEntity.id}&select=data&limit=1`)
+      const rows = await sbFetch(`companies?id=eq.${pageEntity.id}&select=data&limit=1`);
       if (rows?.[0]?.data) {
-        const d = rows[0].data
-        let ctx = `\n\nACTIVE CONTEXT — User is viewing company: ${d.name || '?'}. Industry: ${d.industry || '?'}. Country: ${d.country || '?'}.${d.lastRound ? ` Last Round: ${d.lastRound}.` : ''}${d.totalFunding ? ` Total Funding: ${d.totalFunding}.` : ''}${d.employees ? ` Employees: ${d.employees}.` : ''}`
-        // Fetch top contacts for this company
-        const contacts = await sbFetch(`contacts?select=data&data->>company=eq.${encodeURIComponent(d.name)}&limit=5&order=updated_at.desc`)
-        if (contacts?.length) {
-          ctx += ` Key contacts: ${contacts.map(c => `${c.data.firstName || ''} ${c.data.lastName || ''} (${c.data.title || '?'}, ${c.data.email || 'no email'})`).join('; ')}.`
-        }
-        return ctx
+        const d = rows[0].data;
+        let ctx = `\n\nVIEWING COMPANY: ${d.name || '?'}. Industry: ${d.industry || '?'}.`;
+        if (d.totalFunding) ctx += ` Funding: ${d.totalFunding}.`;
+        if (d.employees) ctx += ` Employees: ${d.employees}.`;
+        return ctx;
       }
     }
-  } catch(e) { /* non-blocking */ }
-  return ''
+  } catch {}
+  return '';
 }
