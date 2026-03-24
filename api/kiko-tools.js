@@ -287,7 +287,7 @@ function formatConversationResults(rows, query) {
   return out
 }
 
-export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com') {
+export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com', pageContext = null) {
   if (name === 'search_contacts') {
     const { query, limit = 10 } = input
     const q = query.trim()
@@ -1190,9 +1190,12 @@ Make it authoritative, data-driven, and board-level. For one-pagers: keep to ~40
   if (name === 'ask_navigator') {
     try {
       const { callNavigator } = await import('./agents/navigator.js');
-      const pageCtx = typeof globalThis.__kikoPageContext === 'object' ? globalThis.__kikoPageContext : {};
-      const result = await callNavigator(input.instruction, pageCtx);
-      // If navigation is needed, return structured result for kiko.js to handle
+      // Embed pageContext directly into instruction so it can't be lost
+      let enrichedInstruction = input.instruction;
+      if (pageContext?.page) {
+        enrichedInstruction += `\n\n[PAGE CONTEXT: page=${pageContext.page}, path=${pageContext.path || '/'}, summary=${pageContext.summary || 'none'}${pageContext.stageDistribution ? `, stages=${JSON.stringify(pageContext.stageDistribution)}` : ''}${pageContext.visibleItems ? `, visibleItems=${pageContext.visibleItems}` : ''}]`;
+      }
+      const result = await callNavigator(enrichedInstruction, pageContext || {});
       if (result.navigateTo) {
         return { navigated: true, page: result.navigateTo, description: result.description };
       }

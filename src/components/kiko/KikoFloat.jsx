@@ -169,7 +169,8 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         body: JSON.stringify({
           message: msg, userEmail: user?.email,
           conversationHistory: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
-          currentPage: (window.location.pathname.replace('/', '') || 'home') + (window.location.search || ''),
+          currentPage: (window.kikoPageContext?.page || window.location.pathname.replace('/', '') || 'home'),
+          pageContext: window.kikoPageContext || { page: window.location.pathname.replace('/', '') || 'home', path: window.location.pathname },
           pageEntity: (() => {
             const path = window.location.pathname; const params = new URLSearchParams(window.location.search)
             if (path.startsWith('/contacts/')) return { type: 'contact', id: path.split('/contacts/')[1] }
