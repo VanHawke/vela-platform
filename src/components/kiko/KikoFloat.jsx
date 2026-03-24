@@ -199,12 +199,9 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
       if (pendingNavRef.current) {
         const navTarget = pendingNavRef.current
         pendingNavRef.current = null
-        console.log('[KikoFloat] Executing post-stream navigation:', navTarget)
-        // requestAnimationFrame ensures React has painted before we navigate
-        requestAnimationFrame(() => {
-          const target = '/' + (navTarget === 'home' ? '' : navTarget)
-          try { navigate(target) } catch (e) { console.error('[KikoFloat] navigate() failed, using href:', e); window.location.href = target }
-        })
+        console.log('[KikoFloat] Navigating to:', navTarget)
+        const target = '/' + (navTarget === 'home' ? '' : navTarget)
+        window.location.href = target
       }
       const allMsgs = [...messages, userMsg, kikoMsg]
       if (user?.id) {
