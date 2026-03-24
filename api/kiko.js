@@ -268,6 +268,8 @@ const TOOL_LABELS = {
   get_recent_conversations: 'Loading recent chats',
   log_activity: 'Logging activity',
   get_activity_feed: 'Loading activity feed',
+  ask_navigator: 'Navigator Agent: analysing screen...',
+  ask_deal_agent: 'Deal Agent: executing...',
 };
 
 // ── Main Handler ─────────────────────────────────────────
@@ -441,6 +443,9 @@ export default async function handler(req, res) {
     let response = await streamCall(messages);
     let toolRounds = 0;
 
+    // Make pageContext available to agents (Navigator needs it)
+    globalThis.__kikoPageContext = pageContext || {};
+
     // Tool execution loop — max 10 rounds (60s Vercel limit)
     while (response.stop_reason === 'tool_use' && toolRounds < 10) {
       toolRounds++;
@@ -451,7 +456,7 @@ export default async function handler(req, res) {
         const result = block.name === 'memory'
           ? await handleMemory(block.input)
           : await executeTool(block.name, block.input, userEmail);
-        if (block.name === 'navigate_page' && result?.navigated) write({ navigate: result.page });
+        if ((block.name === 'navigate_page' || block.name === 'ask_navigator') && result?.navigated) write({ navigate: result.page });
         toolResults.push({
           type: 'tool_result', tool_use_id: block.id,
           content: typeof result === 'string' ? result : JSON.stringify(result).slice(0, 8000)

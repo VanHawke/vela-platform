@@ -252,6 +252,16 @@ export const TOOL_DEFINITIONS = [
     input_schema: { type: 'object', properties: { pipeline: { type: 'string', description: 'Pipeline name filter (optional)' } }, required: [] } },
   { name: 'export_contacts', description: 'Export contacts as a spreadsheet. Use when user says "export contacts", "download contacts".',
     input_schema: { type: 'object', properties: { limit: { type: 'number', description: 'Max contacts (default 500)' }, filter: { type: 'string', description: 'Filter by company/industry' } }, required: [] } },
+
+  // ── AGENT TOOLS — Route to specialist agents ──
+  { name: 'ask_navigator', description: 'ALWAYS use this tool when the user asks about what is on their screen, what page they are viewing, asks to be taken to a page, asks to navigate, says "show me", "go to", "take me to", "what am I looking at", "what is on screen", "tell me about this page", "walk me through this". The Navigator Agent knows every page of the Vela platform and can describe exactly what the user sees.',
+    input_schema: { type: 'object', properties: {
+      instruction: { type: 'string', description: 'What the user wants — e.g. "describe what is on screen", "take me to pipeline", "what page am I on"' },
+    }, required: ['instruction'] } },
+  { name: 'ask_deal_agent', description: 'ALWAYS use this tool when the user asks to: move a deal to a different stage, create a task, add a reminder, update a contact, create a new deal, or any CRM write operation. Examples: "move Decagon to Qualified", "add a task to call Ryan in 2 days", "create a deal for COMSOL", "update Johns email".',
+    input_schema: { type: 'object', properties: {
+      instruction: { type: 'string', description: 'The full user instruction — e.g. "move Decagon from Contact made to Qualified", "create a task to follow up with Ryan at Decagon in 2 days"' },
+    }, required: ['instruction'] } },
 ];
 
 // ── Tool Executor ────────────────────────────────────────
@@ -1174,6 +1184,28 @@ Make it authoritative, data-driven, and board-level. For one-pagers: keep to ~40
       const data = await r.json();
       return data.url ? `✅ Contacts exported: [${data.filename}](${data.url})\n${filtered.length} contacts.` : `Error: ${data.error}`;
     } catch(e) { return `Error: ${e.message}` }
+  }
+
+  // ── AGENT HANDLERS ──
+  if (name === 'ask_navigator') {
+    try {
+      const { callNavigator } = await import('./agents/navigator.js');
+      const pageCtx = typeof globalThis.__kikoPageContext === 'object' ? globalThis.__kikoPageContext : {};
+      const result = await callNavigator(input.instruction, pageCtx);
+      // If navigation is needed, return structured result for kiko.js to handle
+      if (result.navigateTo) {
+        return { navigated: true, page: result.navigateTo, description: result.description };
+      }
+      return result.description;
+    } catch(e) { return `Navigator error: ${e.message}` }
+  }
+
+  if (name === 'ask_deal_agent') {
+    try {
+      const { callDealAgent } = await import('./agents/deal.js');
+      const result = await callDealAgent(input.instruction, userEmail);
+      return result.success ? result.result : `Deal Agent failed: ${result.result}`;
+    } catch(e) { return `Deal Agent error: ${e.message}` }
   }
 
   return { error: `Unknown tool: ${name}` }
