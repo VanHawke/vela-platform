@@ -331,17 +331,15 @@ RULES:
   const claudeActiveRef = useRef(false) // true = Claude is processing, GPT-4o paused
   const suppressAutoRef = useRef(false) // true = suppress all GPT-4o auto-responses
 
-  // ── Keywords that REQUIRE Claude (tools/data access) ──
-  const CLAUDE_KEYWORDS = [
-    'email', 'emails', 'inbox', 'correspondence', 'wrote', 'heard from', 'replied',
-    'contacted', 'outreach', 'message from', 'follow up', 'reach out', 'mailed',
-    'pipeline', 'deals', 'stage', 'qualified', 'how many deals', 'total value',
-    'contacts', 'companies', 'search for', 'look up', 'find out',
-    'news', 'latest', 'recent', 'update on', 'what happened',
-    'document', 'uploaded', 'file', 'report', 'presentation', 'deck',
-    'calendar', 'meeting', 'schedule', 'appointment',
-    'brief me', 'summarise', 'summarize', 'analyse', 'analyze',
-    'draft', 'write an email', 'compose',
+  // ── GPT-4o ONLY handles simple conversational queries ──
+  // Everything else routes to Claude (which has all 21 agents)
+  const GPT4O_ONLY_PATTERNS = [
+    /^(hi|hello|hey|good morning|good afternoon|good evening|how are you|what's up|howdy)/i,
+    /^(thanks|thank you|cheers|great|perfect|okay|ok|got it|understood|cool|nice|brilliant)/i,
+    /^(goodbye|bye|see you|later|that's all|that's it|nothing else)/i,
+    /^(yes|no|yeah|nah|yep|nope|sure|absolutely|definitely)/i,
+    /^(tell me a joke|what time is it|who are you|what can you do)/i,
+    /^(what's the weather|how's the weather)/i,
   ]
 
   // ── Route through Claude for tool-heavy questions ──
@@ -356,7 +354,10 @@ RULES:
       const res = await fetch('/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: text, currentPage: 'voice',
+          message: text,
+          currentPage: window.kikoPageContext?.page || window.location.pathname.replace('/', '') || 'home',
+          pageContext: window.kikoPageContext || { page: window.location.pathname.replace('/', '') || 'home', path: window.location.pathname },
+          voiceMode: true,
           userEmail: user?.email || 'sunny@vanhawke.com',
           conversationHistory: history
         })
@@ -482,21 +483,22 @@ RULES:
         return
       }
 
-      // Check if this needs Claude (tools/data)
-      const tl = text.toLowerCase()
-      const needsClaude = CLAUDE_KEYWORDS.some(w => tl.includes(w))
-      if (needsClaude) {
-        // IMMEDIATELY disable VAD + cancel auto-response + suppress future auto-responses
+      // INVERTED ROUTING: GPT-4o only handles simple conversational queries
+      // Everything else → Claude (which has all 21 specialist agents)
+      const tl = text.toLowerCase().trim()
+      const isSimpleChat = GPT4O_ONLY_PATTERNS.some(p => p.test(tl)) || tl.length < 6
+      if (!isSimpleChat) {
+        // Route to Claude — covers all agents: navigator, deal, data, outreach, strategy, etc.
         suppressAutoRef.current = true
         if (dcRef.current?.readyState === 'open') {
           dcRef.current.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: null } } } }))
           dcRef.current.send(JSON.stringify({ type: 'response.cancel' }))
         }
-        console.log('[Kiko Voice] → Claude (keyword):', text.slice(0, 60))
+        console.log('[Kiko Voice] → Claude (agent routing):', text.slice(0, 60))
         routeThroughClaude(text)
       } else {
-        // Let GPT-4o handle directly — instant response
-        console.log('[Kiko Voice] → GPT-4o direct:', text.slice(0, 60))
+        // Simple conversational — let GPT-4o handle directly (instant response)
+        console.log('[Kiko Voice] → GPT-4o direct (simple chat):', text.slice(0, 60))
       }
     }
 
