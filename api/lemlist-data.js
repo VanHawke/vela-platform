@@ -1,5 +1,5 @@
 // api/lemlist-data.js — Lemlist data endpoint for the Lemlist page UI
-const LEMLIST_KEY = process.env.LEMLIST_API_KEY
+const LEMLIST_KEY = process.env.LEMLIST_KEY
 const headers = { 'Content-Type': 'application/json', 'Authorization': `Basic ${Buffer.from(`:${LEMLIST_KEY}`).toString('base64')}` }
 
 async function fetchJSON(url) {
