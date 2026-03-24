@@ -371,7 +371,7 @@ RULES:
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue
           const d = line.slice(6); if (d === '[DONE]') continue
-          try { const j = JSON.parse(d); if (j.delta) full += j.delta } catch {}
+          try { const j = JSON.parse(d); if (j.delta) full += j.delta; if (j.navigate) { console.log('[Kiko Voice] Navigate:', j.navigate); setTimeout(() => { window.location.href = '/' + (j.navigate === 'home' ? '' : j.navigate) }, 200) } } catch {}
         }
       }
       if (full && dcRef.current?.readyState === 'open') {
