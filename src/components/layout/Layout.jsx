@@ -24,7 +24,7 @@ const ALL_NAV = [
   { id: 'tasks', label: 'Tasks', path: '/tasks', Icon: CheckSquare },
   { id: 'lemlist', label: 'Lemlist', path: '/lemlist', Icon: Send },
 ]
-const DEFAULT_TOP_IDS = ['home', 'pipeline', 'calendar', 'contacts']
+const DEFAULT_TOP_IDS = ['home', 'pipeline', 'partnership-matrix', 'tasks']
 
 function getTopNavIds() {
   try { const s = localStorage.getItem('kiko_top_nav'); if (s) return JSON.parse(s) } catch {}

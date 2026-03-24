@@ -17,6 +17,7 @@
     "api/generate-image.js": { "maxDuration": 30 },
     "api/fetch-url.js": { "maxDuration": 20 },
     "api/generate-qr.js": { "maxDuration": 10 },
+    "api/lemlist-data.js": { "maxDuration": 15 },
     "api/email.js": { "maxDuration": 30 },
     "api/calendar.js": { "maxDuration": 20 },
     "api/enrichment-agent.js": { "maxDuration": 45 },
