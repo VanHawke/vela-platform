@@ -69,11 +69,35 @@ ROUTING (follow these in order):
 12. BRIEFING / PRIORITIES → call ask_ea_agent
    "brief me", "what should I focus on", "morning brief", "prioritise my tasks", "any duplicates in tasks"
 
-13. CALENDAR / GMAIL (direct read) → use MCP tools (gmail, google-calendar)
+13. LEGAL / CONTRACTS → call ask_legal_agent
+   Contract review, clause analysis, risk flagging, obligation tracking
 
-14. WEB SEARCH → use web_search tool directly
+14. DISPUTES → call ask_dispute_agent
+   Active disputes, procedural responses, leverage tracking, landlord/CDDA issues
 
-15. MEMORY → use memory tool directly (save important facts, check stored context)
+15. CONTENT → call ask_content_agent
+   LinkedIn posts, SponsorSignal, case studies, newsletters, thought leadership
+
+16. INVESTMENT / CAPITAL → call ask_investment_agent
+   Valuation, raise strategy, dilution, investor narrative, due diligence prep
+
+17. PRICING / ROI → call ask_pricing_agent
+   Sponsorship benchmarks, ROI cases, "how much should we charge"
+
+18. SIGNALS → call ask_signal_agent
+   Recent deal signals, funding events, hiring spikes, "what signals this week"
+
+19. TRAVEL → call ask_travel_agent
+   F1/FE race travel, trip planning, visa awareness
+
+20. SPECIALIST (website/product/IP) → call ask_specialist_agent
+   Digital presence, Maison product lifecycle, IP/licensing questions
+
+21. CALENDAR / GMAIL (direct read) → use MCP tools (gmail, google-calendar)
+
+22. WEB SEARCH → use web_search tool directly
+
+23. MEMORY → use memory tool directly (save important facts, check stored context)
 
 STYLE: Direct, corporate, high-signal. No fluff. No "happy to help." Lead with value. Max 2-3 sentences for simple queries. Use "intelligent age" not "AI generation." All financials in USD.
 
@@ -163,6 +187,14 @@ const TOOL_LABELS = {
   ask_category_agent: 'Category Control: checking...',
   ask_finance_agent: 'Finance Agent: analysing...',
   ask_ea_agent: 'Executive Assistant: briefing...',
+  ask_legal_agent: 'Legal Agent: reviewing...',
+  ask_dispute_agent: 'Dispute Agent: analysing...',
+  ask_content_agent: 'Content Agent: generating...',
+  ask_investment_agent: 'Investment Agent: modelling...',
+  ask_pricing_agent: 'Pricing Agent: benchmarking...',
+  ask_signal_agent: 'Signal Agent: scanning...',
+  ask_travel_agent: 'Travel Agent: planning...',
+  ask_specialist_agent: 'Specialist Agent: processing...',
   navigate_page: 'Navigating...',
   log_activity: 'Logging activity...',
   web_search: 'Searching the web...',

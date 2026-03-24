@@ -103,6 +103,70 @@ export const TOOL_DEFINITIONS = [
     }, required: ['operation'] },
   },
   {
+    name: 'ask_legal_agent',
+    description: 'Legal risk flagging. Use for: contract review, clause analysis, risk summaries, obligation tracking. NOT legal advice.',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['review', 'analyse'], description: 'review: flag contract risks. analyse: answer legal question.' },
+      params: { type: 'object', description: 'review: text (string), context (string). analyse: question (string).' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'ask_dispute_agent',
+    description: 'Active dispute management. Use for: dispute analysis, drafting procedural responses, leverage tracking, tone discipline. Tenancy, CDDA, commercial disputes.',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['analyse', 'draft'], description: 'analyse: full dispute position. draft: procedural response.' },
+      params: { type: 'object', description: 'situation (string), context (string).' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'ask_content_agent',
+    description: 'Authority content generation. Use for: LinkedIn posts (SponsorSignal format), case studies, newsletters, thought leadership.',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['linkedin', 'case_study', 'newsletter', 'custom'], description: 'Content type to generate.' },
+      params: { type: 'object', description: 'topic (string), context (string). custom also takes: type (string).' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'ask_investment_agent',
+    description: 'Capital strategy. Use for: valuation, investor narrative, raise strategy, dilution modelling, due diligence prep. Currently: Van Hawke Maison pre-seed $500K.',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['analyse'], description: 'analyse: answer investment/capital question.' },
+      params: { type: 'object', description: 'question (string), context (string).' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'ask_pricing_agent',
+    description: 'Pricing & ROI. Use for: sponsorship pricing benchmarks, ROI modelling, "how much should we charge", "build an ROI case for X".',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['roi', 'benchmark'], description: 'roi: build ROI case for company. benchmark: pricing benchmarks.' },
+      params: { type: 'object', description: 'company (string), tier (string), context (string).' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'ask_signal_agent',
+    description: 'Signal detection. Use for: recent sponsorship signals, deal triggers, funding events, hiring spikes, "what signals this week".',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['recent'], description: 'recent: high-relevance signals from news feed.' },
+      params: { type: 'object', description: 'days (number, default 7), type (string, optional category filter).' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'ask_travel_agent',
+    description: 'Travel planning. Use for: F1/FE race travel, flight planning, visa awareness, "plan travel to Melbourne GP".',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['plan'], description: 'plan: plan trip to destination.' },
+      params: { type: 'object', description: 'destination (string), context (string).' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'ask_specialist_agent',
+    description: 'Specialist domains: website/digital presence, product development (Van Hawke Maison eyewear), IP/licensing. Use for niche questions in these areas.',
+    input_schema: { type: 'object', properties: {
+      domain: { type: 'string', enum: ['website', 'product_dev', 'ip'], description: 'Which specialist domain.' },
+      params: { type: 'object', description: 'question (string), context (string).' },
+    }, required: ['domain'] },
+  },
+  {
     name: 'navigate_page',
     description: 'Direct page navigation. Use as fallback if ask_navigator is unavailable.',
     input_schema: { type: 'object', properties: {
@@ -218,6 +282,81 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       const { callEAAgent } = await import('./agents/ea.js');
       return await callEAAgent(input.operation, input.params || {});
     } catch (e) { return `EA Agent error: ${e.message}`; }
+  }
+
+  // ── Legal Agent ──
+  if (name === 'ask_legal_agent') {
+    try {
+      const { callLegalAgent } = await import('./agents/legal.js');
+      return await callLegalAgent(input.operation, input.params || {});
+    } catch (e) { return `Legal Agent error: ${e.message}`; }
+  }
+
+  // ── Dispute Agent ──
+  if (name === 'ask_dispute_agent') {
+    try {
+      const { callDisputeAgent } = await import('./agents/dispute.js');
+      return await callDisputeAgent(input.operation, input.params || {});
+    } catch (e) { return `Dispute Agent error: ${e.message}`; }
+  }
+
+  // ── Content Agent ──
+  if (name === 'ask_content_agent') {
+    try {
+      const { callContentAgent } = await import('./agents/content.js');
+      return await callContentAgent(input.operation, input.params || {});
+    } catch (e) { return `Content Agent error: ${e.message}`; }
+  }
+
+  // ── Investment Agent ──
+  if (name === 'ask_investment_agent') {
+    try {
+      const { callInvestmentAgent } = await import('./agents/investment.js');
+      return await callInvestmentAgent(input.operation, input.params || {});
+    } catch (e) { return `Investment Agent error: ${e.message}`; }
+  }
+
+  // ── Pricing Agent ──
+  if (name === 'ask_pricing_agent') {
+    try {
+      const { callPricingAgent } = await import('./agents/pricing.js');
+      return await callPricingAgent(input.operation, input.params || {});
+    } catch (e) { return `Pricing Agent error: ${e.message}`; }
+  }
+
+  // ── Signal Agent ──
+  if (name === 'ask_signal_agent') {
+    try {
+      const { callSignalAgent } = await import('./agents/signal.js');
+      return await callSignalAgent(input.operation, input.params || {});
+    } catch (e) { return `Signal Agent error: ${e.message}`; }
+  }
+
+  // ── Travel Agent ──
+  if (name === 'ask_travel_agent') {
+    try {
+      const { callTravelAgent } = await import('./agents/travel.js');
+      return await callTravelAgent(input.operation, input.params || {});
+    } catch (e) { return `Travel Agent error: ${e.message}`; }
+  }
+
+  // ── Specialist Agents (Website, Product Dev, IP) ──
+  if (name === 'ask_specialist_agent') {
+    try {
+      if (input.domain === 'website') {
+        const { callWebsiteAgent } = await import('./agents/website.js');
+        return await callWebsiteAgent('analyse', input.params || {});
+      }
+      if (input.domain === 'product_dev') {
+        const { callProductDevAgent } = await import('./agents/product-dev.js');
+        return await callProductDevAgent('analyse', input.params || {});
+      }
+      if (input.domain === 'ip') {
+        const { callIPAgent } = await import('./agents/ip.js');
+        return await callIPAgent('analyse', input.params || {});
+      }
+      return `Unknown specialist domain: ${input.domain}. Available: website, product_dev, ip`;
+    } catch (e) { return `Specialist Agent error: ${e.message}`; }
   }
 
   // ── Direct tools (kept for backwards compatibility) ──
