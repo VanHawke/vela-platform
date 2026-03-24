@@ -33,7 +33,8 @@ export default function Contacts({ user }) {
     }
     setContacts(allData.map(row => ({ id: row.id, ...row.data, updated_at: row.updated_at })))
     setLoading(false)
-    setPageContext({ page: 'contacts', summary: `Contacts: ${allData.length} total`, contactCount: allData.length })
+    const topContacts = allData.slice(0, 10).map(c => `${c.data?.firstName || ''} ${c.data?.lastName || ''} (${c.data?.company || '?'})`).join(', ')
+    setPageContext({ page: 'contacts', summary: `Contacts: ${allData.length} total`, contactCount: allData.length, visibleItems: topContacts })
   }
 
   const save = async () => {

@@ -137,7 +137,8 @@ export default function News() {
       // Sort chronologically — newest first
       const sorted = (data.articles || []).sort((a, b) => new Date(b.published_at) - new Date(a.published_at))
       setArticles(sorted)
-      setPageContext({ page: 'news', summary: `News: ${sorted.length} articles`, articleCount: sorted.length, signalCount: sorted.filter(a => a.relevance >= 7).length })
+      const topArticles = sorted.slice(0, 8).map(a => a.title || '?').join(', ')
+      setPageContext({ page: 'news', summary: `News: ${sorted.length} articles`, articleCount: sorted.length, signalCount: sorted.filter(a => a.relevance >= 7).length, visibleItems: topArticles })
     } catch (e) { console.error('[News]', e) }
     finally { setLoading(false) }
   }

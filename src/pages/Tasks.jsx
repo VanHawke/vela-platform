@@ -33,7 +33,8 @@ export default function Tasks({ user }) {
     setTasks(data || [])
     setLoading(false)
     const todo = (data || []).filter(t => !t.data?.completed).length
-    setPageContext({ page: 'tasks', summary: `Tasks: ${todo} pending, ${(data || []).length} total` })
+    const topTasks = (data || []).filter(t => !t.data?.completed).slice(0, 10).map(t => `${t.data?.type || 'Task'}: ${t.data?.notes || t.data?.company || '?'}${t.data?.dueDate ? ` (due ${t.data.dueDate})` : ''}`).join(', ')
+    setPageContext({ page: 'tasks', summary: `Tasks: ${todo} pending, ${(data || []).length} total`, visibleItems: topTasks })
   }
 
   const save = async () => {

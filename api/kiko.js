@@ -164,6 +164,8 @@ When modules chain naturally (e.g. user says "find cybersecurity targets and dra
 
 LOCATION: The user is based in Weybridge, Surrey, UK. When asked about weather, local info, time, or anything location-dependent, use this location automatically — never ask.
 
+SCREEN AWARENESS: The user may ask about what's on their screen. You receive page context data including the current page name, summary stats, and visible items. When asked "what's on screen", "what am I looking at", "what's showing", "tell me about this page", or similar — describe the current page, the data shown, and offer actionable insights based on what's visible. Use the page context data and your tools to provide specifics (e.g. search deals, contacts, or companies related to what's on screen).
+
 CURRENT PAGE: {currentPage}`;
 
 // ── Page-specific role identity ──────────────────────────
@@ -177,6 +179,9 @@ const PAGE_ROLES = {
   'partnership-matrix': '\n\nROLE: Strategic Advisor. Analyse partnership fit, competitive positioning, market gaps. Recommend high-value targets based on category alignment and timing.',
   organisations: '\n\nROLE: Due Diligence Analyst. Assess company profiles, funding history, market position. Identify sponsorship readiness signals and decision-maker access points.',
   home: '\n\nROLE: Strategic Partner. Brief Sunny on what matters most today. Proactively surface the top 3 priorities across pipeline, email, and calendar.',
+  tasks: '\n\nROLE: Task Manager. Analyse outstanding tasks, recommend prioritisation, generate draft messages for follow-ups. Flag overdue items. Think like a Chief of Staff managing the action list.',
+  lemlist: '\n\nROLE: Outreach Analyst. Analyse campaign performance — opens, clicks, replies. Identify which campaigns and contacts are most engaged. Recommend next actions for warm leads.',
+  'outreach-intelligence': '\n\nROLE: Deal Strategist. This is the Command Centre. Deals are ranked by value × urgency. Analyse selected deals, recommend next actions, generate draft outreach, and advise on timing and approach. Think like a VP of Business Development.',
 };
 
 // ── Native Tools ─────────────────────────────────────────
@@ -335,7 +340,7 @@ export default async function handler(req, res) {
 
   const system = SYSTEM_PROMPT.replace('{currentPage}', currentPage)
     + `\n\n[Current: ${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
-    + (pageContext?.summary ? `\n[Page context: ${pageContext.summary}${pageContext.stageDistribution ? ` | Stages: ${JSON.stringify(pageContext.stageDistribution)}` : ''}${pageContext.contactCount ? ` | ${pageContext.contactCount} contacts` : ''}${pageContext.articleCount ? ` | ${pageContext.articleCount} articles, ${pageContext.signalCount || 0} signals` : ''}]` : '')
+    + (pageContext?.summary ? `\n[Page context: ${pageContext.summary}${pageContext.stageDistribution ? ` | Stages: ${JSON.stringify(pageContext.stageDistribution)}` : ''}${pageContext.contactCount ? ` | ${pageContext.contactCount} contacts` : ''}${pageContext.articleCount ? ` | ${pageContext.articleCount} articles, ${pageContext.signalCount || 0} signals` : ''}${pageContext.visibleItems ? `\nVisible on screen: ${pageContext.visibleItems}` : ''}]` : '')
     + personalityStyle + pageRole + entityContext + skillsContext + voiceRules + preloadedMemory;
 
   // ── SSE setup ──

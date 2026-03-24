@@ -67,7 +67,8 @@ export default function OutreachIntelligence({ user }) {
         return { ...deal, daysSinceUpdate, stage, prob, value, weightedValue, urgency, isStale, actionType, priorityScore }
       }).sort((a, b) => b.priorityScore - a.priorityScore)
 
-      setPageContext({ page: 'outreach-intelligence', summary: `Command Centre: ${actions.length} active deals, ${actions.filter(a => a.isStale).length} stale` })
+      const topActions = actions.slice(0, 10).map(a => `${a.data?.company || '?'} (${a.stage}, ${a.daysSinceUpdate}d)`).join(', ')
+      setPageContext({ page: 'outreach-intelligence', summary: `Command Centre: ${actions.length} active deals, ${actions.filter(a => a.isStale).length} stale`, visibleItems: topActions })
     } catch (e) { console.error('[CommandCentre]', e) }
     finally { setLoading(false) }
   }

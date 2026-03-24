@@ -109,7 +109,8 @@ export default function Organisations({ user }) {
     })
     setDealMap(dm)
     setLoading(false)
-    setPageContext({ page: 'organisations', summary: `Organisations: ${companies.length || 0} companies` })
+    const topOrgs = allData.slice(0, 10).map(c => c.data?.name || '?').join(', ')
+    setPageContext({ page: 'organisations', summary: `Organisations: ${companies.length || 0} companies`, visibleItems: topOrgs })
   }
 
   const save = async () => {

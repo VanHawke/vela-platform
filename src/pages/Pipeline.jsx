@@ -345,7 +345,8 @@ export default function Pipeline({ user }) {
     const activeDeals = (dealsData || []).filter(d => !['won','lost'].includes(d.data?.status))
     const stageCount = {}
     activeDeals.forEach(d => { const s = d.data?.stage || 'Unknown'; stageCount[s] = (stageCount[s] || 0) + 1 })
-    setPageContext({ page: 'pipeline', summary: `Pipeline: ${activeDeals.length} active deals`, stageDistribution: stageCount, dealCount: activeDeals.length })
+    const topDeals = activeDeals.slice(0, 15).map(d => `${d.data?.company || '?'} (${d.data?.stage || '?'})`).join(', ')
+    setPageContext({ page: 'pipeline', summary: `Pipeline: ${activeDeals.length} active deals`, stageDistribution: stageCount, dealCount: activeDeals.length, visibleItems: topDeals })
   }
 
   const activeStages = useMemo(() => showClosed ? [...STAGES, ...CLOSED_STAGES] : STAGES, [showClosed])

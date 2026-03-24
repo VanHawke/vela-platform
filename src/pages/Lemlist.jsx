@@ -23,7 +23,9 @@ export default function Lemlist({ user }) {
       const a = await aRes.json()
       setCampaigns(Array.isArray(c) ? c : [])
       setActivities(Array.isArray(a) ? a : [])
-      setPageContext({ page: 'lemlist', summary: `Lemlist: ${Array.isArray(c) ? c.length : 0} campaigns` })
+      const topCampaigns = Array.isArray(c) ? c.slice(0, 8).map(x => `${x.name} (${x.status || 'draft'})`).join(', ') : ''
+      const topActivities = Array.isArray(a) ? a.slice(0, 5).map(x => `${x.leadFirstName || ''} ${x.leadLastName || ''} · ${x.type || '?'}`).join(', ') : ''
+      setPageContext({ page: 'lemlist', summary: `Lemlist: ${Array.isArray(c) ? c.length : 0} campaigns, ${Array.isArray(a) ? a.length : 0} recent events`, visibleItems: `Campaigns: ${topCampaigns}. Activity: ${topActivities}` })
     } catch (e) { console.error('[Lemlist]', e) }
     finally { setLoading(false) }
   }
