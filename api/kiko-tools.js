@@ -88,6 +88,21 @@ export const TOOL_DEFINITIONS = [
     }, required: ['operation'] },
   },
   {
+    name: 'ask_finance_agent',
+    description: 'Financial analysis. Use for: pipeline forecast (weighted value), revenue projections, cash flow questions, runway, "what is our pipeline worth", financial analysis.',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['forecast', 'analyse'], description: 'forecast: weighted pipeline value. analyse: answer financial question.' },
+      params: { type: 'object', description: 'analyse: question (string).' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'ask_ea_agent',
+    description: 'Executive assistant. Use for: "brief me", morning brief, task prioritisation, task consolidation, "what should I focus on", daily summary.',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['brief', 'prioritise', 'consolidate'], description: 'brief: morning briefing. prioritise: rank tasks. consolidate: find duplicate tasks.' },
+    }, required: ['operation'] },
+  },
+  {
     name: 'navigate_page',
     description: 'Direct page navigation. Use as fallback if ask_navigator is unavailable.',
     input_schema: { type: 'object', properties: {
@@ -187,6 +202,22 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       const { callCategoryControlAgent } = await import('./agents/category-control.js');
       return await callCategoryControlAgent(input.operation, input.params || {});
     } catch (e) { return `Category Control error: ${e.message}`; }
+  }
+
+  // ── Finance Agent ──
+  if (name === 'ask_finance_agent') {
+    try {
+      const { callFinanceAgent } = await import('./agents/finance.js');
+      return await callFinanceAgent(input.operation, input.params || {});
+    } catch (e) { return `Finance Agent error: ${e.message}`; }
+  }
+
+  // ── EA Agent ──
+  if (name === 'ask_ea_agent') {
+    try {
+      const { callEAAgent } = await import('./agents/ea.js');
+      return await callEAAgent(input.operation, input.params || {});
+    } catch (e) { return `EA Agent error: ${e.message}`; }
   }
 
   // ── Direct tools (kept for backwards compatibility) ──

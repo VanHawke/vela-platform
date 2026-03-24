@@ -63,11 +63,17 @@ ROUTING (follow these in order):
 10. ENTITY RECALL → call ask_memory_engine
    "tell me everything about X", "what do we know about Y", "relationship summary for Z", pre-draft context gathering
 
-11. CALENDAR / GMAIL (direct read) → use MCP tools (gmail, google-calendar)
+11. FINANCIAL QUESTIONS → call ask_finance_agent
+   "what's our pipeline worth", "weighted forecast", "revenue projection", "runway", financial analysis
 
-12. WEB SEARCH → use web_search tool directly
+12. BRIEFING / PRIORITIES → call ask_ea_agent
+   "brief me", "what should I focus on", "morning brief", "prioritise my tasks", "any duplicates in tasks"
 
-13. MEMORY → use memory tool directly (save important facts, check stored context)
+13. CALENDAR / GMAIL (direct read) → use MCP tools (gmail, google-calendar)
+
+14. WEB SEARCH → use web_search tool directly
+
+15. MEMORY → use memory tool directly (save important facts, check stored context)
 
 STYLE: Direct, corporate, high-signal. No fluff. No "happy to help." Lead with value. Max 2-3 sentences for simple queries. Use "intelligent age" not "AI generation." All financials in USD.
 
@@ -155,6 +161,8 @@ const TOOL_LABELS = {
   ask_strategy_agent: 'Strategy Agent: evaluating...',
   ask_negotiation_agent: 'Negotiation Agent: analysing...',
   ask_category_agent: 'Category Control: checking...',
+  ask_finance_agent: 'Finance Agent: analysing...',
+  ask_ea_agent: 'Executive Assistant: briefing...',
   navigate_page: 'Navigating...',
   log_activity: 'Logging activity...',
   web_search: 'Searching the web...',
