@@ -52,7 +52,7 @@ async function analysePosition(situation, context = '') {
       sbFetch(`deals?select=data&data->>company=ilike.*${encodeURIComponent(company)}*&limit=2`).catch(() => []),
       sbFetch(`companies?select=data&data->>name=ilike.*${encodeURIComponent(company)}*&limit=1`).catch(() => []),
       sbFetch(`outreach_scores?company=ilike.*${encodeURIComponent(company)}*&order=sent_at.desc&limit=10`).catch(() => []),
-      sbFetch('kiko_learning_log?order=created_at.desc&limit=20').catch(() => []),
+      sbFetch('kiko_learning_log?category=eq.decision&order=created_at.desc&limit=30&select=content,entity_name,created_at').catch(() => []),
     ]);
     if (deals?.length) crmContext += `DEAL: ${deals.map(d => `${d.data.company} — ${d.data.stage}, ${d.data.pipeline}, value: $${(d.data.value||0).toLocaleString()}`).join('; ')}\n`;
     if (companyData?.[0]?.data) {
@@ -63,8 +63,19 @@ async function analysePosition(situation, context = '') {
       const replied = outreach.filter(s => s.outcome === 'replied').length;
       crmContext += `ENGAGEMENT: ${outreach.length} emails, ${replied} replies — ${replied > 0 ? 'they are responsive' : 'low engagement so far'}\n`;
     }
-    const relevant = (learnings || []).filter(l => l.content?.toLowerCase().includes(company.toLowerCase()));
-    if (relevant.length) crmContext += `INTEL: ${relevant.map(l => l.content).join('; ')}\n`;
+    // Match past decisions by company name, industry keywords, or negotiation-related terms
+    const searchTerms = [company.toLowerCase(), ...(companyData?.[0]?.data?.industry || '').toLowerCase().split(/\s+/).filter(w => w.length > 3)];
+    const relevant = (learnings || []).filter(l => {
+      const text = `${l.content || ''} ${l.entity_name || ''}`.toLowerCase();
+      return searchTerms.some(t => text.includes(t));
+    });
+    if (relevant.length) {
+      crmContext += `PAST NEGOTIATION INTEL (${relevant.length} entries — reference to show learning):\n`;
+      for (const r of relevant.slice(0, 5)) {
+        const date = r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short'}) : '?';
+        crmContext += `• [${date}] ${r.entity_name || '?'}: ${(r.content || '').slice(0, 150)}\n`;
+      }
+    }
   }
 
   try {

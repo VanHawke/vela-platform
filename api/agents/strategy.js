@@ -103,11 +103,20 @@ async function evaluate(question, context = '') {
 
   // Past decisions from learning log
   fetches.push(
-    sbFetch('kiko_learning_log?category=eq.decision&order=created_at.desc&limit=10')
-      .then(learnings => {
-        if (learnings?.length) {
-          const relevant = learnings.filter(l => question.toLowerCase().split(/\s+/).some(w => w.length > 3 && l.content?.toLowerCase().includes(w)));
-          if (relevant.length) pastDecisions = `\nPAST DECISIONS: ${relevant.map(l => l.content).join('; ')}`;
+    sbFetch('kiko_learning_log?category=eq.decision&order=created_at.desc&limit=30&select=content,entity_name,created_at')
+      .then(entries => {
+        if (!entries?.length) return;
+        const keywords = question.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+        const relevant = entries.filter(e => {
+          const text = `${e.content || ''} ${e.entity_name || ''}`.toLowerCase();
+          return keywords.some(k => text.includes(k));
+        });
+        if (relevant.length) {
+          pastDecisions = `\nPAST DECISIONS (${relevant.length} relevant — reference these to show learning):\n` +
+            relevant.slice(0, 5).map(e => {
+              const date = e.created_at ? new Date(e.created_at).toLocaleDateString('en-GB', {day:'numeric',month:'short'}) : '?';
+              return `• [${date}] ${e.entity_name || '?'}: ${(e.content || '').slice(0, 200)}`;
+            }).join('\n');
         }
       }).catch(() => {}),
   );
