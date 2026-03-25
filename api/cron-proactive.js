@@ -14,25 +14,31 @@ export default async function handler(req, res) {
     const oneDayAgo = new Date(now - 24 * 60 * 60 * 1000).toISOString();
     const nextDay = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
 
-    // Pull 5 data streams in parallel
-    const [newsSignals, outreachReplies, stageChanges, upcomingTasks, staleDeals] = await Promise.all([
+    // Pull 5 data streams in parallel (safe array conversion)
+    const safe = (v) => Array.isArray(v) ? v : [];
+    const [newsSignals_, outreachReplies_, stageChanges_, upcomingTasks_, staleDeals_] = await Promise.all([
       sbFetch(`news_articles?is_processed=eq.true&deal_signal=eq.true&published_at=gt.${oneDayAgo}&select=title,matched_companies,published_at&order=published_at.desc&limit=20`).catch(() => []),
       sbFetch(`outreach_scores?outcome=eq.replied&sent_at=gt.${oneDayAgo}&select=recipient_name,recipient_email,company,sent_at&order=sent_at.desc&limit=20`).catch(() => []),
       sbFetch(`deal_stage_history?changed_at=gt.${oneDayAgo}&select=deal_id,from_stage,to_stage,changed_at&order=changed_at.desc&limit=20`).catch(() => []),
       sbFetch(`tasks?select=data&order=updated_at.desc&limit=30`).catch(() => []),
       sbFetch(`deals?select=data&data->>status=eq.active&limit=200`).catch(() => []),
     ]);
+    const newsSignals = safe(newsSignals_);
+    const outreachReplies = safe(outreachReplies_);
+    const stageChanges = safe(stageChanges_);
+    const upcomingTasks = safe(upcomingTasks_);
+    const staleDeals = safe(staleDeals_);
 
 
     // Filter tasks
-    const allTasks = (upcomingTasks || []);
+    const allTasks = upcomingTasks;
     const outstanding = allTasks.filter(t => !t.data?.completed);
     const overdue = outstanding.filter(t => t.data?.dueDate && new Date(t.data.dueDate) < now);
     const dueSoon = outstanding.filter(t => t.data?.dueDate && new Date(t.data.dueDate) < new Date(nextDay) && new Date(t.data.dueDate) >= now);
 
     // Find stale deals (crossing 7d, 14d, 30d thresholds)
     const stale = [];
-    for (const d of (staleDeals || [])) {
+    for (const d of staleDeals) {
       const data = d.data || {};
       const last = data.lastActivity ? new Date(data.lastActivity) : null;
       if (!last) continue;
@@ -42,9 +48,9 @@ export default async function handler(req, res) {
 
     // Build data summary for Haiku cross-referencing
     const dataPayload = JSON.stringify({
-      newsSignals: (newsSignals || []).map(n => ({ title: n.title, companies: (n.matched_companies||[]).map(c => c.name||c) })),
-      outreachReplies: (outreachReplies || []).map(r => ({ name: r.recipient_name, company: r.company })),
-      stageChanges: (stageChanges || []).map(s => ({ from: s.from_stage, to: s.to_stage })),
+      newsSignals: newsSignals.map(n => ({ title: n.title, companies: (n.matched_companies||[]).map(c => c.name||c) })),
+      outreachReplies: outreachReplies.map(r => ({ name: r.recipient_name, company: r.company })),
+      stageChanges: stageChanges.map(s => ({ from: s.from_stage, to: s.to_stage })),
       overdueTasks: overdue.slice(0, 5).map(t => ({ type: t.data.type, notes: t.data.notes, company: t.data.company })),
       dueSoonTasks: dueSoon.slice(0, 5).map(t => ({ type: t.data.type, notes: t.data.notes, company: t.data.company })),
       staleDeals: stale.slice(0, 10).map(s => ({ company: s.company, daysSince: s.daysSince, stage: s.stage })),
@@ -52,7 +58,7 @@ export default async function handler(req, res) {
 
 
     // Skip if no data worth cross-referencing
-    const hasData = (newsSignals||[]).length + (outreachReplies||[]).length + stale.length + overdue.length;
+    const hasData = newsSignals.length + outreachReplies.length + stale.length + overdue.length;
     if (hasData === 0) {
       return res.status(200).json({ ok: true, message: 'No signals to cross-reference', alerts: 0 });
     }
