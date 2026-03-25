@@ -40,43 +40,80 @@ Current context: F1 2026 season, Formula E Season 12. Primary pipeline: Haas F1 
 
 // ── Evaluate: core strategic question handler ──
 async function evaluate(question, context = '') {
-  // Gather CRM context if a company is mentioned
-  let crmContext = '';
-  const companyMatch = question.match(/(?:pursue|chase|target|prioritise|evaluate|assess)\s+(.+?)(?:\?|$|or|\svs)/i);
-  if (companyMatch) {
-    const company = companyMatch[1].trim();
-    try {
-      const deals = await sbFetch(`deals?select=data&data->>company=ilike.*${encodeURIComponent(company)}*&limit=3`);
-      if (deals?.length) crmContext += `\nCRM: ${deals.map(d => `${d.data.company} — ${d.data.stage} (${d.data.pipeline})`).join('; ')}`;
-      const history = await sbFetch(`deal_stage_history?order=changed_at.desc&limit=5`);
-      if (history?.length) crmContext += `\nRecent stage changes: ${history.map(h => `${h.from_stage}→${h.to_stage}`).join(', ')}`;
-    } catch {}
+  // Gather ALL relevant context in parallel
+  let crmContext = '', pipelineContext = '', pastDecisions = '', newsContext = '', companyContext = '', outreachContext = '';
+
+  // Extract company name if mentioned
+  const companyMatch = question.match(/(?:pursue|chase|target|prioritise|evaluate|assess|about|on)\s+(.+?)(?:\?|$|or|\svs)/i);
+  const company = companyMatch ? companyMatch[1].trim() : null;
+
+  const fetches = [];
+
+  // CRM deals for mentioned company
+  if (company) {
+    fetches.push(
+      sbFetch(`deals?select=data&data->>company=ilike.*${encodeURIComponent(company)}*&limit=3`)
+        .then(deals => { if (deals?.length) crmContext = `\nDEALS: ${deals.map(d => `${d.data.company} — ${d.data.stage} (${d.data.pipeline}), value: $${(d.data.value||0).toLocaleString()}`).join('; ')}`; })
+        .catch(() => {}),
+      // Company enrichment data
+      sbFetch(`companies?select=data&data->>name=ilike.*${encodeURIComponent(company)}*&limit=1`)
+        .then(companies => {
+          if (companies?.[0]?.data) {
+            const c = companies[0].data;
+            companyContext = `\nCOMPANY: ${c.name} | Industry: ${c.industry || '?'} | Employees: ${c.employees || '?'} | Funding: ${c.totalFunding || '?'} | Last Round: ${c.lastRound || '?'} | Revenue Est: ${c.revenueEst || '?'}`;
+          }
+        }).catch(() => {}),
+      // Contacts at this company
+      sbFetch(`contacts?select=data&data->>company=ilike.*${encodeURIComponent(company)}*&limit=5`)
+        .then(contacts => {
+          if (contacts?.length) companyContext += `\nCONTACTS (${contacts.length}): ${contacts.map(c => `${c.data.firstName} ${c.data.lastName||''} — ${c.data.title||'?'}`).join('; ')}`;
+        }).catch(() => {}),
+      // News about this company
+      sbFetch('news_articles?is_processed=eq.true&order=published_at.desc&limit=20&select=title,matched_companies,published_at,deal_signal')
+        .then(news => {
+          const relevant = (news || []).filter(a => (a.matched_companies || []).some(c => (c.name || c).toLowerCase().includes(company.toLowerCase())));
+          if (relevant.length) newsContext = `\nNEWS (${relevant.length}): ${relevant.slice(0,3).map(a => `${a.title}${a.deal_signal ? ' [DEAL SIGNAL]' : ''}`).join('; ')}`;
+        }).catch(() => {}),
+      // Outreach performance for this company
+      sbFetch(`outreach_scores?company=ilike.*${encodeURIComponent(company)}*&order=sent_at.desc&limit=10`)
+        .then(scores => {
+          if (scores?.length) {
+            const replied = scores.filter(s => s.outcome === 'replied').length;
+            outreachContext = `\nOUTREACH: ${scores.length} emails sent, ${replied} replied (${Math.round(replied/scores.length*100)}% rate)`;
+          }
+        }).catch(() => {}),
+    );
   }
 
-  // Also pull pipeline summary for portfolio-level questions
-  let pipelineContext = '';
-  if (question.toLowerCase().match(/priorit|allocat|portfolio|which.*first|focus/)) {
-    try {
-      const deals = await sbFetch('deals?select=data&data->>status=eq.active&limit=100');
-      if (deals?.length) {
-        const byStage = {};
-        deals.forEach(d => { const s = d.data?.stage || '?'; byStage[s] = (byStage[s] || 0) + 1; });
-        pipelineContext = `\nPipeline: ${deals.length} active deals. ${Object.entries(byStage).map(([s,c]) => `${s}: ${c}`).join(', ')}`;
-      }
-    } catch {}
+  // Pipeline summary for portfolio-level questions
+  if (question.toLowerCase().match(/priorit|allocat|portfolio|which.*first|focus|pipeline/)) {
+    fetches.push(
+      sbFetch('deals?select=data&data->>status=eq.active&limit=200')
+        .then(deals => {
+          if (deals?.length) {
+            const STAGE_PROB = {'To revisit':0.05,'Contact made':0.10,'Qualified':0.20,'In Dialogue':0.35,'Meeting arranged (brand x RH)':0.50,'Proposal Sent':0.60,'Negotiation':0.75,'Verbal Agreement':0.90,'Contract Review':0.95};
+            let totalWeighted = 0;
+            const byStage = {};
+            deals.forEach(d => { const s = d.data?.stage || '?'; byStage[s] = (byStage[s] || 0) + 1; totalWeighted += (d.data?.value || 0) * (STAGE_PROB[s] || 0.1); });
+            pipelineContext = `\nPIPELINE: ${deals.length} active, $${(totalWeighted/1000000).toFixed(1)}M weighted. ${Object.entries(byStage).map(([s,c]) => `${s}: ${c}`).join(', ')}`;
+          }
+        }).catch(() => {}),
+    );
   }
 
-  // Check learning log for relevant past decisions
-  let pastDecisions = '';
-  try {
-    const learnings = await sbFetch('kiko_learning_log?category=eq.decision&order=created_at.desc&limit=10');
-    if (learnings?.length) {
-      const relevant = learnings.filter(l => question.toLowerCase().split(/\s+/).some(w => w.length > 3 && l.content?.toLowerCase().includes(w)));
-      if (relevant.length) pastDecisions = `\nPast decisions: ${relevant.map(l => l.content).join('; ')}`;
-    }
-  } catch {}
+  // Past decisions from learning log
+  fetches.push(
+    sbFetch('kiko_learning_log?category=eq.decision&order=created_at.desc&limit=10')
+      .then(learnings => {
+        if (learnings?.length) {
+          const relevant = learnings.filter(l => question.toLowerCase().split(/\s+/).some(w => w.length > 3 && l.content?.toLowerCase().includes(w)));
+          if (relevant.length) pastDecisions = `\nPAST DECISIONS: ${relevant.map(l => l.content).join('; ')}`;
+        }
+      }).catch(() => {}),
+  );
 
-  const fullContext = [context, crmContext, pipelineContext, pastDecisions].filter(Boolean).join('\n');
+  await Promise.all(fetches);
+  const fullContext = [context, companyContext, crmContext, outreachContext, newsContext, pipelineContext, pastDecisions].filter(Boolean).join('\n');
 
   try {
     const res = await anthropic.messages.create({
@@ -94,16 +131,19 @@ async function evaluate(question, context = '') {
 // ── Prioritise: rank items by revenue impact × urgency ──
 async function prioritise(items = [], criteria = '') {
   if (!items.length) {
-    // Auto-pull from pipeline if no items provided
     try {
-      const deals = await sbFetch('deals?select=data&data->>status=eq.active&order=updated_at.desc&limit=20');
-      items = (deals || []).map(d => ({
-        name: d.data?.company,
-        stage: d.data?.stage,
-        pipeline: d.data?.pipeline,
-        value: d.data?.value || 0,
-        lastActivity: d.data?.lastActivity,
-      }));
+      const deals = await sbFetch('deals?select=data&data->>status=eq.active&order=updated_at.desc&limit=30');
+      const STAGE_PROB = {'To revisit':0.05,'Contact made':0.10,'Qualified':0.20,'In Dialogue':0.35,'Meeting arranged (brand x RH)':0.50,'Proposal Sent':0.60,'Negotiation':0.75,'Verbal Agreement':0.90,'Contract Review':0.95};
+      items = (deals || []).map(d => {
+        const data = d.data || {};
+        const last = data.lastActivity ? new Date(data.lastActivity) : null;
+        const daysSince = last ? Math.floor((Date.now() - last) / 86400000) : 999;
+        return {
+          name: data.company, stage: data.stage, pipeline: data.pipeline,
+          value: data.value || 0, weighted: (data.value || 0) * (STAGE_PROB[data.stage] || 0.1),
+          daysSinceActivity: daysSince, contact: data.contactName || '?',
+        };
+      });
     } catch {}
   }
   if (!items.length) return 'No items to prioritise.';
