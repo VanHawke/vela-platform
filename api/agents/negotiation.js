@@ -43,18 +43,28 @@ Never use soft language. "We could consider..." → "Our position is..." `;
 
 // ── Analyse a negotiation position ──
 async function analysePosition(situation, context = '') {
-  // Pull deal + learning log context
+  // Pull deal + company enrichment + outreach history for power mapping
   let crmContext = '';
   const companyMatch = situation.match(/(?:with|for|at|from)\s+([A-Z][a-zA-Z\s]+?)(?:\.|,|$|\s(?:they|came|offered|want|asked))/);
   if (companyMatch) {
     const company = companyMatch[1].trim();
-    try {
-      const deals = await sbFetch(`deals?select=data&data->>company=ilike.*${encodeURIComponent(company)}*&limit=2`);
-      if (deals?.length) crmContext += `Deal: ${deals.map(d => `${d.data.company} — ${d.data.stage}, ${d.data.pipeline}`).join('; ')}\n`;
-      const learnings = await sbFetch('kiko_learning_log?order=created_at.desc&limit=20');
-      const relevant = (learnings || []).filter(l => l.content?.toLowerCase().includes(company.toLowerCase()));
-      if (relevant.length) crmContext += `Past intel: ${relevant.map(l => l.content).join('; ')}\n`;
-    } catch {}
+    const [deals, companyData, outreach, learnings] = await Promise.all([
+      sbFetch(`deals?select=data&data->>company=ilike.*${encodeURIComponent(company)}*&limit=2`).catch(() => []),
+      sbFetch(`companies?select=data&data->>name=ilike.*${encodeURIComponent(company)}*&limit=1`).catch(() => []),
+      sbFetch(`outreach_scores?company=ilike.*${encodeURIComponent(company)}*&order=sent_at.desc&limit=10`).catch(() => []),
+      sbFetch('kiko_learning_log?order=created_at.desc&limit=20').catch(() => []),
+    ]);
+    if (deals?.length) crmContext += `DEAL: ${deals.map(d => `${d.data.company} — ${d.data.stage}, ${d.data.pipeline}, value: $${(d.data.value||0).toLocaleString()}`).join('; ')}\n`;
+    if (companyData?.[0]?.data) {
+      const c = companyData[0].data;
+      crmContext += `COMPANY POWER: ${c.name} | Revenue: ${c.revenueEst || '?'} | Employees: ${c.employees || '?'} | Funding: ${c.totalFunding || '?'} | Last Round: ${c.lastRound || '?'}\n`;
+    }
+    if (outreach?.length) {
+      const replied = outreach.filter(s => s.outcome === 'replied').length;
+      crmContext += `ENGAGEMENT: ${outreach.length} emails, ${replied} replies — ${replied > 0 ? 'they are responsive' : 'low engagement so far'}\n`;
+    }
+    const relevant = (learnings || []).filter(l => l.content?.toLowerCase().includes(company.toLowerCase()));
+    if (relevant.length) crmContext += `INTEL: ${relevant.map(l => l.content).join('; ')}\n`;
   }
 
   try {
@@ -72,12 +82,26 @@ async function analysePosition(situation, context = '') {
 
 // ── Counter-offer: respond to a specific proposal ──
 async function counterOffer(theirOffer, ourPosition = '', dealContext = '') {
+  // Try to extract company for enrichment
+  let enrichment = '';
+  const text = `${theirOffer} ${ourPosition} ${dealContext}`;
+  const words = text.split(/\s+/).filter(w => w.length > 2 && w[0] === w[0].toUpperCase() && /^[A-Z]/.test(w));
+  for (const word of words.slice(0, 3)) {
+    try {
+      const companies = await sbFetch(`companies?select=data&data->>name=ilike.*${encodeURIComponent(word)}*&limit=1`);
+      if (companies?.[0]?.data) {
+        const c = companies[0].data;
+        enrichment = `THEIR PROFILE: ${c.name} | Revenue: ${c.revenueEst || '?'} | Funding: ${c.totalFunding || '?'} | Employees: ${c.employees || '?'}\n`;
+        break;
+      }
+    } catch {}
+  }
   try {
     const res = await anthropic.messages.create({
       model: 'claude-opus-4-6',
       max_tokens: 800,
       system: NEGOTIATION_PROMPT,
-      messages: [{ role: 'user', content: `They offered: ${theirOffer}\n${ourPosition ? `Our position: ${ourPosition}\n` : ''}${dealContext ? `Context: ${dealContext}\n` : ''}\nBuild a counter-position. Include: what we counter with, what we trade, what we hold firm on, and the exact language to use.` }],
+      messages: [{ role: 'user', content: `They offered: ${theirOffer}\n${ourPosition ? `Our position: ${ourPosition}\n` : ''}${enrichment}${dealContext ? `Context: ${dealContext}\n` : ''}\nBuild a counter-position. Include: what we counter with, what we trade, what we hold firm on, and the exact language to use.` }],
     });
     return res.content[0]?.text || 'Could not generate counter.';
   } catch (err) {
