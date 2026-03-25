@@ -5,6 +5,40 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from './kiko-tools.js';
 
+// Quick Win: Email notification for high-severity alerts
+async function sendAlertEmail(alerts) {
+  const highAlerts = alerts.filter(a => a.severity === 'high');
+  if (!highAlerts.length) return;
+  try {
+    const { getGoogleToken } = await import('./google-token.js');
+    const token = await getGoogleToken('sunny@vanhawke.com');
+    if (!token) return;
+    const subject = `Kiko Alert: ${highAlerts.length} high-priority convergence${highAlerts.length > 1 ? 's' : ''} detected`;
+    const body = highAlerts.map(a => `■ ${a.entity || 'Unknown'}: ${a.title}\n${a.detail}\n→ ${a.action || 'Review in Vela'}`).join('\n\n---\n\n');
+    const htmlBody = `<div style="font-family:-apple-system,system-ui,sans-serif;font-size:14px;color:#333">
+      <h2 style="color:#7C5CFC;margin-bottom:16px">Kiko Intelligence Alert</h2>
+      ${highAlerts.map(a => `<div style="margin-bottom:20px;padding:16px;border-left:4px solid #FF4444;background:#fafafa;border-radius:4px">
+        <strong style="font-size:15px">${a.entity || 'Unknown'}: ${a.title}</strong>
+        <p style="margin:8px 0;color:#555">${a.detail}</p>
+        <p style="color:#7C5CFC;font-weight:600">→ ${a.action || 'Review in Vela'}</p>
+      </div>`).join('')}
+      <p style="margin-top:24px;color:#999;font-size:12px">Open <a href="https://vela-platform-one.vercel.app">Vela</a> and say "brief me" for full context.</p>
+    </div>`;
+    const boundary = `b_${Date.now()}`;
+    let mime = `To: sunny@vanhawke.com\r\nFrom: sunny@vanhawke.com\r\nSubject: ${subject}\r\n`;
+    mime += `MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary="${boundary}"\r\n\r\n`;
+    mime += `--${boundary}\r\nContent-Type: text/plain; charset="UTF-8"\r\n\r\n${body}\r\n`;
+    mime += `--${boundary}\r\nContent-Type: text/html; charset="UTF-8"\r\n\r\n${htmlBody}\r\n`;
+    mime += `--${boundary}--`;
+    const raw = Buffer.from(mime).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+      method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ raw })
+    });
+    console.log(`[Proactive] Sent email alert for ${highAlerts.length} high-severity convergences`);
+  } catch (err) { console.error('[Proactive] Email notification failed:', err.message); }
+}
+
 export const config = { maxDuration: 45 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
@@ -129,6 +163,9 @@ export default async function handler(req, res) {
         console.error('[Proactive] Failed to write alert:', err.message);
       }
     }
+
+    // Quick Win: Send email notification for high-severity alerts
+    await sendAlertEmail(alerts);
 
     return res.status(200).json({ ok: true, alerts: written, drafts, total_signals: hasData });
   } catch (err) {

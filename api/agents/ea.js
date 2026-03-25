@@ -1,8 +1,31 @@
-// api/agents/ea.js — Executive Assistant Agent (Phase 2 Rebuild)
-// 9-source morning brief. Chief of Staff who knows the business.
-// Model: claude-sonnet-4-20250514
+// api/agents/ea.js — Executive Assistant Agent (Phase 2 Rebuild + Quick Wins)
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from '../kiko-tools.js';
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
+
+// Fetch today's calendar events from Google Calendar
+async function getTodayCalendarEvents() {
+  try {
+    const { getGoogleToken } = await import('../google-token.js');
+    const token = await getGoogleToken('sunny@vanhawke.com');
+    if (!token) return [];
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+    const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${startOfDay}&timeMax=${endOfDay}&singleEvents=true&orderBy=startTime&maxResults=10`;
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.items || []).map(e => ({
+      title: e.summary || 'Untitled',
+      start: e.start?.dateTime || e.start?.date || '',
+      end: e.end?.dateTime || e.end?.date || '',
+      attendees: (e.attendees || []).map(a => a.email).slice(0, 5),
+      location: e.location || '',
+    }));
+  } catch { return []; }
+}
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
@@ -26,7 +49,7 @@ async function morningBrief() {
   const sevenDaysAgo = new Date(now - 7 * 86400000).toISOString();
 
   // Pull ALL 9 sources in parallel for speed
-  const [tasks, deals, alerts, activities, news, outreachScores, pipelineNotifs, stageHistory, draftActions] = await Promise.all([
+  const [tasks, deals, alerts, activities, news, outreachScores, pipelineNotifs, stageHistory, draftActions, calendarEvents] = await Promise.all([
     sbFetch('tasks?select=data&order=updated_at.desc&limit=30'),
     sbFetch('deals?select=id,data&data->>status=eq.active&limit=200'),
     sbFetch('kiko_alerts?dismissed=eq.false&expires_at=gt.' + now.toISOString() + '&select=type,severity,title,detail,entity_name&order=created_at.desc&limit=10'),
@@ -36,6 +59,7 @@ async function morningBrief() {
     sbFetch('pipeline_notifications?is_dismissed=eq.false&order=created_at.desc&limit=10'),
     sbFetch('deal_stage_history?changed_at=gt.' + sevenDaysAgo + '&select=deal_id,from_stage,to_stage,changed_at&order=changed_at.desc&limit=20'),
     sbFetch('kiko_draft_actions?status=eq.pending&order=created_at.desc&limit=5&select=action_type,payload,created_at').catch(() => []),
+    getTodayCalendarEvents(),
   ]);
 
   // ── SOURCE 1: Tasks ──
@@ -100,6 +124,7 @@ async function morningBrief() {
     notifications: unreadNotifs.slice(0,3).map(n => ({ type: n.type, title: n.title })),
     recentDecisions: recentDecisions.slice(0,3).map(d => ({ entity: d.entity_name, content: (d.content||'').slice(0,100), date: d.created_at })),
     pendingDraftActions: (Array.isArray(draftActions) ? draftActions : []).slice(0,3).map(d => ({ type: d.action_type, entity: d.payload?.entity, action: d.payload?.suggested_action })),
+    todayCalendar: (calendarEvents || []).map(e => ({ title: e.title, start: e.start, attendees: e.attendees?.slice(0,3), location: e.location })),
   });
 
   try {
@@ -115,6 +140,7 @@ RULES:
 - If deals are stale and tasks are overdue, say so bluntly.
 - If hot leads + news signals converge on a company, call it out as a convergence.
 - End with the top 3 priorities for the day, ranked.
+- If there are calendar events today, weave them into the narrative naturally: "You have a call with X at 2pm — here's what to know going in."
 - If there are pending draft actions, mention them: "I've prepared a [action] for [entity] — say 'approve' to execute."
 - All values in USD.`,
       messages: [{ role: 'user', content: briefData }],
