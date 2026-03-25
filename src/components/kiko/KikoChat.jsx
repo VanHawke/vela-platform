@@ -677,10 +677,28 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         </div>
         {/* Hover actions */}
         {isHovered && !streaming && (
-          <div style={{ position: 'absolute', bottom: -16, right: isUser ? 0 : 'auto', left: isUser ? 'auto' : 132, display: 'flex', gap: 3, zIndex: 5 }}>
-            <button onClick={() => copyToClipboard(msg.content)} title="Copy" style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 12, color: 'rgba(255,255,255,0.3)', transition: 'all 0.15s' }}>📋</button>
-            {isUser && <button onClick={() => editAndResend(i)} title="Edit & Resend" style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 12, color: 'rgba(255,255,255,0.3)', transition: 'all 0.15s' }}>✏️</button>}
-            {isKiko && <button onClick={() => regenerateResponse(i)} title="Regenerate" style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 12, color: 'rgba(255,255,255,0.3)', transition: 'all 0.15s' }}>🔄</button>}
+          <div style={{ position: 'absolute', bottom: -16, right: isUser ? 0 : 'auto', left: isUser ? 'auto' : 132, display: 'flex', gap: 2, zIndex: 5 }}>
+            {(() => {
+              const abtn = (onClick, title, children) => (
+                <button onClick={onClick} title={title} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(255,255,255,0.35)', transition: 'all 0.15s', padding: 0 }}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)' }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = 'rgba(255,255,255,0.35)' }}
+                >{children}</button>
+              )
+              const iconSz = { width: 14, height: 14, stroke: 'currentColor', fill: 'none', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }
+              const CopyIcon = <svg {...iconSz} viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              const ThumbUpIcon = <svg {...iconSz} viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>
+              const ThumbDownIcon = <svg {...iconSz} viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/></svg>
+              const RetryIcon = <svg {...iconSz} viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+              const EditIcon = <svg {...iconSz} viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              return <>
+                {abtn(() => copyToClipboard(msg.content), 'Copy', CopyIcon)}
+                {isKiko && abtn(() => {}, 'Good response', ThumbUpIcon)}
+                {isKiko && abtn(() => {}, 'Bad response', ThumbDownIcon)}
+                {isKiko && abtn(() => regenerateResponse(i), 'Retry', RetryIcon)}
+                {isUser && abtn(() => editAndResend(i), 'Edit', EditIcon)}
+              </>
+            })()}
           </div>
         )}
       </div>

@@ -414,11 +414,31 @@ export default function Settings({ user }) {
               <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Top Navigation Bar</h3>
               <p style={{ fontSize: 13, color: T.textTertiary, margin: '0 0 16px', fontFamily: T.font }}>Choose which pages appear in the floating top navigation. Home is always shown.</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                {ALL_TOP_NAV.map(item => {
+                {ALL_TOP_NAV.map((item, idx) => {
                   const isOn = topNavItems.includes(item.id)
                   const isHome = item.id === 'home'
+                  const topIdx = topNavItems.indexOf(item.id)
+                  const canMoveUp = isOn && !isHome && topIdx > 0 && topNavItems[0] === 'home' ? topIdx > 1 : topIdx > 0
+                  const canMoveDown = isOn && !isHome && topIdx < topNavItems.length - 1
+                  const moveItem = (dir) => {
+                    const arr = [...topNavItems]
+                    const from = arr.indexOf(item.id)
+                    const to = from + dir
+                    if (to < 0 || to >= arr.length) return
+                    ;[arr[from], arr[to]] = [arr[to], arr[from]]
+                    setTopNavItems(arr)
+                    localStorage.setItem('kiko_top_nav', JSON.stringify(arr))
+                    window.dispatchEvent(new Event('kiko_top_nav_updated'))
+                  }
                   return (
                     <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 50, background: isHome ? T.accentSoft : T.surface, border: `1px solid ${T.border}` }}>
+                      {/* Reorder arrows */}
+                      {isOn && !isHome ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 0, flexShrink: 0 }}>
+                          <button onClick={() => moveItem(-1)} disabled={!canMoveUp} style={{ background: 'none', border: 'none', cursor: canMoveUp ? 'pointer' : 'default', color: canMoveUp ? T.textSecondary : 'rgba(255,255,255,0.1)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▲</button>
+                          <button onClick={() => moveItem(1)} disabled={!canMoveDown} style={{ background: 'none', border: 'none', cursor: canMoveDown ? 'pointer' : 'default', color: canMoveDown ? T.textSecondary : 'rgba(255,255,255,0.1)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▼</button>
+                        </div>
+                      ) : <div style={{ width: 14 }} />}
                       <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font }}>{item.label}</span>
                       {isHome ? (
                         <span style={{ fontSize: 10, color: T.textTertiary, padding: '2px 6px', borderRadius: 4, background: T.accentSoft }}>Always shown</span>
