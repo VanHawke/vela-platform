@@ -73,6 +73,31 @@ async function journalInsight(toolName, toolInput, toolResult, userMessage) {
   } catch {} // Non-blocking
 }
 
+// Conversation Memory: extract insights after a conversation completes
+async function extractConversationInsights(message, fullResponse, intent) {
+  if (!message || !fullResponse || fullResponse.length < 100) return;
+  if (['navigate', 'screen'].includes(intent)) return; // Skip trivial intents
+  try {
+    const extract = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001', max_tokens: 300,
+      system: 'Extract key facts, decisions, and open threads from this conversation exchange. Return ONLY valid JSON: { "key_facts": ["..."], "decisions_made": ["..."], "open_threads": ["things left unresolved or to revisit"], "entities": ["company/person names mentioned"] }. Maximum 3 items per array. If nothing significant, return empty arrays.',
+      messages: [{ role: 'user', content: `USER: ${message.slice(0, 300)}\n\nKIKO: ${fullResponse.slice(0, 600)}` }],
+    });
+    const raw = (extract.content[0]?.text || '{}').replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(raw);
+    const hasContent = (parsed.key_facts?.length || 0) + (parsed.decisions_made?.length || 0) + (parsed.open_threads?.length || 0);
+    if (!hasContent) return;
+    await sbFetch('kiko_conversation_insights', {
+      method: 'POST', body: JSON.stringify({
+        user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
+        key_facts: parsed.key_facts || [], decisions_made: parsed.decisions_made || [],
+        open_threads: parsed.open_threads || [], entities_discussed: parsed.entities || [],
+        summary: `${(parsed.key_facts || []).join('; ')}`.slice(0, 200),
+      })
+    });
+  } catch {} // Non-blocking
+}
+
 // ── MCP Server Registry ──
 async function getMcpServers(userEmail) {
   try {
@@ -487,7 +512,32 @@ export default async function handler(req, res) {
       }
     } catch {} // Non-blocking
 
-    const systemWithHint = system + routingHint + preferencesHint + profileHint;
+    // Conversation Memory: inject recent insights for cross-session continuity
+    let memoryHint = '';
+    try {
+      const insights = await sbFetch('kiko_conversation_insights?order=created_at.desc&limit=5&select=key_facts,decisions_made,open_threads,entities_discussed');
+      if (Array.isArray(insights) && insights.length) {
+        memoryHint = '\n\n[RECENT CONVERSATION CONTEXT — reference naturally for continuity]:';
+        for (const i of insights.slice(0, 3)) {
+          if (i.decisions_made?.length) memoryHint += `\n• Decided: ${i.decisions_made.join('; ')}`;
+          if (i.open_threads?.length) memoryHint += `\n• Open: ${i.open_threads.join('; ')}`;
+        }
+      }
+    } catch {}
+
+    // Inbox triage: inject if available (for briefs and general questions)
+    let inboxHint = '';
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const triage = await sbFetch(`kiko_inbox_triage?triage_date=eq.${today}&limit=1&select=summary,priority_emails`);
+      if (Array.isArray(triage) && triage[0]?.summary) {
+        inboxHint = `\n\n[TODAY'S INBOX: ${triage[0].summary}]`;
+        const actions = (triage[0].priority_emails || []).filter(e => e.priority === 'ACTION_REQUIRED');
+        if (actions.length) inboxHint += `\nAction needed: ${actions.map(e => `${e.from}: ${e.subject}`).join('; ')}`;
+      }
+    } catch {}
+
+    const systemWithHint = system + routingHint + preferencesHint + profileHint + memoryHint + inboxHint;
 
     // Deep think detection
     const DEEP_TRIGGERS = ['analyse', 'analyze', 'deep dive', 'think through', 'strategic', 'evaluate', 'comprehensive'];
@@ -516,7 +566,7 @@ export default async function handler(req, res) {
         ? anthropic.beta.messages.stream({ ...params, betas: ['mcp-client-2025-11-20'] })
         : anthropic.beta.messages.stream(params);
       for await (const event of stream) {
-        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') write({ delta: event.delta.text });
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') { write({ delta: event.delta.text }); responseText += event.delta.text; }
         if (event.type === 'content_block_delta' && event.delta?.type === 'thinking_delta') write({ thinking: event.delta.thinking });
         if (event.type === 'content_block_start' && event.content_block?.type === 'mcp_tool_use') write({ toolStatus: `MCP: ${event.content_block.name || 'calling'}...` });
         if (event.type === 'content_block_start' && event.content_block?.type === 'mcp_tool_result') write({ toolStatus: null });
@@ -527,6 +577,7 @@ export default async function handler(req, res) {
     write({ toolStatus: intent !== 'general' ? `Intent: ${intent}` : 'Thinking...' });
     let response = await streamCall(messages);
     let toolRounds = 0;
+    let responseText = ''; // Accumulate for conversation memory extraction
 
     // Tool execution loop — max 10 rounds
     while (response.stop_reason === 'tool_use' && toolRounds < 10) {
@@ -572,7 +623,7 @@ export default async function handler(req, res) {
       write({ toolStatus: 'Composing response...' });
       const finalStream = anthropic.beta.messages.stream({ model: MODEL, max_tokens: 4096, system: systemWithHint, messages });
       for await (const event of finalStream) {
-        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') write({ delta: event.delta.text });
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') { write({ delta: event.delta.text }); responseText += event.delta.text; }
       }
     }
 
@@ -590,6 +641,8 @@ export default async function handler(req, res) {
         callMemoryEngine('extract_and_store', { messages: recentMsgs, entityContext: entityContext || '' }).catch(() => {});
       } catch {}
     }
+    // Conversation Memory: extract insights for cross-session continuity
+    extractConversationInsights(message, responseText, intent);
   } catch (err) {
     console.error('[KIKO] Error:', err);
     write({ delta: `\n\nError: ${err.message}` });

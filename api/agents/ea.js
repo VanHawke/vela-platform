@@ -107,6 +107,17 @@ async function morningBrief() {
     recentDecisions = await sbFetch('kiko_learning_log?category=eq.decision&order=created_at.desc&limit=5&select=content,entity_name,created_at') || [];
   } catch {}
 
+  // Inbox triage for today
+  let inboxSummary = null;
+  try {
+    const today = now.toISOString().split('T')[0];
+    const triage = await sbFetch(`kiko_inbox_triage?triage_date=eq.${today}&limit=1&select=summary,priority_emails`);
+    if (Array.isArray(triage) && triage[0]) {
+      const t = triage[0];
+      inboxSummary = { summary: t.summary, actionRequired: (t.priority_emails || []).filter(e => e.priority === 'ACTION_REQUIRED').map(e => ({ from: e.from, subject: e.subject })) };
+    }
+  } catch {}
+
   const briefData = JSON.stringify({
     date: now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
     tasks: { outstanding: outstanding.length, overdue: overdue.length, dueToday: dueToday.length,
@@ -123,6 +134,7 @@ async function morningBrief() {
     recentDecisions: recentDecisions.slice(0,3).map(d => ({ entity: d.entity_name, content: (d.content||'').slice(0,100), date: d.created_at })),
     pendingDraftActions: (Array.isArray(draftActions) ? draftActions : []).slice(0,3).map(d => ({ type: d.action_type, entity: d.payload?.entity, action: d.payload?.suggested_action })),
     todayCalendar: (calendarEvents || []).map(e => ({ title: e.title, start: e.start, attendees: e.attendees?.slice(0,3), location: e.location })),
+    inboxTriage: inboxSummary,
   });
 
   try {
@@ -139,6 +151,7 @@ RULES:
 - If hot leads + news signals converge on a company, call it out as a convergence.
 - End with the top 3 priorities for the day, ranked.
 - If there are calendar events today, weave them into the narrative naturally: "You have a call with X at 2pm — here's what to know going in."
+- If inbox triage data exists, mention it: "X emails need your attention — [sender]: [subject] is the most urgent."
 - If there are pending draft actions, mention them: "I've prepared a [action] for [entity] — say 'approve' to execute."
 - All values in USD.`,
       messages: [{ role: 'user', content: briefData }],
