@@ -69,6 +69,7 @@ export default function Lemlist({ user }) {
   const [leads, setLeads] = useState([])
   const [sequenceSteps, setSequenceSteps] = useState([])
   const [detailLoading, setDetailLoading] = useState(false)
+  const [campaignActivities, setCampaignActivities] = useState([])
   // Lead detail view
   const [selectedLead, setSelectedLead] = useState(null)
   const [leadActivities, setLeadActivities] = useState([])
@@ -103,18 +104,18 @@ export default function Lemlist({ user }) {
     setLeads([])
     setSequenceSteps([])
     try {
-      // Parallel fetch: stats + activities (for lead derivation) + campaign detail (for sequenceId)
-      const [statsRes, actRes, detailRes] = await Promise.all([
+      // Parallel fetch: stats + activities
+      const [statsRes, actRes] = await Promise.all([
         fetch(`/api/lemlist-data?action=stats&campaign_id=${c._id}`),
         fetch(`/api/lemlist-data?action=activities&campaign_id=${c._id}`),
-        fetch(`/api/lemlist-data?action=campaign_detail&campaign_id=${c._id}`),
       ])
-      const [statsData, actData, detailData] = await Promise.all([
-        statsRes.json(), actRes.json(), detailRes.json(),
+      const [statsData, actData] = await Promise.all([
+        statsRes.json(), actRes.json(),
       ])
       setStats(statsData || {})
       // Derive unique leads from activities (richer data than /leads endpoint)
       const actArr = Array.isArray(actData) ? actData : []
+      setCampaignActivities(actArr)
       const leadMap = {}
       for (const a of actArr) {
         const email = a.leadEmail || a.email || ''
@@ -144,28 +145,40 @@ export default function Lemlist({ user }) {
       }
       const derivedLeads = Object.values(leadMap).sort((a, b) => new Date(b.lastActivity || 0) - new Date(a.lastActivity || 0))
       setLeads(derivedLeads)
-      // Fetch sequence steps if sequenceId available
-      if (detailData?.sequenceId) {
-        try {
-          const stepsRes = await fetch(`/api/lemlist-data?action=sequence_steps&sequence_id=${detailData.sequenceId}`)
-          const stepsData = await stepsRes.json()
-          setSequenceSteps(Array.isArray(stepsData) ? stepsData : [])
-        } catch { setSequenceSteps([]) }
+      // Derive sequence steps from activities (API sequence_steps endpoint not available)
+      const stepMap = {}
+      for (const a of actArr) {
+        const stepNum = a.stepNumber || a.sequenceStep || 0
+        const t = (a.type || '').toLowerCase()
+        if (stepNum > 0 && t.includes('sent')) {
+          if (!stepMap[stepNum]) {
+            stepMap[stepNum] = {
+              _id: `step_${stepNum}`,
+              stepNumber: stepNum,
+              type: t.includes('linkedin') ? 'linkedin' : t.includes('email') ? 'email' : 'other',
+              subject: a.subject || '',
+              count: 0,
+            }
+          }
+          stepMap[stepNum].count++
+          if (!stepMap[stepNum].subject && a.subject) stepMap[stepNum].subject = a.subject
+        }
       }
+      const derivedSteps = Object.values(stepMap).sort((a, b) => a.stepNumber - b.stepNumber)
+      setSequenceSteps(derivedSteps)
     } catch (e) { console.error('[Lemlist detail]', e) }
     finally { setDetailLoading(false) }
   }
 
-  const selectLead = async (lead) => {
+  const selectLead = (lead) => {
     setSelectedLead(lead)
-    setLeadActLoading(true)
-    try {
-      const email = lead.email || lead._id
-      const res = await fetch(`/api/lemlist-data?action=activities&lead_email=${encodeURIComponent(email)}`)
-      const data = await res.json()
-      setLeadActivities(Array.isArray(data) ? data : [])
-    } catch (e) { console.error('[Lemlist lead]', e) }
-    finally { setLeadActLoading(false) }
+    // Filter activities for this lead from already-loaded campaign activities
+    const email = lead.email || ''
+    const filtered = campaignActivities.filter(a => {
+      const aEmail = a.leadEmail || a.email || ''
+      return aEmail.toLowerCase() === email.toLowerCase()
+    }).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+    setLeadActivities(filtered)
   }
 
   // Shared styles
@@ -282,12 +295,11 @@ export default function Lemlist({ user }) {
                         <div style={{ position: 'absolute', left: -17, top: 12, width: 10, height: 10, borderRadius: '50%', background: '#111114', border: '2px solid rgba(139,108,246,0.4)', zIndex: 1 }} />
                         <div style={{ flex: 1, ...card, padding: '10px 14px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                            {stepIcon(step.type || step.action)}
-                            <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.6)', textTransform: 'capitalize' }}>{(step.type || step.action || 'step').replace(/([A-Z])/g, ' $1').trim()}</span>
-                            <span style={{ fontSize: 10, color: T.textTertiary, marginLeft: 'auto' }}>Step {idx + 1}</span>
+                            {stepIcon(step.type)}
+                            <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.6)', textTransform: 'capitalize' }}>{step.type === 'linkedin' ? 'LinkedIn Message' : step.type === 'email' ? 'Email' : 'Action'}</span>
+                            <span style={{ fontSize: 10, color: T.textTertiary, marginLeft: 'auto' }}>Step {step.stepNumber} · {step.count} sent</span>
                           </div>
                           {step.subject && <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>Subject: {step.subject}</div>}
-                          {step.delay && <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 2 }}>Delay: {step.delay.value} {step.delay.unit || 'days'}</div>}
                         </div>
                       </div>
                     ))}
@@ -358,10 +370,8 @@ export default function Lemlist({ user }) {
           {/* Activity timeline */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px' }}>
             <p style={sectionTitle}>Activity Timeline</p>
-            {leadActLoading ? (
-              <div style={{ padding: 20, textAlign: 'center', color: T.textTertiary, fontSize: 13 }}>Loading activities...</div>
-            ) : leadActivities.length === 0 ? (
-              <div style={{ padding: 20, textAlign: 'center', color: T.textTertiary, fontSize: 13 }}>No activities recorded</div>
+            {leadActivities.length === 0 ? (
+              <div style={{ padding: 20, textAlign: 'center', color: T.textTertiary, fontSize: 13 }}>No activities recorded for this lead</div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 0, position: 'relative', paddingLeft: 20 }}>
                 <div style={{ position: 'absolute', left: 5, top: 6, bottom: 6, width: 1, background: 'rgba(255,255,255,0.04)' }} />
