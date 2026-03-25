@@ -121,8 +121,26 @@ async function evaluate(question, context = '') {
       }).catch(() => {}),
   );
 
+  // Phase 19: Thought journal — past strategic reasoning threads
+  let thoughtContext = '';
+  fetches.push(
+    sbFetch('kiko_thought_journal?order=created_at.desc&limit=15&select=topic,insight,related_entities,confidence')
+      .then(entries => {
+        if (!entries?.length) return;
+        const keywords = question.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+        const relevant = (Array.isArray(entries) ? entries : []).filter(e => {
+          const text = `${e.topic || ''} ${e.insight || ''} ${(e.related_entities||[]).join(' ')}`.toLowerCase();
+          return keywords.some(k => text.includes(k));
+        });
+        if (relevant.length) {
+          thoughtContext = `\nPAST REASONING (reference to show continuity of thinking):\n` +
+            relevant.slice(0, 3).map(e => `• ${e.topic}: ${(e.insight || '').slice(0, 150)}`).join('\n');
+        }
+      }).catch(() => {}),
+  );
+
   await Promise.all(fetches);
-  const fullContext = [context, companyContext, crmContext, outreachContext, newsContext, pipelineContext, pastDecisions].filter(Boolean).join('\n');
+  const fullContext = [context, companyContext, crmContext, outreachContext, newsContext, pipelineContext, pastDecisions, thoughtContext].filter(Boolean).join('\n');
 
   try {
     const res = await anthropic.messages.create({

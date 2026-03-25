@@ -30,6 +30,49 @@ async function logDecision(toolName, toolInput, toolResult, userMessage) {
   } catch {} // Non-blocking — logging failure must never break responses
 }
 
+// Phase 18: Output tracking — measure agent quality over time
+async function trackOutput(toolName, intent, userMessage, result) {
+  try {
+    const agent = toolName ? toolName.replace('ask_', '').replace('_agent', '') : 'general';
+    const resultStr = typeof result === 'string' ? result : JSON.stringify(result);
+    await sbFetch('kiko_output_tracking', {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
+        agent, intent: intent || 'unknown',
+        user_message: (userMessage || '').slice(0, 150),
+        output_preview: resultStr.slice(0, 300),
+      })
+    });
+  } catch {} // Non-blocking
+}
+
+// Phase 19: Thought journal — extract and persist strategic insights
+const INSIGHT_TOOLS = ['ask_strategy_agent', 'ask_negotiation_agent', 'ask_pricing_agent', 'ask_investment_agent'];
+async function journalInsight(toolName, toolInput, toolResult, userMessage) {
+  if (!INSIGHT_TOOLS.includes(toolName)) return;
+  try {
+    const resultStr = typeof toolResult === 'string' ? toolResult : JSON.stringify(toolResult);
+    // Extract entities mentioned
+    const entities = [];
+    const entityPattern = /(?:Cloudflare|Palo Alto|Nordic|Torq|Decagon|Haas|Broadcom|Infineon|Fastly|Attio|Team8)/gi;
+    const matches = (userMessage + ' ' + resultStr).match(entityPattern);
+    if (matches) entities.push(...[...new Set(matches.map(m => m.charAt(0).toUpperCase() + m.slice(1).toLowerCase()))]);
+    // Determine topic from intent
+    const topic = toolInput?.question?.slice(0, 80) || toolInput?.situation?.slice(0, 80) || (userMessage || '').slice(0, 80);
+    await sbFetch('kiko_thought_journal', {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
+        topic: topic,
+        insight: resultStr.slice(0, 500),
+        related_entities: entities.slice(0, 5),
+        confidence: 0.7,
+      })
+    });
+  } catch {} // Non-blocking
+}
+
 // ── MCP Server Registry ──
 async function getMcpServers(userEmail) {
   try {
@@ -401,6 +444,16 @@ export default async function handler(req, res) {
             }
             routingHint += ctx;
           }
+          // Phase 17: Relationship intelligence
+          if (contacts?.[0]?.data?.email) {
+            try {
+              const rel = await sbFetch(`kiko_relationships?contact_email=eq.${encodeURIComponent(contacts[0].data.email.toLowerCase())}&limit=1`);
+              if (Array.isArray(rel) && rel[0]) {
+                const r = rel[0];
+                routingHint += `\n[RELATIONSHIP: ${r.warmth_score > 0.6 ? 'WARM' : r.warmth_score > 0.35 ? 'LUKEWARM' : 'COLD'} | ${r.emails_sent} sent, ${r.emails_received} received | Type: ${r.relationship_type} | Last contact: ${r.last_sent_at ? new Date(r.last_sent_at).toLocaleDateString('en-GB') : 'unknown'}]`;
+              }
+            } catch {}
+          }
         }
       } catch {} // Non-blocking — if context fetch fails, Claude still drafts
     }
@@ -491,7 +544,9 @@ export default async function handler(req, res) {
           type: 'tool_result', tool_use_id: block.id,
           content: typeof result === 'string' ? result : JSON.stringify(result).slice(0, 8000)
         });
-        logDecision(block.name, block.input, result, message); // Phase 8: Learning loop
+        logDecision(block.name, block.input, result, message); // Phase 8
+        trackOutput(block.name, intent, message, result); // Phase 18
+        journalInsight(block.name, block.input, result, message); // Phase 19
       }
       write({ toolStatus: null });
       messages.push({ role: 'assistant', content: response.content });
@@ -507,7 +562,9 @@ export default async function handler(req, res) {
         write({ toolStatus: TOOL_LABELS[block.name] || 'Finishing...' });
         const result = block.name === 'memory' ? await handleMemory(block.input) : await executeTool(block.name, block.input, userEmail, pageContext);
         finalResults.push({ type: 'tool_result', tool_use_id: block.id, content: typeof result === 'string' ? result : JSON.stringify(result).slice(0, 4000) });
-        logDecision(block.name, block.input, result, message); // Phase 8: Learning loop
+        logDecision(block.name, block.input, result, message); // Phase 8
+        trackOutput(block.name, intent, message, result); // Phase 18
+        journalInsight(block.name, block.input, result, message); // Phase 19
       }
       write({ toolStatus: null });
       messages.push({ role: 'assistant', content: response.content });
