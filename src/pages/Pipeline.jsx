@@ -8,6 +8,7 @@ import {
   Plus, Settings, GripVertical, Eye, EyeOff, Check, Trash2, Loader2, ArrowRight
 } from 'lucide-react'
 import DocumentSection from '@/components/documents/DocumentSection'
+import CompanyLogo from '@/components/CompanyLogo'
 
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5'
 
@@ -511,13 +512,9 @@ export default function Pipeline({ user }) {
                         onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.025)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderLeftColor = stageAccent[stage.id] || 'rgba(255,255,255,0.1)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           {companyDomains[deal.company] ? (
-                            <div style={{ width: 18, height: 18, borderRadius: 4, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-                              <img src={`https://www.google.com/s2/favicons?domain=${companyDomains[deal.company]}&sz=64`} alt="" style={{ width: 14, height: 14, objectFit: 'contain' }} />
-                            </div>
+                            <CompanyLogo name={deal.company} domain={companyDomains[deal.company]} size={18} />
                           ) : (
-                            <div style={{ width: 18, height: 18, borderRadius: 4, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                              <Building2 style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.15)' }} />
-                            </div>
+                            <CompanyLogo name={deal.company} size={18} />
                           )}
                           <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.82)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {deal.company || deal.title}
@@ -557,9 +554,7 @@ export default function Pipeline({ user }) {
                         <img src={`https://www.google.com/s2/favicons?domain=${companyDomains[selectedDeal.company]}&sz=128`} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
                       </div>
                     ) : (
-                      <div style={{ width: 40, height: 40, borderRadius: 50, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Building2 style={{ width: 18, height: 18, color: 'rgba(255,255,255,0.2)' }} />
-                      </div>
+                      <CompanyLogo name={selectedDeal.company} domain={companyDomains[selectedDeal.company]} size={40} />
                     )}
                     <div>
                       <h2 style={{ fontSize: 17, fontWeight: 400, color: 'rgba(255,255,255,0.9)', margin: 0, fontFamily: 'var(--font)' }}>{selectedDeal.company || selectedDeal.title}</h2>

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { setPageContext } from '@/lib/pageContext'
 import { Mail, MousePointer, Reply, AlertTriangle, Clock, ChevronRight, ChevronLeft, RefreshCw, Users, BarChart3, Send, Linkedin, Phone, ArrowRight, X, Eye } from 'lucide-react'
 import T from '@/lib/theme'
+import CompanyLogo from '@/components/CompanyLogo'
 
 // ── Helpers ──
 function timeAgo(d) {
@@ -326,9 +327,7 @@ export default function Lemlist({ user }) {
                         onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
                         onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.02)' }}
                       >
-                        <div style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(139,108,246,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, color: 'rgba(139,108,246,0.6)', flexShrink: 0 }}>
-                          {(lead.firstName || lead.email || '?')[0].toUpperCase()}
-                        </div>
+                        <CompanyLogo name={lead.companyName || lead.firstName} size={30} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.7)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {lead.firstName || ''} {lead.lastName || ''}{lead.companyName ? ` · ${lead.companyName}` : ''}

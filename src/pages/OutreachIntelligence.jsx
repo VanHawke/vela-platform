@@ -7,6 +7,7 @@ import { Target, TrendingUp, Clock, Building2, Send, RefreshCw, Loader2, AlertTr
 import T from '@/lib/theme'
 import DOMPurify from 'dompurify'
 import DoubleHelix from '@/components/kiko/DoubleHelix'
+import CompanyLogo from '@/components/CompanyLogo'
 
 function md(text) {
   if (!text) return ''
@@ -213,6 +214,8 @@ Be direct. Use web search for current company intelligence if needed.`
               >
                 {/* Rank */}
                 <span style={{ fontSize: 11, color: i < 3 ? 'rgba(139,108,246,0.6)' : T.textTertiary, fontWeight: 500, width: 16, textAlign: 'center', flexShrink: 0, marginTop: 3 }}>{i + 1}</span>
+                {/* Company logo */}
+                <CompanyLogo name={d.company} size={28} />
                 {/* Urgency bar */}
                 <div style={{ width: 3, height: 32, borderRadius: 2, flexShrink: 0, marginTop: 2, background: urgencyColor(action.urgency) }} />
                 {/* Content */}
