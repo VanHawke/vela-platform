@@ -745,7 +745,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             }}
               onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,80,80,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,80,80,0.15)'; e.currentTarget.style.color = 'rgba(255,80,80,0.5)' }}
               onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.25)' }}
-            >Bye, Kiko</button>
+            >Goodbye Kiko</button>
           </div>
 
           {/* Greeting — slides down and fades in voice mode */}
@@ -788,7 +788,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                     padding: '11px 26px', borderRadius: 50, background: T.glass,
                     backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
                     border: `1.5px solid ${T.glassBorder}`, color: 'rgba(255,255,255,0.55)',
-                    fontSize: 14, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.2s', fontWeight: 400,
+                    fontSize: 13, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.2s', fontWeight: 400,
                     boxShadow: T.glassShadow,
                   }}
                     onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = 'rgba(255,255,255,0.85)'; e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = T.glassShadowHover }}
