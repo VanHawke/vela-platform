@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [gLoading, setGLoading] = useState(false)
   const [showEmail, setShowEmail] = useState(false)
+  const [customLogo] = useState(() => { try { return localStorage.getItem('custom_logo_url') } catch { return null } })
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => { setTimeout(() => setMounted(true), 100) }, [])
@@ -62,10 +63,16 @@ export default function LoginPage() {
 
       <div style={{ width: '100%', maxWidth: 380, textAlign: 'center', position: 'relative', zIndex: 5, padding: '0 24px' }}>
 
-        {/* VAN HAWKE brand mark */}
+        {/* Brand logo */}
         <div style={{ marginBottom: 64, ...fade(0) }}>
-          <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.15em', fontFamily: T.font }}>VAN HAWKE</span>
-          <span style={{ fontSize: 9, verticalAlign: 'super', color: 'rgba(255,255,255,0.12)', marginLeft: 2 }}>™</span>
+          {customLogo ? (
+            <img src={customLogo} alt="Logo" style={{ height: 28, maxWidth: 160, objectFit: 'contain', opacity: 0.5 }} />
+          ) : (
+            <>
+              <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.15em', fontFamily: T.font }}>VAN HAWKE</span>
+              <span style={{ fontSize: 9, verticalAlign: 'super', color: 'rgba(255,255,255,0.12)', marginLeft: 2 }}>™</span>
+            </>
+          )}
         </div>
 
         {/* Kiko helix — large, centred, dramatic */}
@@ -77,7 +84,7 @@ export default function LoginPage() {
 
         {/* Kiko name + tagline */}
         <h1 style={{ fontSize: 33, fontWeight: 200, color: 'rgba(255,255,255,0.9)', letterSpacing: '-0.04em', margin: '0 0 6px', ...fade(0.4) }}>Kiko</h1>
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.2)', fontWeight: 300, margin: '0 0 48px', letterSpacing: '0.02em', ...fade(0.5) }}>Your AI operating system</p>
+        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.2)', fontWeight: 300, margin: '0 0 48px', letterSpacing: '0.02em', ...fade(0.5) }}>Intelligence, Applied</p>
 
         {/* Primary CTA — Google OAuth */}
         <div style={fade(0.6)}>

@@ -55,12 +55,19 @@ export default function Layout({ user }) {
   // Listen for Settings nav changes
   useEffect(() => {
     const handler = () => setTopNavIds(getTopNavIds())
+    const moreHandler = () => { try { const s = localStorage.getItem('kiko_more_order'); setMoreOrder(s ? JSON.parse(s) : null) } catch {} }
     window.addEventListener('kiko_top_nav_updated', handler)
-    return () => window.removeEventListener('kiko_top_nav_updated', handler)
+    window.addEventListener('kiko_more_order_updated', moreHandler)
+    return () => { window.removeEventListener('kiko_top_nav_updated', handler); window.removeEventListener('kiko_more_order_updated', moreHandler) }
   }, [])
 
   const TABS = ALL_NAV.filter(n => topNavIds.includes(n.id))
-  const MORE_ITEMS = ALL_NAV.filter(n => !topNavIds.includes(n.id))
+  // More items respect custom order from Settings
+  const moreItemsRaw = ALL_NAV.filter(n => !topNavIds.includes(n.id))
+  const [moreOrder, setMoreOrder] = useState(() => { try { const s = localStorage.getItem('kiko_more_order'); return s ? JSON.parse(s) : null } catch { return null } })
+  const MORE_ITEMS = moreOrder
+    ? [...moreItemsRaw].sort((a, b) => { const ai = moreOrder.indexOf(a.id); const bi = moreOrder.indexOf(b.id); return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi) })
+    : moreItemsRaw
   const moreRef = useRef(null)
   const [customLogo, setCustomLogo] = useState(() => { try { return localStorage.getItem('custom_logo_url') } catch { return null } })
   const avatarRef = useRef(null)

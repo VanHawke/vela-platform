@@ -111,7 +111,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
   return (
     <>
       <button onClick={onToggle} style={{
-        position: 'fixed', left: 360, top: 'calc(50% + 28px)', transform: 'translateY(-50%)',
+        position: 'fixed', left: 400, top: 'calc(50% + 28px)', transform: 'translateY(-50%)',
         zIndex: 201, width: 28, height: 80, borderRadius: '0 10px 10px 0',
         background: T.surface, border: `1px solid ${T.border}`, borderLeft: 'none',
         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -121,7 +121,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
       </button>
 
       <div style={{
-        position: 'fixed', top: 48, left: 0, width: 360, height: 'calc(100% - 48px)', zIndex: 200,
+        position: 'fixed', top: 48, left: 0, width: 400, height: 'calc(100% - 48px)', zIndex: 200,
         background: '#111114', borderRight: `1px solid ${T.border}`,
         display: 'flex', flexDirection: 'column',
         boxShadow: '4px 0 16px rgba(0,0,0,0.3)',
@@ -134,7 +134,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
         }}>
           <span style={{ fontSize: 15, fontWeight: 500, color: '#fff', fontFamily: T.font }}>Chats</span>
           <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => { onNewChat() }} style={{
+            <button onClick={() => { onNewChat(); onToggle() }} style={{
               width: 34, height: 34, borderRadius: 50, border: 'none',
               background: T.accentSoft, cursor: 'pointer', display: 'flex',
               alignItems: 'center', justifyContent: 'center', color: '#fff',
@@ -169,15 +169,6 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
                   onMouseOver={e => { if (!active) e.currentTarget.style.background = T.surfaceHover }}
                   onMouseOut={e => { if (!active) e.currentTarget.style.background = active ? T.accentSoft : 'transparent' }}
                 >
-                  <div style={{
-                    width: 30, height: 30, borderRadius: 8, flexShrink: 0, marginTop: 1,
-                    background: active ? T.accent : T.accentSoft,
-                    color: active ? '#fff' : 'rgba(255,255,255,0.4)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    {voice ? <Mic size={14} /> : <MessageCircle size={14} />}
-                  </div>
-
                   <div style={{ flex: 1, minWidth: 0 }}>
                     {renamingId === conv.id ? (
                       <input value={renameValue} onChange={e => setRenameValue(e.target.value)}
@@ -189,7 +180,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
                         <span style={{
                           fontSize: 14, fontWeight: 500, color: '#fff', fontFamily: T.font,
-                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 220,
+                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 280,
                         }}>{starred ? '★ ' : ''}{(conv.title || 'Untitled').replace('🎤 ', '')}</span>
                         <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', fontFamily: T.font, flexShrink: 0 }}>
                           {timeAgo(conv.updated_at)}

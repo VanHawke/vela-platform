@@ -66,6 +66,7 @@ export default function Settings({ user }) {
   ]
   const DEFAULT_TOP_NAV = ['home', 'contacts', 'pipeline', 'settings']
   const [topNavItems, setTopNavItems] = useState(DEFAULT_TOP_NAV)
+  const [moreOrder, setMoreOrder] = useState(() => { try { const s = localStorage.getItem('kiko_more_order'); return s ? JSON.parse(s) : null } catch { return null } })
 
   useEffect(() => {
     const stored = localStorage.getItem('kiko_nav_order')
@@ -466,6 +467,42 @@ export default function Settings({ user }) {
               </div>
               <button onClick={() => { setTopNavItems(DEFAULT_TOP_NAV); localStorage.setItem('kiko_top_nav', JSON.stringify(DEFAULT_TOP_NAV)); window.dispatchEvent(new Event('kiko_top_nav_updated')) }}
                 style={{ marginTop: 12, fontSize: 12, padding: '6px 12px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font }}>Reset to Default</button>
+            </div>
+
+            {/* More Dropdown Order */}
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>More Dropdown Order</h3>
+              <p style={{ fontSize: 13, color: T.textTertiary, margin: '0 0 16px', fontFamily: T.font }}>Reorder items in the More dropdown menu.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {(() => {
+                  const moreItems = ALL_TOP_NAV.filter(n => !topNavItems.includes(n.id))
+                  const ordered = moreOrder
+                    ? [...moreItems].sort((a, b) => { const ai = moreOrder.indexOf(a.id); const bi = moreOrder.indexOf(b.id); return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi) })
+                    : moreItems
+                  return ordered.map((item, idx) => {
+                    const canUp = idx > 0
+                    const canDown = idx < ordered.length - 1
+                    const moveMore = (dir) => {
+                      const ids = ordered.map(i => i.id)
+                      const from = idx; const to = idx + dir
+                      if (to < 0 || to >= ids.length) return
+                      ;[ids[from], ids[to]] = [ids[to], ids[from]]
+                      setMoreOrder(ids)
+                      localStorage.setItem('kiko_more_order', JSON.stringify(ids))
+                      window.dispatchEvent(new Event('kiko_more_order_updated'))
+                    }
+                    return (
+                      <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 50, background: T.surface, border: `1px solid ${T.border}` }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 0, flexShrink: 0 }}>
+                          <button onClick={() => moveMore(-1)} disabled={!canUp} style={{ background: 'none', border: 'none', cursor: canUp ? 'pointer' : 'default', color: canUp ? T.textSecondary : 'rgba(255,255,255,0.1)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▲</button>
+                          <button onClick={() => moveMore(1)} disabled={!canDown} style={{ background: 'none', border: 'none', cursor: canDown ? 'pointer' : 'default', color: canDown ? T.textSecondary : 'rgba(255,255,255,0.1)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▼</button>
+                        </div>
+                        <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font }}>{item.label}</span>
+                      </div>
+                    )
+                  })
+                })()}
+              </div>
             </div>
           </div>
         )}
