@@ -27,8 +27,6 @@ async function getTodayCalendarEvents() {
   } catch { return []; }
 }
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
-
 const STAGE_PROB = {
   'To revisit': 0.05, 'Contact made': 0.10, 'Qualified': 0.20,
   'In Dialogue': 0.35, 'Meeting arranged (brand x RH)': 0.50,
