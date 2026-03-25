@@ -67,7 +67,7 @@ export default async function handler(req, res) {
     const crossRef = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 1000,
-      system: `You identify CONVERGENCE MOMENTS in business data — where multiple signals point to the same company or opportunity. Return ONLY valid JSON array. Each item: { "entity": "Company Name", "severity": "high|medium|low", "title": "Short alert title", "detail": "2-3 sentence explanation of why these signals converge", "action": "Specific recommended action" }. If no convergence found, return empty array []. Maximum 5 alerts.`,
+      system: `You identify CONVERGENCE MOMENTS in business data — where multiple signals point to the same company or opportunity. Return ONLY valid JSON array. Each item: { "entity": "Company Name", "severity": "high|medium|low", "title": "Short alert title", "detail": "2-3 sentence explanation of why these signals converge", "action": "Specific recommended next step, e.g. 'Draft authority follow-up email referencing their funding announcement'" }. If no convergence found, return empty array []. Maximum 5 alerts. ALWAYS include an action for each alert.`,
       messages: [{ role: 'user', content: `Cross-reference these data streams from the last 24 hours. Find companies appearing in 2+ streams, or urgent patterns:\n\n${dataPayload}` }],
     });
 
@@ -85,12 +85,14 @@ export default async function handler(req, res) {
     }
 
 
-    // Write convergence alerts to kiko_alerts
+    // Write convergence alerts + draft actions to kiko_alerts and kiko_draft_actions
     let written = 0;
+    let drafts = 0;
     for (const alert of alerts.slice(0, 5)) {
       try {
-        await sbFetch('kiko_alerts', {
+        const { data: alertRow } = await sbFetch('kiko_alerts', {
           method: 'POST',
+          headers: { Prefer: 'return=representation' },
           body: JSON.stringify({
             type: 'convergence',
             severity: alert.severity || 'medium',
@@ -98,16 +100,37 @@ export default async function handler(req, res) {
             detail: (alert.detail || '').slice(0, 500),
             entity_name: (alert.entity || '').slice(0, 100),
             dismissed: false,
-            expires_at: new Date(now.getTime() + 48 * 60 * 60 * 1000).toISOString(), // 48h expiry
+            expires_at: new Date(now.getTime() + 48 * 60 * 60 * 1000).toISOString(),
           })
         });
         written++;
+
+        // Phase 14: Create draft action if alert has a suggested action
+        if (alert.action && alert.entity) {
+          try {
+            const alertId = Array.isArray(alertRow) ? alertRow[0]?.id : alertRow?.id;
+            await sbFetch('kiko_draft_actions', {
+              method: 'POST',
+              body: JSON.stringify({
+                alert_id: alertId || null,
+                action_type: 'follow_up',
+                payload: {
+                  entity: alert.entity,
+                  suggested_action: alert.action,
+                  context: (alert.detail || '').slice(0, 300),
+                },
+                status: 'pending',
+              })
+            });
+            drafts++;
+          } catch {}
+        }
       } catch (err) {
         console.error('[Proactive] Failed to write alert:', err.message);
       }
     }
 
-    return res.status(200).json({ ok: true, alerts: written, total_signals: hasData });
+    return res.status(200).json({ ok: true, alerts: written, drafts, total_signals: hasData });
   } catch (err) {
     console.error('[Proactive] Engine error:', err.message);
     return res.status(200).json({ ok: false, error: err.message }); // 200 so Vercel cron doesn't retry

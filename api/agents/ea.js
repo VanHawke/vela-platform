@@ -26,7 +26,7 @@ async function morningBrief() {
   const sevenDaysAgo = new Date(now - 7 * 86400000).toISOString();
 
   // Pull ALL 9 sources in parallel for speed
-  const [tasks, deals, alerts, activities, news, outreachScores, pipelineNotifs, stageHistory] = await Promise.all([
+  const [tasks, deals, alerts, activities, news, outreachScores, pipelineNotifs, stageHistory, draftActions] = await Promise.all([
     sbFetch('tasks?select=data&order=updated_at.desc&limit=30'),
     sbFetch('deals?select=id,data&data->>status=eq.active&limit=200'),
     sbFetch('kiko_alerts?dismissed=eq.false&expires_at=gt.' + now.toISOString() + '&select=type,severity,title,detail,entity_name&order=created_at.desc&limit=10'),
@@ -35,6 +35,7 @@ async function morningBrief() {
     sbFetch('outreach_scores?outcome=eq.replied&order=sent_at.desc&limit=10'),
     sbFetch('pipeline_notifications?is_dismissed=eq.false&order=created_at.desc&limit=10'),
     sbFetch('deal_stage_history?changed_at=gt.' + sevenDaysAgo + '&select=deal_id,from_stage,to_stage,changed_at&order=changed_at.desc&limit=20'),
+    sbFetch('kiko_draft_actions?status=eq.pending&order=created_at.desc&limit=5&select=action_type,payload,created_at').catch(() => []),
   ]);
 
   // ── SOURCE 1: Tasks ──
@@ -98,6 +99,7 @@ async function morningBrief() {
     alerts: (alerts||[]).slice(0,5).map(a => ({ severity: a.severity, title: a.title, entity: a.entity_name })),
     notifications: unreadNotifs.slice(0,3).map(n => ({ type: n.type, title: n.title })),
     recentDecisions: recentDecisions.slice(0,3).map(d => ({ entity: d.entity_name, content: (d.content||'').slice(0,100), date: d.created_at })),
+    pendingDraftActions: (Array.isArray(draftActions) ? draftActions : []).slice(0,3).map(d => ({ type: d.action_type, entity: d.payload?.entity, action: d.payload?.suggested_action })),
   });
 
   try {
@@ -113,6 +115,7 @@ RULES:
 - If deals are stale and tasks are overdue, say so bluntly.
 - If hot leads + news signals converge on a company, call it out as a convergence.
 - End with the top 3 priorities for the day, ranked.
+- If there are pending draft actions, mention them: "I've prepared a [action] for [entity] — say 'approve' to execute."
 - All values in USD.`,
       messages: [{ role: 'user', content: briefData }],
     });
