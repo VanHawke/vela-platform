@@ -91,22 +91,22 @@ export default function ImageUpload({ label, storageKey, folder = 'uploads', asp
 
   return (
     <div style={{ fontFamily: T.font }}>
-      <label style={{ fontSize: 13, fontWeight: 500, color: T.text, display: 'block', marginBottom: 6 }}>{label}</label>
-      {aspectHint && <p style={{ fontSize: 11, color: T.textTertiary, margin: '0 0 8px' }}>{aspectHint}</p>}
+      <label style={{ fontSize: 14, fontWeight: 500, color: T.text, display: 'block', marginBottom: 6 }}>{label}</label>
+      {aspectHint && <p style={{ fontSize: 12, color: T.textTertiary, margin: '0 0 8px' }}>{aspectHint}</p>}
 
       {/* Crop modal */}
       {showCrop && rawUrl && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(24px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: T.surface, borderRadius: 18, padding: 24, maxWidth: 520, width: '90%', boxShadow: '0 24px 80px rgba(255,255,255,0.12)' }}>
-            <p style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 16px' }}>Crop {label}</p>
+            <p style={{ fontSize: 16, fontWeight: 400, color: T.text, margin: '0 0 16px' }}>Crop {label}</p>
             <div style={{ maxHeight: 400, overflow: 'auto', borderRadius: 50, background: T.bg, display: 'flex', justifyContent: 'center' }}>
               <ReactCrop crop={crop} onChange={setCrop} onComplete={setCompletedCrop}>
                 <img ref={imgRef} src={rawUrl} alt="" style={{ maxHeight: 380, maxWidth: '100%', objectFit: 'contain' }} />
               </ReactCrop>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
-              <button onClick={cancelCrop} style={{ height: 36, padding: '0 16px', borderRadius: 50, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, fontSize: 13, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
-              <button onClick={saveCrop} disabled={uploading} style={{ height: 36, padding: '0 20px', borderRadius: 50, border: 'none', background: T.accent, color: 'rgba(255,255,255,0.9)', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <button onClick={cancelCrop} style={{ height: 36, padding: '0 16px', borderRadius: 50, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, fontSize: 14, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
+              <button onClick={saveCrop} disabled={uploading} style={{ height: 36, padding: '0 20px', borderRadius: 50, border: 'none', background: T.accent, color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
                 {uploading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Save
               </button>
             </div>
@@ -128,7 +128,7 @@ export default function ImageUpload({ label, storageKey, folder = 'uploads', asp
         ) : (
           <div style={{ textAlign: 'center' }}>
             <Upload size={20} color={T.textTertiary} style={{ margin: '0 auto 6px' }} />
-            <p style={{ fontSize: 12, color: T.textTertiary, margin: 0 }}>Click to upload</p>
+            <p style={{ fontSize: 13, color: T.textTertiary, margin: 0 }}>Click to upload</p>
           </div>
         )}
         {uploading && (
@@ -138,7 +138,7 @@ export default function ImageUpload({ label, storageKey, folder = 'uploads', asp
         )}
       </div>
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
-      {error && <p style={{ fontSize: 12, color: '#C62828', marginTop: 6 }}>{error}</p>}
+      {error && <p style={{ fontSize: 13, color: '#C62828', marginTop: 6 }}>{error}</p>}
     </div>
   )
 }

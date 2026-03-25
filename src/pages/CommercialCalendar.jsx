@@ -168,7 +168,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, onClick }) 
       onMouseEnter={e => { if (isCurrent && !s.isSel) e.currentTarget.style.borderColor = T.borderHover }}
       onMouseLeave={e => { if (isCurrent && !s.isSel) e.currentTarget.style.borderColor = s.isToday ? T.text : s.border }}
     >
-      <span style={{ fontSize: 12, fontWeight: s.isToday ? 600 : 400, color: numColor, lineHeight: 1, fontFamily: T.font }}>
+      <span style={{ fontSize: 13, fontWeight: s.isToday ? 600 : 400, color: numColor, lineHeight: 1, fontFamily: T.font }}>
         {day}
       </span>
 
@@ -181,7 +181,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, onClick }) 
                 s.isSel || s.isRaceDay ? 'rgba(255,255,255,0.32)' : T.f1,
                 <>
                   <img src="/f1-logo.png" alt="F1" style={{ width: 8, height: 8, objectFit: 'contain', display: 'block' }} />
-                  <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.9)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
+                  <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.9)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
                     {s.isRaceDay ? 'Race day' : `${e.city.slice(0, 3).toUpperCase()}${e.sprint ? ' ⚡' : ''}`}
                   </span>
                 </>
@@ -194,7 +194,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, onClick }) 
                 s.isSel ? 'rgba(255,255,255,0.32)' : T.fe,
                 <>
                   <img src="/fe-logo.png" alt="FE" style={{ width: 8, height: 8, objectFit: 'contain', display: 'block' }} />
-                  <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.9)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
+                  <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.9)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
                     {e.city.slice(0, 3).toUpperCase()}
                   </span>
                 </>
@@ -246,11 +246,11 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: T.surface }}>
       {/* Header */}
       <div style={{ padding: '11px 18px', borderBottom: `1.5px solid ${T.border}`, background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-        <span style={{ fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font }}>
+        <span style={{ fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font }}>
           {selected ? fmtLong(selected) : 'Select a date'}
         </span>
         {isSelectedToday && (
-          <span style={{ fontSize: 9, fontWeight: 400, color: '#1565C0', background: '#E3F2FD', border: '1.5px solid #B5D4F4', padding: '2px 9px', borderRadius: 4, fontFamily: T.font }}>Today</span>
+          <span style={{ fontSize: 10, fontWeight: 400, color: '#1565C0', background: '#E3F2FD', border: '1.5px solid #B5D4F4', padding: '2px 9px', borderRadius: 4, fontFamily: T.font }}>Today</span>
         )}
       </div>
 
@@ -263,8 +263,8 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
               <div key={i} style={{ padding: '12px 14px', borderRadius: 50, background: event.series === 'f1' ? T.f1Light : T.feLight, border: `1.5px solid ${event.series === 'f1' ? T.f1Border : T.feBorder}`, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                 <SeriesIcon series={event.series} size={36} />
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 14, fontWeight: 500, color: event.series === 'f1' ? T.f1Dark : T.feDark, margin: 0, fontFamily: T.font }}>{event.name}</p>
-                  <p style={{ fontSize: 11, color: event.series === 'f1' ? T.f1 : T.fe, margin: '3px 0 0', fontFamily: T.font }}>
+                  <p style={{ fontSize: 15, fontWeight: 500, color: event.series === 'f1' ? T.f1Dark : T.feDark, margin: 0, fontFamily: T.font }}>{event.name}</p>
+                  <p style={{ fontSize: 12, color: event.series === 'f1' ? T.f1 : T.fe, margin: '3px 0 0', fontFamily: T.font }}>
                     {event.series === 'f1' ? 'Formula 1' : 'Formula E'} · {event.city}
                     {event.series === 'f1' ? ` · R${event.round}` : ` · S12 R${event.round}`}
                     {event.sprint ? ' · Sprint' : ''}{event.saturday ? ' · Saturday' : ''}
@@ -277,7 +277,7 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
 
         {/* No event on selected date */}
         {selected && selEvents.length === 0 && (
-          <p style={{ fontSize: 12, color: T.textTertiary, fontFamily: T.font }}>No race events on this date.</p>
+          <p style={{ fontSize: 13, color: T.textTertiary, fontFamily: T.font }}>No race events on this date.</p>
         )}
 
         {/* Outreach nudge */}
@@ -285,11 +285,11 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
           <div style={{ padding: '12px 14px', borderRadius: 50, background: T.amberLight, border: `1.5px solid ${T.amberBorder}` }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
               <div style={{ width: 6, height: 6, borderRadius: 1, background: T.amber, flexShrink: 0 }} />
-              <p style={{ fontSize: 11, fontWeight: 500, color: T.amber, margin: 0, fontFamily: T.font }}>
+              <p style={{ fontSize: 12, fontWeight: 500, color: T.amber, margin: 0, fontFamily: T.font }}>
                 Outreach window · {outreach.name} in {daysUntil(outreach.date, selected)}d
               </p>
             </div>
-            <p style={{ fontSize: 11, color: T.textSecondary, margin: 0, lineHeight: 1.5, fontFamily: T.font }}>
+            <p style={{ fontSize: 12, color: T.textSecondary, margin: 0, lineHeight: 1.5, fontFamily: T.font }}>
               14–21 days before race is peak window for sponsor decisions. Send Haas pipeline follow-ups now.
             </p>
           </div>
@@ -298,7 +298,7 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
         {/* This month */}
         {monthEvents.length > 0 && (
           <div>
-            <p style={{ fontSize: 9, fontWeight: 400, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10, fontFamily: T.font }}>
+            <p style={{ fontSize: 10, fontWeight: 400, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10, fontFamily: T.font }}>
               {MONTHS_FULL[viewMonth]} {viewYear}
             </p>
             {monthEvents.map((e, i) => {
@@ -307,10 +307,10 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
               return (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: `1.5px solid ${T.border}`, opacity: isPast ? 0.38 : 1 }}>
                   <SeriesIcon series={e.series} size={22} />
-                  <span style={{ flex: 1, fontSize: 12, fontWeight: isActive ? 500 : 400, color: T.text, fontFamily: T.font, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{ flex: 1, fontSize: 13, fontWeight: isActive ? 500 : 400, color: T.text, fontFamily: T.font, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {e.name}{e.sprint ? ' ⚡' : ''}
                   </span>
-                  <span style={{ fontSize: 10, color: isActive ? (e.series === 'f1' ? T.f1 : T.fe) : T.textTertiary, flexShrink: 0, fontFamily: T.font }}>
+                  <span style={{ fontSize: 11, color: isActive ? (e.series === 'f1' ? T.f1 : T.fe) : T.textTertiary, flexShrink: 0, fontFamily: T.font }}>
                     {isActive ? 'Today' : fmtRange(e.date, e.end)}{isPast ? ' ✓' : ''}
                   </span>
                 </div>
@@ -322,19 +322,19 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
         {/* Next up */}
         {upcoming.length > 0 && (
           <div>
-            <p style={{ fontSize: 9, fontWeight: 400, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10, fontFamily: T.font }}>Next up</p>
+            <p style={{ fontSize: 10, fontWeight: 400, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10, fontFamily: T.font }}>Next up</p>
             {upcoming.map((e, i) => {
               const days = daysUntil(e.date)
               return (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: `1.5px solid ${T.border}` }}>
                   <SeriesIcon series={e.series} size={28} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 12, fontWeight: 500, color: T.text, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: T.font }}>{e.name}</p>
-                    <p style={{ fontSize: 10, color: T.textTertiary, margin: '1px 0 0', fontFamily: T.font }}>
+                    <p style={{ fontSize: 13, fontWeight: 500, color: T.text, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: T.font }}>{e.name}</p>
+                    <p style={{ fontSize: 11, color: T.textTertiary, margin: '1px 0 0', fontFamily: T.font }}>
                       {e.city} · {e.series === 'f1' ? `R${e.round}` : `S12 R${e.round}`}{e.sprint ? ' · Sprint' : ''}
                     </p>
                   </div>
-                  <span style={{ fontSize: 11, fontWeight: 500, color: T.textSecondary, flexShrink: 0, fontFamily: T.font }}>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: T.textSecondary, flexShrink: 0, fontFamily: T.font }}>
                     {days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : `${days}d`}
                   </span>
                 </div>
@@ -403,7 +403,7 @@ export default function CommercialCalendar() {
           <button onClick={prevMonth} style={{ width: 28, height: 28, borderRadius: 7, border: `1.5px solid ${T.border}`, background: T.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.textSecondary, cursor: 'pointer' }}>
             <ChevronLeft size={13} />
           </button>
-          <span style={{ flex: 1, textAlign: 'center', fontSize: 15, fontWeight: 500, color: T.text, fontFamily: T.font }}>
+          <span style={{ flex: 1, textAlign: 'center', fontSize: 16, fontWeight: 500, color: T.text, fontFamily: T.font }}>
             {MONTHS_FULL[viewMonth]} {viewYear}
           </span>
           <button onClick={nextMonth} style={{ width: 28, height: 28, borderRadius: 7, border: `1.5px solid ${T.border}`, background: T.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.textSecondary, cursor: 'pointer' }}>
@@ -417,19 +417,19 @@ export default function CommercialCalendar() {
           ].map(({ id, label, on, set, bg, rem }) => (
             <button key={id} onClick={() => set(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 7px', borderRadius: 6, border: `1.5px solid ${on ? T.border : T.border}`, background: on ? 'rgba(255,255,255,0.04)' : 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}>
               <img src={id === 'f1' ? '/f1-logo.png' : '/fe-logo.png'} alt={label} style={{ width: 16, height: 16, objectFit: 'contain', display: 'block', flexShrink: 0 }} />
-              <span style={{ fontSize: 11, fontWeight: 500, color: T.textSecondary, fontFamily: T.font }}>{label}</span>
-              {on && <span style={{ fontSize: 9, color: T.textTertiary, fontFamily: T.font }}>{rem}</span>}
+              <span style={{ fontSize: 12, fontWeight: 500, color: T.textSecondary, fontFamily: T.font }}>{label}</span>
+              {on && <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font }}>{rem}</span>}
             </button>
           ))}
           <div style={{ width: '0.5px', height: 16, background: T.border, margin: '0 2px' }} />
-          <button onClick={goToday} style={{ fontSize: 10, padding: '4px 10px', borderRadius: 6, border: `1.5px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font }}>Today</button>
+          <button onClick={goToday} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: `1.5px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font }}>Today</button>
           {/* Next race stat */}
           {nextD !== null && (
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-              <span style={{ fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font }}>
+              <span style={{ fontSize: 15, fontWeight: 500, color: T.text, fontFamily: T.font }}>
                 {nextD === 0 ? 'Today' : `${nextD}d`}
               </span>
-              <span style={{ fontSize: 9, color: T.textTertiary, fontFamily: T.font }}>next race</span>
+              <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font }}>next race</span>
             </div>
           )}
         </div>
@@ -437,7 +437,7 @@ export default function CommercialCalendar() {
         {/* Day headers — full names */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', padding: '8px 12px 4px', gap: 3, background: T.surface, borderBottom: `1.5px solid ${T.border}`, flexShrink: 0 }}>
           {DAYS_FULL.map(d => (
-            <div key={d} style={{ textAlign: 'center', fontSize: 9, color: T.textTertiary, letterSpacing: '0.02em', fontFamily: T.font }}>{d}</div>
+            <div key={d} style={{ textAlign: 'center', fontSize: 10, color: T.textTertiary, letterSpacing: '0.02em', fontFamily: T.font }}>{d}</div>
           ))}
         </div>
 
@@ -457,7 +457,7 @@ export default function CommercialCalendar() {
           ].map(({ bg, label }) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <div style={{ width: 8, height: 8, borderRadius: 2, background: bg }} />
-              <span style={{ fontSize: 9, color: T.textTertiary, fontFamily: T.font }}>{label}</span>
+              <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font }}>{label}</span>
             </div>
           ))}
         </div>

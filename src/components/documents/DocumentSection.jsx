@@ -73,8 +73,8 @@ export default function DocumentSection({ linkedCompanyId, linkedDealId, linkedT
     setUploading(false)
   }
 
-  const sectionTitle = { fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 10px', fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', gap: 6 }
-  const emptyText = { fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', margin: 0, lineHeight: 1.5 }
+  const sectionTitle = { fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 10px', fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', gap: 6 }
+  const emptyText = { fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', margin: 0, lineHeight: 1.5 }
 
   return (
     <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
@@ -83,7 +83,7 @@ export default function DocumentSection({ linkedCompanyId, linkedDealId, linkedT
           <FileText style={{ width: 12, height: 12 }} /> {entityLabel} ({documents.length})
         </p>
         <input ref={fileRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.png,.jpg,.jpeg,.webp,.xlsx" onChange={e => { const f = e.target.files?.[0]; if (f) handleUpload(f); e.target.value = '' }} style={{ display: 'none' }} />
-        <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 500, color: 'var(--accent)', background: 'rgba(255,255,255,0.07)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+        <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 500, color: 'var(--accent)', background: 'rgba(255,255,255,0.07)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', fontFamily: 'var(--font)' }}>
           {uploading ? <Loader2 style={{ width: 10, height: 10, animation: 'spin 1s linear infinite' }} /> : <Plus style={{ width: 10, height: 10 }} />}
           {uploading ? uploadStatus : 'Add'}
         </button>

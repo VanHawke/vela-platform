@@ -65,8 +65,8 @@ export default function Lemlist({ user }) {
       <div style={{ width: 300, borderRight: '1px solid rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <div style={{ padding: '16px 16px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <h1 style={{ fontSize: 18, fontWeight: 400, color: T.text, margin: 0 }}>Lemlist</h1>
-            <p style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300, marginTop: 2 }}>{campaigns.length} campaigns</p>
+            <h1 style={{ fontSize: 19, fontWeight: 400, color: T.text, margin: 0 }}>Lemlist</h1>
+            <p style={{ fontSize: 12, color: T.textTertiary, fontWeight: 300, marginTop: 2 }}>{campaigns.length} campaigns</p>
           </div>
           <button onClick={loadCampaigns} style={{ width: 28, height: 28, borderRadius: 50, border: 'none', background: 'rgba(255,255,255,0.04)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.textTertiary }}>
             <RefreshCw size={12} />
@@ -81,7 +81,7 @@ export default function Lemlist({ user }) {
               background: !selectedCampaign ? 'rgba(139,108,246,0.06)' : 'transparent',
               border: `1px solid ${!selectedCampaign ? 'rgba(139,108,246,0.15)' : 'transparent'}`,
             }}>
-            <div style={{ fontSize: 12, fontWeight: 400, color: !selectedCampaign ? 'rgba(139,108,246,0.8)' : 'rgba(255,255,255,0.5)' }}>All campaigns</div>
+            <div style={{ fontSize: 13, fontWeight: 400, color: !selectedCampaign ? 'rgba(139,108,246,0.8)' : 'rgba(255,255,255,0.5)' }}>All campaigns</div>
           </div>
 
           {campaigns.map(c => {
@@ -95,9 +95,9 @@ export default function Lemlist({ user }) {
                 onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.02)' }}
               >
-                <div style={{ fontSize: 12, fontWeight: 400, color: isActive ? 'rgba(139,108,246,0.8)' : 'rgba(255,255,255,0.6)', marginBottom: 2 }}>{c.name}</div>
+                <div style={{ fontSize: 13, fontWeight: 400, color: isActive ? 'rgba(139,108,246,0.8)' : 'rgba(255,255,255,0.6)', marginBottom: 2 }}>{c.name}</div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 8, background: c.status === 'active' || c.status === 'running' ? 'rgba(6,214,160,0.08)' : 'rgba(255,255,255,0.04)', color: c.status === 'active' || c.status === 'running' ? 'rgba(6,214,160,0.5)' : T.textTertiary, fontWeight: 500 }}>{c.status || 'draft'}</span>
+                  <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 8, background: c.status === 'active' || c.status === 'running' ? 'rgba(6,214,160,0.08)' : 'rgba(255,255,255,0.04)', color: c.status === 'active' || c.status === 'running' ? 'rgba(6,214,160,0.5)' : T.textTertiary, fontWeight: 500 }}>{c.status || 'draft'}</span>
                 </div>
               </div>
             )
@@ -108,17 +108,17 @@ export default function Lemlist({ user }) {
       {/* RIGHT — Activity Feed */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px 10px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-          <h2 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: 0 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 400, color: T.text, margin: 0 }}>
             {selectedCampaign ? selectedCampaign.name : 'Recent Activity'}
           </h2>
-          <p style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300, marginTop: 2 }}>
+          <p style={{ fontSize: 12, color: T.textTertiary, fontWeight: 300, marginTop: 2 }}>
             {actLoading ? 'Loading...' : `${activities.length} events`}
           </p>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '8px 20px 20px' }}>
           {activities.length === 0 && !actLoading && (
-            <div style={{ textAlign: 'center', padding: 40, color: T.textTertiary, fontWeight: 300, fontSize: 13 }}>No activities yet.</div>
+            <div style={{ textAlign: 'center', padding: 40, color: T.textTertiary, fontWeight: 300, fontSize: 14 }}>No activities yet.</div>
           )}
 
           {activities.map((a, i) => (
@@ -129,14 +129,14 @@ export default function Lemlist({ user }) {
             }}>
               <div style={{ marginTop: 2, flexShrink: 0 }}>{typeIcon(a.type)}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', fontWeight: 400, marginBottom: 2 }}>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', fontWeight: 400, marginBottom: 2 }}>
                   {a.leadFirstName || ''} {a.leadLastName || ''}{a.leadCompanyName ? ` · ${a.leadCompanyName}` : ''}
                 </div>
-                <div style={{ fontSize: 10, color: T.textTertiary, fontWeight: 300 }}>
+                <div style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300 }}>
                   {a.type?.replace(/([A-Z])/g, ' $1').trim() || 'Unknown'}{a.campaignName ? ` — ${a.campaignName}` : ''}
                 </div>
               </div>
-              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', fontWeight: 300, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.15)', fontWeight: 300, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 3 }}>
                 <Clock size={8} />
                 {a.createdAt ? new Date(a.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''}
               </div>

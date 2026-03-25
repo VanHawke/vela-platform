@@ -55,7 +55,7 @@ export default function KikoInsights({ onAction }) {
         <div style={{ ...pillStyle, background: 'rgba(245,158,11,0.03)', border: '1px solid rgba(245,158,11,0.1)' }}>
           <div style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: 'rgba(245,158,11,0.6)', boxShadow: '0 0 8px rgba(245,158,11,0.3)' }} />
           <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => onAction?.('Brief me on outstanding alerts and convergence signals')}>
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 400, fontFamily: T.font }}>
+            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', fontWeight: 400, fontFamily: T.font }}>
               {alertCount} new alert{alertCount !== 1 ? 's' : ''} — partnership signals &amp; updates
             </span>
           </div>
@@ -70,9 +70,9 @@ export default function KikoInsights({ onAction }) {
         <div key={draft.id} style={{ ...pillStyle, background: 'rgba(124,92,252,0.04)', border: '1px solid rgba(124,92,252,0.12)' }}>
           <div style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: 'rgba(124,92,252,0.6)', boxShadow: '0 0 8px rgba(124,92,252,0.3)' }} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', fontWeight: 500, fontFamily: T.font }}>
+            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: 500, fontFamily: T.font }}>
               {draft.payload?.entity || 'Action'}: </span>
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 400, fontFamily: T.font }}>
+            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', fontWeight: 400, fontFamily: T.font }}>
               {(draft.payload?.suggested_action || 'Follow up').slice(0, 60)}{(draft.payload?.suggested_action || '').length > 60 ? '…' : ''}
             </span>
           </div>

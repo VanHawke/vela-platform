@@ -109,7 +109,7 @@ export default function Tasks({ user }) {
   }
 
   const card = { background: 'rgba(255,255,255,0.02)', border: `1px solid rgba(255,255,255,0.04)`, borderRadius: 12, padding: '12px 14px', marginBottom: 6, cursor: 'pointer', display: 'flex', gap: 10, alignItems: 'flex-start', transition: 'all 0.15s' }
-  const inp = { width: '100%', background: 'rgba(255,255,255,0.03)', border: `1px solid rgba(255,255,255,0.06)`, borderRadius: 8, padding: '8px 12px', fontSize: 13, color: T.text, fontFamily: T.font, fontWeight: 300, outline: 'none' }
+  const inp = { width: '100%', background: 'rgba(255,255,255,0.03)', border: `1px solid rgba(255,255,255,0.06)`, borderRadius: 8, padding: '8px 12px', fontSize: 14, color: T.text, fontFamily: T.font, fontWeight: 300, outline: 'none' }
 
   if (loading) return <div style={{ padding: 40, textAlign: 'center', color: T.textTertiary, fontFamily: T.font, fontWeight: 300 }}>Loading tasks...</div>
 
@@ -119,17 +119,17 @@ export default function Tasks({ user }) {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         <div style={{ padding: '16px 20px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <h1 style={{ fontSize: 20, fontWeight: 400, color: T.text, margin: 0 }}>Tasks</h1>
-            <p style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300, marginTop: 2 }}>{todoCount} outstanding{overdueCount > 0 ? ` · ${overdueCount} overdue` : ''}</p>
+            <h1 style={{ fontSize: 21, fontWeight: 400, color: T.text, margin: 0 }}>Tasks</h1>
+            <p style={{ fontSize: 12, color: T.textTertiary, fontWeight: 300, marginTop: 2 }}>{todoCount} outstanding{overdueCount > 0 ? ` · ${overdueCount} overdue` : ''}</p>
           </div>
-          <button onClick={() => setShowForm(!showForm)} style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(139,108,246,0.08)', border: '1px solid rgba(139,108,246,0.15)', color: 'rgba(139,108,246,0.7)', fontSize: 11, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><Plus size={12} /> New</button>
+          <button onClick={() => setShowForm(!showForm)} style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(139,108,246,0.08)', border: '1px solid rgba(139,108,246,0.15)', color: 'rgba(139,108,246,0.7)', fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><Plus size={12} /> New</button>
         </div>
 
         {/* Filters */}
         <div style={{ display: 'flex', gap: 6, padding: '0 20px 10px', flexWrap: 'wrap' }}>
           {[['todo', `Outstanding (${todoCount})`], ['overdue', `Overdue (${overdueCount})`], ['done', 'Completed'], ['all', 'All']].map(([key, label]) => (
             <button key={key} onClick={() => setFilter(key)} style={{
-              padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 400, cursor: 'pointer', fontFamily: T.font,
+              padding: '5px 12px', borderRadius: 20, fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: T.font,
               border: `1px solid ${filter === key ? 'rgba(139,108,246,0.2)' : 'rgba(255,255,255,0.06)'}`,
               background: filter === key ? 'rgba(139,108,246,0.08)' : 'transparent',
               color: filter === key ? 'rgba(139,108,246,0.8)' : 'rgba(255,255,255,0.3)',
@@ -160,14 +160,14 @@ export default function Tasks({ user }) {
               </div>
               <input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Notes / description" style={inp} />
               <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={save} style={{ padding: '7px 20px', borderRadius: 8, background: 'rgba(139,108,246,0.12)', border: '1px solid rgba(139,108,246,0.2)', color: 'rgba(139,108,246,0.8)', fontSize: 12, cursor: 'pointer', fontFamily: T.font }}>Save</button>
-                <button onClick={() => setShowForm(false)} style={{ padding: '7px 14px', borderRadius: 8, background: 'transparent', border: `1px solid rgba(255,255,255,0.06)`, color: T.textTertiary, fontSize: 12, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
+                <button onClick={save} style={{ padding: '7px 20px', borderRadius: 8, background: 'rgba(139,108,246,0.12)', border: '1px solid rgba(139,108,246,0.2)', color: 'rgba(139,108,246,0.8)', fontSize: 13, cursor: 'pointer', fontFamily: T.font }}>Save</button>
+                <button onClick={() => setShowForm(false)} style={{ padding: '7px 14px', borderRadius: 8, background: 'transparent', border: `1px solid rgba(255,255,255,0.06)`, color: T.textTertiary, fontSize: 13, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
               </div>
             </div>
           )}
 
           {filtered.length === 0 && (
-            <div style={{ textAlign: 'center', padding: 40, color: T.textTertiary, fontWeight: 300, fontSize: 13 }}>
+            <div style={{ textAlign: 'center', padding: 40, color: T.textTertiary, fontWeight: 300, fontSize: 14 }}>
               {filter === 'done' ? 'No completed tasks.' : 'No outstanding tasks.'}
             </div>
           )}
@@ -193,12 +193,12 @@ export default function Tasks({ user }) {
                 </button>
                 {/* Content */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 9, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 2 }}>{d.type || 'Task'}</div>
-                  <div style={{ fontSize: 13, fontWeight: 400, color: d.completed ? T.textTertiary : 'rgba(255,255,255,0.8)', textDecoration: d.completed ? 'line-through' : 'none', marginBottom: 4, lineHeight: 1.4 }}>{d.notes || d.type || 'Untitled'}</div>
+                  <div style={{ fontSize: 10, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 2 }}>{d.type || 'Task'}</div>
+                  <div style={{ fontSize: 14, fontWeight: 400, color: d.completed ? T.textTertiary : 'rgba(255,255,255,0.8)', textDecoration: d.completed ? 'line-through' : 'none', marginBottom: 4, lineHeight: 1.4 }}>{d.notes || d.type || 'Untitled'}</div>
                   <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                    {d.company && <span style={{ fontSize: 10, color: 'rgba(0,212,170,0.5)', fontWeight: 400, display: 'flex', alignItems: 'center', gap: 3 }}><Building2 size={9} /> {d.company}</span>}
-                    {d.contact && <span style={{ fontSize: 10, color: T.textTertiary, fontWeight: 300 }}>{d.contact}</span>}
-                    {d.dueDate && <span style={{ fontSize: 10, color: isOverdue ? 'rgba(255,59,48,0.6)' : T.textTertiary, fontWeight: 300, display: 'flex', alignItems: 'center', gap: 3 }}><Calendar size={9} /> {new Date(d.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}{isOverdue ? ' · Overdue' : ''}</span>}
+                    {d.company && <span style={{ fontSize: 11, color: 'rgba(0,212,170,0.5)', fontWeight: 400, display: 'flex', alignItems: 'center', gap: 3 }}><Building2 size={9} /> {d.company}</span>}
+                    {d.contact && <span style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300 }}>{d.contact}</span>}
+                    {d.dueDate && <span style={{ fontSize: 11, color: isOverdue ? 'rgba(255,59,48,0.6)' : T.textTertiary, fontWeight: 300, display: 'flex', alignItems: 'center', gap: 3 }}><Calendar size={9} /> {new Date(d.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}{isOverdue ? ' · Overdue' : ''}</span>}
                   </div>
                 </div>
                 {/* Delete */}
@@ -219,13 +219,13 @@ export default function Tasks({ user }) {
           <div style={{ width: 40, height: 12, overflow: 'hidden' }}>
             <DoubleHelix width={40} height={12} mini />
           </div>
-          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(139,108,246,0.6)', letterSpacing: '0.04em' }}>Kiko Recommendation</span>
+          <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(139,108,246,0.6)', letterSpacing: '0.04em' }}>Kiko Recommendation</span>
         </div>
 
         {/* Panel content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
           {!selected && !kikoLoading && (
-            <div style={{ textAlign: 'center', padding: '60px 20px', color: T.textTertiary, fontWeight: 300, fontSize: 12 }}>
+            <div style={{ textAlign: 'center', padding: '60px 20px', color: T.textTertiary, fontWeight: 300, fontSize: 13 }}>
               <div style={{ marginBottom: 8, opacity: 0.3 }}><ChevronRight size={20} /></div>
               Select a task to get Kiko's recommendation
             </div>
@@ -234,16 +234,16 @@ export default function Tasks({ user }) {
           {kikoLoading && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '40px 0' }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,108,246,0.45) 0%, rgba(0,212,170,0.25) 60%, transparent 100%)', boxShadow: '0 0 18px rgba(139,108,246,0.35)', animation: 'kikoThink 1.5s ease-in-out infinite' }} />
-              <span style={{ fontSize: 12, color: 'rgba(139,108,246,0.6)', fontWeight: 400 }}>Analysing task...</span>
+              <span style={{ fontSize: 13, color: 'rgba(139,108,246,0.6)', fontWeight: 400 }}>Analysing task...</span>
             </div>
           )}
 
           {kikoRec && selected && (
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 300, lineHeight: 1.65 }}>
+            <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', fontWeight: 300, lineHeight: 1.65 }}>
               {/* Task context header */}
               <div style={{ marginBottom: 12, padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-                <div style={{ fontSize: 10, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>{selected.data?.type}</div>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 400 }}>{selected.data?.company}{selected.data?.contact ? ` · ${selected.data.contact}` : ''}</div>
+                <div style={{ fontSize: 11, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>{selected.data?.type}</div>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', fontWeight: 400 }}>{selected.data?.company}{selected.data?.contact ? ` · ${selected.data.contact}` : ''}</div>
               </div>
               <span dangerouslySetInnerHTML={{ __html: md(kikoRec) }} />
             </div>
@@ -253,9 +253,9 @@ export default function Tasks({ user }) {
         {/* Action buttons */}
         {selected && kikoRec && !kikoLoading && (
           <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(255,255,255,0.04)', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button onClick={() => getKikoRec(selected)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 400, border: '1px solid rgba(139,108,246,0.15)', background: 'rgba(139,108,246,0.04)', color: 'rgba(139,108,246,0.7)', cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Regenerate</button>
-            <button onClick={() => { toggle(selected); setSelected(null); setKikoRec(null) }} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 400, border: '1px solid rgba(6,214,160,0.15)', background: 'rgba(6,214,160,0.04)', color: 'rgba(6,214,160,0.6)', cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><CheckSquare size={10} /> Complete</button>
-            <button onClick={() => { navigator.clipboard.writeText(kikoRec) }} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 400, border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', color: T.textTertiary, cursor: 'pointer', fontFamily: T.font }}>Copy</button>
+            <button onClick={() => getKikoRec(selected)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(139,108,246,0.15)', background: 'rgba(139,108,246,0.04)', color: 'rgba(139,108,246,0.7)', cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Regenerate</button>
+            <button onClick={() => { toggle(selected); setSelected(null); setKikoRec(null) }} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(6,214,160,0.15)', background: 'rgba(6,214,160,0.04)', color: 'rgba(6,214,160,0.6)', cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><CheckSquare size={10} /> Complete</button>
+            <button onClick={() => { navigator.clipboard.writeText(kikoRec) }} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', color: T.textTertiary, cursor: 'pointer', fontFamily: T.font }}>Copy</button>
           </div>
         )}
       </div>

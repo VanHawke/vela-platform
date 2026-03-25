@@ -150,10 +150,10 @@ Be direct. Use web search for current company intelligence if needed.`
         <div style={{ padding: '16px 20px 0' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <div>
-              <h1 style={{ fontSize: 20, fontWeight: 400, color: T.text, margin: 0 }}>Command Centre</h1>
-              <p style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300, marginTop: 2 }}>Priority actions ranked by deal value × urgency</p>
+              <h1 style={{ fontSize: 21, fontWeight: 400, color: T.text, margin: 0 }}>Command Centre</h1>
+              <p style={{ fontSize: 12, color: T.textTertiary, fontWeight: 300, marginTop: 2 }}>Priority actions ranked by deal value × urgency</p>
             </div>
-            <button onClick={loadData} style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', color: T.textTertiary, fontSize: 11, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Refresh</button>
+            <button onClick={loadData} style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', color: T.textTertiary, fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Refresh</button>
           </div>
 
           {/* Stats bar */}
@@ -161,30 +161,30 @@ Be direct. Use web search for current company intelligence if needed.`
             <div style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
               <Target size={14} style={{ color: 'rgba(139,108,246,0.5)', flexShrink: 0 }} />
               <div>
-                <div style={{ fontSize: 16, fontWeight: 300, color: 'rgba(139,108,246,0.7)' }}>{deals.length}</div>
-                <div style={{ fontSize: 9, color: T.textTertiary, fontWeight: 300 }}>Active deals</div>
+                <div style={{ fontSize: 17, fontWeight: 300, color: 'rgba(139,108,246,0.7)' }}>{deals.length}</div>
+                <div style={{ fontSize: 10, color: T.textTertiary, fontWeight: 300 }}>Active deals</div>
               </div>
             </div>
             <div style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
               <TrendingUp size={14} style={{ color: 'rgba(0,212,170,0.5)', flexShrink: 0 }} />
               <div>
-                <div style={{ fontSize: 16, fontWeight: 300, color: 'rgba(0,212,170,0.6)' }}>${(weightedPipeline / 1000000).toFixed(1)}M</div>
-                <div style={{ fontSize: 9, color: T.textTertiary, fontWeight: 300 }}>Weighted pipeline</div>
+                <div style={{ fontSize: 17, fontWeight: 300, color: 'rgba(0,212,170,0.6)' }}>${(weightedPipeline / 1000000).toFixed(1)}M</div>
+                <div style={{ fontSize: 10, color: T.textTertiary, fontWeight: 300 }}>Weighted pipeline</div>
               </div>
             </div>
             <div style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
               <AlertTriangle size={14} style={{ color: staleCount > 0 ? 'rgba(255,59,48,0.5)' : 'rgba(6,214,160,0.4)', flexShrink: 0 }} />
               <div>
-                <div style={{ fontSize: 16, fontWeight: 300, color: staleCount > 0 ? 'rgba(255,59,48,0.6)' : 'rgba(6,214,160,0.5)' }}>{staleCount}</div>
-                <div style={{ fontSize: 9, color: T.textTertiary, fontWeight: 300 }}>Stale (30d+)</div>
+                <div style={{ fontSize: 17, fontWeight: 300, color: staleCount > 0 ? 'rgba(255,59,48,0.6)' : 'rgba(6,214,160,0.5)' }}>{staleCount}</div>
+                <div style={{ fontSize: 10, color: T.textTertiary, fontWeight: 300 }}>Stale (30d+)</div>
               </div>
             </div>
             {nextRace && (
               <div style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
                 <Calendar size={14} style={{ color: daysToRace <= 14 ? 'rgba(0,212,170,0.5)' : 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 16, fontWeight: 300, color: daysToRace <= 14 ? 'rgba(0,212,170,0.6)' : 'rgba(255,255,255,0.4)' }}>{daysToRace}d</div>
-                  <div style={{ fontSize: 9, color: T.textTertiary, fontWeight: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80 }}>{nextRace.name}</div>
+                  <div style={{ fontSize: 17, fontWeight: 300, color: daysToRace <= 14 ? 'rgba(0,212,170,0.6)' : 'rgba(255,255,255,0.4)' }}>{daysToRace}d</div>
+                  <div style={{ fontSize: 10, color: T.textTertiary, fontWeight: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80 }}>{nextRace.name}</div>
                 </div>
               </div>
             )}
@@ -193,10 +193,10 @@ Be direct. Use web search for current company intelligence if needed.`
 
         {/* Priority action list */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px' }}>
-          <div style={{ fontSize: 10, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>Priority Actions</div>
+          <div style={{ fontSize: 11, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>Priority Actions</div>
 
           {priorityActions.length === 0 && (
-            <div style={{ textAlign: 'center', padding: 40, color: T.textTertiary, fontWeight: 300, fontSize: 13 }}>No active deals in pipeline.</div>
+            <div style={{ textAlign: 'center', padding: 40, color: T.textTertiary, fontWeight: 300, fontSize: 14 }}>No active deals in pipeline.</div>
           )}
 
           {priorityActions.slice(0, 30).map((action, i) => {
@@ -212,21 +212,21 @@ Be direct. Use web search for current company intelligence if needed.`
                 onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.background = 'rgba(255,255,255,0.015)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.03)' }}}
               >
                 {/* Rank */}
-                <span style={{ fontSize: 10, color: i < 3 ? 'rgba(139,108,246,0.6)' : T.textTertiary, fontWeight: 500, width: 16, textAlign: 'center', flexShrink: 0, marginTop: 3 }}>{i + 1}</span>
+                <span style={{ fontSize: 11, color: i < 3 ? 'rgba(139,108,246,0.6)' : T.textTertiary, fontWeight: 500, width: 16, textAlign: 'center', flexShrink: 0, marginTop: 3 }}>{i + 1}</span>
                 {/* Urgency bar */}
                 <div style={{ width: 3, height: 32, borderRadius: 2, flexShrink: 0, marginTop: 2, background: urgencyColor(action.urgency) }} />
                 {/* Content */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                    <span style={{ fontSize: 9, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{action.actionType}</span>
-                    {action.isStale && <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 6, background: 'rgba(255,59,48,0.08)', color: 'rgba(255,59,48,0.6)', fontWeight: 500 }}>STALE</span>}
+                    <span style={{ fontSize: 10, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{action.actionType}</span>
+                    {action.isStale && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 6, background: 'rgba(255,59,48,0.08)', color: 'rgba(255,59,48,0.6)', fontWeight: 500 }}>STALE</span>}
                   </div>
-                  <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.75)', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.company || 'Unknown'}{d.contact ? ` — ${d.contact}` : ''}</div>
+                  <div style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.75)', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.company || 'Unknown'}{d.contact ? ` — ${d.contact}` : ''}</div>
                   <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                    <span style={{ fontSize: 10, color: T.textTertiary, fontWeight: 300 }}>{action.stage}</span>
-                    {action.value > 0 && <span style={{ fontSize: 10, color: 'rgba(0,212,170,0.4)', fontWeight: 300 }}>${(action.value / 1000000).toFixed(1)}M</span>}
-                    <span style={{ fontSize: 10, color: action.daysSinceUpdate > 30 ? 'rgba(255,59,48,0.5)' : T.textTertiary, fontWeight: 300 }}>{action.daysSinceUpdate}d ago</span>
-                    <span style={{ fontSize: 10, color: 'rgba(139,108,246,0.3)', fontWeight: 300 }}>{action.prob}%</span>
+                    <span style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300 }}>{action.stage}</span>
+                    {action.value > 0 && <span style={{ fontSize: 11, color: 'rgba(0,212,170,0.4)', fontWeight: 300 }}>${(action.value / 1000000).toFixed(1)}M</span>}
+                    <span style={{ fontSize: 11, color: action.daysSinceUpdate > 30 ? 'rgba(255,59,48,0.5)' : T.textTertiary, fontWeight: 300 }}>{action.daysSinceUpdate}d ago</span>
+                    <span style={{ fontSize: 11, color: 'rgba(139,108,246,0.3)', fontWeight: 300 }}>{action.prob}%</span>
                   </div>
                 </div>
                 <ChevronRight size={12} style={{ color: 'rgba(255,255,255,0.08)', flexShrink: 0, marginTop: 8 }} />
@@ -240,21 +240,21 @@ Be direct. Use web search for current company intelligence if needed.`
       <div style={{ width: 370, borderLeft: '1px solid rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.01)', flexShrink: 0 }}>
         <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 40, height: 12, overflow: 'hidden' }}><DoubleHelix width={40} height={12} mini /></div>
-          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(139,108,246,0.6)', letterSpacing: '0.04em' }}>Kiko Intelligence</span>
+          <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(139,108,246,0.6)', letterSpacing: '0.04em' }}>Kiko Intelligence</span>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
           {!selectedAction && !kikoLoading && (
             <div style={{ textAlign: 'center', padding: '60px 20px' }}>
               <Target size={20} style={{ color: 'rgba(255,255,255,0.08)', margin: '0 auto 10px', display: 'block' }} />
-              <p style={{ fontSize: 12, color: T.textTertiary, fontWeight: 300, lineHeight: 1.5 }}>Select a deal to get Kiko's recommendation — analysis, timing, and draft message.</p>
+              <p style={{ fontSize: 13, color: T.textTertiary, fontWeight: 300, lineHeight: 1.5 }}>Select a deal to get Kiko's recommendation — analysis, timing, and draft message.</p>
             </div>
           )}
 
           {kikoLoading && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '40px 0' }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,108,246,0.45) 0%, rgba(0,212,170,0.25) 60%, transparent 100%)', boxShadow: '0 0 18px rgba(139,108,246,0.35)', animation: 'kikoThink 1.5s ease-in-out infinite' }} />
-              <span style={{ fontSize: 12, color: 'rgba(139,108,246,0.6)', fontWeight: 400 }}>Analysing deal...</span>
+              <span style={{ fontSize: 13, color: 'rgba(139,108,246,0.6)', fontWeight: 400 }}>Analysing deal...</span>
             </div>
           )}
 
@@ -262,16 +262,16 @@ Be direct. Use web search for current company intelligence if needed.`
             <div>
               {/* Context header */}
               <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-                <div style={{ fontSize: 10, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 }}>{selectedAction.actionType}</div>
-                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: 400 }}>{selectedAction.data?.company}{selectedAction.data?.contact ? ` · ${selectedAction.data.contact}` : ''}</div>
+                <div style={{ fontSize: 11, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 }}>{selectedAction.actionType}</div>
+                <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', fontWeight: 400 }}>{selectedAction.data?.company}{selectedAction.data?.contact ? ` · ${selectedAction.data.contact}` : ''}</div>
                 <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                  <span style={{ fontSize: 10, color: T.textTertiary }}>{selectedAction.stage}</span>
-                  {selectedAction.value > 0 && <span style={{ fontSize: 10, color: 'rgba(0,212,170,0.4)' }}>${(selectedAction.value / 1000000).toFixed(1)}M</span>}
-                  <span style={{ fontSize: 10, color: selectedAction.isStale ? 'rgba(255,59,48,0.5)' : T.textTertiary }}>{selectedAction.daysSinceUpdate}d since activity</span>
+                  <span style={{ fontSize: 11, color: T.textTertiary }}>{selectedAction.stage}</span>
+                  {selectedAction.value > 0 && <span style={{ fontSize: 11, color: 'rgba(0,212,170,0.4)' }}>${(selectedAction.value / 1000000).toFixed(1)}M</span>}
+                  <span style={{ fontSize: 11, color: selectedAction.isStale ? 'rgba(255,59,48,0.5)' : T.textTertiary }}>{selectedAction.daysSinceUpdate}d since activity</span>
                 </div>
               </div>
               {/* Kiko's analysis */}
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.72)', fontWeight: 300, lineHeight: 1.65 }}>
+              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.72)', fontWeight: 300, lineHeight: 1.65 }}>
                 <span dangerouslySetInnerHTML={{ __html: md(kikoRec) }} />
               </div>
             </div>
@@ -281,8 +281,8 @@ Be direct. Use web search for current company intelligence if needed.`
         {/* Action buttons */}
         {selectedAction && kikoRec && !kikoLoading && (
           <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(255,255,255,0.04)', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button onClick={() => getKikoRec(selectedAction)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 400, border: '1px solid rgba(139,108,246,0.15)', background: 'rgba(139,108,246,0.04)', color: 'rgba(139,108,246,0.7)', cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Regenerate</button>
-            <button onClick={() => navigator.clipboard.writeText(kikoRec)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 400, border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', color: T.textTertiary, cursor: 'pointer', fontFamily: T.font }}>Copy</button>
+            <button onClick={() => getKikoRec(selectedAction)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(139,108,246,0.15)', background: 'rgba(139,108,246,0.04)', color: 'rgba(139,108,246,0.7)', cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Regenerate</button>
+            <button onClick={() => navigator.clipboard.writeText(kikoRec)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', color: T.textTertiary, cursor: 'pointer', fontFamily: T.font }}>Copy</button>
           </div>
         )}
       </div>

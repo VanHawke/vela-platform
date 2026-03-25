@@ -658,7 +658,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           WebkitBackdropFilter: isUser ? 'blur(40px)' : 'none',
           border: isUser ? `1.5px solid ${T.userMsgBorder}` : 'none',
           color: isUser ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.88)',
-          fontSize: 15, lineHeight: 1.85, fontFamily: T.font, fontWeight: isUser ? 400 : 400,
+          fontSize: 16, lineHeight: 1.85, fontFamily: T.font, fontWeight: isUser ? 400 : 400,
         }}>
           {isUser ? msg.content : (() => {
             // Strip ---DRAFT--- block from display text (rendered separately in DraftPreview)
@@ -678,9 +678,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         {/* Hover actions */}
         {isHovered && !streaming && (
           <div style={{ position: 'absolute', bottom: -16, right: isUser ? 0 : 'auto', left: isUser ? 'auto' : 132, display: 'flex', gap: 3, zIndex: 5 }}>
-            <button onClick={() => copyToClipboard(msg.content)} title="Copy" style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 11, color: 'rgba(255,255,255,0.3)', transition: 'all 0.15s' }}>📋</button>
-            {isUser && <button onClick={() => editAndResend(i)} title="Edit & Resend" style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 11, color: 'rgba(255,255,255,0.3)', transition: 'all 0.15s' }}>✏️</button>}
-            {isKiko && <button onClick={() => regenerateResponse(i)} title="Regenerate" style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 11, color: 'rgba(255,255,255,0.3)', transition: 'all 0.15s' }}>🔄</button>}
+            <button onClick={() => copyToClipboard(msg.content)} title="Copy" style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 12, color: 'rgba(255,255,255,0.3)', transition: 'all 0.15s' }}>📋</button>
+            {isUser && <button onClick={() => editAndResend(i)} title="Edit & Resend" style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 12, color: 'rgba(255,255,255,0.3)', transition: 'all 0.15s' }}>✏️</button>}
+            {isKiko && <button onClick={() => regenerateResponse(i)} title="Regenerate" style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 12, color: 'rgba(255,255,255,0.3)', transition: 'all 0.15s' }}>🔄</button>}
           </div>
         )}
       </div>
@@ -697,8 +697,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div style={{ width: 48, height: 48, borderRadius: 50, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={T.textSecondary} strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
             </div>
-            <p style={{ fontSize: 15, fontWeight: 500, color: T.text, fontFamily: T.font, margin: '0 0 4px' }}>Drop file for Kiko to analyse</p>
-            <p style={{ fontSize: 12, color: T.textTertiary, fontFamily: T.font, margin: 0 }}>PDF, images, spreadsheets, text files</p>
+            <p style={{ fontSize: 16, fontWeight: 500, color: T.text, fontFamily: T.font, margin: '0 0 4px' }}>Drop file for Kiko to analyse</p>
+            <p style={{ fontSize: 13, color: T.textTertiary, fontFamily: T.font, margin: 0 }}>PDF, images, spreadsheets, text files</p>
           </div>
         )}
 
@@ -734,13 +734,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div style={{ width: 280, height: 3, borderRadius: 50, overflow: 'hidden', opacity: voiceState.speaking ? 0 : 1, transition: 'opacity 0.5s' }}>
               <div style={{ width: '100%', height: '100%', borderRadius: 50, background: voiceState.status === 'error' ? 'linear-gradient(90deg, transparent, rgba(255,80,80,0.5), transparent)' : voiceState.status === 'connecting' ? 'linear-gradient(90deg, transparent, rgba(245,158,11,0.5), transparent)' : 'linear-gradient(90deg, transparent, rgba(6,214,160,0.5), transparent)', animation: 'kikoListenPulse 2s ease-in-out infinite' }} />
             </div>
-            <div style={{ marginTop: 16, fontSize: 13, fontWeight: 300, fontFamily: T.font, color: voiceState.status === 'error' ? 'rgba(255,80,80,0.4)' : voiceState.status === 'connecting' ? 'rgba(245,158,11,0.3)' : voiceState.speaking ? 'rgba(139,108,246,0.25)' : 'rgba(255,255,255,0.12)', transition: 'color 0.3s' }}>
+            <div style={{ marginTop: 16, fontSize: 14, fontWeight: 300, fontFamily: T.font, color: voiceState.status === 'error' ? 'rgba(255,80,80,0.4)' : voiceState.status === 'connecting' ? 'rgba(245,158,11,0.3)' : voiceState.speaking ? 'rgba(139,108,246,0.25)' : 'rgba(255,255,255,0.12)', transition: 'color 0.3s' }}>
               {voiceState.status === 'error' ? 'Connection failed' : voiceState.status === 'connecting' ? 'Connecting...' : voiceState.speaking ? 'Kiko is speaking...' : 'Listening...'}
             </div>
             <button onClick={stopVoice} style={{
               marginTop: 24, padding: '10px 28px', borderRadius: 50,
               background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)',
-              fontSize: 12, color: 'rgba(255,255,255,0.25)', cursor: 'pointer', fontFamily: T.font,
+              fontSize: 13, color: 'rgba(255,255,255,0.25)', cursor: 'pointer', fontFamily: T.font,
               fontWeight: 300, transition: 'all 0.3s',
             }}
               onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,80,80,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,80,80,0.15)'; e.currentTarget.style.color = 'rgba(255,80,80,0.5)' }}
@@ -755,10 +755,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             transition: 'all 0.5s cubic-bezier(0.4,0,0,1)',
             overflow: 'hidden',
           }}>
-            <h1 style={{ fontSize: 24, fontWeight: 200, color: 'rgba(255,255,255,0.95)', margin: '0 0 4px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
+            <h1 style={{ fontSize: 25, fontWeight: 200, color: 'rgba(255,255,255,0.95)', margin: '0 0 4px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
               {getGreeting()}, {firstName}
             </h1>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.32)', margin: '0 0 18px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.32)', margin: '0 0 18px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
           </div>
 
           {/* Prompt bar — slides down in voice mode */}
@@ -771,7 +771,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           }}>
                 <PromptBar welcome />
                 {dictateError && (
-                  <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,80,80,0.7)', fontFamily: T.font, margin: '8px 0 0', animation: 'fadeIn 0.2s' }}>{dictateError}</p>
+                  <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(255,80,80,0.7)', fontFamily: T.font, margin: '8px 0 0', animation: 'fadeIn 0.2s' }}>{dictateError}</p>
                 )}
               </div>
 
@@ -788,7 +788,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                     padding: '11px 26px', borderRadius: 50, background: T.glass,
                     backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
                     border: `1.5px solid ${T.glassBorder}`, color: 'rgba(255,255,255,0.55)',
-                    fontSize: 13, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.2s', fontWeight: 400,
+                    fontSize: 14, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.2s', fontWeight: 400,
                     boxShadow: T.glassShadow,
                   }}
                     onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = 'rgba(255,255,255,0.85)'; e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = T.glassShadowHover }}
@@ -821,8 +821,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <div style={{ width: 48, height: 48, borderRadius: 50, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={T.textSecondary} strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
           </div>
-          <p style={{ fontSize: 15, fontWeight: 500, color: T.text, fontFamily: T.font, margin: '0 0 4px' }}>Drop file for Kiko to analyse</p>
-          <p style={{ fontSize: 12, color: T.textTertiary, fontFamily: T.font, margin: 0 }}>PDF, images, spreadsheets, text files</p>
+          <p style={{ fontSize: 16, fontWeight: 500, color: T.text, fontFamily: T.font, margin: '0 0 4px' }}>Drop file for Kiko to analyse</p>
+          <p style={{ fontSize: 13, color: T.textTertiary, fontFamily: T.font, margin: 0 }}>PDF, images, spreadsheets, text files</p>
         </div>
       )}
       <div style={{ flex: 1, overflowY: 'auto', padding: compact ? 16 : 24 }}>
@@ -845,14 +845,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   boxShadow: '0 0 20px rgba(139,108,246,0.08)',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 14, color: 'rgba(139,108,246,0.8)', fontFamily: T.font, fontWeight: 400 }}>
+                    <span style={{ fontSize: 15, color: 'rgba(139,108,246,0.8)', fontFamily: T.font, fontWeight: 400 }}>
                       {toolStatus || 'Kiko is thinking...'}
                     </span>
                   </div>
                 </div>
                 {thinkingSteps.length > 0 && (
                   <div style={{ marginTop: 6 }}>
-                    <button onClick={() => setShowSteps(!showSteps)} style={{ fontSize: 11, color: 'rgba(139,108,246,0.5)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: T.font, padding: '2px 0' }}>
+                    <button onClick={() => setShowSteps(!showSteps)} style={{ fontSize: 12, color: 'rgba(139,108,246,0.5)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: T.font, padding: '2px 0' }}>
                       {showSteps ? 'Hide process' : `Show process (${thinkingSteps.length} steps)`}
                     </button>
                     {showSteps && (
@@ -860,7 +860,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                         {thinkingSteps.map((step, si) => {
                           const isLast = si === thinkingSteps.length - 1
                           return (
-                            <div key={si} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', fontSize: 12, color: T.textTertiary, fontFamily: T.font, fontWeight: 300 }}>
+                            <div key={si} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', fontSize: 13, color: T.textTertiary, fontFamily: T.font, fontWeight: 300 }}>
                               <span style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: isLast ? 'rgba(139,108,246,0.7)' : 'rgba(0,212,170,0.5)', animation: isLast ? 'pulse 1s infinite' : 'none' }} />
                               <span style={{ color: isLast ? 'rgba(139,108,246,0.7)' : T.textTertiary }}>{step.label}</span>
                             </div>
@@ -877,7 +877,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {streaming && streamText && (
             <div style={{ marginBottom: 24, display: 'flex', gap: 12 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.accent, flexShrink: 0, marginTop: 8, boxShadow: '0 0 8px rgba(139,108,246,0.3)' }} />
-              <div style={{ flex: 1, fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.75, fontFamily: T.font, fontWeight: 300 }}>
+              <div style={{ flex: 1, fontSize: 15, color: 'rgba(255,255,255,0.6)', lineHeight: 1.75, fontFamily: T.font, fontWeight: 300 }}>
                 <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
                 <span style={{ animation: 'pulse 1s infinite', marginLeft: 2, color: 'rgba(139,108,246,0.4)' }}>|</span>
               </div>
@@ -890,7 +890,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         <div style={{ maxWidth: compact ? '100%' : 680, margin: '0 auto' }}>
           <PromptBar />
           {dictateError && (
-            <p style={{ textAlign: 'center', fontSize: 11, color: '#C62828', fontFamily: T.font, margin: '6px 0 0' }}>{dictateError}</p>
+            <p style={{ textAlign: 'center', fontSize: 12, color: '#C62828', fontFamily: T.font, margin: '6px 0 0' }}>{dictateError}</p>
           )}
         </div>
       </div>

@@ -308,11 +308,11 @@ export default function Organisations({ user }) {
 
   const glass = { margin: '0 16px', padding: '12px 20px', borderRadius: 18, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 36px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
   const listCard = { background: 'rgba(255,255,255,0.04)', borderRadius: 50, padding: '14px 18px', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'box-shadow 0.15s ease', cursor: 'pointer' }
-  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: 50, padding: '10px 14px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
-  const sectionTitle = { fontSize: 11, fontWeight: 400, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.04em' }
-  const emptyText = { fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', fontStyle: 'italic' }
-  const fieldRow = { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }
-  const fieldLabel = { fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: 500 }
+  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: 50, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
+  const sectionTitle = { fontSize: 12, fontWeight: 400, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.04em' }
+  const emptyText = { fontSize: 13, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', fontStyle: 'italic' }
+  const fieldRow = { display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }
+  const fieldLabel = { fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: 500 }
 
   const panelOpen = !!selectedOrg
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : null
@@ -330,10 +330,10 @@ export default function Organisations({ user }) {
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: 8 }}>
       <div style={glass}>
         <div>
-          <h1 style={{ fontSize: 18, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Organisations</h1>
-          <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{filtered.length.toLocaleString()} organisation{filtered.length !== 1 ? 's' : ''}</p>
+          <h1 style={{ fontSize: 19, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Organisations</h1>
+          <p style={{ fontSize: 12, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{filtered.length.toLocaleString()} organisation{filtered.length !== 1 ? 's' : ''}</p>
         </div>
-        <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, background: 'var(--accent)', color: 'rgba(255,255,255,0.9)', padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+        <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 500, background: 'var(--accent)', color: 'rgba(255,255,255,0.9)', padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
           <Plus style={{ width: 14, height: 14 }} /> Add Organisation
         </button>
       </div>
@@ -343,9 +343,9 @@ export default function Organisations({ user }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ position: 'relative', flex: 1, maxWidth: 300 }}>
             <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 13, height: 13, color: 'var(--text-tertiary)' }} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search organisations..." style={{ ...inputStyle, padding: '7px 10px 7px 30px', fontSize: 12 }} />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search organisations..." style={{ ...inputStyle, padding: '7px 10px 7px 30px', fontSize: 13 }} />
           </div>
-          <select value={`${sortField}-${sortDir}`} onChange={e => { const [f, d] = e.target.value.split('-'); setSortField(f); setSortDir(d) }} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: 50, padding: '6px 10px', fontSize: 11, color: 'var(--text-secondary)', outline: 'none', fontFamily: 'var(--font)', cursor: 'pointer' }}>
+          <select value={`${sortField}-${sortDir}`} onChange={e => { const [f, d] = e.target.value.split('-'); setSortField(f); setSortDir(d) }} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: 50, padding: '6px 10px', fontSize: 12, color: 'var(--text-secondary)', outline: 'none', fontFamily: 'var(--font)', cursor: 'pointer' }}>
             <option value="name-asc">Name A → Z</option>
             <option value="name-desc">Name Z → A</option>
             <option value="funding-desc">Funding ↓</option>
@@ -357,7 +357,7 @@ export default function Organisations({ user }) {
             <option value="country-asc">Country A → Z</option>
           </select>
           {totalPages > 1 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>
               <button disabled={page === 0} onClick={() => setPage(p => p - 1)} style={{ background: 'none', border: 'none', cursor: page === 0 ? 'default' : 'pointer', opacity: page === 0 ? 0.3 : 1, color: 'var(--text-secondary)', padding: 2 }}><ChevronLeft style={{ width: 14, height: 14 }} /></button>
               <span>{page + 1} / {totalPages}</span>
               <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} style={{ background: 'none', border: 'none', cursor: page >= totalPages - 1 ? 'default' : 'pointer', opacity: page >= totalPages - 1 ? 0.3 : 1, color: 'var(--text-secondary)', padding: 2 }}><ChevronRight style={{ width: 14, height: 14 }} /></button>
@@ -383,18 +383,18 @@ export default function Organisations({ user }) {
                 border: isActive ? '1.5px solid rgba(255,255,255,0.2)' : '1px solid rgba(255,255,255,0.08)',
                 background: isActive ? 'rgba(255,255,255,0.12)' : isOpen ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.04)',
                 color: isActive ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
-                fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: isActive ? 500 : 400,
+                fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: isActive ? 500 : 400,
                 transition: 'all 0.12s',
               }}>
                 {chip.label}
-                {chip.count > 0 && <span style={{ fontSize: 10, fontWeight: 400, background: 'rgba(255,255,255,0.2)', borderRadius: 50, padding: '1px 5px' }}>{chip.count}</span>}
+                {chip.count > 0 && <span style={{ fontSize: 11, fontWeight: 400, background: 'rgba(255,255,255,0.2)', borderRadius: 50, padding: '1px 5px' }}>{chip.count}</span>}
                 <ChevronDown style={{ width: 11, height: 11, opacity: 0.6, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
               </button>
             )
           })}
           {activeFilterCount > 0 && (
             <button onClick={() => { setFilters({ industries: [], countries: [], fundingMin: '', fundingMax: '', revenueMin: '', revenueMax: '', lastRound: '' }); setOpenPopover(null) }}
-              style={{ fontSize: 11, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', padding: '5px 6px' }}>
+              style={{ fontSize: 12, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', padding: '5px 6px' }}>
               Clear all
             </button>
           )}
@@ -407,7 +407,7 @@ export default function Organisations({ user }) {
               {/* Industry */}
               {openPopover === 'industry' && (
                 <>
-                  <p style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 8px', fontFamily: 'var(--font)' }}>Industry</p>
+                  <p style={{ fontSize: 10, fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 8px', fontFamily: 'var(--font)' }}>Industry</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, maxHeight: 220, overflowY: 'auto' }}>
                     {filterOptions.industries.map(ind => {
                       const sel = filters.industries.includes(ind)
@@ -415,7 +415,7 @@ export default function Organisations({ user }) {
                         <button key={ind} onClick={() => setFilters(p => ({ ...p, industries: sel ? p.industries.filter(i => i !== ind) : [...p.industries, ind] }))} style={{
                           padding: '4px 10px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)',
                           background: sel ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)', color: sel ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
-                          fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
+                          fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
                         }}>{ind}</button>
                       )
                     })}
@@ -426,7 +426,7 @@ export default function Organisations({ user }) {
               {/* Country */}
               {openPopover === 'country' && (
                 <>
-                  <p style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 8px', fontFamily: 'var(--font)' }}>Country</p>
+                  <p style={{ fontSize: 10, fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 8px', fontFamily: 'var(--font)' }}>Country</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, maxHeight: 220, overflowY: 'auto' }}>
                     {filterOptions.countries.map(cty => {
                       const sel = filters.countries.includes(cty)
@@ -434,7 +434,7 @@ export default function Organisations({ user }) {
                         <button key={cty} onClick={() => setFilters(p => ({ ...p, countries: sel ? p.countries.filter(c => c !== cty) : [...p.countries, cty] }))} style={{
                           padding: '4px 10px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)',
                           background: sel ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)', color: sel ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
-                          fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
+                          fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
                         }}>{cty}</button>
                       )
                     })}
@@ -445,11 +445,11 @@ export default function Organisations({ user }) {
               {/* Funding */}
               {openPopover === 'funding' && (
                 <>
-                  <p style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 8px', fontFamily: 'var(--font)' }}>Total Funding</p>
+                  <p style={{ fontSize: 10, fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 8px', fontFamily: 'var(--font)' }}>Total Funding</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <input value={filters.fundingMin} onChange={e => setFilters(p => ({ ...p, fundingMin: e.target.value }))} placeholder="Min e.g. $10M" style={{ ...inputStyle, padding: '7px 10px', fontSize: 12, flex: 1 }} />
-                    <span style={{ fontSize: 11, color: 'var(--text-tertiary)', flexShrink: 0 }}>→</span>
-                    <input value={filters.fundingMax} onChange={e => setFilters(p => ({ ...p, fundingMax: e.target.value }))} placeholder="Max e.g. $1B" style={{ ...inputStyle, padding: '7px 10px', fontSize: 12, flex: 1 }} />
+                    <input value={filters.fundingMin} onChange={e => setFilters(p => ({ ...p, fundingMin: e.target.value }))} placeholder="Min e.g. $10M" style={{ ...inputStyle, padding: '7px 10px', fontSize: 13, flex: 1 }} />
+                    <span style={{ fontSize: 12, color: 'var(--text-tertiary)', flexShrink: 0 }}>→</span>
+                    <input value={filters.fundingMax} onChange={e => setFilters(p => ({ ...p, fundingMax: e.target.value }))} placeholder="Max e.g. $1B" style={{ ...inputStyle, padding: '7px 10px', fontSize: 13, flex: 1 }} />
                   </div>
                 </>
               )}
@@ -457,7 +457,7 @@ export default function Organisations({ user }) {
               {/* Round */}
               {openPopover === 'round' && (
                 <>
-                  <p style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 8px', fontFamily: 'var(--font)' }}>Last Round</p>
+                  <p style={{ fontSize: 10, fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 8px', fontFamily: 'var(--font)' }}>Last Round</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 10 }}>
                     {['Seed', 'Series A', 'Series B', 'Series C', 'Series D+', 'Growth', 'IPO', 'Public', 'Bootstrapped'].map(r => {
                       const sel = filters.lastRound === r
@@ -465,23 +465,23 @@ export default function Organisations({ user }) {
                         <button key={r} onClick={() => setFilters(p => ({ ...p, lastRound: sel ? '' : r }))} style={{
                           padding: '4px 10px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)',
                           background: sel ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)', color: sel ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
-                          fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
+                          fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
                         }}>{r}</button>
                       )
                     })}
                   </div>
-                  <input value={filters.lastRound} onChange={e => setFilters(p => ({ ...p, lastRound: e.target.value }))} placeholder="Or type e.g. Series B" style={{ ...inputStyle, padding: '7px 10px', fontSize: 12 }} />
+                  <input value={filters.lastRound} onChange={e => setFilters(p => ({ ...p, lastRound: e.target.value }))} placeholder="Or type e.g. Series B" style={{ ...inputStyle, padding: '7px 10px', fontSize: 13 }} />
                 </>
               )}
 
               {/* Revenue */}
               {openPopover === 'revenue' && (
                 <>
-                  <p style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 8px', fontFamily: 'var(--font)' }}>Revenue Estimate</p>
+                  <p style={{ fontSize: 10, fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 8px', fontFamily: 'var(--font)' }}>Revenue Estimate</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <input value={filters.revenueMin} onChange={e => setFilters(p => ({ ...p, revenueMin: e.target.value }))} placeholder="Min e.g. $1M" style={{ ...inputStyle, padding: '7px 10px', fontSize: 12, flex: 1 }} />
-                    <span style={{ fontSize: 11, color: 'var(--text-tertiary)', flexShrink: 0 }}>→</span>
-                    <input value={filters.revenueMax} onChange={e => setFilters(p => ({ ...p, revenueMax: e.target.value }))} placeholder="Max e.g. $500M" style={{ ...inputStyle, padding: '7px 10px', fontSize: 12, flex: 1 }} />
+                    <input value={filters.revenueMin} onChange={e => setFilters(p => ({ ...p, revenueMin: e.target.value }))} placeholder="Min e.g. $1M" style={{ ...inputStyle, padding: '7px 10px', fontSize: 13, flex: 1 }} />
+                    <span style={{ fontSize: 12, color: 'var(--text-tertiary)', flexShrink: 0 }}>→</span>
+                    <input value={filters.revenueMax} onChange={e => setFilters(p => ({ ...p, revenueMax: e.target.value }))} placeholder="Max e.g. $500M" style={{ ...inputStyle, padding: '7px 10px', fontSize: 13, flex: 1 }} />
                   </div>
                 </>
               )}
@@ -493,8 +493,8 @@ export default function Organisations({ user }) {
                   if (openPopover === 'funding') setFilters(p => ({ ...p, fundingMin: '', fundingMax: '' }))
                   if (openPopover === 'round') setFilters(p => ({ ...p, lastRound: '' }))
                   if (openPopover === 'revenue') setFilters(p => ({ ...p, revenueMin: '', revenueMax: '' }))
-                }} style={{ fontSize: 11, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Reset</button>
-                <button onClick={() => setOpenPopover(null)} style={{ fontSize: 12, fontWeight: 500, padding: '6px 16px', borderRadius: 50, background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.9)', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                }} style={{ fontSize: 12, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Reset</button>
+                <button onClick={() => setOpenPopover(null)} style={{ fontSize: 13, fontWeight: 500, padding: '6px 16px', borderRadius: 50, background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.9)', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
                   Show {filtered.length.toLocaleString()}
                 </button>
               </div>
@@ -507,35 +507,35 @@ export default function Organisations({ user }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap', paddingBottom: 4 }}>
             {filters.industries.map(ind => (
               <span key={ind} onClick={() => setFilters(p => ({ ...p, industries: p.industries.filter(i => i !== ind) }))}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: '#E6F1FB', color: '#0C447C', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: '#E6F1FB', color: '#0C447C', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
                 {ind} <X style={{ width: 11, height: 11, opacity: 0.7 }} />
               </span>
             ))}
             {filters.countries.map(cty => (
               <span key={cty} onClick={() => setFilters(p => ({ ...p, countries: p.countries.filter(c => c !== cty) }))}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: 'rgba(6,214,160,0.08)', color: 'rgba(6,214,160,0.6)', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: 'rgba(6,214,160,0.08)', color: 'rgba(6,214,160,0.6)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
                 {cty} <X style={{ width: 11, height: 11, opacity: 0.7 }} />
               </span>
             ))}
             {(filters.fundingMin || filters.fundingMax) && (
               <span onClick={() => setFilters(p => ({ ...p, fundingMin: '', fundingMax: '' }))}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: 'rgba(245,158,11,0.08)', color: 'rgba(245,158,11,0.6)', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: 'rgba(245,158,11,0.08)', color: 'rgba(245,158,11,0.6)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
                 Funding: {filters.fundingMin || '—'} → {filters.fundingMax || '—'} <X style={{ width: 11, height: 11, opacity: 0.7 }} />
               </span>
             )}
             {filters.lastRound && (
               <span onClick={() => setFilters(p => ({ ...p, lastRound: '' }))}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: 'rgba(139,108,246,0.08)', color: 'rgba(139,108,246,0.6)', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: 'rgba(139,108,246,0.08)', color: 'rgba(139,108,246,0.6)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
                 {filters.lastRound} <X style={{ width: 11, height: 11, opacity: 0.7 }} />
               </span>
             )}
             {(filters.revenueMin || filters.revenueMax) && (
               <span onClick={() => setFilters(p => ({ ...p, revenueMin: '', revenueMax: '' }))}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: 'rgba(6,214,160,0.08)', color: 'rgba(6,214,160,0.6)', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: 'rgba(6,214,160,0.08)', color: 'rgba(6,214,160,0.6)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
                 Revenue: {filters.revenueMin || '—'} → {filters.revenueMax || '—'} <X style={{ width: 11, height: 11, opacity: 0.7 }} />
               </span>
             )}
-            <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', marginLeft: 2 }}>{filtered.length.toLocaleString()} results</span>
+            <span style={{ fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', marginLeft: 2 }}>{filtered.length.toLocaleString()} results</span>
           </div>
         )}
       </div>
@@ -548,12 +548,12 @@ export default function Organisations({ user }) {
           ) : paged.length === 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-tertiary)' }}>
               <Building2 style={{ width: 32, height: 32, marginBottom: 12, opacity: 0.4 }} />
-              <p style={{ fontSize: 13, fontFamily: 'var(--font)' }}>{search ? 'No organisations match' : 'No organisations yet'}</p>
+              <p style={{ fontSize: 14, fontFamily: 'var(--font)' }}>{search ? 'No organisations match' : 'No organisations yet'}</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {/* Column headers */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 18px 8px', fontSize: 10, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, fontFamily: 'var(--font)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 18px 8px', fontSize: 11, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, fontFamily: 'var(--font)' }}>
                 <div style={{ width: 28 }}></div>
                 <div style={{ width: 200 }}>Company</div>
                 <div style={{ width: 130 }}>Industry</div>
@@ -568,13 +568,13 @@ export default function Organisations({ user }) {
                   onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}
                   onMouseLeave={e => { e.currentTarget.style.background = selectedOrg?.id === company.id ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.025)'; e.currentTarget.style.borderColor = selectedOrg?.id === company.id ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.05)' }}>
                   <OrgLogo domain={listDomainCache[company.id]} name={company.name} size={28} />
-                  <div style={{ width: 200, fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.82)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.name}</div>
-                  <div style={{ width: 130, fontSize: 11, color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.industry || '—'}</div>
-                  <div style={{ width: 120, fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.country || '—'}</div>
-                  <div style={{ width: 100, fontSize: 11, color: company.totalFunding ? 'rgba(6,214,160,0.5)' : 'rgba(255,255,255,0.08)', fontFamily: 'var(--font)', textAlign: 'right' }}>{company.totalFunding || '—'}</div>
-                  <div style={{ flex: 1, fontSize: 11, color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font)', textAlign: 'right' }}>{company.contactCount || 0}</div>
+                  <div style={{ width: 200, fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.82)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.name}</div>
+                  <div style={{ width: 130, fontSize: 12, color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.industry || '—'}</div>
+                  <div style={{ width: 120, fontSize: 12, color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.country || '—'}</div>
+                  <div style={{ width: 100, fontSize: 12, color: company.totalFunding ? 'rgba(6,214,160,0.5)' : 'rgba(255,255,255,0.08)', fontFamily: 'var(--font)', textAlign: 'right' }}>{company.totalFunding || '—'}</div>
+                  <div style={{ flex: 1, fontSize: 12, color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font)', textAlign: 'right' }}>{company.contactCount || 0}</div>
                   <div style={{ width: 60, display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
-                    <button onClick={(e) => { e.stopPropagation(); edit(company) }} style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.15)'}>Edit</button>
+                    <button onClick={(e) => { e.stopPropagation(); edit(company) }} style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.15)'}>Edit</button>
                     <button onClick={(e) => { e.stopPropagation(); remove(company.id) }} style={{ color: 'rgba(255,255,255,0.1)', background: 'none', border: 'none', cursor: 'pointer', padding: 2, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = '#ef4444'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.1)'}><X style={{ width: 12, height: 12 }} /></button>
                   </div>
                 </div>
@@ -593,8 +593,8 @@ export default function Organisations({ user }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <OrgLogo domain={orgDomain} name={selectedOrg.name} size={48} />
                     <div>
-                      <h2 style={{ fontSize: 16, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{selectedOrg.name}</h2>
-                      {selectedOrg.industry && <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '3px 0 0', fontFamily: 'var(--font)' }}>{selectedOrg.industry}</p>}
+                      <h2 style={{ fontSize: 17, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{selectedOrg.name}</h2>
+                      {selectedOrg.industry && <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '3px 0 0', fontFamily: 'var(--font)' }}>{selectedOrg.industry}</p>}
                     </div>
                   </div>
                   <button onClick={closePanel} style={{ background: 'rgba(255,255,255,0.04)', border: 'none', borderRadius: 50, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-tertiary)', flexShrink: 0 }}>
@@ -606,39 +606,39 @@ export default function Organisations({ user }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 14 }}>
                   <div>
                     <p style={fieldLabel}>Industry / Sector</p>
-                    <p style={{ fontSize: 13, color: selectedOrg.industry ? 'var(--text)' : 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{selectedOrg.industry || 'Not set — edit to add'}</p>
+                    <p style={{ fontSize: 14, color: selectedOrg.industry ? 'var(--text)' : 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{selectedOrg.industry || 'Not set — edit to add'}</p>
                   </div>
                   <div>
                     <p style={fieldLabel}>Country HQ</p>
-                    <p style={{ fontSize: 13, color: selectedOrg.country ? 'var(--text)' : 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{selectedOrg.country || 'Not set — edit to add'}</p>
+                    <p style={{ fontSize: 14, color: selectedOrg.country ? 'var(--text)' : 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{selectedOrg.country || 'Not set — edit to add'}</p>
                   </div>
                 </div>
 
                 {/* Action buttons */}
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {orgLinkedin ? (
-                    <a href={orgLinkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#0a66c2', background: 'rgba(10,102,194,0.06)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '1px solid rgba(10,102,194,0.12)' }}>
+                    <a href={orgLinkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#0a66c2', background: 'rgba(10,102,194,0.06)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '1px solid rgba(10,102,194,0.12)' }}>
                       <Linkedin style={{ width: 13, height: 13 }} /> LinkedIn
                     </a>
                   ) : (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-tertiary)', background: 'rgba(0,0,0,0.02)', padding: '6px 12px', borderRadius: 50, fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-tertiary)', background: 'rgba(0,0,0,0.02)', padding: '6px 12px', borderRadius: 50, fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}>
                       <Linkedin style={{ width: 13, height: 13 }} /> No LinkedIn
                     </span>
                   )}
                   {selectedOrg.website ? (
-                    <a href={selectedOrg.website.startsWith('http') ? selectedOrg.website : `https://${selectedOrg.website}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}>
+                    <a href={selectedOrg.website.startsWith('http') ? selectedOrg.website : `https://${selectedOrg.website}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}>
                       <ExternalLink style={{ width: 13, height: 13 }} /> Website
                     </a>
                   ) : orgDomain ? (
-                    <a href={`https://${orgDomain}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}>
+                    <a href={`https://${orgDomain}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}>
                       <ExternalLink style={{ width: 13, height: 13 }} /> {orgDomain}
                     </a>
                   ) : (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-tertiary)', background: 'rgba(0,0,0,0.02)', padding: '6px 12px', borderRadius: 50, fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-tertiary)', background: 'rgba(0,0,0,0.02)', padding: '6px 12px', borderRadius: 50, fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}>
                       <Globe style={{ width: 13, height: 13 }} /> No website
                     </span>
                   )}
-                  <button onClick={() => edit(selectedOrg)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.08)', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                  <button onClick={() => edit(selectedOrg)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.08)', cursor: 'pointer', fontFamily: 'var(--font)' }}>
                     Edit
                   </button>
                 </div>
@@ -649,12 +649,12 @@ export default function Organisations({ user }) {
                 <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
                   <p style={sectionTitle}>Funding & Intelligence</p>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    {selectedOrg.lastRound && <div><p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '0 0 2px', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: 500 }}>Last Round</p><p style={{ fontSize: 12, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{selectedOrg.lastRound}</p></div>}
-                    {selectedOrg.totalFunding && <div><p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '0 0 2px', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: 500 }}>Total Funding</p><p style={{ fontSize: 12, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{selectedOrg.totalFunding}</p></div>}
-                    {selectedOrg.valuation && <div><p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '0 0 2px', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: 500 }}>Valuation</p><p style={{ fontSize: 12, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{selectedOrg.valuation}</p></div>}
-                    {selectedOrg.employees && <div><p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '0 0 2px', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: 500 }}>Employees</p><p style={{ fontSize: 12, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{selectedOrg.employees}</p></div>}
-                    {selectedOrg.revenueEst && <div><p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '0 0 2px', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: 500 }}>Revenue Est.</p><p style={{ fontSize: 12, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{selectedOrg.revenueEst}</p></div>}
-                    {selectedOrg.founded && <div><p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '0 0 2px', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: 500 }}>Founded</p><p style={{ fontSize: 12, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{selectedOrg.founded}</p></div>}
+                    {selectedOrg.lastRound && <div><p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '0 0 2px', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: 500 }}>Last Round</p><p style={{ fontSize: 13, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{selectedOrg.lastRound}</p></div>}
+                    {selectedOrg.totalFunding && <div><p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '0 0 2px', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: 500 }}>Total Funding</p><p style={{ fontSize: 13, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{selectedOrg.totalFunding}</p></div>}
+                    {selectedOrg.valuation && <div><p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '0 0 2px', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: 500 }}>Valuation</p><p style={{ fontSize: 13, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{selectedOrg.valuation}</p></div>}
+                    {selectedOrg.employees && <div><p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '0 0 2px', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: 500 }}>Employees</p><p style={{ fontSize: 13, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{selectedOrg.employees}</p></div>}
+                    {selectedOrg.revenueEst && <div><p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '0 0 2px', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: 500 }}>Revenue Est.</p><p style={{ fontSize: 13, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{selectedOrg.revenueEst}</p></div>}
+                    {selectedOrg.founded && <div><p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '0 0 2px', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: 500 }}>Founded</p><p style={{ fontSize: 13, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{selectedOrg.founded}</p></div>}
                   </div>
                 </div>
               )}
@@ -666,8 +666,8 @@ export default function Organisations({ user }) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {orgDeals.map(d => (
                       <div key={d.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(0,0,0,0.02)', borderRadius: 50 }}>
-                        <p style={{ fontSize: 12, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{d.pipeline || '—'}</p>
-                        <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 50, background: d.stage === 'Closed Won' ? 'rgba(16,185,129,0.08)' : d.stage === 'Closed Lost' ? 'rgba(239,68,68,0.08)' : 'rgba(59,130,246,0.08)', color: d.stage === 'Closed Won' ? '#10b981' : d.stage === 'Closed Lost' ? '#ef4444' : '#3b82f6', fontWeight: 500, fontFamily: 'var(--font)' }}>{d.stage || '—'}</span>
+                        <p style={{ fontSize: 13, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{d.pipeline || '—'}</p>
+                        <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 50, background: d.stage === 'Closed Won' ? 'rgba(16,185,129,0.08)' : d.stage === 'Closed Lost' ? 'rgba(239,68,68,0.08)' : 'rgba(59,130,246,0.08)', color: d.stage === 'Closed Won' ? '#10b981' : d.stage === 'Closed Lost' ? '#ef4444' : '#3b82f6', fontWeight: 500, fontFamily: 'var(--font)' }}>{d.stage || '—'}</span>
                       </div>
                     ))}
                   </div>
@@ -691,12 +691,12 @@ export default function Organisations({ user }) {
                           <img src={c.picture} alt="" style={{ width: 28, height: 28, borderRadius: 50, objectFit: 'cover' }} />
                         ) : (
                           <div style={{ width: 28, height: 28, borderRadius: 50, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{(c.firstName || c.lastName || '?')[0]?.toUpperCase()}</span>
+                            <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{(c.firstName || c.lastName || '?')[0]?.toUpperCase()}</span>
                           </div>
                         )}
                         <div style={{ minWidth: 0, flex: 1 }}>
-                          <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[c.firstName, c.lastName].filter(Boolean).join(' ') || 'Unnamed'}</p>
-                          <p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '1px 0 0', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title || '—'}</p>
+                          <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{[c.firstName, c.lastName].filter(Boolean).join(' ') || 'Unnamed'}</p>
+                          <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '1px 0 0', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title || '—'}</p>
                         </div>
                       </div>
                     ))}
@@ -711,8 +711,8 @@ export default function Organisations({ user }) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {orgCampaigns.map(c => (
                       <div key={c.name} style={{ padding: '8px 10px', background: 'rgba(59,130,246,0.04)', borderRadius: 50, border: '1px solid rgba(59,130,246,0.1)' }}>
-                        <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{c.name}</p>
-                        <p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{c.contacts} contact{c.contacts !== 1 ? 's' : ''}{c.status ? ` · ${c.status}` : ''}{c.lastEvent ? ` · Last: ${formatDate(c.lastEvent)}` : ''}</p>
+                        <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{c.name}</p>
+                        <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{c.contacts} contact{c.contacts !== 1 ? 's' : ''}{c.status ? ` · ${c.status}` : ''}{c.lastEvent ? ` · Last: ${formatDate(c.lastEvent)}` : ''}</p>
                       </div>
                     ))}
                   </div>
@@ -726,8 +726,8 @@ export default function Organisations({ user }) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {orgCampaigns.map(c => (
                       <div key={c.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: 'rgba(0,0,0,0.02)', borderRadius: 50 }}>
-                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0, fontFamily: 'var(--font)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</p>
-                        <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', flexShrink: 0, marginLeft: 8 }}>{c.contacts} contact{c.contacts !== 1 ? 's' : ''}</span>
+                        <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, fontFamily: 'var(--font)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</p>
+                        <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', flexShrink: 0, marginLeft: 8 }}>{c.contacts} contact{c.contacts !== 1 ? 's' : ''}</span>
                       </div>
                     ))}
                   </div>
@@ -740,15 +740,15 @@ export default function Organisations({ user }) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {orgLastComm.sent && (
                       <div style={{ padding: '8px 10px', background: 'rgba(0,0,0,0.02)', borderRadius: 50 }}>
-                        <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Last sent: {orgLastComm.sent.type === 'emailsSent' ? 'Email' : 'LinkedIn message'}</p>
-                        {orgLastComm.sent.email_subject && <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{orgLastComm.sent.email_subject}</p>}
-                        <p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '3px 0 0', fontFamily: 'var(--font)' }}>{formatDate(orgLastComm.sent.created_at)} · {orgLastComm.sent.campaign_name || ''}</p>
+                        <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Last sent: {orgLastComm.sent.type === 'emailsSent' ? 'Email' : 'LinkedIn message'}</p>
+                        {orgLastComm.sent.email_subject && <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{orgLastComm.sent.email_subject}</p>}
+                        <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '3px 0 0', fontFamily: 'var(--font)' }}>{formatDate(orgLastComm.sent.created_at)} · {orgLastComm.sent.campaign_name || ''}</p>
                       </div>
                     )}
                     {orgLastComm.received && (
                       <div style={{ padding: '8px 10px', background: 'rgba(16,185,129,0.04)', borderRadius: 50, border: '1px solid rgba(16,185,129,0.1)' }}>
-                        <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Last received: {orgLastComm.received.type === 'emailsReplied' ? 'Email reply' : 'LinkedIn reply'}</p>
-                        <p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '3px 0 0', fontFamily: 'var(--font)' }}>{formatDate(orgLastComm.received.created_at)}</p>
+                        <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Last received: {orgLastComm.received.type === 'emailsReplied' ? 'Email reply' : 'LinkedIn reply'}</p>
+                        <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '3px 0 0', fontFamily: 'var(--font)' }}>{formatDate(orgLastComm.received.created_at)}</p>
                       </div>
                     )}
                   </div>
@@ -763,7 +763,7 @@ export default function Organisations({ user }) {
                     {orgCompetitors.length > 0 && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#34C759' }} />
-                        <span style={{ fontSize: 9, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>enriched</span>
+                        <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>enriched</span>
                       </div>
                     )}
                     <button onClick={() => {
@@ -779,7 +779,7 @@ export default function Organisations({ user }) {
                         }
                         setLoadingCompetitors(false)
                       }).catch(() => setLoadingCompetitors(false))
-                    }} style={{ fontSize: 10, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', padding: '2px 4px' }}>
+                    }} style={{ fontSize: 11, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', padding: '2px 4px' }}>
                       Refresh
                     </button>
                   </div>
@@ -810,18 +810,18 @@ export default function Organisations({ user }) {
                             {compDomain ? (
                               <img src={`https://www.google.com/s2/favicons?domain=${compDomain}&sz=64`} alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
                             ) : null}
-                            <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-secondary)', display: compDomain ? 'none' : 'flex' }}>{c.name?.[0]?.toUpperCase()}</span>
+                            <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-secondary)', display: compDomain ? 'none' : 'flex' }}>{c.name?.[0]?.toUpperCase()}</span>
                           </div>
                           {/* Info */}
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', fontFamily: 'var(--font)', marginBottom: 1 }}>{c.name}</div>
-                            <div style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', marginBottom: 4 }}>
+                            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', fontFamily: 'var(--font)', marginBottom: 1 }}>{c.name}</div>
+                            <div style={{ fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', marginBottom: 4 }}>
                               {[c.industry, c.stage, c.funding].filter(Boolean).join(' · ')}
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-                              <span style={{ fontSize: 9, fontWeight: 500, padding: '1px 5px', borderRadius: 4, background: tc.bg, color: tc.color, fontFamily: 'var(--font)' }}>{c.threat || 'competitor'}</span>
+                              <span style={{ fontSize: 10, fontWeight: 500, padding: '1px 5px', borderRadius: 4, background: tc.bg, color: tc.color, fontFamily: 'var(--font)' }}>{c.threat || 'competitor'}</span>
                               {alreadyInCrm ? (
-                                <span style={{ fontSize: 9, fontWeight: 500, padding: '1px 5px', borderRadius: 4, background: 'rgba(0,85,204,0.08)', color: '#0055CC', fontFamily: 'var(--font)' }}>In CRM</span>
+                                <span style={{ fontSize: 10, fontWeight: 500, padding: '1px 5px', borderRadius: 4, background: 'rgba(0,85,204,0.08)', color: '#0055CC', fontFamily: 'var(--font)' }}>In CRM</span>
                               ) : (
                                 <button onClick={async () => {
                                   const id = `org${Date.now()}`
@@ -830,12 +830,12 @@ export default function Organisations({ user }) {
                                   setCompanies(prev => [{ id, ...data }, ...prev])
                                   // re-render to show In CRM badge
                                   setOrgCompetitors(p => [...p])
-                                }} style={{ fontSize: 9, fontWeight: 500, padding: '1px 5px', borderRadius: 4, background: 'rgba(255,255,255,0.04)', color: 'var(--text-secondary)', fontFamily: 'var(--font)', border: 'none', cursor: 'pointer' }}>
+                                }} style={{ fontSize: 10, fontWeight: 500, padding: '1px 5px', borderRadius: 4, background: 'rgba(255,255,255,0.04)', color: 'var(--text-secondary)', fontFamily: 'var(--font)', border: 'none', cursor: 'pointer' }}>
                                   + Add to CRM
                                 </button>
                               )}
                             </div>
-                            {c.reason && <div style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', marginTop: 3, lineHeight: 1.35, fontStyle: 'italic' }}>{c.reason}</div>}
+                            {c.reason && <div style={{ fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', marginTop: 3, lineHeight: 1.35, fontStyle: 'italic' }}>{c.reason}</div>}
                           </div>
                         </div>
                       )
@@ -855,11 +855,11 @@ export default function Organisations({ user }) {
                       const typeColor = { funding: '#10b981', partnership: '#3b82f6', product: '#8b5cf6', leadership: '#f59e0b', acquisition: '#ef4444', expansion: '#06b6d4' }[s.type] || 'var(--text-tertiary)'
                       return (
                         <div key={i} style={{ padding: '10px 12px', background: 'rgba(0,0,0,0.02)', borderRadius: 50, borderLeft: `3px solid ${typeColor}` }}>
-                          <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.4 }}>{s.headline}</p>
-                          <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '4px 0 0', fontFamily: 'var(--font)', lineHeight: 1.4 }}>{s.summary}</p>
+                          <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.4 }}>{s.headline}</p>
+                          <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '4px 0 0', fontFamily: 'var(--font)', lineHeight: 1.4 }}>{s.summary}</p>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
-                            <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: `${typeColor}15`, color: typeColor, fontWeight: 400, fontFamily: 'var(--font)', textTransform: 'uppercase' }}>{s.type}</span>
-                            {s.date && <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>{s.date}</span>}
+                            <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: `${typeColor}15`, color: typeColor, fontWeight: 400, fontFamily: 'var(--font)', textTransform: 'uppercase' }}>{s.type}</span>
+                            {s.date && <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>{s.date}</span>}
                           </div>
                         </div>
                       )
@@ -882,7 +882,7 @@ export default function Organisations({ user }) {
         <div onClick={e => e.target === e.currentTarget && reset()} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(8px)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: '0 24px 80px rgba(255,255,255,0.1), 0 8px 24px rgba(255,255,255,0.04)', width: '100%', maxWidth: 420, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-              <h2 style={{ fontSize: 16, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{editing ? 'Edit Organisation' : 'Add Organisation'}</h2>
+              <h2 style={{ fontSize: 17, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{editing ? 'Edit Organisation' : 'Add Organisation'}</h2>
               <button onClick={reset} style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer' }}><X style={{ width: 16, height: 16 }} /></button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -892,8 +892,8 @@ export default function Organisations({ user }) {
               <textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Notes" rows={2} style={{ ...inputStyle, resize: 'none' }} />
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-              <button onClick={reset} style={{ flex: 1, padding: '10px 0', fontSize: 13, color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 50, background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font)' }}>Cancel</button>
-              <button onClick={save} style={{ flex: 1, padding: '10px 0', fontSize: 13, color: 'rgba(255,255,255,0.9)', background: 'var(--accent)', border: 'none', borderRadius: 50, cursor: 'pointer', fontWeight: 500, fontFamily: 'var(--font)' }}>Save</button>
+              <button onClick={reset} style={{ flex: 1, padding: '10px 0', fontSize: 14, color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 50, background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font)' }}>Cancel</button>
+              <button onClick={save} style={{ flex: 1, padding: '10px 0', fontSize: 14, color: 'rgba(255,255,255,0.9)', background: 'var(--accent)', border: 'none', borderRadius: 50, cursor: 'pointer', fontWeight: 500, fontFamily: 'var(--font)' }}>Save</button>
             </div>
           </div>
         </div>

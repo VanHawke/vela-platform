@@ -134,13 +134,13 @@ export default function ContactDetail() {
 
   const glass = { background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 36px rgba(0,0,0,0.3)' }
   const card = { background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: 24, border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }
-  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: 50, padding: '10px 14px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
-  const labelStyle = { fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }
-  const sectionTitle = { fontSize: 12, fontWeight: 400, color: 'var(--text)', fontFamily: 'var(--font)', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.04em' }
-  const emptyText = { fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', fontStyle: 'italic' }
+  const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: 50, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
+  const labelStyle = { fontSize: 12, fontWeight: 500, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }
+  const sectionTitle = { fontSize: 13, fontWeight: 400, color: 'var(--text)', fontFamily: 'var(--font)', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.04em' }
+  const emptyText = { fontSize: 13, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', fontStyle: 'italic' }
 
   if (loading) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 24, height: 24, border: '2px solid rgba(255,255,255,0.08)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /></div>
-  if (!contact) return <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}><p style={{ fontSize: 14, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>Contact not found</p><button onClick={() => nav('/contacts')} style={{ fontSize: 13, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Back to Contacts</button></div>
+  if (!contact) return <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}><p style={{ fontSize: 15, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>Contact not found</p><button onClick={() => nav('/contacts')} style={{ fontSize: 14, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Back to Contacts</button></div>
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: 8 }}>
@@ -151,11 +151,11 @@ export default function ContactDetail() {
             <ArrowLeft style={{ width: 16, height: 16 }} />
           </button>
           <div>
-            <h1 style={{ fontSize: 18, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{displayName(contact)}</h1>
-            {contact.title && <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{contact.title}</p>}
+            <h1 style={{ fontSize: 19, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{displayName(contact)}</h1>
+            {contact.title && <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{contact.title}</p>}
           </div>
         </div>
-        <button onClick={() => setEditing(!editing)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, background: editing ? 'transparent' : 'var(--accent)', color: editing ? 'var(--text-secondary)' : 'rgba(255,255,255,0.04)', padding: '6px 14px', borderRadius: 50, border: editing ? '1px solid var(--border)' : 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+        <button onClick={() => setEditing(!editing)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 500, background: editing ? 'transparent' : 'var(--accent)', color: editing ? 'var(--text-secondary)' : 'rgba(255,255,255,0.04)', padding: '6px 14px', borderRadius: 50, border: editing ? '1px solid var(--border)' : 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
           {editing ? <><X style={{ width: 14, height: 14 }} /> Cancel</> : <><Edit3 style={{ width: 14, height: 14 }} /> Edit</>}
         </button>
       </div>
@@ -171,14 +171,14 @@ export default function ContactDetail() {
                 <img src={contact.picture} alt="" style={{ width: 56, height: 56, borderRadius: 18, objectFit: 'cover' }} />
               ) : (
                 <div style={{ width: 56, height: 56, borderRadius: 18, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: 22, fontWeight: 400, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{(contact.firstName || contact.lastName || '?')[0]?.toUpperCase()}</span>
+                  <span style={{ fontSize: 23, fontWeight: 400, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{(contact.firstName || contact.lastName || '?')[0]?.toUpperCase()}</span>
                 </div>
               )}
               <div>
-                <p style={{ fontSize: 16, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{displayName(contact)}</p>
-                {contact.title && <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '4px 0 0', fontFamily: 'var(--font)' }}>{contact.title}</p>}
+                <p style={{ fontSize: 17, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{displayName(contact)}</p>
+                {contact.title && <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0', fontFamily: 'var(--font)' }}>{contact.title}</p>}
                 {contact.company && (
-                  <p onClick={() => orgId && nav(`/organisations?org=${orgId}`)} style={{ fontSize: 12, color: orgId ? 'var(--accent)' : 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', gap: 4, cursor: orgId ? 'pointer' : 'default' }}>
+                  <p onClick={() => orgId && nav(`/organisations?org=${orgId}`)} style={{ fontSize: 13, color: orgId ? 'var(--accent)' : 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', gap: 4, cursor: orgId ? 'pointer' : 'default' }}>
                     <Building2 style={{ width: 11, height: 11 }} /> {contact.company} {orgId && <ChevronRight style={{ width: 10, height: 10 }} />}
                   </p>
                 )}
@@ -186,9 +186,9 @@ export default function ContactDetail() {
             </div>
             {/* Quick actions */}
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {contact.email && <a href={`mailto:${contact.email}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}><Mail style={{ width: 13, height: 13 }} /> Email</a>}
-              {contact.phone && <a href={`tel:${contact.phone}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}><Phone style={{ width: 13, height: 13 }} /> Call</a>}
-              {contact.linkedin && <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}><Linkedin style={{ width: 13, height: 13 }} /> LinkedIn</a>}
+              {contact.email && <a href={`mailto:${contact.email}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}><Mail style={{ width: 13, height: 13 }} /> Email</a>}
+              {contact.phone && <a href={`tel:${contact.phone}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}><Phone style={{ width: 13, height: 13 }} /> Call</a>}
+              {contact.linkedin && <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}><Linkedin style={{ width: 13, height: 13 }} /> LinkedIn</a>}
             </div>
           </div>
 
@@ -199,8 +199,8 @@ export default function ContactDetail() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'rgba(0,0,0,0.02)', borderRadius: 50, border: `1px solid ${urgencyColor(nextTask.urgency)}20` }}>
                 <CalendarCheck style={{ width: 16, height: 16, color: urgencyColor(nextTask.urgency), flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{nextTask.label}</p>
-                  <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{nextTask.channel} · {nextTask.urgency === 'overdue' ? 'Overdue' : nextTask.urgency === 'high' ? 'High priority' : nextTask.urgency === 'due' ? 'Due soon' : 'Upcoming'}</p>
+                  <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{nextTask.label}</p>
+                  <p style={{ fontSize: 12, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{nextTask.channel} · {nextTask.urgency === 'overdue' ? 'Overdue' : nextTask.urgency === 'high' ? 'High priority' : nextTask.urgency === 'due' ? 'Due soon' : 'Upcoming'}</p>
                 </div>
               </div>
             ) : (
@@ -213,18 +213,18 @@ export default function ContactDetail() {
             <p style={sectionTitle}>Activity</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {contact.lastActivity && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
                   <Clock style={{ width: 13, height: 13, color: 'var(--text-tertiary)' }} />
                   Last activity: {daysAgo(contact.lastActivity)} ({formatDate(contact.lastActivity)})
                 </div>
               )}
               {contact.createdAt && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
                   <Clock style={{ width: 13, height: 13, color: 'var(--text-tertiary)' }} />
                   Created: {formatDate(contact.createdAt)}
                 </div>
               )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
                 <ExternalLink style={{ width: 13, height: 13, color: 'var(--text-tertiary)' }} />
                 Preferred Contact Channel: <strong>{preferredChannel}</strong>
               </div>
@@ -236,8 +236,8 @@ export default function ContactDetail() {
             <div style={card}>
               <p style={sectionTitle}>Deal Pipeline</p>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(0,0,0,0.02)', borderRadius: 50 }}>
-                <p style={{ fontSize: 12, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{dealInfo.pipeline || '—'}</p>
-                <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 50, background: dealInfo.stage === 'Closed Won' ? 'rgba(16,185,129,0.08)' : dealInfo.stage === 'Closed Lost' ? 'rgba(239,68,68,0.08)' : 'rgba(59,130,246,0.08)', color: dealInfo.stage === 'Closed Won' ? '#10b981' : dealInfo.stage === 'Closed Lost' ? '#ef4444' : '#3b82f6', fontWeight: 500, fontFamily: 'var(--font)' }}>{dealInfo.stage || '—'}</span>
+                <p style={{ fontSize: 13, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{dealInfo.pipeline || '—'}</p>
+                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 50, background: dealInfo.stage === 'Closed Won' ? 'rgba(16,185,129,0.08)' : dealInfo.stage === 'Closed Lost' ? 'rgba(239,68,68,0.08)' : 'rgba(59,130,246,0.08)', color: dealInfo.stage === 'Closed Won' ? '#10b981' : dealInfo.stage === 'Closed Lost' ? '#ef4444' : '#3b82f6', fontWeight: 500, fontFamily: 'var(--font)' }}>{dealInfo.stage || '—'}</span>
               </div>
             </div>
           )}
@@ -259,7 +259,7 @@ export default function ContactDetail() {
                     <div key={f.key}><p style={labelStyle}>{f.label}</p><input value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} style={inputStyle} /></div>
                   ))}
                   <div><p style={labelStyle}>Notes</p><textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} rows={3} style={{ ...inputStyle, resize: 'none' }} /></div>
-                  <button onClick={save} style={{ alignSelf: 'flex-end', fontSize: 13, fontWeight: 500, background: 'var(--accent)', color: 'rgba(255,255,255,0.9)', padding: '8px 20px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Save Changes</button>
+                  <button onClick={save} style={{ alignSelf: 'flex-end', fontSize: 14, fontWeight: 500, background: 'var(--accent)', color: 'rgba(255,255,255,0.9)', padding: '8px 20px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Save Changes</button>
                 </div>
               </>
             ) : (
@@ -277,13 +277,13 @@ export default function ContactDetail() {
                     { label: 'Preferred Contact Channel', value: preferredChannel },
                   ].map(f => (
                     <div key={f.label}>
-                      <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '0 0 4px', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>{f.label}</p>
+                      <p style={{ fontSize: 12, color: 'var(--text-tertiary)', margin: '0 0 4px', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>{f.label}</p>
                       {f.link ? (
-                        <a href={f.link} target={f.link?.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer" style={{ fontSize: 13, color: 'var(--accent)', fontFamily: 'var(--font)', textDecoration: 'none' }}>{f.value || '—'}</a>
+                        <a href={f.link} target={f.link?.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer" style={{ fontSize: 14, color: 'var(--accent)', fontFamily: 'var(--font)', textDecoration: 'none' }}>{f.value || '—'}</a>
                       ) : f.onClick ? (
-                        <p onClick={f.onClick} style={{ fontSize: 13, color: 'var(--accent)', margin: 0, fontFamily: 'var(--font)', cursor: 'pointer' }}>{f.value || '—'}</p>
+                        <p onClick={f.onClick} style={{ fontSize: 14, color: 'var(--accent)', margin: 0, fontFamily: 'var(--font)', cursor: 'pointer' }}>{f.value || '—'}</p>
                       ) : (
-                        <p style={{ fontSize: 13, color: f.value ? 'var(--text)' : 'var(--text-tertiary)', margin: 0, fontFamily: 'var(--font)' }}>{f.value || '—'}</p>
+                        <p style={{ fontSize: 14, color: f.value ? 'var(--text)' : 'var(--text-tertiary)', margin: 0, fontFamily: 'var(--font)' }}>{f.value || '—'}</p>
                       )}
                     </div>
                   ))}
@@ -291,7 +291,7 @@ export default function ContactDetail() {
                 {contact.notes && contact.notes !== '[]' && (
                   <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                     <p style={{ ...labelStyle, marginBottom: 8 }}>Notes</p>
-                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>{contact.notes}</p>
+                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', fontFamily: 'var(--font)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>{contact.notes}</p>
                   </div>
                 )}
               </>
@@ -307,14 +307,14 @@ export default function ContactDetail() {
                   <div key={c.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'rgba(59,130,246,0.04)', borderRadius: 50, border: '1px solid rgba(59,130,246,0.1)' }}>
                     <Send style={{ width: 14, height: 14, color: '#3b82f6', flexShrink: 0 }} />
                     <div>
-                      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{c.name}</p>
-                      {c.lastEvent && <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>Last event: {daysAgo(c.lastEvent)} · {c.events} event{c.events !== 1 ? 's' : ''}</p>}
+                      <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{c.name}</p>
+                      {c.lastEvent && <p style={{ fontSize: 12, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>Last event: {daysAgo(c.lastEvent)} · {c.events} event{c.events !== 1 ? 's' : ''}</p>}
                     </div>
                   </div>
                 ))}
               </div>
             ) : contact?.outreachStatus ? (
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)', margin: 0 }}>{contact.outreachStatus}</p>
+              <p style={{ fontSize: 14, color: 'var(--text-secondary)', fontFamily: 'var(--font)', margin: 0 }}>{contact.outreachStatus}</p>
             ) : (
               <p style={emptyText}>No active campaign</p>
             )}
@@ -327,10 +327,10 @@ export default function ContactDetail() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {campaigns.map(c => (
                   <div key={c.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(0,0,0,0.02)', borderRadius: 50 }}>
-                    <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0, fontFamily: 'var(--font)' }}>{c.name}</p>
+                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, fontFamily: 'var(--font)' }}>{c.name}</p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      {c.events > 0 && <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>{c.events} events</span>}
-                      {c.lastEvent && <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>{formatDate(c.lastEvent)}</span>}
+                      {c.events > 0 && <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>{c.events} events</span>}
+                      {c.lastEvent && <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>{formatDate(c.lastEvent)}</span>}
                     </div>
                   </div>
                 ))}
@@ -349,9 +349,9 @@ export default function ContactDetail() {
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', background: 'rgba(0,0,0,0.02)', borderRadius: 10 }}>
                     <Send style={{ width: 14, height: 14, color: 'var(--text-tertiary)', flexShrink: 0, marginTop: 2 }} />
                     <div>
-                      <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Last sent: {activityLabel(lastSent.type)}</p>
-                      {lastSent.email_subject && <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{lastSent.email_subject}</p>}
-                      <p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '4px 0 0', fontFamily: 'var(--font)' }}>{formatDate(lastSent.created_at)} · {lastSent.campaign_name || ''}</p>
+                      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Last sent: {activityLabel(lastSent.type)}</p>
+                      {lastSent.email_subject && <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{lastSent.email_subject}</p>}
+                      <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '4px 0 0', fontFamily: 'var(--font)' }}>{formatDate(lastSent.created_at)} · {lastSent.campaign_name || ''}</p>
                     </div>
                   </div>
                 )}
@@ -359,8 +359,8 @@ export default function ContactDetail() {
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', background: 'rgba(16,185,129,0.04)', borderRadius: 50, border: '1px solid rgba(16,185,129,0.1)' }}>
                     <Inbox style={{ width: 14, height: 14, color: '#10b981', flexShrink: 0, marginTop: 2 }} />
                     <div>
-                      <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Last received: {activityLabel(lastReceived.type)}</p>
-                      <p style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '4px 0 0', fontFamily: 'var(--font)' }}>{formatDate(lastReceived.created_at)} · {lastReceived.campaign_name || ''}</p>
+                      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Last received: {activityLabel(lastReceived.type)}</p>
+                      <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '4px 0 0', fontFamily: 'var(--font)' }}>{formatDate(lastReceived.created_at)} · {lastReceived.campaign_name || ''}</p>
                     </div>
                   </div>
                 )}

@@ -3,7 +3,7 @@
 // Pill shapes, richer aurora backdrop, elements pop off the page
 
 export const T = {
-  bg: '#07070B',
+  bg: '#000000',
   surface: 'rgba(255,255,255,0.04)',
   surfaceHover: 'rgba(255,255,255,0.07)',
   surfaceAlt: 'rgba(255,255,255,0.03)',

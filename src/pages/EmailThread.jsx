@@ -69,7 +69,7 @@ export default function EmailThread({ threadId, userEmail, onReply, onReplyAll, 
   }
 
   if (messages.length === 0) {
-    return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.textTertiary, fontSize: 13 }}>Thread not found</div>
+    return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.textTertiary, fontSize: 14 }}>Thread not found</div>
   }
 
   const subject = messages[0]?.subject || '(no subject)'
@@ -79,8 +79,8 @@ export default function EmailThread({ threadId, userEmail, onReply, onReplyAll, 
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', fontFamily: T.font }}>
       {/* Thread header */}
       <div style={{ padding: '16px 20px', borderBottom: `1px solid ${T.border}` }}>
-        <h2 style={{ fontSize: 18, fontWeight: 400, color: T.text, margin: '0 0 6px', lineHeight: 1.3 }}>{subject}</h2>
-        <span style={{ fontSize: 11, color: T.textTertiary }}>
+        <h2 style={{ fontSize: 19, fontWeight: 400, color: T.text, margin: '0 0 6px', lineHeight: 1.3 }}>{subject}</h2>
+        <span style={{ fontSize: 12, color: T.textTertiary }}>
           {messages.length} message{messages.length > 1 ? 's' : ''}
         </span>
       </div>
@@ -94,7 +94,7 @@ export default function EmailThread({ threadId, userEmail, onReply, onReplyAll, 
         ].map(btn => (
           <button key={btn.label} onClick={btn.action} style={{
             display: 'flex', alignItems: 'center', gap: 5, padding: '6px 10px', borderRadius: 50,
-            border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 12, color: T.textSecondary,
+            border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13, color: T.textSecondary,
             fontFamily: T.font, transition: 'background 0.1s',
           }}
             onMouseOver={e => e.currentTarget.style.background = T.accentSoft}
@@ -105,7 +105,7 @@ export default function EmailThread({ threadId, userEmail, onReply, onReplyAll, 
         <div style={{ flex: 1 }} />
         <button onClick={onTrash} style={{
           display: 'flex', alignItems: 'center', gap: 5, padding: '6px 10px', borderRadius: 50,
-          border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 12, color: T.textTertiary,
+          border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13, color: T.textTertiary,
           fontFamily: T.font,
         }}
           onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,59,48,0.06)'; e.currentTarget.style.color = '#FF3B30' }}
@@ -135,22 +135,22 @@ export default function EmailThread({ threadId, userEmail, onReply, onReplyAll, 
                 <div style={{
                   width: 32, height: 32, borderRadius: '50%', background: T.accentSoft,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  fontSize: 13, fontWeight: 400, color: T.textSecondary,
+                  fontSize: 14, fontWeight: 400, color: T.textSecondary,
                 }}>
                   {fromName.charAt(0).toUpperCase()}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 13, fontWeight: 400, color: T.text }}>{fromName}</span>
-                    <span style={{ fontSize: 11, color: T.textTertiary }}>{fromEmail}</span>
+                    <span style={{ fontSize: 14, fontWeight: 400, color: T.text }}>{fromName}</span>
+                    <span style={{ fontSize: 12, color: T.textTertiary }}>{fromEmail}</span>
                   </div>
                   {!isExpanded && (
-                    <p style={{ fontSize: 11, color: T.textTertiary, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <p style={{ fontSize: 12, color: T.textTertiary, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {msg.snippet || msg.body_text?.slice(0, 100) || ''}
                     </p>
                   )}
                 </div>
-                <span style={{ fontSize: 10, color: T.textTertiary, flexShrink: 0 }}>{dateStr}</span>
+                <span style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0 }}>{dateStr}</span>
                 {isExpanded ? <ChevronUp size={14} color={T.textTertiary} /> : <ChevronDown size={14} color={T.textTertiary} />}
               </button>
 
@@ -158,7 +158,7 @@ export default function EmailThread({ threadId, userEmail, onReply, onReplyAll, 
               {isExpanded && (
                 <div style={{ padding: '0 16px 16px' }}>
                   {/* To/CC */}
-                  <div style={{ fontSize: 11, color: T.textTertiary, marginBottom: 10, lineHeight: 1.6 }}>
+                  <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 10, lineHeight: 1.6 }}>
                     <span>To: {Array.isArray(msg.to_addresses) ? msg.to_addresses.join(', ') : (msg.to_addresses || '')}</span>
                     {msg.cc_addresses && msg.cc_addresses.length > 0 && (
                       <span style={{ display: 'block' }}>CC: {msg.cc_addresses.join(', ')}</span>
@@ -171,7 +171,7 @@ export default function EmailThread({ threadId, userEmail, onReply, onReplyAll, 
                           download={att.filename} target="_blank" rel="noopener"
                           style={{
                             display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px',
-                            borderRadius: 50, background: T.accentSoft, fontSize: 11, color: T.textSecondary,
+                            borderRadius: 50, background: T.accentSoft, fontSize: 12, color: T.textSecondary,
                             textDecoration: 'none', border: `1px solid ${T.border}`, fontFamily: T.font,
                           }}
                           onMouseOver={e => e.currentTarget.style.borderColor = T.blue}
@@ -185,7 +185,7 @@ export default function EmailThread({ threadId, userEmail, onReply, onReplyAll, 
                     </div>
                   )}
                   {msg.has_attachments && (!msg.attachments || msg.attachments.length === 0) && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: T.textTertiary, marginBottom: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: T.textTertiary, marginBottom: 8 }}>
                       <Paperclip size={12} /> Attachments
                     </div>
                   )}
@@ -235,7 +235,7 @@ function MessageBody({ html, text }) {
   }, [html])
 
   if (!html) {
-    return <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{text || ''}</div>
+    return <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.85)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{text || ''}</div>
   }
 
   return <iframe ref={iframeRef} title="Email" style={{ width: '100%', border: 'none', minHeight: 100 }} sandbox="allow-same-origin" />

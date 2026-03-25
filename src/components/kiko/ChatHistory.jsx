@@ -122,7 +122,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
         padding: '16px 16px 12px', display: 'flex', alignItems: 'center',
         justifyContent: 'space-between', borderBottom: `1px solid ${T.border}`,
       }}>
-        <span style={{ fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font }}>Chats</span>
+        <span style={{ fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font }}>Chats</span>
         <div style={{ display: 'flex', gap: 4 }}>
           <button onClick={() => { onNewChat(); onToggle(); }} style={{
             width: 32, height: 32, borderRadius: 50, border: 'none',
@@ -140,9 +140,9 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
       {/* Conversation list */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
         {loading ? (
-          <p style={{ textAlign: 'center', padding: 20, color: T.textTertiary, fontSize: 12, fontFamily: T.font }}>Loading...</p>
+          <p style={{ textAlign: 'center', padding: 20, color: T.textTertiary, fontSize: 13, fontFamily: T.font }}>Loading...</p>
         ) : conversations.length === 0 ? (
-          <p style={{ textAlign: 'center', padding: 20, color: T.textTertiary, fontSize: 12, fontFamily: T.font }}>No conversations yet</p>
+          <p style={{ textAlign: 'center', padding: 20, color: T.textTertiary, fontSize: 13, fontFamily: T.font }}>No conversations yet</p>
         ) : (
           conversations.map(conv => {
             const active = conv.id === activeConvId
@@ -173,20 +173,20 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
                       onKeyDown={e => { if (e.key === 'Enter') renameConversation(conv.id); if (e.key === 'Escape') setRenamingId(null) }}
                       onBlur={() => renameConversation(conv.id)}
                       autoFocus onClick={e => e.stopPropagation()}
-                      style={{ width: '100%', fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font, border: `1px solid ${T.border}`, borderRadius: 6, padding: '2px 6px', outline: 'none', background: T.bg }} />
+                      style={{ width: '100%', fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font, border: `1px solid ${T.border}`, borderRadius: 6, padding: '2px 6px', outline: 'none', background: T.bg }} />
                   ) : (
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
                       <span onDoubleClick={(e) => startRename(conv, e)} style={{
-                        fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font,
+                        fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font,
                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180,
                       }}>{(conv.title || 'Untitled').replace('🎤 ', '')}</span>
-                      <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font, flexShrink: 0 }}>
+                      <span style={{ fontSize: 11, color: T.textTertiary, fontFamily: T.font, flexShrink: 0 }}>
                         {timeAgo(conv.updated_at)}
                       </span>
                     </div>
                   )}
                   <p style={{
-                    fontSize: 11, color: T.textTertiary, fontFamily: T.font, margin: 0,
+                    fontSize: 12, color: T.textTertiary, fontFamily: T.font, margin: 0,
                     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                     lineHeight: 1.4,
                   }}>{getPreview(conv)}</p>

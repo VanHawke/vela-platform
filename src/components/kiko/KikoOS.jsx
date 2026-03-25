@@ -171,7 +171,7 @@ export default function KikoOS({ user, onOpenVoice }) {
         <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && input.trim()) handleSubmit() }}
           placeholder="Ask Kiko anything..." autoFocus
-          style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 14, color: 'var(--text)', fontFamily: 'var(--font)' }} />
+          style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 15, color: 'var(--text)', fontFamily: 'var(--font)' }} />
         {/* Mic — transcribe to text */}
         <button title="Transcribe speech to text" style={{
           width: 32, height: 32, borderRadius: '50%', background: 'transparent', border: 'none',
@@ -190,7 +190,7 @@ export default function KikoOS({ user, onOpenVoice }) {
         }}><ArrowUp size={16} /></button>
         <button onClick={() => setStage(0)} style={{
           width: 24, height: 24, borderRadius: '50%', background: 'transparent', border: 'none',
-          color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: 14,
+          color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: 15,
         }}>×</button>
       </div>
     )
@@ -216,8 +216,8 @@ export default function KikoOS({ user, onOpenVoice }) {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <KikoSymbol size={18} color="var(--text)" />
-          <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--text)', fontFamily: 'var(--font)' }}>Kiko</span>
-          <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>· {currentPage}</span>
+          <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text)', fontFamily: 'var(--font)' }}>Kiko</span>
+          <span style={{ fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>· {currentPage}</span>
         </div>
         <button onClick={() => setStage(0)} style={{
           background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', padding: 4,
@@ -234,16 +234,16 @@ export default function KikoOS({ user, onOpenVoice }) {
               </div>
             )}
             {msg.role === 'user' ? (
-              <div style={{ maxWidth: '80%', padding: '8px 14px', borderRadius: '14px 14px 4px 14px', background: 'var(--accent)', color: 'rgba(255,255,255,0.9)', fontSize: 13, lineHeight: 1.5, fontFamily: 'var(--font)' }}>{msg.content}</div>
+              <div style={{ maxWidth: '80%', padding: '8px 14px', borderRadius: '14px 14px 4px 14px', background: 'var(--accent)', color: 'rgba(255,255,255,0.9)', fontSize: 14, lineHeight: 1.5, fontFamily: 'var(--font)' }}>{msg.content}</div>
             ) : (
-              <div style={{ maxWidth: '80%', padding: '10px 14px', borderRadius: 50, background: 'var(--accent-soft)', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, fontFamily: 'var(--font)' }}>
+              <div style={{ maxWidth: '80%', padding: '10px 14px', borderRadius: 50, background: 'var(--accent-soft)', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5, fontFamily: 'var(--font)' }}>
                 <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />
               </div>
             )}
           </div>
         ))}
         {toolStatus && (
-          <div style={{ padding: '6px 0', color: 'var(--text-tertiary)', fontSize: 11, fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ padding: '6px 0', color: 'var(--text-tertiary)', fontSize: 12, fontFamily: 'var(--font)', display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--text-tertiary)', animation: 'pulse 1s infinite' }} />{toolStatus}
           </div>
         )}
@@ -253,7 +253,7 @@ export default function KikoOS({ user, onOpenVoice }) {
             <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 3 }}>
               <KikoSymbol size={12} color="rgba(255,255,255,0.04)" />
             </div>
-            <div style={{ maxWidth: '80%', padding: '10px 14px', borderRadius: 50, background: 'var(--accent-soft)', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, fontFamily: 'var(--font)' }}>
+            <div style={{ maxWidth: '80%', padding: '10px 14px', borderRadius: 50, background: 'var(--accent-soft)', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5, fontFamily: 'var(--font)' }}>
               <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
               <span style={{ animation: 'pulse 1s infinite', marginLeft: 2 }}>▍</span>
             </div>
@@ -268,7 +268,7 @@ export default function KikoOS({ user, onOpenVoice }) {
           <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) handleSubmit() }}
             placeholder="Ask Kiko..." disabled={streaming} autoFocus
-            style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 13, color: 'var(--text)', fontFamily: 'var(--font)' }} />
+            style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 14, color: 'var(--text)', fontFamily: 'var(--font)' }} />
           <button title="Transcribe" style={{ width: 28, height: 28, borderRadius: '50%', background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Mic size={14} /></button>
           <button onClick={onOpenVoice} title="Voice mode" style={{ width: 28, height: 28, borderRadius: '50%', background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><AudioLines size={14} /></button>
           <button onClick={() => handleSubmit()} disabled={!input.trim() || streaming} style={{

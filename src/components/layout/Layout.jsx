@@ -169,7 +169,7 @@ export default function Layout({ user }) {
               <img src={customLogo} alt="Logo" style={{ height: 28, borderRadius: 7, maxWidth: 120, objectFit: 'contain' }} />
             ) : (
               <>
-                <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.4)', fontFamily: T.font, letterSpacing: '0.1em' }}>VAN HAWKE</span>
+                <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.4)', fontFamily: T.font, letterSpacing: '0.1em' }}>VAN HAWKE</span>
               </>
             )}
           </button>
@@ -188,7 +188,7 @@ export default function Layout({ user }) {
                   padding: '7px 22px', borderRadius: 50, border: 'none',
                   background: active ? 'rgba(255,255,255,0.1)' : 'transparent',
                   color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)',
-                  fontSize: 12, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: T.font,
+                  fontSize: 13, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: T.font,
                   boxShadow: active ? 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 8px rgba(0,0,0,0.2)' : 'none',
                   transition: 'all 0.2s',
                 }}
@@ -202,7 +202,7 @@ export default function Layout({ user }) {
               <button onClick={() => setMoreOpen(!moreOpen)} style={{
                 padding: '7px 22px', borderRadius: 50, border: 'none',
                 background: moreOpen ? 'rgba(255,255,255,0.07)' : 'transparent',
-                color: moreOpen ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
+                color: moreOpen ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
                 display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.2s',
               }}
                 onMouseOver={e => { if (!moreOpen) { e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}}
@@ -224,7 +224,7 @@ export default function Layout({ user }) {
                       width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none',
                       background: loc.pathname === item.path ? 'rgba(255,255,255,0.08)' : 'transparent',
                       color: loc.pathname === item.path ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.4)', textAlign: 'left',
-                      fontSize: 12, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
+                      fontSize: 13, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
                       display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
                     }}
                       onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)' }}
@@ -235,7 +235,7 @@ export default function Layout({ user }) {
                   <button onClick={() => { nav('/settings'); setMoreOpen(false) }} style={{
                     width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none',
                     background: 'transparent', color: 'rgba(255,255,255,0.4)', textAlign: 'left',
-                    fontSize: 12, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
+                    fontSize: 13, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
                     display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
                   }}
                     onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)' }}
@@ -253,7 +253,7 @@ export default function Layout({ user }) {
           {voiceActive && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 50, background: 'rgba(6,214,160,0.04)', border: '1.5px solid rgba(6,214,160,0.1)', animation: 'fadeIn 0.3s ease-out' }}>
               <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(6,214,160,0.7)', animation: 'kikoBreathe 1.5s ease-in-out infinite' }} />
-              <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(6,214,160,0.6)', fontFamily: 'var(--font)' }}>{voiceStatus}</span>
+              <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(6,214,160,0.6)', fontFamily: 'var(--font)' }}>{voiceStatus}</span>
             </div>
           )}
           {/* Command palette trigger */}
@@ -262,13 +262,13 @@ export default function Layout({ user }) {
             padding: '5px 10px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)',
             background: 'transparent',
             cursor: 'pointer', fontFamily: 'var(--font)',
-            color: 'rgba(255,255,255,0.2)', fontSize: 11, transition: 'all 0.15s',
+            color: 'rgba(255,255,255,0.2)', fontSize: 12, transition: 'all 0.15s',
           }}
             onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
             onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; e.currentTarget.style.background = 'transparent' }}
           >
             <Search size={13} />
-            <span style={{ fontSize: 11, fontWeight: 500, opacity: 0.6 }}>&#8984;K</span>
+            <span style={{ fontSize: 12, fontWeight: 500, opacity: 0.6 }}>&#8984;K</span>
           </button>
 
           {/* User avatar dropdown */}
@@ -281,7 +281,7 @@ export default function Layout({ user }) {
               {profile.profile_photo_url ? (
                 <img src={profile.profile_photo_url} alt="" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
               ) : (
-                <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.9)', fontFamily: 'var(--font)' }}>{initials}</span>
+                <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.9)', fontFamily: 'var(--font)' }}>{initials}</span>
               )}
             </button>
             {avatarOpen && (
@@ -293,15 +293,15 @@ export default function Layout({ user }) {
                 padding: '6px', zIndex: 400, animation: 'fadeIn 0.15s ease-out',
               }}>
                 <div style={{ padding: '8px 12px 10px', borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: 4 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.8)', fontFamily: 'var(--font)' }}>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.8)', fontFamily: 'var(--font)' }}>
                     {profile.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : user?.email?.split('@')[0] || 'User'}
                   </div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)', marginTop: 2 }}>{user?.email}</div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)', marginTop: 2 }}>{user?.email}</div>
                 </div>
                 <button onClick={() => { nav('/settings'); setAvatarOpen(false) }} style={{
                   width: '100%', padding: '9px 12px', borderRadius: 10, border: 'none',
                   background: 'transparent', color: 'rgba(255,255,255,0.4)', textAlign: 'left',
-                  fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font)',
+                  fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font)',
                   display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.15s',
                 }}
                   onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)' }}
@@ -310,7 +310,7 @@ export default function Layout({ user }) {
                 <button onClick={() => { signOut(); setAvatarOpen(false) }} style={{
                   width: '100%', padding: '9px 12px', borderRadius: 10, border: 'none',
                   background: 'transparent', color: 'rgba(255,80,80,0.7)', textAlign: 'left',
-                  fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font)',
+                  fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font)',
                   display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.15s',
                 }}
                   onMouseOver={e => e.currentTarget.style.background = 'rgba(255,80,80,0.06)'}
@@ -366,7 +366,7 @@ export default function Layout({ user }) {
               transition: 'color 0.15s', fontFamily: T.font,
             }}>
               <Icon size={20} strokeWidth={active ? 2 : 1.5} />
-              <span style={{ fontSize: 9, fontWeight: active ? 500 : 300, letterSpacing: '0.01em' }}>{tab.label}</span>
+              <span style={{ fontSize: 10, fontWeight: active ? 500 : 300, letterSpacing: '0.01em' }}>{tab.label}</span>
             </button>
           )
         })}
@@ -376,7 +376,7 @@ export default function Layout({ user }) {
           color: 'rgba(255,255,255,0.32)', fontFamily: T.font,
         }}>
           <MoreHorizontal size={20} strokeWidth={1.5} />
-          <span style={{ fontSize: 9, fontWeight: 300 }}>More</span>
+          <span style={{ fontSize: 10, fontWeight: 300 }}>More</span>
         </button>
       </nav>
 

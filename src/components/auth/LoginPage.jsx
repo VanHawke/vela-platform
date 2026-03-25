@@ -49,7 +49,7 @@ export default function LoginPage() {
     border: '1px solid rgba(255,255,255,0.06)',
     background: 'rgba(255,255,255,0.03)',
     backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-    padding: '0 18px', fontSize: 13, color: 'rgba(255,255,255,0.8)', outline: 'none',
+    padding: '0 18px', fontSize: 14, color: 'rgba(255,255,255,0.8)', outline: 'none',
     fontFamily: T.font, fontWeight: 300, transition: 'all 0.2s',
   }
 
@@ -64,8 +64,8 @@ export default function LoginPage() {
 
         {/* VAN HAWKE brand mark */}
         <div style={{ marginBottom: 64, ...fade(0) }}>
-          <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.15em', fontFamily: T.font }}>VAN HAWKE</span>
-          <span style={{ fontSize: 8, verticalAlign: 'super', color: 'rgba(255,255,255,0.12)', marginLeft: 2 }}>™</span>
+          <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.15em', fontFamily: T.font }}>VAN HAWKE</span>
+          <span style={{ fontSize: 9, verticalAlign: 'super', color: 'rgba(255,255,255,0.12)', marginLeft: 2 }}>™</span>
         </div>
 
         {/* Kiko helix — large, centred, dramatic */}
@@ -76,8 +76,8 @@ export default function LoginPage() {
         </div>
 
         {/* Kiko name + tagline */}
-        <h1 style={{ fontSize: 32, fontWeight: 200, color: 'rgba(255,255,255,0.9)', letterSpacing: '-0.04em', margin: '0 0 6px', ...fade(0.4) }}>Kiko</h1>
-        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', fontWeight: 300, margin: '0 0 48px', letterSpacing: '0.02em', ...fade(0.5) }}>Your AI operating system</p>
+        <h1 style={{ fontSize: 33, fontWeight: 200, color: 'rgba(255,255,255,0.9)', letterSpacing: '-0.04em', margin: '0 0 6px', ...fade(0.4) }}>Kiko</h1>
+        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.2)', fontWeight: 300, margin: '0 0 48px', letterSpacing: '0.02em', ...fade(0.5) }}>Your AI operating system</p>
 
         {/* Primary CTA — Google OAuth */}
         <div style={fade(0.6)}>
@@ -87,7 +87,7 @@ export default function LoginPage() {
             background: 'rgba(255,255,255,0.04)',
             backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-            fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.75)', cursor: 'pointer', fontFamily: T.font,
+            fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.75)', cursor: 'pointer', fontFamily: T.font,
             transition: 'all 0.3s',
             boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
           }}
@@ -103,7 +103,7 @@ export default function LoginPage() {
         {/* Email toggle */}
         <div style={{ marginTop: 16, ...fade(0.7) }}>
           <button onClick={() => setShowEmail(!showEmail)} style={{
-            background: 'none', border: 'none', color: 'rgba(255,255,255,0.15)', fontSize: 11, cursor: 'pointer',
+            background: 'none', border: 'none', color: 'rgba(255,255,255,0.15)', fontSize: 12, cursor: 'pointer',
             fontFamily: T.font, fontWeight: 300, display: 'flex', alignItems: 'center', gap: 4, margin: '0 auto',
             transition: 'color 0.2s', padding: '8px 0',
           }}
@@ -133,13 +133,13 @@ export default function LoginPage() {
               }}>{showPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
             </div>
 
-            {error && <p style={{ fontSize: 12, color: 'rgba(255,80,80,0.7)', background: 'rgba(255,80,80,0.05)', padding: '8px 14px', borderRadius: 10, margin: '0 0 10px', border: '1px solid rgba(255,80,80,0.08)', fontFamily: T.font, fontWeight: 300 }}>{error}</p>}
+            {error && <p style={{ fontSize: 13, color: 'rgba(255,80,80,0.7)', background: 'rgba(255,80,80,0.05)', padding: '8px 14px', borderRadius: 10, margin: '0 0 10px', border: '1px solid rgba(255,80,80,0.08)', fontFamily: T.font, fontWeight: 300 }}>{error}</p>}
 
             <button type="submit" disabled={loading} style={{
               width: '100%', height: 48, borderRadius: 14,
               background: 'linear-gradient(135deg, rgba(139,108,246,0.6), rgba(6,214,160,0.4))',
               color: 'rgba(255,255,255,0.9)', border: 'none',
-              fontSize: 13, fontWeight: 400, cursor: 'pointer', fontFamily: T.font,
+              fontSize: 14, fontWeight: 400, cursor: 'pointer', fontFamily: T.font,
               transition: 'all 0.3s',
               boxShadow: '0 4px 24px rgba(139,108,246,0.2)',
               opacity: loading ? 0.5 : 1,
@@ -151,7 +151,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.08)', marginTop: 48, fontWeight: 300, ...fade(0.8) }}>Powered by Van Hawke Group</p>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.08)', marginTop: 48, fontWeight: 300, ...fade(0.8) }}>Powered by Van Hawke Group</p>
       </div>
     </div>
   )

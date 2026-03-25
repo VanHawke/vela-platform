@@ -72,7 +72,7 @@ export default function PipelineNotifications() {
     <div style={{ background: T.surface, borderRadius: 18, border: `1px solid ${T.border}`, padding: 20, fontFamily: T.font }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <Bell size={16} style={{ color: T.textTertiary }} />
-        <span style={{ fontSize: 13, color: T.textTertiary }}>No activity yet. Notifications appear here when prospects interact with campaigns or new F1 partnerships are announced.</span>
+        <span style={{ fontSize: 14, color: T.textTertiary }}>No activity yet. Notifications appear here when prospects interact with campaigns or new F1 partnerships are announced.</span>
       </div>
     </div>
   )
@@ -84,19 +84,19 @@ export default function PipelineNotifications() {
         onClick={() => setExpanded(!expanded)}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {unread > 0 ? <BellRing size={15} style={{ color: T.red }} /> : <Bell size={15} style={{ color: T.textTertiary }} />}
-          <span style={{ fontSize: 13, fontWeight: 400, color: T.text }}>Pipeline Activity</span>
+          <span style={{ fontSize: 14, fontWeight: 400, color: T.text }}>Pipeline Activity</span>
           {unread > 0 && (
-            <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.9)', background: T.red, borderRadius: 50, padding: '1px 6px', minWidth: 18, textAlign: 'center' }}>{unread}</span>
+            <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.9)', background: T.red, borderRadius: 50, padding: '1px 6px', minWidth: 18, textAlign: 'center' }}>{unread}</span>
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {unread > 0 && (
             <button onClick={(e) => { e.stopPropagation(); markRead('all') }}
-              style={{ fontSize: 10, color: T.blue, background: 'none', border: 'none', cursor: 'pointer', fontFamily: T.font }}>
+              style={{ fontSize: 11, color: T.blue, background: 'none', border: 'none', cursor: 'pointer', fontFamily: T.font }}>
               Mark all read
             </button>
           )}
-          <span style={{ fontSize: 10, color: T.textTertiary, transform: expanded ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>▼</span>
+          <span style={{ fontSize: 11, color: T.textTertiary, transform: expanded ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>▼</span>
         </div>
       </div>
 
@@ -121,15 +121,15 @@ export default function PipelineNotifications() {
                 {/* Content */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 12, fontWeight: n.is_read ? 400 : 600, color: T.text }}>{n.title}</span>
+                    <span style={{ fontSize: 13, fontWeight: n.is_read ? 400 : 600, color: T.text }}>{n.title}</span>
                     {!n.is_read && <span style={{ width: 6, height: 6, borderRadius: 3, background: T.blue, flexShrink: 0 }} />}
                   </div>
-                  <p style={{ fontSize: 11, color: T.textSecondary, margin: '2px 0 0', lineHeight: 1.4 }}>{n.body}</p>
+                  <p style={{ fontSize: 12, color: T.textSecondary, margin: '2px 0 0', lineHeight: 1.4 }}>{n.body}</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                    <span style={{ fontSize: 9, color: config.color, background: config.bg, padding: '1px 5px', borderRadius: 3, fontWeight: 400 }}>{config.label}</span>
-                    {n.pipeline && <span style={{ fontSize: 9, color: T.textTertiary, background: T.accentSoft, padding: '1px 5px', borderRadius: 3 }}>{n.pipeline}</span>}
-                    {n.stage && <span style={{ fontSize: 9, color: T.textTertiary }}>{n.stage}</span>}
-                    <span style={{ fontSize: 9, color: T.textTertiary, marginLeft: 'auto' }}>{timeAgo(n.created_at)}</span>
+                    <span style={{ fontSize: 10, color: config.color, background: config.bg, padding: '1px 5px', borderRadius: 3, fontWeight: 400 }}>{config.label}</span>
+                    {n.pipeline && <span style={{ fontSize: 10, color: T.textTertiary, background: T.accentSoft, padding: '1px 5px', borderRadius: 3 }}>{n.pipeline}</span>}
+                    {n.stage && <span style={{ fontSize: 10, color: T.textTertiary }}>{n.stage}</span>}
+                    <span style={{ fontSize: 10, color: T.textTertiary, marginLeft: 'auto' }}>{timeAgo(n.created_at)}</span>
                   </div>
                 </div>
 

@@ -385,7 +385,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               <div style={{ width: 24, height: 12, overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)', maskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)' }}>
                 <DoubleHelix width={24} height={12} mini />
               </div>
-              <span style={{ fontSize: 13, fontWeight: 500, color: T.text, fontFamily: T.font }}>Kiko</span>
+              <span style={{ fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font }}>Kiko</span>
             </div>
             <button onClick={toggleOpen} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textTertiary, padding: 4, display: 'flex', borderRadius: 6, lineHeight: 1 }}>
               <X size={13} />
@@ -402,7 +402,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                       <DoubleHelix width={18} height={10} mini />
                     </div>
                   )}
-                  <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : 8, background: msg.role === 'user' ? T.accent : T.accentSoft, color: msg.role === 'user' ? 'rgba(255,255,255,0.9)' : T.textSecondary, fontSize: 12, lineHeight: 1.55, fontFamily: T.font }}>
+                  <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : 8, background: msg.role === 'user' ? T.accent : T.accentSoft, color: msg.role === 'user' ? 'rgba(255,255,255,0.9)' : T.textSecondary, fontSize: 13, lineHeight: 1.55, fontFamily: T.font }}>
                     {msg.role === 'user' ? msg.content : <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />}
                   </div>
                 </div>
@@ -415,7 +415,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                   <div style={{ padding: '7px 11px', borderRadius: 50, background: T.accentSoft }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <span style={{ width: 5, height: 5, borderRadius: '50%', background: T.accent, flexShrink: 0, animation: 'kikoBreathe 2s ease-in-out infinite' }} />
-                      <span style={{ fontSize: 11, color: T.textSecondary, fontFamily: T.font }}>{toolStatus || 'Thinking…'}</span>
+                      <span style={{ fontSize: 12, color: T.textSecondary, fontFamily: T.font }}>{toolStatus || 'Thinking…'}</span>
                     </div>
                     <div style={{ height: 2, borderRadius: 1, background: 'rgba(255,255,255,0.04)', marginTop: 5, overflow: 'hidden', width: 120 }}>
                       <div style={{ height: '100%', borderRadius: 1, background: T.accent, animation: 'kikoProgress 2.4s ease-in-out infinite' }} />
@@ -428,7 +428,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                   <div style={{ width: 20, height: 20, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
                     <DoubleHelix width={18} height={10} mini />
                   </div>
-                  <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: 50, background: T.accentSoft, fontSize: 12, color: T.textSecondary, lineHeight: 1.55, fontFamily: T.font }}>
+                  <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: 50, background: T.accentSoft, fontSize: 13, color: T.textSecondary, lineHeight: 1.55, fontFamily: T.font }}>
                     <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
                     <span style={{ animation: 'kikoBreathe 1s infinite' }}>▍</span>
                   </div>
@@ -443,7 +443,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
             <div style={{ padding: '10px 12px 4px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {CHIPS.map((chip, i) => (
                 <button key={chip} onClick={() => handleSubmit(chip)} style={{
-                  fontSize: 11, padding: '5px 10px', borderRadius: 50,
+                  fontSize: 12, padding: '5px 10px', borderRadius: 50,
                   border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)',
                   color: T.textSecondary, cursor: 'pointer', fontFamily: T.font,
                   animation: `kikoChipIn 0.3s ease ${0.08 + i * 0.05}s both`,
@@ -468,7 +468,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
             <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && input.trim()) handleSubmit() }}
               placeholder="Ask anything…"
-              style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 13, color: T.text, fontFamily: T.font }} />
+              style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 14, color: T.text, fontFamily: T.font }} />
             <button onClick={transcribing ? stopTranscribe : startTranscribe} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: transcribing ? 'rgba(34,197,94,0.12)' : 'transparent', color: transcribing ? 'rgba(34,197,94,0.9)' : T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
               <Mic size={13} />
               {transcribing && <span style={{ position: 'absolute', top: 2, right: 2, width: 6, height: 6, borderRadius: '50%', background: 'rgba(34,197,94,0.9)', animation: 'kikoBreathe 1s ease-in-out infinite' }} />}

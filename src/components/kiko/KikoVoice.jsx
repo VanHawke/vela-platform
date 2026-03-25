@@ -814,8 +814,8 @@ RULES:
         }}>
           <DoubleHelix width={40} height={40} mini speaking={speaking} energy={window.__kikoAudioEnergy || 0} pitch={window.__kikoAudioPitch || 0} />
         </button>
-        {listenMode !== 'active' && <span style={{ fontSize: 9, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textAlign: 'center', maxWidth: 80 }}>{listenMode === 'off' ? 'Mic off' : 'Passive'}</span>}
-        <button onClick={handleClose} style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: 'rgba(14,14,20,0.9)', border: '1.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>×</button>
+        {listenMode !== 'active' && <span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', textAlign: 'center', maxWidth: 80 }}>{listenMode === 'off' ? 'Mic off' : 'Passive'}</span>}
+        <button onClick={handleClose} style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: 'rgba(14,14,20,0.9)', border: '1.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>×</button>
       </div>
     )
   }
@@ -834,8 +834,8 @@ RULES:
       {dragOver && (
         <div style={{ position: 'absolute', inset: 12, zIndex: 10, borderRadius: 18, border: '2px dashed #1A1A1A', background: 'rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', gap: 8 }}>
           <Paperclip size={28} color="rgba(255,255,255,0.12)" style={{ opacity: 0.6 }} />
-          <p style={{ fontSize: 15, fontWeight: 400, color: 'rgba(255,255,255,0.85)', fontFamily: 'var(--font)' }}>Drop file for Kiko to analyse</p>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--font)' }}>PDF, DOCX, PPTX, images</p>
+          <p style={{ fontSize: 16, fontWeight: 400, color: 'rgba(255,255,255,0.85)', fontFamily: 'var(--font)' }}>Drop file for Kiko to analyse</p>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--font)' }}>PDF, DOCX, PPTX, images</p>
         </div>
       )}
 
@@ -849,7 +849,7 @@ RULES:
           <X size={14} />
         </button>
 
-        <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', padding: '4px 14px', borderRadius: 50, background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.08)', fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.04em', whiteSpace: 'nowrap', fontFamily: 'var(--font)' }}>
+        <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', padding: '4px 14px', borderRadius: 50, background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.08)', fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.04em', whiteSpace: 'nowrap', fontFamily: 'var(--font)' }}>
           {modeLabel}
         </div>
 
@@ -866,13 +866,13 @@ RULES:
 
         {/* Live text */}
         <div style={{ textAlign: 'center', maxWidth: 360, minHeight: 60, marginBottom: 24 }}>
-          {transcript && <p style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.8)', margin: '0 0 7px', fontFamily: 'var(--font)', lineHeight: 1.35 }}>{transcript}</p>}
-          {kikoText   && <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.55 }}>{kikoText}</p>}
-          {status === 'error' && !transcript && <p style={{ fontSize: 13, color: '#C62828', margin: 0, fontFamily: 'var(--font)' }}>{error}</p>}
+          {transcript && <p style={{ fontSize: 16, fontWeight: 500, color: 'rgba(255,255,255,0.8)', margin: '0 0 7px', fontFamily: 'var(--font)', lineHeight: 1.35 }}>{transcript}</p>}
+          {kikoText   && <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.35)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.55 }}>{kikoText}</p>}
+          {status === 'error' && !transcript && <p style={{ fontSize: 14, color: '#C62828', margin: 0, fontFamily: 'var(--font)' }}>{error}</p>}
         </div>
 
         {listenMode !== 'active' && status === 'live' && (
-          <button onClick={() => listenMode === 'off' ? reactivate() : resetToActive()} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 50, padding: '7px 16px', cursor: 'pointer', fontFamily: 'var(--font)', marginBottom: 24 }}>
+          <button onClick={() => listenMode === 'off' ? reactivate() : resetToActive()} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 50, padding: '7px 16px', cursor: 'pointer', fontFamily: 'var(--font)', marginBottom: 24 }}>
             <Mic size={12} /> Tap to resume
           </button>
         )}
@@ -884,13 +884,13 @@ RULES:
           </button>
 
           {attachedFile && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px 3px 7px', borderRadius: 50, background: attachedFile.status === 'ready' ? 'rgba(52,199,89,0.08)' : 'rgba(255,255,255,0.04)', border: `1.5px solid ${attachedFile.status === 'ready' ? 'rgba(52,199,89,0.2)' : 'rgba(0,0,0,0.09)'}`, fontSize: 11, color: attachedFile.status === 'ready' ? '#34C759' : 'rgba(255,255,255,0.35)', maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 0 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px 3px 7px', borderRadius: 50, background: attachedFile.status === 'ready' ? 'rgba(52,199,89,0.08)' : 'rgba(255,255,255,0.04)', border: `1.5px solid ${attachedFile.status === 'ready' ? 'rgba(52,199,89,0.2)' : 'rgba(0,0,0,0.09)'}`, fontSize: 12, color: attachedFile.status === 'ready' ? '#34C759' : 'rgba(255,255,255,0.35)', maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 0 }}>
               {attachedFile.status === 'uploading' && <Loader2 style={{ width: 10, height: 10, animation: 'spin 1s linear infinite', flexShrink: 0 }} />}
               {attachedFile.status === 'analysing' && <Loader2 style={{ width: 10, height: 10, animation: 'spin 1s linear infinite', flexShrink: 0, color: '#007AFF' }} />}
               {attachedFile.status === 'ready' && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
               {!attachedFile.status && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>}
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{attachedFile.status === 'uploading' ? 'Uploading…' : attachedFile.status === 'analysing' ? 'Analysing…' : attachedFile.name}</span>
-              {attachedFile.category && <span style={{ fontSize: 9, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.03em', opacity: 0.7 }}>{attachedFile.category}</span>}
+              {attachedFile.category && <span style={{ fontSize: 10, fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.03em', opacity: 0.7 }}>{attachedFile.category}</span>}
               <button onClick={() => setAttachedFile(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: 0, lineHeight: 1, opacity: 0.5 }}>×</button>
             </div>
           )}
@@ -898,7 +898,7 @@ RULES:
           <input value={typeInput} onChange={e => setTypeInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendTyped())}
             placeholder="Ask anything or drop a file…"
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 15, color: 'rgba(255,255,255,0.85)', fontFamily: 'var(--font)', height: 40 }} />
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 16, color: 'rgba(255,255,255,0.85)', fontFamily: 'var(--font)', height: 40 }} />
 
           <button title="Dictate" style={{ width: 40, height: 40, borderRadius: '50%', border: 'none', background: 'transparent', color: 'rgba(0,0,0,0.35)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
@@ -910,7 +910,7 @@ RULES:
         </div>
 
         {status === 'error' && (
-          <button onClick={connectRealtime} style={{ marginTop: 14, padding: '7px 18px', borderRadius: 50, background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)', border: '1.5px solid rgba(255,255,255,0.08)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)' }}>Retry</button>
+          <button onClick={connectRealtime} style={{ marginTop: 14, padding: '7px 18px', borderRadius: 50, background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)', border: '1.5px solid rgba(255,255,255,0.08)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font)' }}>Retry</button>
         )}
       </div>
 
@@ -925,16 +925,16 @@ RULES:
       <div style={{ position: 'relative', zIndex: 1, width: showPane ? 272 : 0, flexShrink: 0, overflow: 'hidden', borderLeft: showPane ? '1.5px solid rgba(255,255,255,0.06)' : 'none', transition: 'width 0.3s cubic-bezier(0.4,0,0.2,1)', background: 'rgba(255,255,255,0.35)' }}>
         <div style={{ width: 272, height: '100%', display: 'flex', flexDirection: 'column', padding: '20px 14px 16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <span style={{ fontSize: 9, fontWeight: 500, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.3)', fontFamily: 'var(--font)' }}>Transcript</span>
-            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.15)', fontFamily: 'var(--font)' }}>{messages.length} messages</span>
+            <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.3)', fontFamily: 'var(--font)' }}>Transcript</span>
+            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.15)', fontFamily: 'var(--font)' }}>{messages.length} messages</span>
           </div>
           <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 9 }}>
             {messages.length === 0
-              ? <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)', textAlign: 'center', marginTop: 40, lineHeight: 1.5 }}>Conversation appears here as you speak</p>
+              ? <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)', textAlign: 'center', marginTop: 40, lineHeight: 1.5 }}>Conversation appears here as you speak</p>
               : messages.map((m, i) => (
                 <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <span style={{ fontSize: 8, fontWeight: 500, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.28)', fontFamily: 'var(--font)' }}>{m.role === 'user' ? 'You' : 'Kiko'}</span>
-                  <div style={{ fontSize: 11, lineHeight: 1.45, padding: '7px 10px', borderRadius: 50, fontFamily: 'var(--font)', background: m.role === 'user' ? 'rgba(139,108,246,0.12)' : 'rgba(255,255,255,0.04)', color: m.role === 'user' ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.55)' }}>
+                  <span style={{ fontSize: 9, fontWeight: 500, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.28)', fontFamily: 'var(--font)' }}>{m.role === 'user' ? 'You' : 'Kiko'}</span>
+                  <div style={{ fontSize: 12, lineHeight: 1.45, padding: '7px 10px', borderRadius: 50, fontFamily: 'var(--font)', background: m.role === 'user' ? 'rgba(139,108,246,0.12)' : 'rgba(255,255,255,0.04)', color: m.role === 'user' ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.55)' }}>
                     {m.content}
                   </div>
                 </div>

@@ -146,9 +146,9 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
     display: 'flex', alignItems: 'center', gap: 8, padding: '0 16px',
     borderBottom: `1px solid ${T.border}`, height: 40,
   }
-  const labelStyle = { fontSize: 12, color: T.textTertiary, width: 36, flexShrink: 0, fontFamily: T.font }
+  const labelStyle = { fontSize: 13, color: T.textTertiary, width: 36, flexShrink: 0, fontFamily: T.font }
   const inputStyle = {
-    flex: 1, border: 'none', outline: 'none', fontSize: 13, color: T.text,
+    flex: 1, border: 'none', outline: 'none', fontSize: 14, color: T.text,
     fontFamily: T.font, background: 'transparent', height: '100%',
   }
 
@@ -159,7 +159,7 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '12px 16px', borderBottom: `1px solid ${T.border}`,
       }}>
-        <span style={{ fontSize: 14, fontWeight: 400, color: T.text }}>{title}</span>
+        <span style={{ fontSize: 15, fontWeight: 400, color: T.text }}>{title}</span>
         <button onClick={onClose} style={{
           background: 'none', border: 'none', cursor: 'pointer', color: T.textTertiary, padding: 4,
         }}><X size={16} /></button>
@@ -169,7 +169,7 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
       <div style={fieldStyle}>
         <span style={labelStyle}>To</span>
         <input value={to} onChange={e => setTo(e.target.value)} placeholder="recipient@example.com" style={inputStyle} autoFocus={mode === 'new'} />
-        {!showCc && <button onClick={() => setShowCc(true)} style={{ fontSize: 11, color: T.textTertiary, background: 'none', border: 'none', cursor: 'pointer' }}>Cc/Bcc</button>}
+        {!showCc && <button onClick={() => setShowCc(true)} style={{ fontSize: 12, color: T.textTertiary, background: 'none', border: 'none', cursor: 'pointer' }}>Cc/Bcc</button>}
       </div>
       {showCc && (
         <>
@@ -222,7 +222,7 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
       {attachments.length > 0 && (
         <div style={{ padding: '6px 16px', borderBottom: `1px solid ${T.border}`, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {attachments.map((a, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, background: T.accentSoft, fontSize: 11, color: T.textSecondary, fontFamily: T.font }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 6, background: T.accentSoft, fontSize: 12, color: T.textSecondary, fontFamily: T.font }}>
               <Paperclip size={10} />
               <span>{a.name} ({(a.size / 1024).toFixed(0)}KB)</span>
               <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: T.textTertiary, display: 'flex' }}>
@@ -240,7 +240,7 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
           contentEditable
           suppressContentEditableWarning
           style={{
-            minHeight: '100%', outline: 'none', fontSize: 14, lineHeight: 1.6,
+            minHeight: '100%', outline: 'none', fontSize: 15, lineHeight: 1.6,
             color: T.text, fontFamily: '-apple-system, system-ui, sans-serif',
           }}
           onPaste={(e) => {
@@ -260,7 +260,7 @@ export default function EmailCompose({ mode, replyTo, userEmail, onClose, onSent
           height: 36, padding: '0 20px', borderRadius: 50, border: 'none',
           background: to.trim() ? T.accent : T.accentSoft,
           color: to.trim() ? 'rgba(255,255,255,0.9)' : T.textTertiary,
-          fontSize: 13, fontWeight: 400, cursor: 'pointer', fontFamily: T.font,
+          fontSize: 14, fontWeight: 400, cursor: 'pointer', fontFamily: T.font,
           display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s',
         }}>
           {sending ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Send size={14} />}

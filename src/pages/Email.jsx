@@ -157,7 +157,7 @@ export default function Email({ user }) {
       <div style={{ width: 200, borderRight: `1px solid ${T.border}`, padding: 12, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
         <button onClick={() => setComposing('new')} style={{
           width: '100%', height: 40, borderRadius: 50, border: 'none', background: T.accent, color: 'rgba(255,255,255,0.9)',
-          fontSize: 13, fontWeight: 400, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+          fontSize: 14, fontWeight: 400, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           marginBottom: 12, fontFamily: T.font,
         }}>
           <Plus size={14} /> Compose
@@ -171,13 +171,13 @@ export default function Email({ user }) {
               width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px',
               borderRadius: 50, border: 'none', cursor: 'pointer', textAlign: 'left',
               background: active ? T.accentSoft : 'transparent', fontFamily: T.font,
-              color: active ? T.text : T.textSecondary, fontSize: 13, fontWeight: active ? 600 : 400,
+              color: active ? T.text : T.textSecondary, fontSize: 14, fontWeight: active ? 600 : 400,
               transition: 'all 0.1s',
             }}>
               <Icon size={15} style={{ flexShrink: 0 }} />
               <span style={{ flex: 1 }}>{f.label}</span>
               {f.id === 'INBOX' && unreadCount > 0 && (
-                <span style={{ fontSize: 10, background: T.blue, color: 'rgba(255,255,255,0.9)', padding: '1px 6px', borderRadius: 50, fontWeight: 400 }}>{unreadCount}</span>
+                <span style={{ fontSize: 11, background: T.blue, color: 'rgba(255,255,255,0.9)', padding: '1px 6px', borderRadius: 50, fontWeight: 400 }}>{unreadCount}</span>
               )}
             </button>
           )
@@ -187,7 +187,7 @@ export default function Email({ user }) {
         {userLabels.length > 0 && (
           <>
             <div style={{ height: 1, background: T.border, margin: '8px 0' }} />
-            <div style={{ fontSize: 10, fontWeight: 400, color: T.textTertiary, padding: '4px 12px', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: T.font }}>Labels</div>
+            <div style={{ fontSize: 11, fontWeight: 400, color: T.textTertiary, padding: '4px 12px', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: T.font }}>Labels</div>
             {userLabels.map(l => {
               const active = folder === l.id
               return (
@@ -195,7 +195,7 @@ export default function Email({ user }) {
                   width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '6px 12px',
                   borderRadius: 50, border: 'none', cursor: 'pointer', textAlign: 'left',
                   background: active ? T.accentSoft : 'transparent', fontFamily: T.font,
-                  color: active ? T.text : T.textSecondary, fontSize: 12, fontWeight: active ? 600 : 400,
+                  color: active ? T.text : T.textSecondary, fontSize: 13, fontWeight: active ? 600 : 400,
                 }}>
                   <Tag size={13} style={{ flexShrink: 0 }} />
                   <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.name}</span>
@@ -215,7 +215,7 @@ export default function Email({ user }) {
             <input value={search} onChange={e => setSearch(e.target.value)} onKeyDown={handleSearch}
               placeholder="Search emails..." style={{
                 width: '100%', height: 34, borderRadius: 50, border: `1px solid ${T.border}`,
-                background: T.bg, paddingLeft: 32, paddingRight: 10, fontSize: 12,
+                background: T.bg, paddingLeft: 32, paddingRight: 10, fontSize: 13,
                 fontFamily: T.font, color: T.text, outline: 'none',
               }} />
           </div>
@@ -234,7 +234,7 @@ export default function Email({ user }) {
               <Loader2 size={18} style={{ animation: 'spin 1s linear infinite', color: T.textTertiary }} />
             </div>
           ) : threadList.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 40, color: T.textTertiary, fontSize: 13 }}>
+            <div style={{ textAlign: 'center', padding: 40, color: T.textTertiary, fontSize: 14 }}>
               <Mail size={32} style={{ marginBottom: 8, opacity: 0.3 }} />
               <p>No emails</p>
             </div>
@@ -252,18 +252,18 @@ export default function Email({ user }) {
                 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
                   {unread && <div style={{ width: 6, height: 6, borderRadius: 3, background: T.blue, flexShrink: 0 }} />}
-                  <span style={{ flex: 1, fontSize: 13, fontWeight: unread ? 600 : 400, color: T.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{ flex: 1, fontSize: 14, fontWeight: unread ? 600 : 400, color: T.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {extractName(em.from_address)}
                   </span>
-                  <span style={{ fontSize: 10, color: T.textTertiary, flexShrink: 0 }}>{formatDate(em.date)}</span>
+                  <span style={{ fontSize: 11, color: T.textTertiary, flexShrink: 0 }}>{formatDate(em.date)}</span>
                   <button onClick={(e) => handleStar(em, e)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0 }}>
                     <Star size={12} style={{ fill: em.is_starred ? T.yellow : 'none', color: em.is_starred ? T.yellow : T.textTertiary }} />
                   </button>
                 </div>
-                <p style={{ fontSize: 12, fontWeight: unread ? 600 : 400, color: unread ? T.text : T.textSecondary, margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <p style={{ fontSize: 13, fontWeight: unread ? 600 : 400, color: unread ? T.text : T.textSecondary, margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {em.subject || '(no subject)'}
                 </p>
-                <p style={{ fontSize: 11, color: T.textTertiary, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <p style={{ fontSize: 12, color: T.textTertiary, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {em.snippet}
                 </p>
               </button>
@@ -294,7 +294,7 @@ export default function Email({ user }) {
         ) : (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: T.textTertiary }}>
             <Mail size={36} style={{ marginBottom: 12, opacity: 0.2 }} />
-            <p style={{ fontSize: 14, fontFamily: T.font }}>Select an email to read</p>
+            <p style={{ fontSize: 15, fontFamily: T.font }}>Select an email to read</p>
           </div>
         )}
       </div>

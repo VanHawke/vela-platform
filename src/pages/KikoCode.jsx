@@ -228,7 +228,7 @@ export default function KikoCode({ user }) {
               onChange={(v) => setContent(v || '')}
               theme="vs-dark"
               options={{
-                fontSize: 13,
+                fontSize: 14,
                 minimap: { enabled: false },
                 lineNumbers: 'on',
                 scrollBeyondLastLine: false,

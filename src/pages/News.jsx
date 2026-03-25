@@ -87,16 +87,16 @@ function ArticleCard({ article, onStar, featured = false }) {
         onMouseEnter={e => e.currentTarget.style.borderColor = T.borderHover}
         onMouseLeave={e => e.currentTarget.style.borderColor = T.border}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-          {sig.label && <span style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.04em', textTransform: 'uppercase', color: sig.text, background: sig.bg, border: `1px solid ${sig.border}`, padding: '2px 8px', borderRadius: 6 }}>{sig.label}</span>}
-          {score >= 7 && <span style={{ fontSize: 10, color: sig.text || T.textTertiary }}>{score}/10</span>}
-          <span style={{ fontSize: 10, color: T.textTertiary, marginLeft: 'auto' }}>{timeAgo(article.published_at)}</span>
+          {sig.label && <span style={{ fontSize: 10, fontWeight: 400, letterSpacing: '0.04em', textTransform: 'uppercase', color: sig.text, background: sig.bg, border: `1px solid ${sig.border}`, padding: '2px 8px', borderRadius: 6 }}>{sig.label}</span>}
+          {score >= 7 && <span style={{ fontSize: 11, color: sig.text || T.textTertiary }}>{score}/10</span>}
+          <span style={{ fontSize: 11, color: T.textTertiary, marginLeft: 'auto' }}>{timeAgo(article.published_at)}</span>
           <button onClick={() => onStar(article)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: article.is_starred ? T.yellow : 'rgba(255,255,255,0.08)' }}><Star size={13} fill={article.is_starred ? T.yellow : 'none'} /></button>
         </div>
-        <div style={{ fontSize: 16, fontWeight: 300, lineHeight: 1.45, color: T.text, marginBottom: 6, letterSpacing: '-0.01em' }}>{article.title}</div>
-        {summary && <div style={{ fontSize: 12, color: T.textTertiary, lineHeight: 1.5, marginBottom: 8 }}>{summary}</div>}
+        <div style={{ fontSize: 17, fontWeight: 300, lineHeight: 1.45, color: T.text, marginBottom: 6, letterSpacing: '-0.01em' }}>{article.title}</div>
+        {summary && <div style={{ fontSize: 13, color: T.textTertiary, lineHeight: 1.5, marginBottom: 8 }}>{summary}</div>}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)' }}>{article.source_name}</span>
-          {article.url && <a href={article.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: sig.text || T.textSecondary, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, opacity: 0.6, transition: 'opacity 0.15s' }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}>Read <ExternalLink size={9} /></a>}
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>{article.source_name}</span>
+          {article.url && <a href={article.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: sig.text || T.textSecondary, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, opacity: 0.6, transition: 'opacity 0.15s' }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}>Read <ExternalLink size={9} /></a>}
         </div>
       </div>
     )
@@ -108,11 +108,11 @@ function ArticleCard({ article, onStar, featured = false }) {
       onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = T.border }}
       onMouseLeave={e => { e.currentTarget.style.background = T.surface; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)' }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 400, color: T.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.4 }}>{article.title}</div>
-        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>{article.source_name} · {timeAgo(article.published_at)}</div>
+        <div style={{ fontSize: 14, fontWeight: 400, color: T.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.4 }}>{article.title}</div>
+        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>{article.source_name} · {timeAgo(article.published_at)}</div>
       </div>
       <button onClick={() => onStar(article)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: article.is_starred ? T.yellow : 'rgba(255,255,255,0.06)', flexShrink: 0 }}><Star size={12} fill={article.is_starred ? T.yellow : 'none'} /></button>
-      {article.url && <a href={article.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: T.textTertiary, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0, opacity: 0.5, transition: 'opacity 0.15s', padding: '4px 10px', borderRadius: 50, border: `1px solid rgba(255,255,255,0.06)` }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}>Read <ExternalLink size={9} /></a>}
+      {article.url && <a href={article.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: T.textTertiary, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0, opacity: 0.5, transition: 'opacity 0.15s', padding: '4px 10px', borderRadius: 50, border: `1px solid rgba(255,255,255,0.06)` }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}>Read <ExternalLink size={9} /></a>}
     </div>
   )
 }
@@ -191,7 +191,7 @@ export default function News() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 50, border: `1px solid ${T.border}`, background: 'transparent', width: 200 }}>
             <Search size={12} color={T.textTertiary} style={{ flexShrink: 0 }} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…"
-              style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 12, color: T.text, width: '100%', fontFamily: T.font }} />
+              style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 13, color: T.text, width: '100%', fontFamily: T.font }} />
             {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: T.textTertiary, display: 'flex' }}><X size={11} /></button>}
           </div>
 
@@ -199,7 +199,7 @@ export default function News() {
           <div style={{ display: 'flex', gap: 4, flex: 1, flexWrap: 'wrap' }}>
             {FILTERS.map(f => (
               <button key={f.id} onClick={() => setFilter(f.id)} style={{
-                padding: '5px 11px', borderRadius: 50, fontSize: 11, fontFamily: T.font, cursor: 'pointer',
+                padding: '5px 11px', borderRadius: 50, fontSize: 12, fontFamily: T.font, cursor: 'pointer',
                 fontWeight: filter === f.id ? 500 : 400, whiteSpace: 'nowrap', transition: 'all 0.1s',
                 border: filter === f.id ? `1px solid ${T.text}` : `1px solid ${T.border}`,
                 background: filter === f.id ? T.text : T.surface,
@@ -212,7 +212,7 @@ export default function News() {
           <div style={{ display: 'flex', gap: 3 }}>
             {WINDOWS.map(w => (
               <button key={w.id} onClick={() => setWindow(w.id)} style={{
-                padding: '5px 9px', borderRadius: 6, fontSize: 10, fontFamily: T.font, cursor: 'pointer',
+                padding: '5px 9px', borderRadius: 6, fontSize: 11, fontFamily: T.font, cursor: 'pointer',
                 border: window === w.id ? `1px solid ${T.text}` : `1px solid ${T.border}`,
                 background: window === w.id ? T.text : 'transparent',
                 color: window === w.id ? 'rgba(255,255,255,0.9)' : T.textSecondary, transition: 'all 0.1s',
@@ -235,8 +235,8 @@ export default function News() {
             { val: todayCount, label: 'today' },
           ].map(({ val, label, accent }) => (
             <div key={label} style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-              <span style={{ fontSize: 15, fontWeight: 500, color: accent || T.text, lineHeight: 1 }}>{val}</span>
-              <span style={{ fontSize: 10, color: T.textTertiary }}>{label}</span>
+              <span style={{ fontSize: 16, fontWeight: 500, color: accent || T.text, lineHeight: 1 }}>{val}</span>
+              <span style={{ fontSize: 11, color: T.textTertiary }}>{label}</span>
             </div>
           ))}
         </div>
@@ -249,7 +249,7 @@ export default function News() {
             <Loader2 size={20} color={T.textTertiary} style={{ animation: 'spin 1s linear infinite' }} />
           </div>
         ) : displayed.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 60, color: T.textTertiary, fontSize: 13 }}>
+          <div style={{ textAlign: 'center', padding: 60, color: T.textTertiary, fontSize: 14 }}>
             {search ? 'No articles match' : 'No articles in this window'}
           </div>
         ) : (
@@ -257,7 +257,7 @@ export default function News() {
             {/* Featured row — deal signals & partnerships */}
             {featured.length > 0 && (
               <>
-                <div style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.textTertiary, marginBottom: 8 }}>
+                <div style={{ fontSize: 10, fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.textTertiary, marginBottom: 8 }}>
                   Signals
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: featured.length === 1 ? '1fr' : '1fr 1fr', gap: 10, marginBottom: 16 }}>
@@ -269,7 +269,7 @@ export default function News() {
             {/* All articles grid */}
             {rest.length > 0 && (
               <>
-                <div style={{ fontSize: 9, fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.textTertiary, marginBottom: 8, marginTop: featured.length > 0 ? 8 : 0 }}>
+                <div style={{ fontSize: 10, fontWeight: 400, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.textTertiary, marginBottom: 8, marginTop: featured.length > 0 ? 8 : 0 }}>
                   {featured.length > 0 ? 'More' : 'Articles'} · {rest.length}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

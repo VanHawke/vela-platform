@@ -54,6 +54,14 @@ function AuroraCanvas({ extraOrb = null }) {
         ctx.fillStyle = grad
         ctx.fillRect(0, 0, w, h)
       }
+      // Dark blue gradient from bottom — Render B treatment
+      const blueGrad = ctx.createLinearGradient(0, h * 0.35, 0, h)
+      blueGrad.addColorStop(0, 'rgba(10,25,60,0)')
+      blueGrad.addColorStop(0.4, 'rgba(10,25,60,0.15)')
+      blueGrad.addColorStop(0.7, 'rgba(15,35,80,0.22)')
+      blueGrad.addColorStop(1, 'rgba(20,45,100,0.18)')
+      ctx.fillStyle = blueGrad
+      ctx.fillRect(0, 0, w, h)
       animRef.current = requestAnimationFrame(draw)
     }
     animRef.current = requestAnimationFrame(draw)

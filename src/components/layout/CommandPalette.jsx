@@ -107,7 +107,7 @@ export default function CommandPalette({ open, onClose, onVoice }) {
           <input ref={inputRef} value={query} onChange={e => setQuery(e.target.value)} onKeyDown={handleKeyDown}
             placeholder="Search pages, contacts, deals..." autoFocus
             onInput={e => e.stopPropagation()}
-            style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, color: T.text, fontFamily: T.font, background: 'transparent' }} />
+            style={{ flex: 1, border: 'none', outline: 'none', fontSize: 15, color: T.text, fontFamily: T.font, background: 'transparent' }} />
         </div>
 
         {/* Results */}
@@ -120,7 +120,7 @@ export default function CommandPalette({ open, onClose, onVoice }) {
             return (
               <div key={item.id}>
                 {showSection && (
-                  <div style={{ padding: '8px 10px 4px', fontSize: 10, fontWeight: 400, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.04em', fontFamily: T.font }}>{sectionLabel}</div>
+                  <div style={{ padding: '8px 10px 4px', fontSize: 11, fontWeight: 400, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.04em', fontFamily: T.font }}>{sectionLabel}</div>
                 )}
                 <button onClick={() => handleSelect(item)} style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 10,
@@ -134,22 +134,22 @@ export default function CommandPalette({ open, onClose, onVoice }) {
                     <Icon size={14} color={T.sub} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 400, color: T.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</div>
-                    {item.sub && <div style={{ fontSize: 11, color: T.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.sub}</div>}
+                    <div style={{ fontSize: 14, fontWeight: 400, color: T.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</div>
+                    {item.sub && <div style={{ fontSize: 12, color: T.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.sub}</div>}
                   </div>
                 </button>
               </div>
             )
           })}
-          {searching && <div style={{ padding: '12px 10px', fontSize: 12, color: T.muted, fontFamily: T.font }}>Searching...</div>}
-          {query && !searching && allItems.length === 0 && <div style={{ padding: '12px 10px', fontSize: 12, color: T.muted, fontFamily: T.font }}>No results</div>}
+          {searching && <div style={{ padding: '12px 10px', fontSize: 13, color: T.muted, fontFamily: T.font }}>Searching...</div>}
+          {query && !searching && allItems.length === 0 && <div style={{ padding: '12px 10px', fontSize: 13, color: T.muted, fontFamily: T.font }}>No results</div>}
         </div>
 
         {/* Keyboard hints */}
         <div style={{ padding: '8px 16px', borderTop: '1.5px solid rgba(255,255,255,0.07)', display: 'flex', gap: 16, justifyContent: 'center' }}>
           {[['↑↓', 'navigate'], ['↵', 'open'], ['esc', 'close']].map(([key, label]) => (
-            <span key={key} style={{ fontSize: 10, color: T.muted, fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}>
-              <kbd style={{ padding: '1px 5px', borderRadius: 4, background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)', fontSize: 10, fontFamily: 'inherit' }}>{key}</kbd>
+            <span key={key} style={{ fontSize: 11, color: T.muted, fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <kbd style={{ padding: '1px 5px', borderRadius: 4, background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)', fontSize: 11, fontFamily: 'inherit' }}>{key}</kbd>
               {label}
             </span>
           ))}
