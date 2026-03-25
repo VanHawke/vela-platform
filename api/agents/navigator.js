@@ -58,18 +58,15 @@ NEWS SIGNALS (id: news, path: /news)
 - Each article: headline, source, date, relevance score
 - High-relevance articles flagged
 
-CALENDAR (id: calendar, path: /calendar)
-- Google Calendar integration
-- Event list view with upcoming meetings, calls, F1/FE events
-
-KNOWLEDGE LIBRARY (id: documents, path: /documents)
-- Uploaded documents (PDFs, decks, proposals)
-- Search and browse
+RACE CALENDAR (id: calendar, path: /calendar)
+- F1 2026 and Formula E Season 12 race calendars
+- Pre-race outreach windows, upcoming events
+- Event list view with meetings, calls, race weekends
 
 LEMLIST (id: lemlist, path: /lemlist)
-- Left: campaign list (84 campaigns) with status badges (active, draft, archived, ended)
-- Right: activity feed — email opens (purple), replies (green), bounces (red), sends (gray)
-- Click campaign → filters activity to that campaign
+- Left: campaign list sorted by status (Running → Paused → Other) with lead counts
+- Middle: click campaign → stats bar (sent, opened, clicked, replied, bounced), sequence flow (email/LinkedIn steps), leads list with last activity
+- Right: click any lead → full activity timeline showing every email, LinkedIn action, open, reply
 
 SETTINGS (id: settings, path: /settings)
 - Navigation customisation, preferences
@@ -77,7 +74,7 @@ SETTINGS (id: settings, path: /settings)
 
 const NAVIGATOR_PROMPT = `You are the Navigator Agent inside Kiko, the AI operating system for Van Hawke Group.
 
-Your ONLY job: understand the Vela platform UI, describe what's on screen, and navigate between pages.
+Your ONLY job: understand the Kiko platform UI, describe what's on screen, and navigate between pages.
 
 ${PLATFORM_MAP}
 
@@ -128,10 +125,10 @@ export async function callNavigator(instruction, pageContext = {}) {
       'contacts': 'contacts', 'people': 'contacts',
       'organisations': 'organisations', 'organizations': 'organisations', 'companies': 'organisations',
       'tasks': 'tasks', 'to do': 'tasks', 'todo': 'tasks', 'task list': 'tasks',
-      'calendar': 'calendar', 'schedule': 'calendar',
+      'calendar': 'calendar', 'schedule': 'calendar', 'race calendar': 'calendar', 'races': 'calendar', 'f1 calendar': 'calendar',
       'news': 'news', 'news signals': 'news',
       'partnership matrix': 'partnership-matrix', 'matrix': 'partnership-matrix', 'partnerships': 'partnership-matrix',
-      'documents': 'documents', 'knowledge library': 'documents', 'docs': 'documents',
+      'lemlist': 'lemlist', 'outreach campaigns': 'lemlist', 'campaigns': 'lemlist',
       'lemlist': 'lemlist', 'campaigns': 'lemlist',
       'home': 'home', 'dashboard': 'home', 'homepage': 'home',
       'settings': 'settings',

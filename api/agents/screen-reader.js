@@ -22,9 +22,9 @@ export async function describeScreen(currentPage) {
     case 'news': return await describeNews();
     case 'partnership-matrix': return await describeMatrix();
     case 'lemlist': return await describeLemlist();
-    case 'calendar': return 'You are on the Calendar page. It shows your Google Calendar events — upcoming meetings, calls, and F1/FE race events.';
-    case 'documents': return await describeDocuments();
-    case 'home': return 'You are on the Home page — Kiko\'s main interface. You can ask me anything, use the quick action chips (Brief me, Pipeline update, Check emails, F1 calendar), or navigate to any page.';
+    case 'calendar': return 'You are on the Race Calendar page. It shows F1 2026 and Formula E Season 12 race calendars with pre-race outreach windows and upcoming events.';
+    case 'documents': return 'Knowledge Library has been removed. Documents can be uploaded directly in chat — just drag and drop a file and I will learn from it.';
+    case 'home': return 'You are on the Home page — Kiko\'s main interface. You can ask me anything, use the quick action chips (Brief me, Pipeline update, Check emails, Race calendar), or navigate to any page.';
     default: return `You are on the ${currentPage || 'unknown'} page.`;
     }
   } catch (err) { return `Screen description error: ${err.message}`; }
