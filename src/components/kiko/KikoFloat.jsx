@@ -43,8 +43,8 @@ const STYLES = `
 }
 @keyframes kikoVortexSpin { to { transform: rotate(360deg); } }
 @keyframes kikoPulseRing {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.03); }
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.06); }
 }
 @keyframes kikoBreatheScale {
   0%, 100% { transform: scale(1); }
@@ -493,19 +493,20 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         </>}
         {/* Idle breathing ring — subtle purple */}
         {!open && !voiceOpen && <>
-          <div style={{ position: 'absolute', inset: -5, borderRadius: '50%', border: '1.5px solid rgba(139,108,246,0.1)', animation: 'kikoPulseRing 3s ease-in-out infinite', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: '2px solid rgba(139,108,246,0.25)', animation: 'kikoPulseRing 4s ease-in-out infinite', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', inset: -14, borderRadius: '50%', border: '1.5px solid rgba(139,108,246,0.12)', animation: 'kikoPulseRing 4s ease-in-out 1s infinite', pointerEvents: 'none' }} />
         </>}
         <button onClick={toggleOpen} className={fabClass} style={{
           width: 60, height: 60, borderRadius: '50%',
           background: voiceOpen
             ? 'radial-gradient(circle at 40% 35%, rgba(10,28,24,1), rgba(8,8,12,1))'
-            : 'radial-gradient(circle at 40% 35%, rgba(22,20,32,1), rgba(10,10,14,1))',
-          border: voiceOpen ? '2px solid rgba(6,214,160,0.25)' : '2px solid rgba(139,108,246,0.18)',
+            : 'radial-gradient(circle at 40% 35%, rgba(35,28,55,1), rgba(15,13,22,1))',
+          border: voiceOpen ? '2px solid rgba(6,214,160,0.25)' : '2px solid rgba(139,108,246,0.35)',
           color: 'rgba(255,255,255,0.9)',
           cursor: 'pointer',
           boxShadow: voiceOpen
             ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)'
-            : '0 0 0 3px rgba(139,108,246,0.05), 0 0 20px rgba(139,108,246,0.08), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
+            : '0 0 0 3px rgba(139,108,246,0.1), 0 0 28px rgba(139,108,246,0.15), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           overflow: 'hidden',
           transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
