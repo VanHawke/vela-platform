@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 // ── Platform tokens ───────────────────────────────────────
 const T = {
-  bg: '#07070B', surface: 'rgba(255,255,255,0.04)', surfaceHover: 'rgba(255,255,255,0.06)',
+  bg: '#000000', surface: 'rgba(255,255,255,0.04)', surfaceHover: 'rgba(255,255,255,0.06)',
   border: 'rgba(255,255,255,0.08)', borderHover: 'rgba(255,255,255,0.12)',
   text: 'rgba(255,255,255,0.95)', textSecondary: 'rgba(255,255,255,0.55)', textTertiary: 'rgba(255,255,255,0.32)',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",

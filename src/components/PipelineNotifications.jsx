@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Bell, BellRing, X, Mail, MessageSquare, Zap, UserCheck, ChevronRight, Check, Trophy } from 'lucide-react'
 
 const T = {
-  bg: '#07070B', surface: 'rgba(255,255,255,0.04)',
+  bg: '#000000', surface: 'rgba(255,255,255,0.04)',
   border: 'rgba(255,255,255,0.08)', borderHover: 'rgba(255,255,255,0.1)',
   text: 'rgba(255,255,255,0.95)', textSecondary: 'rgba(255,255,255,0.55)', textTertiary: 'rgba(255,255,255,0.32)',
   accent: 'rgba(255,255,255,0.12)', accentSoft: 'rgba(255,255,255,0.04)',

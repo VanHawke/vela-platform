@@ -54,7 +54,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100vw', height: '100vh', background: '#07070B', fontFamily: T.font, position: 'relative', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100vw', height: '100vh', background: '#000000', fontFamily: T.font, position: 'relative', overflow: 'hidden' }}>
       <AuroraCanvas />
 
       {/* Ambient glow behind helix */}
