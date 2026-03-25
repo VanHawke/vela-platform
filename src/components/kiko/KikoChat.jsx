@@ -399,7 +399,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     if ((!msg && !fileAttachments.length) || streaming) return
     setInput('')
     const displayMsg = msg || (fileAttachments.length ? `Uploaded ${fileAttachments.length} file(s)` : '')
-    const userMsg = { role: 'user', content: displayMsg }
+    const userMsg = { role: 'user', content: displayMsg, timestamp: Date.now() }
     setMessages(prev => [...prev, userMsg])
     setStreaming(true); setStreamText(''); setToolStatus(null); setThinkingSteps([]); setShowSteps(false)
     streamingRef.current = true; streamTextRef.current = ''; lastQueryRef.current = msg || ''
@@ -453,7 +453,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           } catch {}
         }
       }
-      const kikoMsg = { role: 'assistant', content: full }
+      const kikoMsg = { role: 'assistant', content: full, timestamp: Date.now() }
       const updated = [...messages, userMsg, kikoMsg]
       setMessages(prev => [...prev, kikoMsg]); setStreamText(''); setToolStatus(null)
       const newId = await saveConversation(updated.map(m => ({ role: m.role, content: m.content })), activeConvId, msg, full)
@@ -642,8 +642,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     const isKiko = isVoice ? msg.role === 'kiko' : msg.role === 'assistant'
     const isHovered = hoveredMsg === i
     return (
-      <div key={i} style={{ marginBottom: 24, display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', gap: 12, position: 'relative' }}
+      <div key={i} style={{ marginBottom: 24, position: 'relative' }}
         onMouseEnter={() => setHoveredMsg(i)} onMouseLeave={() => setHoveredMsg(null)}>
+        <div style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', gap: 12 }}>
         {isKiko && (
           <div style={{ width: 120, marginTop: 4, flexShrink: 0 }}>
             <DoubleHelix width={120} height={20} mini />
@@ -675,9 +676,16 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               onSendToGmail={() => handleSubmit(`Send the email draft you just wrote to Gmail. Use draft_email tool.`)} />
           })()}
         </div>
+        </div>
+        {/* Timestamp */}
+        <div style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', paddingLeft: isUser ? 0 : 132, marginTop: 4 }}>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.15)', fontFamily: T.font }}>
+            {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''}
+          </span>
+        </div>
         {/* Action buttons — below message, Claude-style */}
         {isHovered && !streaming && (
-          <div style={{ display: 'flex', gap: 2, marginTop: 4, paddingLeft: isUser ? 0 : 48, justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
+          <div style={{ display: 'flex', gap: 2, marginTop: 2, paddingLeft: isUser ? 0 : 132, justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
             {(() => {
               const abtn = (onClick, title, children) => (
                 <button onClick={onClick} title={title} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(255,255,255,0.35)', transition: 'all 0.15s', padding: 0 }}

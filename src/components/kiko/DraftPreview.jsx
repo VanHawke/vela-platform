@@ -60,7 +60,7 @@ export default function DraftPreview({ draft, onToneAdjust, onCopy, onSendToGmai
     onCopy?.()
   }
 
-  const toneChips = ['More direct', 'Add urgency', 'Soften', 'Shorten 25%', 'Make formal', 'Add scarcity']
+  const toneChips = ['More professional', 'More concise', 'More friendly', 'Add urgency', 'Soften tone', 'Make shorter']
 
   return (
     <div style={{ background: 'rgba(255,255,255,0.025)', border: '1.5px solid rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden', marginTop: 12, maxWidth: 580, backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.2)' }}>
