@@ -675,9 +675,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               onSendToGmail={() => handleSubmit(`Send the email draft you just wrote to Gmail. Use draft_email tool.`)} />
           })()}
         </div>
-        {/* Hover actions */}
+        {/* Action buttons — below message, Claude-style */}
         {isHovered && !streaming && (
-          <div style={{ position: 'absolute', bottom: -16, right: isUser ? 0 : 'auto', left: isUser ? 'auto' : 132, display: 'flex', gap: 2, zIndex: 5 }}>
+          <div style={{ display: 'flex', gap: 2, marginTop: 4, paddingLeft: isUser ? 0 : 48, justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
             {(() => {
               const abtn = (onClick, title, children) => (
                 <button onClick={onClick} title={title} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(255,255,255,0.35)', transition: 'all 0.15s', padding: 0 }}
@@ -863,9 +863,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   boxShadow: '0 0 20px rgba(139,108,246,0.08)',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 15, color: 'rgba(139,108,246,0.8)', fontFamily: T.font, fontWeight: 400 }}>
+                    <span style={{ fontSize: 15, color: 'rgba(139,108,246,0.8)', fontFamily: T.font, fontWeight: 400, flex: 1 }}>
                       {toolStatus || 'Kiko is thinking...'}
                     </span>
+                    <button onClick={stopKiko} style={{ padding: '4px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', fontSize: 12, cursor: 'pointer', fontFamily: T.font, flexShrink: 0 }}
+                      onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)' }}
+                      onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)' }}
+                    >Stop</button>
                   </div>
                 </div>
                 {thinkingSteps.length > 0 && (
@@ -895,9 +899,15 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {streaming && streamText && (
             <div style={{ marginBottom: 24, display: 'flex', gap: 12 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.accent, flexShrink: 0, marginTop: 8, boxShadow: '0 0 8px rgba(139,108,246,0.3)' }} />
-              <div style={{ flex: 1, fontSize: 15, color: 'rgba(255,255,255,0.6)', lineHeight: 1.75, fontFamily: T.font, fontWeight: 300 }}>
-                <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
-                <span style={{ animation: 'pulse 1s infinite', marginLeft: 2, color: 'rgba(139,108,246,0.4)' }}>|</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', lineHeight: 1.75, fontFamily: T.font, fontWeight: 300 }}>
+                  <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
+                  <span style={{ animation: 'pulse 1s infinite', marginLeft: 2, color: 'rgba(139,108,246,0.4)' }}>|</span>
+                </div>
+                <button onClick={stopKiko} style={{ marginTop: 6, padding: '5px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.35)', fontSize: 12, cursor: 'pointer', fontFamily: T.font }}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)' }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = 'rgba(255,255,255,0.35)' }}
+                >&#9632; Stop generating</button>
               </div>
             </div>
           )}
@@ -910,6 +920,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {dictateError && (
             <p style={{ textAlign: 'center', fontSize: 12, color: '#C62828', fontFamily: T.font, margin: '6px 0 0' }}>{dictateError}</p>
           )}
+          <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.12)', fontFamily: T.font, margin: '8px 0 0', fontWeight: 300 }}>Kiko is AI and can make mistakes. Please double-check responses.</p>
         </div>
       </div>
       {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} />}

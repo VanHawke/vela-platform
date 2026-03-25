@@ -52,19 +52,18 @@ export default function Settings({ user }) {
 
   const ALL_TOP_NAV = [
     { id: 'home', label: 'Home', path: '/' },
+    { id: 'pipeline', label: 'Pipeline', path: '/pipeline' },
+    { id: 'calendar', label: 'Calendar', path: '/calendar' },
     { id: 'contacts', label: 'Contacts', path: '/contacts' },
     { id: 'organisations', label: 'Organisations', path: '/organisations' },
-    { id: 'pipeline', label: 'Deal Pipeline', path: '/pipeline' },
-    { id: 'email', label: 'Outreach Intelligence', path: '/email' },
+    { id: 'email', label: 'Command Centre', path: '/email' },
     { id: 'news', label: 'News Signals', path: '/news' },
     { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix' },
-    { id: 'calendar', label: 'Calendar', path: '/calendar' },
     { id: 'documents', label: 'Knowledge Library', path: '/documents' },
     { id: 'tasks', label: 'Tasks', path: '/tasks' },
-    { id: 'dashboard', label: 'Dashboard', path: '/dashboard' },
-    { id: 'settings', label: 'Settings', path: '/settings' },
+    { id: 'lemlist', label: 'Lemlist', path: '/lemlist' },
   ]
-  const DEFAULT_TOP_NAV = ['home', 'contacts', 'pipeline', 'settings']
+  const DEFAULT_TOP_NAV = ['home', 'pipeline', 'partnership-matrix', 'tasks']
   const [topNavItems, setTopNavItems] = useState(DEFAULT_TOP_NAV)
   const [moreOrder, setMoreOrder] = useState(() => { try { const s = localStorage.getItem('kiko_more_order'); return s ? JSON.parse(s) : null } catch { return null } })
 

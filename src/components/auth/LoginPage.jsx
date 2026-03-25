@@ -64,7 +64,7 @@ export default function LoginPage() {
       <div style={{ width: '100%', maxWidth: 380, textAlign: 'center', position: 'relative', zIndex: 5, padding: '0 24px' }}>
 
         {/* Brand logo */}
-        <div style={{ marginBottom: 64, ...fade(0) }}>
+        <div style={{ marginBottom: 64, display: 'flex', justifyContent: 'center', ...fade(0) }}>
           {customLogo ? (
             <img src={customLogo} alt="Logo" style={{ height: 28, maxWidth: 160, objectFit: 'contain', opacity: 0.5 }} />
           ) : (
@@ -158,7 +158,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.08)', marginTop: 48, fontWeight: 300, ...fade(0.8) }}>Powered by Van Hawke Group</p>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.08)', marginTop: 48, fontWeight: 300, ...fade(0.8) }}>By Van Hawke</p>
       </div>
     </div>
   )
