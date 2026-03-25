@@ -4,6 +4,7 @@
     { "path": "/api/news-agent", "schedule": "0 8 * * 1-5" },
     { "path": "/api/cron-outreach-score", "schedule": "0 9 * * 1" },
     { "path": "/api/cron-partnership-scan", "schedule": "0 7 * * 1" },
+    { "path": "/api/cron-proactive", "schedule": "0 7 * * 1-5" },
     { "path": "/api/cron-document-scan", "schedule": "0 6 * * 0" }
   ],
   "functions": {
@@ -26,7 +27,8 @@
     "api/cron-outreach-score.js": { "maxDuration": 45 },
     "api/cron-partnership-scan.js": { "maxDuration": 45 },
     "api/documents.js": { "maxDuration": 30 },
-    "api/cron-document-scan.js": { "maxDuration": 30 }
+    "api/cron-document-scan.js": { "maxDuration": 30 },
+    "api/cron-proactive.js": { "maxDuration": 45 }
   },
   "rewrites": [
     { "source": "/api/google-auth/callback", "destination": "/api/google-auth" },
