@@ -117,7 +117,7 @@ export default function App() {
           <Route path="deals" element={<Navigate to="/pipeline" replace />} />
           <Route path="tasks" element={<Tasks user={user} />} />
           <Route path="email" element={<OutreachIntelligence user={user} />} />
-          <Route path="news" element={<News user={user} />} />
+          {/* News Signals removed — replaced by Partnership Detection alerts */}
           <Route path="partnership-matrix" element={<PartnershipMatrix user={user} />} />
           <Route path="calendar" element={<CommercialCalendar user={user} />} />
           {/* Knowledge Library removed — documents accessible via Kiko chat upload */}

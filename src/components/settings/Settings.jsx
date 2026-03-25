@@ -42,11 +42,11 @@ export default function Settings({ user }) {
   const [navLogo, setNavLogo] = useState(() => { try { return localStorage.getItem('custom_logo_url') } catch { return null } })
 
   const DEFAULT_NAV = [
-    { id: 'home', label: 'Home' }, { id: 'contacts', label: 'Contacts' },
-    { id: 'organisations', label: 'Organisations' }, { id: 'pipeline', label: 'Deal Pipeline' },
-    { id: 'email', label: 'Outreach Intelligence' }, { id: 'news', label: 'News Signals' },
-    { id: 'partnership-matrix', label: 'Partnership Matrix' }, { id: 'calendar', label: 'Calendar' },
-    { id: 'documents', label: 'Knowledge Library' }, { id: 'tasks', label: 'Tasks' },
+    { id: 'home', label: 'Home' }, { id: 'pipeline', label: 'Pipeline' },
+    { id: 'contacts', label: 'Contacts' }, { id: 'organisations', label: 'Organisations' },
+    { id: 'email', label: 'Command Centre' }, { id: 'partnership-matrix', label: 'Partnership Matrix' },
+    { id: 'calendar', label: 'Race Calendar' }, { id: 'tasks', label: 'Tasks' },
+    { id: 'lemlist', label: 'Lemlist' },
   ]
   const [navOrder, setNavOrder] = useState(DEFAULT_NAV)
 
@@ -57,7 +57,6 @@ export default function Settings({ user }) {
     { id: 'contacts', label: 'Contacts', path: '/contacts' },
     { id: 'organisations', label: 'Organisations', path: '/organisations' },
     { id: 'email', label: 'Command Centre', path: '/email' },
-    { id: 'news', label: 'News Signals', path: '/news' },
     { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix' },
     { id: 'tasks', label: 'Tasks', path: '/tasks' },
     { id: 'lemlist', label: 'Lemlist', path: '/lemlist' },

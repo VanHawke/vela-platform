@@ -126,7 +126,7 @@ export async function callNavigator(instruction, pageContext = {}) {
       'organisations': 'organisations', 'organizations': 'organisations', 'companies': 'organisations',
       'tasks': 'tasks', 'to do': 'tasks', 'todo': 'tasks', 'task list': 'tasks',
       'calendar': 'calendar', 'schedule': 'calendar', 'race calendar': 'calendar', 'races': 'calendar', 'f1 calendar': 'calendar',
-      'news': 'news', 'news signals': 'news',
+      'news': 'partnership-matrix', 'news signals': 'partnership-matrix', 'partnerships': 'partnership-matrix',
       'partnership matrix': 'partnership-matrix', 'matrix': 'partnership-matrix', 'partnerships': 'partnership-matrix',
       'lemlist': 'lemlist', 'outreach campaigns': 'lemlist', 'campaigns': 'lemlist',
       'lemlist': 'lemlist', 'campaigns': 'lemlist',

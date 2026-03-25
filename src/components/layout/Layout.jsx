@@ -18,7 +18,6 @@ const ALL_NAV = [
   { id: 'contacts', label: 'Contacts', path: '/contacts', Icon: Users },
   { id: 'organisations', label: 'Organisations', path: '/organisations', Icon: Building2 },
   { id: 'email', label: 'Command Centre', path: '/email', Icon: Target },
-  { id: 'news', label: 'News Signals', path: '/news', Icon: Newspaper },
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
   { id: 'tasks', label: 'Tasks', path: '/tasks', Icon: CheckSquare },
   { id: 'lemlist', label: 'Lemlist', path: '/lemlist', Icon: Send },
