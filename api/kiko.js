@@ -334,6 +334,35 @@ export default async function handler(req, res) {
     } else if (intent === 'general') {
       routingHint = '\n\n[ROUTING HINT: This is a general question. Answer directly from your knowledge. Do not call any tools unless the user explicitly asks for data.]';
     }
+
+    // For outreach/content, pre-fetch context so Claude drafts with real data
+    if (intent === 'outreach' || intent === 'content') {
+      try {
+        // Extract potential entity names from the message
+        const words = message.split(/\s+/).filter(w => w.length > 2 && w[0] === w[0].toUpperCase());
+        if (words.length) {
+          const searchTerm = words.join(' ');
+          const contacts = await sbFetch(`contacts?select=data&or=(data->>firstName.ilike.*${encodeURIComponent(words[0])}*,data->>company.ilike.*${encodeURIComponent(words[0])}*)&limit=3`);
+          if (contacts?.length) {
+            let ctx = '\n\n[CONTACT CONTEXT for drafting]:';
+            for (const c of contacts) {
+              const d = c.data || {};
+              ctx += `\n• ${d.firstName || ''} ${d.lastName || ''} — ${d.title || '?'} @ ${d.company || '?'} | ${d.email || 'no email'}`;
+            }
+            // Check for deals with this company
+            const company = contacts[0]?.data?.company;
+            if (company) {
+              const deals = await sbFetch(`deals?select=data&data->>company=ilike.*${encodeURIComponent(company)}*&limit=2`);
+              if (deals?.length) {
+                ctx += '\n[DEAL CONTEXT]:';
+                for (const dl of deals) ctx += `\n• ${dl.data.company} — ${dl.data.stage} (${dl.data.pipeline || '?'})`;
+              }
+            }
+            routingHint += ctx;
+          }
+        }
+      } catch {} // Non-blocking — if context fetch fails, Claude still drafts
+    }
     const systemWithHint = system + routingHint;
 
     // Deep think detection
