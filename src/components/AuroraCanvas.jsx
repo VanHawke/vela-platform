@@ -44,7 +44,7 @@ function AuroraCanvas({ extraOrb = null }) {
         const dx = Math.sin(t * orb.speed + orb.phase) * 80
         const dy = Math.cos(t * orb.speed * 0.7 + orb.phase) * 60
         const px = orb.cx + dx, py = orb.cy + dy
-        const pulse = 0.18 + Math.sin(t * 0.0004 + orb.phase) * 0.04
+        const pulse = 0.06 + Math.sin(t * 0.0004 + orb.phase) * 0.02
         const [r, g, b] = orb.color
         const grad = ctx.createRadialGradient(px, py, 0, px, py, orb.r)
         grad.addColorStop(0, `rgba(${r},${g},${b},${pulse})`)
@@ -55,11 +55,12 @@ function AuroraCanvas({ extraOrb = null }) {
         ctx.fillRect(0, 0, w, h)
       }
       // Dark blue gradient from bottom — Render B treatment
-      const blueGrad = ctx.createLinearGradient(0, h * 0.35, 0, h)
+      const blueGrad = ctx.createLinearGradient(0, h * 0.3, 0, h)
       blueGrad.addColorStop(0, 'rgba(10,25,60,0)')
-      blueGrad.addColorStop(0.4, 'rgba(10,25,60,0.15)')
-      blueGrad.addColorStop(0.7, 'rgba(15,35,80,0.22)')
-      blueGrad.addColorStop(1, 'rgba(20,45,100,0.18)')
+      blueGrad.addColorStop(0.35, 'rgba(10,25,60,0.2)')
+      blueGrad.addColorStop(0.6, 'rgba(15,35,80,0.3)')
+      blueGrad.addColorStop(0.85, 'rgba(18,40,90,0.28)')
+      blueGrad.addColorStop(1, 'rgba(20,45,100,0.22)')
       ctx.fillStyle = blueGrad
       ctx.fillRect(0, 0, w, h)
       animRef.current = requestAnimationFrame(draw)
