@@ -414,7 +414,27 @@ export default async function handler(req, res) {
       }
     } catch {} // Non-blocking
 
-    const systemWithHint = system + routingHint + preferencesHint;
+    // Phase 15: Load user communication profile
+    let profileHint = '';
+    try {
+      const profiles = await sbFetch(`kiko_user_profiles?user_id=eq.${userEmail === 'sunny@vanhawke.com' ? '9f486437-4bf5-4111-abfe-fe19bfa76063' : ''}&limit=1&select=draft_instructions,communication_style,language_fingerprint`);
+      if (Array.isArray(profiles) && profiles[0]?.draft_instructions) {
+        const p = profiles[0];
+        profileHint = `\n\n[SUNNY'S VOICE — when drafting emails, messages, or content, write EXACTLY like this]:`;
+        profileHint += `\n${p.draft_instructions}`;
+        if (p.language_fingerprint?.signature_phrases?.length) {
+          profileHint += `\nSignature phrases to use naturally: ${p.language_fingerprint.signature_phrases.join(', ')}`;
+        }
+        if (p.language_fingerprint?.avoided_phrases?.length) {
+          profileHint += `\nPhrases to AVOID: ${p.language_fingerprint.avoided_phrases.join(', ')}`;
+        }
+        if (p.communication_style?.directness) {
+          profileHint += `\nDirectness: ${p.communication_style.directness} | Formality: ${p.communication_style.formality || '?'}`;
+        }
+      }
+    } catch {} // Non-blocking
+
+    const systemWithHint = system + routingHint + preferencesHint + profileHint;
 
     // Deep think detection
     const DEEP_TRIGGERS = ['analyse', 'analyze', 'deep dive', 'think through', 'strategic', 'evaluate', 'comprehensive'];
