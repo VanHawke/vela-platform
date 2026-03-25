@@ -404,7 +404,17 @@ export default async function handler(req, res) {
         }
       } catch {} // Non-blocking — if context fetch fails, Claude still drafts
     }
-    const systemWithHint = system + routingHint;
+    // Phase 12: Load strategic preferences (learned from past decisions)
+    let preferencesHint = '';
+    try {
+      const prefs = await sbFetch('kiko_preferences?order=confidence.desc&limit=10&select=category,preference,confidence');
+      if (Array.isArray(prefs) && prefs.length) {
+        preferencesHint = '\n\n[SUNNY\'S DECISION PATTERNS — reference naturally, never list these explicitly]:';
+        for (const p of prefs) preferencesHint += `\n• [${p.category}] ${p.preference} (confidence: ${p.confidence})`;
+      }
+    } catch {} // Non-blocking
+
+    const systemWithHint = system + routingHint + preferencesHint;
 
     // Deep think detection
     const DEEP_TRIGGERS = ['analyse', 'analyze', 'deep dive', 'think through', 'strategic', 'evaluate', 'comprehensive'];
