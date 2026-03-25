@@ -16,15 +16,15 @@ async function getGoogleToken() {
 async function scanGmailContacts(token) {
   const contacts = {}; // email → { sent, received, lastSent, lastReceived, name }
 
-  // Scan last 100 sent emails for outbound frequency
+  // Scan last 50 sent emails for outbound frequency
   const sentRes = await fetch(
-    `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=in:sent&maxResults=100`,
+    `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=in:sent&maxResults=50`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
   const sentData = await sentRes.json();
   const sentIds = (sentData.messages || []).map(m => m.id);
 
-  for (const id of sentIds.slice(0, 80)) {
+  for (const id of sentIds.slice(0, 40)) {
     try {
       const msgRes = await fetch(
         `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=To&metadataHeaders=Date`,
@@ -48,15 +48,15 @@ async function scanGmailContacts(token) {
   }
 
 
-  // Scan last 100 received emails for inbound frequency
+  // Scan last 50 received emails for inbound frequency
   const recvRes = await fetch(
-    `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=in:inbox -from:me&maxResults=100`,
+    `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=in:inbox -from:me&maxResults=50`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
   const recvData = await recvRes.json();
   const recvIds = (recvData.messages || []).map(m => m.id);
 
-  for (const id of recvIds.slice(0, 80)) {
+  for (const id of recvIds.slice(0, 40)) {
     try {
       const msgRes = await fetch(
         `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=From&metadataHeaders=Date`,
@@ -137,7 +137,8 @@ export default async function handler(req, res) {
 
     let written = 0;
     for (const [email, data] of Object.entries(contacts)) {
-      if (email === USER_EMAIL) continue; // skip self
+      if (email === USER_EMAIL) continue;
+      if (data.sent + data.received < 2) continue; // Skip one-off contacts
       const warmth = calculateWarmth(data);
       const relType = classifyRelationship(data);
       const crm = crmByEmail[email];
