@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
 import T from '@/lib/theme'
-import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, CheckSquare, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target } from 'lucide-react'
+import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
 import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
@@ -21,7 +21,7 @@ const ALL_NAV = [
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
   { id: 'lemlist', label: 'Lemlist', path: '/lemlist', Icon: Send },
 ]
-const DEFAULT_TOP_IDS = ['home', 'pipeline', 'partnership-matrix', 'tasks']
+const DEFAULT_TOP_IDS = ['home', 'pipeline', 'partnership-matrix', 'email']
 
 function getTopNavIds() {
   try { const s = localStorage.getItem('kiko_top_nav'); if (s) return JSON.parse(s) } catch {}
@@ -29,10 +29,9 @@ function getTopNavIds() {
 }
 
 const PAGE_LABELS = {
-  '/pipeline': 'Pipeline', '/calendar': 'Calendar', '/contacts': 'Contacts',
+  '/pipeline': 'Pipeline', '/calendar': 'Race Calendar', '/contacts': 'Contacts',
   '/partnership-matrix': 'Partnership Matrix', '/email': 'Command Centre',
-  '/lemlist': 'Lemlist',
-  '/organisations': 'Organisations', '/tasks': 'Tasks', '/lemlist': 'Lemlist',
+  '/organisations': 'Organisations', '/lemlist': 'Lemlist',
   '/settings': 'Settings', '/dashboard': 'Dashboard',
 }
 
@@ -222,7 +221,7 @@ export default function Layout({ user }) {
                   boxShadow: T.glassShadow, padding: '6px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
                 }}>
                   {MORE_ITEMS.map(item => {
-                    const Icon = item.Icon || FileText
+                    const Icon = item.Icon || Building2
                     return (
                     <button key={item.label} onClick={() => { nav(item.path); setMoreOpen(false) }} style={{
                       width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none',
