@@ -335,6 +335,28 @@ export default async function handler(req, res) {
       routingHint = '\n\n[ROUTING HINT: This is a general question. Answer directly from your knowledge. Do not call any tools unless the user explicitly asks for data.]';
     }
 
+    // For general queries, inject live CRM context so Claude has business awareness
+    if (intent === 'general') {
+      try {
+        const [gDeals, gTasks, gActivity, gLearnings] = await Promise.all([
+          sbFetch('deals?select=data&data->>status=eq.active&limit=50').catch(() => []),
+          sbFetch('tasks?select=data&order=updated_at.desc&limit=10').catch(() => []),
+          sbFetch('activities?select=type,entity_name,subject&order=created_at.desc&limit=5').catch(() => []),
+          sbFetch('kiko_learning_log?category=eq.decision&order=created_at.desc&limit=5').catch(() => []),
+        ]);
+        const outstanding = (gTasks||[]).filter(t => !t.data?.completed);
+        const overdue = outstanding.filter(t => t.data?.dueDate && new Date(t.data.dueDate) < new Date());
+        let ctx = '\n\n[BUSINESS CONTEXT — reference naturally if relevant, do not list unless asked]:';
+        ctx += `\nPipeline: ${(gDeals||[]).length} active deals.`;
+        ctx += ` Tasks: ${outstanding.length} outstanding, ${overdue.length} overdue.`;
+        if (gActivity?.length) ctx += `\nRecent activity: ${gActivity.slice(0,3).map(a => `${a.type}: ${a.entity_name}`).join(', ')}`;
+        if (gLearnings?.length) ctx += `\nRecent decisions: ${gLearnings.slice(0,3).map(l => (l.user_message||'').slice(0,80)).join('; ')}`;
+        routingHint = `\n\n[ROUTING HINT: You have FULL access to all tools — CRM queries, web search via MCP, Gmail, Calendar, and all specialist agent tools. Think like a Chief of Staff who knows the entire business. If business context strengthens your answer, query the CRM. If current information is needed, use web search. Sunny uses you instead of ChatGPT and Claude — be worthy of that. Answer with depth, intelligence, and specificity.]` + ctx;
+      } catch {
+        routingHint = '\n\n[ROUTING HINT: You have full access to all tools. Answer with depth and intelligence. If business context would help, query the CRM. If current information is needed, search the web.]';
+      }
+    }
+
     // For outreach/content, pre-fetch context so Claude drafts with real data
     if (intent === 'outreach' || intent === 'content') {
       try {
