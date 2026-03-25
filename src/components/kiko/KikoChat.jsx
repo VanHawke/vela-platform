@@ -849,12 +849,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {/* Thinking indicator — prominent pulsing orb */}
           {streaming && !streamText && (
             <div style={{ marginBottom: 24, display: 'flex', gap: 14, alignItems: 'center', padding: '12px 0' }}>
-              <div style={{
-                width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-                background: 'radial-gradient(circle, rgba(139,108,246,0.5) 0%, rgba(0,212,170,0.3) 60%, transparent 100%)',
-                boxShadow: '0 0 24px rgba(139,108,246,0.4), 0 0 48px rgba(0,212,170,0.15), inset 0 0 12px rgba(139,108,246,0.3)',
-                animation: 'kikoThink 1.5s ease-in-out infinite',
-              }} />
+              <div style={{ width: 36, height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <DoubleHelix width={36} height={36} />
+              </div>
               <div style={{ flex: 1, maxWidth: 400 }}>
                 <div style={{
                   padding: '14px 18px', borderRadius: 16,

@@ -120,7 +120,7 @@ export default function App() {
           <Route path="news" element={<News user={user} />} />
           <Route path="partnership-matrix" element={<PartnershipMatrix user={user} />} />
           <Route path="calendar" element={<CommercialCalendar user={user} />} />
-          <Route path="documents" element={<Documents user={user} />} />
+          {/* Knowledge Library removed — documents accessible via Kiko chat upload */}
           <Route path="lemlist" element={<Lemlist user={user} />} />
           <Route path="kikocode" element={<KikoCode user={user} />} />
           <Route path="settings" element={<Settings user={user} />} />

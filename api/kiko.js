@@ -575,9 +575,9 @@ export default async function handler(req, res) {
     }
 
     write({ toolStatus: intent !== 'general' ? `Intent: ${intent}` : 'Thinking...' });
+    let responseText = ''; // Accumulate for conversation memory extraction — declared before streamCall
     let response = await streamCall(messages);
     let toolRounds = 0;
-    let responseText = ''; // Accumulate for conversation memory extraction
 
     // Tool execution loop — max 10 rounds
     while (response.stop_reason === 'tool_use' && toolRounds < 10) {

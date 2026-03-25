@@ -237,7 +237,7 @@ Be direct. Use web search for current company intelligence if needed.`
       </div>
 
       {/* RIGHT — Kiko Intelligence Panel */}
-      <div style={{ width: 370, borderLeft: '1px solid rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.01)', flexShrink: 0 }}>
+      <div style={{ flex: 1, borderLeft: '1px solid rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.01)', flexShrink: 0, minWidth: 0 }}>
         <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 40, height: 12, overflow: 'hidden' }}><DoubleHelix width={40} height={12} mini /></div>
           <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(139,108,246,0.6)', letterSpacing: '0.04em' }}>Kiko Intelligence</span>
@@ -253,7 +253,7 @@ Be direct. Use web search for current company intelligence if needed.`
 
           {kikoLoading && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '40px 0' }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,108,246,0.45) 0%, rgba(0,212,170,0.25) 60%, transparent 100%)', boxShadow: '0 0 18px rgba(139,108,246,0.35)', animation: 'kikoThink 1.5s ease-in-out infinite' }} />
+              <div style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><DoubleHelix width={48} height={48} /></div>
               <span style={{ fontSize: 13, color: 'rgba(139,108,246,0.6)', fontWeight: 400 }}>Analysing deal...</span>
             </div>
           )}

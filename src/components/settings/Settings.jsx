@@ -53,13 +53,12 @@ export default function Settings({ user }) {
   const ALL_TOP_NAV = [
     { id: 'home', label: 'Home', path: '/' },
     { id: 'pipeline', label: 'Pipeline', path: '/pipeline' },
-    { id: 'calendar', label: 'Calendar', path: '/calendar' },
+    { id: 'calendar', label: 'Race Calendar', path: '/calendar' },
     { id: 'contacts', label: 'Contacts', path: '/contacts' },
     { id: 'organisations', label: 'Organisations', path: '/organisations' },
     { id: 'email', label: 'Command Centre', path: '/email' },
     { id: 'news', label: 'News Signals', path: '/news' },
     { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix' },
-    { id: 'documents', label: 'Knowledge Library', path: '/documents' },
     { id: 'tasks', label: 'Tasks', path: '/tasks' },
     { id: 'lemlist', label: 'Lemlist', path: '/lemlist' },
   ]

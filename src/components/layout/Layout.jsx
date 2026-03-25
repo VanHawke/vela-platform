@@ -14,13 +14,12 @@ import AuroraCanvas from '../AuroraCanvas'
 const ALL_NAV = [
   { id: 'home', label: 'Home', path: '/', Icon: Home },
   { id: 'pipeline', label: 'Pipeline', path: '/pipeline', Icon: GitBranch },
-  { id: 'calendar', label: 'Calendar', path: '/calendar', Icon: Calendar },
+  { id: 'calendar', label: 'Race Calendar', path: '/calendar', Icon: Calendar },
   { id: 'contacts', label: 'Contacts', path: '/contacts', Icon: Users },
   { id: 'organisations', label: 'Organisations', path: '/organisations', Icon: Building2 },
   { id: 'email', label: 'Command Centre', path: '/email', Icon: Target },
   { id: 'news', label: 'News Signals', path: '/news', Icon: Newspaper },
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
-  { id: 'documents', label: 'Knowledge Library', path: '/documents', Icon: FileText },
   { id: 'tasks', label: 'Tasks', path: '/tasks', Icon: CheckSquare },
   { id: 'lemlist', label: 'Lemlist', path: '/lemlist', Icon: Send },
 ]
