@@ -150,6 +150,17 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
         overflow: 'hidden',
       }}
     >
+      {/* ── All Pipelines option ── */}
+      <div style={{ padding: '6px 0', borderBottom: '1.5px solid var(--border)' }}>
+        <button
+          onClick={() => { onSelect('All'); closeAll() }}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background 0.1s' }}
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-hover)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+          <span style={tx({ flex: 1, fontSize: 15, color: 'var(--text)', fontWeight: activePipeline === 'All' ? 500 : 400 })}>All Pipelines</span>
+          {activePipeline === 'All' && <Check size={14} strokeWidth={2.5} color="var(--text)" />}
+        </button>
+      </div>
       {/* ── Active pipelines ── */}
       <div style={{ padding: '6px 0', borderBottom: '1.5px solid var(--border)' }}>
         {visible.map(pl => (
@@ -311,7 +322,7 @@ export default function Pipeline({ user }) {
   const [deals, setDeals] = useState([])
   const [pipelines, setPipelines] = useState([])
   const [loading, setLoading] = useState(true)
-  const [pipelineFilter, setPipelineFilter] = useState('Haas F1')
+  const [pipelineFilter, setPipelineFilter] = useState('All')
   const [showClosed, setShowClosed] = useState(false)
   const [dragDeal, setDragDeal] = useState(null)
   const [dragOverStage, setDragOverStage] = useState(null)
@@ -335,7 +346,10 @@ export default function Pipeline({ user }) {
     setDeals((dealsData || []).map(row => ({ _id: row.id, ...row.data, updated_at: row.updated_at })))
     if (plData && plData.length > 0) {
       setPipelines(plData)
-      setPipelineFilter(plData.find(p => p.visible)?.name || plData[0]?.name || 'Haas F1')
+      // Keep 'All' as default — only override if not set
+      if (pipelineFilter !== 'All' && !plData.find(p => p.name === pipelineFilter)) {
+        setPipelineFilter(plData.find(p => p.visible)?.name || plData[0]?.name || 'Haas F1')
+      }
     }
     const domainMap = {}
     ;(orgs || []).forEach(o => { if (o.name && o.website) domainMap[o.name] = o.website.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0] })
@@ -351,7 +365,7 @@ export default function Pipeline({ user }) {
   }
 
   const activeStages = useMemo(() => showClosed ? [...STAGES, ...CLOSED_STAGES] : STAGES, [showClosed])
-  const filteredDeals = useMemo(() => deals.filter(d => d.pipeline === pipelineFilter), [deals, pipelineFilter])
+  const filteredDeals = useMemo(() => pipelineFilter === 'All' ? deals : deals.filter(d => d.pipeline === pipelineFilter), [deals, pipelineFilter])
   const dealsByStage = (stageId) => filteredDeals.filter(d => d.stage === stageId)
 
   const selectDeal = async (deal) => {
@@ -527,6 +541,12 @@ export default function Pipeline({ user }) {
                         )}
                         {!deal.contactName && deal.industry && (
                           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', margin: '4px 0 0', fontFamily: 'var(--font)' }}>{deal.industry}</p>
+                        )}
+                        {/* Pipeline badge — visible in All view */}
+                        {pipelineFilter === 'All' && deal.pipeline && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                            <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: 'rgba(139,108,246,0.08)', color: 'rgba(139,108,246,0.6)', fontWeight: 500, fontFamily: 'var(--font)' }}>{deal.pipeline}</span>
+                          </div>
                         )}
                         <div style={{ marginTop: 6 }}>
                           <span style={{ fontSize: 11, fontFamily: 'var(--font)', ...staleStyle(deal.lastActivity) }}>
