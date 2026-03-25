@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
 import T from '@/lib/theme'
-import { Settings, LogOut, Search, ChevronDown, BarChart3, Newspaper, Grid3X3, FileText, Building2, CheckSquare, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target } from 'lucide-react'
+import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, CheckSquare, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
 import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
@@ -32,7 +32,7 @@ function getTopNavIds() {
 const PAGE_LABELS = {
   '/pipeline': 'Pipeline', '/calendar': 'Calendar', '/contacts': 'Contacts',
   '/partnership-matrix': 'Partnership Matrix', '/email': 'Command Centre',
-  '/news': 'News Signals', '/documents': 'Knowledge Library',
+  '/lemlist': 'Lemlist',
   '/organisations': 'Organisations', '/tasks': 'Tasks', '/lemlist': 'Lemlist',
   '/settings': 'Settings', '/dashboard': 'Dashboard',
 }

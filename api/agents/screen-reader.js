@@ -19,7 +19,7 @@ export async function describeScreen(currentPage) {
     case 'organisations': return await describeOrganisations();
     case 'email': case 'outreach-intelligence': return await describeCommandCentre();
     case 'tasks': return await describeTasks();
-    case 'news': return await describeNews();
+    case 'news': return 'News Signals has been replaced by the Partnership Detection Engine. Partnership announcements are now detected automatically and appear as alerts on the Home page. Say "show me the partnership matrix" to see the latest F1 partnerships.';
     case 'partnership-matrix': return await describeMatrix();
     case 'lemlist': return await describeLemlist();
     case 'calendar': return 'You are on the Race Calendar page. It shows F1 2026 and Formula E Season 12 race calendars with pre-race outreach windows and upcoming events.';

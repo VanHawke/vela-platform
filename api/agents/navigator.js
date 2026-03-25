@@ -52,11 +52,9 @@ PARTNERSHIP MATRIX (id: partnership-matrix, path: /partnership-matrix)
 - Shows current sponsors per team per category
 - Gaps highlighted — open categories available for sales
 - Team selector tabs at top
-
-NEWS SIGNALS (id: news, path: /news)
-- Daily news feed filtered for F1/FE/sponsorship relevance
-- Each article: headline, source, date, relevance score
-- High-relevance articles flagged
+- NEW: Partnership Detection Engine runs daily at 7am, auto-detects F1 sponsor announcements from team websites and news
+- New partners appear here automatically with "New" badges
+- Alerts show on homepage with "Discuss" and "View Matrix" buttons
 
 RACE CALENDAR (id: calendar, path: /calendar)
 - F1 2026 and Formula E Season 12 race calendars

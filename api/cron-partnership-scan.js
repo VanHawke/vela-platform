@@ -66,12 +66,13 @@ async function upsertPartnership(p, source) {
     // Log activity
     await supabase.from('kiko_alerts').insert({
       type: 'new_partnership',
-      severity: 'medium',
-      title: `New: ${p.partner_name} → ${p.team_id}`,
-      detail: `${p.partner_name} detected as ${p.tier || 'partner'} for ${p.team_id} (${p.category_id}). Source: ${source}`,
+      severity: 'high',
+      title: `New F1 Partner: ${p.partner_name} → ${p.team_id}`,
+      detail: `${p.partner_name} announced as ${p.tier || 'partner'} for ${p.team_id} (${p.category_id}). Source: ${source}`,
       entity_type: 'partnership',
       entity_name: p.partner_name,
-      metadata: { ...p, source },
+      action: `View ${p.partner_name} in Partnership Matrix`,
+      metadata: { ...p, source, action_url: '/partnership-matrix' },
       expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     });
     // Homepage notification
@@ -124,12 +125,28 @@ export default async function handler(req, res) {
   const searchFeeds = [
     'https://news.google.com/rss/search?q=F1+team+sponsor+partner+2026&hl=en&gl=US&ceid=US:en',
     'https://news.google.com/rss/search?q=Formula+1+sponsorship+deal+2026&hl=en&gl=GB&ceid=GB:en',
+    'https://news.google.com/rss/search?q=Formula+1+new+partner+announcement+2026&hl=en&gl=US&ceid=US:en',
   ];
 
+  // F1 team official news pages
+  const teamFeeds = [
+    { team: 'Red Bull', url: 'https://news.google.com/rss/search?q=site:redbullracing.com+partner&hl=en' },
+    { team: 'Ferrari', url: 'https://news.google.com/rss/search?q=site:ferrari.com+partner+F1&hl=en' },
+    { team: 'McLaren', url: 'https://news.google.com/rss/search?q=site:mclaren.com+partner&hl=en' },
+    { team: 'Mercedes', url: 'https://news.google.com/rss/search?q=site:mercedesamgf1.com+partner&hl=en' },
+    { team: 'Aston Martin', url: 'https://news.google.com/rss/search?q=site:astonmartinf1.com+partner&hl=en' },
+    { team: 'Alpine', url: 'https://news.google.com/rss/search?q=site:alpinecars.com+F1+partner&hl=en' },
+    { team: 'Williams', url: 'https://news.google.com/rss/search?q=site:williamsf1.com+partner&hl=en' },
+    { team: 'Haas', url: 'https://news.google.com/rss/search?q=site:haasf1team.com+partner&hl=en' },
+    { team: 'Racing Bulls', url: 'https://news.google.com/rss/search?q=site:racingbulls.com+partner&hl=en' },
+    { team: 'Audi', url: 'https://news.google.com/rss/search?q=Audi+F1+partner+sponsor+2026&hl=en' },
+  ];
+  const allFeeds = [...searchFeeds.map(url => ({ url })), ...teamFeeds];
+
   let webArticles = 0;
-  for (const feedUrl of searchFeeds) {
+  for (const feed of allFeeds) {
     try {
-      const feedRes = await fetch(feedUrl, { headers: { 'User-Agent': 'Kiko/1.0' } });
+      const feedRes = await fetch(feed.url, { headers: { 'User-Agent': 'Kiko/1.0' } });
       if (!feedRes.ok) continue;
       const xml = await feedRes.text();
       // Simple XML title extraction
@@ -145,7 +162,7 @@ export default async function handler(req, res) {
 
         const partnerships = await classifyPartnership(title);
         for (const p of partnerships) {
-          const result = await upsertPartnership(p, `Web: ${title}`);
+          const result = await upsertPartnership(p, `Web${feed.team ? ` (${feed.team})` : ''}: ${title}`);
           if (result === 'new') { added++; results.push(p); webArticles++; }
           else if (result === 'existing') updated++;
         }

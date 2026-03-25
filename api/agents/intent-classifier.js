@@ -14,7 +14,7 @@ const PAGE_ALIASES = {
   'organisations': 'organisations', 'organizations': 'organisations', 'companies': 'organisations',
   'tasks': 'tasks', 'to do': 'tasks', 'todo': 'tasks', 'task list': 'tasks',
   'calendar': 'calendar', 'schedule': 'calendar', 'race calendar': 'calendar', 'races': 'calendar',
-  'news': 'news', 'news signals': 'news',
+  'partnership': 'strategy', 'partnership matrix': 'strategy', 'partnerships': 'strategy',
   'partnership matrix': 'partnership-matrix', 'matrix': 'partnership-matrix', 'partnerships': 'partnership-matrix',
   'lemlist': 'lemlist', 'campaigns': 'lemlist',
   'lemlist': 'lemlist', 'campaigns': 'lemlist',

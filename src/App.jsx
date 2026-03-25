@@ -13,9 +13,9 @@ import Contacts from '@/pages/Contacts'
 import ContactDetail from '@/pages/ContactDetail'
 import Organisations from '@/pages/Organisations'
 import Tasks from '@/pages/Tasks'
-import Documents from '@/pages/Documents'
+// Documents page removed — uploads via Kiko chat drag-and-drop
 import OutreachIntelligence from '@/pages/OutreachIntelligence'
-import News from '@/pages/News'
+// News page removed — replaced by Partnership Detection Engine alerts
 import PartnershipMatrix from '@/pages/PartnershipMatrix'
 import CommercialCalendar from '@/pages/CommercialCalendar'
 import KikoCode from '@/pages/KikoCode'
