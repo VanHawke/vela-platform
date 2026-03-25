@@ -103,17 +103,47 @@ export default function Lemlist({ user }) {
     setLeads([])
     setSequenceSteps([])
     try {
-      // Parallel fetch: stats + leads + campaign detail (for sequenceId)
-      const [statsRes, leadsRes, detailRes] = await Promise.all([
+      // Parallel fetch: stats + activities (for lead derivation) + campaign detail (for sequenceId)
+      const [statsRes, actRes, detailRes] = await Promise.all([
         fetch(`/api/lemlist-data?action=stats&campaign_id=${c._id}`),
-        fetch(`/api/lemlist-data?action=leads&campaign_id=${c._id}`),
+        fetch(`/api/lemlist-data?action=activities&campaign_id=${c._id}`),
         fetch(`/api/lemlist-data?action=campaign_detail&campaign_id=${c._id}`),
       ])
-      const [statsData, leadsData, detailData] = await Promise.all([
-        statsRes.json(), leadsRes.json(), detailRes.json(),
+      const [statsData, actData, detailData] = await Promise.all([
+        statsRes.json(), actRes.json(), detailRes.json(),
       ])
       setStats(statsData || {})
-      setLeads(Array.isArray(leadsData) ? leadsData : [])
+      // Derive unique leads from activities (richer data than /leads endpoint)
+      const actArr = Array.isArray(actData) ? actData : []
+      const leadMap = {}
+      for (const a of actArr) {
+        const email = a.leadEmail || a.email || ''
+        if (!email) continue
+        if (!leadMap[email]) {
+          leadMap[email] = {
+            email,
+            firstName: a.leadFirstName || a.firstName || '',
+            lastName: a.leadLastName || a.lastName || '',
+            companyName: a.leadCompanyName || a.companyName || '',
+            _id: a.leadId || email,
+            lastActivity: a.createdAt,
+            lastType: a.type,
+            activities: 1,
+          }
+        } else {
+          leadMap[email].activities++
+          // Keep most recent activity info
+          if (a.createdAt > leadMap[email].lastActivity) {
+            leadMap[email].lastActivity = a.createdAt
+            leadMap[email].lastType = a.type
+          }
+          // Fill in missing names
+          if (!leadMap[email].firstName && (a.leadFirstName || a.firstName)) leadMap[email].firstName = a.leadFirstName || a.firstName
+          if (!leadMap[email].companyName && (a.leadCompanyName || a.companyName)) leadMap[email].companyName = a.leadCompanyName || a.companyName
+        }
+      }
+      const derivedLeads = Object.values(leadMap).sort((a, b) => new Date(b.lastActivity || 0) - new Date(a.lastActivity || 0))
+      setLeads(derivedLeads)
       // Fetch sequence steps if sequenceId available
       if (detailData?.sequenceId) {
         try {
@@ -271,8 +301,10 @@ export default function Lemlist({ user }) {
                 {leads.length === 0 && <div style={{ fontSize: 13, color: T.textTertiary, fontWeight: 300, padding: 12 }}>No leads in this campaign</div>}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   {leads.map((lead, idx) => {
-                    const isSelected = selectedLead?.email === lead.email || selectedLead?._id === lead._id
-                    const leadStatus = lead.status || (lead.unsubscribed ? 'unsubscribed' : lead.replied ? 'replied' : 'active')
+                    const isSelected = selectedLead?.email === lead.email
+                    const lastType = (lead.lastType || '').replace(/([A-Z])/g, ' $1').trim()
+                    const isReply = (lead.lastType || '').toLowerCase().includes('replied')
+                    const isBounce = (lead.lastType || '').toLowerCase().includes('bounced')
                     return (
                       <div key={lead._id || idx} onClick={() => selectLead(lead)} style={{
                         ...card, padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12,
@@ -292,11 +324,11 @@ export default function Lemlist({ user }) {
                           <div style={{ fontSize: 11, color: T.textTertiary, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{lead.email}</div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
-                          <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 5, fontWeight: 500,
-                            background: leadStatus === 'replied' ? 'rgba(6,214,160,0.08)' : leadStatus === 'interested' ? 'rgba(6,214,160,0.08)' : leadStatus === 'bounced' ? 'rgba(255,59,48,0.08)' : 'rgba(255,255,255,0.04)',
-                            color: leadStatus === 'replied' ? 'rgba(6,214,160,0.7)' : leadStatus === 'interested' ? 'rgba(6,214,160,0.7)' : leadStatus === 'bounced' ? 'rgba(255,59,48,0.7)' : T.textTertiary,
-                          }}>{leadStatus}</span>
-                          {lead.currentStepName && <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>Step: {lead.currentStepName}</span>}
+                          <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 5, fontWeight: 500, textTransform: 'capitalize',
+                            background: isReply ? 'rgba(6,214,160,0.08)' : isBounce ? 'rgba(255,59,48,0.08)' : 'rgba(255,255,255,0.04)',
+                            color: isReply ? 'rgba(6,214,160,0.7)' : isBounce ? 'rgba(255,59,48,0.7)' : T.textTertiary,
+                          }}>{lastType || 'active'}</span>
+                          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>{lead.activities} events · {timeAgo(lead.lastActivity)}</span>
                         </div>
                         <ChevronRight size={14} style={{ color: 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
                       </div>
