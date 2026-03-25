@@ -16,15 +16,15 @@ async function getGoogleToken() {
 async function scanGmailContacts(token) {
   const contacts = {}; // email → { sent, received, lastSent, lastReceived, name }
 
-  // Scan last 200 sent emails for outbound frequency
+  // Scan last 100 sent emails for outbound frequency
   const sentRes = await fetch(
-    `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=in:sent&maxResults=200`,
+    `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=in:sent&maxResults=100`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
   const sentData = await sentRes.json();
   const sentIds = (sentData.messages || []).map(m => m.id);
 
-  for (const id of sentIds.slice(0, 150)) {
+  for (const id of sentIds.slice(0, 80)) {
     try {
       const msgRes = await fetch(
         `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=To&metadataHeaders=Date`,
@@ -48,15 +48,15 @@ async function scanGmailContacts(token) {
   }
 
 
-  // Scan last 200 received emails for inbound frequency
+  // Scan last 100 received emails for inbound frequency
   const recvRes = await fetch(
-    `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=in:inbox -from:me&maxResults=200`,
+    `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=in:inbox -from:me&maxResults=100`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
   const recvData = await recvRes.json();
   const recvIds = (recvData.messages || []).map(m => m.id);
 
-  for (const id of recvIds.slice(0, 150)) {
+  for (const id of recvIds.slice(0, 80)) {
     try {
       const msgRes = await fetch(
         `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=From&metadataHeaders=Date`,
