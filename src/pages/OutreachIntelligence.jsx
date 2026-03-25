@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
-import { Target, TrendingUp, Clock, Building2, Send, RefreshCw, Loader2, AlertTriangle, Calendar, ChevronRight } from 'lucide-react'
+import { Target, TrendingUp, Clock, Building2, Send, RefreshCw, Loader2, AlertTriangle, Calendar, ChevronRight, CheckSquare, Square } from 'lucide-react'
 import T from '@/lib/theme'
 import DOMPurify from 'dompurify'
 import DoubleHelix from '@/components/kiko/DoubleHelix'
@@ -23,6 +23,7 @@ export default function OutreachIntelligence({ user }) {
   const [deals, setDeals] = useState([])
   const [activities, setActivities] = useState([])
   const [nextRace, setNextRace] = useState(null)
+  const [tasks, setTasks] = useState([])
   const [selectedAction, setSelectedAction] = useState(null)
   const [kikoLoading, setKikoLoading] = useState(false)
   const [kikoRec, setKikoRec] = useState(null)
@@ -32,14 +33,16 @@ export default function OutreachIntelligence({ user }) {
   const loadData = async () => {
     setLoading(true)
     try {
-      const [dealsRes, actRes, raceRes] = await Promise.all([
+      const [dealsRes, actRes, raceRes, tasksRes] = await Promise.all([
         supabase.from('deals').select('id, data, updated_at').not('data->>status', 'in', '("won","lost")').order('updated_at', { ascending: false }),
         supabase.from('activities').select('*').order('created_at', { ascending: false }).limit(20),
         supabase.from('race_calendar').select('name, date, circuit').gt('date', new Date().toISOString().split('T')[0]).order('date').limit(1),
+        supabase.from('tasks').select('*').order('updated_at', { ascending: false }),
       ])
       setDeals(dealsRes.data || [])
       setActivities(actRes.data || [])
       setNextRace(raceRes.data?.[0] || null)
+      setTasks((tasksRes.data || []).filter(t => !t.data?.completed))
 
       // Build priority actions from deals
       const now = new Date()
@@ -74,6 +77,12 @@ export default function OutreachIntelligence({ user }) {
     finally { setLoading(false) }
   }
 
+  const toggleTask = async (task) => {
+    const updated = { ...task.data, completed: true, completedAt: new Date().toISOString() }
+    await supabase.from('tasks').update({ data: updated, updated_at: new Date().toISOString() }).eq('id', task.id)
+    setTasks(prev => prev.filter(t => t.id !== task.id))
+  }
+
   // Kiko recommendation for selected action
   const getKikoRec = useCallback(async (deal) => {
     setSelectedAction(deal)
@@ -81,7 +90,19 @@ export default function OutreachIntelligence({ user }) {
     setKikoRec(null)
     try {
       const d = deal.data || {}
-      const prompt = `PRIORITY ACTION for: ${d.company || 'Unknown'} (${d.contact || 'no contact'})
+      const isTask = deal.isTask
+      const td = deal.taskData || {}
+      const prompt = isTask
+        ? `TASK: "${td.type || 'Task'}" for ${td.company || 'unknown company'}${td.contact ? ` (contact: ${td.contact})` : ''}. Notes: "${td.notes || 'none'}". Due: ${td.dueDate || 'no date set'}.
+
+Provide:
+1. ANALYSIS — Current state, company intel, timing signals.
+2. RECOMMENDED ACTION — Specific next move.
+3. SUGGESTED DRAFT — If email/LinkedIn task, write a draft (100 words max, authority tone, no pricing).
+4. TIMING — When to execute and why.
+
+Be specific. Use web search for company intelligence if needed.`
+        : `PRIORITY ACTION for: ${d.company || 'Unknown'} (${d.contact || 'no contact'})
 Stage: ${deal.stage} | Value: $${(deal.value || 0).toLocaleString()} | Days since activity: ${deal.daysSinceUpdate}
 Pipeline: ${d.pipeline || 'Unknown'} | ${deal.isStale ? 'STALE — needs immediate attention' : ''}
 
@@ -194,6 +215,47 @@ Be direct. Use web search for current company intelligence if needed.`
 
         {/* Priority action list */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px' }}>
+
+          {/* Tasks Due section */}
+          {tasks.length > 0 && (<>
+            <div style={{ fontSize: 11, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <CheckSquare size={12} style={{ color: 'rgba(6,214,160,0.5)' }} />
+              Tasks Due ({tasks.length})
+            </div>
+            {tasks.slice(0, 8).map(task => {
+              const d = task.data || {}
+              const isOverdue = d.dueDate && new Date(d.dueDate) < new Date()
+              return (
+                <div key={task.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '9px 12px', borderRadius: 10, marginBottom: 4, background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.03)', cursor: 'pointer', transition: 'all 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.015)' }}
+                  onClick={() => {
+                    setSelectedAction({ id: task.id, data: { company: d.company || '', contact: d.contact || '' }, isTask: true, taskData: d })
+                    getKikoRec({ id: task.id, data: { company: d.company || '', contact: d.contact || '' }, isTask: true, taskData: d })
+                  }}>
+                  <button onClick={(e) => { e.stopPropagation(); toggleTask(task) }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 2, color: 'rgba(255,255,255,0.2)' }}>
+                    <Square size={14} />
+                  </button>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                      <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(6,214,160,0.6)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{d.type || 'Task'}</span>
+                      {isOverdue && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 6, background: 'rgba(255,59,48,0.08)', color: 'rgba(255,59,48,0.6)', fontWeight: 500 }}>OVERDUE</span>}
+                    </div>
+                    <div style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.75)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {d.company || d.notes || 'Untitled task'}{d.contact ? ` — ${d.contact}` : ''}
+                    </div>
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 3 }}>
+                      {d.dueDate && <span style={{ fontSize: 11, color: isOverdue ? 'rgba(255,59,48,0.5)' : T.textTertiary }}><Clock size={10} style={{ marginRight: 3 }} />{d.dueDate}</span>}
+                      {d.notes && d.company && <span style={{ fontSize: 11, color: T.textTertiary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.notes.slice(0, 50)}</span>}
+                    </div>
+                  </div>
+                  <ChevronRight size={12} style={{ color: 'rgba(255,255,255,0.08)', flexShrink: 0, marginTop: 8 }} />
+                </div>
+              )
+            })}
+            <div style={{ height: 16 }} />
+          </>)}
+
           <div style={{ fontSize: 11, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>Priority Actions</div>
 
           {priorityActions.length === 0 && (
@@ -265,12 +327,25 @@ Be direct. Use web search for current company intelligence if needed.`
             <div>
               {/* Context header */}
               <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-                <div style={{ fontSize: 11, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 }}>{selectedAction.actionType}</div>
-                <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', fontWeight: 400 }}>{selectedAction.data?.company}{selectedAction.data?.contact ? ` · ${selectedAction.data.contact}` : ''}</div>
+                <div style={{ fontSize: 11, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 }}>
+                  {selectedAction.isTask ? (selectedAction.taskData?.type || 'Task') : selectedAction.actionType}
+                </div>
+                <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', fontWeight: 400 }}>
+                  {selectedAction.data?.company || selectedAction.taskData?.company}{selectedAction.data?.contact ? ` · ${selectedAction.data.contact}` : ''}
+                </div>
                 <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                  <span style={{ fontSize: 11, color: T.textTertiary }}>{selectedAction.stage}</span>
-                  {selectedAction.value > 0 && <span style={{ fontSize: 11, color: 'rgba(0,212,170,0.4)' }}>${(selectedAction.value / 1000000).toFixed(1)}M</span>}
-                  <span style={{ fontSize: 11, color: selectedAction.isStale ? 'rgba(255,59,48,0.5)' : T.textTertiary }}>{selectedAction.daysSinceUpdate}d since activity</span>
+                  {selectedAction.isTask ? (
+                    <>
+                      {selectedAction.taskData?.dueDate && <span style={{ fontSize: 11, color: new Date(selectedAction.taskData.dueDate) < new Date() ? 'rgba(255,59,48,0.5)' : T.textTertiary }}>Due: {selectedAction.taskData.dueDate}</span>}
+                      {selectedAction.taskData?.notes && <span style={{ fontSize: 11, color: T.textTertiary }}>{selectedAction.taskData.notes.slice(0, 40)}</span>}
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ fontSize: 11, color: T.textTertiary }}>{selectedAction.stage}</span>
+                      {selectedAction.value > 0 && <span style={{ fontSize: 11, color: 'rgba(0,212,170,0.4)' }}>${(selectedAction.value / 1000000).toFixed(1)}M</span>}
+                      <span style={{ fontSize: 11, color: selectedAction.isStale ? 'rgba(255,59,48,0.5)' : T.textTertiary }}>{selectedAction.daysSinceUpdate}d since activity</span>
+                    </>
+                  )}
                 </div>
               </div>
               {/* Kiko's analysis */}
