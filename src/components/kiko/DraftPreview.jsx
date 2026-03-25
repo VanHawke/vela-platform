@@ -11,7 +11,6 @@ export function detectDraft(text) {
     const block = draftBlock[1].trim()
     const toMatch = block.match(/^To:\s*(.+)/im)
     const subjectMatch = block.match(/^Subject:\s*(.+)/im)
-    // Body = everything after Subject line (or To line if no subject)
     const lastHeader = subjectMatch ? subjectMatch.index + subjectMatch[0].length : (toMatch ? toMatch.index + toMatch[0].length : 0)
     const body = block.slice(lastHeader).trim()
     return {
@@ -22,26 +21,62 @@ export function detectDraft(text) {
     }
   }
 
-  // Pattern 2: Loose detection — Subject: + To: lines in message
+  // Pattern 2: Subject + To with email
   const subjectMatch = text.match(/Subject:\s*"?([^"\n]+)"?/i)
   const toMatch = text.match(/To:\s*([^\n,]+@[^\n,]+)/i)
   if (subjectMatch && toMatch) {
-    // Find body between headers and signature
     const lines = text.split('\n')
     let bodyStart = -1
     for (let i = 0; i < lines.length; i++) {
-      const l = lines[i].trim()
-      if (l.match(/^(Dear |Hi |Hello |Hey |\w+,\s*$)/i)) { bodyStart = i; break }
+      if (lines[i].trim().match(/^(Dear |Hi |Hello |Hey |\w+,\s*$)/i)) { bodyStart = i; break }
     }
+    if (bodyStart === -1) bodyStart = lines.findIndex((l, idx) => idx > 0 && l.trim().length > 20 && !l.match(/^(Subject|To|From|CC|BCC):/i))
     if (bodyStart === -1) return null
     let bodyEnd = lines.length
     for (let i = bodyStart + 1; i < lines.length; i++) {
-      if (lines[i].match(/^(Sunny Sidhu|Best regards|Kind regards|Cheers|Thanks,)/i)) { bodyEnd = i + 2; break }
+      if (lines[i].match(/^(Sunny|Best regards|Kind regards|Cheers|Thanks,|Warm regards|Sincerely)/i)) { bodyEnd = i + 2; break }
     }
     const body = lines.slice(bodyStart, Math.min(bodyEnd, lines.length)).join('\n').trim()
     if (body.length < 30) return null
     return { subject: subjectMatch[1].trim(), to: toMatch[1].trim(), body, type: 'email' }
   }
+
+  // Pattern 3: Subject line alone (most common Kiko pattern)
+  if (subjectMatch) {
+    const lines = text.split('\n')
+    const subIdx = lines.findIndex(l => l.match(/Subject:/i))
+    if (subIdx === -1) return null
+    // Find body start: first line after Subject that looks like email content
+    let bodyStart = -1
+    for (let i = subIdx + 1; i < lines.length; i++) {
+      const l = lines[i].trim()
+      if (l.length > 15 && !l.match(/^(To|From|CC|BCC|Subject):/i)) { bodyStart = i; break }
+    }
+    if (bodyStart === -1) return null
+    let bodyEnd = lines.length
+    for (let i = bodyStart + 1; i < lines.length; i++) {
+      if (lines[i].match(/^(Sunny|Best regards|Kind regards|Cheers|Thanks,|Warm regards|Sincerely)/i)) { bodyEnd = i + 2; break }
+    }
+    const body = lines.slice(bodyStart, Math.min(bodyEnd, lines.length)).join('\n').trim()
+    if (body.length < 40) return null
+    const toLoose = text.match(/To:\s*(.+)/im)
+    return { subject: subjectMatch[1].trim(), to: toLoose ? toLoose[1].trim() : '', body, type: 'email' }
+  }
+
+  // Pattern 4: "Dear X" + sign-off pattern (email without Subject header)
+  const dearMatch = text.match(/^(Dear |Hi |Hello )\w/m)
+  const signOff = text.match(/^(Best regards|Kind regards|Warm regards|Sincerely|Thanks,|Cheers)/m)
+  if (dearMatch && signOff) {
+    const lines = text.split('\n')
+    const startIdx = lines.findIndex(l => l.match(/^(Dear |Hi |Hello )\w/))
+    const endIdx = lines.findIndex(l => l.match(/^(Best regards|Kind regards|Warm regards|Sincerely|Thanks,|Cheers)/))
+    if (startIdx >= 0 && endIdx > startIdx) {
+      const body = lines.slice(startIdx, Math.min(endIdx + 2, lines.length)).join('\n').trim()
+      if (body.length < 40) return null
+      return { subject: '', to: '', body, type: 'email' }
+    }
+  }
+
   return null
 }
 

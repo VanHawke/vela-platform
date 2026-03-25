@@ -45,7 +45,8 @@ export default function Settings({ user }) {
     { id: 'home', label: 'Home' }, { id: 'pipeline', label: 'Pipeline' },
     { id: 'contacts', label: 'Contacts' }, { id: 'organisations', label: 'Organisations' },
     { id: 'email', label: 'Command Centre' }, { id: 'partnership-matrix', label: 'Partnership Matrix' },
-    { id: 'calendar', label: 'Race Calendar' }, { id: 'tasks', label: 'Tasks' },
+    { id: 'calendar', label: 'Race Calendar' },
+    { id: 'lemlist', label: 'Lemlist' },
     { id: 'lemlist', label: 'Lemlist' },
   ]
   const [navOrder, setNavOrder] = useState(DEFAULT_NAV)
@@ -58,10 +59,9 @@ export default function Settings({ user }) {
     { id: 'organisations', label: 'Organisations', path: '/organisations' },
     { id: 'email', label: 'Command Centre', path: '/email' },
     { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix' },
-    { id: 'tasks', label: 'Tasks', path: '/tasks' },
     { id: 'lemlist', label: 'Lemlist', path: '/lemlist' },
   ]
-  const DEFAULT_TOP_NAV = ['home', 'pipeline', 'partnership-matrix', 'tasks']
+  const DEFAULT_TOP_NAV = ['home', 'pipeline', 'partnership-matrix', 'email']
   const [topNavItems, setTopNavItems] = useState(DEFAULT_TOP_NAV)
   const [moreOrder, setMoreOrder] = useState(() => { try { const s = localStorage.getItem('kiko_more_order'); return s ? JSON.parse(s) : null } catch { return null } })
 

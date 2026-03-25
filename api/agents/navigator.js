@@ -30,11 +30,9 @@ COMMAND CENTRE (id: email, path: /email)
 - Right panel: Kiko Intelligence — click any deal for AI analysis + draft
 - Stale deals (30d+ no activity) flagged with red STALE badge
 
-TASKS (id: tasks, path: /tasks)
-- Left: task list with filter chips (Outstanding, Overdue, Completed, All)
-- Each task: checkbox, priority bar, type label (EMAIL FOLLOWUP, LINKEDIN FOLLOWUP, etc.), description, company, contact, due date
-- + New button for task creation form
-- Right panel: Kiko Recommendation — click any task for AI analysis + draft
+TASKS — now merged into COMMAND CENTRE (id: email, path: /email)
+- Tasks are accessible via the Command Centre page
+- Say "open command centre" to see tasks and priority actions together
 
 CONTACTS (id: contacts, path: /contacts)
 - Searchable table of all contacts
@@ -122,7 +120,7 @@ export async function callNavigator(instruction, pageContext = {}) {
       'command centre': 'email', 'command center': 'email', 'outreach intelligence': 'email',
       'contacts': 'contacts', 'people': 'contacts',
       'organisations': 'organisations', 'organizations': 'organisations', 'companies': 'organisations',
-      'tasks': 'tasks', 'to do': 'tasks', 'todo': 'tasks', 'task list': 'tasks',
+      'tasks': 'email', 'to do': 'email', 'todo': 'email', 'task list': 'email',
       'calendar': 'calendar', 'schedule': 'calendar', 'race calendar': 'calendar', 'races': 'calendar', 'f1 calendar': 'calendar',
       'news': 'partnership-matrix', 'news signals': 'partnership-matrix', 'partnerships': 'partnership-matrix',
       'partnership matrix': 'partnership-matrix', 'matrix': 'partnership-matrix', 'partnerships': 'partnership-matrix',

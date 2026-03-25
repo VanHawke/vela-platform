@@ -19,7 +19,6 @@ const ALL_NAV = [
   { id: 'organisations', label: 'Organisations', path: '/organisations', Icon: Building2 },
   { id: 'email', label: 'Command Centre', path: '/email', Icon: Target },
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
-  { id: 'tasks', label: 'Tasks', path: '/tasks', Icon: CheckSquare },
   { id: 'lemlist', label: 'Lemlist', path: '/lemlist', Icon: Send },
 ]
 const DEFAULT_TOP_IDS = ['home', 'pipeline', 'partnership-matrix', 'tasks']
