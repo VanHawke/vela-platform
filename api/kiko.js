@@ -11,6 +11,25 @@ export const config = { supportsResponseStreaming: true, maxDuration: 60 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const MODEL = 'claude-sonnet-4-20250514';
 
+// Phase 8: Learning Loop — log decisions for pattern matching
+const DECISION_TOOLS = ['ask_strategy_agent', 'ask_deal_agent', 'ask_negotiation_agent', 'ask_pricing_agent', 'ask_investment_agent'];
+async function logDecision(toolName, toolInput, toolResult, userMessage) {
+  if (!DECISION_TOOLS.includes(toolName)) return;
+  try {
+    const agent = toolName.replace('ask_', '').replace('_agent', '');
+    const entity = toolInput?.company || toolInput?.query || toolInput?.situation || '';
+    const resultStr = typeof toolResult === 'string' ? toolResult : JSON.stringify(toolResult);
+    await sbFetch('kiko_learning_log', {
+      method: 'POST',
+      body: JSON.stringify({
+        category: 'decision',
+        content: `[${agent}] Q: ${(userMessage || '').slice(0, 100)} | A: ${resultStr.slice(0, 400)}`,
+        entity_name: (typeof entity === 'string' ? entity : '').slice(0, 100) || null,
+      })
+    });
+  } catch {} // Non-blocking — logging failure must never break responses
+}
+
 // ── MCP Server Registry ──
 async function getMcpServers(userEmail) {
   try {
@@ -442,6 +461,7 @@ export default async function handler(req, res) {
           type: 'tool_result', tool_use_id: block.id,
           content: typeof result === 'string' ? result : JSON.stringify(result).slice(0, 8000)
         });
+        logDecision(block.name, block.input, result, message); // Phase 8: Learning loop
       }
       write({ toolStatus: null });
       messages.push({ role: 'assistant', content: response.content });
@@ -457,6 +477,7 @@ export default async function handler(req, res) {
         write({ toolStatus: TOOL_LABELS[block.name] || 'Finishing...' });
         const result = block.name === 'memory' ? await handleMemory(block.input) : await executeTool(block.name, block.input, userEmail, pageContext);
         finalResults.push({ type: 'tool_result', tool_use_id: block.id, content: typeof result === 'string' ? result : JSON.stringify(result).slice(0, 4000) });
+        logDecision(block.name, block.input, result, message); // Phase 8: Learning loop
       }
       write({ toolStatus: null });
       messages.push({ role: 'assistant', content: response.content });
