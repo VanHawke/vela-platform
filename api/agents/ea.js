@@ -77,97 +77,50 @@ async function morningBrief() {
   // ── SOURCE 6: Pipeline notifications ──
   const unreadNotifs = (pipelineNotifs || []).filter(n => !n.is_read);
 
-  // ══════ COMPOSE THE BRIEF ══════
-  let out = `MORNING BRIEF — ${now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}\n\n`;
+  // ══════ SYNTHESISE VIA CLAUDE (not a formatted list) ══════
+  // Also pull recent decisions from learning log for context
+  let recentDecisions = [];
+  try {
+    recentDecisions = await sbFetch('kiko_learning_log?category=eq.decision&order=created_at.desc&limit=5&select=content,entity_name,created_at') || [];
+  } catch {}
 
-  // ── OVERDUE (highest priority) ──
-  if (overdue.length) {
-    out += `🔴 OVERDUE (${overdue.length}):\n`;
-    for (const t of overdue.slice(0, 5)) {
-      const d = t.data;
-      const daysOver = Math.floor((now - new Date(d.dueDate)) / 86400000);
-      out += `  • ${d.type}: ${d.notes}${d.company ? ` (${d.company})` : ''} — ${daysOver}d overdue\n`;
-    }
-    out += '\n';
-  }
+  const briefData = JSON.stringify({
+    date: now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+    tasks: { outstanding: outstanding.length, overdue: overdue.length, dueToday: dueToday.length,
+      overdueItems: overdue.slice(0,5).map(t => ({ type: t.data.type, notes: t.data.notes, company: t.data.company, daysOverdue: Math.floor((now - new Date(t.data.dueDate)) / 86400000) })),
+      dueTodayItems: dueToday.slice(0,3).map(t => ({ type: t.data.type, notes: t.data.notes, company: t.data.company })) },
+    pipeline: { total: allDeals.length, rawValue: totalRaw, weightedValue: totalWeighted,
+      stale: staleDeals.slice(0,5).map(d => ({ company: d.company, daysSince: d.daysSince })),
+      atRisk: atRiskDeals.slice(0,5).map(d => ({ company: d.company, daysSince: d.daysSince })) },
+    momentum: recentMoves.slice(0,5).map(m => ({ company: movedDealNames[m.deal_id] || '?', from: m.from_stage, to: m.to_stage })),
+    hotLeads: hotLeads.slice(0,5).map(h => ({ name: h.recipient_name || h.recipient_email, company: h.company })),
+    dealSignals: dealSignals.slice(0,5).map(s => ({ title: s.title, companies: (s.matched_companies||[]).map(c => c.name||c) })),
+    alerts: (alerts||[]).slice(0,5).map(a => ({ severity: a.severity, title: a.title, entity: a.entity_name })),
+    notifications: unreadNotifs.slice(0,3).map(n => ({ type: n.type, title: n.title })),
+    recentDecisions: recentDecisions.slice(0,3).map(d => ({ entity: d.entity_name, content: (d.content||'').slice(0,100), date: d.created_at })),
+  });
 
-  // ── DUE TODAY ──
-  if (dueToday.length) {
-    out += `📌 DUE TODAY (${dueToday.length}):\n`;
-    for (const t of dueToday) {
-      out += `  • ${t.data.type}: ${t.data.notes}${t.data.company ? ` (${t.data.company})` : ''}\n`;
-    }
-    out += '\n';
-  }
+  try {
+    const briefResponse = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514', max_tokens: 800,
+      system: `You are Kiko, Sunny's Chief of Staff at Van Hawke Group. Compose a morning brief.
 
-  // ── HOT LEADS (outreach replies — immediate revenue opportunity) ──
-  if (hotLeads.length) {
-    out += `🔥 HOT LEADS (${hotLeads.length} outreach replies):\n`;
-    for (const h of hotLeads) {
-      out += `  • ${h.recipient_name || h.recipient_email}${h.company ? ` (${h.company})` : ''} — replied ${h.sent_at ? new Date(h.sent_at).toLocaleDateString('en-GB', {day:'numeric',month:'short'}) : ''}\n`;
-    }
-    out += '\n';
+RULES:
+- DO NOT list data sources as sections. SYNTHESISE into a narrative.
+- Identify CONVERGENCE MOMENTS: where multiple signals point to the same company.
+- Lead with the single most important action Sunny should take RIGHT NOW.
+- Be specific: names, numbers, dates. No filler. Under 400 words.
+- If deals are stale and tasks are overdue, say so bluntly.
+- If hot leads + news signals converge on a company, call it out as a convergence.
+- End with the top 3 priorities for the day, ranked.
+- All values in USD.`,
+      messages: [{ role: 'user', content: briefData }],
+    });
+    return briefResponse.content[0]?.text || 'Brief generation failed — data was gathered but synthesis errored.';
+  } catch (err) {
+    // Fallback: return raw data summary if Claude fails
+    return `BRIEF DATA (synthesis unavailable): ${outstanding.length} tasks (${overdue.length} overdue), ${allDeals.length} deals (${fmt(totalWeighted)} weighted), ${hotLeads.length} hot leads, ${dealSignals.length} signals, ${(alerts||[]).length} alerts. Error: ${err.message}`;
   }
-
-  // ── PIPELINE (weighted value + momentum) ──
-  out += `💰 PIPELINE: ${allDeals.length} active deals | ${fmt(totalRaw)} raw | ${fmt(totalWeighted)} weighted\n`;
-  if (recentMoves.length) {
-    out += `  Moved this week:\n`;
-    for (const m of recentMoves.slice(0, 5)) {
-      const name = movedDealNames[m.deal_id] || 'Unknown';
-      const date = new Date(m.changed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-      out += `  ↗ ${name}: ${m.from_stage} → ${m.to_stage} (${date})\n`;
-    }
-  }
-  if (atRiskDeals.length) {
-    out += `  ⚠️ At risk (4-7d no contact): ${atRiskDeals.map(d => `${d.company} (${d.daysSince}d)`).join(', ')}\n`;
-  }
-  if (staleDeals.length) {
-    out += `  🔴 Stale (7d+): ${staleDeals.slice(0, 5).map(d => `${d.company} (${d.daysSince}d)`).join(', ')}`;
-    if (staleDeals.length > 5) out += ` +${staleDeals.length - 5} more`;
-    out += '\n';
-  }
-  out += '\n';
-
-  // ── DEAL SIGNALS (from news) ──
-  if (dealSignals.length) {
-    out += `📰 DEAL SIGNALS (${dealSignals.length} this week):\n`;
-    for (const s of dealSignals.slice(0, 3)) {
-      const companies = (s.matched_companies || []).map(c => c.name || c).join(', ');
-      out += `  • ${s.title}${companies ? ` — ${companies}` : ''}\n`;
-    }
-    out += '\n';
-  }
-
-  // ── ALERTS ──
-  if (alerts?.length) {
-    out += `⚠️ ALERTS (${alerts.length}):\n`;
-    for (const a of alerts.slice(0, 3)) out += `  [${(a.severity||'info').toUpperCase()}] ${a.title}\n`;
-    out += '\n';
-  }
-
-  // ── PIPELINE NOTIFICATIONS ──
-  if (unreadNotifs.length) {
-    out += `🔔 NOTIFICATIONS (${unreadNotifs.length} unread):\n`;
-    for (const n of unreadNotifs.slice(0, 3)) {
-      out += `  ${n.type === 'reply' ? '💬' : n.type === 'interested' ? '✅' : '📈'} ${n.title}\n`;
-    }
-    out += '\n';
-  }
-
-  // ── RECENT ACTIVITY ──
-  if (activities?.length) {
-    out += `📋 RECENT ACTIVITY:\n`;
-    for (const a of (activities || []).slice(0, 3)) {
-      const date = new Date(a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-      out += `  ${date} — [${a.type}] ${a.entity_name}: ${a.subject || ''}\n`;
-    }
-    out += '\n';
-  }
-
-  // ── SUMMARY LINE ──
-  out += `📝 ${outstanding.length} tasks (${overdue.length} overdue) | ${hotLeads.length} hot leads | ${staleDeals.length} stale deals`;
-  return out;
 }
 
 async function prioritiseTasks() {
