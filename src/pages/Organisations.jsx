@@ -844,7 +844,7 @@ export default function Organisations({ user }) {
                 )}
               </div>
 
-              {/* News Signals */}
+              {/* Intelligence Signals */}
               <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
                 <p style={sectionTitle}>Recent Signals</p>
                 {loadingSignals ? (

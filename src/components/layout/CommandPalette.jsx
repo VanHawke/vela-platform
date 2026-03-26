@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { Search, FileText, BarChart3, Newspaper, Grid3X3, Building2, CheckSquare, Mic, Settings, Users, GitBranch, Calendar } from 'lucide-react'
+import { Search, BarChart3, Grid3X3, Building2, Mic, Settings, Users, GitBranch, Calendar, Send, Target } from 'lucide-react'
 
 const T = {
   text: 'rgba(255,255,255,0.95)', sub: 'rgba(255,255,255,0.55)', muted: 'rgba(255,255,255,0.32)',
@@ -11,14 +11,12 @@ const T = {
 
 const PAGES = [
   { id: 'pipeline', label: 'Pipeline', path: '/pipeline', icon: GitBranch, section: 'pages' },
-  { id: 'calendar', label: 'Calendar', path: '/calendar', icon: Calendar, section: 'pages' },
+  { id: 'calendar', label: 'Race Calendar', path: '/calendar', icon: Calendar, section: 'pages' },
   { id: 'contacts', label: 'Contacts', path: '/contacts', icon: Users, section: 'pages' },
-  { id: 'email', label: 'Outreach Intelligence', path: '/email', icon: BarChart3, section: 'pages' },
-  { id: 'news', label: 'News Signals', path: '/news', icon: Newspaper, section: 'pages' },
+  { id: 'email', label: 'Command Centre', path: '/email', icon: Target, section: 'pages' },
   { id: 'matrix', label: 'Partnership Matrix', path: '/partnership-matrix', icon: Grid3X3, section: 'pages' },
-  { id: 'documents', label: 'Knowledge Library', path: '/documents', icon: FileText, section: 'pages' },
   { id: 'organisations', label: 'Organisations', path: '/organisations', icon: Building2, section: 'pages' },
-  { id: 'tasks', label: 'Tasks', path: '/tasks', icon: CheckSquare, section: 'pages' },
+  { id: 'lemlist', label: 'Lemlist', path: '/lemlist', icon: Send, section: 'pages' },
 ]
 
 const ACTIONS = [
