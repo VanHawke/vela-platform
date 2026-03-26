@@ -331,6 +331,9 @@ export default function Pipeline({ user }) {
   const [dealContacts, setDealContacts] = useState([])
   const [dealCampaigns, setDealCampaigns] = useState([])
   const [dealTasks, setDealTasks] = useState([])
+  const [activityNote, setActivityNote] = useState('')
+  const [activityType, setActivityType] = useState(null)
+  const [savingActivity, setSavingActivity] = useState(false)
   const [loadingPanel, setLoadingPanel] = useState(false)
   const [companyDomains, setCompanyDomains] = useState({})
   const nav = useNavigate()
@@ -396,7 +399,22 @@ export default function Pipeline({ user }) {
     setLoadingPanel(false)
   }
 
-  const closePanel = () => { setSelectedDeal(null); setDealCompany(null); setDealContacts([]); setDealCampaigns([]) }
+  const closePanel = () => { setSelectedDeal(null); setDealCompany(null); setDealContacts([]); setDealCampaigns([]); setDealTasks([]); setActivityNote(''); setActivityType(null) }
+
+  const logActivity = async (type) => {
+    if (savingActivity || !selectedDeal) return
+    setSavingActivity(true)
+    const now = new Date().toISOString()
+    await supabase.from('activities').insert({
+      type, entity_name: selectedDeal.company || selectedDeal.title,
+      deal_id: selectedDeal._id, subject: activityNote || `${type} logged`,
+      status: 'completed', completed_at: now,
+      metadata: { contact: selectedDeal.contactName, pipeline: selectedDeal.pipeline, logged_by: 'user' }
+    })
+    // Update deal's last activity
+    await supabase.from('deals').update({ updated_at: now }).eq('id', selectedDeal._id)
+    setActivityNote(''); setActivityType(null); setSavingActivity(false)
+  }
   const panelOpen = !!selectedDeal
 
   const moveStage = async (deal, newStage) => {
@@ -663,6 +681,25 @@ export default function Pipeline({ user }) {
                   </div>
                 </div>
               )}
+              {/* Quick Activity Logger */}
+              <div style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.1)' }}>
+                <p style={sectionTitle}><Clock style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Log Activity</p>
+                <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
+                  {['Call', 'Meeting', 'Email Sent', 'LinkedIn', 'Note'].map(t => (
+                    <button key={t} onClick={() => activityType === t ? setActivityType(null) : setActivityType(t)}
+                      style={{ padding: '4px 10px', borderRadius: 8, fontSize: 11, fontWeight: 400, fontFamily: 'var(--font)', cursor: 'pointer', border: `1px solid ${activityType === t ? 'rgba(139,108,246,0.3)' : 'rgba(255,255,255,0.06)'}`, background: activityType === t ? 'rgba(139,108,246,0.08)' : 'rgba(255,255,255,0.02)', color: activityType === t ? 'rgba(139,108,246,0.8)' : 'rgba(255,255,255,0.35)', transition: 'all 0.15s' }}>{t}</button>
+                  ))}
+                </div>
+                {activityType && (
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <input value={activityNote} onChange={e => setActivityNote(e.target.value)} placeholder={`Notes for ${activityType}...`}
+                      onKeyDown={e => e.key === 'Enter' && logActivity(activityType.toLowerCase().replace(' ', '_'))}
+                      style={{ flex: 1, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: 'rgba(255,255,255,0.7)', fontFamily: 'var(--font)', outline: 'none' }} />
+                    <button onClick={() => logActivity(activityType.toLowerCase().replace(' ', '_'))} disabled={savingActivity}
+                      style={{ padding: '6px 14px', borderRadius: 8, fontSize: 11, fontFamily: 'var(--font)', cursor: 'pointer', border: '1px solid rgba(6,214,160,0.2)', background: 'rgba(6,214,160,0.06)', color: 'rgba(6,214,160,0.7)' }}>{savingActivity ? '...' : 'Log'}</button>
+                  </div>
+                )}
+              </div>
               <DocumentSection
                 linkedDealId={selectedDeal?._id}
                 linkedCompanyId={dealCompany?.id}
