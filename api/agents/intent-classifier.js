@@ -12,7 +12,7 @@ const PAGE_ALIASES = {
   'command centre': 'email', 'command center': 'email', 'outreach intelligence': 'email',
   'contacts': 'contacts', 'people': 'contacts',
   'organisations': 'organisations', 'organizations': 'organisations', 'companies': 'organisations',
-  'tasks': 'tasks', 'to do': 'tasks', 'todo': 'tasks', 'task list': 'tasks',
+  'tasks': 'email', 'to do': 'email', 'todo': 'email', 'task list': 'email',
   'calendar': 'calendar', 'schedule': 'calendar', 'race calendar': 'calendar', 'races': 'calendar',
   'partnership': 'strategy', 'partnership matrix': 'strategy', 'partnerships': 'strategy',
   'partnership matrix': 'partnership-matrix', 'matrix': 'partnership-matrix', 'partnerships': 'partnership-matrix',

@@ -223,7 +223,6 @@ const PAGE_ROLES = {
   'partnership-matrix': '\nROLE: Strategic Advisor. Partnership Detection Engine auto-scans F1 team websites daily. Analyse gaps, competitive positioning, new partner announcements, target recommendations.',
   organisations: '\nROLE: Due Diligence. Assess profiles, funding, sponsorship readiness.',
   home: '\nROLE: Strategic Partner. Brief on top 3 priorities across pipeline, email, calendar.',
-  tasks: '\nROLE: Task Manager. Prioritise, flag overdue, recommend actions.',
   lemlist: '\nROLE: Outreach Analyst. Campaign performance, warm leads, next actions.',
   'outreach-intelligence': '\nROLE: Deal Strategist. Command Centre — deals ranked by value × urgency.',
 };
