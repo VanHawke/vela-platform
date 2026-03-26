@@ -15,10 +15,10 @@ Visa awareness: UK passport — visa-free for most F1 destinations. Qatar/Saudi 
 async function planTrip(destination, context = '') {
   let raceContext = '';
   try {
-    const races = await sbFetch('race_calendar?select=*&order=race_date.asc&limit=30');
+    const races = await sbFetch('race_calendar?select=*&order=date.asc&limit=30');
     if (races?.length) {
       const relevant = races.filter(r => r.location?.toLowerCase().includes((destination || '').toLowerCase()) || r.name?.toLowerCase().includes((destination || '').toLowerCase()));
-      if (relevant.length) raceContext = `\nRace: ${relevant.map(r => `${r.name} — ${r.race_date} at ${r.location}`).join('; ')}`;
+      if (relevant.length) raceContext = `\nRace: ${relevant.map(r => `${r.name} — ${r.date} at ${r.circuit}, ${r.city}`).join('; ')}`;
     }
   } catch {}
   try {

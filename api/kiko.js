@@ -227,7 +227,6 @@ const PAGE_ROLES = {
   organisations: '\nROLE: Due Diligence. Assess profiles, funding, sponsorship readiness.',
   home: '\nROLE: Strategic Partner. Brief on top 3 priorities across pipeline, email, calendar.',
   lemlist: '\nROLE: Outreach Analyst. Use ask_lemlist_live for campaign stats, warm leads, deliverability. Use ask_outreach_agent for drafting emails and adding leads.',
-  'outreach-intelligence': '\nROLE: Deal Strategist. Command Centre — deals ranked by value × urgency.',
 };
 
 // ── Native Tools ──

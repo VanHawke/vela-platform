@@ -12,7 +12,7 @@ import Pipeline from '@/pages/Pipeline'
 import Contacts from '@/pages/Contacts'
 import ContactDetail from '@/pages/ContactDetail'
 import Organisations from '@/pages/Organisations'
-import Tasks from '@/pages/Tasks'
+// Tasks page removed — merged into Command Centre
 // Documents page removed — uploads via Kiko chat drag-and-drop
 import OutreachIntelligence from '@/pages/OutreachIntelligence'
 // News page removed — replaced by Partnership Detection Engine alerts
@@ -115,7 +115,7 @@ export default function App() {
           <Route path="organisations" element={<Organisations user={user} />} />
           <Route path="companies" element={<Navigate to="/organisations" replace />} />
           <Route path="deals" element={<Navigate to="/pipeline" replace />} />
-          <Route path="tasks" element={<Tasks user={user} />} />
+          <Route path="tasks" element={<Navigate to="/email" replace />} />
           <Route path="email" element={<OutreachIntelligence user={user} />} />
           {/* News Signals removed — replaced by Partnership Detection alerts */}
           <Route path="partnership-matrix" element={<PartnershipMatrix user={user} />} />
