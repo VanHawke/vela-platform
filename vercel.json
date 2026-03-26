@@ -12,6 +12,8 @@
     { "path": "/api/cron-relationship-intel", "schedule": "0 5 * * 0" },
     { "path": "/api/cron-meeting-prep", "schedule": "0 * * * *" },
     { "path": "/api/cron-inbox-triage", "schedule": "15 7 * * 1-5" },
+    { "path": "/api/cron-lemlist-enrich", "schedule": "15 6 * * 1" },
+    { "path": "/api/cron-lemlist-signals", "schedule": "30 7 * * 1-5" },
     { "path": "/api/cron-document-scan", "schedule": "0 6 * * 0" }
   ],
   "functions": {
@@ -42,7 +44,9 @@
     "api/cron-relationship-intel.js": { "maxDuration": 45 },
     "api/cron-meeting-prep.js": { "maxDuration": 45 },
     "api/cron-inbox-triage.js": { "maxDuration": 45 },
-    "api/cron-task-automation.js": { "maxDuration": 30 }
+    "api/cron-task-automation.js": { "maxDuration": 30 },
+    "api/cron-lemlist-enrich.js": { "maxDuration": 45 },
+    "api/cron-lemlist-signals.js": { "maxDuration": 30 }
   },
   "rewrites": [
     { "source": "/api/google-auth/callback", "destination": "/api/google-auth" },
