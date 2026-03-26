@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
 import {
   ChevronDown, Clock, User, Building2, X, Send, Users, ExternalLink,
-  Plus, Settings, GripVertical, Eye, EyeOff, Check, Trash2, Loader2, ArrowRight
+  Plus, Settings, GripVertical, Eye, EyeOff, Check, Trash2, Loader2, ArrowRight, CheckSquare
 } from 'lucide-react'
 import DocumentSection from '@/components/documents/DocumentSection'
 import CompanyLogo from '@/components/CompanyLogo'
@@ -330,6 +330,7 @@ export default function Pipeline({ user }) {
   const [dealCompany, setDealCompany] = useState(null)
   const [dealContacts, setDealContacts] = useState([])
   const [dealCampaigns, setDealCampaigns] = useState([])
+  const [dealTasks, setDealTasks] = useState([])
   const [loadingPanel, setLoadingPanel] = useState(false)
   const [companyDomains, setCompanyDomains] = useState({})
   const nav = useNavigate()
@@ -370,7 +371,7 @@ export default function Pipeline({ user }) {
 
   const selectDeal = async (deal) => {
     setSelectedDeal(deal); setLoadingPanel(true)
-    setDealCompany(null); setDealContacts([]); setDealCampaigns([])
+    setDealCompany(null); setDealContacts([]); setDealCampaigns([]); setDealTasks([])
     if (deal.company) {
       const { data: orgs } = await supabase.from('companies').select('id, data').filter('data->>name', 'eq', deal.company).limit(1)
       if (orgs?.length > 0) setDealCompany({ id: orgs[0].id, ...orgs[0].data })
@@ -388,6 +389,9 @@ export default function Pipeline({ user }) {
         campMap[camp.name].contacts++
       }))
       setDealCampaigns(Object.values(campMap).sort((a, b) => b.contacts - a.contacts))
+      // Fetch tasks for this company
+      const { data: taskData } = await supabase.from('tasks').select('*').filter('data->>company', 'ilike', `%${deal.company}%`).order('updated_at', { ascending: false }).limit(5)
+      setDealTasks((taskData || []).filter(t => !t.data?.completed))
     }
     setLoadingPanel(false)
   }
@@ -635,6 +639,30 @@ export default function Pipeline({ user }) {
                   </div>
                 ) : <p style={emptyText}>No campaigns linked</p>}
               </div>
+              {/* Tasks Due for this deal */}
+              {dealTasks.length > 0 && (
+                <div style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.1)' }}>
+                  <p style={sectionTitle}><CheckSquare style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Tasks Due ({dealTasks.length})</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {dealTasks.map(task => {
+                      const d = task.data || {}
+                      const isOverdue = d.dueDate && new Date(d.dueDate) < new Date()
+                      return (
+                        <div key={task.id} onClick={() => nav('/email')} style={{ padding: '8px 10px', background: isOverdue ? 'rgba(255,59,48,0.04)' : 'rgba(6,214,160,0.04)', borderRadius: 12, border: `1.5px solid ${isOverdue ? 'rgba(255,59,48,0.1)' : 'rgba(6,214,160,0.1)'}`, cursor: 'pointer', transition: 'all 0.15s' }}
+                          onMouseEnter={e => e.currentTarget.style.background = isOverdue ? 'rgba(255,59,48,0.08)' : 'rgba(6,214,160,0.08)'}
+                          onMouseLeave={e => e.currentTarget.style.background = isOverdue ? 'rgba(255,59,48,0.04)' : 'rgba(6,214,160,0.04)'}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 10, fontWeight: 500, color: isOverdue ? 'rgba(255,59,48,0.6)' : 'rgba(6,214,160,0.6)', textTransform: 'uppercase' }}>{d.type || 'Task'}</span>
+                            {isOverdue && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 6, background: 'rgba(255,59,48,0.08)', color: 'rgba(255,59,48,0.6)', fontWeight: 500 }}>OVERDUE</span>}
+                            {d.dueDate && <span style={{ fontSize: 10, color: 'var(--text-tertiary)', marginLeft: 'auto' }}>{d.dueDate}</span>}
+                          </div>
+                          <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.7)', margin: '3px 0 0', fontFamily: 'var(--font)' }}>{d.notes || d.contact || 'View in Command Centre →'}</p>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
               <DocumentSection
                 linkedDealId={selectedDeal?._id}
                 linkedCompanyId={dealCompany?.id}
