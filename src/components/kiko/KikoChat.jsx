@@ -128,6 +128,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const dragCounterRef = useRef(0)
   const [chatDragOver, setChatDragOver] = useState(false)
   const [fileUploading, setFileUploading] = useState(false)
+  const [imagePreview, setImagePreview] = useState(null) // { url, name, file }
   const abortRef = useRef(null)
   const streamTextRef = useRef('')
   const lastQueryRef = useRef('')
@@ -399,7 +400,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     if ((!msg && !fileAttachments.length) || streaming) return
     setInput('')
     const displayMsg = msg || (fileAttachments.length ? `Uploaded ${fileAttachments.length} file(s)` : '')
-    const userMsg = { role: 'user', content: displayMsg, timestamp: Date.now() }
+    const imgPreview = fileAttachments.find(a => a.type === 'image' && a.previewUrl)?.previewUrl || null
+    const userMsg = { role: 'user', content: displayMsg, timestamp: Date.now(), imagePreview: imgPreview }
+    if (imgPreview) setImagePreview(null)
     setMessages(prev => [...prev, userMsg])
     setStreaming(true); setStreamText(''); setToolStatus(null); setThinkingSteps([]); setShowSteps(false)
     streamingRef.current = true; streamTextRef.current = ''; lastQueryRef.current = msg || ''
@@ -501,7 +504,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           r.readAsDataURL(file)
         })
         if (isImage) {
-          handleSubmit(`I've uploaded an image: "${file.name}". Analyse it.`, [{ type: 'image', mediaType: file.type, data: base64 }])
+          // Store preview URL for display in chat
+          const previewUrl = URL.createObjectURL(file)
+          setImagePreview({ url: previewUrl, name: file.name })
+          handleSubmit(`Analyse this image: "${file.name}"`, [{ type: 'image', mediaType: file.type, data: base64, previewUrl }])
         } else if (isPdf) {
           handleSubmit(`I've uploaded a PDF: "${file.name}". Analyse it thoroughly.`, [{ type: 'document', mediaType: 'application/pdf', data: base64 }])
         } else {
@@ -661,7 +667,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           color: isUser ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.88)',
           fontSize: 16, lineHeight: 1.85, fontFamily: T.font, fontWeight: isUser ? 400 : 400,
         }}>
-          {isUser ? msg.content : (() => {
+          {isUser ? <>
+            {msg.imagePreview && <img src={msg.imagePreview} alt="Upload" style={{ maxWidth: 200, maxHeight: 150, borderRadius: 12, marginBottom: 8, display: 'block', objectFit: 'cover' }} />}
+            {msg.content}
+          </> : (() => {
             // Strip ---DRAFT--- block from display text (rendered separately in DraftPreview)
             const displayText = msg.content.replace(/---DRAFT---[\s\S]*?---END DRAFT---/gi, '').trim()
             return displayText ? <span dangerouslySetInnerHTML={{ __html: md(displayText) }} /> : null

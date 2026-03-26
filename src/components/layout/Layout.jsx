@@ -21,10 +21,23 @@ const ALL_NAV = [
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
   { id: 'lemlist', label: 'Lemlist', path: '/lemlist', Icon: Send },
 ]
+const VALID_NAV_IDS = new Set(ALL_NAV.map(n => n.id))
 const DEFAULT_TOP_IDS = ['home', 'pipeline', 'partnership-matrix', 'email']
 
 function getTopNavIds() {
-  try { const s = localStorage.getItem('kiko_top_nav'); if (s) return JSON.parse(s) } catch {}
+  try {
+    const s = localStorage.getItem('kiko_top_nav')
+    if (s) {
+      const parsed = JSON.parse(s)
+      // Remove stale items that no longer exist in nav
+      const cleaned = parsed.filter(id => VALID_NAV_IDS.has(id))
+      if (cleaned.length !== parsed.length) {
+        localStorage.setItem('kiko_top_nav', JSON.stringify(cleaned.length > 0 ? cleaned : DEFAULT_TOP_IDS))
+        return cleaned.length > 0 ? cleaned : DEFAULT_TOP_IDS
+      }
+      return parsed
+    }
+  } catch {}
   return DEFAULT_TOP_IDS
 }
 
