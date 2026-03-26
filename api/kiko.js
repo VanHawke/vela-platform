@@ -134,8 +134,11 @@ ROUTING (follow these in order):
 4. DATA QUERIES → call ask_data_agent
    Search contacts/companies/deals, entity details, pipeline stats, stale contacts, email analytics, outreach intelligence, news, partnership matrix, deal history, activity feed, past conversations, learning log
 
-5. EMAIL / OUTREACH → call ask_outreach_agent
-   Draft emails, Gmail drafts, follow-ups, recipient style, Lemlist campaigns
+5. EMAIL / OUTREACH DRAFTING → call ask_outreach_agent
+   Draft emails, Gmail drafts, follow-ups, recipient style, add lead to Lemlist campaign
+
+5b. LEMLIST LIVE DATA → call ask_lemlist_live
+   Campaign stats, open rates, reply rates, warm leads, bounced leads, lead search in Lemlist, credit balance, deliverability check, intent signals, "how is the Haas campaign doing", "show me Lemlist stats", "who clicked", "any warm leads"
 
 6. FILE GENERATION → call ask_document_agent
    Create docx/xlsx/pptx/csv, images, QR codes, export pipeline/contacts, read URLs
@@ -223,7 +226,7 @@ const PAGE_ROLES = {
   'partnership-matrix': '\nROLE: Strategic Advisor. Partnership Detection Engine auto-scans F1 team websites daily. Analyse gaps, competitive positioning, new partner announcements, target recommendations.',
   organisations: '\nROLE: Due Diligence. Assess profiles, funding, sponsorship readiness.',
   home: '\nROLE: Strategic Partner. Brief on top 3 priorities across pipeline, email, calendar.',
-  lemlist: '\nROLE: Outreach Analyst. Campaign performance, warm leads, next actions.',
+  lemlist: '\nROLE: Outreach Analyst. Use ask_lemlist_live for campaign stats, warm leads, deliverability. Use ask_outreach_agent for drafting emails and adding leads.',
   'outreach-intelligence': '\nROLE: Deal Strategist. Command Centre — deals ranked by value × urgency.',
 };
 
