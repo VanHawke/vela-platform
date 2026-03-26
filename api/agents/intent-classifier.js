@@ -41,13 +41,15 @@ INTENTS:
 - screen: Asking what's on screen, what page they're on, describe what they see
 - crm_write: Moving deals between stages, creating tasks, updating contacts, creating deals, adding reminders
 - data: Searching contacts/companies/deals, pipeline stats, entity details, stale contacts, email analytics, news, activity feed
-- outreach: Drafting emails, Gmail drafts, follow-ups, Lemlist campaigns, recipient analysis
+- outreach: Drafting emails, Gmail drafts, follow-ups, adding leads to Lemlist campaigns, recipient analysis
 - brief: Morning brief, daily priorities, "what should I focus on", task consolidation
 - strategy: "Should we pursue X", evaluate opportunities, kill or continue, capital allocation
 - content: LinkedIn posts, SponsorSignal, case studies, newsletters, thought leadership
 - research: Deep research on a company, industry analysis, competitor intelligence, web search needed
 - memory: "What do we know about X", relationship summary, recall everything about an entity
 - finance: Pipeline value, weighted forecast, revenue projection, runway, financial analysis
+- lemlist: Lemlist campaign stats, open rates, reply rates, warm leads, bounced leads, credit balance, deliverability, "how are campaigns doing", "Lemlist performance"
+- signal: Recent deal signals, funding events, hiring spikes, intent signals, "what signals this week"
 - document: Create Word docs, spreadsheets, presentations, CSVs, export pipeline/contacts, QR codes
 - negotiation: Counter-offers, pricing pushback, "they came back at X", concession strategy
 - category: Sponsorship category availability, "gaps on Haas", exclusivity conflicts
@@ -82,7 +84,7 @@ export async function classifyIntent(message, currentPage = 'home') {
       messages: [{ role: 'user', content: `[Current page: ${currentPage}] ${message}` }],
     });
     const intentText = (response.content?.[0]?.text || 'general').trim().toLowerCase().replace(/[^a-z_]/g, '');
-    const validIntents = ['screen','crm_write','data','outreach','brief','strategy','content','research','memory','finance','document','negotiation','category','legal','dispute','investment','pricing','travel','calendar','email_read','general'];
+    const validIntents = ['screen','crm_write','data','outreach','lemlist','signal','brief','strategy','content','research','memory','finance','document','negotiation','category','legal','dispute','investment','pricing','travel','calendar','email_read','general'];
     const intent = validIntents.includes(intentText) ? intentText : 'general';
     console.log(`[Intent] "${message.slice(0,60)}" → ${intent} (${response.usage?.input_tokens || '?'}in/${response.usage?.output_tokens || '?'}out)`);
     return { intent };
@@ -99,6 +101,8 @@ export const INTENT_TO_AGENT = {
   crm_write:   { tool: 'ask_deal_agent' },
   data:        { tool: 'ask_data_agent' },
   outreach:    { tool: 'ask_outreach_agent' },
+  lemlist:     { tool: 'ask_lemlist_live' },
+  signal:      { tool: 'ask_signal_agent' },
   brief:       { tool: 'ask_ea_agent', defaultOp: 'brief' },
   strategy:    { tool: 'ask_strategy_agent' },
   content:     { tool: 'ask_content_agent' },
