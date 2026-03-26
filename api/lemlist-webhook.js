@@ -18,7 +18,37 @@ export default async function handler(req, res) {
   const email = event.email || event.leadEmail || ''
   const now = new Date().toISOString()
 
-  // Skip if no email to match on
+  // === INTENT SIGNAL HANDLING ===
+  const signalTypes = ['companyIsHiring', 'companyRaisedFunds', 'jobChange', 'newHire', 'companyEmployeeVisitedMyWebsite']
+  if (signalTypes.includes(type)) {
+    const contact = event.contact || {}
+    const company = event.company || {}
+    const name = [contact.firstName, contact.lastName].filter(Boolean).join(' ') || contact.email || ''
+    const companyName = company.name || event.companyName || ''
+    const severity = (type === 'companyRaisedFunds' || type === 'jobChange') ? 'high' : 'medium'
+    const labels = { companyIsHiring: '👥 Hiring', companyRaisedFunds: '💰 Fundraising', jobChange: '🔄 Job Change', newHire: '🆕 New Hire', companyEmployeeVisitedMyWebsite: '🌐 Website Visit' }
+    const title = `${labels[type] || type}: ${companyName || name}`
+    await supabase.from('kiko_alerts').insert({
+      type: 'intent_signal', severity, title,
+      detail: `${title}. ${contact.jobTitle ? `Role: ${contact.jobTitle}.` : ''} ${name ? `Contact: ${name}.` : ''}`,
+      entity_type: 'signal', entity_name: companyName || name,
+      action: type === 'companyRaisedFunds' ? 'Budget window — draft outreach' : type === 'jobChange' ? 'Re-engage at new company' : 'Review signal',
+      metadata: { signal_type: type, company: companyName, contact: name, email: contact.email, source: 'lemlist_webhook' },
+      expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+    })
+    if (severity === 'high') {
+      await supabase.from('tasks').insert({
+        id: `tsig_${Date.now()}`, org_id: ORG_ID, updated_at: now,
+        data: { type: type === 'companyRaisedFunds' ? 'Timing Opportunity' : 'Re-engage',
+          company: companyName, contact: name, notes: title,
+          dueDate: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
+          completed: false, createdAt: now, assignedTo: 'Sunny Sidhu', autoCreated: true },
+      })
+    }
+    return res.status(200).json({ ok: true, type: 'signal', signal: type, entity: companyName || name })
+  }
+
+  // Skip if no email to match on (campaign events need email)
   if (!email) return res.status(200).json({ ok: true, skipped: 'no email' })
 
   try {
