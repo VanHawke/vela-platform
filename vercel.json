@@ -4,6 +4,7 @@
     { "path": "/api/news-agent", "schedule": "0 8 * * 1-5" },
     { "path": "/api/cron-outreach-score", "schedule": "0 9 * * 1" },
     { "path": "/api/cron-partnership-scan", "schedule": "0 7 * * 1-5" },
+    { "path": "/api/cron-task-automation", "schedule": "30 6 * * 1-5" },
     { "path": "/api/cron-proactive", "schedule": "0 7 * * 1-5" },
     { "path": "/api/cron-preference-synthesis", "schedule": "0 6 * * 0" },
     { "path": "/api/cron-profile-synthesis", "schedule": "0 4 * * 0" },
@@ -40,7 +41,8 @@
     "api/cron-edit-delta.js": { "maxDuration": 30 },
     "api/cron-relationship-intel.js": { "maxDuration": 45 },
     "api/cron-meeting-prep.js": { "maxDuration": 45 },
-    "api/cron-inbox-triage.js": { "maxDuration": 45 }
+    "api/cron-inbox-triage.js": { "maxDuration": 45 },
+    "api/cron-task-automation.js": { "maxDuration": 30 }
   },
   "rewrites": [
     { "source": "/api/google-auth/callback", "destination": "/api/google-auth" },
