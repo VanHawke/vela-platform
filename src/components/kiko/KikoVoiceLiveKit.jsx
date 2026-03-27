@@ -1,6 +1,7 @@
 // src/components/kiko/KikoVoiceLiveKit.jsx — Phase 13: LiveKit Voice Agent
 // LiveKit + Deepgram STT + Claude Sonnet + Deepgram Aura-2 Helena
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import {
   LiveKitRoom,
   RoomAudioRenderer,
@@ -124,7 +125,10 @@ export default function KikoVoiceLiveKit({
   const [error, setError] = useState(null)
 
   // Auto-connect on mount
-  useEffect(() => { connect() }, [])
+  useEffect(() => {
+    console.log('[KikoVoiceLiveKit] mounted, auto-connecting...')
+    connect()
+  }, [])
 
   const connect = useCallback(async () => {
     setPhase('connecting')
@@ -151,7 +155,8 @@ export default function KikoVoiceLiveKit({
     if (onClose) onClose()
   }, [onClose])
 
-  return (
+  // Portal — renders at document.body level, bypasses parent overflow:hidden / transform
+  return createPortal(
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9999,
       background: 'radial-gradient(ellipse at 50% 30%, '
@@ -274,6 +279,7 @@ export default function KikoVoiceLiveKit({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
