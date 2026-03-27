@@ -334,6 +334,7 @@ RULES:
   const claudeActiveRef = useRef(false) // true = Claude is processing, GPT-4o paused
   const suppressAutoRef = useRef(false) // true = suppress all GPT-4o auto-responses
   const pendingClaudeQueryRef = useRef(null) // text waiting for Claude after hold message plays
+  const holdMessageActiveRef = useRef(false) // true = allow exactly one response (the hold message) through
 
   // ── GPT-4o ONLY handles bare greetings/acks — everything else goes to Claude ──
   // Claude has: memory (6 tables), 23 agents, screen context, email, web search, deals, contacts
@@ -435,6 +436,7 @@ RULES:
       claudeActiveRef.current = false
       suppressAutoRef.current = false
       pendingClaudeQueryRef.current = null
+      holdMessageActiveRef.current = false
       // Re-enable VAD if it was disabled
       if (dcRef.current?.readyState === 'open') {
         dcRef.current.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: { type: 'server_vad', threshold: 0.65, prefix_padding_ms: 250, silence_duration_ms: 800 } } } } }))
@@ -492,10 +494,16 @@ RULES:
       const isSimpleChat = GPT4O_ONLY_PATTERNS.some(p => p.test(tl)) || tl.length < 6
       if (!isSimpleChat) {
         // Route to Claude — ALL 23 agents, memory, email, web search, screen context
-        // Step 1: GPT-4o speaks a hold message (~300ms) while we prepare
-        // Step 2: On hold message done, suppress GPT-4o and call Claude
+        // IMMEDIATELY suppress GPT-4o auto-responses before anything else
+        suppressAutoRef.current = true
+        holdMessageActiveRef.current = true // allow the hold message through
         pendingClaudeQueryRef.current = text
         if (dcRef.current?.readyState === 'open') {
+          // Cancel any in-flight GPT-4o response
+          dcRef.current.send(JSON.stringify({ type: 'response.cancel' }))
+          // Disable VAD while Claude processes
+          dcRef.current.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: null } } } }))
+          // Speak hold message
           dcRef.current.send(JSON.stringify({
             type: 'response.create',
             response: { modalities: ['audio', 'text'], instructions: 'Say ONLY one brief phrase (vary each time): "One moment." or "Let me check." or "Checking now." — nothing else.' }
@@ -514,6 +522,14 @@ RULES:
 
     // ── GPT-4o response lifecycle ──
     if (t === 'response.created') {
+      // If suppress is active but hold message is expected, let it through
+      if (suppressAutoRef.current && holdMessageActiveRef.current) {
+        holdMessageActiveRef.current = false // consumed — next response will be blocked
+        setSpeaking(true); setThinking(false)
+        speakingRef.current = true
+        kikoOutputRef.current = ''
+        return
+      }
       // If suppress flag is set, this is an unwanted auto-response — kill it
       if (suppressAutoRef.current) {
         if (dcRef.current?.readyState === 'open') {
@@ -531,23 +547,9 @@ RULES:
       kikoOutputRef.current += delta
       setKikoText(kikoOutputRef.current)
 
-      // ── REFUSAL INTERCEPTOR ──
-      if (!claudeActiveRef.current) {
-        const output = kikoOutputRef.current.toLowerCase()
-        const hasNegative = /\b(can'?t|cannot|don'?t|unable|unfortunately|i don'?t have|i'm not able)\b/.test(output)
-        const hasRefusal = /\b(access|retrieve|recall|memory|remember|past convers|long.term|carry over|retain|previous session|personal data|emails|inbox|pipeline|calendar)\b/.test(output)
-        if (hasNegative && hasRefusal && output.length > 20) {
-          if (dcRef.current?.readyState === 'open') {
-            dcRef.current.send(JSON.stringify({ type: 'response.cancel' }))
-          }
-          speakingRef.current = false
-          setKikoText('Let me check...')
-          setSpeaking(false)
-          console.log('[Kiko Voice] Refusal intercepted → Claude')
-          const lastUserMsg = conversationRef.current.messages.filter(m => m.role === 'user').pop()
-          if (lastUserMsg) routeThroughClaude(lastUserMsg.content)
-        }
-      }
+      // ── REFUSAL INTERCEPTOR — DISABLED ──
+      // All non-greeting queries now route to Claude directly.
+      // GPT-4o should never be answering data questions, so no refusal to intercept.
     }
 
     if (t === 'response.audio_transcript.done' || t === 'response.output_audio_transcript.done') {
