@@ -1,15 +1,13 @@
 // src/components/kiko/KikoVoiceLiveKit.jsx — Phase 13: LiveKit Voice Agent
-// Replaces GPT-4o Realtime with LiveKit + Deepgram + Claude + Helena
+// LiveKit + Deepgram STT + Claude Sonnet + Deepgram Aura-2 Helena
 import { useState, useCallback, useEffect, useRef } from 'react'
 import {
   LiveKitRoom,
   RoomAudioRenderer,
   useVoiceAssistant,
   BarVisualizer,
-  useRoomContext,
-  DisconnectButton,
 } from '@livekit/components-react'
-import { Mic, MicOff, PhoneOff } from 'lucide-react'
+import { Mic, PhoneOff, MessageSquare, X } from 'lucide-react'
 
 const glass = {
   background: 'rgba(255,255,255,0.07)',
@@ -19,19 +17,27 @@ const glass = {
   boxShadow: '0 8px 32px rgba(255,255,255,0.04)',
 }
 
-// Inner component — must be inside LiveKitRoom
-function VoiceAgent({ onDisconnect }) {
+// Inner component — reports voice state to parent
+function VoiceAgent({ onDisconnect, onVoiceState }) {
   const { state, audioTrack } = useVoiceAssistant()
-  // state: 'disconnected' | 'connecting' | 'listening' | 'thinking' | 'speaking'
+
+  useEffect(() => {
+    if (onVoiceState) {
+      onVoiceState({
+        speaking: state === 'speaking',
+        thinking: state === 'thinking',
+        status: state,
+      })
+    }
+  }, [state, onVoiceState])
 
   const stateLabel = {
     disconnected: 'Disconnected',
     connecting: 'Connecting...',
     listening: 'Listening',
     thinking: 'Thinking...',
-    speaking: 'Speaking',
+    speaking: 'Kiko is speaking',
   }
-
   const stateColor = {
     disconnected: '#666',
     connecting: '#FFB347',
@@ -42,118 +48,169 @@ function VoiceAgent({ onDisconnect }) {
 
   return (
     <div style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', gap: 24, padding: 32, minHeight: 280,
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      gap: 20, padding: 32, minHeight: 260,
     }}>
-      {/* Voice visualizer */}
-      <div style={{ height: 80, width: '100%', display: 'flex', justifyContent: 'center' }}>
+      <div style={{
+        height: 64, width: '100%',
+        display: 'flex', justifyContent: 'center',
+      }}>
         {audioTrack ? (
           <BarVisualizer
-            state={state}
-            barCount={7}
+            state={state} barCount={7}
             trackRef={audioTrack}
-            style={{ width: 200, height: 80 }}
+            style={{ width: 180, height: 64 }}
             options={{ minHeight: 4 }}
           />
         ) : (
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 6, height: 80,
+            display: 'flex', alignItems: 'center',
+            gap: 6, height: 64,
           }}>
             {[0, 0.1, 0.05, 0.15, 0.08].map((d, i) => (
               <div key={i} style={{
-                width: 5, borderRadius: 3, background: stateColor[state] || '#00D4AA',
-                height: state === 'speaking' || state === 'listening' ? 30 : 6,
-                minHeight: 6, transition: 'height 0.3s ease',
-                animation: state === 'speaking' ? `kikoEq 0.7s ease-in-out ${d}s infinite alternate` : 'none',
+                width: 5, borderRadius: 3,
+                background: stateColor[state] || '#00D4AA',
+                height: ['speaking','listening']
+                  .includes(state) ? 28 : 6,
+                minHeight: 6,
+                transition: 'height 0.3s ease',
               }} />
             ))}
           </div>
         )}
       </div>
 
-      {/* State label */}
       <div style={{
-        fontSize: 14, fontWeight: 300, color: stateColor[state] || '#999',
-        letterSpacing: '0.5px', textTransform: 'uppercase',
+        fontSize: 13, fontWeight: 300,
+        color: stateColor[state] || '#999',
+        letterSpacing: '0.5px',
+        textTransform: 'uppercase',
       }}>
         {stateLabel[state] || state}
       </div>
 
-      {/* Disconnect button */}
       <button
         onClick={onDisconnect}
         style={{
-          ...glass, borderRadius: 50, padding: '12px 24px',
-          display: 'flex', alignItems: 'center', gap: 8,
-          cursor: 'pointer', color: '#ff6b6b', fontSize: 14, fontWeight: 400,
+          ...glass, borderRadius: 50,
+          padding: '10px 20px',
+          display: 'flex', alignItems: 'center',
+          gap: 8, cursor: 'pointer',
+          color: '#ff6b6b', fontSize: 13,
+          fontWeight: 400, border: 'none',
         }}
       >
-        <PhoneOff size={16} /> End Session
+        <PhoneOff size={14} /> End
       </button>
-
       <RoomAudioRenderer />
     </div>
   )
 }
 
-// Main exported component
-export default function KikoVoiceLiveKit({ onClose }) {
-  const [connectionState, setConnectionState] = useState('idle') // idle | connecting | connected
+// Main component — matches KikoFloat's expected interface
+export default function KikoVoiceLiveKit({
+  onClose, user, mini, onVoiceState, onShowPrompt
+}) {
+  const [phase, setPhase] = useState('idle')
   const [token, setToken] = useState(null)
   const [wsUrl, setWsUrl] = useState(null)
   const [error, setError] = useState(null)
 
+  // Auto-connect on mount
+  useEffect(() => { connect() }, [])
+
   const connect = useCallback(async () => {
-    setConnectionState('connecting')
+    setPhase('connecting')
     setError(null)
     try {
-      const res = await fetch('/api/livekit-token', { method: 'POST' })
-      if (!res.ok) throw new Error('Failed to get voice token')
+      const res = await fetch('/api/livekit-token', {
+        method: 'POST',
+      })
+      if (!res.ok) throw new Error('Token error')
       const data = await res.json()
       setToken(data.token)
       setWsUrl(data.url)
-      setConnectionState('connected')
+      setPhase('connected')
     } catch (err) {
       setError(err.message)
-      setConnectionState('idle')
+      setPhase('idle')
     }
   }, [])
 
   const disconnect = useCallback(() => {
     setToken(null)
     setWsUrl(null)
-    setConnectionState('idle')
-  }, [])
+    setPhase('idle')
+    if (onClose) onClose()
+  }, [onClose])
 
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'radial-gradient(ellipse at 50% 30%, rgba(124,92,252,0.12) 0%, rgba(10,10,12,0.97) 60%)',
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      background: 'radial-gradient(ellipse at 50% 30%, '
+        + 'rgba(124,92,252,0.12) 0%, '
+        + 'rgba(10,10,12,0.97) 60%)',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
     }}>
-      {/* Close button */}
-      <button
-        onClick={onClose || disconnect}
-        style={{
-          position: 'absolute', top: 20, right: 20,
-          background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 8,
-          padding: '8px 16px', color: '#999', cursor: 'pointer', fontSize: 13,
-        }}
-      >
-        ✕ Close
-      </button>
+      {/* Top bar */}
+      <div style={{
+        position: 'absolute', top: 16,
+        left: 16, right: 16,
+        display: 'flex',
+        justifyContent: 'space-between',
+      }}>
+        {onShowPrompt && (
+          <button onClick={onShowPrompt} style={{
+            ...glass, borderRadius: 8,
+            padding: '8px 14px',
+            display: 'flex', alignItems: 'center',
+            gap: 6, cursor: 'pointer',
+            color: '#999', fontSize: 12,
+            border: 'none',
+          }}>
+            <MessageSquare size={14} /> Text
+          </button>
+        )}
+        <button onClick={onClose} style={{
+          ...glass, borderRadius: 8,
+          padding: '8px 14px',
+          cursor: 'pointer', color: '#999',
+          fontSize: 12, border: 'none',
+        }}>
+          <X size={14} />
+        </button>
+      </div>
 
       {/* Title */}
-      <div style={{ fontSize: 28, fontWeight: 300, color: '#fff', marginBottom: 8, letterSpacing: '-0.5px' }}>
+      <div style={{
+        fontSize: 26, fontWeight: 300,
+        color: '#fff', marginBottom: 4,
+        letterSpacing: '-0.5px',
+      }}>
         Kiko Voice
       </div>
-      <div style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.4)', marginBottom: 32 }}>
-        {connectionState === 'connected' ? 'Connected — speak naturally' : 'Tap to start voice session'}
+      <div style={{
+        fontSize: 12, fontWeight: 300,
+        color: 'rgba(255,255,255,0.35)',
+        marginBottom: 28,
+      }}>
+        {phase === 'connected'
+          ? 'Connected — speak naturally'
+          : phase === 'connecting'
+          ? 'Connecting to Helena...'
+          : 'Tap to start'}
       </div>
 
       {/* Main panel */}
-      <div style={{ ...glass, borderRadius: 24, width: 360, minHeight: 320, overflow: 'hidden' }}>
-        {connectionState === 'connected' && token && wsUrl ? (
+      <div style={{
+        ...glass, borderRadius: 20,
+        width: 340, minHeight: 300,
+        overflow: 'hidden',
+      }}>
+        {phase === 'connected' && token && wsUrl ? (
           <LiveKitRoom
             serverUrl={wsUrl}
             token={token}
@@ -163,49 +220,55 @@ export default function KikoVoiceLiveKit({ onClose }) {
             onDisconnected={disconnect}
             style={{ height: '100%' }}
           >
-            <VoiceAgent onDisconnect={disconnect} />
+            <VoiceAgent
+              onDisconnect={disconnect}
+              onVoiceState={onVoiceState}
+            />
           </LiveKitRoom>
         ) : (
           <div style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'center', gap: 24, padding: 48, minHeight: 280,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: 20, padding: 48, minHeight: 260,
           }}>
-            {/* Connect button */}
             <button
               onClick={connect}
-              disabled={connectionState === 'connecting'}
+              disabled={phase === 'connecting'}
               style={{
-                width: 100, height: 100, borderRadius: '50%',
-                background: connectionState === 'connecting'
+                width: 90, height: 90,
+                borderRadius: '50%',
+                background: phase === 'connecting'
                   ? 'rgba(124,92,252,0.3)'
                   : 'linear-gradient(135deg, #7C5CFC, #00D4AA)',
                 border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 4px 24px rgba(124,92,252,0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 20px rgba(124,92,252,0.3)',
                 transition: 'all 0.3s ease',
               }}
             >
-              {connectionState === 'connecting' ? (
-                <div style={{ color: '#fff', fontSize: 13 }}>Connecting...</div>
+              {phase === 'connecting' ? (
+                <div style={{
+                  color: '#fff', fontSize: 11,
+                }}>
+                  Connecting...
+                </div>
               ) : (
-                <Mic size={36} color="#fff" />
+                <Mic size={32} color="#fff" />
               )}
             </button>
-
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 300 }}>
-              {error ? <span style={{ color: '#ff6b6b' }}>{error}</span> : 'Tap to connect'}
-            </div>
+            {error && (
+              <div style={{
+                fontSize: 12,
+                color: '#ff6b6b',
+              }}>
+                {error}
+              </div>
+            )}
           </div>
         )}
       </div>
-
-      {/* Equalizer animation keyframes */}
-      <style>{`
-        @keyframes kikoEq {
-          0% { height: 6px; }
-          100% { height: 36px; }
-        }
-      `}</style>
     </div>
   )
 }
