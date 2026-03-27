@@ -839,7 +839,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <div style={{ flex: voiceActive ? 1 : 0.3, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
         </div>
 
-        {/* LiveKit Voice — full-screen overlay when active */}
+        {/* LiveKit Voice overlay */}
         {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} />}
 
         {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} />}
@@ -938,7 +938,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         </div>
       </div>
       {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} />}
-      {/* LiveKit Voice — full-screen overlay when in conversation */}
+      {/* LiveKit Voice overlay in conversation */}
       {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} />}
     </div>
   )
