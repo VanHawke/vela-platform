@@ -20,6 +20,17 @@ function VoiceUI({ onClose, onVoiceState }) {
   const speaking = state === 'speaking'
   const thinking = state === 'thinking'
 
+  // Filter out internal reasoning/tool call text from agent transcriptions
+  const filterReasoning = (text) => {
+    if (!text) return ''
+    // Remove ask_kiko tool call reasoning
+    let filtered = text.replace(/<ask_kiko>[\s\S]*?<\/ask_kiko>/gi, '').trim()
+    filtered = filtered.replace(/ask_kiko>[\s\S]*?<\/ask_kiko>/gi, '').trim()
+    // Remove any "The user is..." reasoning patterns
+    filtered = filtered.replace(/^(The user is|I should|Let me|I need to|I'll)[\s\S]*?[.!]\s*/gi, '').trim()
+    return filtered
+  }
+
   // Track transcriptions
   useEffect(() => {
     if (userTranscriptions?.length) {
@@ -31,7 +42,10 @@ function VoiceUI({ onClose, onVoiceState }) {
   useEffect(() => {
     if (agentTranscriptions?.length) {
       const last = agentTranscriptions[agentTranscriptions.length - 1]
-      if (last?.text) setKikoText(last.text)
+      if (last?.text) {
+        const cleaned = filterReasoning(last.text)
+        if (cleaned) setKikoText(cleaned)
+      }
     }
   }, [agentTranscriptions])
 
