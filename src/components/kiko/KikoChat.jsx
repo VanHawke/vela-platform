@@ -839,8 +839,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <div style={{ flex: voiceActive ? 1 : 0.3, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
         </div>
 
-        {/* Headless KikoVoice — runs WebRTC connection when active */}
-        {voiceActive && <KikoVoice headless onClose={stopVoice} user={user} micStream={voiceMicStream} onVoiceState={handleVoiceState} onVoiceMessage={handleVoiceMessage} />}
+        {/* LiveKit Voice — full-screen overlay when active */}
+        {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} onVoiceMessage={handleVoiceMessage} />}
 
         {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} />}
       </div>
@@ -938,13 +938,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         </div>
       </div>
       {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} />}
-      {/* Headless KikoVoice — runs WebRTC for voice mode within conversation */}
+      {/* LiveKit Voice — full-screen overlay when active in conversation */}
       {voiceActive && (
         <KikoVoice
-          headless
           onClose={stopVoice}
           user={user}
-          micStream={voiceMicStream}
           onVoiceState={handleVoiceState}
           onVoiceMessage={handleVoiceMessage}
         />
