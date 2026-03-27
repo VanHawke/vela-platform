@@ -111,8 +111,13 @@ function VoiceAgent({ onDisconnect, onVoiceState }) {
 
 // Main component — matches KikoFloat's expected interface
 export default function KikoVoiceLiveKit({
-  onClose, user, mini, onVoiceState, onShowPrompt
+  onClose, user, mini, onVoiceState, onShowPrompt,
+  headless, micStream, onVoiceMessage
 }) {
+  // Headless mode (voice within text chat) — not yet supported with LiveKit
+  // Full-screen voice overlay is the primary interface for Phase 13
+  if (headless) return null
+
   const [phase, setPhase] = useState('idle')
   const [token, setToken] = useState(null)
   const [wsUrl, setWsUrl] = useState(null)
