@@ -114,10 +114,48 @@ async function recall(entityName) {
     }
     out += '\n';
   }
+
+  // Search thought journal
+  const thoughts = await sbFetch('kiko_thought_journal?select=topic,insight,related_entities,confidence,created_at&order=created_at.desc&limit=20');
+  const matchedThoughts = (thoughts || []).filter(t =>
+    t.topic?.toLowerCase().includes(q) ||
+    t.insight?.toLowerCase().includes(q) ||
+    (t.related_entities || []).some(e => e.toLowerCase().includes(q))
+  );
+  if (matchedThoughts.length) {
+    out += `── Strategic Insights (${matchedThoughts.length}) ──\n`;
+    for (const t of matchedThoughts.slice(0, 5)) out += `[${Math.round(t.confidence * 100)}%] ${t.topic}: ${t.insight.slice(0, 300)}\n`;
+    out += '\n';
+  }
+
+  // Search conversation insights
+  const insights = await sbFetch('kiko_conversation_insights?select=key_facts,decisions_made,open_threads,entities_discussed,summary,created_at&order=created_at.desc&limit=20');
+  const matchedInsights = (insights || []).filter(i =>
+    (i.entities_discussed || []).some(e => e.toLowerCase().includes(q)) ||
+    i.summary?.toLowerCase().includes(q)
+  );
+  if (matchedInsights.length) {
+    out += `── Conversation Intelligence (${matchedInsights.length}) ──\n`;
+    for (const i of matchedInsights.slice(0, 3)) {
+      if (i.key_facts?.length) out += `Facts: ${i.key_facts.join('; ')}\n`;
+      if (i.decisions_made?.length) out += `Decisions: ${i.decisions_made.join('; ')}\n`;
+      if (i.open_threads?.length) out += `Open threads: ${i.open_threads.join('; ')}\n`;
+    }
+    out += '\n';
+  }
+
+  // Search relationships
+  const rels = await sbFetch(`kiko_relationships?select=contact_name,company,warmth_score,relationship_type,emails_sent,emails_received&or=(contact_name.ilike.*${encodeURIComponent(entityName)}*,company.ilike.*${encodeURIComponent(entityName)}*)&limit=5`);
+  if (rels?.length) {
+    out += `── Relationships ──\n`;
+    for (const r of rels) out += `${r.contact_name} @ ${r.company} | Warmth: ${r.warmth_score}/10 | Type: ${r.relationship_type} | Emails: ${r.emails_sent || 0} sent, ${r.emails_received || 0} received\n`;
+    out += '\n';
+  }
+
   if (dealContext) out += `── Deals ──\n${dealContext}\n`;
   if (contactContext) out += `── Contacts ──\n${contactContext}\n`;
   if (convoContext) out += `── Past Conversations ──\n${convoContext}\n`;
-  if (!matched.length && !dealContext && !contactContext && !convoContext) out += 'No stored intelligence found for this entity.';
+  if (!matched.length && !dealContext && !contactContext && !convoContext && !matchedThoughts.length && !matchedInsights.length && !rels?.length) out += 'No stored intelligence found for this entity.';
   return out;
 }
 
