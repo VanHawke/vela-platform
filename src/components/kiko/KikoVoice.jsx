@@ -197,6 +197,36 @@ export default function KikoVoice({ onClose, user, micStream, mini = false, onSh
           const { count: cc } = await supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('org_id', orgId)
           const { count: co } = await supabase.from('companies').select('*', { count: 'exact', head: true }).eq('org_id', orgId)
           platformContext = `\n\nPLATFORM: ${dc||0} deals, ${cc||0} contacts, ${co||0} companies.`
+
+          // ── PRE-LOAD LIVE DATA so GPT-4o can answer common questions directly (no API hop) ──
+          try {
+            const { data: allDeals } = await supabase.from('deals').select('data').limit(100)
+            const active = (allDeals||[]).filter(d => d.data?.status !== 'won' && d.data?.status !== 'lost')
+            const totalVal = active.reduce((s,d) => s + (d.data?.value||0), 0)
+            const stages = {}
+            active.forEach(d => { const st = d.data?.stage || '?'; stages[st] = (stages[st]||0) + 1 })
+            const topStages = Object.entries(stages).sort((a,b) => b[1]-a[1]).slice(0,5).map(([s,c]) => `${s}(${c})`).join(', ')
+            const topDeals = active.sort((a,b) => (b.data?.value||0) - (a.data?.value||0)).slice(0,5)
+              .map(d => `${d.data?.company}: $${(d.data?.value/1e6).toFixed(1)}M, ${d.data?.stage}, contact ${d.data?.contactName||'?'}`).join('; ')
+
+            const { data: alerts } = await supabase.from('kiko_alerts').select('severity,title,detail').eq('dismissed', false).order('created_at', { ascending: false }).limit(5)
+            const alertStr = (alerts||[]).map(a => `[${a.severity}] ${a.title}`).join('; ')
+
+            const today = new Date().toISOString().split('T')[0]
+            const { data: races } = await supabase.from('race_calendar').select('name,date,circuit,city').gt('date', today).order('date').limit(1)
+            const raceStr = races?.[0] ? `Next race: ${races[0].name} on ${races[0].date} at ${races[0].circuit}, ${races[0].city}` : ''
+
+            const { data: tasks } = await supabase.from('tasks').select('data').order('updated_at', { ascending: false }).limit(10)
+            const outstanding = (tasks||[]).filter(t => !t.data?.completed)
+            const taskStr = outstanding.length ? `${outstanding.length} outstanding tasks: ${outstanding.slice(0,3).map(t => t.data?.notes?.slice(0,50)).join('; ')}` : 'No outstanding tasks.'
+
+            platformContext += `\n\nLIVE DATA (loaded just now — answer from this, NO need to check anything):
+PIPELINE: ${active.length} active deals, $${(totalVal/1e6).toFixed(1)}M total. Stages: ${topStages}.
+TOP DEALS: ${topDeals}
+ALERTS: ${alertStr || 'No active alerts.'}
+${raceStr}
+TASKS: ${taskStr}`
+          } catch (preloadErr) { console.warn('[Kiko Voice] Pre-load error:', preloadErr) }
         }
       }
 
@@ -275,7 +305,10 @@ RULES:
 - Keep responses under 3 sentences unless asked for detail.
 - Never say "I don't have long-term memory" or "I can't retain" — you CAN and DO.
 - When you receive a message starting with [KIKO_SAY], read the content naturally as your own words. Do not add commentary.
-- For emails, pipeline data, CRM queries, web searches — say "Let me check that for you" and wait. The system will provide data.
+- Answer pipeline, deal, alert, race, and task questions DIRECTLY from your LIVE DATA above. Do NOT say "let me check" for data you already have.
+- Only say "Let me check that" for specific email lookups, contact searches, or drafting emails — things NOT in your LIVE DATA.
+- For weather, give your best knowledge. Say the location and general conditions.
+- Say numbers naturally: "twenty-nine million" not "$29,500,000".
 - FAREWELL: ONLY if the user says "goodbye" or "goodbye kiko", respond with "Goodbye, ${firstName}!" and nothing else. Do NOT treat "bye", "see you", "later", "thanks", "that's all" or any other phrase as a farewell. Only the word "goodbye" ends the conversation.`,
             audio: {
               input: {
@@ -331,7 +364,7 @@ RULES:
   const claudeActiveRef = useRef(false) // true = Claude is processing, GPT-4o paused
   const suppressAutoRef = useRef(false) // true = suppress all GPT-4o auto-responses
 
-  // ── GPT-4o ONLY handles simple conversational queries ──
+  // ── GPT-4o handles these directly (data is pre-loaded in instructions) ──
   // Everything else routes to Claude (which has all 21 agents)
   const GPT4O_ONLY_PATTERNS = [
     /^(hi|hello|hey|good morning|good afternoon|good evening|how are you|what's up|howdy)/i,
@@ -339,7 +372,15 @@ RULES:
     /^(goodbye|bye|see you|later|that's all|that's it|nothing else)/i,
     /^(yes|no|yeah|nah|yep|nope|sure|absolutely|definitely)/i,
     /^(tell me a joke|what time is it|who are you|what can you do)/i,
-    /^(what's the weather|how's the weather)/i,
+    /^(what's the weather|how's the weather|weather)/i,
+    // Pipeline, deals, alerts, tasks, race — all pre-loaded in GPT-4o context
+    /(pipeline|brief me|brief|update me|how.*(deals|pipeline)|what.*(pipeline|deals))/i,
+    /(alert|signal|notification|any.*(alert|signal|news))/i,
+    /(next race|f1|formula|race calendar|when.*(race|grand prix))/i,
+    /(task|to.?do|outstanding|what.*(need|should).*(do|work))/i,
+    /(how much|worth|total value|deal value|revenue)/i,
+    /(top deal|biggest deal|largest deal)/i,
+    /(stale|inactive|cold.*deal)/i,
   ]
 
   // ── Route through Claude for tool-heavy questions ──
