@@ -1,285 +1,188 @@
-// src/components/kiko/KikoVoiceLiveKit.jsx — Phase 13: LiveKit Voice Agent
-// LiveKit + Deepgram STT + Claude Sonnet + Deepgram Aura-2 Helena
+// src/components/kiko/KikoVoiceLiveKit.jsx — Phase 13: LiveKit Voice with Beautiful UI
+// Same ribbon/glassmorphism/dark void as original KikoVoice — powered by LiveKit
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import {
   LiveKitRoom,
   RoomAudioRenderer,
   useVoiceAssistant,
-  BarVisualizer,
 } from '@livekit/components-react'
-import { Mic, PhoneOff, MessageSquare, X } from 'lucide-react'
+import { X } from 'lucide-react'
+import DoubleHelix from './DoubleHelix'
 
-const glass = {
-  background: 'rgba(255,255,255,0.07)',
-  backdropFilter: 'blur(40px)',
-  WebkitBackdropFilter: 'blur(40px)',
-  border: '1.5px solid rgba(255,255,255,0.1)',
-  boxShadow: '0 8px 32px rgba(255,255,255,0.04)',
-}
+// Inner component — must be inside LiveKitRoom
+function VoiceUI({ onClose, onVoiceState }) {
+  const { state, audioTrack, agentTranscriptions, userTranscriptions } = useVoiceAssistant()
+  const [transcript, setTranscript] = useState('')
+  const [kikoText, setKikoText] = useState('')
 
-// Inner component — reports voice state to parent
-function VoiceAgent({ onDisconnect, onVoiceState }) {
-  const { state, audioTrack } = useVoiceAssistant()
+  // Map LiveKit states to Kiko UI states
+  const speaking = state === 'speaking'
+  const thinking = state === 'thinking'
+
+  // Track transcriptions
+  useEffect(() => {
+    if (userTranscriptions?.length) {
+      const last = userTranscriptions[userTranscriptions.length - 1]
+      if (last?.text) setTranscript(last.text)
+    }
+  }, [userTranscriptions])
 
   useEffect(() => {
-    if (onVoiceState) {
-      onVoiceState({
-        speaking: state === 'speaking',
-        thinking: state === 'thinking',
-        status: state,
-      })
+    if (agentTranscriptions?.length) {
+      const last = agentTranscriptions[agentTranscriptions.length - 1]
+      if (last?.text) setKikoText(last.text)
     }
-  }, [state, onVoiceState])
+  }, [agentTranscriptions])
 
-  const stateLabel = {
-    disconnected: 'Disconnected',
-    connecting: 'Connecting...',
-    listening: 'Listening',
-    thinking: 'Thinking...',
-    speaking: 'Kiko is speaking',
-  }
-  const stateColor = {
-    disconnected: '#666',
-    connecting: '#FFB347',
-    listening: '#00D4AA',
-    thinking: '#7C5CFC',
-    speaking: '#00D4AA',
-  }
+  // Report state to parent
+  useEffect(() => {
+    if (onVoiceState) onVoiceState({
+      status: state, speaking, thinking, transcript, kikoText,
+      energy: 0, pitch: 0,
+    })
+  }, [state, speaking, thinking, transcript, kikoText])
+
+  const showRings = speaking || thinking
+  const avBg = speaking
+    ? 'radial-gradient(circle at 40% 35%, rgba(10,28,24,0.95), rgba(8,8,12,1))'
+    : thinking
+    ? 'radial-gradient(circle at 40% 35%, rgba(22,18,36,0.95), rgba(10,10,14,1))'
+    : 'radial-gradient(circle at 40% 35%, rgba(18,18,26,0.95), rgba(10,10,14,1))'
+
+  const modeLabel = state === 'speaking' ? 'Kiko Speaking'
+    : state === 'thinking' ? 'Thinking...'
+    : state === 'listening' ? 'Listening'
+    : state === 'connecting' ? 'Connecting...'
+    : 'Connected'
 
   return (
-    <div style={{
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      gap: 20, padding: 32, minHeight: 260,
-    }}>
-      <div style={{
-        height: 64, width: '100%',
-        display: 'flex', justifyContent: 'center',
-      }}>
-        {audioTrack ? (
-          <BarVisualizer
-            state={state} barCount={7}
-            trackRef={audioTrack}
-            style={{ width: 180, height: 64 }}
-            options={{ minHeight: 4 }}
-          />
-        ) : (
-          <div style={{
-            display: 'flex', alignItems: 'center',
-            gap: 6, height: 64,
-          }}>
-            {[0, 0.1, 0.05, 0.15, 0.08].map((d, i) => (
-              <div key={i} style={{
-                width: 5, borderRadius: 3,
-                background: stateColor[state] || '#00D4AA',
-                height: ['speaking','listening']
-                  .includes(state) ? 28 : 6,
-                minHeight: 6,
-                transition: 'height 0.3s ease',
-              }} />
-            ))}
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex' }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+
+      {/* Frosted glass background */}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(14,14,20,0.85)', backdropFilter: 'blur(48px) saturate(1.8)', WebkitBackdropFilter: 'blur(48px) saturate(1.8)' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg,rgba(255,255,255,0.03) 0%,rgba(255,255,255,0.01) 50%)', pointerEvents: 'none' }} />
+
+      {/* Stage */}
+      <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 40px 32px', zIndex: 1 }}>
+
+        <button onClick={onClose} style={{ position: 'absolute', top: 18, right: 18, width: 30, height: 30, borderRadius: 9, background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)' }}>
+          <X size={14} />
+        </button>
+
+        {/* Mode pill */}
+        <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', padding: '4px 14px', borderRadius: 50, background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.08)', fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
+          {modeLabel}
+        </div>
+
+        {/* Avatar with rings */}
+        <div style={{ position: 'relative', marginBottom: 28 }}>
+          {showRings && <>
+            <div style={{ position: 'absolute', inset: -13, borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.06)', animation: 'pulse 2.2s ease-in-out infinite', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', inset: -26, borderRadius: 62, border: '1.5px solid rgba(255,255,255,0.07)', animation: 'pulse 2.2s ease-in-out infinite 0.5s', pointerEvents: 'none' }} />
+          </>}
+          <div style={{ width: 156, height: 156, borderRadius: 38, background: avBg, border: '1.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', boxShadow: '0 16px 48px rgba(0,0,0,0.14)', transition: 'background 0.5s' }}>
+            <DoubleHelix width={140} height={80} speaking={speaking} energy={0} pitch={0} />
           </div>
-        )}
+        </div>
+
+        {/* Live transcript */}
+        <div style={{ textAlign: 'center', maxWidth: 360, minHeight: 60, marginBottom: 24 }}>
+          {transcript && <p style={{ fontSize: 16, fontWeight: 500, color: 'rgba(255,255,255,0.8)', margin: '0 0 7px', lineHeight: 1.35 }}>{transcript}</p>}
+          {kikoText && <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.35)', margin: 0, lineHeight: 1.55 }}>{kikoText}</p>}
+        </div>
+
+        {/* Goodbye button */}
+        <button onClick={onClose} style={{
+          padding: '10px 28px', borderRadius: 50,
+          background: 'rgba(255,255,255,0.04)',
+          border: '1.5px solid rgba(255,255,255,0.08)',
+          color: 'rgba(255,255,255,0.35)', fontSize: 13,
+          fontWeight: 400, cursor: 'pointer',
+          transition: 'all 0.2s',
+        }}>
+          Goodbye Kiko
+        </button>
       </div>
 
-      <div style={{
-        fontSize: 13, fontWeight: 300,
-        color: stateColor[state] || '#999',
-        letterSpacing: '0.5px',
-        textTransform: 'uppercase',
-      }}>
-        {stateLabel[state] || state}
-      </div>
-
-      <button
-        onClick={onDisconnect}
-        style={{
-          ...glass, borderRadius: 50,
-          padding: '10px 20px',
-          display: 'flex', alignItems: 'center',
-          gap: 8, cursor: 'pointer',
-          color: '#ff6b6b', fontSize: 13,
-          fontWeight: 400, border: 'none',
-        }}
-      >
-        <PhoneOff size={14} /> End
-      </button>
       <RoomAudioRenderer />
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.04); opacity: 0.7; }
+        }
+      `}</style>
     </div>
   )
 }
 
-// Main component — matches KikoFloat's expected interface
+// Main component — auto-connects, renders via portal
 export default function KikoVoiceLiveKit({
   onClose, user, mini, onVoiceState, onShowPrompt,
   headless, micStream, onVoiceMessage
 }) {
-  // Headless mode (voice within text chat) — not yet supported with LiveKit
-  // Full-screen voice overlay is the primary interface for Phase 13
   if (headless) return null
 
-  const [phase, setPhase] = useState('idle')
   const [token, setToken] = useState(null)
   const [wsUrl, setWsUrl] = useState(null)
   const [error, setError] = useState(null)
 
   // Auto-connect on mount
   useEffect(() => {
-    console.log('[KikoVoiceLiveKit] mounted, auto-connecting...')
-    connect()
+    (async () => {
+      try {
+        const res = await fetch('/api/livekit-token', { method: 'POST' })
+        if (!res.ok) throw new Error('Token failed')
+        const data = await res.json()
+        setToken(data.token)
+        setWsUrl(data.url)
+      } catch (err) {
+        setError(err.message)
+      }
+    })()
   }, [])
 
-  const connect = useCallback(async () => {
-    setPhase('connecting')
-    setError(null)
-    try {
-      const res = await fetch('/api/livekit-token', {
-        method: 'POST',
-      })
-      if (!res.ok) throw new Error('Token error')
-      const data = await res.json()
-      setToken(data.token)
-      setWsUrl(data.url)
-      setPhase('connected')
-    } catch (err) {
-      setError(err.message)
-      setPhase('idle')
-    }
-  }, [])
-
-  const disconnect = useCallback(() => {
+  const handleClose = useCallback(() => {
     setToken(null)
     setWsUrl(null)
-    setPhase('idle')
     if (onClose) onClose()
   }, [onClose])
 
-  // Portal — renders at document.body level, bypasses parent overflow:hidden / transform
-  return createPortal(
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'radial-gradient(ellipse at 50% 30%, '
-        + 'rgba(124,92,252,0.12) 0%, '
-        + 'rgba(10,10,12,0.97) 60%)',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-    }}>
-      {/* Top bar */}
-      <div style={{
-        position: 'absolute', top: 16,
-        left: 16, right: 16,
-        display: 'flex',
-        justifyContent: 'space-between',
-      }}>
-        {onShowPrompt && (
-          <button onClick={onShowPrompt} style={{
-            ...glass, borderRadius: 8,
-            padding: '8px 14px',
-            display: 'flex', alignItems: 'center',
-            gap: 6, cursor: 'pointer',
-            color: '#999', fontSize: 12,
-            border: 'none',
-          }}>
-            <MessageSquare size={14} /> Text
+  if (!token || !wsUrl) {
+    // Loading state — same beautiful UI, connecting message
+    return createPortal(
+      <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(14,14,20,0.85)', backdropFilter: 'blur(48px) saturate(1.8)', WebkitBackdropFilter: 'blur(48px) saturate(1.8)' }} />
+        <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+          <button onClick={handleClose} style={{ position: 'absolute', top: 18, right: 18, width: 30, height: 30, borderRadius: 9, background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)' }}>
+            <X size={14} />
           </button>
-        )}
-        <button onClick={onClose} style={{
-          ...glass, borderRadius: 8,
-          padding: '8px 14px',
-          cursor: 'pointer', color: '#999',
-          fontSize: 12, border: 'none',
-        }}>
-          <X size={14} />
-        </button>
-      </div>
-
-      {/* Title */}
-      <div style={{
-        fontSize: 26, fontWeight: 300,
-        color: '#fff', marginBottom: 4,
-        letterSpacing: '-0.5px',
-      }}>
-        Kiko Voice
-      </div>
-      <div style={{
-        fontSize: 12, fontWeight: 300,
-        color: 'rgba(255,255,255,0.35)',
-        marginBottom: 28,
-      }}>
-        {phase === 'connected'
-          ? 'Connected — speak naturally'
-          : phase === 'connecting'
-          ? 'Connecting to Helena...'
-          : 'Tap to start'}
-      </div>
-
-      {/* Main panel */}
-      <div style={{
-        ...glass, borderRadius: 20,
-        width: 340, minHeight: 300,
-        overflow: 'hidden',
-      }}>
-        {phase === 'connected' && token && wsUrl ? (
-          <LiveKitRoom
-            serverUrl={wsUrl}
-            token={token}
-            connect={true}
-            audio={true}
-            video={false}
-            onDisconnected={disconnect}
-            style={{ height: '100%' }}
-          >
-            <VoiceAgent
-              onDisconnect={disconnect}
-              onVoiceState={onVoiceState}
-            />
-          </LiveKitRoom>
-        ) : (
-          <div style={{
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-            gap: 20, padding: 48, minHeight: 260,
-          }}>
-            <button
-              onClick={connect}
-              disabled={phase === 'connecting'}
-              style={{
-                width: 90, height: 90,
-                borderRadius: '50%',
-                background: phase === 'connecting'
-                  ? 'rgba(124,92,252,0.3)'
-                  : 'linear-gradient(135deg, #7C5CFC, #00D4AA)',
-                border: 'none', cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 20px rgba(124,92,252,0.3)',
-                transition: 'all 0.3s ease',
-              }}
-            >
-              {phase === 'connecting' ? (
-                <div style={{
-                  color: '#fff', fontSize: 11,
-                }}>
-                  Connecting...
-                </div>
-              ) : (
-                <Mic size={32} color="#fff" />
-              )}
-            </button>
-            {error && (
-              <div style={{
-                fontSize: 12,
-                color: '#ff6b6b',
-              }}>
-                {error}
-              </div>
-            )}
+          <div style={{ width: 156, height: 156, borderRadius: 38, background: 'radial-gradient(circle at 40% 35%, rgba(18,18,26,0.95), rgba(10,10,14,1))', border: '1.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 16px 48px rgba(0,0,0,0.14)', marginBottom: 28 }}>
+            <DoubleHelix width={140} height={80} speaking={false} energy={0} pitch={0} />
           </div>
-        )}
-      </div>
-    </div>,
+          <p style={{ fontSize: 14, color: error ? '#C62828' : 'rgba(255,255,255,0.35)', margin: 0 }}>
+            {error || 'Connecting to Kiko...'}
+          </p>
+        </div>
+      </div>,
+      document.body
+    )
+  }
+
+  return createPortal(
+    <LiveKitRoom
+      serverUrl={wsUrl}
+      token={token}
+      connect={true}
+      audio={true}
+      video={false}
+      onDisconnected={handleClose}
+      style={{ position: 'fixed', inset: 0, zIndex: 200 }}
+    >
+      <VoiceUI onClose={handleClose} onVoiceState={onVoiceState} />
+    </LiveKitRoom>,
     document.body
   )
 }

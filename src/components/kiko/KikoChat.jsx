@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import DOMPurify from 'dompurify'
 import T from '@/lib/theme'
 import taskManager from '@/lib/kikoTaskManager'
-import KikoVoice from './KikoVoice'
+import KikoVoice from './KikoVoiceLiveKit'
 import ChatHistory from './ChatHistory'
 import KikoSymbol from './KikoSymbol'
 import DoubleHelix from './DoubleHelix'
@@ -839,8 +839,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <div style={{ flex: voiceActive ? 1 : 0.3, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
         </div>
 
-        {/* KikoVoice — runs WebRTC connection when active */}
-        {voiceActive && <KikoVoice headless onClose={stopVoice} user={user} micStream={voiceMicStream} onVoiceState={handleVoiceState} onVoiceMessage={handleVoiceMessage} />}
+        {/* LiveKit Voice — full-screen overlay when active */}
+        {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} />}
 
         {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} />}
       </div>
@@ -938,17 +938,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         </div>
       </div>
       {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} />}
-      {/* KikoVoice — runs WebRTC for voice mode within conversation */}
-      {voiceActive && (
-        <KikoVoice
-          headless
-          onClose={stopVoice}
-          user={user}
-          micStream={voiceMicStream}
-          onVoiceState={handleVoiceState}
-          onVoiceMessage={handleVoiceMessage}
-        />
-      )}
+      {/* LiveKit Voice — full-screen overlay when in conversation */}
+      {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} />}
     </div>
   )
 }
