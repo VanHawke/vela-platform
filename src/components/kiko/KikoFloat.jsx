@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useNavigate, useLocation } from 'react-router-dom'
 import T from '@/lib/theme'
 import DoubleHelix from './DoubleHelix'
-import KikoVoice from './KikoVoiceLiveKit'
+import KikoVoice from './KikoVoice'
 import DOMPurify from 'dompurify'
 
 // Theme imported from @/lib/theme.js
