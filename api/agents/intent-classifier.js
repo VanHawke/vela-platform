@@ -60,6 +60,7 @@ INTENTS:
 - travel: F1/FE race travel, trip planning, visa awareness
 - calendar: Check calendar, schedule meetings, what's on today (Google Calendar)
 - email_read: Check emails, read emails, inbox search, unread count, email correspondence, "last email from/to/with X", "correspondence with X", "what did X email me", "any emails from X", "email thread with X", finding specific emails or email history (Gmail)
+- self_monitor: System health, errors, "are you working", "what broke", "diagnose yourself", "is inbox triage running", cron status, agent stats
 - general: General conversation, greetings, questions Claude can answer from knowledge
 
 Respond with ONLY the intent name. Nothing else.`;
@@ -85,7 +86,7 @@ export async function classifyIntent(message, currentPage = 'home') {
       messages: [{ role: 'user', content: `[Current page: ${currentPage}] ${message}` }],
     });
     const intentText = (response.content?.[0]?.text || 'general').trim().toLowerCase().replace(/[^a-z_]/g, '');
-    const validIntents = ['screen','crm_write','data','outreach','lemlist','signal','brief','strategy','content','research','memory','finance','document','negotiation','category','legal','dispute','investment','pricing','travel','calendar','email_read','general'];
+    const validIntents = ['screen','crm_write','data','outreach','lemlist','signal','brief','strategy','content','research','memory','finance','document','negotiation','category','legal','dispute','investment','pricing','travel','calendar','email_read','self_monitor','general'];
     const intent = validIntents.includes(intentText) ? intentText : 'general';
     console.log(`[Intent] "${message.slice(0,60)}" → ${intent} (${response.usage?.input_tokens || '?'}in/${response.usage?.output_tokens || '?'}out)`);
     return { intent };
@@ -120,5 +121,6 @@ export const INTENT_TO_AGENT = {
   travel:      { tool: 'ask_travel_agent' },
   calendar:    { tool: null, useMCP: 'google-calendar' },
   email_read:  { tool: null, useMCP: 'gmail' },
+  self_monitor: { tool: 'ask_self_monitor' },
   general:     { tool: null, directResponse: true },
 };

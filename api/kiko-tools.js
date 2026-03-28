@@ -19,6 +19,16 @@ export const sbFetch = async (path, opts = {}) => {
   catch { console.error(`[sbFetch] Non-JSON response for ${path}: ${text.slice(0, 200)}`); return opts.method && opts.method !== 'GET' ? {} : []; }
 };
 
+// ── Error Logger (write to kiko_error_log for self-monitoring) ──
+export const logError = async (component, errorMessage, context = '', severity = 'error') => {
+  try {
+    await sbFetch('kiko_error_log', {
+      method: 'POST',
+      body: JSON.stringify({ component, error_message: (errorMessage || '').slice(0, 1000), context: (context || '').slice(0, 500), severity })
+    });
+  } catch {} // Must never throw — this is the error logger itself
+};
+
 // ── Agent Tool Definitions (6 agents — down from 49 tools) ──
 export const TOOL_DEFINITIONS = [
   {
@@ -196,11 +206,20 @@ export const TOOL_DEFINITIONS = [
       params: { type: 'object', description: 'campaign_name (string, optional filter), email (string, for lead_detail), query (string, for lead_search), limit (number, default 10).' },
     }, required: ['operation'] },
   },
+  {
+    name: 'ask_self_monitor',
+    description: 'Kiko self-monitoring. Check system health, recent errors, cron job status, agent performance. Use when user asks: "are you working", "what errors happened", "is inbox triage running", "what broke", "system health", "diagnose yourself".',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['health_check', 'recent_errors', 'cron_status', 'agent_stats'], description: 'health_check: overall system health. recent_errors: last 24h errors. cron_status: check if crons ran today. agent_stats: agent usage and error rates.' },
+      params: { type: 'object', description: 'hours (number, default 24 for recent_errors), component (string, filter errors by component).' },
+    }, required: ['operation'] },
+  },
 ];
 
 // ── Tool Executor — Routes to agents ──
 function agentError(agentName, err) {
   console.error(`[KIKO] ${agentName} FAILED:`, err.message);
+  logError(`agent:${agentName.toLowerCase()}`, err.message, '', 'error');
   return `AGENT UNAVAILABLE: ${agentName} failed — ${err.message}. Tell Sunny this agent hit an error. Do NOT attempt to handle the task yourself.`;
 }
 
@@ -397,6 +416,13 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     } catch (e) { return agentError('Lemlist Live', e); }
   }
 
+  // ── Self-Monitor ──
+  if (name === 'ask_self_monitor') {
+    try {
+      return await handleSelfMonitor(input.operation, input.params || {});
+    } catch (e) { return agentError('Self-Monitor', e); }
+  }
+
   return { error: `Unknown tool: ${name}` };
 }
 
@@ -525,6 +551,86 @@ async function executeLemlistLive(operation, params = {}) {
   }
 
   return `Unknown Lemlist operation: ${operation}. Available: campaign_stats, lead_search, lead_detail, warm_leads, credits, signals, deliverability`;
+}
+
+// ── Self-Monitor Handler ──
+async function handleSelfMonitor(operation, params = {}) {
+  try {
+    if (operation === 'health_check') {
+      const [errors24h, lastTriage, lastLearning, lastInsight, taskCount, dealCount] = await Promise.all([
+        sbFetch('kiko_error_log?created_at=gt.' + new Date(Date.now() - 86400000).toISOString() + '&select=component,severity&limit=50').catch(() => []),
+        sbFetch('kiko_inbox_triage?order=triage_date.desc&limit=1&select=triage_date,summary').catch(() => []),
+        sbFetch('kiko_learning_log?order=created_at.desc&limit=1&select=created_at,category').catch(() => []),
+        sbFetch('kiko_conversation_insights?order=created_at.desc&limit=1&select=created_at').catch(() => []),
+        sbFetch('tasks?select=data&limit=100').catch(() => []),
+        sbFetch('deals?select=data&data->>status=eq.active&limit=100').catch(() => []),
+      ]);
+      const errorCount = (errors24h || []).length;
+      const criticals = (errors24h || []).filter(e => e.severity === 'critical').length;
+      const components = [...new Set((errors24h || []).map(e => e.component))];
+      let health = errorCount === 0 ? '🟢 HEALTHY' : criticals > 0 ? '🔴 CRITICAL' : errorCount > 10 ? '🟡 DEGRADED' : '🟢 HEALTHY (minor issues)';
+      let out = `KIKO SYSTEM HEALTH: ${health}\n\n`;
+      out += `Errors (24h): ${errorCount}${criticals ? ` (${criticals} critical)` : ''}\n`;
+      if (components.length) out += `Affected: ${components.join(', ')}\n`;
+      out += `Active deals: ${(dealCount || []).length}\n`;
+      out += `Tasks: ${(taskCount || []).length}\n`;
+      out += `Last inbox triage: ${lastTriage?.[0]?.triage_date || 'never'}\n`;
+      out += `Last learning: ${lastLearning?.[0]?.created_at ? new Date(lastLearning[0].created_at).toLocaleDateString('en-GB') : 'never'}\n`;
+      out += `Last conversation insight: ${lastInsight?.[0]?.created_at ? new Date(lastInsight[0].created_at).toLocaleDateString('en-GB') : 'never'}`;
+      return out;
+    }
+    if (operation === 'recent_errors') {
+      const hours = params?.hours || 24;
+      const since = new Date(Date.now() - hours * 3600000).toISOString();
+      let query = `kiko_error_log?created_at=gt.${since}&order=created_at.desc&limit=20&select=created_at,component,error_message,severity`;
+      if (params?.component) query += `&component=eq.${encodeURIComponent(params.component)}`;
+      const errors = await sbFetch(query);
+      if (!errors?.length) return `No errors in the last ${hours} hours. All systems operational.`;
+      let out = `ERRORS (last ${hours}h): ${errors.length} found\n\n`;
+      for (const e of errors) {
+        out += `[${new Date(e.created_at).toLocaleTimeString('en-GB')}] ${e.severity.toUpperCase()} | ${e.component}: ${e.error_message}\n`;
+      }
+      return out;
+    }
+    if (operation === 'cron_status') {
+      const today = new Date().toISOString().split('T')[0];
+      const [triage, prep, proactive, news] = await Promise.all([
+        sbFetch(`kiko_inbox_triage?triage_date=eq.${today}&limit=1&select=triage_date`).catch(() => []),
+        sbFetch(`kiko_meeting_prep?select=created_at&order=created_at.desc&limit=1`).catch(() => []),
+        sbFetch(`kiko_alerts?created_at=gt.${today}T00:00:00Z&limit=5&select=created_at,alert_type`).catch(() => []),
+        sbFetch(`news_articles?is_processed=eq.true&order=published_at.desc&limit=1&select=published_at`).catch(() => []),
+      ]);
+      let out = 'CRON STATUS:\n\n';
+      out += `Inbox triage today: ${triage?.length ? '✅ Ran' : '❌ Not run'}\n`;
+      out += `Meeting prep: ${prep?.[0]?.created_at ? '✅ Last: ' + new Date(prep[0].created_at).toLocaleDateString('en-GB') : '❌ No data'}\n`;
+      out += `Proactive alerts today: ${proactive?.length || 0} alerts\n`;
+      out += `News agent: ${news?.[0]?.published_at ? '✅ Last: ' + new Date(news[0].published_at).toLocaleDateString('en-GB') : '❌ No data'}`;
+      return out;
+    }
+    if (operation === 'agent_stats') {
+      const [outputs, errors] = await Promise.all([
+        sbFetch('kiko_output_tracking?order=created_at.desc&limit=100&select=agent,intent,created_at').catch(() => []),
+        sbFetch('kiko_error_log?order=created_at.desc&limit=50&select=component,created_at').catch(() => []),
+      ]);
+      const agentCounts = {};
+      for (const o of (outputs || [])) { agentCounts[o.agent] = (agentCounts[o.agent] || 0) + 1; }
+      const errorCounts = {};
+      for (const e of (errors || [])) { errorCounts[e.component] = (errorCounts[e.component] || 0) + 1; }
+      let out = 'AGENT STATS (recent):\n\n';
+      for (const [agent, count] of Object.entries(agentCounts).sort((a, b) => b[1] - a[1])) {
+        const errs = errorCounts[`agent:${agent}`] || 0;
+        out += `${agent}: ${count} calls${errs ? ` (${errs} errors)` : ''}\n`;
+      }
+      if (Object.keys(errorCounts).length) {
+        out += '\nERROR COMPONENTS:\n';
+        for (const [comp, count] of Object.entries(errorCounts).sort((a, b) => b[1] - a[1])) {
+          out += `${comp}: ${count} errors\n`;
+        }
+      }
+      return out;
+    }
+    return `Unknown self-monitor operation: ${operation}. Available: health_check, recent_errors, cron_status, agent_stats`;
+  } catch (e) { return `Self-monitor error: ${e.message}`; }
 }
 
 // ── Entity Context Helper (used by kiko.js for page-specific context) ──

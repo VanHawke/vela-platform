@@ -2,7 +2,7 @@
 // Step 1: Haiku classifies intent (~100ms)
 // Step 2: Deterministic navigation OR agent dispatch OR full tool loop
 import Anthropic from '@anthropic-ai/sdk';
-import { TOOL_DEFINITIONS, executeTool, fetchEntityContext, sbFetch } from './kiko-tools.js';
+import { TOOL_DEFINITIONS, executeTool, fetchEntityContext, sbFetch, logError } from './kiko-tools.js';
 import { classifyIntent, INTENT_TO_AGENT } from './agents/intent-classifier.js';
 import { describeScreen } from './agents/screen-reader.js';
 
@@ -126,6 +126,7 @@ async function getMcpServers(userEmail) {
     ];
   } catch (err) {
     console.log('[MCP] Google token unavailable:', err.message);
+    logError('mcp:google', err.message, `user=${userEmail}`, 'warning');
     return [];
   }
 }
@@ -333,6 +334,7 @@ const TOOL_LABELS = {
   ask_signal_agent: 'Signal Agent: scanning...',
   ask_travel_agent: 'Travel Agent: planning...',
   ask_specialist_agent: 'Specialist Agent: processing...',
+  ask_self_monitor: 'Self-Monitor: checking...',
   navigate_page: 'Navigating...',
   log_activity: 'Logging activity...',
   web_search: 'Searching the web...',
@@ -700,6 +702,7 @@ export default async function handler(req, res) {
     extractConversationInsights(message, responseText, intent);
   } catch (err) {
     console.error('[KIKO] Error:', err);
+    logError('coordinator', err.message, `intent=${intent || 'unknown'}, message=${(message || '').slice(0, 100)}`, 'critical');
     write({ delta: `\n\nError: ${err.message}` });
     res.write('data: [DONE]\n\n');
     res.end();
