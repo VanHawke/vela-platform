@@ -497,3 +497,136 @@ Extensive exploration of avatar alternatives to DoubleHelix. Crown, bars, fluid 
 13. Access Gmail (search, read, threads) and Google Calendar via MCP
 14. Generate documents (Word, Excel, PowerPoint, CSV, images, QR codes)
 15. Draft emails in Sunny's voice (from learned communication profile)
+
+
+---
+
+## 9. COMPLETE SESSION 2 FINAL STATE — March 28, 2026 (Night)
+
+### System Totals
+| Component | Count |
+|-----------|-------|
+| Tools registered | 26 |
+| Tool handlers | 26 |
+| Intents classified | 27 |
+| Intent-to-agent mappings | 27 |
+| Routing guide entries | 28 |
+| Crons in vercel.json | 20 |
+| Agent files | 24 (23 hardcoded + 1 dynamic runner) |
+| Knowledge sources | 60 (12 categories) |
+| Curriculum pillars | 20 (142 topics) |
+| Intelligence tables | 17 |
+| Supabase tables (total) | 30+ |
+
+### New Systems Built This Session
+
+**Dynamic Self-Knowledge** (kiko-self-knowledge.js)
+- 13 discovery sections scanning tools, intents, agents, crons, skills, dynamic agents, cron health, knowledge sources, imported conversations, platform pages
+- 5-minute cache, auto-discovers new capabilities
+
+**Learning Director** (cron-learning-director.js)
+- 20 pillars, 142 topics across all business domains
+- Runs daily 3am, researches 2 topics via Sonnet + web search
+- Distils into operational principles, stores in learning_log + memories + skills
+- Full curriculum completes in ~71 days
+
+**Knowledge Ingestion** (ingest-knowledge.js)
+- 60 curated sources: all F1 teams, sponsorship industry, psychology, fashion, legal, design, AI generation, advertising, strategy, investment
+- Runs weekday mornings 5am, scrapes + extracts via Haiku
+- High-relevance facts auto-flow to learning_log
+
+**Self-Reflection** (cron-self-reflection.js)
+- Weekly Sundays 4am, reads all conversation patterns + corrections + preferences
+- Writes evolving identity.md in first person
+- Loaded into ALL conversations (not just voice)
+
+**Morning Intelligence Brief** (cron-morning-intelligence.js)
+- Runs 7:30am Mon-Fri, synthesises ALL data streams into actionable push brief
+- Pipeline health, stale deals, overdue tasks, inbox triage, deal signals, race calendar, open threads, pending actions, relationship decay
+- Auto race-week mode switching when race within 7 days
+- Writes as high-priority alert, injected into all conversations for 24h
+
+**Competitive Change Detector** (cron-competitive-intel.js)
+- Runs weekly Mondays 2am
+- Fetches all F1 team partner pages, diffs against stored snapshot
+- Detects new partners, lost partners, category changes
+- Writes high-priority alerts for any changes detected
+
+**Conversation Import** (import-conversations.js)
+- Parses ChatGPT (tree + flat) and Claude exports
+- Haiku extraction: facts, decisions, entities, strategic value
+- High-value auto-populates conversation_insights + learning_log
+
+**Dynamic Agent System** (agents/dynamic-runner.js)
+- Kiko creates, updates, lists, runs her own agents stored in kiko_dynamic_agents
+- Universal runner: loads definition → executes data queries → calls Claude with custom prompt
+- Self-knowledge auto-discovers dynamic agents
+- No code change needed to add new capabilities
+
+**Operational Mode System** (kiko_operational_mode table)
+- Modes: default, fundraising, race_week, outreach_sprint, deal_closing, product_launch
+- Auto-switches to race_week when race within 7 days (via morning intelligence)
+- Mode injected into ALL conversations — adjusts every response to serve current priorities
+- Auto-expires when set with duration
+
+**Enriched Agents** (5 previously hollow, now data-connected)
+- legal.js: pulls CRM deals + legal documents
+- dispute.js: pulls dispute tasks + activities
+- ip.js: pulls deal pipeline + F1 partnerships
+- product-dev.js: pulls Haas deals + race calendar + product docs
+- website.js: pulls pipeline data + content requests
+
+**Signal Agent Enhanced**: pipeline cross-reference, company filtering, key topic display
+**Auto-Activity Logging**: deal + outreach agents auto-write to activities table
+**Conversation Search**: full-text search across 163 past conversations
+**Correction Learning**: detects user rephrasing, logs to learning_log
+**Auto-Research Learning**: every research/strategy/data query auto-extracts facts
+**Trigger Triage**: on-demand inbox triage when stale
+**Task Automation Enhanced**: creates draft actions for overdue items
+
+### Context Injection Chain (what Kiko sees per conversation)
+1. System prompt (routing guide, orchestration, web access, style)
+2. Dynamic self-knowledge (tools, intents, agents, crons, skills, knowledge sources, dynamic agents)
+3. Identity document (personality, self-model from reflection)
+4. Page context (current page, visible data, stage distribution)
+5. Routing hint (intent-specific guidance)
+6. Decision patterns (from kiko_preferences)
+7. Communication profile (draft instructions, language fingerprint)
+8. Conversation memory (recent decisions, open threads)
+9. Inbox triage (today's email summary)
+10. Morning intelligence brief (today's push brief)
+11. Operational mode (current priorities and focus)
+
+### Cron Schedule (20 total)
+| Time | Cron | Purpose |
+|------|------|---------|
+| 2am Mon | Competitive Intel | Diff F1 partner pages |
+| 3am Daily | Learning Director | Autonomous curriculum (2 topics/day) |
+| 4am Sun | Self-Reflection | Personality evolution |
+| 4am Sun | Profile Synthesis | Communication style analysis |
+| 5am M-F | Knowledge Ingestion | Scrape 60 curated sources |
+| 5am Sun | Relationship Intel | Contact warmth scores |
+| 6am Sun | Preference Synthesis | Decision pattern extraction |
+| 6am Mon | Enrichment | Fill CRM data gaps |
+| 6:15am Mon | Lemlist Enrich | LinkedIn URLs + emails |
+| 6:30am M-F | Task Automation | Merge dupes, draft overdue actions |
+| 7am M-F | Proactive Engine | Cross-reference signals with pipeline |
+| 7am M-F | Partnership Scan | Detect F1 partner changes |
+| 7:15am M-F | Inbox Triage | Classify email priority |
+| 7:30am M-F | Morning Intelligence | Push brief + auto race-week mode |
+| 7:30am M-F | Lemlist Signals | Intent signals from sequences |
+| 8am M-F | News Agent | Scan for deal signals |
+| 9am Mon | Outreach Score | Email effectiveness tracking |
+| 10pm M-F | Edit Delta | Draft vs sent comparison learning |
+| Hourly | Meeting Prep | Pre-meeting briefing docs |
+| Sun 6am | Document Scan | Re-scan outdated documents |
+
+### What Remains
+| Item | Priority | Impact |
+|------|----------|--------|
+| Voice mode (Phase 13) | HIGHEST | 10x interaction density — Pipecat + Claude + Deepgram + Cartesia |
+| ChatGPT/Claude import UI | HIGH | Months of strategic thinking absorbed |
+| Process remaining imports | MEDIUM | Batch processing for 50+ conversations |
+| Investment agent enrichment | LOW | Comp data + dilution modelling |
+| Travel agent web search | LOW | Live flight + visa search |
+| Avatar design | MEDIUM | Visual identity for Kiko |
