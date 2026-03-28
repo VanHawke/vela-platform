@@ -14,7 +14,10 @@
     { "path": "/api/cron-inbox-triage", "schedule": "15 7 * * 1-5" },
     { "path": "/api/cron-lemlist-enrich", "schedule": "15 6 * * 1" },
     { "path": "/api/cron-lemlist-signals", "schedule": "30 7 * * 1-5" },
-    { "path": "/api/cron-document-scan", "schedule": "0 6 * * 0" }
+    { "path": "/api/cron-document-scan", "schedule": "0 6 * * 0" },
+    { "path": "/api/ingest-knowledge", "schedule": "0 5 * * 1-5" },
+    { "path": "/api/cron-learning-director", "schedule": "0 3 * * *" },
+    { "path": "/api/cron-self-reflection", "schedule": "0 4 * * 0" }
   ],
   "functions": {
     "api/kiko.js": { "maxDuration": 60 },
@@ -45,7 +48,11 @@
     "api/cron-inbox-triage.js": { "maxDuration": 45 },
     "api/cron-task-automation.js": { "maxDuration": 30 },
     "api/cron-lemlist-enrich.js": { "maxDuration": 45 },
-    "api/cron-lemlist-signals.js": { "maxDuration": 30 }
+    "api/cron-lemlist-signals.js": { "maxDuration": 30 },
+    "api/import-conversations.js": { "maxDuration": 120 },
+    "api/ingest-knowledge.js": { "maxDuration": 60 },
+    "api/cron-learning-director.js": { "maxDuration": 120 },
+    "api/cron-self-reflection.js": { "maxDuration": 60 }
   },
   "rewrites": [
     { "source": "/api/google-auth/callback", "destination": "/api/google-auth" },

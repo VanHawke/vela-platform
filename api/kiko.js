@@ -408,12 +408,19 @@ export default async function handler(req, res) {
   // Skills removed from Prime — domain expertise lives inside specialist agents.
   // Loading skills here caused Prime to attempt tasks directly instead of routing to agents.
 
+  // Load Kiko's self-model (identity) for all conversations
+  let identityContext = '';
+  try {
+    const identity = await sbFetch('kiko_memories?path=eq./memories/identity.md&select=content&limit=1');
+    if (identity?.[0]?.content) identityContext = '\n\n── KIKO IDENTITY ──\n' + identity[0].content.slice(0, 2000);
+  } catch {}
+
   // Voice mode adjustments
   let voiceRules = '';
   let preloadedMemory = '';
   if (voiceMode || currentPage === 'voice') {
     try {
-      const memRows = await sbFetch('kiko_memories?select=path,content&is_directory=eq.false&path=in.(%22/memories/sunny_profile.md%22,%22/memories/identity.md%22)&order=path.asc');
+      const memRows = await sbFetch('kiko_memories?select=path,content&is_directory=eq.false&path=eq./memories/sunny_profile.md&order=path.asc');
       if (memRows?.length) preloadedMemory = '\n\n── MEMORY ──\n' + memRows.map(r => r.content).join('\n\n');
     } catch {}
     voiceRules = '\n\nVOICE MODE — SPEED IS CRITICAL:\n- Max 2 sentences. No markdown. Say numbers naturally.\n- For greetings (hi, hello, hey, good morning): respond IMMEDIATELY with a warm 1-sentence reply. Do NOT call any tools.\n- For simple questions you can answer from the system prompt context: respond IMMEDIATELY. Do NOT call tools.\n- ONLY call a tool if the user explicitly asks for data, actions, or information you genuinely cannot answer without it.\n- NEVER call memory tools — memory is already pre-loaded above.\n- Keep responses SHORT and spoken-word natural. No lists. No headers.';
@@ -744,6 +751,27 @@ export default async function handler(req, res) {
     }
     // Conversation Memory: extract insights for cross-session continuity
     extractConversationInsights(message, responseText, intent);
+
+    // Auto-save research findings to knowledge bank
+    if ((intent === 'research' || intent === 'strategy' || intent === 'data') && responseText.length > 300) {
+      try {
+        const extract = await anthropic.messages.create({
+          model: 'claude-haiku-4-5-20251001', max_tokens: 200,
+          system: 'Extract 1-3 key business facts worth remembering from this exchange. Return ONLY JSON: { "facts": ["fact1", "fact2"], "entity": "main company/person or null" }. If nothing worth saving, return empty facts array.',
+          messages: [{ role: 'user', content: `Q: ${message.slice(0, 200)}\nA: ${responseText.slice(0, 800)}` }],
+        });
+        const parsed = JSON.parse((extract.content[0]?.text || '{}').replace(/```json|```/g, '').trim());
+        for (const fact of (parsed.facts || []).slice(0, 3)) {
+          await sbFetch('kiko_learning_log', {
+            method: 'POST', body: JSON.stringify({
+              user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
+              category: 'auto_research', content: fact,
+              entity_name: parsed.entity || null, user_message: message.slice(0, 200),
+            })
+          });
+        }
+      } catch {} // Non-blocking
+    }
   } catch (err) {
     console.error('[KIKO] Error:', err);
     logError('coordinator', err.message, `intent=${intent || 'unknown'}, message=${(message || '').slice(0, 100)}`, 'critical');

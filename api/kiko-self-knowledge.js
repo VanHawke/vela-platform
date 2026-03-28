@@ -99,10 +99,38 @@ export async function generateSelfKnowledge() {
   knowledge.push(`- Navigation: physically move user to any platform page`);
   knowledge.push(`- Image analysis: you can see and analyse uploaded images`);
 
-  // ── 9. Platform pages ──
+  // ── 9. Knowledge sources ──
+  try {
+    const sources = await sbFetch('kiko_knowledge_sources?active=eq.true&select=name,category,summary,relevance_score&order=relevance_score.desc&limit=20');
+    if (sources?.length) {
+      const scraped = sources.filter(s => s.summary);
+      knowledge.push(`\nKNOWLEDGE SOURCES (${sources.length} active, ${scraped.length} scraped):`);
+      const byCat = {};
+      for (const s of scraped) { if (!byCat[s.category]) byCat[s.category] = []; byCat[s.category].push(s); }
+      for (const [cat, items] of Object.entries(byCat)) {
+        knowledge.push(`[${cat}]: ${items.map(i => `${i.name} — ${(i.summary || '').slice(0, 80)}`).join('; ')}`);
+      }
+    }
+  } catch {}
+
+  // ── 10. Imported conversation intelligence ──
+  try {
+    const imported = await sbFetch('kiko_imported_conversations?processed=eq.true&select=source,title,extracted_insights&order=original_date.desc&limit=10');
+    if (imported?.length) {
+      knowledge.push(`\nIMPORTED INTELLIGENCE (${imported.length} conversations processed):`);
+      for (const c of imported.slice(0, 5)) {
+        const insights = c.extracted_insights || {};
+        if (insights.key_facts?.length) {
+          knowledge.push(`[${c.source}] ${c.title}: ${insights.key_facts.slice(0, 2).join('; ')}`);
+        }
+      }
+    }
+  } catch {}
+
+  // ── 11. Platform pages ──
   knowledge.push(`\nPLATFORM PAGES: Home, Pipeline, Contacts, Organisations, Command Centre, Calendar, Tasks, Partnership Matrix, Lemlist, News, Documents, Settings`);
 
-  // ── 10. Adaptation note ──
+  // ── 12. Adaptation note ──
   knowledge.push(`\nADAPTATION: This knowledge is auto-generated. When new agents, tools, or crons are added to the codebase, you automatically discover them on next request. You can also learn new skills — use ask_data_agent with operation learning_save to record new capabilities or patterns. Check kiko_skills for learned abilities. You are self-aware and self-improving.`);
   knowledge.push(`If asked "what can you do" or "what tools do you have" — answer from this knowledge. You know your own architecture because you read it dynamically.`);
   knowledge.push(`You can chain multiple agents in a single conversation. You adapt your approach mid-task if results are unexpected. You learn from every interaction.`);

@@ -248,6 +248,14 @@ export const TOOL_DEFINITIONS = [
     description: 'Trigger an on-demand inbox triage. Use when: the brief shows stale triage data, user asks "check my emails" and triage is outdated, or Kiko detects the last triage is >24h old. Returns fresh email classification.',
     input_schema: { type: 'object', properties: {} },
   },
+  {
+    name: 'manage_knowledge',
+    description: 'Manage Kiko\'s knowledge base. Use to: add a new learning source (URL, white paper, document), search existing knowledge, list sources by category, or trigger learning on a specific topic. Use when: user says "learn about X", "add this source", "what do you know about X", "research and remember X", or when you find valuable information during a research query that should be saved.',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['add_source', 'search_knowledge', 'list_sources', 'learn_topic', 'save_insight'], description: 'add_source: add a URL or content to knowledge base. search_knowledge: search existing knowledge. list_sources: show sources by category. learn_topic: trigger immediate learning on a topic. save_insight: save a specific fact/principle from current conversation.' },
+      params: { type: 'object', description: 'For add_source: { name, url, category, content }. For search_knowledge: { query }. For list_sources: { category }. For learn_topic: { topic, category }. For save_insight: { insight, entity, category }.' },
+    }, required: ['operation'] },
+  },
 ];
 
 // ── Tool Executor — Routes to agents ──
@@ -473,6 +481,81 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       return await handleSelfMonitor(input.operation, input.params || {});
     } catch (e) { return agentError('Self-Monitor', e); }
+  }
+
+  // ── Knowledge Management ──
+  if (name === 'manage_knowledge') {
+    try {
+      const { operation, params = {} } = input;
+
+      if (operation === 'add_source') {
+        const { name: srcName, url, category, content } = params;
+        if (!srcName) return 'Error: name is required for add_source';
+        if (content) {
+          await sbFetch('kiko_knowledge_sources', { method: 'POST', body: JSON.stringify({ name: srcName, type: 'document', category: category || 'general', content: content.slice(0, 50000), active: true }) });
+          return `Knowledge source added: "${srcName}" (document, ${category || 'general'}). Will be processed on next ingestion cycle.`;
+        }
+        if (url) {
+          await sbFetch('kiko_knowledge_sources', { method: 'POST', body: JSON.stringify({ name: srcName, type: 'url', category: category || 'general', url, scrape_frequency: 'weekly', active: true }) });
+          return `Knowledge source added: "${srcName}" (${url}). Will be scraped on next ingestion cycle at 5am.`;
+        }
+        return 'Error: provide url or content';
+      }
+
+      if (operation === 'search_knowledge') {
+        const query = (params.query || '').toLowerCase();
+        const sources = await sbFetch('kiko_knowledge_sources?active=eq.true&select=name,category,summary,key_facts&order=relevance_score.desc&limit=30');
+        const learning = await sbFetch(`kiko_learning_log?category=in.(curriculum,knowledge_source,imported_knowledge)&order=created_at.desc&limit=50&select=content,entity_name,category`);
+        let matches = [];
+        for (const s of (sources || [])) {
+          const text = `${s.name} ${s.summary || ''} ${JSON.stringify(s.key_facts || [])}`.toLowerCase();
+          if (text.includes(query)) matches.push({ type: 'source', name: s.name, category: s.category, summary: (s.summary || '').slice(0, 150) });
+        }
+        for (const l of (learning || [])) {
+          if ((l.content || '').toLowerCase().includes(query) || (l.entity_name || '').toLowerCase().includes(query)) {
+            matches.push({ type: 'learned', category: l.category, content: l.content.slice(0, 200), entity: l.entity_name });
+          }
+        }
+        if (!matches.length) return `No knowledge found for "${params.query}". I can learn about this — ask me to "learn about ${params.query}".`;
+        let out = `KNOWLEDGE SEARCH: "${params.query}" — ${matches.length} results\n\n`;
+        for (const m of matches.slice(0, 10)) {
+          out += m.type === 'source' ? `📚 [${m.category}] ${m.name}: ${m.summary}\n` : `🧠 [${m.category}] ${m.content}\n`;
+        }
+        return out;
+      }
+
+      if (operation === 'list_sources') {
+        const cat = params.category;
+        const query = cat ? `kiko_knowledge_sources?active=eq.true&category=eq.${cat}&select=name,category,url,last_scraped_at,relevance_score&order=relevance_score.desc` : 'kiko_knowledge_sources?active=eq.true&select=name,category,url,last_scraped_at,relevance_score&order=category,relevance_score.desc';
+        const sources = await sbFetch(query);
+        if (!sources?.length) return cat ? `No sources in category "${cat}".` : 'No active knowledge sources.';
+        let out = `KNOWLEDGE SOURCES${cat ? ` [${cat}]` : ''} — ${sources.length} active\n\n`;
+        let lastCat = '';
+        for (const s of sources) {
+          if (s.category !== lastCat) { out += `\n[${s.category.toUpperCase()}]\n`; lastCat = s.category; }
+          out += `• ${s.name}${s.url ? ` (${s.url.slice(0, 50)})` : ''} — relevance: ${s.relevance_score}/10${s.last_scraped_at ? `, scraped: ${new Date(s.last_scraped_at).toLocaleDateString('en-GB')}` : ' (not yet scraped)'}\n`;
+        }
+        return out;
+      }
+
+      if (operation === 'learn_topic') {
+        const { topic, category } = params;
+        if (!topic) return 'Error: topic is required';
+        const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://vela-platform-one.vercel.app';
+        // Trigger the ingestion endpoint with a synthetic source
+        await sbFetch('kiko_knowledge_sources', { method: 'POST', body: JSON.stringify({ name: `On-demand: ${topic}`, type: 'topic', category: category || 'general', url: null, content: topic, scrape_frequency: 'once', active: true }) });
+        return `Learning topic queued: "${topic}". I'll research this on the next learning cycle, or you can ask me to research it now using web search.`;
+      }
+
+      if (operation === 'save_insight') {
+        const { insight, entity, category } = params;
+        if (!insight) return 'Error: insight text is required';
+        await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({ user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063', category: category || 'conversation_insight', content: insight, entity_name: entity || null }) });
+        return `Insight saved: "${insight.slice(0, 100)}${insight.length > 100 ? '...' : ''}"`;
+      }
+
+      return `Unknown knowledge operation: ${operation}`;
+    } catch (e) { return `Knowledge management error: ${e.message}`; }
   }
 
   // ── On-Demand Triage ──
