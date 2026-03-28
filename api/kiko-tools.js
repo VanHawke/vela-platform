@@ -235,6 +235,14 @@ export const TOOL_DEFINITIONS = [
       params: { type: 'object', description: 'hours (number, default 24 for recent_errors), component (string, filter errors by component).' },
     }, required: ['operation'] },
   },
+  {
+    name: 'search_conversations',
+    description: 'Search past conversations for context. Use when: "you mentioned this before", "what did we discuss about X", "recall our conversation about Y", "we talked about this last week", any reference to prior discussions, or when you need historical context about a decision or entity.',
+    input_schema: { type: 'object', properties: {
+      query: { type: 'string', description: 'Search term — entity name, topic, keyword. Keep it focused.' },
+      limit: { type: 'number', description: 'Max results (default 5).' },
+    }, required: ['query'] },
+  },
 ];
 
 // ── Tool Executor — Routes to agents ──
@@ -245,6 +253,17 @@ function agentError(agentName, err) {
 }
 
 export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com', pageContext = null) {
+
+  // ── Auto-Activity Logger — fires after agent calls that touch CRM entities ──
+  const autoLogActivity = async (type, entityName, description) => {
+    try {
+      await sbFetch('activities', { method: 'POST', body: JSON.stringify({
+        type, entity_name: entityName, subject: (description || '').slice(0, 500),
+        status: 'completed', completed_at: new Date().toISOString(),
+        metadata: { logged_by: 'kiko', tool: name, auto: true }
+      })});
+    } catch {} // Never fail on logging
+  };
 
   // ── Navigator Agent ──
   if (name === 'ask_navigator') {
@@ -265,6 +284,10 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       const { callDealAgent } = await import('./agents/deal.js');
       const result = await callDealAgent(input.instruction, userEmail);
+      if (result.success) {
+        const entity = input.instruction?.match(/(?:for|at|with|to)\s+([A-Z][a-zA-Z\s&]+)/)?.[1] || 'unknown';
+        autoLogActivity('crm_action', entity.trim(), input.instruction?.slice(0, 200));
+      }
       return result.success ? result.result : `Deal Agent failed: ${result.result}`;
     } catch (e) { return agentError('Deal Agent', e); }
   }
@@ -281,7 +304,10 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
   if (name === 'ask_outreach_agent') {
     try {
       const { callOutreachAgent } = await import('./agents/outreach.js');
-      return await callOutreachAgent(input.operation, input.params || {}, userEmail);
+      const result = await callOutreachAgent(input.operation, input.params || {}, userEmail);
+      const entity = input.params?.company || input.params?.recipient || input.params?.contactName || 'unknown';
+      autoLogActivity('outreach', entity, `${input.operation}: ${JSON.stringify(input.params || {}).slice(0, 200)}`);
+      return result;
     } catch (e) { return agentError('Outreach Agent', e); }
   }
 
@@ -442,6 +468,47 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       return await handleSelfMonitor(input.operation, input.params || {});
     } catch (e) { return agentError('Self-Monitor', e); }
+  }
+
+  // ── Conversation Search ──
+  if (name === 'search_conversations') {
+    try {
+      const query = (input.query || '').toLowerCase();
+      const limit = input.limit || 5;
+      // Search conversations table — messages are jsonb arrays
+      const convos = await sbFetch(`conversations?select=id,title,messages,updated_at&order=updated_at.desc&limit=50`);
+      if (!convos?.length) return 'No past conversations found.';
+      // Score conversations by keyword match in messages
+      const scored = [];
+      for (const c of convos) {
+        const msgs = c.messages || [];
+        const text = msgs.map(m => (m.content || '')).join(' ').toLowerCase();
+        if (text.includes(query)) {
+          const matchMsgs = msgs.filter(m => (m.content || '').toLowerCase().includes(query));
+          scored.push({
+            title: c.title || 'Untitled',
+            date: c.updated_at ? new Date(c.updated_at).toLocaleDateString('en-GB') : '?',
+            matches: matchMsgs.length,
+            excerpts: matchMsgs.slice(0, 3).map(m => {
+              const content = m.content || '';
+              const idx = content.toLowerCase().indexOf(query);
+              const start = Math.max(0, idx - 60);
+              const end = Math.min(content.length, idx + query.length + 60);
+              return `[${m.role}]: ...${content.slice(start, end)}...`;
+            })
+          });
+        }
+      }
+      scored.sort((a, b) => b.matches - a.matches);
+      if (!scored.length) return `No conversations found mentioning "${input.query}".`;
+      let out = `CONVERSATION SEARCH: "${input.query}" — ${scored.length} conversations found\n\n`;
+      for (const s of scored.slice(0, limit)) {
+        out += `📅 ${s.date} — ${s.title} (${s.matches} mentions)\n`;
+        for (const e of s.excerpts) out += `  ${e}\n`;
+        out += '\n';
+      }
+      return out;
+    } catch (e) { return `Conversation search error: ${e.message}`; }
   }
 
   return { error: `Unknown tool: ${name}` };

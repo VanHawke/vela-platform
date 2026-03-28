@@ -115,7 +115,31 @@ async function extractConversationInsights(message, fullResponse, intent) {
   } catch {} // Non-blocking
 }
 
-// ── MCP Server Registry ──
+// ── Correction Learning — detect when user rephrases ──
+async function detectCorrection(message, conversationHistory, intent) {
+  if (conversationHistory.length < 3) return; // Need at least one exchange
+  try {
+    const lastUserMsg = conversationHistory.filter(m => m.role === 'user').slice(-2, -1)[0];
+    if (!lastUserMsg) return;
+    // Quick heuristic: if both messages are >10 chars, share 30%+ words, but aren't identical
+    const prev = (lastUserMsg.content || '').toLowerCase().split(/\s+/);
+    const curr = message.toLowerCase().split(/\s+/);
+    if (prev.length < 3 || curr.length < 3) return;
+    const prevSet = new Set(prev);
+    const overlap = curr.filter(w => prevSet.has(w) && w.length > 3).length;
+    const similarity = overlap / Math.max(prev.length, curr.length);
+    if (similarity > 0.25 && similarity < 0.9) {
+      // Likely a rephrase — log it for learning
+      await sbFetch('kiko_learning_log', {
+        method: 'POST', body: JSON.stringify({
+          user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
+          category: 'correction', content: `User rephrased. Original: "${lastUserMsg.content?.slice(0, 150)}". Rephrased: "${message.slice(0, 150)}". Intent: ${intent}. Similarity: ${(similarity * 100).toFixed(0)}%.`,
+          entity_name: null, user_message: message.slice(0, 200),
+        })
+      });
+    }
+  } catch {} // Non-blocking
+}
 async function getMcpServers(userEmail) {
   try {
     const { getGoogleToken } = await import('./google-token.js');
@@ -448,6 +472,9 @@ export default async function handler(req, res) {
     // ── PHASE 1: Intent Classification ──
     const classification = await classifyIntent(message, currentPage);
     const { intent, target } = classification;
+
+    // Non-blocking: detect if user is rephrasing (correction learning)
+    detectCorrection(message, conversationHistory, intent);
 
     // Handle deterministic navigation — no Claude needed
     if (intent === 'navigate' && target) {

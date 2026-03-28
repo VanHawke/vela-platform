@@ -1,58 +1,43 @@
-// api/agents/dispute.js — Dispute Agent
-// Active dispute management. Procedural responses, tone discipline, leverage tracking.
-// Model: claude-opus-4-6 (adversarial thinking)
+// api/agents/dispute.js — Dispute Agent with CRM context
 import Anthropic from '@anthropic-ai/sdk';
+import { sbFetch } from '../kiko-tools.js';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
-const DISPUTE_PROMPT = `You are the Dispute Agent inside Kiko, the AI operating system for Van Hawke Group.
-You protect Sunny's position in active disputes. Think like a litigation strategist.
+const DISPUTE_PROMPT = `You are the Dispute Resolution Agent for Van Hawke Group.
+Handle: active disputes, procedural responses, leverage tracking, landlord/tenant (CDDA), commercial disputes.
+Sunny is UK-based. UK law applies unless stated otherwise.
+Structure responses: SITUATION SUMMARY → LEGAL POSITION → RECOMMENDED ACTION → TIMELINE → ESCALATION PATH.
+Flag deadlines and limitation periods. Always recommend documenting everything in writing.`;
 
-RULES:
-1. NEVER make admissions. Flag any language that could be used against us.
-2. Tone: professional, measured, factual. Never emotional, never aggressive.
-3. Every response must be procedurally correct (format, timing, addressee).
-4. Track leverage: what we hold, what they hold, what's at stake.
-5. Silence is valid. Not every communication requires a response.
-6. Escalation timing matters — too early weakens position, too late loses options.
+async function analyse(question, context = '') {
+  let crmContext = '';
+  try {
+    // Check for any related activities or tasks
+    const tasks = await sbFetch(`tasks?select=data&data->>type=ilike.*dispute*&limit=5`);
+    if (tasks?.length) {
+      crmContext = '\n\nActive dispute-related tasks:';
+      for (const t of tasks) crmContext += `\n• ${t.data?.notes || t.data?.title || '?'} (${t.data?.company || '?'})`;
+    }
+    const activities = await sbFetch(`activities?select=type,entity_name,subject&type=ilike.*dispute*&order=created_at.desc&limit=5`);
+    if (activities?.length) {
+      crmContext += '\n\nRecent dispute activity:';
+      for (const a of activities) crmContext += `\n• ${a.entity_name}: ${a.subject}`;
+    }
+  } catch {}
 
-OUTPUT for dispute analysis:
-- POSITION SUMMARY (our stance, 2 sentences)
-- LEVERAGE MAP (ours vs theirs)
-- RECOMMENDED RESPONSE (exact language or "do not respond")
-- RISK (what could go wrong)
-- NEXT STEP (with timing)
-
-ALWAYS include: "This is not legal advice. Consult a solicitor for binding decisions."`;
-
-async function analyse(situation, context = '') {
   try {
     const res = await anthropic.messages.create({
-      model: 'claude-opus-4-6', max_tokens: 1200,
+      model: 'claude-sonnet-4-20250514', max_tokens: 1200,
       system: DISPUTE_PROMPT,
-      messages: [{ role: 'user', content: `DISPUTE SITUATION:\n${situation}${context ? `\n\nCONTEXT:\n${context}` : ''}` }],
+      messages: [{ role: 'user', content: `${question}${crmContext}${context ? `\nContext: ${context}` : ''}` }],
     });
-    return res.content[0]?.text || 'Could not analyse dispute.';
+    return res.content[0]?.text || 'Could not analyse.';
   } catch (err) { return `Dispute error: ${err.message}`; }
-}
-
-async function draftResponse(situation, context = '') {
-  try {
-    const res = await anthropic.messages.create({
-      model: 'claude-opus-4-6', max_tokens: 1000,
-      system: DISPUTE_PROMPT,
-      messages: [{ role: 'user', content: `Draft a response for this dispute situation. Must be procedurally correct, make no admissions, and maintain professional tone.\n\nSITUATION:\n${situation}${context ? `\n\nCONTEXT:\n${context}` : ''}` }],
-    });
-    return res.content[0]?.text || 'Could not draft response.';
-  } catch (err) { return `Dispute draft error: ${err.message}`; }
 }
 
 export async function callDisputeAgent(operation, params = {}) {
   try {
-    switch (operation) {
-      case 'analyse': return await analyse(params.situation || params.query, params.context);
-      case 'draft': return await draftResponse(params.situation || params.query, params.context);
-      default: return `Unknown dispute operation: ${operation}. Available: analyse, draft`;
-    }
-  } catch (err) { return `Dispute Agent error (${operation}): ${err.message}`; }
+    return await analyse(params.question || params.query || params.instruction || operation, params.context);
+  } catch (err) { return `Dispute Agent error: ${err.message}`; }
 }
