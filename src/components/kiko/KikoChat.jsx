@@ -10,6 +10,7 @@ import KikoSymbol from './KikoSymbol'
 import DoubleHelix from './DoubleHelix'
 import DraftPreview, { detectDraft } from './DraftPreview'
 import KikoInsights, { InsightsBadge } from './KikoInsights'
+import { useDynamicChips } from '@/hooks/useDynamicChips'
 
 // Theme imported from @/lib/theme.js
 
@@ -40,7 +41,7 @@ function getGreeting() {
   return h >= 5 && h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'
 }
 
-const CHIPS = ['Brief me', 'Pipeline update', 'Check emails', 'F1 calendar']
+// Chips are now dynamic — see useDynamicChips hook
 
 // Kiko 4-dot symbol (asymmetric diamond) with optional staggered animation
 const KikoDots = ({ size = 40, color = 'rgba(255,255,255,0.04)', animated = false }) => {
@@ -102,6 +103,7 @@ const CtaEq = () => {
 export default function KikoChat({ user, compact = false, initialMessage = '' }) {
   const navigate = useNavigate()
   const outletCtx = useOutletContext() || {}
+  const dynamicChips = useDynamicChips('home', false)
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState(initialMessage)
   const [streaming, setStreaming] = useState(false)
@@ -822,7 +824,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.1s',
                 overflow: 'hidden', pointerEvents: voiceActive ? 'none' : 'auto',
               }}>
-                {CHIPS.map(c => (
+                {dynamicChips.map(c => (
                   <button key={c} onClick={() => handleSubmit(c)} style={{
                     padding: '11px 26px', borderRadius: 50, background: T.glass,
                     backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,

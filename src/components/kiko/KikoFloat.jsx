@@ -6,6 +6,7 @@ import T from '@/lib/theme'
 import DoubleHelix from './DoubleHelix'
 import KikoVoice from './KikoVoice'
 import DOMPurify from 'dompurify'
+import { useDynamicChips } from '@/hooks/useDynamicChips'
 
 // Strip orphaned Unicode surrogates — prevents API JSON parse errors from emoji corruption
 function sanitizeUnicode(str) {
@@ -111,16 +112,13 @@ function EqIcon({ size = 18, color = 'currentColor' }) {
   )
 }
 
-const CHIPS = [
-  'Brief me on my pipeline',
-  "What's happening in F1?",
-  'Draft a follow-up email',
-  'Summarise yesterday',
-]
+// Chips are now dynamic — see useDynamicChips hook
 
 export default function KikoFloat({ user, messages: sharedMessages, setMessages: setSharedMessages, convId: sharedConvId, setConvId: setSharedConvId, onNavigate }) {
   const loc = useLocation()
   const isHome = loc.pathname === '/'
+  const currentPage = loc.pathname.replace('/', '') || 'home'
+  const dynamicChips = useDynamicChips(currentPage, true)
   const [open, setOpen] = useState(sharedMessages?.length > 0)
   const [hasPanel, setHasPanel] = useState(sharedMessages?.length > 0)
   const [panelKey, setPanelKey] = useState(0)
@@ -493,7 +491,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           {/* Chips — only when no conversation yet */}
           {!hasMessages && (
             <div style={{ padding: '10px 12px 4px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {CHIPS.map((chip, i) => (
+              {dynamicChips.map((chip, i) => (
                 <button key={chip} onClick={() => handleSubmit(chip)} style={{
                   fontSize: 12, padding: '5px 10px', borderRadius: 50,
                   border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)',
