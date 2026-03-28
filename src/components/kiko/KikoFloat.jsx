@@ -3,7 +3,7 @@ import { X, ArrowUp, Mic } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useNavigate, useLocation } from 'react-router-dom'
 import T from '@/lib/theme'
-import DoubleHelix from './DoubleHelix'
+import KikoCrown from './KikoCrown'
 import KikoVoice from './KikoVoice'
 import DOMPurify from 'dompurify'
 import { useDynamicChips } from '@/hooks/useDynamicChips'
@@ -410,7 +410,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: hasMessages ? '1.5px solid rgba(255,255,255,0.07)' : 'none' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 24, height: 12, overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)', maskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)' }}>
-                <DoubleHelix width={24} height={12} mini />
+                <KikoCrown width={24} height={14} mini />
               </div>
               <span style={{ fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font }}>Kiko</span>
             </div>
@@ -427,7 +427,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                   <div style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                   {msg.role !== 'user' && (
                     <div style={{ width: 20, height: 20, borderRadius: 50, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
-                      <DoubleHelix width={18} height={10} mini />
+                      <KikoCrown width={18} height={12} mini />
                     </div>
                   )}
                   <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : 8, background: msg.role === 'user' ? T.accent : T.accentSoft, color: msg.role === 'user' ? 'rgba(255,255,255,0.9)' : T.textSecondary, fontSize: 13, lineHeight: 1.55, fontFamily: T.font }}>
@@ -451,7 +451,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               {streaming && !streamText && (
                 <div style={{ marginBottom: 8, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                   <div style={{ width: 20, height: 20, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
-                    <DoubleHelix width={18} height={10} mini />
+                    <KikoCrown width={18} height={12} mini speed={2.5} />
                   </div>
                   <div style={{ padding: '7px 11px', borderRadius: 50, background: T.accentSoft }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -468,7 +468,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                 <div style={{ marginBottom: 8 }}>
                   <div style={{ display: 'flex' }}>
                     <div style={{ width: 20, height: 20, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
-                      <DoubleHelix width={18} height={10} mini />
+                      <KikoCrown width={18} height={12} mini />
                     </div>
                     <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: 50, background: T.accentSoft, fontSize: 13, color: T.textSecondary, lineHeight: 1.55, fontFamily: T.font }}>
                       <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
@@ -534,7 +534,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         </div>
       )}
 
-      {/* ── FAB button — Dark sphere with DoubleHelix, teal aura when speaking ── */}
+      {/* ── FAB button — Dark sphere with KikoCrown, teal aura when speaking ── */}
       <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 101, width: 60, height: 60 }}>
         {/* Teal aura rings — visible when voice is active */}
         {voiceOpen && <>
@@ -568,7 +568,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         >
           {open
             ? <X size={18} />
-            : <DoubleHelix width={40} height={40} mini />
+            : <KikoCrown width={30} height={24} mini />
           }
         </button>
       </div>

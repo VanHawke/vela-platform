@@ -6,7 +6,7 @@ import { setPageContext } from '@/lib/pageContext'
 import { Target, TrendingUp, Clock, Building2, Send, RefreshCw, Loader2, AlertTriangle, Calendar, ChevronRight, CheckSquare, Square } from 'lucide-react'
 import T from '@/lib/theme'
 import DOMPurify from 'dompurify'
-import DoubleHelix from '@/components/kiko/DoubleHelix'
+import KikoCrown from '@/components/kiko/KikoCrown'
 import CompanyLogo from '@/components/CompanyLogo'
 
 function md(text) {
@@ -304,7 +304,7 @@ Be direct. Use web search for current company intelligence if needed.`
       {/* RIGHT — Kiko Intelligence Panel */}
       <div style={{ flex: 1, borderLeft: '1px solid rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.01)', flexShrink: 0, minWidth: 0 }}>
         <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 40, height: 12, overflow: 'hidden' }}><DoubleHelix width={40} height={12} mini /></div>
+          <div style={{ width: 40, height: 12, overflow: 'hidden' }}><KikoCrown width={30} height={14} mini /></div>
           <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(139,108,246,0.6)', letterSpacing: '0.04em' }}>Kiko Intelligence</span>
         </div>
 
@@ -318,7 +318,7 @@ Be direct. Use web search for current company intelligence if needed.`
 
           {kikoLoading && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '40px 0' }}>
-              <div style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><DoubleHelix width={48} height={48} /></div>
+              <div style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><KikoCrown width={48} height={36} /></div>
               <span style={{ fontSize: 13, color: 'rgba(139,108,246,0.6)', fontWeight: 400 }}>Analysing deal...</span>
             </div>
           )}
