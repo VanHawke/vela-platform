@@ -365,3 +365,82 @@ The choice does not affect intelligence — only audio quality and latency.
 
 END OF ARCHITECTURE DOCUMENT
 Last updated: March 28, 2026
+
+
+---
+
+## 6. SESSION 2 CHANGES (March 28, 2026 — Evening)
+
+### 6A. DYNAMIC SELF-KNOWLEDGE (kiko-self-knowledge.js)
+Kiko's self-knowledge is now auto-generated at runtime, not hardcoded.
+The generator scans:
+1. TOOL_DEFINITIONS → discovers all agent tools + direct tools
+2. INTENT_TO_AGENT → discovers all intents and routing
+3. api/agents/ directory → discovers agent files on disk
+4. vercel.json → discovers cron jobs + schedules
+5. kiko_skills table → discovers learned skills
+6. kiko_cron_heartbeats → checks cron health
+7. Static capabilities (Gmail, Calendar, web search, memory, docs, CRM)
+
+Cache: 5 minutes. Adding a new agent to kiko-tools.js makes Kiko aware of it automatically.
+
+### 6B. ORCHESTRATION INTELLIGENCE
+System prompt now includes:
+- 4 complexity tiers (1 tool → 2-3 → 3-5 → 5+ tools)
+- Decision framework (company mentioned → CRM first; drafting → context first; current events → web search)
+- Self-correction loop (agent returns nothing → try alternative)
+- Multi-agent chaining (routing hint no longer says "call immediately, don't deliberate")
+
+### 6C. WEB ACCESS FIX
+Added explicit WEB ACCESS block to system prompt. Kiko will never again say "I can't access the internet."
+Also fixed: research intent now gets proper routing hint (was falling through with empty hint).
+Also fixed: general intent routing hint changed from "don't call tools" to "you have FULL access to all tools."
+
+### 6D. CRON HEARTBEATS
+New table: kiko_cron_heartbeats (id, cron_name, status, started_at, finished_at, duration_ms, records_processed, error_message, metadata)
+New helper: cronHeartbeat(name, status, extras) in kiko-tools.js
+All 15 cron files import cronHeartbeat. All write 'started' on entry and 'error' on failure.
+Self-monitor cron_status operation now queries heartbeats for 7-day history.
+
+### 6E. SCREEN READER FIX
+Added 'command-centre' to the switch statement in screen-reader.js. Previously only matched 'email' and 'outreach-intelligence'.
+
+### 6F. CHAT UI CHANGES
+- Action buttons (copy, thumbs up/down, retry) always visible below Kiko responses
+- Edit + copy buttons below user messages
+- Timestamp on same row as action icons
+- Stop response pill button during streaming (both KikoChat + KikoFloat)
+- DoubleHelix ribbon sits below action icons row
+- Sidebar push layout (ChatHistory is flex child, not position:fixed)
+- Alerts moved to right-side slide panel (KikoInsights rewritten)
+- InsightsBadge on homepage below chips
+- Dynamic chips (useDynamicChips.js) — homepage + per-page float chips from live data
+- Homepage ribbon opacity boosted (purple 0.12, teal 0.10; mini 0.10, 0.08)
+
+### 6G. NEW FILES
+- api/kiko-self-knowledge.js — dynamic self-knowledge generator
+- src/hooks/useDynamicChips.js — context-aware chip suggestions
+- kiko_cron_heartbeats table in Supabase
+
+### 6H. KIKO AVATAR STATUS
+Extensive exploration of avatar alternatives to DoubleHelix. Crown, bars, fluid orbs, etc. None approved. DoubleHelix ribbon remains the active avatar across all screens. Avatar design deferred to dedicated session with visual references.
+
+---
+
+## 7. VERIFIED TEST MATRIX (end of session)
+
+| Test | Status |
+|------|--------|
+| Navigation ("take me to pipeline") | PASS |
+| Email routing ("correspondence with BigBear") | PASS |
+| Screen reader ("what am I looking at" on command-centre) | PASS (fixed) |
+| Web search ("research Nordic Semi") | PASS (fixed) |
+| Self-knowledge ("how many agents do you have") | PASS (dynamic) |
+| Self-monitor ("health check") | PASS |
+| Brief ("brief me") | PASS |
+| Multi-agent chaining | PASS (routing hint updated) |
+| Dynamic chips (homepage) | PASS |
+| Dynamic chips (float per page) | PASS |
+| Notification panel | PASS |
+| Cron heartbeats | DEPLOYED (tracking active) |
+
