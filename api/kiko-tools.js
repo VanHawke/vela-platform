@@ -243,6 +243,11 @@ export const TOOL_DEFINITIONS = [
       limit: { type: 'number', description: 'Max results (default 5).' },
     }, required: ['query'] },
   },
+  {
+    name: 'trigger_triage',
+    description: 'Trigger an on-demand inbox triage. Use when: the brief shows stale triage data, user asks "check my emails" and triage is outdated, or Kiko detects the last triage is >24h old. Returns fresh email classification.',
+    input_schema: { type: 'object', properties: {} },
+  },
 ];
 
 // ── Tool Executor — Routes to agents ──
@@ -468,6 +473,29 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
     try {
       return await handleSelfMonitor(input.operation, input.params || {});
     } catch (e) { return agentError('Self-Monitor', e); }
+  }
+
+  // ── On-Demand Triage ──
+  if (name === 'trigger_triage') {
+    try {
+      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://vela-platform-one.vercel.app';
+      const triageRes = await fetch(`${baseUrl}/api/cron-inbox-triage`, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+      const result = await triageRes.json();
+      if (result.ok) {
+        // Read the fresh triage
+        const today = new Date().toISOString().split('T')[0];
+        const triage = await sbFetch(`kiko_inbox_triage?triage_date=eq.${today}&limit=1&select=summary,priority_emails`);
+        if (triage?.[0]) {
+          let out = `FRESH INBOX TRIAGE:\n${triage[0].summary}\n\n`;
+          for (const e of (triage[0].priority_emails || [])) {
+            out += `${e.priority === 'ACTION_REQUIRED' ? '🔴' : '📌'} ${e.from}: ${e.subject}\n  → ${e.reason || ''}\n`;
+          }
+          return out;
+        }
+        return `Triage completed: ${JSON.stringify(result)}`;
+      }
+      return `Triage failed: ${result.error || 'unknown'}`;
+    } catch (e) { return `Triage trigger error: ${e.message}`; }
   }
 
   // ── Conversation Search ──

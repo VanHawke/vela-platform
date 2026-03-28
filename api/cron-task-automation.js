@@ -158,14 +158,38 @@ export default async function handler(req, res) {
     // 3. Create tasks from recent stage changes
     const fromStages = await createTasksFromStageChanges(tasks || []);
 
-    // 4. Flag overdue count
+    // 4. Flag overdue count + create draft actions for top overdue
     const active = (tasks || []).filter(t => !t.data?.completed);
     const overdue = active.filter(t => t.data?.dueDate && new Date(t.data.dueDate) < now);
+
+    // 5. Create draft actions for overdue tasks (so Kiko can suggest them)
+    let draftActionsCreated = 0;
+    if (overdue.length > 0) {
+      const existingDrafts = await supabase.from('kiko_draft_actions').select('payload').eq('status', 'pending');
+      const existingEntities = new Set((existingDrafts.data || []).map(d => d.payload?.entity?.toLowerCase()));
+      for (const task of overdue.slice(0, 5)) {
+        const entity = task.data?.company || task.data?.contactName || 'unknown';
+        if (existingEntities.has(entity.toLowerCase())) continue;
+        await supabase.from('kiko_draft_actions').insert({
+          user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
+          action_type: 'follow_up',
+          payload: {
+            entity,
+            suggested_action: `Follow up on overdue ${task.data?.type || 'task'}: ${(task.data?.notes || task.data?.title || '').slice(0, 100)}`,
+            task_id: task.id,
+            days_overdue: Math.floor((now - new Date(task.data.dueDate)) / 86400000),
+          },
+          status: 'pending',
+        });
+        draftActionsCreated++;
+      }
+    }
 
     const summary = {
       merged_duplicates: merged,
       tasks_from_stale_deals: fromStale,
       tasks_from_stage_changes: fromStages,
+      draft_actions_created: draftActionsCreated,
       overdue_count: overdue.length,
       total_active: active.length - merged,
       timestamp: now.toISOString(),
