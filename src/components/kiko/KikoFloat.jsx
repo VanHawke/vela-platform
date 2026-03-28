@@ -4,8 +4,29 @@ import { supabase } from '@/lib/supabase'
 import { useNavigate, useLocation } from 'react-router-dom'
 import T from '@/lib/theme'
 import DoubleHelix from './DoubleHelix'
-import KikoVoice from './KikoVoiceLiveKit'
+import KikoVoice from './KikoVoice'
 import DOMPurify from 'dompurify'
+
+// Strip orphaned Unicode surrogates — prevents API JSON parse errors from emoji corruption
+function sanitizeUnicode(str) {
+  if (!str) return '';
+  let result = '';
+  for (let i = 0; i < str.length; i++) {
+    const code = str.charCodeAt(i);
+    if (code >= 0xD800 && code <= 0xDBFF) {
+      const next = str.charCodeAt(i + 1);
+      if (next >= 0xDC00 && next <= 0xDFFF) {
+        result += str[i] + str[i + 1];
+        i++;
+      }
+    } else if (code >= 0xDC00 && code <= 0xDFFF) {
+      // Orphaned low surrogate — skip
+    } else {
+      result += str[i];
+    }
+  }
+  return result;
+}
 
 // Theme imported from @/lib/theme.js
 
@@ -174,7 +195,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   // Navigation is handled via pendingNavRef — queued during SSE stream, executed post-stream
 
   const handleSubmit = useCallback(async (text) => {
-    const msg = (text || input).trim()
+    const msg = sanitizeUnicode((text || input).trim())
     if (!msg || streaming) return
     setInput('')
     if (!open) { setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open') }
@@ -280,18 +301,22 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         recorderRef.current = sr
         mediaRef.current = true
         const baseInput = input
-        let accumulated = ''
+        // Use a Set to deduplicate final transcripts across sr restarts
+        const seenFinals = new Set()
         setTranscribing(true)
         sr.onresult = e => {
+          let finals = ''
           let interim = ''
-          for (let i = e.resultIndex; i < e.results.length; i++) {
+          for (let i = 0; i < e.results.length; i++) {
             if (e.results[i].isFinal) {
               const text = e.results[i][0].transcript.trim()
-              if (text) accumulated += (accumulated ? ' ' : '') + text
-              interim = ''
+              if (text && !seenFinals.has(text)) {
+                seenFinals.add(text)
+              }
             } else { interim = e.results[i][0].transcript }
           }
-          const display = baseInput + (baseInput && accumulated ? ' ' : '') + accumulated + (interim ? ' ' + interim : '')
+          finals = [...seenFinals].join(' ')
+          const display = baseInput + (baseInput && finals ? ' ' : '') + finals + (interim ? ' ' + interim : '')
           setInput(display)
         }
         sr.onerror = (e) => {

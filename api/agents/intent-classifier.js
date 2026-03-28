@@ -59,7 +59,7 @@ INTENTS:
 - pricing: Sponsorship benchmarks, ROI cases, "how much should we charge"
 - travel: F1/FE race travel, trip planning, visa awareness
 - calendar: Check calendar, schedule meetings, what's on today (Google Calendar)
-- email_read: Check emails, unread count, inbox search (Gmail)
+- email_read: Check emails, read emails, inbox search, unread count, email correspondence, "last email from/to/with X", "correspondence with X", "what did X email me", "any emails from X", "email thread with X", finding specific emails or email history (Gmail)
 - general: General conversation, greetings, questions Claude can answer from knowledge
 
 Respond with ONLY the intent name. Nothing else.`;
@@ -74,6 +74,7 @@ export async function classifyIntent(message, currentPage = 'home') {
   if (/^(hi|hey|hello|good morning|good evening|thanks|thank you|bye|goodbye)\b/i.test(lower)) return { intent: 'general' };
   if (lower.includes('brief me') || lower.includes('morning brief') || lower === 'brief') return { intent: 'brief' };
   if (lower.includes('what am i looking at') || lower.includes('what\'s on screen') || lower.includes('where am i') || lower.includes('describe this page')) return { intent: 'screen' };
+  if (lower.includes('correspondence with') || lower.includes('last email') || lower.includes('email from') || lower.includes('email to') || lower.includes('emails from') || lower.includes('emails to') || lower.includes('check my email') || lower.includes('check my inbox') || lower.includes('unread email')) return { intent: 'email_read' };
 
   // Step 3: Haiku classification for everything else (~100-200ms)
   try {

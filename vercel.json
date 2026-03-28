@@ -17,8 +17,8 @@
     { "path": "/api/cron-document-scan", "schedule": "0 6 * * 0" }
   ],
   "functions": {
+    "api/realtime-token.js": { "maxDuration": 15 },
     "api/kiko.js": { "maxDuration": 60 },
-    "api/voice.js": { "maxDuration": 60 },
     "api/kiko-research.js": { "maxDuration": 120 },
     "api/kiko-code.js": { "maxDuration": 30 },
     "api/news-agent.js": { "maxDuration": 45 },

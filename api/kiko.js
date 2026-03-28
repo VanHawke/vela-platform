@@ -11,6 +11,22 @@ export const config = { supportsResponseStreaming: true, maxDuration: 60 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const MODEL = 'claude-sonnet-4-20250514';
 
+// Strip orphaned Unicode surrogates — prevents Anthropic API JSON parse errors
+function sanitizeUnicode(str) {
+  if (!str || typeof str !== 'string') return str || '';
+  let result = '';
+  for (let i = 0; i < str.length; i++) {
+    const code = str.charCodeAt(i);
+    if (code >= 0xD800 && code <= 0xDBFF) {
+      const next = str.charCodeAt(i + 1);
+      if (next >= 0xDC00 && next <= 0xDFFF) { result += str[i] + str[i + 1]; i++; }
+    } else if (code >= 0xDC00 && code <= 0xDFFF) {
+      // Orphaned low surrogate — skip
+    } else { result += str[i]; }
+  }
+  return result;
+}
+
 // Phase 8: Learning Loop — log decisions for pattern matching
 const DECISION_TOOLS = ['ask_strategy_agent', 'ask_deal_agent', 'ask_negotiation_agent', 'ask_pricing_agent', 'ask_investment_agent'];
 async function logDecision(toolName, toolInput, toolResult, userMessage) {
@@ -211,6 +227,22 @@ OUTREACH DOCTRINE: 5-touch authority-led. No pricing in early outreach. No pleas
 
 PROACTIVE: When briefing, flag stale deals, recommend next actions, connect signals to opportunities. When you spot something important, save it to memory via ask_data_agent (operation: learning_save).
 
+SELF-KNOWLEDGE: You are Kiko OS v16. You have:
+- 23 specialist agents across 6 layers (Orchestration, Revenue, Intelligence, Governance, Execution, Specialist)
+- 12 cron jobs (meeting prep hourly; profile/relationship/preference synthesis Sundays; enrichment, partnerships, proactive, inbox triage, news, outreach score weekdays)
+- Gmail access via MCP (search emails, read messages, read threads)
+- Google Calendar access via MCP (list events, create events, find free time)
+- Web search (up to 5 searches per conversation)
+- Memory filesystem in Supabase (read/write persistent notes)
+- Intelligence tables: learning log, preferences, relationships (79 contacts), user profile, thought journal, conversation insights, draft actions, inbox triage
+- CRM: deals, contacts, companies, activities, tasks, documents, pipeline notifications
+- F1 data: teams, partnerships, sponsor categories, race calendar
+- Document generation: Word, Excel, PowerPoint, CSV, images (DALL-E), QR codes
+- Platform pages: Home, Pipeline, Contacts, Organisations, Email/Command Centre, Calendar, Tasks, Partnership Matrix, Lemlist, News, Documents, Settings
+- Navigation: You can physically move the user to any page
+- CRM writes: Move deals between stages, create tasks, log activities, update contacts
+If asked "what can you do" or "what tools do you have" — answer from this knowledge. You know your own architecture.
+
 IMAGE ANALYSIS: You CAN see and analyse uploaded images. When a user uploads an image (screenshot, photo, document scan), describe what you see and provide relevant analysis. Do NOT say you cannot view images — the image data is sent to you directly.
 
 ERROR HANDLING: If an agent returns an error, tell Sunny the agent failed and what went wrong. Do NOT attempt to handle the task yourself — you are a coordinator, not an executor. Say "The [Agent Name] hit an error: [details]. Let me know if you want me to try again."
@@ -317,7 +349,8 @@ export default async function handler(req, res) {
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const { message, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null, pageContext = null, attachments = [], deepThink = false, personality = 'executive', voiceMode = false } = req.body;
+  const { message: rawMessage, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null, pageContext = null, attachments = [], deepThink = false, personality = 'executive', voiceMode = false } = req.body;
+  const message = sanitizeUnicode(rawMessage);
   if (!message && action !== 'title') return res.status(400).json({ error: 'message required' });
 
   // ── Title generation ──
@@ -346,7 +379,7 @@ export default async function handler(req, res) {
       const memRows = await sbFetch('kiko_memories?select=path,content&is_directory=eq.false&path=in.(%22/memories/sunny_profile.md%22,%22/memories/identity.md%22)&order=path.asc');
       if (memRows?.length) preloadedMemory = '\n\n── MEMORY ──\n' + memRows.map(r => r.content).join('\n\n');
     } catch {}
-    voiceRules = '\n\nVOICE MODE: Max 2-3 sentences. No markdown. Say numbers naturally. Memory already loaded — only save new facts.';
+    voiceRules = '\n\nVOICE MODE — SPEED IS CRITICAL:\n- Max 2 sentences. No markdown. Say numbers naturally.\n- For greetings (hi, hello, hey, good morning): respond IMMEDIATELY with a warm 1-sentence reply. Do NOT call any tools.\n- For simple questions you can answer from the system prompt context: respond IMMEDIATELY. Do NOT call tools.\n- ONLY call a tool if the user explicitly asks for data, actions, or information you genuinely cannot answer without it.\n- NEVER call memory tools — memory is already pre-loaded above.\n- Keep responses SHORT and spoken-word natural. No lists. No headers.';
   }
 
   const PERSONALITIES = {
@@ -374,7 +407,7 @@ export default async function handler(req, res) {
     // Build messages
     const messages = conversationHistory.slice(-20)
       .filter(m => m.role === 'user' || m.role === 'assistant')
-      .map(m => ({ role: m.role, content: m.content || '' }));
+      .map(m => ({ role: m.role, content: sanitizeUnicode(m.content || '') }));
 
     // File attachments
     if (attachments.length > 0) {
@@ -390,7 +423,10 @@ export default async function handler(req, res) {
       messages.push({ role: 'user', content: message });
     }
 
-    const allTools = [...NATIVE_TOOLS, ...TOOL_DEFINITIONS];
+    const voiceTools = voiceMode
+      ? [...NATIVE_TOOLS.filter(t => t.name !== 'memory'), ...TOOL_DEFINITIONS]
+      : [...NATIVE_TOOLS, ...TOOL_DEFINITIONS];
+    const allTools = voiceTools;
 
     // ── PHASE 1: Intent Classification ──
     const classification = await classifyIntent(message, currentPage);
@@ -430,6 +466,10 @@ export default async function handler(req, res) {
     let routingHint = '';
     if (agentMapping?.tool) {
       routingHint = `\n\n[ROUTING HINT: This message was classified as "${intent}". Use the ${agentMapping.tool} tool to handle it. Call it immediately — do not deliberate.]`;
+    } else if (intent === 'email_read') {
+      routingHint = '\n\n[ROUTING HINT: This is an EMAIL query. Use Gmail MCP tools to search and read emails. Use gmail_search_messages to find emails, gmail_read_message to read specific emails, gmail_read_thread to read full threads. Search by sender name, company, subject, or keyword. Always search first, then read the relevant messages. Give Sunny a clear summary of what you find — dates, senders, key content. If the user mentions a person, also check the CRM (ask_data_agent with search_contacts) to get their email address first, then search Gmail.]';
+    } else if (intent === 'calendar') {
+      routingHint = '\n\n[ROUTING HINT: This is a CALENDAR query. Use Google Calendar MCP tools to check events, create events, find free time. Use gcal_list_events to see upcoming events, gcal_create_event to schedule, gcal_find_my_free_time to check availability.]';
     } else if (intent === 'general') {
       routingHint = '\n\n[ROUTING HINT: This is a general question. Answer directly from your knowledge. Do not call any tools unless the user explicitly asks for data.]';
     }
@@ -494,8 +534,12 @@ export default async function handler(req, res) {
         }
       } catch {} // Non-blocking — if context fetch fails, Claude still drafts
     }
-    // Phase 12: Load strategic preferences (learned from past decisions)
+    // Phase 12: Load strategic preferences (SKIP in voice mode for speed)
     let preferencesHint = '';
+    let profileHint = '';
+    let memoryHint = '';
+    let inboxHint = '';
+    if (!voiceMode) {
     try {
       const prefs = await sbFetch('kiko_preferences?order=confidence.desc&limit=10&select=category,preference,confidence');
       if (Array.isArray(prefs) && prefs.length) {
@@ -505,7 +549,6 @@ export default async function handler(req, res) {
     } catch {} // Non-blocking
 
     // Phase 15: Load user communication profile
-    let profileHint = '';
     try {
       const profiles = await sbFetch(`kiko_user_profiles?user_id=eq.${userEmail === 'sunny@vanhawke.com' ? '9f486437-4bf5-4111-abfe-fe19bfa76063' : ''}&limit=1&select=draft_instructions,communication_style,language_fingerprint`);
       if (Array.isArray(profiles) && profiles[0]?.draft_instructions) {
@@ -525,7 +568,6 @@ export default async function handler(req, res) {
     } catch {} // Non-blocking
 
     // Conversation Memory: inject recent insights for cross-session continuity
-    let memoryHint = '';
     try {
       const insights = await sbFetch('kiko_conversation_insights?order=created_at.desc&limit=5&select=key_facts,decisions_made,open_threads,entities_discussed');
       if (Array.isArray(insights) && insights.length) {
@@ -538,7 +580,6 @@ export default async function handler(req, res) {
     } catch {}
 
     // Inbox triage: inject if available (for briefs and general questions)
-    let inboxHint = '';
     try {
       const today = new Date().toISOString().split('T')[0];
       const triage = await sbFetch(`kiko_inbox_triage?triage_date=eq.${today}&limit=1&select=summary,priority_emails`);
@@ -548,22 +589,23 @@ export default async function handler(req, res) {
         if (actions.length) inboxHint += `\nAction needed: ${actions.map(e => `${e.from}: ${e.subject}`).join('; ')}`;
       }
     } catch {}
+    } // end !voiceMode
 
     const systemWithHint = system + routingHint + preferencesHint + profileHint + memoryHint + inboxHint;
 
     // Deep think detection
     const DEEP_TRIGGERS = ['analyse', 'analyze', 'deep dive', 'think through', 'strategic', 'evaluate', 'comprehensive'];
-    const needsDeepThink = deepThink || (message && DEEP_TRIGGERS.some(t => message.toLowerCase().includes(t)));
+    const needsDeepThink = !voiceMode && (deepThink || (message && DEEP_TRIGGERS.some(t => message.toLowerCase().includes(t))));
 
     // MCP servers
-    const mcpServers = await getMcpServers(userEmail);
+    const mcpServers = voiceMode ? [] : await getMcpServers(userEmail);
     if (mcpServers.length > 0) write({ toolStatus: `MCP: ${mcpServers.length} servers connected` });
 
     // Stream helper
     async function streamCall(msgs, opts = {}) {
       const params = {
-        model: needsDeepThink ? 'claude-opus-4-6' : MODEL,
-        max_tokens: needsDeepThink ? 16000 : 4096,
+        model: needsDeepThink ? 'claude-opus-4-6' : (voiceMode ? 'claude-haiku-4-5-20251001' : MODEL),
+        max_tokens: needsDeepThink ? 16000 : (voiceMode ? 800 : 4096),
         system: systemWithHint, messages: msgs, tools: opts.noTools ? undefined : allTools,
       };
       if (mcpServers.length > 0 && !opts.noTools) {
@@ -591,8 +633,9 @@ export default async function handler(req, res) {
     let response = await streamCall(messages);
     let toolRounds = 0;
 
-    // Tool execution loop — max 10 rounds
-    while (response.stop_reason === 'tool_use' && toolRounds < 10) {
+    // Tool execution loop — max 10 rounds (2 in voice mode for speed)
+    const maxRounds = voiceMode ? 2 : 10;
+    while (response.stop_reason === 'tool_use' && toolRounds < maxRounds) {
       toolRounds++;
       const toolResults = [];
       for (const block of response.content) {

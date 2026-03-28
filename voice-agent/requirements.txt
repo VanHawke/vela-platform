@@ -1,4 +1,0 @@
-# voice-agent/requirements.txt
-livekit-agents[anthropic,deepgram,silero,turn-detector]~=1.4
-python-dotenv
-aiohttp

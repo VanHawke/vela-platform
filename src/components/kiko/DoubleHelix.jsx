@@ -35,22 +35,22 @@ function DoubleHelix({ width = 400, height = 60, speaking = false, energy = 0, p
       const sp = spProp || rawE > 0.05
       const eTarget = sp ? (rawE || propE || 0) : 0
       const pTarget = sp ? (rawP || propP || 0) : 0
-      const eSpeed = eTarget > eRef.current ? 0.3 : 0.08
-      const pSpeed = pTarget > pRef.current ? 0.25 : 0.06
+      const eSpeed = eTarget > eRef.current ? 0.15 : 0.06
+      const pSpeed = pTarget > pRef.current ? 0.12 : 0.04
       eRef.current += (eTarget - eRef.current) * eSpeed
       pRef.current += (pTarget - pRef.current) * pSpeed
       const e = eRef.current, p = pRef.current
 
       ctx.clearRect(0, 0, width, height)
       const cx = width / 2, cy = height / 2
-      const layers = sp ? Math.round(4 + e * 4) : (m ? 2 : 3)
-      const speed = sp ? 2.5 + p * 2 : 1.0
-      const ampBase = sp ? 0.5 + e * 0.6 : (m ? 0.2 : 0.3)
-      const freqMod = sp ? 1 + p * 1.0 : 1
+      const layers = sp ? Math.round(3 + e * 2) : (m ? 2 : 3)
+      const speed = sp ? 1.8 + p * 1.2 : 1.0
+      const ampBase = sp ? 0.3 + e * 0.3 : (m ? 0.2 : 0.3)
+      const freqMod = sp ? 1 + p * 0.5 : 1
 
       for (let l = 0; l < layers; l++) {
         const ph = l * 0.45 + t * speed
-        const am = ampBase + (sp ? Math.sin(t * 2.8 + l * 0.5) * (0.1 + e * 0.2) : Math.sin(t * 0.4 + l) * 0.06)
+        const am = ampBase + (sp ? Math.sin(t * 2.0 + l * 0.5) * (0.05 + e * 0.1) : Math.sin(t * 0.4 + l) * 0.06)
 
         // Top wave — purple
         ctx.beginPath()
@@ -59,7 +59,7 @@ function DoubleHelix({ width = 400, height = 60, speaking = false, energy = 0, p
           const y = cy - 5 - l * 2
             + Math.sin(i * (14 * freqMod / width) + ph) * env * height * 0.3 * am
             + Math.sin(i * (5.5 * freqMod / width) + ph * 0.7) * env * height * 0.17 * am
-            + (sp ? Math.sin(i * (25 * freqMod / width) + t * 5 + l) * env * (height * 0.04 + e * height * 0.06) * am : 0)
+            + (sp ? Math.sin(i * (25 * freqMod / width) + t * 5 + l) * env * (height * 0.02 + e * height * 0.03) * am : 0)
           i === 0 ? ctx.moveTo(i, y) : ctx.lineTo(i, y)
         }
         ctx.strokeStyle = `rgba(139,108,246,${sp ? 0.06 + l * 0.03 + e * 0.05 : (m ? 0.03 + l * 0.02 : 0.06 + l * 0.04)})`
@@ -73,7 +73,7 @@ function DoubleHelix({ width = 400, height = 60, speaking = false, energy = 0, p
           const y = cy + 5 + l * 2
             - Math.sin(i * (14 * freqMod / width) + ph + 0.35) * env * height * 0.3 * am
             - Math.sin(i * (5.5 * freqMod / width) + ph * 0.7 + 0.5) * env * height * 0.17 * am
-            - (sp ? Math.sin(i * (25 * freqMod / width) + t * 5 + l + 1) * env * (height * 0.04 + e * height * 0.06) * am : 0)
+            - (sp ? Math.sin(i * (25 * freqMod / width) + t * 5 + l + 1) * env * (height * 0.02 + e * height * 0.03) * am : 0)
           i === 0 ? ctx.moveTo(i, y) : ctx.lineTo(i, y)
         }
         ctx.strokeStyle = `rgba(6,214,160,${sp ? 0.05 + l * 0.025 + e * 0.04 : (m ? 0.025 + l * 0.015 : 0.05 + l * 0.035)})`
@@ -81,7 +81,7 @@ function DoubleHelix({ width = 400, height = 60, speaking = false, energy = 0, p
         ctx.stroke()
 
         // Pink shimmer on high energy
-        if (sp && e > 0.3 && l >= 2) {
+        if (sp && e > 0.5 && l >= 2) {
           ctx.beginPath()
           for (let i = 0; i < width; i += 2) {
             const d = (i - cx) / cx, env = Math.max(0, 1 - d * d * 1.3)
@@ -104,8 +104,8 @@ function DoubleHelix({ width = 400, height = 60, speaking = false, energy = 0, p
       wg.addColorStop(0.7, `rgba(255,255,255,${sp ? (0.25 + e * 0.4) * 0.85 : (m ? 0.3 : 0.5)})`)
       wg.addColorStop(0.92, `rgba(255,255,255,${wa * 0.5})`)
       wg.addColorStop(1, 'transparent')
-      const wAm = sp ? 0.4 + e * 0.45 + Math.sin(t * 2.8) * (0.05 + e * 0.15) : (m ? 0.2 : 0.3)
-      const wF = sp ? 1 + p * 0.8 : 1
+      const wAm = sp ? 0.25 + e * 0.25 + Math.sin(t * 2.8) * (0.03 + e * 0.08) : (m ? 0.2 : 0.3)
+      const wF = sp ? 1 + p * 0.4 : 1
       for (let i = 0; i < width; i += 2) {
         const d = (i - cx) / cx, env = Math.max(0, 1 - d * d * 1.3)
         const y = cy
