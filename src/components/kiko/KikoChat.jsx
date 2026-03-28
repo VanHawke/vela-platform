@@ -694,34 +694,29 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           })()}
         </div>
         </div>
-        {/* Timestamp */}
-        <div style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', paddingLeft: isUser ? 0 : 132, marginTop: 4 }}>
-          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.15)', fontFamily: T.font }}>
-            {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''}
-          </span>
-        </div>
-        {/* Action buttons — always in DOM for Kiko (no layout shift). Opacity-controlled. */}
-        {isKiko && !streaming && (
-          <div style={{ display: 'flex', gap: 1, marginTop: 4, paddingLeft: 132, opacity: 1 }}>
+        {/* Timestamp + action buttons — same row, always visible */}
+        {!streaming && (
+          <div style={{ display: 'flex', gap: 2, alignItems: 'center', marginTop: 4, paddingLeft: isUser ? 0 : 132, justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
+            {/* Timestamp */}
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.15)', fontFamily: T.font, marginRight: 4 }}>
+              {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''}
+            </span>
             {(() => {
               const abtn = (onClick, title, children) => (
-                <button onClick={onClick} title={title} style={{ width: 30, height: 30, borderRadius: 6, background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(255,255,255,0.22)', transition: 'all 0.12s', padding: 0 }}
+                <button onClick={onClick} title={title} style={{ width: 28, height: 28, borderRadius: 6, background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(255,255,255,0.2)', transition: 'all 0.12s', padding: 0 }}
                   onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.55)' }}
-                  onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.22)' }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.2)' }}
                 >{children}</button>
               )
               const iconSz = { width: 14, height: 14, stroke: 'currentColor', fill: 'none', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }
               const CopyIcon = <svg {...iconSz} viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              const EditIcon = <svg {...iconSz} viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               const ThumbUpIcon = <svg {...iconSz} viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>
               const ThumbDownIcon = <svg {...iconSz} viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/></svg>
               const RetryIcon = <svg {...iconSz} viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
-              const EditIcon = <svg {...iconSz} viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              return <>
-                {abtn(() => copyToClipboard(msg.content), 'Copy', CopyIcon)}
-                {abtn(() => {}, 'Good response', ThumbUpIcon)}
-                {abtn(() => {}, 'Bad response', ThumbDownIcon)}
-                {abtn(() => regenerateResponse(i), 'Retry', RetryIcon)}
-              </>
+              if (isUser) return <>{abtn(() => editAndResend(i), 'Edit', EditIcon)}{abtn(() => copyToClipboard(msg.content), 'Copy', CopyIcon)}</>
+              if (isKiko) return <>{abtn(() => copyToClipboard(msg.content), 'Copy', CopyIcon)}{abtn(() => {}, 'Good', ThumbUpIcon)}{abtn(() => {}, 'Bad', ThumbDownIcon)}{abtn(() => regenerateResponse(i), 'Retry', RetryIcon)}</>
+              return null
             })()}
           </div>
         )}
