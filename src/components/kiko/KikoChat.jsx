@@ -661,11 +661,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       <div key={i} style={{ marginBottom: 24, position: 'relative' }}
         onMouseEnter={() => setHoveredMsg(i)} onMouseLeave={() => setHoveredMsg(null)}>
         <div style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', gap: 12 }}>
-        {isKiko && (
-          <div style={{ width: 120, marginTop: 4, flexShrink: 0 }}>
-            <DoubleHelix width={120} height={20} mini />
-          </div>
-        )}
         <div style={{
           maxWidth: isUser ? '65%' : '100%',
           padding: isUser ? '13px 20px' : '0',
@@ -698,7 +693,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         </div>
         {/* Timestamp + action buttons — same row, always visible */}
         {!streaming && (
-          <div style={{ display: 'flex', gap: 2, alignItems: 'center', marginTop: 4, paddingLeft: isUser ? 0 : 132, justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
+          <div style={{ display: 'flex', gap: 2, alignItems: 'center', marginTop: 6, justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
+            {/* Kiko avatar — below response, like Claude */}
+            {isKiko && (
+              <div style={{ width: 20, height: 20, marginRight: 4, flexShrink: 0, opacity: 0.5 }}>
+                <DoubleHelix width={20} height={10} mini />
+              </div>
+            )}
             {/* Timestamp */}
             <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.15)', fontFamily: T.font, marginRight: 4 }}>
               {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''}
