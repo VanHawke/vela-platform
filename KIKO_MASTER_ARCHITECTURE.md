@@ -444,3 +444,56 @@ Extensive exploration of avatar alternatives to DoubleHelix. Crown, bars, fluid 
 | Notification panel | PASS |
 | Cron heartbeats | DEPLOYED (tracking active) |
 
+
+
+---
+
+## 8. FINAL STATE — END OF SESSION 2
+
+### What Changed (Before → After)
+
+| Component | Before | After |
+|-----------|--------|-------|
+| Self-knowledge | Static hardcoded string | Dynamic runtime generator (kiko-self-knowledge.js) |
+| Agent discovery | Manual — edit prompt when adding agent | Automatic — scans tool registry + agent directory |
+| Hollow agents | 5 (legal, dispute, ip, product-dev, website) | 0 — all enriched with CRM/Supabase data |
+| Web search | Available but Kiko denied having it | Explicit WEB ACCESS declaration + research routing |
+| Routing | Single-agent, "call immediately, don't think" | Multi-agent orchestration, 4 complexity tiers |
+| General intent | "Don't call tools" | "Full access to all tools, use web search if needed" |
+| Activity logging | 2 rows across 308 deals | Auto-logs on every deal + outreach action |
+| Conversation search | Impossible | search_conversations tool (163 conversations) |
+| Correction learning | None | Detects rephrasing, logs to kiko_learning_log |
+| Cron monitoring | Silent failures | 15 crons with heartbeat tracking |
+| Inbox triage | 1 stale row, silent failures | Rewritten with error logging, always writes record |
+| Task automation | Creates tasks only | Creates tasks + draft actions for overdue items |
+| On-demand triage | N/A | trigger_triage tool calls cron endpoint |
+| Screen reader | Missed command-centre | Fixed — all page aliases recognised |
+| Signal agent | Basic article list | Pipeline cross-reference + company filtering |
+| Tools registered | 23 | 25 (added search_conversations, trigger_triage) |
+| Tool handlers | 23 | 25 (all matched) |
+
+### Verification Counts
+- Agent files: 23 (all with Supabase data access)
+- Tools: 25 registered, 25 with handlers (1:1)
+- Intents: 25 classified, all mapped to agents
+- Crons: 15 in vercel.json, all with heartbeat imports
+- Intelligence tables: 14 active (learning_log, preferences, user_profiles, relationships, thought_journal, conversation_insights, draft_actions, draft_tracking, inbox_triage, memories, alerts, error_log, cron_heartbeats, skills)
+- CRM tables: deals(308), contacts(5006), companies(2243), activities(2+auto), tasks(12)
+- Domain tables: f1_teams(11), f1_partnerships(389), sponsor_categories(20), race_calendar(21), news_articles(2578)
+
+### What Kiko Can Now Do (verified)
+1. Search the internet for current information
+2. Chain multiple agents in a single conversation (up to 10 rounds)
+3. Auto-discover new agents/tools/crons added to the codebase
+4. Search her own conversation history (163 conversations)
+5. Auto-log activities when she touches CRM entities
+6. Detect when users rephrase (correction learning)
+7. Monitor her own cron health via heartbeats
+8. Trigger inbox triage on demand when data is stale
+9. Create proactive draft actions for overdue tasks
+10. Self-diagnose: errors, cron status, agent stats
+11. Navigate users to any of 12 pages
+12. Read live screen data on every page
+13. Access Gmail (search, read, threads) and Google Calendar via MCP
+14. Generate documents (Word, Excel, PowerPoint, CSV, images, QR codes)
+15. Draft emails in Sunny's voice (from learned communication profile)
