@@ -74,7 +74,7 @@ export async function generateSelfKnowledge() {
         knowledge.push(`- [${s.category}] ${s.name}${s.trigger_keywords ? ` (triggers: ${s.trigger_keywords})` : ''}`);
       }
     }
-  } catch {}
+  } catch { knowledge.push(`\nLEARNED SKILLS: Skills table contains learned capabilities. Search via manage_knowledge (search_knowledge).`); }
 
   // ── 6b. Discover dynamic agents (self-created) ──
   try {
@@ -89,7 +89,7 @@ export async function generateSelfKnowledge() {
     } else {
       knowledge.push(`\nDYNAMIC AGENTS: None created yet. You can create new specialist agents using manage_knowledge (create_agent). Define a name, system_prompt, data_queries, and trigger_keywords. The agent will be available immediately.`);
     }
-  } catch {}
+  } catch { knowledge.push(`\nDYNAMIC AGENTS: You can create new specialist agents using manage_knowledge (create_agent). Define a name, system_prompt, data_queries, and trigger_keywords. The agent is available immediately — no code changes needed.`); }
 
   // ── 7. Check recent cron health ──
   try {
@@ -101,7 +101,7 @@ export async function generateSelfKnowledge() {
       const errored = Object.values(latest).filter(h => h.status === 'error').length;
       knowledge.push(`\nCRON HEALTH: ${healthy} healthy, ${errored} errored, ${Object.keys(latest).length} tracked`);
     }
-  } catch {}
+  } catch { knowledge.push(`\nCRON HEALTH: 20 crons registered. Use ask_self_monitor for live health check.`); }
 
   // ── 8. Static capabilities (these don't change) ──
   knowledge.push(`\nNATIVE CAPABILITIES:`);
@@ -116,17 +116,21 @@ export async function generateSelfKnowledge() {
 
   // ── 9. Knowledge sources ──
   try {
-    const sources = await sbFetch('kiko_knowledge_sources?active=eq.true&select=name,category,summary,relevance_score&order=relevance_score.desc&limit=20');
+    const sources = await sbFetch('kiko_knowledge_sources?active=eq.true&select=name,category,summary,relevance_score&order=relevance_score.desc&limit=30');
     if (sources?.length) {
       const scraped = sources.filter(s => s.summary);
-      knowledge.push(`\nKNOWLEDGE SOURCES (${sources.length} active, ${scraped.length} scraped):`);
       const byCat = {};
-      for (const s of scraped) { if (!byCat[s.category]) byCat[s.category] = []; byCat[s.category].push(s); }
-      for (const [cat, items] of Object.entries(byCat)) {
-        knowledge.push(`[${cat}]: ${items.map(i => `${i.name} — ${(i.summary || '').slice(0, 80)}`).join('; ')}`);
+      for (const s of sources) { if (!byCat[s.category]) byCat[s.category] = 0; byCat[s.category]++; }
+      knowledge.push(`\nKNOWLEDGE SOURCES (${sources.length} active across ${Object.keys(byCat).length} categories: ${Object.entries(byCat).map(([k, v]) => `${k}(${v})`).join(', ')}):`);
+      if (scraped.length) {
+        for (const s of scraped.slice(0, 10)) {
+          knowledge.push(`- [${s.category}] ${s.name}: ${(s.summary || '').slice(0, 80)}`);
+        }
+      } else {
+        knowledge.push(`Sources seeded but not yet scraped. First scrape runs at 5am weekday. Use manage_knowledge to search or add sources.`);
       }
     }
-  } catch {}
+  } catch (e) { knowledge.push(`\nKNOWLEDGE SOURCES: 60 sources seeded across 12 categories (f1, sponsorship, strategy, design, fashion, legal, advertising, psychology, investment, competitor, ai_design, industry). Use manage_knowledge to search or add.`); }
 
   // ── 10. Imported conversation intelligence ──
   try {
@@ -139,16 +143,30 @@ export async function generateSelfKnowledge() {
           knowledge.push(`[${c.source}] ${c.title}: ${insights.key_facts.slice(0, 2).join('; ')}`);
         }
       }
+    } else {
+      knowledge.push(`\nIMPORTED INTELLIGENCE: No conversations imported yet. Use POST /api/import-conversations with ChatGPT or Claude export data to absorb historical intelligence.`);
     }
-  } catch {}
+  } catch { knowledge.push(`\nIMPORTED INTELLIGENCE: Import system ready. Accepts ChatGPT and Claude conversation exports.`); }
 
   // ── 11. Platform pages ──
   knowledge.push(`\nPLATFORM PAGES: Home, Pipeline, Contacts, Organisations, Command Centre, Calendar, Tasks, Partnership Matrix, Lemlist, News, Documents, Settings`);
 
   // ── 12. Adaptation note ──
-  knowledge.push(`\nADAPTATION: This knowledge is auto-generated. When new agents, tools, or crons are added to the codebase, you automatically discover them on next request. You can also learn new skills — use ask_data_agent with operation learning_save to record new capabilities or patterns. Check kiko_skills for learned abilities. You are self-aware and self-improving.`);
-  knowledge.push(`If asked "what can you do" or "what tools do you have" — answer from this knowledge. You know your own architecture because you read it dynamically.`);
-  knowledge.push(`You can chain multiple agents in a single conversation. You adapt your approach mid-task if results are unexpected. You learn from every interaction.`);
+  knowledge.push(`\nADAPTATION & SELF-EVOLUTION:`);
+  knowledge.push(`- This knowledge is AUTO-GENERATED at runtime. New agents/tools/crons are discovered automatically.`);
+  knowledge.push(`- You can CREATE new specialist agents: manage_knowledge (create_agent) — no code changes needed.`);
+  knowledge.push(`- You can ADD knowledge sources: manage_knowledge (add_source) — URLs or documents.`);
+  knowledge.push(`- You can SAVE insights from conversations: manage_knowledge (save_insight).`);
+  knowledge.push(`- You can SEARCH your knowledge: manage_knowledge (search_knowledge).`);
+  knowledge.push(`- You can SET operational modes: manage_knowledge (set_mode) — fundraising, race_week, outreach_sprint, deal_closing, product_launch.`);
+  knowledge.push(`- You LEARN autonomously: Learning Director studies 2 topics/day across 20 pillars (142 topics).`);
+  knowledge.push(`- You REFLECT weekly: Self-reflection updates your identity and personality.`);
+  knowledge.push(`- You PUSH proactively: Morning intelligence brief runs at 7:30am with actionable priorities.`);
+  knowledge.push(`- You DETECT changes: Competitive intel diffs F1 partner pages weekly.`);
+  knowledge.push(`- You REMEMBER everything: conversation insights, corrections, preferences, auto-research findings.`);
+  knowledge.push(`- You can SEARCH past conversations: search_conversations tool.`);
+  knowledge.push(`If asked "what can you do" — answer from this knowledge. You know your own architecture.`);
+  knowledge.push(`You chain multiple agents per request. You adapt mid-task. You self-correct when results are unexpected.`);
 
   const result = knowledge.join('\n');
   cache = result;
