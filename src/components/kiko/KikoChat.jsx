@@ -9,7 +9,7 @@ import ChatHistory from './ChatHistory'
 import KikoSymbol from './KikoSymbol'
 import DoubleHelix from './DoubleHelix'
 import DraftPreview, { detectDraft } from './DraftPreview'
-import KikoInsights from './KikoInsights'
+import KikoInsights, { InsightsBadge } from './KikoInsights'
 
 // Theme imported from @/lib/theme.js
 
@@ -113,6 +113,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [thinkingSteps, setThinkingSteps] = useState([])
   const [showSteps, setShowSteps] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [insightsOpen, setInsightsOpen] = useState(false)
+  const [alertCount, setAlertCount] = useState(0)
+
+  // Poll alert count from KikoInsights
+  useEffect(() => {
+    const iv = setInterval(() => { if (window.__kikoAlertCount !== undefined) setAlertCount(window.__kikoAlertCount) }, 2000)
+    return () => clearInterval(iv)
+  }, [])
   const toggleHistory = (val) => {
     const next = typeof val === 'boolean' ? val : !historyOpen
     setHistoryOpen(next)
@@ -833,8 +841,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 ))}
               </div>
 
-          {/* Urgent alerts only — dismissible */}
-          {!voiceActive && <KikoInsights onAction={(text) => handleSubmit(text)} />}
+          {/* Alert badge — opens right panel */}
+          {!voiceActive && alertCount > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4, opacity: voiceActive ? 0 : 1, transition: 'opacity 0.3s' }}>
+              <InsightsBadge count={alertCount} onClick={() => setInsightsOpen(true)} />
+            </div>
+          )}
 
           {/* Bottom spacer */}
           <div style={{ flex: voiceActive ? 1 : 0.3, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
@@ -842,6 +854,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
         {/* LiveKit Voice overlay */}
         {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} />}
+
+        {/* Notifications panel — slides from right */}
+        <KikoInsights open={insightsOpen} onClose={() => setInsightsOpen(false)} onAction={(text) => { setInsightsOpen(false); handleSubmit(text) }} />
       </div>
       </div>
     )
