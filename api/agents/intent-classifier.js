@@ -61,7 +61,7 @@ INTENTS:
 - calendar: Check calendar, schedule meetings, what's on today (Google Calendar)
 - email_read: Check emails, read emails, inbox search, unread count, email correspondence, "last email from/to/with X", "correspondence with X", "what did X email me", "any emails from X", "email thread with X", finding specific emails or email history (Gmail)
 - self_monitor: System health, errors, "are you working", "what broke", "diagnose yourself", "is inbox triage running", cron status, agent stats
-- knowledge: Knowledge management — "learn from this URL", "add this source", "what do you know about X", "show me your sources", "remember this", "save this insight", managing Kiko's knowledge base
+- knowledge: Knowledge management — "learn from this URL", "add this source", "what do you know about X", "show me your sources", "remember this", "save this insight", "create an agent for Y", "show my agents", "run the X agent", managing Kiko's knowledge base and custom agents
 - conversation_search: Recall past conversations — "we discussed X before", "you mentioned Y", "what did we talk about last week", "recall our conversation about Z", references to prior discussions
 - general: General conversation, greetings, questions Claude can answer from knowledge
 
@@ -79,8 +79,8 @@ export async function classifyIntent(message, currentPage = 'home') {
   if (lower.includes('what am i looking at') || lower.includes('what\'s on screen') || lower.includes('where am i') || lower.includes('describe this page')) return { intent: 'screen' };
   if (lower.includes('correspondence with') || lower.includes('last email') || lower.includes('email from') || lower.includes('email to') || lower.includes('emails from') || lower.includes('emails to') || lower.includes('check my email') || lower.includes('check my inbox') || lower.includes('unread email')) return { intent: 'email_read' };
 
-  // Knowledge management shortcuts
-  if (lower.includes('learn from') || lower.includes('add this source') || lower.includes('add source') || lower.includes('show me your sources') || lower.includes('your knowledge') || lower.includes('what do you know about') || lower.includes('save this insight') || lower.includes('remember this fact')) return { intent: 'knowledge' };
+  // Knowledge management shortcuts (includes agent creation)
+  if (lower.includes('learn from') || lower.includes('add this source') || lower.includes('add source') || lower.includes('show me your sources') || lower.includes('your knowledge') || lower.includes('what do you know about') || lower.includes('save this insight') || lower.includes('remember this fact') || lower.includes('create an agent') || lower.includes('create a new agent') || lower.includes('build an agent') || lower.includes('show my agents') || lower.includes('list agents') || lower.includes('custom agent') || lower.includes('dynamic agent')) return { intent: 'knowledge' };
 
   // Conversation search shortcuts
   if (lower.includes('we discussed') || lower.includes('you mentioned') || lower.includes('what did we talk') || lower.includes('recall our conversation') || lower.includes('we talked about') || lower.includes('previous conversation') || lower.includes('earlier conversation') || lower.includes('last time we spoke')) return { intent: 'conversation_search' };

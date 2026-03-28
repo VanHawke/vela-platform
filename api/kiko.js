@@ -242,8 +242,8 @@ ROUTING (follow these in order):
 26. PAST CONVERSATIONS → call search_conversations
    "you mentioned this before", "what did we discuss about X", "recall our conversation about Y", "we talked about this", any reference to prior discussions or historical context
 
-27. KNOWLEDGE MANAGEMENT → call manage_knowledge
-   "learn from this URL", "add this source", "what do you know about X", "show me your sources", "remember this", "save this insight". Operations: add_source (add URL/document), search_knowledge (search all knowledge), list_sources (show sources by category), learn_topic (queue for learning), save_insight (save a fact from conversation).
+27. KNOWLEDGE & AGENT MANAGEMENT → call manage_knowledge
+   "learn from this URL", "add this source", "what do you know about X", "show me your sources", "remember this", "save this insight", "create an agent for Y", "show my agents", "run the X agent". Operations: add_source, search_knowledge, list_sources, learn_topic, save_insight, create_agent, list_agents, run_agent. You can CREATE NEW SPECIALIST AGENTS on the fly — define a system_prompt, data_queries for context, and trigger_keywords. The agent is available immediately.
 
 28. EMAIL TRIAGE → call trigger_triage
    "check my emails" when inbox data is stale (>24h old), "refresh inbox", "what's in my inbox right now". Always check kiko_inbox_triage freshness first — if today's date matches, use the cached data. If stale, trigger fresh triage.
@@ -533,7 +533,7 @@ export default async function handler(req, res) {
     } else if (intent === 'research') {
       routingHint = '\n\n[ROUTING HINT: This is a RESEARCH query. Use the web_search tool to find current information. Run 3-8 searches systematically: company overview, funding, leadership, news, competitors, partnerships. Synthesise into a structured brief. You HAVE internet access — use it. Also cross-reference with CRM data via ask_data_agent if the entity exists in the pipeline. After research, save key findings using manage_knowledge (operation: save_insight).]';
     } else if (intent === 'knowledge') {
-      routingHint = '\n\n[ROUTING HINT: This is a KNOWLEDGE MANAGEMENT query. Use the manage_knowledge tool. Operations: add_source (add a URL or document), search_knowledge (search existing knowledge base), list_sources (show all sources by category), learn_topic (queue a topic for the Learning Director), save_insight (save a specific fact). If the user says "learn from [URL]" use add_source. If "what do you know about X" use search_knowledge.]';
+      routingHint = '\n\n[ROUTING HINT: This is a KNOWLEDGE MANAGEMENT query. Use the manage_knowledge tool. Operations: add_source (add URL/document), search_knowledge (search knowledge base), list_sources (show sources), learn_topic (queue learning), save_insight (save a fact), create_agent (create a new dynamic specialist agent), list_agents (show custom agents), run_agent (execute a custom agent). If user says "create an agent for X" — design a system_prompt, pick relevant data_queries, and create it. You can create agents for ANY domain.]';
     } else if (intent === 'conversation_search') {
       routingHint = '\n\n[ROUTING HINT: This references a PAST CONVERSATION. Use the search_conversations tool with relevant keywords. Search for entity names, topics, or specific phrases the user mentions. Return the most relevant excerpts with dates.]';
     } else if (intent === 'general') {

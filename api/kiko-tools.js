@@ -250,10 +250,10 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'manage_knowledge',
-    description: 'Manage Kiko\'s knowledge base. Use to: add a new learning source (URL, white paper, document), search existing knowledge, list sources by category, or trigger learning on a specific topic. Use when: user says "learn about X", "add this source", "what do you know about X", "research and remember X", or when you find valuable information during a research query that should be saved.',
+    description: 'Manage Kiko\'s knowledge base AND create new agents. Use to: add a learning source, search knowledge, list sources, trigger learning, save insights, create a new specialist agent, or list custom agents. Use when: user says "learn about X", "add this source", "what do you know about X", "create an agent for Y", "show me your agents".',
     input_schema: { type: 'object', properties: {
-      operation: { type: 'string', enum: ['add_source', 'search_knowledge', 'list_sources', 'learn_topic', 'save_insight'], description: 'add_source: add a URL or content to knowledge base. search_knowledge: search existing knowledge. list_sources: show sources by category. learn_topic: trigger immediate learning on a topic. save_insight: save a specific fact/principle from current conversation.' },
-      params: { type: 'object', description: 'For add_source: { name, url, category, content }. For search_knowledge: { query }. For list_sources: { category }. For learn_topic: { topic, category }. For save_insight: { insight, entity, category }.' },
+      operation: { type: 'string', enum: ['add_source', 'search_knowledge', 'list_sources', 'learn_topic', 'save_insight', 'create_agent', 'list_agents', 'run_agent'], description: 'add_source: add URL/document. search_knowledge: search knowledge. list_sources: show sources. learn_topic: queue learning. save_insight: save a fact. create_agent: create a new dynamic agent. list_agents: show all custom agents. run_agent: execute a dynamic agent.' },
+      params: { type: 'object', description: 'For add_source: { name, url, category, content }. For search_knowledge: { query }. For list_sources: { category }. For learn_topic: { topic, category }. For save_insight: { insight, entity, category }. For create_agent: { name, display_name, description, system_prompt, data_queries, trigger_keywords, category }. For run_agent: { agent_name, question }.' },
     }, required: ['operation'] },
   },
 ];
@@ -552,6 +552,23 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
         if (!insight) return 'Error: insight text is required';
         await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({ user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063', category: category || 'conversation_insight', content: insight, entity_name: entity || null }) });
         return `Insight saved: "${insight.slice(0, 100)}${insight.length > 100 ? '...' : ''}"`;
+      }
+
+      if (operation === 'create_agent') {
+        const { createDynamicAgent } = await import('./agents/dynamic-runner.js');
+        const result = await createDynamicAgent(params);
+        if (result.error) return `Failed to create agent: ${result.error}`;
+        return `Agent "${result.name}" ${result.action} successfully. It's now available and I'll automatically discover it. You can trigger it by name or by its keywords.`;
+      }
+
+      if (operation === 'list_agents') {
+        const { listDynamicAgents } = await import('./agents/dynamic-runner.js');
+        return await listDynamicAgents();
+      }
+
+      if (operation === 'run_agent') {
+        const { runDynamicAgent } = await import('./agents/dynamic-runner.js');
+        return await runDynamicAgent(params.agent_name, params.question || params.query, params.context);
       }
 
       return `Unknown knowledge operation: ${operation}`;
