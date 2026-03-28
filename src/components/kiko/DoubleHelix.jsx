@@ -62,7 +62,7 @@ function DoubleHelix({ width = 400, height = 60, speaking = false, energy = 0, p
             + (sp ? Math.sin(i * (25 * freqMod / width) + t * 5 + l) * env * (height * 0.02 + e * height * 0.03) * am : 0)
           i === 0 ? ctx.moveTo(i, y) : ctx.lineTo(i, y)
         }
-        ctx.strokeStyle = `rgba(139,108,246,${sp ? 0.06 + l * 0.03 + e * 0.05 : (m ? 0.04 + l * 0.025 : 0.12 + l * 0.06)})`
+        ctx.strokeStyle = `rgba(139,108,246,${sp ? 0.06 + l * 0.03 + e * 0.05 : (m ? 0.10 + l * 0.05 : 0.12 + l * 0.06)})`
         ctx.lineWidth = sp ? 10 + e * 8 - l * 1.2 : (m ? 3 - l * 0.6 : 8 - l * 1.5)
         ctx.lineCap = 'round'; ctx.stroke()
 
@@ -76,7 +76,7 @@ function DoubleHelix({ width = 400, height = 60, speaking = false, energy = 0, p
             - (sp ? Math.sin(i * (25 * freqMod / width) + t * 5 + l + 1) * env * (height * 0.02 + e * height * 0.03) * am : 0)
           i === 0 ? ctx.moveTo(i, y) : ctx.lineTo(i, y)
         }
-        ctx.strokeStyle = `rgba(6,214,160,${sp ? 0.05 + l * 0.025 + e * 0.04 : (m ? 0.035 + l * 0.02 : 0.10 + l * 0.05)})`
+        ctx.strokeStyle = `rgba(6,214,160,${sp ? 0.05 + l * 0.025 + e * 0.04 : (m ? 0.08 + l * 0.04 : 0.10 + l * 0.05)})`
         ctx.lineWidth = sp ? 10 + e * 8 - l * 1.2 : (m ? 3 - l * 0.6 : 8 - l * 1.5)
         ctx.stroke()
 
