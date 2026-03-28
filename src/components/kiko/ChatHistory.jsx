@@ -92,40 +92,23 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
 
   function isVoice(conv) { return conv.title?.startsWith('🎤') }
 
-  // Collapsed state
+  // Collapsed state — thin strip
   if (!open) {
     return (
-      <button onClick={onToggle} style={{
-        position: 'fixed', left: 0, top: '50%', transform: 'translateY(-50%)',
-        zIndex: 200, width: 28, height: 80, borderRadius: '0 10px 10px 0',
-        background: T.surface, border: `1px solid ${T.border}`, borderLeft: 'none',
-        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '2px 0 8px rgba(255,255,255,0.15)', color: T.textTertiary,
-      }}>
-        <ChevronRight size={14} />
-      </button>
+      <div style={{ width: 28, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight: `1px solid ${T.border}`, cursor: 'pointer' }} onClick={onToggle}>
+        <ChevronRight size={14} style={{ color: T.textTertiary }} />
+      </div>
     )
   }
 
-  // Expanded panel — wider (360px)
+  // Expanded panel — flex child, not fixed
   return (
     <>
-      <button onClick={onToggle} style={{
-        position: 'fixed', left: 400, top: 'calc(50% + 28px)', transform: 'translateY(-50%)',
-        zIndex: 201, width: 28, height: 80, borderRadius: '0 10px 10px 0',
-        background: T.surface, border: `1px solid ${T.border}`, borderLeft: 'none',
-        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '2px 0 8px rgba(255,255,255,0.15)', color: T.textTertiary,
-      }}>
-        <ChevronLeft size={14} />
-      </button>
-
       <div style={{
-        position: 'fixed', top: 48, left: 0, width: 400, height: 'calc(100% - 48px)', zIndex: 200,
+        width: 400, flexShrink: 0, height: '100%',
         background: '#111114', borderRight: `1px solid ${T.border}`,
         display: 'flex', flexDirection: 'column',
-        boxShadow: '4px 0 16px rgba(0,0,0,0.3)',
-        animation: 'slideInLeft 0.2s ease-out',
+        transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
       }}>
         {/* Header */}
         <div style={{

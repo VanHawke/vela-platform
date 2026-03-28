@@ -692,9 +692,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''}
           </span>
         </div>
-        {/* Action buttons — below Kiko messages, always visible. User messages show on hover only. */}
-        {((isKiko && !streaming) || (isUser && isHovered && !streaming)) && (
-          <div style={{ display: 'flex', gap: 1, marginTop: 4, paddingLeft: isUser ? 0 : 132, justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
+        {/* Action buttons — always in DOM for Kiko (no layout shift). Opacity-controlled. */}
+        {isKiko && !streaming && (
+          <div style={{ display: 'flex', gap: 1, marginTop: 4, paddingLeft: 132, opacity: 1 }}>
             {(() => {
               const abtn = (onClick, title, children) => (
                 <button onClick={onClick} title={title} style={{ width: 30, height: 30, borderRadius: 6, background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(255,255,255,0.22)', transition: 'all 0.12s', padding: 0 }}
@@ -710,10 +710,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               const EditIcon = <svg {...iconSz} viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               return <>
                 {abtn(() => copyToClipboard(msg.content), 'Copy', CopyIcon)}
-                {isKiko && abtn(() => {}, 'Good response', ThumbUpIcon)}
-                {isKiko && abtn(() => {}, 'Bad response', ThumbDownIcon)}
-                {isKiko && abtn(() => regenerateResponse(i), 'Retry', RetryIcon)}
-                {isUser && abtn(() => editAndResend(i), 'Edit', EditIcon)}
+                {abtn(() => {}, 'Good response', ThumbUpIcon)}
+                {abtn(() => {}, 'Bad response', ThumbDownIcon)}
+                {abtn(() => regenerateResponse(i), 'Retry', RetryIcon)}
               </>
             })()}
           </div>
@@ -725,8 +724,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   // ── WELCOME STATE (no text messages, not in voice mode) ──
   if (!hasMessages && !compact) {
     return (
+      <div style={{ display: 'flex', height: '100%', flex: 1 }}>
+      {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} />}
       <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
-        style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'transparent', position: 'relative', overflow: 'hidden' }}>
+        style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'transparent', position: 'relative', overflow: 'hidden', minWidth: 0 }}>
         {chatDragOver && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(26,26,26,0.3)', borderRadius: 18, margin: 8, pointerEvents: 'none' }}>
             <div style={{ width: 48, height: 48, borderRadius: 50, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
@@ -841,16 +842,17 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
         {/* LiveKit Voice overlay */}
         {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} />}
-
-        {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} />}
+      </div>
       </div>
     )
   }
 
   // ── CONVERSATION STATE (text messages) ──
   return (
+    <div style={{ display: 'flex', height: '100%' }}>
+      {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} />}
     <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
-      style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'transparent', position: 'relative', overflow: 'hidden' }}>
+      style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, background: 'transparent', position: 'relative', overflow: 'hidden' }}>
       {chatDragOver && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(26,26,26,0.3)', borderRadius: 18, margin: 8, pointerEvents: 'none' }}>
           <div style={{ width: 48, height: 48, borderRadius: 50, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
@@ -937,9 +939,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.12)', fontFamily: T.font, margin: '8px 0 0', fontWeight: 300 }}>Kiko is AI and can make mistakes. Please double-check responses.</p>
         </div>
       </div>
-      {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} />}
       {/* LiveKit Voice overlay in conversation */}
       {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} />}
+    </div>
     </div>
   )
 }
