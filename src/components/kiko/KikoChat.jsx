@@ -691,15 +691,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           })()}
         </div>
         </div>
-        {/* Kiko DoubleHelix ribbon — sits below response on its own line */}
-        {isKiko && !streaming && (
-          <div style={{ marginTop: 6, marginBottom: 2 }}>
-            <DoubleHelix width={80} height={16} mini />
-          </div>
-        )}
-        {/* Timestamp + action buttons — separate row below ribbon */}
+        {/* Timestamp + action buttons — single row. Kiko ribbon sits left of icons. */}
         {!streaming && (
-          <div style={{ display: 'flex', gap: 2, alignItems: 'center', marginTop: 2, justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
+          <div style={{ display: 'flex', gap: 2, alignItems: 'center', marginTop: 6, justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
             {/* Timestamp */}
             <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.15)', fontFamily: T.font, marginRight: 4 }}>
               {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''}
@@ -721,6 +715,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               if (isKiko) return <>{abtn(() => copyToClipboard(msg.content), 'Copy', CopyIcon)}{abtn(() => {}, 'Good', ThumbUpIcon)}{abtn(() => {}, 'Bad', ThumbDownIcon)}{abtn(() => regenerateResponse(i), 'Retry', RetryIcon)}</>
               return null
             })()}
+          </div>
+        )}
+        {/* Kiko DoubleHelix ribbon — below the action icons */}
+        {isKiko && !streaming && (
+          <div style={{ marginTop: 4 }}>
+            <DoubleHelix width={60} height={14} mini />
           </div>
         )}
       </div>
