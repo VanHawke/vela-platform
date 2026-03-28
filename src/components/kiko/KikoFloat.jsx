@@ -136,6 +136,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   const [fileUploading, setFileUploading] = useState(false)
   const [fabClass, setFabClass] = useState('')
   const pendingNavRef = useRef(null) // Navigation queued during stream, executed after
+  const abortRef = useRef(null) // AbortController for stop button
   const convId = sharedConvId || null
   const setConvId = setSharedConvId || (() => {})
   const navigate = useNavigate()
@@ -202,9 +203,12 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
     const userMsg = { role: 'user', content: msg }
     setMessages(prev => [...prev, userMsg])
     setStreaming(true); setStreamText(''); setToolStatus(null)
+    const controller = new AbortController()
+    abortRef.current = controller
     try {
       const res = await fetch('/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           message: msg, userEmail: user?.email,
           conversationHistory: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
@@ -263,8 +267,8 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         window.location.href = '/' + (navTarget === 'home' ? '' : navTarget)
         return // Stop execution — page is reloading
       }
-    } catch (err) { setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message}` }]); setStreamText('') }
-    finally { setStreaming(false) }
+    } catch (err) { if (err.name !== 'AbortError') { setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message}` }]); } setStreamText('') }
+    finally { setStreaming(false); abortRef.current = null }
   }, [input, streaming, messages, user, convId, open])
 
   const processFileForKiko = async (file) => {
@@ -421,7 +425,8 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           {hasMessages && (
             <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
               {messages.map((msg, i) => (
-                <div key={i} style={{ marginBottom: 8, display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                <div key={i} style={{ marginBottom: msg.role !== 'user' ? 4 : 8 }}>
+                  <div style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                   {msg.role !== 'user' && (
                     <div style={{ width: 20, height: 20, borderRadius: 50, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
                       <DoubleHelix width={18} height={10} mini />
@@ -430,6 +435,19 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                   <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : 8, background: msg.role === 'user' ? T.accent : T.accentSoft, color: msg.role === 'user' ? 'rgba(255,255,255,0.9)' : T.textSecondary, fontSize: 13, lineHeight: 1.55, fontFamily: T.font }}>
                     {msg.role === 'user' ? msg.content : <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />}
                   </div>
+                  </div>
+                  {msg.role !== 'user' && !streaming && (
+                    <div style={{ display: 'flex', gap: 1, marginTop: 2, paddingLeft: 28 }}>
+                      <button onClick={() => { navigator.clipboard?.writeText(msg.content); }} title="Copy" style={{ width: 24, height: 24, borderRadius: 5, background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.1s' }}
+                        onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)' }}
+                        onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.2)' }}
+                      ><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
+                      <button onClick={() => { if (i > 0) { const ui = messages.slice(0, i).findLastIndex(m => m.role === 'user'); if (ui >= 0) handleSubmit(messages[ui].content) } }} title="Retry" style={{ width: 24, height: 24, borderRadius: 5, background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.1s' }}
+                        onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)' }}
+                        onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.2)' }}
+                      ><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg></button>
+                    </div>
+                  )}
                 </div>
               ))}
               {streaming && !streamText && (
@@ -449,13 +467,22 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                 </div>
               )}
               {streaming && streamText && (
-                <div style={{ marginBottom: 8, display: 'flex' }}>
-                  <div style={{ width: 20, height: 20, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
-                    <DoubleHelix width={18} height={10} mini />
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ display: 'flex' }}>
+                    <div style={{ width: 20, height: 20, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
+                      <DoubleHelix width={18} height={10} mini />
+                    </div>
+                    <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: 50, background: T.accentSoft, fontSize: 13, color: T.textSecondary, lineHeight: 1.55, fontFamily: T.font }}>
+                      <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
+                      <span style={{ animation: 'kikoBreathe 1s infinite' }}>▍</span>
+                    </div>
                   </div>
-                  <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: 50, background: T.accentSoft, fontSize: 13, color: T.textSecondary, lineHeight: 1.55, fontFamily: T.font }}>
-                    <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
-                    <span style={{ animation: 'kikoBreathe 1s infinite' }}>▍</span>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: 6 }}>
+                    <button onClick={() => { if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; if (streamText) setMessages(prev => [...prev, { role: 'assistant', content: streamText }]); setStreamText(''); setStreaming(false) } }}
+                      style={{ padding: '4px 12px', borderRadius: 14, border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', cursor: 'pointer', fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.1s' }}
+                      onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)' }}
+                      onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)' }}
+                    ><span style={{ width: 8, height: 8, borderRadius: 1.5, background: 'currentColor', display: 'inline-block' }} /> Stop</button>
                   </div>
                 </div>
               )}

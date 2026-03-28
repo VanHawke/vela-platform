@@ -692,14 +692,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''}
           </span>
         </div>
-        {/* Action buttons — below message, Claude-style */}
-        {isHovered && !streaming && (
-          <div style={{ display: 'flex', gap: 2, marginTop: 2, paddingLeft: isUser ? 0 : 132, justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
+        {/* Action buttons — below Kiko messages, always visible. User messages show on hover only. */}
+        {((isKiko && !streaming) || (isUser && isHovered && !streaming)) && (
+          <div style={{ display: 'flex', gap: 1, marginTop: 4, paddingLeft: isUser ? 0 : 132, justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
             {(() => {
               const abtn = (onClick, title, children) => (
-                <button onClick={onClick} title={title} style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(255,255,255,0.35)', transition: 'all 0.15s', padding: 0 }}
-                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)' }}
-                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = 'rgba(255,255,255,0.35)' }}
+                <button onClick={onClick} title={title} style={{ width: 30, height: 30, borderRadius: 6, background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(255,255,255,0.22)', transition: 'all 0.12s', padding: 0 }}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.55)' }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.22)' }}
                 >{children}</button>
               )
               const iconSz = { width: 14, height: 14, stroke: 'currentColor', fill: 'none', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }
@@ -918,10 +918,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
                   <span style={{ animation: 'pulse 1s infinite', marginLeft: 2, color: 'rgba(139,108,246,0.4)' }}>|</span>
                 </div>
-                <button onClick={stopKiko} style={{ marginTop: 6, padding: '5px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.35)', fontSize: 12, cursor: 'pointer', fontFamily: T.font }}
-                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)' }}
-                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = 'rgba(255,255,255,0.35)' }}
-                >&#9632; Stop generating</button>
+                <button onClick={stopKiko} style={{ marginTop: 10, padding: '7px 18px', borderRadius: 20, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)', fontSize: 13, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.65)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)' }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)' }}
+                ><span style={{ width: 10, height: 10, borderRadius: 2, background: 'currentColor', display: 'inline-block' }} /> Stop response</button>
               </div>
             </div>
           )}
