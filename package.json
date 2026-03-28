@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@11labs/client": "^0.2.0",
+
     "@anthropic-ai/sdk": "^0.40.1",
     "@base-ui/react": "^1.2.0",
     "@fontsource-variable/geist": "^5.2.8",
