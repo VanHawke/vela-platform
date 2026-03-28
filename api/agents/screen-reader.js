@@ -17,7 +17,7 @@ export async function describeScreen(currentPage) {
     case 'pipeline': return await describePipeline();
     case 'contacts': return await describeContacts();
     case 'organisations': return await describeOrganisations();
-    case 'email': case 'outreach-intelligence': return await describeCommandCentre();
+    case 'email': case 'outreach-intelligence': case 'command-centre': return await describeCommandCentre();
     case 'tasks': return await describeTasks();
     case 'news': return 'News Signals has been replaced by the Partnership Detection Engine. Partnership announcements are now detected automatically and appear as alerts on the Home page. Say "show me the partnership matrix" to see the latest F1 partnerships.';
     case 'partnership-matrix': return await describeMatrix();

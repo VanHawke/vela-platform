@@ -29,6 +29,27 @@ export const logError = async (component, errorMessage, context = '', severity =
   } catch {} // Must never throw — this is the error logger itself
 };
 
+// ── Cron Heartbeat (write to kiko_cron_heartbeats for self-monitoring) ──
+export const cronHeartbeat = async (cronName, status, extras = {}) => {
+  try {
+    if (status === 'started') {
+      const res = await sbFetch('kiko_cron_heartbeats', {
+        method: 'POST', headers: { Prefer: 'return=representation' },
+        body: JSON.stringify({ cron_name: cronName, status: 'started', metadata: extras })
+      });
+      return res?.[0]?.id || null;
+    } else {
+      // Update existing heartbeat with finished status
+      if (extras.heartbeatId) {
+        await sbFetch(`kiko_cron_heartbeats?id=eq.${extras.heartbeatId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status, finished_at: new Date().toISOString(), duration_ms: extras.durationMs, records_processed: extras.recordsProcessed, error_message: extras.errorMessage })
+        });
+      }
+    }
+  } catch {} // Must never throw
+};
+
 // ── Agent Tool Definitions (6 agents — down from 49 tools) ──
 export const TOOL_DEFINITIONS = [
   {
@@ -594,17 +615,30 @@ async function handleSelfMonitor(operation, params = {}) {
     }
     if (operation === 'cron_status') {
       const today = new Date().toISOString().split('T')[0];
-      const [triage, prep, proactive, news] = await Promise.all([
+      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+      const [triage, prep, proactive, news, heartbeats] = await Promise.all([
         sbFetch(`kiko_inbox_triage?triage_date=eq.${today}&limit=1&select=triage_date`).catch(() => []),
         sbFetch(`kiko_meeting_prep?select=created_at&order=created_at.desc&limit=1`).catch(() => []),
         sbFetch(`kiko_alerts?created_at=gt.${today}T00:00:00Z&limit=5&select=created_at,alert_type`).catch(() => []),
         sbFetch(`news_articles?is_processed=eq.true&order=published_at.desc&limit=1&select=published_at`).catch(() => []),
+        sbFetch(`kiko_cron_heartbeats?started_at=gt.${weekAgo}&order=started_at.desc&limit=30&select=cron_name,status,started_at,duration_ms,error_message`).catch(() => []),
       ]);
       let out = 'CRON STATUS:\n\n';
       out += `Inbox triage today: ${triage?.length ? '✅ Ran' : '❌ Not run'}\n`;
       out += `Meeting prep: ${prep?.[0]?.created_at ? '✅ Last: ' + new Date(prep[0].created_at).toLocaleDateString('en-GB') : '❌ No data'}\n`;
       out += `Proactive alerts today: ${proactive?.length || 0} alerts\n`;
-      out += `News agent: ${news?.[0]?.published_at ? '✅ Last: ' + new Date(news[0].published_at).toLocaleDateString('en-GB') : '❌ No data'}`;
+      out += `News agent: ${news?.[0]?.published_at ? '✅ Last: ' + new Date(news[0].published_at).toLocaleDateString('en-GB') : '❌ No data'}\n`;
+      if (heartbeats?.length) {
+        const byCron = {};
+        for (const h of heartbeats) { if (!byCron[h.cron_name]) byCron[h.cron_name] = h; }
+        out += `\nHEARTBEATS (last 7 days):\n`;
+        for (const [name, h] of Object.entries(byCron)) {
+          const status = h.status === 'finished' ? '✅' : h.status === 'error' ? '❌' : '⏳';
+          out += `${status} ${name}: ${new Date(h.started_at).toLocaleDateString('en-GB')} ${new Date(h.started_at).toLocaleTimeString('en-GB')}${h.duration_ms ? ` (${h.duration_ms}ms)` : ''}${h.error_message ? ` ERR: ${h.error_message}` : ''}\n`;
+        }
+      } else {
+        out += `\nNo cron heartbeats recorded yet (heartbeat tracking newly enabled).`;
+      }
       return out;
     }
     if (operation === 'agent_stats') {
