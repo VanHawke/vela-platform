@@ -655,6 +655,18 @@ export default async function handler(req, res) {
         if (actions.length) inboxHint += `\nAction needed: ${actions.map(e => `${e.from}: ${e.subject}`).join('; ')}`;
       }
     } catch {}
+
+    // Morning intelligence brief: inject today's brief if available
+    let morningBrief = '';
+    try {
+      const brief = await sbFetch(`kiko_alerts?type=eq.morning_brief&order=created_at.desc&limit=1&select=detail,created_at`);
+      if (brief?.[0]?.detail) {
+        const briefAge = Date.now() - new Date(brief[0].created_at);
+        if (briefAge < 24 * 60 * 60 * 1000) { // Only if less than 24h old
+          morningBrief = `\n\n[TODAY'S INTELLIGENCE BRIEF — reference proactively, especially during briefs and priority questions]:\n${brief[0].detail.slice(0, 1500)}`;
+        }
+      }
+    } catch {}
     } // end !voiceMode
 
     // Load operational mode (always, including voice)
@@ -674,7 +686,7 @@ export default async function handler(req, res) {
       }
     } catch {}
 
-    const systemWithHint = system + routingHint + preferencesHint + profileHint + memoryHint + inboxHint + modeHint;
+    const systemWithHint = system + routingHint + preferencesHint + profileHint + memoryHint + inboxHint + morningBrief + modeHint;
 
     // Deep think detection
     const DEEP_TRIGGERS = ['analyse', 'analyze', 'deep dive', 'think through', 'strategic', 'evaluate', 'comprehensive'];

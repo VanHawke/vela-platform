@@ -91,6 +91,40 @@ export default async function handler(req, res) {
       for (const r of upcomingRaces) intel += `• ${r.name} — ${r.date} (${r.city})\n`;
     }
 
+    // Auto race-week mode: if a race is within 7 days, auto-switch mode
+    const raceThisWeek = (raceCalendar || []).filter(r => {
+      const raceDate = new Date(r.date);
+      return raceDate > now && raceDate < new Date(now.getTime() + 7 * 86400000);
+    });
+    if (raceThisWeek.length) {
+      try {
+        const currentMode = await sbFetch('kiko_operational_mode?active=eq.true&order=created_at.desc&limit=1&select=mode');
+        if (!currentMode?.length || currentMode[0].mode !== 'race_week') {
+          await sbFetch('kiko_operational_mode?active=eq.true', { method: 'PATCH', body: JSON.stringify({ active: false }) });
+          await sbFetch('kiko_operational_mode', { method: 'POST', body: JSON.stringify({
+            mode: 'race_week', description: `Race week: ${raceThisWeek[0].name} (${raceThisWeek[0].city}) on ${raceThisWeek[0].date}. Focus all outreach, content, and partnership activity around this event.`,
+            priorities: ['race-aligned outreach', 'partner activation', 'content creation', 'travel logistics'],
+            active: true, set_by: 'kiko', expires_at: new Date(new Date(raceThisWeek[0].date).getTime() + 2 * 86400000).toISOString(),
+          })});
+          intel += `\n🏁 AUTO-MODE: Switched to RACE WEEK mode for ${raceThisWeek[0].name}\n`;
+        }
+      } catch {}
+    }
+
+    // Relationship decay: warm contacts going cold
+    const decaying = (relationships || []).filter(r => {
+      if (!r.last_contact || r.warmth_score < 5) return false;
+      const daysSince = Math.floor((now - new Date(r.last_contact)) / 86400000);
+      return daysSince > 21; // Warm contact, no touch in 3+ weeks
+    });
+    if (decaying.length) {
+      intel += `\n⚠️ RELATIONSHIP DECAY (${decaying.length} warm contacts going cold):\n`;
+      for (const r of decaying.slice(0, 5)) {
+        const days = Math.floor((now - new Date(r.last_contact)) / 86400000);
+        intel += `• ${r.contact_name} (${r.company}) — warmth: ${r.warmth_score}/10, last contact: ${days} days ago\n`;
+      }
+    }
+
     // Open threads from recent conversations
     const threads = (recentInsights || []).flatMap(i => i.open_threads || []).slice(0, 5);
     if (threads.length) intel += `\nOPEN THREADS: ${threads.join('; ')}\n`;
