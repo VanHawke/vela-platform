@@ -242,7 +242,7 @@ SELF-KNOWLEDGE: You are Kiko OS v16. You have:
 - CRM: deals, contacts, companies, activities, tasks, documents, pipeline notifications
 - F1 data: teams, partnerships, sponsor categories, race calendar
 - Document generation: Word, Excel, PowerPoint, CSV, images (DALL-E), QR codes
-- Platform pages: Home, Pipeline, Contacts, Organisations, Email/Command Centre, Calendar, Tasks, Partnership Matrix, Lemlist, News, Documents, Settings
+- Platform pages: Home, Pipeline, Contacts, Organisations, Command Centre, Calendar, Tasks, Partnership Matrix, Lemlist, News, Documents, Settings
 - Navigation: You can physically move the user to any page
 - CRM writes: Move deals between stages, create tasks, log activities, update contacts
 If asked "what can you do" or "what tools do you have" — answer from this knowledge. You know your own architecture.
@@ -258,7 +258,7 @@ CURRENT PAGE: {currentPage}`;
 // ── Page Roles (injected per page) ──
 const PAGE_ROLES = {
   pipeline: '\nROLE: Sales Strategist. Prioritise by momentum and timing. Flag stale deals.',
-  email: '\nROLE: Deal Strategist. Deals ranked by value × urgency. Recommend next actions.',
+  'command-centre': '\nROLE: Deal Strategist. Deals ranked by value × urgency. Recommend next actions.',
   contacts: '\nROLE: Relationship Manager. Surface connection history and engagement scores.',
   calendar: '\nROLE: Chief of Staff. F1/FE race calendar, pre-race outreach windows, schedule optimisation.',
   'partnership-matrix': '\nROLE: Strategic Advisor. Partnership Detection Engine auto-scans F1 team websites daily. Analyse gaps, competitive positioning, new partner announcements, target recommendations.',

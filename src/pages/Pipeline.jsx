@@ -666,7 +666,7 @@ export default function Pipeline({ user }) {
                       const d = task.data || {}
                       const isOverdue = d.dueDate && new Date(d.dueDate) < new Date()
                       return (
-                        <div key={task.id} onClick={() => nav('/email')} style={{ padding: '8px 10px', background: isOverdue ? 'rgba(255,59,48,0.04)' : 'rgba(6,214,160,0.04)', borderRadius: 12, border: `1.5px solid ${isOverdue ? 'rgba(255,59,48,0.1)' : 'rgba(6,214,160,0.1)'}`, cursor: 'pointer', transition: 'all 0.15s' }}
+                        <div key={task.id} onClick={() => nav('/command-centre')} style={{ padding: '8px 10px', background: isOverdue ? 'rgba(255,59,48,0.04)' : 'rgba(6,214,160,0.04)', borderRadius: 12, border: `1.5px solid ${isOverdue ? 'rgba(255,59,48,0.1)' : 'rgba(6,214,160,0.1)'}`, cursor: 'pointer', transition: 'all 0.15s' }}
                           onMouseEnter={e => e.currentTarget.style.background = isOverdue ? 'rgba(255,59,48,0.08)' : 'rgba(6,214,160,0.08)'}
                           onMouseLeave={e => e.currentTarget.style.background = isOverdue ? 'rgba(255,59,48,0.04)' : 'rgba(6,214,160,0.04)'}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

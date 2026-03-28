@@ -57,11 +57,11 @@ export default function Settings({ user }) {
     { id: 'calendar', label: 'Race Calendar', path: '/calendar' },
     { id: 'contacts', label: 'Contacts', path: '/contacts' },
     { id: 'organisations', label: 'Organisations', path: '/organisations' },
-    { id: 'email', label: 'Command Centre', path: '/email' },
+    { id: 'command-centre', label: 'Command Centre', path: '/command-centre' },
     { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix' },
     { id: 'lemlist', label: 'Lemlist', path: '/lemlist' },
   ]
-  const DEFAULT_TOP_NAV = ['home', 'pipeline', 'partnership-matrix', 'email']
+  const DEFAULT_TOP_NAV = ['home', 'pipeline', 'partnership-matrix', 'command-centre']
   const [topNavItems, setTopNavItems] = useState(DEFAULT_TOP_NAV)
   const [moreOrder, setMoreOrder] = useState(() => { try { const s = localStorage.getItem('kiko_more_order'); return s ? JSON.parse(s) : null } catch { return null } })
 

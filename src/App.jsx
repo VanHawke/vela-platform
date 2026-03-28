@@ -115,8 +115,9 @@ export default function App() {
           <Route path="organisations" element={<Organisations user={user} />} />
           <Route path="companies" element={<Navigate to="/organisations" replace />} />
           <Route path="deals" element={<Navigate to="/pipeline" replace />} />
-          <Route path="tasks" element={<Navigate to="/email" replace />} />
-          <Route path="email" element={<OutreachIntelligence user={user} />} />
+          <Route path="tasks" element={<Navigate to="/command-centre" replace />} />
+          <Route path="email" element={<Navigate to="/command-centre" replace />} />
+          <Route path="command-centre" element={<OutreachIntelligence user={user} />} />
           {/* News Signals removed — replaced by Partnership Detection alerts */}
           <Route path="partnership-matrix" element={<PartnershipMatrix user={user} />} />
           <Route path="calendar" element={<CommercialCalendar user={user} />} />

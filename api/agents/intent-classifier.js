@@ -9,10 +9,10 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const NAV_TRIGGERS = ['take me to', 'go to', 'open the', 'navigate to', 'switch to', 'pull up'];
 const PAGE_ALIASES = {
   'pipeline': 'pipeline', 'deals': 'pipeline', 'deal pipeline': 'pipeline',
-  'command centre': 'email', 'command center': 'email', 'outreach intelligence': 'email',
+  'command centre': 'command-centre', 'command center': 'command-centre', 'outreach intelligence': 'command-centre',
   'contacts': 'contacts', 'people': 'contacts',
   'organisations': 'organisations', 'organizations': 'organisations', 'companies': 'organisations',
-  'tasks': 'email', 'to do': 'email', 'todo': 'email', 'task list': 'email',
+  'tasks': 'command-centre', 'to do': 'command-centre', 'todo': 'command-centre', 'task list': 'command-centre',
   'calendar': 'calendar', 'schedule': 'calendar', 'race calendar': 'calendar', 'races': 'calendar',
   'partnership': 'strategy', 'partnership matrix': 'strategy', 'partnerships': 'strategy',
   'partnership matrix': 'partnership-matrix', 'matrix': 'partnership-matrix', 'partnerships': 'partnership-matrix',

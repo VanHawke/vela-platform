@@ -17,7 +17,7 @@ const ALL_NAV = [
   { id: 'calendar', label: 'Race Calendar', path: '/calendar', Icon: Calendar },
   { id: 'contacts', label: 'Contacts', path: '/contacts', Icon: Users },
   { id: 'organisations', label: 'Organisations', path: '/organisations', Icon: Building2 },
-  { id: 'email', label: 'Command Centre', path: '/email', Icon: Target },
+  { id: 'command-centre', label: 'Command Centre', path: '/command-centre', Icon: Target },
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
   { id: 'lemlist', label: 'Lemlist', path: '/lemlist', Icon: Send },
 ]
