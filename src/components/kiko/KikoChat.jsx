@@ -7,7 +7,7 @@ import taskManager from '@/lib/kikoTaskManager'
 import KikoVoice from './KikoVoice'
 import ChatHistory from './ChatHistory'
 import KikoSymbol from './KikoSymbol'
-import KikoCrown from './KikoCrown'
+import DoubleHelix from './DoubleHelix'
 import DraftPreview, { detectDraft } from './DraftPreview'
 import KikoInsights, { InsightsBadge } from './KikoInsights'
 import { useDynamicChips } from '@/hooks/useDynamicChips'
@@ -717,10 +717,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             })()}
           </div>
         )}
-        {/* Kiko Crown — below the action icons */}
+        {/* Kiko DoubleHelix ribbon — below the action icons */}
         {isKiko && !streaming && (
           <div style={{ marginTop: 4 }}>
-            <KikoCrown width={60} height={16} mini />
+            <DoubleHelix width={60} height={14} mini />
           </div>
         )}
       </div>
@@ -752,15 +752,16 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
           {/* Wave — always visible, scales up in voice mode */}
           <div id="kikoWaveHome" style={{
-            marginBottom: voiceActive ? 0 : 28, overflow: 'visible', padding: '16px 0',
+            width: '90%', maxWidth: 900, marginBottom: voiceActive ? 0 : 28, overflow: 'visible', padding: '16px 0',
             cursor: voiceActive ? 'default' : 'pointer',
-            transform: voiceActive ? 'scale(1.3)' : 'scale(1)',
+            transform: voiceActive ? 'scale(1.15)' : 'scale(1)',
             transition: 'all 0.7s cubic-bezier(0.34,1.56,0.64,1)',
-            display: 'flex', justifyContent: 'center',
+            WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+            maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
           }}
-            onMouseEnter={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1.05)' }}
+            onMouseEnter={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1.02)' }}
             onMouseLeave={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1)' }}>
-            <KikoCrown width={200} height={60} speaking={voiceActive && voiceState.speaking} energy={voiceState.energy || 0} pitch={voiceState.pitch || 0} onClick={voiceActive ? undefined : () => startVoice()} />
+            <DoubleHelix width={900} height={100} speaking={voiceActive && voiceState.speaking} energy={voiceState.energy || 0} pitch={voiceState.pitch || 0} onClick={voiceActive ? undefined : () => startVoice()} />
           </div>
 
           {/* Voice controls — visible only in voice mode */}
@@ -881,7 +882,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {streaming && !streamText && (
             <div style={{ marginBottom: 24, display: 'flex', gap: 14, alignItems: 'center', padding: '12px 0' }}>
               <div style={{ width: 36, height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <KikoCrown width={36} height={28} speed={2.5} />
+                <DoubleHelix width={36} height={36} />
               </div>
               <div style={{ flex: 1, maxWidth: 400 }}>
                 <div style={{

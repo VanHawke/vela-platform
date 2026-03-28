@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { Loader2, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react'
 import T from '@/lib/theme'
 import AuroraCanvas from '@/components/AuroraCanvas'
-import KikoCrown from '@/components/kiko/KikoCrown'
+import DoubleHelix from '@/components/kiko/DoubleHelix'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -79,7 +79,7 @@ export default function LoginPage() {
         <div style={{ width: '100%', maxWidth: 420, margin: '0 auto 24px', overflow: 'visible', padding: '8px 0', ...fade(0.2),
           WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
           maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
-          <KikoCrown width={120} height={50} />
+          <DoubleHelix width={420} height={80} />
         </div>
 
         {/* Kiko name + tagline */}
