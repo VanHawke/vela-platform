@@ -1,7 +1,7 @@
 // api/cron-relationship-intel.js — Relationship Intelligence (Phase 17)
 // Weekly scan of Gmail sent/received. Maps contact frequency, response times,
 // warmth scores. Feeds into outreach and strategy agents.
-import { sbFetch } from './kiko-tools.js';
+import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 
 export const config = { maxDuration: 45 };
 const USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063';
@@ -120,6 +120,9 @@ function classifyRelationship(contact) {
 
 export default async function handler(req, res) {
   try {
+    const __hbStart = Date.now();
+    const __hbId = await cronHeartbeat('cron-relationship-intel', 'started');
+    try {
     const token = await getGoogleToken();
     if (!token) return res.status(200).json({ ok: false, error: 'No Google token' });
 
@@ -167,6 +170,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ ok: true, relationships: written, total_contacts: emails.length });
   } catch (err) {
+    await cronHeartbeat('cron-relationship-intel', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart });
     return res.status(200).json({ ok: false, error: err.message });
   }
 }

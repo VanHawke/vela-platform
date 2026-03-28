@@ -1,4 +1,5 @@
 // api/cron-partnership-scan.js — Partnership Scanner Agent v2
+import { cronHeartbeat } from './kiko-tools.js';
 // Phase 1: Scan news_articles for deal signals (RSS feed)
 // Phase 2: Web search for recent F1 partnership announcements
 // Phase 3: Auto-classify + upsert + Kiko alert + activity log

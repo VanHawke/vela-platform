@@ -1,4 +1,5 @@
 // api/cron-outreach-score.js — Daily outreach scoring engine
+import { cronHeartbeat } from './kiko-tools.js';
 // Pulls sent emails from last 7 days, checks for replies, classifies messaging approach, scores effectiveness
 // Runs once daily at 9am UK via Vercel cron
 

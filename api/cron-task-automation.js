@@ -1,4 +1,5 @@
 // api/cron-task-automation.js — Kiko Task Automation Agent
+import { cronHeartbeat } from './kiko-tools.js';
 // Runs Mon-Fri 6:30am before morning brief
 // 1. Merge duplicate tasks (same company + similar type)
 // 2. Create follow-up tasks from stale deals (no task exists)

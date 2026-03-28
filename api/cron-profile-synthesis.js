@@ -2,7 +2,7 @@
 // Runs weekly. Pulls last 50 sent emails from Gmail, analyses via Sonnet,
 // writes structured profile to kiko_user_profiles. STANDALONE.
 import Anthropic from '@anthropic-ai/sdk';
-import { sbFetch } from './kiko-tools.js';
+import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 
 export const config = { maxDuration: 45 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
@@ -67,6 +67,9 @@ async function extractSentEmails(token, maxEmails = 50) {
 
 export default async function handler(req, res) {
   try {
+    const __hbStart = Date.now();
+    const __hbId = await cronHeartbeat('cron-profile-synthesis', 'started');
+    try {
     const token = await getGoogleToken();
     if (!token) return res.status(200).json({ ok: false, error: 'No Google token' });
 
@@ -176,6 +179,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ ok: true, emails_analysed: samples.length, version: currentVersion + 1 });
   } catch (err) {
+    await cronHeartbeat('cron-profile-synthesis', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart });
     return res.status(200).json({ ok: false, error: err.message });
   }
 }

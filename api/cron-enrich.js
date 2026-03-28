@@ -1,4 +1,5 @@
 // Vercel Cron Job — runs daily to fill data gaps
+import { cronHeartbeat } from './kiko-tools.js';
 // Add to vercel.json: { "crons": [{ "path": "/api/cron-enrich", "schedule": "0 6 * * *" }] }
 
 export default async function handler(req, res) {

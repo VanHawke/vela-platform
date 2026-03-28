@@ -3,7 +3,7 @@
 // original vs sent version, logs style refinement deltas.
 // Feeds into profile synthesis for continuous learning.
 import Anthropic from '@anthropic-ai/sdk';
-import { sbFetch } from './kiko-tools.js';
+import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 
 export const config = { maxDuration: 30 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
@@ -29,6 +29,9 @@ function extractBody(payload) {
 
 export default async function handler(req, res) {
   try {
+    const __hbStart = Date.now();
+    const __hbId = await cronHeartbeat('cron-edit-delta', 'started');
+    try {
     const token = await getGoogleToken();
     if (!token) return res.status(200).json({ ok: false, error: 'No Google token' });
 
@@ -110,6 +113,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ ok: true, drafts_checked: safe.length, deltas: deltasFound });
   } catch (err) {
+    await cronHeartbeat('cron-edit-delta', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart });
     return res.status(200).json({ ok: false, error: err.message });
   }
 }

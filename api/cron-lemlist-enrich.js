@@ -1,4 +1,5 @@
 // api/cron-lemlist-enrich.js — Lemlist Enrichment Sync
+import { cronHeartbeat } from './kiko-tools.js';
 // Pulls LinkedIn URLs + missing emails from Lemlist enrichment API
 // Runs weekly (Monday 6:15am) — uses Lemlist credits
 import { createClient } from '@supabase/supabase-js';

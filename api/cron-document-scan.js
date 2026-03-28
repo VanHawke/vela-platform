@@ -1,4 +1,5 @@
 // api/cron-document-scan.js — Weekly re-scan of documents with outdated analysis
+import { cronHeartbeat } from './kiko-tools.js';
 // Schedule: Sunday 6am UTC via Vercel cron
 
 const CURRENT_SCAN_VERSION = 1

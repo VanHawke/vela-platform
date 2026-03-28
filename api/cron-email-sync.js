@@ -1,4 +1,5 @@
 // api/cron-email-sync.js — Runs every 5 minutes to sync Gmail for all connected users
+import { cronHeartbeat } from './kiko-tools.js';
 // Inlines sync logic directly — no internal HTTP calls that break on Vercel
 
 import { createClient } from '@supabase/supabase-js';

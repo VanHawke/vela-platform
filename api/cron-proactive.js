@@ -3,7 +3,7 @@
 // Writes convergence alerts to kiko_alerts.
 // STANDALONE — if this fails, nothing else breaks.
 import Anthropic from '@anthropic-ai/sdk';
-import { sbFetch } from './kiko-tools.js';
+import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 
 // Quick Win: Email notification for high-severity alerts
 async function sendAlertEmail(alerts) {
@@ -44,6 +44,9 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
 export default async function handler(req, res) {
   try {
+    const __hbStart = Date.now();
+    const __hbId = await cronHeartbeat('cron-proactive', 'started');
+    try {
     const now = new Date();
     const oneDayAgo = new Date(now - 24 * 60 * 60 * 1000).toISOString();
     const nextDay = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
@@ -170,6 +173,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true, alerts: written, drafts, total_signals: hasData });
   } catch (err) {
     console.error('[Proactive] Engine error:', err.message);
+    await cronHeartbeat('cron-proactive', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart });
     return res.status(200).json({ ok: false, error: err.message }); // 200 so Vercel cron doesn't retry
   }
 }

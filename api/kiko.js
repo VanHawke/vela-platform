@@ -4,6 +4,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { TOOL_DEFINITIONS, executeTool, fetchEntityContext, sbFetch, logError } from './kiko-tools.js';
 import { classifyIntent, INTENT_TO_AGENT } from './agents/intent-classifier.js';
+import { generateSelfKnowledge } from './kiko-self-knowledge.js';
 import { describeScreen } from './agents/screen-reader.js';
 
 export const config = { supportsResponseStreaming: true, maxDuration: 60 };
@@ -231,22 +232,7 @@ OUTREACH DOCTRINE: 5-touch authority-led. No pricing in early outreach. No pleas
 
 PROACTIVE: When briefing, flag stale deals, recommend next actions, connect signals to opportunities. When you spot something important, save it to memory via ask_data_agent (operation: learning_save).
 
-SELF-KNOWLEDGE: You are Kiko OS v16. You have:
-- 23 specialist agents across 6 layers (Orchestration, Revenue, Intelligence, Governance, Execution, Specialist)
-- 12 cron jobs (meeting prep hourly; profile/relationship/preference synthesis Sundays; enrichment, partnerships, proactive, inbox triage, news, outreach score weekdays)
-- Gmail access via MCP (search emails, read messages, read threads)
-- Google Calendar access via MCP (list events, create events, find free time)
-- Web search (up to 5 searches per conversation)
-- Memory filesystem in Supabase (read/write persistent notes)
-- Intelligence tables: learning log, preferences, relationships (79 contacts), user profile, thought journal, conversation insights, draft actions, inbox triage
-- CRM: deals, contacts, companies, activities, tasks, documents, pipeline notifications
-- F1 data: teams, partnerships, sponsor categories, race calendar
-- Document generation: Word, Excel, PowerPoint, CSV, images (DALL-E), QR codes
-- Platform pages: Home, Pipeline, Contacts, Organisations, Command Centre, Calendar, Tasks, Partnership Matrix, Lemlist, News, Documents, Settings
-- Navigation: You can physically move the user to any page
-- CRM writes: Move deals between stages, create tasks, log activities, update contacts
-If asked "what can you do" or "what tools do you have" — answer from this knowledge. You know your own architecture.
-You can chain multiple agents in a single conversation. You can adapt your approach mid-task if results are unexpected. You learn from every interaction — decisions, preferences, and patterns are stored and influence future responses. You are not a simple chatbot that calls one tool and stops. You are an operating system that orchestrates complex workflows across data, email, web, and CRM to get results.
+SELF-KNOWLEDGE: {DYNAMIC_SELF_KNOWLEDGE}
 
 GOOGLE CONNECTION: If Gmail or Calendar MCP tools fail or return errors, tell Sunny: "Google connection needs refreshing. Open this link to reconnect: https://vela-platform-one.vercel.app/api/google-auth?email=sunny@vanhawke.com". Do NOT try to work around the failure — tell him directly.
 
@@ -416,7 +402,11 @@ export default async function handler(req, res) {
     executive: '\nSTYLE: Board-level. Direct, strategic. Lead with conclusion, support with evidence.',
   };
 
-  const system = SYSTEM_PROMPT.replace('{currentPage}', currentPage)
+  // Generate dynamic self-knowledge (auto-discovers agents, tools, crons)
+  let selfKnowledge = '';
+  try { selfKnowledge = await generateSelfKnowledge(); } catch { selfKnowledge = 'Self-knowledge generation failed. You have 23+ agents, web search, Gmail, Calendar, memory, and full CRM access.'; }
+
+  const system = SYSTEM_PROMPT.replace('{currentPage}', currentPage).replace('{DYNAMIC_SELF_KNOWLEDGE}', selfKnowledge)
     + `\n[${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
     + (pageContext?.summary ? `\n[Context: ${pageContext.summary}${pageContext.stageDistribution ? ` | Stages: ${JSON.stringify(pageContext.stageDistribution)}` : ''}${pageContext.visibleItems ? `\nVisible: ${pageContext.visibleItems}` : ''}]` : '')
     + (PERSONALITIES[personality] || PERSONALITIES.executive)

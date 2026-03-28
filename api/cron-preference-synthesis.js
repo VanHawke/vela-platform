@@ -2,13 +2,16 @@
 // Runs weekly. Reads kiko_learning_log, distils patterns via Sonnet,
 // writes/updates kiko_preferences. STANDALONE — if fails, agents work as before.
 import Anthropic from '@anthropic-ai/sdk';
-import { sbFetch } from './kiko-tools.js';
+import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 
 export const config = { maxDuration: 45 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
 export default async function handler(req, res) {
   try {
+    const __hbStart = Date.now();
+    const __hbId = await cronHeartbeat('cron-preference-synthesis', 'started');
+    try {
     // Pull last 30 days of decisions
     const since = new Date(Date.now() - 30 * 86400000).toISOString();
     const entries = await sbFetch(`kiko_learning_log?category=eq.decision&created_at=gt.${since}&order=created_at.desc&limit=50&select=content,entity_name,created_at`);
@@ -61,6 +64,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ ok: true, preferences: written, from_entries: safe.length });
   } catch (err) {
+    await cronHeartbeat('cron-preference-synthesis', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart });
     return res.status(200).json({ ok: false, error: err.message });
   }
 }

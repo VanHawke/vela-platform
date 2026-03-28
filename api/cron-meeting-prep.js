@@ -2,7 +2,7 @@
 // Runs hourly. Scans calendar for meetings in next 2 hours.
 // Generates enriched prep brief per meeting. STANDALONE.
 import Anthropic from '@anthropic-ai/sdk';
-import { sbFetch } from './kiko-tools.js';
+import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 
 export const config = { maxDuration: 45 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
@@ -16,6 +16,9 @@ async function getGoogleToken() {
 
 export default async function handler(req, res) {
   try {
+    const __hbStart = Date.now();
+    const __hbId = await cronHeartbeat('cron-meeting-prep', 'started');
+    try {
     const token = await getGoogleToken();
     if (!token) return res.status(200).json({ ok: false, error: 'No Google token' });
 
@@ -101,5 +104,6 @@ export default async function handler(req, res) {
       generated++;
     }
     return res.status(200).json({ ok: true, preps: generated, events_checked: events.length });
-  } catch (err) { return res.status(200).json({ ok: false, error: err.message }); }
+  } catch (err) { await cronHeartbeat('cron-meeting-prep', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart });
+    return res.status(200).json({ ok: false, error: err.message }); }
 }

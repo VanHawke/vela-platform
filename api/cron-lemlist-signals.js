@@ -1,4 +1,5 @@
 // api/cron-lemlist-signals.js — Lemlist Intent Signals Sync
+import { cronHeartbeat } from './kiko-tools.js';
 // Attempts to poll Lemlist watchlists API. If unavailable, falls back gracefully.
 // Lemlist signals primarily flow via webhooks — see lemlist-webhook.js for real-time handling.
 // Runs Mon-Fri 7:30am as backup data sync
