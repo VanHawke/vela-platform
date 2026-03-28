@@ -600,6 +600,39 @@ export default async function handler(req, res) {
         }
       } catch {} // Non-blocking — if context fetch fails, Claude still drafts
     }
+
+    // ── UNIVERSAL ENTITY AUTO-RECALL — for ANY intent mentioning a company/person ──
+    if (!voiceMode && intent !== 'outreach' && intent !== 'content' && intent !== 'navigate' && intent !== 'screen') {
+      try {
+        const capWords = message.match(/\b[A-Z][a-zA-Z]{2,}(?:\s+[A-Z][a-zA-Z]+)*/g) || [];
+        const filtered = capWords.filter(w => !['The','This','What','When','Where','How','Why','Can','Should','Would','Could','Please','Kiko','Sunny','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday','January','February','March','April','May','June','July','August','September','October','November','December'].includes(w));
+        if (filtered.length > 0) {
+          const primary = filtered[0];
+          const contacts = await sbFetch(`contacts?select=data&or=(data->>firstName.ilike.*${encodeURIComponent(primary)}*,data->>lastName.ilike.*${encodeURIComponent(primary)}*,data->>company.ilike.*${encodeURIComponent(primary)}*)&limit=2`);
+          const deals = await sbFetch(`deals?select=data&or=(data->>company.ilike.*${encodeURIComponent(primary)}*,data->>contactName.ilike.*${encodeURIComponent(primary)}*)&limit=2`);
+          if (contacts?.length || deals?.length) {
+            let entityCtx = '\n\n[AUTO-RECALL — what we know about entities mentioned]:';
+            for (const c of (contacts || []).slice(0, 2)) {
+              const d = c.data || {};
+              entityCtx += `\n👤 ${d.firstName || ''} ${d.lastName || ''} — ${d.title || '?'} @ ${d.company || '?'} | ${d.email || ''}`;
+            }
+            for (const dl of (deals || []).slice(0, 2)) {
+              const d = dl.data || {};
+              entityCtx += `\n📊 ${d.company} — Stage: ${d.stage} | Value: $${d.value || '?'} | Contact: ${d.contactName || '?'} | Pipeline: ${d.pipeline || '?'}`;
+            }
+            // Check for conversation history with this entity
+            const convos = await sbFetch(`kiko_conversation_insights?select=summary,entities_discussed&order=created_at.desc&limit=10`);
+            const relevant = (convos || []).filter(c => (c.entities_discussed || []).some(e => e.toLowerCase().includes(primary.toLowerCase())));
+            if (relevant.length) entityCtx += `\n💬 Discussed ${relevant.length} times recently: ${relevant[0]?.summary?.slice(0, 100) || ''}`;
+            // Check for signals
+            const signals = await sbFetch(`news_articles?matched_companies=cs.[{"name":"${primary}"}]&order=published_at.desc&limit=1&select=title,published_at`);
+            if (signals?.length) entityCtx += `\n📰 Signal: ${signals[0].title}`;
+            routingHint += entityCtx;
+          }
+        }
+      } catch {} // Never fail on auto-recall
+    }
+
     // Phase 12: Load strategic preferences (SKIP in voice mode for speed)
     let preferencesHint = '';
     let profileHint = '';

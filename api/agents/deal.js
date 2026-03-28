@@ -118,6 +118,33 @@ async function moveStage({ company, new_stage, reason }) {
   await sbFetch('deal_stage_history', { method: 'POST', body: JSON.stringify({ deal_id: match.id, from_stage: oldStage, to_stage: new_stage, changed_by: ORG_ID, org_id: ORG_ID }) }).catch(() => {});
   await sbFetch('activities', { method: 'POST', body: JSON.stringify({ org_id: ORG_ID, deal_id: match.id, type: 'stage_change', entity_name: match.data.company, subject: `${oldStage} → ${new_stage}`, body: reason || '', created_by: ORG_ID }) }).catch(() => {});
 
+  // Win/Loss Analysis — auto-trigger when deal closes
+  if (['Won', 'Lost', 'won', 'lost'].includes(new_stage)) {
+    try {
+      const stageHistory = await sbFetch(`deal_stage_history?deal_id=eq.${match.id}&order=changed_at.asc&select=from_stage,to_stage,changed_at`);
+      const activities = await sbFetch(`activities?deal_id=eq.${match.id}&order=created_at.desc&limit=10&select=type,subject,created_at`);
+      const analysis = await new Anthropic({ apiKey: process.env.ANTHROPIC_KEY }).messages.create({
+        model: 'claude-haiku-4-5-20251001', max_tokens: 400,
+        system: 'Analyse this deal outcome. Return JSON: { "key_factors": ["what drove the outcome"], "lessons": ["actionable lessons for future deals"], "analysis": "2-sentence summary" }',
+        messages: [{ role: 'user', content: `Deal: ${match.data.company} (${match.data.pipeline})\nOutcome: ${new_stage}\nValue: $${match.data.value || '?'}\nStage journey: ${JSON.stringify(stageHistory || [])}\nActivities: ${JSON.stringify(activities || [])}\nReason: ${reason || 'not specified'}` }],
+      });
+      const parsed = JSON.parse((analysis.content[0]?.text || '{}').replace(/```json|```/g, '').trim());
+      await sbFetch('kiko_win_loss_analysis', { method: 'POST', body: JSON.stringify({
+        deal_id: match.id, company: match.data.company, outcome: new_stage.toLowerCase(),
+        value: match.data.value, pipeline: match.data.pipeline,
+        stage_journey: stageHistory || [], analysis: parsed.analysis,
+        key_factors: parsed.key_factors || [], lessons: parsed.lessons || [],
+      })});
+      // Store lessons in learning log
+      for (const lesson of (parsed.lessons || []).slice(0, 3)) {
+        await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({
+          user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063', category: 'win_loss',
+          content: `[${new_stage.toUpperCase()}] ${match.data.company}: ${lesson}`, entity_name: match.data.company,
+        })});
+      }
+    } catch {} // Non-blocking
+  }
+
   return { success: true, result: `Moved "${match.data.company}" from ${oldStage} → ${new_stage}.`, navigateTo: null };
 }
 

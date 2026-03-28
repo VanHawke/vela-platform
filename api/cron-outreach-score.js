@@ -217,6 +217,36 @@ ${JSON.stringify(emailBatch, null, 1)}` }]
       }
     }
 
+    // ── Pattern Learning: analyse what works ──
+    try {
+      const allScores = await fetch(`${SB}/rest/v1/outreach_scores?select=subject,approach_category,outcome,word_count&scored_at=not.is.null&limit=50&order=scored_at.desc`, { headers: h });
+      const scored_emails = await allScores.json();
+      if (scored_emails?.length >= 10) {
+        const replied = scored_emails.filter(e => e.outcome === 'replied');
+        const silence = scored_emails.filter(e => e.outcome === 'silence');
+        const replyRate = (replied.length / scored_emails.length * 100).toFixed(0);
+        // Analyse patterns
+        const avgWordReplied = replied.length ? Math.round(replied.reduce((s, e) => s + (e.word_count || 0), 0) / replied.length) : 0;
+        const avgWordSilence = silence.length ? Math.round(silence.reduce((s, e) => s + (e.word_count || 0), 0) / silence.length) : 0;
+        const approachStats = {};
+        for (const e of scored_emails) {
+          const a = e.approach_category || 'unknown';
+          if (!approachStats[a]) approachStats[a] = { total: 0, replied: 0 };
+          approachStats[a].total++;
+          if (e.outcome === 'replied') approachStats[a].replied++;
+        }
+        let insight = `Outreach patterns (${scored_emails.length} emails): ${replyRate}% reply rate. `;
+        insight += `Avg words in replied: ${avgWordReplied}, in silence: ${avgWordSilence}. `;
+        for (const [approach, stats] of Object.entries(approachStats)) {
+          insight += `${approach}: ${stats.replied}/${stats.total} replied (${(stats.replied/stats.total*100).toFixed(0)}%). `;
+        }
+        await fetch(`${SB}/rest/v1/kiko_learning_log`, {
+          method: 'POST', headers: h,
+          body: JSON.stringify({ user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063', category: 'outreach_patterns', content: insight, entity_name: 'outreach_effectiveness' }),
+        });
+      }
+    } catch {} // Non-blocking
+
     return res.status(200).json({ scored, updated, total_emails: messageIds.length })
   } catch (err) {
     console.error('[Outreach Score] Error:', err.message)

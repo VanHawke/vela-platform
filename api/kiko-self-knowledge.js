@@ -76,6 +76,28 @@ export async function generateSelfKnowledge() {
     }
   } catch { knowledge.push(`\nLEARNED SKILLS: Skills table contains learned capabilities. Search via manage_knowledge (search_knowledge).`); }
 
+  // ── 6c. Win/Loss patterns ──
+  try {
+    const winLoss = await sbFetch('kiko_win_loss_analysis?select=company,outcome,key_factors,lessons&order=created_at.desc&limit=10');
+    if (winLoss?.length) {
+      knowledge.push(`\nWIN/LOSS INTELLIGENCE (${winLoss.length} deals analysed):`);
+      const wins = winLoss.filter(w => w.outcome === 'won');
+      const losses = winLoss.filter(w => w.outcome === 'lost');
+      if (wins.length) knowledge.push(`Won (${wins.length}): ${wins.flatMap(w => w.key_factors || []).slice(0, 5).join('; ')}`);
+      if (losses.length) knowledge.push(`Lost (${losses.length}): ${losses.flatMap(w => w.key_factors || []).slice(0, 5).join('; ')}`);
+      const allLessons = winLoss.flatMap(w => w.lessons || []).slice(0, 5);
+      if (allLessons.length) knowledge.push(`Lessons: ${allLessons.join('; ')}`);
+    }
+  } catch {}
+
+  // ── 6d. Outreach effectiveness patterns ──
+  try {
+    const patterns = await sbFetch('kiko_learning_log?category=eq.outreach_patterns&order=created_at.desc&limit=1&select=content');
+    if (patterns?.[0]?.content) {
+      knowledge.push(`\nOUTREACH EFFECTIVENESS: ${patterns[0].content}`);
+    }
+  } catch {}
+
   // ── 6b. Discover dynamic agents (self-created) ──
   try {
     const dynAgents = await sbFetch('kiko_dynamic_agents?active=eq.true&select=name,display_name,description,category,trigger_keywords,usage_count&order=usage_count.desc');
