@@ -694,10 +694,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         {/* Timestamp + action buttons — same row, always visible */}
         {!streaming && (
           <div style={{ display: 'flex', gap: 2, alignItems: 'center', marginTop: 6, justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
-            {/* Kiko avatar — below response, like Claude */}
+            {/* Kiko avatar — visible circle below response, like Claude's logo */}
             {isKiko && (
-              <div style={{ width: 20, height: 20, marginRight: 4, flexShrink: 0, opacity: 0.5 }}>
-                <DoubleHelix width={20} height={10} mini />
+              <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg, #7C5CFC, #00D4AA)', marginRight: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.5" fill="rgba(255,255,255,0.9)"/></svg>
               </div>
             )}
             {/* Timestamp */}
