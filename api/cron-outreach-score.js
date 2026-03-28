@@ -6,6 +6,9 @@ import { cronHeartbeat } from './kiko-tools.js';
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5'
 
 export default async function handler(req, res) {
+  const __hbStart = Date.now();
+  const __hbId = await cronHeartbeat('cron-outreach-score', 'started');
+  try {
   if (req.method !== 'POST' && req.method !== 'GET') return res.status(405).end()
 
   const SB = process.env.VITE_SUPABASE_URL
@@ -218,5 +221,9 @@ ${JSON.stringify(emailBatch, null, 1)}` }]
   } catch (err) {
     console.error('[Outreach Score] Error:', err.message)
     return res.status(500).json({ error: err.message })
+  }
+  } catch (__hbErr) {
+    await cronHeartbeat('cron-outreach-score', 'error', { heartbeatId: __hbId, errorMessage: __hbErr?.message || 'unknown' });
+    throw __hbErr;
   }
 }

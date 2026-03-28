@@ -35,6 +35,9 @@ async function tryFetchSignals() {
 }
 
 export default async function handler(req, res) {
+  const __hbStart = Date.now();
+  const __hbId = await cronHeartbeat('cron-lemlist-signals', 'started');
+  try {
   console.log('[LemlistSignals] Starting signal sync...');
   
   const result = await tryFetchSignals();
@@ -90,4 +93,8 @@ export default async function handler(req, res) {
   }
 
   return res.json({ ok: true, path, signalsProcessed: signals.length, newAlerts, timestamp: new Date().toISOString() });
+  } catch (__hbErr) {
+    await cronHeartbeat('cron-lemlist-signals', 'error', { heartbeatId: __hbId, errorMessage: __hbErr?.message || 'unknown' });
+    throw __hbErr;
+  }
 }

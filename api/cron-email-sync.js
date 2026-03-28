@@ -12,6 +12,9 @@ const supabase = createClient(
 const GMAIL_BASE = 'https://gmail.googleapis.com/gmail/v1/users/me';
 
 export default async function handler(req, res) {
+  const __hbStart = Date.now();
+  const __hbId = await cronHeartbeat('cron-email-sync', 'started');
+  try {
   if (req.method !== 'GET' && req.method !== 'POST') return res.status(405).json({ error: 'GET or POST' });
   const results = [];
 
@@ -106,4 +109,8 @@ export default async function handler(req, res) {
   }
 
   return res.json({ status: 'complete', timestamp: new Date().toISOString(), users: results.length, results });
+  } catch (__hbErr) {
+    await cronHeartbeat('cron-email-sync', 'error', { heartbeatId: __hbId, errorMessage: __hbErr?.message || 'unknown' });
+    throw __hbErr;
+  }
 }

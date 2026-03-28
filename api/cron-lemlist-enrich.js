@@ -77,6 +77,9 @@ async function updateContact(contactId, existingData, enrichResult) {
 }
 
 export default async function handler(req, res) {
+  const __hbStart = Date.now();
+  const __hbId = await cronHeartbeat('cron-lemlist-enrich', 'started');
+  try {
   console.log('[LemlistEnrich] Starting enrichment sync...');
   
   // Get contacts missing LinkedIn or email — prioritise deal-linked contacts
@@ -141,4 +144,8 @@ export default async function handler(req, res) {
   }
 
   return res.json({ ok: true, ...summary });
+  } catch (__hbErr) {
+    await cronHeartbeat('cron-lemlist-enrich', 'error', { heartbeatId: __hbId, errorMessage: __hbErr?.message || 'unknown' });
+    throw __hbErr;
+  }
 }

@@ -93,6 +93,9 @@ async function upsertPartnership(p, source) {
 }
 
 export default async function handler(req, res) {
+  const __hbStart = Date.now();
+  const __hbId = await cronHeartbeat('cron-partnership-scan', 'started');
+  try {
   console.log('[PartnerScan] Starting partnership scan...');
   let added = 0, updated = 0, skipped = 0;
   const results = [];
@@ -187,4 +190,8 @@ export default async function handler(req, res) {
   };
   console.log('[PartnerScan] Complete:', JSON.stringify(summary));
   return res.json({ ok: true, ...summary });
+  } catch (__hbErr) {
+    await cronHeartbeat('cron-partnership-scan', 'error', { heartbeatId: __hbId, errorMessage: __hbErr?.message || 'unknown' });
+    throw __hbErr;
+  }
 }

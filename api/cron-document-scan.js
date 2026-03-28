@@ -12,7 +12,9 @@ export default async function handler(req, res) {
   const h = { apikey: SK, Authorization: `Bearer ${SK}`, 'Content-Type': 'application/json' }
 
   try {
-    // Find documents needing re-scan: outdated version OR not scanned in 30+ days
+    const __hbStart = Date.now();
+    const __hbId = await cronHeartbeat('cron-document-scan', 'started');
+    try {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
     const url = `${SB}/rest/v1/documents?or=(scan_version.lt.${CURRENT_SCAN_VERSION},last_scanned_at.lt.${thirtyDaysAgo},last_scanned_at.is.null)&scan_status=neq.scanning&select=id,name,scan_version,last_scanned_at&limit=${MAX_RESCAN_PER_RUN}&order=last_scanned_at.asc.nullsfirst`
     const docsRes = await fetch(url, { headers: h })
@@ -44,7 +46,12 @@ export default async function handler(req, res) {
       }
     }
 
+    await cronHeartbeat('cron-document-scan', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: results.length });
     return res.status(200).json({ scanned: results.length, results })
+    } catch (innerErr) {
+      await cronHeartbeat('cron-document-scan', 'error', { heartbeatId: __hbId, errorMessage: innerErr.message });
+      throw innerErr;
+    }
   } catch (err) {
     console.error('[DocScan] Cron error:', err.message)
     return res.status(500).json({ error: err.message })

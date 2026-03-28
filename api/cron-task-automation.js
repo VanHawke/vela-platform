@@ -136,6 +136,9 @@ async function createTasksFromStageChanges(tasks) {
 }
 
 export default async function handler(req, res) {
+  const __hbStart = Date.now();
+  const __hbId = await cronHeartbeat('cron-task-automation', 'started');
+  try {
   console.log('[TaskAutomation] Starting...');
   const now = new Date();
   try {
@@ -191,5 +194,9 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error('[TaskAutomation] Error:', err.message);
     return res.status(500).json({ error: err.message });
+  }
+  } catch (__hbErr) {
+    await cronHeartbeat('cron-task-automation', 'error', { heartbeatId: __hbId, errorMessage: __hbErr?.message || 'unknown' });
+    throw __hbErr;
   }
 }

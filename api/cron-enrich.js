@@ -3,6 +3,9 @@ import { cronHeartbeat } from './kiko-tools.js';
 // Add to vercel.json: { "crons": [{ "path": "/api/cron-enrich", "schedule": "0 6 * * *" }] }
 
 export default async function handler(req, res) {
+  const __hbStart = Date.now();
+  const __hbId = await cronHeartbeat('cron-enrich', 'started');
+  try {
   // Vercel cron sends GET requests
   if (req.method !== 'GET' && req.method !== 'POST') return res.status(405).json({ error: 'GET or POST' })
 
@@ -63,4 +66,8 @@ export default async function handler(req, res) {
   } catch (e) { results.intelligence = { error: e.message } }
 
   return res.json({ status: 'complete', timestamp: new Date().toISOString(), results })
+  } catch (__hbErr) {
+    await cronHeartbeat('cron-enrich', 'error', { heartbeatId: __hbId, errorMessage: __hbErr?.message || 'unknown' });
+    throw __hbErr;
+  }
 }
