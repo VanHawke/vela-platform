@@ -61,6 +61,8 @@ INTENTS:
 - calendar: Check calendar, schedule meetings, what's on today (Google Calendar)
 - email_read: Check emails, read emails, inbox search, unread count, email correspondence, "last email from/to/with X", "correspondence with X", "what did X email me", "any emails from X", "email thread with X", finding specific emails or email history (Gmail)
 - self_monitor: System health, errors, "are you working", "what broke", "diagnose yourself", "is inbox triage running", cron status, agent stats
+- knowledge: Knowledge management — "learn from this URL", "add this source", "what do you know about X", "show me your sources", "remember this", "save this insight", managing Kiko's knowledge base
+- conversation_search: Recall past conversations — "we discussed X before", "you mentioned Y", "what did we talk about last week", "recall our conversation about Z", references to prior discussions
 - general: General conversation, greetings, questions Claude can answer from knowledge
 
 Respond with ONLY the intent name. Nothing else.`;
@@ -77,6 +79,12 @@ export async function classifyIntent(message, currentPage = 'home') {
   if (lower.includes('what am i looking at') || lower.includes('what\'s on screen') || lower.includes('where am i') || lower.includes('describe this page')) return { intent: 'screen' };
   if (lower.includes('correspondence with') || lower.includes('last email') || lower.includes('email from') || lower.includes('email to') || lower.includes('emails from') || lower.includes('emails to') || lower.includes('check my email') || lower.includes('check my inbox') || lower.includes('unread email')) return { intent: 'email_read' };
 
+  // Knowledge management shortcuts
+  if (lower.includes('learn from') || lower.includes('add this source') || lower.includes('add source') || lower.includes('show me your sources') || lower.includes('your knowledge') || lower.includes('what do you know about') || lower.includes('save this insight') || lower.includes('remember this fact')) return { intent: 'knowledge' };
+
+  // Conversation search shortcuts
+  if (lower.includes('we discussed') || lower.includes('you mentioned') || lower.includes('what did we talk') || lower.includes('recall our conversation') || lower.includes('we talked about') || lower.includes('previous conversation') || lower.includes('earlier conversation') || lower.includes('last time we spoke')) return { intent: 'conversation_search' };
+
   // Step 3: Haiku classification for everything else (~100-200ms)
   try {
     const response = await anthropic.messages.create({
@@ -86,7 +94,7 @@ export async function classifyIntent(message, currentPage = 'home') {
       messages: [{ role: 'user', content: `[Current page: ${currentPage}] ${message}` }],
     });
     const intentText = (response.content?.[0]?.text || 'general').trim().toLowerCase().replace(/[^a-z_]/g, '');
-    const validIntents = ['screen','crm_write','data','outreach','lemlist','signal','brief','strategy','content','research','memory','finance','document','negotiation','category','legal','dispute','investment','pricing','travel','calendar','email_read','self_monitor','general'];
+    const validIntents = ['screen','crm_write','data','outreach','lemlist','signal','brief','strategy','content','research','memory','finance','document','negotiation','category','legal','dispute','investment','pricing','travel','calendar','email_read','self_monitor','knowledge','conversation_search','general'];
     const intent = validIntents.includes(intentText) ? intentText : 'general';
     console.log(`[Intent] "${message.slice(0,60)}" → ${intent} (${response.usage?.input_tokens || '?'}in/${response.usage?.output_tokens || '?'}out)`);
     return { intent };
@@ -122,5 +130,7 @@ export const INTENT_TO_AGENT = {
   calendar:    { tool: null, useMCP: 'google-calendar' },
   email_read:  { tool: null, useMCP: 'gmail' },
   self_monitor: { tool: 'ask_self_monitor' },
+  knowledge:    { tool: 'manage_knowledge' },
+  conversation_search: { tool: 'search_conversations' },
   general:     { tool: null, directResponse: true },
 };

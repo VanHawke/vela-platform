@@ -60,9 +60,9 @@ export async function generateSelfKnowledge() {
   try {
     const tables = await sbFetch('?select=');
     // Fallback: list known intelligence tables
-    knowledge.push(`\nINTELLIGENCE TABLES: kiko_learning_log, kiko_preferences, kiko_user_profiles, kiko_relationships, kiko_thought_journal, kiko_conversation_insights, kiko_draft_actions, kiko_inbox_triage, kiko_memories, kiko_alerts, kiko_error_log, kiko_cron_heartbeats, kiko_skills`);
+    knowledge.push(`\nINTELLIGENCE TABLES: kiko_learning_log, kiko_preferences, kiko_user_profiles, kiko_relationships, kiko_thought_journal, kiko_conversation_insights, kiko_draft_actions, kiko_inbox_triage, kiko_memories, kiko_alerts, kiko_error_log, kiko_cron_heartbeats, kiko_skills, kiko_knowledge_sources, kiko_imported_conversations`);
   } catch {
-    knowledge.push(`\nINTELLIGENCE TABLES: kiko_learning_log, kiko_preferences, kiko_user_profiles, kiko_relationships, kiko_thought_journal, kiko_conversation_insights, kiko_draft_actions, kiko_inbox_triage, kiko_memories, kiko_alerts, kiko_error_log, kiko_cron_heartbeats, kiko_skills`);
+    knowledge.push(`\nINTELLIGENCE TABLES: kiko_learning_log, kiko_preferences, kiko_user_profiles, kiko_relationships, kiko_thought_journal, kiko_conversation_insights, kiko_draft_actions, kiko_inbox_triage, kiko_memories, kiko_alerts, kiko_error_log, kiko_cron_heartbeats, kiko_skills, kiko_knowledge_sources, kiko_imported_conversations`);
   }
 
   // ── 6. Discover learned capabilities from kiko_skills ──

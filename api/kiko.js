@@ -231,13 +231,22 @@ ROUTING (follow these in order):
    "are you working", "system health", "what errors", "is inbox triage running", "diagnose yourself", "what broke", "cron status"
 
 22. DEEP RESEARCH → use web_search tool directly (run 5-8 searches, synthesise)
-   "research [company]", "deep dive on [X]", "deep research". Run multiple web searches systematically: company overview, funding, leadership, news, competitors, partnerships. Synthesise into structured brief with sections: OVERVIEW, KEY PEOPLE, RECENT DEVELOPMENTS, FINANCIAL POSITION, PARTNERSHIP SIGNALS, RECOMMENDED APPROACH.
+   "research [company]", "deep dive on [X]", "deep research". Run multiple web searches systematically: company overview, funding, leadership, news, competitors, partnerships. Synthesise into structured brief with sections: OVERVIEW, KEY PEOPLE, RECENT DEVELOPMENTS, FINANCIAL POSITION, PARTNERSHIP SIGNALS, RECOMMENDED APPROACH. After research, ALWAYS save key findings using manage_knowledge (save_insight) so you remember them next time.
 
-22. CALENDAR / GMAIL (direct read) → use MCP tools (gmail, google-calendar)
+23. CALENDAR / GMAIL (direct read) → use MCP tools (gmail, google-calendar)
 
-23. WEB SEARCH → use web_search tool directly
+24. WEB SEARCH → use web_search tool directly
 
-24. MEMORY → use memory tool directly (save important facts, check stored context)
+25. MEMORY → use memory tool directly (save important facts, check stored context)
+
+26. PAST CONVERSATIONS → call search_conversations
+   "you mentioned this before", "what did we discuss about X", "recall our conversation about Y", "we talked about this", any reference to prior discussions or historical context
+
+27. KNOWLEDGE MANAGEMENT → call manage_knowledge
+   "learn from this URL", "add this source", "what do you know about X", "show me your sources", "remember this", "save this insight". Operations: add_source (add URL/document), search_knowledge (search all knowledge), list_sources (show sources by category), learn_topic (queue for learning), save_insight (save a fact from conversation).
+
+28. EMAIL TRIAGE → call trigger_triage
+   "check my emails" when inbox data is stale (>24h old), "refresh inbox", "what's in my inbox right now". Always check kiko_inbox_triage freshness first — if today's date matches, use the cached data. If stale, trigger fresh triage.
 
 STYLE: Direct, corporate, high-signal. No fluff. No "happy to help." Lead with value. Max 2-3 sentences for simple queries. Use "intelligent age" not "AI generation." All financials in USD.
 
@@ -522,7 +531,11 @@ export default async function handler(req, res) {
     } else if (intent === 'calendar') {
       routingHint = '\n\n[ROUTING HINT: This is a CALENDAR query. Use Google Calendar MCP tools to check events, create events, find free time. Use gcal_list_events to see upcoming events, gcal_create_event to schedule, gcal_find_my_free_time to check availability.]';
     } else if (intent === 'research') {
-      routingHint = '\n\n[ROUTING HINT: This is a RESEARCH query. Use the web_search tool to find current information. Run 3-8 searches systematically: company overview, funding, leadership, news, competitors, partnerships. Synthesise into a structured brief. You HAVE internet access — use it. Also cross-reference with CRM data via ask_data_agent if the entity exists in the pipeline.]';
+      routingHint = '\n\n[ROUTING HINT: This is a RESEARCH query. Use the web_search tool to find current information. Run 3-8 searches systematically: company overview, funding, leadership, news, competitors, partnerships. Synthesise into a structured brief. You HAVE internet access — use it. Also cross-reference with CRM data via ask_data_agent if the entity exists in the pipeline. After research, save key findings using manage_knowledge (operation: save_insight).]';
+    } else if (intent === 'knowledge') {
+      routingHint = '\n\n[ROUTING HINT: This is a KNOWLEDGE MANAGEMENT query. Use the manage_knowledge tool. Operations: add_source (add a URL or document), search_knowledge (search existing knowledge base), list_sources (show all sources by category), learn_topic (queue a topic for the Learning Director), save_insight (save a specific fact). If the user says "learn from [URL]" use add_source. If "what do you know about X" use search_knowledge.]';
+    } else if (intent === 'conversation_search') {
+      routingHint = '\n\n[ROUTING HINT: This references a PAST CONVERSATION. Use the search_conversations tool with relevant keywords. Search for entity names, topics, or specific phrases the user mentions. Return the most relevant excerpts with dates.]';
     } else if (intent === 'general') {
       routingHint = '\n\n[ROUTING HINT: This is a general question. You have FULL access to all tools — CRM, web search, Gmail, Calendar, all 23 specialist agents. Answer from your knowledge first, but if current data, business context, or research would improve the answer, use the appropriate tool. Do not hold back.]';
     }
