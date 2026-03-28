@@ -19,46 +19,20 @@ She must:
 
 ## 2. WHAT IS CURRENTLY BROKEN (as of March 28, 2026)
 
-### BUG 1: Text Input Corruption
-**Symptom:** Messages sent to /api/kiko contain every intermediate keystroke
-concatenated: "WWhWheWhen..." instead of just "When was my last email..."
-**Root cause:** Browser speech-to-text (SpeechRecognition) interim results
-leaking into the input field, OR macOS dictation producing incremental updates
-that get concatenated rather than replaced. The KikoFloat input handler itself
-(`onChange={e => setInput(e.target.value)}`) is correct — the corruption happens
-BEFORE it reaches the input field, in the dictation/transcription layer.
-**Fix status:** Partial. Surrogate sanitiser deployed. Deduplication Set deployed.
-Need to verify the deployed fix is actually running (cache issues have plagued
-every deploy).
+### FIXED THIS SESSION:
+- ✅ Text input surrogate corruption (emoji crash) — sanitiser on client + server
+- ✅ Speech recognition duplication — dedup Set replacing accumulator closure
+- ✅ Email queries failing — email_read intent now routes to Gmail MCP
+- ✅ No self-knowledge — PLATFORM_KNOWLEDGE injected into system prompt
+- ✅ No self-monitoring — kiko_error_log table + ask_self_monitor tool
+- ✅ No error logging — all agent/coordinator/MCP failures logged automatically
+- ✅ Dead code — realtime-token.js deleted, @11labs removed, vercel.json cleaned
 
-### BUG 2: Email/Correspondence Queries Fail
-**Symptom:** "When was my last correspondence with BigBear" → Kiko searches CRM
-contacts (finds Grace Williamson) but cannot access actual email content.
-**Root cause:** The Data Agent searches Supabase tables (contacts, activities,
-email analytics summaries) but does NOT have direct Gmail access. Gmail access
-requires MCP tools (gmail_search_messages, gmail_read_message) which are only
-available to the Coordinator (kiko.js), not to individual agents. When the intent
-classifier routes "correspondence" to `data` intent, the Data Agent looks in CRM
-but has no email data.
-**Fix required:** Email-related queries must route to the Coordinator's MCP
-tools, OR the Data Agent must be able to invoke MCP Gmail tools, OR a dedicated
-email_read intent must trigger MCP usage directly.
-
-### BUG 3: Voice is GPT-4o (broken, fabricates data)
-**Symptom:** Voice responses are hallucinated. GPT-4o invents companies, deals,
-contacts that don't exist. 15 Phase 13 commits attempted alternatives (LiveKit,
-Pipecat, browser-native). All rolled back. Current code is back to GPT-4o
-Realtime.
-**Fix required:** DEFERRED. Text must work first. Voice is a transport layer
-problem, not an intelligence problem.
-
-### BUG 4: Kiko Has No Self-Awareness
-**Symptom:** Kiko cannot answer "what tools do you have", "what pages exist",
-"what went wrong with my last query", "how many agents do you have". She has no
-knowledge of her own architecture.
-**Fix required:** A PLATFORM_KNOWLEDGE document injected into the system prompt
-that describes every page, every agent, every capability, every table. Plus a
-self-monitoring system that logs errors and lets Kiko diagnose herself.
+### REMAINING:
+- Google OAuth needs periodic reconnection (token expires, auto-refresh works on Vercel)
+- Voice mode is GPT-4o Realtime (fabricates data) — DEFERRED, text-first
+- Inbox triage cron may need manual trigger to catch up (3 days behind)
+- macOS dictation may still produce intermediate keystrokes (browser-level, not our code)
 
 ---
 
