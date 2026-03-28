@@ -657,7 +657,24 @@ export default async function handler(req, res) {
     } catch {}
     } // end !voiceMode
 
-    const systemWithHint = system + routingHint + preferencesHint + profileHint + memoryHint + inboxHint;
+    // Load operational mode (always, including voice)
+    let modeHint = '';
+    try {
+      const mode = await sbFetch('kiko_operational_mode?active=eq.true&order=created_at.desc&limit=1&select=mode,description,priorities,expires_at');
+      if (mode?.[0] && mode[0].mode !== 'default') {
+        const m = mode[0];
+        if (m.expires_at && new Date(m.expires_at) < new Date()) {
+          // Mode expired — deactivate it
+          await sbFetch(`kiko_operational_mode?id=eq.${m.id}`, { method: 'PATCH', body: JSON.stringify({ active: false }) });
+        } else {
+          modeHint = `\n\n[OPERATIONAL MODE: ${m.mode.toUpperCase()}]\n${m.description}`;
+          if (m.priorities?.length) modeHint += `\nPriorities: ${m.priorities.join(' > ')}`;
+          modeHint += `\nAdjust ALL responses to serve this mode. Every answer should ladder back to these priorities.`;
+        }
+      }
+    } catch {}
+
+    const systemWithHint = system + routingHint + preferencesHint + profileHint + memoryHint + inboxHint + modeHint;
 
     // Deep think detection
     const DEEP_TRIGGERS = ['analyse', 'analyze', 'deep dive', 'think through', 'strategic', 'evaluate', 'comprehensive'];

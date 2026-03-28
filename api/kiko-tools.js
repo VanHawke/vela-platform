@@ -252,7 +252,7 @@ export const TOOL_DEFINITIONS = [
     name: 'manage_knowledge',
     description: 'Manage Kiko\'s knowledge base AND create new agents. Use to: add a learning source, search knowledge, list sources, trigger learning, save insights, create a new specialist agent, or list custom agents. Use when: user says "learn about X", "add this source", "what do you know about X", "create an agent for Y", "show me your agents".',
     input_schema: { type: 'object', properties: {
-      operation: { type: 'string', enum: ['add_source', 'search_knowledge', 'list_sources', 'learn_topic', 'save_insight', 'create_agent', 'list_agents', 'run_agent'], description: 'add_source: add URL/document. search_knowledge: search knowledge. list_sources: show sources. learn_topic: queue learning. save_insight: save a fact. create_agent: create a new dynamic agent. list_agents: show all custom agents. run_agent: execute a dynamic agent.' },
+      operation: { type: 'string', enum: ['add_source', 'search_knowledge', 'list_sources', 'learn_topic', 'save_insight', 'create_agent', 'list_agents', 'run_agent', 'set_mode', 'get_mode'], description: 'add_source: add URL/document. search_knowledge: search knowledge. list_sources: show sources. learn_topic: queue learning. save_insight: save a fact. create_agent: create dynamic agent. list_agents: show custom agents. run_agent: execute dynamic agent. set_mode: set operational mode (fundraising, race_week, outreach_sprint, deal_closing, product_launch). get_mode: show current mode.' },
       params: { type: 'object', description: 'For add_source: { name, url, category, content }. For search_knowledge: { query }. For list_sources: { category }. For learn_topic: { topic, category }. For save_insight: { insight, entity, category }. For create_agent: { name, display_name, description, system_prompt, data_queries, trigger_keywords, category }. For run_agent: { agent_name, question }.' },
     }, required: ['operation'] },
   },
@@ -569,6 +569,28 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       if (operation === 'run_agent') {
         const { runDynamicAgent } = await import('./agents/dynamic-runner.js');
         return await runDynamicAgent(params.agent_name, params.question || params.query, params.context);
+      }
+
+      if (operation === 'set_mode') {
+        const { mode, description, priorities, expires_in_days } = params;
+        if (!mode) return 'Error: mode is required. Options: fundraising, race_week, outreach_sprint, deal_closing, product_launch, default';
+        // Deactivate current mode
+        await sbFetch('kiko_operational_mode?active=eq.true', { method: 'PATCH', body: JSON.stringify({ active: false }) });
+        // Set new mode
+        const expiresAt = expires_in_days ? new Date(Date.now() + expires_in_days * 86400000).toISOString() : null;
+        await sbFetch('kiko_operational_mode', { method: 'POST', body: JSON.stringify({
+          mode, description: description || `${mode} mode activated`,
+          priorities: priorities || [], active: true, set_by: 'sunny',
+          expires_at: expiresAt,
+        })});
+        return `Operational mode set: ${mode.toUpperCase()}${expiresAt ? ` (expires in ${expires_in_days} days)` : ''}. All my responses will now prioritise this mode.`;
+      }
+
+      if (operation === 'get_mode') {
+        const mode = await sbFetch('kiko_operational_mode?active=eq.true&order=created_at.desc&limit=1&select=mode,description,priorities,created_at,expires_at');
+        if (!mode?.length) return 'Current mode: DEFAULT. No special operational mode active.';
+        const m = mode[0];
+        return `Current mode: ${m.mode.toUpperCase()}\n${m.description}\nPriorities: ${(m.priorities || []).join(' > ')}\nSet: ${new Date(m.created_at).toLocaleDateString('en-GB')}${m.expires_at ? `\nExpires: ${new Date(m.expires_at).toLocaleDateString('en-GB')}` : ''}`;
       }
 
       return `Unknown knowledge operation: ${operation}`;

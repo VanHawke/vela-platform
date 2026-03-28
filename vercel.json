@@ -17,7 +17,9 @@
     { "path": "/api/cron-document-scan", "schedule": "0 6 * * 0" },
     { "path": "/api/ingest-knowledge", "schedule": "0 5 * * 1-5" },
     { "path": "/api/cron-learning-director", "schedule": "0 3 * * *" },
-    { "path": "/api/cron-self-reflection", "schedule": "0 4 * * 0" }
+    { "path": "/api/cron-self-reflection", "schedule": "0 4 * * 0" },
+    { "path": "/api/cron-morning-intelligence", "schedule": "30 7 * * 1-5" },
+    { "path": "/api/cron-competitive-intel", "schedule": "0 2 * * 1" }
   ],
   "functions": {
     "api/kiko.js": { "maxDuration": 60 },
@@ -52,7 +54,9 @@
     "api/import-conversations.js": { "maxDuration": 120 },
     "api/ingest-knowledge.js": { "maxDuration": 60 },
     "api/cron-learning-director.js": { "maxDuration": 120 },
-    "api/cron-self-reflection.js": { "maxDuration": 60 }
+    "api/cron-self-reflection.js": { "maxDuration": 60 },
+    "api/cron-morning-intelligence.js": { "maxDuration": 90 },
+    "api/cron-competitive-intel.js": { "maxDuration": 120 }
   },
   "rewrites": [
     { "source": "/api/google-auth/callback", "destination": "/api/google-auth" },
