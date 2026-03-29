@@ -48,7 +48,7 @@ export default function DocumentSection({ linkedCompanyId, linkedDealId, linkedT
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'process', storagePath: path, publicUrl, fileName: file.name,
-          fileType: file.type, accessLevel: 'workspace', userEmail: 'sunny@vanhawke.com',
+          fileType: file.type, accessLevel: 'workspace', userEmail: user?.email || '',
           // Pre-link to the current entity
           ...(linkedCompanyId && { linkedCompanyId }),
           ...(linkedDealId && { linkedDealId }),

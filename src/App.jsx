@@ -92,6 +92,18 @@ export default function App() {
         if (sess && window.location.hash.includes('access_token')) {
           window.history.replaceState(null, '', window.location.pathname)
         }
+        // Auto-sync Google token to user_tokens table on sign-in
+        if (sess?.provider_token && sess?.user?.email) {
+          fetch('/api/sync-google-token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: sess.user.email,
+              access_token: sess.provider_token,
+              refresh_token: sess.provider_refresh_token || '',
+            }),
+          }).catch(() => {}) // non-blocking
+        }
       }
     })
     return () => subscription.unsubscribe()

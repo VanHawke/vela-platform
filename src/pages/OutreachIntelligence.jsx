@@ -116,7 +116,7 @@ Be direct. Use web search for current company intelligence if needed.`
 
       const res = await fetch('/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: prompt, currentPage: 'outreach-intelligence', userEmail: user?.email || 'sunny@vanhawke.com', conversationHistory: [] })
+        body: JSON.stringify({ message: prompt, currentPage: 'outreach-intelligence', userEmail: user?.email || '', conversationHistory: [] })
       })
       const reader = res.body.getReader()
       const dec = new TextDecoder()

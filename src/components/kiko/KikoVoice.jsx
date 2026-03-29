@@ -40,7 +40,7 @@ async function executeTool(name, args) {
         // Use the kiko API to search emails via MCP
         const r = await fetch('/api/kiko', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: `Search my emails for: ${args.query}. Give me a brief summary of the top 3 results.`, userEmail: 'sunny@vanhawke.com', currentPage: 'email', conversationHistory: [], voiceMode: true })
+          body: JSON.stringify({ message: `Search my emails for: ${args.query}. Give me a brief summary of the top 3 results.`, userEmail: (await supabase.auth.getSession()).data?.session?.user?.email || '', currentPage: 'email', conversationHistory: [], voiceMode: true })
         })
         const text = await r.text()
         const deltas = text.split('\n').filter(l => l.startsWith('data: ')).map(l => { try { return JSON.parse(l.slice(6)) } catch { return null } }).filter(Boolean)
@@ -49,7 +49,7 @@ async function executeTool(name, args) {
       case 'get_calendar': {
         const r = await fetch('/api/kiko', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: `What's on my calendar for the next ${args.days || 3} days?`, userEmail: 'sunny@vanhawke.com', currentPage: 'calendar', conversationHistory: [], voiceMode: true })
+          body: JSON.stringify({ message: `What's on my calendar for the next ${args.days || 3} days?`, userEmail: (await supabase.auth.getSession()).data?.session?.user?.email || '', currentPage: 'calendar', conversationHistory: [], voiceMode: true })
         })
         const text = await r.text()
         const deltas = text.split('\n').filter(l => l.startsWith('data: ')).map(l => { try { return JSON.parse(l.slice(6)) } catch { return null } }).filter(Boolean)
@@ -83,7 +83,7 @@ async function executeTool(name, args) {
       case 'ask_kiko': {
         const r = await fetch('/api/kiko', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: args.query, userEmail: 'sunny@vanhawke.com', currentPage: window.location.pathname.replace('/', '') || 'home', conversationHistory: [], voiceMode: true })
+          body: JSON.stringify({ message: args.query, userEmail: (await supabase.auth.getSession()).data?.session?.user?.email || '', currentPage: window.location.pathname.replace('/', '') || 'home', conversationHistory: [], voiceMode: true })
         })
         const text = await r.text()
         const deltas = text.split('\n').filter(l => l.startsWith('data: ')).map(l => { try { return JSON.parse(l.slice(6)) } catch { return null } }).filter(Boolean)

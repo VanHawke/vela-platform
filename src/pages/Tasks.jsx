@@ -69,7 +69,7 @@ export default function Tasks({ user }) {
 
       const res = await fetch('/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: prompt, currentPage: 'tasks', userEmail: user?.email || 'sunny@vanhawke.com', conversationHistory: [] })
+        body: JSON.stringify({ message: prompt, currentPage: 'tasks', userEmail: user?.email || '', conversationHistory: [] })
       })
       const reader = res.body.getReader()
       const dec = new TextDecoder()
