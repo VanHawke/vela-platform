@@ -257,6 +257,22 @@ export const TOOL_DEFINITIONS = [
     }, required: ['operation'] },
   },
   {
+    name: 'read_email',
+    description: 'Read, search, and manage Gmail. Use when: "check my email", "any emails from X", "unread emails", "last email from X", "correspondence with X", "inbox summary", "search emails for X".',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['search', 'unread', 'read_message', 'inbox_summary'], description: 'search: search emails by query. unread: get unread count + recent unread. read_message: read specific email by ID. inbox_summary: overview of recent inbox.' },
+      query: { type: 'string', description: 'For search: Gmail search query (e.g. "from:john subject:proposal"). For read_message: message ID.' },
+    }, required: ['operation'] },
+  },
+  {
+    name: 'read_calendar',
+    description: 'Read and manage Google Calendar. Use when: "what\'s on my calendar", "any meetings today", "what\'s my schedule", "am I free on Tuesday", "upcoming meetings", "calendar this week".',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['today', 'upcoming', 'search', 'free_slots'], description: 'today: today\'s events. upcoming: next 7 days. search: search by query. free_slots: find available time.' },
+      query: { type: 'string', description: 'For search: keywords. For free_slots: date range like "next Tuesday".' },
+    }, required: ['operation'] },
+  },
+  {
     name: 'manage_knowledge',
     description: 'Manage Kiko\'s knowledge base AND create new agents. Use to: add a learning source, search knowledge, list sources, trigger learning, save insights, create a new specialist agent, or list custom agents. Use when: user says "learn about X", "add this source", "what do you know about X", "create an agent for Y", "show me your agents".',
     input_schema: { type: 'object', properties: {
@@ -700,6 +716,131 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       }
       return out;
     } catch (e) { return `Conversation search error: ${e.message}`; }
+  }
+
+  // ── Email tool (uses our own Gmail API, not MCP) ──
+  if (name === 'read_email') {
+    const { operation, query } = input;
+    try {
+      const { getGoogleToken } = await import('./google-token.js');
+      const token = await getGoogleToken(userEmail);
+      const GMAIL = 'https://gmail.googleapis.com/gmail/v1/users/me';
+      const gfetch = (path) => fetch(`${GMAIL}${path}`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
+
+      if (operation === 'unread' || operation === 'inbox_summary') {
+        const list = await gfetch('/messages?q=is:unread&maxResults=10');
+        if (!list.messages?.length) return 'No unread emails.';
+        const msgs = [];
+        for (const m of list.messages.slice(0, 5)) {
+          const detail = await gfetch(`/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`);
+          const hdrs = detail.payload?.headers || [];
+          const from = hdrs.find(h => h.name === 'From')?.value || '?';
+          const subject = hdrs.find(h => h.name === 'Subject')?.value || '(no subject)';
+          const date = hdrs.find(h => h.name === 'Date')?.value || '';
+          msgs.push({ from, subject, date: date.split(',').slice(0,2).join(',').trim(), id: m.id });
+        }
+        return `UNREAD EMAILS (${list.resultSizeEstimate || list.messages.length}):\n${msgs.map(m => `• ${m.from.split('<')[0].trim()}: ${m.subject} [${m.date}]`).join('\n')}`;
+      }
+
+      if (operation === 'search') {
+        const q = query || 'newer_than:7d';
+        const list = await gfetch(`/messages?q=${encodeURIComponent(q)}&maxResults=10`);
+        if (!list.messages?.length) return `No emails found for: "${q}"`;
+        const msgs = [];
+        for (const m of list.messages.slice(0, 5)) {
+          const detail = await gfetch(`/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`);
+          const hdrs = detail.payload?.headers || [];
+          msgs.push({
+            from: (hdrs.find(h => h.name === 'From')?.value || '?').split('<')[0].trim(),
+            subject: hdrs.find(h => h.name === 'Subject')?.value || '(no subject)',
+            date: (hdrs.find(h => h.name === 'Date')?.value || '').split(',').slice(0,2).join(',').trim(),
+            id: m.id,
+          });
+        }
+        return `EMAIL SEARCH "${q}" (${list.resultSizeEstimate || list.messages.length} results):\n${msgs.map(m => `• ${m.from}: ${m.subject} [${m.date}]`).join('\n')}`;
+      }
+
+      if (operation === 'read_message' && query) {
+        const detail = await gfetch(`/messages/${query}?format=full`);
+        const hdrs = detail.payload?.headers || [];
+        const from = hdrs.find(h => h.name === 'From')?.value || '?';
+        const subject = hdrs.find(h => h.name === 'Subject')?.value || '';
+        const to = hdrs.find(h => h.name === 'To')?.value || '';
+        // Extract body
+        let body = '';
+        const parts = detail.payload?.parts || [detail.payload];
+        for (const p of parts) {
+          if (p?.mimeType === 'text/plain' && p.body?.data) {
+            body = Buffer.from(p.body.data, 'base64url').toString('utf-8');
+            break;
+          }
+        }
+        if (!body && detail.payload?.body?.data) body = Buffer.from(detail.payload.body.data, 'base64url').toString('utf-8');
+        return `FROM: ${from}\nTO: ${to}\nSUBJECT: ${subject}\n\n${body.slice(0, 2000)}`;
+      }
+
+      return 'Specify operation: unread, search, read_message, or inbox_summary.';
+    } catch (e) {
+      if (e.message?.includes('No Google token') || e.message?.includes('refresh failed')) {
+        return `Gmail not connected. Sunny needs to connect Google in Settings: https://vela-platform-one.vercel.app/api/google-auth?email=${userEmail}`;
+      }
+      return `Email error: ${e.message}`;
+    }
+  }
+
+  // ── Calendar tool (uses our own Google Calendar API, not MCP) ──
+  if (name === 'read_calendar') {
+    const { operation, query } = input;
+    try {
+      const { getGoogleToken } = await import('./google-token.js');
+      const token = await getGoogleToken(userEmail);
+      const GCAL = 'https://www.googleapis.com/calendar/v3/calendars/primary';
+      const gcfetch = (path) => fetch(`${GCAL}${path}`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
+
+      const now = new Date();
+      let timeMin, timeMax;
+
+      if (operation === 'today') {
+        timeMin = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+        timeMax = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+      } else if (operation === 'upcoming' || operation === 'free_slots') {
+        timeMin = now.toISOString();
+        timeMax = new Date(now.getTime() + 7 * 86400000).toISOString();
+      } else {
+        timeMin = now.toISOString();
+        timeMax = new Date(now.getTime() + 30 * 86400000).toISOString();
+      }
+
+      const events = await gcfetch(`/events?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}&maxResults=20&singleEvents=true&orderBy=startTime`);
+
+      if (!events.items?.length) return operation === 'today' ? 'No events today. Calendar is clear.' : 'No upcoming events in the next 7 days.';
+
+      if (operation === 'free_slots') {
+        // Calculate free time between events
+        const busy = events.items.filter(e => e.start?.dateTime).map(e => ({
+          start: new Date(e.start.dateTime), end: new Date(e.end.dateTime), title: e.summary || '?',
+        }));
+        let out = `BUSY TIMES (next 7 days):\n`;
+        for (const b of busy) {
+          out += `• ${b.start.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} ${b.start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}-${b.end.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}: ${b.title}\n`;
+        }
+        return out;
+      }
+
+      let out = operation === 'today' ? `TODAY'S CALENDAR:\n` : `UPCOMING EVENTS:\n`;
+      for (const e of events.items) {
+        const start = e.start?.dateTime ? new Date(e.start.dateTime) : null;
+        const day = start ? start.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) : (e.start?.date || '?');
+        const time = start ? start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : 'All day';
+        out += `• ${day} ${time}: ${e.summary || '(no title)'}${e.location ? ' @ ' + e.location : ''}\n`;
+      }
+      return out;
+    } catch (e) {
+      if (e.message?.includes('No Google token') || e.message?.includes('refresh failed')) {
+        return `Calendar not connected. Sunny needs to connect Google in Settings: https://vela-platform-one.vercel.app/api/google-auth?email=${userEmail}`;
+      }
+      return `Calendar error: ${e.message}`;
+    }
   }
 
   return { error: `Unknown tool: ${name}` };

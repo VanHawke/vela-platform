@@ -45,7 +45,7 @@ function handleConsent(req, res) {
     response_type: 'code',
     scope: SCOPES,
     access_type: 'offline',
-    prompt: 'consent',
+    prompt: req.query?.force === 'true' ? 'consent' : 'select_account',
     state: email,
   });
 
@@ -92,24 +92,29 @@ async function handleCallback(req, res) {
     const { access_token, refresh_token, expires_in, scope } = tokenData;
 
     if (!refresh_token) {
-      console.warn('[GoogleAuth] No refresh_token received — user may need to revoke and re-consent');
+      console.warn('[GoogleAuth] No refresh_token received — preserving existing one if available');
     }
 
     // Calculate expiry
     const expires_at = new Date(Date.now() + (expires_in || 3600) * 1000).toISOString();
 
+    // Build upsert data — only overwrite refresh_token if we got a new one
+    const upsertData = {
+      user_email: userEmail,
+      provider: 'google',
+      access_token,
+      expires_at,
+      scope: scope || SCOPES,
+      updated_at: new Date().toISOString(),
+    };
+    if (refresh_token) {
+      upsertData.refresh_token = refresh_token;
+    }
+
     // Upsert into user_tokens
     const { error: dbError } = await supabase
       .from('user_tokens')
-      .upsert({
-        user_email: userEmail,
-        provider: 'google',
-        access_token,
-        refresh_token: refresh_token || '',
-        expires_at,
-        scope: scope || SCOPES,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_email,provider' });
+      .upsert(upsertData, { onConflict: 'user_email,provider' });
 
     if (dbError) {
       console.error('[GoogleAuth] DB upsert error:', dbError.message);

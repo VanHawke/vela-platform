@@ -166,21 +166,9 @@ async function detectCorrection(message, conversationHistory, intent) {
     }
   } catch {} // Non-blocking
 }
-async function getMcpServers(userEmail) {
-  try {
-    const { getGoogleToken } = await import('./google-token.js');
-    const token = await getGoogleToken(userEmail);
-    if (!token) return [];
-    return [
-      { type: 'url', url: 'https://gmail.mcp.claude.com/mcp', name: 'gmail', authorization_token: token },
-      { type: 'url', url: 'https://gcal.mcp.claude.com/mcp', name: 'google-calendar', authorization_token: token },
-    ];
-  } catch (err) {
-    console.log('[MCP] Google token unavailable:', err.message);
-    logError('mcp:google', err.message, `user=${userEmail}`, 'warning');
-    return [];
-  }
-}
+// MCP disabled — Anthropic's hosted MCP servers require their own OAuth flow, 
+// not our direct Google tokens. Email/calendar access uses our own tools instead.
+async function getMcpServers() { return []; }
 
 // ── System Prompt — Clean Coordinator ──
 const SYSTEM_PROMPT = `You are Kiko — the AI operating system for Van Hawke Group.
@@ -259,7 +247,8 @@ ROUTING (follow these in order):
 22. DEEP RESEARCH → use web_search tool directly (run 5-8 searches, synthesise)
    "research [company]", "deep dive on [X]", "deep research". Run multiple web searches systematically: company overview, funding, leadership, news, competitors, partnerships. Synthesise into structured brief with sections: OVERVIEW, KEY PEOPLE, RECENT DEVELOPMENTS, FINANCIAL POSITION, PARTNERSHIP SIGNALS, RECOMMENDED APPROACH. After research, ALWAYS save key findings using manage_knowledge (save_insight) so you remember them next time.
 
-23. CALENDAR / GMAIL (direct read) → use MCP tools (gmail, google-calendar)
+23. CALENDAR / GMAIL → call read_calendar or read_email
+   "check my calendar", "any meetings today", "what's my schedule", "check my email", "unread emails", "emails from X", "last email about Y"
 
 24. WEB SEARCH → use web_search tool directly
 
@@ -301,8 +290,6 @@ OUTREACH DOCTRINE: 5-touch authority-led. No pricing in early outreach. No pleas
 PROACTIVE: When briefing, flag stale deals, recommend next actions, connect signals to opportunities. When you spot something important, save it to memory via ask_data_agent (operation: learning_save).
 
 SELF-KNOWLEDGE: {DYNAMIC_SELF_KNOWLEDGE}
-
-GOOGLE CONNECTION: If Gmail or Calendar MCP tools fail or return errors, tell Sunny: "Google connection needs refreshing. Open this link to reconnect: https://vela-platform-one.vercel.app/api/google-auth?email=sunny@vanhawke.com". Do NOT try to work around the failure — tell him directly.
 
 IMAGE ANALYSIS: You CAN see and analyse uploaded images. When a user uploads an image (screenshot, photo, document scan), describe what you see and provide relevant analysis. Do NOT say you cannot view images — the image data is sent to you directly.
 
@@ -573,9 +560,9 @@ export default async function handler(req, res) {
     if (agentMapping?.tool) {
       routingHint = `\n\n[ROUTING HINT: This message was classified as "${intent}". Start with the ${agentMapping.tool} tool. After getting results, you may call additional tools if the task requires multiple steps — you have up to 10 tool rounds. For example: research a company (web_search) → check CRM (ask_data_agent) → draft email (ask_outreach_agent). Think about what the user actually needs end-to-end, not just the first step.]`;
     } else if (intent === 'email_read') {
-      routingHint = '\n\n[ROUTING HINT: This is an EMAIL query. Use Gmail MCP tools to search and read emails. Use gmail_search_messages to find emails, gmail_read_message to read specific emails, gmail_read_thread to read full threads. Search by sender name, company, subject, or keyword. Always search first, then read the relevant messages. Give Sunny a clear summary of what you find — dates, senders, key content. If the user mentions a person, also check the CRM (ask_data_agent with search_contacts) to get their email address first, then search Gmail.]';
+      routingHint = '\n\n[ROUTING HINT: This is an EMAIL query. Use the read_email tool. Operations: unread (get unread count + recent), search (Gmail search query like "from:john subject:proposal"), read_message (read specific email by ID), inbox_summary. If the user mentions a person, search by their name. Give Sunny a clear summary — dates, senders, key content.]';
     } else if (intent === 'calendar') {
-      routingHint = '\n\n[ROUTING HINT: This is a CALENDAR query. Use Google Calendar MCP tools to check events, create events, find free time. Use gcal_list_events to see upcoming events, gcal_create_event to schedule, gcal_find_my_free_time to check availability.]';
+      routingHint = '\n\n[ROUTING HINT: This is a CALENDAR query. Use the read_calendar tool. Operations: today (today\'s events), upcoming (next 7 days), search (by keyword), free_slots (find available time). Give times in UK format.]';
     } else if (intent === 'research') {
       routingHint = '\n\n[ROUTING HINT: This is a RESEARCH query. Use the web_search tool to find current information. Run 3-8 searches systematically: company overview, funding, leadership, news, competitors, partnerships. Synthesise into a structured brief. You HAVE internet access — use it. Also cross-reference with CRM data via ask_data_agent if the entity exists in the pipeline. After research, save key findings using manage_knowledge (operation: save_insight).]';
     } else if (intent === 'knowledge') {
@@ -822,50 +809,25 @@ export default async function handler(req, res) {
     const needsDeepThink = !voiceMode && (deepThink || (message && DEEP_TRIGGERS.some(t => message.toLowerCase().includes(t))));
 
     // MCP servers
-    const mcpServers = voiceMode ? [] : await getMcpServers(userEmail);
-    if (mcpServers.length > 0) write({ toolStatus: `MCP: ${mcpServers.length} servers connected` });
+    // MCP disabled — email/calendar use our own Google API tools directly
 
-    // Stream helper
+    // Stream helper — clean, no MCP complexity
     async function streamCall(msgs, opts = {}) {
       const params = {
         model: needsDeepThink ? 'claude-opus-4-6' : (voiceMode ? 'claude-haiku-4-5-20251001' : MODEL),
         max_tokens: needsDeepThink ? 16000 : (voiceMode ? 800 : 4096),
         system: systemWithHint, messages: msgs, tools: opts.noTools ? undefined : allTools,
       };
-      if (mcpServers.length > 0 && !opts.noTools) {
-        params.mcp_servers = mcpServers;
-        params.tools = [...(params.tools || []), ...mcpServers.map(s => ({ type: 'mcp_toolset', mcp_server_name: s.name }))];
-      }
       if (needsDeepThink) {
         params.thinking = { type: 'enabled', budget_tokens: 10000 };
         write({ toolStatus: 'Deep analysis...' });
       }
-      // Event processor
-      async function processStream(s) {
-        for await (const event of s) {
-          if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') { write({ delta: event.delta.text }); responseText += event.delta.text; }
-          if (event.type === 'content_block_delta' && event.delta?.type === 'thinking_delta') write({ thinking: event.delta.thinking });
-          if (event.type === 'content_block_start' && event.content_block?.type === 'mcp_tool_use') write({ toolStatus: `MCP: ${event.content_block.name || 'calling'}...` });
-          if (event.type === 'content_block_start' && event.content_block?.type === 'mcp_tool_result') write({ toolStatus: null });
-        }
-        return await s.finalMessage();
-      }
-
-      // Try MCP first, fall back to non-MCP if it fails (e.g. expired Google token)
-      if (mcpServers.length > 0) {
-        try {
-          const mcpStream = anthropic.beta.messages.stream({ ...params, betas: ['mcp-client-2025-11-20'] });
-          return await processStream(mcpStream);
-        } catch (mcpErr) {
-          console.warn('[KIKO] MCP failed, falling back:', mcpErr.message?.slice(0, 120));
-          logError('mcp:stream', mcpErr.message?.slice(0, 200) || 'MCP stream failed', '', 'warning');
-          delete params.mcp_servers;
-          params.tools = allTools;
-          // Fall through to non-MCP below
-        }
-      }
       const stream = anthropic.beta.messages.stream(params);
-      return await processStream(stream);
+      for await (const event of stream) {
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') { write({ delta: event.delta.text }); responseText += event.delta.text; }
+        if (event.type === 'content_block_delta' && event.delta?.type === 'thinking_delta') write({ thinking: event.delta.thinking });
+      }
+      return await stream.finalMessage();
     }
 
     write({ toolStatus: intent !== 'general' ? `Intent: ${intent}` : 'Thinking...' });
