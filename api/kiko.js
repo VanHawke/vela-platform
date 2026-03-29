@@ -992,7 +992,11 @@ export default async function handler(req, res) {
       write({ delta: 'I gathered data but couldn\'t complete the full synthesis. Try breaking your question into smaller parts — for example: "Research semiconductor companies for Haas" then separately "Draft the Monaco strategy."' });
     }
 
-    write({ meta: { done: true, model: needsDeepThink ? 'claude-opus-4-6' : MODEL, toolRounds, intent, version: 'v16.1' } });
+    // Include cache stats in meta for cost tracking
+    const usage = response?.usage || {};
+    write({ meta: { done: true, model: needsDeepThink ? 'claude-opus-4-6' : MODEL, toolRounds, intent, version: 'v16.2',
+      cache: { write: usage.cache_creation_input_tokens || 0, read: usage.cache_read_input_tokens || 0, input: usage.input_tokens || 0, output: usage.output_tokens || 0 }
+    } });
     finished = true; clearTimeout(watchdog);
     res.write('data: [DONE]\n\n');
     res.end();
