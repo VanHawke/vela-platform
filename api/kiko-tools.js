@@ -665,6 +665,31 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
           });
         }
       }
+      // Also search imported conversations (ChatGPT/Claude history)
+      try {
+        const imported = await sbFetch(`kiko_imported_conversations?processed=eq.true&select=title,source,messages,original_date,extracted_insights&order=original_date.desc&limit=30`);
+        for (const c of (imported || [])) {
+          const msgs = c.messages || [];
+          const text = msgs.map(m => (m.content || '')).join(' ').toLowerCase();
+          const insightText = JSON.stringify(c.extracted_insights || {}).toLowerCase();
+          if (text.includes(query) || insightText.includes(query)) {
+            const matchMsgs = msgs.filter(m => (m.content || '').toLowerCase().includes(query));
+            scored.push({
+              title: `[${c.source}] ${c.title || 'Untitled'}`,
+              date: c.original_date ? new Date(c.original_date).toLocaleDateString('en-GB') : '?',
+              matches: matchMsgs.length || 1,
+              excerpts: matchMsgs.length ? matchMsgs.slice(0, 3).map(m => {
+                const content = m.content || '';
+                const idx = content.toLowerCase().indexOf(query);
+                const start = Math.max(0, idx - 60);
+                const end = Math.min(content.length, idx + query.length + 60);
+                return `[${m.role}]: ...${content.slice(start, end)}...`;
+              }) : (c.extracted_insights?.key_facts || []).slice(0, 2).map(f => `[insight]: ${f}`),
+            });
+          }
+        }
+      } catch {} // Non-blocking — imported search is bonus
+
       scored.sort((a, b) => b.matches - a.matches);
       if (!scored.length) return `No conversations found mentioning "${input.query}".`;
       let out = `CONVERSATION SEARCH: "${input.query}" — ${scored.length} conversations found\n\n`;
