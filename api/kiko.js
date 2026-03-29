@@ -174,7 +174,7 @@ ROUTING (follow these in order):
    "move [company] to [stage]", "create a task", "add a reminder", "follow up with", "create a deal", "update [person]"
 
 4. DATA QUERIES → call ask_data_agent
-   Search contacts/companies/deals, entity details, pipeline stats, stale contacts, email analytics, outreach intelligence, news, partnership matrix, deal history, activity feed, past conversations, learning log
+   Search contacts/companies/deals, entity details, pipeline stats, stale contacts, email analytics, outreach intelligence, news, partnership matrix, deal history, activity feed, past conversations, learning log, warm path to target company ("who do we know at X", "how do we get to Y", "find me a way into Z"), win/loss analysis ("what worked", "why did we lose X", "deal patterns")
 
 5. EMAIL / OUTREACH DRAFTING → call ask_outreach_agent
    Draft emails, Gmail drafts, follow-ups, recipient style, add lead to Lemlist campaign
@@ -489,6 +489,16 @@ export default async function handler(req, res) {
     const classification = await classifyIntent(message, currentPage);
     const { intent, target } = classification;
 
+    // ── Context-Aware Greeting: first message = proactive status push ──
+    const isFirstMessage = conversationHistory.length <= 1;
+    const isGreeting = /^(hi|hey|hello|good morning|good evening|morning|evening|yo|sup|what'?s up)\b/i.test(message.trim());
+    if (isFirstMessage && isGreeting && !voiceMode) {
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg && typeof lastMsg.content === 'string') {
+        messages[messages.length - 1] = { role: 'user', content: `${lastMsg.content}\n\n[CONTEXT: This is Sunny's first message of this session. DO NOT just say hello back. Greet him briefly (one line) then immediately give a 4-5 sentence proactive status update: any urgent alerts, stale deals needing attention, overdue tasks, recent signals, what you recommend he focuses on. Be a Chief of Staff who walks in with the briefing, not a receptionist who says "how can I help you today." Lead with the most important thing.]` };
+      }
+    }
+
     // Non-blocking: detect if user is rephrasing (correction learning)
     detectCorrection(message, conversationHistory, intent);
 
@@ -597,6 +607,20 @@ export default async function handler(req, res) {
               }
             } catch {}
           }
+          // Load learned email templates for drafting
+          try {
+            const templates = await sbFetch('kiko_memories?path=eq./memories/email_templates.md&select=content&limit=1');
+            if (templates?.[0]?.content) {
+              routingHint += `\n\n[LEARNED EMAIL TEMPLATES — use these patterns when drafting]:\n${templates[0].content.slice(0, 1000)}`;
+            }
+          } catch {}
+          // Load outreach effectiveness patterns
+          try {
+            const patterns = await sbFetch('kiko_learning_log?category=eq.outreach_patterns&order=created_at.desc&limit=1&select=content');
+            if (patterns?.[0]?.content) {
+              routingHint += `\n[OUTREACH DATA: ${patterns[0].content.slice(0, 300)}]`;
+            }
+          } catch {}
         }
       } catch {} // Non-blocking — if context fetch fails, Claude still drafts
     }

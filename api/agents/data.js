@@ -362,6 +362,71 @@ async function getOutreachTiming({ company, contact_email }, userEmail) {
   return out;
 }
 
+// ── Warm Path Finder — who do we know that connects us to a target? ──
+async function findWarmPath({ company, person }) {
+  const target = (company || person || '').toLowerCase();
+  if (!target) return 'Error: provide company or person name';
+  try {
+    // 1. Check direct contacts at the target company
+    const directContacts = await sbFetch(`contacts?select=data&or=(data->>company.ilike.*${encodeURIComponent(target)}*)&limit=5`);
+    // 2. Check relationships with anyone at that company
+    const relationships = await sbFetch(`kiko_relationships?select=contact_name,company,warmth_score,last_contact&company=ilike.*${encodeURIComponent(target)}*&order=warmth_score.desc&limit=5`);
+    // 3. Check all warm contacts (warmth > 6) who might know someone
+    const warmContacts = await sbFetch('kiko_relationships?warmth_score=gte.6&order=warmth_score.desc&limit=20&select=contact_name,company,warmth_score');
+    // 4. Check deal history
+    const deals = await sbFetch(`deals?select=data&data->>company=ilike.*${encodeURIComponent(target)}*&limit=3`);
+
+    let out = `WARM PATH ANALYSIS: ${company || person}\n\n`;
+
+    if (directContacts?.length) {
+      out += `🟢 DIRECT CONTACTS (${directContacts.length}):\n`;
+      for (const c of directContacts) {
+        const d = c.data || {};
+        out += `• ${d.firstName || ''} ${d.lastName || ''} — ${d.title || '?'} | ${d.email || ''}\n`;
+      }
+    } else { out += '🔴 No direct contacts at this company.\n'; }
+
+    if (relationships?.length) {
+      out += `\n📊 RELATIONSHIP STRENGTH:\n`;
+      for (const r of relationships) out += `• ${r.contact_name} — warmth: ${r.warmth_score}/10, last: ${r.last_contact ? new Date(r.last_contact).toLocaleDateString('en-GB') : '?'}\n`;
+    }
+
+    if (deals?.length) {
+      out += `\n📋 DEAL HISTORY:\n`;
+      for (const d of deals) out += `• ${d.data?.company} — ${d.data?.stage} ($${d.data?.value || '?'})\n`;
+    }
+
+    // Find potential connectors — warm contacts at related companies
+    if (!directContacts?.length && warmContacts?.length) {
+      out += `\n🔗 POTENTIAL CONNECTORS (warm contacts who might know someone):\n`;
+      for (const w of warmContacts.slice(0, 8)) {
+        out += `• ${w.contact_name} @ ${w.company} (warmth: ${w.warmth_score}/10)\n`;
+      }
+    }
+    return out;
+  } catch (e) { return `Warm path error: ${e.message}`; }
+}
+
+// ── Win/Loss Insights ──
+async function getWinLossInsights({ company }) {
+  try {
+    const filter = company ? `kiko_win_loss_analysis?company=ilike.*${encodeURIComponent(company)}*&order=created_at.desc&limit=10` : 'kiko_win_loss_analysis?order=created_at.desc&limit=10';
+    const analyses = await sbFetch(filter + '&select=company,outcome,value,analysis,key_factors,lessons');
+    if (!analyses?.length) return company ? `No win/loss data for "${company}".` : 'No win/loss analyses yet. They are auto-generated when deals move to Won or Lost.';
+    let out = `WIN/LOSS ANALYSIS${company ? ` — ${company}` : ''} (${analyses.length} deals):\n\n`;
+    const wins = analyses.filter(a => a.outcome === 'won');
+    const losses = analyses.filter(a => a.outcome === 'lost');
+    out += `Record: ${wins.length} won, ${losses.length} lost\n`;
+    if (wins.length) out += `Win value: $${wins.reduce((s, w) => s + (w.value || 0), 0).toLocaleString()}\n`;
+    out += '\n';
+    for (const a of analyses) {
+      out += `${a.outcome === 'won' ? '🟢' : '🔴'} ${a.company} ($${a.value?.toLocaleString() || '?'}): ${a.analysis || ''}\n`;
+      if (a.lessons?.length) out += `  Lessons: ${a.lessons.join('; ')}\n`;
+    }
+    return out;
+  } catch (e) { return `Win/loss error: ${e.message}`; }
+}
+
 // ── Main Dispatch ──
 // Called by Kiko Prime. Routes to the correct handler based on operation.
 export async function callDataAgent(operation, params = {}, userEmail = 'sunny@vanhawke.com') {
@@ -388,7 +453,9 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
       case 'skills': return await getSkills();
       case 'bookmark': return await bookmarkConversation(params);
       case 'outreach_timing': return await getOutreachTiming(params, userEmail);
-      default: return `Unknown data operation: ${operation}. Available: search_contacts, search_companies, search_deals, entity_detail, alerts, email_analytics, outreach_intelligence, outreach_timing, stale_contacts, news, partnership_matrix, pipeline_notifications, deal_history, activity_feed, search_documents, past_conversations, recent_conversations, learning_search, learning_save, skills, bookmark`;
+      case 'warm_path': return await findWarmPath(params);
+      case 'win_loss': return await getWinLossInsights(params);
+      default: return `Unknown data operation: ${operation}. Available: search_contacts, search_companies, search_deals, entity_detail, alerts, email_analytics, outreach_intelligence, outreach_timing, stale_contacts, news, partnership_matrix, pipeline_notifications, deal_history, activity_feed, search_documents, past_conversations, recent_conversations, learning_search, learning_save, skills, bookmark, warm_path, win_loss`;
     }
   } catch (err) {
     return `Data Agent error (${operation}): ${err.message}`;
