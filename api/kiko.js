@@ -518,7 +518,8 @@ export default async function handler(req, res) {
     + `\n[${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
     + (pageContext?.summary ? `\n[Context: ${pageContext.summary}${pageContext.stageDistribution ? ` | Stages: ${JSON.stringify(pageContext.stageDistribution)}` : ''}${pageContext.visibleItems ? `\nVisible: ${pageContext.visibleItems}` : ''}]` : '')
     + (PERSONALITIES[personality] || PERSONALITIES.executive)
-    + pageRole + entityContext + voiceRules + preloadedMemory;
+    + pageRole + entityContext + voiceRules + preloadedMemory
+    + `\n\n[CRITICAL IDENTITY: The user you are speaking with RIGHT NOW is ${userConfig.display_name}. Address them as ${userConfig.display_name.split(' ')[0]}. Do NOT use any other name. Do NOT refer to them by any name from your memory — ONLY use the name provided here: ${userConfig.display_name}.]`;
 
   // ── SSE setup ──
   res.setHeader('Content-Type', 'text/event-stream');

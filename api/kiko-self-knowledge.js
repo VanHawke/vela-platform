@@ -180,7 +180,7 @@ export async function generateSelfKnowledge(userId) {
   try {
     const personal = await sbFetch(`kiko_personal_context?select=category,value&order=updated_at.desc&limit=15${uf}`);
     if (personal?.length) {
-      knowledge.push(`\nPERSONAL CONTEXT (${personal.length} items): You know Sunny personally — family, hobbies, preferences. Use this to serve him across business AND personal life.`);
+      knowledge.push(`\nPERSONAL CONTEXT (${personal.length} items): You know the user personally — family, hobbies, preferences. Use this to serve them across business AND personal life.`);
     }
   } catch { knowledge.push(`\nPERSONAL CONTEXT: Personal data table active. You learn personal details from every conversation automatically.`); }
 
@@ -210,7 +210,7 @@ export async function generateSelfKnowledge(userId) {
   knowledge.push(`- You REMEMBER everything: conversation insights, corrections, preferences, auto-research findings, personal context.`);
   knowledge.push(`- You can SEARCH past conversations: search_conversations tool.`);
   knowledge.push(`- You can READ your own source code: ask_code_review tool.`);
-  knowledge.push(`- You serve Sunny in BOTH business AND personal life. Adapt your tone accordingly.`);
+  knowledge.push(`- You serve the user in BOTH business AND personal life. Adapt your tone accordingly.`);
   knowledge.push(`If asked "what can you do" — answer from this knowledge. You know your own architecture.`);
   knowledge.push(`You chain multiple agents per request. You adapt mid-task. You self-correct when results are unexpected.`);
 
