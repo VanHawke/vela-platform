@@ -895,19 +895,31 @@ export default async function handler(req, res) {
       response = await streamCall(messages);
     }
 
-    // If Claude still wants tools but we're out of budget — force a text response with what we have
+    // If Claude still wants tools but we're out of budget — force a text response
     if (response.stop_reason === 'tool_use') {
-      // Don't execute more tools — tell Claude to respond with collected data
-      const pendingTools = response.content.filter(b => b.type === 'tool_use').map(b => b.name);
-      const fakeResults = response.content.filter(b => b.type === 'tool_use').map(b => ({
-        type: 'tool_result', tool_use_id: b.id,
-        content: `[TIME LIMIT] Could not execute ${b.name} — synthesise your response using the data already gathered from previous tool calls. Do NOT request more tools.`,
-      }));
-      messages.push({ role: 'assistant', content: response.content });
-      messages.push({ role: 'user', content: fakeResults });
       write({ toolStatus: 'Composing response...' });
-      // Force no-tools AND fast model — we're out of time, need a quick synthesis
-      response = await streamCall(messages, { noTools: true, fast: true });
+      // Extract all tool results gathered so far into a concise summary
+      const toolData = [];
+      for (const m of messages) {
+        if (Array.isArray(m.content)) {
+          for (const block of m.content) {
+            if (block.type === 'tool_result') {
+              const text = typeof block.content === 'string' ? block.content : JSON.stringify(block.content);
+              toolData.push(text.slice(0, 1500));
+            }
+          }
+        }
+      }
+      // Build a compact synthesis request — original question + collected data only
+      const synthMessages = [
+        { role: 'user', content: `ORIGINAL QUESTION: ${message}\n\nCOLLECTED DATA FROM ${toolRounds} RESEARCH ROUNDS:\n${toolData.join('\n---\n').slice(0, 12000)}\n\nSynthesise a comprehensive, actionable response using ALL the data above. Do NOT request any more tools. Respond directly.` },
+      ];
+      response = await streamCall(synthMessages, { noTools: true, fast: true });
+    }
+
+    // Fallback: if response is still empty, send a meaningful message
+    if (!responseText || responseText.trim().length < 10) {
+      write({ delta: 'I gathered data but couldn\'t complete the full synthesis. Try breaking your question into smaller parts — for example: "Research semiconductor companies for Haas" then separately "Draft the Monaco strategy."' });
     }
 
     write({ meta: { done: true, model: needsDeepThink ? 'claude-opus-4-6' : MODEL, toolRounds, intent, version: 'v16.1' } });
