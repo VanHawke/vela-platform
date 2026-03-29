@@ -482,6 +482,16 @@ export default async function handler(req, res) {
   if (res.flushHeaders) res.flushHeaders();
   const write = (d) => { try { res.write(`data: ${JSON.stringify(d)}\n\n`); } catch {} };
 
+  // Watchdog: if handler takes >55s, force-send an error and close
+  let finished = false;
+  const watchdog = setTimeout(() => {
+    if (!finished) {
+      finished = true;
+      write({ delta: '\n\nRequest timed out. Try a simpler question or try again.' });
+      try { res.write('data: [DONE]\n\n'); res.end(); } catch {}
+    }
+  }, 55000);
+
   try {
     write({ toolStatus: 'Connecting...' });
     // Build messages
@@ -530,6 +540,7 @@ export default async function handler(req, res) {
       write({ navigate: target });
       write({ delta: `Opening ${target.replace(/-/g, ' ')}.` });
       write({ meta: { done: true, model: 'classifier', intent: 'navigate', version: 'v16.1' } });
+      finished = true; clearTimeout(watchdog);
       res.write('data: [DONE]\n\n');
       res.end();
       return;
@@ -549,6 +560,7 @@ export default async function handler(req, res) {
         if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') write({ delta: event.delta.text });
       }
       write({ meta: { done: true, model: MODEL, intent: 'screen', version: 'v16.1' } });
+      finished = true; clearTimeout(watchdog);
       res.write('data: [DONE]\n\n');
       res.end();
       return;
@@ -884,7 +896,8 @@ export default async function handler(req, res) {
       }
     }
 
-    write({ meta: { done: true, model: needsDeepThink ? 'claude-opus-4-6' : MODEL, toolRounds, intent, version: 'v16.0' } });
+    write({ meta: { done: true, model: needsDeepThink ? 'claude-opus-4-6' : MODEL, toolRounds, intent, version: 'v16.1' } });
+    finished = true; clearTimeout(watchdog);
     res.write('data: [DONE]\n\n');
     res.end();
 
@@ -947,6 +960,7 @@ If nothing worth saving, return empty arrays.`,
     }
   } catch (err) {
     console.error('[KIKO] Error:', err);
+    finished = true; clearTimeout(watchdog);
     try { logError('coordinator', err?.message || 'unknown', (message || '').slice(0, 100), 'critical'); } catch {}
     try { write({ delta: `\n\nSomething went wrong: ${err?.message || 'Unknown error'}. Try again.` }); } catch {}
     try { res.write('data: [DONE]\n\n'); } catch {}
