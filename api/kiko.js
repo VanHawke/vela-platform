@@ -836,12 +836,15 @@ export default async function handler(req, res) {
 
     // Stream helper — clean, no MCP complexity
     async function streamCall(msgs, opts = {}) {
+      // Tool rounds use Sonnet for speed. Only final synthesis uses Opus (if deep think).
+      // fast: true forces Sonnet even if deep think was requested (used when time budget hit)
+      const useDeep = needsDeepThink && opts.noTools && !opts.fast;
       const params = {
-        model: needsDeepThink ? 'claude-opus-4-6' : (voiceMode ? 'claude-haiku-4-5-20251001' : MODEL),
-        max_tokens: needsDeepThink ? 16000 : (voiceMode ? 800 : 4096),
+        model: useDeep ? 'claude-opus-4-6' : (voiceMode ? 'claude-haiku-4-5-20251001' : MODEL),
+        max_tokens: useDeep ? 16000 : (voiceMode ? 800 : 4096),
         system: systemWithHint, messages: msgs, tools: opts.noTools ? undefined : allTools,
       };
-      if (needsDeepThink) {
+      if (useDeep) {
         params.thinking = { type: 'enabled', budget_tokens: 10000 };
         write({ toolStatus: 'Deep analysis...' });
       }
@@ -903,8 +906,8 @@ export default async function handler(req, res) {
       messages.push({ role: 'assistant', content: response.content });
       messages.push({ role: 'user', content: fakeResults });
       write({ toolStatus: 'Composing response...' });
-      // Force no-tools so Claude MUST respond with text
-      response = await streamCall(messages, { noTools: true });
+      // Force no-tools AND fast model — we're out of time, need a quick synthesis
+      response = await streamCall(messages, { noTools: true, fast: true });
     }
 
     write({ meta: { done: true, model: needsDeepThink ? 'claude-opus-4-6' : MODEL, toolRounds, intent, version: 'v16.1' } });
