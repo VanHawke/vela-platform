@@ -299,27 +299,21 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
     if (SR) {
       try {
         const sr = new SR()
-        sr.continuous = true; sr.interimResults = true; sr.lang = 'en-US'
+        sr.continuous = true; sr.interimResults = false; sr.lang = 'en-US'
         recorderRef.current = sr
         mediaRef.current = true
         const baseInput = input
-        // Use a Set to deduplicate final transcripts across sr restarts
-        const seenFinals = new Set()
+        const finals = []
         setTranscribing(true)
         sr.onresult = e => {
-          let finals = ''
-          let interim = ''
           for (let i = 0; i < e.results.length; i++) {
             if (e.results[i].isFinal) {
               const text = e.results[i][0].transcript.trim()
-              if (text && !seenFinals.has(text)) {
-                seenFinals.add(text)
-              }
-            } else { interim = e.results[i][0].transcript }
+              if (text && !finals.includes(text)) finals.push(text)
+            }
           }
-          finals = [...seenFinals].join(' ')
-          const display = baseInput + (baseInput && finals ? ' ' : '') + finals + (interim ? ' ' + interim : '')
-          setInput(display)
+          const display = (baseInput ? baseInput + ' ' : '') + finals.join(' ')
+          setInput(display.trim())
         }
         sr.onerror = (e) => {
           console.error('[Float Dictate] error:', e.error)

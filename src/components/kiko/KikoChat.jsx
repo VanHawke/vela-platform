@@ -139,6 +139,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [chatDragOver, setChatDragOver] = useState(false)
   const [fileUploading, setFileUploading] = useState(false)
   const [imagePreview, setImagePreview] = useState(null) // { url, name, file }
+  const [pendingAttachment, setPendingAttachment] = useState(null) // { type, mediaType, data, previewUrl, name }
   const abortRef = useRef(null)
   const streamTextRef = useRef('')
   const lastQueryRef = useRef('')
@@ -234,28 +235,23 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       try {
         const sr = new SR()
         sr.continuous = true
-        sr.interimResults = true
+        sr.interimResults = false
         sr.lang = 'en-US'
         transcribeRef.current.sr = sr
         transcribeRef.current.active = true
-        transcribeRef.current.baseInput = input // snapshot input before dictation
-        let accumulated = '' // all finalized text from this dictation session
+        transcribeRef.current.baseInput = input
+        const finals = []
         setTranscribing(true)
         sr.onresult = (e) => {
-          let interim = ''
           for (let i = e.resultIndex; i < e.results.length; i++) {
             if (e.results[i].isFinal) {
               const text = e.results[i][0].transcript.trim()
-              if (text) accumulated += (accumulated ? ' ' : '') + text
-              interim = ''
-            } else {
-              interim = e.results[i][0].transcript
+              if (text && !finals.includes(text)) finals.push(text)
             }
           }
-          // Update input: base + accumulated finals + current interim
           const base = transcribeRef.current.baseInput
-          const display = base + (base && accumulated ? ' ' : '') + accumulated + (interim ? ' ' + interim : '')
-          setInput(display)
+          const display = (base ? base + ' ' : '') + finals.join(' ')
+          setInput(display.trim())
         }
         sr.onerror = (e) => {
           console.error('[Dictate] error:', e.error)
@@ -407,10 +403,15 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   const handleSubmit = useCallback(async (text, fileAttachments = []) => {
     const msg = (text || input).trim()
-    if ((!msg && !fileAttachments.length) || streaming) return
+    // Include pending attachment if present
+    const allAttachments = [...fileAttachments]
+    if (pendingAttachment) allAttachments.push(pendingAttachment)
+    if ((!msg && !allAttachments.length) || streaming) return
+    const effectiveMsg = msg || (allAttachments.length ? `Analyse this file: "${allAttachments[0].name || 'uploaded file'}"` : '')
     setInput('')
-    const displayMsg = msg || (fileAttachments.length ? `Uploaded ${fileAttachments.length} file(s)` : '')
-    const imgPreview = fileAttachments.find(a => a.type === 'image' && a.previewUrl)?.previewUrl || null
+    setPendingAttachment(null)
+    const displayMsg = effectiveMsg
+    const imgPreview = allAttachments.find(a => a.type === 'image' && a.previewUrl)?.previewUrl || null
     const userMsg = { role: 'user', content: displayMsg, timestamp: Date.now(), imagePreview: imgPreview }
     if (imgPreview) setImagePreview(null)
     setMessages(prev => [...prev, userMsg])
@@ -434,8 +435,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
         body: JSON.stringify(isResearch ? { query: msg, userEmail: user?.email } : {
-          message: msg || 'Analyse this file.', userEmail: user?.email,
-          attachments: fileAttachments,
+          message: effectiveMsg, userEmail: user?.email,
+          attachments: allAttachments,
           conversationHistory: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
           currentPage: pageCtx.page || (window.location.pathname.replace('/', '') || 'home'),
           pageContext: pageCtx,
@@ -514,10 +515,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           r.readAsDataURL(file)
         })
         if (isImage) {
-          // Store preview URL for display in chat
+          // Store as pending — let user add a comment before submitting
           const previewUrl = URL.createObjectURL(file)
           setImagePreview({ url: previewUrl, name: file.name })
-          handleSubmit(`Analyse this image: "${file.name}"`, [{ type: 'image', mediaType: file.type, data: base64, previewUrl }])
+          setPendingAttachment({ type: 'image', mediaType: file.type, data: base64, previewUrl, name: file.name })
+          setFileUploading(false)
+          return // Don't auto-submit
         } else if (isPdf) {
           handleSubmit(`I've uploaded a PDF: "${file.name}". Analyse it thoroughly.`, [{ type: 'document', mediaType: 'application/pdf', data: base64 }])
         } else {
@@ -535,7 +538,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const handleFileDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); dragCounterRef.current--; if (dragCounterRef.current <= 0) { dragCounterRef.current = 0; setChatDragOver(false) } }
   const handleFileDragOver = (e) => { e.preventDefault(); e.stopPropagation() }
 
-  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 'Sunny'
+  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || ''
   const trans = 'all 0.6s cubic-bezier(0.4,0,0.2,1)'
 
   // ── Prompt bar (shared) — mic becomes stop button during voice mode ──
