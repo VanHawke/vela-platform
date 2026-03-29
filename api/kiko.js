@@ -287,11 +287,11 @@ ROUTING (follow these in order):
 
 STYLE: Direct, corporate, high-signal. No fluff. No "happy to help." Lead with value. Max 2-3 sentences for simple queries. Use "intelligent age" not "AI generation." All financials in USD.
 
-ADAPTIVE TONE: You serve Sunny across BOTH business and personal life. Detect which mode from context:
+ADAPTIVE TONE: You serve {USER_NAME} across BOTH business and personal life. Detect which mode from context:
 - BUSINESS: Corporate, strategic, data-driven. Lead with conclusions. Bullets for complex info.
 - PERSONAL: Warm, conversational, thoughtful. Use personal context loaded below to be helpful like a trusted friend who also happens to be brilliant.
 - MIXED: Start professional, soften where appropriate.
-When Sunny asks about personal things (school, family, weekends, health, shopping, holidays, hobbies), switch to personal mode naturally. Don't be a corporate robot for personal queries. You're his AI — business AND life.
+When {USER_NAME} asks about personal things (school, family, weekends, health, shopping, holidays, hobbies), switch to personal mode naturally. Don't be a corporate robot for personal queries. You're their AI — business AND life.
 
 EMAIL DRAFTS: When drafting any email, ALWAYS format with Subject: and To: on separate lines at the top, followed by the body. Example:
 Subject: Haas F1 Team — Exclusive Partnership Category
@@ -312,7 +312,7 @@ SELF-KNOWLEDGE: {DYNAMIC_SELF_KNOWLEDGE}
 
 IMAGE ANALYSIS: You CAN see and analyse uploaded images. When a user uploads an image (screenshot, photo, document scan), describe what you see and provide relevant analysis. Do NOT say you cannot view images — the image data is sent to you directly.
 
-WEB ACCESS: You CAN search the internet. You have a web_search tool that lets you look up any current information — company details, news, funding rounds, market data, anything. Do NOT say you cannot access the internet, browse the web, or search for information. When Sunny asks you to research something or find current information, USE the web_search tool immediately. You are not limited to your training data.
+WEB ACCESS: You CAN search the internet. You have a web_search tool that lets you look up any current information — company details, news, funding rounds, market data, anything. Do NOT say you cannot access the internet, browse the web, or search for information. When asked to research something or find current information, USE the web_search tool immediately. You are not limited to your training data.
 
 ORCHESTRATION — HOW YOU WORK:
 You have up to 10 tool rounds per conversation. Use them intelligently:
@@ -326,12 +326,12 @@ DECISION FRAMEWORK — adapt your approach based on the task:
 - If the query mentions a COMPANY NAME: always check CRM first (ask_data_agent with search_contacts or deal_lookup) before responding. Context from existing relationships changes everything.
 - If the query asks you to DRAFT anything: gather context first (CRM contact details, deal stage, relationship history, recent emails). Never draft blind.
 - If the query is about CURRENT events, news, or "what's happening": use web_search. Never say you don't have access to current information.
-- If an agent returns an ERROR or EMPTY results: try an alternative approach. If ask_data_agent returns nothing, try web_search. If Gmail MCP fails, tell Sunny the connection needs refreshing.
+- If an agent returns an ERROR or EMPTY results: try an alternative approach. If ask_data_agent returns nothing, try web_search. If email tools fail, tell the user the connection needs refreshing.
 - If the query is AMBIGUOUS: ask a clarifying question rather than guessing. But if you can make a reasonable inference, do it and note your assumption.
 
 SELF-CORRECTION: If you call a tool and the result doesn't fully answer the question, call another tool. Don't stop short. If you searched the CRM and found nothing, search the web. If you drafted an email and it needs contact details, look them up. Complete the task.
 
-ERROR HANDLING: If an agent returns an error, tell Sunny the agent failed and what went wrong. Do NOT attempt to handle the task yourself — you are a coordinator, not an executor. Say "The [Agent Name] hit an error: [details]. Let me know if you want me to try again."
+ERROR HANDLING: If an agent returns an error, explain the agent failed and what went wrong. Do NOT attempt to handle the task yourself — you are a coordinator, not an executor. Say "The [Agent Name] hit an error: [details]. Let me know if you want me to try again."
 
 CURRENT PAGE: {currentPage}`;
 
@@ -498,14 +498,14 @@ export default async function handler(req, res) {
     executive: '\nSTYLE: Board-level. Direct, strategic. Lead with conclusion, support with evidence.',
   };
 
-  // Generate dynamic self-knowledge (auto-discovers agents, tools, crons)
-  let selfKnowledge = '';
-  try { selfKnowledge = await generateSelfKnowledge(); } catch { selfKnowledge = 'Self-knowledge generation failed. You have 23+ agents, web search, Gmail, Calendar, memory, and full CRM access.'; }
-
-  // ── Load user config — drives all personalization ──
+  // ── Load user config FIRST — drives all personalization ──
   const userConfig = await getUserConfig(userEmail);
-  const userId = userConfig.user_id || '00000000-0000-0000-0000-000000000000'; // safe fallback — matches nothing
+  const userId = userConfig.user_id || '00000000-0000-0000-0000-000000000000';
   const isSuperAdmin = userConfig.role === 'super_admin';
+
+  // Generate dynamic self-knowledge (auto-discovers agents, tools, crons) — scoped per user
+  let selfKnowledge = '';
+  try { selfKnowledge = await generateSelfKnowledge(userId); } catch { selfKnowledge = 'Self-knowledge generation failed. You have 23+ agents, web search, Gmail, Calendar, memory, and full CRM access.'; }
 
   const system = SYSTEM_PROMPT
     .replace('{currentPage}', currentPage)
@@ -575,7 +575,7 @@ export default async function handler(req, res) {
     if (isFirstMessage && isGreeting && !voiceMode) {
       const lastMsg = messages[messages.length - 1];
       if (lastMsg && typeof lastMsg.content === 'string') {
-        messages[messages.length - 1] = { role: 'user', content: `${lastMsg.content}\n\n[CONTEXT: This is Sunny's first message of this session. DO NOT just say hello back. Greet him briefly (one line) then immediately give a 4-5 sentence proactive status update: any urgent alerts, stale deals needing attention, overdue tasks, recent signals, what you recommend he focuses on. Be a Chief of Staff who walks in with the briefing, not a receptionist who says "how can I help you today." Lead with the most important thing.]` };
+        messages[messages.length - 1] = { role: 'user', content: `${lastMsg.content}\n\n[CONTEXT: This is ${userConfig.display_name}'s first message of this session. DO NOT just say hello back. Greet them briefly (one line) then immediately give a 4-5 sentence proactive status update: any urgent alerts, stale deals needing attention, overdue tasks, recent signals, what you recommend they focus on. Be a Chief of Staff who walks in with the briefing, not a receptionist who says "how can I help you today." Lead with the most important thing.]` };
       }
     }
 
@@ -599,7 +599,7 @@ export default async function handler(req, res) {
       const screenData = await describeScreen(currentPage);
       write({ toolStatus: null });
       // Inject live data and let Claude compose a natural response
-      const screenSystem = system + `\n\n[LIVE SCREEN DATA — describe this naturally to Sunny, highlight what matters most]:\n${screenData}`;
+      const screenSystem = system + `\n\n[LIVE SCREEN DATA — describe this naturally to ${userConfig.display_name}, highlight what matters most]:\n${screenData}`;
       const screenStream = anthropic.beta.messages.stream({
         model: MODEL, max_tokens: 600, system: screenSystem, messages,
       });
@@ -619,7 +619,7 @@ export default async function handler(req, res) {
     if (agentMapping?.tool) {
       routingHint = `\n\n[ROUTING HINT: This message was classified as "${intent}". Start with the ${agentMapping.tool} tool. After getting results, you may call additional tools if the task requires multiple steps — you have up to 10 tool rounds. For example: research a company (web_search) → check CRM (ask_data_agent) → draft email (ask_outreach_agent). Think about what the user actually needs end-to-end, not just the first step.]`;
     } else if (intent === 'email_read') {
-      routingHint = '\n\n[ROUTING HINT: This is an EMAIL query. Use the read_email tool. Operations: unread (get unread count + recent), search (Gmail search query like "from:john subject:proposal"), read_message (read specific email by ID), inbox_summary. If the user mentions a person, search by their name. Give Sunny a clear summary — dates, senders, key content.]';
+      routingHint = '\n\n[ROUTING HINT: This is an EMAIL query. Use the read_email tool. Operations: unread (get unread count + recent), search (Gmail search query like "from:john subject:proposal"), read_message (read specific email by ID), inbox_summary. If the user mentions a person, search by their name. Give a clear summary — dates, senders, key content.]';
     } else if (intent === 'calendar') {
       routingHint = '\n\n[ROUTING HINT: This is a CALENDAR query. Use the read_calendar tool. Operations: today (today\'s events), upcoming (next 7 days), search (by keyword), free_slots (find available time). Give times in UK format.]';
     } else if (intent === 'research') {
@@ -650,7 +650,7 @@ export default async function handler(req, res) {
         ctx += ` Tasks: ${outstanding.length} outstanding, ${overdue.length} overdue.`;
         if (gActivity?.length) ctx += `\nRecent activity: ${gActivity.slice(0,3).map(a => `${a.type}: ${a.entity_name}`).join(', ')}`;
         if (gLearnings?.length) ctx += `\nRecent decisions: ${gLearnings.slice(0,3).map(l => (l.user_message||'').slice(0,80)).join('; ')}`;
-        routingHint = `\n\n[ROUTING HINT: You have FULL access to all tools — CRM queries, web search via MCP, Gmail, Calendar, and all specialist agent tools. Think like a Chief of Staff who knows the entire business. If business context strengthens your answer, query the CRM. If current information is needed, use web search. Sunny uses you instead of ChatGPT and Claude — be worthy of that. Answer with depth, intelligence, and specificity.]` + ctx;
+        routingHint = `\n\n[ROUTING HINT: You have FULL access to all tools — CRM queries, web search, Gmail, Calendar, and all specialist agent tools. Think like a Chief of Staff who knows the entire business. If business context strengthens your answer, query the CRM. If current information is needed, use web search. Answer with depth, intelligence, and specificity.]` + ctx;
       } catch {
         routingHint = '\n\n[ROUTING HINT: You have full access to all tools. Answer with depth and intelligence. If business context would help, query the CRM. If current information is needed, search the web.]';
       }
@@ -713,7 +713,8 @@ export default async function handler(req, res) {
     if (!voiceMode && intent !== 'outreach' && intent !== 'content' && intent !== 'navigate' && intent !== 'screen') {
       try {
         const capWords = message.match(/\b[A-Z][a-zA-Z]{2,}(?:\s+[A-Z][a-zA-Z]+)*/g) || [];
-        const filtered = capWords.filter(w => !['The','This','What','When','Where','How','Why','Can','Should','Would','Could','Please','Kiko','Sunny','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday','January','February','March','April','May','June','July','August','September','October','November','December'].includes(w));
+        const userName = (userConfig.display_name || '').split(' ')[0];
+        const filtered = capWords.filter(w => !['The','This','What','When','Where','How','Why','Can','Should','Would','Could','Please','Kiko',userName,'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday','January','February','March','April','May','June','July','August','September','October','November','December'].includes(w));
         if (filtered.length > 0) {
           const primary = filtered[0];
           const contacts = await sbFetch(`contacts?select=data&or=(data->>firstName.ilike.*${encodeURIComponent(primary)}*,data->>lastName.ilike.*${encodeURIComponent(primary)}*,data->>company.ilike.*${encodeURIComponent(primary)}*)&limit=2`);
@@ -837,7 +838,7 @@ export default async function handler(req, res) {
       if (healthAlerts?.[0]?.detail) {
         const alert = healthAlerts[0];
         if (new Date(alert.expires_at) > new Date()) {
-          morningBrief += `\n\n[⚠️ SYSTEM HEALTH ISSUE: ${alert.detail}. If Sunny asks about system status or something isn't working, reference this. Suggest checking /api/health for details.]`;
+          morningBrief += `\n\n[⚠️ SYSTEM HEALTH ISSUE: ${alert.detail}. If the user asks about system status or something isn't working, reference this. Suggest checking /api/health for details.]`;
         }
       }
     } catch {}
@@ -850,7 +851,7 @@ export default async function handler(req, res) {
         for (const p of pending) {
           morningBrief += `\n• ${p.payload?.suggested_action || p.action_type} (${p.payload?.entity || '?'})`;
         }
-        morningBrief += `\nSurface these when briefing or when relevant to the conversation. Ask Sunny if he wants to approve or dismiss them.]`;
+        morningBrief += `\nSurface these when briefing or when relevant to the conversation. Ask if they want to approve or dismiss them.]`;
       }
     } catch {}
     } // end !voiceMode
@@ -992,7 +993,7 @@ export default async function handler(req, res) {
       try {
         const extract = await anthropic.messages.create({
           model: 'claude-haiku-4-5-20251001', max_tokens: 400,
-          system: `Analyse this exchange between Sunny (CEO) and Kiko (AI OS). Extract ALL of the following. Return ONLY JSON:
+          system: `Analyse this exchange between the user and Kiko (AI OS). Extract ALL of the following. Return ONLY JSON:
 {
   "facts": ["1-3 key facts worth remembering permanently"],
   "entity": "main company/person name or null",

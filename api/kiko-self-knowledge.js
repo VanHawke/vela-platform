@@ -10,11 +10,14 @@ import path from 'path';
 // Cache for 5 minutes — capabilities don't change mid-conversation
 let cache = null;
 let cacheTime = 0;
+let lastCacheKey = null;
 const CACHE_TTL = 5 * 60 * 1000;
 
-export async function generateSelfKnowledge() {
-  if (cache && Date.now() - cacheTime < CACHE_TTL) return cache;
+export async function generateSelfKnowledge(userId) {
+  const cacheKey = userId || 'default';
+  if (cache && Date.now() - cacheTime < CACHE_TTL && cacheKey === lastCacheKey) return cache;
 
+  const uf = userId ? `&user_id=eq.${userId}` : '';
   const knowledge = [];
   knowledge.push('SELF-KNOWLEDGE (auto-generated — this updates when capabilities change):');
   knowledge.push(`You are Kiko OS. Generated: ${new Date().toISOString()}`);
@@ -92,7 +95,7 @@ export async function generateSelfKnowledge() {
 
   // ── 6d. Outreach effectiveness patterns ──
   try {
-    const patterns = await sbFetch('kiko_learning_log?category=eq.outreach_patterns&order=created_at.desc&limit=1&select=content');
+    const patterns = await sbFetch(`kiko_learning_log?category=eq.outreach_patterns&order=created_at.desc&limit=1&select=content${uf}`);
     if (patterns?.[0]?.content) {
       knowledge.push(`\nOUTREACH EFFECTIVENESS: ${patterns[0].content}`);
     }
@@ -156,7 +159,7 @@ export async function generateSelfKnowledge() {
 
   // ── 10. Imported conversation intelligence ──
   try {
-    const imported = await sbFetch('kiko_imported_conversations?processed=eq.true&select=source,title,extracted_insights&order=original_date.desc&limit=10');
+    const imported = await sbFetch(`kiko_imported_conversations?processed=eq.true${uf}&select=source,title,extracted_insights&order=original_date.desc&limit=10`);
     if (imported?.length) {
       knowledge.push(`\nIMPORTED INTELLIGENCE (${imported.length} conversations processed):`);
       for (const c of imported.slice(0, 5)) {
@@ -175,7 +178,7 @@ export async function generateSelfKnowledge() {
 
   // ── 11b. Personal context ──
   try {
-    const personal = await sbFetch('kiko_personal_context?select=category,value&order=updated_at.desc&limit=15');
+    const personal = await sbFetch(`kiko_personal_context?select=category,value&order=updated_at.desc&limit=15${uf}`);
     if (personal?.length) {
       knowledge.push(`\nPERSONAL CONTEXT (${personal.length} items): You know Sunny personally — family, hobbies, preferences. Use this to serve him across business AND personal life.`);
     }
@@ -183,7 +186,7 @@ export async function generateSelfKnowledge() {
 
   // ── 11c. Curiosity queue ──
   try {
-    const curious = await sbFetch('kiko_curiosity_queue?status=eq.queued&select=topic,priority&order=priority.desc&limit=5');
+    const curious = await sbFetch(`kiko_curiosity_queue?status=eq.queued&select=topic,priority&order=priority.desc&limit=5${uf}`);
     if (curious?.length) {
       knowledge.push(`\nCURIOSITY QUEUE (${curious.length} topics to learn): ${curious.map(c => c.topic).join(', ')}`);
     }
@@ -214,5 +217,6 @@ export async function generateSelfKnowledge() {
   const result = knowledge.join('\n');
   cache = result;
   cacheTime = Date.now();
+  lastCacheKey = cacheKey;
   return result;
 }
