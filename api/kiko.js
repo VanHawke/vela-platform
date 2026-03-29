@@ -855,12 +855,19 @@ export default async function handler(req, res) {
 
     write({ toolStatus: intent !== 'general' ? `Intent: ${intent}` : 'Thinking...' });
     let responseText = ''; // Accumulate for conversation memory extraction — declared before streamCall
+    const requestStart = Date.now();
     let response = await streamCall(messages);
     let toolRounds = 0;
 
-    // Tool execution loop — max 10 rounds (2 in voice mode for speed)
-    const maxRounds = voiceMode ? 2 : 10;
+    // Tool execution loop — time-aware, stops before timeout
+    const maxRounds = voiceMode ? 2 : 5;
+    const timeLimit = voiceMode ? 12000 : 90000; // 90s budget for tool chains (leaves 25s for final response)
     while (response.stop_reason === 'tool_use' && toolRounds < maxRounds) {
+      const elapsed = Date.now() - requestStart;
+      if (elapsed > timeLimit) {
+        console.log(`[KIKO] Time budget exceeded (${elapsed}ms) after ${toolRounds} tool rounds — forcing response`);
+        break;
+      }
       toolRounds++;
       const toolResults = [];
       for (const block of response.content) {
@@ -885,26 +892,19 @@ export default async function handler(req, res) {
       response = await streamCall(messages);
     }
 
-    // Safety: if tool limit hit, force text-only
+    // If Claude still wants tools but we're out of budget — force a text response with what we have
     if (response.stop_reason === 'tool_use') {
-      const finalResults = [];
-      for (const block of response.content) {
-        if (block.type !== 'tool_use') continue;
-        write({ toolStatus: TOOL_LABELS[block.name] || 'Finishing...' });
-        const result = block.name === 'memory' ? await handleMemory(block.input) : await executeTool(block.name, block.input, userEmail, pageContext);
-        finalResults.push({ type: 'tool_result', tool_use_id: block.id, content: typeof result === 'string' ? result : JSON.stringify(result).slice(0, 4000) });
-        logDecision(block.name, block.input, result, message); // Phase 8
-        trackOutput(block.name, intent, message, result); // Phase 18
-        journalInsight(block.name, block.input, result, message); // Phase 19
-      }
-      write({ toolStatus: null });
+      // Don't execute more tools — tell Claude to respond with collected data
+      const pendingTools = response.content.filter(b => b.type === 'tool_use').map(b => b.name);
+      const fakeResults = response.content.filter(b => b.type === 'tool_use').map(b => ({
+        type: 'tool_result', tool_use_id: b.id,
+        content: `[TIME LIMIT] Could not execute ${b.name} — synthesise your response using the data already gathered from previous tool calls. Do NOT request more tools.`,
+      }));
       messages.push({ role: 'assistant', content: response.content });
-      messages.push({ role: 'user', content: finalResults });
+      messages.push({ role: 'user', content: fakeResults });
       write({ toolStatus: 'Composing response...' });
-      const finalStream = anthropic.beta.messages.stream({ model: MODEL, max_tokens: 4096, system: systemWithHint, messages });
-      for await (const event of finalStream) {
-        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') { write({ delta: event.delta.text }); responseText += event.delta.text; }
-      }
+      // Force no-tools so Claude MUST respond with text
+      response = await streamCall(messages, { noTools: true });
     }
 
     write({ meta: { done: true, model: needsDeepThink ? 'claude-opus-4-6' : MODEL, toolRounds, intent, version: 'v16.1' } });
