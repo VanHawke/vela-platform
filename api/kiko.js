@@ -841,7 +841,7 @@ export default async function handler(req, res) {
       const useDeep = needsDeepThink && opts.noTools && !opts.fast;
       const params = {
         model: useDeep ? 'claude-opus-4-6' : (voiceMode ? 'claude-haiku-4-5-20251001' : MODEL),
-        max_tokens: useDeep ? 16000 : (voiceMode ? 800 : 4096),
+        max_tokens: opts.maxTokens || (useDeep ? 16000 : (voiceMode ? 800 : 4096)),
         system: systemWithHint, messages: msgs, tools: opts.noTools ? undefined : allTools,
       };
       if (useDeep) {
@@ -864,7 +864,7 @@ export default async function handler(req, res) {
 
     // Tool execution loop — time-aware, stops before timeout
     const maxRounds = voiceMode ? 2 : 5;
-    const timeLimit = voiceMode ? 12000 : 90000; // 90s budget for tool chains (leaves 25s for final response)
+    const timeLimit = voiceMode ? 12000 : 65000; // 65s for tools, leaves 50s for synthesis + overhead
     while (response.stop_reason === 'tool_use' && toolRounds < maxRounds) {
       const elapsed = Date.now() - requestStart;
       if (elapsed > timeLimit) {
@@ -914,7 +914,7 @@ export default async function handler(req, res) {
       const synthMessages = [
         { role: 'user', content: `ORIGINAL QUESTION: ${message}\n\nCOLLECTED DATA FROM ${toolRounds} RESEARCH ROUNDS:\n${toolData.join('\n---\n').slice(0, 12000)}\n\nSynthesise a comprehensive, actionable response using ALL the data above. Do NOT request any more tools. Respond directly.` },
       ];
-      response = await streamCall(synthMessages, { noTools: true, fast: true });
+      response = await streamCall(synthMessages, { noTools: true, fast: true, maxTokens: 3000 });
     }
 
     // Fallback: if response is still empty, send a meaningful message
