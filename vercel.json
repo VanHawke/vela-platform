@@ -11,6 +11,7 @@
     { "path": "/api/cron-edit-delta", "schedule": "0 22 * * 1-5" },
     { "path": "/api/cron-relationship-intel", "schedule": "0 5 * * 0" },
     { "path": "/api/cron-meeting-prep", "schedule": "0 * * * *" },
+    { "path": "/api/cron-health-check", "schedule": "30 * * * *" },
     { "path": "/api/cron-inbox-triage", "schedule": "15 7 * * 1-5" },
     { "path": "/api/cron-lemlist-enrich", "schedule": "15 6 * * 1" },
     { "path": "/api/cron-lemlist-signals", "schedule": "30 7 * * 1-5" },

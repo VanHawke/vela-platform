@@ -784,6 +784,17 @@ export default async function handler(req, res) {
       }
     } catch {}
 
+    // System health alerts — surface if anything is broken
+    try {
+      const healthAlerts = await sbFetch('kiko_alerts?type=eq.system_health&severity=eq.high&order=created_at.desc&limit=1&select=detail,created_at,expires_at');
+      if (healthAlerts?.[0]?.detail) {
+        const alert = healthAlerts[0];
+        if (new Date(alert.expires_at) > new Date()) {
+          morningBrief += `\n\n[⚠️ SYSTEM HEALTH ISSUE: ${alert.detail}. If Sunny asks about system status or something isn't working, reference this. Suggest checking /api/health for details.]`;
+        }
+      }
+    } catch {}
+
     // Pending draft actions — surface proactively
     try {
       const pending = await sbFetch('kiko_draft_actions?status=eq.pending&order=created_at.desc&limit=5&select=action_type,payload,created_at');
