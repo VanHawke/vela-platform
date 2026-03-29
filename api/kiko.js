@@ -708,6 +708,8 @@ export default async function handler(req, res) {
     let profileHint = '';
     let memoryHint = '';
     let inboxHint = '';
+    let personalHint = '';
+    let morningBrief = '';
     if (!voiceMode) {
     try {
       const prefs = await sbFetch('kiko_preferences?order=confidence.desc&limit=10&select=category,preference,confidence');
@@ -737,7 +739,6 @@ export default async function handler(req, res) {
     } catch {} // Non-blocking
 
     // Personal context: inject Sunny's personal information for personal queries
-    let personalHint = '';
     try {
       const personal = await sbFetch('kiko_personal_context?select=category,key,value&order=updated_at.desc&limit=20');
       if (personal?.length) {
@@ -774,7 +775,6 @@ export default async function handler(req, res) {
     } catch {}
 
     // Morning intelligence brief: inject today's brief if available
-    let morningBrief = '';
     try {
       const brief = await sbFetch(`kiko_alerts?type=eq.morning_brief&order=created_at.desc&limit=1&select=detail,created_at`);
       if (brief?.[0]?.detail) {
