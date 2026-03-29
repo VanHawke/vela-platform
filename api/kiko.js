@@ -876,6 +876,15 @@ export default async function handler(req, res) {
 
     const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + inboxHint + morningBrief + modeHint;
 
+    // ── Prompt Caching ──
+    // Split system content into stable (cached) and dynamic (not cached) blocks
+    // The base system prompt + self-knowledge are stable per user session (~9K tokens)
+    // Context hints change per request and should NOT be cached
+    const systemCached = [
+      { type: 'text', text: system, cache_control: { type: 'ephemeral' } },
+      { type: 'text', text: identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + inboxHint + morningBrief + modeHint },
+    ];
+
     // Deep think detection
     const DEEP_TRIGGERS = ['analyse', 'analyze', 'deep dive', 'think through', 'strategic', 'evaluate', 'comprehensive'];
     const needsDeepThink = !voiceMode && (deepThink || (message && DEEP_TRIGGERS.some(t => message.toLowerCase().includes(t))));
@@ -883,15 +892,27 @@ export default async function handler(req, res) {
     // MCP servers
     // MCP disabled — email/calendar use our own Google API tools directly
 
-    // Stream helper — clean, no MCP complexity
+    // Stream helper — with prompt caching for cost reduction
     async function streamCall(msgs, opts = {}) {
       // Tool rounds use Sonnet for speed. Only final synthesis uses Opus (if deep think).
       // fast: true forces Sonnet even if deep think was requested (used when time budget hit)
       const useDeep = needsDeepThink && opts.noTools && !opts.fast;
+      
+      // Build tools array with cache_control on last tool (caches entire tool block)
+      let toolsWithCache = undefined;
+      if (!opts.noTools) {
+        toolsWithCache = [...allTools];
+        if (toolsWithCache.length > 0) {
+          const last = { ...toolsWithCache[toolsWithCache.length - 1] };
+          last.cache_control = { type: 'ephemeral' };
+          toolsWithCache[toolsWithCache.length - 1] = last;
+        }
+      }
+      
       const params = {
         model: useDeep ? 'claude-opus-4-6' : (voiceMode ? 'claude-haiku-4-5-20251001' : MODEL),
         max_tokens: opts.maxTokens || (useDeep ? 16000 : (voiceMode ? 800 : 4096)),
-        system: systemWithHint, messages: msgs, tools: opts.noTools ? undefined : allTools,
+        system: systemCached, messages: msgs, tools: toolsWithCache,
       };
       if (useDeep) {
         params.thinking = { type: 'enabled', budget_tokens: 10000 };
