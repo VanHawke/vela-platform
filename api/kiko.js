@@ -493,9 +493,10 @@ export default async function handler(req, res) {
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Vercel-No-Buffering', '1');
   if (res.flushHeaders) res.flushHeaders();
-  const write = (d) => res.write(`data: ${JSON.stringify(d)}\n\n`);
+  const write = (d) => { try { res.write(`data: ${JSON.stringify(d)}\n\n`); } catch {} };
 
   try {
+    write({ toolStatus: 'Connecting...' });
     // Build messages
     const messages = conversationHistory.slice(-20)
       .filter(m => m.role === 'user' || m.role === 'assistant')
@@ -984,9 +985,9 @@ If nothing worth saving, return empty arrays.`,
     }
   } catch (err) {
     console.error('[KIKO] Error:', err);
-    logError('coordinator', err.message, `intent=${intent || 'unknown'}, message=${(message || '').slice(0, 100)}`, 'critical');
-    write({ delta: `\n\nError: ${err.message}` });
-    res.write('data: [DONE]\n\n');
-    res.end();
+    try { logError('coordinator', err?.message || 'unknown', (message || '').slice(0, 100), 'critical'); } catch {}
+    try { write({ delta: `\n\nSomething went wrong: ${err?.message || 'Unknown error'}. Try again.` }); } catch {}
+    try { res.write('data: [DONE]\n\n'); } catch {}
+    try { res.end(); } catch {}
   }
 }
