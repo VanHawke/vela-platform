@@ -347,12 +347,24 @@ const PAGE_ROLES = {
   lemlist: '\nROLE: Outreach Analyst. Use ask_lemlist_live for campaign stats, warm leads, deliverability. Use ask_outreach_agent for drafting emails and adding leads.',
 };
 
-// ── Native Tools ──
-const NATIVE_TOOLS = [
-  { type: 'memory_20250818', name: 'memory' },
-  { type: 'web_search_20250305', name: 'web_search', max_uses: 5,
-    user_location: { type: 'approximate', city: '{USER_CITY}', country: '{USER_COUNTRY}', timezone: '{USER_TIMEZONE}' } },
-];
+// ── Native Tools (built per-user in handler) ──
+function buildNativeTools(userConfig) {
+  const loc = userConfig?.location || '';
+  const city = loc.split(',')[0].trim();
+  const country = loc.includes('UK') ? 'GB' : loc.includes('US') ? 'US' : '';
+  const tz = userConfig?.timezone || 'Europe/London';
+  const tool = { type: 'web_search_20250305', name: 'web_search', max_uses: 5 };
+  if (city || country) {
+    tool.user_location = { type: 'approximate' };
+    if (city) tool.user_location.city = city;
+    if (country) tool.user_location.country = country;
+    if (tz) tool.user_location.timezone = tz;
+  }
+  return [
+    { type: 'memory_20250818', name: 'memory' },
+    tool,
+  ];
+}
 
 // ── Memory Handler ──
 async function handleMemory(input) {
@@ -499,9 +511,6 @@ export default async function handler(req, res) {
     .replace('{USER_NAME}', userConfig.display_name || userEmail.split('@')[0])
     .replace('{USER_TITLE}', userConfig.job_title || 'team member')
     .replace('{USER_LOCATION}', userConfig.location || '')
-    .replace('{USER_CITY}', (userConfig.location || '').split(',')[0].trim() || '')
-    .replace('{USER_COUNTRY}', (userConfig.location || '').includes('UK') ? 'GB' : '')
-    .replace('{USER_TIMEZONE}', userConfig.timezone || 'Europe/London')
     .replace(/\{USER_NAME\}/g, userConfig.display_name || userEmail.split('@')[0])
     + `\n[${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
     + (pageContext?.summary ? `\n[Context: ${pageContext.summary}${pageContext.stageDistribution ? ` | Stages: ${JSON.stringify(pageContext.stageDistribution)}` : ''}${pageContext.visibleItems ? `\nVisible: ${pageContext.visibleItems}` : ''}]` : '')
@@ -547,9 +556,10 @@ export default async function handler(req, res) {
       messages.push({ role: 'user', content: message });
     }
 
+    const nativeTools = buildNativeTools(userConfig);
     const voiceTools = voiceMode
-      ? [...NATIVE_TOOLS.filter(t => t.name !== 'memory'), ...TOOL_DEFINITIONS]
-      : [...NATIVE_TOOLS, ...TOOL_DEFINITIONS];
+      ? [...nativeTools.filter(t => t.name !== 'memory'), ...TOOL_DEFINITIONS]
+      : [...nativeTools, ...TOOL_DEFINITIONS];
     const allTools = voiceTools;
 
     // ── PHASE 1: Intent Classification ──
