@@ -289,7 +289,7 @@ function agentError(agentName, err) {
   return `AGENT UNAVAILABLE: ${agentName} failed — ${err.message}. Tell Sunny this agent hit an error. Do NOT attempt to handle the task yourself.`;
 }
 
-export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com', pageContext = null) {
+export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com', pageContext = null, userId = null) {
 
   // ── Auto-Activity Logger — fires after agent calls that touch CRM entities ──
   const autoLogActivity = async (type, entityName, description) => {
@@ -320,7 +320,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
   if (name === 'ask_deal_agent') {
     try {
       const { callDealAgent } = await import('./agents/deal.js');
-      const result = await callDealAgent(input.instruction, userEmail);
+      const result = await callDealAgent(input.instruction, userEmail, userId);
       if (result.success) {
         const entity = input.instruction?.match(/(?:for|at|with|to)\s+([A-Z][a-zA-Z\s&]+)/)?.[1] || 'unknown';
         autoLogActivity('crm_action', entity.trim(), input.instruction?.slice(0, 200));
@@ -341,7 +341,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
   if (name === 'ask_outreach_agent') {
     try {
       const { callOutreachAgent } = await import('./agents/outreach.js');
-      const result = await callOutreachAgent(input.operation, input.params || {}, userEmail);
+      const result = await callOutreachAgent(input.operation, input.params || {}, userEmail, userId);
       const entity = input.params?.company || input.params?.recipient || input.params?.contactName || 'unknown';
       autoLogActivity('outreach', entity, `${input.operation}: ${JSON.stringify(input.params || {}).slice(0, 200)}`);
       return result;
@@ -574,7 +574,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       if (operation === 'save_insight') {
         const { insight, entity, category } = params;
         if (!insight) return 'Error: insight text is required';
-        await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({ user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063', category: category || 'conversation_insight', content: insight, entity_name: entity || null }) });
+        await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({ user_id: userId, category: category || 'conversation_insight', content: insight, entity_name: entity || null }) });
         return `Insight saved: "${insight.slice(0, 100)}${insight.length > 100 ? '...' : ''}"`;
       }
 
@@ -683,7 +683,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       }
       // Also search imported conversations (ChatGPT/Claude history)
       try {
-        const imported = await sbFetch(`kiko_imported_conversations?processed=eq.true&select=title,source,messages,original_date,extracted_insights&order=original_date.desc&limit=30`);
+        const imported = await sbFetch(`kiko_imported_conversations?processed=eq.true${userId ? '&user_id=eq.' + userId : ''}&select=title,source,messages,original_date,extracted_insights&order=original_date.desc&limit=30`);
         for (const c of (imported || [])) {
           const msgs = c.messages || [];
           const text = msgs.map(m => (m.content || '')).join(' ').toLowerCase();

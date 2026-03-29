@@ -7,10 +7,29 @@ import { classifyIntent, INTENT_TO_AGENT } from './agents/intent-classifier.js';
 import { generateSelfKnowledge } from './kiko-self-knowledge.js';
 import { describeScreen } from './agents/screen-reader.js';
 
-export const config = { supportsResponseStreaming: true, maxDuration: 60 };
+export const config = { supportsResponseStreaming: true, maxDuration: 120 };
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const MODEL = 'claude-sonnet-4-20250514';
+
+// ── User config loader — replaces all hardcoded user references ──
+const userConfigCache = new Map();
+async function getUserConfig(email) {
+  if (userConfigCache.has(email)) {
+    const cached = userConfigCache.get(email);
+    if (Date.now() - cached.ts < 300000) return cached.data; // 5 min cache
+  }
+  try {
+    const rows = await sbFetch(`kiko_user_config?email=eq.${encodeURIComponent(email)}&limit=1`);
+    if (rows?.[0]) {
+      const config = rows[0];
+      userConfigCache.set(email, { data: config, ts: Date.now() });
+      return config;
+    }
+  } catch {}
+  // Fallback for unknown users — minimal config so Kiko still works
+  return { user_id: null, email, display_name: email.split('@')[0], role: 'user', company_name: '', job_title: '', location: '', timezone: 'Europe/London', communication_style: 'executive', company_description: '' };
+}
 
 // Strip orphaned Unicode surrogates — prevents Anthropic API JSON parse errors
 function sanitizeUnicode(str) {
@@ -30,7 +49,7 @@ function sanitizeUnicode(str) {
 
 // Phase 8: Learning Loop — log decisions for pattern matching
 const DECISION_TOOLS = ['ask_strategy_agent', 'ask_deal_agent', 'ask_negotiation_agent', 'ask_pricing_agent', 'ask_investment_agent'];
-async function logDecision(toolName, toolInput, toolResult, userMessage) {
+async function logDecision(toolName, toolInput, toolResult, userMessage, userId) {
   if (!DECISION_TOOLS.includes(toolName)) return;
   try {
     const agent = toolName.replace('ask_', '').replace('_agent', '');
@@ -48,14 +67,14 @@ async function logDecision(toolName, toolInput, toolResult, userMessage) {
 }
 
 // Phase 18: Output tracking — measure agent quality over time
-async function trackOutput(toolName, intent, userMessage, result) {
+async function trackOutput(toolName, intent, userMessage, result, userId) {
   try {
     const agent = toolName ? toolName.replace('ask_', '').replace('_agent', '') : 'general';
     const resultStr = typeof result === 'string' ? result : JSON.stringify(result);
     await sbFetch('kiko_output_tracking', {
       method: 'POST',
       body: JSON.stringify({
-        user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
+        user_id: userId,
         agent, intent: intent || 'unknown',
         user_message: (userMessage || '').slice(0, 150),
         output_preview: resultStr.slice(0, 300),
@@ -66,7 +85,7 @@ async function trackOutput(toolName, intent, userMessage, result) {
 
 // Phase 19: Thought journal — extract and persist strategic insights
 const INSIGHT_TOOLS = ['ask_strategy_agent', 'ask_negotiation_agent', 'ask_pricing_agent', 'ask_investment_agent'];
-async function journalInsight(toolName, toolInput, toolResult, userMessage) {
+async function journalInsight(toolName, toolInput, toolResult, userMessage, userId) {
   if (!INSIGHT_TOOLS.includes(toolName)) return;
   try {
     const resultStr = typeof toolResult === 'string' ? toolResult : JSON.stringify(toolResult);
@@ -80,7 +99,7 @@ async function journalInsight(toolName, toolInput, toolResult, userMessage) {
     await sbFetch('kiko_thought_journal', {
       method: 'POST',
       body: JSON.stringify({
-        user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
+        user_id: userId,
         topic: topic,
         insight: resultStr.slice(0, 500),
         related_entities: entities.slice(0, 5),
@@ -91,7 +110,7 @@ async function journalInsight(toolName, toolInput, toolResult, userMessage) {
 }
 
 // Conversation Memory: extract insights after a conversation completes
-async function extractConversationInsights(message, fullResponse, intent) {
+async function extractConversationInsights(message, fullResponse, intent, userId) {
   if (!message || !fullResponse || fullResponse.length < 100) return;
   if (['navigate', 'screen'].includes(intent)) return; // Skip trivial intents
   try {
@@ -106,7 +125,7 @@ async function extractConversationInsights(message, fullResponse, intent) {
     if (!hasContent) return;
     await sbFetch('kiko_conversation_insights', {
       method: 'POST', body: JSON.stringify({
-        user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
+        user_id: userId,
         key_facts: parsed.key_facts || [], decisions_made: parsed.decisions_made || [],
         open_threads: parsed.open_threads || [], entities_discussed: parsed.entities || [],
         summary: `${(parsed.key_facts || []).join('; ')}`.slice(0, 200),
@@ -158,7 +177,7 @@ async function detectCorrection(message, conversationHistory, intent) {
       // Likely a rephrase — log it for learning
       await sbFetch('kiko_learning_log', {
         method: 'POST', body: JSON.stringify({
-          user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
+          user_id: userId,
           category: 'correction', content: `User rephrased. Original: "${lastUserMsg.content?.slice(0, 150)}". Rephrased: "${message.slice(0, 150)}". Intent: ${intent}. Similarity: ${(similarity * 100).toFixed(0)}%.`,
           entity_name: null, user_message: message.slice(0, 200),
         })
@@ -171,8 +190,8 @@ async function detectCorrection(message, conversationHistory, intent) {
 async function getMcpServers() { return []; }
 
 // ── System Prompt — Clean Coordinator ──
-const SYSTEM_PROMPT = `You are Kiko — the AI operating system for Van Hawke Group.
-You work with Sunny Sidhu, CEO, based in Weybridge, UK. Never ask his name or location.
+const SYSTEM_PROMPT = `You are Kiko — the AI operating system for {COMPANY_NAME}.
+You work with {USER_NAME}, {USER_TITLE}, based in {USER_LOCATION}. Never ask their name or location.
 
 You are a COORDINATOR. You route requests to specialist agents and relay their results naturally. You never say "the agent said" — you speak as Kiko.
 
@@ -270,7 +289,7 @@ STYLE: Direct, corporate, high-signal. No fluff. No "happy to help." Lead with v
 
 ADAPTIVE TONE: You serve Sunny across BOTH business and personal life. Detect which mode from context:
 - BUSINESS: Corporate, strategic, data-driven. Lead with conclusions. Bullets for complex info.
-- PERSONAL: Warm, conversational, thoughtful. You know his child is at Oatlands School, he lives in Weybridge. Be helpful like a trusted friend who also happens to be brilliant.
+- PERSONAL: Warm, conversational, thoughtful. Use personal context loaded below to be helpful like a trusted friend who also happens to be brilliant.
 - MIXED: Start professional, soften where appropriate.
 When Sunny asks about personal things (school, family, weekends, health, shopping, holidays, hobbies), switch to personal mode naturally. Don't be a corporate robot for personal queries. You're his AI — business AND life.
 
@@ -282,7 +301,7 @@ Dear Ryan,
 [body]
 
 Best regards,
-Sunny Sidhu
+{USER_NAME}
 This format triggers the draft preview panel with Copy, Send to Gmail, and tone adjustment options.
 
 OUTREACH DOCTRINE: 5-touch authority-led. No pricing in early outreach. No pleasantries. Board-level positioning. Scarcity by design.
@@ -332,7 +351,7 @@ const PAGE_ROLES = {
 const NATIVE_TOOLS = [
   { type: 'memory_20250818', name: 'memory' },
   { type: 'web_search_20250305', name: 'web_search', max_uses: 5,
-    user_location: { type: 'approximate', city: 'Weybridge', region: 'Surrey', country: 'GB', timezone: 'Europe/London' } },
+    user_location: { type: 'approximate', city: '{USER_CITY}', country: '{USER_COUNTRY}', timezone: '{USER_TIMEZONE}' } },
 ];
 
 // ── Memory Handler ──
@@ -468,7 +487,22 @@ export default async function handler(req, res) {
   let selfKnowledge = '';
   try { selfKnowledge = await generateSelfKnowledge(); } catch { selfKnowledge = 'Self-knowledge generation failed. You have 23+ agents, web search, Gmail, Calendar, memory, and full CRM access.'; }
 
-  const system = SYSTEM_PROMPT.replace('{currentPage}', currentPage).replace('{DYNAMIC_SELF_KNOWLEDGE}', selfKnowledge)
+  // ── Load user config — drives all personalization ──
+  const userConfig = await getUserConfig(userEmail);
+  const userId = userConfig.user_id;
+  const isSuperAdmin = userConfig.role === 'super_admin';
+
+  const system = SYSTEM_PROMPT
+    .replace('{currentPage}', currentPage)
+    .replace('{DYNAMIC_SELF_KNOWLEDGE}', selfKnowledge)
+    .replace('{COMPANY_NAME}', userConfig.company_name || 'your organisation')
+    .replace('{USER_NAME}', userConfig.display_name || userEmail.split('@')[0])
+    .replace('{USER_TITLE}', userConfig.job_title || 'team member')
+    .replace('{USER_LOCATION}', userConfig.location || '')
+    .replace('{USER_CITY}', (userConfig.location || '').split(',')[0].trim() || '')
+    .replace('{USER_COUNTRY}', (userConfig.location || '').includes('UK') ? 'GB' : '')
+    .replace('{USER_TIMEZONE}', userConfig.timezone || 'Europe/London')
+    .replace(/\{USER_NAME\}/g, userConfig.display_name || userEmail.split('@')[0])
     + `\n[${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
     + (pageContext?.summary ? `\n[Context: ${pageContext.summary}${pageContext.stageDistribution ? ` | Stages: ${JSON.stringify(pageContext.stageDistribution)}` : ''}${pageContext.visibleItems ? `\nVisible: ${pageContext.visibleItems}` : ''}]` : '')
     + (PERSONALITIES[personality] || PERSONALITIES.executive)
@@ -594,7 +628,7 @@ export default async function handler(req, res) {
           sbFetch('deals?select=data&data->>status=eq.active&limit=50').catch(() => []),
           sbFetch('tasks?select=data&order=updated_at.desc&limit=10').catch(() => []),
           sbFetch('activities?select=type,entity_name,subject&order=created_at.desc&limit=5').catch(() => []),
-          sbFetch('kiko_learning_log?category=eq.decision&order=created_at.desc&limit=5').catch(() => []),
+          sbFetch(`kiko_learning_log?user_id=eq.${userId}&category=eq.decision&order=created_at.desc&limit=5`).catch(() => []),
         ]);
         const outstanding = (gTasks||[]).filter(t => !t.data?.completed);
         const overdue = outstanding.filter(t => t.data?.dueDate && new Date(t.data.dueDate) < new Date());
@@ -653,7 +687,7 @@ export default async function handler(req, res) {
           } catch {}
           // Load outreach effectiveness patterns
           try {
-            const patterns = await sbFetch('kiko_learning_log?category=eq.outreach_patterns&order=created_at.desc&limit=1&select=content');
+            const patterns = await sbFetch(`kiko_learning_log?user_id=eq.${userId}&category=eq.outreach_patterns&order=created_at.desc&limit=1&select=content`);
             if (patterns?.[0]?.content) {
               routingHint += `\n[OUTREACH DATA: ${patterns[0].content.slice(0, 300)}]`;
             }
@@ -682,7 +716,7 @@ export default async function handler(req, res) {
               entityCtx += `\n📊 ${d.company} — Stage: ${d.stage} | Value: $${d.value || '?'} | Contact: ${d.contactName || '?'} | Pipeline: ${d.pipeline || '?'}`;
             }
             // Check for conversation history with this entity
-            const convos = await sbFetch(`kiko_conversation_insights?select=summary,entities_discussed&order=created_at.desc&limit=10`);
+            const convos = await sbFetch(`kiko_conversation_insights?user_id=eq.${userId}&select=summary,entities_discussed&order=created_at.desc&limit=10`);
             const relevant = (convos || []).filter(c => (c.entities_discussed || []).some(e => e.toLowerCase().includes(primary.toLowerCase())));
             if (relevant.length) entityCtx += `\n💬 Discussed ${relevant.length} times recently: ${relevant[0]?.summary?.slice(0, 100) || ''}`;
             // Check for thread history (cross-session tracking)
@@ -711,7 +745,7 @@ export default async function handler(req, res) {
     let morningBrief = '';
     if (!voiceMode) {
     try {
-      const prefs = await sbFetch('kiko_preferences?order=confidence.desc&limit=10&select=category,preference,confidence');
+      const prefs = await sbFetch(`kiko_preferences?user_id=eq.${userId}&order=confidence.desc&limit=10&select=category,preference,confidence`);
       if (Array.isArray(prefs) && prefs.length) {
         preferencesHint = '\n\n[SUNNY\'S DECISION PATTERNS — reference naturally, never list these explicitly]:';
         for (const p of prefs) preferencesHint += `\n• [${p.category}] ${p.preference} (confidence: ${p.confidence})`;
@@ -720,7 +754,7 @@ export default async function handler(req, res) {
 
     // Phase 15: Load user communication profile
     try {
-      const profiles = await sbFetch(`kiko_user_profiles?user_id=eq.${userEmail === 'sunny@vanhawke.com' ? '9f486437-4bf5-4111-abfe-fe19bfa76063' : ''}&limit=1&select=draft_instructions,communication_style,language_fingerprint`);
+      const profiles = await sbFetch(`kiko_user_profiles?user_id=eq.${userId || ''}&limit=1&select=draft_instructions,communication_style,language_fingerprint`);
       if (Array.isArray(profiles) && profiles[0]?.draft_instructions) {
         const p = profiles[0];
         profileHint = `\n\n[SUNNY'S VOICE — when drafting emails, messages, or content, write EXACTLY like this]:`;
@@ -739,7 +773,7 @@ export default async function handler(req, res) {
 
     // Personal context: inject Sunny's personal information for personal queries
     try {
-      const personal = await sbFetch('kiko_personal_context?select=category,key,value&order=updated_at.desc&limit=20');
+      const personal = await sbFetch(`kiko_personal_context?user_id=eq.${userId}&select=category,key,value&order=updated_at.desc&limit=20`);
       if (personal?.length) {
         personalHint = '\n\n[SUNNY — PERSONAL CONTEXT (reference naturally, never list these)]:';
         const byCat = {};
@@ -752,7 +786,7 @@ export default async function handler(req, res) {
 
     // Conversation Memory: inject recent insights for cross-session continuity
     try {
-      const insights = await sbFetch('kiko_conversation_insights?order=created_at.desc&limit=5&select=key_facts,decisions_made,open_threads,entities_discussed');
+      const insights = await sbFetch(`kiko_conversation_insights?user_id=eq.${userId}&order=created_at.desc&limit=5&select=key_facts,decisions_made,open_threads,entities_discussed`);
       if (Array.isArray(insights) && insights.length) {
         memoryHint = '\n\n[RECENT CONVERSATION CONTEXT — reference naturally for continuity]:';
         for (const i of insights.slice(0, 3)) {
@@ -775,7 +809,7 @@ export default async function handler(req, res) {
 
     // Morning intelligence brief: inject today's brief if available
     try {
-      const brief = await sbFetch(`kiko_alerts?type=eq.morning_brief&order=created_at.desc&limit=1&select=detail,created_at`);
+      const brief = await sbFetch(`kiko_alerts?type=eq.morning_brief&user_id=eq.${userId}&order=created_at.desc&limit=1&select=detail,created_at`);
       if (brief?.[0]?.detail) {
         const briefAge = Date.now() - new Date(brief[0].created_at);
         if (briefAge < 24 * 60 * 60 * 1000) { // Only if less than 24h old
@@ -786,7 +820,7 @@ export default async function handler(req, res) {
 
     // System health alerts — surface if anything is broken
     try {
-      const healthAlerts = await sbFetch('kiko_alerts?type=eq.system_health&severity=eq.high&order=created_at.desc&limit=1&select=detail,created_at,expires_at');
+      const healthAlerts = await sbFetch(`kiko_alerts?type=eq.system_health&severity=eq.high&user_id=eq.${userId}&order=created_at.desc&limit=1&select=detail,created_at,expires_at`);
       if (healthAlerts?.[0]?.detail) {
         const alert = healthAlerts[0];
         if (new Date(alert.expires_at) > new Date()) {
@@ -797,7 +831,7 @@ export default async function handler(req, res) {
 
     // Pending draft actions — surface proactively
     try {
-      const pending = await sbFetch('kiko_draft_actions?status=eq.pending&order=created_at.desc&limit=5&select=action_type,payload,created_at');
+      const pending = await sbFetch(`kiko_draft_actions?status=eq.pending&user_id=eq.${userId}&order=created_at.desc&limit=5&select=action_type,payload,created_at`);
       if (pending?.length) {
         morningBrief += `\n\n[PENDING ACTIONS (${pending.length} waiting for approval):`;
         for (const p of pending) {
@@ -811,7 +845,7 @@ export default async function handler(req, res) {
     // Load operational mode (always, including voice)
     let modeHint = '';
     try {
-      const mode = await sbFetch('kiko_operational_mode?active=eq.true&order=created_at.desc&limit=1&select=mode,description,priorities,expires_at');
+      const mode = await sbFetch(`kiko_operational_mode?active=eq.true&user_id=eq.${userId}&order=created_at.desc&limit=1&select=id,mode,description,priorities,expires_at`);
       if (mode?.[0] && mode[0].mode !== 'default') {
         const m = mode[0];
         if (m.expires_at && new Date(m.expires_at) < new Date()) {
@@ -878,16 +912,16 @@ export default async function handler(req, res) {
         write({ toolStatus: TOOL_LABELS[block.name] || `Running ${block.name}...` });
         const result = block.name === 'memory'
           ? await handleMemory(block.input)
-          : await executeTool(block.name, block.input, userEmail, pageContext);
+          : await executeTool(block.name, block.input, userEmail, pageContext, userId);
         // Handle navigation from any tool
         if ((block.name === 'navigate_page' || block.name === 'ask_navigator') && result?.navigated) write({ navigate: result.page });
         toolResults.push({
           type: 'tool_result', tool_use_id: block.id,
           content: typeof result === 'string' ? result : JSON.stringify(result).slice(0, 8000)
         });
-        logDecision(block.name, block.input, result, message); // Phase 8
-        trackOutput(block.name, intent, message, result); // Phase 18
-        journalInsight(block.name, block.input, result, message); // Phase 19
+        logDecision(block.name, block.input, result, message, userId); // Phase 8
+        trackOutput(block.name, intent, message, result, userId); // Phase 18
+        journalInsight(block.name, block.input, result, message, userId); // Phase 19
       }
       write({ toolStatus: null });
       messages.push({ role: 'assistant', content: response.content });
@@ -938,7 +972,7 @@ export default async function handler(req, res) {
       } catch {}
     }
     // Conversation Memory: extract insights for cross-session continuity
-    extractConversationInsights(message, responseText, intent);
+    extractConversationInsights(message, responseText, intent, userId);
 
     // ── UNIVERSAL LEARNING ENGINE — learns from EVERY conversation ──
     if (!['navigate', 'screen'].includes(intent) && responseText.length > 200) {
@@ -961,7 +995,7 @@ If nothing worth saving, return empty arrays.`,
         // Save facts to learning log
         for (const fact of (parsed.facts || []).slice(0, 3)) {
           await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({
-            user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
+            user_id: userId,
             category: 'auto_learning', content: fact,
             entity_name: parsed.entity || null, user_message: message.slice(0, 200),
           })});
@@ -970,14 +1004,14 @@ If nothing worth saving, return empty arrays.`,
         // Save personal context
         for (const personal of (parsed.personal || []).slice(0, 3)) {
           await sbFetch('kiko_personal_context', { method: 'POST', body: JSON.stringify({
-            category: 'inferred', key: personal.slice(0, 50), value: personal, source: 'conversation',
+            user_id: userId, category: 'inferred', key: personal.slice(0, 50), value: personal, source: 'conversation',
           })});
         }
 
         // Queue unknown topics for curiosity learning
         for (const topic of (parsed.unknown_topics || []).slice(0, 2)) {
           await sbFetch('kiko_curiosity_queue', { method: 'POST', body: JSON.stringify({
-            topic, category: parsed.category || 'general',
+            user_id: userId, topic, category: parsed.category || 'general',
             reason: 'Kiko lacked depth on this topic during conversation',
             source_conversation: message.slice(0, 200), priority: 7,
           })});

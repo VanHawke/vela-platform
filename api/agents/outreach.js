@@ -37,7 +37,7 @@ async function draftEmail({ to, subject, body, cc, thread_id }, userEmail) {
     if (!draftRes.ok) return `Failed to create draft: ${JSON.stringify(draft)}`;
     try { await sbFetch('activities', { method: 'POST', body: JSON.stringify({ type: 'email_drafted', entity_name: to, subject: subject || 'No subject', status: 'draft', metadata: { to, subject, draft_id: draft?.id } }) }); } catch {}
     // Phase 16: Track draft for edit delta learning
-    try { await sbFetch('kiko_draft_tracking', { method: 'POST', body: JSON.stringify({ user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063', gmail_draft_id: draft?.id, gmail_message_id: draft?.message?.id, original_content: body.slice(0, 2000), recipient: to, subject: subject || '', status: 'drafted' }) }); } catch {}
+    try { await sbFetch('kiko_draft_tracking', { method: 'POST', body: JSON.stringify({ user_id: userId, gmail_draft_id: draft?.id, gmail_message_id: draft?.message?.id, original_content: body.slice(0, 2000), recipient: to, subject: subject || '', status: 'drafted' }) }); } catch {}
     return `Draft created. To: ${to}${subject ? `, Subject: "${subject}"` : ''}. Saved in Gmail Drafts.`;
   } catch (e) { return `Draft error: ${e.message}`; }
 }
@@ -125,7 +125,7 @@ async function lemlistGetActivities({ campaign_id, type }) {
 }
 
 // ── Main Dispatch ──
-export async function callOutreachAgent(operation, params = {}, userEmail = 'sunny@vanhawke.com') {
+export async function callOutreachAgent(operation, params = {}, userEmail = 'sunny@vanhawke.com', userId = null) {
   try {
     switch (operation) {
       case 'draft_email': return await draftEmail(params, userEmail);

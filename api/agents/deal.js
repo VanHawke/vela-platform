@@ -59,7 +59,7 @@ COMMON ALIASES:
 - "in dialogue" / "talking" / "in discussion" → "In Dialogue"
 `;
 
-export async function callDealAgent(instruction, userEmail = 'sunny@vanhawke.com') {
+export async function callDealAgent(instruction, userEmail = 'sunny@vanhawke.com', userId = null) {
   try {
     // Ask Claude to parse the instruction into a structured operation
     const response = await anthropic.messages.create({
@@ -138,7 +138,7 @@ async function moveStage({ company, new_stage, reason }) {
       // Store lessons in learning log
       for (const lesson of (parsed.lessons || []).slice(0, 3)) {
         await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({
-          user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063', category: 'win_loss',
+          user_id: userId, category: 'win_loss',
           content: `[${new_stage.toUpperCase()}] ${match.data.company}: ${lesson}`, entity_name: match.data.company,
         })});
       }
