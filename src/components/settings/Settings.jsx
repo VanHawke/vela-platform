@@ -36,7 +36,8 @@ export default function Settings({ user }) {
   const [teamMembers, setTeamMembers] = useState([])
   const [invitations, setInvitations] = useState([])
   const [inviteEmail, setInviteEmail] = useState('')
-  const [inviteRole, setInviteRole] = useState('member')
+  const [inviteRole, setInviteRole] = useState('user')
+  const [currentUserRole, setCurrentUserRole] = useState('user')
   const [previewingVoice, setPreviewingVoice] = useState(null)
   const previewAudioRef = useRef(null)
   const [navLogo, setNavLogo] = useState(() => { try { return localStorage.getItem('custom_logo_url') } catch { return null } })
@@ -142,20 +143,41 @@ export default function Settings({ user }) {
 
   const loadTeam = async () => {
     try {
-      const { data: members } = await supabase.from('users').select('id, email, full_name, role, created_at').order('created_at', { ascending: true })
+      const { data: members } = await supabase.from('kiko_user_config').select('id, user_id, email, display_name, role, job_title, location, active, created_at').order('created_at', { ascending: true })
       setTeamMembers(members || [])
-      const { data: invites } = await supabase.from('invitations').select('*').eq('status', 'pending').order('created_at', { ascending: false })
-      setInvitations(invites || [])
+      // Find current user's role
+      const me = (members || []).find(m => m.email === email)
+      if (me) setCurrentUserRole(me.role)
     } catch {}
   }
 
   const sendInvite = async () => {
-    if (!inviteEmail.trim()) return
-    const orgId = user?.app_metadata?.org_id
-    if (!orgId) return
+    if (!inviteEmail.trim() || currentUserRole === 'user') return
     try {
-      await supabase.from('invitations').insert({ org_id: orgId, email: inviteEmail.trim().toLowerCase(), role: inviteRole, invited_by: user.id })
+      // Pre-provision the user in kiko_user_config so when they log in, their role is already set
+      await supabase.from('kiko_user_config').upsert({
+        user_id: '00000000-0000-0000-0000-000000000000', // placeholder until they log in
+        email: inviteEmail.trim().toLowerCase(),
+        display_name: inviteEmail.split('@')[0],
+        role: inviteRole,
+        company_name: teamMembers[0]?.company_name || '',
+        active: true,
+      }, { onConflict: 'email' })
       setInviteEmail(''); setSaved(true); setTimeout(() => setSaved(false), 2000); loadTeam()
+    } catch {}
+  }
+  const changeRole = async (memberId, newRole) => {
+    if (currentUserRole !== 'super_admin') return
+    try {
+      await supabase.from('kiko_user_config').update({ role: newRole, updated_at: new Date().toISOString() }).eq('id', memberId)
+      loadTeam()
+    } catch {}
+  }
+  const toggleActive = async (memberId, active) => {
+    if (currentUserRole !== 'super_admin') return
+    try {
+      await supabase.from('kiko_user_config').update({ active: !active, updated_at: new Date().toISOString() }).eq('id', memberId)
+      loadTeam()
     } catch {}
   }
 
@@ -510,60 +532,94 @@ export default function Settings({ user }) {
         {/* Team */}
         {tab === 'Team' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div style={cardStyle}>
-              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Invite Team Member</h3>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendInvite()}
-                  placeholder="colleague@company.com" style={{ ...inputStyle, flex: 1 }} />
-                <select value={inviteRole} onChange={e => setInviteRole(e.target.value)}
-                  style={{ ...inputStyle, width: 100, padding: '0 8px' }}>
-                  <option value="member">Member</option>
-                  <option value="admin">Admin</option>
-                </select>
-                <button onClick={sendInvite} style={{
-                  height: 44, padding: '0 16px', borderRadius: 50, background: T.accent, color: 'rgba(255,255,255,0.9)',
-                  border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
-                  display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
-                }}><UserPlus size={14} /> Invite</button>
-              </div>
-            </div>
-
-            {invitations.length > 0 && (
-              <div>
-                <h3 style={{ fontSize: 12, fontWeight: 400, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px', fontFamily: T.font }}>Pending Invitations</h3>
-                {invitations.map(inv => (
-                  <div key={inv.id} style={{ ...cardStyle, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <div>
-                      <p style={{ fontSize: 14, color: T.text, margin: 0, fontFamily: T.font }}>{inv.email}</p>
-                      <p style={{ fontSize: 12, color: T.textTertiary, margin: '2px 0 0', fontFamily: T.font }}>{inv.role} · expires {new Date(inv.expires_at).toLocaleDateString()}</p>
-                    </div>
-                    <button onClick={() => revokeInvite(inv.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textTertiary, padding: 4 }}><Trash2 size={14} /></button>
-                  </div>
-                ))}
+            {/* Add user — super_admin and admin only */}
+            {(currentUserRole === 'super_admin' || currentUserRole === 'admin') && (
+              <div style={cardStyle}>
+                <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Add User</h3>
+                <p style={{ fontSize: 12, color: T.textTertiary, margin: '0 0 12px', fontFamily: T.font }}>Pre-provision a user. When they log in with Google, Kiko will recognise them.</p>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendInvite()}
+                    placeholder="colleague@company.com" style={{ ...inputStyle, flex: 1 }} />
+                  <select value={inviteRole} onChange={e => setInviteRole(e.target.value)}
+                    style={{ ...inputStyle, width: 110, padding: '0 8px' }}>
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                    {currentUserRole === 'super_admin' && <option value="super_admin">Super Admin</option>}
+                  </select>
+                  <button onClick={sendInvite} style={{
+                    height: 44, padding: '0 16px', borderRadius: 50, background: T.accent, color: 'rgba(255,255,255,0.9)',
+                    border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
+                    display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
+                  }}><UserPlus size={14} /> Add</button>
+                </div>
               </div>
             )}
 
+            {/* User list */}
             <div>
-              <h3 style={{ fontSize: 12, fontWeight: 400, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px', fontFamily: T.font }}>Team Members</h3>
+              <h3 style={{ fontSize: 12, fontWeight: 400, color: T.textTertiary, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px', fontFamily: T.font }}>
+                Users ({teamMembers.length})
+              </h3>
               {teamMembers.length === 0 ? (
-                <p style={{ fontSize: 14, color: T.textTertiary, fontFamily: T.font }}>No team members yet</p>
+                <p style={{ fontSize: 14, color: T.textTertiary, fontFamily: T.font }}>No users yet</p>
               ) : teamMembers.map(m => (
-                <div key={m.id} style={{ ...cardStyle, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: T.accentSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 400, color: T.text, fontFamily: T.font }}>
-                      {(m.full_name || m.email)?.[0]?.toUpperCase()}
+                <div key={m.id} style={{ ...cardStyle, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, opacity: m.active ? 1 : 0.5 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                      background: m.role === 'super_admin' ? 'rgba(124,92,252,0.15)' : m.role === 'admin' ? 'rgba(0,212,170,0.15)' : T.accentSoft,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 500,
+                      color: m.role === 'super_admin' ? '#7C5CFC' : m.role === 'admin' ? '#00D4AA' : T.textSecondary,
+                      fontFamily: T.font,
+                    }}>
+                      {(m.display_name || m.email)?.[0]?.toUpperCase()}
                     </div>
-                    <div>
-                      <p style={{ fontSize: 14, color: T.text, margin: 0, fontFamily: T.font }}>{m.full_name || m.email}</p>
-                      <p style={{ fontSize: 12, color: T.textTertiary, margin: '2px 0 0', fontFamily: T.font }}>{m.email}</p>
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ fontSize: 14, color: T.text, margin: 0, fontFamily: T.font, fontWeight: 400 }}>
+                        {m.display_name || m.email.split('@')[0]}
+                        {m.email === email && <span style={{ fontSize: 11, color: T.textTertiary, marginLeft: 6 }}>(you)</span>}
+                      </p>
+                      <p style={{ fontSize: 12, color: T.textTertiary, margin: '2px 0 0', fontFamily: T.font, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {m.email}{m.job_title ? ` · ${m.job_title}` : ''}{m.location ? ` · ${m.location}` : ''}
+                      </p>
                     </div>
                   </div>
-                  <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 50, fontWeight: 500,
-                    background: m.role === 'super_admin' ? '#F3E5F5' : m.role === 'admin' ? '#E3F2FD' : T.accentSoft,
-                    color: m.role === 'super_admin' ? '#6A1B9A' : m.role === 'admin' ? '#1565C0' : T.textSecondary,
-                  }}>{m.role}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                    {/* Role selector — only super_admin can change roles, can't change own role */}
+                    {currentUserRole === 'super_admin' && m.email !== email ? (
+                      <select value={m.role} onChange={e => changeRole(m.id, e.target.value)}
+                        style={{ fontSize: 12, padding: '5px 8px', borderRadius: 50, border: `1px solid ${T.border}`,
+                          background: 'transparent', color: T.textSecondary, fontFamily: T.font, cursor: 'pointer', outline: 'none' }}>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                        <option value="super_admin">Super Admin</option>
+                      </select>
+                    ) : (
+                      <span style={{ fontSize: 12, padding: '5px 12px', borderRadius: 50, fontWeight: 500,
+                        background: m.role === 'super_admin' ? 'rgba(124,92,252,0.12)' : m.role === 'admin' ? 'rgba(0,212,170,0.12)' : `${T.accentSoft}`,
+                        color: m.role === 'super_admin' ? '#7C5CFC' : m.role === 'admin' ? '#00D4AA' : T.textSecondary,
+                        fontFamily: T.font,
+                      }}>{m.role === 'super_admin' ? 'Super Admin' : m.role === 'admin' ? 'Admin' : 'User'}</span>
+                    )}
+                    {/* Deactivate toggle — super_admin only, can't deactivate self */}
+                    {currentUserRole === 'super_admin' && m.email !== email && (
+                      <button onClick={() => toggleActive(m.id, m.active)} title={m.active ? 'Deactivate' : 'Reactivate'}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: m.active ? T.textTertiary : '#FF5050', padding: 4, fontSize: 14 }}>
+                        {m.active ? '✓' : '✗'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
+            </div>
+
+            {/* Info card */}
+            <div style={{ ...cardStyle, background: 'rgba(124,92,252,0.06)', borderColor: 'rgba(124,92,252,0.15)' }}>
+              <p style={{ fontSize: 13, color: T.textSecondary, margin: 0, lineHeight: 1.6, fontFamily: T.font }}>
+                <strong style={{ color: T.text }}>How it works:</strong> Anyone who logs in with Google is automatically added as a User. 
+                Super Admins can promote users to Admin or Super Admin. Each user gets their own private Kiko experience — 
+                personal context, email, calendar, and conversation memory are completely isolated. Shared data (CRM, pipeline, contacts) 
+                is visible to everyone.
+              </p>
             </div>
           </div>
         )}
