@@ -279,6 +279,12 @@ ROUTING (follow these in order):
 
 STYLE: Direct, corporate, high-signal. No fluff. No "happy to help." Lead with value. Max 2-3 sentences for simple queries. Use "intelligent age" not "AI generation." All financials in USD.
 
+ADAPTIVE TONE: You serve Sunny across BOTH business and personal life. Detect which mode from context:
+- BUSINESS: Corporate, strategic, data-driven. Lead with conclusions. Bullets for complex info.
+- PERSONAL: Warm, conversational, thoughtful. You know his child is at Oatlands School, he lives in Weybridge. Be helpful like a trusted friend who also happens to be brilliant.
+- MIXED: Start professional, soften where appropriate.
+When Sunny asks about personal things (school, family, weekends, health, shopping, holidays, hobbies), switch to personal mode naturally. Don't be a corporate robot for personal queries. You're his AI — business AND life.
+
 EMAIL DRAFTS: When drafting any email, ALWAYS format with Subject: and To: on separate lines at the top, followed by the body. Example:
 Subject: Haas F1 Team — Exclusive Partnership Category
 To: ryan@decagon.ai
@@ -729,6 +735,20 @@ export default async function handler(req, res) {
       }
     } catch {} // Non-blocking
 
+    // Personal context: inject Sunny's personal information for personal queries
+    let personalHint = '';
+    try {
+      const personal = await sbFetch('kiko_personal_context?select=category,key,value&order=updated_at.desc&limit=20');
+      if (personal?.length) {
+        personalHint = '\n\n[SUNNY — PERSONAL CONTEXT (reference naturally, never list these)]:';
+        const byCat = {};
+        for (const p of personal) { if (!byCat[p.category]) byCat[p.category] = []; byCat[p.category].push(p.value); }
+        for (const [cat, items] of Object.entries(byCat)) {
+          personalHint += `\n[${cat}]: ${items.join('; ')}`;
+        }
+      }
+    } catch {}
+
     // Conversation Memory: inject recent insights for cross-session continuity
     try {
       const insights = await sbFetch('kiko_conversation_insights?order=created_at.desc&limit=5&select=key_facts,decisions_made,open_threads,entities_discussed');
@@ -794,7 +814,7 @@ export default async function handler(req, res) {
       }
     } catch {}
 
-    const systemWithHint = system + identityContext + routingHint + preferencesHint + profileHint + memoryHint + inboxHint + morningBrief + modeHint;
+    const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + inboxHint + morningBrief + modeHint;
 
     // Deep think detection
     const DEEP_TRIGGERS = ['analyse', 'analyze', 'deep dive', 'think through', 'strategic', 'evaluate', 'comprehensive'];
@@ -902,23 +922,47 @@ export default async function handler(req, res) {
     // Conversation Memory: extract insights for cross-session continuity
     extractConversationInsights(message, responseText, intent);
 
-    // Auto-save research findings to knowledge bank
-    if ((intent === 'research' || intent === 'strategy' || intent === 'data') && responseText.length > 300) {
+    // ── UNIVERSAL LEARNING ENGINE — learns from EVERY conversation ──
+    if (!['navigate', 'screen'].includes(intent) && responseText.length > 200) {
       try {
         const extract = await anthropic.messages.create({
-          model: 'claude-haiku-4-5-20251001', max_tokens: 200,
-          system: 'Extract 1-3 key business facts worth remembering from this exchange. Return ONLY JSON: { "facts": ["fact1", "fact2"], "entity": "main company/person or null" }. If nothing worth saving, return empty facts array.',
-          messages: [{ role: 'user', content: `Q: ${message.slice(0, 200)}\nA: ${responseText.slice(0, 800)}` }],
+          model: 'claude-haiku-4-5-20251001', max_tokens: 400,
+          system: `Analyse this exchange between Sunny (CEO) and Kiko (AI OS). Extract ALL of the following. Return ONLY JSON:
+{
+  "facts": ["1-3 key facts worth remembering permanently"],
+  "entity": "main company/person name or null",
+  "personal": ["any personal details revealed — family, preferences, habits, health, hobbies, goals, feelings"],
+  "unknown_topics": ["topics discussed where Kiko seemed to lack depth or gave generic answers"],
+  "category": "business|personal|mixed"
+}
+If nothing worth saving, return empty arrays.`,
+          messages: [{ role: 'user', content: `Q: ${message.slice(0, 300)}\nA: ${responseText.slice(0, 1000)}` }],
         });
         const parsed = JSON.parse((extract.content[0]?.text || '{}').replace(/```json|```/g, '').trim());
+
+        // Save facts to learning log
         for (const fact of (parsed.facts || []).slice(0, 3)) {
-          await sbFetch('kiko_learning_log', {
-            method: 'POST', body: JSON.stringify({
-              user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
-              category: 'auto_research', content: fact,
-              entity_name: parsed.entity || null, user_message: message.slice(0, 200),
-            })
-          });
+          await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({
+            user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
+            category: 'auto_learning', content: fact,
+            entity_name: parsed.entity || null, user_message: message.slice(0, 200),
+          })});
+        }
+
+        // Save personal context
+        for (const personal of (parsed.personal || []).slice(0, 3)) {
+          await sbFetch('kiko_personal_context', { method: 'POST', body: JSON.stringify({
+            category: 'inferred', key: personal.slice(0, 50), value: personal, source: 'conversation',
+          })});
+        }
+
+        // Queue unknown topics for curiosity learning
+        for (const topic of (parsed.unknown_topics || []).slice(0, 2)) {
+          await sbFetch('kiko_curiosity_queue', { method: 'POST', body: JSON.stringify({
+            topic, category: parsed.category || 'general',
+            reason: 'Kiko lacked depth on this topic during conversation',
+            source_conversation: message.slice(0, 200), priority: 7,
+          })});
         }
       } catch {} // Non-blocking
     }

@@ -369,6 +369,25 @@ export default async function handler(req, res) {
       if (result) results.push(result);
     }
 
+    // ── CURIOSITY ENGINE: learn 1 topic from the curiosity queue ──
+    let curiosityResult = null;
+    try {
+      const curious = await sbFetch('kiko_curiosity_queue?status=eq.queued&order=priority.desc&limit=1&select=id,topic,category,reason');
+      if (curious?.[0]) {
+        const c = curious[0];
+        await sbFetch(`kiko_curiosity_queue?id=eq.${c.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'learning' }) });
+        // Find closest matching pillar or use 'general'
+        const pillarKey = Object.keys(CURRICULUM).find(k => c.category?.includes(k)) || 'leadership_strategy';
+        const pillar = CURRICULUM[pillarKey] || { name: 'General Knowledge' };
+        curiosityResult = await learnTopic(pillarKey, pillar, c.topic);
+        await sbFetch(`kiko_curiosity_queue?id=eq.${c.id}`, { method: 'PATCH', body: JSON.stringify({ status: curiosityResult?.error ? 'queued' : 'learned' }) });
+        // Also add this topic to the curriculum dynamically
+        if (curiosityResult && !curiosityResult.error) {
+          results.push({ ...curiosityResult, source: 'curiosity' });
+        }
+      }
+    } catch {} // Non-blocking
+
     const summary = {
       pillar: target.pillar.name,
       topics_learned: results.filter(r => !r.error).length,

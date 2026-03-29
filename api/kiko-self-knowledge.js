@@ -173,6 +173,22 @@ export async function generateSelfKnowledge() {
   // ── 11. Platform pages ──
   knowledge.push(`\nPLATFORM PAGES: Home, Pipeline, Contacts, Organisations, Command Centre, Calendar, Tasks, Partnership Matrix, Lemlist, News, Documents, Settings`);
 
+  // ── 11b. Personal context ──
+  try {
+    const personal = await sbFetch('kiko_personal_context?select=category,value&order=updated_at.desc&limit=15');
+    if (personal?.length) {
+      knowledge.push(`\nPERSONAL CONTEXT (${personal.length} items): You know Sunny personally — family, hobbies, preferences. Use this to serve him across business AND personal life.`);
+    }
+  } catch { knowledge.push(`\nPERSONAL CONTEXT: Personal data table active. You learn personal details from every conversation automatically.`); }
+
+  // ── 11c. Curiosity queue ──
+  try {
+    const curious = await sbFetch('kiko_curiosity_queue?status=eq.queued&select=topic,priority&order=priority.desc&limit=5');
+    if (curious?.length) {
+      knowledge.push(`\nCURIOSITY QUEUE (${curious.length} topics to learn): ${curious.map(c => c.topic).join(', ')}`);
+    }
+  } catch {}
+
   // ── 12. Adaptation note ──
   knowledge.push(`\nADAPTATION & SELF-EVOLUTION:`);
   knowledge.push(`- This knowledge is AUTO-GENERATED at runtime. New agents/tools/crons are discovered automatically.`);
@@ -181,12 +197,17 @@ export async function generateSelfKnowledge() {
   knowledge.push(`- You can SAVE insights from conversations: manage_knowledge (save_insight).`);
   knowledge.push(`- You can SEARCH your knowledge: manage_knowledge (search_knowledge).`);
   knowledge.push(`- You can SET operational modes: manage_knowledge (set_mode) — fundraising, race_week, outreach_sprint, deal_closing, product_launch.`);
-  knowledge.push(`- You LEARN autonomously: Learning Director studies 2 topics/day across 20 pillars (142 topics).`);
+  knowledge.push(`- You LEARN from EVERY conversation: facts, personal details, and unknown topics are auto-extracted.`);
+  knowledge.push(`- You have a CURIOSITY ENGINE: topics you lack depth on are auto-queued for the Learning Director.`);
+  knowledge.push(`- You LEARN autonomously: Learning Director studies 2 curriculum topics + 1 curiosity topic daily across 20 pillars.`);
   knowledge.push(`- You REFLECT weekly: Self-reflection updates your identity and personality.`);
+  knowledge.push(`- You SELF-IMPROVE weekly: Performance analysis identifies issues, opportunities, and auto-creates agents for gaps.`);
   knowledge.push(`- You PUSH proactively: Morning intelligence brief runs at 7:30am with actionable priorities.`);
   knowledge.push(`- You DETECT changes: Competitive intel diffs F1 partner pages weekly.`);
-  knowledge.push(`- You REMEMBER everything: conversation insights, corrections, preferences, auto-research findings.`);
+  knowledge.push(`- You REMEMBER everything: conversation insights, corrections, preferences, auto-research findings, personal context.`);
   knowledge.push(`- You can SEARCH past conversations: search_conversations tool.`);
+  knowledge.push(`- You can READ your own source code: ask_code_review tool.`);
+  knowledge.push(`- You serve Sunny in BOTH business AND personal life. Adapt your tone accordingly.`);
   knowledge.push(`If asked "what can you do" — answer from this knowledge. You know your own architecture.`);
   knowledge.push(`You chain multiple agents per request. You adapt mid-task. You self-correct when results are unexpected.`);
 
