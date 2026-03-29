@@ -360,10 +360,12 @@ function buildNativeTools(userConfig) {
     if (country) tool.user_location.country = country;
     if (tz) tool.user_location.timezone = tz;
   }
-  return [
-    { type: 'memory_20250818', name: 'memory' },
-    tool,
-  ];
+  const tools = [tool];
+  // Anthropic memory tool stores per-API-key — only enable for super_admin to prevent cross-user leaks
+  if (userConfig?.role === 'super_admin') {
+    tools.unshift({ type: 'memory_20250818', name: 'memory' });
+  }
+  return tools;
 }
 
 // ── Memory Handler ──
@@ -502,7 +504,7 @@ export default async function handler(req, res) {
 
   // ── Load user config — drives all personalization ──
   const userConfig = await getUserConfig(userEmail);
-  const userId = userConfig.user_id;
+  const userId = userConfig.user_id || '00000000-0000-0000-0000-000000000000'; // safe fallback — matches nothing
   const isSuperAdmin = userConfig.role === 'super_admin';
 
   const system = SYSTEM_PROMPT
