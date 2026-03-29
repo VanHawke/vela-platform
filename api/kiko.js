@@ -490,7 +490,7 @@ export default async function handler(req, res) {
       write({ delta: '\n\nRequest timed out. Try a simpler question or try again.' });
       try { res.write('data: [DONE]\n\n'); res.end(); } catch {}
     }
-  }, 55000);
+  }, 115000);
 
   try {
     write({ toolStatus: 'Connecting...' });

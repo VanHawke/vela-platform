@@ -26,7 +26,7 @@
     { "path": "/api/cron-self-improvement", "schedule": "0 3 * * 0" }
   ],
   "functions": {
-    "api/kiko.js": { "maxDuration": 60 },
+    "api/kiko.js": { "maxDuration": 120 },
     "api/kiko-research.js": { "maxDuration": 120 },
     "api/kiko-code.js": { "maxDuration": 30 },
     "api/news-agent.js": { "maxDuration": 45 },
