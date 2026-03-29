@@ -839,16 +839,32 @@ export default async function handler(req, res) {
         params.thinking = { type: 'enabled', budget_tokens: 10000 };
         write({ toolStatus: 'Deep analysis...' });
       }
-      const stream = mcpServers.length > 0
-        ? anthropic.beta.messages.stream({ ...params, betas: ['mcp-client-2025-11-20'] })
-        : anthropic.beta.messages.stream(params);
-      for await (const event of stream) {
-        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') { write({ delta: event.delta.text }); responseText += event.delta.text; }
-        if (event.type === 'content_block_delta' && event.delta?.type === 'thinking_delta') write({ thinking: event.delta.thinking });
-        if (event.type === 'content_block_start' && event.content_block?.type === 'mcp_tool_use') write({ toolStatus: `MCP: ${event.content_block.name || 'calling'}...` });
-        if (event.type === 'content_block_start' && event.content_block?.type === 'mcp_tool_result') write({ toolStatus: null });
+      // Event processor
+      async function processStream(s) {
+        for await (const event of s) {
+          if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') { write({ delta: event.delta.text }); responseText += event.delta.text; }
+          if (event.type === 'content_block_delta' && event.delta?.type === 'thinking_delta') write({ thinking: event.delta.thinking });
+          if (event.type === 'content_block_start' && event.content_block?.type === 'mcp_tool_use') write({ toolStatus: `MCP: ${event.content_block.name || 'calling'}...` });
+          if (event.type === 'content_block_start' && event.content_block?.type === 'mcp_tool_result') write({ toolStatus: null });
+        }
+        return await s.finalMessage();
       }
-      return await stream.finalMessage();
+
+      // Try MCP first, fall back to non-MCP if it fails (e.g. expired Google token)
+      if (mcpServers.length > 0) {
+        try {
+          const mcpStream = anthropic.beta.messages.stream({ ...params, betas: ['mcp-client-2025-11-20'] });
+          return await processStream(mcpStream);
+        } catch (mcpErr) {
+          console.warn('[KIKO] MCP failed, falling back:', mcpErr.message?.slice(0, 120));
+          logError('mcp:stream', mcpErr.message?.slice(0, 200) || 'MCP stream failed', '', 'warning');
+          delete params.mcp_servers;
+          params.tools = allTools;
+          // Fall through to non-MCP below
+        }
+      }
+      const stream = anthropic.beta.messages.stream(params);
+      return await processStream(stream);
     }
 
     write({ toolStatus: intent !== 'general' ? `Intent: ${intent}` : 'Thinking...' });
