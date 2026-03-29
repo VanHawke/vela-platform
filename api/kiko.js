@@ -575,6 +575,8 @@ export default async function handler(req, res) {
       routingHint = '\n\n[ROUTING HINT: This is a KNOWLEDGE MANAGEMENT query. Use the manage_knowledge tool. Operations: add_source (add URL/document), search_knowledge (search knowledge base), list_sources (show sources), learn_topic (queue learning), save_insight (save a fact), create_agent (create a new dynamic specialist agent), list_agents (show custom agents), run_agent (execute a custom agent). If user says "create an agent for X" — design a system_prompt, pick relevant data_queries, and create it. You can create agents for ANY domain.]';
     } else if (intent === 'conversation_search') {
       routingHint = '\n\n[ROUTING HINT: This references a PAST CONVERSATION. Use the search_conversations tool with relevant keywords. Search for entity names, topics, or specific phrases the user mentions. Return the most relevant excerpts with dates.]';
+    } else if (intent === 'code_review') {
+      routingHint = '\n\n[ROUTING HINT: This is a SELF-ANALYSIS query. Use the ask_code_review tool. Operations: architecture (full codebase structure), review (review specific file — pass filename like "kiko.js" or "agents/deal.js"), performance (agent usage stats, error rates, cron health), suggest (AI-generated top 5 improvements), read (read raw source file). Default to "suggest" if the user just asks generally about improvements.]';
     } else if (intent === 'general') {
       routingHint = '\n\n[ROUTING HINT: This is a general question. You have FULL access to all tools — CRM, web search, Gmail, Calendar, all 23 specialist agents. Answer from your knowledge first, but if current data, business context, or research would improve the answer, use the appropriate tool. Do not hold back.]';
     }
@@ -761,6 +763,18 @@ export default async function handler(req, res) {
         }
       }
     } catch {}
+
+    // Pending draft actions — surface proactively
+    try {
+      const pending = await sbFetch('kiko_draft_actions?status=eq.pending&order=created_at.desc&limit=5&select=action_type,payload,created_at');
+      if (pending?.length) {
+        morningBrief += `\n\n[PENDING ACTIONS (${pending.length} waiting for approval):`;
+        for (const p of pending) {
+          morningBrief += `\n• ${p.payload?.suggested_action || p.action_type} (${p.payload?.entity || '?'})`;
+        }
+        morningBrief += `\nSurface these when briefing or when relevant to the conversation. Ask Sunny if he wants to approve or dismiss them.]`;
+      }
+    } catch {}
     } // end !voiceMode
 
     // Load operational mode (always, including voice)
@@ -780,7 +794,7 @@ export default async function handler(req, res) {
       }
     } catch {}
 
-    const systemWithHint = system + routingHint + preferencesHint + profileHint + memoryHint + inboxHint + morningBrief + modeHint;
+    const systemWithHint = system + identityContext + routingHint + preferencesHint + profileHint + memoryHint + inboxHint + morningBrief + modeHint;
 
     // Deep think detection
     const DEEP_TRIGGERS = ['analyse', 'analyze', 'deep dive', 'think through', 'strategic', 'evaluate', 'comprehensive'];

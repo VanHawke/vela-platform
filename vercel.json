@@ -21,7 +21,8 @@
     { "path": "/api/cron-morning-intelligence", "schedule": "30 7 * * 1-5" },
     { "path": "/api/cron-competitive-intel", "schedule": "0 2 * * 1" },
     { "path": "/api/cron-task-executor", "schedule": "30 8 * * 1-5" },
-    { "path": "/api/cron-email-template-learning", "schedule": "0 10 * * 0" }
+    { "path": "/api/cron-email-template-learning", "schedule": "0 10 * * 0" },
+    { "path": "/api/cron-self-improvement", "schedule": "0 3 * * 0" }
   ],
   "functions": {
     "api/kiko.js": { "maxDuration": 60 },
