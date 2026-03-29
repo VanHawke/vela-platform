@@ -135,7 +135,7 @@ async function extractConversationInsights(message, fullResponse, intent, userId
     // Update thread tracker for each mentioned entity
     for (const entity of (parsed.entities || []).slice(0, 3)) {
       try {
-        const existing = await sbFetch(`kiko_thread_tracker?entity_name=ilike.${encodeURIComponent(entity)}&limit=1`);
+        const existing = await sbFetch(`kiko_thread_tracker?entity_name=ilike.${encodeURIComponent(entity)}&user_id=eq.${userId}&limit=1`);
         if (existing?.length) {
           const t = existing[0];
           const decisions = [...(t.key_decisions || []), ...(parsed.decisions_made || [])].slice(-10);
@@ -149,7 +149,7 @@ async function extractConversationInsights(message, fullResponse, intent, userId
           })});
         } else {
           await sbFetch('kiko_thread_tracker', { method: 'POST', body: JSON.stringify({
-            entity_name: entity, entity_type: 'company',
+            entity_name: entity, entity_type: 'company', user_id: userId,
             thread_summary: (parsed.key_facts || []).join('; '),
             key_decisions: parsed.decisions_made || [],
             open_questions: parsed.open_threads || [],
@@ -367,18 +367,19 @@ function buildNativeTools(userConfig) {
 }
 
 // ── Memory Handler ──
-async function handleMemory(input) {
+async function handleMemory(input, userId) {
   const { command, path, file_text, old_str, new_str, insert_line, new_content, view_range } = input;
+  const uf = userId ? `&user_id=eq.${userId}` : ''; // user filter for all memory queries
   try {
     if (command === 'view') {
       if (!path || path === '/memories') {
-        const rows = await sbFetch('kiko_memories?select=path,is_directory,content&order=path.asc');
+        const rows = await sbFetch(`kiko_memories?select=path,is_directory,content&order=path.asc${uf}`);
         return 'Files in /memories:\n' + (rows || []).map(r => `${r.is_directory ? '4.0K' : `${((r.content||'').length/1024).toFixed(1)}K`}\t${r.path}`).join('\n');
       }
-      const rows = await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}&select=content,is_directory&limit=1`);
+      const rows = await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}${uf}&select=content,is_directory&limit=1`);
       if (!rows?.[0]) return `Error: not found: ${path}`;
       if (rows[0].is_directory) {
-        const ch = await sbFetch(`kiko_memories?path=like.${encodeURIComponent(path+'/%')}&select=path,content&order=path.asc`);
+        const ch = await sbFetch(`kiko_memories?path=like.${encodeURIComponent(path+'/%')}${uf}&select=path,content&order=path.asc`);
         return (ch||[]).map(r => `${((r.content||'').length/1024).toFixed(1)}K\t${r.path}`).join('\n');
       }
       const lines = (rows[0].content||'').split('\n');
@@ -386,24 +387,24 @@ async function handleMemory(input) {
       return lines.map((l,i)=>`${i+1}\t${l}`).join('\n');
     }
     if (command === 'create') {
-      await sbFetch('kiko_memories', { method:'POST', headers:{Prefer:'resolution=merge-duplicates'}, body: JSON.stringify({path, content:file_text||'', is_directory:false, org_id:'35975d96-c2c9-4b6c-b4d4-bb947ae817d5', updated_at:new Date().toISOString()}) });
+      await sbFetch('kiko_memories', { method:'POST', headers:{Prefer:'resolution=merge-duplicates'}, body: JSON.stringify({path, content:file_text||'', is_directory:false, user_id: userId, updated_at:new Date().toISOString()}) });
       return `Created ${path}`;
     }
     if (command === 'str_replace') {
-      const rows = await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}&select=content&limit=1`);
+      const rows = await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}${uf}&select=content&limit=1`);
       if (!rows?.[0]) return `Error: not found: ${path}`;
-      await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}`, { method:'PATCH', body: JSON.stringify({content:rows[0].content.replace(old_str, new_str), updated_at:new Date().toISOString()}) });
+      await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}${uf}`, { method:'PATCH', body: JSON.stringify({content:rows[0].content.replace(old_str, new_str), updated_at:new Date().toISOString()}) });
       return `Replaced in ${path}`;
     }
     if (command === 'insert') {
-      const rows = await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}&select=content&limit=1`);
+      const rows = await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}${uf}&select=content&limit=1`);
       if (!rows?.[0]) return `Error: not found: ${path}`;
       const lines = rows[0].content.split('\n'); lines.splice(insert_line, 0, new_content);
-      await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}`, { method:'PATCH', body: JSON.stringify({content:lines.join('\n'), updated_at:new Date().toISOString()}) });
+      await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}${uf}`, { method:'PATCH', body: JSON.stringify({content:lines.join('\n'), updated_at:new Date().toISOString()}) });
       return `Inserted at line ${insert_line} in ${path}`;
     }
     if (command === 'delete') {
-      await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}`, {method:'DELETE'});
+      await sbFetch(`kiko_memories?path=eq.${encodeURIComponent(path)}${uf}`, {method:'DELETE'});
       return `Deleted ${path}`;
     }
     return `Unknown memory command: ${command}`;
@@ -473,7 +474,7 @@ export default async function handler(req, res) {
   // Load Kiko's self-model (identity) for all conversations
   let identityContext = '';
   try {
-    const identity = await sbFetch('kiko_memories?path=eq./memories/identity.md&select=content&limit=1');
+    const identity = await sbFetch(`kiko_memories?path=eq./memories/identity.md&user_id=eq.${userId}&select=content&limit=1`);
     if (identity?.[0]?.content) identityContext = '\n\n── KIKO IDENTITY ──\n' + identity[0].content.slice(0, 2000);
   } catch {}
 
@@ -482,7 +483,7 @@ export default async function handler(req, res) {
   let preloadedMemory = '';
   if (voiceMode || currentPage === 'voice') {
     try {
-      const memRows = await sbFetch('kiko_memories?select=path,content&is_directory=eq.false&path=eq./memories/sunny_profile.md&order=path.asc');
+      const memRows = await sbFetch(`kiko_memories?select=path,content&is_directory=eq.false&user_id=eq.${userId}&path=like./memories/%_profile.md&order=path.asc`);
       if (memRows?.length) preloadedMemory = '\n\n── MEMORY ──\n' + memRows.map(r => r.content).join('\n\n');
     } catch {}
     voiceRules = '\n\nVOICE MODE — SPEED IS CRITICAL:\n- Max 2 sentences. No markdown. Say numbers naturally.\n- For greetings (hi, hello, hey, good morning): respond IMMEDIATELY with a warm 1-sentence reply. Do NOT call any tools.\n- For simple questions you can answer from the system prompt context: respond IMMEDIATELY. Do NOT call tools.\n- ONLY call a tool if the user explicitly asks for data, actions, or information you genuinely cannot answer without it.\n- NEVER call memory tools — memory is already pre-loaded above.\n- Keep responses SHORT and spoken-word natural. No lists. No headers.';
@@ -681,7 +682,7 @@ export default async function handler(req, res) {
           // Phase 17: Relationship intelligence
           if (contacts?.[0]?.data?.email) {
             try {
-              const rel = await sbFetch(`kiko_relationships?contact_email=eq.${encodeURIComponent(contacts[0].data.email.toLowerCase())}&limit=1`);
+              const rel = await sbFetch(`kiko_relationships?contact_email=eq.${encodeURIComponent(contacts[0].data.email.toLowerCase())}&user_id=eq.${userId}&limit=1`);
               if (Array.isArray(rel) && rel[0]) {
                 const r = rel[0];
                 routingHint += `\n[RELATIONSHIP: ${r.warmth_score > 0.6 ? 'WARM' : r.warmth_score > 0.35 ? 'LUKEWARM' : 'COLD'} | ${r.emails_sent} sent, ${r.emails_received} received | Type: ${r.relationship_type} | Last contact: ${r.last_sent_at ? new Date(r.last_sent_at).toLocaleDateString('en-GB') : 'unknown'}]`;
@@ -690,7 +691,7 @@ export default async function handler(req, res) {
           }
           // Load learned email templates for drafting
           try {
-            const templates = await sbFetch('kiko_memories?path=eq./memories/email_templates.md&select=content&limit=1');
+            const templates = await sbFetch(`kiko_memories?path=eq./memories/email_templates.md&user_id=eq.${userId}&select=content&limit=1`);
             if (templates?.[0]?.content) {
               routingHint += `\n\n[LEARNED EMAIL TEMPLATES — use these patterns when drafting]:\n${templates[0].content.slice(0, 1000)}`;
             }
@@ -730,7 +731,7 @@ export default async function handler(req, res) {
             const relevant = (convos || []).filter(c => (c.entities_discussed || []).some(e => e.toLowerCase().includes(primary.toLowerCase())));
             if (relevant.length) entityCtx += `\n💬 Discussed ${relevant.length} times recently: ${relevant[0]?.summary?.slice(0, 100) || ''}`;
             // Check for thread history (cross-session tracking)
-            const threads = await sbFetch(`kiko_thread_tracker?entity_name=ilike.*${encodeURIComponent(primary)}*&limit=1&select=discussion_count,thread_summary,key_decisions,open_questions,status`);
+            const threads = await sbFetch(`kiko_thread_tracker?entity_name=ilike.*${encodeURIComponent(primary)}*&user_id=eq.${userId}&limit=1&select=discussion_count,thread_summary,key_decisions,open_questions,status`);
             if (threads?.[0]) {
               const th = threads[0];
               entityCtx += `\n🔗 THREAD (${th.discussion_count}x): ${(th.thread_summary || '').slice(0, 150)}`;
@@ -921,7 +922,7 @@ export default async function handler(req, res) {
         if (block.type !== 'tool_use') continue;
         write({ toolStatus: TOOL_LABELS[block.name] || `Running ${block.name}...` });
         const result = block.name === 'memory'
-          ? await handleMemory(block.input)
+          ? await handleMemory(block.input, userId)
           : await executeTool(block.name, block.input, userEmail, pageContext, userId);
         // Handle navigation from any tool
         if ((block.name === 'navigate_page' || block.name === 'ask_navigator') && result?.navigated) write({ navigate: result.page });
