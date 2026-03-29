@@ -427,6 +427,66 @@ async function getWinLossInsights({ company }) {
   } catch (e) { return `Win/loss error: ${e.message}`; }
 }
 
+// ── Thread History — cross-session entity tracking ──
+async function getThreadHistory({ entity, company }) {
+  const target = entity || company;
+  if (!target) return 'Error: provide entity or company name';
+  try {
+    const threads = await sbFetch(`kiko_thread_tracker?entity_name=ilike.*${encodeURIComponent(target)}*&order=last_discussed_at.desc&limit=5&select=*`);
+    if (!threads?.length) return `No conversation threads found for "${target}".`;
+    let out = `THREAD HISTORY: ${target}\n\n`;
+    for (const t of threads) {
+      out += `📍 ${t.entity_name} (${t.entity_type}) — discussed ${t.discussion_count}x\n`;
+      out += `   First: ${new Date(t.first_discussed_at).toLocaleDateString('en-GB')} | Last: ${new Date(t.last_discussed_at).toLocaleDateString('en-GB')}\n`;
+      if (t.thread_summary) out += `   Summary: ${t.thread_summary.slice(0, 200)}\n`;
+      if (t.key_decisions?.length) out += `   Decisions: ${t.key_decisions.join('; ')}\n`;
+      if (t.open_questions?.length) out += `   Open: ${t.open_questions.join('; ')}\n`;
+      out += `   Status: ${t.status}\n\n`;
+    }
+    return out;
+  } catch (e) { return `Thread history error: ${e.message}`; }
+}
+
+// ── Deal Prediction — score deals by closure likelihood ──
+async function predictDealOutcomes() {
+  try {
+    const deals = await sbFetch('deals?select=id,data,updated_at&data->>status=eq.active&limit=100');
+    if (!deals?.length) return 'No active deals to score.';
+    const now = new Date();
+    const stageProb = { 'To revisit': 0.05, 'Contact made': 0.10, 'Qualified': 0.20, 'In Dialogue': 0.35, 'Meeting arranged (brand x RH)': 0.50, 'Proposal Sent': 0.60, 'Negotiation': 0.75, 'Verbal Agreement': 0.90, 'Contract Review': 0.95 };
+    
+    // Get win/loss patterns
+    const winLoss = await sbFetch('kiko_win_loss_analysis?select=key_factors,outcome&limit=20');
+    const winFactors = (winLoss || []).filter(w => w.outcome === 'won').flatMap(w => w.key_factors || []);
+    
+    const scored = deals.map(d => {
+      const dd = d.data || {};
+      const stageScore = stageProb[dd.stage] || 0.15;
+      const daysSinceUpdate = Math.floor((now - new Date(d.updated_at)) / 86400000);
+      const freshnessScore = daysSinceUpdate < 7 ? 1.0 : daysSinceUpdate < 14 ? 0.7 : daysSinceUpdate < 30 ? 0.4 : 0.1;
+      const valueScore = (dd.value || 0) > 100000 ? 1.0 : (dd.value || 0) > 50000 ? 0.8 : 0.5;
+      const composite = (stageScore * 0.5 + freshnessScore * 0.3 + valueScore * 0.2);
+      return { company: dd.company, stage: dd.stage, value: dd.value, daysSinceUpdate, score: Math.round(composite * 100), pipeline: dd.pipeline };
+    });
+    scored.sort((a, b) => b.score - a.score);
+    
+    let out = `DEAL PREDICTION (${scored.length} active deals scored):\n\n`;
+    out += `🟢 HIGH PROBABILITY (>60%):\n`;
+    for (const d of scored.filter(s => s.score > 60)) out += `  ${d.company} — ${d.stage} ($${d.value?.toLocaleString() || '?'}) — ${d.score}% | ${d.daysSinceUpdate}d stale\n`;
+    out += `\n🟡 MEDIUM (30-60%):\n`;
+    for (const d of scored.filter(s => s.score >= 30 && s.score <= 60).slice(0, 10)) out += `  ${d.company} — ${d.stage} ($${d.value?.toLocaleString() || '?'}) — ${d.score}% | ${d.daysSinceUpdate}d stale\n`;
+    out += `\n🔴 LOW (<30%):\n`;
+    const low = scored.filter(s => s.score < 30);
+    out += `  ${low.length} deals at low probability\n`;
+    
+    // Weighted pipeline value
+    const weighted = scored.reduce((s, d) => s + (d.value || 0) * d.score / 100, 0);
+    out += `\n💰 WEIGHTED PIPELINE: $${Math.round(weighted).toLocaleString()} (vs $${scored.reduce((s, d) => s + (d.value || 0), 0).toLocaleString()} total)\n`;
+    if (winFactors.length) out += `\n📈 Winning factors from past deals: ${[...new Set(winFactors)].slice(0, 5).join('; ')}`;
+    return out;
+  } catch (e) { return `Deal prediction error: ${e.message}`; }
+}
+
 // ── Main Dispatch ──
 // Called by Kiko Prime. Routes to the correct handler based on operation.
 export async function callDataAgent(operation, params = {}, userEmail = 'sunny@vanhawke.com') {
@@ -455,7 +515,9 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
       case 'outreach_timing': return await getOutreachTiming(params, userEmail);
       case 'warm_path': return await findWarmPath(params);
       case 'win_loss': return await getWinLossInsights(params);
-      default: return `Unknown data operation: ${operation}. Available: search_contacts, search_companies, search_deals, entity_detail, alerts, email_analytics, outreach_intelligence, outreach_timing, stale_contacts, news, partnership_matrix, pipeline_notifications, deal_history, activity_feed, search_documents, past_conversations, recent_conversations, learning_search, learning_save, skills, bookmark, warm_path, win_loss`;
+      case 'thread_history': return await getThreadHistory(params);
+      case 'deal_prediction': return await predictDealOutcomes();
+      default: return `Unknown data operation: ${operation}. Available: search_contacts, search_companies, search_deals, entity_detail, alerts, email_analytics, outreach_intelligence, outreach_timing, stale_contacts, news, partnership_matrix, pipeline_notifications, deal_history, activity_feed, search_documents, past_conversations, recent_conversations, learning_search, learning_save, skills, bookmark, warm_path, win_loss, thread_history, deal_prediction`;
     }
   } catch (err) {
     return `Data Agent error (${operation}): ${err.message}`;

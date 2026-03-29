@@ -112,6 +112,32 @@ async function extractConversationInsights(message, fullResponse, intent) {
         summary: `${(parsed.key_facts || []).join('; ')}`.slice(0, 200),
       })
     });
+
+    // Update thread tracker for each mentioned entity
+    for (const entity of (parsed.entities || []).slice(0, 3)) {
+      try {
+        const existing = await sbFetch(`kiko_thread_tracker?entity_name=ilike.${encodeURIComponent(entity)}&limit=1`);
+        if (existing?.length) {
+          const t = existing[0];
+          const decisions = [...(t.key_decisions || []), ...(parsed.decisions_made || [])].slice(-10);
+          const questions = [...(t.open_questions || []), ...(parsed.open_threads || [])].slice(-10);
+          await sbFetch(`kiko_thread_tracker?id=eq.${t.id}`, { method: 'PATCH', body: JSON.stringify({
+            discussion_count: (t.discussion_count || 0) + 1,
+            last_discussed_at: new Date().toISOString(),
+            key_decisions: decisions, open_questions: questions,
+            thread_summary: `${t.thread_summary || ''}; ${(parsed.key_facts || []).join('; ')}`.slice(-500),
+            updated_at: new Date().toISOString(),
+          })});
+        } else {
+          await sbFetch('kiko_thread_tracker', { method: 'POST', body: JSON.stringify({
+            entity_name: entity, entity_type: 'company',
+            thread_summary: (parsed.key_facts || []).join('; '),
+            key_decisions: parsed.decisions_made || [],
+            open_questions: parsed.open_threads || [],
+          })});
+        }
+      } catch {} // Non-blocking per entity
+    }
   } catch {} // Non-blocking
 }
 
@@ -247,6 +273,9 @@ ROUTING (follow these in order):
 
 28. EMAIL TRIAGE → call trigger_triage
    "check my emails" when inbox data is stale (>24h old), "refresh inbox", "what's in my inbox right now". Always check kiko_inbox_triage freshness first — if today's date matches, use the cached data. If stale, trigger fresh triage.
+
+29. CODE SELF-ANALYSIS → call ask_code_review
+   "review your code", "analyse your architecture", "how can you improve", "suggest improvements", "performance report", "what are your weaknesses", "read your source code". Operations: architecture (codebase structure), review (specific file), performance (analytics), suggest (AI improvement recommendations), read (raw source).
 
 STYLE: Direct, corporate, high-signal. No fluff. No "happy to help." Lead with value. Max 2-3 sentences for simple queries. Use "intelligent age" not "AI generation." All financials in USD.
 
@@ -648,6 +677,14 @@ export default async function handler(req, res) {
             const convos = await sbFetch(`kiko_conversation_insights?select=summary,entities_discussed&order=created_at.desc&limit=10`);
             const relevant = (convos || []).filter(c => (c.entities_discussed || []).some(e => e.toLowerCase().includes(primary.toLowerCase())));
             if (relevant.length) entityCtx += `\n💬 Discussed ${relevant.length} times recently: ${relevant[0]?.summary?.slice(0, 100) || ''}`;
+            // Check for thread history (cross-session tracking)
+            const threads = await sbFetch(`kiko_thread_tracker?entity_name=ilike.*${encodeURIComponent(primary)}*&limit=1&select=discussion_count,thread_summary,key_decisions,open_questions,status`);
+            if (threads?.[0]) {
+              const th = threads[0];
+              entityCtx += `\n🔗 THREAD (${th.discussion_count}x): ${(th.thread_summary || '').slice(0, 150)}`;
+              if (th.key_decisions?.length) entityCtx += `\n  Decided: ${th.key_decisions.slice(-3).join('; ')}`;
+              if (th.open_questions?.length) entityCtx += `\n  Open: ${th.open_questions.slice(-3).join('; ')}`;
+            }
             // Check for signals
             const signals = await sbFetch(`news_articles?matched_companies=cs.[{"name":"${primary}"}]&order=published_at.desc&limit=1&select=title,published_at`);
             if (signals?.length) entityCtx += `\n📰 Signal: ${signals[0].title}`;

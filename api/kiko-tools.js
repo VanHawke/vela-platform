@@ -249,6 +249,14 @@ export const TOOL_DEFINITIONS = [
     input_schema: { type: 'object', properties: {} },
   },
   {
+    name: 'ask_code_review',
+    description: 'Kiko self-analysis. Review own source code, analyse architecture, check performance analytics, generate improvement recommendations. Use when: "review your code", "analyse your architecture", "how can you improve", "what are your weaknesses", "performance report", "check your own code", "suggest improvements", "read your source".',
+    input_schema: { type: 'object', properties: {
+      operation: { type: 'string', enum: ['architecture', 'review', 'performance', 'suggest', 'read'], description: 'architecture: analyse full codebase structure. review: review a specific file for bugs/improvements. performance: agent usage + error rates + cron stats. suggest: AI-generated top 5 improvements. read: read a specific source file.' },
+      params: { type: 'object', description: 'For review/read: { filename: "kiko.js" or "agents/deal.js" }' },
+    }, required: ['operation'] },
+  },
+  {
     name: 'manage_knowledge',
     description: 'Manage Kiko\'s knowledge base AND create new agents. Use to: add a learning source, search knowledge, list sources, trigger learning, save insights, create a new specialist agent, or list custom agents. Use when: user says "learn about X", "add this source", "what do you know about X", "create an agent for Y", "show me your agents".',
     input_schema: { type: 'object', properties: {
@@ -595,6 +603,14 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
 
       return `Unknown knowledge operation: ${operation}`;
     } catch (e) { return `Knowledge management error: ${e.message}`; }
+  }
+
+  // ── Code Review / Self-Analysis ──
+  if (name === 'ask_code_review') {
+    try {
+      const { callCodeReviewAgent } = await import('./agents/code-review.js');
+      return await callCodeReviewAgent(input.operation, input.params || {});
+    } catch (e) { return agentError('CodeReview', e); }
   }
 
   // ── On-Demand Triage ──
