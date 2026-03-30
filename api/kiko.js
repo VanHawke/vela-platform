@@ -584,7 +584,7 @@ export default async function handler(req, res) {
     if (isFirstMessage && isGreeting && !voiceMode) {
       const lastMsg = messages[messages.length - 1];
       if (lastMsg && typeof lastMsg.content === 'string') {
-        messages[messages.length - 1] = { role: 'user', content: `${lastMsg.content}\n\n[CONTEXT: This is ${userConfig.display_name}'s first message of this session. DO NOT just say hello back. Greet them briefly (one line) then immediately give a 4-5 sentence proactive status update: any urgent alerts, stale deals needing attention, overdue tasks, recent signals, what you recommend they focus on. Be a Chief of Staff who walks in with the briefing, not a receptionist who says "how can I help you today." Lead with the most important thing.]` };
+        messages[messages.length - 1] = { role: 'user', content: `${lastMsg.content}\n\n[CONTEXT: This is ${userConfig.display_name}'s first message. Greet them briefly (one line) then give a 3-4 sentence proactive status using ONLY the intelligence brief, inbox triage, and pipeline data already in your system prompt. Do NOT call any tools — everything you need is already loaded above. Lead with the most important thing.]` };
       }
     }
 
@@ -896,9 +896,13 @@ export default async function handler(req, res) {
     }
 
     write({ toolStatus: intent !== 'general' ? `Intent: ${intent}` : 'Thinking...' });
-    let responseText = ''; // Accumulate for conversation memory extraction — declared before streamCall
+    let responseText = '';
     const requestStart = Date.now();
-    let response = await streamCall(messages);
+
+    // Fast-path for greetings and simple queries — skip tool loop entirely
+    const FAST_RESPONSE_INTENTS = ['greeting'];
+    const skipTools = FAST_RESPONSE_INTENTS.includes(intent) && conversationHistory.length === 0;
+    let response = await streamCall(messages, skipTools ? { noTools: true, maxTokens: 1500 } : {});
     let toolRounds = 0;
 
     // Tool execution loop — time-aware, stops before timeout
