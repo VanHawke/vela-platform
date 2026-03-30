@@ -866,7 +866,8 @@ export default async function handler(req, res) {
     async function streamCall(msgs, opts = {}) {
       // Tool rounds use Sonnet for speed. Only final synthesis uses Opus (if deep think).
       // fast: true forces Sonnet even if deep think was requested (used when time budget hit)
-      const useDeep = needsDeepThink && opts.noTools && !opts.fast;
+      // Only super_admin gets deep think (requires beta API)
+      const useDeep = isSuperAdmin && needsDeepThink && opts.noTools && !opts.fast;
       
       // Build tools array with cache_control on last tool (caches entire tool block)
       let toolsWithCache = undefined;
@@ -888,7 +889,11 @@ export default async function handler(req, res) {
         params.thinking = { type: 'enabled', budget_tokens: 10000 };
         write({ toolStatus: 'Deep analysis...' });
       }
-      const stream = anthropic.beta.messages.stream(params);
+      // Non-super-admin: use non-beta API to prevent Anthropic memory injection
+      // Super-admin: use beta API (supports extended thinking + memory)
+      const stream = isSuperAdmin
+        ? anthropic.beta.messages.stream(params)
+        : anthropic.messages.stream(params);
       for await (const event of stream) {
         if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') { write({ delta: event.delta.text }); responseText += event.delta.text; }
         if (event.type === 'content_block_delta' && event.delta?.type === 'thinking_delta') write({ thinking: event.delta.thinking });

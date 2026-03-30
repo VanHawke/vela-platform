@@ -492,7 +492,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       setStreamText('')
     }
     finally { setStreaming(false); streamingRef.current = false }
-  }, [input, streaming, messages, user, activeConvId])
+  }, [input, streaming, messages, user, activeConvId, pendingAttachment])
 
   const processFileForKiko = async (file) => {
     if (!file || fileUploading || streaming) return
@@ -547,14 +547,23 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     const ic = welcome ? 17 : 15
     return (
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 8,
+        display: 'flex', flexDirection: 'column', gap: 0,
         background: T.glass, backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
-        borderRadius: 50, padding: welcome ? '7px 7px 7px 24px' : '4px 4px 4px 14px',
+        borderRadius: pendingAttachment ? 20 : 50, padding: welcome ? '7px 7px 7px 24px' : '4px 4px 4px 14px',
         border: `1.5px solid ${T.glassBorder}`,
         boxShadow: T.glassShadow,
         maxWidth: welcome ? 540 : (compact ? '100%' : 640),
         width: '100%', margin: '0 auto',
       }}>
+        {/* Pending image preview */}
+        {pendingAttachment?.previewUrl && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0 6px', borderBottom: `1px solid ${T.glassBorder}` }}>
+            <img src={pendingAttachment.previewUrl} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} />
+            <span style={{ fontSize: 12, color: T.textSecondary, fontFamily: T.font, flex: 1 }}>{pendingAttachment.name}</span>
+            <button onClick={() => { setPendingAttachment(null); setImagePreview(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textTertiary, padding: 4, fontSize: 16 }}>✕</button>
+          </div>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <input ref={fileInputRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx" onChange={e => { const f = e.target.files?.[0]; if (f) processFileForKiko(f); e.target.value = '' }} style={{ display: 'none' }} />
         {/* Paperclip */}
         <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} title="Attach file" style={{
@@ -568,7 +577,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         <input
           ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSubmit()}
-          placeholder={fileUploading ? "Analysing document..." : "Ask anything"} autoFocus
+          placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment or press send..." : "Ask anything"} autoFocus
           style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: welcome ? 15 : 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font, height: welcome ? 44 : 36, fontWeight: 300 }}
         />
         {/* Mic / Stop */}
@@ -629,19 +638,20 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} />
           </button>
         ) : (
-          <button onClick={() => handleSubmit()} disabled={!input.trim()} style={{
+          <button onClick={() => handleSubmit()} disabled={!input.trim() && !pendingAttachment} style={{
             width: welcome ? 42 : sz, height: welcome ? 42 : sz, borderRadius: 50,
-            background: input.trim() ? T.accentGradient : 'rgba(255,255,255,0.04)',
-            border: input.trim() ? 'none' : '1.5px solid rgba(255,255,255,0.1)',
+            background: (input.trim() || pendingAttachment) ? T.accentGradient : 'rgba(255,255,255,0.04)',
+            border: (input.trim() || pendingAttachment) ? 'none' : '1.5px solid rgba(255,255,255,0.1)',
             color: 'rgba(255,255,255,0.9)',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'all 0.15s', flexShrink: 0, opacity: input.trim() ? 0.9 : 0.5,
-            boxShadow: input.trim() ? '0 4px 16px rgba(139,108,246,0.3)' : 'none',
+            transition: 'all 0.15s', flexShrink: 0, opacity: (input.trim() || pendingAttachment) ? 0.9 : 0.5,
+            boxShadow: (input.trim() || pendingAttachment) ? '0 4px 16px rgba(139,108,246,0.3)' : 'none',
             marginLeft: 3,
           }}>
             <svg width={welcome ? 15 : 13} height={welcome ? 15 : 13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         )}
+      </div>
       </div>
     )
   }
