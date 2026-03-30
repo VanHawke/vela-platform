@@ -513,7 +513,8 @@ export default async function handler(req, res) {
     + (pageContext?.summary ? `\n[Context: ${pageContext.summary}${pageContext.stageDistribution ? ` | Stages: ${JSON.stringify(pageContext.stageDistribution)}` : ''}${pageContext.visibleItems ? `\nVisible: ${pageContext.visibleItems}` : ''}]` : '')
     + (PERSONALITIES[personality] || PERSONALITIES.executive)
     + pageRole + entityContext + voiceRules + preloadedMemory
-    + `\n\n[CRITICAL IDENTITY: The user you are speaking with RIGHT NOW is ${userConfig.display_name}. Address them as ${userConfig.display_name.split(' ')[0]}. Do NOT use any other name. Do NOT refer to them by any name from your memory — ONLY use the name provided here: ${userConfig.display_name}.]`;
+    + `\n\n[CRITICAL IDENTITY: The user you are speaking with RIGHT NOW is ${userConfig.display_name}. Address them as ${userConfig.display_name.split(' ')[0]}. Do NOT use any other name.]`
+    + (isSuperAdmin ? '' : `\n\n[MEMORY ISOLATION — CRITICAL: You may have memories stored from other users who share this system. You MUST completely ignore ALL memories that reference people, families, children, personal details, locations, or private matters that were NOT told to you by ${userConfig.display_name} in THIS conversation or in the personal context section above. If you have NO personal context items for this user, then you know NOTHING about their personal life — do not reference any memories about daughters, children, family, schools, addresses, books, legal matters, or any other personal details. Any such memories belong to a DIFFERENT user and are CONFIDENTIAL. Respond only with "I don't have any personal information about you yet" when asked about personal matters you have no data for.]`);
 
   // ── SSE setup ──
   res.setHeader('Content-Type', 'text/event-stream');
