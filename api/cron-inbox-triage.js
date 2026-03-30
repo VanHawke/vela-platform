@@ -35,8 +35,6 @@ export default async function handler(req, res) {
 }
 
 async function triageUser(userId, email, token, today) {
-
-async function triageUser(userId, email, token, today) {
     const searchRes = await fetch(
       `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=is:unread newer_than:1d -category:promotions -category:social&maxResults=20`,
       { headers: { Authorization: `Bearer ${token}` } }
@@ -94,11 +92,6 @@ async function triageUser(userId, email, token, today) {
 
     await writeTriage(userId, today, summary, priorityEmails);
     return { ok: true, total_unread: emails.length, action_required: actionCount, important: importantCount };
-  } catch (err) {
-    await logError('cron:inbox-triage', err.message);
-    await cronHeartbeat('cron-inbox-triage', 'error', { heartbeatId: __hbId, errorMessage: err.message });
-    return res.status(200).json({ ok: false, error: err.message });
-  }
 }
 
 async function writeTriage(userId, today, summary, priorityEmails) {
