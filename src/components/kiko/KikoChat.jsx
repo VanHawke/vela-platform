@@ -6,6 +6,7 @@ import T from '@/lib/theme'
 import taskManager from '@/lib/kikoTaskManager'
 import KikoVoice from './KikoVoice'
 import ChatHistory from './ChatHistory'
+import AllChatsView from './AllChatsView'
 import KikoSymbol from './KikoSymbol'
 import DoubleHelix from './DoubleHelix'
 import DraftPreview, { detectDraft } from './DraftPreview'
@@ -140,6 +141,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [fileUploading, setFileUploading] = useState(false)
   const [imagePreview, setImagePreview] = useState(null) // { url, name, file }
   const [pendingAttachment, setPendingAttachment] = useState(null) // { type, mediaType, data, previewUrl, name }
+  const [allChatsData, setAllChatsData] = useState(null) // { convos, onSelect, onDelete }
   const abortRef = useRef(null)
   const streamTextRef = useRef('')
   const lastQueryRef = useRef('')
@@ -744,7 +746,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   if (!hasMessages && !compact) {
     return (
       <div style={{ display: 'flex', height: '100%', flex: 1 }}>
-      {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} />}
+      {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
       <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
         style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'transparent', position: 'relative', overflow: 'hidden', minWidth: 0 }}>
         {chatDragOver && (
@@ -758,6 +760,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         )}
 
         {/* Center content */}
+        {allChatsData ? (
+          <AllChatsView
+            convos={allChatsData.convos}
+            onSelect={(conv) => { allChatsData.onSelect(conv); setAllChatsData(null) }}
+            onDelete={(conv) => { allChatsData.onDelete(conv); setAllChatsData(d => d ? { ...d, convos: d.convos.filter(c => c.id !== conv.id) } : null) }}
+            onClose={() => setAllChatsData(null)}
+          />
+        ) : (
         <div id="kikoHomeContent" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', transition: trans, overflow: 'auto', minHeight: 0, padding: '0 24px 20px' }}>
 
           {/* Top spacer — pushes avatar to visual centre */}
@@ -862,6 +872,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {/* Bottom spacer */}
           <div style={{ flex: voiceActive ? 1 : 0.3, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
         </div>
+        )}
 
         {/* LiveKit Voice overlay */}
         {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} />}
@@ -876,7 +887,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   // ── CONVERSATION STATE (text messages) ──
   return (
     <div style={{ display: 'flex', height: '100%' }}>
-      {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} />}
+      {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
     <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
       style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, background: 'transparent', position: 'relative', overflow: 'hidden' }}>
       {chatDragOver && (
@@ -888,6 +899,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <p style={{ fontSize: 13, color: T.textTertiary, fontFamily: T.font, margin: 0 }}>PDF, images, spreadsheets, text files</p>
         </div>
       )}
+      {allChatsData ? (
+        <AllChatsView
+          convos={allChatsData.convos}
+          onSelect={(conv) => { allChatsData.onSelect(conv); setAllChatsData(null) }}
+          onDelete={(conv) => { allChatsData.onDelete(conv); setAllChatsData(d => d ? { ...d, convos: d.convos.filter(c => c.id !== conv.id) } : null) }}
+          onClose={() => setAllChatsData(null)}
+        />
+      ) : (
       <div style={{ flex: 1, overflowY: 'auto', padding: compact ? 16 : 24 }}>
         <div style={{ maxWidth: compact ? '100%' : 680, margin: '0 auto', width: '100%' }}>
           {renderMessages(messages)}
@@ -956,6 +975,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <div ref={scrollRef} />
         </div>
       </div>
+      )}
       <div style={{ padding: compact ? 12 : 16, borderTop: `1.5px solid ${T.border}` }}>
         <div style={{ maxWidth: compact ? '100%' : 680, margin: '0 auto' }}>
           <PromptBar />
