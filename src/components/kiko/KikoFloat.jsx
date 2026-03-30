@@ -521,7 +521,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               <EqIcon size={14} color="rgba(6,214,160,0.7)" />
             </button>
             <button onClick={() => handleSubmit()} disabled={!input.trim() || streaming}
-              style={{ width: 28, height: 28, borderRadius: 50, border: 'none', background: input.trim() && !streaming ? T.accentGradient : 'rgba(255,255,255,0.04)', color: input.trim() && !streaming ? 'rgba(255,255,255,0.9)' : T.textTertiary, cursor: input.trim() && !streaming ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s', boxShadow: input.trim() ? '0 2px 8px rgba(139,108,246,0.2)' : 'none' }}>
+              style={{ width: 28, height: 28, borderRadius: 50, border: 'none', background: input.trim() && !streaming ? T.accentGradient : 'rgba(255,255,255,0.04)', color: input.trim() && !streaming ? 'rgba(255,255,255,0.9)' : T.textTertiary, cursor: input.trim() && !streaming ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s', boxShadow: input.trim() ? '0 2px 8px rgba(212,167,106,0.2)' : 'none' }}>
               <ArrowUp size={13} />
             </button>
           </div>
@@ -537,28 +537,28 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         </>}
         {/* Idle breathing ring — subtle purple */}
         {!open && !voiceOpen && <>
-          <div style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: '2px solid rgba(139,108,246,0.25)', animation: 'kikoPulseRing 4s ease-in-out infinite', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', inset: -14, borderRadius: '50%', border: '1.5px solid rgba(139,108,246,0.12)', animation: 'kikoPulseRing 4s ease-in-out 1s infinite', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: '2px solid rgba(212,167,106,0.25)', animation: 'kikoPulseRing 4s ease-in-out infinite', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', inset: -14, borderRadius: '50%', border: '1.5px solid rgba(212,167,106,0.12)', animation: 'kikoPulseRing 4s ease-in-out 1s infinite', pointerEvents: 'none' }} />
         </>}
         <button onClick={toggleOpen} className={fabClass} style={{
           width: 60, height: 60, borderRadius: '50%',
           background: voiceOpen
             ? 'radial-gradient(circle at 40% 35%, rgba(10,28,24,1), rgba(8,8,12,1))'
             : 'radial-gradient(circle at 40% 35%, rgba(35,28,55,1), rgba(15,13,22,1))',
-          border: voiceOpen ? '2px solid rgba(6,214,160,0.25)' : '2px solid rgba(139,108,246,0.35)',
+          border: voiceOpen ? '2px solid rgba(6,214,160,0.25)' : '2px solid rgba(212,167,106,0.35)',
           color: 'rgba(255,255,255,0.9)',
           cursor: 'pointer',
           boxShadow: voiceOpen
             ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)'
-            : '0 0 0 3px rgba(139,108,246,0.1), 0 0 28px rgba(139,108,246,0.15), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
+            : '0 0 0 3px rgba(212,167,106,0.1), 0 0 28px rgba(212,167,106,0.15), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           overflow: 'hidden',
           transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
           transformOrigin: 'center',
           position: 'relative',
         }}
-          onMouseEnter={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.4)' : 'rgba(139,108,246,0.35)'; e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 5px rgba(6,214,160,0.12), 0 0 40px rgba(6,214,160,0.2), 0 12px 36px rgba(0,0,0,0.5)' : '0 0 0 4px rgba(139,108,246,0.08), 0 0 32px rgba(139,108,246,0.12), 0 12px 36px rgba(0,0,0,0.5)' }}}
-          onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'rgba(139,108,246,0.18)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4)' : '0 0 0 3px rgba(139,108,246,0.05), 0 0 20px rgba(139,108,246,0.08), 0 8px 28px rgba(0,0,0,0.4)' }}}
+          onMouseEnter={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.4)' : 'rgba(212,167,106,0.35)'; e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 5px rgba(6,214,160,0.12), 0 0 40px rgba(6,214,160,0.2), 0 12px 36px rgba(0,0,0,0.5)' : '0 0 0 4px rgba(212,167,106,0.08), 0 0 32px rgba(212,167,106,0.12), 0 12px 36px rgba(0,0,0,0.5)' }}}
+          onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'rgba(212,167,106,0.18)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4)' : '0 0 0 3px rgba(212,167,106,0.05), 0 0 20px rgba(212,167,106,0.08), 0 8px 28px rgba(0,0,0,0.4)' }}}
         >
           {open
             ? <X size={18} />

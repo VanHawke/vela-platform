@@ -85,9 +85,9 @@ export default function Contacts({ user }) {
   const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 50, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
   const pillBtn = (bg, bc, col) => ({ padding: '8px 18px', borderRadius: 50, background: bg, border: `1.5px solid ${bc}`, fontSize: 12, color: col, fontWeight: 400, cursor: 'pointer', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)', fontFamily: 'var(--font)' })
   const actionBtn = { width: 30, height: 30, borderRadius: 50, background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.15)', cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)', flexShrink: 0 }
-  const stageColors = { 'To revisit': ['rgba(255,255,255,0.04)','rgba(255,255,255,0.08)','rgba(255,255,255,0.2)'], 'Contact made': ['rgba(139,108,246,0.08)','rgba(139,108,246,0.15)','rgba(139,108,246,0.55)'], 'In Dialogue': ['rgba(245,158,11,0.08)','rgba(245,158,11,0.15)','rgba(245,158,11,0.6)'], 'Qualified': ['rgba(6,214,160,0.08)','rgba(6,214,160,0.15)','rgba(6,214,160,0.55)'], 'Meeting arranged (brand x RH)': ['rgba(59,130,246,0.08)','rgba(59,130,246,0.15)','rgba(59,130,246,0.55)'] }
-  const avatarColors = ['rgba(139,108,246,0.15)', 'rgba(6,214,160,0.15)', 'rgba(236,72,153,0.15)', 'rgba(59,130,246,0.15)', 'rgba(245,158,11,0.15)']
-  const avatarTextColors = ['rgba(139,108,246,0.7)', 'rgba(6,214,160,0.7)', 'rgba(236,72,153,0.7)', 'rgba(59,130,246,0.7)', 'rgba(245,158,11,0.7)']
+  const stageColors = { 'To revisit': ['rgba(255,255,255,0.04)','rgba(255,255,255,0.08)','rgba(255,255,255,0.2)'], 'Contact made': ['rgba(212,167,106,0.08)','rgba(212,167,106,0.15)','rgba(212,167,106,0.55)'], 'In Dialogue': ['rgba(245,158,11,0.08)','rgba(245,158,11,0.15)','rgba(245,158,11,0.6)'], 'Qualified': ['rgba(6,214,160,0.08)','rgba(6,214,160,0.15)','rgba(6,214,160,0.55)'], 'Meeting arranged (brand x RH)': ['rgba(59,130,246,0.08)','rgba(59,130,246,0.15)','rgba(59,130,246,0.55)'] }
+  const avatarColors = ['rgba(212,167,106,0.15)', 'rgba(6,214,160,0.15)', 'rgba(236,72,153,0.15)', 'rgba(59,130,246,0.15)', 'rgba(245,158,11,0.15)']
+  const avatarTextColors = ['rgba(212,167,106,0.7)', 'rgba(6,214,160,0.7)', 'rgba(236,72,153,0.7)', 'rgba(59,130,246,0.7)', 'rgba(245,158,11,0.7)']
   const getAvatarColor = (name) => { const i = (name || '').charCodeAt(0) % 5; return [avatarColors[i], avatarTextColors[i]] }
   const getStage = (c) => { const s = c.stage || c.dealStage || ''; return stageColors[s] ? s : '' }
 
@@ -104,7 +104,7 @@ export default function Contacts({ user }) {
             <Search style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.2)', flexShrink: 0, marginRight: 8 }} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search contacts..." style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 14, color: 'rgba(255,255,255,0.7)', fontFamily: 'var(--font)', height: 38, fontWeight: 300 }} />
           </div>
-          <select value={sortDir} onChange={e => setSortDir(e.target.value)} style={pillBtn('rgba(139,108,246,0.08)','rgba(139,108,246,0.18)','rgba(139,108,246,0.65)')}>
+          <select value={sortDir} onChange={e => setSortDir(e.target.value)} style={pillBtn('rgba(212,167,106,0.08)','rgba(212,167,106,0.18)','rgba(212,167,106,0.65)')}>
             <option value="asc">A → Z</option><option value="desc">Z → A</option>
           </select>
           <button onClick={() => setShowForm(true)} style={pillBtn('rgba(6,214,160,0.08)','rgba(6,214,160,0.15)','rgba(6,214,160,0.6)')}>+ Add</button>

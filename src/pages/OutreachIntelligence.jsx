@@ -159,7 +159,7 @@ Be direct. Use web search for current company intelligence if needed.`
   const staleCount = priorityActions.filter(a => a.isStale).length
   const daysToRace = nextRace ? Math.ceil((new Date(nextRace.date) - now) / 86400000) : null
 
-  const urgencyColor = (u) => u >= 3 ? 'rgba(255,59,48,0.6)' : u >= 2 ? 'rgba(245,158,11,0.5)' : u >= 1 ? 'rgba(139,108,246,0.4)' : 'rgba(255,255,255,0.1)'
+  const urgencyColor = (u) => u >= 3 ? 'rgba(255,59,48,0.6)' : u >= 2 ? 'rgba(245,158,11,0.5)' : u >= 1 ? 'rgba(212,167,106,0.4)' : 'rgba(255,255,255,0.1)'
   const card = { background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 14, padding: 16 }
 
   if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}><Loader2 style={{ width: 24, height: 24, animation: 'spin 1s linear infinite', color: T.textTertiary }} /></div>
@@ -181,9 +181,9 @@ Be direct. Use web search for current company intelligence if needed.`
           {/* Stats bar */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
             <div style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
-              <Target size={14} style={{ color: 'rgba(139,108,246,0.5)', flexShrink: 0 }} />
+              <Target size={14} style={{ color: 'rgba(212,167,106,0.5)', flexShrink: 0 }} />
               <div>
-                <div style={{ fontSize: 17, fontWeight: 300, color: 'rgba(139,108,246,0.7)' }}>{deals.length}</div>
+                <div style={{ fontSize: 17, fontWeight: 300, color: 'rgba(212,167,106,0.7)' }}>{deals.length}</div>
                 <div style={{ fontSize: 10, color: T.textTertiary, fontWeight: 300 }}>Active deals</div>
               </div>
             </div>
@@ -268,14 +268,14 @@ Be direct. Use web search for current company intelligence if needed.`
             return (
               <div key={action.id} onClick={() => getKikoRec(action)} style={{
                 display: 'flex', gap: 10, alignItems: 'flex-start', padding: '11px 12px', borderRadius: 10, marginBottom: 4, cursor: 'pointer', transition: 'all 0.15s',
-                background: isSelected ? 'rgba(139,108,246,0.03)' : 'rgba(255,255,255,0.015)',
-                border: `1px solid ${isSelected ? 'rgba(139,108,246,0.2)' : 'rgba(255,255,255,0.03)'}`,
+                background: isSelected ? 'rgba(212,167,106,0.03)' : 'rgba(255,255,255,0.015)',
+                border: `1px solid ${isSelected ? 'rgba(212,167,106,0.2)' : 'rgba(255,255,255,0.03)'}`,
               }}
                 onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}}
                 onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.background = 'rgba(255,255,255,0.015)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.03)' }}}
               >
                 {/* Rank */}
-                <span style={{ fontSize: 11, color: i < 3 ? 'rgba(139,108,246,0.6)' : T.textTertiary, fontWeight: 500, width: 16, textAlign: 'center', flexShrink: 0, marginTop: 3 }}>{i + 1}</span>
+                <span style={{ fontSize: 11, color: i < 3 ? 'rgba(212,167,106,0.6)' : T.textTertiary, fontWeight: 500, width: 16, textAlign: 'center', flexShrink: 0, marginTop: 3 }}>{i + 1}</span>
                 {/* Company logo */}
                 <CompanyLogo name={d.company} size={28} />
                 {/* Urgency bar */}
@@ -291,7 +291,7 @@ Be direct. Use web search for current company intelligence if needed.`
                     <span style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300 }}>{action.stage}</span>
                     {action.value > 0 && <span style={{ fontSize: 11, color: 'rgba(0,212,170,0.4)', fontWeight: 300 }}>${(action.value / 1000000).toFixed(1)}M</span>}
                     <span style={{ fontSize: 11, color: action.daysSinceUpdate > 30 ? 'rgba(255,59,48,0.5)' : T.textTertiary, fontWeight: 300 }}>{action.daysSinceUpdate}d ago</span>
-                    <span style={{ fontSize: 11, color: 'rgba(139,108,246,0.3)', fontWeight: 300 }}>{action.prob}%</span>
+                    <span style={{ fontSize: 11, color: 'rgba(212,167,106,0.3)', fontWeight: 300 }}>{action.prob}%</span>
                   </div>
                 </div>
                 <ChevronRight size={12} style={{ color: 'rgba(255,255,255,0.08)', flexShrink: 0, marginTop: 8 }} />
@@ -305,7 +305,7 @@ Be direct. Use web search for current company intelligence if needed.`
       <div style={{ flex: 1, borderLeft: '1px solid rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.01)', flexShrink: 0, minWidth: 0 }}>
         <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 40, height: 12, overflow: 'hidden' }}><DoubleHelix width={40} height={12} mini /></div>
-          <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(139,108,246,0.6)', letterSpacing: '0.04em' }}>Kiko Intelligence</span>
+          <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(212,167,106,0.6)', letterSpacing: '0.04em' }}>Kiko Intelligence</span>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
@@ -319,7 +319,7 @@ Be direct. Use web search for current company intelligence if needed.`
           {kikoLoading && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '40px 0' }}>
               <div style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><DoubleHelix width={48} height={48} /></div>
-              <span style={{ fontSize: 13, color: 'rgba(139,108,246,0.6)', fontWeight: 400 }}>Analysing deal...</span>
+              <span style={{ fontSize: 13, color: 'rgba(212,167,106,0.6)', fontWeight: 400 }}>Analysing deal...</span>
             </div>
           )}
 
@@ -359,7 +359,7 @@ Be direct. Use web search for current company intelligence if needed.`
         {/* Action buttons */}
         {selectedAction && kikoRec && !kikoLoading && (
           <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(255,255,255,0.04)', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button onClick={() => getKikoRec(selectedAction)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(139,108,246,0.15)', background: 'rgba(139,108,246,0.04)', color: 'rgba(139,108,246,0.7)', cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Regenerate</button>
+            <button onClick={() => getKikoRec(selectedAction)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(212,167,106,0.15)', background: 'rgba(212,167,106,0.04)', color: 'rgba(212,167,106,0.7)', cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Regenerate</button>
             <button onClick={() => navigator.clipboard.writeText(kikoRec)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', color: T.textTertiary, cursor: 'pointer', fontFamily: T.font }}>Copy</button>
           </div>
         )}

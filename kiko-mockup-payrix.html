@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Kiko — Dashboard (Payrix Style)</title>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#F5F5F3;--white:#FFFFFF;--sidebar:#1C1C1E;
+  --teal:#3BB8C3;--teal-dark:#2A9DA8;--teal-light:#E8F7F8;
+  --orange:#FF6B35;--orange-light:rgba(255,107,53,0.08);
+  --green:#22C55E;--green-light:rgba(34,197,94,0.08);
+  --red:#EF4444;--red-light:rgba(239,68,68,0.08);
+  --text:#1C1C1E;--text-2:#6B6B6B;--text-3:#9CA3AF;--text-4:#D1D5DB;
+  --r:16px;--r-lg:20px;--r-sm:12px;
+  --shadow:0 1px 3px rgba(0,0,0,0.04),0 1px 2px rgba(0,0,0,0.02);
+  --font:'Urbanist',-apple-system,sans-serif;
+}
+body{background:var(--bg);font-family:var(--font);color:var(--text);height:100vh;display:flex;overflow:hidden}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside style="width:72px;background:var(--sidebar);display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:8px;flex-shrink:0">
+  <!-- Logo -->
+  <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--teal),#7BC9CE);display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+  </div>
+  <!-- Nav icons -->
+  <div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
+  </div>
+  <div style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+  </div>
+  <div style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+  </div>
+  <div style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+  </div>
+  <div style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+  </div>
+  <div style="flex:1"></div>
+  <div style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+  </div>
+  <!-- Avatar -->
+  <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--orange),#FFAA70);margin-top:8px"></div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main style="flex:1;overflow-y:auto;padding:24px 28px">
+  <!-- TOP BAR -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+    <div>
+      <div style="font-size:13px;color:var(--text-3);margin-bottom:2px">Updated today at 9:00 AM</div>
+      <h1 style="font-size:28px;font-weight:600;letter-spacing:-0.02em">Overview</h1>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div style="display:flex;background:var(--white);border-radius:var(--r);padding:4px;box-shadow:var(--shadow)">
+        <span style="padding:8px 16px;border-radius:var(--r-sm);background:var(--text);color:white;font-size:13px;font-weight:500">Day</span>
+        <span style="padding:8px 16px;border-radius:var(--r-sm);font-size:13px;color:var(--text-2);cursor:pointer">Week</span>
+        <span style="padding:8px 16px;border-radius:var(--r-sm);font-size:13px;color:var(--text-2);cursor:pointer">Month</span>
+      </div>
+      <div style="width:40px;height:40px;border-radius:var(--r-sm);background:var(--white);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;cursor:pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </div>
+      <div style="width:40px;height:40px;border-radius:var(--r-sm);background:var(--white);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;cursor:pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      </div>
+    </div>
+  </div>
+  <!-- HERO CARD - Account Value with gradient -->
+  <div style="background:linear-gradient(135deg,#A8E6CF,#88D8E0,#7BC9CE,#5BB8C3);border-radius:var(--r-lg);padding:28px 32px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start;box-shadow:0 4px 20px rgba(59,184,195,0.15)">
+    <div>
+      <div style="font-size:13px;color:rgba(0,0,0,0.5);margin-bottom:4px">Pipeline value</div>
+      <div style="font-size:36px;font-weight:600;color:var(--text);letter-spacing:-0.03em">$4,870,000</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+        <span style="padding:4px 10px;border-radius:8px;background:rgba(255,255,255,0.5);font-size:12px;font-weight:500;color:var(--text)">Active</span>
+        <span style="font-size:13px;color:rgba(0,0,0,0.4)">ID: VH-2026</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div style="width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,0.4);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <span style="font-size:10px;color:rgba(0,0,0,0.4)">Pipeline</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div style="width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,0.4);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span style="font-size:10px;color:rgba(0,0,0,0.4)">Add deal</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div style="width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,0.4);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.5"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        </div>
+        <span style="font-size:10px;color:rgba(0,0,0,0.4)">Export</span>
+      </div>
+    </div>
+  </div>
+  <!-- METRIC GRID -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;margin-bottom:20px">
+    <div style="background:var(--white);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:12px;color:var(--text-3)">Active deals</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-4)" stroke-width="1.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </div>
+      <div style="font-size:28px;font-weight:600;letter-spacing:-0.02em">14</div>
+      <div style="display:flex;align-items:center;gap:4px;margin-top:6px"><span style="font-size:11px;font-weight:500;color:var(--green)">+3</span><span style="font-size:11px;color:var(--text-3)">this week</span></div>
+    </div>
+    <div style="background:var(--white);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:12px;color:var(--text-3)">Win rate (90d)</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-4)" stroke-width="1.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </div>
+      <div style="font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--green)">87%</div>
+      <div style="display:flex;align-items:center;gap:4px;margin-top:6px"><span style="font-size:11px;font-weight:500;color:var(--green)">+15%</span><span style="font-size:11px;color:var(--text-3)">vs last Q</span></div>
+    </div>
+    <div style="background:var(--white);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:12px;color:var(--text-3)">Weighted forecast</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-4)" stroke-width="1.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </div>
+      <div style="font-size:28px;font-weight:600;letter-spacing:-0.02em">$2.1M</div>
+      <div style="display:flex;align-items:center;gap:4px;margin-top:6px"><span style="font-size:11px;font-weight:500;color:var(--green)">+$400K</span><span style="font-size:11px;color:var(--text-3)">this month</span></div>
+    </div>
+    <div style="background:var(--white);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:12px;color:var(--text-3)">Stale deals</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-4)" stroke-width="1.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </div>
+      <div style="font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--red)">3</div>
+      <div style="display:flex;align-items:center;gap:4px;margin-top:6px"><span style="font-size:11px;font-weight:500;color:var(--red)">14+ days</span><span style="font-size:11px;color:var(--text-3)">no activity</span></div>
+    </div>
+  </div>
+  <!-- TWO COLUMN: Deal Activity + Top Deals -->
+  <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-bottom:20px">
+    <!-- Deal Activity Chart -->
+    <div style="background:var(--white);border-radius:var(--r);padding:24px;box-shadow:var(--shadow)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div>
+          <div style="font-size:16px;font-weight:600">Deal activity</div>
+          <div style="font-size:12px;color:var(--text-3);margin-top:2px">123 interactions this week</div>
+        </div>
+        <div style="display:flex;gap:12px;font-size:11px">
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--green)"></span>Won</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--red)"></span>Lost</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--orange)"></span>Active</span>
+        </div>
+      </div>
+      <!-- Simplified bar chart -->
+      <div style="display:flex;align-items:flex-end;gap:6px;height:140px;padding-bottom:24px;border-bottom:1px solid var(--bg)">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <div style="width:100%;border-radius:4px 4px 0 0;background:var(--green);height:80px"></div>
+          <div style="width:100%;border-radius:0 0 4px 4px;background:var(--red);height:12px"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <div style="width:100%;border-radius:4px 4px 0 0;background:var(--green);height:60px"></div>
+          <div style="width:100%;border-radius:0 0 4px 4px;background:var(--red);height:20px"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <div style="width:100%;border-radius:4px 4px 0 0;background:var(--orange);height:100px"></div>
+          <div style="width:100%;border-radius:0 0 4px 4px;background:var(--red);height:8px"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <div style="width:100%;border-radius:4px 4px 0 0;background:var(--green);height:45px"></div>
+          <div style="width:100%;border-radius:0 0 4px 4px;background:var(--red);height:30px"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <div style="width:100%;border-radius:4px 4px 0 0;background:var(--green);height:90px"></div>
+          <div style="width:100%;border-radius:0 0 4px 4px;background:var(--red);height:6px"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <div style="width:100%;border-radius:4px 4px 0 0;background:var(--orange);height:70px"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <div style="width:100%;border-radius:4px 4px 0 0;background:var(--green);height:55px"></div>
+          <div style="width:100%;border-radius:0 0 4px 4px;background:var(--red);height:18px"></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding-top:8px;font-size:11px;color:var(--text-3)">
+        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+      </div>
+    </div>
+    <!-- Top Deals -->
+    <div style="background:var(--white);border-radius:var(--r);padding:24px;box-shadow:var(--shadow)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-size:16px;font-weight:600">Top deals</div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-4)" stroke-width="1.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </div>
+      <!-- Deal rows -->
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg);border-radius:var(--r-sm)">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:32px;height:32px;border-radius:10px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--teal)">H</div>
+            <div><div style="font-size:13px;font-weight:500">Haas F1 2026</div><div style="font-size:11px;color:var(--text-3)">Negotiation</div></div>
+          </div>
+          <div style="text-align:right"><div style="font-size:14px;font-weight:600">$2.4M</div><div style="font-size:11px;color:var(--orange)">hot</div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg);border-radius:var(--r-sm)">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:32px;height:32px;border-radius:10px;background:rgba(74,127,248,0.08);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#4A7FF8">S</div>
+            <div><div style="font-size:13px;font-weight:500">Salesforce F1</div><div style="font-size:11px;color:var(--text-3)">Proposal</div></div>
+          </div>
+          <div style="text-align:right"><div style="font-size:14px;font-weight:600">$1.2M</div><div style="font-size:11px;color:var(--orange)">hot</div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg);border-radius:var(--r-sm)">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:32px;height:32px;border-radius:10px;background:var(--orange-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--orange)">O</div>
+            <div><div style="font-size:13px;font-weight:500">Oracle Cloud</div><div style="font-size:11px;color:var(--text-3)">Qualified</div></div>
+          </div>
+          <div style="text-align:right"><div style="font-size:14px;font-weight:600">$850K</div><div style="font-size:11px;color:var(--red)">stale</div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg);border-radius:var(--r-sm)">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:32px;height:32px;border-radius:10px;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--green)">C</div>
+            <div><div style="font-size:13px;font-weight:500">Crowdstrike</div><div style="font-size:11px;color:var(--text-3)">Closed Won</div></div>
+          </div>
+          <div style="text-align:right"><div style="font-size:14px;font-weight:600;color:var(--green)">$680K</div><div style="font-size:11px;color:var(--green)">won</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- KIKO AI ASSISTANT BAR -->
+  <div style="background:var(--white);border-radius:var(--r-lg);padding:20px 24px;box-shadow:var(--shadow)">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--teal),#7BC9CE,var(--orange));flex-shrink:0"></div>
+      <div style="font-size:14px;font-weight:500;color:var(--text)">Kiko</div>
+      <div style="flex:1"></div>
+      <span style="font-size:11px;color:var(--text-3)">AI-powered insights</span>
+    </div>
+    <!-- Suggestion chips - exactly like Payrix -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <span style="padding:8px 16px;border-radius:50px;border:1px solid rgba(0,0,0,0.08);font-size:13px;color:var(--text-2);cursor:pointer;transition:all 0.12s;background:var(--bg)">Any stale deals?</span>
+      <span style="padding:8px 16px;border-radius:50px;border:1px solid rgba(0,0,0,0.08);font-size:13px;color:var(--text-2);cursor:pointer;background:var(--bg)">Top deals this week?</span>
+      <span style="padding:8px 16px;border-radius:50px;border:1px solid rgba(0,0,0,0.08);font-size:13px;color:var(--text-2);cursor:pointer;background:var(--bg)">Brief me</span>
+      <span style="padding:8px 16px;border-radius:50px;border:1px solid rgba(0,0,0,0.08);font-size:13px;color:var(--text-2);cursor:pointer;background:var(--bg)">Meetings today?</span>
+    </div>
+    <!-- Search input -->
+    <div style="display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:14px;padding:12px 16px">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <span style="font-size:14px;color:var(--text-4);flex:1">Ask anything or search...</span>
+      <div style="width:32px;height:32px;border-radius:10px;background:var(--teal);display:flex;align-items:center;justify-content:center;cursor:pointer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </div>
+    </div>
+  </div>
+</main>
+</body></html>

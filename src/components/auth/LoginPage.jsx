@@ -59,7 +59,7 @@ export default function LoginPage() {
       <AuroraCanvas />
 
       {/* Ambient glow behind helix */}
-      <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,108,246,0.04) 0%, transparent 70%)', top: '50%', left: '50%', transform: 'translate(-50%, -65%)', zIndex: 1, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,167,106,0.04) 0%, transparent 70%)', top: '50%', left: '50%', transform: 'translate(-50%, -65%)', zIndex: 1, pointerEvents: 'none' }} />
 
       <div style={{ width: '100%', maxWidth: 380, textAlign: 'center', position: 'relative', zIndex: 5, padding: '0 24px' }}>
 
@@ -126,13 +126,13 @@ export default function LoginPage() {
           <form onSubmit={emailLogin}>
             <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)}
               style={{ ...glassInput, marginBottom: 8 }}
-              onFocus={e => e.target.style.borderColor = 'rgba(139,108,246,0.25)'}
+              onFocus={e => e.target.style.borderColor = 'rgba(212,167,106,0.25)'}
               onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.06)'} />
             <div style={{ position: 'relative', marginBottom: 10 }}>
               <input type={showPw ? 'text' : 'password'} placeholder="Password" value={password}
                 onChange={e => setPassword(e.target.value)}
                 style={{ ...glassInput, paddingRight: 44 }}
-                onFocus={e => e.target.style.borderColor = 'rgba(139,108,246,0.25)'}
+                onFocus={e => e.target.style.borderColor = 'rgba(212,167,106,0.25)'}
                 onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.06)'} />
               <button type="button" onClick={() => setShowPw(!showPw)} style={{
                 position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
@@ -144,11 +144,11 @@ export default function LoginPage() {
 
             <button type="submit" disabled={loading} style={{
               width: '100%', height: 48, borderRadius: 14,
-              background: 'linear-gradient(135deg, rgba(139,108,246,0.6), rgba(6,214,160,0.4))',
+              background: 'linear-gradient(135deg, rgba(212,167,106,0.6), rgba(6,214,160,0.4))',
               color: 'rgba(255,255,255,0.9)', border: 'none',
               fontSize: 14, fontWeight: 400, cursor: 'pointer', fontFamily: T.font,
               transition: 'all 0.3s',
-              boxShadow: '0 4px 24px rgba(139,108,246,0.2)',
+              boxShadow: '0 4px 24px rgba(212,167,106,0.2)',
               opacity: loading ? 0.5 : 1,
             }}
               onMouseEnter={e => { if (!loading) e.currentTarget.style.transform = 'translateY(-1px)' }}

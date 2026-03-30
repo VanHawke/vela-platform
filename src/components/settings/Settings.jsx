@@ -568,7 +568,7 @@ export default function Settings({ user }) {
                     <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
                       background: m.role === 'super_admin' ? 'rgba(124,92,252,0.15)' : m.role === 'admin' ? 'rgba(0,212,170,0.15)' : T.accentSoft,
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 500,
-                      color: m.role === 'super_admin' ? '#7C5CFC' : m.role === 'admin' ? '#00D4AA' : T.textSecondary,
+                      color: m.role === 'super_admin' ? '#D4A76A' : m.role === 'admin' ? '#00D4AA' : T.textSecondary,
                       fontFamily: T.font,
                     }}>
                       {(m.display_name || m.email)?.[0]?.toUpperCase()}
@@ -596,7 +596,7 @@ export default function Settings({ user }) {
                     ) : (
                       <span style={{ fontSize: 12, padding: '5px 12px', borderRadius: 50, fontWeight: 500,
                         background: m.role === 'super_admin' ? 'rgba(124,92,252,0.12)' : m.role === 'admin' ? 'rgba(0,212,170,0.12)' : `${T.accentSoft}`,
-                        color: m.role === 'super_admin' ? '#7C5CFC' : m.role === 'admin' ? '#00D4AA' : T.textSecondary,
+                        color: m.role === 'super_admin' ? '#D4A76A' : m.role === 'admin' ? '#00D4AA' : T.textSecondary,
                         fontFamily: T.font,
                       }}>{m.role === 'super_admin' ? 'Super Admin' : m.role === 'admin' ? 'Admin' : 'User'}</span>
                     )}
