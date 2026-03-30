@@ -16,8 +16,8 @@ export const T = {
   glassBlur: 'blur(40px) saturate(1.6)',
   glassSaturate: 'blur(40px) saturate(1.6)',
   // Physical glass slab shadow — the signature look
-  glassShadow: 'inset 0 2px 0 rgba(255,255,255,0.1), inset 0 1px 2px rgba(255,255,255,0.05), inset 0 -1px 0 rgba(0,0,0,0.1), 0 0 20px rgba(255,255,255,0.02), 0 0 1px rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.25), 0 2px 8px rgba(0,0,0,0.15)',
-  glassShadowHover: 'inset 0 2px 0 rgba(255,255,255,0.15), inset 0 1px 2px rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.12), 0 0 30px rgba(255,255,255,0.03), 0 0 1px rgba(255,255,255,0.08), 0 16px 48px rgba(0,0,0,0.35), 0 4px 12px rgba(0,0,0,0.2)',
+  glassShadow: 'inset 0 2px 0 rgba(255,255,255,0.12), inset 0 1px 3px rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.12), 0 0 24px rgba(255,255,255,0.03), 0 0 1px rgba(255,255,255,0.08), 0 12px 40px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2)',
+  glassShadowHover: 'inset 0 2px 0 rgba(255,255,255,0.18), inset 0 1px 3px rgba(255,255,255,0.09), inset 0 -1px 0 rgba(0,0,0,0.15), 0 0 36px rgba(255,255,255,0.04), 0 0 1px rgba(255,255,255,0.1), 0 20px 56px rgba(0,0,0,0.4), 0 6px 16px rgba(0,0,0,0.25)',
   glassInner: 'inset 0 2px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.1)',
   glassBorderWidth: '1.5px',
 

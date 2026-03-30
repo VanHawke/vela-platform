@@ -185,7 +185,7 @@ export default function Layout({ user }) {
               <img src={customLogo} alt="Logo" style={{ height: 28, borderRadius: 7, maxWidth: 120, objectFit: 'contain' }} />
             ) : (
               <>
-                <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.4)', fontFamily: T.font, letterSpacing: '0.1em' }}>VAN HAWKE</span>
+                <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,0.55)', fontFamily: T.font, letterSpacing: '0.12em' }}>VAN HAWKE<sup style={{ fontSize: 8, verticalAlign: 'super', opacity: 0.5 }}>™</sup></span>
               </>
             )}
           </button>
@@ -274,16 +274,17 @@ export default function Layout({ user }) {
           )}
           {/* Command palette trigger */}
           <button onClick={() => setPaletteOpen(true)} style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '5px 10px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)',
-            background: 'transparent',
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '7px 14px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)',
+            background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
             cursor: 'pointer', fontFamily: 'var(--font)',
-            color: 'rgba(255,255,255,0.2)', fontSize: 12, transition: 'all 0.15s',
+            color: 'rgba(255,255,255,0.25)', fontSize: 13, transition: 'all 0.15s',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
           }}
-            onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
-            onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; e.currentTarget.style.background = 'transparent' }}
+            onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
+            onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
           >
-            <Search size={13} />
+            <Search size={14} />
             <span style={{ fontSize: 12, fontWeight: 500, opacity: 0.6 }}>&#8984;K</span>
           </button>
 

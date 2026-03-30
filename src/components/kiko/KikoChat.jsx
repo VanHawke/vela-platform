@@ -600,7 +600,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         </button>
         {/* Textarea — physically expands via useEffect, handles macOS dictation */}
         <textarea
-          ref={inputRef} value={input}
+          ref={inputRef} value={input} dir="ltr"
           onChange={e => { if (!composingRef.current) setInput(e.target.value) }}
           onCompositionStart={() => { composingRef.current = true }}
           onCompositionEnd={e => { composingRef.current = false; setInput(e.target.value) }}

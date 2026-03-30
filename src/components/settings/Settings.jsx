@@ -434,7 +434,11 @@ export default function Settings({ user }) {
               <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Top Navigation Bar</h3>
               <p style={{ fontSize: 13, color: T.textTertiary, margin: '0 0 16px', fontFamily: T.font }}>Choose which pages appear in the floating top navigation. Home is always shown.</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                {ALL_TOP_NAV.map((item, idx) => {
+                {/* Render enabled items in their actual order, then disabled items */}
+                {[
+                  ...topNavItems.map(id => ALL_TOP_NAV.find(t => t.id === id)).filter(Boolean),
+                  ...ALL_TOP_NAV.filter(item => !topNavItems.includes(item.id))
+                ].map((item, idx) => {
                   const isOn = topNavItems.includes(item.id)
                   const isHome = item.id === 'home'
                   const topIdx = topNavItems.indexOf(item.id)
