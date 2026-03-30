@@ -45,13 +45,25 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
 
   // Load full messages only when a conversation is clicked
   async function selectConversation(conv) {
+    // Move to top of list immediately (update local date)
+    const now = new Date().toISOString()
+    setAllConvos(prev => {
+      const updated = prev.map(c => c.id === conv.id ? { ...c, date: now } : c)
+      return updated.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+    })
+
     if (conv.type === 'kiko') {
       const { data } = await supabase.from('conversations').select('messages').eq('id', conv.id).single()
       onSelectConversation({ id: conv.id, messages: data?.messages || [], title: conv.title, type: 'kiko' })
+      // Persist the timestamp update
+      supabase.from('conversations').update({ updated_at: now }).eq('id', conv.id).then(() => {})
     } else {
-      const { data } = await supabase.from('kiko_imported_conversations').select('messages').eq('id', conv.realId || conv.id.replace('imp_', '')).single()
+      const realId = conv.realId || conv.id.replace('imp_', '')
+      const { data } = await supabase.from('kiko_imported_conversations').select('messages').eq('id', realId).single()
       const msgs = (data?.messages || []).map(m => ({ role: m.role === 'human' ? 'user' : m.role, content: m.content || '' }))
       onSelectConversation({ id: conv.id, messages: msgs, title: conv.title, type: 'imported' })
+      // Persist the timestamp update
+      supabase.from('kiko_imported_conversations').update({ original_date: now }).eq('id', realId).then(() => {})
     }
   }
 
