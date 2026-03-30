@@ -552,78 +552,84 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || ''
   const trans = 'all 0.6s cubic-bezier(0.4,0,0.2,1)'
 
-  // ── Prompt bar (shared) — mic becomes stop button during voice mode ──
+  // ── Prompt bar (shared) — rewritten to match approved mockup ──
   const PromptBar = ({ welcome = false }) => {
-    const sz = welcome ? 36 : 30
-    const ic = welcome ? 17 : 15
+    const ic = 15
+    const hasContent = input.trim() || pendingAttachment
     return (
       <div style={{
-        display: 'flex', flexDirection: 'column', gap: 0,
-        background: T.glass, backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
-        borderRadius: pendingAttachment ? 20 : 24, padding: welcome ? '7px 7px 7px 20px' : '4px 4px 4px 14px',
-        border: `1.5px solid ${T.glassBorder}`,
-        boxShadow: T.glassShadow,
+        display: 'flex', flexDirection: 'column',
+        background: 'rgba(255,255,255,0.03)', backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
+        borderRadius: (pendingAttachment || input.split('\n').length > 2) ? 20 : 24,
+        padding: '6px 6px 6px 20px',
+        border: `1px solid ${transcribing ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.08)'}`,
+        transition: 'border-color 0.2s',
         maxWidth: welcome ? 540 : (compact ? '100%' : 640),
         width: '100%', margin: '0 auto',
       }}>
         {/* Pending image preview */}
         {pendingAttachment?.previewUrl && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0 6px', borderBottom: `1px solid ${T.glassBorder}` }}>
-            <img src={pendingAttachment.previewUrl} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} />
-            <span style={{ fontSize: 12, color: T.textSecondary, fontFamily: T.font, flex: 1 }}>{pendingAttachment.name}</span>
-            <button onClick={() => { setPendingAttachment(null); setImagePreview(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textTertiary, padding: 4, fontSize: 16 }}>✕</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0 8px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <img src={pendingAttachment.previewUrl} alt="" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover' }} />
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontFamily: T.font, flex: 1 }}>{pendingAttachment.name}</span>
+            <button onClick={() => { setPendingAttachment(null); setImagePreview(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', padding: 4, fontSize: 14, width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>✕</button>
           </div>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
         <input ref={fileInputRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx" onChange={e => { const f = e.target.files?.[0]; if (f) processFileForKiko(f); e.target.value = '' }} style={{ display: 'none' }} />
         {/* Paperclip */}
         <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} title="Attach file" style={{
-          width: sz, height: sz, borderRadius: '50%', border: 'none',
-          background: 'transparent', color: T.textTertiary,
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          width: 32, height: 32, borderRadius: '50%', border: 'none',
+          background: 'transparent', color: 'rgba(255,255,255,0.3)',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginBottom: 2,
         }}>
           <svg width={ic} height={ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
         </button>
-        {/* Text input — auto-expanding textarea */}
+        {/* Textarea — physically expands, no scroll */}
         <textarea
-          ref={inputRef} value={input} onChange={e => { setInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px'; }}
+          ref={inputRef} value={input}
+          onChange={e => {
+            setInput(e.target.value)
+            e.target.style.height = 'auto'
+            e.target.style.height = Math.min(e.target.scrollHeight, 300) + 'px'
+          }}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
-          placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment or press send..." : "Ask anything"} autoFocus
-          rows={1}
-          style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font, minHeight: welcome ? 44 : 36, maxHeight: 200, fontWeight: 300, resize: 'none', lineHeight: '1.5', padding: '8px 0', overflow: 'auto' }}
+          placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment or press send..." : "Ask anything"}
+          autoFocus rows={1}
+          style={{
+            flex: 1, border: 'none', background: 'transparent', outline: 'none',
+            fontSize: 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font,
+            minHeight: 40, maxHeight: 300, fontWeight: 400, resize: 'none',
+            lineHeight: '1.5', padding: '10px 0', overflow: 'hidden',
+          }}
         />
         {/* Mic / Stop */}
         {voiceActive ? (
           <button onClick={stopVoice} title="Stop voice" style={{
-            width: sz, height: sz, borderRadius: '50%', border: 'none',
+            width: 32, height: 32, borderRadius: '50%', border: 'none',
             background: 'rgba(239,68,68,0.1)', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginBottom: 2,
           }}>
-            <div style={{ width: 12, height: 12, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} />
+            <div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} />
           </button>
         ) : (
           <>
           <button onClick={transcribing ? stopTranscribe : startTranscribe} title={transcribing ? 'Stop dictation' : 'Dictate'} style={{
-            width: sz, height: sz, borderRadius: '50%', border: 'none',
+            width: 32, height: 32, borderRadius: '50%', border: 'none',
             background: transcribing ? 'rgba(34,197,94,0.12)' : 'transparent',
-            color: transcribing ? 'rgba(34,197,94,0.9)' : T.textTertiary,
+            color: transcribing ? 'rgba(34,197,94,0.9)' : 'rgba(255,255,255,0.3)',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            position: 'relative', flexShrink: 0,
+            position: 'relative', flexShrink: 0, marginBottom: 2,
           }}>
-            <svg width={ic + 1} height={ic + 1} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-            {transcribing && <span style={{ position: 'absolute', top: welcome ? 2 : 1, right: welcome ? 2 : 1, width: 7, height: 7, borderRadius: '50%', background: 'rgba(34,197,94,0.9)', animation: 'kikoBreathe 1s ease-in-out infinite' }} />}
+            <svg width={ic + 1} height={ic + 1} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+            {transcribing && <span style={{ position: 'absolute', top: 2, right: 2, width: 7, height: 7, borderRadius: '50%', background: 'rgba(34,197,94,0.9)' }} />}
           </button>
-          {/* Voice CTA — teal equalizer */}
           {!voiceActive && (
             <button onClick={startVoice} title="Talk to Kiko" style={{
-              width: sz, height: sz, borderRadius: 50, border: '1.5px solid rgba(6,214,160,0.15)',
+              width: 32, height: 32, borderRadius: 50, border: '1px solid rgba(6,214,160,0.15)',
               background: 'rgba(6,214,160,0.08)', color: 'rgba(6,214,160,0.7)',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              boxShadow: 'inset 0 1px 0 rgba(6,214,160,0.06)', transition: 'all 0.3s',
-            }}
-              onMouseOver={e => { e.currentTarget.style.background = 'rgba(6,214,160,0.15)'; e.currentTarget.style.borderColor = 'rgba(6,214,160,0.25)' }}
-              onMouseOut={e => { e.currentTarget.style.background = 'rgba(6,214,160,0.08)'; e.currentTarget.style.borderColor = 'rgba(6,214,160,0.15)' }}
-            >
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginBottom: 2,
+            }}>
               <svg width={ic} height={ic} viewBox="0 0 24 24" fill="none">
                 <rect x="4" y="8" width="2" height="8" rx="1" fill="rgba(6,214,160,0.6)" />
                 <rect x="8" y="5" width="2" height="14" rx="1" fill="rgba(6,214,160,0.8)" />
@@ -635,32 +641,29 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           )}
           </>
         )}
-        {/* Send / Stop button */}
+        {/* Send / Stop */}
         {streaming ? (
           <button onClick={stopKiko} title="Stop Kiko" style={{
-            width: welcome ? 42 : sz, height: welcome ? 42 : sz, borderRadius: 50,
-            background: 'rgba(239,68,68,0.08)', border: '1.5px solid rgba(239,68,68,0.15)',
+            width: 36, height: 36, borderRadius: 50,
+            background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)',
             color: 'rgba(239,68,68,0.7)', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'all 0.15s', flexShrink: 0, marginLeft: 3,
-          }}
-            onMouseOver={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)' }}
-            onMouseOut={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.15)' }}
-          >
+            flexShrink: 0, marginBottom: 0,
+          }}>
             <div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} />
           </button>
         ) : (
-          <button onClick={() => handleSubmit()} disabled={!input.trim() && !pendingAttachment} style={{
-            width: welcome ? 42 : sz, height: welcome ? 42 : sz, borderRadius: 50,
-            background: (input.trim() || pendingAttachment) ? T.accentGradient : 'rgba(255,255,255,0.04)',
-            border: (input.trim() || pendingAttachment) ? 'none' : '1.5px solid rgba(255,255,255,0.1)',
-            color: 'rgba(255,255,255,0.9)',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'all 0.15s', flexShrink: 0, opacity: (input.trim() || pendingAttachment) ? 0.9 : 0.5,
-            boxShadow: (input.trim() || pendingAttachment) ? '0 4px 16px rgba(139,108,246,0.3)' : 'none',
-            marginLeft: 3,
+          <button onClick={() => handleSubmit()} disabled={!hasContent} style={{
+            width: 36, height: 36, borderRadius: 50,
+            background: hasContent ? T.accentGradient : 'rgba(255,255,255,0.04)',
+            border: hasContent ? 'none' : '1px solid rgba(255,255,255,0.08)',
+            color: 'rgba(255,255,255,0.95)', cursor: hasContent ? 'pointer' : 'default',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0, opacity: hasContent ? 1 : 0.25, marginBottom: 0,
+            boxShadow: hasContent ? '0 4px 16px rgba(139,108,246,0.3)' : 'none',
+            transition: 'all 0.15s',
           }}>
-            <svg width={welcome ? 15 : 13} height={welcome ? 15 : 13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         )}
       </div>
@@ -686,18 +689,16 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       <div key={i} style={{ marginBottom: 24, position: 'relative' }}
         onMouseEnter={() => setHoveredMsg(i)} onMouseLeave={() => setHoveredMsg(null)}>
         {/* Kiko label for assistant messages */}
-        {isKiko && <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(139,108,246,0.6)', fontFamily: T.font, marginBottom: 6 }}>Kiko</div>}
-        <div style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', gap: 12 }}>
+        {isKiko && <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(139,108,246,0.55)', fontFamily: T.font, marginBottom: 6 }}>Kiko</div>}
+        <div style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
         <div style={{
           maxWidth: isUser ? '65%' : '100%',
           padding: isUser ? '13px 20px' : '0',
           borderRadius: isUser ? '20px 20px 6px 20px' : 0,
-          background: isUser ? T.userMsg : 'transparent',
-          backdropFilter: isUser ? 'blur(40px)' : 'none',
-          WebkitBackdropFilter: isUser ? 'blur(40px)' : 'none',
-          border: isUser ? `1.5px solid ${T.userMsgBorder}` : 'none',
-          color: isUser ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.88)',
-          fontSize: 16, lineHeight: 1.85, fontFamily: T.font, fontWeight: 400,
+          background: isUser ? 'rgba(255,255,255,0.06)' : 'transparent',
+          border: isUser ? '1px solid rgba(255,255,255,0.08)' : 'none',
+          color: isUser ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.85)',
+          fontSize: 15, lineHeight: 1.7, fontFamily: T.font, fontWeight: 400,
         }}>
           {isUser ? <>
             {msg.imagePreview && <img src={msg.imagePreview} alt="Upload" style={{ maxWidth: 200, maxHeight: 150, borderRadius: 12, marginBottom: 8, display: 'block', objectFit: 'cover' }} />}
@@ -973,15 +974,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {/* Streaming response */}
           {streaming && streamText && (
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(139,108,246,0.6)', fontFamily: T.font, marginBottom: 6 }}>Kiko</div>
-              <div style={{ fontSize: 16, color: 'rgba(255,255,255,0.88)', lineHeight: 1.85, fontFamily: T.font, fontWeight: 400 }}>
+              <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(139,108,246,0.55)', fontFamily: T.font, marginBottom: 6 }}>Kiko</div>
+              <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.85)', lineHeight: 1.7, fontFamily: T.font, fontWeight: 400 }}>
                 <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
-                <span style={{ animation: 'pulse 1s infinite', marginLeft: 2, color: 'rgba(139,108,246,0.4)' }}>|</span>
+                <span style={{ display: 'inline-block', width: 2, height: 16, background: 'rgba(139,108,246,0.4)', marginLeft: 2, verticalAlign: 'text-bottom', animation: 'kikoBlink 1s infinite' }} />
               </div>
-                <button onClick={stopKiko} style={{ marginTop: 10, padding: '7px 18px', borderRadius: 20, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)', fontSize: 13, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}
-                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.65)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)' }}
-                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)' }}
-                ><span style={{ width: 10, height: 10, borderRadius: 2, background: 'currentColor', display: 'inline-block' }} /> Stop response</button>
+              <button onClick={stopKiko} style={{ marginTop: 10, padding: '6px 14px', borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: 2, background: 'currentColor', display: 'inline-block' }} /> Stop
+              </button>
             </div>
           )}
           <div ref={scrollRef} />
