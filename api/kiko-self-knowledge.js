@@ -72,12 +72,11 @@ export async function generateSelfKnowledge(userId) {
   try {
     const skills = await sbFetch('kiko_skills?select=name,category&limit=50');
     if (skills?.length) {
-      knowledge.push(`\nLEARNED SKILLS (${skills.length}):`);
-      for (const s of skills) {
-        knowledge.push(`- [${s.category}] ${s.name}`);
-      }
+      const byCat = {};
+      for (const s of skills) { byCat[s.category] = (byCat[s.category] || 0) + 1; }
+      knowledge.push(`\nLEARNED SKILLS (${skills.length}): ${Object.entries(byCat).map(([c,n]) => `${c}(${n})`).join(', ')}`);
     }
-  } catch { knowledge.push(`\nLEARNED SKILLS: Skills table contains learned capabilities.`); }
+  } catch { knowledge.push(`\nLEARNED SKILLS: Available via manage_knowledge.`); }
 
   // ── 6c. Win/Loss patterns ──
   try {
