@@ -139,7 +139,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const scrollRef = useRef(null)
   const inputRef = useRef(null)
   const fileInputRef = useRef(null)
-  const transcribeRef = useRef({ media: null, recorder: null, sr: null, active: false, baseInput: '' })
+  const transcribeRef = useRef({ media: null, recorder: null, sr: null, active: false, baseInput: '', committed: '' })
+  const composingRef = useRef(false) // Track IME/macOS dictation composition
   const dragCounterRef = useRef(0)
   const [chatDragOver, setChatDragOver] = useState(false)
   const [fileUploading, setFileUploading] = useState(false)
@@ -346,6 +347,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const resetKey = outletCtx.kikoResetKey
   useEffect(() => { if (resetKey > 0) startNewChat() }, [resetKey])
 
+  // Auto-resize textarea whenever input changes
+  useEffect(() => {
+    const el = inputRef.current
+    if (!el) return
+    el.style.height = '0px'
+    el.style.height = Math.min(el.scrollHeight, 300) + 'px'
+  }, [input])
+
   // Background task persistence — save streaming on unmount, restore on mount
   useEffect(() => {
     // On mount: check for completed background tasks
@@ -424,7 +433,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     if (transcribing) { transcribeRef.current.active = false; if (transcribeRef.current.sr) { try { transcribeRef.current.sr.stop() } catch {} transcribeRef.current.sr = null }; setTranscribing(false) }
     const effectiveMsg = msg || (allAttachments.length ? `Analyse this file: "${allAttachments[0].name || 'uploaded file'}"` : '')
     setInput('')
-    if (inputRef.current) inputRef.current.style.height = 'auto'
     setPendingAttachment(null)
     const displayMsg = effectiveMsg
     const imgPreview = allAttachments.find(a => a.type === 'image' && a.previewUrl)?.previewUrl || null
@@ -565,7 +573,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       <div style={{
         display: 'flex', flexDirection: 'column',
         background: 'rgba(255,255,255,0.03)', backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
-        borderRadius: (pendingAttachment || input.split('\n').length > 2) ? 20 : 24,
+        borderRadius: (pendingAttachment || input.length > 80) ? 20 : 24,
         padding: '6px 6px 6px 20px',
         border: `1px solid ${transcribing ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.08)'}`,
         transition: 'border-color 0.2s',
@@ -590,15 +598,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         }}>
           <svg width={ic} height={ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
         </button>
-        {/* Textarea — physically expands, no scroll */}
+        {/* Textarea — physically expands via useEffect, handles macOS dictation */}
         <textarea
           ref={inputRef} value={input}
-          onChange={e => {
-            setInput(e.target.value)
-            e.target.style.height = 'auto'
-            e.target.style.height = Math.min(e.target.scrollHeight, 300) + 'px'
-          }}
-          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+          onChange={e => { if (!composingRef.current) setInput(e.target.value) }}
+          onCompositionStart={() => { composingRef.current = true }}
+          onCompositionEnd={e => { composingRef.current = false; setInput(e.target.value) }}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !composingRef.current) { e.preventDefault(); handleSubmit(); } }}
           placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment or press send..." : "Ask anything"}
           autoFocus rows={1}
           style={{
