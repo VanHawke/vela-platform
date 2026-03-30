@@ -236,23 +236,29 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     if (SR) {
       try {
         const sr = new SR()
-        sr.continuous = true
-        sr.interimResults = false
+        sr.continuous = false  // Single phrase — avoids duplicate restarts
+        sr.interimResults = true  // Show live transcription as user speaks
         sr.lang = 'en-US'
         transcribeRef.current.sr = sr
         transcribeRef.current.active = true
         transcribeRef.current.baseInput = input
-        const finals = []
+        transcribeRef.current.committed = ''  // All committed final text
         setTranscribing(true)
         sr.onresult = (e) => {
+          let interim = ''
+          let newFinal = ''
           for (let i = e.resultIndex; i < e.results.length; i++) {
+            const text = e.results[i][0].transcript.trim()
             if (e.results[i].isFinal) {
-              const text = e.results[i][0].transcript.trim()
-              if (text && !finals.includes(text)) finals.push(text)
+              newFinal += (newFinal ? ' ' : '') + text
+            } else {
+              interim = text
             }
           }
+          if (newFinal) transcribeRef.current.committed += (transcribeRef.current.committed ? ' ' : '') + newFinal
           const base = transcribeRef.current.baseInput
-          const display = (base ? base + ' ' : '') + finals.join(' ')
+          const committed = transcribeRef.current.committed
+          const display = (base ? base + ' ' : '') + committed + (interim ? ' ' + interim : '')
           setInput(display.trim())
         }
         sr.onerror = (e) => {
@@ -409,8 +415,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     const allAttachments = [...fileAttachments]
     if (pendingAttachment) allAttachments.push(pendingAttachment)
     if ((!msg && !allAttachments.length) || streaming) return
+    // Stop dictation on submit
+    if (transcribing) { transcribeRef.current.active = false; if (transcribeRef.current.sr) { try { transcribeRef.current.sr.stop() } catch {} transcribeRef.current.sr = null }; setTranscribing(false) }
     const effectiveMsg = msg || (allAttachments.length ? `Analyse this file: "${allAttachments[0].name || 'uploaded file'}"` : '')
     setInput('')
+    if (inputRef.current) inputRef.current.style.height = 'auto'
     setPendingAttachment(null)
     const displayMsg = effectiveMsg
     const imgPreview = allAttachments.find(a => a.type === 'image' && a.previewUrl)?.previewUrl || null
@@ -551,7 +560,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       <div style={{
         display: 'flex', flexDirection: 'column', gap: 0,
         background: T.glass, backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
-        borderRadius: pendingAttachment ? 20 : 50, padding: welcome ? '7px 7px 7px 24px' : '4px 4px 4px 14px',
+        borderRadius: pendingAttachment ? 20 : 24, padding: welcome ? '7px 7px 7px 20px' : '4px 4px 4px 14px',
         border: `1.5px solid ${T.glassBorder}`,
         boxShadow: T.glassShadow,
         maxWidth: welcome ? 540 : (compact ? '100%' : 640),
@@ -575,12 +584,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         }}>
           <svg width={ic} height={ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
         </button>
-        {/* Text input */}
-        <input
-          ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSubmit()}
+        {/* Text input — auto-expanding textarea */}
+        <textarea
+          ref={inputRef} value={input} onChange={e => { setInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px'; }}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
           placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment or press send..." : "Ask anything"} autoFocus
-          style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: welcome ? 15 : 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font, height: welcome ? 44 : 36, fontWeight: 300 }}
+          rows={1}
+          style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font, minHeight: welcome ? 44 : 36, maxHeight: 200, fontWeight: 300, resize: 'none', lineHeight: '1.5', padding: '8px 0', overflow: 'auto' }}
         />
         {/* Mic / Stop */}
         {voiceActive ? (
@@ -675,6 +685,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     return (
       <div key={i} style={{ marginBottom: 24, position: 'relative' }}
         onMouseEnter={() => setHoveredMsg(i)} onMouseLeave={() => setHoveredMsg(null)}>
+        {/* Kiko label for assistant messages */}
+        {isKiko && <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(139,108,246,0.6)', fontFamily: T.font, marginBottom: 6 }}>Kiko</div>}
         <div style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', gap: 12 }}>
         <div style={{
           maxWidth: isUser ? '65%' : '100%',
@@ -685,7 +697,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           WebkitBackdropFilter: isUser ? 'blur(40px)' : 'none',
           border: isUser ? `1.5px solid ${T.userMsgBorder}` : 'none',
           color: isUser ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.88)',
-          fontSize: 16, lineHeight: 1.85, fontFamily: T.font, fontWeight: isUser ? 400 : 400,
+          fontSize: 16, lineHeight: 1.85, fontFamily: T.font, fontWeight: 400,
         }}>
           {isUser ? <>
             {msg.imagePreview && <img src={msg.imagePreview} alt="Upload" style={{ maxWidth: 200, maxHeight: 150, borderRadius: 12, marginBottom: 8, display: 'block', objectFit: 'cover' }} />}
@@ -960,18 +972,16 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           )}
           {/* Streaming response */}
           {streaming && streamText && (
-            <div style={{ marginBottom: 24, display: 'flex', gap: 12 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.accent, flexShrink: 0, marginTop: 8, boxShadow: '0 0 8px rgba(139,108,246,0.3)' }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', lineHeight: 1.75, fontFamily: T.font, fontWeight: 300 }}>
-                  <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
-                  <span style={{ animation: 'pulse 1s infinite', marginLeft: 2, color: 'rgba(139,108,246,0.4)' }}>|</span>
-                </div>
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(139,108,246,0.6)', fontFamily: T.font, marginBottom: 6 }}>Kiko</div>
+              <div style={{ fontSize: 16, color: 'rgba(255,255,255,0.88)', lineHeight: 1.85, fontFamily: T.font, fontWeight: 400 }}>
+                <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
+                <span style={{ animation: 'pulse 1s infinite', marginLeft: 2, color: 'rgba(139,108,246,0.4)' }}>|</span>
+              </div>
                 <button onClick={stopKiko} style={{ marginTop: 10, padding: '7px 18px', borderRadius: 20, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)', fontSize: 13, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}
                   onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.65)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)' }}
                   onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)' }}
                 ><span style={{ width: 10, height: 10, borderRadius: 2, background: 'currentColor', display: 'inline-block' }} /> Stop response</button>
-              </div>
             </div>
           )}
           <div ref={scrollRef} />
