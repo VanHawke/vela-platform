@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { supabase } from '@/lib/supabase'
 import T from '@/lib/theme'
 import { Search, X, Trash2 } from 'lucide-react'
 
@@ -13,15 +14,47 @@ function timeAgo(d) {
   return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })
 }
 
-export default function AllChatsView({ convos, onSelect, onDelete, onClose }) {
+export default function AllChatsView({ convos, onSelect, onDelete, onClose, userId }) {
   const [search, setSearch] = useState('')
+  const [searchResults, setSearchResults] = useState(null) // null = show all, array = show results
+  const [searching, setSearching] = useState(false)
   const inputRef = useRef(null)
+  const debounceRef = useRef(null)
 
   useEffect(() => { inputRef.current?.focus() }, [])
 
-  const filtered = search.trim()
-    ? convos.filter(c => (c.title || '').toLowerCase().includes(search.toLowerCase()))
-    : convos
+  // Debounced deep search — queries title + message content
+  const doSearch = useCallback((q) => {
+    if (!q.trim()) { setSearchResults(null); setSearching(false); return }
+    setSearching(true)
+    supabase.rpc('search_conversations', { query: q.trim(), uid: userId }).then(({ data, error }) => {
+      if (error) {
+        // Fallback to title-only search if RPC fails
+        const titleMatches = convos.filter(c => (c.title || '').toLowerCase().includes(q.toLowerCase()))
+        setSearchResults(titleMatches)
+      } else {
+        // Map RPC results to our format
+        const results = (data || []).map(r => ({
+          id: 'imp_' + r.id, realId: r.id, title: r.title, date: r.original_date,
+          type: 'imported', source: r.source, matchType: r.match_type,
+        }))
+        // Also include Kiko conversation title matches
+        const kikoMatches = convos.filter(c => c.type === 'kiko' && (c.title || '').toLowerCase().includes(q.toLowerCase()))
+        setSearchResults([...kikoMatches, ...results])
+      }
+      setSearching(false)
+    })
+  }, [convos, userId])
+
+  const handleSearch = (val) => {
+    setSearch(val)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (!val.trim()) { setSearchResults(null); setSearching(false); return }
+    setSearching(true)
+    debounceRef.current = setTimeout(() => doSearch(val), 300)
+  }
+
+  const displayed = searchResults !== null ? searchResults : convos
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 700, margin: '0 auto', padding: '40px 24px 24px', width: '100%' }}>
@@ -38,24 +71,24 @@ export default function AllChatsView({ convos, onSelect, onDelete, onClose }) {
       {/* Search */}
       <div style={{ position: 'relative', marginBottom: 20 }}>
         <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.3)' }} />
-        <input ref={inputRef} value={search} onChange={e => setSearch(e.target.value)}
+        <input ref={inputRef} value={search} onChange={e => handleSearch(e.target.value)}
           placeholder="Search your chats…"
           style={{ width: '100%', padding: '12px 14px 12px 40px', borderRadius: 12, border: `1.5px solid ${T.glassBorder}`, background: T.glass, backdropFilter: T.glassBlur, color: '#fff', fontSize: 14, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
       </div>
 
       {/* Count */}
       <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', fontFamily: T.font, marginBottom: 12, padding: '0 4px' }}>
-        {search ? `${filtered.length} results` : `${convos.length} conversations`}
+        {searching ? 'Searching…' : search ? `${displayed.length} results` : `${convos.length} conversations`}
       </div>
 
       {/* Conversation list */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
-        {filtered.length === 0 ? (
+        {!searching && displayed.length === 0 ? (
           <p style={{ textAlign: 'center', padding: 40, color: 'rgba(255,255,255,0.3)', fontSize: 14, fontFamily: T.font }}>
             {search ? 'No chats match your search' : 'No conversations yet'}
           </p>
         ) : (
-          filtered.map(conv => (
+          displayed.map(conv => (
             <div key={conv.id} onClick={() => { onSelect(conv); onClose() }}
               style={{ padding: '14px 16px', borderBottom: `1px solid rgba(255,255,255,0.04)`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'background 0.1s', borderRadius: 8 }}
               onMouseOver={e => e.currentTarget.style.background = T.surfaceHover}
@@ -64,9 +97,12 @@ export default function AllChatsView({ convos, onSelect, onDelete, onClose }) {
                 <span style={{ fontSize: 14, fontWeight: 500, color: '#fff', fontFamily: T.font, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {(conv.title || 'Untitled').replace('🎤 ', '')}
                 </span>
-                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontFamily: T.font, marginTop: 2, display: 'block' }}>
-                  {conv.date ? timeAgo(conv.date) : ''}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontFamily: T.font }}>{conv.date ? timeAgo(conv.date) : ''}</span>
+                  {conv.matchType === 'content' && search && (
+                    <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 50, background: 'rgba(139,108,246,0.12)', color: 'rgba(139,108,246,0.7)', fontFamily: T.font }}>in messages</span>
+                  )}
+                </div>
               </div>
               <button onClick={(e) => { e.stopPropagation(); onDelete(conv) }}
                 style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.15)', transition: 'color 0.15s', flexShrink: 0 }}

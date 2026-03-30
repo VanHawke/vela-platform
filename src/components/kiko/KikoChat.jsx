@@ -763,6 +763,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         {allChatsData ? (
           <AllChatsView
             convos={allChatsData.convos}
+            userId={user?.id}
             onSelect={(conv) => { allChatsData.onSelect(conv); setAllChatsData(null) }}
             onDelete={(conv) => { allChatsData.onDelete(conv); setAllChatsData(d => d ? { ...d, convos: d.convos.filter(c => c.id !== conv.id) } : null) }}
             onClose={() => setAllChatsData(null)}
@@ -902,6 +903,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       {allChatsData ? (
         <AllChatsView
           convos={allChatsData.convos}
+          userId={user?.id}
           onSelect={(conv) => { allChatsData.onSelect(conv); setAllChatsData(null) }}
           onDelete={(conv) => { allChatsData.onDelete(conv); setAllChatsData(d => d ? { ...d, convos: d.convos.filter(c => c.id !== conv.id) } : null) }}
           onClose={() => setAllChatsData(null)}

@@ -147,7 +147,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
       </div>
 
       {/* Recents label */}
-      <div style={{ padding: '4px 16px 8px', fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.35)', fontFamily: T.font, letterSpacing: '0.03em', textTransform: 'uppercase' }}>
+      <div style={{ padding: '4px 16px 8px', fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.35)', fontFamily: T.font, letterSpacing: '0.03em' }}>
         Recents
       </div>
 
