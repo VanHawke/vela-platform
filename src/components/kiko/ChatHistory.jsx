@@ -15,7 +15,9 @@ function timeAgo(d) {
 
 export default function ChatHistory({ user, open, onToggle, onSelectConversation, onNewChat, activeConvId }) {
   const [conversations, setConversations] = useState([])
+  const [importedConvos, setImportedConvos] = useState([])
   const [loading, setLoading] = useState(true)
+  const [tab, setTab] = useState('kiko') // 'kiko' | 'imported'
   const [renamingId, setRenamingId] = useState(null)
   const [renameValue, setRenameValue] = useState('')
   const [menuOpenId, setMenuOpenId] = useState(null)
@@ -42,12 +44,35 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
   }
 
   useEffect(() => { loadConversations() }, [user?.id, orgId])
-  useEffect(() => { if (open) loadConversations() }, [open, activeConvId])
+  useEffect(() => { if (open) { loadConversations(); if (tab === 'imported') loadImported(); } }, [open, activeConvId, tab])
   useEffect(() => {
     if (!open) return
     const iv = setInterval(loadConversations, 5000)
     return () => clearInterval(iv)
   }, [open])
+
+  async function loadImported() {
+    if (!user?.id) return
+    try {
+      const { data } = await supabase
+        .from('kiko_imported_conversations')
+        .select('id, title, source, messages, original_date, extracted_insights')
+        .eq('user_id', user.id)
+        .eq('processed', true)
+        .order('original_date', { ascending: false })
+        .limit(100)
+      setImportedConvos(data || [])
+    } catch {}
+  }
+
+  function loadImportedConversation(conv) {
+    // Convert imported format to Kiko format
+    const msgs = (conv.messages || []).map(m => ({
+      role: m.role === 'human' ? 'user' : m.role === 'assistant' ? 'assistant' : m.role,
+      content: m.content || '',
+    }))
+    onSelectConversation({ id: 'imported_' + conv.id, messages: msgs, title: conv.title, imported: true, source: conv.source })
+  }
 
   // Close menu on outside click
   useEffect(() => {
@@ -130,8 +155,25 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
           </div>
         </div>
 
+        {/* Tab switcher */}
+        <div style={{ display: 'flex', gap: 0, padding: '0 8px', borderBottom: `1px solid ${T.border}` }}>
+          {['kiko', 'imported'].map(t => (
+            <button key={t} onClick={() => { setTab(t); if (t === 'imported') loadImported(); }}
+              style={{
+                flex: 1, padding: '10px 0', border: 'none', background: 'transparent',
+                color: tab === t ? '#fff' : 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: 500,
+                fontFamily: T.font, cursor: 'pointer', transition: 'color 0.15s',
+                borderBottom: tab === t ? '2px solid rgba(139,108,246,0.7)' : '2px solid transparent',
+              }}>
+              {t === 'kiko' ? 'Kiko' : `Imported (${importedConvos.length || '…'})`}
+            </button>
+          ))}
+        </div>
+
         {/* Conversation list */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+          {tab === 'kiko' ? (
+          <>
           {loading ? (
             <p style={{ textAlign: 'center', padding: 20, color: 'rgba(255,255,255,0.4)', fontSize: 14, fontFamily: T.font }}>Loading...</p>
           ) : conversations.length === 0 ? (
@@ -232,6 +274,49 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
                 </div>
               )
             })
+          )}
+          </>
+          ) : (
+          /* Imported conversations tab */
+          importedConvos.length === 0 ? (
+            <p style={{ textAlign: 'center', padding: 20, color: 'rgba(255,255,255,0.4)', fontSize: 14, fontFamily: T.font }}>No imported conversations</p>
+          ) : (
+            importedConvos.map(conv => {
+              const msgCount = (conv.messages || []).length;
+              const date = conv.original_date ? new Date(conv.original_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }) : '';
+              const sourceIcon = conv.source === 'chatgpt' ? '🤖' : '🟣';
+              const preview = (conv.messages || []).find(m => m.role === 'human' || m.role === 'user')?.content?.slice(0, 80) || '';
+              return (
+                <div key={conv.id} onClick={() => loadImportedConversation(conv)}
+                  style={{
+                    padding: '12px 14px', borderRadius: 14, cursor: 'pointer',
+                    marginBottom: 2, transition: 'background 0.1s', background: 'transparent',
+                    display: 'flex', alignItems: 'flex-start', gap: 10,
+                  }}
+                  onMouseOver={e => e.currentTarget.style.background = T.surfaceHover}
+                  onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+                      <span style={{ fontSize: 14, fontWeight: 500, color: '#fff', fontFamily: T.font, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 260 }}>
+                        {sourceIcon} {conv.title || 'Untitled'}
+                      </span>
+                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: T.font, flexShrink: 0 }}>{date}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 50, background: conv.source === 'chatgpt' ? 'rgba(16,163,127,0.15)' : 'rgba(139,108,246,0.15)', color: conv.source === 'chatgpt' ? '#10A37F' : '#8B6CF6', fontFamily: T.font, fontWeight: 500 }}>
+                        {conv.source === 'chatgpt' ? 'ChatGPT' : 'Claude'}
+                      </span>
+                      <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontFamily: T.font }}>{msgCount} msgs</span>
+                    </div>
+                    <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', fontFamily: T.font, margin: '4px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.4 }}>
+                      {preview || 'No preview'}
+                    </p>
+                  </div>
+                </div>
+              )
+            })
+          )
           )}
         </div>
       </div>
