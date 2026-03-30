@@ -845,6 +845,15 @@ export default async function handler(req, res) {
     } catch {}
 
     const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + inboxHint + morningBrief + modeHint;
+    // TEMP DEBUG: trace which section leaks private data
+    if (userEmail !== 'sunny@vanhawke.com') {
+      const debugTerms = ['nyla','maya','weybridge','van hawke maison','cultural performance','sponsorship book','oatlands'];
+      const sections = { system, identityContext, routingHint, preferencesHint, personalHint, profileHint, memoryHint, inboxHint, morningBrief, modeHint };
+      for (const [name, content] of Object.entries(sections)) {
+        const found = debugTerms.filter(t => (content||'').toLowerCase().includes(t));
+        if (found.length) console.log(`[LEAK SOURCE] ${name} → ${found.join(', ')}`);
+      }
+    }
 
     // ── Prompt Caching ──
     // Split system content into stable (cached) and dynamic (not cached) blocks
