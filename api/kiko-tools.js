@@ -658,7 +658,8 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       const query = (input.query || '').toLowerCase();
       const limit = input.limit || 5;
       // Search conversations table — messages are jsonb arrays
-      const convos = await sbFetch(`conversations?select=id,title,messages,updated_at&order=updated_at.desc&limit=50`);
+      // Search Kiko conversations — only non-archived ones
+      const convos = await sbFetch(`conversations?select=id,title,messages,updated_at&archived=neq.true&order=updated_at.desc&limit=50`);
       if (!convos?.length) return 'No past conversations found.';
       // Score conversations by keyword match in messages
       const scored = [];
