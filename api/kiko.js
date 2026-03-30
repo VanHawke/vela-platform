@@ -471,7 +471,8 @@ export default async function handler(req, res) {
 
   // ── USER CONFIG FIRST — everything else depends on userId ──
   const userConfig = await getUserConfig(userEmail);
-  const userId = userConfig.user_id || '00000000-0000-0000-0000-000000000000';
+  const isRegistered = !!userConfig.user_id; // Has a real kiko_user_config entry
+  const userId = userConfig.user_id || crypto.randomUUID(); // Ephemeral UUID for unregistered — never accumulates data
   const isSuperAdmin = userConfig.role === 'super_admin';
 
   // ── PARALLEL INITIAL LOAD — entityContext, identity, selfKnowledge all at once ──
@@ -589,8 +590,8 @@ export default async function handler(req, res) {
       }
     }
 
-    // Non-blocking: detect if user is rephrasing (correction learning)
-    detectCorrection(message, conversationHistory, intent);
+    // Non-blocking: detect if user is rephrasing (correction learning) — registered users only
+    if (isRegistered) detectCorrection(message, conversationHistory, intent);
 
     // Handle deterministic navigation — no Claude needed
     if (intent === 'navigate' && target) {
@@ -644,8 +645,8 @@ export default async function handler(req, res) {
       routingHint = '\n\n[ROUTING HINT: This is a general question. You have FULL access to all tools — CRM, web search, Gmail, Calendar, all 23 specialist agents. Answer from your knowledge first, but if current data, business context, or research would improve the answer, use the appropriate tool. Do not hold back.]';
     }
 
-    // For general queries, inject live CRM context so Claude has business awareness
-    if (intent === 'general') {
+    // For general queries, inject live CRM context (registered users only)
+    if (isRegistered && intent === 'general') {
       try {
         const [gDeals, gTasks, gActivity, gLearnings] = await Promise.all([
           sbFetch('deals?select=data&data->>status=eq.active&limit=50').catch(() => []),
@@ -666,8 +667,8 @@ export default async function handler(req, res) {
       }
     }
 
-    // For outreach/content, pre-fetch context so Claude drafts with real data
-    if (intent === 'outreach' || intent === 'content') {
+    // For outreach/content, pre-fetch context (registered users only)
+    if (isRegistered && (intent === 'outreach' || intent === 'content')) {
       try {
         // Extract potential entity names from the message
         const words = message.split(/\s+/).filter(w => w.length > 2 && w[0] === w[0].toUpperCase());
@@ -719,8 +720,8 @@ export default async function handler(req, res) {
       } catch {} // Non-blocking — if context fetch fails, Claude still drafts
     }
 
-    // ── UNIVERSAL ENTITY AUTO-RECALL — parallelized ──
-    if (!voiceMode && intent !== 'outreach' && intent !== 'content' && intent !== 'navigate' && intent !== 'screen') {
+    // ── UNIVERSAL ENTITY AUTO-RECALL — parallelized (registered users only) ──
+    if (!voiceMode && isRegistered && intent !== 'outreach' && intent !== 'content' && intent !== 'navigate' && intent !== 'screen') {
       try {
         const capWords = message.match(/\b[A-Z][a-zA-Z]{2,}(?:\s+[A-Z][a-zA-Z]+)*/g) || [];
         const userName = (userConfig.display_name || '').split(' ')[0];
@@ -756,7 +757,7 @@ export default async function handler(req, res) {
     let inboxHint = '';
     let personalHint = '';
     let morningBrief = '';
-    if (!voiceMode) {
+    if (!voiceMode && isRegistered) { // ISOLATION: Only registered users get personal context
     // ── PARALLEL CONTEXT LOADING — all 7 queries fire simultaneously ──
     try {
       const [prefs, profiles, personal, insights, triage, brief, pending] = await Promise.all([
@@ -845,15 +846,6 @@ export default async function handler(req, res) {
     } catch {}
 
     const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + inboxHint + morningBrief + modeHint;
-    // TEMP DEBUG: trace which section leaks private data
-    if (userEmail !== 'sunny@vanhawke.com') {
-      const debugTerms = ['nyla','maya','weybridge','van hawke maison','cultural performance','sponsorship book','oatlands'];
-      const sections = { system, identityContext, routingHint, preferencesHint, personalHint, profileHint, memoryHint, inboxHint, morningBrief, modeHint };
-      for (const [name, content] of Object.entries(sections)) {
-        const found = debugTerms.filter(t => (content||'').toLowerCase().includes(t));
-        if (found.length) console.log(`[LEAK SOURCE] ${name} → ${found.join(', ')}`);
-      }
-    }
 
     // ── Prompt Caching ──
     // Split system content into stable (cached) and dynamic (not cached) blocks
@@ -943,9 +935,11 @@ export default async function handler(req, res) {
           type: 'tool_result', tool_use_id: block.id,
           content: typeof result === 'string' ? result : JSON.stringify(result).slice(0, 8000)
         });
-        logDecision(block.name, block.input, result, message, userId); // Phase 8
-        trackOutput(block.name, intent, message, result, userId); // Phase 18
-        journalInsight(block.name, block.input, result, message, userId); // Phase 19
+        if (isRegistered) {
+          logDecision(block.name, block.input, result, message, userId);
+          trackOutput(block.name, intent, message, result, userId);
+          journalInsight(block.name, block.input, result, message, userId);
+        }
       }
       write({ toolStatus: null });
       messages.push({ role: 'assistant', content: response.content });
@@ -989,21 +983,22 @@ export default async function handler(req, res) {
     res.write('data: [DONE]\n\n');
     res.end();
 
-    // ── Memory Engine: auto-extract facts (non-blocking, fire-and-forget) ──
-    // Only extract from conversations with 3+ user messages to avoid noise
+    // ── Memory Engine: auto-extract facts (registered users only) ──
     const userMsgCount = messages.filter(m => m.role === 'user' && typeof m.content === 'string').length;
-    if (userMsgCount >= 2) {
+    if (isRegistered && userMsgCount >= 2) {
       try {
         const { callMemoryEngine } = await import('./agents/memory-engine.js');
         const recentMsgs = messages.slice(-8).filter(m => typeof m.content === 'string').map(m => ({ role: m.role, content: m.content }));
         callMemoryEngine('extract_and_store', { messages: recentMsgs, entityContext: entityContext || '' }).catch(() => {});
       } catch {}
     }
-    // Conversation Memory: extract insights for cross-session continuity
-    extractConversationInsights(message, responseText, intent, userId);
+    // Conversation Memory: extract insights for cross-session continuity (registered users only)
+    if (isRegistered) {
+      extractConversationInsights(message, responseText, intent, userId);
+    }
 
-    // ── UNIVERSAL LEARNING ENGINE — learns from EVERY conversation ──
-    if (!['navigate', 'screen'].includes(intent) && responseText.length > 200) {
+    // ── UNIVERSAL LEARNING ENGINE — registered users only ──
+    if (isRegistered && !['navigate', 'screen'].includes(intent) && responseText.length > 200) {
       try {
         const extract = await anthropic.messages.create({
           model: 'claude-haiku-4-5-20251001', max_tokens: 400,
