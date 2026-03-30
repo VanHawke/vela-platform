@@ -1,5 +1,6 @@
 // Vercel Cron Job — runs daily to fill data gaps
 import { cronHeartbeat } from './kiko-tools.js';
+import { getActiveUsers } from './cron-utils.js';
 // Add to vercel.json: { "crons": [{ "path": "/api/cron-enrich", "schedule": "0 6 * * *" }] }
 
 export default async function handler(req, res) {
@@ -61,8 +62,10 @@ export default async function handler(req, res) {
   // 7. Email intelligence — analyse unprocessed emails and update contact scores
   try {
     const { processUnanalysedEmails } = await import('./email-intelligence.js')
-    const intelResult = await processUnanalysedEmails('sunny@vanhawke.com', 30)
-    results.intelligence = intelResult
+    const users = await getActiveUsers();
+    const intelResults = [];
+    for (const u of users) { try { intelResults.push(await processUnanalysedEmails(u.email, 30)); } catch {} }
+    results.intelligence = intelResults
   } catch (e) { results.intelligence = { error: e.message } }
 
   return res.json({ status: 'complete', timestamp: new Date().toISOString(), results })

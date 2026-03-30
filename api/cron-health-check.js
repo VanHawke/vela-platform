@@ -5,6 +5,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, logError, cronHeartbeat } from './kiko-tools.js';
 import { classifyIntent } from './agents/intent-classifier.js';
 import { generateSelfKnowledge } from './kiko-self-knowledge.js';
+import { getActiveUsers, getGoogleToken } from './cron-utils.js';
 
 export const config = { maxDuration: 45 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
@@ -13,6 +14,9 @@ export default async function handler(req, res) {
   const __hbStart = Date.now();
   const __hbId = await cronHeartbeat('cron-health-check', 'started');
   const results = [];
+  // Resolve primary user dynamically
+  let primaryEmail = null;
+  try { const users = await getActiveUsers(); if (users[0]?.email) primaryEmail = users[0].email; } catch {}
 
   const check = async (name, fn) => {
     const t = Date.now();
@@ -55,14 +59,14 @@ export default async function handler(req, res) {
     // 5. Google token
     await check('google_token', async () => {
       const { getGoogleToken } = await import('./google-token.js');
-      const token = await getGoogleToken('sunny@vanhawke.com');
+      const token = await getGoogleToken(primaryEmail);
       return token ? 'ok' : 'missing';
     });
 
     // 6. Gmail API reachable
     await check('gmail', async () => {
       const { getGoogleToken } = await import('./google-token.js');
-      const token = await getGoogleToken('sunny@vanhawke.com');
+      const token = await getGoogleToken(primaryEmail);
       const r = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile', {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -72,7 +76,7 @@ export default async function handler(req, res) {
     // 7. Calendar API reachable
     await check('calendar', async () => {
       const { getGoogleToken } = await import('./google-token.js');
-      const token = await getGoogleToken('sunny@vanhawke.com');
+      const token = await getGoogleToken(primaryEmail);
       const now = new Date().toISOString();
       const r = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(now)}&maxResults=1`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -85,7 +89,7 @@ export default async function handler(req, res) {
       const r = await fetch('https://vela-platform-one.vercel.app/api/kiko', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: 'ping', conversationHistory: [], currentPage: 'home', userEmail: 'sunny@vanhawke.com' }),
+        body: JSON.stringify({ message: 'ping', conversationHistory: [], currentPage: 'home', userEmail: primaryEmail }),
       });
       const text = await r.text();
       if (text.includes('Something went wrong')) return 'error in response';

@@ -4,14 +4,14 @@
 // STANDALONE — if this fails, nothing else breaks.
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
+import { getActiveUsers, getGoogleToken } from './cron-utils.js';
 
 // Quick Win: Email notification for high-severity alerts
-async function sendAlertEmail(alerts) {
+async function sendAlertEmail(alerts, userEmail) {
   const highAlerts = alerts.filter(a => a.severity === 'high');
   if (!highAlerts.length) return;
   try {
-    const { getGoogleToken } = await import('./google-token.js');
-    const token = await getGoogleToken('sunny@vanhawke.com');
+    const token = await getGoogleToken(userEmail);
     if (!token) return;
     const subject = `Kiko Alert: ${highAlerts.length} high-priority convergence${highAlerts.length > 1 ? 's' : ''} detected`;
     const body = highAlerts.map(a => `■ ${a.entity || 'Unknown'}: ${a.title}\n${a.detail}\n→ ${a.action || 'Review in Vela'}`).join('\n\n---\n\n');
@@ -25,7 +25,7 @@ async function sendAlertEmail(alerts) {
       <p style="margin-top:24px;color:#999;font-size:12px">Open <a href="https://vela-platform-one.vercel.app">Vela</a> and say "brief me" for full context.</p>
     </div>`;
     const boundary = `b_${Date.now()}`;
-    let mime = `To: sunny@vanhawke.com\r\nFrom: sunny@vanhawke.com\r\nSubject: ${subject}\r\n`;
+    let mime = `To: ${userEmail}\r\nFrom: ${userEmail}\r\nSubject: ${subject}\r\n`;
     mime += `MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary="${boundary}"\r\n\r\n`;
     mime += `--${boundary}\r\nContent-Type: text/plain; charset="UTF-8"\r\n\r\n${body}\r\n`;
     mime += `--${boundary}\r\nContent-Type: text/html; charset="UTF-8"\r\n\r\n${htmlBody}\r\n`;
@@ -43,7 +43,6 @@ export const config = { maxDuration: 45 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
 export default async function handler(req, res) {
-  try {
     const __hbStart = Date.now();
     const __hbId = await cronHeartbeat('cron-proactive', 'started');
     try {
@@ -167,8 +166,9 @@ export default async function handler(req, res) {
       }
     }
 
-    // Quick Win: Send email notification for high-severity alerts
-    await sendAlertEmail(alerts);
+    // Send email notification for high-severity alerts to all active users
+    const users = await getActiveUsers();
+    for (const u of users) { try { await sendAlertEmail(alerts, u.email); } catch {} }
 
     return res.status(200).json({ ok: true, alerts: written, drafts, total_signals: hasData });
   } catch (err) {

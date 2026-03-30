@@ -4,15 +4,10 @@
 // Feeds into profile synthesis for continuous learning.
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
+import { getActiveUsers, getGoogleToken } from './cron-utils.js';
 
 export const config = { maxDuration: 30 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
-const USER_EMAIL = 'sunny@vanhawke.com';
-
-async function getGoogleToken() {
-  const { getGoogleToken: gt } = await import('./google-token.js');
-  return gt(USER_EMAIL);
-}
 
 function extractBody(payload) {
   if (!payload) return '';
@@ -28,11 +23,13 @@ function extractBody(payload) {
 
 
 export default async function handler(req, res) {
-  try {
     const __hbStart = Date.now();
     const __hbId = await cronHeartbeat('cron-edit-delta', 'started');
     try {
-    const token = await getGoogleToken();
+    // Get first active user with Google token for email checking
+    const users = await getActiveUsers();
+    let token = null;
+    for (const u of users) { token = await getGoogleToken(u.email); if (token) break; }
     if (!token) return res.status(200).json({ ok: false, error: 'No Google token' });
 
     // Get unresolved drafts (status = 'drafted', created in last 7 days)

@@ -3,15 +3,18 @@
 // Auto-drafts follow-up emails for review, creates actionable alerts.
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, logError, cronHeartbeat } from './kiko-tools.js';
+import { getActiveUsers } from './cron-utils.js';
 
 export const config = { maxDuration: 60 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
-const USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063';
+let USER_ID = null; // resolved dynamically
 
 export default async function handler(req, res) {
   const __hbStart = Date.now();
   const __hbId = await cronHeartbeat('cron-task-executor', 'started');
   try {
+    const users = await getActiveUsers();
+    USER_ID = users.find(u => u.role === 'super_admin')?.user_id || users[0]?.user_id;
     const now = new Date();
     const tasks = await sbFetch('tasks?select=id,data&order=updated_at.desc&limit=50');
     if (!tasks?.length) {

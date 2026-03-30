@@ -1,5 +1,6 @@
 // api/cron-task-automation.js — Kiko Task Automation Agent
 import { cronHeartbeat } from './kiko-tools.js';
+import { getActiveUsers } from './cron-utils.js';
 // Runs Mon-Fri 6:30am before morning brief
 // 1. Merge duplicate tasks (same company + similar type)
 // 2. Create follow-up tasks from stale deals (no task exists)
@@ -139,6 +140,8 @@ export default async function handler(req, res) {
   const __hbStart = Date.now();
   const __hbId = await cronHeartbeat('cron-task-automation', 'started');
   try {
+  const users = await getActiveUsers();
+  const primaryUserId = users.find(u => u.role === 'super_admin')?.user_id || users[0]?.user_id;
   console.log('[TaskAutomation] Starting...');
   const now = new Date();
   try {
@@ -171,7 +174,7 @@ export default async function handler(req, res) {
         const entity = task.data?.company || task.data?.contactName || 'unknown';
         if (existingEntities.has(entity.toLowerCase())) continue;
         await supabase.from('kiko_draft_actions').insert({
-          user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
+          user_id: primaryUserId,
           action_type: 'follow_up',
           payload: {
             entity,

@@ -3,6 +3,7 @@
 // The recommendations are stored and Sunny can review them.
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, logError, cronHeartbeat } from './kiko-tools.js';
+import { getActiveUsers } from './cron-utils.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -13,6 +14,10 @@ export default async function handler(req, res) {
   const __hbStart = Date.now();
   const __hbId = await cronHeartbeat('cron-self-improvement', 'started');
   try {
+    // Resolve user dynamically
+    const users = await getActiveUsers();
+    const primaryUserId = users.find(u => u.role === 'super_admin')?.user_id || users[0]?.user_id;
+
     // Gather performance data
     const [outputs, errors, corrections, heartbeats, winLoss] = await Promise.all([
       sbFetch('kiko_output_tracking?select=agent,intent,created_at&order=created_at.desc&limit=200'),
@@ -129,7 +134,7 @@ Return JSON: { "issues": [{ "title": "...", "evidence": "...", "fix": "..." }], 
       // Store lessons in learning log
       for (const gap of (parsed.learning_gaps || []).slice(0, 3)) {
         await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({
-          user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063', category: 'self_improvement',
+          user_id: primaryUserId, category: 'self_improvement',
           content: `Learning gap identified: ${gap}`, entity_name: 'kiko',
         })});
       }
