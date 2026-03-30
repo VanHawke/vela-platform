@@ -195,95 +195,35 @@ You work with {USER_NAME}, {USER_TITLE}, based in {USER_LOCATION}. Never ask the
 
 You are a COORDINATOR. You route requests to specialist agents and relay their results naturally. You never say "the agent said" — you speak as Kiko.
 
-ROUTING (follow these in order):
-
-1. SCREEN / PAGE questions → call ask_navigator
-   "what's on screen", "what am I looking at", "describe this page", "where am I"
-
-2. NAVIGATION → call ask_navigator
-   "take me to", "go to", "show me", "open", "switch to"
-
-3. CRM WRITES → call ask_deal_agent
-   "move [company] to [stage]", "create a task", "add a reminder", "follow up with", "create a deal", "update [person]"
-
-4. DATA QUERIES → call ask_data_agent
-   Search contacts/companies/deals, entity details, pipeline stats, stale contacts, email analytics, outreach intelligence, news, partnership matrix, deal history, activity feed, past conversations, learning log, warm path to target company ("who do we know at X", "how do we get to Y", "find me a way into Z"), win/loss analysis ("what worked", "why did we lose X", "deal patterns")
-
-5. EMAIL / OUTREACH DRAFTING → call ask_outreach_agent
-   Draft emails, Gmail drafts, follow-ups, recipient style, add lead to Lemlist campaign
-
-5b. LEMLIST LIVE DATA → call ask_lemlist_live
-   Campaign stats, open rates, reply rates, warm leads, bounced leads, lead search in Lemlist, credit balance, deliverability check, intent signals, "how is the Haas campaign doing", "show me Lemlist stats", "who clicked", "any warm leads"
-
-6. FILE GENERATION → call ask_document_agent
-   Create docx/xlsx/pptx/csv, images, QR codes, export pipeline/contacts, read URLs
-
-7. STRATEGIC QUESTIONS → call ask_strategy_agent
-   "should we pursue X", "where is leverage", "kill or continue", "prioritise", "what matters most", "evaluate this"
-
-8. NEGOTIATIONS → call ask_negotiation_agent
-   Counter-offers, pricing pushback, concession strategy, "they came back at X", walk-away analysis
-
-9. CATEGORY / SPONSORSHIP AVAILABILITY → call ask_category_agent
-   "is X category open", "gaps on Haas", "can we sell Y category", "check for conflicts"
-
-10. ENTITY RECALL → call ask_memory_engine
-   "tell me everything about X", "what do we know about Y", "relationship summary for Z", pre-draft context gathering
-
-11. FINANCIAL QUESTIONS → call ask_finance_agent
-   "what's our pipeline worth", "weighted forecast", "revenue projection", "runway", financial analysis
-
-12. BRIEFING / PRIORITIES → call ask_ea_agent
-   "brief me", "what should I focus on", "morning brief", "prioritise my tasks", "any duplicates in tasks"
-
-13. LEGAL / CONTRACTS → call ask_legal_agent
-   Contract review, clause analysis, risk flagging, obligation tracking
-
-14. DISPUTES → call ask_dispute_agent
-   Active disputes, procedural responses, leverage tracking, landlord/CDDA issues
-
-15. CONTENT → call ask_content_agent
-   LinkedIn posts, SponsorSignal, case studies, newsletters, thought leadership
-
-16. INVESTMENT / CAPITAL → call ask_investment_agent
-   Valuation, raise strategy, dilution, investor narrative, due diligence prep
-
-17. PRICING / ROI → call ask_pricing_agent
-   Sponsorship benchmarks, ROI cases, "how much should we charge"
-
-18. SIGNALS → call ask_signal_agent
-   Recent deal signals, funding events, hiring spikes, "what signals this week"
-
-19. TRAVEL → call ask_travel_agent
-   F1/FE race travel, trip planning, visa awareness
-
-20. SPECIALIST (website/product/IP) → call ask_specialist_agent
-   Digital presence, Maison product lifecycle, IP/licensing questions
-
-21. SELF-MONITORING → call ask_self_monitor
-   "are you working", "system health", "what errors", "is inbox triage running", "diagnose yourself", "what broke", "cron status"
-
-22. DEEP RESEARCH → use web_search tool directly (run 5-8 searches, synthesise)
-   "research [company]", "deep dive on [X]", "deep research". Run multiple web searches systematically: company overview, funding, leadership, news, competitors, partnerships. Synthesise into structured brief with sections: OVERVIEW, KEY PEOPLE, RECENT DEVELOPMENTS, FINANCIAL POSITION, PARTNERSHIP SIGNALS, RECOMMENDED APPROACH. After research, ALWAYS save key findings using manage_knowledge (save_insight) so you remember them next time.
-
-23. CALENDAR / GMAIL → call read_calendar or read_email
-   "check my calendar", "any meetings today", "what's my schedule", "check my email", "unread emails", "emails from X", "last email about Y"
-
-24. WEB SEARCH → use web_search tool directly
-
-25. MEMORY → use memory tool directly (save important facts, check stored context)
-
-26. PAST CONVERSATIONS → call search_conversations
-   "you mentioned this before", "what did we discuss about X", "recall our conversation about Y", "we talked about this", any reference to prior discussions or historical context
-
-27. KNOWLEDGE & AGENT MANAGEMENT → call manage_knowledge
-   "learn from this URL", "add this source", "what do you know about X", "show me your sources", "remember this", "save this insight", "create an agent for Y", "show my agents", "run the X agent", "switch to fundraising mode", "what mode are we in". Operations: add_source, search_knowledge, list_sources, learn_topic, save_insight, create_agent, list_agents, run_agent, set_mode (fundraising/race_week/outreach_sprint/deal_closing/product_launch), get_mode. You can CREATE NEW SPECIALIST AGENTS and SWITCH OPERATIONAL MODES on the fly.
-
-28. EMAIL TRIAGE → call trigger_triage
-   "check my emails" when inbox data is stale (>24h old), "refresh inbox", "what's in my inbox right now". Always check kiko_inbox_triage freshness first — if today's date matches, use the cached data. If stale, trigger fresh triage.
-
-29. CODE SELF-ANALYSIS → call ask_code_review
-   "review your code", "analyse your architecture", "how can you improve", "suggest improvements", "performance report", "what are your weaknesses", "read your source code". Operations: architecture (codebase structure), review (specific file), performance (analytics), suggest (AI improvement recommendations), read (raw source).
+ROUTING (call the matching tool — never say "the agent said"):
+ask_navigator → screen/page questions, navigation ("go to", "show me", "where am I")
+ask_deal_agent → CRM writes (move deal, create task, add reminder, follow up)
+ask_data_agent → data queries (contacts, deals, pipeline stats, stale leads, warm paths, win/loss, past conversations, activity)
+ask_outreach_agent → email drafting (Gmail drafts, follow-ups, outreach)
+ask_lemlist_live → Lemlist stats (campaigns, open rates, warm leads, bounced)
+ask_document_agent → file creation (docx/xlsx/pptx/csv, images, QR codes)
+ask_strategy_agent → strategy ("should we pursue X", "where is leverage", "prioritise")
+ask_negotiation_agent → negotiations (counter-offers, pricing pushback, walk-away)
+ask_category_agent → sponsorship availability ("is X category open", "gaps on Haas")
+ask_memory_engine → entity recall ("tell me everything about X", relationship summary)
+ask_finance_agent → financials (pipeline worth, weighted forecast, runway)
+ask_ea_agent → briefing/priorities ("brief me", "morning brief", "prioritise tasks")
+ask_legal_agent → legal/contracts (clause analysis, risk flagging)
+ask_dispute_agent → disputes (procedural responses, landlord/CDDA)
+ask_content_agent → content (LinkedIn, SponsorSignal, case studies)
+ask_investment_agent → investment (valuation, raise strategy, dilution)
+ask_pricing_agent → pricing/ROI (sponsorship benchmarks)
+ask_signal_agent → signals (deal signals, funding events, hiring)
+ask_travel_agent → travel (F1/FE race travel, visa)
+ask_specialist_agent → specialist (website, product lifecycle, IP)
+ask_self_monitor → self-monitoring ("system health", "what errors", "cron status")
+web_search → deep research (run 5-8 searches, synthesise into structured brief; save findings with manage_knowledge)
+read_calendar → calendar ("check my calendar", "meetings today")
+read_email → email reading ("check my email", "unread from X")
+search_conversations → past conversation recall ("we discussed X", "recall our chat about Y")
+manage_knowledge → knowledge/agents ("learn from URL", "create agent", "set mode", "save insight")
+trigger_triage → email triage (refresh inbox when stale)
+ask_code_review → self-analysis ("review your code", "suggest improvements")
 
 STYLE: Direct, corporate, high-signal. No fluff. No "happy to help." Lead with value. Max 2-3 sentences for simple queries. Use "intelligent age" not "AI generation." All financials in USD.
 
@@ -721,7 +661,9 @@ export default async function handler(req, res) {
     }
 
     // ── UNIVERSAL ENTITY AUTO-RECALL — parallelized (registered users only) ──
-    if (!voiceMode && isRegistered && intent !== 'outreach' && intent !== 'content' && intent !== 'navigate' && intent !== 'screen') {
+    // Skip for fast intents (greeting, navigate, screen, calendar_read, email_read)
+    const SKIP_ENTITY_RECALL = ['greeting', 'outreach', 'content', 'navigate', 'screen', 'calendar_read', 'email_read'];
+    if (!voiceMode && isRegistered && !SKIP_ENTITY_RECALL.includes(intent)) {
       try {
         const capWords = message.match(/\b[A-Z][a-zA-Z]{2,}(?:\s+[A-Z][a-zA-Z]+)*/g) || [];
         const userName = (userConfig.display_name || '').split(' ')[0];
@@ -758,17 +700,29 @@ export default async function handler(req, res) {
     let personalHint = '';
     let morningBrief = '';
     if (!voiceMode && isRegistered) { // ISOLATION: Only registered users get personal context
-    // ── PARALLEL CONTEXT LOADING — all 7 queries fire simultaneously ──
+    // ── CONTEXT LOADING — intent-aware (light for greetings, full for everything else) ──
+    const isLightIntent = ['greeting', 'navigate', 'screen'].includes(intent);
     try {
-      const [prefs, profiles, personal, insights, triage, brief, pending] = await Promise.all([
-        sbFetch(`kiko_preferences?user_id=eq.${userId}&order=confidence.desc&limit=10&select=category,preference,confidence`).catch(() => []),
-        sbFetch(`kiko_user_profiles?user_id=eq.${userId || ''}&limit=1&select=draft_instructions,communication_style,language_fingerprint`).catch(() => []),
-        sbFetch(`kiko_personal_context?user_id=eq.${userId}&select=category,key,value&order=updated_at.desc&limit=20`).catch(() => []),
-        sbFetch(`kiko_conversation_insights?user_id=eq.${userId}&order=created_at.desc&limit=5&select=key_facts,decisions_made,open_threads,entities_discussed`).catch(() => []),
-        sbFetch(`kiko_inbox_triage?triage_date=eq.${new Date().toISOString().split('T')[0]}&limit=1&select=summary,priority_emails`).catch(() => []),
-        sbFetch(`kiko_alerts?type=eq.morning_brief&user_id=eq.${userId}&order=created_at.desc&limit=1&select=detail,created_at`).catch(() => []),
-        sbFetch(`kiko_draft_actions?status=eq.pending&user_id=eq.${userId}&order=created_at.desc&limit=5&select=action_type,payload,created_at`).catch(() => []),
-      ]);
+      const queries = isLightIntent
+        ? [ // Light: only 3 queries for greeting speed
+          Promise.resolve([]), // prefs — skip
+          Promise.resolve([]), // profiles — skip
+          sbFetch(`kiko_personal_context?user_id=eq.${userId}&select=category,key,value&order=updated_at.desc&limit=15`).catch(() => []),
+          Promise.resolve([]), // insights — skip
+          sbFetch(`kiko_inbox_triage?triage_date=eq.${new Date().toISOString().split('T')[0]}&limit=1&select=summary,priority_emails`).catch(() => []),
+          sbFetch(`kiko_alerts?type=eq.morning_brief&user_id=eq.${userId}&order=created_at.desc&limit=1&select=detail,created_at`).catch(() => []),
+          Promise.resolve([]), // pending — skip
+        ]
+        : [ // Full: all 7 queries
+          sbFetch(`kiko_preferences?user_id=eq.${userId}&order=confidence.desc&limit=10&select=category,preference,confidence`).catch(() => []),
+          sbFetch(`kiko_user_profiles?user_id=eq.${userId || ''}&limit=1&select=draft_instructions,communication_style,language_fingerprint`).catch(() => []),
+          sbFetch(`kiko_personal_context?user_id=eq.${userId}&select=category,key,value&order=updated_at.desc&limit=20`).catch(() => []),
+          sbFetch(`kiko_conversation_insights?user_id=eq.${userId}&order=created_at.desc&limit=5&select=key_facts,decisions_made,open_threads,entities_discussed`).catch(() => []),
+          sbFetch(`kiko_inbox_triage?triage_date=eq.${new Date().toISOString().split('T')[0]}&limit=1&select=summary,priority_emails`).catch(() => []),
+          sbFetch(`kiko_alerts?type=eq.morning_brief&user_id=eq.${userId}&order=created_at.desc&limit=1&select=detail,created_at`).catch(() => []),
+          sbFetch(`kiko_draft_actions?status=eq.pending&user_id=eq.${userId}&order=created_at.desc&limit=5&select=action_type,payload,created_at`).catch(() => []),
+        ];
+      const [prefs, profiles, personal, insights, triage, brief, pending] = await Promise.all(queries);
 
       // Preferences
       if (Array.isArray(prefs) && prefs.length) {
