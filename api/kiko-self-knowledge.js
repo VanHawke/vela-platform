@@ -70,14 +70,14 @@ export async function generateSelfKnowledge(userId) {
 
   // ── 6. Discover learned capabilities from kiko_skills ──
   try {
-    const skills = await sbFetch('kiko_skills?select=name,category,trigger_keywords&limit=50');
+    const skills = await sbFetch('kiko_skills?select=name,category&limit=50');
     if (skills?.length) {
       knowledge.push(`\nLEARNED SKILLS (${skills.length}):`);
       for (const s of skills) {
-        knowledge.push(`- [${s.category}] ${s.name}${s.trigger_keywords ? ` (triggers: ${s.trigger_keywords})` : ''}`);
+        knowledge.push(`- [${s.category}] ${s.name}`);
       }
     }
-  } catch { knowledge.push(`\nLEARNED SKILLS: Skills table contains learned capabilities. Search via manage_knowledge (search_knowledge).`); }
+  } catch { knowledge.push(`\nLEARNED SKILLS: Skills table contains learned capabilities.`); }
 
   // ── 6c. Win/Loss patterns ──
   try {
@@ -103,11 +103,11 @@ export async function generateSelfKnowledge(userId) {
 
   // ── 6b. Discover dynamic agents (self-created) ──
   try {
-    const dynAgents = await sbFetch('kiko_dynamic_agents?active=eq.true&select=name,display_name,description,category,trigger_keywords,usage_count&order=usage_count.desc');
+    const dynAgents = await sbFetch('kiko_dynamic_agents?active=eq.true&select=name,display_name,description,category,usage_count&order=usage_count.desc');
     if (dynAgents?.length) {
-      knowledge.push(`\nDYNAMIC AGENTS (${dynAgents.length} — created by Kiko at runtime):`);
+      knowledge.push(`\nDYNAMIC AGENTS (${dynAgents.length}):`);
       for (const a of dynAgents) {
-        knowledge.push(`- ${a.display_name} [${a.name}]: ${(a.description || '').slice(0, 100)}${a.trigger_keywords?.length ? ` (triggers: ${a.trigger_keywords.join(', ')})` : ''}`);
+        knowledge.push(`- ${a.display_name} [${a.name}]: ${(a.description || '').slice(0, 100)}`);
       }
       knowledge.push(`To run a dynamic agent: use manage_knowledge with operation "run_agent" and params { agent_name, question }.`);
       knowledge.push(`To create a new agent: use manage_knowledge with operation "create_agent".`);

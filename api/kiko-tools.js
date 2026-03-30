@@ -163,7 +163,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'ask_investment_agent',
-    description: 'Capital strategy. Use for: valuation, investor narrative, raise strategy, dilution modelling, due diligence prep. Currently: Van Hawke Maison pre-seed $500K.',
+    description: 'Capital strategy. Use for: valuation, investor narrative, raise strategy, dilution modelling, due diligence prep.',
     input_schema: { type: 'object', properties: {
       operation: { type: 'string', enum: ['analyse'], description: 'analyse: answer investment/capital question.' },
       params: { type: 'object', description: 'question (string), context (string).' },
@@ -195,7 +195,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'ask_specialist_agent',
-    description: 'Specialist domains: website/digital presence, product development (Van Hawke Maison eyewear), IP/licensing. Use for niche questions in these areas.',
+    description: 'Specialist domains: website/digital presence, product development, IP/licensing. Use for niche questions in these areas.',
     input_schema: { type: 'object', properties: {
       domain: { type: 'string', enum: ['website', 'product_dev', 'ip'], description: 'Which specialist domain.' },
       params: { type: 'object', description: 'question (string), context (string).' },
