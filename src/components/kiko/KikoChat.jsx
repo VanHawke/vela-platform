@@ -15,8 +15,10 @@ import { useDynamicChips } from '@/hooks/useDynamicChips'
 
 // Theme imported from @/lib/theme.js
 
+const mdCache = new Map()
 function md(text) {
   if (!text) return ''
+  if (mdCache.has(text)) return mdCache.get(text)
   let h = text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     // Supabase generated-files image → inline preview
@@ -34,7 +36,9 @@ function md(text) {
     .replace(/^## (.+)$/gm, '<div style="font-size:15px;font-weight:500;color:rgba(255,255,255,0.85);margin:16px 0 8px">$1</div>')
     .replace(/^---$/gm, '<hr style="border:none;border-top:1.5px solid rgba(255,255,255,0.1);margin:16px 0"/>')
     .replace(/\n/g, '<br/>')
-  return DOMPurify.sanitize(h)
+  const result = DOMPurify.sanitize(h)
+  if (text.length < 50000) { mdCache.set(text, result); if (mdCache.size > 200) mdCache.delete(mdCache.keys().next().value) }
+  return result
 }
 
 function getGreeting() {
@@ -142,6 +146,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [imagePreview, setImagePreview] = useState(null) // { url, name, file }
   const [pendingAttachment, setPendingAttachment] = useState(null) // { type, mediaType, data, previewUrl, name }
   const [allChatsData, setAllChatsData] = useState(null) // { convos, onSelect, onDelete }
+  const [showAllMsgs, setShowAllMsgs] = useState(false)
   const abortRef = useRef(null)
   const streamTextRef = useRef('')
   const lastQueryRef = useRef('')
@@ -326,7 +331,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const loadConversation = (conv) => {
     if (!conv?.messages) return
     setMessages(conv.messages.map(m => ({ role: m.role, content: m.content })))
-    setActiveConvId(conv.id); setStreamText(''); setStreaming(false)
+    setActiveConvId(conv.id); setStreamText(''); setStreaming(false); setShowAllMsgs(false)
   }
   const startNewChat = () => {
     setMessages([]); setActiveConvId(null); setStreamText(''); setStreaming(false); setInput('')
@@ -924,7 +929,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       ) : (
       <div style={{ flex: 1, overflowY: 'auto', padding: compact ? 16 : 24 }}>
         <div style={{ maxWidth: compact ? '100%' : 680, margin: '0 auto', width: '100%' }}>
-          {renderMessages(messages)}
+          {messages.length > 40 && !showAllMsgs && (
+            <button onClick={() => setShowAllMsgs(true)} style={{ display: 'block', margin: '0 auto 16px', padding: '6px 16px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)', fontSize: 12, cursor: 'pointer', fontFamily: T.font }}>
+              Show {messages.length - 40} earlier messages
+            </button>
+          )}
+          {renderMessages(showAllMsgs ? messages : messages.slice(-40))}
           {/* Thinking indicator — prominent pulsing orb */}
           {streaming && !streamText && (
             <div style={{ marginBottom: 24, display: 'flex', gap: 14, alignItems: 'center', padding: '12px 0' }}>
