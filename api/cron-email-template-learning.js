@@ -3,6 +3,7 @@
 // Extracts winning patterns into reusable templates.
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, logError, cronHeartbeat } from './kiko-tools.js';
+import { getActiveUsers } from './cron-utils.js';
 
 export const config = { maxDuration: 60 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
@@ -11,6 +12,11 @@ export default async function handler(req, res) {
   const __hbStart = Date.now();
   const __hbId = await cronHeartbeat('cron-email-template-learning', 'started');
   try {
+    // Resolve user for writes — shared knowledge, stored under super_admin
+    const users = await getActiveUsers();
+    const primaryUserId = users.find(u => u.role === 'super_admin')?.user_id || users[0]?.user_id;
+    if (!primaryUserId) return res.status(200).json({ ok: false, error: 'No active users' });
+
     // Get scored outreach emails with outcomes
     const scored = await sbFetch('outreach_scores?scored_at=not.is.null&select=subject,approach_category,outcome,word_count,recipient_name,company&order=scored_at.desc&limit=50');
     if (!scored?.length || scored.length < 5) {
@@ -60,7 +66,7 @@ Return JSON: {
       // Store patterns in learning log
       if (parsed.patterns?.winning?.length) {
         await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({
-          user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063', category: 'email_templates',
+          user_id: primaryUserId, category: 'email_templates',
           content: `WINNING PATTERNS: ${parsed.patterns.winning.join('; ')}. LOSING: ${(parsed.patterns.losing || []).join('; ')}. Stats: ${JSON.stringify(parsed.stats || {})}`,
           entity_name: 'outreach_effectiveness',
         })});

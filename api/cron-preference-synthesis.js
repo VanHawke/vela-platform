@@ -3,6 +3,7 @@
 // writes/updates kiko_preferences. STANDALONE — if fails, agents work as before.
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
+import { getActiveUsers } from './cron-utils.js';
 
 export const config = { maxDuration: 45 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
@@ -11,10 +12,14 @@ export default async function handler(req, res) {
   try {
     const __hbStart = Date.now();
     const __hbId = await cronHeartbeat('cron-preference-synthesis', 'started');
+    const users = await getActiveUsers();
+    const results = [];
+    for (const user of users) {
     try {
-    // Pull last 30 days of decisions
+    const userId = user.user_id;
+    // Pull last 30 days of decisions for this user
     const since = new Date(Date.now() - 30 * 86400000).toISOString();
-    const entries = await sbFetch(`kiko_learning_log?category=eq.decision&created_at=gt.${since}&order=created_at.desc&limit=50&select=content,entity_name,created_at`);
+    const entries = await sbFetch(`kiko_learning_log?category=eq.decision&user_id=eq.${userId}&created_at=gt.${since}&order=created_at.desc&limit=50&select=content,entity_name,created_at`);
     const safe = Array.isArray(entries) ? entries : [];
 
     if (safe.length < 3) {
@@ -42,8 +47,8 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, message: 'No patterns identified', preferences: 0 });
     }
 
-    // Clear old preferences and write new ones
-    await sbFetch('kiko_preferences?id=not.is.null', { method: 'DELETE' });
+    // Clear old preferences for this user and write new ones
+    await sbFetch(`kiko_preferences?user_id=eq.${userId}`, { method: 'DELETE' });
 
     let written = 0;
     for (const pref of preferences.slice(0, 10)) {
@@ -51,6 +56,7 @@ export default async function handler(req, res) {
         await sbFetch('kiko_preferences', {
           method: 'POST',
           body: JSON.stringify({
+            user_id: userId,
             category: (pref.category || 'general').slice(0, 50),
             preference: (pref.preference || '').slice(0, 300),
             confidence: Math.min(Math.max(pref.confidence || 0.5, 0.1), 0.99),
@@ -62,9 +68,12 @@ export default async function handler(req, res) {
       } catch {}
     }
 
-    return res.status(200).json({ ok: true, preferences: written, from_entries: safe.length });
+    results.push({ user: user.email, ok: true, preferences: written });
+    } catch (e) { results.push({ user: user.email, ok: false, error: e.message }); }
+    } // end user loop
+    await cronHeartbeat('cron-preference-synthesis', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: results.length });
+    return res.status(200).json({ ok: true, users: results });
   } catch (err) {
-    await cronHeartbeat('cron-preference-synthesis', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart });
     return res.status(200).json({ ok: false, error: err.message });
   }
 }

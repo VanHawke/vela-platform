@@ -1,26 +1,23 @@
-// api/cron-meeting-prep.js — Meeting Prep Auto-Generation
+// api/cron-meeting-prep.js — Meeting Prep Auto-Generation (multi-user)
 // Runs hourly. Scans calendar for meetings in next 2 hours.
-// Generates enriched prep brief per meeting. STANDALONE.
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
+import { getActiveUsers, getGoogleToken } from './cron-utils.js';
 
 export const config = { maxDuration: 45 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
-const USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063';
-const USER_EMAIL = 'sunny@vanhawke.com';
-
-async function getGoogleToken() {
-  const { getGoogleToken: gt } = await import('./google-token.js');
-  return gt(USER_EMAIL);
-}
 
 export default async function handler(req, res) {
   try {
     const __hbStart = Date.now();
     const __hbId = await cronHeartbeat('cron-meeting-prep', 'started');
+    const users = await getActiveUsers();
+    const results = [];
+    for (const user of users) {
     try {
-    const token = await getGoogleToken();
-    if (!token) return res.status(200).json({ ok: false, error: 'No Google token' });
+    const token = await getGoogleToken(user.email);
+    if (!token) { results.push({ user: user.email, ok: false }); continue; }
+    const USER_ID = user.user_id;
 
     // Get events in next 2 hours
     const now = new Date();
@@ -103,7 +100,11 @@ export default async function handler(req, res) {
       });
       generated++;
     }
-    return res.status(200).json({ ok: true, preps: generated, events_checked: events.length });
-  } catch (err) { await cronHeartbeat('cron-meeting-prep', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart });
+    results.push({ user: user.email, ok: true, preps: generated, events: events.length });
+    } catch (e) { results.push({ user: user.email, ok: false, error: e.message }); }
+    } // end user loop
+    await cronHeartbeat('cron-meeting-prep', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: results.length });
+    return res.status(200).json({ ok: true, users: results });
+  } catch (err) {
     return res.status(200).json({ ok: false, error: err.message }); }
 }

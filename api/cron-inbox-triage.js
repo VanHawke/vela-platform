@@ -1,34 +1,42 @@
-// api/cron-inbox-triage.js — Smart Inbox Triage (fixed)
+// api/cron-inbox-triage.js — Smart Inbox Triage (multi-user)
 // Runs at 7:15am Mon-Fri. Scans inbox, classifies by urgency.
-// Always writes a triage record, even if inbox is clear.
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, cronHeartbeat, logError } from './kiko-tools.js';
+import { getActiveUsers, getGoogleToken } from './cron-utils.js';
 
 export const config = { maxDuration: 45 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
-const USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063';
-const USER_EMAIL = 'sunny@vanhawke.com';
-
-async function getGoogleToken() {
-  const { getGoogleToken: gt } = await import('./google-token.js');
-  return gt(USER_EMAIL);
-}
 
 export default async function handler(req, res) {
   const __hbStart = Date.now();
   const __hbId = await cronHeartbeat('cron-inbox-triage', 'started');
   const today = new Date().toISOString().split('T')[0];
+  const results = [];
 
   try {
-    let token;
-    try { token = await getGoogleToken(); } catch (e) {
-      await logError('cron:inbox-triage', `Google token failed: ${e.message}`);
-      await writeTriage(today, 'Google connection expired. Cannot triage inbox.', []);
-      await cronHeartbeat('cron-inbox-triage', 'error', { heartbeatId: __hbId, errorMessage: e.message });
-      return res.status(200).json({ ok: false, error: 'Google token expired' });
+    const users = await getActiveUsers();
+    for (const user of users) {
+      try {
+        const token = await getGoogleToken(user.email);
+        if (!token) { results.push({ user: user.email, ok: false, error: 'no token' }); continue; }
+        const r = await triageUser(user.user_id, user.email, token, today);
+        results.push({ user: user.email, ...r });
+      } catch (e) {
+        results.push({ user: user.email, ok: false, error: e.message });
+      }
     }
+    await cronHeartbeat('cron-inbox-triage', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: results.length });
+    return res.status(200).json({ ok: true, users: results });
+  } catch (err) {
+    await logError('cron:inbox-triage', err.message);
+    await cronHeartbeat('cron-inbox-triage', 'error', { heartbeatId: __hbId, errorMessage: err.message });
+    return res.status(200).json({ ok: false, error: err.message });
+  }
+}
 
-    // Search: unread from last 24h + any starred
+async function triageUser(userId, email, token, today) {
+
+async function triageUser(userId, email, token, today) {
     const searchRes = await fetch(
       `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=is:unread newer_than:1d -category:promotions -category:social&maxResults=20`,
       { headers: { Authorization: `Bearer ${token}` } }
@@ -37,9 +45,8 @@ export default async function handler(req, res) {
     const ids = (searchData.messages || []).map(m => m.id);
 
     if (!ids.length) {
-      await writeTriage(today, 'Inbox clear — no unread emails in the last 24 hours.', []);
-      await cronHeartbeat('cron-inbox-triage', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 });
-      return res.status(200).json({ ok: true, message: 'Inbox clear', emails: 0 });
+      await writeTriage(userId, today, 'Inbox clear — no unread emails in the last 24 hours.', []);
+      return { ok: true, emails: 0 };
     }
 
     // Fetch metadata for each email
@@ -59,9 +66,8 @@ export default async function handler(req, res) {
     }
 
     if (!emails.length) {
-      await writeTriage(today, 'Found message IDs but could not fetch metadata.', []);
-      await cronHeartbeat('cron-inbox-triage', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart });
-      return res.status(200).json({ ok: true, message: 'No metadata', emails: 0 });
+      await writeTriage(userId, today, 'Found message IDs but could not fetch metadata.', []);
+      return { ok: true, emails: 0 };
     }
 
     // Classify via Haiku
@@ -86,9 +92,8 @@ export default async function handler(req, res) {
     const importantCount = priorityEmails.filter(e => e.priority === 'IMPORTANT').length;
     const summary = `${emails.length} unread: ${actionCount} need action, ${importantCount} important, ${emails.length - actionCount - importantCount} can wait.`;
 
-    await writeTriage(today, summary, priorityEmails);
-    await cronHeartbeat('cron-inbox-triage', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: emails.length });
-    return res.status(200).json({ ok: true, total_unread: emails.length, action_required: actionCount, important: importantCount });
+    await writeTriage(userId, today, summary, priorityEmails);
+    return { ok: true, total_unread: emails.length, action_required: actionCount, important: importantCount };
   } catch (err) {
     await logError('cron:inbox-triage', err.message);
     await cronHeartbeat('cron-inbox-triage', 'error', { heartbeatId: __hbId, errorMessage: err.message });
@@ -96,12 +101,12 @@ export default async function handler(req, res) {
   }
 }
 
-async function writeTriage(today, summary, priorityEmails) {
-  const row = { user_id: USER_ID, triage_date: today, priority_emails: priorityEmails || [], summary };
+async function writeTriage(userId, today, summary, priorityEmails) {
+  const row = { user_id: userId, triage_date: today, priority_emails: priorityEmails || [], summary };
   try {
-    const existing = await sbFetch(`kiko_inbox_triage?user_id=eq.${USER_ID}&triage_date=eq.${today}&limit=1`);
+    const existing = await sbFetch(`kiko_inbox_triage?user_id=eq.${userId}&triage_date=eq.${today}&limit=1`);
     if (Array.isArray(existing) && existing.length) {
-      await sbFetch(`kiko_inbox_triage?user_id=eq.${USER_ID}&triage_date=eq.${today}`, { method: 'PATCH', body: JSON.stringify(row) });
+      await sbFetch(`kiko_inbox_triage?user_id=eq.${userId}&triage_date=eq.${today}`, { method: 'PATCH', body: JSON.stringify(row) });
     } else {
       await sbFetch('kiko_inbox_triage', { method: 'POST', body: JSON.stringify(row) });
     }

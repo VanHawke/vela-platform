@@ -4,10 +4,10 @@
 // This is what makes Kiko push instead of wait.
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, logError, cronHeartbeat } from './kiko-tools.js';
+import { getActiveUsers } from './cron-utils.js';
 
 export const config = { maxDuration: 90 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
-const USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063';
 
 export default async function handler(req, res) {
   const __hbStart = Date.now();
@@ -151,16 +151,20 @@ Max 250 words. No pleasantries. No "good morning." Start with the most important
     const briefText = synthesis.content[0]?.text || 'Could not generate brief.';
 
     // Write as high-priority alert
+    // Write alert for each active user
+    const users = await getActiveUsers();
+    for (const user of users) {
     await sbFetch('kiko_alerts', {
       method: 'POST', body: JSON.stringify({
         type: 'morning_brief', severity: 'high',
         title: `Morning Intelligence Brief — ${today}`,
-        detail: briefText,
+        detail: briefText, user_id: user.user_id,
         entity_type: 'system', entity_name: 'Kiko Intelligence',
         metadata: { stale_deals: stale.length, overdue_tasks: overdue.length, signals: (signals || []).length, upcoming_races: upcomingRaces.length },
         expires_at: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(),
       })
     });
+    }
 
     await cronHeartbeat('cron-morning-intelligence', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 1 });
     return res.status(200).json({ ok: true, brief_length: briefText.length, preview: briefText.slice(0, 200) });

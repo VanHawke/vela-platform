@@ -1,7 +1,6 @@
-// api/cron-outreach-score.js — Daily outreach scoring engine
+// api/cron-outreach-score.js — Daily outreach scoring engine (multi-user)
 import { cronHeartbeat } from './kiko-tools.js';
-// Pulls sent emails from last 7 days, checks for replies, classifies messaging approach, scores effectiveness
-// Runs once daily at 9am UK via Vercel cron
+import { getActiveUsers, getGoogleToken as getToken } from './cron-utils.js';
 
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5'
 
@@ -17,9 +16,14 @@ export default async function handler(req, res) {
   const h = { apikey: SK, Authorization: `Bearer ${SK}`, 'Content-Type': 'application/json' }
 
   try {
+    // Multi-user loop
+    const users = await getActiveUsers();
+    const allResults = [];
+    for (const __user of users) {
+    const __userId = __user.user_id;
+    try {
     // Step 1: Get Google token for Gmail API
-    const { getGoogleToken } = await import('./google-token.js')
-    const token = await getGoogleToken('sunny@vanhawke.com')
+    const token = await getToken(__user.email)
 
     // Step 2: Find sent emails from last 7 days not yet scored
     const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0]
@@ -30,7 +34,7 @@ export default async function handler(req, res) {
     )
     const searchData = await searchRes.json()
     const messageIds = (searchData.messages || []).map(m => m.id)
-    if (!messageIds.length) return res.status(200).json({ scored: 0, message: 'No sent emails found' })
+    if (!messageIds.length) { allResults.push({ user: __user.email, scored: 0 }); continue; }
 
     // Step 3: Check which are already scored
     const existingRes = await fetch(`${SB}/rest/v1/outreach_scores?select=email_gmail_id&org_id=eq.${ORG_ID}`, { headers: h })
@@ -38,7 +42,7 @@ export default async function handler(req, res) {
     const scoredIds = new Set((existing || []).map(e => e.email_gmail_id))
 
     const newIds = messageIds.filter(id => !scoredIds.has(id))
-    if (!newIds.length) return res.status(200).json({ scored: 0, message: 'All emails already scored' })
+    if (!newIds.length) { allResults.push({ user: __user.email, scored: 0 }); continue; }
 
     // Step 4: Fetch full email details for unscored messages
     const emails = []
@@ -242,18 +246,19 @@ ${JSON.stringify(emailBatch, null, 1)}` }]
         }
         await fetch(`${SB}/rest/v1/kiko_learning_log`, {
           method: 'POST', headers: h,
-          body: JSON.stringify({ user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063', category: 'outreach_patterns', content: insight, entity_name: 'outreach_effectiveness' }),
+          body: JSON.stringify({ user_id: __userId, category: 'outreach_patterns', content: insight, entity_name: 'outreach_effectiveness' }),
         });
       }
     } catch {} // Non-blocking
 
-    return res.status(200).json({ scored, updated, total_emails: messageIds.length })
+    allResults.push({ user: __user.email, ok: true, scored, updated });
+  } catch (userErr) { allResults.push({ user: __user.email, ok: false, error: userErr.message }); }
+  } // end user loop
+    await cronHeartbeat('cron-outreach-score', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: allResults.length });
+    return res.status(200).json({ ok: true, users: allResults })
   } catch (err) {
     console.error('[Outreach Score] Error:', err.message)
+    await cronHeartbeat('cron-outreach-score', 'error', { heartbeatId: __hbId, errorMessage: err.message });
     return res.status(500).json({ error: err.message })
-  }
-  } catch (__hbErr) {
-    await cronHeartbeat('cron-outreach-score', 'error', { heartbeatId: __hbId, errorMessage: __hbErr?.message || 'unknown' });
-    throw __hbErr;
   }
 }

@@ -1,18 +1,11 @@
-// api/cron-profile-synthesis.js — User Profile Synthesis (Phase 15)
-// Runs weekly. Pulls last 50 sent emails from Gmail, analyses via Sonnet,
-// writes structured profile to kiko_user_profiles. STANDALONE.
+// api/cron-profile-synthesis.js — User Profile Synthesis (multi-user)
+// Runs weekly. Pulls last 50 sent emails from Gmail, analyses via Sonnet.
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
+import { getActiveUsers, getGoogleToken } from './cron-utils.js';
 
 export const config = { maxDuration: 45 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
-const USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063'; // Sunny
-const USER_EMAIL = 'sunny@vanhawke.com';
-
-async function getGoogleToken() {
-  const { getGoogleToken: gt } = await import('./google-token.js');
-  return gt(USER_EMAIL);
-}
 
 
 async function extractSentEmails(token, maxEmails = 50) {
@@ -69,9 +62,13 @@ export default async function handler(req, res) {
   try {
     const __hbStart = Date.now();
     const __hbId = await cronHeartbeat('cron-profile-synthesis', 'started');
+    const users = await getActiveUsers();
+    const results = [];
+    for (const user of users) {
     try {
-    const token = await getGoogleToken();
-    if (!token) return res.status(200).json({ ok: false, error: 'No Google token' });
+    const USER_ID = user.user_id;
+    const token = await getGoogleToken(user.email);
+    if (!token) { results.push({ user: user.email, ok: false }); continue; }
 
     const samples = await extractSentEmails(token, 50);
     if (samples.length < 5) {
@@ -177,9 +174,12 @@ export default async function handler(req, res) {
       });
     }
 
-    return res.status(200).json({ ok: true, emails_analysed: samples.length, version: currentVersion + 1 });
+    results.push({ user: user.email, ok: true, emails: samples.length });
+    } catch (e) { results.push({ user: user.email, ok: false, error: e.message }); }
+    } // end user loop
+    await cronHeartbeat('cron-profile-synthesis', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: results.length });
+    return res.status(200).json({ ok: true, users: results });
   } catch (err) {
-    await cronHeartbeat('cron-profile-synthesis', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart });
     return res.status(200).json({ ok: false, error: err.message });
   }
 }

@@ -2,15 +2,9 @@
 // Weekly scan of Gmail sent/received. Maps contact frequency, response times,
 // warmth scores. Feeds into outreach and strategy agents.
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
+import { getActiveUsers, getGoogleToken } from './cron-utils.js';
 
 export const config = { maxDuration: 45 };
-const USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063';
-const USER_EMAIL = 'sunny@vanhawke.com';
-
-async function getGoogleToken() {
-  const { getGoogleToken: gt } = await import('./google-token.js');
-  return gt(USER_EMAIL);
-}
 
 
 async function scanGmailContacts(token) {
@@ -122,9 +116,13 @@ export default async function handler(req, res) {
   try {
     const __hbStart = Date.now();
     const __hbId = await cronHeartbeat('cron-relationship-intel', 'started');
+    const users = await getActiveUsers();
+    const results = [];
+    for (const user of users) {
     try {
-    const token = await getGoogleToken();
-    if (!token) return res.status(200).json({ ok: false, error: 'No Google token' });
+    const USER_ID = user.user_id;
+    const token = await getGoogleToken(user.email);
+    if (!token) { results.push({ user: user.email, ok: false }); continue; }
 
     const contacts = await scanGmailContacts(token);
     const emails = Object.keys(contacts);
@@ -168,9 +166,12 @@ export default async function handler(req, res) {
       } catch {}
     }
 
-    return res.status(200).json({ ok: true, relationships: written, total_contacts: emails.length });
+    results.push({ user: user.email, ok: true, relationships: written });
+    } catch (e) { results.push({ user: user.email, ok: false, error: e.message }); }
+    } // end user loop
+    await cronHeartbeat('cron-relationship-intel', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: results.length });
+    return res.status(200).json({ ok: true, users: results });
   } catch (err) {
-    await cronHeartbeat('cron-relationship-intel', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart });
     return res.status(200).json({ ok: false, error: err.message });
   }
 }
