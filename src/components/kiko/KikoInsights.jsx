@@ -128,7 +128,7 @@ export default function KikoInsights({ onAction, open, onClose }) {
                     <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: 400, fontFamily: T.font, display: 'block', lineHeight: 1.4 }}>{alert.title}</span>
                   </div>
                   <button onClick={() => { onAction?.(`Tell me about the ${alert.entity_name} partnership announcement`); onClose?.() }}
-                    style={{ ...btnBase, background: 'rgba(212,167,106,0.06)', color: 'rgba(212,167,106,0.6)', fontSize: 10, width: 'auto', borderRadius: 6, padding: '0 8px', fontFamily: T.font }}>Discuss</button>
+                    style={{ ...btnBase, background: 'rgba(139,108,246,0.06)', color: 'rgba(139,108,246,0.6)', fontSize: 10, width: 'auto', borderRadius: 6, padding: '0 8px', fontFamily: T.font }}>Discuss</button>
                   <button onClick={() => { nav('/partnership-matrix'); onClose?.() }}
                     style={{ ...btnBase, background: 'rgba(0,212,170,0.04)', color: 'rgba(0,212,170,0.5)', fontSize: 10, width: 'auto', borderRadius: 6, padding: '0 8px', fontFamily: T.font }}>Matrix</button>
                   <button onClick={() => dismissPartnership(alert)} style={{ ...btnBase, background: 'transparent', color: 'rgba(255,255,255,0.15)' }}><X size={10} /></button>

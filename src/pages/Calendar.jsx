@@ -142,7 +142,7 @@ export default function Calendar({ user }) {
             <Button
               onClick={() => { setShowCreate(true); setSelectedEvent(null) }}
               size="sm"
-              className="bg-[#D4A76A] text-white hover:bg-[#D4A76A]/90"
+              className="bg-[#8B6CF6] text-white hover:bg-[#8B6CF6]/90"
             >
               <Plus className="h-4 w-4 mr-1" /> New Event
             </Button>

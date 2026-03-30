@@ -40,7 +40,7 @@ function statusColor(c) {
 
 function stepIcon(type) {
   const t = (type || '').toLowerCase()
-  if (t.includes('email') || t.includes('mail')) return <Mail size={14} style={{ color: 'rgba(212,167,106,0.7)' }} />
+  if (t.includes('email') || t.includes('mail')) return <Mail size={14} style={{ color: 'rgba(139,108,246,0.7)' }} />
   if (t.includes('linkedin')) return <Linkedin size={14} style={{ color: 'rgba(0,119,181,0.7)' }} />
   if (t.includes('call') || t.includes('phone')) return <Phone size={14} style={{ color: 'rgba(0,212,170,0.7)' }} />
   if (t.includes('delay') || t.includes('wait')) return <Clock size={14} style={{ color: 'rgba(255,255,255,0.3)' }} />
@@ -50,7 +50,7 @@ function stepIcon(type) {
 function activityIcon(type) {
   const t = (type || '').toLowerCase()
   if (t.includes('replied')) return <Reply size={12} style={{ color: 'rgba(6,214,160,0.8)' }} />
-  if (t.includes('opened') || t.includes('open')) return <Eye size={12} style={{ color: 'rgba(212,167,106,0.6)' }} />
+  if (t.includes('opened') || t.includes('open')) return <Eye size={12} style={{ color: 'rgba(139,108,246,0.6)' }} />
   if (t.includes('clicked')) return <MousePointer size={12} style={{ color: 'rgba(0,212,170,0.6)' }} />
   if (t.includes('bounced')) return <AlertTriangle size={12} style={{ color: 'rgba(255,59,48,0.6)' }} />
   if (t.includes('linkedin')) return <Linkedin size={12} style={{ color: 'rgba(0,119,181,0.6)' }} />
@@ -223,8 +223,8 @@ export default function Lemlist({ user }) {
                   )}
                   <div onClick={() => selectCampaign(c)} style={{
                     padding: '10px 12px', borderRadius: 10, marginBottom: 3, cursor: 'pointer', transition: 'all 0.15s',
-                    background: isActive ? 'rgba(212,167,106,0.06)' : 'rgba(255,255,255,0.015)',
-                    border: `1px solid ${isActive ? 'rgba(212,167,106,0.15)' : 'rgba(255,255,255,0.03)'}`,
+                    background: isActive ? 'rgba(139,108,246,0.06)' : 'rgba(255,255,255,0.015)',
+                    border: `1px solid ${isActive ? 'rgba(139,108,246,0.15)' : 'rgba(255,255,255,0.03)'}`,
                   }}
                     onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
                     onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.015)' }}
@@ -293,7 +293,7 @@ export default function Lemlist({ user }) {
                     <div style={{ position: 'absolute', left: 6, top: 8, bottom: 8, width: 1, background: 'rgba(255,255,255,0.06)' }} />
                     {sequenceSteps.map((step, idx) => (
                       <div key={step._id || idx} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '8px 0', position: 'relative' }}>
-                        <div style={{ position: 'absolute', left: -17, top: 12, width: 10, height: 10, borderRadius: '50%', background: '#111114', border: '2px solid rgba(212,167,106,0.4)', zIndex: 1 }} />
+                        <div style={{ position: 'absolute', left: -17, top: 12, width: 10, height: 10, borderRadius: '50%', background: '#111114', border: '2px solid rgba(139,108,246,0.4)', zIndex: 1 }} />
                         <div style={{ flex: 1, ...card, padding: '10px 14px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
                             {stepIcon(step.type)}
@@ -321,8 +321,8 @@ export default function Lemlist({ user }) {
                     return (
                       <div key={lead._id || idx} onClick={() => selectLead(lead)} style={{
                         ...card, padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12,
-                        background: isSelected ? 'rgba(212,167,106,0.06)' : card.background,
-                        borderColor: isSelected ? 'rgba(212,167,106,0.15)' : 'rgba(255,255,255,0.04)',
+                        background: isSelected ? 'rgba(139,108,246,0.06)' : card.background,
+                        borderColor: isSelected ? 'rgba(139,108,246,0.15)' : 'rgba(255,255,255,0.04)',
                       }}
                         onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
                         onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.02)' }}
@@ -380,7 +380,7 @@ export default function Lemlist({ user }) {
                   const isSent = (a.type || '').toLowerCase().includes('sent')
                   return (
                     <div key={a._id || i} style={{ display: 'flex', gap: 10, padding: '8px 0', position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: -17, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#111114', border: `2px solid ${isReply ? 'rgba(6,214,160,0.5)' : 'rgba(212,167,106,0.3)'}`, zIndex: 1 }} />
+                      <div style={{ position: 'absolute', left: -17, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#111114', border: `2px solid ${isReply ? 'rgba(6,214,160,0.5)' : 'rgba(139,108,246,0.3)'}`, zIndex: 1 }} />
                       <div style={{ flex: 1, ...card, padding: '10px 12px', background: isReply ? 'rgba(6,214,160,0.03)' : card.background, borderColor: isReply ? 'rgba(6,214,160,0.1)' : 'rgba(255,255,255,0.04)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                           {activityIcon(a.type)}

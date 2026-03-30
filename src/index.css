@@ -2,35 +2,35 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #1C1C1E;
-  --surface: rgba(255,255,255,0.06);
-  --surface-hover: rgba(255,255,255,0.10);
-  --border: rgba(255,255,255,0.08);
-  --border-hover: rgba(255,255,255,0.14);
-  --text: rgba(255,255,255,0.88);
-  --text-secondary: rgba(255,255,255,0.50);
+  --bg: #000000;
+  --surface: rgba(255,255,255,0.07);
+  --surface-hover: rgba(255,255,255,0.12);
+  --border: rgba(255,255,255,0.1);
+  --border-hover: rgba(255,255,255,0.18);
+  --text: rgba(255,255,255,0.9);
+  --text-secondary: rgba(255,255,255,0.5);
   --text-tertiary: rgba(255,255,255,0.22);
-  --text-muted: rgba(255,255,255,0.10);
-  --accent: #D4A76A;
+  --text-muted: rgba(255,255,255,0.12);
+  --accent: #8B6CF6;
   --accent-teal: #06D6A0;
   --accent-pink: #EC4899;
   --accent-blue: #3B82F6;
-  --accent-amber: #D4A76A;
-  --accent-soft: rgba(212,167,106,0.12);
+  --accent-amber: #F59E0B;
+  --accent-soft: rgba(139,108,246,0.1);
   --radius: 20px;
   --radius-sm: 14px;
   --radius-xl: 24px;
   --radius-pill: 50px;
-  --font: 'DM Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-  --glass-bg: rgba(255,255,255,0.05);
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'DM Sans', 'Segoe UI', sans-serif;
+  --glass-bg: rgba(255,255,255,0.07);
   --glass-blur: blur(40px);
-  --glass-border: rgba(255,255,255,0.10);
-  --glass-border-hover: rgba(255,255,255,0.18);
-  --glass-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.12);
+  --glass-border-hover: rgba(255,255,255,0.2);
+  --glass-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
   --shadow-sm: none;
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.3);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
-  --shadow-kiko: 0 0 60px rgba(212,167,106,0.12), 0 0 120px rgba(6,214,160,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.2);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.3);
+  --shadow-kiko: 0 0 60px rgba(139,108,246,0.15), 0 0 120px rgba(6,214,160,0.08);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -96,8 +96,8 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); -web
 .input::placeholder { color: var(--text-tertiary); }
 .input:disabled { background: var(--bg); color: var(--text-tertiary); }
 
-.card { background: rgba(255,255,255,0.04); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); border-radius: var(--radius); border: 0.5px solid rgba(255,255,255,0.06); box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04); transition: all 0.4s cubic-bezier(0.2,0,0,1); }
-.card:hover { border-color: rgba(255,255,255,0.12); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06); }
+.card { background: rgba(255,255,255,0.06); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); border-radius: var(--radius); border: 0.5px solid rgba(255,255,255,0.08); box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06); transition: all 0.4s cubic-bezier(0.2,0,0,1); }
+.card:hover { border-color: rgba(255,255,255,0.15); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08); }
 
 .pill { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; font-family: var(--font); }
 
@@ -151,7 +151,7 @@ h1, h2, h3, h4, h5, h6 { color: rgba(255,255,255,0.9); }
 }
 
 /* ── FullCalendar dark glassmorphism overrides ── */
-.vela-calendar .fc { --fc-border-color: rgba(255,255,255,0.04); --fc-button-bg-color: rgba(255,255,255,0.04); --fc-button-border-color: rgba(255,255,255,0.06); --fc-button-hover-bg-color: rgba(255,255,255,0.08); --fc-button-hover-border-color: rgba(255,255,255,0.1); --fc-button-active-bg-color: rgba(212,167,106,0.2); --fc-button-active-border-color: rgba(212,167,106,0.3); --fc-today-bg-color: rgba(212,167,106,0.04); --fc-highlight-color: rgba(212,167,106,0.08); --fc-neutral-bg-color: rgba(255,255,255,0.02); --fc-list-event-hover-bg-color: rgba(255,255,255,0.04); --fc-page-bg-color: transparent; --fc-now-indicator-color: #06D6A0; }
+.vela-calendar .fc { --fc-border-color: rgba(255,255,255,0.04); --fc-button-bg-color: rgba(255,255,255,0.04); --fc-button-border-color: rgba(255,255,255,0.06); --fc-button-hover-bg-color: rgba(255,255,255,0.08); --fc-button-hover-border-color: rgba(255,255,255,0.1); --fc-button-active-bg-color: rgba(139,108,246,0.2); --fc-button-active-border-color: rgba(139,108,246,0.3); --fc-today-bg-color: rgba(139,108,246,0.04); --fc-highlight-color: rgba(139,108,246,0.08); --fc-neutral-bg-color: rgba(255,255,255,0.02); --fc-list-event-hover-bg-color: rgba(255,255,255,0.04); --fc-page-bg-color: transparent; --fc-now-indicator-color: #06D6A0; }
 .vela-calendar .fc .fc-toolbar-title { color: rgba(255,255,255,0.9); font-weight: 300; font-size: 18px; }
 .vela-calendar .fc .fc-button { color: rgba(255,255,255,0.6); font-weight: 300; font-size: 12px; border-radius: 10px; }
 .vela-calendar .fc .fc-button-active { color: rgba(255,255,255,0.9); }

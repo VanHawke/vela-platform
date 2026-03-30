@@ -458,7 +458,7 @@ export default function Pipeline({ user }) {
   // Stage accent colours for left-border + header
   const stageAccent = {
     'To revisit': 'rgba(255,255,255,0.1)',
-    'Contact made': 'rgba(212,167,106,0.3)',
+    'Contact made': 'rgba(139,108,246,0.3)',
     'In Dialogue': 'rgba(245,158,11,0.35)',
     'Qualified': 'rgba(6,214,160,0.35)',
     'Meeting arranged (brand x RH)': 'rgba(59,130,246,0.35)',
@@ -467,7 +467,7 @@ export default function Pipeline({ user }) {
   }
   const stageTextColor = {
     'To revisit': 'rgba(255,255,255,0.3)',
-    'Contact made': 'rgba(212,167,106,0.6)',
+    'Contact made': 'rgba(139,108,246,0.6)',
     'In Dialogue': 'rgba(245,158,11,0.7)',
     'Qualified': 'rgba(6,214,160,0.7)',
     'Meeting arranged (brand x RH)': 'rgba(59,130,246,0.7)',
@@ -523,7 +523,7 @@ export default function Pipeline({ user }) {
                   style={{
                     width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column',
                     background: isOver ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.015)',
-                    borderRadius: 16, border: isOver ? '1px dashed rgba(212,167,106,0.3)' : '1px solid rgba(255,255,255,0.05)',
+                    borderRadius: 16, border: isOver ? '1px dashed rgba(139,108,246,0.3)' : '1px solid rgba(255,255,255,0.05)',
                     transition: 'all 0.15s ease',
                   }}>
                   <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -567,7 +567,7 @@ export default function Pipeline({ user }) {
                         {/* Pipeline badge — visible in All view */}
                         {pipelineFilter === 'All' && deal.pipeline && (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                            <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: 'rgba(212,167,106,0.08)', color: 'rgba(212,167,106,0.6)', fontWeight: 500, fontFamily: 'var(--font)' }}>{deal.pipeline}</span>
+                            <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: 'rgba(139,108,246,0.08)', color: 'rgba(139,108,246,0.6)', fontWeight: 500, fontFamily: 'var(--font)' }}>{deal.pipeline}</span>
                           </div>
                         )}
                         <div style={{ marginTop: 6 }}>
@@ -614,7 +614,7 @@ export default function Pipeline({ user }) {
                   </div>
                 </div>
                 {dealCompany && (
-                  <button onClick={() => nav(`/organisations?org=${dealCompany.id}`)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--accent)', background: 'rgba(212,167,106,0.06)', padding: '6px 12px', borderRadius: 50, border: '1.5px solid rgba(212,167,106,0.12)', cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: 300 }}>
+                  <button onClick={() => nav(`/organisations?org=${dealCompany.id}`)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--accent)', background: 'rgba(139,108,246,0.06)', padding: '6px 12px', borderRadius: 50, border: '1.5px solid rgba(139,108,246,0.12)', cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: 300 }}>
                     <ExternalLink style={{ width: 12, height: 12 }} /> View Organisation
                   </button>
                 )}
@@ -687,7 +687,7 @@ export default function Pipeline({ user }) {
                 <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
                   {['Call', 'Meeting', 'Email Sent', 'LinkedIn', 'Note'].map(t => (
                     <button key={t} onClick={() => activityType === t ? setActivityType(null) : setActivityType(t)}
-                      style={{ padding: '4px 10px', borderRadius: 8, fontSize: 11, fontWeight: 400, fontFamily: 'var(--font)', cursor: 'pointer', border: `1px solid ${activityType === t ? 'rgba(212,167,106,0.3)' : 'rgba(255,255,255,0.06)'}`, background: activityType === t ? 'rgba(212,167,106,0.08)' : 'rgba(255,255,255,0.02)', color: activityType === t ? 'rgba(212,167,106,0.8)' : 'rgba(255,255,255,0.35)', transition: 'all 0.15s' }}>{t}</button>
+                      style={{ padding: '4px 10px', borderRadius: 8, fontSize: 11, fontWeight: 400, fontFamily: 'var(--font)', cursor: 'pointer', border: `1px solid ${activityType === t ? 'rgba(139,108,246,0.3)' : 'rgba(255,255,255,0.06)'}`, background: activityType === t ? 'rgba(139,108,246,0.08)' : 'rgba(255,255,255,0.02)', color: activityType === t ? 'rgba(139,108,246,0.8)' : 'rgba(255,255,255,0.35)', transition: 'all 0.15s' }}>{t}</button>
                   ))}
                 </div>
                 {activityType && (

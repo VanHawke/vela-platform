@@ -100,7 +100,7 @@ export default function AllChatsView({ convos, onSelect, onDelete, onClose, user
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
                   <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontFamily: T.font }}>{conv.date ? timeAgo(conv.date) : ''}</span>
                   {conv.matchType === 'content' && search && (
-                    <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 50, background: 'rgba(212,167,106,0.12)', color: 'rgba(212,167,106,0.7)', fontFamily: T.font }}>in messages</span>
+                    <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 50, background: 'rgba(139,108,246,0.12)', color: 'rgba(139,108,246,0.7)', fontFamily: T.font }}>in messages</span>
                   )}
                 </div>
               </div>

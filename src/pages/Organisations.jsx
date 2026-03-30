@@ -525,7 +525,7 @@ export default function Organisations({ user }) {
             )}
             {filters.lastRound && (
               <span onClick={() => setFilters(p => ({ ...p, lastRound: '' }))}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: 'rgba(212,167,106,0.08)', color: 'rgba(212,167,106,0.6)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 10px', borderRadius: 50, background: 'rgba(139,108,246,0.08)', color: 'rgba(139,108,246,0.6)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font)' }}>
                 {filters.lastRound} <X style={{ width: 11, height: 11, opacity: 0.7 }} />
               </span>
             )}

@@ -58,7 +58,7 @@ export default function SkillsManager() {
           <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: 0, fontFamily: T.font }}>Kiko Skills</h3>
           <p style={{ fontSize: 12, color: T.textTertiary, margin: '2px 0 0', fontFamily: T.font }}>{skills.length} skills — auto-injected into Kiko by keyword match</p>
         </div>
-        <button onClick={startNew} style={{ padding: '6px 16px', borderRadius: 50, background: T.accentSoft, border: `1px solid ${T.accentBorder}`, color: 'rgba(212,167,106,0.7)', fontSize: 13, cursor: 'pointer', fontFamily: T.font, fontWeight: 400 }}>+ New Skill</button>
+        <button onClick={startNew} style={{ padding: '6px 16px', borderRadius: 50, background: T.accentSoft, border: `1px solid ${T.accentBorder}`, color: 'rgba(139,108,246,0.7)', fontSize: 13, cursor: 'pointer', fontFamily: T.font, fontWeight: 400 }}>+ New Skill</button>
       </div>
 
       {/* Edit form */}
