@@ -1,6 +1,6 @@
 # KIKO INTELLIGENCE OS — MASTER SESSION BRIEF
 # ═══════════════════════════════════════════════
-# Last updated: 31 March 2026, end of Session 6
+# Last updated: 31 March 2026, end of Session 7
 # MANDATORY: Read this ENTIRE file before writing ANY code
 # MANDATORY: Read KIKO_EVOLUTION_PLAN.md before writing ANY code
 # ═══════════════════════════════════════════════
@@ -169,28 +169,23 @@ CRM tables: deals, contacts, companies, activities, tasks, pipelines, pipeline_s
 **Where**: `api/cron-proactive.js` — full implementation including Haiku convergence detection, email alerts for high-severity items
 **Verified**: kiko_alerts table has 116+ entries. kiko_draft_actions table has entries with action_type, payload, status.
 
-### Phase 12: Memory Synthesis ⚠️ 80% COMPLETE
+### Phase 12: Memory Synthesis ✅ COMPLETE
 **What EXISTS**:
 - `kiko_preferences` table with 10 synthesised preferences (92% confidence "Prioritizes Cloudflare as Tier 1", 90% "Never shows pricing in early-stage outreach", 88% "Favors semiconductor companies", etc.)
 - `cron-preference-synthesis.js` runs weekly (Sundays 6am), reads learning_log + conversation history, distils decision patterns via Sonnet
-
-**What's MISSING**:
-- ❌ **Preferences NOT injected into agent prompts.** `api/agents/strategy.js`, `api/agents/negotiation.js`, and `api/agents/ea.js` have ZERO references to `kiko_preferences`. The data exists but agents don't use it.
-- **TO COMPLETE**: Add a parallel `sbFetch('kiko_preferences')` call in each agent's data-gathering phase, format as `[SUNNY'S PREFERENCES]` section, inject into the agent's system prompt. ~30 minutes work.
+- **Preferences injected into Strategy, Negotiation, and EA agents** (Session 7). Strategy agent adds `[SUNNY'S PREFERENCES]` section to fullContext. Negotiation agent fetches and injects before Anthropic call. EA agent includes in briefData JSON + synthesis prompt references them for priority weighting.
 
 ### Phase 13: Voice Replacement ❌ NOT DONE
 **What EXISTS**: `src/components/kiko/KikoVoice.jsx` with GPT-4o Realtime WebRTC (partially working but hallucination-prone, persistent browser caching issues). Multiple git tags show failed attempts (LiveKit, relay patterns).
 **What's NEEDED**: Kill GPT-4o. Replace with Pipecat + Claude + Deepgram STT + Cartesia TTS (Serafina voice ID: `4tRn1lSkEn13EVTuqb0g`). Voice becomes a transport layer — same `/api/kiko` endpoint handles voice and text.
 **Effort**: 3-4 hours. Biggest remaining lift.
 
-### Phase 14: Autonomous Draft Actions ⚠️ 70% COMPLETE
+### Phase 14: Autonomous Draft Actions ✅ COMPLETE
 **What EXISTS**:
 - `kiko_draft_actions` table with real data (follow_up actions, deal moves, etc.) created by the proactive cron (Phase 11)
-- Draft actions include: action_type (follow_up, deal_move, task_create), payload (entity, context, suggested action), status (pending/approved/rejected)
-
-**What's MISSING**:
-- ❌ **No UI for review/approve/dismiss.** Draft actions are created but completely invisible to the user.
-- **TO COMPLETE**: Build a homepage widget showing pending draft actions with [Review] [Approve] [Dismiss] buttons. On approve, execute the action (send email draft to compose, move deal stage, create task). ~1-2 hours work.
+- Draft actions include: action_type (follow_up, deal_move, task_create, auto_followup), payload (entity, context, suggested action), status (pending/approved/rejected)
+- **API endpoint** `api/kiko-draft-actions.js` (Session 7): list/approve/dismiss. Approve executes action (creates task for follow-ups, moves deal stage + logs history for deal_move, creates task for task_create). All wrapped in try/catch with error logging.
+- **Dashboard widget** `src/components/DraftActions.jsx` (Session 7): Shows pending actions with entity name, suggested action, action type badge, Approve/Dismiss buttons, processing animation, auto-refresh every 60s. Auto-hides when no pending actions. Dark glass theme matching PipelineNotifications.
 
 ---
 
@@ -216,10 +211,10 @@ CRM tables: deals, contacts, companies, activities, tasks, pipelines, pipeline_s
 
 ## PLATFORM HARDENING — STATUS AUDIT
 
-### Error Handling & Recovery ⚠️ BASIC
+### Error Handling & Recovery ✅ IMPLEMENTED (Session 7)
 - `kiko_error_log` table exists, server-side errors logged via `logError()` in kiko-tools.js
-- **MISSING**: No graceful user-facing error messages (raw errors or silence), no auto-retry on tool failures, no Gmail token refresh prompts when auth expires mid-conversation
-- **TO BUILD**: Wrap tool call errors in kiko.js with user-friendly messages, add exponential retry for transient failures (network, rate limits), detect expired Google token and prompt user to re-auth
+- **Tool loop error handling in kiko.js**: All tool executions wrapped in try/catch with three error paths: (1) Google OAuth expiry detection (401/403/invalid_grant) → tells user to re-auth in Settings, (2) transient network errors (ECONNREFUSED/ETIMEDOUT/fetch failed) → 2s delay + 1 retry, (3) all other errors → friendly message + continues with available data. All errors logged to kiko_error_log.
+- **STILL MISSING**: No auto-retry on streaming failures, no proactive Gmail token refresh prompts at conversation start
 
 ### Response Speed ⚠️ 4.2s greeting, 14-28s tools
 - Greeting: 5.4s → 4.2s (22% improvement from Session 4 optimisations: compact self-knowledge 2510→232 tokens, context queries 12→3)
@@ -280,7 +275,7 @@ CRM tables: deals, contacts, companies, activities, tasks, pipelines, pipeline_s
 2. ~~Drag-drop white overlay / stuck~~ — **FIXED** Session 6. Dark theme overlay + 4s auto-dismiss timeout.
 3. ~~Nav order ignoring Settings~~ — **FIXED** Session 6. TABS now maps from `topNavIds` order.
 4. **Browser/CDN caching** — Voice mode and UI changes sometimes require incognito/fresh tabs. Workaround: `?v=N` query param or Cmd+Shift+R.
-5. **Kiko error log: `(relationships || []).filter is not a function`** — Seen in error log 31 March 07:30. Non-critical (cron-level), but should be investigated.
+5. **Kiko error log: `(relationships || []).filter is not a function`** — **FIXED** Session 7. Changed to `Array.isArray(relationships) ? relationships : []` in `cron-morning-intelligence.js`.
 
 ---
 
@@ -294,6 +289,7 @@ CRM tables: deals, contacts, companies, activities, tasks, pipelines, pipeline_s
 | 4 | 30 Mar 2026 | Multi-user architecture (54/54 audit pass), speed optimisation (5.4s→4.2s), ChatGPT import (384 conversations) |
 | 5 | 30 Mar 2026 | Data isolation verification (8/8 tests), chat history UI, cron multi-user conversion, UI exploration (Niva/Payrix refs) |
 | 6 | 31 Mar 2026 | Fixed reversed text, dictation bugs, file intelligence endpoint, nav order, drag-drop overlay, logo size, favicon upload, full phase audit |
+| 7 | 31 Mar 2026 | Phase 12 complete (preferences in strategy/negotiation/EA agents), Phase 14 complete (draft actions API + UI widget), error handling (tool loop try/catch with auth detection + retry), bug fix (relationships array guard) |
 
 Transcripts: `/mnt/transcripts/` (read-only). Key: `/mnt/transcripts/2026-03-30-18-41-09-kiko-session5-full-day.txt`
 
@@ -321,34 +317,24 @@ These are Kiko's learned decision patterns from Sunny's behaviour. Phase 12 comp
 ## NEXT SESSION — PRIORITY ACTIONS
 
 ### Immediate (do these first):
-1. **Phase 12 COMPLETION: Inject preferences into agents** (~30 min)
-   - In `api/agents/strategy.js`: Add `sbFetch('kiko_preferences?user_id=eq.${userId}&order=confidence.desc&limit=10')` to the parallel fetch array. Format as `[SUNNY'S PREFERENCES]:\n- {preference} (confidence: {confidence})` and inject into the system prompt.
-   - Same pattern in `api/agents/negotiation.js` and `api/agents/ea.js`
-   - Test: "Should we pursue [company]" → response should reference known preferences
-
-2. **Phase 14 COMPLETION: Draft actions UI** (~1-2 hours)
-   - Create a widget on the homepage showing pending draft actions from `kiko_draft_actions` where `status='pending'`
-   - Each card shows: action_type, entity name, suggested action, [Approve] [Dismiss] buttons
-   - Approve → execute action (create task, draft email, move deal stage via appropriate tool)
-   - Dismiss → update status to 'rejected'
-   - Query: `sbFetch('kiko_draft_actions?status=eq.pending&order=created_at.desc&limit=10')`
-
-3. **Error handling** (~30 min)
-   - In kiko.js tool loop: catch tool errors, return user-friendly message instead of raw error
-   - Detect Gmail/Calendar auth failures (401/403), prompt user to re-authenticate
-   - Add retry logic (1 retry with 2s delay) for transient network errors
-
-4. **Response speed** (~1-2 hours)
+1. **Response speed** (~1-2 hours)
    - Route greetings + simple navigation through Haiku instead of Sonnet (sub-1.5s)
    - Stream SSE response while context queries still running (Promise.allSettled, don't await all before streaming)
    - Trim conversation history: last 10 messages for non-research queries, last 20 for research
 
+2. **Audit logging** (~20 min)
+   - Create `kiko_audit_log` table (user_id, action_type, entity_type, entity_id, detail, ip_address, created_at)
+   - Log every query to kiko.js, every tool call, every CRM data access
+
+3. **Monitoring** (~30 min)
+   - External uptime ping (Better Stack or Uptime Robot)
+   - Slack webhook for cron failures
+
 ### Next priority:
-5. **Audit logging** — Create `kiko_audit_log` table, log queries/tool calls/data access
-6. **Monitoring** — External uptime ping (Better Stack), Slack webhook for cron failures
-7. **Backup/DR** — Enable Supabase PITR, document rollback procedure
-8. **Mobile responsiveness** — Full responsive pass
-9. **Phase 13: Voice** — Pipecat + Claude + Deepgram + Cartesia (3-4 hours)
+4. **Backup/DR** — Enable Supabase PITR, document rollback procedure
+5. **Mobile responsiveness** — Full responsive pass on Layout.jsx, KikoChat.jsx, Dashboard.jsx
+6. **Phase 13: Voice** — Pipecat + Claude + Deepgram + Cartesia (3-4 hours)
+7. **Dashboard overhaul** — Dashboard.jsx still uses light theme classes (bg-white, text-[#1A1A1A]) inconsistent with the dark glass theme. Rebuild to match PipelineNotifications/DraftActions dark glass styling.
 
 ---
 
@@ -410,4 +396,4 @@ curl -s -X POST $URL/api/file-extract -H 'Content-Type: application/json' \
 
 8. **handleSubmit signature** — `handleSubmit(text, fileAttachments = [], hiddenContext = '')`. The `hiddenContext` parameter sends text to the API without showing it in the chat bubble. Used by file uploads.
 
-*This brief was written at the end of Session 6, 31 March 2026. The platform is live and stable. All Phases 6-11 are verified working. Phases 12 and 14 need completion (data exists, UI/wiring missing).*
+*This brief was written at the end of Session 7, 31 March 2026. The platform is live and stable. All Phases 6-12 and 14 are verified working. Phase 13 (Voice) is the main remaining lift. Response speed optimisation is the next highest-impact work.*
