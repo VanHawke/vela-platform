@@ -121,6 +121,18 @@ async function evaluate(question, context = '') {
       }).catch(() => {}),
   );
 
+  // Phase 12: Synthesised preferences — Sunny's decision patterns
+  let preferencesContext = '';
+  fetches.push(
+    sbFetch('kiko_preferences?order=confidence.desc&limit=10&select=category,preference,confidence')
+      .then(prefs => {
+        if (prefs?.length) {
+          preferencesContext = `\n[SUNNY'S PREFERENCES — apply these to your verdict]:\n` +
+            prefs.map(p => `• [${p.confidence}%] ${p.preference}`).join('\n');
+        }
+      }).catch(() => {}),
+  );
+
   // Phase 19: Thought journal — past strategic reasoning threads
   let thoughtContext = '';
   fetches.push(
@@ -140,7 +152,7 @@ async function evaluate(question, context = '') {
   );
 
   await Promise.all(fetches);
-  const fullContext = [context, companyContext, crmContext, outreachContext, newsContext, pipelineContext, pastDecisions, thoughtContext].filter(Boolean).join('\n');
+  const fullContext = [context, companyContext, crmContext, outreachContext, newsContext, pipelineContext, pastDecisions, thoughtContext, preferencesContext].filter(Boolean).join('\n');
 
   try {
     const res = await anthropic.messages.create({

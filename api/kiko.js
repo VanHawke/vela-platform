@@ -896,9 +896,32 @@ export default async function handler(req, res) {
       for (const block of response.content) {
         if (block.type !== 'tool_use') continue;
         write({ toolStatus: TOOL_LABELS[block.name] || `Running ${block.name}...` });
-        const result = block.name === 'memory'
-          ? await handleMemory(block.input, userId)
-          : await executeTool(block.name, block.input, userEmail, pageContext, userId);
+        let result;
+        try {
+          result = block.name === 'memory'
+            ? await handleMemory(block.input, userId)
+            : await executeTool(block.name, block.input, userEmail, pageContext, userId);
+        } catch (toolErr) {
+          const errMsg = toolErr.message || String(toolErr);
+          // Detect Google OAuth/token expiry
+          if (errMsg.includes('401') || errMsg.includes('403') || errMsg.includes('invalid_grant') || errMsg.includes('Token has been expired')) {
+            result = `AUTH_EXPIRED: Google authentication has expired. Please ask Sunny to reconnect his Google account in Settings → Accounts. The ${block.name.replace('ask_', '').replace('read_', '')} tool cannot run until re-authenticated.`;
+          } else if (errMsg.includes('ECONNREFUSED') || errMsg.includes('ETIMEDOUT') || errMsg.includes('fetch failed') || errMsg.includes('network')) {
+            // Retry once for transient network errors
+            try {
+              await new Promise(r => setTimeout(r, 2000));
+              result = block.name === 'memory'
+                ? await handleMemory(block.input, userId)
+                : await executeTool(block.name, block.input, userEmail, pageContext, userId);
+            } catch (retryErr) {
+              result = `TOOL_ERROR: ${block.name} failed after retry — ${(retryErr.message || '').slice(0, 200)}. This is a temporary connectivity issue. Try again in a moment.`;
+            }
+          } else {
+            result = `TOOL_ERROR: ${block.name} encountered an error — ${errMsg.slice(0, 200)}. I'll work with what I have.`;
+          }
+          // Log the error
+          try { await logError(`tool:${block.name}`, errMsg, `input: ${JSON.stringify(block.input).slice(0, 300)}`); } catch {}
+        }
         // Handle navigation from any tool
         if ((block.name === 'navigate_page' || block.name === 'ask_navigator') && result?.navigated) write({ navigate: result.page });
         toolResults.push({

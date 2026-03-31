@@ -78,12 +78,22 @@ async function analysePosition(situation, context = '') {
     }
   }
 
+  // Phase 12: Synthesised preferences — Sunny's negotiation patterns
+  let preferencesContext = '';
+  try {
+    const prefs = await sbFetch('kiko_preferences?order=confidence.desc&limit=10&select=category,preference,confidence');
+    if (prefs?.length) {
+      preferencesContext = `\n[SUNNY'S PREFERENCES — factor into your position]:\n` +
+        prefs.map(p => `• [${p.confidence}%] ${p.preference}`).join('\n') + '\n';
+    }
+  } catch {}
+
   try {
     const res = await anthropic.messages.create({
       model: 'claude-opus-4-6',
       max_tokens: 1200,
       system: NEGOTIATION_PROMPT,
-      messages: [{ role: 'user', content: `NEGOTIATION SITUATION:\n${situation}${crmContext ? `\n\nCRM CONTEXT:\n${crmContext}` : ''}${context ? `\n\nADDITIONAL CONTEXT:\n${context}` : ''}` }],
+      messages: [{ role: 'user', content: `NEGOTIATION SITUATION:\n${situation}${crmContext ? `\n\nCRM CONTEXT:\n${crmContext}` : ''}${preferencesContext ? `\n${preferencesContext}` : ''}${context ? `\n\nADDITIONAL CONTEXT:\n${context}` : ''}` }],
     });
     return res.content[0]?.text || 'Negotiation Agent could not analyse this position.';
   } catch (err) {

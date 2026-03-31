@@ -112,7 +112,7 @@ export default async function handler(req, res) {
     }
 
     // Relationship decay: warm contacts going cold
-    const decaying = (relationships || []).filter(r => {
+    const decaying = (Array.isArray(relationships) ? relationships : []).filter(r => {
       if (!r.last_contact || r.warmth_score < 5) return false;
       const daysSince = Math.floor((now - new Date(r.last_contact)) / 86400000);
       return daysSince > 21; // Warm contact, no touch in 3+ weeks

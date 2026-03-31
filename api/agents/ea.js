@@ -47,7 +47,7 @@ async function morningBrief() {
   const sevenDaysAgo = new Date(now - 7 * 86400000).toISOString();
 
   // Pull ALL 9 sources in parallel for speed
-  const [tasks, deals, alerts, activities, news, outreachScores, pipelineNotifs, stageHistory, draftActions, calendarEvents] = await Promise.all([
+  const [tasks, deals, alerts, activities, news, outreachScores, pipelineNotifs, stageHistory, draftActions, calendarEvents, preferences] = await Promise.all([
     sbFetch('tasks?select=data&order=updated_at.desc&limit=30'),
     sbFetch('deals?select=id,data&data->>status=eq.active&limit=200'),
     sbFetch('kiko_alerts?dismissed=eq.false&expires_at=gt.' + now.toISOString() + '&select=type,severity,title,detail,entity_name&order=created_at.desc&limit=10'),
@@ -58,6 +58,7 @@ async function morningBrief() {
     sbFetch('deal_stage_history?changed_at=gt.' + sevenDaysAgo + '&select=deal_id,from_stage,to_stage,changed_at&order=changed_at.desc&limit=20'),
     sbFetch('kiko_draft_actions?status=eq.pending&order=created_at.desc&limit=5&select=action_type,payload,created_at').catch(() => []),
     getTodayCalendarEvents(),
+    sbFetch('kiko_preferences?order=confidence.desc&limit=10&select=category,preference,confidence').catch(() => []),
   ]);
 
   // ── SOURCE 1: Tasks ──
@@ -135,6 +136,7 @@ async function morningBrief() {
     pendingDraftActions: (Array.isArray(draftActions) ? draftActions : []).slice(0,3).map(d => ({ type: d.action_type, entity: d.payload?.entity, action: d.payload?.suggested_action })),
     todayCalendar: (calendarEvents || []).map(e => ({ title: e.title, start: e.start, attendees: e.attendees?.slice(0,3), location: e.location })),
     inboxTriage: inboxSummary,
+    preferences: (Array.isArray(preferences) ? preferences : []).slice(0, 10).map(p => ({ confidence: p.confidence, preference: p.preference, category: p.category })),
   });
 
   try {
@@ -153,6 +155,7 @@ RULES:
 - If there are calendar events today, weave them into the narrative naturally: "You have a call with X at 2pm — here's what to know going in."
 - If inbox triage data exists, mention it: "X emails need your attention — [sender]: [subject] is the most urgent."
 - If there are pending draft actions, mention them: "I've prepared a [action] for [entity] — say 'approve' to execute."
+- If preferences data exists, use it to frame priorities — e.g. if Sunny prioritises semiconductors, weight those deals higher.
 - All values in USD.`,
       messages: [{ role: 'user', content: briefData }],
     });

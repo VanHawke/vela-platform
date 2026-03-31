@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Briefcase, Users, Building2, CheckSquare, TrendingUp } from 'lucide-react'
 import PipelineNotifications from '@/components/PipelineNotifications'
+import DraftActions from '@/components/DraftActions'
 
 const stageColor = (s) => {
   if (s === 'Closed Won') return 'bg-emerald-50 text-emerald-700'
@@ -48,6 +49,9 @@ export default function Dashboard({ user }) {
         <h1 className="text-[24px] font-semibold text-[#1A1A1A] mb-6">Dashboard</h1>
         <div className="mb-6">
           <PipelineNotifications />
+        </div>
+        <div className="mb-6">
+          <DraftActions />
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {cards.map(c => { const I = c.icon; return (
