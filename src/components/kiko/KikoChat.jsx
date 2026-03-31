@@ -595,8 +595,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         {/* Textarea — physically expands via useEffect, handles macOS dictation */}
         <textarea
           ref={inputRef} value={input} dir="ltr"
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+          onChange={e => { if (!composingRef.current) setInput(e.target.value) }}
+          onCompositionStart={() => { composingRef.current = true }}
+          onCompositionEnd={e => { composingRef.current = false; setInput(e.target.value) }}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !composingRef.current) { e.preventDefault(); handleSubmit(); } }}
           placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment or press send..." : "Ask anything"}
           autoFocus rows={1}
           style={{
@@ -852,7 +854,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.05s',
             overflow: 'hidden', pointerEvents: voiceActive ? 'none' : 'auto',
           }}>
-                <PromptBar welcome />
+                {PromptBar({ welcome: true })}
                 {dictateError && (
                   <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(255,80,80,0.7)', fontFamily: T.font, margin: '8px 0 0', animation: 'fadeIn 0.2s' }}>{dictateError}</p>
                 )}
@@ -999,7 +1001,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       )}
       <div style={{ padding: compact ? 12 : 16, borderTop: `1.5px solid ${T.border}` }}>
         <div style={{ maxWidth: compact ? '100%' : 680, margin: '0 auto' }}>
-          <PromptBar />
+          {PromptBar({})}
           {dictateError && (
             <p style={{ textAlign: 'center', fontSize: 12, color: '#C62828', fontFamily: T.font, margin: '6px 0 0' }}>{dictateError}</p>
           )}
