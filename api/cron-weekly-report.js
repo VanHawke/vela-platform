@@ -126,9 +126,11 @@ Nothing else. No markdown. No greeting.`,
     }).join('');
 
     const weekEnd = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-    const subject = priorities[0] 
-      ? `${priorities[0].replace(/^1\.\s*/, '').slice(0, 50)} — weekly report`
-      : `Your week at Van Hawke — w/e ${weekEnd}`;
+    // Dynamic subject: lead with key metric, keep it tight
+    const topCampaign = campaigns.find(c => c.replyRate > 0);
+    const subject = avgReplyRate > 0
+      ? `${avgReplyRate}% reply rate · ${campaigns.length} campaigns · w/e ${weekEnd}`
+      : `${overdue.length} overdue · ${staleDeals.length} stale deals · w/e ${weekEnd}`;
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#000000;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
