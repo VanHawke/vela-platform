@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useNavigate, useLocation } from 'react-router-dom'
 import T from '@/lib/theme'
 import KikoWaveform from './KikoWaveform'
-import KikoVoice from './KikoVoice'
+// KikoVoice removed — voice stays in FAB circle
 import DOMPurify from 'dompurify'
 import { useDynamicChips } from '@/hooks/useDynamicChips'
 

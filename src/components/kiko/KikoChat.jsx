@@ -648,7 +648,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           style={{
             width: '100%', border: 'none', background: 'transparent', outline: 'none',
             fontSize: 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font,
-            minHeight: welcome ? 80 : 56, maxHeight: 300, fontWeight: 400, resize: 'none',
+            minHeight: welcome ? 64 : 44, maxHeight: 300, fontWeight: 400, resize: 'none',
             lineHeight: '1.5', padding: '4px 0', overflowY: 'auto',
             fieldSizing: 'content',
           }}
@@ -922,7 +922,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             transition: 'all 0.5s cubic-bezier(0.4,0,0,1)',
             overflow: 'hidden',
           }}>
-            <h1 style={{ fontSize: 38, fontWeight: 200, color: 'rgba(255,255,255,0.95)', margin: '0 0 6px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
+            <h1 style={{ fontSize: 40, fontWeight: 200, color: 'rgba(255,255,255,0.95)', margin: '0 0 6px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
               {getGreeting()}, {firstName}
             </h1>
             <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.35)', margin: '0 0 24px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
