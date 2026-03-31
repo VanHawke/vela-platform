@@ -1,6 +1,5 @@
 import mammoth from 'mammoth';
-import pdfParse from 'pdf-parse';
-import officeparser from 'officeparser';
+import { parseOffice } from 'officeparser';
 
 export const config = { api: { bodyParser: { sizeLimit: '10mb' } } };
 
@@ -8,7 +7,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
   try {
-    const { filename, data, mimeType } = req.body;
+    const { filename, data } = req.body;
     if (!data || !filename) return res.status(400).json({ error: 'Missing filename or data' });
 
     const buffer = Buffer.from(data, 'base64');
@@ -22,20 +21,9 @@ export default async function handler(req, res) {
       metadata = { type: 'docx', warnings: result.messages?.length || 0 };
     }
 
-    else if (ext === 'xlsx' || ext === 'xls' || ext === 'xlsm') {
-      text = await officeparser.parseOffice(buffer);
-      metadata = { type: 'xlsx' };
-    }
-
-    else if (ext === 'pptx' || ext === 'ppt') {
-      text = await officeparser.parseOffice(buffer);
-      metadata = { type: 'pptx' };
-    }
-
-    else if (ext === 'pdf') {
-      const result = await pdfParse(buffer);
-      text = result.text;
-      metadata = { type: 'pdf', pages: result.numpages };
+    else if (ext === 'xlsx' || ext === 'xls' || ext === 'xlsm' || ext === 'pptx' || ext === 'ppt') {
+      text = await parseOffice(buffer);
+      metadata = { type: ext.startsWith('xl') ? 'xlsx' : 'pptx' };
     }
 
     else {
