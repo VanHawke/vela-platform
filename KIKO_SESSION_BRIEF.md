@@ -1,6 +1,6 @@
 # KIKO INTELLIGENCE OS — MASTER SESSION BRIEF
 # ═══════════════════════════════════════════════
-# Last updated: 31 March 2026, end of Session 7
+# Last updated: 31 March 2026, end of Session 8
 # MANDATORY: Read this ENTIRE file before writing ANY code
 # MANDATORY: Read KIKO_EVOLUTION_PLAN.md before writing ANY code
 # ═══════════════════════════════════════════════
@@ -296,7 +296,7 @@ CRM tables: deals, contacts, companies, activities, tasks, pipelines, pipeline_s
 | 5 | 30 Mar 2026 | Data isolation verification (8/8 tests), chat history UI, cron multi-user conversion, UI exploration (Niva/Payrix refs) |
 | 6 | 31 Mar 2026 | Fixed reversed text, dictation bugs, file intelligence endpoint, nav order, drag-drop overlay, logo size, favicon upload, full phase audit |
 | 7 | 31 Mar 2026 | Phase 12 complete (preferences in 3 agents), Phase 14 complete (draft actions API + UI in KikoChat), error handling (tool loop try/catch), speed (Haiku greetings 2.1s, history trim), audit logging (3 event types), mobile responsive (hamburger menu + breakpoints), killed Dashboard, bug fix (relationships array guard) |
-| 8 | 31 Mar 2026 | Monitoring (Better Stack uptime, /api/ping, Gmail alerts, cron watchdog, enhanced health check), DR runbook (DISASTER_RECOVERY.md) |
+| 8 | 31 Mar 2026 | Monitoring (Better Stack uptime, /api/ping, Gmail alerts, cron watchdog), DR runbook, semantic search (pgvector 389 conversations embedded), draft actions → Gmail drafts, PWA (manifest + SW + icons), GitHub Actions CI (8 tests), full audit (cron heartbeat fixes ×5, news-agent heartbeat, vercel.json maxDuration ×6, expired alerts cleanup) |
 
 Transcripts: `/mnt/transcripts/` (read-only). Key: `/mnt/transcripts/2026-03-30-18-41-09-kiko-session5-full-day.txt`
 
@@ -324,12 +324,14 @@ These are Kiko's learned decision patterns from Sunny's behaviour. Phase 12 comp
 ## NEXT SESSION — PRIORITY ACTIONS
 
 ### Immediate (do these first):
-1. **Phase 13: Voice** — Pipecat + Claude + Deepgram + Cartesia (3-4 hours). Biggest remaining lift.
+1. **Phase 13: Voice** — Pipecat + Claude + Deepgram + Cartesia (3-4 hours). Last remaining evolution phase.
 
 ### Next priority:
-2. **Mobile deep pass** — Page-specific responsive testing (Pipeline, Contacts, Settings) on real devices
-3. **Further speed** — Haiku for simple navigation intents, parallel streaming (start SSE response while context queries still loading)
-4. **Enable Supabase PITR** — When budget allows (~$100/month), enable in Dashboard → Project Settings → Add-ons
+2. **Auto-embed new conversations** — Hook into kiko.js post-response to embed conversations as they happen (currently only backfilled)
+3. **Mobile deep pass** — Page-specific responsive testing (Pipeline, Contacts, Settings) on real devices
+4. **Further speed** — Haiku for simple navigation intents, parallel streaming (start SSE response while context queries still loading)
+5. **Enable Supabase PITR** — When budget allows (~$100/month), enable in Dashboard → Project Settings → Add-ons
+6. **Dead code cleanup** — Delete orphan pages (Email.jsx, EmailCompose.jsx, EmailThread.jsx)
 
 ---
 
@@ -391,4 +393,4 @@ curl -s -X POST $URL/api/file-extract -H 'Content-Type: application/json' \
 
 8. **handleSubmit signature** — `handleSubmit(text, fileAttachments = [], hiddenContext = '')`. The `hiddenContext` parameter sends text to the API without showing it in the chat bubble. Used by file uploads.
 
-*This brief was written at the end of Session 8, 31 March 2026. The platform is live, monitored, and documented. All Phases 6-12 and 14 verified working. Better Stack uptime monitoring active. Gmail alerts on failures. DR runbook written. Phase 13 (Voice) is the only remaining evolution phase.*
+*This brief was written at the end of Session 8, 31 March 2026. The platform is live, monitored (Better Stack + Gmail alerts), audited, and documented. All Phases 6-12 and 14 verified working. Semantic search live (389 conversations, pgvector). PWA installable. CI pipeline active. DR runbook written. Full audit completed — 5 cron fixes, 6 vercel.json fixes, expired alerts cleaned. Phase 13 (Voice) is the only remaining evolution phase.*
