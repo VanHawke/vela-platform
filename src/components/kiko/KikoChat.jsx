@@ -11,7 +11,6 @@ import KikoSymbol from './KikoSymbol'
 import DoubleHelix from './DoubleHelix'
 import DraftPreview, { detectDraft } from './DraftPreview'
 import KikoInsights, { InsightsBadge } from './KikoInsights'
-import DraftActions from '../DraftActions'
 import { useDynamicChips } from '@/hooks/useDynamicChips'
 
 // Theme imported from @/lib/theme.js
@@ -931,13 +930,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             </h1>
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.32)', margin: '0 0 18px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
           </div>
-
-          {/* Draft Actions — pending Kiko recommendations */}
-          {!voiceActive && (
-            <div style={{ width: '100%', maxWidth: 540, marginBottom: 12 }}>
-              <DraftActions />
-            </div>
-          )}
 
           {/* Prompt bar — slides down in voice mode */}
           <div id="kikoPromptWrap" style={{

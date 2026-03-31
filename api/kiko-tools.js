@@ -655,64 +655,92 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
   // ── Conversation Search ──
   if (name === 'search_conversations') {
     try {
-      const query = (input.query || '').toLowerCase();
+      const query = (input.query || '');
       const limit = input.limit || 5;
-      // Search conversations table — messages are jsonb arrays
-      // Search Kiko conversations — only non-archived ones
-      const convos = await sbFetch(`conversations?select=id,title,messages,updated_at&archived=neq.true&order=updated_at.desc&limit=50`);
-      if (!convos?.length) return 'No past conversations found.';
-      // Score conversations by keyword match in messages
+
+      // Phase 1: Semantic search (pgvector) — finds conceptual matches
+      let semanticResults = [];
+      try {
+        const { semanticSearchConversations } = await import('./embed-utils.js');
+        semanticResults = await semanticSearchConversations(query, limit, userId);
+      } catch (semErr) {
+        console.error('[search_conversations] Semantic search unavailable:', semErr.message);
+      }
+
+      // Phase 2: Keyword fallback — catches exact matches semantic might miss
       const scored = [];
-      for (const c of convos) {
+      const queryLower = query.toLowerCase();
+      const convos = await sbFetch(`conversations?select=id,title,messages,updated_at&archived=neq.true&order=updated_at.desc&limit=50`);
+      for (const c of (convos || [])) {
         const msgs = c.messages || [];
         const text = msgs.map(m => (m.content || '')).join(' ').toLowerCase();
-        if (text.includes(query)) {
-          const matchMsgs = msgs.filter(m => (m.content || '').toLowerCase().includes(query));
+        if (text.includes(queryLower)) {
+          const matchMsgs = msgs.filter(m => (m.content || '').toLowerCase().includes(queryLower));
           scored.push({
-            title: c.title || 'Untitled',
+            title: c.title || 'Untitled', id: c.id,
             date: c.updated_at ? new Date(c.updated_at).toLocaleDateString('en-GB') : '?',
-            matches: matchMsgs.length,
+            matches: matchMsgs.length, source: 'keyword',
             excerpts: matchMsgs.slice(0, 3).map(m => {
               const content = m.content || '';
-              const idx = content.toLowerCase().indexOf(query);
+              const idx = content.toLowerCase().indexOf(queryLower);
               const start = Math.max(0, idx - 60);
-              const end = Math.min(content.length, idx + query.length + 60);
+              const end = Math.min(content.length, idx + queryLower.length + 60);
               return `[${m.role}]: ...${content.slice(start, end)}...`;
             })
           });
         }
       }
-      // Also search imported conversations (ChatGPT/Claude history)
+      // Also keyword-search imported conversations
       try {
-        const imported = await sbFetch(`kiko_imported_conversations?processed=eq.true${userId ? '&user_id=eq.' + userId : ''}&select=title,source,messages,original_date,extracted_insights&order=original_date.desc&limit=30`);
+        const imported = await sbFetch(`kiko_imported_conversations?processed=eq.true${userId ? '&user_id=eq.' + userId : ''}&select=id,title,source,messages,original_date,extracted_insights&order=original_date.desc&limit=30`);
         for (const c of (imported || [])) {
           const msgs = c.messages || [];
           const text = msgs.map(m => (m.content || '')).join(' ').toLowerCase();
           const insightText = JSON.stringify(c.extracted_insights || {}).toLowerCase();
-          if (text.includes(query) || insightText.includes(query)) {
-            const matchMsgs = msgs.filter(m => (m.content || '').toLowerCase().includes(query));
+          if (text.includes(queryLower) || insightText.includes(queryLower)) {
+            const matchMsgs = msgs.filter(m => (m.content || '').toLowerCase().includes(queryLower));
             scored.push({
-              title: `[${c.source}] ${c.title || 'Untitled'}`,
+              title: `[${c.source}] ${c.title || 'Untitled'}`, id: c.id,
               date: c.original_date ? new Date(c.original_date).toLocaleDateString('en-GB') : '?',
-              matches: matchMsgs.length || 1,
-              excerpts: matchMsgs.length ? matchMsgs.slice(0, 3).map(m => {
+              matches: matchMsgs.length || 1, source: 'keyword',
+              excerpts: matchMsgs.length ? matchMsgs.slice(0, 2).map(m => {
                 const content = m.content || '';
-                const idx = content.toLowerCase().indexOf(query);
-                const start = Math.max(0, idx - 60);
-                const end = Math.min(content.length, idx + query.length + 60);
-                return `[${m.role}]: ...${content.slice(start, end)}...`;
+                const idx = content.toLowerCase().indexOf(queryLower);
+                return `[${m.role}]: ...${content.slice(Math.max(0, idx - 60), idx + queryLower.length + 60)}...`;
               }) : (c.extracted_insights?.key_facts || []).slice(0, 2).map(f => `[insight]: ${f}`),
             });
           }
         }
-      } catch {} // Non-blocking — imported search is bonus
+      } catch {}
 
+      // Merge: semantic results first, then keyword results (deduplicated)
+      const seenIds = new Set();
+      let out = `CONVERSATION SEARCH: "${query}"`;
+      const allResults = [];
+
+      // Add semantic results
+      for (const sr of semanticResults) {
+        seenIds.add(String(sr.conversation_id));
+        allResults.push({
+          title: sr.title || 'Untitled',
+          date: '', source: `semantic (${Math.round(sr.similarity * 100)}% match)`,
+          summary: sr.summary?.slice(0, 200) || '',
+        });
+      }
+
+      // Add keyword results not already in semantic
       scored.sort((a, b) => b.matches - a.matches);
-      if (!scored.length) return `No conversations found mentioning "${input.query}".`;
-      let out = `CONVERSATION SEARCH: "${input.query}" — ${scored.length} conversations found\n\n`;
-      for (const s of scored.slice(0, limit)) {
-        out += `📅 ${s.date} — ${s.title} (${s.matches} mentions)\n`;
-        for (const e of s.excerpts) out += `  ${e}\n`;
+      for (const kr of scored) {
+        if (seenIds.has(String(kr.id))) continue;
+        allResults.push(kr);
+      }
+
+      if (!allResults.length) return `No conversations found for "${query}". Try broader terms.`;
+      out += ` — ${allResults.length} results\n\n`;
+      for (const r of allResults.slice(0, limit)) {
+        out += `📅 ${r.date ? r.date + ' — ' : ''}${r.title} (${r.source || r.matches + ' mentions'})\n`;
+        if (r.summary) out += `  ${r.summary}\n`;
+        if (r.excerpts) for (const e of r.excerpts) out += `  ${e}\n`;
         out += '\n';
       }
       return out;
