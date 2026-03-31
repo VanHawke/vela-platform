@@ -8,7 +8,7 @@ import KikoVoice from './KikoVoice'
 import ChatHistory from './ChatHistory'
 import AllChatsView from './AllChatsView'
 import KikoSymbol from './KikoSymbol'
-import DoubleHelix from './DoubleHelix'
+import KikoWaveform from './KikoWaveform'
 import DraftPreview, { detectDraft } from './DraftPreview'
 import KikoInsights, { InsightsBadge } from './KikoInsights'
 import { useDynamicChips } from '@/hooks/useDynamicChips'
@@ -836,10 +836,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             })()}
           </div>
         )}
-        {/* Kiko DoubleHelix ribbon — below the action icons */}
+        {/* Kiko Waveform — below the action icons */}
         {isKiko && !streaming && (
           <div style={{ marginTop: 4 }}>
-            <DoubleHelix width={60} height={14} mini />
+            <KikoWaveform width={60} height={14} mini />
           </div>
         )}
       </div>
@@ -889,7 +889,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           }}
             onMouseEnter={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1.02)' }}
             onMouseLeave={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1)' }}>
-            <DoubleHelix width={900} height={100} speaking={voiceActive && voiceState.speaking} energy={voiceState.energy || 0} pitch={voiceState.pitch || 0} onClick={voiceActive ? undefined : () => startVoice()} />
+            <KikoWaveform width={900} height={100} speaking={voiceActive && voiceState.speaking} volume={voiceState.energy || 0} onClick={voiceActive ? undefined : () => startVoice()} />
           </div>
 
           {/* Voice controls — visible only in voice mode */}
@@ -1025,7 +1025,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {streaming && !streamText && (
             <div style={{ marginBottom: 24, display: 'flex', gap: 14, alignItems: 'center', padding: '12px 0' }}>
               <div style={{ width: 36, height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <DoubleHelix width={36} height={36} />
+                <KikoWaveform width={36} height={36} mini />
               </div>
               <div style={{ flex: 1, maxWidth: 400 }}>
                 <div style={{

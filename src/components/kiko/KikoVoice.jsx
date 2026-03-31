@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
-import DoubleHelix from './DoubleHelix'
+import KikoWaveform from './KikoWaveform'
 import AuroraCanvas from '../AuroraCanvas'
 import T from '@/lib/theme'
 import { supabase } from '@/lib/supabase'
@@ -106,7 +106,7 @@ export default function KikoVoice({ onClose, user, onVoiceState }) {
 
   useEffect(() => { if (onVoiceState) onVoiceState({ status, speaking }) }, [status, speaking])
 
-  // ── Drive DoubleHelix from remote audio ──
+  // ── Drive KikoWaveform from remote audio ──
   const startAudioAnalyser = (stream) => {
     try {
       const ctx = new AudioContext()
@@ -308,14 +308,14 @@ STYLE: Say "intelligent age" not "AI generation". All financials in USD. No mark
         onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.3)' }}
       ><X size={14} /></button>
 
-      {/* DoubleHelix ribbon */}
+      {/* KikoWaveform */}
       <div style={{
         position: 'relative', zIndex: 1, width: '95%', maxWidth: 1100, marginBottom: 24,
         overflow: 'visible', padding: '48px 0',
         WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
         maskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
       }}>
-        <DoubleHelix width={1100} height={140} speaking={speaking} energy={0} pitch={0} />
+        <KikoWaveform width={1100} height={140} speaking={speaking} volume={0} />
       </div>
 
       {/* Status bar */}

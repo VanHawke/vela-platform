@@ -4,7 +4,7 @@ import { setPageContext } from '@/lib/pageContext'
 import { Plus, X, CheckSquare, Square, Calendar, ChevronRight, Send, RefreshCw, Clock, Building2 } from 'lucide-react'
 import T from '@/lib/theme'
 import DOMPurify from 'dompurify'
-import DoubleHelix from '@/components/kiko/DoubleHelix'
+import KikoWaveform from '@/components/kiko/KikoWaveform'
 
 function md(text) {
   if (!text) return ''
@@ -217,7 +217,7 @@ export default function Tasks({ user }) {
         {/* Panel header */}
         <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 40, height: 12, overflow: 'hidden' }}>
-            <DoubleHelix width={40} height={12} mini />
+            <KikoWaveform width={40} height={12} mini />
           </div>
           <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(139,108,246,0.6)', letterSpacing: '0.04em' }}>Kiko Recommendation</span>
         </div>
@@ -234,7 +234,7 @@ export default function Tasks({ user }) {
           {kikoLoading && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '40px 0' }}>
               <div style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <DoubleHelix width={48} height={48} />
+                <KikoWaveform width={48} height={48} mini />
               </div>
               <span style={{ fontSize: 13, color: 'rgba(139,108,246,0.6)', fontWeight: 400 }}>Analysing task...</span>
             </div>
