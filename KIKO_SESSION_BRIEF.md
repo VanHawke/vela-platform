@@ -223,11 +223,11 @@ CRM tables: deals, contacts, companies, activities, tasks, pipelines, pipeline_s
 - Greetings skip `selfKnowledge` and `entityContext` parallel fetches entirely
 - **STILL POSSIBLE**: Parallel streaming (start SSE while context loads), Haiku for simple navigation
 
-### Backup & Disaster Recovery ⚠️ GIT TAGS ONLY
+### Backup & Disaster Recovery ✅ DOCUMENTED (Session 8)
 - Git tags created before major deploys (e.g., `pre-phase6-backup-202603311345`)
 - Supabase handles DB backups automatically (Pro plan: daily, 7-day retention)
-- **MISSING**: No formal rollback procedure document, no manual DB snapshot schedule, no recovery runbook
-- **TO BUILD**: Document rollback steps (git checkout tag → deploy), enable Supabase Point-in-Time Recovery, write recovery runbook
+- **DISASTER_RECOVERY.md**: Full runbook covering Vercel rollback (git tags + dashboard), DB recovery (daily backups, PITR setup, manual table backup SQL), Google auth re-connection, Anthropic key rotation, credential rotation, Better Stack setup, infrastructure dashboard links
+- **PITR**: Available to enable in Supabase Dashboard → Project Settings → Add-ons (~$100/month). Not yet enabled — enable when budget allows.
 
 ### Automated Testing ❌ NONE
 - Foundation tests exist as manual curl commands in KIKO_EVOLUTION_PLAN.md (F1-F6)
@@ -235,12 +235,13 @@ CRM tables: deals, contacts, companies, activities, tasks, pipelines, pipeline_s
 - **MISSING**: Integration tests for multi-user isolation, regression tests for cron multi-user, load tests for concurrent users
 - **TO BUILD**: Test suite (Vitest or Jest), CI pipeline (GitHub Actions), isolation test that creates test user and verifies zero data leakage
 
-### Monitoring & Alerting ⚠️ BASIC
-- `cron-health-check.js` runs every 30 minutes, writes to kiko_cron_heartbeats table
-- `/api/health` endpoint checks 10 systems (supabase, anthropic_api, intent_classifier, etc.) — last verified 10/10 ✅
-- Proactive cron sends email alerts for high-severity convergences
-- **MISSING**: No external uptime monitoring, no Slack/email alerts when crons fail or API errors spike, no real-time health dashboard
-- **TO BUILD**: Better Stack or Uptime Robot for external pinging, Slack webhook for critical failures, simple health dashboard page
+### Monitoring & Alerting ✅ IMPLEMENTED (Session 8)
+- **Better Stack**: External uptime monitor on `https://vela-platform-one.vercel.app/api/ping`, checking every 3 minutes, alerts via phone call + email to sunny@vanhawke.com
+- **`/api/ping`**: Ultra-lightweight endpoint (<50ms), zero dependencies — just confirms serverless is alive
+- **Gmail alerts**: `sendAlert()` in `api/alert-utils.js` sends email to primary user on health check failures
+- **Cron watchdog**: `checkCronHealth()` checks today's heartbeats against expected schedule, reports missing or failed crons
+- **Enhanced health check cron**: Now calls `sendAlert()` on failures + includes cron watchdog results in response
+- **In-app alerts**: All failures written to `kiko_alerts` table, surfaced in morning briefs
 
 ### Audit Logging ✅ IMPLEMENTED (Session 7)
 - `kiko_audit_log` table created in Supabase with indexes on user_id, action_type, created_at
@@ -295,6 +296,7 @@ CRM tables: deals, contacts, companies, activities, tasks, pipelines, pipeline_s
 | 5 | 30 Mar 2026 | Data isolation verification (8/8 tests), chat history UI, cron multi-user conversion, UI exploration (Niva/Payrix refs) |
 | 6 | 31 Mar 2026 | Fixed reversed text, dictation bugs, file intelligence endpoint, nav order, drag-drop overlay, logo size, favicon upload, full phase audit |
 | 7 | 31 Mar 2026 | Phase 12 complete (preferences in 3 agents), Phase 14 complete (draft actions API + UI in KikoChat), error handling (tool loop try/catch), speed (Haiku greetings 2.1s, history trim), audit logging (3 event types), mobile responsive (hamburger menu + breakpoints), killed Dashboard, bug fix (relationships array guard) |
+| 8 | 31 Mar 2026 | Monitoring (Better Stack uptime, /api/ping, Gmail alerts, cron watchdog, enhanced health check), DR runbook (DISASTER_RECOVERY.md) |
 
 Transcripts: `/mnt/transcripts/` (read-only). Key: `/mnt/transcripts/2026-03-30-18-41-09-kiko-session5-full-day.txt`
 
@@ -322,17 +324,12 @@ These are Kiko's learned decision patterns from Sunny's behaviour. Phase 12 comp
 ## NEXT SESSION — PRIORITY ACTIONS
 
 ### Immediate (do these first):
-1. **Monitoring** (~30 min)
-   - External uptime ping (Better Stack or Uptime Robot)
-   - Slack webhook for cron failures
-
-2. **Backup/DR** — Enable Supabase PITR, document rollback procedure
+1. **Phase 13: Voice** — Pipecat + Claude + Deepgram + Cartesia (3-4 hours). Biggest remaining lift.
 
 ### Next priority:
-3. **Mobile deep pass** — Page-specific responsive testing (Pipeline, Contacts, Settings) on real devices
-4. **Phase 13: Voice** — Pipecat + Claude + Deepgram + Cartesia (3-4 hours)
-5. **Further speed** — Haiku for simple navigation intents, parallel streaming (start SSE response while context queries still loading)
-6. **Delete Dashboard.jsx** — File still exists on disk but is no longer imported or routed. Can be safely deleted.
+2. **Mobile deep pass** — Page-specific responsive testing (Pipeline, Contacts, Settings) on real devices
+3. **Further speed** — Haiku for simple navigation intents, parallel streaming (start SSE response while context queries still loading)
+4. **Enable Supabase PITR** — When budget allows (~$100/month), enable in Dashboard → Project Settings → Add-ons
 
 ---
 
@@ -394,4 +391,4 @@ curl -s -X POST $URL/api/file-extract -H 'Content-Type: application/json' \
 
 8. **handleSubmit signature** — `handleSubmit(text, fileAttachments = [], hiddenContext = '')`. The `hiddenContext` parameter sends text to the API without showing it in the chat bubble. Used by file uploads.
 
-*This brief was written at the end of Session 7, 31 March 2026. The platform is live and stable. All Phases 6-12 and 14 are verified working. Speed optimised (2.1s Haiku greetings). Audit logging live. Mobile responsive with hamburger menu. Dashboard killed — KikoChat is the home page with DraftActions inline. Phase 13 (Voice) is the main remaining lift.*
+*This brief was written at the end of Session 8, 31 March 2026. The platform is live, monitored, and documented. All Phases 6-12 and 14 verified working. Better Stack uptime monitoring active. Gmail alerts on failures. DR runbook written. Phase 13 (Voice) is the only remaining evolution phase.*
