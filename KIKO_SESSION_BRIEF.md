@@ -276,10 +276,13 @@ Intelligence tables: conversation_embeddings (pgvector semantic search, 389 embe
 
 ### Weekly Pipeline Report ✅ LIVE (Session 9)
 - `api/cron-weekly-report.js` — Sundays 7pm UTC
-- Gathers: pipeline metrics (weighted value, stale deals), stage movements, outreach performance, outstanding tasks, key decisions, new partnerships
-- Synthesises via Sonnet into <400 word actionable report
-- Sends directly to Gmail inbox
+- **Format:** Option A clean editorial, dark theme HTML email (#0A0A0C bg, #7C5CFC accent)
+- **Lemlist campaign table:** Pulls live from Lemlist API — campaign name, channel (Email/LinkedIn), sent count, open rate %, reply rate % — all colour-coded (green/amber/red)
+- **Metric cards:** Open rate, Reply rate, Overdue tasks (no pipeline $ value)
+- **AI narrative:** Sonnet synthesises top insight (2-3 sentences) + 3 numbered Monday priorities
+- **Subject line:** Dynamic — leads with reply rate + campaign count, e.g. "12% reply rate · 40 campaigns · w/e 31 Mar 2026"
 - All arrays guarded with Array.isArray
+- Lemlist auth: Basic auth using LEMLIST_KEY env var (same pattern as kiko-tools.js)
 
 ### Draft Actions → Gmail Drafts ✅ LIVE (Session 8)
 - Approving a follow-up/email draft action creates a real Gmail draft (not just a task)
