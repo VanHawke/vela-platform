@@ -347,17 +347,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const resetKey = outletCtx.kikoResetKey
   useEffect(() => { if (resetKey > 0) startNewChat() }, [resetKey])
 
-  // Auto-resize textarea whenever input changes
-  useEffect(() => {
-    const el = inputRef.current
-    if (!el) return
-    const start = el.selectionStart
-    const end = el.selectionEnd
-    el.style.height = 'auto'
-    el.style.height = Math.min(el.scrollHeight, 300) + 'px'
-    el.selectionStart = start
-    el.selectionEnd = end
-  }, [input])
+  // Auto-resize is handled by CSS field-sizing: content on the textarea
 
   // Background task persistence — save streaming on unmount, restore on mount
   useEffect(() => {
@@ -615,7 +605,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             flex: 1, border: 'none', background: 'transparent', outline: 'none',
             fontSize: 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font,
             minHeight: 40, maxHeight: 300, fontWeight: 400, resize: 'none',
-            lineHeight: '1.5', padding: '10px 0', overflow: 'hidden',
+            lineHeight: '1.5', padding: '10px 0', overflowY: 'auto',
+            fieldSizing: 'content',
           }}
         />
         {/* Mic / Stop */}
