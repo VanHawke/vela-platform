@@ -25,7 +25,8 @@ export default async function handler(req, res) {
     }
 
     if (action === 'backfill') {
-      let embedded = 0, errors = 0;
+      let embedded = 0, errors = 0, skipped = 0;
+      const batchSize = parseInt(req.query?.batch || '30', 10); // Process max 30 per call
 
       // Get already-embedded conversation IDs
       const existing = await sbFetch('conversation_embeddings?select=conversation_id,source');
@@ -34,23 +35,25 @@ export default async function handler(req, res) {
       // Embed Kiko conversations
       const convos = await sbFetch('conversations?select=id,title,messages,user_id&archived=neq.true&order=updated_at.desc&limit=100');
       for (const c of (convos || [])) {
-        if (embeddedSet.has(`kiko:${c.id}`)) continue;
+        if (embedded >= batchSize) break;
+        if (embeddedSet.has(`kiko:${c.id}`)) { skipped++; continue; }
         const ok = await embedConversation(c.id, 'kiko', c.title, c.messages, c.user_id);
         if (ok) embedded++; else errors++;
-        // Rate limit: OpenAI embedding API
-        await new Promise(r => setTimeout(r, 200));
+        await new Promise(r => setTimeout(r, 100));
       }
 
       // Embed imported conversations
       const imported = await sbFetch('kiko_imported_conversations?select=id,title,messages,user_id&processed=eq.true&order=original_date.desc&limit=500');
       for (const c of (imported || [])) {
-        if (embeddedSet.has(`imported:${c.id}`)) continue;
+        if (embedded >= batchSize) break;
+        if (embeddedSet.has(`imported:${c.id}`)) { skipped++; continue; }
         const ok = await embedConversation(c.id, 'imported', c.title, c.messages, c.user_id);
         if (ok) embedded++; else errors++;
-        await new Promise(r => setTimeout(r, 200));
+        await new Promise(r => setTimeout(r, 100));
       }
 
-      return res.json({ action: 'backfill', embedded, errors, total: (existing || []).length + embedded });
+      const remaining = (convos || []).length + (imported || []).length - (existing || []).length - embedded - skipped;
+      return res.json({ action: 'backfill', embedded, errors, skipped, total: (existing || []).length + embedded, remaining: Math.max(0, remaining) });
     }
 
     return res.status(400).json({ error: 'Invalid action. Use: stats, backfill' });
