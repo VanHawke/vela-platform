@@ -182,7 +182,7 @@ export default function Layout({ user }) {
           <button onClick={() => { setKikoMessages([]); setKikoConvId(null); setKikoResetKey(k => k + 1); nav('/') }}
             style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
             {customLogo ? (
-              <img src={customLogo} alt="Logo" style={{ height: 28, borderRadius: 7, maxWidth: 120, objectFit: 'contain' }} />
+              <img src={customLogo} alt="Logo" style={{ height: 36, borderRadius: 8, maxWidth: 160, objectFit: 'contain' }} />
             ) : (
               <>
                 <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,0.55)', fontFamily: T.font, letterSpacing: '0.12em' }}>VAN HAWKE<sup style={{ fontSize: 8, verticalAlign: 'super', opacity: 0.5 }}>™</sup></span>
