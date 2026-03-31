@@ -88,6 +88,14 @@ export default function Layout({ user }) {
     return () => window.removeEventListener('kiko_logo_updated', handler)
   }, [])
 
+  // Apply custom favicon on load
+  useEffect(() => {
+    try {
+      const faviconUrl = localStorage.getItem('custom_favicon_url')
+      if (faviconUrl) { const link = document.querySelector('link[rel="icon"]'); if (link) { link.href = faviconUrl; link.type = 'image/png' } }
+    } catch {}
+  }, [])
+
   // Listen for voice state changes from KikoChat
   const [chatHistoryOpen, setChatHistoryOpen] = useState(false)
   useEffect(() => {

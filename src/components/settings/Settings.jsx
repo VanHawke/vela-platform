@@ -41,6 +41,7 @@ export default function Settings({ user }) {
   const [previewingVoice, setPreviewingVoice] = useState(null)
   const previewAudioRef = useRef(null)
   const [navLogo, setNavLogo] = useState(() => { try { return localStorage.getItem('custom_logo_url') } catch { return null } })
+  const [favicon, setFavicon] = useState(() => { try { return localStorage.getItem('custom_favicon_url') } catch { return null } })
 
   const DEFAULT_NAV = [
     { id: 'home', label: 'Home' }, { id: 'pipeline', label: 'Pipeline' },
@@ -672,6 +673,15 @@ export default function Settings({ user }) {
                     {settings.login_bg_url && <button onClick={() => { saveSettings({ login_bg_url: null }); try { localStorage.removeItem('kiko_login_bg') } catch {} }} title="Remove" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: T.textTertiary, padding: 0 }}><X size={12} /> Remove</button>}
                   </div>
                   <ImageUpload label="Login Background Image" storageKey="login_bg" folder="backgrounds" aspectHint="16:9 landscape recommended" currentUrl={settings.login_bg_url} onUploaded={(url) => { saveSettings({ login_bg_url: url }); try { localStorage.setItem('kiko_login_bg', url) } catch {} }} />
+                </div>
+
+                {/* Browser Favicon */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: favicon ? 6 : 0 }}>
+                    <span />
+                    {favicon && <button onClick={() => { try { localStorage.removeItem('custom_favicon_url') } catch {}; setFavicon(null); const link = document.querySelector('link[rel="icon"]'); if (link) link.href = '/favicon.svg'; }} title="Reset to default" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: T.textTertiary, padding: 0 }}><X size={12} /> Reset to default</button>}
+                  </div>
+                  <ImageUpload label="Browser Favicon" storageKey="favicon" folder="logos" aspectHint="Square, shown in the browser tab (32×32 recommended)" currentUrl={favicon} onUploaded={(url) => { try { localStorage.setItem('custom_favicon_url', url) } catch {}; setFavicon(url); const link = document.querySelector('link[rel="icon"]'); if (link) { link.href = url; link.type = 'image/png'; } }} />
                 </div>
 
               </div>
