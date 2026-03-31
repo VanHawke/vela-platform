@@ -784,7 +784,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             {msg.content}
           </> : (() => {
             // Strip ---DRAFT--- block from display text (rendered separately in DraftPreview)
-            const displayText = msg.content.replace(/---DRAFT---[\s\S]*?---END DRAFT---/gi, '').trim()
+            const displayText = msg.content
+              .replace(/---DRAFT---[\s\S]*?---END DRAFT---/gi, '')
+              .replace(/<tool_call>[\s\S]*?<\/tool_call>/gi, '')
+              .replace(/<tool_function_result>[\s\S]*?<\/tool_function_result>/gi, '')
+              .replace(/<tool_name>[\s\S]*?<\/tool_name>/gi, '')
+              .replace(/<tool_parameters>[\s\S]*?<\/tool_parameters>/gi, '')
+              .trim()
             return displayText ? <span dangerouslySetInnerHTML={{ __html: md(displayText) }} /> : null
           })()}
           {/* Draft Preview Panel — renders below Kiko's message if a draft is detected */}
@@ -1076,7 +1082,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(139,108,246,0.55)', fontFamily: T.font, marginBottom: 6 }}>Kiko</div>
               <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.85)', lineHeight: 1.7, fontFamily: T.font, fontWeight: 400 }}>
-                <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
+                <span dangerouslySetInnerHTML={{ __html: md(streamText.replace(/<tool_call>[\s\S]*?(<\/tool_call>|$)/gi, '').replace(/<tool_function_result>[\s\S]*?(<\/tool_function_result>|$)/gi, '').replace(/<tool_name>[\s\S]*?(<\/tool_name>|$)/gi, '').replace(/<tool_parameters>[\s\S]*?(<\/tool_parameters>|$)/gi, '').trim()) }} />
                 <span style={{ display: 'inline-block', width: 2, height: 16, background: 'rgba(139,108,246,0.4)', marginLeft: 2, verticalAlign: 'text-bottom', animation: 'kikoBlink 1s infinite' }} />
               </div>
               <button onClick={stopKiko} style={{ marginTop: 10, padding: '6px 14px', borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
