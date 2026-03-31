@@ -23,7 +23,8 @@
     { "path": "/api/cron-competitive-intel", "schedule": "0 2 * * 1" },
     { "path": "/api/cron-task-executor", "schedule": "30 8 * * 1-5" },
     { "path": "/api/cron-email-template-learning", "schedule": "0 10 * * 0" },
-    { "path": "/api/cron-self-improvement", "schedule": "0 3 * * 0" }
+    { "path": "/api/cron-self-improvement", "schedule": "0 3 * * 0" },
+    { "path": "/api/cron-weekly-report", "schedule": "0 19 * * 0" }
   ],
   "functions": {
     "api/kiko.js": { "maxDuration": 120 },
@@ -65,7 +66,8 @@
     "api/kiko-draft-actions.js": { "maxDuration": 30 },
     "api/cron-task-executor.js": { "maxDuration": 45 },
     "api/cron-email-template-learning.js": { "maxDuration": 45 },
-    "api/cron-self-improvement.js": { "maxDuration": 60 }
+    "api/cron-self-improvement.js": { "maxDuration": 60 },
+    "api/cron-weekly-report.js": { "maxDuration": 60 }
   },
   "rewrites": [
     { "source": "/api/google-auth/callback", "destination": "/api/google-auth" },

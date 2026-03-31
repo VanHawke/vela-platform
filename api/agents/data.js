@@ -487,6 +487,94 @@ async function predictDealOutcomes() {
   } catch (e) { return `Deal prediction error: ${e.message}`; }
 }
 
+// ── Partnership Matrix Refresh — on-demand update via web search ──
+async function refreshTeamPartnerships(params) {
+  try {
+    const teamQuery = (params.team || params.query || '').toLowerCase();
+    if (!teamQuery) return 'Please specify a team: e.g. "refresh partnerships for Haas"';
+    
+    const TEAM_MAP = {
+      'red bull': 'red_bull', 'redbull': 'red_bull', 'ferrari': 'ferrari', 'mclaren': 'mclaren',
+      'mercedes': 'mercedes', 'aston martin': 'aston_martin', 'aston': 'aston_martin',
+      'alpine': 'alpine', 'williams': 'williams', 'haas': 'haas',
+      'racing bulls': 'racing_bulls', 'rb': 'racing_bulls', 'audi': 'audi', 'cadillac': 'cadillac',
+    };
+    const teamId = TEAM_MAP[teamQuery] || teamQuery;
+    const teamName = Object.entries(TEAM_MAP).find(([, v]) => v === teamId)?.[0] || teamId;
+
+    // Get current partnerships for this team
+    const current = await sbFetch(`f1_partnerships?team_id=eq.${teamId}&status=eq.active&select=partner_name,category_id,tier`);
+    const currentNames = new Set((current || []).map(p => p.partner_name.toLowerCase()));
+
+    // Use Anthropic to research current partnerships
+    const Anthropic = (await import('@anthropic-ai/sdk')).default;
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
+
+    const res = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+      messages: [{
+        role: 'user',
+        content: `Search for the CURRENT 2025-2026 F1 sponsors and partners for ${teamName} F1 team. I need an accurate, comprehensive list.
+
+For each partner, provide:
+- partner_name: Official company/brand name
+- category: One of: fintech, cloud, ai_data, cybersecurity, banking, energy, telecom, automotive, fashion, food_bev, watches, crypto, software, legal, hospitality, gaming, health, logistics, semiconductors, robotics
+- tier: One of: title, principal, official, technical, partner, supplier
+
+Respond with ONLY a JSON array. Example: [{"partner_name":"Toyota","category":"automotive","tier":"title"}]
+Include ALL known sponsors — title, principal, official partners, technical partners, and suppliers.`
+      }],
+    });
+
+    // Extract text from response (may have tool use blocks)
+    let responseText = '';
+    for (const block of res.content) {
+      if (block.type === 'text') responseText += block.text;
+    }
+
+    // Parse partnerships from response
+    const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) return `Could not parse partnership data for ${teamName}. Raw response available but no structured JSON found.`;
+
+    let partnerships;
+    try { partnerships = JSON.parse(jsonMatch[0]); } catch { return `JSON parse error for ${teamName} partnerships.`; }
+    if (!Array.isArray(partnerships) || !partnerships.length) return `No partnerships found for ${teamName}.`;
+
+    // Upsert each partnership
+    let added = 0, updated = 0;
+    for (const p of partnerships) {
+      if (!p.partner_name) continue;
+      const isNew = !currentNames.has(p.partner_name.toLowerCase());
+      await sbFetch('f1_partnerships', {
+        method: 'POST',
+        headers: { Prefer: 'resolution=merge-duplicates' },
+        body: JSON.stringify({
+          team_id: teamId,
+          partner_name: p.partner_name,
+          category_id: p.category || null,
+          tier: p.tier || 'partner',
+          status: 'active',
+          verified: true,
+          last_verified_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }),
+      });
+      if (isNew) added++; else updated++;
+    }
+
+    let out = `PARTNERSHIP REFRESH: ${teamName.toUpperCase()}\n`;
+    out += `Found ${partnerships.length} partners via web search.\n`;
+    out += `• ${added} NEW partners added\n• ${updated} existing partners verified\n\n`;
+    if (added > 0) {
+      const newOnes = partnerships.filter(p => !currentNames.has(p.partner_name.toLowerCase()));
+      out += `NEW:\n${newOnes.map(p => `  + ${p.partner_name} (${p.category || '?'}, ${p.tier || 'partner'})`).join('\n')}\n`;
+    }
+    return out;
+  } catch (e) { return `Partnership refresh error: ${e.message}`; }
+}
+
 // ── Main Dispatch ──
 // Called by Kiko Prime. Routes to the correct handler based on operation.
 export async function callDataAgent(operation, params = {}, userEmail = 'sunny@vanhawke.com') {
@@ -517,6 +605,7 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
       case 'win_loss': return await getWinLossInsights(params);
       case 'thread_history': return await getThreadHistory(params);
       case 'deal_prediction': return await predictDealOutcomes();
+      case 'refresh_partnerships': return await refreshTeamPartnerships(params);
       default: return `Unknown data operation: ${operation}. Available: search_contacts, search_companies, search_deals, entity_detail, alerts, email_analytics, outreach_intelligence, outreach_timing, stale_contacts, news, partnership_matrix, pipeline_notifications, deal_history, activity_feed, search_documents, past_conversations, recent_conversations, learning_search, learning_save, skills, bookmark, warm_path, win_loss, thread_history, deal_prediction`;
     }
   } catch (err) {

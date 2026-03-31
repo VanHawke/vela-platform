@@ -1031,6 +1031,17 @@ export default async function handler(req, res) {
       extractConversationInsights(message, responseText, intent, userId);
     }
 
+    // Auto-embed conversation for semantic search (non-blocking)
+    if (isRegistered && responseText.length > 100 && !['navigate', 'screen', 'greeting'].includes(intent)) {
+      try {
+        const { embedConversation } = await import('./embed-utils.js');
+        const convMsgs = messages.filter(m => typeof m.content === 'string').slice(-6);
+        const convId = `live_${Date.now()}_${userId?.slice(0, 8) || 'anon'}`;
+        const title = (message || '').slice(0, 80);
+        embedConversation(convId, 'kiko', title, convMsgs, userId).catch(() => {});
+      } catch {}
+    }
+
     // ── UNIVERSAL LEARNING ENGINE — registered users only ──
     if (isRegistered && !['navigate', 'screen'].includes(intent) && responseText.length > 200) {
       try {

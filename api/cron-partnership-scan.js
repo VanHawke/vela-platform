@@ -100,15 +100,15 @@ export default async function handler(req, res) {
   let added = 0, updated = 0, skipped = 0;
   const results = [];
 
-  // === PHASE 1: Scan unprocessed news_articles (deal signals) ===
+  // === PHASE 1: Scan unprocessed news_articles (deal signals) — max 10 per run ===
   const { data: articles } = await supabase.from('news_articles')
     .select('id, title, summary, intelligence')
     .or('deal_signal.eq.true,category.eq.f1_sponsorship,category.eq.sports_sponsorship')
     .order('published_at', { ascending: false })
     .limit(30);
 
-  const unscanned = (articles || []).filter(a => !a.intelligence?.partnership_scanned);
-  console.log(`[PartnerScan] Phase 1: ${unscanned.length} unscanned deal articles`);
+  const unscanned = (articles || []).filter(a => !a.intelligence?.partnership_scanned).slice(0, 10);
+  console.log(`[PartnerScan] Phase 1: ${unscanned.length} unscanned deal articles (capped at 10)`);
 
   for (const article of unscanned) {
     const partnerships = await classifyPartnership(`Title: ${article.title}\nSummary: ${article.summary || ''}`);
@@ -147,8 +147,13 @@ export default async function handler(req, res) {
   ];
   const allFeeds = [...searchFeeds.map(url => ({ url })), ...teamFeeds];
 
+  // Rotate through feeds — only scan 3 per run to stay within time budget
+  const dayOfWeek = new Date().getDay(); // 0=Sun, 1=Mon...
+  const feedOffset = (dayOfWeek * 3) % allFeeds.length;
+  const feedsThisRun = allFeeds.slice(feedOffset, feedOffset + 3);
+
   let webArticles = 0;
-  for (const feed of allFeeds) {
+  for (const feed of feedsThisRun) {
     try {
       const feedRes = await fetch(feed.url, { headers: { 'User-Agent': 'Kiko/1.0' } });
       if (!feedRes.ok) continue;
@@ -189,6 +194,7 @@ export default async function handler(req, res) {
     timestamp: new Date().toISOString()
   };
   console.log('[PartnerScan] Complete:', JSON.stringify(summary));
+  await cronHeartbeat('cron-partnership-scan', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: added + updated });
   return res.json({ ok: true, ...summary });
   } catch (__hbErr) {
     await cronHeartbeat('cron-partnership-scan', 'error', { heartbeatId: __hbId, errorMessage: __hbErr?.message || 'unknown' });
