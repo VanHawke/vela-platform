@@ -579,6 +579,16 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const handleFileDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); dragCounterRef.current--; if (dragCounterRef.current <= 0) { dragCounterRef.current = 0; setChatDragOver(false) } }
   const handleFileDragOver = (e) => { e.preventDefault(); e.stopPropagation() }
 
+  // Safety: auto-dismiss drag overlay after 4s (catches stuck state from missed events)
+  useEffect(() => {
+    if (!chatDragOver) return
+    const timer = setTimeout(() => { dragCounterRef.current = 0; setChatDragOver(false) }, 4000)
+    const dismissOnDrop = () => { dragCounterRef.current = 0; setChatDragOver(false) }
+    window.addEventListener('drop', dismissOnDrop)
+    window.addEventListener('dragend', dismissOnDrop)
+    return () => { clearTimeout(timer); window.removeEventListener('drop', dismissOnDrop); window.removeEventListener('dragend', dismissOnDrop) }
+  }, [chatDragOver])
+
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || ''
   const trans = 'all 0.6s cubic-bezier(0.4,0,0.2,1)'
 
@@ -790,12 +800,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
         style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'transparent', position: 'relative', overflow: 'hidden', minWidth: 0 }}>
         {chatDragOver && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(26,26,26,0.3)', borderRadius: 18, margin: 8, pointerEvents: 'none' }}>
-            <div style={{ width: 48, height: 48, borderRadius: 50, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={T.textSecondary} strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(10,10,14,0.92)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(139,108,246,0.5)', borderRadius: 18, margin: 8, pointerEvents: 'none' }}>
+            <div style={{ width: 48, height: 48, borderRadius: 50, background: 'rgba(139,108,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(139,108,246,0.8)" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
             </div>
-            <p style={{ fontSize: 16, fontWeight: 500, color: T.text, fontFamily: T.font, margin: '0 0 4px' }}>Drop file for Kiko to analyse</p>
-            <p style={{ fontSize: 13, color: T.textTertiary, fontFamily: T.font, margin: 0 }}>PDF, images, spreadsheets, text files</p>
+            <p style={{ fontSize: 16, fontWeight: 500, color: 'rgba(255,255,255,0.9)', fontFamily: T.font, margin: '0 0 4px' }}>Drop file for Kiko to analyse</p>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', fontFamily: T.font, margin: 0 }}>PDF, Word, Excel, PowerPoint, images, text files</p>
           </div>
         )}
 
@@ -932,12 +942,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
       style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, background: 'transparent', position: 'relative', overflow: 'hidden' }}>
       {chatDragOver && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(26,26,26,0.3)', borderRadius: 18, margin: 8, pointerEvents: 'none' }}>
-          <div style={{ width: 48, height: 48, borderRadius: 50, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={T.textSecondary} strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(10,10,14,0.92)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(139,108,246,0.5)', borderRadius: 18, margin: 8, pointerEvents: 'none' }}>
+          <div style={{ width: 48, height: 48, borderRadius: 50, background: 'rgba(139,108,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(139,108,246,0.8)" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
           </div>
-          <p style={{ fontSize: 16, fontWeight: 500, color: T.text, fontFamily: T.font, margin: '0 0 4px' }}>Drop file for Kiko to analyse</p>
-          <p style={{ fontSize: 13, color: T.textTertiary, fontFamily: T.font, margin: 0 }}>PDF, images, spreadsheets, text files</p>
+          <p style={{ fontSize: 16, fontWeight: 500, color: 'rgba(255,255,255,0.9)', fontFamily: T.font, margin: '0 0 4px' }}>Drop file for Kiko to analyse</p>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', fontFamily: T.font, margin: 0 }}>PDF, Word, Excel, PowerPoint, images, text files</p>
         </div>
       )}
       {allChatsData ? (

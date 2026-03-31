@@ -70,7 +70,7 @@ export default function Layout({ user }) {
     return () => { window.removeEventListener('kiko_top_nav_updated', handler); window.removeEventListener('kiko_more_order_updated', moreHandler) }
   }, [])
 
-  const TABS = ALL_NAV.filter(n => topNavIds.includes(n.id))
+  const TABS = topNavIds.map(id => ALL_NAV.find(n => n.id === id)).filter(Boolean)
   // More items respect custom order from Settings
   const moreItemsRaw = ALL_NAV.filter(n => !topNavIds.includes(n.id))
   const [moreOrder, setMoreOrder] = useState(() => { try { const s = localStorage.getItem('kiko_more_order'); return s ? JSON.parse(s) : null } catch { return null } })
