@@ -595,10 +595,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         {/* Textarea — physically expands via useEffect, handles macOS dictation */}
         <textarea
           ref={inputRef} value={input} dir="ltr"
-          onChange={e => { if (!composingRef.current) setInput(e.target.value) }}
-          onCompositionStart={() => { composingRef.current = true }}
-          onCompositionEnd={e => { composingRef.current = false; setInput(e.target.value) }}
-          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !composingRef.current) { e.preventDefault(); handleSubmit(); } }}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
           placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment or press send..." : "Ask anything"}
           autoFocus rows={1}
           style={{
