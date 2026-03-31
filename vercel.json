@@ -60,7 +60,12 @@
     "api/cron-learning-director.js": { "maxDuration": 120 },
     "api/cron-self-reflection.js": { "maxDuration": 60 },
     "api/cron-morning-intelligence.js": { "maxDuration": 90 },
-    "api/cron-competitive-intel.js": { "maxDuration": 120 }
+    "api/cron-competitive-intel.js": { "maxDuration": 120 },
+    "api/embed-conversations.js": { "maxDuration": 120 },
+    "api/kiko-draft-actions.js": { "maxDuration": 30 },
+    "api/cron-task-executor.js": { "maxDuration": 45 },
+    "api/cron-email-template-learning.js": { "maxDuration": 45 },
+    "api/cron-self-improvement.js": { "maxDuration": 60 }
   },
   "rewrites": [
     { "source": "/api/google-auth/callback", "destination": "/api/google-auth" },

@@ -74,6 +74,7 @@ export default async function handler(req, res) {
     await cronHeartbeat('cron-preference-synthesis', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: results.length });
     return res.status(200).json({ ok: true, users: results });
   } catch (err) {
+    await cronHeartbeat('cron-preference-synthesis', 'error', { heartbeatId: __hbId, errorMessage: err.message, durationMs: Date.now() - __hbStart }).catch(() => {});
     return res.status(200).json({ ok: false, error: err.message });
   }
 }

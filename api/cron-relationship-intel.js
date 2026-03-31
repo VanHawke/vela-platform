@@ -172,6 +172,7 @@ export default async function handler(req, res) {
     await cronHeartbeat('cron-relationship-intel', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: results.length });
     return res.status(200).json({ ok: true, users: results });
   } catch (err) {
+    try { await cronHeartbeat('cron-relationship-intel', 'error', { heartbeatId: __hbId, errorMessage: err.message }); } catch {}
     return res.status(200).json({ ok: false, error: err.message });
   }
 }

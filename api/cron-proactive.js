@@ -173,7 +173,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true, alerts: written, drafts, total_signals: hasData });
   } catch (err) {
     console.error('[Proactive] Engine error:', err.message);
-    await cronHeartbeat('cron-proactive', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart });
+    await cronHeartbeat('cron-proactive', 'error', { heartbeatId: __hbId, errorMessage: err.message, durationMs: Date.now() - __hbStart });
     return res.status(200).json({ ok: false, error: err.message }); // 200 so Vercel cron doesn't retry
   }
 }
