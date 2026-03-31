@@ -20,13 +20,12 @@ function stripToolXml(t) {
   if (!t) return ''
   return t
     .replace(/<tool_call>[\s\S]*?<\/tool_call>/gi, '')
-    .replace(/<tool_function_result>[\s\S]*?<\/tool_function_result>/gi, '')
-    .replace(/<tool_name>[\s\S]*?<\/tool_name>/gi, '')
-    .replace(/<tool_parameters>[\s\S]*?<\/tool_parameters>/gi, '')
     .replace(/<tool_call>[\s\S]*/gi, '')
-    .replace(/<tool_function_result>[\s\S]*/gi, '')
+    .replace(/<tool_name>[\s\S]*?<\/tool_name>/gi, '')
     .replace(/<tool_name>[\s\S]*/gi, '')
+    .replace(/<tool_parameters>[\s\S]*?<\/tool_parameters>/gi, '')
     .replace(/<tool_parameters>[\s\S]*/gi, '')
+    .replace(/<\/?tool_function_result>/gi, '')
     .trim()
 }
 function md(text) {
