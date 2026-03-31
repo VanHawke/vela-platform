@@ -2,6 +2,7 @@
 // Fetches from 10+ sports business/F1/sponsorship RSS feeds, deduplicates, classifies via Haiku
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
+import { cronHeartbeat, logError } from './kiko-tools.js';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -330,12 +331,24 @@ export default async function handler(req, res) {
     return res.json({ ok: true });
   }
 
-  // Default for GET (cron trigger) — run sync
+  // Default for GET (cron trigger) — run sync with heartbeat
   if (req.method === 'GET' && !action) {
-    const articles = await fetchAllFeeds();
-    const storeResult = await storeArticles(articles);
-    const classifyResult = await classifyBatch(20);
-    return res.json({ action: 'cron-sync', fetched: storeResult, classified: classifyResult });
+    const __hbStart = Date.now();
+    const __hbId = await cronHeartbeat('news-agent', 'started');
+    try {
+      const articles = await fetchAllFeeds();
+      const storeResult = await storeArticles(articles);
+      const classifyResult = await classifyBatch(20);
+      await cronHeartbeat('news-agent', 'finished', {
+        heartbeatId: __hbId, durationMs: Date.now() - __hbStart,
+        recordsProcessed: (storeResult?.stored || 0) + (classifyResult?.classified || 0),
+      });
+      return res.json({ action: 'cron-sync', fetched: storeResult, classified: classifyResult });
+    } catch (err) {
+      await cronHeartbeat('news-agent', 'error', { heartbeatId: __hbId, errorMessage: err.message });
+      await logError('news-agent', err.message).catch(() => {});
+      return res.status(500).json({ error: err.message });
+    }
   }
 
   return res.status(400).json({ error: 'action required: fetch|classify|sync|list|star|read' });

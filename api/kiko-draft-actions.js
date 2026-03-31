@@ -36,23 +36,69 @@ export default async function handler(req, res) {
 
       try {
         // Execute based on action type
-        if (action_type === 'follow_up' || action_type === 'email') {
-          // Create a task for the follow-up rather than auto-sending
-          await sbFetch('tasks', {
-            method: 'POST',
-            body: JSON.stringify({
-              data: {
-                type: 'follow_up',
-                notes: payload?.suggested_action || payload?.action || 'Follow up',
-                company: payload?.entity || payload?.company || '',
-                contactName: payload?.contact || '',
-                completed: false,
-                dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-                source: 'kiko_draft_action',
-              },
-            }),
-          });
-          executionResult = `Task created: follow up with ${payload?.entity || 'contact'}`;
+        if (action_type === 'follow_up' || action_type === 'email' || action_type === 'auto_followup') {
+          // Create a real Gmail draft the user can review and send
+          let gmailDraftCreated = false;
+          try {
+            const { getGoogleToken } = await import('./google-token.js');
+            const { getActiveUsers } = await import('./cron-utils.js');
+            const users = await getActiveUsers();
+            const email = users[0]?.email;
+            if (email) {
+              const token = await getGoogleToken(email);
+              if (token && payload?.draft) {
+                // Parse subject and body from the draft text
+                const draftText = payload.draft || '';
+                const subjectMatch = draftText.match(/SUBJECT:\s*(.+?)(?:\n|$)/i);
+                const subject = subjectMatch ? subjectMatch[1].trim() : `Follow up: ${payload?.entity || 'contact'}`;
+                // Strip SUBJECT: and ACTION: lines to get clean body
+                const body = draftText
+                  .replace(/^SUBJECT:.*$/mi, '')
+                  .replace(/^ACTION:.*$/mi, '')
+                  .trim();
+                // Find recipient email from contacts if available
+                let recipientEmail = payload?.recipient_email || '';
+                if (!recipientEmail && payload?.entity) {
+                  const contacts = await sbFetch(`contacts?select=data&data->>company=ilike.*${encodeURIComponent(payload.entity)}*&limit=1`);
+                  if (contacts?.[0]?.data?.email) recipientEmail = contacts[0].data.email;
+                }
+                const toLine = recipientEmail ? `To: ${recipientEmail}\r\n` : '';
+                const raw = Buffer.from(
+                  `${toLine}From: ${email}\r\nSubject: ${subject}\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n${body}`
+                ).toString('base64url');
+                const gmailRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/drafts', {
+                  method: 'POST',
+                  headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ message: { raw } }),
+                });
+                if (gmailRes.ok) {
+                  const gmailData = await gmailRes.json();
+                  gmailDraftCreated = true;
+                  executionResult = `Gmail draft created for ${payload?.entity || 'contact'} (draft ID: ${gmailData.id}). Open Gmail to review and send.`;
+                }
+              }
+            }
+          } catch (gmailErr) {
+            console.error('[draft-actions] Gmail draft failed:', gmailErr.message);
+          }
+          // Fallback: create a task if Gmail draft failed
+          if (!gmailDraftCreated) {
+            await sbFetch('tasks', {
+              method: 'POST',
+              body: JSON.stringify({
+                data: {
+                  type: 'follow_up',
+                  notes: payload?.suggested_action || payload?.action || payload?.draft?.slice(0, 200) || 'Follow up',
+                  company: payload?.entity || payload?.company || '',
+                  contactName: payload?.contact || '',
+                  completed: false,
+                  dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+                  source: 'kiko_draft_action',
+                },
+              }),
+            });
+            executionResult = `Task created (Gmail draft unavailable): follow up with ${payload?.entity || 'contact'}`;
+          }
         } else if (action_type === 'deal_move') {
           // Move deal to suggested stage
           const dealName = payload?.entity || payload?.company;

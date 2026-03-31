@@ -1,16 +1,16 @@
-// Service Worker for Kiko PWA — caches app shell for offline access
-const CACHE_NAME = 'kiko-v13';
-const OFFLINE_URL = '/';
+// Kiko Intelligence OS — Service Worker
+// Minimal: caches shell for offline, passes all API calls through to network
 
-// Install — cache the app shell
+const CACHE_NAME = 'kiko-v1';
+const SHELL_URLS = ['/', '/index.html'];
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll([OFFLINE_URL]))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_URLS))
   );
   self.skipWaiting();
 });
 
-// Activate — clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -20,11 +20,11 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch — network first, cache fallback for navigation
 self.addEventListener('fetch', (event) => {
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() => caches.match(OFFLINE_URL))
-    );
-  }
+  const url = new URL(event.request.url);
+  // Never cache API calls or SSE streams
+  if (url.pathname.startsWith('/api/')) return;
+  event.respondWith(
+    fetch(event.request).catch(() => caches.match(event.request))
+  );
 });

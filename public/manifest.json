@@ -1,18 +1,24 @@
 {
-  "name": "Kiko — Van Hawke",
+  "name": "Kiko Intelligence OS",
   "short_name": "Kiko",
-  "description": "AI operating system for sponsorship intelligence",
+  "description": "AI Chief of Staff for Van Hawke Group",
   "start_url": "/",
-  "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#07070B",
-  "theme_color": "#07070B",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "any",
   "icons": [
-    { "src": "/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "maskable" },
-    { "src": "/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "maskable" }
-  ],
-  "categories": ["business", "productivity"]
+    {
+      "src": "/kiko-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/kiko-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }
