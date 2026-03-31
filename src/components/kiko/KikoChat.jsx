@@ -542,8 +542,31 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         } else if (isPdf) {
           handleSubmit(`I've uploaded a PDF: "${file.name}". Analyse it thoroughly.`, [{ type: 'document', mediaType: 'application/pdf', data: base64 }])
         } else {
-          // Unsupported binary — just acknowledge
-          handleSubmit(`I've uploaded "${file.name}" (${file.type}, ${(file.size/1024).toFixed(0)}KB). This file type can't be directly analysed. Try PDF, images, or text files.`)
+          // Document files: extract text server-side then send to Kiko
+          const isDocument = file.name.match(/\.(docx?|xlsx?|xlsm|pptx?|pdf)$/i)
+          if (isDocument) {
+            try {
+              const res = await fetch('/api/file-extract', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: file.name, data: base64, mimeType: file.type })
+              })
+              const result = await res.json()
+              if (!res.ok) throw new Error(result.error || 'Extraction failed')
+              const meta = result.metadata || {}
+              const header = `I've uploaded "${file.name}" (${meta.type}${meta.pages ? `, ${meta.pages} pages` : ''}, ${(result.text.length/1000).toFixed(0)}K chars${meta.truncated ? ', truncated' : ''}).`
+              handleSubmit(`${header}\n\nHere are the extracted contents:\n\n${result.text}\n\nAnalyse this document thoroughly.`)
+            } catch (extractErr) {
+              // Fallback: if extraction fails and it's a PDF, send as native document
+              if (file.name.match(/\.pdf$/i)) {
+                handleSubmit(`I've uploaded a PDF: "${file.name}". Analyse it thoroughly.`, [{ type: 'document', mediaType: 'application/pdf', data: base64 }])
+              } else {
+                handleSubmit(`I've uploaded "${file.name}" but text extraction failed: ${extractErr.message}. Try converting to PDF first.`)
+              }
+            }
+          } else {
+            handleSubmit(`I've uploaded "${file.name}" (${file.type}, ${(file.size/1024).toFixed(0)}KB). This file type isn't supported yet. Try PDF, Word, Excel, PowerPoint, images, or text files.`)
+          }
         }
       }
     } catch (err) {
