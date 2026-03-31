@@ -351,8 +351,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   useEffect(() => {
     const el = inputRef.current
     if (!el) return
-    el.style.height = '0px'
+    const start = el.selectionStart
+    const end = el.selectionEnd
+    el.style.height = 'auto'
     el.style.height = Math.min(el.scrollHeight, 300) + 'px'
+    el.selectionStart = start
+    el.selectionEnd = end
   }, [input])
 
   // Background task persistence — save streaming on unmount, restore on mount
