@@ -555,11 +555,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               const header = `I've uploaded "${file.name}" (${meta.type}${meta.pages ? `, ${meta.pages} pages` : ''}, ${(result.text.length/1000).toFixed(0)}K chars${meta.truncated ? ', truncated' : ''}).`
               handleSubmit(`${header}\n\nHere are the extracted contents:\n\n${result.text}\n\nAnalyse this document thoroughly.`)
             } catch (extractErr) {
-              // Fallback: if extraction fails and it's a PDF, send as native document
-              if (file.name.match(/\.pdf$/i)) {
+              // Fallback: for small PDFs (< 4MB), try native document; otherwise report error
+              if (file.name.match(/\.pdf$/i) && base64.length < 4_000_000) {
                 handleSubmit(`I've uploaded a PDF: "${file.name}". Analyse it thoroughly.`, [{ type: 'document', mediaType: 'application/pdf', data: base64 }])
               } else {
-                handleSubmit(`I've uploaded "${file.name}" but text extraction failed: ${extractErr.message}. Try converting to PDF first.`)
+                handleSubmit(`I've uploaded "${file.name}" but text extraction failed: ${extractErr.message}. Try a smaller file or convert to text.`)
               }
             }
           } else {
