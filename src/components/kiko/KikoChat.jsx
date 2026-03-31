@@ -119,6 +119,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [editText, setEditText] = useState('')
   const [thinkingSteps, setThinkingSteps] = useState([])
   const [showSteps, setShowSteps] = useState(false)
+  const [expandedSteps, setExpandedSteps] = useState(null)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [insightsOpen, setInsightsOpen] = useState(false)
   const [alertCount, setAlertCount] = useState(0)
@@ -480,13 +481,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           try {
             const j = JSON.parse(d)
             if (j.delta) { full += j.delta; setStreamText(full); streamTextRef.current = full }
-            if (j.thinking) { setThinkingSteps(prev => [...prev, { label: 'Reasoning...', time: Date.now() }]) }
-            if (j.toolStatus !== undefined) { setToolStatus(j.toolStatus); if (j.toolStatus) setThinkingSteps(prev => [...prev, { label: j.toolStatus, time: Date.now() }]) }
+            if (j.thinking) { setThinkingSteps(prev => prev.some(s => s.label === 'Reasoning...') ? prev : [...prev, { label: 'Reasoning...', time: Date.now() }]) }
+            if (j.toolStatus !== undefined) { setToolStatus(j.toolStatus); if (j.toolStatus && j.toolStatus !== 'Connecting...' && j.toolStatus !== 'Composing response...') setThinkingSteps(prev => prev.some(s => s.label === j.toolStatus) ? prev : [...prev, { label: j.toolStatus, time: Date.now() }]) }
             if (j.navigate) pendingNav = j.navigate
           } catch {}
         }
       }
-      const kikoMsg = { role: 'assistant', content: full, timestamp: Date.now() }
+      const kikoMsg = { role: 'assistant', content: full, timestamp: Date.now(), steps: thinkingSteps.length > 0 ? [...thinkingSteps] : undefined }
       const updated = [...messages, userMsg, kikoMsg]
       setMessages(prev => [...prev, kikoMsg]); setStreamText(''); setToolStatus(null)
       const newId = await saveConversation(updated.map(m => ({ role: m.role, content: m.content })), activeConvId, msg, full)
@@ -736,6 +737,38 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         onMouseEnter={() => setHoveredMsg(i)} onMouseLeave={() => setHoveredMsg(null)}>
         {/* Kiko label for assistant messages */}
         {isKiko && <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(139,108,246,0.55)', fontFamily: T.font, marginBottom: 6 }}>Kiko</div>}
+        {/* Collapsible reasoning steps on completed messages */}
+        {isKiko && msg.steps?.length > 0 && (() => {
+          const stepId = `steps-${i}`
+          const isOpen = expandedSteps === i
+          return (
+            <div style={{ marginBottom: 8 }}>
+              <button onClick={() => setExpandedSteps(isOpen ? null : i)} style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                fontSize: 12, color: 'rgba(124,92,252,0.55)', background: 'rgba(124,92,252,0.03)',
+                border: '1px solid rgba(124,92,252,0.08)', borderRadius: 10,
+                cursor: 'pointer', fontFamily: T.font, padding: '6px 12px', fontWeight: 500,
+              }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(124,92,252,0.5)" strokeWidth="2.5" style={{ transition: 'transform 0.3s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}><path d="M6 9l6 6 6-6"/></svg>
+                <span>Kiko's reasoning</span>
+                <span style={{ fontSize: 11, color: 'rgba(124,92,252,0.3)', marginLeft: 4 }}>{msg.steps.length} steps</span>
+              </button>
+              <div style={{ maxHeight: isOpen ? 400 : 0, overflow: 'hidden', transition: 'max-height 0.4s cubic-bezier(0.4,0,0.2,1)' }}>
+                <div style={{ padding: '6px 0 0' }}>
+                  {msg.steps.map((step, si) => (
+                    <div key={si} style={{ display: 'flex', gap: 10, padding: '4px 0' }}>
+                      <div style={{ width: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 5 }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: (step.label.includes('Agent') || step.label.includes('agent')) ? 'rgba(6,214,160,0.5)' : 'rgba(124,92,252,0.4)', flexShrink: 0 }} />
+                        {si < msg.steps.length - 1 && <span style={{ flex: 1, width: 1, background: 'rgba(124,92,252,0.06)', marginTop: 3 }} />}
+                      </div>
+                      <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', fontFamily: T.font, fontWeight: 400, lineHeight: 1.5 }}>{step.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )
+        })()}
         <div style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
         <div style={{
           maxWidth: isUser ? '65%' : '100%',
@@ -1001,22 +1034,38 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 </div>
                 {thinkingSteps.length > 0 && (
                   <div style={{ marginTop: 6 }}>
-                    <button onClick={() => setShowSteps(!showSteps)} style={{ fontSize: 12, color: 'rgba(139,108,246,0.5)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: T.font, padding: '2px 0' }}>
-                      {showSteps ? 'Hide process' : `Show process (${thinkingSteps.length} steps)`}
+                    <button onClick={() => setShowSteps(!showSteps)} style={{
+                      display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                      fontSize: 12, color: 'rgba(124,92,252,0.6)', background: 'rgba(124,92,252,0.04)',
+                      border: '1px solid rgba(124,92,252,0.1)', borderRadius: 10,
+                      cursor: 'pointer', fontFamily: T.font, padding: '8px 12px', fontWeight: 500,
+                      transition: 'all 0.2s',
+                    }}>
+                      <span style={{ width: 16, height: 16, borderRadius: '50%', border: '1.5px solid rgba(124,92,252,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(124,92,252,0.6)" strokeWidth="2.5"><path d={showSteps ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"}/></svg>
+                      </span>
+                      <span>Kiko's reasoning</span>
+                      <span style={{ marginLeft: 'auto', fontSize: 11, color: 'rgba(124,92,252,0.35)' }}>{thinkingSteps.length} steps</span>
                     </button>
-                    {showSteps && (
-                      <div style={{ padding: '8px 12px', borderRadius: 12, background: 'rgba(139,108,246,0.03)', border: `1px solid rgba(139,108,246,0.08)`, marginTop: 4 }}>
+                    <div style={{ maxHeight: showSteps ? 400 : 0, overflow: 'hidden', transition: 'max-height 0.4s cubic-bezier(0.4,0,0.2,1)' }}>
+                      <div style={{ padding: '8px 0 0' }}>
                         {thinkingSteps.map((step, si) => {
                           const isLast = si === thinkingSteps.length - 1
+                          const isAgent = step.label.includes('Agent') || step.label.includes('agent')
+                          const isMemory = step.label.includes('memory') || step.label.includes('Memory')
+                          const dotColor = isAgent ? 'rgba(6,214,160,0.6)' : isMemory ? 'rgba(6,214,160,0.5)' : 'rgba(124,92,252,0.5)'
                           return (
-                            <div key={si} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', fontSize: 13, color: T.textTertiary, fontFamily: T.font, fontWeight: 300 }}>
-                              <span style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: isLast ? 'rgba(139,108,246,0.7)' : 'rgba(0,212,170,0.5)', animation: isLast ? 'pulse 1s infinite' : 'none' }} />
-                              <span style={{ color: isLast ? 'rgba(139,108,246,0.7)' : T.textTertiary }}>{step.label}</span>
+                            <div key={si} style={{ display: 'flex', gap: 10, padding: '5px 0', opacity: 1, transition: 'opacity 0.3s' }}>
+                              <div style={{ width: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 5 }}>
+                                <span style={{ width: 7, height: 7, borderRadius: '50%', background: isLast ? 'rgba(124,92,252,0.7)' : dotColor, flexShrink: 0, animation: isLast ? 'pulse 1.2s infinite' : 'none' }} />
+                                {!isLast && <span style={{ flex: 1, width: 1, background: 'rgba(124,92,252,0.08)', marginTop: 4 }} />}
+                              </div>
+                              <span style={{ fontSize: 12, color: isLast ? 'rgba(124,92,252,0.65)' : 'rgba(255,255,255,0.4)', fontFamily: T.font, fontWeight: 400, lineHeight: 1.5 }}>{step.label}</span>
                             </div>
                           )
                         })}
                       </div>
-                    )}
+                    </div>
                   </div>
                 )}
               </div>
