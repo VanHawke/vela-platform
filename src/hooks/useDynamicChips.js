@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 
-const FALLBACK_HOME = ['Brief me', 'Pipeline update', 'Check emails', 'F1 calendar']
+const FALLBACK_HOME = ['Brief me', 'Pipeline update', 'Check emails']
 const FALLBACK_FLOAT = ['Brief me on my pipeline', "What's happening in F1?", 'Draft a follow-up email', 'Summarise yesterday']
 
 // Page-specific static chips (used when no live data available)
@@ -50,12 +50,12 @@ async function loadHomeChips() {
 
     // Overdue tasks
     const overdue = tasks.filter(t => !t.completed && t.dueDate && new Date(t.dueDate) < new Date())
-    if (overdue.length > 0) chips.push(`${overdue.length} overdue task${overdue.length > 1 ? 's' : ''} — prioritise`)
+    if (overdue.length > 0) chips.push(`${overdue.length} overdue tasks`)
 
     // Stale deals
     const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000)
     const stale = deals.filter(d => d.lastActivity && new Date(d.lastActivity) < thirtyDaysAgo)
-    if (stale.length > 0) chips.push(`${stale.length} stale deal${stale.length > 1 ? 's' : ''} — review`)
+    if (stale.length > 0) chips.push(`${stale.length} stale deals`)
 
     // Inbox
     if (triage?.priority_emails?.length) {
@@ -66,14 +66,14 @@ async function loadHomeChips() {
     // Always include brief
     chips.push('Brief me')
 
-    // Fill to 4 with sensible defaults
-    const defaults = ['Pipeline update', 'Check emails', 'F1 calendar']
-    while (chips.length < 4 && defaults.length) {
+    // Fill to 3 with sensible defaults
+    const defaults = ['Pipeline update', 'Check emails']
+    while (chips.length < 3 && defaults.length) {
       const d = defaults.shift()
       if (!chips.includes(d)) chips.push(d)
     }
 
-    return chips.slice(0, 4)
+    return chips.slice(0, 3)
   } catch {
     return FALLBACK_HOME
   }

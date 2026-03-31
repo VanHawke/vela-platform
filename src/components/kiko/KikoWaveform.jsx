@@ -2,7 +2,7 @@
 // Purple-biased double-sided waveform with independent up/down bars, edge fade
 import { useRef, useEffect, memo } from 'react'
 
-function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, energy = 0, mini = false, noEdgeFade = false, onClick }) {
+function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, energy = 0, mini = false, onClick }) {
   const canvasRef = useRef(null)
   const barsRef = useRef(null)
   const tRef = useRef(0)
@@ -77,21 +77,12 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
           cx.fillRect(x, CY + hD - 1.2, bw, 1.2)
         }
       }
-      // Edge fades (skip when parent provides CSS mask)
-      if (!noEdgeFade) {
-      const fadeW = W * 0.14
-      const eL = cx.createLinearGradient(0, 0, fadeW, 0)
-      eL.addColorStop(0, 'rgba(0,0,0,1)'); eL.addColorStop(1, 'rgba(0,0,0,0)')
-      cx.fillStyle = eL; cx.fillRect(0, 0, fadeW, H)
-      const eR = cx.createLinearGradient(W - fadeW, 0, W, 0)
-      eR.addColorStop(0, 'rgba(0,0,0,0)'); eR.addColorStop(1, 'rgba(0,0,0,1)')
-      cx.fillStyle = eR; cx.fillRect(W - fadeW, 0, fadeW, H)
-      }
+      // Edge fades removed — gaussian envelope handles natural taper
       raf = requestAnimationFrame(draw)
     }
     draw()
     return () => cancelAnimationFrame(raf)
-  }, [width, height, mini, speaking, noEdgeFade])
+  }, [width, height, mini, speaking])
 
   // Sync external volume/energy prop into ref (non-rerendering)
   useEffect(() => {

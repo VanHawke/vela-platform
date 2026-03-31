@@ -359,23 +359,20 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
 
   async function openVoiceMode() {
     setVoiceOpen(true)
+    setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open')
     window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: true, speaking: false, thinking: false, status: 'connecting' } }))
+  }
+
+  function closeVoiceMode() {
+    setVoiceOpen(false)
+    setFloatVoiceState({ speaking: false, status: 'idle', energy: 0 })
+    window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: false } }))
   }
 
   // Hide KikoFloat entirely on homepage — Kiko IS the wave there
   if (isHome && !voiceOpen) return null
 
-  // Voice overlay — dispatch voice state for nav Listening pill
-  if (voiceOpen) {
-    return (
-      <KikoVoice
-        onClose={() => { setVoiceOpen(false); window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: false } })) }}
-        user={user} mini={true}
-        onVoiceState={(state) => window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: true, speaking: state.speaking, thinking: state.thinking, status: state.status } }))}
-        onShowPrompt={() => { setVoiceOpen(false); window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: false } })); setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open') }}
-      />
-    )
-  }
+  // Voice mode now stays inside float — no more full-page takeover
 
   const panelW = 340
 
@@ -413,8 +410,29 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
             </button>
           </div>
 
-          {/* Messages */}
-          {hasMessages && (
+          {/* Voice mode — in-panel, replaces messages area */}
+          {voiceOpen && (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '24px 16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 14px', borderRadius: 50, background: 'rgba(6,214,160,0.06)', border: '1px solid rgba(6,214,160,0.15)' }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(6,214,160,0.8)', animation: 'kikoBreathe 1.5s ease-in-out infinite' }} />
+                <span style={{ fontSize: 12, color: 'rgba(6,214,160,0.7)', fontFamily: T.font }}>{floatVoiceState.speaking ? 'Kiko is speaking' : floatVoiceState.status === 'connecting' ? 'Connecting...' : 'Listening'}</span>
+              </div>
+              <KikoWaveform width={280} height={80} volume={floatVoiceState.energy || 0.05} speaking={floatVoiceState.speaking} />
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', margin: 0, textAlign: 'center', fontFamily: T.font }}>Speak naturally — Kiko is listening</p>
+              <button onClick={closeVoiceMode} style={{
+                marginTop: 8, padding: '8px 20px', borderRadius: 50,
+                background: 'rgba(255,59,48,0.08)', border: '1px solid rgba(255,59,48,0.15)',
+                color: 'rgba(255,59,48,0.7)', fontSize: 12, fontFamily: T.font, cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+                onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,59,48,0.15)' }}
+                onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,59,48,0.08)' }}
+              >Stop listening</button>
+            </div>
+          )}
+
+          {/* Messages — hidden during voice mode */}
+          {!voiceOpen && hasMessages && (
             <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
               {messages.map((msg, i) => (
                 <div key={i} style={{ marginBottom: msg.role !== 'user' ? 4 : 8 }}>
@@ -482,8 +500,8 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
             </div>
           )}
 
-          {/* Chips — only when no conversation yet */}
-          {!hasMessages && (
+          {/* Chips — only when no conversation yet and not in voice mode */}
+          {!voiceOpen && !hasMessages && (
             <div style={{ padding: '10px 12px 4px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {dynamicChips.map((chip, i) => (
                 <button key={chip} onClick={() => handleSubmit(chip)} style={{
@@ -502,8 +520,8 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
             </div>
           )}
 
-          {/* Input bar inside panel */}
-          <div style={{ padding: '8px 10px 10px', display: 'flex', alignItems: 'center', gap: 6, borderTop: hasMessages ? '1.5px solid rgba(255,255,255,0.07)' : 'none', marginTop: hasMessages ? 0 : 8 }}>
+          {/* Input bar inside panel — hidden during voice mode */}
+          {!voiceOpen && <div style={{ padding: '8px 10px 10px', display: 'flex', alignItems: 'center', gap: 6, borderTop: hasMessages ? '1.5px solid rgba(255,255,255,0.07)' : 'none', marginTop: hasMessages ? 0 : 8 }}>
             <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} style={{ width: 26, height: 26, borderRadius: '50%', border: 'none', background: 'transparent', color: T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {fileUploading
                 ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'kikoVortexSpin 1s linear infinite' }}><circle cx="12" cy="12" r="10"/></svg>
@@ -524,7 +542,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               style={{ width: 28, height: 28, borderRadius: 50, border: 'none', background: input.trim() && !streaming ? T.accentGradient : 'rgba(255,255,255,0.04)', color: input.trim() && !streaming ? 'rgba(255,255,255,0.9)' : T.textTertiary, cursor: input.trim() && !streaming ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s', boxShadow: input.trim() ? '0 2px 8px rgba(139,108,246,0.2)' : 'none' }}>
               <ArrowUp size={13} />
             </button>
-          </div>
+          </div>}
         </div>
       )}
 
@@ -562,7 +580,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         >
           {open
             ? <X size={18} />
-            : <KikoWaveform width={40} height={40} mini />
+            : <KikoWaveform width={40} height={40} mini volume={voiceOpen ? (floatVoiceState.energy || 0.05) : 0} speaking={voiceOpen && floatVoiceState.speaking} />
           }
         </button>
       </div>

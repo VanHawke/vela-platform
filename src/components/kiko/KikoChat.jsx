@@ -622,8 +622,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       <div style={{
         display: 'flex', flexDirection: 'column',
         background: 'rgba(255,255,255,0.03)', backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
-        borderRadius: (pendingAttachment || input.length > 80) ? 20 : 24,
-        padding: '6px 6px 6px 20px',
+        borderRadius: 20,
+        padding: '14px 16px 8px',
         border: `1px solid ${transcribing ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.08)'}`,
         transition: 'border-color 0.2s',
         maxWidth: welcome ? 540 : (compact ? '100%' : 640),
@@ -631,23 +631,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       }}>
         {/* Pending image preview */}
         {pendingAttachment?.previewUrl && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0 8px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 0 10px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <img src={pendingAttachment.previewUrl} alt="" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover' }} />
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontFamily: T.font, flex: 1 }}>{pendingAttachment.name}</span>
             <button onClick={() => { setPendingAttachment(null); setImagePreview(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', padding: 4, fontSize: 14, width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>✕</button>
           </div>
         )}
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+        {/* Textarea — top area, expanded height */}
         <input ref={fileInputRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx" onChange={e => { const f = e.target.files?.[0]; if (f) processFileForKiko(f); e.target.value = '' }} style={{ display: 'none' }} />
-        {/* Paperclip */}
-        <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} title="Attach file" style={{
-          width: 32, height: 32, borderRadius: '50%', border: 'none',
-          background: 'transparent', color: 'rgba(255,255,255,0.3)',
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginBottom: 2,
-        }}>
-          <svg width={ic} height={ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-        </button>
-        {/* Textarea — physically expands via useEffect, handles macOS dictation */}
         <textarea
           ref={inputRef} value={input} dir="ltr"
           onChange={e => setInput(e.target.value)}
@@ -655,20 +646,26 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment or press send..." : "Ask anything"}
           autoFocus rows={1}
           style={{
-            flex: 1, border: 'none', background: 'transparent', outline: 'none',
+            width: '100%', border: 'none', background: 'transparent', outline: 'none',
             fontSize: 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font,
-            minHeight: 40, maxHeight: 300, fontWeight: 400, resize: 'none',
-            lineHeight: '1.5', padding: '10px 0', overflowY: 'auto',
+            minHeight: welcome ? 140 : 100, maxHeight: 300, fontWeight: 400, resize: 'none',
+            lineHeight: '1.5', padding: '4px 0', overflowY: 'auto',
             fieldSizing: 'content',
           }}
         />
-        {/* Mic / Stop */}
-        {voiceActive ? (
-          <button onClick={stopVoice} title="Stop voice" style={{
+        {/* Bottom bar — attachment left, actions right */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+          <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} title="Attach file" style={{
             width: 32, height: 32, borderRadius: '50%', border: 'none',
-            background: 'rgba(239,68,68,0.1)', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginBottom: 2,
+            background: 'transparent', color: 'rgba(255,255,255,0.3)',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
+            <svg width={ic} height={ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        {/* Mic */}
+        {voiceActive ? (
+          <button onClick={stopVoice} title="Stop voice" style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(239,68,68,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} />
           </button>
         ) : (
@@ -677,8 +674,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             width: 32, height: 32, borderRadius: '50%', border: 'none',
             background: transcribing ? 'rgba(34,197,94,0.12)' : 'transparent',
             color: transcribing ? 'rgba(34,197,94,0.9)' : 'rgba(255,255,255,0.3)',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            position: 'relative', flexShrink: 0, marginBottom: 2,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
           }}>
             <svg width={ic + 1} height={ic + 1} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
             {transcribing && <span style={{ position: 'absolute', top: 2, right: 2, width: 7, height: 7, borderRadius: '50%', background: 'rgba(34,197,94,0.9)' }} />}
@@ -687,7 +683,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <button onClick={startVoice} title="Talk to Kiko" style={{
               width: 32, height: 32, borderRadius: 50, border: '1px solid rgba(6,214,160,0.15)',
               background: 'rgba(6,214,160,0.08)', color: 'rgba(6,214,160,0.7)',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginBottom: 2,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <svg width={ic} height={ic} viewBox="0 0 24 24" fill="none">
                 <rect x="4" y="8" width="2" height="8" rx="1" fill="rgba(6,214,160,0.6)" />
@@ -725,7 +721,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         )}
-      </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -925,10 +922,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             transition: 'all 0.5s cubic-bezier(0.4,0,0,1)',
             overflow: 'hidden',
           }}>
-            <h1 style={{ fontSize: 25, fontWeight: 200, color: 'rgba(255,255,255,0.95)', margin: '0 0 4px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
+            <h1 style={{ fontSize: 36, fontWeight: 200, color: 'rgba(255,255,255,0.95)', margin: '0 0 6px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
               {getGreeting()}, {firstName}
             </h1>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.32)', margin: '0 0 18px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
+            <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.35)', margin: '0 0 24px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
           </div>
 
           {/* Prompt bar — slides down in voice mode */}
@@ -953,13 +950,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.1s',
                 overflow: 'hidden', pointerEvents: voiceActive ? 'none' : 'auto',
               }}>
-                {dynamicChips.map(c => (
+                {dynamicChips.slice(0, 3).map(c => (
                   <button key={c} onClick={() => handleSubmit(c)} style={{
                     padding: '11px 26px', borderRadius: 50, background: T.glass,
                     backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
                     border: `1.5px solid ${T.glassBorder}`, color: 'rgba(255,255,255,0.55)',
                     fontSize: 13, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.2s', fontWeight: 400,
-                    boxShadow: T.glassShadow,
+                    boxShadow: T.glassShadow, whiteSpace: 'nowrap',
                   }}
                     onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = 'rgba(255,255,255,0.85)'; e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = T.glassShadowHover }}
                     onMouseOut={e => { e.currentTarget.style.borderColor = T.glassBorder; e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; e.currentTarget.style.background = T.glass; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = T.glassShadow }}

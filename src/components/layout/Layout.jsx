@@ -200,8 +200,8 @@ export default function Layout({ user }) {
           </button>
         </div>
 
-        {/* Center: Pill tab group — absolutely centered to prevent shift */}
-        <div className="desktop-top-nav" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center' }}>
+        {/* Center: Pill tab group — flex centered between logo and right controls */}
+        <div className="desktop-top-nav" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: 3, background: T.glass, backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur, borderRadius: 50, padding: 4, border: `1.5px solid ${T.glassBorder}`, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 16px rgba(0,0,0,0.2)' }}>
             {TABS.map(tab => {
               const active = isTabActive(tab.path)
