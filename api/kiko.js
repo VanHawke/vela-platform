@@ -540,6 +540,14 @@ export default async function handler(req, res) {
     // Non-blocking: detect if user is rephrasing (correction learning) — registered users only
     if (isRegistered) detectCorrection(message, conversationHistory, intent);
 
+    // Trim conversation history for non-research intents to reduce token usage and latency
+    const DEEP_HISTORY_INTENTS = ['research', 'code_review', 'conversation_search'];
+    if (!DEEP_HISTORY_INTENTS.includes(intent) && messages.length > 11) {
+      const newUserMsg = messages.pop(); // remove current message
+      while (messages.length > 10) messages.shift(); // keep last 10 history
+      messages.push(newUserMsg); // add current message back
+    }
+
     // Handle deterministic navigation — no Claude needed
     if (intent === 'navigate' && target) {
       write({ navigate: target });
@@ -830,6 +838,7 @@ export default async function handler(req, res) {
       // fast: true forces Sonnet even if deep think was requested (used when time budget hit)
       // Only super_admin gets deep think (requires beta API)
       const useDeep = isSuperAdmin && needsDeepThink && opts.noTools && !opts.fast;
+      const useHaiku = opts.useHaiku === true;
       
       // Build tools array with cache_control on last tool (caches entire tool block)
       let toolsWithCache = undefined;
@@ -843,7 +852,7 @@ export default async function handler(req, res) {
       }
       
       const params = {
-        model: useDeep ? 'claude-opus-4-6' : (voiceMode ? 'claude-haiku-4-5-20251001' : MODEL),
+        model: useDeep ? 'claude-opus-4-6' : (voiceMode || useHaiku ? 'claude-haiku-4-5-20251001' : MODEL),
         max_tokens: opts.maxTokens || (useDeep ? 16000 : (voiceMode ? 800 : 4096)),
         system: systemCached, messages: msgs, tools: toolsWithCache,
       };
@@ -876,10 +885,11 @@ export default async function handler(req, res) {
     let responseText = '';
     const requestStart = Date.now();
 
-    // Fast-path for greetings and simple queries — skip tool loop entirely
+    // Fast-path for greetings and simple queries — skip tool loop, use Haiku for speed
     const FAST_RESPONSE_INTENTS = ['greeting'];
-    const skipTools = FAST_RESPONSE_INTENTS.includes(intent) && conversationHistory.length === 0;
-    let response = await streamCall(messages, skipTools ? { noTools: true, maxTokens: 1500 } : {});
+    const isSimpleGreeting = FAST_RESPONSE_INTENTS.includes(intent);
+    const skipTools = isSimpleGreeting;
+    let response = await streamCall(messages, skipTools ? { noTools: true, maxTokens: 1500, useHaiku: true } : {});
     let toolRounds = 0;
 
     // Tool execution loop — time-aware, stops before timeout
