@@ -6,6 +6,7 @@ import { sbFetch, logError, cronHeartbeat } from './kiko-tools.js';
 import { classifyIntent } from './agents/intent-classifier.js';
 import { generateSelfKnowledge } from './kiko-self-knowledge.js';
 import { getActiveUsers, getGoogleToken } from './cron-utils.js';
+import { sendAlert, checkCronHealth } from './alert-utils.js';
 
 export const config = { maxDuration: 45 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
@@ -100,18 +101,36 @@ export default async function handler(req, res) {
     const failed = results.filter(r => !r.ok);
     const passed = results.filter(r => r.ok);
 
-    if (failed.length > 0) {
+    // Cron watchdog — check for missing or failed cron heartbeats
+    let cronProblems = [];
+    try {
+      cronProblems = await checkCronHealth();
+    } catch {}
+
+    if (failed.length > 0 || cronProblems.length > 0) {
       // Write high-priority alert — Kiko will surface this in conversations
+      const alertParts = [];
+      if (failed.length) alertParts.push(`FAILING SYSTEMS: ${failed.map(f => `${f.name} — ${f.error}`).join('; ')}`);
+      if (cronProblems.length) alertParts.push(`CRON ISSUES: ${cronProblems.map(p => `${p.cron} (${p.issue}: ${p.detail})`).join('; ')}`);
+      alertParts.push(`PASSING: ${passed.map(p => p.name).join(', ')}`);
+
       await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
         type: 'system_health', severity: 'high',
-        title: `⚠️ SYSTEM HEALTH: ${failed.length} check(s) failing`,
-        detail: `FAILING: ${failed.map(f => `${f.name} — ${f.error}`).join('; ')}. PASSING: ${passed.map(p => p.name).join(', ')}.`,
+        title: `⚠️ SYSTEM HEALTH: ${failed.length} check(s) failing, ${cronProblems.length} cron issue(s)`,
+        detail: alertParts.join('. '),
         entity_type: 'system', entity_name: 'Health Check',
-        metadata: { results, timestamp: new Date().toISOString() },
-        expires_at: new Date(Date.now() + 4 * 3600000).toISOString(), // 4hr expiry
+        metadata: { results, cronProblems, timestamp: new Date().toISOString() },
+        expires_at: new Date(Date.now() + 4 * 3600000).toISOString(),
       })});
 
-      // Also log each failure
+      // Send external alert (Slack / Gmail)
+      const severity = failed.some(f => ['supabase', 'anthropic', 'kiko_endpoint'].includes(f.name)) ? 'critical' : 'warning';
+      await sendAlert(
+        `${failed.length} system check(s) failing, ${cronProblems.length} cron issue(s)`,
+        alertParts.join('\n'),
+        severity
+      ).catch(() => {});
+
       for (const f of failed) {
         await logError('health-check', `${f.name}: ${f.error}`, '', 'error');
       }
@@ -128,9 +147,11 @@ export default async function handler(req, res) {
       recordsProcessed: results.length,
     });
     return res.status(200).json({
-      status: failed.length === 0 ? 'healthy' : 'degraded',
+      status: failed.length === 0 && cronProblems.length === 0 ? 'healthy' : 'degraded',
       passed: passed.length, failed: failed.length,
+      cron_issues: cronProblems.length,
       checks: results,
+      cron_problems: cronProblems,
     });
   } catch (err) {
     await logError('cron:health-check', err.message);
