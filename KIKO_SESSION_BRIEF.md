@@ -1,6 +1,6 @@
 # KIKO INTELLIGENCE OS — MASTER SESSION BRIEF
 # ═══════════════════════════════════════════════
-# Last updated: 31 March 2026, end of Session 9
+# Last updated: 31 March 2026, end of Session 10
 # MANDATORY: Read this ENTIRE file before writing ANY code
 # MANDATORY: Read KIKO_EVOLUTION_PLAN.md before writing ANY code
 # ═══════════════════════════════════════════════
@@ -71,8 +71,8 @@ ask_navigator, ask_deal_agent, ask_data_agent, ask_outreach_agent, ask_document_
 ### 25 Agents (in `api/agents/`)
 category-control, code-review, content, data, deal, dispute, document, dynamic-runner, ea, finance, intent-classifier, investment, ip, legal, memory-engine, navigator, negotiation, outreach, pricing, product-dev, screen-reader, signal, strategy, travel, website
 
-### 24 Crons (in `api/cron-*.js` + `api/cron-utils.js`)
-competitive-intel, document-scan, edit-delta, email-template-learning, enrich, health-check, inbox-triage, learning-director, lemlist-enrich, lemlist-signals, meeting-prep, morning-intelligence, outreach-score, partnership-scan, preference-synthesis, proactive, profile-synthesis, relationship-intel, self-improvement, self-reflection, task-automation, task-executor, weekly-report + cron-utils (shared utilities)
+### 25 Crons (in `api/cron-*.js` + `api/cron-utils.js`)
+competitive-intel, document-scan, edit-delta, email-template-learning, enrich, health-check, inbox-triage, learning-director, lemlist-enrich, lemlist-signals, meeting-prep, morning-intelligence, outreach-score, partnership-scan, partnership-verify, preference-synthesis, proactive, profile-synthesis, relationship-intel, self-improvement, self-reflection, task-automation, task-executor, weekly-report + cron-utils (shared utilities)
 
 **All crons use `getActiveUsers()` from `api/cron-utils.js` — zero hardcoded UUIDs or emails.**
 
@@ -98,6 +98,7 @@ competitive-intel, document-scan, edit-delta, email-template-learning, enrich, h
 | 10am Sun | email-template-learning | Weekly |
 | 6:15am Mon | lemlist-enrich | Weekly |
 | 7pm Sun | weekly-report | Weekly |
+| 5am Sun | partnership-verify | Weekly (2 teams/run, full cycle ~6 weeks) |
 
 ### Database Tables (115 tables in Supabase)
 Key Kiko-specific tables: kiko_alerts, kiko_audit_log, kiko_conversation_insights, kiko_cron_heartbeats, kiko_curiosity_queue, kiko_draft_actions, kiko_draft_tracking, kiko_dynamic_agents, kiko_error_log, kiko_imported_conversations, kiko_inbox_triage, kiko_knowledge_sources, kiko_learning_log, kiko_meeting_prep, kiko_memories, kiko_operational_mode, kiko_output_tracking, kiko_personal_context, kiko_preferences, kiko_relationships, kiko_skills, kiko_thought_journal, kiko_thread_tracker, kiko_user_config, kiko_user_profiles, kiko_win_loss_analysis
@@ -268,11 +269,12 @@ Intelligence tables: conversation_embeddings (pgvector semantic search, 389 embe
 - `search_conversations` tool upgraded: semantic search first (pgvector), keyword fallback for exact matches, results merged + deduplicated
 - **Auto-embed hook** in kiko.js: every substantive conversation auto-embeds post-response (non-blocking)
 
-### Partnership Matrix Refresh ✅ LIVE (Session 9)
+### Partnership Matrix Refresh ✅ LIVE (Session 9-10)
 - `refresh_partnerships` operation added to data agent
 - Usage: "Kiko, update partnerships for Haas" → web search via Sonnet + web_search tool → verified upserts
 - Partnership scan cron batched: 10 articles + 3 rotating feeds per run (was timing out)
 - Cron finished heartbeat added (was missing)
+- **Verification cron** (`api/cron-partnership-verify.js`): Sundays 5am UTC, picks 2 teams per run, web-searches their partner pages, marks verified/unverified/new. Full 11-team cycle every ~6 weeks.
 
 ### Weekly Pipeline Report ✅ LIVE (Session 9)
 - `api/cron-weekly-report.js` — Sundays 7pm UTC
@@ -337,6 +339,7 @@ Intelligence tables: conversation_embeddings (pgvector semantic search, 389 embe
 | 7 | 31 Mar 2026 | Phase 12 complete (preferences in 3 agents), Phase 14 complete (draft actions API + UI in KikoChat), error handling (tool loop try/catch), speed (Haiku greetings 2.1s, history trim), audit logging (3 event types), mobile responsive (hamburger menu + breakpoints), killed Dashboard, bug fix (relationships array guard) |
 | 8 | 31 Mar 2026 | Monitoring (Better Stack uptime, /api/ping, Gmail alerts, cron watchdog), DR runbook, semantic search (pgvector 389 conversations embedded), draft actions → Gmail drafts, PWA (manifest + SW + icons), GitHub Actions CI (8 tests), full audit (cron heartbeat fixes ×5, news-agent heartbeat, vercel.json maxDuration ×6, expired alerts cleanup) |
 | 9 | 31 Mar 2026 | Partnership matrix on-demand refresh (web search + verified upsert via Kiko), auto-embed new conversations (post-response hook), weekly pipeline report email (Sunday 7pm cron), partnership scan batching fix, alert email deduplication, Array.isArray guards across crons, home screen restored |
+| 10 | 31 Mar 2026 | Weekly report v2 (Option A dark HTML + Lemlist campaign table), partnership verification cron (weekly, 2 teams/run, web search verify/expire/add), dead code cleanup (-855 lines: Email.jsx, EmailCompose.jsx, EmailThread.jsx, DraftActions.jsx deleted) |
 
 Transcripts: `/mnt/transcripts/` (read-only). Key: `/mnt/transcripts/2026-03-30-18-41-09-kiko-session5-full-day.txt`
 
@@ -367,12 +370,10 @@ These are Kiko's learned decision patterns from Sunny's behaviour. Phase 12 comp
 1. **Phase 13: Voice** — Pipecat + Claude + Deepgram + Cartesia (3-4 hours). Last remaining evolution phase.
 
 ### Next priority:
-2. **Partnership verification cron** — Weekly cron that web-searches each team's partner page and marks verified/expired. Currently only on-demand refresh exists.
-3. **Browser push notifications** — Hot lead replies + convergence alerts push to phone/desktop
-4. **Mobile deep pass** — Page-specific responsive testing (Pipeline, Contacts, Settings) on real devices
-5. **Further speed** — Haiku for simple navigation intents, parallel streaming (start SSE response while context queries still loading)
-6. **Dead code cleanup** — Delete orphan pages (Email.jsx, EmailCompose.jsx, EmailThread.jsx, DraftActions.jsx)
-7. **Enable Supabase PITR** — When budget allows (~$100/month)
+2. **Browser push notifications** — Hot lead replies + convergence alerts push to phone/desktop
+3. **Mobile deep pass** — Page-specific responsive testing (Pipeline, Contacts, Settings) on real devices
+4. **Further speed** — Haiku for simple navigation intents, parallel streaming (start SSE response while context queries still loading)
+5. **Enable Supabase PITR** — When budget allows (~$100/month)
 
 ---
 
@@ -434,4 +435,4 @@ curl -s -X POST $URL/api/file-extract -H 'Content-Type: application/json' \
 
 8. **handleSubmit signature** — `handleSubmit(text, fileAttachments = [], hiddenContext = '')`. The `hiddenContext` parameter sends text to the API without showing it in the chat bubble. Used by file uploads.
 
-*This brief was written at the end of Session 9, 31 March 2026. The platform is live, monitored (Better Stack + Gmail alerts), audited, and documented. All Phases 6-12 and 14 verified working. Semantic search live (389+ conversations, pgvector, auto-embedding). PWA installable. CI pipeline active. DR runbook written. Partnership matrix has on-demand refresh. Weekly pipeline report emails every Sunday 7pm. 12/12 system tests passing. Phase 13 (Voice) is the only remaining evolution phase.*
+*This brief was written at the end of Session 10, 31 March 2026. The platform is live, monitored (Better Stack + Gmail alerts), audited, and documented. All Phases 6-12 and 14 verified working. Semantic search live (389+ conversations, pgvector, auto-embedding). PWA installable. CI pipeline active. DR runbook written. Partnership matrix has on-demand refresh + weekly automated verification cron (2 teams/run). Weekly pipeline report with Lemlist campaign performance table emails every Sunday 7pm. Dead code cleaned (-855 lines). 11/11 system tests passing. Phase 13 (Voice) is the only remaining evolution phase.*
