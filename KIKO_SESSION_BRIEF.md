@@ -216,10 +216,12 @@ CRM tables: deals, contacts, companies, activities, tasks, pipelines, pipeline_s
 - **Tool loop error handling in kiko.js**: All tool executions wrapped in try/catch with three error paths: (1) Google OAuth expiry detection (401/403/invalid_grant) → tells user to re-auth in Settings, (2) transient network errors (ECONNREFUSED/ETIMEDOUT/fetch failed) → 2s delay + 1 retry, (3) all other errors → friendly message + continues with available data. All errors logged to kiko_error_log.
 - **STILL MISSING**: No auto-retry on streaming failures, no proactive Gmail token refresh prompts at conversation start
 
-### Response Speed ⚠️ 4.2s greeting, 14-28s tools
-- Greeting: 5.4s → 4.2s (22% improvement from Session 4 optimisations: compact self-knowledge 2510→232 tokens, context queries 12→3)
-- **MISSING**: No Haiku routing for simple greetings/navigation, no parallel streaming (context loads sequentially before response starts), full 20-message conversation history always sent
-- **TO BUILD**: Use Haiku for greetings + simple navigation (sub-1.5s), stream response while context still loading (parallel), trim conversation history to last 10 for non-research queries
+### Response Speed ✅ OPTIMISED (Session 7)
+- First-message greeting: 6.9s (Sonnet, with proactive status, selfKnowledge skipped)
+- Mid-conversation greeting: **2.1s** (Haiku, no tools, no heavy fetches) — **50% faster** than 4.2s baseline
+- Non-research queries: conversation history trimmed to 10 messages (was always 20), reducing token count ~40%
+- Greetings skip `selfKnowledge` and `entityContext` parallel fetches entirely
+- **STILL POSSIBLE**: Parallel streaming (start SSE while context loads), Haiku for simple navigation
 
 ### Backup & Disaster Recovery ⚠️ GIT TAGS ONLY
 - Git tags created before major deploys (e.g., `pre-phase6-backup-202603311345`)
@@ -289,7 +291,7 @@ CRM tables: deals, contacts, companies, activities, tasks, pipelines, pipeline_s
 | 4 | 30 Mar 2026 | Multi-user architecture (54/54 audit pass), speed optimisation (5.4s→4.2s), ChatGPT import (384 conversations) |
 | 5 | 30 Mar 2026 | Data isolation verification (8/8 tests), chat history UI, cron multi-user conversion, UI exploration (Niva/Payrix refs) |
 | 6 | 31 Mar 2026 | Fixed reversed text, dictation bugs, file intelligence endpoint, nav order, drag-drop overlay, logo size, favicon upload, full phase audit |
-| 7 | 31 Mar 2026 | Phase 12 complete (preferences in strategy/negotiation/EA agents), Phase 14 complete (draft actions API + UI widget), error handling (tool loop try/catch with auth detection + retry), bug fix (relationships array guard) |
+| 7 | 31 Mar 2026 | Phase 12 complete (preferences in strategy/negotiation/EA agents), Phase 14 complete (draft actions API + UI widget), error handling (tool loop try/catch with auth detection + retry), bug fix (relationships array guard), speed optimisation (Haiku for greetings 4.2s→2.1s, history trim, skip heavy fetches) |
 
 Transcripts: `/mnt/transcripts/` (read-only). Key: `/mnt/transcripts/2026-03-30-18-41-09-kiko-session5-full-day.txt`
 
@@ -317,24 +319,20 @@ These are Kiko's learned decision patterns from Sunny's behaviour. Phase 12 comp
 ## NEXT SESSION — PRIORITY ACTIONS
 
 ### Immediate (do these first):
-1. **Response speed** (~1-2 hours)
-   - Route greetings + simple navigation through Haiku instead of Sonnet (sub-1.5s)
-   - Stream SSE response while context queries still running (Promise.allSettled, don't await all before streaming)
-   - Trim conversation history: last 10 messages for non-research queries, last 20 for research
-
-2. **Audit logging** (~20 min)
+1. **Audit logging** (~20 min)
    - Create `kiko_audit_log` table (user_id, action_type, entity_type, entity_id, detail, ip_address, created_at)
    - Log every query to kiko.js, every tool call, every CRM data access
 
-3. **Monitoring** (~30 min)
+2. **Monitoring** (~30 min)
    - External uptime ping (Better Stack or Uptime Robot)
    - Slack webhook for cron failures
 
 ### Next priority:
-4. **Backup/DR** — Enable Supabase PITR, document rollback procedure
-5. **Mobile responsiveness** — Full responsive pass on Layout.jsx, KikoChat.jsx, Dashboard.jsx
-6. **Phase 13: Voice** — Pipecat + Claude + Deepgram + Cartesia (3-4 hours)
-7. **Dashboard overhaul** — Dashboard.jsx still uses light theme classes (bg-white, text-[#1A1A1A]) inconsistent with the dark glass theme. Rebuild to match PipelineNotifications/DraftActions dark glass styling.
+3. **Backup/DR** — Enable Supabase PITR, document rollback procedure
+4. **Mobile responsiveness** — Full responsive pass on Layout.jsx, KikoChat.jsx, Dashboard.jsx
+5. **Phase 13: Voice** — Pipecat + Claude + Deepgram + Cartesia (3-4 hours)
+6. **Dashboard overhaul** — Dashboard.jsx still uses light theme classes (bg-white, text-[#1A1A1A]) inconsistent with the dark glass theme. Rebuild to match PipelineNotifications/DraftActions dark glass styling.
+7. **Further speed** — Haiku for simple navigation intents, parallel streaming (start SSE response while context queries still loading)
 
 ---
 
@@ -396,4 +394,4 @@ curl -s -X POST $URL/api/file-extract -H 'Content-Type: application/json' \
 
 8. **handleSubmit signature** — `handleSubmit(text, fileAttachments = [], hiddenContext = '')`. The `hiddenContext` parameter sends text to the API without showing it in the chat bubble. Used by file uploads.
 
-*This brief was written at the end of Session 7, 31 March 2026. The platform is live and stable. All Phases 6-12 and 14 are verified working. Phase 13 (Voice) is the main remaining lift. Response speed optimisation is the next highest-impact work.*
+*This brief was written at the end of Session 7, 31 March 2026. The platform is live and stable. All Phases 6-12 and 14 are verified working. Speed optimised: mid-conversation greetings 2.1s (Haiku), first-message 6.9s (Sonnet). Phase 13 (Voice) is the main remaining lift. Audit logging and monitoring are next.*
