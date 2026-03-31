@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     if (!action || action === 'list') {
       const limit = params.limit || 10;
       const drafts = await sbFetch(
-        `kiko_draft_actions?status=eq.pending&order=created_at.desc&limit=${limit}&select=id,action_type,payload,created_at,source`
+        `kiko_draft_actions?status=eq.pending&order=created_at.desc&limit=${limit}&select=id,action_type,payload,created_at`
       );
       return res.json({ drafts: drafts || [], count: (drafts || []).length });
     }
