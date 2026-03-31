@@ -648,15 +648,6 @@ export default function Settings({ user }) {
                   <ImageUpload label="Navigation Logo" storageKey="nav_logo" folder="logos" aspectHint="Replaces the Kiko symbol in the top-left navigation bar" currentUrl={navLogo} onUploaded={(url) => { try { localStorage.setItem('custom_logo_url', url) } catch {}; setNavLogo(url); window.dispatchEvent(new Event('kiko_logo_updated')) }} />
                 </div>
 
-                {/* Profile Picture */}
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: settings.profile_photo_url ? 6 : 0 }}>
-                    <span />
-                    {settings.profile_photo_url && <button onClick={() => saveSettings({ profile_photo_url: null })} title="Remove" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: T.textTertiary, padding: 0 }}><X size={12} /> Remove</button>}
-                  </div>
-                  <ImageUpload label="Profile Picture" storageKey="profile_photo" folder="avatars" aspectHint="Square, shown in your profile" currentUrl={settings.profile_photo_url} onUploaded={(url) => saveSettings({ profile_photo_url: url })} />
-                </div>
-
                 {/* Login Brand Logo */}
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: settings.kiko_avatar_url ? 6 : 0 }}>
