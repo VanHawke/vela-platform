@@ -4,13 +4,24 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
 
-export const config = { api: { bodyParser: { sizeLimit: '10mb' } } };
+// Disable Vercel's body parser — we handle raw body ourselves to support large files
+export const config = { api: { bodyParser: false }, maxDuration: 30 };
+
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', c => chunks.push(c));
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
   try {
-    const { filename, data } = req.body;
+    const raw = await readBody(req);
+    const { filename, data } = JSON.parse(raw.toString('utf-8'));
     if (!data || !filename) return res.status(400).json({ error: 'Missing filename or data' });
 
     const buffer = Buffer.from(data, 'base64');

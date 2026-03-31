@@ -543,11 +543,15 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           // Document files: extract text server-side then send to Kiko
           const isDocument = file.name.match(/\.(docx?|xlsx?|xlsm|pptx?|pdf)$/i)
           if (isDocument) {
+            if (file.size > 15 * 1024 * 1024) {
+              handleSubmit(`File "${file.name}" is too large (${(file.size/1024/1024).toFixed(1)}MB). Maximum is 15MB. Try a smaller file.`)
+              return
+            }
             try {
               const res = await fetch('/api/file-extract', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ filename: file.name, data: base64, mimeType: file.type })
+                body: JSON.stringify({ filename: file.name, data: base64 })
               })
               const result = await res.json()
               if (!res.ok) throw new Error(result.error || 'Extraction failed')
@@ -555,12 +559,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               const header = `I've uploaded "${file.name}" (${meta.type}${meta.pages ? `, ${meta.pages} pages` : ''}, ${(result.text.length/1000).toFixed(0)}K chars${meta.truncated ? ', truncated' : ''}).`
               handleSubmit(`${header}\n\nHere are the extracted contents:\n\n${result.text}\n\nAnalyse this document thoroughly.`)
             } catch (extractErr) {
-              // Fallback: for small PDFs (< 4MB), try native document; otherwise report error
-              if (file.name.match(/\.pdf$/i) && base64.length < 4_000_000) {
-                handleSubmit(`I've uploaded a PDF: "${file.name}". Analyse it thoroughly.`, [{ type: 'document', mediaType: 'application/pdf', data: base64 }])
-              } else {
-                handleSubmit(`I've uploaded "${file.name}" but text extraction failed: ${extractErr.message}. Try a smaller file or convert to text.`)
-              }
+              handleSubmit(`I uploaded "${file.name}" but extraction failed: ${extractErr.message}. Please try again or use a different format.`)
             }
           } else {
             handleSubmit(`I've uploaded "${file.name}" (${file.type}, ${(file.size/1024).toFixed(0)}KB). This file type isn't supported yet. Try PDF, Word, Excel, PowerPoint, images, or text files.`)
