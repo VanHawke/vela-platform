@@ -648,7 +648,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           style={{
             width: '100%', border: 'none', background: 'transparent', outline: 'none',
             fontSize: 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font,
-            minHeight: welcome ? 140 : 100, maxHeight: 300, fontWeight: 400, resize: 'none',
+            minHeight: welcome ? 80 : 56, maxHeight: 300, fontWeight: 400, resize: 'none',
             lineHeight: '1.5', padding: '4px 0', overflowY: 'auto',
             fieldSizing: 'content',
           }}
@@ -922,7 +922,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             transition: 'all 0.5s cubic-bezier(0.4,0,0,1)',
             overflow: 'hidden',
           }}>
-            <h1 style={{ fontSize: 36, fontWeight: 200, color: 'rgba(255,255,255,0.95)', margin: '0 0 6px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
+            <h1 style={{ fontSize: 38, fontWeight: 200, color: 'rgba(255,255,255,0.95)', margin: '0 0 6px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
               {getGreeting()}, {firstName}
             </h1>
             <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.35)', margin: '0 0 24px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
@@ -931,10 +931,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {/* Prompt bar — slides down in voice mode */}
           <div id="kikoPromptWrap" style={{
             width: '100%', maxWidth: 540, marginBottom: 14,
-            opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 100,
+            opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 300,
             transform: voiceActive ? 'translateY(40px)' : 'translateY(0)',
             transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.05s',
-            overflow: 'hidden', pointerEvents: voiceActive ? 'none' : 'auto',
+            overflow: voiceActive ? 'hidden' : 'visible', pointerEvents: voiceActive ? 'none' : 'auto',
           }}>
                 {PromptBar({ welcome: true })}
                 {dictateError && (
