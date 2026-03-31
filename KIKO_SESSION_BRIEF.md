@@ -1,6 +1,6 @@
 # KIKO OS — SESSION HANDOVER BRIEF
-# Last updated: 31 March 2026
-# Author: Session 5 (30 March 2026, full day)
+# Last updated: 31 March 2026, Session 6
+# Author: Session 6 (31 March 2026)
 
 ---
 
@@ -14,131 +14,107 @@
 6. Supabase project ID: `dwiywqeleyckzcxbwrlb`, org: `35975d96-c2c9-4b6c-b4d4-bb947ae817d5`
 7. Deploy command: `VERCEL_FORCE_NO_BUILD_CACHE=1 npx vercel --prod --yes --force`
 8. Key env var: `ANTHROPIC_KEY` (not `ANTHROPIC_API_KEY`)
+9. Vercel env vars: `SUPABASE_URL` or `VITE_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
 
 ---
 
 ## WHAT KIKO IS
 
 Kiko Intelligence OS is a multi-user AI operating system. Not a chatbot — a platform.
-
-The user is Sunny, CEO of Van Hawke Group (F1/Formula E sponsorship advisory).
 Kiko is Sunny's AI chief of staff — she knows his deals, contacts, calendar, emails, communication style, and proactively manages his day.
 
-### System Stats (verified 30 March 2026)
+### System Stats (verified 31 March 2026)
 | Component | Count |
 |-----------|-------|
 | Tools | 29 |
 | Intents | 28 |
 | Agents | 22 (+ 7 direct tools) |
-| Crons | 24 (all 17 user-facing converted to multi-user) |
+| Crons | 24 (all multi-user) |
 | Tables | 25 + kiko_user_config |
 | Knowledge sources | 60 |
 | Personal context items | 365 |
-| Conversation insights | 305 |
 | Relationships | 94 |
-| Preferences | 10 |
-| Imported conversations | 384 (322 ChatGPT + 62 Claude) |
+| Preferences (synthesised) | 10 |
 | Memories | 46 |
-| Learning log | 48 |
-| Skills | 35 |
-| Alerts | 107 |
 
 ### Tech Stack
 - **Frontend**: React/Vite, deployed on Vercel
 - **Backend**: Vercel serverless API routes (`/api/kiko.js` is the main coordinator)
 - **Database**: Supabase/Postgres with RLS
-- **AI**: Claude (Anthropic) as primary backbone, GPT-4o Realtime for voice
+- **AI**: Claude (Anthropic) as primary backbone, GPT-4o Realtime for voice (to be replaced)
 - **Auth**: Google OAuth via Supabase
+- **File extraction**: `/api/file-extract.js` — mammoth (DOCX), officeparser (XLSX/PPTX), pdf-parse v1 (PDF), Supabase Storage for large files (>3MB)
 
 ---
 
-## MULTI-USER ARCHITECTURE — VERIFIED BULLETPROOF
+## EVOLUTION PLAN — PHASE STATUS AUDIT
 
-### Isolation Model
-- **PRIVATE per user**: Chats, email, calendar, personal context, conversation insights, imported conversations, learning log, thought journal, curiosity queue, relationships, preferences, user profiles, draft actions, memories
-- **SHARED across org**: CRM pipeline, deals, contacts, companies, knowledge sources, skills, dynamic agents
+| Phase | Feature | Status | Evidence |
+|-------|---------|--------|----------|
+| 6 | General Intelligence | ✅ LIVE | Routing hint says "FULL access to all tools". General queries use CRM, web search, all agents. |
+| 7 | CRM Context | ✅ LIVE | 4 parallel queries (deals, tasks, activities, learning_log) injected into general queries. |
+| 8 | Decision Logging | ✅ LIVE | `logDecision()` in kiko.js called after tool executions. Verified: Nordic Semiconductor verdict logged. |
+| 9 | Pattern Matching | ✅ LIVE | strategy.js and negotiation.js query learning_log for past decisions. Verified: Infineon referenced Nordic. |
+| 10 | Synthesised Brief | ✅ LIVE | ea.js passes raw data to Claude Sonnet with "SYNTHESISE" instruction. Narrative output verified. |
+| 11 | Proactive Engine | ✅ LIVE | cron-proactive.js runs 7am weekdays. Cross-references signals via Haiku. Writes to kiko_alerts + kiko_draft_actions. |
+| 12 | Memory Synthesis | ⚠️ PARTIAL | kiko_preferences table EXISTS with 10 entries. cron-preference-synthesis.js EXISTS and runs weekly. **BUT preferences NOT injected into agent prompts** (0 references in strategy/negotiation/ea agents). |
+| 13 | Voice Replacement | ❌ NOT DONE | KikoVoice.jsx exists but still uses GPT-4o WebRTC. No Pipecat/Deepgram/Cartesia integration. Git tags show multiple voice attempts. |
+| 14 | Autonomous Drafts | ⚠️ PARTIAL | kiko_draft_actions table EXISTS with data from proactive cron. **BUT no UI for review/approve/dismiss.** Draft actions are created but invisible to the user. |
 
-### How It Works
-1. User logs in via Google → auto-provisioned in `kiko_user_config` table
-2. RLS policies isolate all private data by `user_id`
-3. Three roles: `super_admin` / `admin` / `user`
-4. `isRegistered` gate prevents data writes for unregistered users (prevents UUID contamination)
-5. All 17 cron files use `getActiveUsers()` from `api/cron-utils.js` — zero hardcoded UUIDs or emails
+### Additional Feature Status
 
-### Verification Results (8/8 tests pass)
-- Sunny sees his data (Nyla ✅, Maya ✅)
-- Alice (test user): ZERO leaks ✅
-- Bob (test user): ZERO leaks ✅
-- Stranger: ZERO leaks ✅
-- Alice/Bob not called Sunny ✅
-- Fallback UUID: ZERO rows ✅
-- Zero rows in ANY private table for non-Sunny users ✅
-
----
-
-## KEY FILES
-
-| File | Purpose |
-|------|---------|
-| `api/kiko.js` | Main AI coordinator — intent routing, context loading, streaming |
-| `api/kiko-tools.js` | Tool registry (29 tools), sbFetch helper, error logging |
-| `api/kiko-self-knowledge.js` | Auto-generated system stats (compact 232-token format) |
-| `api/cron-utils.js` | Shared multi-user cron utilities (getActiveUsers, getGoogleToken) |
-| `src/lib/theme.js` | Central theme object (T) — all colors, glass, shadows, aurora config |
-| `src/index.css` | CSS variables, glass/card classes, animations, keyframes |
-| `src/components/layout/Layout.jsx` | Main layout — top nav, tabs, search, aurora background |
-| `src/components/kiko/KikoChat.jsx` | Main chat — textarea, message rendering, markdown cache |
-| `src/components/kiko/KikoFloat.jsx` | Floating Kiko orb — the circular button bottom-right |
-| `src/components/kiko/ChatHistory.jsx` | Sidebar — recents, three-dot menu |
-| `src/components/kiko/AllChatsView.jsx` | Full chat search (deep search via Supabase RPC) |
-| `src/components/settings/Settings.jsx` | Settings page — nav config, team, appearance |
-| `src/components/auth/LoginPage.jsx` | Login — Google OAuth, frosted glass design |
-| `src/pages/Pipeline.jsx` | Deal pipeline (Kanban) |
-| `KIKO_EVOLUTION_PLAN.md` | 19-phase architecture spec — MANDATORY reading before code changes |
-| `KIKO_MASTER_ARCHITECTURE.md` | Full system architecture document |
+| Feature | Status | Detail |
+|---------|--------|--------|
+| File Intelligence | ✅ LIVE | `/api/file-extract.js` — PDF (pdf-parse v1), DOCX (mammoth), XLSX/PPTX (officeparser). Large files upload to Supabase Storage first. Clean UX: short display message in chat, full text as hidden context. |
+| Error Handling | ⚠️ BASIC | `kiko_error_log` table exists, errors logged server-side. BUT: no graceful user-facing messages, no auto-retry, no Gmail token refresh prompts. Raw errors shown or silent failures. |
+| Response Speed | ⚠️ 4.2s | Greeting 4.2s (down from 5.4s). Tool queries 14-28s. No Haiku routing for simple queries, no parallel streaming while context loads. |
+| Backup/DR | ⚠️ GIT ONLY | Git tags created before deploys. No formal rollback procedure, no DB snapshot schedule, no recovery runbook. |
+| Automated Testing | ❌ NONE | Zero test coverage. Foundation tests exist as manual curl commands in Evolution Plan. No CI/CD. |
+| Monitoring/Alerting | ⚠️ BASIC | `cron-health-check` writes to DB. No external monitoring (Uptime Robot, Better Stack), no Slack/email alerts, no real-time dashboard. |
+| Audit Logging | ❌ NONE | `kiko_audit_log` table does NOT exist. No query/tool-call/data-access logging with user IDs. |
+| Mobile Responsiveness | ❌ UNTESTED | Completely untested on phone. |
+| Onboarding Flow | ❌ NONE | No new user setup wizard. |
+| Billing | ❌ NONE | No Stripe integration. |
 
 ---
 
-## CURRENT DEPLOYMENT STATE
+## SESSION 6 COMPLETED WORK (31 March 2026)
 
-### What's LIVE on production (vela-platform-one.vercel.app):
-- Original black (#000000) background with purple (#8B6CF6) accents
-- The revert of the warm theme change is deployed
-- All cron multi-user conversions are deployed
-- Chat history sidebar, deep search, prompt bar redesign — all deployed
-- Speed optimizations (greeting 5.4s→4.2s) — deployed
-
-### What's COMMITTED but NOT deployed:
-Commit `c448790` — UI fixes (awaiting approval to deploy):
-1. **Brand logo** — fontSize 12→15, fontWeight 500→600, color opacity 0.4→0.55, added ™ superscript
-2. **Search bar** — Larger padding, glass background with backdrop-filter blur, stronger border
-3. **Prompt bar text direction** — Added `dir="ltr"` to textarea to fix reverse text input bug
-4. **Settings nav reorder** — Fixed: now renders enabled items in their actual order, then disabled items
-5. **Enhanced glassmorphism** — Glass borders 0.5px→1px, inset top-edge highlight + bottom shadow, deeper outer shadows, saturate(1.5-1.6) on backdrop-filter
+1. ✅ Deployed UI fixes (commit c448790 — logo, search bar, glassmorphism, nav reorder)
+2. ✅ Fixed reversed text input — root cause: PromptBar defined inside render causing React to destroy/recreate textarea on every keystroke. Fix: call as function not JSX component.
+3. ✅ Fixed dictation bugs — composingRef guard was blocking onChange after Kiko dictation and Mac system dictation
+4. ✅ File intelligence — `/api/file-extract` endpoint (DOCX/XLSX/PPTX/PDF). Large files route through Supabase Storage to bypass Vercel's 4.5MB body limit.
+5. ✅ Clean file upload UX — hidden context pattern (short display message, full text sent to API)
+6. ✅ Nav order bug fixed — TABS now maps from topNavIds order, not ALL_NAV static order
+7. ✅ Dark drag-drop overlay with auto-dismiss safety timeout (was white/invisible text, could get stuck)
+8. ✅ Larger logo (28px → 36px, maxWidth 120→160)
+9. ✅ Favicon upload in Settings > Appearance
+10. ✅ Removed duplicate Profile Picture from Appearance (already in Profile tab)
+11. ✅ Verified Phases 6-11 all working via live tests
 
 ---
 
-## PENDING WORK — PRIORITY ORDER
+## PRIORITY ACTIONS — NEXT SESSIONS
 
-### Tier 1: Must-have for daily use
-1. **Deploy the UI fixes** (commit c448790) — awaiting Sunny's approval
-2. **Response speed < 3s** — Currently 4.2s greeting. Next: use Haiku for greetings, stream while context loads
-3. **Voice mode** — Pipecat + Claude + Deepgram STT + Cartesia TTS (Serafina voice ID: 4tRn1lSkEn13EVTuqb0g). WebRTC rebuild with GPT-4o Realtime was completed but has persistent browser/CDN caching issues
-4. **Push notifications** — Morning brief to email/WhatsApp
-5. **Chat fluidity** — The `dir="ltr"` fix addresses reverse text. Further improvements needed for streaming smoothness
-6. **File intelligence** — Server-side PDF/DOCX/XLSX extraction via `pdf-parse`, `mammoth`, `xlsx` npm packages. Add `/api/file-extract` endpoint. Doable with current setup.
-7. **Mobile responsiveness** — Completely untested on phone
+### Tier 1: Complete the Evolution Plan
+1. **Phase 12 COMPLETION** — Inject preferences into agent prompts (strategy, negotiation, ea). Data exists, cron exists, just not wired into agents.
+2. **Phase 13: Voice Replacement** — Kill GPT-4o. Pipecat + Claude + Deepgram STT + Cartesia TTS. Biggest lift (~3-4 hours).
+3. **Phase 14 COMPLETION** — Build UI for draft actions: review/approve/dismiss on homepage. Data exists, just needs frontend.
 
-### Tier 2: Required for paying customers
-8. **Onboarding flow** — New user setup wizard
-9. **Billing** — Stripe integration
-10. **Admin dashboard** — Settings > Team page (exists but untested)
-11. **Audit logging** — `kiko_audit_log` table
-12. **GDPR** — Data export/deletion
-13. **SSO/SAML** — Supabase supports it, needs config
+### Tier 2: Platform Hardening (Sunny's additions)
+4. **Error handling & recovery** — Graceful user-facing error messages, Gmail token auto-refresh, retry logic for tool failures. Currently: raw error text or silence.
+5. **Response speed < 3s** — Use Haiku for greetings/simple queries, stream response while context still loading (parallel not sequential), trim conversation history to last 10 messages for non-research queries.
+6. **Backup & DR** — Formal rollback procedure, Supabase DB snapshot schedule (daily via dashboard), recovery runbook document.
+7. **Automated testing** — Integration tests for multi-user isolation, regression tests for cron multi-user, load tests for concurrent users. CI/CD pipeline.
+8. **Monitoring & alerting** — External uptime monitoring (Better Stack or Uptime Robot), Slack/email alerts when crons fail or API errors spike, real-time health dashboard.
+9. **Audit logging** — Create `kiko_audit_log` table. Log every query, tool call, and data access with timestamps and user IDs. Every enterprise buyer asks for this.
 
 ### Tier 3: Scale
-14. **Rate limiting**, **Testing**, **Documentation**, **Monitoring**, **Backup/DR**
+10. **Mobile responsiveness** — Completely untested, needs full pass
+11. **Onboarding flow** — New user setup wizard
+12. **Billing** — Stripe integration
+13. **SSO/SAML** — Supabase supports it, needs config
+14. **GDPR** — Data export/deletion
 
 ### Tier 4: Differentiators
 15. **Kernel extraction** — Separate Kiko intelligence from Vela application
@@ -148,69 +124,11 @@ Commit `c448790` — UI fixes (awaiting approval to deploy):
 
 ## KNOWN BUGS
 
-1. **Prompt bar text input reversed** — FIXED in commit c448790 (not deployed). Added `dir="ltr"` to textarea
-2. **Settings nav reorder doesn't reflect order** — FIXED in commit c448790. Was rendering `ALL_TOP_NAV` (static order) instead of `topNavItems` (user's order)
-3. **Browser/CDN caching** — Voice mode and some UI changes require incognito/fresh tabs to see updates
-4. **Page freezing on long conversations** — FIXED earlier. Markdown cache (200 entries LRU) + 40-message render limit with "Show earlier" button
-5. **Chat streaming smoothness** — Needs investigation. Streaming works but can feel jerky on long responses
-
----
-
-## UI DESIGN DIRECTION
-
-### Current state (LIVE):
-- Background: #000000 (pure black)
-- Accent: #8B6CF6 (purple) with teal #06D6A0 secondary
-- Glass: `rgba(255,255,255,0.04-0.07)` with `backdrop-filter: blur(40px)`
-- Font: DM Sans (system fonts as fallback)
-- Aurora: Animated canvas orbs (purple/teal/pink/blue/amber)
-
-### Approved direction (NOT implemented — render stage only):
-- Sunny reviewed Behance/Dribbble references extensively
-- Key references: Niva AI (warm light), Payrix FMS (teal gradient + glass), Sphere AI (luminescent orbs)
-- The screenshot reference Sunny provided shows: warm dark charcoal background (#2A2A2C-ish), amber/gold CTAs, softer glass
-- **CRITICAL**: Any colour/theme changes must be shown as LOCAL RENDERS FIRST. Never push to production.
-- Local mockup files were created at `/Users/sunny/Desktop/vela-platform/kiko-mockup-*.html` and `/Users/sunny/Desktop/vela-platform/kiko-payrix.html`
-- Renders were also shown via browser CSS injection (no code changes)
-- Final design direction is still being refined — do not implement until approved
-
-### Design specs from references:
-- **Payrix**: Font Urbanist, teal gradient background upper half, frosted glass cards on top, orange accent borders, "Ask anything" AI bar at bottom
-- **Niva**: Font Roobert (→Outfit as Google Fonts match), bg #F0EFEB (warm cream LIGHT theme), blue #4A7FF8, orange #FF7648, amber #FFC757
-- **Screenshot reference**: Dark warm charcoal, amber/gold accent replacing purple, same layout
-
----
-
-## CRON SCHEDULE (24 jobs, all multi-user)
-
-| Time | Job | Frequency |
-|------|-----|-----------|
-| Hourly | meeting-prep | Every hour |
-| 4am Sun | profile-synthesis | Weekly |
-| 5am Sun | relationship-intel | Weekly |
-| 6am Sun | preference-synthesis + document-scan | Weekly |
-| 6am Mon | enrich | Weekly |
-| 7am Mon-Fri | partnership-scan + proactive | Weekdays |
-| 7:15am Mon-Fri | inbox-triage | Weekdays |
-| 8am Mon-Fri | news-agent | Weekdays |
-| 9am Mon | outreach-score | Weekly |
-| 10pm Mon-Fri | edit-delta | Weekdays |
-
-All 17 cron files use `getActiveUsers()` from `api/cron-utils.js`. Zero hardcoded UUIDs or emails.
-
----
-
-## SPEED OPTIMISATION (completed)
-
-| Metric | Before | After |
-|--------|--------|-------|
-| System prompt routing | 89 lines (~3,500 chars) | 28 lines (~2,000 chars) |
-| Self-knowledge | 2,510 tokens | 232 tokens (-91%) |
-| Context queries (greeting) | 12 | 3 (-75%) |
-| Greeting first token | 5.4s | 4.2s (-22%) |
-| Greeting headers | 3.6s | 2.6s (-28%) |
-
-Next optimisation: Use Haiku for simple greetings/navigation, stream response while context still loading.
+1. ~~Prompt bar text reversed~~ — FIXED Session 6 (PromptBar inside render)
+2. ~~Drag-drop white overlay~~ — FIXED Session 6 (dark theme + auto-dismiss)
+3. ~~Nav order not matching Settings~~ — FIXED Session 6 (topNavIds.map)
+4. **Browser/CDN caching** — Voice mode and some UI changes require incognito/fresh tabs
+5. **PDF extraction with very large files** — Works via Supabase Storage path, but extraction can be slow for 50+ page documents
 
 ---
 
@@ -230,56 +148,33 @@ Before ANY deploy:
 
 ---
 
-## IMPORTANT CONTEXT ABOUT THE USER
+## KEY FILES
 
-- Sunny is CEO of Van Hawke Group (F1/FE sponsorship advisory, Maison eyewear, Group Inc holding)
-- Communication style: formal, direct, commanding authority. No hedging words.
-- Language rules: "intelligent age" not "AI generation", all financials in USD, emails under 150 words
-- Daughters: Nyla and Maya. Based in Weybridge, UK. Child in Year 1 at Oatlands School.
-- SponsorSignal: Daily LinkedIn sponsorship intelligence post (8am UK)
-- Haas F1 is the primary deal (multi-year, 2026-2028, advanced negotiation, $2.4M)
-- Van Hawke Maison: Cultural Performance Eyewear, pre-seed $500K round, Archive 01 as proof-of-concept
-
----
-
-## HEALTH CHECK
-
-The health endpoint (`/api/health`) checks 10 systems. As of session end: **10/10 ✅**
-- supabase ✅, anthropic_api ✅, intent_classifier ✅, self_knowledge ✅
-- google_token ✅, gmail_api ✅, calendar_api ✅, database_tables ✅
-- cron_health ✅, kiko_endpoint ✅
-
----
-
-## SESSION HISTORY (transcripts)
-
-| Session | Date | Key Work |
-|---------|------|----------|
-| Session 1 | 29 Mar 2026 | Platform scoping, CRM import, initial Kiko build |
-| Session 2 | 29 Mar 2026 | Agent architecture (23 components), Navigator + Deal agents |
-| Session 3 | 30 Mar 2026 | Voice interface attempts (LiveKit → GPT-4o Realtime WebRTC) |
-| Session 4 | 30 Mar 2026 | Multi-user architecture (54/54 audit), speed opt, ChatGPT import |
-| Session 5 | 30 Mar 2026 | Data isolation verification, chat history UI, cron multi-user, UI exploration |
-
-Transcript files are in `/mnt/transcripts/` (read-only). Key transcript:
-`/mnt/transcripts/2026-03-30-18-41-09-kiko-session5-full-day.txt`
+| File | Purpose |
+|------|---------|
+| `api/kiko.js` | Main AI coordinator — intent routing, context loading, streaming, decision logging |
+| `api/kiko-tools.js` | Tool registry (29 tools), sbFetch helper, error logging |
+| `api/file-extract.js` | Server-side document extraction (PDF/DOCX/XLSX/PPTX) |
+| `api/agents/ea.js` | EA Agent — synthesised morning brief (Phase 10) |
+| `api/agents/strategy.js` | Strategy Agent — with past decision pattern matching (Phase 9) |
+| `api/agents/negotiation.js` | Negotiation Agent — with past position matching (Phase 9) |
+| `api/cron-proactive.js` | Proactive intelligence — convergence detection + draft actions (Phase 11/14) |
+| `api/cron-preference-synthesis.js` | Weekly preference model synthesis (Phase 12) |
+| `src/components/kiko/KikoChat.jsx` | Main chat — textarea, file upload, message rendering |
+| `src/components/kiko/KikoFloat.jsx` | Floating Kiko orb |
+| `src/components/layout/Layout.jsx` | Main layout — top nav, tabs, search, aurora, favicon |
+| `src/components/settings/Settings.jsx` | Settings — nav config, appearance, favicon upload |
+| `src/lib/theme.js` | Central theme object (T) |
+| `KIKO_EVOLUTION_PLAN.md` | 19-phase architecture spec — MANDATORY reading |
 
 ---
 
 ## WHAT TO DO FIRST IN A NEW SESSION
 
 1. Read this file (`KIKO_SESSION_BRIEF.md`)
-2. Read `KIKO_EVOLUTION_PLAN.md` (mandatory before any code changes)
-3. Check what's committed vs deployed: `git log --oneline -5`
+2. Read `KIKO_EVOLUTION_PLAN.md`
+3. Check git state: `git log --oneline -5`
 4. Run health check: `curl -s https://vela-platform-one.vercel.app/api/health | python3 -m json.tool`
 5. Ask Sunny what the priority is
 
-### Immediate pending items awaiting decision:
-- **Deploy UI fixes** (commit c448790) — logo, search bar, text direction fix, nav reorder, glassmorphism
-- **UI design direction** — Sunny is exploring colour/theme options. DO NOT implement without explicit approval. Create renders only.
-- **File intelligence** — Server-side document extraction. Ready to build.
-- **Chat fluidity** — Needs specific bug reports from Sunny to investigate
-
----
-
-*This brief was auto-generated at the end of Session 5, 30 March 2026. The live platform is untouched — all UI experiments were reverted. The codebase has one uncommitted-to-production commit (c448790) with UI improvements awaiting deployment approval.*
+*Updated at end of Session 6, 31 March 2026.*
