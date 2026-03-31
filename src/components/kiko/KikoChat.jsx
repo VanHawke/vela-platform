@@ -544,14 +544,24 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           const isDocument = file.name.match(/\.(docx?|xlsx?|xlsm|pptx?|pdf)$/i)
           if (isDocument) {
             if (file.size > 15 * 1024 * 1024) {
-              handleSubmit(`File "${file.name}" is too large (${(file.size/1024/1024).toFixed(1)}MB). Maximum is 15MB. Try a smaller file.`)
+              handleSubmit(`File "${file.name}" is too large (${(file.size/1024/1024).toFixed(1)}MB). Maximum is 15MB.`)
               return
             }
             try {
+              let extractBody;
+              // Large files (> 3MB base64 ~ 2MB file): upload to Supabase Storage first to avoid Vercel 413
+              if (base64.length > 3_000_000) {
+                const tmpPath = `tmp/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
+                const { error: upErr } = await supabase.storage.from('vela-assets').upload(tmpPath, file)
+                if (upErr) throw new Error(`Upload failed: ${upErr.message}`)
+                extractBody = JSON.stringify({ filename: file.name, storagePath: tmpPath })
+              } else {
+                extractBody = JSON.stringify({ filename: file.name, data: base64 })
+              }
               const res = await fetch('/api/file-extract', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ filename: file.name, data: base64 })
+                body: extractBody
               })
               const result = await res.json()
               if (!res.ok) throw new Error(result.error || 'Extraction failed')
