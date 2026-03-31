@@ -355,30 +355,37 @@ async function handleMemory(input, userId) {
 
 // ── Tool Status Labels ──
 const TOOL_LABELS = {
-  ask_navigator: 'Navigator: analysing...',
-  ask_deal_agent: 'Deal Agent: executing...',
-  ask_data_agent: 'Data Agent: querying...',
-  ask_outreach_agent: 'Outreach Agent: drafting...',
-  ask_document_agent: 'Document Agent: generating...',
-  ask_memory_engine: 'Memory Engine: recalling...',
-  ask_strategy_agent: 'Strategy Agent: evaluating...',
-  ask_negotiation_agent: 'Negotiation Agent: analysing...',
-  ask_category_agent: 'Category Control: checking...',
-  ask_finance_agent: 'Finance Agent: analysing...',
-  ask_ea_agent: 'Executive Assistant: briefing...',
-  ask_legal_agent: 'Legal Agent: reviewing...',
-  ask_dispute_agent: 'Dispute Agent: analysing...',
-  ask_content_agent: 'Content Agent: generating...',
-  ask_investment_agent: 'Investment Agent: modelling...',
-  ask_pricing_agent: 'Pricing Agent: benchmarking...',
-  ask_signal_agent: 'Signal Agent: scanning...',
-  ask_travel_agent: 'Travel Agent: planning...',
-  ask_specialist_agent: 'Specialist Agent: processing...',
-  ask_self_monitor: 'Self-Monitor: checking...',
+  ask_navigator: 'Analysing page context...',
+  ask_deal_agent: 'Searching deals and pipeline data...',
+  ask_data_agent: 'Querying CRM database...',
+  ask_outreach_agent: 'Drafting outreach communication...',
+  ask_document_agent: 'Processing document intelligence...',
+  ask_memory_engine: 'Retrieving past decisions and context...',
+  ask_strategy_agent: 'Strategy Agent composing verdict...',
+  ask_negotiation_agent: 'Analysing negotiation positions...',
+  ask_category_agent: 'Checking sponsorship category availability...',
+  ask_finance_agent: 'Running financial analysis...',
+  ask_ea_agent: 'Compiling your executive brief...',
+  ask_legal_agent: 'Reviewing legal framework...',
+  ask_dispute_agent: 'Analysing dispute resolution options...',
+  ask_content_agent: 'Generating content...',
+  ask_investment_agent: 'Building investment model...',
+  ask_pricing_agent: 'Benchmarking pricing against market data...',
+  ask_signal_agent: 'Scanning partnership signals...',
+  ask_travel_agent: 'Planning travel logistics...',
+  ask_specialist_agent: 'Running specialist analysis...',
+  ask_self_monitor: 'Running system diagnostics...',
   navigate_page: 'Navigating...',
   log_activity: 'Logging activity...',
-  web_search: 'Searching the web...',
-  memory: 'Checking memory...',
+  web_search: 'Searching web for current intel...',
+  memory: 'Retrieving past decisions and context...',
+  ask_lemlist_live: 'Querying Lemlist campaign data...',
+  search_conversations: 'Searching conversation history...',
+  trigger_triage: 'Running inbox triage...',
+  ask_code_review: 'Analysing platform code...',
+  read_email: 'Reading emails via Gmail...',
+  read_calendar: 'Checking your calendar...',
+  manage_knowledge: 'Managing knowledge library...',
 };
 
 // ── Main Handler ──
@@ -856,7 +863,16 @@ export default async function handler(req, res) {
       return await stream.finalMessage();
     }
 
-    write({ toolStatus: intent !== 'general' ? `Intent: ${intent}` : 'Thinking...' });
+    const INTENT_LABELS = {
+      pipeline: 'Checking deal pipeline...', deals: 'Searching deals...', contacts: 'Looking up contacts...',
+      organisations: 'Searching organisations...', tasks: 'Reviewing tasks...', calendar: 'Checking calendar...',
+      strategy: 'Evaluating strategic opportunity...', partnership: 'Analysing partnership landscape...',
+      negotiation: 'Preparing negotiation analysis...', outreach: 'Drafting outreach...', content: 'Generating content...',
+      brief: 'Preparing your morning brief...', screen: 'Reading current screen...', category: 'Analysing sponsorship categories...',
+      navigation: 'Navigating...', memory: 'Searching your history...', general: 'Thinking...',
+      code_review: 'Analysing platform code...', email: 'Checking emails...', document: 'Processing document...',
+    };
+    write({ toolStatus: INTENT_LABELS[intent] || 'Thinking...' });
     let responseText = '';
     const requestStart = Date.now();
 
@@ -903,7 +919,7 @@ export default async function handler(req, res) {
 
     // If Claude still wants tools but we're out of budget — force a text response
     if (response.stop_reason === 'tool_use') {
-      write({ toolStatus: 'Composing response...' });
+      write({ toolStatus: 'Synthesising response...' });
       // Extract all tool results gathered so far into a concise summary
       const toolData = [];
       for (const m of messages) {
