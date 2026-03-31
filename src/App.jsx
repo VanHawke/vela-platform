@@ -7,7 +7,7 @@ import AuthCallback from '@/pages/AuthCallback'
 import Layout from '@/components/layout/Layout'
 import KikoChat from '@/components/kiko/KikoChat'
 import Settings from '@/components/settings/Settings'
-import Dashboard from '@/pages/Dashboard'
+// Dashboard removed — KikoChat is the home page, DraftActions rendered inline
 import Pipeline from '@/pages/Pipeline'
 import Contacts from '@/pages/Contacts'
 import ContactDetail from '@/pages/ContactDetail'
@@ -120,7 +120,7 @@ export default function App() {
         <Route element={session ? <Layout key="app" user={user} /> : <Navigate to="/login" replace />}>
           <Route index element={<KikoChat user={user} />} />
           <Route path="home" element={<KikoChat user={user} />} />
-          <Route path="dashboard" element={<Dashboard user={user} />} />
+          <Route path="dashboard" element={<KikoChat user={user} />} />
           <Route path="pipeline" element={<Pipeline user={user} />} />
           <Route path="contacts" element={<Contacts user={user} />} />
           <Route path="contacts/:id" element={<ContactDetail user={user} />} />

@@ -169,3 +169,70 @@ dialog, [role="dialog"] { background: rgba(14,14,20,0.9); backdrop-filter: blur(
 @keyframes kikoListenPulse { 0%, 100% { opacity: 0.15; transform: scaleX(0.5); } 50% { opacity: 0.6; transform: scaleX(1); } }
 @keyframes shimmer { 0% { opacity: 0.03; } 50% { opacity: 0.06; } 100% { opacity: 0.03; } }
 @keyframes kikoFadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE RESPONSIVENESS
+   ═══════════════════════════════════════════════════════════ */
+
+/* Tablet and below: hide center nav, simplify header */
+@media (max-width: 768px) {
+  .desktop-top-nav {
+    display: none !important;
+  }
+  
+  header {
+    padding: 0 12px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+  }
+}
+
+/* Phone screens */
+@media (max-width: 480px) {
+  header {
+    padding: 0 10px !important;
+  }
+
+  /* Kiko welcome greeting */
+  #kikoGreeting h1 {
+    font-size: 20px !important;
+  }
+  
+  #kikoGreeting p {
+    font-size: 12px !important;
+  }
+  
+  /* Prompt bar */
+  #kikoPromptWrap {
+    max-width: 95% !important;
+    padding: 0 8px !important;
+  }
+  
+  /* Wave visualizer */
+  #kikoWaveHome {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  
+  /* Chips row */
+  #kikoChipsWrap {
+    flex-wrap: wrap !important;
+    max-width: 95% !important;
+    gap: 6px !important;
+  }
+}
+
+/* Small phones */
+@media (max-width: 375px) {
+  #kikoGreeting h1 {
+    font-size: 18px !important;
+  }
+}
+
+/* Mobile hamburger button — shown on tablet and below */
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+}

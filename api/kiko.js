@@ -49,6 +49,22 @@ function sanitizeUnicode(str) {
 
 // Phase 8: Learning Loop — log decisions for pattern matching
 const DECISION_TOOLS = ['ask_strategy_agent', 'ask_deal_agent', 'ask_negotiation_agent', 'ask_pricing_agent', 'ask_investment_agent'];
+
+// Audit logging — every query and tool call
+async function auditLog(actionType, { userId, userEmail, intent, toolName, entityType, entityId, detail, durationMs } = {}) {
+  try {
+    await sbFetch('kiko_audit_log', {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: userId || null, user_email: userEmail || null,
+        action_type: actionType, intent: intent || null,
+        tool_name: toolName || null, entity_type: entityType || null,
+        entity_id: entityId || null, detail: (detail || '').slice(0, 500),
+        duration_ms: durationMs || null,
+      }),
+    });
+  } catch {} // Must never throw
+}
 async function logDecision(toolName, toolInput, toolResult, userMessage, userId) {
   if (!DECISION_TOOLS.includes(toolName)) return;
   try {
@@ -487,6 +503,7 @@ export default async function handler(req, res) {
 
   try {
     write({ toolStatus: 'Connecting...' });
+    const queryStartTime = Date.now();
     // Build messages
     const messages = conversationHistory.slice(-20)
       .filter(m => m.role === 'user' || m.role === 'assistant')
@@ -529,6 +546,9 @@ export default async function handler(req, res) {
       classification = await classifyIntent(message, currentPage);
     }
     const { intent, target } = classification;
+
+    // Audit: log every query
+    auditLog('query', { userId, userEmail, intent, detail: (message || '').slice(0, 200) });
 
     // ── Context-Aware Greeting: first message = proactive status push ──
     const isFirstMessage = conversationHistory.length <= 1;
@@ -948,6 +968,8 @@ export default async function handler(req, res) {
           trackOutput(block.name, intent, message, result, userId);
           journalInsight(block.name, block.input, result, message, userId);
         }
+        // Audit: log every tool call
+        auditLog('tool_call', { userId, userEmail, intent, toolName: block.name, detail: JSON.stringify(block.input).slice(0, 300) });
       }
       write({ toolStatus: null });
       messages.push({ role: 'assistant', content: response.content });
@@ -985,10 +1007,13 @@ export default async function handler(req, res) {
     // Include cache stats in meta for cost tracking
     const usage = response?.usage || {};
     const actualModel = needsDeepThink ? 'claude-opus-4-6' : (useHaikuForGreeting ? 'claude-haiku-4-5-20251001' : MODEL);
+    const totalDuration = Date.now() - queryStartTime;
     write({ meta: { done: true, model: actualModel, toolRounds, intent, version: 'v16.3',
       cache: { write: usage.cache_creation_input_tokens || 0, read: usage.cache_read_input_tokens || 0, input: usage.input_tokens || 0, output: usage.output_tokens || 0 }
     } });
     finished = true; clearTimeout(watchdog);
+    // Audit: log completion with duration
+    auditLog('response_complete', { userId, userEmail, intent, durationMs: totalDuration, detail: `model=${actualModel} tools=${toolRounds} tokens=${usage.input_tokens||0}+${usage.output_tokens||0}` });
     res.write('data: [DONE]\n\n');
     res.end();
 

@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
 import T from '@/lib/theme'
-import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target } from 'lucide-react'
+import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
 import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
@@ -57,6 +57,7 @@ export default function Layout({ user }) {
   const [avatarOpen, setAvatarOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
   const [paletteOpen, setPaletteOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [voiceActive, setVoiceActive] = useState(false)
   const [voiceStatus, setVoiceStatus] = useState('Listening')
   const [topNavIds, setTopNavIds] = useState(getTopNavIds)
@@ -271,7 +272,7 @@ export default function Layout({ user }) {
           </div>
         </div>
 
-        {/* Right: Voice status + ⌘K pill + avatar */}
+        {/* Right: Voice status + ⌘K pill + mobile menu + avatar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {/* Listening pill — only when voice is active */}
           {voiceActive && (
@@ -280,6 +281,15 @@ export default function Layout({ user }) {
               <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(6,214,160,0.6)', fontFamily: 'var(--font)' }}>{voiceStatus}</span>
             </div>
           )}
+          {/* Mobile hamburger — visible only below 768px */}
+          <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{
+            display: 'none', alignItems: 'center', justifyContent: 'center',
+            width: 36, height: 36, borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)',
+            background: mobileMenuOpen ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)',
+            cursor: 'pointer', transition: 'all 0.15s',
+          }}>
+            {mobileMenuOpen ? <X size={16} color="rgba(255,255,255,0.7)" /> : <Menu size={16} color="rgba(255,255,255,0.5)" />}
+          </button>
           {/* Command palette trigger */}
           <button onClick={() => setPaletteOpen(true)} style={{
             display: 'flex', alignItems: 'center', gap: 8,
@@ -346,6 +356,46 @@ export default function Layout({ user }) {
           </div>
         </div>
       </header>
+
+      {/* Mobile navigation menu overlay */}
+      {mobileMenuOpen && (
+        <div style={{
+          position: 'fixed', top: 48, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+          zIndex: 240, animation: 'fadeIn 0.15s ease-out',
+        }} onClick={() => setMobileMenuOpen(false)}>
+          <div style={{
+            background: 'rgba(14,14,20,0.95)', borderBottom: '1px solid rgba(255,255,255,0.08)',
+            padding: '8px 12px', maxHeight: '70vh', overflowY: 'auto',
+          }} onClick={e => e.stopPropagation()}>
+            {ALL_NAV.map(item => {
+              const Icon = item.Icon || Building2
+              const active = isTabActive(item.path)
+              return (
+                <button key={item.id} onClick={() => {
+                  if (item.path === '/') { setKikoMessages([]); setKikoConvId(null); setKikoResetKey(k => k + 1) }
+                  nav(item.path); setMobileMenuOpen(false)
+                }} style={{
+                  width: '100%', padding: '12px 14px', borderRadius: 12, border: 'none',
+                  background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
+                  color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)',
+                  fontSize: 15, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: T.font,
+                  display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', transition: 'all 0.15s',
+                }}>
+                  <Icon size={16} />{item.label}
+                </button>
+              )
+            })}
+            <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '6px 8px' }} />
+            <button onClick={() => { nav('/settings'); setMobileMenuOpen(false) }} style={{
+              width: '100%', padding: '12px 14px', borderRadius: 12, border: 'none',
+              background: 'transparent', color: 'rgba(255,255,255,0.4)',
+              fontSize: 15, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
+              display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left',
+            }}><Settings size={16} />Settings</button>
+          </div>
+        </div>
+      )}
 
       <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1 }}>
         <Outlet context={{ kikoMessages, setKikoMessages, kikoConvId, setKikoConvId, kikoNavigate, kikoResetKey, openPalette: () => setPaletteOpen(true) }} />
