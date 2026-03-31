@@ -417,7 +417,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     } catch { return convId }
   }
 
-  const handleSubmit = useCallback(async (text, fileAttachments = []) => {
+  const handleSubmit = useCallback(async (text, fileAttachments = [], hiddenContext = '') => {
     const msg = (text || input).trim()
     // Include pending attachment if present
     const allAttachments = [...fileAttachments]
@@ -429,6 +429,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     setInput('')
     setPendingAttachment(null)
     const displayMsg = effectiveMsg
+    const apiMsg = hiddenContext ? effectiveMsg + '\n\n' + hiddenContext : effectiveMsg
     const imgPreview = allAttachments.find(a => a.type === 'image' && a.previewUrl)?.previewUrl || null
     const userMsg = { role: 'user', content: displayMsg, timestamp: Date.now(), imagePreview: imgPreview }
     if (imgPreview) setImagePreview(null)
@@ -453,7 +454,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
         body: JSON.stringify(isResearch ? { query: msg, userEmail: user?.email } : {
-          message: effectiveMsg, userEmail: user?.email,
+          message: apiMsg, userEmail: user?.email,
           attachments: allAttachments,
           conversationHistory: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
           currentPage: pageCtx.page || (window.location.pathname.replace('/', '') || 'home'),
@@ -523,7 +524,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       if (isText) {
         // Text files: read as text, send directly
         const text = await file.text()
-        handleSubmit(`I've uploaded "${file.name}". Here are the contents:\n\n${text.slice(0, 50000)}\n\nAnalyse this.`)
+        handleSubmit(`📎 Uploaded: "${file.name}" (${(text.length/1000).toFixed(0)}K chars). Analyse this file.`, [], `[FILE CONTENTS — "${file.name}"]\n\n${text.slice(0, 50000)}\n\n[END OF FILE]\n\nAnalyse this.`)
       } else {
         // Binary files: convert to base64
         const base64 = await new Promise((res, rej) => {
@@ -566,8 +567,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               const result = await res.json()
               if (!res.ok) throw new Error(result.error || 'Extraction failed')
               const meta = result.metadata || {}
-              const header = `I've uploaded "${file.name}" (${meta.type}${meta.pages ? `, ${meta.pages} pages` : ''}, ${(result.text.length/1000).toFixed(0)}K chars${meta.truncated ? ', truncated' : ''}).`
-              handleSubmit(`${header}\n\nHere are the extracted contents:\n\n${result.text}\n\nAnalyse this document thoroughly.`)
+              const displayText = `📎 Uploaded: "${file.name}" (${meta.type}${meta.pages ? `, ${meta.pages} pages` : ''}, ${(result.text.length/1000).toFixed(0)}K chars). Analyse this document.`
+              const context = `[DOCUMENT CONTENTS — "${file.name}"]\n\n${result.text}\n\n[END OF DOCUMENT]\n\nAnalyse this document thoroughly.`
+              handleSubmit(displayText, [], context)
             } catch (extractErr) {
               handleSubmit(`I uploaded "${file.name}" but extraction failed: ${extractErr.message}. Please try again or use a different format.`)
             }
