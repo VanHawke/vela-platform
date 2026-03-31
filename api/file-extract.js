@@ -1,14 +1,11 @@
 import mammoth from 'mammoth';
 import { parseOffice } from 'officeparser';
 import { createRequire } from 'module';
-import { createClient } from '@supabase/supabase-js';
 const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+const SB_URL = () => process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const SB_KEY = () => process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
 export const config = { maxDuration: 30 };
 
@@ -21,12 +18,14 @@ export default async function handler(req, res) {
 
     let buffer;
     if (storagePath) {
-      // Download from Supabase Storage
-      const { data: fileData, error: dlError } = await supabase.storage.from('vela-assets').download(storagePath);
-      if (dlError) throw new Error(`Storage download failed: ${dlError.message}`);
-      buffer = Buffer.from(await fileData.arrayBuffer());
+      // Download from Supabase Storage via REST API
+      const dlUrl = `${SB_URL()}/storage/v1/object/vela-assets/${storagePath}`;
+      const dlRes = await fetch(dlUrl, {
+        headers: { 'Authorization': `Bearer ${SB_KEY()}`, 'apikey': SB_KEY() }
+      });
+      if (!dlRes.ok) throw new Error(`Storage download failed: ${dlRes.status} ${dlRes.statusText}`);
+      buffer = Buffer.from(await dlRes.arrayBuffer());
     } else if (data) {
-      // Small files: accept inline base64
       buffer = Buffer.from(data, 'base64');
     } else {
       return res.status(400).json({ error: 'Missing storagePath or data' });
@@ -49,15 +48,18 @@ export default async function handler(req, res) {
       text = typeof result === 'string' ? result : (result.toText ? result.toText() : JSON.stringify(result.content || result));
       metadata = { type: ext.startsWith('xl') ? 'xlsx' : 'pptx' };
     } else {
-      return res.status(400).json({ error: `Unsupported file type: .${ext}` });
+      return res.status(400).json({ error: `Unsupported: .${ext}` });
     }
 
     const truncated = text.length > 80000;
     if (truncated) text = text.slice(0, 80000);
 
-    // Clean up temp file from storage if we uploaded it
+    // Clean up temp file from storage
     if (storagePath?.startsWith('tmp/')) {
-      supabase.storage.from('vela-assets').remove([storagePath]).catch(() => {});
+      fetch(`${SB_URL()}/storage/v1/object/vela-assets/${storagePath}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${SB_KEY()}`, 'apikey': SB_KEY() }
+      }).catch(() => {});
     }
 
     return res.status(200).json({ text, filename, metadata: { ...metadata, chars: text.length, truncated } });
