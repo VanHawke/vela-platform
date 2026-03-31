@@ -75,11 +75,12 @@ export default function LoginPage() {
           )}
         </div>
 
-        {/* Kiko helix — large, centred, dramatic */}
+        {/* Kiko waveform — large, centred, dramatic */}
         <div style={{ width: '100%', maxWidth: 420, margin: '0 auto 24px', overflow: 'visible', padding: '8px 0', ...fade(0.2),
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
           WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
           maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
-          <KikoWaveform width={420} height={80} volume={0.15} />
+          <KikoWaveform width={420} height={80} volume={0.15} noEdgeFade />
         </div>
 
         {/* Kiko name + tagline */}
