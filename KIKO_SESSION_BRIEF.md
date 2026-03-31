@@ -242,15 +242,18 @@ CRM tables: deals, contacts, companies, activities, tasks, pipelines, pipeline_s
 - **MISSING**: No external uptime monitoring, no Slack/email alerts when crons fail or API errors spike, no real-time health dashboard
 - **TO BUILD**: Better Stack or Uptime Robot for external pinging, Slack webhook for critical failures, simple health dashboard page
 
-### Audit Logging ❌ NONE
-- `kiko_audit_log` table does NOT exist (Supabase returns 404). There IS a `self_audit_log` table but it's for Kiko's self-reflection, not security audit.
-- **MISSING**: No query/tool-call/data-access logging with user IDs and timestamps
-- **TO BUILD**: Create `kiko_audit_log` table (user_id, action_type, entity_type, entity_id, detail, ip_address, created_at). Log every query to kiko.js, every tool call, every CRM data access. ~20 minutes.
+### Audit Logging ✅ IMPLEMENTED (Session 7)
+- `kiko_audit_log` table created in Supabase with indexes on user_id, action_type, created_at
+- Three event types logged: `query` (every message with intent), `tool_call` (every tool execution with input), `response_complete` (with duration_ms, model, token counts)
+- All logging is non-blocking (wrapped in try/catch, never throws)
+- Verified live: entries writing to database on every interaction
 
-### Mobile Responsiveness ❌ UNTESTED
-- Completely untested on phone/tablet
-- Layout.jsx has a `.desktop-top-nav` class but no mobile breakpoints
-- KikoChat.jsx has no responsive adjustments
+### Mobile Responsiveness ✅ BASIC (Session 7)
+- Nav pill hidden on screens ≤768px, replaced by hamburger menu button
+- Mobile menu overlay: full-screen dark glass panel with all nav items + settings
+- Header height reduced on mobile (56px → 48px), padding compressed
+- KikoChat greeting, prompt bar, chips, and wave visualizer responsive on phones (≤480px)
+- **STILL NEEDED**: Full testing on real devices, page-specific responsive passes (Pipeline, Contacts, etc.)
 
 ---
 
@@ -291,7 +294,7 @@ CRM tables: deals, contacts, companies, activities, tasks, pipelines, pipeline_s
 | 4 | 30 Mar 2026 | Multi-user architecture (54/54 audit pass), speed optimisation (5.4s→4.2s), ChatGPT import (384 conversations) |
 | 5 | 30 Mar 2026 | Data isolation verification (8/8 tests), chat history UI, cron multi-user conversion, UI exploration (Niva/Payrix refs) |
 | 6 | 31 Mar 2026 | Fixed reversed text, dictation bugs, file intelligence endpoint, nav order, drag-drop overlay, logo size, favicon upload, full phase audit |
-| 7 | 31 Mar 2026 | Phase 12 complete (preferences in strategy/negotiation/EA agents), Phase 14 complete (draft actions API + UI widget), error handling (tool loop try/catch with auth detection + retry), bug fix (relationships array guard), speed optimisation (Haiku for greetings 4.2s→2.1s, history trim, skip heavy fetches) |
+| 7 | 31 Mar 2026 | Phase 12 complete (preferences in 3 agents), Phase 14 complete (draft actions API + UI in KikoChat), error handling (tool loop try/catch), speed (Haiku greetings 2.1s, history trim), audit logging (3 event types), mobile responsive (hamburger menu + breakpoints), killed Dashboard, bug fix (relationships array guard) |
 
 Transcripts: `/mnt/transcripts/` (read-only). Key: `/mnt/transcripts/2026-03-30-18-41-09-kiko-session5-full-day.txt`
 
@@ -319,20 +322,17 @@ These are Kiko's learned decision patterns from Sunny's behaviour. Phase 12 comp
 ## NEXT SESSION — PRIORITY ACTIONS
 
 ### Immediate (do these first):
-1. **Audit logging** (~20 min)
-   - Create `kiko_audit_log` table (user_id, action_type, entity_type, entity_id, detail, ip_address, created_at)
-   - Log every query to kiko.js, every tool call, every CRM data access
-
-2. **Monitoring** (~30 min)
+1. **Monitoring** (~30 min)
    - External uptime ping (Better Stack or Uptime Robot)
    - Slack webhook for cron failures
 
+2. **Backup/DR** — Enable Supabase PITR, document rollback procedure
+
 ### Next priority:
-3. **Backup/DR** — Enable Supabase PITR, document rollback procedure
-4. **Mobile responsiveness** — Full responsive pass on Layout.jsx, KikoChat.jsx, Dashboard.jsx
-5. **Phase 13: Voice** — Pipecat + Claude + Deepgram + Cartesia (3-4 hours)
-6. **Dashboard overhaul** — Dashboard.jsx still uses light theme classes (bg-white, text-[#1A1A1A]) inconsistent with the dark glass theme. Rebuild to match PipelineNotifications/DraftActions dark glass styling.
-7. **Further speed** — Haiku for simple navigation intents, parallel streaming (start SSE response while context queries still loading)
+3. **Mobile deep pass** — Page-specific responsive testing (Pipeline, Contacts, Settings) on real devices
+4. **Phase 13: Voice** — Pipecat + Claude + Deepgram + Cartesia (3-4 hours)
+5. **Further speed** — Haiku for simple navigation intents, parallel streaming (start SSE response while context queries still loading)
+6. **Delete Dashboard.jsx** — File still exists on disk but is no longer imported or routed. Can be safely deleted.
 
 ---
 
@@ -394,4 +394,4 @@ curl -s -X POST $URL/api/file-extract -H 'Content-Type: application/json' \
 
 8. **handleSubmit signature** — `handleSubmit(text, fileAttachments = [], hiddenContext = '')`. The `hiddenContext` parameter sends text to the API without showing it in the chat bubble. Used by file uploads.
 
-*This brief was written at the end of Session 7, 31 March 2026. The platform is live and stable. All Phases 6-12 and 14 are verified working. Speed optimised: mid-conversation greetings 2.1s (Haiku), first-message 6.9s (Sonnet). Phase 13 (Voice) is the main remaining lift. Audit logging and monitoring are next.*
+*This brief was written at the end of Session 7, 31 March 2026. The platform is live and stable. All Phases 6-12 and 14 are verified working. Speed optimised (2.1s Haiku greetings). Audit logging live. Mobile responsive with hamburger menu. Dashboard killed — KikoChat is the home page with DraftActions inline. Phase 13 (Voice) is the main remaining lift.*
