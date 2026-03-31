@@ -1,5 +1,6 @@
 import mammoth from 'mammoth';
 import { parseOffice } from 'officeparser';
+import { PDFParse } from 'pdf-parse';
 
 export const config = { api: { bodyParser: { sizeLimit: '10mb' } } };
 
@@ -24,6 +25,15 @@ export default async function handler(req, res) {
     else if (ext === 'xlsx' || ext === 'xls' || ext === 'xlsm' || ext === 'pptx' || ext === 'ppt') {
       text = await parseOffice(buffer);
       metadata = { type: ext.startsWith('xl') ? 'xlsx' : 'pptx' };
+    }
+
+    else if (ext === 'pdf') {
+      const p = new PDFParse({ data: new Uint8Array(buffer) });
+      await p.load();
+      const result = await p.getText();
+      const pages = result?.pages || [];
+      text = pages.map(pg => pg.text).join('\n\n--- Page Break ---\n\n');
+      metadata = { type: 'pdf', pages: pages.length };
     }
 
     else {

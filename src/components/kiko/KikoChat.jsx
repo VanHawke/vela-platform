@@ -539,8 +539,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           setPendingAttachment({ type: 'image', mediaType: file.type, data: base64, previewUrl, name: file.name })
           setFileUploading(false)
           return // Don't auto-submit
-        } else if (isPdf) {
-          handleSubmit(`I've uploaded a PDF: "${file.name}". Analyse it thoroughly.`, [{ type: 'document', mediaType: 'application/pdf', data: base64 }])
         } else {
           // Document files: extract text server-side then send to Kiko
           const isDocument = file.name.match(/\.(docx?|xlsx?|xlsm|pptx?|pdf)$/i)

@@ -7,7 +7,7 @@ import { classifyIntent, INTENT_TO_AGENT } from './agents/intent-classifier.js';
 import { generateSelfKnowledge } from './kiko-self-knowledge.js';
 import { describeScreen } from './agents/screen-reader.js';
 
-export const config = { supportsResponseStreaming: true, maxDuration: 120 };
+export const config = { supportsResponseStreaming: true, maxDuration: 120, api: { bodyParser: { sizeLimit: '12mb' } } };
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const MODEL = 'claude-sonnet-4-20250514';
