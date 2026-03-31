@@ -168,7 +168,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   // Edit mode: pre-fill input when edit button clicked
   useEffect(() => {
-    if (editingIdx !== null) { setInput(editText); inputRef.current?.focus(); setEditingIdx(null) }
+    if (editingIdx !== null) { if (inputRef.current) inputRef.current.value = editText; setInput(editText); inputRef.current?.focus(); setEditingIdx(null) }
   }, [editingIdx])
 
   // Auto-load conversation after navigation (page reload preserves state via sessionStorage)
@@ -247,7 +247,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         sr.lang = 'en-US'
         transcribeRef.current.sr = sr
         transcribeRef.current.active = true
-        transcribeRef.current.baseInput = input
+        transcribeRef.current.baseInput = inputRef.current?.value || ''
         transcribeRef.current.committed = ''  // All committed final text
         setTranscribing(true)
         sr.onresult = (e) => {
@@ -265,6 +265,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           const base = transcribeRef.current.baseInput
           const committed = transcribeRef.current.committed
           const display = (base ? base + ' ' : '') + committed + (interim ? ' ' + interim : '')
+          if (inputRef.current) inputRef.current.value = display.trim()
           setInput(display.trim())
         }
         sr.onerror = (e) => {
@@ -313,7 +314,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             body: JSON.stringify({ action: 'transcribe', audio: base64 })
           })
           const stt = await sttRes.json()
-          if (stt.text) setInput(prev => prev + (prev ? ' ' : '') + stt.text)
+          if (stt.text) { const cur = inputRef.current?.value || ''; const newVal = cur + (cur ? ' ' : '') + stt.text; if (inputRef.current) inputRef.current.value = newVal; setInput(newVal) }
           setTranscribing(false)
         }
         recorder.start()
@@ -335,7 +336,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     setActiveConvId(conv.id); setStreamText(''); setStreaming(false); setShowAllMsgs(false)
   }
   const startNewChat = () => {
-    setMessages([]); setActiveConvId(null); setStreamText(''); setStreaming(false); setInput('')
+    setMessages([]); setActiveConvId(null); setStreamText(''); setStreaming(false); if (inputRef.current) inputRef.current.value = ''; setInput('')
     setVoiceActive(false); setVoiceMessages([])
     if (voiceMicStream) { voiceMicStream.getTracks().forEach(t => t.stop()); setVoiceMicStream(null) }
     inputRef.current?.focus()
@@ -418,7 +419,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   }
 
   const handleSubmit = useCallback(async (text, fileAttachments = []) => {
-    const msg = (text || input).trim()
+    const msg = (text || inputRef.current?.value || '').trim()
     // Include pending attachment if present
     const allAttachments = [...fileAttachments]
     if (pendingAttachment) allAttachments.push(pendingAttachment)
@@ -426,6 +427,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     // Stop dictation on submit
     if (transcribing) { transcribeRef.current.active = false; if (transcribeRef.current.sr) { try { transcribeRef.current.sr.stop() } catch {} transcribeRef.current.sr = null }; setTranscribing(false) }
     const effectiveMsg = msg || (allAttachments.length ? `Analyse this file: "${allAttachments[0].name || 'uploaded file'}"` : '')
+    if (inputRef.current) inputRef.current.value = ''
     setInput('')
     setPendingAttachment(null)
     const displayMsg = effectiveMsg
@@ -510,7 +512,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       setStreamText('')
     }
     finally { setStreaming(false); streamingRef.current = false }
-  }, [input, streaming, messages, user, activeConvId, pendingAttachment])
+  }, [streaming, messages, user, activeConvId, pendingAttachment])
 
   const processFileForKiko = async (file) => {
     if (!file || fileUploading || streaming) return
@@ -594,8 +596,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         </button>
         {/* Textarea — physically expands via useEffect, handles macOS dictation */}
         <textarea
-          ref={inputRef} value={input} dir="ltr"
-          onChange={e => { if (!composingRef.current) setInput(e.target.value) }}
+          ref={inputRef} dir="ltr" defaultValue={initialMessage || ''}
+          onChange={e => { setInput(e.target.value) }}
           onCompositionStart={() => { composingRef.current = true }}
           onCompositionEnd={e => { composingRef.current = false; setInput(e.target.value) }}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !composingRef.current) { e.preventDefault(); handleSubmit(); } }}
