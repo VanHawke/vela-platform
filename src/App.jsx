@@ -7,7 +7,7 @@ import AuthCallback from '@/pages/AuthCallback'
 import Layout from '@/components/layout/Layout'
 import KikoChat from '@/components/kiko/KikoChat'
 import Settings from '@/components/settings/Settings'
-// Dashboard removed — KikoChat is the home page, DraftActions rendered inline
+// Dashboard removed — KikoChat is the home page
 import Pipeline from '@/pages/Pipeline'
 import Contacts from '@/pages/Contacts'
 import ContactDetail from '@/pages/ContactDetail'
