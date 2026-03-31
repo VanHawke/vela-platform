@@ -68,9 +68,10 @@ export default async function handler(req, res) {
     results.intelligence = intelResults
   } catch (e) { results.intelligence = { error: e.message } }
 
+  await cronHeartbeat('cron-enrich', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: Object.keys(results).length });
   return res.json({ status: 'complete', timestamp: new Date().toISOString(), results })
   } catch (__hbErr) {
     await cronHeartbeat('cron-enrich', 'error', { heartbeatId: __hbId, errorMessage: __hbErr?.message || 'unknown' });
-    throw __hbErr;
+    return res.status(200).json({ ok: false, error: __hbErr?.message });
   }
 }

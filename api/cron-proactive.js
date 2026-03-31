@@ -96,6 +96,7 @@ export default async function handler(req, res) {
     // Skip if no data worth cross-referencing
     const hasData = newsSignals.length + outreachReplies.length + stale.length + overdue.length;
     if (hasData === 0) {
+      await cronHeartbeat('cron-proactive', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 });
       return res.status(200).json({ ok: true, message: 'No signals to cross-reference', alerts: 0 });
     }
 
@@ -113,10 +114,12 @@ export default async function handler(req, res) {
       alerts = JSON.parse(rawText.replace(/```json|```/g, '').trim());
     } catch {
       console.error('[Proactive] Failed to parse Haiku response:', rawText.slice(0, 200));
+      await cronHeartbeat('cron-proactive', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 });
       return res.status(200).json({ ok: true, message: 'Cross-reference ran but parse failed', raw: rawText.slice(0, 200) });
     }
 
     if (!Array.isArray(alerts) || !alerts.length) {
+      await cronHeartbeat('cron-proactive', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 });
       return res.status(200).json({ ok: true, message: 'No convergence detected', alerts: 0 });
     }
 
@@ -170,6 +173,7 @@ export default async function handler(req, res) {
     const users = await getActiveUsers();
     for (const u of users) { try { await sendAlertEmail(alerts, u.email); } catch {} }
 
+    await cronHeartbeat('cron-proactive', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: written });
     return res.status(200).json({ ok: true, alerts: written, drafts, total_signals: hasData });
   } catch (err) {
     console.error('[Proactive] Engine error:', err.message);

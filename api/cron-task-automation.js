@@ -217,13 +217,15 @@ export default async function handler(req, res) {
     }
 
     console.log('[TaskAutomation] Complete:', JSON.stringify(summary));
+    await cronHeartbeat('cron-task-automation', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: summary.total_processed || 0 });
     return res.json({ ok: true, ...summary });
   } catch (err) {
     console.error('[TaskAutomation] Error:', err.message);
-    return res.status(500).json({ error: err.message });
+    await cronHeartbeat('cron-task-automation', 'error', { heartbeatId: __hbId, errorMessage: err.message }).catch(() => {});
+    return res.status(200).json({ ok: false, error: err.message });
   }
   } catch (__hbErr) {
     await cronHeartbeat('cron-task-automation', 'error', { heartbeatId: __hbId, errorMessage: __hbErr?.message || 'unknown' });
-    throw __hbErr;
+    return res.status(200).json({ ok: false, error: __hbErr?.message });
   }
 }

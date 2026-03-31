@@ -25,10 +25,10 @@ export default async function handler(req, res) {
 
     const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${now.toISOString()}&timeMax=${twoHours.toISOString()}&singleEvents=true&orderBy=startTime&maxResults=5`;
     const calRes = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-    if (!calRes.ok) return res.status(200).json({ ok: false, error: 'Calendar fetch failed' });
+    if (!calRes.ok) { results.push({ user: user.email, ok: false, error: 'Calendar fetch failed' }); continue; }
     const calData = await calRes.json();
     const events = (calData.items || []).filter(e => e.attendees?.length > 0);
-    if (!events.length) return res.status(200).json({ ok: true, message: 'No upcoming meetings with attendees', preps: 0 });
+    if (!events.length) { results.push({ user: user.email, ok: true, preps: 0 }); continue; }
 
     // Check which events already have prep generated
     const existingPreps = await sbFetch(`kiko_meeting_prep?user_id=eq.${USER_ID}&event_time=gte.${now.toISOString()}&select=calendar_event_id`);

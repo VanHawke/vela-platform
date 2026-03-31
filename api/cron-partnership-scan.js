@@ -198,6 +198,6 @@ export default async function handler(req, res) {
   return res.json({ ok: true, ...summary });
   } catch (__hbErr) {
     await cronHeartbeat('cron-partnership-scan', 'error', { heartbeatId: __hbId, errorMessage: __hbErr?.message || 'unknown' });
-    throw __hbErr;
+    return res.status(200).json({ ok: false, error: __hbErr?.message });
   }
 }

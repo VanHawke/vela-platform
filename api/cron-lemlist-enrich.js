@@ -93,7 +93,7 @@ export default async function handler(req, res) {
     .order('updated_at', { ascending: false })
     .limit(200);
 
-  if (!contacts?.length) return res.json({ ok: true, message: 'No contacts need enrichment', enriched: 0 });
+  if (!contacts?.length) { await cronHeartbeat('cron-lemlist-enrich', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 }); return res.json({ ok: true, message: 'No contacts need enrichment', enriched: 0 }); }
 
   // Prioritise: deal-linked contacts first, then others
   const sorted = (contacts || []).sort((a, b) => {
@@ -143,9 +143,10 @@ export default async function handler(req, res) {
     });
   }
 
+  await cronHeartbeat('cron-lemlist-enrich', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: summary.enriched || 0 });
   return res.json({ ok: true, ...summary });
   } catch (__hbErr) {
     await cronHeartbeat('cron-lemlist-enrich', 'error', { heartbeatId: __hbId, errorMessage: __hbErr?.message || 'unknown' });
-    throw __hbErr;
+    return res.status(200).json({ ok: false, error: __hbErr?.message });
   }
 }

@@ -22,6 +22,7 @@ export default async function handler(req, res) {
 
     if (!Array.isArray(docs) || docs.length === 0) {
       console.log('[DocScan] No documents need re-scanning')
+      await cronHeartbeat('cron-document-scan', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 });
       return res.status(200).json({ scanned: 0, message: 'All documents up to date' })
     }
 
@@ -50,10 +51,10 @@ export default async function handler(req, res) {
     return res.status(200).json({ scanned: results.length, results })
     } catch (innerErr) {
       await cronHeartbeat('cron-document-scan', 'error', { heartbeatId: __hbId, errorMessage: innerErr.message });
-      throw innerErr;
+      return res.status(200).json({ ok: false, error: innerErr.message });
     }
   } catch (err) {
     console.error('[DocScan] Cron error:', err.message)
-    return res.status(500).json({ error: err.message })
+    return res.status(200).json({ ok: false, error: err.message })
   }
 }

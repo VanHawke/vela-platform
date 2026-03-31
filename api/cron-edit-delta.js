@@ -30,13 +30,13 @@ export default async function handler(req, res) {
     const users = await getActiveUsers();
     let token = null;
     for (const u of users) { token = await getGoogleToken(u.email); if (token) break; }
-    if (!token) return res.status(200).json({ ok: false, error: 'No Google token' });
+    if (!token) { await cronHeartbeat('cron-edit-delta', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 }); return res.status(200).json({ ok: false, error: 'No Google token' }); }
 
     // Get unresolved drafts (status = 'drafted', created in last 7 days)
     const since = new Date(Date.now() - 7 * 86400000).toISOString();
     const drafts = await sbFetch(`kiko_draft_tracking?status=eq.drafted&created_at=gt.${since}&order=created_at.desc&limit=20`);
     const safe = Array.isArray(drafts) ? drafts : [];
-    if (!safe.length) return res.status(200).json({ ok: true, message: 'No pending drafts to check', deltas: 0 });
+    if (!safe.length) { await cronHeartbeat('cron-edit-delta', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 }); return res.status(200).json({ ok: true, message: 'No pending drafts to check', deltas: 0 }); }
 
     let deltasFound = 0;
     for (const draft of safe) {
@@ -108,9 +108,10 @@ export default async function handler(req, res) {
       } catch {} // Individual draft failure doesn't stop the loop
     }
 
+    await cronHeartbeat('cron-edit-delta', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: deltasFound });
     return res.status(200).json({ ok: true, drafts_checked: safe.length, deltas: deltasFound });
   } catch (err) {
-    await cronHeartbeat('cron-edit-delta', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart });
+    await cronHeartbeat('cron-edit-delta', 'error', { heartbeatId: __hbId, errorMessage: err.message, durationMs: Date.now() - __hbStart }).catch(() => {});
     return res.status(200).json({ ok: false, error: err.message });
   }
 }

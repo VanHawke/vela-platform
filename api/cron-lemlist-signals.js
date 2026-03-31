@@ -43,6 +43,7 @@ export default async function handler(req, res) {
   const result = await tryFetchSignals();
   if (!result) {
     console.log('[LemlistSignals] Signals API not available — signals flow via webhooks instead');
+    await cronHeartbeat('cron-lemlist-signals', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 });
     return res.json({ ok: true, message: 'Signals API not available on current plan. Signals flow via lemlist-webhook.js in real-time.', newAlerts: 0 });
   }
 
@@ -92,9 +93,10 @@ export default async function handler(req, res) {
     await new Promise(r => setTimeout(r, 300));
   }
 
+  await cronHeartbeat('cron-lemlist-signals', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: signals.length });
   return res.json({ ok: true, path, signalsProcessed: signals.length, newAlerts, timestamp: new Date().toISOString() });
   } catch (__hbErr) {
     await cronHeartbeat('cron-lemlist-signals', 'error', { heartbeatId: __hbId, errorMessage: __hbErr?.message || 'unknown' });
-    throw __hbErr;
+    return res.status(200).json({ ok: false, error: __hbErr?.message });
   }
 }

@@ -54,7 +54,7 @@
     "api/cron-relationship-intel.js": { "maxDuration": 45 },
     "api/cron-meeting-prep.js": { "maxDuration": 45 },
     "api/cron-inbox-triage.js": { "maxDuration": 45 },
-    "api/cron-task-automation.js": { "maxDuration": 30 },
+    "api/cron-task-automation.js": { "maxDuration": 45 },
     "api/cron-lemlist-enrich.js": { "maxDuration": 45 },
     "api/cron-lemlist-signals.js": { "maxDuration": 30 },
     "api/import-conversations.js": { "maxDuration": 120 },
@@ -69,7 +69,8 @@
     "api/cron-email-template-learning.js": { "maxDuration": 45 },
     "api/cron-self-improvement.js": { "maxDuration": 60 },
     "api/cron-weekly-report.js": { "maxDuration": 60 },
-    "api/cron-partnership-verify.js": { "maxDuration": 120 }
+    "api/cron-partnership-verify.js": { "maxDuration": 120 },
+    "api/cron-health-check.js": { "maxDuration": 45 }
   },
   "rewrites": [
     { "source": "/api/google-auth/callback", "destination": "/api/google-auth" },

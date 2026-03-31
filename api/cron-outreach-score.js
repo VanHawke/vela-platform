@@ -258,6 +258,6 @@ ${JSON.stringify(emailBatch, null, 1)}` }]
   } catch (err) {
     console.error('[Outreach Score] Error:', err.message)
     await cronHeartbeat('cron-outreach-score', 'error', { heartbeatId: __hbId, errorMessage: err.message });
-    return res.status(500).json({ error: err.message })
+    return res.status(200).json({ ok: false, error: err.message })
   }
 }

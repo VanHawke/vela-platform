@@ -338,7 +338,7 @@ export default async function handler(req, res) {
     // Resolve USER_ID dynamically — shared knowledge, written under first super_admin
     const users = await getActiveUsers();
     const USER_ID = users.find(u => u.role === 'super_admin')?.user_id || users[0]?.user_id;
-    if (!USER_ID) return res.status(200).json({ ok: false, error: 'No active users' });
+    if (!USER_ID) { await cronHeartbeat('cron-learning-director', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 }); return res.status(200).json({ ok: false, error: 'No active users' }); }
 
     // Discover what's already been learned
     const learned = await getLearnedTopicCount();
@@ -409,6 +409,6 @@ export default async function handler(req, res) {
   } catch (err) {
     await logError('cron:learning-director', err.message);
     await cronHeartbeat('cron-learning-director', 'error', { heartbeatId: __hbId, errorMessage: err.message });
-    return res.status(500).json({ error: err.message });
+    return res.status(200).json({ ok: false, error: err.message });
   }
 }
