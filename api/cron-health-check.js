@@ -114,22 +114,32 @@ export default async function handler(req, res) {
       if (cronProblems.length) alertParts.push(`CRON ISSUES: ${cronProblems.map(p => `${p.cron} (${p.issue}: ${p.detail})`).join('; ')}`);
       alertParts.push(`PASSING: ${passed.map(p => p.name).join(', ')}`);
 
+      // Send external alert — but only once per unique issue set (suppress repeat emails)
+      const issueFingerprint = [...failed.map(f => f.name), ...cronProblems.map(p => p.cron)].sort().join(',');
+      let shouldEmail = true;
+      try {
+        const recentAlerts = await sbFetch(`kiko_alerts?type=eq.system_health&created_at=gt.${new Date(Date.now() - 4 * 3600000).toISOString()}&select=metadata&order=created_at.desc&limit=1`);
+        const lastFingerprint = recentAlerts?.[0]?.metadata?.fingerprint;
+        if (lastFingerprint === issueFingerprint) shouldEmail = false; // Same issues, don't re-email
+      } catch {}
+
       await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
         type: 'system_health', severity: 'high',
         title: `⚠️ SYSTEM HEALTH: ${failed.length} check(s) failing, ${cronProblems.length} cron issue(s)`,
         detail: alertParts.join('. '),
         entity_type: 'system', entity_name: 'Health Check',
-        metadata: { results, cronProblems, timestamp: new Date().toISOString() },
+        metadata: { results, cronProblems, fingerprint: issueFingerprint, timestamp: new Date().toISOString() },
         expires_at: new Date(Date.now() + 4 * 3600000).toISOString(),
       })});
 
-      // Send external alert (Slack / Gmail)
-      const severity = failed.some(f => ['supabase', 'anthropic', 'kiko_endpoint'].includes(f.name)) ? 'critical' : 'warning';
-      await sendAlert(
-        `${failed.length} system check(s) failing, ${cronProblems.length} cron issue(s)`,
-        alertParts.join('\n'),
+      if (shouldEmail) {
+        const severity = failed.some(f => ['supabase', 'anthropic', 'kiko_endpoint'].includes(f.name)) ? 'critical' : 'warning';
+        await sendAlert(
+          `${failed.length} system check(s) failing, ${cronProblems.length} cron issue(s)`,
+          alertParts.join('\n'),
         severity
       ).catch(() => {});
+      } // end shouldEmail
 
       for (const f of failed) {
         await logError('health-check', `${f.name}: ${f.error}`, '', 'error');
