@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     ]);
 
     // Calculate pipeline metrics
-    const allDeals = deals || [];
+    const allDeals = Array.isArray(deals) ? deals : [];
     let totalRaw = 0, totalWeighted = 0;
     const staleDeals = [];
     for (const d of allDeals) {
@@ -51,16 +51,16 @@ export default async function handler(req, res) {
     }
 
     // Outreach metrics
-    const outreachData = outreach || [];
+    const outreachData = Array.isArray(outreach) ? outreach : [];
     const replied = outreachData.filter(o => o.outcome === 'replied').length;
     const outreachRate = outreachData.length ? Math.round(replied / outreachData.length * 100) : 0;
 
     // Tasks
-    const outstanding = (tasks || []).filter(t => !t.data?.completed);
+    const outstanding = (Array.isArray(tasks) ? tasks : []).filter(t => !t.data?.completed);
     const overdue = outstanding.filter(t => t.data?.dueDate && new Date(t.data.dueDate) < now);
 
     // Stage movements this week
-    const moves = (stageHistory || []).slice(0, 10);
+    const moves = (Array.isArray(stageHistory) ? stageHistory : []).slice(0, 10);
 
     // Build data for Sonnet synthesis
     const reportData = JSON.stringify({
@@ -69,9 +69,9 @@ export default async function handler(req, res) {
       stage_movements: moves.length,
       outreach: { sent: outreachData.length, replied, rate: outreachRate + '%' },
       tasks: { outstanding: outstanding.length, overdue: overdue.length },
-      alerts: (alerts || []).length,
-      decisions: (decisions || []).slice(0, 5).map(d => ({ entity: d.entity_name, summary: (d.content || '').slice(0, 100) })),
-      new_partnerships: (newPartnerships || []).map(p => `${p.partner_name} → ${p.team_id} (${p.category_id})`),
+      alerts: (Array.isArray(alerts) ? alerts : []).length,
+      decisions: (Array.isArray(decisions) ? decisions : []).slice(0, 5).map(d => ({ entity: d.entity_name, summary: (d.content || '').slice(0, 100) })),
+      new_partnerships: (Array.isArray(newPartnerships) ? newPartnerships : []).map(p => `${p.partner_name} → ${p.team_id} (${p.category_id})`),
     });
 
     // Synthesise via Sonnet
