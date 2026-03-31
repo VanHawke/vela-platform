@@ -422,11 +422,14 @@ export default async function handler(req, res) {
   const userId = userConfig.user_id || crypto.randomUUID(); // Ephemeral UUID for unregistered — never accumulates data
   const isSuperAdmin = userConfig.role === 'super_admin';
 
+  // ── Early greeting detection — skip heavy fetches for simple greetings ──
+  const earlyGreeting = /^(hi|hey|hello|good\s+(morning|afternoon|evening)|howdy|what'?s?\s+up|yo)\b/i.test((message || '').trim());
+
   // ── PARALLEL INITIAL LOAD — entityContext, identity, selfKnowledge all at once ──
   const [entityContext, identityResult, selfKnowledge, voiceMemResult] = await Promise.all([
-    fetchEntityContext(pageEntity),
+    earlyGreeting ? Promise.resolve('') : fetchEntityContext(pageEntity),
     sbFetch(`kiko_memories?path=eq./memories/identity.md&user_id=eq.${userId}&select=content&limit=1`).catch(() => []),
-    generateSelfKnowledge(userId).catch(() => 'Self-knowledge unavailable.'),
+    earlyGreeting ? Promise.resolve('') : generateSelfKnowledge(userId).catch(() => 'Self-knowledge unavailable.'),
     (voiceMode || currentPage === 'voice')
       ? sbFetch(`kiko_memories?select=path,content&is_directory=eq.false&user_id=eq.${userId}&path=like./memories/%_profile.md&order=path.asc`).catch(() => [])
       : Promise.resolve([]),
@@ -886,10 +889,12 @@ export default async function handler(req, res) {
     const requestStart = Date.now();
 
     // Fast-path for greetings and simple queries — skip tool loop, use Haiku for speed
+    // First-message greetings use Sonnet (proactive status needs quality), mid-conversation greetings use Haiku
     const FAST_RESPONSE_INTENTS = ['greeting'];
     const isSimpleGreeting = FAST_RESPONSE_INTENTS.includes(intent);
+    const useHaikuForGreeting = isSimpleGreeting && !isFirstMessage;
     const skipTools = isSimpleGreeting;
-    let response = await streamCall(messages, skipTools ? { noTools: true, maxTokens: 1500, useHaiku: true } : {});
+    let response = await streamCall(messages, skipTools ? { noTools: true, maxTokens: 1500, useHaiku: useHaikuForGreeting } : {});
     let toolRounds = 0;
 
     // Tool execution loop — time-aware, stops before timeout
@@ -979,7 +984,8 @@ export default async function handler(req, res) {
 
     // Include cache stats in meta for cost tracking
     const usage = response?.usage || {};
-    write({ meta: { done: true, model: needsDeepThink ? 'claude-opus-4-6' : MODEL, toolRounds, intent, version: 'v16.2',
+    const actualModel = needsDeepThink ? 'claude-opus-4-6' : (useHaikuForGreeting ? 'claude-haiku-4-5-20251001' : MODEL);
+    write({ meta: { done: true, model: actualModel, toolRounds, intent, version: 'v16.3',
       cache: { write: usage.cache_creation_input_tokens || 0, read: usage.cache_read_input_tokens || 0, input: usage.input_tokens || 0, output: usage.output_tokens || 0 }
     } });
     finished = true; clearTimeout(watchdog);
