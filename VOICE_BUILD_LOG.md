@@ -239,3 +239,32 @@
 - **Fix:** Changed both `useRealtimeVoice.js` and `KikoVoice.jsx` to dispatch `kiko_navigate` custom event instead. Layout.jsx listens for this event and calls `kikoNavigate()` which uses React Router's `navigate()` function. This triggers proper re-render of the entire component tree including Layout, nav bar, and page header.
 - **Files:** useRealtimeVoice.js, KikoVoice.jsx, Layout.jsx
 - **Lesson:** Never use pushState for SPA navigation. Always go through React Router.
+
+
+## ✅ CONFIRMED: Voice follows across pages (1 Apr 2026)
+### Test: Home → "take me to command centre" (simulated via kiko_navigate event)
+- [x] Nav bar visible on command centre page
+- [x] Page header "Command Centre" with stats visible
+- [x] KikoFloat panel auto-opened with voice active ("Kiko • Listening")
+- [x] Red stop button shows voice is running
+- [x] Prompt bar still usable for text input + file upload
+
+### How it works:
+1. Voice nav dispatches `kiko_navigate` event with page name
+2. Layout.jsx handler: resets `voiceFullscreen` (shows nav), sets `floatVoiceRequested=true`, calls React Router `navigate()`
+3. Safety net `useEffect`: if `!isHome && voiceFullscreen`, force reset to false
+4. KikoFloat receives `autoVoice=true` prop → auto-opens panel + activates inline voice via `useRealtimeVoice` hook
+5. KikoFloat calls `onAutoVoiceConsumed()` to reset the flag
+
+### Settings voice picker:
+- Voice selection saves to `user_settings` (Supabase) AND `localStorage`
+- `useRealtimeVoice.js` and `KikoVoice.jsx` read from `localStorage.getItem('kiko_voice')`
+- `api/realtime-token.js` accepts `voice` parameter in request body
+- Available voices: shimmer, coral (default), sage, verse, marin, alloy, echo, cedar
+
+### REMAINING FOR NEXT SESSION:
+1. Voice preview play buttons in Settings (currently hit deleted /api/voice endpoint)
+2. Speech Speed setting — not wired
+3. Personality setting — display only
+4. Voice tone/pitch/femininity controls — not available in GPT-4o Realtime API (voice is fixed per model)
+5. Occasional self-reply — monitor with VAD 0.6
