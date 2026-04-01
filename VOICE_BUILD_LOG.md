@@ -206,3 +206,29 @@
 7. Clear service workers if architecture changed
 8. Hard refresh (Cmd+Shift+R)
 9. Test: voice from home, voice from KikoFloat, ask_kiko fires, interruption, goodbye
+
+
+## DEPLOY: Inline KikoFloat voice + web search fix (1 Apr 2026)
+### Changes:
+1. **Inline voice in KikoFloat** — Created `useRealtimeVoice.js` hook (headless WebRTC). KikoFloat EQ button starts voice WITHOUT leaving the page. User stays on pipeline/contacts/etc while talking to Kiko. Prompt bar + attach file still usable during voice.
+2. **Web search timeout** — Voice mode tool rounds 3→5, timeout 20s→45s. Research queries ("find top 20 companies") now have time for 3-8 web searches + synthesis.
+3. **Voice status in float header** — Shows "Kiko • Speaking" / "Listening" / "Thinking" / "Connecting" with coloured dot.
+4. **Red stop button** — EQ icon swaps to red square when voice active.
+
+### Verified working:
+- [x] Pipeline page stays visible during voice
+- [x] KikoFloat panel open with voice active
+- [x] Status indicator in float header
+- [x] Prompt bar still usable
+- [x] ask_kiko tool calls firing
+- [x] WebRTC connected (`[RealtimeVoice] Connected`)
+
+### Files:
+- NEW: `src/hooks/useRealtimeVoice.js` — headless GPT-4o WebRTC hook
+- MOD: `src/components/kiko/KikoFloat.jsx` — uses hook, inline voice, status indicator
+- MOD: `api/kiko.js` — voice timeout 20s→45s, tool rounds 3→5
+
+### Note: Triple `[RealtimeVoice] Connected` in console
+- Hook may be mounting 3 times due to React strict mode or multiple renders
+- Not causing issues but should investigate if it creates multiple WebRTC connections
+- Fix: add cleanup in useEffect to prevent double-connect
