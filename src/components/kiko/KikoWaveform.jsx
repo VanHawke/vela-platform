@@ -46,11 +46,11 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
           const fv = (freq[fi] || 0) / 255
           eqU = fv * 0.8 + Math.abs(Math.sin(t * b.f1 + b.ph)) * 0.2
           eqD = fv * 0.7 + Math.abs(Math.sin(t * b.f2 + b.ph + 1.8)) * 0.3
-        } else if (vol < 0.25) {
-          // Idle/low volume — uniform breathing bars (no diagonal in mini mode)
-          const breathe = 0.45 + 0.2 * Math.sin(t * 1.5)
-          eqU = breathe
-          eqD = breathe * 0.85
+        } else if (vol < 0.25 || mini) {
+          // Uniform bars — scales with volume but stays horizontal (no diagonal)
+          const breathe = (0.35 + 0.2 * Math.sin(t * 1.5)) * (1 + vol * 2)
+          eqU = Math.min(breathe, 0.9)
+          eqD = Math.min(breathe * 0.85, 0.8)
         } else {
           eqU = Math.abs(Math.sin(t * b.f1 + b.ph))
           eqD = Math.abs(Math.sin(t * b.f2 + b.ph + 1.8))
