@@ -72,6 +72,7 @@ export function useRealtimeVoice({ active, onClose }) {
   const audioRef = useRef(null)
   const streamRef = useRef(null)
   const deadRef = useRef(false)
+  const connectingRef = useRef(false) // Guard against double-mount in React strict mode
 
   // Expose close handler for close_voice tool
   const onCloseRef = useRef(onClose)
@@ -105,6 +106,8 @@ export function useRealtimeVoice({ active, onClose }) {
   }, [])
 
   const connect = useCallback(async () => {
+    if (connectingRef.current || pcRef.current) return // Prevent double-connect
+    connectingRef.current = true
     try {
       deadRef.current = false
       setStatus('connecting')
@@ -125,7 +128,26 @@ export function useRealtimeVoice({ active, onClose }) {
       audioEl.style.display = 'none'
       document.body.appendChild(audioEl)
       audioRef.current = audioEl
-      pc.ontrack = (e) => { audioEl.srcObject = e.streams[0] }
+      pc.ontrack = (e) => {
+        audioEl.srcObject = e.streams[0]
+        // Create analyser for frequency data (drives KikoWaveform)
+        try {
+          const actx = new AudioContext()
+          const src = actx.createMediaStreamSource(e.streams[0])
+          const an = actx.createAnalyser(); an.fftSize = 256; an.smoothingTimeConstant = 0.75
+          src.connect(an)
+          const fd = new Uint8Array(an.frequencyBinCount)
+          const pump = () => {
+            if (deadRef.current) return
+            an.getByteFrequencyData(fd)
+            window.__kikoFreqData = fd
+            let s = 0; for (let i = 0; i < fd.length; i++) s += fd[i] * fd[i]
+            window.__kikoAudioEnergy = Math.min(0.55, Math.sqrt(s / fd.length) / 255 * 2.5)
+            requestAnimationFrame(pump)
+          }
+          requestAnimationFrame(pump)
+        } catch {}
+      }
 
       const ms = await navigator.mediaDevices.getUserMedia({ audio: true })
       if (deadRef.current) { ms.getTracks().forEach(t => t.stop()); return }
@@ -158,11 +180,13 @@ export function useRealtimeVoice({ active, onClose }) {
       if (!sdpRes.ok) throw new Error('SDP failed: ' + sdpRes.status)
       await pc.setRemoteDescription({ type: 'answer', sdp: await sdpRes.text() })
       console.log('[RealtimeVoice] Connected')
-    } catch (err) { console.error('[RealtimeVoice] Connect failed:', err); setStatus('error') }
+      connectingRef.current = false
+    } catch (err) { console.error('[RealtimeVoice] Connect failed:', err); setStatus('error'); connectingRef.current = false }
   }, [handleDCMessage])
 
   const disconnect = useCallback(() => {
     deadRef.current = true
+    connectingRef.current = false
     if (dcRef.current) try { dcRef.current.close() } catch {}
     if (pcRef.current) try { pcRef.current.close() } catch {}
     streamRef.current?.getTracks().forEach(t => t.stop())

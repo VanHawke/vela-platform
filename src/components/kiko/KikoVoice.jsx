@@ -78,6 +78,8 @@ export default function KikoVoice({ onClose, user, onVoiceState }) {
       const d = new Uint8Array(an.frequencyBinCount)
       const pump = () => {
         an.getByteFrequencyData(d)
+        // Expose raw frequency data for KikoWaveform spectral reactivity
+        window.__kikoFreqData = d
         let s = 0; for (let i = 0; i < d.length; i++) s += d[i] * d[i]
         const rms = Math.sqrt(s / d.length) / 255
         window.__kikoAudioEnergy = Math.min(0.55, rms * 2.5)

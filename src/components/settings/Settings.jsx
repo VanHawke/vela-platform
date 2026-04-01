@@ -82,9 +82,9 @@ export default function Settings({ user }) {
     if (previewAudioRef.current) { previewAudioRef.current.pause(); previewAudioRef.current = null }
     setPreviewingVoice(voiceId)
     try {
-      const res = await fetch('/api/voice', {
+      const res = await fetch('/api/voice-preview', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'preview-voice', voice: voiceId })
+        body: JSON.stringify({ voice: voiceId })
       })
       if (!res.ok) { setPreviewingVoice(null); return }
       const blob = await res.blob()
@@ -381,7 +381,7 @@ export default function Settings({ user }) {
               <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Speech Speed</h3>
               <div style={{ display: 'flex', gap: 8 }}>
                 {SPEEDS.map(s => (
-                  <button key={s.id} onClick={() => saveSettings({ kiko_speed: s.id })} style={{
+                  <button key={s.id} onClick={() => { saveSettings({ kiko_speed: s.id }); try { localStorage.setItem('kiko_speed', s.id) } catch {} }} style={{
                     padding: '8px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
                     background: parseFloat(settings.kiko_speed || 1.0) === s.id ? T.accent : T.surface,
                     color: parseFloat(settings.kiko_speed || 1.0) === s.id ? 'rgba(255,255,255,0.9)' : T.textSecondary,
@@ -414,7 +414,7 @@ export default function Settings({ user }) {
                 ].map(p => {
                   const sel = (settings.kiko_personality || 'executive') === p.id
                   return (
-                    <button key={p.id} onClick={() => saveSettings({ kiko_personality: p.id })} style={{
+                    <button key={p.id} onClick={() => { saveSettings({ kiko_personality: p.id }); try { localStorage.setItem('kiko_personality', p.id) } catch {} }} style={{
                       padding: '8px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
                       background: sel ? T.accent : T.surface,
                       color: sel ? 'rgba(255,255,255,0.9)' : T.textSecondary,

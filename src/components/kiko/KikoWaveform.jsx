@@ -38,8 +38,18 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
       const maxH = CY * 0.85
       for (let i = 0; i < N; i++) {
         const b = bars[i]
-        const eqU = Math.abs(Math.sin(t * b.f1 + b.ph))
-        const eqD = Math.abs(Math.sin(t * b.f2 + b.ph + 1.8))
+        // Use real frequency data if available (from audio analyser)
+        const freq = window.__kikoFreqData
+        let eqU, eqD
+        if (freq && freq.length > 0 && vol > 0.02) {
+          const fi = Math.floor((i / N) * freq.length)
+          const fv = (freq[fi] || 0) / 255
+          eqU = fv * 0.8 + Math.abs(Math.sin(t * b.f1 + b.ph)) * 0.2
+          eqD = fv * 0.7 + Math.abs(Math.sin(t * b.f2 + b.ph + 1.8)) * 0.3
+        } else {
+          eqU = Math.abs(Math.sin(t * b.f1 + b.ph))
+          eqD = Math.abs(Math.sin(t * b.f2 + b.ph + 1.8))
+        }
         const tU = 1.5 + b.env * vol * maxH * eqU
         const tD = 1.5 + b.env * vol * maxH * eqD
         b.curU = lp(b.curU, tU, 0.14)
