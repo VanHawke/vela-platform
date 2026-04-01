@@ -903,7 +903,7 @@ export default async function handler(req, res) {
       }
       
       const params = {
-        model: useDeep ? 'claude-opus-4-6' : (useHaiku ? 'claude-haiku-4-5-20251001' : MODEL),
+        model: useDeep ? 'claude-opus-4-6' : (useHaiku ? 'claude-haiku-4-5-20251001' : (voiceMode && opts.useHaiku ? 'claude-haiku-4-5-20251001' : MODEL)),
         max_tokens: opts.maxTokens || (useDeep ? 16000 : (voiceMode ? 1500 : 4096)),
         system: systemCached, messages: msgs, tools: toolsWithCache,
       };
@@ -937,17 +937,17 @@ export default async function handler(req, res) {
     const requestStart = Date.now();
 
     // Fast-path for greetings and simple queries — skip tool loop, use Haiku for speed
-    // First-message greetings use Sonnet (proactive status needs quality), mid-conversation greetings use Haiku
+    // Voice: ALL greetings use Haiku (speed > proactive context). Text: first-message greetings use Sonnet.
     const FAST_RESPONSE_INTENTS = ['greeting'];
     const isSimpleGreeting = FAST_RESPONSE_INTENTS.includes(intent);
-    const useHaikuForGreeting = isSimpleGreeting && !isFirstMessage;
+    const useHaikuForGreeting = isSimpleGreeting && (voiceMode || !isFirstMessage);
     const skipTools = isSimpleGreeting;
-    let response = await streamCall(messages, skipTools ? { noTools: true, maxTokens: 1500, useHaiku: useHaikuForGreeting } : {});
+    let response = await streamCall(messages, skipTools ? { noTools: true, maxTokens: voiceMode ? 300 : 1500, useHaiku: useHaikuForGreeting } : {});
     let toolRounds = 0;
 
     // Tool execution loop — time-aware, stops before timeout
     const maxRounds = voiceMode ? 3 : 5;
-    const timeLimit = voiceMode ? 25000 : 65000; // 25s for voice tools, 65s for text
+    const timeLimit = voiceMode ? 20000 : 65000; // 20s for voice tools, 65s for text
     while (response.stop_reason === 'tool_use' && toolRounds < maxRounds) {
       const elapsed = Date.now() - requestStart;
       if (elapsed > timeLimit) {

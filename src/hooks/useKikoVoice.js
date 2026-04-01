@@ -150,10 +150,10 @@ export function useKikoVoice({ user, onClose }) {
     setResponse('');
     dispatchVoiceState({ thinking: true, status: 'Thinking' });
 
-    // Instant filler — speak immediately while brain processes
+    // Fire filler AND brain call in parallel — don't block brain on TTS
     const filler = randomFiller();
     console.log('[Voice] Filler:', filler);
-    await sendToTTS(filler);
+    sendToTTS(filler); // Fire-and-forget, no await
 
     try {
       const res = await fetch('/api/kiko', {
