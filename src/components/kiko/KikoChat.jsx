@@ -982,7 +982,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <h1 style={{ fontSize: 42, fontWeight: 200, color: 'rgba(255,255,255,0.95)', margin: '0 0 6px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
               {getGreeting()}, {firstName}
             </h1>
-            <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.35)', margin: '0 0 27px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
+            <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.35)', margin: '0 0 39px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
           </div>
 
           {/* Prompt bar — slides down in voice mode */}
@@ -1009,12 +1009,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               }}>
                 {dynamicChips.slice(0, 3).map(c => (
                   <button key={c} onClick={() => handleSubmit(c)} style={{
-                    padding: '10px 0', borderRadius: 14, background: T.glass,
-                    flex: '1 1 0', textAlign: 'center', minWidth: 0,
+                    padding: '10px 20px', borderRadius: 14, background: T.glass,
                     backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
                     border: `0.5px solid ${T.glassBorder}`, color: 'rgba(255,255,255,0.55)',
                     fontSize: 13, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.2s', fontWeight: 400,
-                    boxShadow: T.glassShadow, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                    boxShadow: T.glassShadow, whiteSpace: 'nowrap',
                   }}
                     onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = 'rgba(255,255,255,0.85)'; e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = T.glassShadowHover }}
                     onMouseOut={e => { e.currentTarget.style.borderColor = T.glassBorder; e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; e.currentTarget.style.background = T.glass; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = T.glassShadow }}

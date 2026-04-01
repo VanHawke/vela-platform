@@ -47,10 +47,10 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
           eqU = fv * 0.8 + Math.abs(Math.sin(t * b.f1 + b.ph)) * 0.2
           eqD = fv * 0.7 + Math.abs(Math.sin(t * b.f2 + b.ph + 1.8)) * 0.3
         } else if (vol < 0.15) {
-          // Idle/low volume — visible waveform with per-bar variation (matches full equalizer)
-          const wave = 0.4 + 0.25 * Math.sin(t * 1.5 + i * 0.15)
-          eqU = wave
-          eqD = wave * 0.8
+          // Idle/low volume — uniform breathing bars (no diagonal in mini mode)
+          const breathe = 0.45 + 0.2 * Math.sin(t * 1.5)
+          eqU = breathe
+          eqD = breathe * 0.85
         } else {
           eqU = Math.abs(Math.sin(t * b.f1 + b.ph))
           eqD = Math.abs(Math.sin(t * b.f2 + b.ph + 1.8))
