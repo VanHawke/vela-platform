@@ -378,3 +378,33 @@
 - Tag: phase-13-voice-v5
 - All code pushed to origin/main
 - Build log: VOICE_BUILD_LOG.md (comprehensive)
+
+
+## FINAL DEPLOY — 1 April 2026 (evening batch)
+
+### UI Polish:
+- Homepage prompt bar: 640px (conversation stays 720px)
+- 3 equal-width suggestion pills with flex: 1 1 0
+- Typewriter "Ask me anything...." at 70ms per character
+- Greeting font sizes: 42px heading, 18px subtitle
+- Scroll-to-bottom arrow button (glass circle, appears on scroll up)
+- Instant scroll to bottom on conversation load (justLoadedRef)
+- More dropdown frosted: rgba(12,12,18,0.82) with heavy blur
+- Chat title dropdown: Star/Rename/Delete with glassmorphism menu
+- DB migration: starred column on conversations table
+
+### Voice:
+- KikoWaveform idle vol 0.18 with per-bar wave variation (no slant)
+- Spectral equalizer reads real frequency data
+- Avatar consistency: KikoWaveform used everywhere, KikoVoiceOrb removed
+- Triple WebRTC connection guard
+- Inline voice analyser in useRealtimeVoice.js
+- Voice preview endpoint: api/voice-preview.js
+- Speed/personality save to localStorage
+
+### Glassmorphism v4:
+- 12 pages updated with frosted glass surfaces
+- Theme tokens: 0.5px borders, multi-layer shadows, top-edge highlights
+- CSS variables updated in index.css
+
+### GIT TAG: phase-13-complete
