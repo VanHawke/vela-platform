@@ -276,3 +276,48 @@
 - **Fix:** Added `document.body.appendChild(audioEl)` after creation, with `audioEl.style.display = 'none'`. Cleanup removes element on unmount via `audioEl.remove()`.
 - **Files:** KikoVoice.jsx, useRealtimeVoice.js
 - **Lesson:** Always append dynamically created audio/video elements to the DOM.
+
+
+## DEPLOY: KikoVoiceOrb in FAB (1 Apr 2026)
+- Animated teal orb replaces "+" icon when voice mode is active in KikoFloat
+- Three concentric rings + glowing center dot
+- Pulses fast (1s) when speaking, breathes slow (3s) when listening
+- Teal aura rings around FAB sphere when voice active
+- Keyframes: kikoOrbPulse (scale 1→1.15), kikoOrbBreathe (scale 1→1.2)
+
+## END OF DAY STATUS — 1 April 2026
+
+### ARCHITECTURE (FINAL):
+- GPT-4o Realtime WebRTC = instant speech-to-speech voice layer
+- ask_kiko tool = routes ALL data/memory/research to /api/kiko (Claude + 39 tools + web search)
+- navigate_page tool = React Router via kiko_navigate event (preserves Layout)
+- close_voice tool = "Goodbye Kiko" verbal command
+
+### VERIFIED WORKING:
+- [x] Speech-to-speech (sub-second greetings)
+- [x] ask_kiko fires for data questions → Claude brain
+- [x] Web search via Claude (45s timeout, 5 tool rounds)
+- [x] Fullscreen voice from home (KikoVoice.jsx)
+- [x] Inline voice from KikoFloat on any page (useRealtimeVoice.js)
+- [x] Voice follows across pages (autoVoice prop → KikoFloat activates)
+- [x] Nav/header preserved on voice navigation
+- [x] "Goodbye Kiko" closes voice
+- [x] Settings voice picker wired (localStorage → realtime-token)
+- [x] Equalizer animated (fullscreen mode)
+- [x] KikoVoiceOrb animated in FAB (inline mode)
+- [x] Audio element appended to DOM for playback
+- [x] VAD threshold 0.6 (anti self-reply)
+- [x] Settings Kiko/Team tabs hidden for non-super_admin
+
+### REMAINING FOR NEXT SESSION:
+1. Verify audio playback end-to-end (DOM append fix needs user confirmation)
+2. Voice preview play buttons in Settings (need TTS preview endpoint)
+3. Speech speed setting — not wired to GPT-4o (may not be configurable)
+4. Personality setting — display only
+5. Monitor occasional self-reply with VAD 0.6
+6. Triple WebRTC connection on mount (React strict mode?) — needs investigation
+
+### GIT STATE:
+- Tag: phase-13-voice-v4
+- Latest commit includes all fixes
+- Build log: VOICE_BUILD_LOG.md (comprehensive)
