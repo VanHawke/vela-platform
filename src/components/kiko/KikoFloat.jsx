@@ -640,7 +640,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'rgba(139,108,246,0.18)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4)' : '0 0 0 3px rgba(139,108,246,0.05), 0 0 20px rgba(139,108,246,0.08), 0 8px 28px rgba(0,0,0,0.4)' }}}
         >
           {voiceOpen
-            ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, width: 40, height: 40, transform: 'rotate(-45deg)' }}>
+            ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, width: 40, height: 40, transform: open ? 'rotate(-45deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}>
                 {[1,1,1,1,1,1,1].map((_, i) => (
                   <div key={i} style={{
                     width: 2.5, borderRadius: 1.5,
