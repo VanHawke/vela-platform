@@ -699,7 +699,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         borderTop: `0.5px solid ${transcribing ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.15)'}`,
         boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.05) inset',
         transition: 'border-color 0.2s',
-        maxWidth: welcome ? 640 : (compact ? '100%' : 720),
+        maxWidth: welcome ? 540 : (compact ? '100%' : 720),
         width: '100%', margin: '0 auto',
       }}>
         {/* Pending image preview */}
@@ -1009,7 +1009,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
           {/* Prompt bar — slides down in voice mode */}
           <div id="kikoPromptWrap" style={{
-            width: '100%', maxWidth: 640, marginBottom: 14,
+            width: '100%', maxWidth: 540, marginBottom: 14,
             opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 300,
             transform: voiceActive ? 'translateY(40px)' : 'translateY(0)',
             transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.05s',
@@ -1023,7 +1023,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
               {/* 4 chips only — below prompt bar */}
               <div id="kikoChipsWrap" style={{
-                display: 'flex', gap: 8, justifyContent: 'center', maxWidth: 640, marginBottom: voiceActive ? 0 : 20,
+                display: 'flex', gap: 8, justifyContent: 'center', maxWidth: 540, marginBottom: voiceActive ? 0 : 20,
                 opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 60,
                 transform: voiceActive ? 'translateY(30px)' : 'translateY(0)',
                 transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.1s',

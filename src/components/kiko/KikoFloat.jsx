@@ -577,16 +577,17 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               </div>
             </div>
           )}
-          <div style={{ padding: '8px 10px 10px', display: 'flex', alignItems: 'center', gap: 6, borderTop: hasMessages ? '1.5px solid rgba(255,255,255,0.07)' : 'none', marginTop: hasMessages ? 0 : 8 }}>
+          <div style={{ padding: '8px 10px 10px', display: 'flex', alignItems: 'flex-end', gap: 6, borderTop: hasMessages ? '1.5px solid rgba(255,255,255,0.07)' : 'none', marginTop: hasMessages ? 0 : 8 }}>
             <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} style={{ width: 26, height: 26, borderRadius: '50%', border: 'none', background: 'transparent', color: T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {fileUploading
                 ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'kikoVortexSpin 1s linear infinite' }}><circle cx="12" cy="12" r="10"/></svg>
                 : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>}
             </button>
-            <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && input.trim()) handleSubmit() }}
+            <textarea ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && input.trim()) { e.preventDefault(); handleSubmit() } }}
               placeholder="Ask me anything...."
-              style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 14, color: T.text, fontFamily: T.font }} />
+              rows={1}
+              style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 14, color: T.text, fontFamily: T.font, resize: 'none', minHeight: 20, maxHeight: 120, lineHeight: '1.4', padding: '2px 0', overflowY: 'auto', fieldSizing: 'content' }} />
             <button onClick={transcribing ? stopTranscribe : startTranscribe} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: transcribing ? 'rgba(34,197,94,0.12)' : 'transparent', color: transcribing ? 'rgba(34,197,94,0.9)' : T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
               <Mic size={13} />
               {transcribing && <span style={{ position: 'absolute', top: 2, right: 2, width: 6, height: 6, borderRadius: '50%', background: 'rgba(34,197,94,0.9)', animation: 'kikoBreathe 1s ease-in-out infinite' }} />}
