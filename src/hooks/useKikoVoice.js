@@ -275,9 +275,9 @@ export function useKikoVoice({ user, onClose }) {
       // 4. Open STT WebSocket (browser → Deepgram direct)
       const sttParams = new URLSearchParams({
         model: 'nova-3', language: 'en',
-        interim_results: 'true', utterance_end_ms: '600',
+        interim_results: 'true', utterance_end_ms: '1000',
         vad_events: 'true', smart_format: 'true',
-        punctuate: 'true', keywords: 'Kiko:2,Haas:2,Van Hawke:2',
+        punctuate: 'true',
       });
       const ws = new WebSocket(
         `wss://api.deepgram.com/v1/listen?${sttParams}`,
