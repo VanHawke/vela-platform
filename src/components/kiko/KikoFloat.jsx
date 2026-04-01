@@ -640,15 +640,14 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'rgba(139,108,246,0.18)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4)' : '0 0 0 3px rgba(139,108,246,0.05), 0 0 20px rgba(139,108,246,0.08), 0 8px 28px rgba(0,0,0,0.4)' }}}
         >
           {voiceOpen
-            ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, width: 40, height: 40 }}>
-                {[0.35,0.5,0.7,0.85,1,0.85,0.7,0.5,0.35].map((h, i) => (
+            ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, width: 40, height: 40 }}>
+                {[1,1,1,1,1,1,1].map((_, i) => (
                   <div key={i} style={{
-                    width: 2, borderRadius: 1,
+                    width: 2.5, borderRadius: 1.5,
                     background: 'linear-gradient(0deg, rgba(6,214,160,0.6), rgba(139,108,246,0.9))',
-                    height: voiceSpeaking ? `${h * 24}px` : `${h * 10}px`,
-                    transition: 'height 0.12s ease',
-                    animation: voiceSpeaking ? `kikoBarPulse ${0.3 + i * 0.06}s ease-in-out infinite alternate` : 'none',
-                    opacity: voiceSpeaking ? 1 : 0.7,
+                    height: voiceSpeaking ? 18 : 10,
+                    transition: 'height 0.15s ease',
+                    animation: voiceSpeaking ? `kikoBarPulse ${0.3 + i * 0.08}s ease-in-out infinite alternate` : 'none',
                   }} />
                 ))}
               </div>
