@@ -34,7 +34,7 @@ export default function KikoVoice({ onClose, user, onVoiceState }) {
       status,
       speaking: isSpeaking,
       thinking: status === 'thinking',
-      energy: isSpeaking ? speakEnergy : micEnergy,
+      energy: isSpeaking ? speakEnergy : 0,
     })
   }, [status, isSpeaking, micEnergy, speakEnergy, onVoiceState])
 
@@ -70,7 +70,7 @@ export default function KikoVoice({ onClose, user, onVoiceState }) {
       }}>
         <KikoWaveform
           width={1100} height={140}
-          volume={isSpeaking ? speakEnergy : micEnergy}
+          volume={isSpeaking ? speakEnergy : 0}
           speaking={isSpeaking}
         />
       </div>

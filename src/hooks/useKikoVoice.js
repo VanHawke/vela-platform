@@ -38,6 +38,7 @@ export function useKikoVoice({ user, onClose }) {
   const transcriptRef = useRef('');
   const tokenRef = useRef(null);        // Cached Deepgram temp token
   const isSpeakingRef = useRef(false);  // Track TTS state for interruption
+  const sendToKikoRef = useRef(null);   // Ref to avoid stale closure in STT handler
 
   // ── Dispatch voice state (green pill + float glow) ──
   const dispatchVoiceState = useCallback((detail) => {
@@ -104,6 +105,7 @@ export function useKikoVoice({ user, onClose }) {
       ws.onmessage = (evt) => {
         if (evt.data instanceof ArrayBuffer && evt.data.byteLength > 44) {
           // Audio chunk — enqueue for playback
+          console.log('[Voice] TTS audio chunk:', evt.data.byteLength, 'bytes');
           if (!audioPlayer.current) {
             audioPlayer.current = new StreamingAudioPlayer();
             audioPlayer.current.onEnd = () => {
@@ -133,6 +135,7 @@ export function useKikoVoice({ user, onClose }) {
   // ── Send text to TTS WebSocket ──
   const sendToTTS = useCallback(async (text) => {
     try {
+      console.log('[Voice] TTS send:', text.slice(0, 60));
       const ws = await openTTSSocket();
       if (ws.readyState !== WebSocket.OPEN) return;
       ws.send(JSON.stringify({ type: 'Speak', text }));
@@ -145,12 +148,15 @@ export function useKikoVoice({ user, onClose }) {
   // ── Send transcript to /api/kiko brain (STREAMING) ──
   const sendToKiko = useCallback(async (text) => {
     if (!text || text.trim().length < 2) return;
+    console.log('[Voice] Sending to Kiko:', text);
     setStatus('thinking');
     setResponse('');
     dispatchVoiceState({ thinking: true, status: 'Thinking' });
 
     // Instant filler — speak immediately while brain processes
-    await sendToTTS(randomFiller());
+    const filler = randomFiller();
+    console.log('[Voice] Filler:', filler);
+    await sendToTTS(filler);
 
     try {
       const res = await fetch('/api/kiko', {
@@ -168,6 +174,7 @@ export function useKikoVoice({ user, onClose }) {
       // Stream LLM tokens → sentence chunks → TTS WebSocket
       const chunker = new SentenceChunker((sentence) => {
         // Each complete sentence gets spoken immediately
+        console.log('[Voice] Sentence to TTS:', sentence.slice(0, 80));
         sendToTTS(sentence);
       });
 
@@ -215,6 +222,9 @@ export function useKikoVoice({ user, onClose }) {
     }
   }, [user, sendToTTS, dispatchVoiceState]);
 
+  // Keep ref in sync so STT handler always has latest sendToKiko
+  sendToKikoRef.current = sendToKiko;
+
   // ── Handle Deepgram STT messages ──
   const handleSTTMessage = useCallback((data) => {
     if (data.type === 'Results') {
@@ -224,6 +234,7 @@ export function useKikoVoice({ user, onClose }) {
         transcriptRef.current = (transcriptRef.current + ' ' + alt.transcript).trim();
         setTranscript(transcriptRef.current);
         setInterimText('');
+        console.log('[Voice] Final transcript:', transcriptRef.current);
       } else {
         setInterimText(alt.transcript);
       }
@@ -231,8 +242,10 @@ export function useKikoVoice({ user, onClose }) {
 
     if (data.type === 'UtteranceEnd') {
       const finalText = transcriptRef.current.trim();
+      console.log('[Voice] UtteranceEnd, text:', finalText);
       if (finalText.length > 1) {
-        sendToKiko(finalText);
+        // Use ref to avoid stale closure
+        sendToKikoRef.current?.(finalText);
         transcriptRef.current = '';
         setTranscript('');
         setInterimText('');
@@ -250,7 +263,7 @@ export function useKikoVoice({ user, onClose }) {
       setStatus('listening');
       dispatchVoiceState({ speaking: false, status: 'Listening' });
     }
-  }, [sendToKiko, dispatchVoiceState]);
+  }, [dispatchVoiceState]);
 
   // ── Initialise the full voice pipeline ──
   const start = useCallback(async () => {
