@@ -321,3 +321,30 @@
 - Tag: phase-13-voice-v4
 - Latest commit includes all fixes
 - Build log: VOICE_BUILD_LOG.md (comprehensive)
+
+
+## DEPLOY: Glassmorphism v4 + Voice fixes batch (1 Apr 2026, evening)
+### Glassmorphism changes:
+- **theme.js**: Glass v4 tokens — elevated shadows, 0.5px borders, top-edge highlight, deep/float variants
+- **index.css**: CSS variables updated — glass-bg, glass-shadow, glass-shadow-deep, glass-shadow-card
+- **12 pages bulk-updated**: rgba backgrounds → glass transparency, 1.5px borders → 0.5px
+- **Pipeline.jsx**: Column containers + deal cards with backdrop-filter blur + depth shadows
+- **OutreachIntelligence.jsx** (Command Centre): Stat cards with glass + blur
+- **KikoFloat.jsx**: Panel with heavy blur(40px) saturate(1.5) + float shadow
+- **KikoChat.jsx**: Prompt bar with elevated glass + top-edge highlight
+- **Settings.jsx**: Card panels with glass + blur + shadow
+- **Layout.jsx**: Nav pill border-radius 50→14, glass shadow
+
+### Voice fixes in same deploy:
+1. Spectral equalizer — KikoWaveform reads window.__kikoFreqData from audio analyser
+2. Avatar consistency — FAB shows KikoWaveform mini during voice (not KikoVoiceOrb)
+3. Voice preview endpoint — api/voice-preview.js using OpenAI gpt-4o-mini-tts
+4. Speed/personality save to localStorage
+5. Triple WebRTC connection guard (connectingRef)
+6. Inline voice analyser in useRealtimeVoice.js
+
+### STILL REMAINING (items 9-10, 14, 16):
+9. File drag-and-drop preview thumbnails in prompt bar
+10. Chat panel title with dropdown (Star/Rename/Delete)
+14. Re-test partnership matrix voice navigation
+16. Commit c448790 pending fixes
