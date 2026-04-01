@@ -177,6 +177,8 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   })
   const [floatVoiceState, setFloatVoiceState] = useState({ speaking: false, status: 'connecting', energy: 0, pitch: 0 })
   const [fileUploading, setFileUploading] = useState(false)
+  const [pendingFile, setPendingFile] = useState(null) // { file, previewUrl, name, type }
+  const [fileDragging, setFileDragging] = useState(false)
   const [fabClass, setFabClass] = useState('')
   const pendingNavRef = useRef(null) // Navigation queued during stream, executed after
   const abortRef = useRef(null) // AbortController for stop button
@@ -356,6 +358,28 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
     finally { setFileUploading(false) }
   }
 
+  // Stage file for preview before processing
+  const stageFile = (file) => {
+    if (!file) return
+    const isImage = file.type.startsWith('image/')
+    const previewUrl = isImage ? URL.createObjectURL(file) : null
+    setPendingFile({ file, previewUrl, name: file.name, type: file.type })
+    if (!open) { setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open') }
+  }
+
+  const clearPendingFile = () => { if (pendingFile?.previewUrl) URL.revokeObjectURL(pendingFile.previewUrl); setPendingFile(null) }
+
+  const submitWithFile = () => {
+    if (!pendingFile) return
+    processFileForKiko(pendingFile.file)
+    setPendingFile(null)
+  }
+
+  // Drag and drop handlers
+  const handleDragOver = (e) => { e.preventDefault(); e.stopPropagation(); setFileDragging(true) }
+  const handleDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); setFileDragging(false) }
+  const handleDrop = (e) => { e.preventDefault(); e.stopPropagation(); setFileDragging(false); const f = e.dataTransfer?.files?.[0]; if (f) stageFile(f) }
+
   async function startTranscribe() {
     if (transcribing) return
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -443,12 +467,13 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   return (
     <>
       <input ref={fileInputRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx"
-        onChange={e => { const f = e.target.files?.[0]; if (f) processFileForKiko(f); e.target.value = '' }}
-        style={{ display: 'none' }} />
+        onChange={e => { const f = e.target.files?.[0]; if (f) stageFile(f); e.target.value = '' }} style={{ display: 'none' }} />
 
       {/* ── Spring pop panel ── */}
       {hasPanel && (
-        <div key={panelKey} className={`kiko-panel ${open ? 'entering' : ''}`} style={{
+        <div key={panelKey} className={`kiko-panel ${open ? 'entering' : ''}`}
+          onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
+          style={{
           position: 'fixed', bottom: 88, right: 24, width: panelW,
           zIndex: 100, borderRadius: 24,
           background: 'rgba(255,255,255,0.035)',
@@ -571,6 +596,19 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           )}
 
           {/* Input bar inside panel */}
+          {/* File preview strip */}
+          {pendingFile && (
+            <div style={{ padding: '8px 12px 0', borderTop: '0.5px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)' }}>
+                {pendingFile.previewUrl
+                  ? <img src={pendingFile.previewUrl} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
+                  : <div style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(139,108,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'rgba(139,108,246,0.7)', fontWeight: 500 }}>{pendingFile.name.split('.').pop()?.toUpperCase()}</div>
+                }
+                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontFamily: T.font, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pendingFile.name}</span>
+                <button onClick={clearPendingFile} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', padding: 2, fontSize: 12, lineHeight: 1 }}>✕</button>
+              </div>
+            </div>
+          )}
           <div style={{ padding: '8px 10px 10px', display: 'flex', alignItems: 'center', gap: 6, borderTop: hasMessages ? '1.5px solid rgba(255,255,255,0.07)' : 'none', marginTop: hasMessages ? 0 : 8 }}>
             <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} style={{ width: 26, height: 26, borderRadius: '50%', border: 'none', background: 'transparent', color: T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {fileUploading
@@ -588,8 +626,8 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
             <button onClick={voiceOpen ? closeVoiceMode : openVoiceMode} style={{ width: 28, height: 28, borderRadius: 50, border: voiceOpen ? '1.5px solid rgba(255,59,48,0.2)' : '1.5px solid rgba(6,214,160,0.15)', background: voiceOpen ? 'rgba(255,59,48,0.08)' : 'rgba(6,214,160,0.08)', color: voiceOpen ? 'rgba(255,59,48,0.7)' : 'rgba(6,214,160,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.3s' }}>
               {voiceOpen ? <div style={{ width: 8, height: 8, borderRadius: 1.5, background: 'rgba(255,59,48,0.7)' }} /> : <EqIcon size={14} color="rgba(6,214,160,0.7)" />}
             </button>
-            <button onClick={() => handleSubmit()} disabled={!input.trim() || streaming}
-              style={{ width: 28, height: 28, borderRadius: 50, border: 'none', background: input.trim() && !streaming ? T.accentGradient : 'rgba(255,255,255,0.04)', color: input.trim() && !streaming ? 'rgba(255,255,255,0.9)' : T.textTertiary, cursor: input.trim() && !streaming ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s', boxShadow: input.trim() ? '0 2px 8px rgba(139,108,246,0.2)' : 'none' }}>
+            <button onClick={() => { if (pendingFile) submitWithFile(); else handleSubmit(); }} disabled={(!input.trim() && !pendingFile) || streaming}
+              style={{ width: 28, height: 28, borderRadius: 50, border: 'none', background: (input.trim() || pendingFile) && !streaming ? T.accentGradient : 'rgba(255,255,255,0.04)', color: (input.trim() || pendingFile) && !streaming ? 'rgba(255,255,255,0.9)' : T.textTertiary, cursor: (input.trim() || pendingFile) && !streaming ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s', boxShadow: (input.trim() || pendingFile) ? '0 2px 8px rgba(139,108,246,0.2)' : 'none' }}>
               <ArrowUp size={13} />
             </button>
           </div>
