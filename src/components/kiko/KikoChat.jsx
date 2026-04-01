@@ -1009,7 +1009,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               }}>
                 {dynamicChips.slice(0, 3).map(c => (
                   <button key={c} onClick={() => handleSubmit(c)} style={{
-                    padding: '7px 20px', borderRadius: 14, background: T.glass,
+                    padding: '6px 18px', borderRadius: 14, background: T.glass,
                     backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
                     border: `0.5px solid ${T.glassBorder}`, color: 'rgba(255,255,255,0.55)',
                     fontSize: 13, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.2s', fontWeight: 400,

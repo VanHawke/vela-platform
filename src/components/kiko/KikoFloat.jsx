@@ -85,6 +85,10 @@ const STYLES = `
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.2); }
 }
+@keyframes kikoBarPulse {
+  0% { height: 6px; }
+  100% { height: 22px; }
+}
 .kiko-panel { transform-origin: bottom right; }
 .kiko-panel.entering { animation: kikoSpringIn 0.42s cubic-bezier(0.34,1.56,0.64,1) forwards; }
 .kiko-fab-open { animation: kikoFabSpin 0.3s cubic-bezier(0.34,1.3,0.64,1) forwards; }
@@ -636,7 +640,17 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'rgba(139,108,246,0.18)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4)' : '0 0 0 3px rgba(139,108,246,0.05), 0 0 20px rgba(139,108,246,0.08), 0 8px 28px rgba(0,0,0,0.4)' }}}
         >
           {voiceOpen
-            ? <KikoWaveform width={40} height={40} mini volume={voiceSpeaking ? 0.4 : 0.08} speaking={voiceSpeaking} />
+            ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, width: 40, height: 40 }}>
+                {[0.6,0.85,1,0.85,0.6].map((h, i) => (
+                  <div key={i} style={{
+                    width: 3, borderRadius: 2,
+                    background: 'linear-gradient(180deg, rgba(139,108,246,0.9), rgba(6,214,160,0.7))',
+                    height: voiceSpeaking ? `${h * 22}px` : `${h * 8}px`,
+                    transition: 'height 0.15s ease',
+                    animation: voiceSpeaking ? `kikoBarPulse ${0.4 + i * 0.1}s ease-in-out infinite alternate` : 'kikoBreatheScale 2s ease-in-out infinite',
+                  }} />
+                ))}
+              </div>
             : open
               ? <X size={18} />
               : <KikoWaveform width={40} height={40} mini volume={voiceOpen ? (floatVoiceState.energy || 0.12) : 0} speaking={voiceOpen && floatVoiceState.speaking} />
