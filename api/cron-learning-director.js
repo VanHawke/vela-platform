@@ -366,7 +366,7 @@ export default async function handler(req, res) {
     const unlearned = target.pillar.topics.filter(t =>
       !learned.has(`${target.key}:${t.split(' ').slice(0, 3).join('_')}`)
     );
-    const batch = unlearned.slice(0, 2); // 2 topics per run to stay within time limit
+    const batch = unlearned.slice(0, 1); // 1 topic per run — Claude calls take 20-40s each, must finish before 120s timeout
 
     const results = [];
     for (const topic of batch) {
@@ -374,8 +374,9 @@ export default async function handler(req, res) {
       if (result) results.push(result);
     }
 
-    // ── CURIOSITY ENGINE: learn 1 topic from the curiosity queue ──
+    // ── CURIOSITY ENGINE: learn 1 topic — only if time allows (under 80s elapsed) ──
     let curiosityResult = null;
+    if (Date.now() - __hbStart < 80000) {
     try {
       const curious = await sbFetch('kiko_curiosity_queue?status=eq.queued&order=priority.desc&limit=1&select=id,topic,category,reason');
       if (curious?.[0]) {
@@ -392,6 +393,7 @@ export default async function handler(req, res) {
         }
       }
     } catch {} // Non-blocking
+    } // time guard
 
     const summary = {
       pillar: target.pillar.name,
