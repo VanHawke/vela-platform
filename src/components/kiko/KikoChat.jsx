@@ -147,6 +147,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     window.dispatchEvent(new CustomEvent('kiko_history_state', { detail: { open: next } }))
   }
   const [activeConvId, setActiveConvId] = useState(null)
+  const [convTitle, setConvTitle] = useState('')
+  const [titleMenuOpen, setTitleMenuOpen] = useState(false)
+  const [isStarred, setIsStarred] = useState(false)
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [renameValue, setRenameValue] = useState('')
   const [transcribing, setTranscribing] = useState(false)
   const [dictateError, setDictateError] = useState('')
   const scrollRef = useRef(null)
@@ -356,6 +361,43 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   useEffect(() => { if (initialMessage && !messages.length) handleSubmit(initialMessage) }, [])
   useEffect(() => { scrollRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, streamText, voiceMessages])
+
+  // Load conversation title when activeConvId changes
+  useEffect(() => {
+    if (!activeConvId) { setConvTitle(''); setIsStarred(false); return }
+    (async () => {
+      const { data } = await supabase.from('conversations').select('title, starred').eq('id', activeConvId).single()
+      if (data) { setConvTitle(data.title || 'New conversation'); setIsStarred(!!data.starred) }
+    })()
+  }, [activeConvId])
+
+  const toggleStar = async () => {
+    if (!activeConvId) return
+    const newVal = !isStarred
+    setIsStarred(newVal)
+    await supabase.from('conversations').update({ starred: newVal }).eq('id', activeConvId)
+    setTitleMenuOpen(false)
+  }
+  const startRename = () => { setRenameValue(convTitle); setIsRenaming(true); setTitleMenuOpen(false) }
+  const confirmRename = async () => {
+    if (!activeConvId || !renameValue.trim()) return
+    setConvTitle(renameValue.trim())
+    setIsRenaming(false)
+    await supabase.from('conversations').update({ title: renameValue.trim() }).eq('id', activeConvId)
+  }
+  const deleteConversation = async () => {
+    if (!activeConvId) return
+    await supabase.from('conversations').delete().eq('id', activeConvId)
+    setActiveConvId(null); setConvTitle(''); setMessages([]); setTitleMenuOpen(false)
+  }
+
+  // Close title menu on click outside
+  useEffect(() => {
+    if (!titleMenuOpen) return
+    const handler = () => setTitleMenuOpen(false)
+    setTimeout(() => document.addEventListener('click', handler), 0)
+    return () => document.removeEventListener('click', handler)
+  }, [titleMenuOpen])
 
   const resetKey = outletCtx.kikoResetKey
   useEffect(() => { if (resetKey > 0) startNewChat() }, [resetKey])
@@ -1012,6 +1054,48 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           onClose={() => setAllChatsData(null)}
         />
       ) : (
+      <>
+      {/* Chat title bar with dropdown */}
+      {activeConvId && convTitle && (
+        <div style={{ padding: '10px 24px', borderBottom: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 8, position: 'relative', flexShrink: 0 }}>
+          {isRenaming ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
+              <input value={renameValue} onChange={e => setRenameValue(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') confirmRename(); if (e.key === 'Escape') setIsRenaming(false) }} autoFocus
+                style={{ flex: 1, border: '0.5px solid rgba(255,255,255,0.15)', borderRadius: 8, background: 'rgba(255,255,255,0.04)', padding: '5px 10px', fontSize: 13, color: T.text, fontFamily: T.font, outline: 'none' }} />
+              <button onClick={confirmRename} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '0.5px solid rgba(139,108,246,0.3)', background: 'rgba(139,108,246,0.1)', color: T.accent, cursor: 'pointer', fontFamily: T.font }}>Save</button>
+            </div>
+          ) : (
+            <button onClick={() => setTitleMenuOpen(!titleMenuOpen)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: 8, color: T.text, fontFamily: T.font, fontSize: 13, fontWeight: 500, maxWidth: '70%' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+              {isStarred && <span style={{ color: '#F59E0B', fontSize: 12 }}>★</span>}
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{convTitle}</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, opacity: 0.4, transform: titleMenuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+          )}
+          {/* Dropdown menu */}
+          {titleMenuOpen && (
+            <div style={{ position: 'absolute', top: '100%', left: 16, zIndex: 50, minWidth: 160, background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(40px) saturate(1.4)', WebkitBackdropFilter: 'blur(40px) saturate(1.4)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 4, boxShadow: '0 12px 40px rgba(0,0,0,0.4)' }}>
+              <button onClick={toggleStar} style={{ width: '100%', textAlign: 'left', padding: '8px 12px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: T.text, fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8 }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                <span style={{ fontSize: 14 }}>{isStarred ? '★' : '☆'}</span> {isStarred ? 'Unstar' : 'Star'}
+              </button>
+              <button onClick={startRename} style={{ width: '100%', textAlign: 'left', padding: '8px 12px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: T.text, fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8 }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 3a2.83 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5z"/></svg> Rename
+              </button>
+              <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 8px' }} />
+              <button onClick={deleteConversation} style={{ width: '100%', textAlign: 'left', padding: '8px 12px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(255,80,80,0.8)', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8 }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,80,80,0.06)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> Delete
+              </button>
+            </div>
+          )}
+        </div>
+      )}
       <div style={{ flex: 1, overflowY: 'auto', padding: compact ? 16 : 24 }}>
         <div style={{ maxWidth: compact ? '100%' : 680, margin: '0 auto', width: '100%' }}>
           {messages.length > 40 && !showAllMsgs && (
@@ -1098,6 +1182,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <div ref={scrollRef} />
         </div>
       </div>
+      </>
       )}
       <div style={{ padding: compact ? 12 : 16, borderTop: `1.5px solid ${T.border}` }}>
         <div style={{ maxWidth: compact ? '100%' : 680, margin: '0 auto' }}>
