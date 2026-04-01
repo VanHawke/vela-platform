@@ -137,7 +137,7 @@ export default function PartnershipMatrix({ user }) {
       {/* Add Modal */}
       {showAdd && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowAdd(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: 'rgba(14,14,20,0.95)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 20, padding: 20, width: 360, border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 16px 64px rgba(0,0,0,0.5)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 20, padding: 20, width: 360, border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 16px 64px rgba(0,0,0,0.5)' }}>
             <h3 style={{ fontSize: 15, fontWeight: 400, margin: '0 0 12px' }}>Add Partnership</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <select value={addForm.team_id} onChange={e => setAddForm(p => ({ ...p, team_id: e.target.value }))} style={{ fontSize: 13, padding: '6px 8px', borderRadius: 6, border: `1px solid ${T.border}`, fontFamily: T.font }}>

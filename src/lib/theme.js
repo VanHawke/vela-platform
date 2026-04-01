@@ -8,18 +8,23 @@ export const T = {
   surfaceHover: 'rgba(255,255,255,0.07)',
   surfaceAlt: 'rgba(255,255,255,0.03)',
 
-  // Glass v3 — physical depth system
-  glass: 'rgba(255,255,255,0.04)',
-  glassHover: 'rgba(255,255,255,0.07)',
+  // Glass v4 — elevated physical depth system
+  glass: 'rgba(255,255,255,0.035)',
+  glassHover: 'rgba(255,255,255,0.06)',
   glassBorder: 'rgba(255,255,255,0.1)',
+  glassBorderTop: 'rgba(255,255,255,0.15)',
   glassBorderHover: 'rgba(255,255,255,0.2)',
-  glassBlur: 'blur(40px) saturate(1.6)',
-  glassSaturate: 'blur(40px) saturate(1.6)',
-  // Physical glass slab shadow — the signature look
-  glassShadow: 'inset 0 2px 0 rgba(255,255,255,0.12), inset 0 1px 3px rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.12), 0 0 24px rgba(255,255,255,0.03), 0 0 1px rgba(255,255,255,0.08), 0 12px 40px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2)',
-  glassShadowHover: 'inset 0 2px 0 rgba(255,255,255,0.18), inset 0 1px 3px rgba(255,255,255,0.09), inset 0 -1px 0 rgba(0,0,0,0.15), 0 0 36px rgba(255,255,255,0.04), 0 0 1px rgba(255,255,255,0.1), 0 20px 56px rgba(0,0,0,0.4), 0 6px 16px rgba(0,0,0,0.25)',
-  glassInner: 'inset 0 2px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.1)',
-  glassBorderWidth: '1.5px',
+  glassBlur: 'blur(40px) saturate(1.4)',
+  glassSaturate: 'blur(40px) saturate(1.4)',
+  glassBlurLight: 'blur(24px) saturate(1.2)',
+  glassBlurHeavy: 'blur(40px) saturate(1.5)',
+  // Elevated glass shadow — deep lift off page
+  glassShadow: '0 8px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2), 0 1px 0 rgba(255,255,255,0.05) inset',
+  glassShadowHover: '0 12px 40px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.07) inset',
+  glassShadowDeep: '0 12px 40px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.02) inset',
+  glassShadowFloat: '0 16px 48px rgba(0,0,0,0.45), 0 4px 16px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.05) inset',
+  glassInner: '0 4px 16px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.04) inset',
+  glassBorderWidth: '0.5px',
 
   // Borders
   border: 'rgba(255,255,255,0.1)',
@@ -86,13 +91,14 @@ export const T = {
   auroraAlpha: 0.3, // base alpha — richer than v4's 0.22
 }
 
-// Glass helper — physical slab style
+// Glass helper — elevated frosted slab
 export const glass = {
   background: T.glass,
   backdropFilter: T.glassBlur,
   WebkitBackdropFilter: T.glassBlur,
-  border: `1.5px solid ${T.glassBorder}`,
-  borderRadius: T.radiusPill,
+  border: `0.5px solid ${T.glassBorder}`,
+  borderTop: `0.5px solid ${T.glassBorderTop}`,
+  borderRadius: T.radius,
   boxShadow: T.glassShadow,
   transition: 'all 0.2s cubic-bezier(0.4,0,0.2,1)',
 }
@@ -102,7 +108,6 @@ export const glassHover = {
   background: T.glassHover,
   borderColor: T.glassBorderHover,
   boxShadow: T.glassShadowHover,
-  transform: 'translateY(-2px)',
 }
 
 export default T

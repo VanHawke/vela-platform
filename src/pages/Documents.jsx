@@ -148,7 +148,7 @@ export default function Documents({ user }) {
     return true
   })
 
-  const cardStyle = { background: 'rgba(255,255,255,0.025)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', borderRadius: 16, border: '1.5px solid rgba(255,255,255,0.06)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 24px rgba(0,0,0,0.2)', padding: 16, transition: 'all 0.2s' }
+  const cardStyle = { background: 'rgba(255,255,255,0.025)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', borderRadius: 16, border: '0.5px solid rgba(255,255,255,0.06)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 24px rgba(0,0,0,0.2)', padding: 16, transition: 'all 0.2s' }
   const pillStyle = (color) => ({ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 50, fontSize: 11, fontWeight: 500, background: `${color}12`, color, fontFamily: T.font })
   const inputStyle = { height: 36, borderRadius: 50, border: `1.5px solid ${T.border}`, padding: '0 10px', fontSize: 13, color: T.text, fontFamily: T.font, outline: 'none', background: T.surface }
 
@@ -160,7 +160,7 @@ export default function Documents({ user }) {
       {/* Drag-and-drop overlay */}
       {dragOver && (
         <div style={{
-          position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(14,14,20,0.85)',
+          position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(255,255,255,0.035)',
           backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           border: '2px dashed rgba(255,255,255,0.3)', borderRadius: 18, margin: 8,

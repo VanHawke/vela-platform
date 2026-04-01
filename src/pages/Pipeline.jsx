@@ -481,10 +481,12 @@ export default function Pipeline({ user }) {
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: 8 }}>
       {/* Toolbar */}
       <div style={{
-        margin: '0 16px', padding: '12px 20px', borderRadius: 18,
-        background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)',
+        margin: '0 16px', padding: '12px 20px', borderRadius: 14,
+        background: 'rgba(255,255,255,0.025)', backdropFilter: 'blur(30px) saturate(1.3)', WebkitBackdropFilter: 'blur(30px) saturate(1.3)',
+        border: '0.5px solid rgba(255,255,255,0.08)', borderTop: '0.5px solid rgba(255,255,255,0.12)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.03) inset',
         WebkitBackdropFilter: 'blur(40px)',
-        border: '1.5px solid rgba(255,255,255,0.1)',
+        border: '0.5px solid rgba(255,255,255,0.1)',
         boxShadow: '0 8px 36px rgba(0,0,0,0.3)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
@@ -523,7 +525,9 @@ export default function Pipeline({ user }) {
                   style={{
                     width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column',
                     background: isOver ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.015)',
-                    borderRadius: 16, border: isOver ? '1px dashed rgba(139,108,246,0.3)' : '1px solid rgba(255,255,255,0.05)',
+                    borderRadius: 16, border: isOver ? '1px dashed rgba(139,108,246,0.3)' : '0.5px solid rgba(255,255,255,0.06)',
+                    background: 'rgba(255,255,255,0.02)', backdropFilter: 'blur(20px) saturate(1.15)', WebkitBackdropFilter: 'blur(20px) saturate(1.15)',
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.02) inset',
                     transition: 'all 0.15s ease',
                   }}>
                   <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -543,7 +547,7 @@ export default function Pipeline({ user }) {
                         onDragStart={e => handleDragStart(e, deal)}
                         onDragEnd={handleDragEnd}
                         onClick={() => selectDeal(deal)}
-                        style={{ background: 'rgba(255,255,255,0.025)', borderRadius: 12, padding: '12px 14px', border: '1px solid rgba(255,255,255,0.05)', borderLeft: `3px solid ${stageAccent[stage.id] || 'rgba(255,255,255,0.1)'}`, cursor: 'grab', transition: 'all 0.15s ease', position: 'relative' }}
+                        style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 10, padding: '12px 14px', border: '0.5px solid rgba(255,255,255,0.08)', borderTop: '0.5px solid rgba(255,255,255,0.12)', borderLeft: `3px solid ${stageAccent[stage.id] || 'rgba(255,255,255,0.1)'}`, cursor: 'grab', transition: 'all 0.15s ease', position: 'relative', boxShadow: '0 4px 16px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.04) inset' }}
                         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderLeftColor = stageAccent[stage.id] || 'rgba(255,255,255,0.1)' }}
                         onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.025)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderLeftColor = stageAccent[stage.id] || 'rgba(255,255,255,0.1)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -588,11 +592,11 @@ export default function Pipeline({ user }) {
         <div style={{ width: panelOpen ? 380 : 0, minWidth: panelOpen ? 380 : 0, transition: 'width 0.3s ease, min-width 0.3s ease, opacity 0.2s ease', opacity: panelOpen ? 1 : 0, overflow: 'hidden', marginLeft: panelOpen ? 16 : 0 }}>
           {selectedDeal && (
             <div style={{ width: 380, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 16 }}>
-              <div style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '20px 20px 16px', border: '1.5px solid rgba(255,255,255,0.1)' }}>
+              <div style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '20px 20px 16px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     {companyDomains[selectedDeal.company] ? (
-                      <div style={{ width: 40, height: 40, borderRadius: 50, background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 50, background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
                         <img src={`https://www.google.com/s2/favicons?domain=${companyDomains[selectedDeal.company]}&sz=128`} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
                       </div>
                     ) : (
@@ -603,7 +607,7 @@ export default function Pipeline({ user }) {
                       {dealCompany?.industry && <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: '3px 0 0', fontFamily: 'var(--font)', fontWeight: 300 }}>{dealCompany.industry}{dealCompany.country ? ` · ${dealCompany.country}` : ''}</p>}
                     </div>
                   </div>
-                  <button onClick={closePanel} style={{ background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 50, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}><X style={{ width: 14, height: 14 }} /></button>
+                  <button onClick={closePanel} style={{ background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: 50, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}><X style={{ width: 14, height: 14 }} /></button>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
@@ -619,7 +623,7 @@ export default function Pipeline({ user }) {
                   </button>
                 )}
               </div>
-              <div style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.1)' }}>
+              <div style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
                 <p style={sectionTitle}><Users style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Contacts ({dealContacts.length})</p>
                 {loadingPanel ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{[...Array(2)].map((_, i) => <div key={i} style={{ height: 40, background: 'rgba(255,255,255,0.02)', borderRadius: 50 }} />)}</div>
@@ -644,7 +648,7 @@ export default function Pipeline({ user }) {
                   </div>
                 )}
               </div>
-              <div style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.1)' }}>
+              <div style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
                 <p style={sectionTitle}><Send style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Lemlist Campaigns</p>
                 {dealCampaigns.length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -659,7 +663,7 @@ export default function Pipeline({ user }) {
               </div>
               {/* Tasks Due for this deal */}
               {dealTasks.length > 0 && (
-                <div style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
                   <p style={sectionTitle}><CheckSquare style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Tasks Due ({dealTasks.length})</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {dealTasks.map(task => {
@@ -682,7 +686,7 @@ export default function Pipeline({ user }) {
                 </div>
               )}
               {/* Quick Activity Logger */}
-              <div style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.1)' }}>
+              <div style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
                 <p style={sectionTitle}><Clock style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Log Activity</p>
                 <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
                   {['Call', 'Meeting', 'Email Sent', 'LinkedIn', 'Note'].map(t => (
@@ -694,7 +698,7 @@ export default function Pipeline({ user }) {
                   <div style={{ display: 'flex', gap: 6 }}>
                     <input value={activityNote} onChange={e => setActivityNote(e.target.value)} placeholder={`Notes for ${activityType}...`}
                       onKeyDown={e => e.key === 'Enter' && logActivity(activityType.toLowerCase().replace(' ', '_'))}
-                      style={{ flex: 1, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: 'rgba(255,255,255,0.7)', fontFamily: 'var(--font)', outline: 'none' }} />
+                      style={{ flex: 1, background: 'rgba(255,255,255,0.02)', border: '0.5px solid rgba(255,255,255,0.06)', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: 'rgba(255,255,255,0.7)', fontFamily: 'var(--font)', outline: 'none' }} />
                     <button onClick={() => logActivity(activityType.toLowerCase().replace(' ', '_'))} disabled={savingActivity}
                       style={{ padding: '6px 14px', borderRadius: 8, fontSize: 11, fontFamily: 'var(--font)', cursor: 'pointer', border: '1px solid rgba(6,214,160,0.2)', background: 'rgba(6,214,160,0.06)', color: 'rgba(6,214,160,0.7)' }}>{savingActivity ? '...' : 'Log'}</button>
                   </div>

@@ -19,7 +19,7 @@ const getDomain = (email) => {
 function OrgLogo({ domain, name, size = 36 }) {
   if (domain) {
     return (
-      <div style={{ width: size, height: size, borderRadius: size > 30 ? 10 : 8, background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+      <div style={{ width: size, height: size, borderRadius: size > 30 ? 10 : 8, background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
         <img src={`https://www.google.com/s2/favicons?domain=${domain}&sz=${size > 36 ? 128 : 64}`} alt="" style={{ width: size * 0.7, height: size * 0.7, objectFit: 'contain' }} />
       </div>
     )
@@ -306,8 +306,8 @@ export default function Organisations({ user }) {
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
   useEffect(() => { setPage(0) }, [search])
 
-  const glass = { margin: '0 16px', padding: '12px 20px', borderRadius: 18, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 36px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
-  const listCard = { background: 'rgba(255,255,255,0.04)', borderRadius: 50, padding: '14px 18px', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'box-shadow 0.15s ease', cursor: 'pointer' }
+  const glass = { margin: '0 16px', padding: '12px 20px', borderRadius: 18, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 36px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
+  const listCard = { background: 'rgba(255,255,255,0.04)', borderRadius: 50, padding: '14px 18px', border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'box-shadow 0.15s ease', cursor: 'pointer' }
   const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: 50, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
   const sectionTitle = { fontSize: 12, fontWeight: 400, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.04em' }
   const emptyText = { fontSize: 13, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', fontStyle: 'italic' }
@@ -380,7 +380,7 @@ export default function Organisations({ user }) {
               <button key={chip.id} onClick={() => setOpenPopover(isOpen ? null : chip.id)} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 5,
                 padding: '5px 10px', borderRadius: 50,
-                border: isActive ? '1.5px solid rgba(255,255,255,0.2)' : '1px solid rgba(255,255,255,0.08)',
+                border: isActive ? '1.5px solid rgba(255,255,255,0.2)' : '0.5px solid rgba(255,255,255,0.08)',
                 background: isActive ? 'rgba(255,255,255,0.12)' : isOpen ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.04)',
                 color: isActive ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
                 fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: isActive ? 500 : 400,
@@ -401,7 +401,7 @@ export default function Organisations({ user }) {
 
           {/* ── Popovers ── */}
           {openPopover && (
-            <div style={{ position: 'absolute', top: 36, left: 0, zIndex: 200, background: 'rgba(14,14,20,0.9)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 18, padding: 14, boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.4)', minWidth: 280, maxWidth: 360 }}
+            <div style={{ position: 'absolute', top: 36, left: 0, zIndex: 200, background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: 18, padding: 14, boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.4)', minWidth: 280, maxWidth: 360 }}
               onMouseDown={e => e.stopPropagation()}>
 
               {/* Industry */}
@@ -413,7 +413,7 @@ export default function Organisations({ user }) {
                       const sel = filters.industries.includes(ind)
                       return (
                         <button key={ind} onClick={() => setFilters(p => ({ ...p, industries: sel ? p.industries.filter(i => i !== ind) : [...p.industries, ind] }))} style={{
-                          padding: '4px 10px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)',
+                          padding: '4px 10px', borderRadius: 50, border: '0.5px solid rgba(255,255,255,0.1)',
                           background: sel ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)', color: sel ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
                           fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
                         }}>{ind}</button>
@@ -432,7 +432,7 @@ export default function Organisations({ user }) {
                       const sel = filters.countries.includes(cty)
                       return (
                         <button key={cty} onClick={() => setFilters(p => ({ ...p, countries: sel ? p.countries.filter(c => c !== cty) : [...p.countries, cty] }))} style={{
-                          padding: '4px 10px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)',
+                          padding: '4px 10px', borderRadius: 50, border: '0.5px solid rgba(255,255,255,0.1)',
                           background: sel ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)', color: sel ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
                           fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
                         }}>{cty}</button>
@@ -463,7 +463,7 @@ export default function Organisations({ user }) {
                       const sel = filters.lastRound === r
                       return (
                         <button key={r} onClick={() => setFilters(p => ({ ...p, lastRound: sel ? '' : r }))} style={{
-                          padding: '4px 10px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)',
+                          padding: '4px 10px', borderRadius: 50, border: '0.5px solid rgba(255,255,255,0.1)',
                           background: sel ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)', color: sel ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
                           fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
                         }}>{r}</button>
@@ -588,7 +588,7 @@ export default function Organisations({ user }) {
           {selectedOrg && (
             <div style={{ width: 400, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
               {/* Header card */}
-              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '20px 20px 16px', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
+              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '20px 20px 16px', border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <OrgLogo domain={orgDomain} name={selectedOrg.name} size={48} />
@@ -621,24 +621,24 @@ export default function Organisations({ user }) {
                       <Linkedin style={{ width: 13, height: 13 }} /> LinkedIn
                     </a>
                   ) : (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-tertiary)', background: 'rgba(0,0,0,0.02)', padding: '6px 12px', borderRadius: 50, fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-tertiary)', background: 'rgba(0,0,0,0.02)', padding: '6px 12px', borderRadius: 50, fontFamily: 'var(--font)', border: '0.5px solid rgba(255,255,255,0.08)' }}>
                       <Linkedin style={{ width: 13, height: 13 }} /> No LinkedIn
                     </span>
                   )}
                   {selectedOrg.website ? (
-                    <a href={selectedOrg.website.startsWith('http') ? selectedOrg.website : `https://${selectedOrg.website}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}>
+                    <a href={selectedOrg.website.startsWith('http') ? selectedOrg.website : `https://${selectedOrg.website}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(255,255,255,0.08)' }}>
                       <ExternalLink style={{ width: 13, height: 13 }} /> Website
                     </a>
                   ) : orgDomain ? (
-                    <a href={`https://${orgDomain}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}>
+                    <a href={`https://${orgDomain}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(255,255,255,0.08)' }}>
                       <ExternalLink style={{ width: 13, height: 13 }} /> {orgDomain}
                     </a>
                   ) : (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-tertiary)', background: 'rgba(0,0,0,0.02)', padding: '6px 12px', borderRadius: 50, fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-tertiary)', background: 'rgba(0,0,0,0.02)', padding: '6px 12px', borderRadius: 50, fontFamily: 'var(--font)', border: '0.5px solid rgba(255,255,255,0.08)' }}>
                       <Globe style={{ width: 13, height: 13 }} /> No website
                     </span>
                   )}
-                  <button onClick={() => edit(selectedOrg)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.08)', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                  <button onClick={() => edit(selectedOrg)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, border: '0.5px solid rgba(255,255,255,0.08)', cursor: 'pointer', fontFamily: 'var(--font)' }}>
                     Edit
                   </button>
                 </div>
@@ -646,7 +646,7 @@ export default function Organisations({ user }) {
 
               {/* Funding & Intelligence */}
               {(selectedOrg.lastRound || selectedOrg.totalFunding || selectedOrg.employees || selectedOrg.founded) && (
-                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
+                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
                   <p style={sectionTitle}>Funding & Intelligence</p>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                     {selectedOrg.lastRound && <div><p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '0 0 2px', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: 500 }}>Last Round</p><p style={{ fontSize: 13, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)', fontWeight: 500 }}>{selectedOrg.lastRound}</p></div>}
@@ -661,7 +661,7 @@ export default function Organisations({ user }) {
 
               {/* Deal Pipeline Stage */}
               {orgDeals.length > 0 && (
-                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
+                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
                   <p style={sectionTitle}>Deal Pipeline</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {orgDeals.map(d => (
@@ -675,7 +675,7 @@ export default function Organisations({ user }) {
               )}
 
               {/* Contacts */}
-              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
+              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
                 <p style={sectionTitle}><Users style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Contacts ({orgContacts.length})</p>
                 {loadingPanel ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{[...Array(3)].map((_, i) => <div key={i} style={{ height: 40, background: 'rgba(255,255,255,0.04)', borderRadius: 50, animation: 'pulse 1.5s infinite' }} />)}</div>
@@ -705,7 +705,7 @@ export default function Organisations({ user }) {
               </div>
 
               {/* Active Campaign */}
-              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
+              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
                 <p style={sectionTitle}><Send style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Active Campaign</p>
                 {orgCampaigns.length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -720,7 +720,7 @@ export default function Organisations({ user }) {
               </div>
 
               {/* Campaign History */}
-              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
+              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
                 <p style={sectionTitle}>Campaign History</p>
                 {orgCampaigns.length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -734,7 +734,7 @@ export default function Organisations({ user }) {
                 ) : <p style={emptyText}>No campaign history yet</p>}
               </div>
               {/* Last Communication */}
-              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
+              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
                 <p style={sectionTitle}>Last Communication</p>
                 {orgLastComm.sent || orgLastComm.received ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -756,7 +756,7 @@ export default function Organisations({ user }) {
               </div>
 
               {/* ── Competitors ─────────────────────────── */}
-              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
+              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                   <p style={{ ...sectionTitle, margin: 0 }}>Top Competitors</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -802,11 +802,11 @@ export default function Organisations({ user }) {
                       const compDomain = c.website ? c.website.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0] : null
                       const alreadyInCrm = companies.some(org => org.name?.toLowerCase() === c.name?.toLowerCase())
                       return (
-                        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 11px', borderRadius: 9, border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.01)', cursor: 'default', transition: 'border-color 0.12s' }}
+                        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 11px', borderRadius: 9, border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.01)', cursor: 'default', transition: 'border-color 0.12s' }}
                           onMouseOver={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
                           onMouseOut={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)'}>
                           {/* Logo */}
-                          <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                          <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
                             {compDomain ? (
                               <img src={`https://www.google.com/s2/favicons?domain=${compDomain}&sz=64`} alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
                             ) : null}
@@ -845,7 +845,7 @@ export default function Organisations({ user }) {
               </div>
 
               {/* Intelligence Signals */}
-              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
+              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }}>
                 <p style={sectionTitle}>Recent Signals</p>
                 {loadingSignals ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{[...Array(2)].map((_, i) => <div key={i} style={{ height: 48, background: 'rgba(255,255,255,0.04)', borderRadius: 50, animation: 'pulse 1.5s infinite' }} />)}</div>
@@ -880,7 +880,7 @@ export default function Organisations({ user }) {
       {/* Modal form */}
       {showForm && (
         <div onClick={e => e.target === e.currentTarget && reset()} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(8px)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: '0 24px 80px rgba(255,255,255,0.1), 0 8px 24px rgba(255,255,255,0.04)', width: '100%', maxWidth: 420, padding: 24 }}>
+          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 50, border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: '0 24px 80px rgba(255,255,255,0.1), 0 8px 24px rgba(255,255,255,0.04)', width: '100%', maxWidth: 420, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <h2 style={{ fontSize: 17, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{editing ? 'Edit Organisation' : 'Add Organisation'}</h2>
               <button onClick={reset} style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer' }}><X style={{ width: 16, height: 16 }} /></button>

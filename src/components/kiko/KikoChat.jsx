@@ -34,19 +34,19 @@ function md(text) {
   let h = text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     // Supabase generated-files image → inline preview
-    .replace(/\[View\/Download\]\((https:\/\/[^\s)]*generated-files[^\s)]*\.png[^\s)]*)\)/g, '<div style="margin:8px 0"><a href="$1" target="_blank" rel="noopener"><img src="$1" style="max-width:100%;max-height:360px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);box-shadow:0 4px 16px rgba(0,0,0,0.3)" /></a></div>')
+    .replace(/\[View\/Download\]\((https:\/\/[^\s)]*generated-files[^\s)]*\.png[^\s)]*)\)/g, '<div style="margin:8px 0"><a href="$1" target="_blank" rel="noopener"><img src="$1" style="max-width:100%;max-height:360px;border-radius:12px;border:0.5px solid rgba(255,255,255,0.06);box-shadow:0 4px 16px rgba(0,0,0,0.3)" /></a></div>')
     // Supabase generated-files links → download buttons
     .replace(/\[([^\]]+)\]\((https:\/\/[^\s)]*generated-files[^\s)]*)\)/g, '<a href="$2" target="_blank" download="$1" style="display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;margin:6px 0;background:rgba(139,108,246,0.06);border:1px solid rgba(139,108,246,0.15);color:rgba(139,108,246,0.8);font-size:13px;font-weight:400;text-decoration:none">📄 $1 <span style="font-size:11px">↓</span></a>')
     // Regular markdown links
     .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:rgba(139,108,246,0.7);text-decoration:none;border-bottom:1px solid rgba(139,108,246,0.2)">$1</a>')
-    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(255,255,255,0.07);padding:12px;border-radius:8px;font-size:12px;overflow-x:auto;margin:8px 0;border:1.5px solid rgba(255,255,255,0.1)"><code>$1</code></pre>')
+    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(255,255,255,0.07);padding:12px;border-radius:8px;font-size:12px;overflow-x:auto;margin:8px 0;border:0.5px solid rgba(255,255,255,0.1)"><code>$1</code></pre>')
     .replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.07);padding:2px 6px;border-radius:4px;font-size:12px">$1</code>')
     .replace(/\*\*(.+?)\*\*/g, '<strong style="color:rgba(255,255,255,0.85);font-weight:500">$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/^[-\u2013\u2022] (.+)$/gm, '<li style="margin-left:16px;list-style:disc">$1</li>')
     .replace(/^(\d+)\. (.+)$/gm, '<li style="margin-left:16px;list-style:decimal">$2</li>')
     .replace(/^## (.+)$/gm, '<div style="font-size:15px;font-weight:500;color:rgba(255,255,255,0.85);margin:16px 0 8px">$1</div>')
-    .replace(/^---$/gm, '<hr style="border:none;border-top:1.5px solid rgba(255,255,255,0.1);margin:16px 0"/>')
+    .replace(/^---$/gm, '<hr style="border:none;border-top:0.5px solid rgba(255,255,255,0.1);margin:16px 0"/>')
     .replace(/\n/g, '<br/>')
   const result = DOMPurify.sanitize(h)
   if (text.length < 50000) { mdCache.set(text, result); if (mdCache.size > 200) mdCache.delete(mdCache.keys().next().value) }
@@ -621,17 +621,19 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     return (
       <div style={{
         display: 'flex', flexDirection: 'column',
-        background: 'rgba(255,255,255,0.03)', backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
-        borderRadius: 20,
+        background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(40px) saturate(1.4)', WebkitBackdropFilter: 'blur(40px) saturate(1.4)',
+        borderRadius: 16,
         padding: '14px 16px 8px',
-        border: `1px solid ${transcribing ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.08)'}`,
+        border: `0.5px solid ${transcribing ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.1)'}`,
+        borderTop: `0.5px solid ${transcribing ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.15)'}`,
+        boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.05) inset',
         transition: 'border-color 0.2s',
         maxWidth: welcome ? 540 : (compact ? '100%' : 640),
         width: '100%', margin: '0 auto',
       }}>
         {/* Pending image preview */}
         {pendingAttachment?.previewUrl && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 0 10px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 0 10px', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
             <img src={pendingAttachment.previewUrl} alt="" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover' }} />
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontFamily: T.font, flex: 1 }}>{pendingAttachment.name}</span>
             <button onClick={() => { setPendingAttachment(null); setImagePreview(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', padding: 4, fontSize: 14, width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>✕</button>
@@ -711,7 +713,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <button onClick={() => handleSubmit()} disabled={!hasContent} style={{
             width: 36, height: 36, borderRadius: 50,
             background: hasContent ? T.accentGradient : 'rgba(255,255,255,0.04)',
-            border: hasContent ? 'none' : '1px solid rgba(255,255,255,0.08)',
+            border: hasContent ? 'none' : '0.5px solid rgba(255,255,255,0.08)',
             color: 'rgba(255,255,255,0.95)', cursor: hasContent ? 'pointer' : 'default',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0, opacity: hasContent ? 1 : 0.25, marginBottom: 0,
@@ -784,7 +786,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           padding: isUser ? '13px 20px' : '0',
           borderRadius: isUser ? '20px 20px 6px 20px' : 0,
           background: isUser ? 'rgba(255,255,255,0.06)' : 'transparent',
-          border: isUser ? '1px solid rgba(255,255,255,0.08)' : 'none',
+          border: isUser ? '0.5px solid rgba(255,255,255,0.08)' : 'none',
           color: isUser ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.85)',
           fontSize: 15, lineHeight: 1.7, fontFamily: T.font, fontWeight: 400,
         }}>
@@ -906,7 +908,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             </div>
             <button onClick={stopVoice} style={{
               marginTop: 24, padding: '10px 28px', borderRadius: 50,
-              background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)',
+              background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.1)',
               fontSize: 13, color: 'rgba(255,255,255,0.25)', cursor: 'pointer', fontFamily: T.font,
               fontWeight: 300, transition: 'all 0.3s',
             }}

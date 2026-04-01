@@ -109,7 +109,7 @@ export default function Tasks({ user }) {
   }
 
   const card = { background: 'rgba(255,255,255,0.02)', border: `1px solid rgba(255,255,255,0.04)`, borderRadius: 12, padding: '12px 14px', marginBottom: 6, cursor: 'pointer', display: 'flex', gap: 10, alignItems: 'flex-start', transition: 'all 0.15s' }
-  const inp = { width: '100%', background: 'rgba(255,255,255,0.03)', border: `1px solid rgba(255,255,255,0.06)`, borderRadius: 8, padding: '8px 12px', fontSize: 14, color: T.text, fontFamily: T.font, fontWeight: 300, outline: 'none' }
+  const inp = { width: '100%', background: 'rgba(255,255,255,0.03)', border: `0.5px solid rgba(255,255,255,0.06)`, borderRadius: 8, padding: '8px 12px', fontSize: 14, color: T.text, fontFamily: T.font, fontWeight: 300, outline: 'none' }
 
   if (loading) return <div style={{ padding: 40, textAlign: 'center', color: T.textTertiary, fontFamily: T.font, fontWeight: 300 }}>Loading tasks...</div>
 
@@ -161,7 +161,7 @@ export default function Tasks({ user }) {
               <input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Notes / description" style={inp} />
               <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={save} style={{ padding: '7px 20px', borderRadius: 8, background: 'rgba(139,108,246,0.12)', border: '1px solid rgba(139,108,246,0.2)', color: 'rgba(139,108,246,0.8)', fontSize: 13, cursor: 'pointer', fontFamily: T.font }}>Save</button>
-                <button onClick={() => setShowForm(false)} style={{ padding: '7px 14px', borderRadius: 8, background: 'transparent', border: `1px solid rgba(255,255,255,0.06)`, color: T.textTertiary, fontSize: 13, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
+                <button onClick={() => setShowForm(false)} style={{ padding: '7px 14px', borderRadius: 8, background: 'transparent', border: `0.5px solid rgba(255,255,255,0.06)`, color: T.textTertiary, fontSize: 13, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
               </div>
             </div>
           )}
@@ -257,7 +257,7 @@ export default function Tasks({ user }) {
           <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(255,255,255,0.04)', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             <button onClick={() => getKikoRec(selected)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(139,108,246,0.15)', background: 'rgba(139,108,246,0.04)', color: 'rgba(139,108,246,0.7)', cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Regenerate</button>
             <button onClick={() => { toggle(selected); setSelected(null); setKikoRec(null) }} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(6,214,160,0.15)', background: 'rgba(6,214,160,0.04)', color: 'rgba(6,214,160,0.6)', cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><CheckSquare size={10} /> Complete</button>
-            <button onClick={() => { navigator.clipboard.writeText(kikoRec) }} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', color: T.textTertiary, cursor: 'pointer', fontFamily: T.font }}>Copy</button>
+            <button onClick={() => { navigator.clipboard.writeText(kikoRec) }} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '0.5px solid rgba(255,255,255,0.06)', background: 'transparent', color: T.textTertiary, cursor: 'pointer', fontFamily: T.font }}>Copy</button>
           </div>
         )}
       </div>

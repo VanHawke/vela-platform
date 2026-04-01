@@ -193,7 +193,7 @@ export default function Settings({ user }) {
     outline: 'none', background: T.surface, boxSizing: 'border-box',
   }
   const labelStyle = { fontSize: 14, fontWeight: 500, color: T.text, display: 'block', marginBottom: 6, fontFamily: T.font }
-  const cardStyle = { background: T.surface, borderRadius: T.radius, border: `1px solid ${T.border}`, padding: 20 }
+  const cardStyle = { background: T.glass, backdropFilter: 'blur(24px) saturate(1.2)', WebkitBackdropFilter: 'blur(24px) saturate(1.2)', borderRadius: T.radius, border: `0.5px solid ${T.glassBorder}`, borderTop: `0.5px solid rgba(255,255,255,0.15)`, padding: 20, boxShadow: T.glassShadow }
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'transparent' }}>

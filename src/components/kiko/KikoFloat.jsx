@@ -133,7 +133,7 @@ function md(text) {
   if (!text) return ''
   let h = text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(255,255,255,0.07);padding:8px;border-radius:8px;font-size:11px;overflow-x:auto;margin:4px 0;border:1.5px solid rgba(255,255,255,0.1)"><code>$1</code></pre>')
+    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(255,255,255,0.07);padding:8px;border-radius:8px;font-size:11px;overflow-x:auto;margin:4px 0;border:0.5px solid rgba(255,255,255,0.1)"><code>$1</code></pre>')
     .replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.07);padding:1px 4px;border-radius:3px;font-size:11px">$1</code>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
@@ -451,10 +451,11 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         <div key={panelKey} className={`kiko-panel ${open ? 'entering' : ''}`} style={{
           position: 'fixed', bottom: 88, right: 24, width: panelW,
           zIndex: 100, borderRadius: 24,
-          background: 'rgba(14,14,20,0.8)',
-          backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
-          border: `1.5px solid ${T.glassBorder}`,
-          boxShadow: T.glassShadow,
+          background: 'rgba(255,255,255,0.035)',
+          backdropFilter: 'blur(40px) saturate(1.5)', WebkitBackdropFilter: 'blur(40px) saturate(1.5)',
+          border: `0.5px solid ${T.glassBorder}`,
+          borderTop: `0.5px solid rgba(255,255,255,0.15)`,
+          boxShadow: T.glassShadowFloat || '0 16px 48px rgba(0,0,0,0.45), 0 4px 16px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.05) inset',
           display: 'flex', flexDirection: 'column',
           maxHeight: 'calc(100vh - 160px)',
           opacity: open ? 1 : 0,
@@ -555,7 +556,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               {dynamicChips.map((chip, i) => (
                 <button key={chip} onClick={() => handleSubmit(chip)} style={{
                   fontSize: 12, padding: '5px 10px', borderRadius: 50,
-                  border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)',
+                  border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.07)',
                   color: T.textSecondary, cursor: 'pointer', fontFamily: T.font,
                   animation: `kikoChipIn 0.3s ease ${0.08 + i * 0.05}s both`,
                   transition: 'background 0.15s, border-color 0.15s',

@@ -160,7 +160,7 @@ Be direct. Use web search for current company intelligence if needed.`
   const daysToRace = nextRace ? Math.ceil((new Date(nextRace.date) - now) / 86400000) : null
 
   const urgencyColor = (u) => u >= 3 ? 'rgba(255,59,48,0.6)' : u >= 2 ? 'rgba(245,158,11,0.5)' : u >= 1 ? 'rgba(139,108,246,0.4)' : 'rgba(255,255,255,0.1)'
-  const card = { background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 14, padding: 16 }
+  const card = { background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(24px) saturate(1.2)', WebkitBackdropFilter: 'blur(24px) saturate(1.2)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: 14, padding: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.05) inset' }
 
   if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}><Loader2 style={{ width: 24, height: 24, animation: 'spin 1s linear infinite', color: T.textTertiary }} /></div>
 
@@ -175,7 +175,7 @@ Be direct. Use web search for current company intelligence if needed.`
               <h1 style={{ fontSize: 21, fontWeight: 400, color: T.text, margin: 0 }}>Command Centre</h1>
               <p style={{ fontSize: 12, color: T.textTertiary, fontWeight: 300, marginTop: 2 }}>Priority actions ranked by deal value × urgency</p>
             </div>
-            <button onClick={loadData} style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', color: T.textTertiary, fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Refresh</button>
+            <button onClick={loadData} style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.06)', color: T.textTertiary, fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Refresh</button>
           </div>
 
           {/* Stats bar */}
@@ -360,7 +360,7 @@ Be direct. Use web search for current company intelligence if needed.`
         {selectedAction && kikoRec && !kikoLoading && (
           <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(255,255,255,0.04)', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             <button onClick={() => getKikoRec(selectedAction)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(139,108,246,0.15)', background: 'rgba(139,108,246,0.04)', color: 'rgba(139,108,246,0.7)', cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Regenerate</button>
-            <button onClick={() => navigator.clipboard.writeText(kikoRec)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', color: T.textTertiary, cursor: 'pointer', fontFamily: T.font }}>Copy</button>
+            <button onClick={() => navigator.clipboard.writeText(kikoRec)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '0.5px solid rgba(255,255,255,0.06)', background: 'transparent', color: T.textTertiary, cursor: 'pointer', fontFamily: T.font }}>Copy</button>
           </div>
         )}
       </div>

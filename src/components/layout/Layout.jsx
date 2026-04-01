@@ -233,7 +233,7 @@ export default function Layout({ user }) {
 
         {/* Center: Pill tab group — flex centered between logo and right controls */}
         <div className="desktop-top-nav" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: 3, background: T.glass, backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur, borderRadius: 50, padding: 4, border: `1.5px solid ${T.glassBorder}`, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 16px rgba(0,0,0,0.2)' }}>
+          <div style={{ display: 'flex', gap: 3, background: T.glass, backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur, borderRadius: 14, padding: 4, border: `0.5px solid ${T.glassBorder}`, borderTop: `0.5px solid ${T.glassBorderTop}`, boxShadow: T.glassShadow }}>
             {TABS.map(tab => {
               const active = isTabActive(tab.path)
               return (
@@ -269,7 +269,7 @@ export default function Layout({ user }) {
               {moreOpen && (
                 <div style={{
                   position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-                  width: 240, background: 'rgba(14,14,20,0.85)', backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
+                  width: 240, background: 'rgba(255,255,255,0.035)', backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
                   borderRadius: 18, border: `1.5px solid ${T.glassBorder}`,
                   boxShadow: T.glassShadow, padding: '6px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
                 }}>
@@ -324,7 +324,7 @@ export default function Layout({ user }) {
           {/* Command palette trigger */}
           <button onClick={() => setPaletteOpen(true)} style={{
             display: 'flex', alignItems: 'center', gap: 8,
-            padding: '7px 14px', borderRadius: 50, border: '1.5px solid rgba(255,255,255,0.1)',
+            padding: '7px 14px', borderRadius: 50, border: '0.5px solid rgba(255,255,255,0.1)',
             background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
             cursor: 'pointer', fontFamily: 'var(--font)',
             color: 'rgba(255,255,255,0.25)', fontSize: 13, transition: 'all 0.15s',
@@ -340,7 +340,7 @@ export default function Layout({ user }) {
           {/* User avatar dropdown */}
           <div ref={avatarRef} style={{ position: 'relative' }}>
             <button onClick={() => setAvatarOpen(!avatarOpen)} style={{
-              width: 28, height: 28, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer',
+              width: 28, height: 28, borderRadius: '50%', border: '0.5px solid rgba(255,255,255,0.08)', cursor: 'pointer',
               background: profile.profile_photo_url ? 'transparent' : 'transparent',
               display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, overflow: 'hidden',
             }}>
@@ -353,12 +353,12 @@ export default function Layout({ user }) {
             {avatarOpen && (
               <div style={{
                 position: 'absolute', top: '100%', right: 0, marginTop: 6,
-                width: 200, background: 'rgba(14,14,20,0.9)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
-                borderRadius: 18, border: '1.5px solid rgba(255,255,255,0.1)',
+                width: 200, background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
+                borderRadius: 18, border: '0.5px solid rgba(255,255,255,0.1)',
                 boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 40px rgba(0,0,0,0.5)',
                 padding: '6px', zIndex: 400, animation: 'fadeIn 0.15s ease-out',
               }}>
-                <div style={{ padding: '8px 12px 10px', borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: 4 }}>
+                <div style={{ padding: '8px 12px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.06)', marginBottom: 4 }}>
                   <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.8)', fontFamily: 'var(--font)' }}>
                     {profile.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : user?.email?.split('@')[0] || 'User'}
                   </div>
@@ -396,7 +396,7 @@ export default function Layout({ user }) {
           zIndex: 240, animation: 'fadeIn 0.15s ease-out',
         }} onClick={() => setMobileMenuOpen(false)}>
           <div style={{
-            background: 'rgba(14,14,20,0.95)', borderBottom: '1px solid rgba(255,255,255,0.08)',
+            background: 'rgba(255,255,255,0.035)', borderBottom: '0.5px solid rgba(255,255,255,0.08)',
             padding: '8px 12px', maxHeight: '70vh', overflowY: 'auto',
           }} onClick={e => e.stopPropagation()}>
             {ALL_NAV.map(item => {
@@ -466,8 +466,8 @@ export default function Layout({ user }) {
       {/* Mobile bottom tab bar — visible only below 768px */}
       <nav className="mobile-bottom-nav" style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
-        background: 'rgba(7,7,11,0.92)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
-        borderTop: '1px solid rgba(255,255,255,0.06)',
+        background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
+        borderTop: '0.5px solid rgba(255,255,255,0.06)',
         display: 'none', // shown via CSS media query
         justifyContent: 'space-around', alignItems: 'center',
         padding: '6px 0 env(safe-area-inset-bottom, 8px)',

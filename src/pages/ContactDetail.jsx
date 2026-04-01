@@ -132,8 +132,8 @@ export default function ContactDetail() {
 
   const urgencyColor = (u) => u === 'overdue' ? '#ef4444' : u === 'high' ? '#f59e0b' : u === 'due' ? '#3b82f6' : 'var(--text-tertiary)'
 
-  const glass = { background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 36px rgba(0,0,0,0.3)' }
-  const card = { background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: 24, border: '1.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }
+  const glass = { background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 36px rgba(0,0,0,0.3)' }
+  const card = { background: 'rgba(255,255,255,0.04)', borderRadius: 18, padding: 24, border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'none' }
   const inputStyle = { width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: 50, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
   const labelStyle = { fontSize: 12, fontWeight: 500, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }
   const sectionTitle = { fontSize: 13, fontWeight: 400, color: 'var(--text)', fontFamily: 'var(--font)', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.04em' }
@@ -186,9 +186,9 @@ export default function ContactDetail() {
             </div>
             {/* Quick actions */}
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {contact.email && <a href={`mailto:${contact.email}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}><Mail style={{ width: 13, height: 13 }} /> Email</a>}
-              {contact.phone && <a href={`tel:${contact.phone}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}><Phone style={{ width: 13, height: 13 }} /> Call</a>}
-              {contact.linkedin && <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '1.5px solid rgba(255,255,255,0.08)' }}><Linkedin style={{ width: 13, height: 13 }} /> LinkedIn</a>}
+              {contact.email && <a href={`mailto:${contact.email}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(255,255,255,0.08)' }}><Mail style={{ width: 13, height: 13 }} /> Email</a>}
+              {contact.phone && <a href={`tel:${contact.phone}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(255,255,255,0.08)' }}><Phone style={{ width: 13, height: 13 }} /> Call</a>}
+              {contact.linkedin && <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(255,255,255,0.08)' }}><Linkedin style={{ width: 13, height: 13 }} /> LinkedIn</a>}
             </div>
           </div>
 
