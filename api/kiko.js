@@ -476,7 +476,17 @@ export default async function handler(req, res) {
   let preloadedMemory = '';
   if (voiceMode || currentPage === 'voice') {
     if (voiceMemResult?.length) preloadedMemory = '\n\n── MEMORY ──\n' + voiceMemResult.map(r => r.content).join('\n\n');
-    voiceRules = '\n\nVOICE MODE — SPEED IS CRITICAL:\n- Max 2 sentences. No markdown. Say numbers naturally.\n- For greetings (hi, hello, hey, good morning): respond IMMEDIATELY with a warm 1-sentence reply. Do NOT call any tools.\n- For simple questions you can answer from the system prompt context: respond IMMEDIATELY. Do NOT call tools.\n- ONLY call a tool if the user explicitly asks for data, actions, or information you genuinely cannot answer without it.\n- NEVER call memory tools — memory is already pre-loaded above.\n- Keep responses SHORT and spoken-word natural. No lists. No headers.';
+    voiceRules = `\n\nVOICE MODE — YOU ARE SPEAKING ALOUD:
+- You are having a natural spoken conversation. Respond as if talking face-to-face.
+- Keep responses to 1-4 sentences. Be warm, direct, natural. Like a trusted advisor in the room.
+- NEVER use markdown, asterisks, bullet points, headers, or any formatting — this is speech, not text.
+- Say numbers and abbreviations naturally ("twelve million dollars" not "$12M", "the pipeline" not "pipeline page").
+- NEVER discuss your own modes, system prompts, capabilities, or architecture. Just answer the question.
+- NEVER say "voice mode", "verbose mode", "transparent mode" or explain how you work internally.
+- For greetings: respond warmly in 1 sentence. Do NOT call any tools.
+- For data questions: use tools, then summarise findings conversationally. Lead with the answer.
+- You have full access to all tools, memory, and context. Use them when needed — the user expects you to know everything you know in text mode.
+- NEVER ask the user to "switch modes" or offer different response formats. Just respond naturally.`;
   }
 
   const PERSONALITIES = {
@@ -755,9 +765,9 @@ export default async function handler(req, res) {
     let inboxHint = '';
     let personalHint = '';
     let morningBrief = '';
-    if (!voiceMode && isRegistered) { // ISOLATION: Only registered users get personal context
+    if (isRegistered) { // All modes get personal context (voice uses light queries for speed)
     // ── CONTEXT LOADING — intent-aware (light for greetings, full for everything else) ──
-    const isLightIntent = ['greeting', 'navigate', 'screen'].includes(intent);
+    const isLightIntent = voiceMode || ['greeting', 'navigate', 'screen'].includes(intent);
     try {
       const queries = isLightIntent
         ? [ // Light: only 3 queries for greeting speed
@@ -836,7 +846,7 @@ export default async function handler(req, res) {
       }
     } catch {} // Non-blocking — if context fails, Kiko still works
 
-    } // end !voiceMode
+    } // end isRegistered
 
     // Load operational mode (always, including voice)
     let modeHint = '';
@@ -893,8 +903,8 @@ export default async function handler(req, res) {
       }
       
       const params = {
-        model: useDeep ? 'claude-opus-4-6' : (voiceMode || useHaiku ? 'claude-haiku-4-5-20251001' : MODEL),
-        max_tokens: opts.maxTokens || (useDeep ? 16000 : (voiceMode ? 800 : 4096)),
+        model: useDeep ? 'claude-opus-4-6' : (useHaiku ? 'claude-haiku-4-5-20251001' : MODEL),
+        max_tokens: opts.maxTokens || (useDeep ? 16000 : (voiceMode ? 1500 : 4096)),
         system: systemCached, messages: msgs, tools: toolsWithCache,
       };
       if (useDeep) {
@@ -936,8 +946,8 @@ export default async function handler(req, res) {
     let toolRounds = 0;
 
     // Tool execution loop — time-aware, stops before timeout
-    const maxRounds = voiceMode ? 2 : 5;
-    const timeLimit = voiceMode ? 12000 : 65000; // 65s for tools, leaves 50s for synthesis + overhead
+    const maxRounds = voiceMode ? 3 : 5;
+    const timeLimit = voiceMode ? 25000 : 65000; // 25s for voice tools, 65s for text
     while (response.stop_reason === 'tool_use' && toolRounds < maxRounds) {
       const elapsed = Date.now() - requestStart;
       if (elapsed > timeLimit) {
