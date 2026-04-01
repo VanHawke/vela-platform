@@ -152,3 +152,57 @@
 - KikoFloat.jsx (openVoiceMode dispatches event, voice state listener)
 - Layout.jsx (globalVoiceMode state, kiko_open_voice listener, KikoVoice render)
 - VOICE_BUILD_LOG.md
+
+
+## ✅ CONFIRMED WORKING — 1 Apr 2026, final afternoon session
+
+### Voice Architecture (GPT-4o Realtime WebRTC + ask_kiko)
+- [x] Ephemeral token generation via api/realtime-token.js
+- [x] WebRTC PeerConnection connecting
+- [x] Remote audio track received (Kiko's voice)
+- [x] Data channel open
+- [x] Session config with 3 tools (ask_kiko + navigate_page + close_voice) accepted
+- [x] Speech-to-speech working (sub-second for greetings)
+- [x] ask_kiko tool fires for data questions → routes to /api/kiko (Claude + 39 tools)
+- [x] Interruption working (output_audio_buffer.cleared on speech detection)
+- [x] Voice: Coral (friendly, natural female)
+- [x] VAD threshold: 0.6 (prevents self-reply)
+
+### UI
+- [x] KikoVoice fullscreen portal from homepage (KikoChat)
+- [x] KikoVoice fullscreen portal from KikoFloat EQ button (any non-home page)
+- [x] Equalizer waveform animated by Kiko's remote audio energy
+- [x] "Kiko is speaking" / "Listening" status in top-right
+- [x] "Goodbye Kiko" button visible
+- [x] close_voice tool — verbal "Goodbye Kiko" closes voice after 2s
+- [x] Settings: Kiko + Team tabs hidden for non-super_admin
+
+### GPT-4o Instructions
+- [x] Navigation vs data distinction ("tell me about X" → ask_kiko, "take me to X" → navigate)
+- [x] Voice consistency instruction
+- [x] Filler phrases while tools run
+- [x] Don't respond to background noise/own audio
+
+### Remaining Issues for Next Session
+1. Settings voice picker not wired — display only, doesn't save/apply
+2. Partnership matrix nav/header disappearing after voice navigation
+3. Voice tone/pitch user controls not implemented
+4. Occasional self-reply despite VAD 0.6 — monitor
+
+### File Reference
+- `api/realtime-token.js` — GPT-4o ephemeral key (voice: coral)
+- `src/components/kiko/KikoVoice.jsx` — GPT-4o WebRTC, 3 tools, session config
+- `src/components/kiko/KikoFloat.jsx` — dispatches kiko_open_voice, listens for voice state
+- `src/components/layout/Layout.jsx` — globalVoiceMode state, renders KikoVoice portal
+- `api/kiko.js` — voiceMode rules, Haiku for greetings, Sonnet for tools
+
+### Deploy Checklist
+1. `npm run build` — verify no errors
+2. Check bundle strings: close_voice, ask_kiko, kiko_open_voice
+3. `git add -A && git commit`
+4. `VERCEL_FORCE_NO_BUILD_CACHE=1 npx vercel --prod --yes --force`
+5. Verify live bundle hash changed
+6. `git push origin main`
+7. Clear service workers if architecture changed
+8. Hard refresh (Cmd+Shift+R)
+9. Test: voice from home, voice from KikoFloat, ask_kiko fires, interruption, goodbye
