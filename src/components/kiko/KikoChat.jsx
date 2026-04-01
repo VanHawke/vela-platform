@@ -123,6 +123,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const dynamicChips = useDynamicChips('home', false)
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState(initialMessage)
+  const [typewriterText, setTypewriterText] = useState('')
+  const typewriterDone = useRef(false)
   const [streaming, setStreaming] = useState(false)
   const [streamText, setStreamText] = useState('')
   const [toolStatus, setToolStatus] = useState(null)
@@ -370,6 +372,20 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       if (data) { setConvTitle(data.title || 'New conversation'); setIsStarred(!!data.starred) }
     })()
   }, [activeConvId])
+
+  // Typewriter placeholder — runs once per view
+  useEffect(() => {
+    if (typewriterDone.current) return
+    typewriterDone.current = true
+    const phrase = 'Ask me anything....'
+    let i = 0
+    const timer = setInterval(() => {
+      i++
+      setTypewriterText(phrase.slice(0, i))
+      if (i >= phrase.length) clearInterval(timer)
+    }, 45)
+    return () => clearInterval(timer)
+  }, [])
 
   const toggleStar = async () => {
     if (!activeConvId) return
@@ -666,6 +682,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(40px) saturate(1.4)', WebkitBackdropFilter: 'blur(40px) saturate(1.4)',
         borderRadius: 16,
         padding: '14px 16px 8px',
+        position: 'relative',
         border: `0.5px solid ${transcribing ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.1)'}`,
         borderTop: `0.5px solid ${transcribing ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.15)'}`,
         boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.05) inset',
@@ -687,16 +704,22 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           ref={inputRef} value={input} dir="ltr"
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
-          placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment or press send..." : "Ask anything"}
+          placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment or press send..." : ""}
           autoFocus rows={1}
           style={{
             width: '100%', border: 'none', background: 'transparent', outline: 'none',
             fontSize: 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font,
-            minHeight: welcome ? 64 : 44, maxHeight: 300, fontWeight: 400, resize: 'none',
+            minHeight: 44, maxHeight: 300, fontWeight: 400, resize: 'none',
             lineHeight: '1.5', padding: '4px 0', overflowY: 'auto',
             fieldSizing: 'content',
           }}
         />
+        {/* Typewriter placeholder overlay */}
+        {!input && !fileUploading && !pendingAttachment && typewriterText && (
+          <div style={{ position: 'absolute', top: 18, left: 16, fontSize: 15, color: 'rgba(255,255,255,0.25)', fontFamily: T.font, fontWeight: 400, pointerEvents: 'none', lineHeight: '1.5' }}>
+            {typewriterText}<span style={{ opacity: typewriterText.length < 19 ? 1 : 0, animation: typewriterText.length < 19 ? 'kikoBreathe 0.6s step-end infinite' : 'none' }}>|</span>
+          </div>
+        )}
         {/* Bottom bar — attachment left, actions right */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
           <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} title="Attach file" style={{

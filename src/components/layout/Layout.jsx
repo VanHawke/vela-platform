@@ -269,9 +269,9 @@ export default function Layout({ user }) {
               {moreOpen && (
                 <div style={{
                   position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-                  width: 240, background: 'rgba(255,255,255,0.035)', backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
-                  borderRadius: 18, border: `1.5px solid ${T.glassBorder}`,
-                  boxShadow: T.glassShadow, padding: '6px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
+                  width: 240, background: 'rgba(12,12,18,0.82)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
+                  borderRadius: 14, border: `0.5px solid rgba(255,255,255,0.12)`,
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.06) inset', padding: '6px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
                 }}>
                   {MORE_ITEMS.map(item => {
                     const Icon = item.Icon || Building2

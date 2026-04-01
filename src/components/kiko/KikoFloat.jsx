@@ -617,7 +617,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
             </button>
             <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && input.trim()) handleSubmit() }}
-              placeholder="Ask anything…"
+              placeholder="Ask me anything...."
               style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 14, color: T.text, fontFamily: T.font }} />
             <button onClick={transcribing ? stopTranscribe : startTranscribe} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: transcribing ? 'rgba(34,197,94,0.12)' : 'transparent', color: transcribing ? 'rgba(34,197,94,0.9)' : T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
               <Mic size={13} />
@@ -667,7 +667,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'rgba(139,108,246,0.18)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4)' : '0 0 0 3px rgba(139,108,246,0.05), 0 0 20px rgba(139,108,246,0.08), 0 8px 28px rgba(0,0,0,0.4)' }}}
         >
           {voiceOpen
-            ? <KikoWaveform width={40} height={40} mini volume={voiceSpeaking ? 0.4 : 0.05} speaking={voiceSpeaking} />
+            ? <KikoWaveform width={40} height={40} mini volume={voiceSpeaking ? 0.4 : 0.08} speaking={voiceSpeaking} />
             : open
               ? <X size={18} />
               : <KikoWaveform width={40} height={40} mini volume={voiceOpen ? (floatVoiceState.energy || 0.05) : 0} speaking={voiceOpen && floatVoiceState.speaking} />

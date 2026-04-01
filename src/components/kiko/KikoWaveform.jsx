@@ -31,7 +31,7 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
       // Use external volume or simulate idle breathing
       let vol = volRef.current
       if (!speaking && vol < 0.02) {
-        vol = 0.03 + 0.02 * Math.sin(t * 1.2) // subtle idle breathing
+        vol = 0.06 + 0.03 * Math.sin(t * 1.2) // visible idle breathing
       }
       cx.clearRect(0, 0, W, H)
       const bW = W / N, bw = Math.max(1, bW * 0.55)
