@@ -43,103 +43,95 @@ export function createAnalyser(source, fftSize = 256) {
 }
 
 // ── StreamingAudioPlayer ──
-// Accumulates PCM chunks and schedules gapless playback
-// Uses AudioContext.currentTime for seamless audio without cracks/gaps
+// Accumulates PCM chunks per TTS sentence, plays gaplessly
+// Each Deepgram "Flushed" message triggers a combined play
 export class StreamingAudioPlayer {
   constructor() {
-    this._rawChunks = [];     // Accumulated raw ArrayBuffers
-    this._rawBytes = 0;       // Total bytes accumulated
-    this._nextStartTime = 0;  // When to schedule next buffer
-    this._sources = [];       // Active AudioBufferSourceNodes
+    this._pendingChunks = [];  // Chunks for current sentence
+    this._pendingBytes = 0;
+    this._ctx = null;          // Own AudioContext (not shared)
     this._analyser = null;
+    this._nextTime = 0;        // Schedule gapless
+    this._activeSources = 0;   // Track active source nodes
     this._stopped = false;
-    this._playing = false;
     this._onEnd = null;
-    this._flushTimer = null;  // Timer to flush remaining chunks
-    this._endTimer = null;    // Timer to detect playback end
   }
 
-  enqueue(arrayBuffer) {
-    if (this._stopped || arrayBuffer.byteLength < 100) return;
-    this._rawChunks.push(new Uint8Array(arrayBuffer));
-    this._rawBytes += arrayBuffer.byteLength;
-    // Flush every ~200ms of audio (9600 bytes at 24kHz 16-bit mono)
-    if (this._rawBytes >= 9600) this._flush();
-    // Also set a timer to flush smaller remaining chunks
-    clearTimeout(this._flushTimer);
-    this._flushTimer = setTimeout(() => this._flush(), 80);
+  _getCtx() {
+    if (!this._ctx || this._ctx.state === 'closed') {
+      this._ctx = new AudioContext({ sampleRate: 24000 });
+    }
+    if (this._ctx.state === 'suspended') this._ctx.resume();
+    return this._ctx;
   }
 
-  _flush() {
-    if (this._stopped || this._rawChunks.length === 0) return;
-    // Combine all accumulated chunks
-    const total = this._rawBytes;
+  // Call for each binary audio chunk from Deepgram TTS
+  addChunk(arrayBuffer) {
+    if (this._stopped) return;
+    this._pendingChunks.push(new Uint8Array(arrayBuffer));
+    this._pendingBytes += arrayBuffer.byteLength;
+  }
+
+  // Call when Deepgram sends "Flushed" — plays the accumulated sentence
+  flushAndPlay() {
+    if (this._stopped || this._pendingChunks.length === 0) return;
+    const total = this._pendingBytes;
     const combined = new Uint8Array(total);
     let offset = 0;
-    for (const chunk of this._rawChunks) {
-      combined.set(chunk, offset);
-      offset += chunk.length;
-    }
-    this._rawChunks = [];
-    this._rawBytes = 0;
-    // Decode PCM16 to Float32
+    for (const c of this._pendingChunks) { combined.set(c, offset); offset += c.length; }
+    this._pendingChunks = [];
+    this._pendingBytes = 0;
+
+    // Decode PCM16 → Float32
     const int16 = new Int16Array(combined.buffer);
     const float32 = new Float32Array(int16.length);
     for (let i = 0; i < int16.length; i++) float32[i] = int16[i] / 32768;
-    // Create AudioBuffer
-    const ctx = getAudioContext();
-    const audioBuf = ctx.createBuffer(1, float32.length, 24000);
-    audioBuf.copyToChannel(float32, 0);
-    // Ensure analyser exists
+
+    const ctx = this._getCtx();
+    const buf = ctx.createBuffer(1, float32.length, 24000);
+    buf.copyToChannel(float32, 0);
+
     if (!this._analyser) {
       this._analyser = ctx.createAnalyser();
       this._analyser.fftSize = 256;
       this._analyser.smoothingTimeConstant = 0.75;
       this._analyser.connect(ctx.destination);
     }
-    // Schedule gapless playback
+
     const source = ctx.createBufferSource();
-    source.buffer = audioBuf;
+    source.buffer = buf;
     source.connect(this._analyser);
     const now = ctx.currentTime;
-    const startAt = Math.max(now, this._nextStartTime);
-    this._nextStartTime = startAt + audioBuf.duration;
-    source.start(startAt);
-    this._sources.push(source);
-    this._playing = true;
-    // Cleanup finished sources
+    const startAt = Math.max(now + 0.01, this._nextTime);
+    this._nextTime = startAt + buf.duration;
+    this._activeSources++;
     source.onended = () => {
-      this._sources = this._sources.filter(s => s !== source);
-      // Check if all playback is done
-      clearTimeout(this._endTimer);
-      this._endTimer = setTimeout(() => {
-        if (this._sources.length === 0 && this._rawChunks.length === 0) {
-          this._playing = false;
-          if (this._onEnd) this._onEnd();
-        }
-      }, 100);
+      this._activeSources--;
+      if (this._activeSources <= 0 && this._pendingChunks.length === 0) {
+        this._activeSources = 0;
+        if (this._onEnd) this._onEnd();
+      }
     };
+    source.start(startAt);
+    console.log(`[Voice] Playing ${(buf.duration).toFixed(1)}s audio, scheduled at +${(startAt - now).toFixed(2)}s`);
   }
 
   stop() {
     this._stopped = true;
-    this._rawChunks = [];
-    this._rawBytes = 0;
-    clearTimeout(this._flushTimer);
-    clearTimeout(this._endTimer);
-    for (const s of this._sources) { try { s.stop(); } catch {} }
-    this._sources = [];
-    this._playing = false;
-    this._nextStartTime = 0;
+    this._pendingChunks = [];
+    this._pendingBytes = 0;
+    this._nextTime = 0;
+    this._activeSources = 0;
+    if (this._ctx) { try { this._ctx.close(); } catch {} this._ctx = null; }
+    this._analyser = null;
   }
 
   reset() {
     this.stop();
     this._stopped = false;
-    this._analyser = null;
   }
 
-  isPlaying() { return this._playing; }
+  isPlaying() { return this._activeSources > 0; }
   getAnalyser() { return this._analyser; }
   set onEnd(fn) { this._onEnd = fn; }
 }

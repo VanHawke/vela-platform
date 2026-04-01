@@ -104,28 +104,25 @@ export function useKikoVoice({ user, onClose }) {
       ws.onopen = () => { ttsWS.current = ws; resolve(ws); };
       ws.onmessage = (evt) => {
         if (evt.data instanceof ArrayBuffer && evt.data.byteLength > 44) {
-          // Audio chunk — enqueue for playback
-          console.log('[Voice] TTS audio chunk:', evt.data.byteLength, 'bytes');
-          if (!audioPlayer.current) {
-            audioPlayer.current = new StreamingAudioPlayer();
-            audioPlayer.current.onEnd = () => {
-              isSpeakingRef.current = false;
-              if (!deadRef.current) {
-                setStatus('listening');
-                setSpeakEnergy(0);
-                dispatchVoiceState({ speaking: false, status: 'Listening' });
+          // Audio chunk — accumulate
+          audioPlayer.current?.addChunk(evt.data);
+        } else if (typeof evt.data === 'string') {
+          // Deepgram control message
+          try {
+            const msg = JSON.parse(evt.data);
+            if (msg.type === 'Flushed') {
+              // Sentence complete — play accumulated audio
+              console.log('[Voice] TTS Flushed — playing sentence');
+              audioPlayer.current?.flushAndPlay();
+              if (!isSpeakingRef.current) {
+                isSpeakingRef.current = true;
+                setStatus('speaking');
+                dispatchVoiceState({ speaking: true, status: 'Speaking' });
+                startSpeakEnergyPump();
               }
-            };
-          }
-          audioPlayer.current.enqueue(evt.data);
-          if (!isSpeakingRef.current) {
-            isSpeakingRef.current = true;
-            setStatus('speaking');
-            dispatchVoiceState({ speaking: true, status: 'Speaking' });
-            startSpeakEnergyPump();
-          }
+            }
+          } catch {}
         }
-        // Text messages are metadata — ignore
       };
       ws.onerror = (e) => { console.error('[Voice] TTS WS error:', e); reject(e); };
       ws.onclose = () => { ttsWS.current = null; };
@@ -254,7 +251,7 @@ export function useKikoVoice({ user, onClose }) {
 
     // Interruption: user spoke while Kiko was talking
     if (data.type === 'SpeechStarted' && isSpeakingRef.current) {
-      audioPlayer.current?.stop();
+      audioPlayer.current?.reset();
       cancelAnimationFrame(speakRAF.current);
       isSpeakingRef.current = false;
       setSpeakEnergy(0);
