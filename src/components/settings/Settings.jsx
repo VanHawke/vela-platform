@@ -360,7 +360,7 @@ export default function Settings({ user }) {
                       color: isSelected ? 'rgba(255,255,255,0.9)' : T.text,
                       display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
                       transition: 'all 0.15s',
-                    }} onClick={() => saveSettings({ kiko_voice: v.id })}>
+                    }} onClick={() => { saveSettings({ kiko_voice: v.id }); try { localStorage.setItem('kiko_voice', v.id) } catch {} }}>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: 14, fontWeight: 400, fontFamily: T.font }}>{v.label}</div>
                         <div style={{ fontSize: 12, opacity: 0.7, fontFamily: T.font }}>{v.desc}</div>

@@ -4,6 +4,10 @@ export default async function handler(req, res) {
   const key = process.env.OPENAI_KEY;
   if (!key) return res.status(500).json({ error: 'OPENAI_KEY not configured' });
 
+  // Accept voice preference from client (default: coral)
+  let voice = 'coral';
+  try { const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body; if (body?.voice) voice = body.voice; } catch {}
+
   try {
     const r = await fetch('https://api.openai.com/v1/realtime/client_secrets', {
       method: 'POST',
@@ -12,7 +16,7 @@ export default async function handler(req, res) {
         session: {
           type: 'realtime',
           model: 'gpt-realtime',
-          audio: { output: { voice: 'coral' } },
+          audio: { output: { voice } },
         }
       }),
     });

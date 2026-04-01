@@ -129,7 +129,12 @@ export default function KikoVoice({ onClose, user, onVoiceState }) {
       try {
         // 1. Get ephemeral token
         console.log('[KikoVoice] Getting ephemeral token...')
-        const tokenRes = await fetch('/api/realtime-token', { method: 'POST' })
+        const voice = localStorage.getItem('kiko_voice') || 'coral'
+        const tokenRes = await fetch('/api/realtime-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ voice }),
+        })
         if (!tokenRes.ok) { const e = await tokenRes.text(); throw new Error(`Token failed: ${e}`) }
         const tokenData = await tokenRes.json()
         const ephemeralKey = tokenData.value

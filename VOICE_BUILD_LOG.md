@@ -232,3 +232,10 @@
 - Hook may be mounting 3 times due to React strict mode or multiple renders
 - Not causing issues but should investigate if it creates multiple WebRTC connections
 - Fix: add cleanup in useEffect to prevent double-connect
+
+
+## FIX: Voice navigation breaks top nav/header (1 Apr 2026)
+- **Root cause:** `navigate_page` tool used `window.history.pushState()` + `PopStateEvent`. This bypasses React Router — Layout component never re-renders, so top nav and page header disappear.
+- **Fix:** Changed both `useRealtimeVoice.js` and `KikoVoice.jsx` to dispatch `kiko_navigate` custom event instead. Layout.jsx listens for this event and calls `kikoNavigate()` which uses React Router's `navigate()` function. This triggers proper re-render of the entire component tree including Layout, nav bar, and page header.
+- **Files:** useRealtimeVoice.js, KikoVoice.jsx, Layout.jsx
+- **Lesson:** Never use pushState for SPA navigation. Always go through React Router.

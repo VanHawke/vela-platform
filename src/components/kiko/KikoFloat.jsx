@@ -168,6 +168,16 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
     return () => window.removeEventListener('kiko_voice_state', handler)
   }, [])
 
+  // Auto-activate inline voice when navigating from fullscreen voice (voice follows you)
+  useEffect(() => {
+    const handler = () => {
+      setVoiceOpen(true)
+      if (!open) { setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open') }
+    }
+    window.addEventListener('kiko_float_voice_activate', handler)
+    return () => window.removeEventListener('kiko_float_voice_activate', handler)
+  }, [open])
+
   // Auto-reopen after navigation (page reload preserves state via sessionStorage)
   useEffect(() => {
     try {

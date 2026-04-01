@@ -108,7 +108,12 @@ export function useRealtimeVoice({ active, onClose }) {
     try {
       deadRef.current = false
       setStatus('connecting')
-      const tokenRes = await fetch('/api/realtime-token', { method: 'POST' })
+      const voice = localStorage.getItem('kiko_voice') || 'coral'
+      const tokenRes = await fetch('/api/realtime-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ voice }),
+      })
       if (!tokenRes.ok) throw new Error('Token failed')
       const { value: key } = await tokenRes.json()
       if (!key || deadRef.current) return

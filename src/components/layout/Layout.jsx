@@ -173,7 +173,16 @@ export default function Layout({ user }) {
 
   // Listen for voice navigation (kiko_navigate event from voice tools)
   useEffect(() => {
-    const handler = (e) => { if (e.detail?.page) kikoNavigate(e.detail.page) }
+    const handler = (e) => {
+      if (e.detail?.page) {
+        // Reset fullscreen voice state — nav must be visible on destination page
+        setVoiceFullscreen(false)
+        // Signal KikoFloat to activate inline voice on destination page (voice follows you)
+        window.dispatchEvent(new CustomEvent('kiko_float_voice_activate'))
+        // Navigate via React Router
+        kikoNavigate(e.detail.page)
+      }
+    }
     window.addEventListener('kiko_navigate', handler)
     return () => window.removeEventListener('kiko_navigate', handler)
   }, [kikoNavigate])
@@ -184,6 +193,11 @@ export default function Layout({ user }) {
 
   const pageLabel = PAGE_LABELS[loc.pathname]
   const isTabActive = (path) => path === '/' ? isHome : loc.pathname === path
+
+  // Safety: reset voiceFullscreen when leaving home page
+  useEffect(() => {
+    if (!isHome && voiceFullscreen) setVoiceFullscreen(false)
+  }, [isHome, voiceFullscreen])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden', background: T.bg }}>
