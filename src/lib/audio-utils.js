@@ -43,87 +43,76 @@ export function createAnalyser(source, fftSize = 256) {
 }
 
 // ── StreamingAudioPlayer ──
-// Accumulates PCM chunks per TTS sentence, plays gaplessly
-// Each Deepgram "Flushed" message triggers a combined play
+// Dead simple: collect chunks per sentence, combine, play via Web Audio.
+// This exact pattern was manually tested and confirmed working.
 export class StreamingAudioPlayer {
   constructor() {
-    this._pendingChunks = [];  // Chunks for current sentence
-    this._pendingBytes = 0;
-    this._ctx = null;          // Own AudioContext (not shared)
+    this._chunks = [];
+    this._bytes = 0;
+    this._ctx = null;
+    this._playing = false;
     this._analyser = null;
-    this._nextTime = 0;        // Schedule gapless
-    this._activeSources = 0;   // Track active source nodes
+    this._sources = [];
+    this._nextTime = 0;
     this._stopped = false;
     this._onEnd = null;
   }
 
-  _getCtx() {
-    if (!this._ctx || this._ctx.state === 'closed') {
-      this._ctx = new AudioContext({ sampleRate: 24000 });
-    }
-    if (this._ctx.state === 'suspended') this._ctx.resume();
-    return this._ctx;
-  }
-
-  // Call for each binary audio chunk from Deepgram TTS
   addChunk(arrayBuffer) {
     if (this._stopped) return;
-    this._pendingChunks.push(new Uint8Array(arrayBuffer));
-    this._pendingBytes += arrayBuffer.byteLength;
+    this._chunks.push(new Uint8Array(arrayBuffer));
+    this._bytes += arrayBuffer.byteLength;
   }
 
-  // Call when Deepgram sends "Flushed" — plays the accumulated sentence
   flushAndPlay() {
-    if (this._stopped || this._pendingChunks.length === 0) return;
-    const total = this._pendingBytes;
-    const combined = new Uint8Array(total);
-    let offset = 0;
-    for (const c of this._pendingChunks) { combined.set(c, offset); offset += c.length; }
-    this._pendingChunks = [];
-    this._pendingBytes = 0;
-
-    // Decode PCM16 → Float32
+    if (this._stopped || this._chunks.length === 0) return;
+    // Combine all chunks into one buffer
+    const combined = new Uint8Array(this._bytes);
+    let off = 0;
+    for (const c of this._chunks) { combined.set(c, off); off += c.length; }
+    this._chunks = [];
+    this._bytes = 0;
+    // Decode PCM16 to Float32
     const int16 = new Int16Array(combined.buffer);
-    const float32 = new Float32Array(int16.length);
-    for (let i = 0; i < int16.length; i++) float32[i] = int16[i] / 32768;
-
-    const ctx = this._getCtx();
-    const buf = ctx.createBuffer(1, float32.length, 24000);
-    buf.copyToChannel(float32, 0);
-
+    const f32 = new Float32Array(int16.length);
+    for (let i = 0; i < int16.length; i++) f32[i] = int16[i] / 32768;
+    // Play
+    if (!this._ctx) this._ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+    if (this._ctx.state === 'suspended') this._ctx.resume();
     if (!this._analyser) {
-      this._analyser = ctx.createAnalyser();
+      this._analyser = this._ctx.createAnalyser();
       this._analyser.fftSize = 256;
       this._analyser.smoothingTimeConstant = 0.75;
-      this._analyser.connect(ctx.destination);
+      this._analyser.connect(this._ctx.destination);
     }
-
-    const source = ctx.createBufferSource();
-    source.buffer = buf;
-    source.connect(this._analyser);
-    const now = ctx.currentTime;
-    const startAt = Math.max(now + 0.01, this._nextTime);
-    this._nextTime = startAt + buf.duration;
-    this._activeSources++;
-    source.onended = () => {
-      this._activeSources--;
-      if (this._activeSources <= 0 && this._pendingChunks.length === 0) {
-        this._activeSources = 0;
+    const buf = this._ctx.createBuffer(1, f32.length, 24000);
+    buf.copyToChannel(f32, 0);
+    const src = this._ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(this._analyser);
+    const now = this._ctx.currentTime;
+    const start = Math.max(now + 0.02, this._nextTime);
+    this._nextTime = start + buf.duration;
+    this._playing = true;
+    this._sources.push(src);
+    src.onended = () => {
+      this._sources = this._sources.filter(s => s !== src);
+      if (this._sources.length === 0) {
+        this._playing = false;
         if (this._onEnd) this._onEnd();
       }
     };
-    source.start(startAt);
-    console.log(`[Voice] Playing ${(buf.duration).toFixed(1)}s audio, scheduled at +${(startAt - now).toFixed(2)}s`);
+    src.start(start);
   }
 
   stop() {
     this._stopped = true;
-    this._pendingChunks = [];
-    this._pendingBytes = 0;
+    this._chunks = [];
+    this._bytes = 0;
     this._nextTime = 0;
-    this._activeSources = 0;
-    if (this._ctx) { try { this._ctx.close(); } catch {} this._ctx = null; }
-    this._analyser = null;
+    for (const s of this._sources) { try { s.stop(); } catch {} }
+    this._sources = [];
+    this._playing = false;
   }
 
   reset() {
@@ -131,7 +120,7 @@ export class StreamingAudioPlayer {
     this._stopped = false;
   }
 
-  isPlaying() { return this._activeSources > 0; }
+  isPlaying() { return this._playing; }
   getAnalyser() { return this._analyser; }
   set onEnd(fn) { this._onEnd = fn; }
 }

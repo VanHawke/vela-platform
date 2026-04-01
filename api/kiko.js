@@ -903,8 +903,8 @@ export default async function handler(req, res) {
       }
       
       const params = {
-        model: useDeep ? 'claude-opus-4-6' : (useHaiku ? 'claude-haiku-4-5-20251001' : (voiceMode && opts.useHaiku ? 'claude-haiku-4-5-20251001' : MODEL)),
-        max_tokens: opts.maxTokens || (useDeep ? 16000 : (voiceMode ? 1500 : 4096)),
+        model: useDeep ? 'claude-opus-4-6' : (useHaiku ? 'claude-haiku-4-5-20251001' : MODEL),
+        max_tokens: opts.maxTokens || (useDeep ? 16000 : 4096),
         system: systemCached, messages: msgs, tools: toolsWithCache,
       };
       if (useDeep) {
