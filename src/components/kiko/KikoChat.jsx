@@ -157,6 +157,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [transcribing, setTranscribing] = useState(false)
   const [dictateError, setDictateError] = useState('')
   const scrollRef = useRef(null)
+  const scrollContainerRef = useRef(null)
+  const [showScrollDown, setShowScrollDown] = useState(false)
   const inputRef = useRef(null)
   const fileInputRef = useRef(null)
   const transcribeRef = useRef({ media: null, recorder: null, sr: null, active: false, baseInput: '', committed: '' })
@@ -697,7 +699,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         borderTop: `0.5px solid ${transcribing ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.15)'}`,
         boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.05) inset',
         transition: 'border-color 0.2s',
-        maxWidth: welcome ? 720 : (compact ? '100%' : 720),
+        maxWidth: welcome ? 640 : (compact ? '100%' : 720),
         width: '100%', margin: '0 auto',
       }}>
         {/* Pending image preview */}
@@ -1007,7 +1009,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
           {/* Prompt bar — slides down in voice mode */}
           <div id="kikoPromptWrap" style={{
-            width: '100%', maxWidth: 720, marginBottom: 14,
+            width: '100%', maxWidth: 640, marginBottom: 14,
             opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 300,
             transform: voiceActive ? 'translateY(40px)' : 'translateY(0)',
             transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.05s',
@@ -1021,15 +1023,16 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
               {/* 4 chips only — below prompt bar */}
               <div id="kikoChipsWrap" style={{
-                display: 'flex', gap: 8, justifyContent: 'center', maxWidth: 720, marginBottom: voiceActive ? 0 : 20,
+                display: 'flex', gap: 8, justifyContent: 'center', maxWidth: 640, marginBottom: voiceActive ? 0 : 20,
                 opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 60,
                 transform: voiceActive ? 'translateY(30px)' : 'translateY(0)',
                 transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.1s',
                 overflow: 'hidden', pointerEvents: voiceActive ? 'none' : 'auto',
               }}>
-                {dynamicChips.slice(0, 4).map(c => (
+                {dynamicChips.slice(0, 3).map(c => (
                   <button key={c} onClick={() => handleSubmit(c)} style={{
-                    padding: '9px 18px', borderRadius: 50, background: T.glass,
+                    padding: '9px 0', borderRadius: 50, background: T.glass,
+                    flex: '1 1 0', textAlign: 'center',
                     backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,
                     border: `1.5px solid ${T.glassBorder}`, color: 'rgba(255,255,255,0.55)',
                     fontSize: 13, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.2s', fontWeight: 400,
@@ -1129,7 +1132,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           )}
         </div>
       )}
-      <div style={{ flex: 1, overflowY: 'auto', padding: compact ? 16 : 24 }}>
+      <div ref={scrollContainerRef} onScroll={(e) => {
+        const el = e.currentTarget
+        const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80
+        setShowScrollDown(!atBottom)
+      }} style={{ flex: 1, overflowY: 'auto', padding: compact ? 16 : 24, position: 'relative' }}>
         <div style={{ maxWidth: compact ? '100%' : 680, margin: '0 auto', width: '100%' }}>
           {messages.length > 40 && !showAllMsgs && (
             <button onClick={() => setShowAllMsgs(true)} style={{ display: 'block', margin: '0 auto 16px', padding: '6px 16px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)', fontSize: 12, cursor: 'pointer', fontFamily: T.font }}>
@@ -1215,6 +1222,25 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <div ref={scrollRef} />
         </div>
       </div>
+      {/* Scroll-to-bottom arrow */}
+      {showScrollDown && (
+        <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', zIndex: 10 }}>
+          <button onClick={() => { scrollRef.current?.scrollIntoView({ behavior: 'smooth' }); setShowScrollDown(false) }}
+            style={{
+              position: 'absolute', bottom: 8, width: 36, height: 36, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+              border: '0.5px solid rgba(255,255,255,0.15)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.3)', transition: 'all 0.2s',
+              color: 'rgba(255,255,255,0.6)',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+          </button>
+        </div>
+      )}
       </>
       )}
       <div style={{ padding: compact ? 12 : 16, borderTop: `1.5px solid ${T.border}` }}>
