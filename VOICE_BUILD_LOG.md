@@ -85,3 +85,26 @@
 - Greetings: Haiku, 300 tokens, no tools (fast) ✅
 - Data queries: Sonnet, 3 rounds, 20s, full 4096 tokens ✅
 - Entity auto-recall: skipped in voice mode (speed) ✅
+
+
+## FIX: Stale service worker (1 Apr 2026)
+- **Root cause:** Service worker `kiko-v1` was caching old Deepgram bundle (`index-6WnodsBj.js`). TWO bundles running simultaneously — old Deepgram build kept trying to call deleted `voice-token` endpoint while new GPT-4o build was running.
+- **Fix:** Unregistered service worker, cleared `kiko-v1` cache via browser console. Hard refresh.
+- **Lesson:** Always clear service workers when changing voice architecture. Add this to deploy checklist.
+
+## STATUS AFTER ALL FIXES (1 Apr 2026)
+### GPT-4o Realtime WebRTC — CONFIRMED WORKING
+1. `api/realtime-token` → ephemeral key `ek_...` ✅
+2. WebRTC PeerConnection → connected ✅
+3. Remote audio track → received ✅
+4. Data channel → open ✅
+5. `session.created` → received ✅
+6. `session.updated` (2 tools: ask_kiko + navigate) → accepted ✅
+7. Equalizer: volume prop fed from audio analyser ✅
+8. Service worker stale cache → cleared ✅
+
+### AWAITING USER VOICE TEST
+- Say "Hey Kiko" → GPT-4o should respond instantly with speech
+- Say "How's the pipeline?" → GPT-4o says "let me check" → calls ask_kiko → speaks real data
+- Interrupt mid-sentence → should stop immediately
+- Equalizer should animate when she speaks
