@@ -122,3 +122,33 @@
 - **Settings Kiko tab:** Added SUPER_ADMIN_TABS array. Kiko and Team tabs now filtered out for non-super_admin users. Regular users see: Profile, Skills, Navigation, Appearance, Accounts only.
 - **Settings functionality:** The Voice/Speed/Model/Memory/Personality controls in the Kiko tab are display-only — they don't save to any backend config. Noted for future: wire these to kiko_user_config table if we want per-user voice/personality selection.
 - **Files changed:** api/realtime-token.js (voice), src/components/settings/Settings.jsx (tab gating)
+
+
+## KNOWN ISSUES (reported 1 Apr 2026, afternoon session)
+1. **Settings voice controls don't work** — UI exists but doesn't save/apply. Remove non-functional controls or wire them.
+2. **Voice changes on its own** — GPT-4o sometimes shifts tone/pitch mid-conversation. Need to lock voice in session config.
+3. **User wants voice selection** — Enable voice picker in settings that actually changes the voice used.
+4. **Kiko replies to herself** — Audio feedback loop: speaker audio picked up by mic → GPT-4o responds to itself. Fix: adjust VAD turn detection threshold.
+5. **KikoFloat voice mode not engaging** — Voice works from homepage but not from the floating button.
+6. **Navigation instead of answering** — Asked "about partnership matrix" → navigated to page instead of answering the question. Fix: GPT-4o instructions need to distinguish "tell me about X" from "go to X".
+7. **Partnership matrix page broke nav/header** — After voice-triggered navigation, top nav and header row disappeared. Needed hard refresh.
+8. **"Goodbye Kiko" voice command** — Should close voice mode when spoken. Not currently implemented.
+
+
+## DEPLOY: KikoFloat voice + GPT-4o fixes (1 Apr 2026)
+### Changes:
+1. **GPT-4o session config rewritten:**
+   - VAD threshold 0.6 (prevents self-reply from speaker echo)
+   - Silence duration 500ms (faster turn detection)
+   - Navigation vs data query distinction: "tell me about X" = ask_kiko, "take me to X" = navigate
+   - Voice consistency instruction added
+   - "Don't respond to background noise or your own audio"
+   - input_audio_transcription enabled for transcript logging
+2. **"Goodbye Kiko" voice command:** close_voice tool added. GPT-4o says farewell then closes voice mode after 2s.
+3. **KikoFloat → KikoVoice wiring:** EQ button now dispatches kiko_open_voice event. Layout.jsx listens and renders KikoVoice portal. KikoFloat resets voiceOpen when voice state becomes inactive.
+4. **Equalizer fix verified:** volume state fed from audio analyser.
+### Files changed:
+- KikoVoice.jsx (session config, close_voice tool, onCloseRef)
+- KikoFloat.jsx (openVoiceMode dispatches event, voice state listener)
+- Layout.jsx (globalVoiceMode state, kiko_open_voice listener, KikoVoice render)
+- VOICE_BUILD_LOG.md

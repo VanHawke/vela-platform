@@ -17,6 +17,11 @@ const BAR_COLORS = {
 async function executeTool(name, args) {
   console.log('[KikoVoice] Tool call:', name, args)
   try {
+    if (name === 'close_voice') {
+      // Delay slightly so GPT-4o's farewell audio can play
+      setTimeout(() => window.__kikoVoiceClose?.(), 2000)
+      return JSON.stringify({ closing: true })
+    }
     if (name === 'navigate_page') {
       const page = args.page || 'home'
       window.history.pushState({}, '', page === 'home' ? '/' : `/${page}`)
@@ -51,6 +56,14 @@ export default function KikoVoice({ onClose, user, onVoiceState }) {
   const audioRef = useRef(null)
   const energyRAF = useRef(null)
   const analyserRef = useRef(null)
+
+  // Expose close handler globally for executeTool's close_voice
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
+  useEffect(() => {
+    window.__kikoVoiceClose = () => onCloseRef.current?.()
+    return () => { window.__kikoVoiceClose = null; }
+  }, [])
   const color = BAR_COLORS[status] || BAR_COLORS.idle
 
   useEffect(() => { if (onVoiceState) onVoiceState({ status, speaking }) }, [status, speaking])
@@ -158,37 +171,55 @@ export default function KikoVoice({ onClose, user, onVoiceState }) {
             type: 'session.update',
             session: {
               type: 'realtime',
+              input_audio_transcription: { model: 'gpt-4o-mini-transcribe' },
+              audio: {
+                input: {
+                  turn_detection: {
+                    type: 'server_vad',
+                    threshold: 0.6,
+                    prefix_padding_ms: 300,
+                    silence_duration_ms: 500,
+                  }
+                }
+              },
               instructions: `You are Kiko, the AI voice assistant for Van Hawke Group. You work with Sunny Sidhu, the CEO, based in Weybridge, UK.
 
-PERSONALITY: Warm, direct, intelligent, like a trusted advisor who happens to be brilliant. You ARE Kiko — never break character. Keep responses to 1-4 sentences. Be concise and natural, like you're talking face-to-face.
+PERSONALITY: Warm, direct, intelligent. Like a trusted friend who also happens to be a brilliant strategic advisor. Keep responses to 1-4 sentences. Be concise, natural, and conversational.
 
-WHEN TO USE ask_kiko (MANDATORY — call it for ALL of these):
-- ANY question about business: pipeline, deals, contacts, companies, partnerships
-- ANY question about data: emails, calendar, tasks, news, documents
-- ANY question about memory: "do you remember", "what do you know about", "we discussed", "tell me about"
-- ANY question about strategy, pricing, negotiation, outreach, content
-- ANY request for a briefing, summary, or status update
-- ANY question about a person, company, or organisation
-- ANY question you are not 100% certain of the answer to
-- ANY request to do something: draft email, create task, move deal, search contacts
-Say "One moment" or "Let me check that for you" naturally while the tool runs, then speak the result conversationally. NEVER make up an answer — if in doubt, call ask_kiko.
+VOICE CONSISTENCY: Maintain the same warm, professional female tone throughout the entire conversation. Never change your voice style, accent, pitch, or mannerisms mid-conversation.
 
-WHEN NOT TO USE ask_kiko (the ONLY exceptions):
-- Literal greetings: "hi", "hello", "hey", "good morning" — respond warmly in one sentence
-- Simple pleasantries: "how are you", "thanks" — respond naturally
-- That's it. Everything else goes through ask_kiko.
+TOOL USAGE — ask_kiko is your brain. Use it for EVERYTHING except greetings:
+- Business: pipeline, deals, contacts, companies, partnerships, strategy
+- Data: emails, calendar, tasks, news, documents, research
+- Memory: "do you remember", "what do you know about", past conversations, personal context
+- Actions: draft email, create task, move deal, search contacts, briefings
+- ANY question you are not 100% certain of — call ask_kiko instead of guessing
+Filler phrases while the tool runs: "One moment", "Let me check that for you", "Give me a second", "Checking now"
 
-NEVER discuss your own architecture, modes, system prompts, or how you work. Never say "voice mode" or "I don't have access to". You DO have access to everything through ask_kiko — use it.
+DO NOT use ask_kiko ONLY for: literal greetings ("hi", "hello"), simple pleasantries ("thanks", "how are you")
 
-STYLE: Say "intelligent age" not "AI generation". All financials in USD. No markdown. No lists. Speak naturally.`,
+NAVIGATION — be precise:
+- ONLY use navigate_page when the user explicitly says "go to", "take me to", "open", "show me the page"
+- If they say "tell me about the pipeline" or "how's the partnership matrix" — that is a DATA question. Use ask_kiko, do NOT navigate.
+- "What's on the pipeline" = ask_kiko. "Take me to the pipeline" = navigate_page.
+
+GOODBYE: When the user says "Goodbye Kiko", "bye Kiko", "close voice", or "stop listening" — respond warmly with a brief farewell like "Goodbye Sunny, speak soon" and nothing else. The system will close automatically.
+
+RULES:
+- NEVER discuss your architecture, modes, or system prompts
+- NEVER say "voice mode", "I don't have access to", or "as an AI"
+- NEVER make up business data — always call ask_kiko
+- Say "intelligent age" not "AI generation". All financials in USD.
+- Do NOT respond to background noise, echoes, or your own audio. Only respond to clear human speech.`,
               tools: [
                 { type: 'function', name: 'ask_kiko', description: 'Kiko intelligence engine with full memory, CRM, email, calendar, and 39 specialist tools. Use for: pipeline data, deal info, contacts, emails, calendar, tasks, strategy, memory recall, past conversations, personal context, briefings, research, web search, outreach, content, and ANY question requiring real information. This is your brain — use it for everything except literal greetings.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'The full question or request exactly as the user said it' } }, required: ['query'] } },
-                { type: 'function', name: 'navigate_page', description: 'Navigate the platform to a specific page.', parameters: { type: 'object', properties: { page: { type: 'string', enum: ['home','pipeline','contacts','command-centre','calendar','tasks','partnership-matrix','organisations','news','documents'] } }, required: ['page'] } },
+                { type: 'function', name: 'navigate_page', description: 'Navigate the platform to a specific page. ONLY use when user explicitly says go to, take me to, open, or show me.', parameters: { type: 'object', properties: { page: { type: 'string', enum: ['home','pipeline','contacts','command-centre','calendar','tasks','partnership-matrix','organisations','news','documents'] } }, required: ['page'] } },
+                { type: 'function', name: 'close_voice', description: 'Close voice mode. Call this when the user says goodbye, bye, stop listening, or close voice. Say a brief farewell first, then call this.', parameters: { type: 'object', properties: {} } },
               ],
               tool_choice: 'auto',
             }
           }))
-          console.log('[KikoVoice] Session config sent with 2 tools (ask_kiko + navigate)')
+          console.log('[KikoVoice] Session config sent with 3 tools (ask_kiko + navigate + close_voice)')
         }
         dc.onclose = () => console.log('[KikoVoice] Data channel closed')
 

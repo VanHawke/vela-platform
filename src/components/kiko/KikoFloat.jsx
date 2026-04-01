@@ -154,6 +154,15 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, streamText])
 
+  // Reset voiceOpen when KikoVoice closes (e.g. via "Goodbye Kiko" command)
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.detail?.active === false) setVoiceOpen(false)
+    }
+    window.addEventListener('kiko_voice_state', handler)
+    return () => window.removeEventListener('kiko_voice_state', handler)
+  }, [])
+
   // Auto-reopen after navigation (page reload preserves state via sessionStorage)
   useEffect(() => {
     try {
@@ -358,9 +367,9 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   }
 
   async function openVoiceMode() {
+    // Dispatch event for Layout to open KikoVoice fullscreen portal
+    window.dispatchEvent(new CustomEvent('kiko_open_voice'))
     setVoiceOpen(true)
-    // Keep panel open with prompt bar — no takeover
-    if (!open) { setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open') }
     window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: true, speaking: false, thinking: false, status: 'Listening' } }))
   }
 

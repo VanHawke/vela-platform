@@ -5,6 +5,7 @@ import { signOut } from '@/lib/auth'
 import T from '@/lib/theme'
 import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
+import KikoVoice from '../kiko/KikoVoice'
 import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
 import CommandPalette from './CommandPalette'
@@ -152,12 +153,20 @@ export default function Layout({ user }) {
   const [kikoConvId, setKikoConvId] = useState(null)
   const [kikoResetKey, setKikoResetKey] = useState(0)
   const [voiceFullscreen, setVoiceFullscreen] = useState(false)
+  const [globalVoiceMode, setGlobalVoiceMode] = useState(false)
 
   // Listen for voice fullscreen toggle from KikoChat
   useEffect(() => {
     const handler = (e) => setVoiceFullscreen(e.detail?.active || false)
     window.addEventListener('kiko_voice_fullscreen', handler)
     return () => window.removeEventListener('kiko_voice_fullscreen', handler)
+  }, [])
+
+  // Listen for global voice mode toggle (from KikoFloat EQ button on non-home pages)
+  useEffect(() => {
+    const handler = () => setGlobalVoiceMode(true)
+    window.addEventListener('kiko_open_voice', handler)
+    return () => window.removeEventListener('kiko_open_voice', handler)
   }, [])
 
   const kikoNavigate = useCallback((page) => nav(page === 'home' ? '/' : `/${page}`), [nav])
@@ -412,6 +421,19 @@ export default function Layout({ user }) {
           onNavigate={kikoNavigate}
         />
       )}
+
+      {/* Global voice mode — triggered from KikoFloat EQ button on non-home pages */}
+      {globalVoiceMode && (
+        <KikoVoice
+          onClose={() => setGlobalVoiceMode(false)}
+          user={user}
+          onVoiceState={(state) => {
+            setVoiceActive(state.speaking || state.thinking || state.status === 'Listening')
+            setVoiceStatus(state.speaking ? 'Kiko is speaking' : state.thinking ? 'Thinking...' : 'Listening')
+          }}
+        />
+      )}
+
       <KikoToast />
 
       {/* Command palette */}
