@@ -41,7 +41,7 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
         // Use real frequency data if available (from audio analyser)
         const freq = window.__kikoFreqData
         let eqU, eqD
-        if (freq && freq.length > 0 && vol > 0.02) {
+        if (freq && freq.length > 0 && vol > 0.02 && !mini) {
           const fi = Math.floor((i / N) * freq.length)
           const fv = (freq[fi] || 0) / 255
           eqU = fv * 0.8 + Math.abs(Math.sin(t * b.f1 + b.ph)) * 0.2
