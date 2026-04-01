@@ -693,7 +693,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         display: 'flex', flexDirection: 'column',
         background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(40px) saturate(1.4)', WebkitBackdropFilter: 'blur(40px) saturate(1.4)',
         borderRadius: 16,
-        padding: '10px 12px',
+        padding: welcome ? '10px 12px' : '14px 16px 8px',
         position: 'relative',
         border: `0.5px solid ${transcribing ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.1)'}`,
         borderTop: `0.5px solid ${transcribing ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.15)'}`,
@@ -711,15 +711,16 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           </div>
         )}
         <input ref={fileInputRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx" onChange={e => { const f = e.target.files?.[0]; if (f) processFileForKiko(f); e.target.value = '' }} style={{ display: 'none' }} />
-        {/* Single row: [attach] [textarea] [mic] [EQ] [send] */}
+
+        {welcome ? (
+        /* ── HOMEPAGE: Single row [attach] [textarea] [mic] [EQ] [send] ── */
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6 }}>
           <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} title="Attach file" style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'transparent', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginBottom: 2 }}>
             <svg width={ic} height={ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
           </button>
           <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
             <textarea ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
-              placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment or press send..." : ""}
-              autoFocus rows={1}
+              placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment..." : ""} autoFocus rows={1}
               style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font, minHeight: 36, maxHeight: 200, fontWeight: 400, resize: 'none', lineHeight: '1.5', padding: '6px 0', overflowY: 'auto', fieldSizing: 'content' }} />
             {!input && !fileUploading && !pendingAttachment && typewriterText && (
               <div style={{ position: 'absolute', top: 6, left: 0, fontSize: 15, color: 'rgba(255,255,255,0.25)', fontFamily: T.font, fontWeight: 400, pointerEvents: 'none', lineHeight: '1.5' }}>
@@ -728,28 +729,58 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             )}
           </div>
           {voiceActive ? (
-            <button onClick={stopVoice} title="Stop voice" style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(239,68,68,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginBottom: 2 }}>
-              <div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} />
-            </button>
+            <button onClick={stopVoice} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(239,68,68,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
           ) : (<>
-            <button onClick={transcribing ? stopTranscribe : startTranscribe} title={transcribing ? 'Stop dictation' : 'Dictate'} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: transcribing ? 'rgba(34,197,94,0.12)' : 'transparent', color: transcribing ? 'rgba(34,197,94,0.9)' : 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', marginBottom: 2 }}>
+            <button onClick={transcribing ? stopTranscribe : startTranscribe} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: transcribing ? 'rgba(34,197,94,0.12)' : 'transparent', color: transcribing ? 'rgba(34,197,94,0.9)' : 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
               <svg width={ic + 1} height={ic + 1} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
               {transcribing && <span style={{ position: 'absolute', top: 2, right: 2, width: 7, height: 7, borderRadius: '50%', background: 'rgba(34,197,94,0.9)' }} />}
             </button>
-            <button onClick={startVoice} title="Talk to Kiko" style={{ width: 32, height: 32, borderRadius: 50, border: '1px solid rgba(6,214,160,0.15)', background: 'rgba(6,214,160,0.08)', color: 'rgba(6,214,160,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginBottom: 2 }}>
+            <button onClick={startVoice} style={{ width: 32, height: 32, borderRadius: 50, border: '1px solid rgba(6,214,160,0.15)', background: 'rgba(6,214,160,0.08)', color: 'rgba(6,214,160,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width={ic} height={ic} viewBox="0 0 24 24" fill="none"><rect x="4" y="8" width="2" height="8" rx="1" fill="rgba(6,214,160,0.6)" /><rect x="8" y="5" width="2" height="14" rx="1" fill="rgba(6,214,160,0.8)" /><rect x="12" y="7" width="2" height="10" rx="1" fill="rgba(6,214,160,1)" /><rect x="16" y="4" width="2" height="16" rx="1" fill="rgba(6,214,160,0.8)" /><rect x="20" y="9" width="2" height="6" rx="1" fill="rgba(6,214,160,0.6)" /></svg>
             </button>
           </>)}
           {streaming ? (
-            <button onClick={stopKiko} title="Stop Kiko" style={{ width: 36, height: 36, borderRadius: 50, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginBottom: 0 }}>
-              <div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} />
-            </button>
+            <button onClick={stopKiko} style={{ width: 36, height: 36, borderRadius: 50, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
           ) : (
-            <button onClick={() => handleSubmit()} disabled={!hasContent} style={{ width: 36, height: 36, borderRadius: 50, background: hasContent ? T.accentGradient : 'rgba(255,255,255,0.04)', border: hasContent ? 'none' : '0.5px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.95)', cursor: hasContent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: hasContent ? 1 : 0.25, boxShadow: hasContent ? '0 4px 16px rgba(139,108,246,0.3)' : 'none', transition: 'all 0.15s', marginBottom: 0 }}>
+            <button onClick={() => handleSubmit()} disabled={!hasContent} style={{ width: 36, height: 36, borderRadius: 50, background: hasContent ? T.accentGradient : 'rgba(255,255,255,0.04)', border: hasContent ? 'none' : '0.5px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.95)', cursor: hasContent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: hasContent ? 1 : 0.25, boxShadow: hasContent ? '0 4px 16px rgba(139,108,246,0.3)' : 'none', transition: 'all 0.15s' }}>
               <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           )}
         </div>
+        ) : (
+        /* ── CONVERSATION: Two-row layout — textarea top, icons bottom ── */
+        <>
+        <textarea ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+          placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment..." : "Ask me anything...."}
+          autoFocus rows={1}
+          style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font, minHeight: 44, maxHeight: 300, fontWeight: 400, resize: 'none', lineHeight: '1.5', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content' }} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+          <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'transparent', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width={ic} height={ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {voiceActive ? (
+              <button onClick={stopVoice} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(239,68,68,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
+            ) : (<>
+              <button onClick={transcribing ? stopTranscribe : startTranscribe} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: transcribing ? 'rgba(34,197,94,0.12)' : 'transparent', color: transcribing ? 'rgba(34,197,94,0.9)' : 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                <svg width={ic + 1} height={ic + 1} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+                {transcribing && <span style={{ position: 'absolute', top: 2, right: 2, width: 7, height: 7, borderRadius: '50%', background: 'rgba(34,197,94,0.9)' }} />}
+              </button>
+              <button onClick={startVoice} style={{ width: 32, height: 32, borderRadius: 50, border: '1px solid rgba(6,214,160,0.15)', background: 'rgba(6,214,160,0.08)', color: 'rgba(6,214,160,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width={ic} height={ic} viewBox="0 0 24 24" fill="none"><rect x="4" y="8" width="2" height="8" rx="1" fill="rgba(6,214,160,0.6)" /><rect x="8" y="5" width="2" height="14" rx="1" fill="rgba(6,214,160,0.8)" /><rect x="12" y="7" width="2" height="10" rx="1" fill="rgba(6,214,160,1)" /><rect x="16" y="4" width="2" height="16" rx="1" fill="rgba(6,214,160,0.8)" /><rect x="20" y="9" width="2" height="6" rx="1" fill="rgba(6,214,160,0.6)" /></svg>
+              </button>
+            </>)}
+            {streaming ? (
+              <button onClick={stopKiko} style={{ width: 36, height: 36, borderRadius: 50, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
+            ) : (
+              <button onClick={() => handleSubmit()} disabled={!hasContent} style={{ width: 36, height: 36, borderRadius: 50, background: hasContent ? T.accentGradient : 'rgba(255,255,255,0.04)', border: hasContent ? 'none' : '0.5px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.95)', cursor: hasContent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: hasContent ? 1 : 0.25, boxShadow: hasContent ? '0 4px 16px rgba(139,108,246,0.3)' : 'none', transition: 'all 0.15s' }}>
+                <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            )}
+          </div>
+        </div>
+        </>
+        )}
       </div>
     )
   }
