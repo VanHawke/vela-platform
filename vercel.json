@@ -29,7 +29,7 @@
   ],
   "functions": {
     "api/kiko.js": { "maxDuration": 120 },
-    "api/voice-token.js": { "maxDuration": 10 },
+    "api/realtime-token.js": { "maxDuration": 10 },
     "api/file-extract.js": { "maxDuration": 30 },
     "api/kiko-research.js": { "maxDuration": 120 },
     "api/kiko-code.js": { "maxDuration": 30 },
