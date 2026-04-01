@@ -719,9 +719,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
           </button>
           <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
-            <textarea ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
-              placeholder="" autoFocus rows={1}
-              style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font, height: 32, maxHeight: 120, fontWeight: 400, resize: 'none', lineHeight: '32px', padding: 0, overflowY: 'auto', fieldSizing: 'content' }} />
+            <input ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSubmit(); } }}
+              placeholder="" autoFocus
+              style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font, height: 32, fontWeight: 400, lineHeight: '32px', padding: 0, margin: 0 }} />
             {!input && !fileUploading && !pendingAttachment && typewriterText && (
               <div style={{ position: 'absolute', top: 0, left: 0, fontSize: 15, color: 'rgba(255,255,255,0.25)', fontFamily: T.font, fontWeight: 400, pointerEvents: 'none', lineHeight: '32px', height: 32 }}>
                 {typewriterText}<span style={{ opacity: typewriterText.length < 19 ? 1 : 0, animation: typewriterText.length < 19 ? 'kikoBreathe 0.6s step-end infinite' : 'none' }}>|</span>
@@ -982,7 +982,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <h1 style={{ fontSize: 42, fontWeight: 200, color: 'rgba(255,255,255,0.95)', margin: '0 0 6px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
               {getGreeting()}, {firstName}
             </h1>
-            <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.35)', margin: '0 0 51px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
+            <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.35)', margin: '0 0 60px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
           </div>
 
           {/* Prompt bar — slides down in voice mode */}
