@@ -946,8 +946,8 @@ export default async function handler(req, res) {
     let toolRounds = 0;
 
     // Tool execution loop — time-aware, stops before timeout
-    const maxRounds = voiceMode ? 3 : 5;
-    const timeLimit = voiceMode ? 20000 : 65000; // 20s for voice tools, 65s for text
+    const maxRounds = voiceMode ? 5 : 5;
+    const timeLimit = voiceMode ? 45000 : 65000; // 45s for voice tools (research needs time), 65s for text
     while (response.stop_reason === 'tool_use' && toolRounds < maxRounds) {
       const elapsed = Date.now() - requestStart;
       if (elapsed > timeLimit) {

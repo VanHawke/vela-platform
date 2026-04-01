@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useNavigate, useLocation } from 'react-router-dom'
 import T from '@/lib/theme'
 import KikoWaveform from './KikoWaveform'
+import { useRealtimeVoice } from '@/hooks/useRealtimeVoice'
 // KikoVoice removed — voice stays in FAB circle
 import DOMPurify from 'dompurify'
 import { useDynamicChips } from '@/hooks/useDynamicChips'
@@ -130,6 +131,10 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   const [streamText, setStreamText] = useState('')
   const [transcribing, setTranscribing] = useState(false)
   const [voiceOpen, setVoiceOpen] = useState(false)
+  const { status: voiceStatus, speaking: voiceSpeaking } = useRealtimeVoice({
+    active: voiceOpen,
+    onClose: () => { setVoiceOpen(false); window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: false } })) },
+  })
   const [floatVoiceState, setFloatVoiceState] = useState({ speaking: false, status: 'connecting', energy: 0, pitch: 0 })
   const [fileUploading, setFileUploading] = useState(false)
   const [fabClass, setFabClass] = useState('')
@@ -367,9 +372,9 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   }
 
   async function openVoiceMode() {
-    // Dispatch event for Layout to open KikoVoice fullscreen portal
-    window.dispatchEvent(new CustomEvent('kiko_open_voice'))
+    // Stay inline — no fullscreen portal. WebRTC runs headlessly via useRealtimeVoice hook.
     setVoiceOpen(true)
+    if (!open) { setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open') }
     window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: true, speaking: false, thinking: false, status: 'Listening' } }))
   }
 
@@ -414,6 +419,12 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                 <KikoWaveform width={24} height={12} mini />
               </div>
               <span style={{ fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font }}>Kiko</span>
+              {voiceOpen && (
+                <span style={{ fontSize: 10, fontWeight: 500, color: voiceSpeaking ? '#06D6A0' : voiceStatus === 'thinking' ? '#7C9CF6' : voiceStatus === 'error' ? '#FF5050' : 'rgba(255,255,255,0.4)', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: voiceSpeaking ? '#06D6A0' : voiceStatus === 'connecting' ? '#F59E0B' : '#06D6A0', animation: voiceSpeaking ? 'none' : 'pulse 1.5s ease-in-out infinite' }} />
+                  {voiceSpeaking ? 'Speaking' : voiceStatus === 'thinking' ? 'Thinking' : voiceStatus === 'connecting' ? 'Connecting' : 'Listening'}
+                </span>
+              )}
             </div>
             <button onClick={toggleOpen} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textTertiary, padding: 4, display: 'flex', borderRadius: 6, lineHeight: 1 }}>
               <X size={13} />
