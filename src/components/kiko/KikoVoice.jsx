@@ -45,6 +45,7 @@ async function executeTool(name, args) {
 export default function KikoVoice({ onClose, user, onVoiceState }) {
   const [status, setStatus] = useState('connecting')
   const [speaking, setSpeaking] = useState(false)
+  const [volume, setVolume] = useState(0)
   const pcRef = useRef(null)
   const dcRef = useRef(null)
   const audioRef = useRef(null)
@@ -71,6 +72,7 @@ export default function KikoVoice({ onClose, user, onVoiceState }) {
         window.__kikoAudioPitch = Math.min(0.4, rms * 1.2)
         const isTalking = rms > 0.02
         if (isTalking !== speaking) setSpeaking(isTalking)
+        setVolume(rms > 0.02 ? Math.min(0.55, rms * 2.5) : 0)
         energyRAF.current = requestAnimationFrame(pump)
       }
       energyRAF.current = requestAnimationFrame(pump)
@@ -261,7 +263,7 @@ STYLE: Say "intelligent age" not "AI generation". All financials in USD. No mark
         WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
         maskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
       }}>
-        <KikoWaveform width={1100} height={140} speaking={speaking} volume={0} />
+        <KikoWaveform width={1100} height={140} speaking={speaking} volume={volume} />
       </div>
 
       {/* Status bar */}
