@@ -485,9 +485,6 @@ export default function Pipeline({ user }) {
         background: 'rgba(255,255,255,0.025)', backdropFilter: 'blur(30px) saturate(1.3)', WebkitBackdropFilter: 'blur(30px) saturate(1.3)',
         border: '0.5px solid rgba(255,255,255,0.08)', borderTop: '0.5px solid rgba(255,255,255,0.12)',
         boxShadow: '0 8px 32px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.03) inset',
-        WebkitBackdropFilter: 'blur(40px)',
-        border: '0.5px solid rgba(255,255,255,0.1)',
-        boxShadow: '0 8px 36px rgba(0,0,0,0.3)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div>
