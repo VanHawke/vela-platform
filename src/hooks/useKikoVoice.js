@@ -317,8 +317,16 @@ export function useKikoVoice({ user, onClose }) {
       // 5. Pre-open TTS WebSocket (ready for instant filler)
       openTTSSocket().catch(() => {});
 
-      // 6. Init audio player
+      // 6. Init audio player with onEnd callback
       audioPlayer.current = new StreamingAudioPlayer();
+      audioPlayer.current.onEnd = () => {
+        isSpeakingRef.current = false;
+        if (!deadRef.current) {
+          setStatus('listening');
+          setSpeakEnergy(0);
+          dispatchVoiceState({ speaking: false, status: 'Listening' });
+        }
+      };
 
     } catch (err) {
       console.error('[Voice] Init failed:', err);

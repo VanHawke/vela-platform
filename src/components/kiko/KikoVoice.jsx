@@ -1,7 +1,7 @@
 // src/components/kiko/KikoVoice.jsx — Voice mode UI (Phase 13)
 // Uses useKikoVoice hook for streaming STT → Brain → TTS pipeline
 // Visual design preserved from original: AuroraCanvas, waveform, status bar
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import KikoWaveform from './KikoWaveform'
@@ -27,6 +27,16 @@ export default function KikoVoice({ onClose, user, onVoiceState }) {
 
   const color = BAR_COLORS[status] || BAR_COLORS.idle
   const isSpeaking = status === 'speaking'
+
+  // Feed state back to parent (drives parent's kiko_voice_state event dispatch)
+  useEffect(() => {
+    if (onVoiceState) onVoiceState({
+      status,
+      speaking: isSpeaking,
+      thinking: status === 'thinking',
+      energy: isSpeaking ? speakEnergy : micEnergy,
+    })
+  }, [status, isSpeaking, micEnergy, speakEnergy, onVoiceState])
 
   const handleClose = useCallback(() => { stop(); onClose?.(); }, [stop, onClose])
 
