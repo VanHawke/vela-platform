@@ -753,7 +753,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment..." : "Ask me anything...."}
           autoFocus rows={1}
           style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font, minHeight: 44, maxHeight: 300, fontWeight: 400, resize: 'none', lineHeight: '1.5', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content' }} />
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 6 }}>
           <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'transparent', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width={ic} height={ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
           </button>
@@ -1070,7 +1070,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       <>
       {/* Chat title bar with dropdown */}
       {activeConvId && convTitle && (
-        <div style={{ padding: '10px 24px', borderBottom: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 8, position: 'relative', flexShrink: 0 }}>
+        <div style={{ padding: '10px 24px', display: 'flex', alignItems: 'center', gap: 8, position: 'relative', flexShrink: 0 }}>
           {isRenaming ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
               <input value={renameValue} onChange={e => setRenameValue(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') confirmRename(); if (e.key === 'Escape') setIsRenaming(false) }} autoFocus
@@ -1220,7 +1220,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       )}
       </>
       )}
-      <div style={{ padding: compact ? 12 : 16, borderTop: `1.5px solid ${T.border}` }}>
+      <div style={{ padding: compact ? 12 : 16 }}>
         <div style={{ maxWidth: compact ? '100%' : 720, margin: '0 auto' }}>
           {PromptBar({})}
           {dictateError && (
