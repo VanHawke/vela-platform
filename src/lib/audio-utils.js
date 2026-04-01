@@ -43,60 +43,94 @@ export function createAnalyser(source, fftSize = 256) {
 }
 
 // ── StreamingAudioPlayer ──
-// Queues PCM chunks from TTS WebSocket and plays them back-to-back
-// Allows interruption at any point
+// Accumulates PCM chunks and schedules gapless playback
+// Uses AudioContext.currentTime for seamless audio without cracks/gaps
 export class StreamingAudioPlayer {
   constructor() {
-    this._queue = [];        // AudioBuffer queue
-    this._playing = false;
-    this._source = null;     // Current AudioBufferSourceNode
+    this._rawChunks = [];     // Accumulated raw ArrayBuffers
+    this._rawBytes = 0;       // Total bytes accumulated
+    this._nextStartTime = 0;  // When to schedule next buffer
+    this._sources = [];       // Active AudioBufferSourceNodes
     this._analyser = null;
     this._stopped = false;
-    this._onEnd = null;      // Called when queue drains
+    this._playing = false;
+    this._onEnd = null;
+    this._flushTimer = null;  // Timer to flush remaining chunks
+    this._endTimer = null;    // Timer to detect playback end
   }
 
-  // Add a PCM chunk to the playback queue
   enqueue(arrayBuffer) {
     if (this._stopped || arrayBuffer.byteLength < 100) return;
-    const buf = decodePCM16(arrayBuffer, 24000);
-    this._queue.push(buf);
-    if (!this._playing) this._playNext();
+    this._rawChunks.push(new Uint8Array(arrayBuffer));
+    this._rawBytes += arrayBuffer.byteLength;
+    // Flush every ~200ms of audio (9600 bytes at 24kHz 16-bit mono)
+    if (this._rawBytes >= 9600) this._flush();
+    // Also set a timer to flush smaller remaining chunks
+    clearTimeout(this._flushTimer);
+    this._flushTimer = setTimeout(() => this._flush(), 80);
   }
 
-  _playNext() {
-    if (this._stopped || this._queue.length === 0) {
-      this._playing = false;
-      if (this._onEnd) this._onEnd();
-      return;
+  _flush() {
+    if (this._stopped || this._rawChunks.length === 0) return;
+    // Combine all accumulated chunks
+    const total = this._rawBytes;
+    const combined = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of this._rawChunks) {
+      combined.set(chunk, offset);
+      offset += chunk.length;
     }
-    this._playing = true;
+    this._rawChunks = [];
+    this._rawBytes = 0;
+    // Decode PCM16 to Float32
+    const int16 = new Int16Array(combined.buffer);
+    const float32 = new Float32Array(int16.length);
+    for (let i = 0; i < int16.length; i++) float32[i] = int16[i] / 32768;
+    // Create AudioBuffer
     const ctx = getAudioContext();
-    const buf = this._queue.shift();
-    const source = ctx.createBufferSource();
-    source.buffer = buf;
-
-    // Analyser for waveform energy
+    const audioBuf = ctx.createBuffer(1, float32.length, 24000);
+    audioBuf.copyToChannel(float32, 0);
+    // Ensure analyser exists
     if (!this._analyser) {
       this._analyser = ctx.createAnalyser();
       this._analyser.fftSize = 256;
       this._analyser.smoothingTimeConstant = 0.75;
       this._analyser.connect(ctx.destination);
     }
+    // Schedule gapless playback
+    const source = ctx.createBufferSource();
+    source.buffer = audioBuf;
     source.connect(this._analyser);
-    this._source = source;
+    const now = ctx.currentTime;
+    const startAt = Math.max(now, this._nextStartTime);
+    this._nextStartTime = startAt + audioBuf.duration;
+    source.start(startAt);
+    this._sources.push(source);
+    this._playing = true;
+    // Cleanup finished sources
     source.onended = () => {
-      this._source = null;
-      this._playNext();
+      this._sources = this._sources.filter(s => s !== source);
+      // Check if all playback is done
+      clearTimeout(this._endTimer);
+      this._endTimer = setTimeout(() => {
+        if (this._sources.length === 0 && this._rawChunks.length === 0) {
+          this._playing = false;
+          if (this._onEnd) this._onEnd();
+        }
+      }, 100);
     };
-    source.start(0);
   }
 
   stop() {
     this._stopped = true;
-    this._queue = [];
-    if (this._source) { try { this._source.stop(); } catch {} }
-    this._source = null;
+    this._rawChunks = [];
+    this._rawBytes = 0;
+    clearTimeout(this._flushTimer);
+    clearTimeout(this._endTimer);
+    for (const s of this._sources) { try { s.stop(); } catch {} }
+    this._sources = [];
     this._playing = false;
+    this._nextStartTime = 0;
   }
 
   reset() {
