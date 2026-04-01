@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 
-const FALLBACK_HOME = ['Brief me', 'Pipeline update', 'Check emails']
+const FALLBACK_HOME = ['Brief me', 'Pipeline update', 'Check emails', "What's on today?"]
 const FALLBACK_FLOAT = ['Brief me on my pipeline', "What's happening in F1?", 'Draft a follow-up email', 'Summarise yesterday']
 
 // Page-specific static chips (used when no live data available)
@@ -66,14 +66,14 @@ async function loadHomeChips() {
     // Always include brief
     chips.push('Brief me')
 
-    // Fill to 3 with sensible defaults
-    const defaults = ['Pipeline update', 'Check emails']
-    while (chips.length < 3 && defaults.length) {
+    // Fill to 4 with sensible defaults
+    const defaults = ['Pipeline update', 'Check emails', 'What\'s on today?']
+    while (chips.length < 4 && defaults.length) {
       const d = defaults.shift()
       if (!chips.includes(d)) chips.push(d)
     }
 
-    return chips.slice(0, 3)
+    return chips.slice(0, 4)
   } catch {
     return FALLBACK_HOME
   }
