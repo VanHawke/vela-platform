@@ -154,6 +154,7 @@ export default function Layout({ user }) {
   const [kikoResetKey, setKikoResetKey] = useState(0)
   const [voiceFullscreen, setVoiceFullscreen] = useState(false)
   const [globalVoiceMode, setGlobalVoiceMode] = useState(false)
+  const [floatVoiceRequested, setFloatVoiceRequested] = useState(false)
 
   // Listen for voice fullscreen toggle from KikoChat
   useEffect(() => {
@@ -177,8 +178,8 @@ export default function Layout({ user }) {
       if (e.detail?.page) {
         // Reset fullscreen voice state — nav must be visible on destination page
         setVoiceFullscreen(false)
-        // Signal KikoFloat to activate inline voice on destination page (voice follows you)
-        window.dispatchEvent(new CustomEvent('kiko_float_voice_activate'))
+        // Request KikoFloat to activate inline voice on destination page (voice follows you)
+        setFloatVoiceRequested(true)
         // Navigate via React Router
         kikoNavigate(e.detail.page)
       }
@@ -440,6 +441,8 @@ export default function Layout({ user }) {
           convId={kikoConvId}
           setConvId={setKikoConvId}
           onNavigate={kikoNavigate}
+          autoVoice={floatVoiceRequested}
+          onAutoVoiceConsumed={() => setFloatVoiceRequested(false)}
         />
       )}
 

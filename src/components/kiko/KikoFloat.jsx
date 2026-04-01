@@ -115,7 +115,7 @@ function EqIcon({ size = 18, color = 'currentColor' }) {
 
 // Chips are now dynamic — see useDynamicChips hook
 
-export default function KikoFloat({ user, messages: sharedMessages, setMessages: setSharedMessages, convId: sharedConvId, setConvId: setSharedConvId, onNavigate }) {
+export default function KikoFloat({ user, messages: sharedMessages, setMessages: setSharedMessages, convId: sharedConvId, setConvId: setSharedConvId, onNavigate, autoVoice, onAutoVoiceConsumed }) {
   const loc = useLocation()
   const isHome = loc.pathname === '/'
   const currentPage = loc.pathname.replace('/', '') || 'home'
@@ -170,13 +170,12 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
 
   // Auto-activate inline voice when navigating from fullscreen voice (voice follows you)
   useEffect(() => {
-    const handler = () => {
+    if (autoVoice) {
       setVoiceOpen(true)
       if (!open) { setOpen(true); setHasPanel(true); setPanelKey(k => k + 1); setFabClass('kiko-fab-open') }
+      onAutoVoiceConsumed?.()
     }
-    window.addEventListener('kiko_float_voice_activate', handler)
-    return () => window.removeEventListener('kiko_float_voice_activate', handler)
-  }, [open])
+  }, [autoVoice])
 
   // Auto-reopen after navigation (page reload preserves state via sessionStorage)
   useEffect(() => {
