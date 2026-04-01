@@ -122,6 +122,8 @@ export function useRealtimeVoice({ active, onClose }) {
       pcRef.current = pc
       const audioEl = document.createElement('audio')
       audioEl.autoplay = true
+      audioEl.style.display = 'none'
+      document.body.appendChild(audioEl)
       audioRef.current = audioEl
       pc.ontrack = (e) => { audioEl.srcObject = e.streams[0] }
 
@@ -164,7 +166,7 @@ export function useRealtimeVoice({ active, onClose }) {
     if (dcRef.current) try { dcRef.current.close() } catch {}
     if (pcRef.current) try { pcRef.current.close() } catch {}
     streamRef.current?.getTracks().forEach(t => t.stop())
-    if (audioRef.current) audioRef.current.srcObject = null
+    if (audioRef.current) { audioRef.current.srcObject = null; audioRef.current.remove() }
     setSpeaking(false)
     setStatus('idle')
     window.__kikoAudioEnergy = 0

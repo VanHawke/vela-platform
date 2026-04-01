@@ -149,6 +149,8 @@ export default function KikoVoice({ onClose, user, onVoiceState }) {
         // 3. Set up remote audio playback
         const audioEl = document.createElement('audio')
         audioEl.autoplay = true
+        audioEl.style.display = 'none'
+        document.body.appendChild(audioEl)
         audioRef.current = audioEl
         pc.ontrack = (e) => {
           console.log('[KikoVoice] Got remote audio track')
@@ -268,7 +270,7 @@ RULES:
         pcRef.current.getSenders().forEach(s => { if (s.track) s.track.stop() })
         pcRef.current.close()
       }
-      if (audioRef.current) { audioRef.current.srcObject = null }
+      if (audioRef.current) { audioRef.current.srcObject = null; audioRef.current.remove() }
       window.__kikoAudioEnergy = 0; window.__kikoAudioPitch = 0
     }
   }, [])
@@ -281,7 +283,7 @@ RULES:
       pcRef.current.getSenders().forEach(s => { if (s.track) s.track.stop() })
       pcRef.current.close()
     }
-    if (audioRef.current) audioRef.current.srcObject = null
+    if (audioRef.current) { audioRef.current.srcObject = null; audioRef.current.remove() }
     window.__kikoAudioEnergy = 0; window.__kikoAudioPitch = 0
     onClose?.()
   }, [onClose])
