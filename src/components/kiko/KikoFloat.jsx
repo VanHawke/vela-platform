@@ -5,38 +5,6 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import T from '@/lib/theme'
 import KikoWaveform from './KikoWaveform'
 import { useRealtimeVoice } from '@/hooks/useRealtimeVoice'
-
-// ── Animated voice orb for FAB when Kiko is speaking ──
-function KikoVoiceOrb({ speaking }) {
-  return (
-    <div style={{ width: 40, height: 40, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      {/* Outer pulse ring */}
-      <div style={{
-        position: 'absolute', width: 36, height: 36, borderRadius: '50%',
-        border: speaking ? '2px solid rgba(6,214,160,0.5)' : '1.5px solid rgba(6,214,160,0.2)',
-        animation: speaking ? 'kikoOrbPulse 1s ease-in-out infinite' : 'none',
-        transition: 'all 0.3s',
-      }} />
-      {/* Middle ring */}
-      <div style={{
-        position: 'absolute', width: 26, height: 26, borderRadius: '50%',
-        border: speaking ? '1.5px solid rgba(6,214,160,0.4)' : '1px solid rgba(6,214,160,0.15)',
-        animation: speaking ? 'kikoOrbPulse 1s ease-in-out 0.15s infinite' : 'none',
-        transition: 'all 0.3s',
-      }} />
-      {/* Core — solid dot that breathes */}
-      <div style={{
-        width: speaking ? 14 : 10, height: speaking ? 14 : 10, borderRadius: '50%',
-        background: speaking
-          ? 'radial-gradient(circle, rgba(6,214,160,0.9), rgba(6,214,160,0.5))'
-          : 'radial-gradient(circle, rgba(6,214,160,0.5), rgba(6,214,160,0.2))',
-        boxShadow: speaking ? '0 0 12px rgba(6,214,160,0.4)' : '0 0 6px rgba(6,214,160,0.15)',
-        transition: 'all 0.3s',
-        animation: speaking ? 'kikoOrbBreathe 0.8s ease-in-out infinite' : 'kikoOrbBreathe 3s ease-in-out infinite',
-      }} />
-    </div>
-  )
-}
 // KikoVoice removed — voice stays in FAB circle
 import DOMPurify from 'dompurify'
 import { useDynamicChips } from '@/hooks/useDynamicChips'
@@ -670,7 +638,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
             ? <KikoWaveform width={40} height={40} mini volume={voiceSpeaking ? 0.4 : 0.08} speaking={voiceSpeaking} />
             : open
               ? <X size={18} />
-              : <KikoWaveform width={40} height={40} mini volume={voiceOpen ? (floatVoiceState.energy || 0.05) : 0} speaking={voiceOpen && floatVoiceState.speaking} />
+              : <KikoWaveform width={40} height={40} mini volume={voiceOpen ? (floatVoiceState.energy || 0.12) : 0} speaking={voiceOpen && floatVoiceState.speaking} />
           }
         </button>
       </div>

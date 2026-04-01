@@ -351,6 +351,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   const loadConversation = (conv) => {
     if (!conv?.messages) return
+    justLoadedRef.current = true
     setMessages(conv.messages.map(m => ({ role: m.role, content: m.content })))
     setActiveConvId(conv.id); setStreamText(''); setStreaming(false); setShowAllMsgs(false)
   }
@@ -362,7 +363,16 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   }
 
   useEffect(() => { if (initialMessage && !messages.length) handleSubmit(initialMessage) }, [])
-  useEffect(() => { scrollRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, streamText, voiceMessages])
+  const justLoadedRef = useRef(false)
+  useEffect(() => {
+    if (justLoadedRef.current) {
+      // Instant scroll on conversation load — no animation
+      scrollRef.current?.scrollIntoView({ behavior: 'instant' })
+      justLoadedRef.current = false
+    } else {
+      scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [messages, streamText, voiceMessages])
 
   // Load conversation title when activeConvId changes
   useEffect(() => {
@@ -383,7 +393,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       i++
       setTypewriterText(phrase.slice(0, i))
       if (i >= phrase.length) clearInterval(timer)
-    }, 45)
+    }, 70)
     return () => clearInterval(timer)
   }, [])
 
@@ -989,10 +999,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             transition: 'all 0.5s cubic-bezier(0.4,0,0,1)',
             overflow: 'hidden',
           }}>
-            <h1 style={{ fontSize: 40, fontWeight: 200, color: 'rgba(255,255,255,0.95)', margin: '0 0 6px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
+            <h1 style={{ fontSize: 42, fontWeight: 200, color: 'rgba(255,255,255,0.95)', margin: '0 0 6px', fontFamily: T.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
               {getGreeting()}, {firstName}
             </h1>
-            <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.35)', margin: '0 0 24px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
+            <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.35)', margin: '0 0 24px', fontFamily: T.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
           </div>
 
           {/* Prompt bar — slides down in voice mode */}
@@ -1017,7 +1027,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.1s',
                 overflow: 'hidden', pointerEvents: voiceActive ? 'none' : 'auto',
               }}>
-                {dynamicChips.slice(0, 3).map(c => (
+                {dynamicChips.slice(0, 4).map(c => (
                   <button key={c} onClick={() => handleSubmit(c)} style={{
                     padding: '11px 26px', borderRadius: 50, background: T.glass,
                     backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur,

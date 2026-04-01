@@ -31,7 +31,7 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
       // Use external volume or simulate idle breathing
       let vol = volRef.current
       if (!speaking && vol < 0.02) {
-        vol = 0.06 + 0.03 * Math.sin(t * 1.2) // visible idle breathing
+        vol = 0.12 + 0.05 * Math.sin(t * 1.2) // visible idle breathing with bars
       }
       cx.clearRect(0, 0, W, H)
       const bW = W / N, bw = Math.max(1, bW * 0.55)
@@ -46,6 +46,11 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
           const fv = (freq[fi] || 0) / 255
           eqU = fv * 0.8 + Math.abs(Math.sin(t * b.f1 + b.ph)) * 0.2
           eqD = fv * 0.7 + Math.abs(Math.sin(t * b.f2 + b.ph + 1.8)) * 0.3
+        } else if (vol < 0.15) {
+          // Idle/low volume — symmetric breathing pattern (no slant)
+          const breathe = 0.5 + 0.3 * Math.sin(t * 1.5)
+          eqU = breathe
+          eqD = breathe
         } else {
           eqU = Math.abs(Math.sin(t * b.f1 + b.ph))
           eqD = Math.abs(Math.sin(t * b.f2 + b.ph + 1.8))
