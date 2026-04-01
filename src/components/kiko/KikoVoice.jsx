@@ -171,7 +171,6 @@ export default function KikoVoice({ onClose, user, onVoiceState }) {
             type: 'session.update',
             session: {
               type: 'realtime',
-              input_audio_transcription: { model: 'gpt-4o-mini-transcribe' },
               audio: {
                 input: {
                   turn_detection: {
