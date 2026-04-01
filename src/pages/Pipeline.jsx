@@ -521,9 +521,8 @@ export default function Pipeline({ user }) {
                   onDrop={e => handleDrop(e, stage.id)}
                   style={{
                     width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column',
-                    background: isOver ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.015)',
                     borderRadius: 16, border: isOver ? '1px dashed rgba(139,108,246,0.3)' : '0.5px solid rgba(255,255,255,0.06)',
-                    background: 'rgba(255,255,255,0.02)', backdropFilter: 'blur(20px) saturate(1.15)', WebkitBackdropFilter: 'blur(20px) saturate(1.15)',
+                    background: isOver ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)', backdropFilter: 'blur(20px) saturate(1.15)', WebkitBackdropFilter: 'blur(20px) saturate(1.15)',
                     boxShadow: '0 12px 40px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.02) inset',
                     transition: 'all 0.15s ease',
                   }}>

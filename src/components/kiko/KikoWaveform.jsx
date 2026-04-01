@@ -24,7 +24,6 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
       arr._mini = mini
       barsRef.current = arr
     }
-    }
     const bars = barsRef.current
     function lp(a, b, t) { return a + (b - a) * t }
     let raf
