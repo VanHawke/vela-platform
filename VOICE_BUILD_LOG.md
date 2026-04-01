@@ -268,3 +268,11 @@
 3. Personality setting — display only
 4. Voice tone/pitch/femininity controls — not available in GPT-4o Realtime API (voice is fixed per model)
 5. Occasional self-reply — monitor with VAD 0.6
+
+
+## FIX: Audio not playing — element not in DOM (1 Apr 2026)
+- **Root cause:** `document.createElement('audio')` creates element in memory. Both KikoVoice.jsx and useRealtimeVoice.js never appended it to `document.body`. Some browsers (including Chrome) require audio elements to be in the DOM for autoplay to work with WebRTC streams.
+- **Evidence:** `document.querySelectorAll('audio')` returned empty array despite WebRTC being fully connected with `output_audio_buffer.started` events firing.
+- **Fix:** Added `document.body.appendChild(audioEl)` after creation, with `audioEl.style.display = 'none'`. Cleanup removes element on unmount via `audioEl.remove()`.
+- **Files:** KikoVoice.jsx, useRealtimeVoice.js
+- **Lesson:** Always append dynamically created audio/video elements to the DOM.
