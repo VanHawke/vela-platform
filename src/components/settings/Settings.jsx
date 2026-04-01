@@ -24,6 +24,7 @@ const SPEEDS = [
   { id: 1.2, label: 'Fast' },
 ]
 const TABS = ['Profile', 'Kiko', 'Skills', 'Navigation', 'Team', 'Appearance', 'Accounts']
+const SUPER_ADMIN_TABS = ['Kiko', 'Team'] // Only visible to super_admin
 
 // Theme imported from @/lib/theme.js
 
@@ -200,7 +201,7 @@ export default function Settings({ user }) {
       <div style={{ padding: '24px 32px 0' }}>
         <h1 style={{ fontSize: 25, fontWeight: 400, color: T.text, margin: '0 0 20px', fontFamily: T.font }}>Settings</h1>
         <div style={{ display: 'flex', gap: 4, borderBottom: `1px solid ${T.border}` }}>
-          {TABS.map(t => (
+          {TABS.filter(t => !SUPER_ADMIN_TABS.includes(t) || currentUserRole === 'super_admin').map(t => (
             <button key={t} onClick={() => setTab(t)} style={{
               padding: '10px 16px', borderRadius: '8px 8px 0 0', border: 'none',
               background: tab === t ? T.surface : 'transparent',

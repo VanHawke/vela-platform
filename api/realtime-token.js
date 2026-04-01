@@ -12,7 +12,7 @@ export default async function handler(req, res) {
         session: {
           type: 'realtime',
           model: 'gpt-realtime',
-          audio: { output: { voice: 'shimmer' } },
+          audio: { output: { voice: 'coral' } },
         }
       }),
     });

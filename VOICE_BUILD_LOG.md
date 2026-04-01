@@ -108,3 +108,17 @@
 - Say "How's the pipeline?" → GPT-4o says "let me check" → calls ask_kiko → speaks real data
 - Interrupt mid-sentence → should stop immediately
 - Equalizer should animate when she speaks
+
+
+## FIX: Memory not accessible (1 Apr 2026)
+- **Root cause:** GPT-4o instructions said "casual conversation, opinions, general advice — respond directly without tools." Memory/recall questions ("do you remember", "what do you know about me") were classified as casual → GPT-4o answered from its own empty knowledge.
+- **Fix:** Rewrote instructions with explicit WHEN TO USE / WHEN NOT TO USE lists. ask_kiko is now mandatory for: memory, past conversations, personal context, ANY data question, ANY uncertainty. ONLY literal greetings ("hi", "hello", "how are you") skip the tool.
+- **Also:** Updated ask_kiko tool description to explicitly mention "memory recall, past conversations, personal context"
+- **Files changed:** KikoVoice.jsx only
+
+
+## FIX: Voice tone + Settings page gating (1 Apr 2026)
+- **Voice:** Changed from "shimmer" to "coral" (Friendly, natural female) in realtime-token.js. User wanted softer, more natural, more feminine.
+- **Settings Kiko tab:** Added SUPER_ADMIN_TABS array. Kiko and Team tabs now filtered out for non-super_admin users. Regular users see: Profile, Skills, Navigation, Appearance, Accounts only.
+- **Settings functionality:** The Voice/Speed/Model/Memory/Personality controls in the Kiko tab are display-only — they don't save to any backend config. Noted for future: wire these to kiko_user_config table if we want per-user voice/personality selection.
+- **Files changed:** api/realtime-token.js (voice), src/components/settings/Settings.jsx (tab gating)
