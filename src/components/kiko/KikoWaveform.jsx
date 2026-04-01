@@ -18,7 +18,10 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
     if (!barsRef.current || barsRef.current.length !== N) {
       barsRef.current = Array.from({ length: N }, (_, i) => {
         const nx = (i - N / 2) / (N / 2)
-        const env = Math.pow(Math.exp(-nx * nx * 3.8), 1.5)
+        // Mini mode: much flatter envelope so ALL bars are visible (no diagonal)
+        const env = mini 
+          ? 0.6 + 0.4 * Math.pow(Math.exp(-nx * nx * 2), 1)
+          : Math.pow(Math.exp(-nx * nx * 3.8), 1.5)
         return { env, f1: 0.8 + Math.random() * 3, f2: 1.5 + Math.random() * 2.5, ph: Math.random() * Math.PI * 2, curU: 0, curD: 0 }
       })
     }
