@@ -22,7 +22,7 @@ const STATUS_LABELS = {
 export default function KikoVoice({ onClose, user, onVoiceState }) {
   const {
     status, transcript, interimText, response,
-    micEnergy, speakEnergy, stop,
+    speakEnergy, stop,
   } = useKikoVoice({ user, onClose })
 
   const color = BAR_COLORS[status] || BAR_COLORS.idle
@@ -36,7 +36,7 @@ export default function KikoVoice({ onClose, user, onVoiceState }) {
       thinking: status === 'thinking',
       energy: isSpeaking ? speakEnergy : 0,
     })
-  }, [status, isSpeaking, micEnergy, speakEnergy, onVoiceState])
+  }, [status, isSpeaking, speakEnergy, onVoiceState])
 
   const handleClose = useCallback(() => { stop(); onClose?.(); }, [stop, onClose])
 
