@@ -1,159 +1,143 @@
-// src/hooks/useKikoVoice.js — Kiko Voice: streaming architecture
-// Mic → Deepgram STT (browser WS) → /api/kiko (SSE) → Deepgram TTS (browser WS) → Speaker
-// Key: LLM tokens stream sentence-by-sentence into TTS — no waiting for full response
+// src/hooks/useKikoVoice.js — Kiko Voice: clean architecture
+// Mic → Deepgram STT → /api/kiko → collect full response → ONE TTS call → play
 import { useState, useRef, useEffect, useCallback } from 'react';
-import {
-  getAudioContext, calculateRMS, createAnalyser,
-  StreamingAudioPlayer, SentenceChunker,
-} from '@/lib/audio-utils';
-
-// Filler phrases spoken instantly while brain processes (kills dead silence)
-const FILLERS = [
-  'One moment.',
-  'Let me check.',
-  'On it.',
-  'Checking now.',
-];
-const randomFiller = () => FILLERS[Math.floor(Math.random() * FILLERS.length)];
+import { getAudioContext, calculateRMS, createAnalyser } from '@/lib/audio-utils';
 
 export function useKikoVoice({ user, onClose }) {
   const [status, setStatus] = useState('connecting');
-  // 'connecting' | 'listening' | 'thinking' | 'speaking' | 'error'
   const [transcript, setTranscript] = useState('');
   const [interimText, setInterimText] = useState('');
   const [response, setResponse] = useState('');
   const [micEnergy, setMicEnergy] = useState(0);
   const [speakEnergy, setSpeakEnergy] = useState(0);
 
-  // Refs
-  const sttWS = useRef(null);           // Deepgram STT WebSocket
-  const ttsWS = useRef(null);           // Deepgram TTS WebSocket
+  const sttWS = useRef(null);
   const mediaStream = useRef(null);
   const mediaRecorder = useRef(null);
-  const audioPlayer = useRef(null);
   const micAnalyserRef = useRef(null);
   const energyRAF = useRef(null);
   const speakRAF = useRef(null);
   const deadRef = useRef(false);
   const transcriptRef = useRef('');
-  const tokenRef = useRef(null);        // Cached Deepgram temp token
-  const isSpeakingRef = useRef(false);  // Track TTS state for interruption
-  const sendToKikoRef = useRef(null);   // Ref to avoid stale closure in STT handler
+  const tokenRef = useRef(null);
+  const currentSource = useRef(null);
+  const ttsAnalyser = useRef(null);
+  const ttsCtx = useRef(null);
+  const sendToKikoRef = useRef(null);
 
-  // ── Dispatch voice state (green pill + float glow) ──
   const dispatchVoiceState = useCallback((detail) => {
     window.dispatchEvent(new CustomEvent('kiko_voice_state', {
       detail: { active: true, speaking: false, thinking: false, ...detail },
     }));
   }, []);
 
-  // ── Mic energy pump ──
   const startMicEnergyPump = useCallback((analyser) => {
     const pump = () => {
       if (deadRef.current) return;
       const rms = calculateRMS(analyser);
       setMicEnergy(rms);
-      window.__kikoAudioEnergy = Math.min(0.55, rms * 2.5);
       energyRAF.current = requestAnimationFrame(pump);
     };
     energyRAF.current = requestAnimationFrame(pump);
   }, []);
 
-  // ── Speak energy pump (drives waveform during TTS playback) ──
-  const startSpeakEnergyPump = useCallback(() => {
-    const pump = () => {
-      if (deadRef.current || !audioPlayer.current?.isPlaying()) {
-        setSpeakEnergy(0);
-        window.__kikoAudioEnergy = 0;
-        return;
-      }
-      const an = audioPlayer.current.getAnalyser();
-      const rms = an ? calculateRMS(an) : 0;
-      setSpeakEnergy(rms);
-      window.__kikoAudioEnergy = Math.min(0.55, rms * 2.5);
-      speakRAF.current = requestAnimationFrame(pump);
-    };
-    speakRAF.current = requestAnimationFrame(pump);
-  }, []);
-
-  // ── Get temporary Deepgram token ──
   const getToken = useCallback(async () => {
-    // Reuse if fresh (tokens last 30s, we refresh at 20s)
-    if (tokenRef.current && Date.now() - tokenRef.current.ts < 20000) {
-      return tokenRef.current.token;
-    }
+    if (tokenRef.current && Date.now() - tokenRef.current.ts < 20000) return tokenRef.current.token;
     const res = await fetch('/api/voice-token');
-    if (!res.ok) throw new Error('Token fetch failed');
     const { token } = await res.json();
     tokenRef.current = { token, ts: Date.now() };
     return token;
   }, []);
 
-  // ── Open TTS WebSocket (browser → Deepgram direct) ──
-  const openTTSSocket = useCallback(async () => {
-    if (ttsWS.current?.readyState === WebSocket.OPEN) return ttsWS.current;
-    const token = await getToken();
-    const url = 'wss://api.deepgram.com/v1/speak?' + new URLSearchParams({
-      model: 'aura-2-thalia-en',
-      encoding: 'linear16',
-      sample_rate: '24000',
-    });
-    return new Promise((resolve, reject) => {
-      const ws = new WebSocket(url, ['token', token]);
-      ws.binaryType = 'arraybuffer';
-      ws.onopen = () => { ttsWS.current = ws; resolve(ws); };
-      ws.onmessage = (evt) => {
-        if (evt.data instanceof ArrayBuffer && evt.data.byteLength > 44) {
-          // Audio chunk — accumulate
-          audioPlayer.current?.addChunk(evt.data);
-        } else if (typeof evt.data === 'string') {
-          // Deepgram control message
-          try {
-            const msg = JSON.parse(evt.data);
-            if (msg.type === 'Flushed') {
-              // Sentence complete — play accumulated audio
-              console.log('[Voice] TTS Flushed — playing sentence');
-              audioPlayer.current?.flushAndPlay();
-              if (!isSpeakingRef.current) {
-                isSpeakingRef.current = true;
-                setStatus('speaking');
-                dispatchVoiceState({ speaking: true, status: 'Speaking' });
-                startSpeakEnergyPump();
-              }
-            }
-          } catch {}
-        }
-      };
-      ws.onerror = (e) => { console.error('[Voice] TTS WS error:', e); reject(e); };
-      ws.onclose = () => { ttsWS.current = null; };
-    });
-  }, [getToken, dispatchVoiceState, startSpeakEnergyPump]);
-
-  // ── Send text to TTS WebSocket ──
-  const sendToTTS = useCallback(async (text) => {
+  // ── Play text as speech — ONE clean TTS call, ONE clean audio buffer ──
+  const speakText = useCallback(async (text) => {
+    if (deadRef.current || !text) return;
     try {
-      console.log('[Voice] TTS send:', text.slice(0, 60));
-      const ws = await openTTSSocket();
-      if (ws.readyState !== WebSocket.OPEN) return;
-      ws.send(JSON.stringify({ type: 'Speak', text }));
-      ws.send(JSON.stringify({ type: 'Flush' }));
-    } catch (e) {
-      console.error('[Voice] TTS send error:', e);
-    }
-  }, [openTTSSocket]);
+      const token = await getToken();
+      const url = 'wss://api.deepgram.com/v1/speak?model=aura-2-thalia-en&encoding=linear16&sample_rate=24000';
+      const chunks = [];
+      await new Promise((resolve, reject) => {
+        const ws = new WebSocket(url, ['token', token]);
+        ws.binaryType = 'arraybuffer';
+        ws.onopen = () => {
+          ws.send(JSON.stringify({ type: 'Speak', text }));
+          ws.send(JSON.stringify({ type: 'Flush' }));
+          ws.send(JSON.stringify({ type: 'Close' }));
+        };
+        ws.onmessage = (evt) => {
+          if (evt.data instanceof ArrayBuffer && evt.data.byteLength > 0) chunks.push(new Uint8Array(evt.data));
+        };
+        ws.onclose = () => resolve();
+        ws.onerror = () => reject(new Error('TTS WebSocket error'));
+        setTimeout(() => { try { ws.close(); } catch {} resolve(); }, 15000);
+      });
+      if (deadRef.current || chunks.length === 0) return;
 
-  // ── Send transcript to /api/kiko brain (STREAMING) ──
+      // Combine all chunks into one buffer
+      const total = chunks.reduce((s, c) => s + c.length, 0);
+      const combined = new Uint8Array(total);
+      let off = 0;
+      for (const c of chunks) { combined.set(c, off); off += c.length; }
+      const int16 = new Int16Array(combined.buffer);
+      const f32 = new Float32Array(int16.length);
+      for (let i = 0; i < int16.length; i++) f32[i] = int16[i] / 32768;
+
+      // Play one clean audio buffer
+      if (!ttsCtx.current) ttsCtx.current = new AudioContext({ sampleRate: 24000 });
+      if (ttsCtx.current.state === 'suspended') await ttsCtx.current.resume();
+      const buf = ttsCtx.current.createBuffer(1, f32.length, 24000);
+      buf.copyToChannel(f32, 0);
+      if (!ttsAnalyser.current) {
+        ttsAnalyser.current = ttsCtx.current.createAnalyser();
+        ttsAnalyser.current.fftSize = 256;
+        ttsAnalyser.current.smoothingTimeConstant = 0.75;
+        ttsAnalyser.current.connect(ttsCtx.current.destination);
+      }
+      // Stop any previous playback
+      if (currentSource.current) { try { currentSource.current.stop(); } catch {} }
+      const src = ttsCtx.current.createBufferSource();
+      src.buffer = buf;
+      src.connect(ttsAnalyser.current);
+      currentSource.current = src;
+
+      setStatus('speaking');
+      dispatchVoiceState({ speaking: true, status: 'Speaking' });
+      // Energy pump for waveform
+      const pump = () => {
+        if (deadRef.current) return;
+        const rms = ttsAnalyser.current ? calculateRMS(ttsAnalyser.current) : 0;
+        setSpeakEnergy(rms);
+        window.__kikoAudioEnergy = Math.min(0.55, rms * 2.5);
+        speakRAF.current = requestAnimationFrame(pump);
+      };
+      speakRAF.current = requestAnimationFrame(pump);
+
+      await new Promise((resolve) => {
+        src.onended = resolve;
+        src.start(0);
+      });
+
+      // Done speaking
+      currentSource.current = null;
+      cancelAnimationFrame(speakRAF.current);
+      setSpeakEnergy(0);
+      window.__kikoAudioEnergy = 0;
+      if (!deadRef.current) {
+        setStatus('listening');
+        dispatchVoiceState({ speaking: false, status: 'Listening' });
+      }
+    } catch (e) {
+      console.error('[Voice] TTS error:', e);
+      if (!deadRef.current) { setStatus('listening'); dispatchVoiceState({ status: 'Listening' }); }
+    }
+  }, [getToken, dispatchVoiceState]);
+
+  // ── Send to brain, collect full response, then speak ──
   const sendToKiko = useCallback(async (text) => {
     if (!text || text.trim().length < 2) return;
-    console.log('[Voice] Sending to Kiko:', text);
     setStatus('thinking');
     setResponse('');
     dispatchVoiceState({ thinking: true, status: 'Thinking' });
-
-    // Fire filler AND brain call in parallel — don't block brain on TTS
-    const filler = randomFiller();
-    console.log('[Voice] Filler:', filler);
-    sendToTTS(filler); // Fire-and-forget, no await
 
     try {
       const res = await fetch('/api/kiko', {
@@ -168,18 +152,11 @@ export function useKikoVoice({ user, onClose }) {
         }),
       });
 
-      // Stream LLM tokens → sentence chunks → TTS WebSocket
-      const chunker = new SentenceChunker((sentence) => {
-        // Each complete sentence gets spoken immediately
-        console.log('[Voice] Sentence to TTS:', sentence.slice(0, 80));
-        sendToTTS(sentence);
-      });
-
+      // Collect full SSE response
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let fullResponse = '';
       let buffer = '';
-
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -193,12 +170,7 @@ export function useKikoVoice({ user, onClose }) {
           if (payload === '[DONE]') break;
           try {
             const parsed = JSON.parse(payload);
-            if (parsed.delta) {
-              fullResponse += parsed.delta;
-              setResponse(fullResponse);
-              // Feed token to sentence chunker → fires sendToTTS per sentence
-              chunker.add(parsed.delta);
-            }
+            if (parsed.delta) { fullResponse += parsed.delta; setResponse(fullResponse); }
             if (parsed.navigate) {
               window.history.pushState({}, '', `/${parsed.navigate}`);
               window.dispatchEvent(new PopStateEvent('popstate'));
@@ -207,22 +179,24 @@ export function useKikoVoice({ user, onClose }) {
         }
       }
 
-      // Flush remaining buffered text to TTS
-      chunker.flush();
-
-    } catch (err) {
-      console.error('[Voice] Kiko error:', err);
-      if (!deadRef.current) {
+      // Speak the complete response as one clean audio
+      if (fullResponse.trim() && !deadRef.current) {
+        // Strip markdown artifacts that sound bad when spoken
+        const spoken = fullResponse.replace(/\*\*/g, '').replace(/[#*_`]/g, '').replace(/\n+/g, ' ').trim();
+        await speakText(spoken);
+      } else if (!deadRef.current) {
         setStatus('listening');
         dispatchVoiceState({ status: 'Listening' });
       }
+    } catch (err) {
+      console.error('[Voice] Kiko error:', err);
+      if (!deadRef.current) { setStatus('listening'); dispatchVoiceState({ status: 'Listening' }); }
     }
-  }, [user, sendToTTS, dispatchVoiceState]);
+  }, [user, speakText, dispatchVoiceState]);
 
-  // Keep ref in sync so STT handler always has latest sendToKiko
   sendToKikoRef.current = sendToKiko;
 
-  // ── Handle Deepgram STT messages ──
+  // ── STT message handler ──
   const handleSTTMessage = useCallback((data) => {
     if (data.type === 'Results') {
       const alt = data.channel?.alternatives?.[0];
@@ -231,120 +205,62 @@ export function useKikoVoice({ user, onClose }) {
         transcriptRef.current = (transcriptRef.current + ' ' + alt.transcript).trim();
         setTranscript(transcriptRef.current);
         setInterimText('');
-        console.log('[Voice] Final transcript:', transcriptRef.current);
       } else {
         setInterimText(alt.transcript);
       }
     }
-
     if (data.type === 'UtteranceEnd') {
       const finalText = transcriptRef.current.trim();
-      console.log('[Voice] UtteranceEnd, text:', finalText);
       if (finalText.length > 1) {
-        // Use ref to avoid stale closure
+        // Stop any current playback (interruption)
+        if (currentSource.current) { try { currentSource.current.stop(); } catch {} currentSource.current = null; }
         sendToKikoRef.current?.(finalText);
         transcriptRef.current = '';
         setTranscript('');
         setInterimText('');
       }
     }
+  }, []);
 
-    // Interruption: user spoke while Kiko was talking
-    if (data.type === 'SpeechStarted' && isSpeakingRef.current) {
-      audioPlayer.current?.reset();
-      cancelAnimationFrame(speakRAF.current);
-      isSpeakingRef.current = false;
-      setSpeakEnergy(0);
-      // Close and reopen TTS WS (clears Deepgram's text buffer)
-      if (ttsWS.current) { try { ttsWS.current.close(); } catch {} ttsWS.current = null; }
-      setStatus('listening');
-      dispatchVoiceState({ speaking: false, status: 'Listening' });
-    }
-  }, [dispatchVoiceState]);
-
-  // ── Initialise the full voice pipeline ──
+  // ── Init ──
   const start = useCallback(async () => {
     try {
       setStatus('connecting');
-
-      // 1. Mic permission
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       if (deadRef.current) { stream.getTracks().forEach(t => t.stop()); return; }
       mediaStream.current = stream;
 
-      // 2. Mic analyser for waveform
       const ctx = getAudioContext();
       const micSource = ctx.createMediaStreamSource(stream);
       const { analyser, cleanup } = createAnalyser(micSource);
       micAnalyserRef.current = { analyser, cleanup };
       startMicEnergyPump(analyser);
 
-      // 3. Get Deepgram temporary token
       const token = await getToken();
-
-      // 4. Open STT WebSocket (browser → Deepgram direct)
       const sttParams = new URLSearchParams({
         model: 'nova-3', language: 'en',
         interim_results: 'true', utterance_end_ms: '1000',
-        vad_events: 'true', smart_format: 'true',
-        punctuate: 'true',
+        vad_events: 'true', smart_format: 'true', punctuate: 'true',
       });
-      const ws = new WebSocket(
-        `wss://api.deepgram.com/v1/listen?${sttParams}`,
-        ['token', token]
-      );
+      const ws = new WebSocket(`wss://api.deepgram.com/v1/listen?${sttParams}`, ['token', token]);
       sttWS.current = ws;
 
       ws.onopen = () => {
         if (deadRef.current) { ws.close(); return; }
-        console.log('[Voice] STT connected');
         setStatus('listening');
         dispatchVoiceState({ active: true, status: 'Listening' });
-
-        // Start sending mic audio chunks
-        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-          ? 'audio/webm;codecs=opus' : 'audio/webm';
+        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm';
         const recorder = new MediaRecorder(stream, { mimeType });
         mediaRecorder.current = recorder;
-        recorder.ondataavailable = (e) => {
-          if (e.data.size > 0 && ws.readyState === WebSocket.OPEN) ws.send(e.data);
-        };
+        recorder.ondataavailable = (e) => { if (e.data.size > 0 && ws.readyState === WebSocket.OPEN) ws.send(e.data); };
         recorder.start(250);
       };
+      ws.onmessage = (evt) => { try { handleSTTMessage(JSON.parse(evt.data)); } catch {} };
+      ws.onerror = () => setStatus('error');
+      ws.onclose = (evt) => { if (!deadRef.current && evt.code !== 1000) setStatus('error'); };
+    } catch (err) { console.error('[Voice] Init failed:', err); setStatus('error'); }
+  }, [handleSTTMessage, startMicEnergyPump, getToken, dispatchVoiceState]);
 
-      ws.onmessage = (evt) => {
-        try { handleSTTMessage(JSON.parse(evt.data)); } catch {}
-      };
-      ws.onerror = (err) => {
-        console.error('[Voice] STT error:', err);
-        setStatus('error');
-      };
-      ws.onclose = (evt) => {
-        console.log('[Voice] STT closed:', evt.code);
-        if (!deadRef.current && evt.code !== 1000) setStatus('error');
-      };
-
-      // 5. Pre-open TTS WebSocket (ready for instant filler)
-      openTTSSocket().catch(() => {});
-
-      // 6. Init audio player with onEnd callback
-      audioPlayer.current = new StreamingAudioPlayer();
-      audioPlayer.current.onEnd = () => {
-        isSpeakingRef.current = false;
-        if (!deadRef.current) {
-          setStatus('listening');
-          setSpeakEnergy(0);
-          dispatchVoiceState({ speaking: false, status: 'Listening' });
-        }
-      };
-
-    } catch (err) {
-      console.error('[Voice] Init failed:', err);
-      setStatus('error');
-    }
-  }, [handleSTTMessage, startMicEnergyPump, getToken, openTTSSocket, dispatchVoiceState]);
-
-  // ── Cleanup ──
   const stop = useCallback(() => {
     deadRef.current = true;
     cancelAnimationFrame(energyRAF.current);
@@ -353,15 +269,12 @@ export function useKikoVoice({ user, onClose }) {
     try { mediaRecorder.current?.stop(); } catch {}
     mediaStream.current?.getTracks().forEach(t => t.stop());
     try { sttWS.current?.close(); } catch {}
-    try { ttsWS.current?.close(); } catch {}
-    audioPlayer.current?.stop();
+    if (currentSource.current) { try { currentSource.current.stop(); } catch {} }
     window.__kikoAudioEnergy = 0;
-    window.__kikoAudioPitch = 0;
     dispatchVoiceState({ active: false, status: 'Off' });
     setStatus('idle');
   }, [dispatchVoiceState]);
 
-  // ── Lifecycle ──
   useEffect(() => {
     deadRef.current = false;
     start();
@@ -373,8 +286,7 @@ export function useKikoVoice({ user, onClose }) {
       try { mediaRecorder.current?.stop(); } catch {}
       mediaStream.current?.getTracks().forEach(t => t.stop());
       try { sttWS.current?.close(); } catch {}
-      try { ttsWS.current?.close(); } catch {}
-      audioPlayer.current?.stop();
+      if (currentSource.current) { try { currentSource.current.stop(); } catch {} }
       window.__kikoAudioEnergy = 0;
     };
   }, []);
