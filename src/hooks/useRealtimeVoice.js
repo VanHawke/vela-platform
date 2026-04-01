@@ -13,8 +13,8 @@ async function executeTool(name, args) {
     }
     if (name === 'navigate_page') {
       const page = args.page || 'home'
-      window.history.pushState({}, '', page === 'home' ? '/' : `/${page}`)
-      window.dispatchEvent(new PopStateEvent('popstate'))
+      // Use custom event so React Router handles navigation properly (preserves Layout/nav)
+      window.dispatchEvent(new CustomEvent('kiko_navigate', { detail: { page } }))
       return JSON.stringify({ navigated: true, page })
     }
     if (name === 'ask_kiko') {

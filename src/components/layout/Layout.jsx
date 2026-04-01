@@ -171,6 +171,13 @@ export default function Layout({ user }) {
 
   const kikoNavigate = useCallback((page) => nav(page === 'home' ? '/' : `/${page}`), [nav])
 
+  // Listen for voice navigation (kiko_navigate event from voice tools)
+  useEffect(() => {
+    const handler = (e) => { if (e.detail?.page) kikoNavigate(e.detail.page) }
+    window.addEventListener('kiko_navigate', handler)
+    return () => window.removeEventListener('kiko_navigate', handler)
+  }, [kikoNavigate])
+
   const initials = profile.first_name
     ? (profile.first_name[0] + (profile.last_name?.[0] || '')).toUpperCase()
     : (user?.email?.[0] || 'U').toUpperCase()

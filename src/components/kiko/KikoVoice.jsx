@@ -24,8 +24,7 @@ async function executeTool(name, args) {
     }
     if (name === 'navigate_page') {
       const page = args.page || 'home'
-      window.history.pushState({}, '', page === 'home' ? '/' : `/${page}`)
-      window.dispatchEvent(new PopStateEvent('popstate'))
+      window.dispatchEvent(new CustomEvent('kiko_navigate', { detail: { page } }))
       return JSON.stringify({ navigated: true, page })
     }
     if (name === 'ask_kiko') {
