@@ -440,18 +440,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const resetKey = outletCtx.kikoResetKey
   useEffect(() => { if (resetKey > 0) startNewChat() }, [resetKey])
 
-  // Listen for kiko_action events (Send to Gmail, etc.)
-  useEffect(() => {
-    const handler = (e) => {
-      const { action, subject, to, body } = e.detail || {}
-      if (action === 'create_gmail_draft') {
-        handleSubmit(`Create a Gmail draft with this exact content — do not modify:\nTo: ${to}\nSubject: ${subject}\n\n${body}`)
-      }
-    }
-    window.addEventListener('kiko_action', handler)
-    return () => window.removeEventListener('kiko_action', handler)
-  }, [])
-
   // Auto-resize handled by CSS field-sizing: content
 
   // Background task persistence — save streaming on unmount, restore on mount
@@ -880,7 +868,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               const emailOnly = signoffEnd > 20 ? email.slice(0, signoffEnd).trim() : email
               return <>
                 {pre && <span dangerouslySetInnerHTML={{ __html: md(pre) }} />}
-                {emailOnly && <EmailDraft text={emailOnly} onRewrite={(prompt) => handleSubmit(prompt)} onSendGmail={(subj, to, body) => handleSubmit(`Create a Gmail draft. To: ${to}\nSubject: ${subj}\n\n${body}\n\nUse the gmail_create_draft tool. Do not modify the email content.`)} />}
+                {emailOnly && <EmailDraft text={emailOnly} />}
                 {postEmail && <span dangerouslySetInnerHTML={{ __html: md(postEmail) }} />}
               </>
             }

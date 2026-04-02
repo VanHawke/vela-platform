@@ -27,8 +27,7 @@ function parseEmail(text) {
   let t = text
     .replace(/#{1,3}\s*(SUGGESTED\s*DRAFT|EMAIL\s*DRAFT|DRAFT)\s*/gi, '')
     .replace(/\*?\*?\[Subject to[^\]]*\]\*?\*?\s*/gi, '')
-  t = t.replace(/(Subject\s*:)/i, '\n$1')
-  t = t.replace(/(To\s*:)/i, '\n$1')
+  t = t.replace(/(Subject\s*:)/i, '\n$1').replace(/(To\s*:)/i, '\n$1')
 
   const subMatch = t.match(/\*?\*?Subject\*?\*?\s*:\s*(.+?)(?:\n|$)/i)
   const subject = subMatch ? subMatch[1].replace(/\*\*/g, '').trim() : ''
@@ -40,24 +39,22 @@ function parseEmail(text) {
   else if (subMatch) bodyStartIdx = t.indexOf(subMatch[0]) + subMatch[0].length
   let rawBody = t.slice(bodyStartIdx)
 
-  // Cut at sign-off + name
-  const signoffMatch = rawBody.match(/\n\s*(Best regards|Kind regards|Regards|Sincerely|Best|Cheers),?\s*\n?\s*(Sunny\s*Sidhu|Sunny)?\s*(Van Hawke[^\n]*)?\s*\n/i)
-  if (signoffMatch) {
-    rawBody = rawBody.slice(0, rawBody.indexOf(signoffMatch[0])).trim()
-  }
-
-  // Cut at Kiko commentary patterns
-  const cuts = [
-    /\n\s*\*\*(Key positioning|Strategic|Next steps|Timing|My recommendation|Analysis|Note)[^*]*\*\*/i,
-    /\n\s*(This targets|The email positions|I've framed|I'd push back|I recommend|My recommendation|This reengagement)/i,
+  // Aggressively cut at sign-off + name + any commentary
+  const cutPatterns = [
+    /\n\s*(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards),?\s*[\n,]?\s*(Sunny|Van Hawke)/i,
     /\n\s*Sunny\s*Sidhu/i,
     /\n\s*Van Hawke/i,
+    /\n\s*\*\*(Analysis|My recommendation|Key positioning|Strategic|Next steps|Timing|Note)[:\s]/i,
+    /\n\s*(This reengagement|This targets|The email positions|I've framed|I'd push back|I recommend|My recommendation)/i,
+    /\n\s*(Analysis:|Note:|Recommendation:)/i,
   ]
-  for (const c of cuts) {
-    const idx = rawBody.search(c)
-    if (idx > 20) { rawBody = rawBody.slice(0, idx).trim(); break }
+  for (const pat of cutPatterns) {
+    const idx = rawBody.search(pat)
+    if (idx > 15) { rawBody = rawBody.slice(0, idx).trim(); break }
   }
-
+  // Also strip trailing sign-off without name
+  rawBody = rawBody.replace(/\n\s*(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards),?\s*$/i, '').trim()
+  // Clean markdown
   let body = rawBody.replace(/\*\*/g, '').replace(/\[Current[^\]]*\]/gi, '').trim()
   return { subject, to, body }
 }
@@ -65,32 +62,28 @@ function parseEmail(text) {
 function renderBody(text) {
   return text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/\n/g, '<br/>')
 }
 
-export default function EmailDraft({ text, onRewrite, onSendGmail }) {
-  const [sent, setSent] = useState(false)
-  const [rewriting, setRewriting] = useState(false)
+export default function EmailDraft({ text }) {
   const parsed = parseEmail(text)
   const [currentBody, setCurrentBody] = useState(parsed.body)
   const originalBodyRef = useRef(parsed.body)
   const [hasRewritten, setHasRewritten] = useState(false)
+  const [rewriting, setRewriting] = useState(false)
+  const [sent, setSent] = useState(false)
   const { subject, to } = parsed
 
+  // Open Gmail compose directly — no chat messages, no flickering
   const handleSendGmail = () => {
-    // Dispatch to KikoChat which sends via Kiko's gmail_create_draft tool
-    if (onSendGmail) {
-      onSendGmail(subject, to, currentBody)
-    } else {
-      window.dispatchEvent(new CustomEvent('kiko_action', {
-        detail: { action: 'create_gmail_draft', subject, to, body: currentBody }
-      }))
-    }
+    const cleanSubject = subject.replace(/\u2014/g, '-').replace(/\u2013/g, '-')
+    const gmailBody = currentBody.replace(/\n/g, '%0A')
+    const url = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(to)}&su=${encodeURIComponent(cleanSubject)}&body=${encodeURIComponent(currentBody)}`
+    window.open(url, '_blank')
     setSent(true)
   }
 
+  // In-place rewrite via Kiko API with auth
   const handleRewrite = async (prompt) => {
     setRewriting(true)
     try {
@@ -98,9 +91,10 @@ export default function EmailDraft({ text, onRewrite, onSendGmail }) {
       const token = session?.access_token
       const res = await fetch('/api/kiko', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ message: prompt, voiceMode: false, greeting: false })
       })
+      if (!res.ok) throw new Error('API error')
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let full = ''
@@ -110,17 +104,23 @@ export default function EmailDraft({ text, onRewrite, onSendGmail }) {
         const chunk = decoder.decode(value)
         for (const line of chunk.split('\n')) {
           if (line.startsWith('data: ')) {
-            try { const d = JSON.parse(line.slice(6)); if (d.token) full += d.token } catch {}
+            try {
+              const d = JSON.parse(line.slice(6))
+              if (d.token) full += d.token
+            } catch {}
           }
         }
       }
-      // Strip Subject/To/sign-off/commentary from rewrite
+      // Strip everything except the email body from rewrite response
       let rewritten = full
         .replace(/\*\*/g, '')
-        .replace(/^.*Subject:.*\n?/im, '')
-        .replace(/^.*To:.*\n?/im, '')
-        .replace(/\n\s*(Best regards|Regards|Sincerely|Best|Cheers),?\s*\n?\s*(Sunny\s*Sidhu|Sunny)?\s*(Van Hawke[^\n]*)?\s*$/i, '')
-        .replace(/\n\s*\*\*(Analysis|My recommendation|Note)[^]*$/i, '')
+        .replace(/^.*Subject\s*:.*$/im, '')
+        .replace(/^.*To\s*:.*$/im, '')
+        .replace(/\n\s*(Best regards|Regards|Sincerely|Best|Cheers|Warm regards),?\s*[\n]?\s*(Sunny|Van Hawke).*$/is, '')
+        .replace(/\n\s*Sunny\s*Sidhu.*$/is, '')
+        .replace(/\n\s*Van Hawke.*$/is, '')
+        .replace(/\n\s*\*\*(Analysis|My recommendation|Note).*$/is, '')
+        .replace(/^\s*#+.*$/gm, '')
         .trim()
       if (rewritten.length > 20) {
         setCurrentBody(rewritten)
@@ -133,28 +133,31 @@ export default function EmailDraft({ text, onRewrite, onSendGmail }) {
   const handleRevert = () => { setCurrentBody(originalBodyRef.current); setHasRewritten(false) }
 
   const tones = [
-    { label: 'More Direct', prompt: `Rewrite this email body more directly and concisely. Output ONLY the rewritten email body paragraphs — no subject, no To, no sign-off, no name, no commentary:\n\n${currentBody}` },
-    { label: 'Warmer Tone', prompt: `Rewrite this email body with a warmer, personable tone. Output ONLY the rewritten email body paragraphs — no subject, no To, no sign-off, no name, no commentary:\n\n${currentBody}` },
-    { label: 'Shorter', prompt: `Make this email body much shorter. Output ONLY the rewritten email body paragraphs — no subject, no To, no sign-off, no name, no commentary:\n\n${currentBody}` },
+    { label: 'More Direct', prompt: `Rewrite ONLY the email body below. Output nothing else — no subject, no greeting name, no sign-off, no analysis, no commentary. Just the rewritten paragraphs:\n\n${currentBody}` },
+    { label: 'Warmer Tone', prompt: `Rewrite ONLY the email body below with a warmer tone. Output nothing else — no subject, no greeting name, no sign-off, no analysis, no commentary. Just the rewritten paragraphs:\n\n${currentBody}` },
+    { label: 'Shorter', prompt: `Make the email body below much shorter. Output nothing else — no subject, no greeting name, no sign-off, no analysis, no commentary. Just the rewritten paragraphs:\n\n${currentBody}` },
   ]
 
   return (
     <div style={{ margin: '12px 0', borderRadius: 14, overflow: 'hidden', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.02)' }}>
+      {/* Header */}
       <div style={{ padding: '14px 18px 12px', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
         <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', fontFamily: T.font, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500 }}>Email Draft</div>
         {to && <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', fontFamily: T.font, marginBottom: 4 }}><span style={{ color: 'rgba(255,255,255,0.25)' }}>To:</span> {to}</div>}
         <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.9)', fontFamily: T.font, fontWeight: 500 }}>{subject}</div>
       </div>
-      <div style={{ padding: '16px 18px', fontSize: 14, color: 'rgba(255,255,255,0.7)', fontFamily: T.font, lineHeight: '1.7', opacity: rewriting ? 0.4 : 1, transition: 'opacity 0.2s' }}
+      {/* Body */}
+      <div style={{ padding: '16px 18px', fontSize: 14, color: 'rgba(255,255,255,0.7)', fontFamily: T.font, lineHeight: '1.7', opacity: rewriting ? 0.3 : 1, transition: 'opacity 0.3s' }}
         dangerouslySetInnerHTML={{ __html: renderBody(currentBody) }} />
-      {rewriting && <div style={{ padding: '4px 18px 8px', fontSize: 11, color: 'rgba(139,108,246,0.5)', fontFamily: T.font, fontStyle: 'italic' }}>Rewriting...</div>}
+      {rewriting && <div style={{ padding: '4px 18px 10px', fontSize: 11, color: 'rgba(139,108,246,0.5)', fontFamily: T.font }}>Rewriting...</div>}
+      {/* Actions */}
       <div style={{ padding: '10px 18px 12px', display: 'flex', alignItems: 'center', gap: 6, borderTop: '0.5px solid rgba(255,255,255,0.06)', flexWrap: 'wrap' }}>
         {tones.map(t => (
           <button key={t.label} onClick={() => handleRewrite(t.prompt)} disabled={rewriting} style={{
             padding: '5px 12px', borderRadius: 50, background: 'rgba(255,255,255,0.03)',
-            border: '0.5px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)',
-            fontSize: 11, cursor: rewriting ? 'wait' : 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4,
-            transition: 'all 0.15s', opacity: rewriting ? 0.5 : 1,
+            border: '0.5px solid rgba(255,255,255,0.08)', color: rewriting ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.4)',
+            fontSize: 11, cursor: rewriting ? 'wait' : 'pointer', fontFamily: T.font,
+            display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.15s',
           }}
             onMouseOver={e => { if (!rewriting) { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)' }}}
             onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)' }}
@@ -162,7 +165,7 @@ export default function EmailDraft({ text, onRewrite, onSendGmail }) {
         ))}
         <div style={{ flex: 1 }} />
         {hasRewritten && (
-          <button onClick={handleRevert} style={{ padding: '5px 12px', borderRadius: 50, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)', fontSize: 11, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.15s' }}
+          <button onClick={handleRevert} style={{ padding: '5px 12px', borderRadius: 50, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)', fontSize: 11, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.15s', marginRight: 4 }}
             onMouseOver={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)' }}
             onMouseOut={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.4)' }}
           ><RotateCcw size={9} /> Revert</button>
@@ -176,8 +179,8 @@ export default function EmailDraft({ text, onRewrite, onSendGmail }) {
           display: 'flex', alignItems: 'center', gap: 5, fontWeight: 500, transition: 'all 0.15s',
         }}
           onMouseOver={e => { if (!sent) e.currentTarget.style.background = 'rgba(139,108,246,0.12)' }}
-          onMouseOut={e => { if (!sent) e.currentTarget.style.background = 'rgba(139,108,246,0.06)' }}
-        ><Send size={11} /> {sent ? 'Draft created' : 'Send to Gmail'}</button>
+          onMouseOut={e => { if (!sent) e.currentTarget.style.background = sent ? 'rgba(34,197,94,0.08)' : 'rgba(139,108,246,0.06)' }}
+        ><Send size={11} /> {sent ? 'Opened in Gmail' : 'Send to Gmail'}</button>
       </div>
     </div>
   )
