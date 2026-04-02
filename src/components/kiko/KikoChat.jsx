@@ -27,6 +27,9 @@ function stripToolXml(t) {
     .replace(/<tool_parameters>[\s\S]*?<\/tool_parameters>/gi, '')
     .replace(/<tool_parameters>[\s\S]*/gi, '')
     .replace(/<\/?tool_function_result>/gi, '')
+    .replace(/<ask_\w+>[\s\S]*?<\/ask_\w+>/gi, '')
+    .replace(/<ask_\w+>[\s\S]*/gi, '')
+    .replace(/<\/?ask_\w+>/gi, '')
     .trim()
 }
 function md(text) {
@@ -874,14 +877,17 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             }
             return displayText ? <span dangerouslySetInnerHTML={{ __html: md(displayText) }} /> : null
           })()}
-          {/* Draft Preview Panel — renders below Kiko's message if a draft is detected */}
-          {isKiko && !streaming && (() => {
+          {/* Draft Preview Panel — only if EmailDraft didn't already render */}
+          {isKiko && !streaming && !isEmailDraft(stripToolXml(msg.content)) && (() => {
             const draft = detectDraft(msg.content)
             if (!draft) return null
             return <DraftPreview draft={draft}
               onToneAdjust={(tone) => handleSubmit(`${tone} the draft you just wrote. Keep everything else the same.`)}
               onCopy={() => {}}
-              onSendToGmail={() => handleSubmit(`Send the email draft you just wrote to Gmail. Use draft_email tool.`)} />
+              onSendToGmail={() => {
+                const d = detectDraft(msg.content)
+                if (d) { const url = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(d.to || '')}&su=${encodeURIComponent((d.subject || '').replace(/\u2014/g, '-').replace(/\u2013/g, '-'))}&body=${encodeURIComponent(d.body || '')}`; window.open(url, '_blank') }
+              }} />
           })()}
         </div>
         </div>

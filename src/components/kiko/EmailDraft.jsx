@@ -30,7 +30,7 @@ function parseEmail(text) {
   t = t.replace(/(Subject\s*:)/i, '\n$1').replace(/(To\s*:)/i, '\n$1')
 
   const subMatch = t.match(/\*?\*?Subject\*?\*?\s*:\s*(.+?)(?:\n|$)/i)
-  const subject = subMatch ? subMatch[1].replace(/\*\*/g, '').trim() : ''
+  const subject = subMatch ? subMatch[1].replace(/\*\*/g, '').replace(/â€"/g, '—').trim() : ''
   const toMatch = t.match(/\*?\*?To\*?\*?\s*:\s*(.+?)(?:\n|$)/i)
   let to = toMatch ? toMatch[1].replace(/\*\*/g, '').replace(/\[|\]/g, '').trim() : ''
 
@@ -74,10 +74,16 @@ export default function EmailDraft({ text }) {
   const [sent, setSent] = useState(false)
   const { subject, to } = parsed
 
-  // Open Gmail compose directly — no chat messages, no flickering
+  // Open Gmail compose directly — clean encoding, no chat messages
   const handleSendGmail = () => {
-    const cleanSubject = subject.replace(/\u2014/g, '-').replace(/\u2013/g, '-')
-    const gmailBody = currentBody.replace(/\n/g, '%0A')
+    // Replace all special dashes with plain hyphen for email subject
+    const cleanSubject = subject
+      .replace(/\u2014/g, '-')  // em-dash
+      .replace(/\u2013/g, '-')  // en-dash
+      .replace(/\u2015/g, '-')  // horizontal bar
+      .replace(/\u2012/g, '-')  // figure dash
+      .replace(/\u00e2\u20ac\u201c/g, '-') // â€" mojibake
+      .replace(/â€"/g, '-')     // literal mojibake
     const url = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(to)}&su=${encodeURIComponent(cleanSubject)}&body=${encodeURIComponent(currentBody)}`
     window.open(url, '_blank')
     setSent(true)
