@@ -104,6 +104,17 @@ export default async function handler(req, res) {
             sent_at: new Date().toISOString()
           })
         });
+        // Save significant lessons to learning log for long-term memory
+        if (delta.style_lesson && delta.severity !== 'minor') {
+          try {
+            await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({
+              org_id: '35975d96-c2c9-4b6c-b4d4-bb947ae817d5',
+              category: 'email_style',
+              entity_name: draft.recipient,
+              content: `EMAIL EDIT LESSON (${delta.severity}): ${delta.style_lesson}${delta.changes?.length ? ' Changes: ' + delta.changes.slice(0, 3).join('; ') : ''}`
+            }) });
+          } catch {}
+        }
         deltasFound++;
       } catch {} // Individual draft failure doesn't stop the loop
     }

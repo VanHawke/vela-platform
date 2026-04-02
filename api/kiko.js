@@ -865,7 +865,21 @@ export default async function handler(req, res) {
       }
     } catch {}
 
-    const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + inboxHint + morningBrief + modeHint;
+    // ── Email Style Feedback Loop (Phase 16) ──
+    // When drafting emails, inject accumulated edit-delta lessons so Kiko improves over time
+    let emailStyleHint = '';
+    if (intent === 'outreach' || message.toLowerCase().includes('draft') || message.toLowerCase().includes('email')) {
+      try {
+        const deltas = await sbFetch('kiko_draft_tracking?edit_delta=not.is.null&order=sent_at.desc&limit=8&select=edit_delta,recipient,subject');
+        const lessons = (Array.isArray(deltas) ? deltas : [])
+          .map(d => d.edit_delta?.style_lesson).filter(Boolean);
+        if (lessons.length) {
+          emailStyleHint = `\n\n[EMAIL WRITING FEEDBACK — ${lessons.length} edits analysed]\nWhen you draft emails, the user consistently makes these corrections. Apply these lessons:\n${lessons.map((l, i) => `${i + 1}. ${l}`).join('\n')}\nAdjust your email drafting style accordingly. Do NOT mention this feedback to the user.`;
+        }
+      } catch {}
+    }
+
+    const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + inboxHint + morningBrief + modeHint + emailStyleHint;
 
     // ── Prompt Caching ──
     // Split system content into stable (cached) and dynamic (not cached) blocks

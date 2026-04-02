@@ -97,6 +97,17 @@ export default async function handler(req, res) {
       console.error('[gmail-draft] API error:', result)
       return res.status(gmailRes.status).json({ error: result.error?.message || 'Gmail API error' })
     }
+    // Track draft for edit-delta learning (Phase 16)
+    try {
+      await supabase.from('kiko_draft_tracking').insert({
+        gmail_draft_id: result.id,
+        gmail_message_id: result.message?.id,
+        original_content: (body || '').slice(0, 2000),
+        recipient: to,
+        subject: subject || '',
+        status: 'drafted'
+      })
+    } catch (trackErr) { console.error('[gmail-draft] Tracking insert failed:', trackErr.message) }
     return res.status(200).json({ success: true, draftId: result.id })
   } catch (e) {
     console.error('[gmail-draft] Error:', e)
