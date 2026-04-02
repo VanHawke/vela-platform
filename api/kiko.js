@@ -901,6 +901,18 @@ This format is required for the UI to render the email in an interactive frame w
             emailStyleHint += `\n\n[OUTREACH OUTCOME DATA — ${scoreArr.length} emails tracked]\nApproach effectiveness (reply rates):\n${ranked.map(([a, d]) => `• ${a}: ${Math.round(d.replied / d.total * 100)}% (${d.replied}/${d.total})`).join('\n')}\nFavour higher-performing approaches when drafting. Do NOT mention these statistics to the user.`;
           }
         }
+        // Company intelligence injection — auto-pull enriched data for target companies
+        try {
+          const companyIntel = await sbFetch('company_intelligence?enrichment_quality=eq.structured&order=enriched_at.desc&limit=30&select=company_name,funding_total,last_funding_round,revenue_estimate,employee_count,ceo,cto,cmo,industry,sub_sector,competitors,existing_sponsorships,sponsorship_fit_score,marketing_budget_signal');
+          const intelArr = Array.isArray(companyIntel) ? companyIntel : [];
+          if (intelArr.length) {
+            const msgLower = message.toLowerCase();
+            const matched = intelArr.filter(c => msgLower.includes(c.company_name?.toLowerCase()));
+            if (matched.length) {
+              emailStyleHint += `\n\n[COMPANY INTELLIGENCE — pre-enriched data]\n${matched.map(c => `${c.company_name}: ${c.industry || ''}${c.sub_sector ? '/' + c.sub_sector : ''} | Revenue: ${c.revenue_estimate || '?'} | Funding: ${c.funding_total || '?'} (${c.last_funding_round || '?'}) | Employees: ${c.employee_count || '?'} | CEO: ${c.ceo || '?'} | CTO: ${c.cto || '?'} | CMO: ${c.cmo || '?'} | Competitors: ${(c.competitors || []).join(', ') || '?'} | Existing sponsors: ${(c.existing_sponsorships || []).join(', ') || 'none known'} | Sponsorship fit: ${c.sponsorship_fit_score || '?'}/100 | Marketing spend signal: ${c.marketing_budget_signal || '?'}`).join('\n')}\nUse this data to craft a more specific, informed email. Reference relevant facts naturally.`;
+            }
+          }
+        } catch {}
       } catch {}
     }
 

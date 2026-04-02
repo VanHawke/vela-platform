@@ -627,6 +627,17 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
       case 'win_loss': return await getWinLossInsights(params);
       case 'thread_history': return await getThreadHistory(params);
       case 'deal_prediction': return await predictDealOutcomes();
+      case 'company_intel': {
+        const name = params?.company || params?.name;
+        if (!name) {
+          const all = await sbFetch('company_intelligence?select=company_name,industry,revenue_estimate,sponsorship_fit_score,enriched_at&order=enriched_at.desc&limit=20');
+          return `ENRICHED COMPANIES (${(all||[]).length}):\n${(all||[]).map(c => `• ${c.company_name} — ${c.industry || '?'} | Rev: ${c.revenue_estimate || '?'} | Fit: ${c.sponsorship_fit_score || '?'}/100`).join('\n')}\n\nAsk about a specific company for full intelligence.`;
+        }
+        const intel = await sbFetch(`company_intelligence?company_name=ilike.*${encodeURIComponent(name)}*&limit=1`);
+        if (!intel?.length) return `No enriched intelligence for "${name}". The enrichment cron runs weekly — or ask me to research them now.`;
+        const c = intel[0];
+        return `COMPANY INTELLIGENCE: ${c.company_name}\n\nFunding: ${c.funding_total || '?'} (${c.last_funding_round || '?'}, ${c.last_funding_date || '?'})\nRevenue: ${c.revenue_estimate || '?'} | Employees: ${c.employee_count || '?'} (${c.employee_growth || '?'})\n\nLeadership:\n• CEO: ${c.ceo || '?'}\n• CTO: ${c.cto || '?'}\n• CMO: ${c.cmo || '?'}\n• CFO: ${c.cfo || '?'}\n• VP Marketing: ${c.vp_marketing || '?'}\n• VP Engineering: ${c.vp_engineering || '?'}\n\nBusiness: ${c.industry || '?'} / ${c.sub_sector || '?'} | Model: ${c.business_model || '?'}\nProducts: ${(c.key_products || []).join(', ') || '?'}\nCompetitors: ${(c.competitors || []).join(', ') || '?'}\nAcquisitions: ${(c.recent_acquisitions || []).join(', ') || 'none known'}\n\nSponsorship Readiness:\n• Existing: ${(c.existing_sponsorships || []).join(', ') || 'none known'}\n• Marketing budget: ${c.marketing_budget_signal || '?'}\n• Brand awareness: ${c.brand_awareness_signal || '?'}\n• F1 fit score: ${c.sponsorship_fit_score || '?'}/100\n\nEnriched: ${c.enriched_at ? new Date(c.enriched_at).toLocaleDateString('en-GB') : '?'} via ${c.enrichment_source || '?'}`;
+      }
       case 'refresh_partnerships': return await refreshTeamPartnerships(params);
       default: return `Unknown data operation: ${operation}. Available: search_contacts, search_companies, search_deals, entity_detail, alerts, email_analytics, outreach_intelligence, outreach_timing, stale_contacts, news, partnership_matrix, pipeline_notifications, deal_history, activity_feed, search_documents, past_conversations, recent_conversations, learning_search, learning_save, skills, bookmark, warm_path, win_loss, thread_history, deal_prediction`;
     }
