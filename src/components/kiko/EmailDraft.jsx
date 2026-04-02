@@ -151,6 +151,7 @@ export default function EmailDraft({ text }) {
         }
       }
       // Strip everything except the email body from rewrite response
+      console.log('[EmailDraft] Raw rewrite response:', full.slice(0, 200))
       let rewritten = full
         .replace(/\*\*/g, '')
         .replace(/^.*Subject\s*:.*$/im, '')
@@ -162,6 +163,7 @@ export default function EmailDraft({ text }) {
         .replace(/^\s*#+.*$/gm, '')
         .replace(/<[a-z_]+>[\s\S]*?<\/[a-z_]+>/gi, '')
         .trim()
+      console.log('[EmailDraft] Stripped rewrite:', rewritten.slice(0, 200), '| length:', rewritten.length)
       if (rewritten.length > 20) {
         setCurrentBody(rewritten)
         setHasRewritten(true)
