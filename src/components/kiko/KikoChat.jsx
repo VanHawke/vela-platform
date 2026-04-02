@@ -33,6 +33,9 @@ function md(text) {
   if (!text) return ''
   if (mdCache.has(text)) return mdCache.get(text)
   let h = text
+    // Fix missing spaces after periods (sentences running together)
+    .replace(/\.([A-Z])/g, '. $1')
+    .replace(/\:([A-Z])/g, ': $1')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     // Supabase generated-files image → inline preview
     .replace(/\[View\/Download\]\((https:\/\/[^\s)]*generated-files[^\s)]*\.png[^\s)]*)\)/g, '<div style="margin:8px 0"><a href="$1" target="_blank" rel="noopener"><img src="$1" style="max-width:100%;max-height:360px;border-radius:12px;border:0.5px solid rgba(255,255,255,0.06);box-shadow:0 4px 16px rgba(0,0,0,0.3)" /></a></div>')
@@ -872,13 +875,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             const displayText = stripToolXml(msg.content.replace(/---DRAFT---[\s\S]*?---END DRAFT---/gi, ''))
             if (isKiko && isEmailDraft(displayText)) {
               const { pre, email } = extractEmailSection(displayText)
-              // Find commentary after sign-off in the email section
-              const signoffEnd = email ? email.search(/\n\s*(\*\*Key positioning|\*\*Strategic|\*\*Next steps|\*\*Timing|##\s*TIMING|This targets|The email positions|I've framed|I recommend)/i) : -1
+              const signoffEnd = email ? email.search(/\n\s*(\*\*Key positioning|\*\*Strategic|\*\*Next steps|\*\*Timing|##\s*TIMING|This targets|The email positions|I've framed|I recommend|\*\*Analysis|\*\*My recommendation|I'd push back)/i) : -1
               const postEmail = signoffEnd > 20 ? email.slice(signoffEnd).trim() : ''
               const emailOnly = signoffEnd > 20 ? email.slice(0, signoffEnd).trim() : email
               return <>
                 {pre && <span dangerouslySetInnerHTML={{ __html: md(pre) }} />}
-                {emailOnly && <EmailDraft text={emailOnly} onRewrite={(prompt) => handleSubmit(prompt)} />}
+                {emailOnly && <EmailDraft text={emailOnly} onRewrite={(prompt) => handleSubmit(prompt)} onSendGmail={(subj, to, body) => handleSubmit(`Create a Gmail draft. To: ${to}\nSubject: ${subj}\n\n${body}\n\nUse the gmail_create_draft tool. Do not modify the email content.`)} />}
                 {postEmail && <span dangerouslySetInnerHTML={{ __html: md(postEmail) }} />}
               </>
             }
