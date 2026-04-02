@@ -11,7 +11,7 @@ import KikoSymbol from './KikoSymbol'
 import KikoWaveform from './KikoWaveform'
 import DraftPreview, { detectDraft } from './DraftPreview'
 import KikoInsights, { InsightsBadge } from './KikoInsights'
-import EmailDraft, { isEmailDraft } from './EmailDraft'
+import EmailDraft, { isEmailDraft, extractEmailSection } from './EmailDraft'
 import { useDynamicChips } from '@/hooks/useDynamicChips'
 
 // Theme imported from @/lib/theme.js
@@ -853,7 +853,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             // Strip ---DRAFT--- block from display text (rendered separately in DraftPreview)
             const displayText = stripToolXml(msg.content.replace(/---DRAFT---[\s\S]*?---END DRAFT---/gi, ''))
             if (isKiko && isEmailDraft(displayText)) {
-              return <EmailDraft text={displayText} onRewrite={(prompt) => handleSubmit(prompt)} />
+              const { pre, email } = extractEmailSection(displayText)
+              return <>
+                {pre && <span dangerouslySetInnerHTML={{ __html: md(pre) }} />}
+                {email && <EmailDraft text={email} onRewrite={(prompt) => handleSubmit(prompt)} />}
+              </>
             }
             return displayText ? <span dangerouslySetInnerHTML={{ __html: md(displayText) }} /> : null
           })()}
