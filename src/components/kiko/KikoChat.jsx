@@ -30,6 +30,11 @@ function stripToolXml(t) {
     .replace(/<ask_\w+>[\s\S]*?<\/ask_\w+>/gi, '')
     .replace(/<ask_\w+>[\s\S]*/gi, '')
     .replace(/<\/?ask_\w+>/gi, '')
+    .replace(/<[a-z_]+>[\s\S]*?<\/[a-z_]+>/gi, function(m) {
+      // Only strip if it looks like an XML tool tag (lowercase with underscores), not HTML
+      if (m.match(/^<(tool|ask|draft|search|lookup|agent|function|intent)/i)) return ''
+      return m
+    })
     .trim()
 }
 function md(text) {
@@ -732,11 +737,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
           </button>
           <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
-            <input ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSubmit(); } }}
-              placeholder="" autoFocus
-              style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font, height: 32, fontWeight: 400, lineHeight: '32px', padding: 0, margin: 0, verticalAlign: 'middle', display: 'block' }} />
+            <textarea ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+              placeholder="" autoFocus rows={1}
+              style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: 15, color: 'rgba(255,255,255,0.85)', fontFamily: T.font, minHeight: 24, maxHeight: 200, fontWeight: 400, resize: 'none', lineHeight: '24px', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content', verticalAlign: 'middle', display: 'block' }} />
             {!input && !fileUploading && !pendingAttachment && typewriterText && (
-              <div style={{ position: 'absolute', top: 0, left: 0, fontSize: 15, color: 'rgba(255,255,255,0.25)', fontFamily: T.font, fontWeight: 400, pointerEvents: 'none', lineHeight: '32px', height: 32 }}>
+              <div style={{ position: 'absolute', top: 4, left: 0, fontSize: 15, color: 'rgba(255,255,255,0.25)', fontFamily: T.font, fontWeight: 400, pointerEvents: 'none', lineHeight: '24px' }}>
                 {typewriterText}<span style={{ opacity: typewriterText.length < 19 ? 1 : 0, animation: typewriterText.length < 19 ? 'kikoBreathe 0.6s step-end infinite' : 'none' }}>|</span>
               </div>
             )}

@@ -40,10 +40,9 @@ function parseEmail(text) {
   let rawBody = t.slice(bodyStartIdx)
 
   // Aggressively cut at sign-off + name + any commentary
+  // Cut at sign-off or commentary — works with or without newlines
   const cutPatterns = [
-    /\n\s*(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards),?\s*[\n,]?\s*(Sunny|Van Hawke)/i,
-    /\n\s*Sunny\s*Sidhu/i,
-    /\n\s*Van Hawke/i,
+    /(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards),?\s*(Sunny|Van Hawke)/i,
     /\n\s*\*\*(Analysis|My recommendation|Key positioning|Strategic|Next steps|Timing|Note)[:\s]/i,
     /\n\s*(This reengagement|This targets|The email positions|I've framed|I'd push back|I recommend|My recommendation)/i,
     /\n\s*(Analysis:|Note:|Recommendation:)/i,
@@ -52,10 +51,20 @@ function parseEmail(text) {
     const idx = rawBody.search(pat)
     if (idx > 15) { rawBody = rawBody.slice(0, idx).trim(); break }
   }
-  // Also strip trailing sign-off without name
-  rawBody = rawBody.replace(/\n\s*(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards),?\s*$/i, '').trim()
-  // Clean markdown
-  let body = rawBody.replace(/\*\*/g, '').replace(/\[Current[^\]]*\]/gi, '').trim()
+  // AGGRESSIVE final cleanup — remove ANY sign-off, username, company name anywhere
+  let body = rawBody
+    .replace(/\*\*/g, '')
+    .replace(/\[Current[^\]]*\]/gi, '')
+    .replace(/Best regards,?\s*/gi, '')
+    .replace(/Kind regards,?\s*/gi, '')
+    .replace(/Warm regards,?\s*/gi, '')
+    .replace(/Regards,?\s*/gi, '')
+    .replace(/Sincerely,?\s*/gi, '')
+    .replace(/Cheers,?\s*/gi, '')
+    .replace(/Sunny\s*Sidhu/gi, '')
+    .replace(/Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?\s*/gi, '')
+    .replace(/\n\s*\n\s*\n/g, '\n\n')
+    .trim()
   return { subject, to, body }
 }
 
@@ -76,15 +85,21 @@ export default function EmailDraft({ text }) {
 
   // Open Gmail compose directly — clean encoding, no chat messages
   const handleSendGmail = () => {
-    // Replace all special dashes with plain hyphen for email subject
+    // Clean subject — replace ALL dash variants with plain ASCII hyphen
     const cleanSubject = subject
-      .replace(/\u2014/g, '-')  // em-dash
-      .replace(/\u2013/g, '-')  // en-dash
-      .replace(/\u2015/g, '-')  // horizontal bar
-      .replace(/\u2012/g, '-')  // figure dash
-      .replace(/\u00e2\u20ac\u201c/g, '-') // â€" mojibake
-      .replace(/â€"/g, '-')     // literal mojibake
-    const url = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(to)}&su=${encodeURIComponent(cleanSubject)}&body=${encodeURIComponent(currentBody)}`
+      .replace(/[\u2014\u2013\u2015\u2012\u2010\u2011]/g, '-')
+      .replace(/â€"/g, '-')
+      .replace(/â€"/g, '-')
+      .replace(/â€˜|â€™|â€œ|â€/g, "'")
+    // Clean body — strip any remaining username/sign-off
+    const cleanBody = currentBody
+      .replace(/Sunny\s*Sidhu/gi, '')
+      .replace(/Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?\s*/gi, '')
+      .replace(/Best regards,?\s*/gi, '')
+      .replace(/Kind regards,?\s*/gi, '')
+      .replace(/\n\s*\n\s*\n/g, '\n\n')
+      .trim()
+    const url = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(to)}&su=${encodeURIComponent(cleanSubject)}&body=${encodeURIComponent(cleanBody)}`
     window.open(url, '_blank')
     setSent(true)
   }
@@ -122,11 +137,12 @@ export default function EmailDraft({ text }) {
         .replace(/\*\*/g, '')
         .replace(/^.*Subject\s*:.*$/im, '')
         .replace(/^.*To\s*:.*$/im, '')
-        .replace(/\n\s*(Best regards|Regards|Sincerely|Best|Cheers|Warm regards),?\s*[\n]?\s*(Sunny|Van Hawke).*$/is, '')
-        .replace(/\n\s*Sunny\s*Sidhu.*$/is, '')
-        .replace(/\n\s*Van Hawke.*$/is, '')
-        .replace(/\n\s*\*\*(Analysis|My recommendation|Note).*$/is, '')
+        .replace(/(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards),?\s*(Sunny|Van Hawke)[\s\S]*$/i, '')
+        .replace(/Sunny\s*Sidhu/gi, '')
+        .replace(/Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?\s*/gi, '')
+        .replace(/\n\s*\*\*(Analysis|My recommendation|Note)[\s\S]*$/i, '')
         .replace(/^\s*#+.*$/gm, '')
+        .replace(/<[a-z_]+>[\s\S]*?<\/[a-z_]+>/gi, '')
         .trim()
       if (rewritten.length > 20) {
         setCurrentBody(rewritten)
