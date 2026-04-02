@@ -8,7 +8,7 @@
 - **GitHub:** https://github.com/VanHawke/vela-platform
 - **Supabase:** project `dwiywqeleyckzcxbwrlb` | org `35975d96-c2c9-4b6c-b4d4-bb947ae817d5`
 - **Stack:** React/Vite + Vercel serverless + Supabase/Postgres + Claude Sonnet + GPT-4o Realtime (voice)
-- **Deploy:** `VERCEL_FORCE_NO_BUILD_CACHE=1 npx vercel --prod --yes --force`
+- **Deploy:** `npx vercel --prod --yes` (NEVER use --force or VERCEL_FORCE_NO_BUILD_CACHE=1 — caused $830 bill)
 - **Env vars:** `ANTHROPIC_KEY` (not ANTHROPIC_API_KEY), `VITE_SUPABASE_URL` (not SUPABASE_URL)
 - **Bundle:** 670KB main + lazy chunks (down from 902KB, code-split via React.lazy)
 
@@ -118,7 +118,7 @@
 
 ## MANDATORY RULES
 1. Every session: read KIKO_SESSION_BRIEF.md + KIKO_EVOLUTION_PLAN.md before writing code
-2. 8-step build process: backup → build → verify strings → commit → deploy --force → verify hash → test → confirm
+2. Deploy process: build locally → verify no errors → commit → `npx vercel --prod --yes` → verify live → test browser → confirm. NEVER use VERCEL_FORCE_NO_BUILD_CACHE=1 or --force (caused $830/month overage).
 3. Never say "deployed" without verifying the live bundle hash changed
 4. Before any external API work: search current docs first, never rely on training knowledge
 5. All cron catch blocks return 200. All crons have "finished" heartbeat at every exit path

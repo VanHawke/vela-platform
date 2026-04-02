@@ -13,7 +13,7 @@ You are continuing a build session on Kiko Intelligence OS — a commercial AI o
 - **Codebase:** /Users/sunny/Desktop/vela-platform/
 - **GitHub:** https://github.com/VanHawke/vela-platform
 - **Stack:** React/Vite + Vercel serverless + Supabase + Claude Sonnet + GPT-4o Realtime
-- **Deploy:** `VERCEL_FORCE_NO_BUILD_CACHE=1 npx vercel --prod --yes --force`
+- **Deploy:** `npx vercel --prod --yes` (NEVER use --force or VERCEL_FORCE_NO_BUILD_CACHE=1 — caused $830 overage)
 - **Supabase project:** `dwiywqeleyckzcxbwrlb`
 - **Latest commit:** `3a79145` on main
 - **Bundle:** 670KB (code-split, 11 lazy-loaded pages)
@@ -41,7 +41,7 @@ You are continuing a build session on Kiko Intelligence OS — a commercial AI o
 
 ## KEY RULES
 - Every session: read session brief + evolution plan before writing code
-- 8-step build/deploy process — never skip
+- Deploy: `npx vercel --prod --yes` ONLY. NEVER use VERCEL_FORCE_NO_BUILD_CACHE=1 or --force (caused $830 Vercel bill)
 - Before any external API work: search current docs first
 - Gmail: @vanhawke.agency, Helvetica 12pt, no sign-off/name
 - "Vela" = internal codename only. Kiko = product/platform/AI/OS
