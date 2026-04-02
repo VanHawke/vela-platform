@@ -13,53 +13,57 @@ You are continuing a build session on Kiko Intelligence OS — a commercial AI o
 - **GitHub:** https://github.com/VanHawke/vela-platform
 - **Supabase:** `dwiywqeleyckzcxbwrlb`
 - **Deploy:** `npx vercel --prod --yes` (NEVER use --force or VERCEL_FORCE_NO_BUILD_CACHE=1 — caused $830 bill)
-- **Latest commit:** `c61c221` on main
+- **Latest commit:** `4b186a3` on main
 - **Bundle:** 670KB (code-split, 11 lazy-loaded pages)
 
-## WHAT WAS COMPLETED (2 Apr 2026 — full session)
+## INTELLIGENCE INFRASTRUCTURE (all deployed 2 Apr 2026)
 
-### EMAIL SYSTEM (complete, verified live)
-- EmailDraft frame: thinking collapse + Subject/To/body + tone CTAs + Send to Gmail
-- 3-layer detection: server EMAIL FORMAT RULE + thinking strip + broad isEmailDraft patterns
-- Gmail: @vanhawke.agency, Helvetica 12pt, no sign-off/name
-- Tone rewrite via Haiku (claude-haiku-4-5-20251001)
-- Email quality feedback loop: edit-delta cron → style lessons → system prompt injection
+### Data Ingestion (75 RSS feeds, 8am daily)
+Business: Forbes, TechCrunch, Reuters, CNBC, Wired, VentureBeat, The Verge, Ars Technica, MIT Tech Review
+Paywalled headlines: Bloomberg, FT, WSJ, The Times (via Google News)
+VC/PE: Crunchbase News, GlobeNewsWire M&A, PRN Finance, Google News (Series A-C, IPOs, PE deals)
+Marketing: Marketing Week, The Drum, AdAge, Campaign, Digiday
+Psychology: HBR, Psychology Today, BehavioralEconomics.com
+Design: Creative Review, It's Nice That, Dezeen, Brand New
+Sectors: Cybersecurity, cloud, AI enterprise, semiconductor markets
+Leadership: Google News (new CMO, CTO, CEO appointments)
 
-### CALENDAR (4 series, 61 races)
-- F1 (22), Formula E (12), MotoGP (19), WEC (8) in race_calendar DB table
-- Commercial Calendar page: full grid with 4-series toggles, color coding, detail pane
-- Command Centre: series selector tabs with countdown to next race
+### Company Enrichment (cron-company-enrich.js, weekly Sun 4:30am)
+- Sonnet + web_search enriches pipeline companies → company_intelligence table (30 fields)
+- 7 companies enriched and verified (Palo Alto $9.9B, Cloudflare $1.67B, BigBear.ai, Nordic Semi, Decagon, Attio, NanoXplore)
+- Auto-injected into system prompt when drafting emails mentioning enriched companies
+- Backfill: hit /api/cron-company-enrich 8 more times to cover full pipeline
 
-### INTELLIGENCE ENGINE
-- **75 news feeds** (up from 20): Forbes, TechCrunch, Reuters, CNBC, Wired, VentureBeat, Bloomberg/FT/WSJ/Times via Google News, Crunchbase, VC/PE funding, M&A, marketing (AdAge, The Drum, Campaign), psychology (HBR, Psychology Today), design (Creative Review, Dezeen), leadership moves, sector intelligence
-- **Company enrichment cron** (weekly Sun 4:30am): Sonnet + web_search enriches top pipeline companies → structured data in company_intelligence table (funding, revenue, leadership, competitors, sponsorship fit score). 7 companies already enriched and verified.
-- **Company intelligence auto-injection**: When drafting emails, Kiko pulls enriched data for mentioned companies from company_intelligence table and injects into system prompt
-- **company_intel data operation**: "Kiko, show me intelligence on Cloudflare" returns structured enrichment data
-- **Outreach outcome feedback**: Reply rates by messaging approach injected into email drafting prompt
-- **Race-aware proactive alerts**: Calendar as 6th data stream in proactive cron, urgency tinting
-- **Predictive behavior engine**: Cialdini's 6 principles + timing psychology + deal stage mapping hardcoded into outreach system prompt
+### People Verification (cron-people-verify.js, weekly Sun 5:30am)
+- Web-searches contacts for role changes, departures
+- Creates kiko_alerts for DEPARTED and ROLE_CHANGE
+- Saves to kiko_learning_log (category: people_movement)
 
-### INFRASTRUCTURE
-- Code-split: React.lazy() on 11 pages, bundle 902KB → 670KB
-- Vercel cost fix: removed VERCEL_FORCE_NO_BUILD_CACHE=1 (was causing $830/month)
-- Deploy via `npx vercel --prod --yes` only
+### Pipeline Hygiene (cron-pipeline-hygiene.js, weekly Sun 6:30am)
+- Flags deals >90d inactive as ARCHIVE CANDIDATES
+- Warns on 30-89d stale deals with escalating severity
+- Creates actionable alerts with specific next steps
 
-## BACKFILL COMMAND
-Hit this URL 8 times (60sec between each) to enrich all pipeline companies:
-https://vela-platform-one.vercel.app/api/cron-company-enrich
+### Predictive Behavior Engine (hardcoded in kiko.js outreach routing)
+- Cialdini's 6 principles mapped to deal stages
+- Timing psychology (Tue-Thu 8-10am, post-funding windows, pre-race urgency)
+- Deal stage mapping (cold→authority+reciprocity, stale→pattern interrupt)
+
+### Email Quality Loop
+- edit-delta cron compares drafts vs sent, Haiku extracts style lessons
+- Outreach outcome feedback: reply rates by messaging approach injected into prompt
+- Both compound over time
 
 ## WHAT'S NEXT (priority order)
-1. **People verification cron** — web-search contacts to detect role changes, flag stale people
-2. **Voice (Phase 13)** — STT + TTS pipeline, UI wired, zero audio flowing
-3. **Kiko personality layer** — persistent kiko_identity table, accumulated opinions from intelligence
-4. **Pipeline hygiene cron** — auto-flag >90d inactive, bounced emails, suggest archival
-5. **Manual enrichment trigger** — "Kiko, enrich Datadog" runs enrichment immediately
-6. **Mobile deep pass** — real-device QA
+1. **Voice (Phase 13)** — STT + TTS pipeline. UI wired, zero audio
+2. **Kiko personality layer** — persistent kiko_identity, develops opinions from intelligence
+3. **Manual enrichment trigger** — "Kiko, enrich Datadog" runs immediately
+4. **Company enrichment backfill** — run cron 8 more times to cover full pipeline
+5. **Mobile deep pass** — real-device QA
 
 ## KEY RULES
 - Read session brief + evolution plan before any code
-- Deploy: `npx vercel --prod --yes` ONLY. NEVER use VERCEL_FORCE_NO_BUILD_CACHE=1 or --force
+- Deploy: `npx vercel --prod --yes` ONLY. NEVER --force or VERCEL_FORCE_NO_BUILD_CACHE=1
 - `ANTHROPIC_KEY` not ANTHROPIC_API_KEY. `VITE_SUPABASE_URL` not SUPABASE_URL
 - Gmail: @vanhawke.agency, Helvetica 12pt, no sign-off/name
-- "Vela" = internal codename only. Kiko = product/platform/AI/OS
-- All financials in USD
+- "Vela" internal only. Kiko = product/platform/AI/OS. All financials USD.
