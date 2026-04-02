@@ -55,11 +55,10 @@ Leadership: Google News (new CMO, CTO, CEO appointments)
 - Both compound over time
 
 ## WHAT'S NEXT (priority order)
-1. **Voice (Phase 13)** — STT + TTS pipeline. UI wired, zero audio
-2. **Kiko personality layer** — persistent kiko_identity, develops opinions from intelligence
-3. **Manual enrichment trigger** — "Kiko, enrich Datadog" runs immediately
-4. **Company enrichment backfill** — run cron 8 more times to cover full pipeline
-5. **Mobile deep pass** — real-device QA
+1. **Kiko personality layer** — persistent kiko_identity, develops opinions from intelligence
+2. **Manual enrichment trigger** — "Kiko, enrich Datadog" runs enrichment immediately
+3. **Company enrichment backfill** — run cron 8 more times to cover full pipeline
+4. **Mobile deep pass** — real-device QA
 
 ## KEY RULES
 - Read session brief + evolution plan before any code

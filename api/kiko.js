@@ -294,6 +294,7 @@ You have up to 10 tool rounds per conversation. Use them intelligently:
 1. SIMPLE QUERIES (1 tool): "move Decagon to Negotiation" → ask_deal_agent. Done.
 2. COMPOUND QUERIES (2-3 tools): "What do we know about Cloudflare and should we pursue them?" → ask_data_agent (CRM check) → ask_strategy_agent (evaluation). Chain them.
 3. RESEARCH + ACTION (3-5 tools): "Research Nordic Semi and draft an intro email" → web_search (company intel) → ask_data_agent (CRM check for existing contacts) → ask_outreach_agent (draft email with real context). Always gather context BEFORE drafting.
+4. ENRICH COMPANY: When user says "enrich [company]" → use ask_data_agent with operation "enrich_company" and params.company. This runs a deep web search and saves structured intelligence (funding, leadership, competitors, sponsorship fit) to the database permanently. Also use ask_data_agent with operation "company_intel" to retrieve previously enriched data.
 4. FULL WORKFLOW (5+ tools): "Brief me and then execute the top priority" → ask_ea_agent (brief) → identify priority → use the appropriate agent to execute it.
 
 DECISION FRAMEWORK — adapt your approach based on the task:

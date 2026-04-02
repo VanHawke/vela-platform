@@ -639,7 +639,29 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
         return `COMPANY INTELLIGENCE: ${c.company_name}\n\nFunding: ${c.funding_total || '?'} (${c.last_funding_round || '?'}, ${c.last_funding_date || '?'})\nRevenue: ${c.revenue_estimate || '?'} | Employees: ${c.employee_count || '?'} (${c.employee_growth || '?'})\n\nLeadership:\n• CEO: ${c.ceo || '?'}\n• CTO: ${c.cto || '?'}\n• CMO: ${c.cmo || '?'}\n• CFO: ${c.cfo || '?'}\n• VP Marketing: ${c.vp_marketing || '?'}\n• VP Engineering: ${c.vp_engineering || '?'}\n\nBusiness: ${c.industry || '?'} / ${c.sub_sector || '?'} | Model: ${c.business_model || '?'}\nProducts: ${(c.key_products || []).join(', ') || '?'}\nCompetitors: ${(c.competitors || []).join(', ') || '?'}\nAcquisitions: ${(c.recent_acquisitions || []).join(', ') || 'none known'}\n\nSponsorship Readiness:\n• Existing: ${(c.existing_sponsorships || []).join(', ') || 'none known'}\n• Marketing budget: ${c.marketing_budget_signal || '?'}\n• Brand awareness: ${c.brand_awareness_signal || '?'}\n• F1 fit score: ${c.sponsorship_fit_score || '?'}/100\n\nEnriched: ${c.enriched_at ? new Date(c.enriched_at).toLocaleDateString('en-GB') : '?'} via ${c.enrichment_source || '?'}`;
       }
       case 'refresh_partnerships': return await refreshTeamPartnerships(params);
-      default: return `Unknown data operation: ${operation}. Available: search_contacts, search_companies, search_deals, entity_detail, alerts, email_analytics, outreach_intelligence, outreach_timing, stale_contacts, news, partnership_matrix, pipeline_notifications, deal_history, activity_feed, search_documents, past_conversations, recent_conversations, learning_search, learning_save, skills, bookmark, warm_path, win_loss, thread_history, deal_prediction`;
+      case 'enrich_company': {
+        const name = params?.company || params?.name;
+        if (!name) return 'Please specify a company name to enrich.';
+        try {
+          const Anthropic = (await import('@anthropic-ai/sdk')).default;
+          const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
+          const enrichRes = await client.messages.create({
+            model: 'claude-sonnet-4-20250514', max_tokens: 1500,
+            tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+            messages: [{ role: 'user', content: `Research "${name}" and return ONLY valid JSON: { "company_name": "${name}", "domain": "website", "funding_total": "$X", "last_funding_round": "Series X", "last_funding_date": "YYYY-MM-DD", "last_funding_amount": "$X", "revenue_estimate": "$X", "employee_count": "N", "employee_growth": "+X%", "ceo": "name", "cto": "name or null", "cmo": "name or null", "cfo": "name or null", "vp_marketing": "name or null", "vp_engineering": "name or null", "industry": "X", "sub_sector": "X", "business_model": "X", "key_products": [], "competitors": [], "recent_acquisitions": [], "existing_sponsorships": [], "marketing_budget_signal": "high/medium/low", "brand_awareness_signal": "high/medium/low", "sponsorship_fit_score": 0-100 }. Return ONLY JSON.` }]
+          });
+          const text = enrichRes.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
+          const jsonMatch = text.replace(/```json\n?/g, '').replace(/```/g, '').trim().match(/\{[\s\S]*\}/);
+          if (!jsonMatch) return `Could not parse enrichment data for "${name}".`;
+          const intel = JSON.parse(jsonMatch[0]);
+          const record = { company_name: intel.company_name || name, domain: intel.domain, funding_total: intel.funding_total, last_funding_round: intel.last_funding_round, last_funding_date: intel.last_funding_date, last_funding_amount: intel.last_funding_amount, revenue_estimate: intel.revenue_estimate, employee_count: intel.employee_count, employee_growth: intel.employee_growth, ceo: intel.ceo, cto: intel.cto, cmo: intel.cmo, cfo: intel.cfo, vp_marketing: intel.vp_marketing, vp_engineering: intel.vp_engineering, industry: intel.industry, sub_sector: intel.sub_sector, business_model: intel.business_model, key_products: intel.key_products || [], competitors: intel.competitors || [], recent_acquisitions: intel.recent_acquisitions || [], existing_sponsorships: intel.existing_sponsorships || [], marketing_budget_signal: intel.marketing_budget_signal, brand_awareness_signal: intel.brand_awareness_signal, sponsorship_fit_score: intel.sponsorship_fit_score, enriched_at: new Date().toISOString(), enrichment_source: 'manual_web_search', enrichment_quality: 'structured', needs_refresh: false };
+          const existing = await sbFetch(`company_intelligence?company_name=ilike.*${encodeURIComponent(name)}*&limit=1`);
+          if (Array.isArray(existing) && existing.length) { await sbFetch(`company_intelligence?id=eq.${existing[0].id}`, { method: 'PATCH', body: JSON.stringify(record) }); }
+          else { await sbFetch('company_intelligence', { method: 'POST', body: JSON.stringify(record) }); }
+          return `✅ ENRICHED: ${intel.company_name || name}\nRevenue: ${intel.revenue_estimate || '?'} | Funding: ${intel.funding_total || '?'} (${intel.last_funding_round || '?'})\nEmployees: ${intel.employee_count || '?'} | CEO: ${intel.ceo || '?'} | CMO: ${intel.cmo || '?'}\nIndustry: ${intel.industry || '?'} / ${intel.sub_sector || '?'}\nF1 Fit: ${intel.sponsorship_fit_score || '?'}/100 | Marketing: ${intel.marketing_budget_signal || '?'}`;
+        } catch (err) { return `Enrichment failed for "${name}": ${err.message}`; }
+      }
+      default: return `Unknown data operation: ${operation}. Available: search_contacts, search_companies, search_deals, entity_detail, alerts, email_analytics, outreach_intelligence, outreach_timing, stale_contacts, news, partnership_matrix, pipeline_notifications, deal_history, activity_feed, search_documents, past_conversations, recent_conversations, learning_search, learning_save, skills, bookmark, warm_path, win_loss, thread_history, deal_prediction, company_intel, enrich_company`;
     }
   } catch (err) {
     return `Data Agent error (${operation}): ${err.message}`;
