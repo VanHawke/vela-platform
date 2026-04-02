@@ -917,11 +917,15 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               const signoffEnd = email ? email.search(/\n\s*(\*\*Key positioning|\*\*Strategic|\*\*Next steps|\*\*Timing|##\s*TIMING|This targets|The email positions|I've framed|I recommend|\*\*Analysis|\*\*My recommendation|I'd push back)/i) : -1
               const postEmail = signoffEnd > 20 ? email.slice(signoffEnd).trim() : ''
               const emailOnly = signoffEnd > 20 ? email.slice(0, signoffEnd).trim() : email
-              return <>
-                {pre && <span dangerouslySetInnerHTML={{ __html: md(pre) }} />}
-                {emailOnly && <EmailDraft text={emailOnly} />}
-                {postEmail && <span dangerouslySetInnerHTML={{ __html: md(postEmail) }} />}
-              </>
+              // Only render EmailDraft if the parsed email has actual body content
+              const testParse = emailOnly ? (() => { try { const m = emailOnly.match(/\*?\*?Subject\*?\*?\s*:\s*(.+?)(?:\n|$)/i); const t = emailOnly.match(/\*?\*?To\*?\*?\s*:\s*(.+?)(?:\n|$)/i); const bodyStart = t ? emailOnly.indexOf(t[0]) + t[0].length : (m ? emailOnly.indexOf(m[0]) + m[0].length : 0); const rawBody = emailOnly.slice(bodyStart).replace(/\*\*/g,'').replace(/Best regards.*$/is,'').replace(/Sunny\s*Sidhu/gi,'').replace(/Van\s*Hawke[^\n]*/gi,'').trim(); return rawBody.length > 30; } catch { return false } })() : false
+              if (testParse) {
+                return <>
+                  {pre && <span dangerouslySetInnerHTML={{ __html: md(pre) }} />}
+                  {emailOnly && <EmailDraft text={emailOnly} />}
+                  {postEmail && <span dangerouslySetInnerHTML={{ __html: md(postEmail) }} />}
+                </>
+              }
             }
             return displayText ? <span dangerouslySetInnerHTML={{ __html: md(displayText) }} /> : null
           })()}
