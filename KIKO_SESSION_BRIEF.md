@@ -1,147 +1,148 @@
 # KIKO INTELLIGENCE OS — SESSION BRIEF
-# Updated: 1 April 2026 (post v1.0-go-live, pre-voice build)
-# Tag: v1.0-go-live | Commit: f943428
+# Updated: 2 April 2026 (post email draft system + calendar expansion + feedback loop)
+# Tag: v1.1-email-calendar | Commit: c84e3c2
 
 ## PLATFORM
 - **Live URL:** https://vela-platform-one.vercel.app
 - **Codebase:** /Users/sunny/Desktop/vela-platform/
 - **GitHub:** https://github.com/VanHawke/vela-platform
 - **Supabase:** project `dwiywqeleyckzcxbwrlb` | org `35975d96-c2c9-4b6c-b4d4-bb947ae817d5`
-- **Stack:** React/Vite + Vercel serverless + Supabase/Postgres + Claude Sonnet + GPT-4o (voice planned)
+- **Stack:** React/Vite + Vercel serverless + Supabase/Postgres + Claude Sonnet + GPT-4o Realtime (voice)
 - **Deploy:** `VERCEL_FORCE_NO_BUILD_CACHE=1 npx vercel --prod --yes --force`
-- **Env var:** `ANTHROPIC_KEY` (not ANTHROPIC_API_KEY)
+- **Env vars:** `ANTHROPIC_KEY` (not ANTHROPIC_API_KEY), `VITE_SUPABASE_URL` (not SUPABASE_URL)
+- **Bundle:** 670KB main + lazy chunks (down from 902KB, code-split via React.lazy)
 
 ## SYSTEM STATS
-- 39 tools, 25 agents, 26 crons, 16 pages
-- 308 deals, 5,006 contacts, 2,243 companies, 389 partnerships, 389 embeddings
-- 94 relationships, 10 preferences, 117 learning entries, 60 knowledge sources, 2,858 news
-- DB: 71MB / 500MB free tier
+- 39 tools, 25 agents, 26 crons, 16 pages (11 lazy-loaded)
+- 308 deals, 5,006 contacts, 2,243 companies, 389 partnerships
+- 61 race calendar entries (22 F1, 12 Formula E, 19 MotoGP, 8 WEC)
+- 186 learning entries, 158 alerts, 27 outreach scores, 2 draft tracking entries
+- 183 conversations
+- DB: ~75MB / 500MB free tier
 - Monthly cost: ~$35-40 (Vercel $20, Anthropic $15-20, OpenAI <$1)
 
 ## ARCHITECTURE
-- **System prompt:** Executive operating partner (CFO/CRO/COO/CMO/Chief of Staff) with EXECUTIVE LENS + REASONING DISCIPLINE (explicit 4-step chain-of-thought before tool calls)
-- **Multi-user:** Auto-provision on Google login, RLS isolation, 3 roles (super_admin/admin/user)
-- **Memory:** 3-layer — kiko_learning_log (facts), kiko_preferences (behaviours), conversation_embeddings (pgvector semantic search, auto-embed post-response)
-- **Model routing:** Haiku (greetings/nav <2s) → Sonnet (standard 3-5s) → Opus + extended thinking 10k tokens (deep analysis 8-15s)
-- **Avatar:** KikoWaveform.jsx — purple double-sided soundwave with independent up/down bars, gaussian envelope taper, no edge-fade rectangles
+- **System prompt:** Executive operating partner with EXECUTIVE LENS + REASONING DISCIPLINE + EMAIL FORMAT RULE (forces ### SUGGESTED DRAFT structure for outreach)
+- **Multi-user:** Auto-provision on Google login, RLS isolation, 3 roles
+- **Memory:** 3-layer — kiko_learning_log (facts), kiko_preferences (behaviours), conversation_embeddings (pgvector)
+- **Model routing:** Haiku (greetings/nav <2s) → Sonnet (standard 3-5s) → Opus + extended thinking (deep 8-15s)
+- **Email feedback loop:** kiko_draft_tracking stores original drafts → edit-delta cron compares with sent version → style_lessons injected into outreach system prompt on every email draft
+- **Race-aware intelligence:** Proactive cron pulls race_calendar as 6th data stream, urgency-tints deals based on proximity to race weekends
+
+## EMAIL DRAFT SYSTEM (FULLY OPERATIONAL — 2 Apr 2026)
+### Components
+- `src/components/kiko/EmailDraft.jsx` — Interactive email frame with To, Subject, body, tone CTAs
+- `api/gmail-draft.js` — Silent Gmail draft creation via stored OAuth tokens (no popup)
+- `api/rewrite-email.js` — Lightweight Haiku endpoint for tone rewrites (no tools/memory overhead)
+- `api/agents/outreach.js` — Server-side draftEmail function with all fixes applied
+
+### Verified behaviours
+- ✅ Thinking collapsed ("Kiko's reasoning · N steps") — splits at response boundary markers
+- ✅ EMAIL DRAFT frame renders with Subject, To, body paragraphs
+- ✅ No "Sunny Sidhu" / sign-off / "Van Hawke Group" in email body (triple-layer strip)
+- ✅ Subject clean — no â€" mojibake, plain hyphens only
+- ✅ Tone CTAs: "More Direct" | "Warmer Tone" | "Shorter" — update body in-place via /api/rewrite-email
+- ✅ "↩ Revert" button appears after rewrite, restores original body
+- ✅ "Send to Gmail" → silent draft creation → button turns green "Draft saved"
+- ✅ Gmail From: `Sunny Sidhu <sunny@vanhawke.agency>` (auto-replaces .com → .agency)
+- ✅ Gmail body: Helvetica 12pt HTML
+- ✅ Strategic commentary renders OUTSIDE email frame as markdown
+- ✅ User message editing: click ✏ → textarea populates → submit truncates + resubmits
+
+### Detection logic (3-layer)
+1. Server: EMAIL FORMAT RULE in outreach routing hint forces `### SUGGESTED DRAFT` header
+2. Client: Thinking stripped from raw text BEFORE isEmailDraft() runs (same markers as md() collapse)
+3. Client: isEmailDraft() matches Subject+To together, "here's the email", "I've drafted" patterns
+
+### Email quality feedback loop
+1. Kiko drafts email → tracked in `kiko_draft_tracking` (both outreach agent + "Send to Gmail" button)
+2. User edits + sends from Gmail
+3. `cron-edit-delta` (10pm nightly) detects sent email, compares original vs sent via Haiku
+4. Style lesson + change list written to `edit_delta` JSONB column
+5. Major/moderate lessons also saved to `kiko_learning_log` (category: email_style)
+6. Next email draft → lessons fetched and injected as `[EMAIL WRITING FEEDBACK]` in system prompt
+7. Claude applies accumulated lessons → emails improve over time
+
+## CALENDAR SYSTEM (4 SERIES — 2 Apr 2026)
+### Data (race_calendar table)
+- F1: 22 races (Mar 8 – Dec 6, 2026)
+- Formula E: 12 races (Dec 6, 2025 – Aug 16, 2026)
+- MotoGP: 19 races (Mar 1 – Nov 29, 2026)
+- WEC: 8 races (Apr 19 – Nov 7, 2026) — Qatar postponed to Oct due to Iran war
+
+### Command Centre
+- Series selector tabs: F1 | Formula E | MotoGP | WEC
+- Each tab shows next upcoming race with countdown (e.g., "17d — 6 Hours of Imola")
+
+### Commercial Calendar page (/calendar)
+- Full month grid with color-coded race cells (F1 red, FE blue, MotoGP dark red, WEC green)
+- Series toggle buttons with remaining race counts
+- Detail pane: selected date events + month events + upcoming races
+- Legend: F1 weekend | Formula E | MotoGP | WEC | Outreach window
+- Hardcoded data arrays: F1_2026, FE_S12, MOTOGP_2026, WEC_2026
+
+### Race-aware outreach intelligence
+- `cron-proactive.js` pulls race_calendar as 6th data stream (alongside news, replies, stage changes, tasks, stale deals)
+- Urgency tinting: 🔴 CRITICAL (≤14d), 🟡 HIGH (≤30d), 🟢 NORMAL
+- Haiku cross-references stale deals against upcoming race weekends
+- `getOutreachIntelligence` has `race_windows` focus mode: shows next 6 races + stale deals needing contact
+
+## CODE-SPLIT (2 Apr 2026)
+- 11 pages wrapped in `React.lazy()` + `<Suspense>` boundary in App.jsx
+- Main bundle: 670KB (down from 902KB = 26% reduction)
+- Lazy chunks: Pipeline 30KB, Organisations 46KB, KikoCode 58KB, CommercialCalendar 22KB, etc.
+- Home/KikoChat loads eagerly (no flash), all other pages lazy-load on navigation
+
+## CRON STATUS
+### CONFIRMED WORKING
+- meeting-prep ✅ (hourly), proactive ✅ (7am, now with race calendar), partnership-scan ✅ (7am)
+- task-automation ✅ (6:30am), edit-delta ✅ (10pm, now saves to learning log), weekly-report ✅ (Sun 7pm)
+- health-check ✅ (every 30min), outreach-score ✅ (9am Mon)
+
+### AWAITING VERIFICATION
+- learning-director, inbox-triage, morning-intelligence, news-agent
 
 ## UI DESIGN DIRECTION (APPROVED)
 - Dark ambient: #0A0A0C bg, gradient orb purple #7C5CFC to teal #00D4AA
 - Glassmorphism: frosted glass panels, backdrop-filter blur, ultra-thin borders
 - Font: 300-weight, letterSpacing -0.03em
-- Homepage: 40px greeting, 16px subtitle, 3 single-line chips, 64px prompt textarea
-- Chat: 44px prompt textarea, two-row layout (textarea top, attachment left / actions right bottom)
-- KikoFloat: FAB circle with waveform inside, green glow when voice active, no panel takeover for voice — prompt bar stays visible, EQ button toggles voice on/off (red stop square when active)
-- Nav: flex-centered with content area (not viewport)
-- Login: waveform centred with CSS mask fade (no canvas edge-fade)
+- EmailDraft: glass frame with tone CTAs left, "Send to Gmail" right, body in 1.7 line-height
+- Calendar: MotoGP red #BE1621, WEC green #00875A, F1 red #E10600, FE blue #0055CC
 
-## CRON STATUS (verified from live heartbeats 1 Apr 2026)
-### CONFIRMED WORKING (heartbeat: "finished")
-- meeting-prep ✅ (hourly, 1-2s)
-- proactive ✅ (7am, 9s, 3 records)
-- partnership-scan ✅ (7am, 31s)
-- task-automation ✅ (6:30am, 4.5s)
-- edit-delta ✅ (10pm, 1.7s)
-- weekly-report ✅ (Sun 7pm, 7-18s, 40 records)
-- health-check ✅ (every 30min, 20-30s, 8 records)
-
-### FIXED BUT AWAITING FIRST RUN
-- learning-director — was timing out (2 topics + curiosity = 90s+). Fixed: 1 topic per run + 80s time guard
-- inbox-triage — scheduled 7:15am Mon-Fri, hasn't fired since deploy
-- morning-intelligence — scheduled 7:30am Mon-Fri
-- news-agent — scheduled 8am Mon-Fri
-
-### FULL SCHEDULE (26 entries in vercel.json)
-| Time | Cron | Freq |
-|------|------|------|
-| Every 30min | health-check | Continuous |
-| Hourly | meeting-prep | Continuous |
-| 7am Mon-Fri | partnership-scan, proactive | Daily |
-| 7:15am Mon-Fri | inbox-triage | Daily |
-| 7:30am Mon-Fri | morning-intelligence | Daily |
-| 8am Mon-Fri | news-agent | Daily |
-| 9am Mon | outreach-score | Weekly |
-| 10pm Mon-Fri | edit-delta | Daily |
-| 4am Sun | profile-synthesis | Weekly |
-| 5am Sun | partnership-verify, relationship-intel | Weekly |
-| 6am Sun | preference-synthesis, document-scan | Weekly |
-| 7pm Sun | weekly-report | Weekly |
-| 3am daily | learning-director | Daily |
-
-## VOICE — PHASE 13 (NEXT PRIORITY)
-### What's wired (UI — all working)
-- KikoWaveform responds to `volume` and `speaking` props across entire platform
-- KikoFloat FAB: green glow aura + animated waveform when voice active
-- Green "Listening" pill in Layout.jsx header bar (driven by `kiko_voice_state` CustomEvent)
-- EQ button in KikoFloat panel toggles voice on/off (red stop square when active)
-- Homepage KikoChat: full-width 900×100 waveform in voice mode
-- KikoVoice.jsx component exists and renders on homepage when voiceActive=true
-
-### What's NOT wired (audio — nothing flows)
-- No STT (speech-to-text) pipeline
-- No TTS (text-to-speech) pipeline
-- No WebRTC or WebSocket audio connection
-- The waveform animates on idle breathing only — no real mic/speaker data
-
-### Previous attempts (all failed or abandoned)
-1. **LiveKit Agents (Python)** — tried and abandoned (too complex, wrong architecture)
-2. **GPT-4o Realtime relay** — failed due to cascading refusal interceptor bugs
-3. **GPT-4o Realtime WebRTC** — got session.updated accepted + audio playing + interruption working, but persistent browser/CDN caching blocker made it unreliable
-4. **STT → /api/kiko → TTS** — correct architecture (wraps same endpoint as text), partially built but not completed
-
-### Planned architecture
-- **STT:** Deepgram (streaming, via WebSocket from browser)
-- **Brain:** /api/kiko (same endpoint as text chat — ensures tool access, memory, personality)
-- **TTS:** Cartesia (streaming, Serafina voice ID: `4tRn1lSkEn13EVTuqb0g`)
-- **Alternative stack:** Pipecat framework for orchestration
-
-### Key voice files
-- `src/components/kiko/KikoVoice.jsx` — Full voice page component (renders when voiceActive)
-- `src/components/kiko/KikoFloat.jsx` — Float voice mode (FAB glow, no panel takeover)
-- `src/components/kiko/KikoWaveform.jsx` — Canvas waveform avatar (volume/speaking props)
-- `src/components/layout/Layout.jsx` — Green listening pill (lines 62, 106, 277)
-- `api/kiko.js` — Main brain endpoint (system prompt, tools, streaming)
-- `api/voice.js` — Existing voice endpoint (transcribe action exists for push-to-talk STT)
-
-### Voice state event system
-```js
-// Dispatch from anywhere:
-window.dispatchEvent(new CustomEvent('kiko_voice_state', { 
-  detail: { active: true, speaking: false, thinking: false, status: 'Listening' } 
-}))
-// Layout.jsx listens and shows/hides green pill
-// KikoFloat FAB responds with green glow + waveform energy
-```
+## VOICE — PHASE 13
+### Status: UI wired, WebRTC partially built, no end-to-end audio flow
+- KikoVoice.jsx exists (~320 lines) with 8 browser-executed function tools
+- GPT-4o Realtime WebRTC rebuild deleted all legacy Deepgram files
+- Correct architecture confirmed: speech → STT → /api/kiko → TTS → speech
+- Voice state event system working (green pill, FAB glow, waveform)
 
 ## MANDATORY RULES
-1. Read KIKO_EVOLUTION_PLAN.md before writing any code
-2. 8-step build process: backup → build locally → verify strings → commit → deploy --force → verify live hash → test browser → confirm
-3. Never say "deployed" without verifying the live hash changed
-4. All cron catch blocks return 200 (never throw — prevents Vercel retry spam)
-5. All crons must have "finished" heartbeat at every exit path
-6. Before any code involving external APIs, search and read current official docs first
+1. Every session: read KIKO_SESSION_BRIEF.md + KIKO_EVOLUTION_PLAN.md before writing code
+2. 8-step build process: backup → build → verify strings → commit → deploy --force → verify hash → test → confirm
+3. Never say "deployed" without verifying the live bundle hash changed
+4. Before any external API work: search current docs first, never rely on training knowledge
+5. All cron catch blocks return 200. All crons have "finished" heartbeat at every exit path
+6. Gmail prospecting: @vanhawke.agency, Helvetica 12pt, no sign-off/name
+7. "Vela" is internal codename only — Kiko is the product/platform/AI/OS
 
 ## KEY FILES
-- `api/kiko.js` — Main brain endpoint, system prompt, auto-embed hook, model routing
+- `api/kiko.js` — Main brain: system prompt, model routing, tool loop, email style injection (line ~880)
 - `api/kiko-tools.js` — 39 tool definitions
-- `api/voice.js` — Existing voice endpoint (transcribe action for push-to-talk)
-- `api/agents/` — 25 agent files
-- `api/cron-*.js` — 26 cron files (all heartbeat-fixed)
-- `src/components/kiko/KikoWaveform.jsx` — Purple soundwave avatar (volume/speaking/mini props)
-- `src/components/kiko/KikoChat.jsx` — Homepage + chat UI (PromptBar, greeting, chips, voice mode)
-- `src/components/kiko/KikoFloat.jsx` — Floating assistant (FAB circle + panel + voice toggle)
-- `src/components/kiko/KikoVoice.jsx` — Full voice page component
-- `src/components/layout/Layout.jsx` — Nav, header, green listening pill
-- `src/hooks/useDynamicChips.js` — Context-aware 3-chip suggestions
-- `vercel.json` — Cron schedule + function configs (maxDuration for all)
-- `KIKO_EVOLUTION_PLAN.md` — 19-phase architectural spec (mandatory reading)
+- `api/agents/outreach.js` — draftEmail (vanhawke.agency, Helvetica 12pt, body/subject cleanup)
+- `api/agents/data.js` — getOutreachIntelligence (race_windows focus), getOutreachTiming
+- `api/gmail-draft.js` — Silent Gmail draft creation + kiko_draft_tracking insert
+- `api/rewrite-email.js` — Lightweight Haiku rewrite (claude-haiku-4-5-20251001, ANTHROPIC_KEY)
+- `api/cron-proactive.js` — 6-stream cross-reference (news, replies, stages, tasks, stale deals, race calendar)
+- `api/cron-edit-delta.js` — Draft edit comparison + style lesson extraction + learning log save
+- `src/components/kiko/KikoChat.jsx` — Chat UI, thinking collapse, EmailDraft detection, user message editing
+- `src/components/kiko/EmailDraft.jsx` — Email frame: isEmailDraft(), extractEmailSection(), parseEmail(), tone CTAs
+- `src/pages/OutreachIntelligence.jsx` — Command Centre with 4-series race tabs
+- `src/pages/CommercialCalendar.jsx` — Full calendar with F1/FE/MotoGP/WEC toggles + detail pane
+- `src/App.jsx` — Router with React.lazy() code-split + Suspense boundary
 
 ## WHAT'S LEFT (priority order)
-1. **Voice (Phase 13)** — STT + TTS pipeline. UI fully wired, zero audio flowing. THIS IS NEXT.
-2. **Verify 3 remaining crons** — inbox-triage, morning-intelligence, news-agent (check heartbeats)
-3. **Proactive morning briefing** — Surface cron intelligence in first interaction
-4. **Mobile deep pass** — Real-device QA
+1. **Voice (Phase 13)** — STT + TTS pipeline. UI fully wired, zero audio flowing
+2. **Verify remaining crons** — inbox-triage, morning-intelligence, news-agent, learning-director
+3. **Mobile deep pass** — Real-device QA
+4. **Memory optimisation** — Redis/Upstash cache for hot-path data (defer until 5+ DAU)
 5. **Browser push notifications** — Service worker + Web Push API
-6. **Code-splitting** — React.lazy() for pages (902KB bundle)
-7. **F1 sponsorship agent** — Dedicated agent with race calendar, ROI calculators
-8. **Redis/Upstash cache** — Hot-path memory data for 30-40% speed improvement
