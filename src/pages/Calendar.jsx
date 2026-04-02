@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { setPageContext } from '@/lib/pageContext'
+import { supabase } from '@/lib/supabase'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -33,7 +34,29 @@ export default function Calendar({ user }) {
 
   useEffect(() => {
     if (email) fetchEvents()
+    fetchRaceCalendar()
   }, [email])
+
+  const SERIES_COLORS = { 'F1': '#e10600', 'Formula E': '#00b4ff', 'MotoGP': '#ff6600', 'WEC': '#00aa55' }
+
+  const fetchRaceCalendar = async () => {
+    try {
+      const { data } = await supabase.from('race_calendar').select('*').gte('date', new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]).order('date')
+      if (data?.length) {
+        const raceEvents = data.map(r => ({
+          id: `race-${r.id}`,
+          title: `${r.series === 'F1' ? '🏎️' : r.series === 'Formula E' ? '⚡' : r.series === 'MotoGP' ? '🏍️' : '🏁'} ${r.name}`,
+          start: r.date,
+          allDay: true,
+          extendedProps: { type: 'race', series: r.series, circuit: r.circuit, city: r.city, country: r.country },
+          backgroundColor: SERIES_COLORS[r.series] || '#666',
+          borderColor: SERIES_COLORS[r.series] || '#666',
+          textColor: '#fff',
+        }))
+        setEvents(prev => [...prev.filter(e => !e.id?.startsWith('race-')), ...raceEvents])
+      }
+    } catch (err) { console.error('[Calendar] Race fetch error:', err) }
+  }
 
   const fetchEvents = async () => {
     try {

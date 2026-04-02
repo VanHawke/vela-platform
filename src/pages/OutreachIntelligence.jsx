@@ -225,7 +225,7 @@ Be direct. Use web search for current company intelligence if needed.`
                 onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(0,212,170,0.2)' }}
                 onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}>
                 <div style={{ display: 'flex', gap: 4, marginBottom: 2 }}>
-                  {['F1', 'MotoGP', 'WEC'].map(s => (
+                  {['F1', 'Formula E', 'MotoGP', 'WEC'].map(s => (
                     <button key={s} onClick={e => { e.stopPropagation(); setRaceSeries(s); setNextRace(allNextRaces[s] || null) }}
                       style={{ padding: '2px 8px', borderRadius: 50, border: raceSeries === s ? '1px solid rgba(0,212,170,0.3)' : '1px solid rgba(255,255,255,0.06)', background: raceSeries === s ? 'rgba(0,212,170,0.08)' : 'transparent', color: raceSeries === s ? 'rgba(0,212,170,0.7)' : 'rgba(255,255,255,0.25)', fontSize: 9, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, transition: 'all 0.15s' }}>{s}</button>
                   ))}
