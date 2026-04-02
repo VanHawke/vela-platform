@@ -29,7 +29,7 @@ export default async function handler(req, res) {
         .map(e => e.company_name?.toLowerCase())
     );
 
-    const toEnrich = companies.filter(c => !recentlyEnriched.has(c.toLowerCase())).slice(0, 8);
+    const toEnrich = companies.filter(c => !recentlyEnriched.has(c.toLowerCase())).slice(0, 4);
     if (!toEnrich.length) {
       await cronHeartbeat('cron-company-enrich', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 });
       return res.status(200).json({ ok: true, message: 'All companies recently enriched', enriched: 0 });
