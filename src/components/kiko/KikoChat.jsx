@@ -9,7 +9,7 @@ import ChatHistory from './ChatHistory'
 import AllChatsView from './AllChatsView'
 import KikoSymbol from './KikoSymbol'
 import KikoWaveform from './KikoWaveform'
-import DraftPreview, { detectDraft } from './DraftPreview'
+// DraftPreview disabled — EmailDraft handles all email drafts
 import KikoInsights, { InsightsBadge } from './KikoInsights'
 import EmailDraft, { isEmailDraft, extractEmailSection } from './EmailDraft'
 import { useDynamicChips } from '@/hooks/useDynamicChips'
@@ -315,6 +315,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             transcribeRef.current.active = false
           } else if (e.error === 'no-speech') {
             // Ignore no-speech, it auto-restarts
+          } else if (e.error === 'network' || e.error === 'aborted') {
+            // Suppress transient errors — silently retry
+            console.warn('[Dictate] transient error:', e.error)
           } else {
             setDictateError(`Dictation error: ${e.error}`)
             setTranscribing(false)
@@ -882,18 +885,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             }
             return displayText ? <span dangerouslySetInnerHTML={{ __html: md(displayText) }} /> : null
           })()}
-          {/* Draft Preview Panel — only if EmailDraft didn't already render */}
-          {isKiko && !streaming && !isEmailDraft(stripToolXml(msg.content)) && (() => {
-            const draft = detectDraft(msg.content)
-            if (!draft) return null
-            return <DraftPreview draft={draft}
-              onToneAdjust={(tone) => handleSubmit(`${tone} the draft you just wrote. Keep everything else the same.`)}
-              onCopy={() => {}}
-              onSendToGmail={() => {
-                const d = detectDraft(msg.content)
-                if (d) { const url = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(d.to || '')}&su=${encodeURIComponent((d.subject || '').replace(/\u2014/g, '-').replace(/\u2013/g, '-'))}&body=${encodeURIComponent(d.body || '')}`; window.open(url, '_blank') }
-              }} />
-          })()}
+          {/* DraftPreview DISABLED — EmailDraft handles all email rendering */}
         </div>
         </div>
         {/* Timestamp + action buttons — single row. Kiko ribbon sits left of icons. */}
