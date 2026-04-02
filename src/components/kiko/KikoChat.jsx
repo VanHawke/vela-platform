@@ -1001,12 +1001,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
               {/* 4 chips only — below prompt bar */}
               <div id="kikoChipsWrap" style={{
-                display: 'flex', gap: 8, justifyContent: 'center', maxWidth: 720, marginBottom: voiceActive ? 0 : 20,
+                display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center', maxWidth: 720, marginBottom: voiceActive ? 0 : 20,
                 opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 60,
                 transform: voiceActive ? 'translateY(30px)' : 'translateY(0)',
                 transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.1s',
                 overflow: 'hidden', pointerEvents: voiceActive ? 'none' : 'auto',
               }}>
+                {alertCount > 0 && <InsightsBadge count={alertCount} onClick={() => setInsightsOpen(true)} />}
                 {dynamicChips.slice(0, 3).map(c => (
                   <button key={c} onClick={() => handleSubmit(c)} style={{
                     padding: '6px 16px', borderRadius: 50, background: T.glass,
@@ -1020,13 +1021,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   >{c}</button>
                 ))}
               </div>
-
-          {/* Alert badge — opens right panel */}
-          {!voiceActive && alertCount > 0 && (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4, opacity: voiceActive ? 0 : 1, transition: 'opacity 0.3s' }}>
-              <InsightsBadge count={alertCount} onClick={() => setInsightsOpen(true)} />
-            </div>
-          )}
 
           {/* Bottom spacer */}
           <div style={{ flex: voiceActive ? 1 : 0.3, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
