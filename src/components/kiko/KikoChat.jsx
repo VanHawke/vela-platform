@@ -176,6 +176,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [hoveredMsg, setHoveredMsg] = useState(null)
   const [editingIdx, setEditingIdx] = useState(null)
   const [editText, setEditText] = useState('')
+  const editingIdxRef = useRef(null)
   const [thinkingSteps, setThinkingSteps] = useState([])
   const [showSteps, setShowSteps] = useState(false)
   const [expandedSteps, setExpandedSteps] = useState(null)
@@ -235,7 +236,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   // Edit mode: pre-fill input when edit button clicked
   useEffect(() => {
-    if (editingIdx !== null) { setInput(editText); inputRef.current?.focus(); setEditingIdx(null) }
+    if (editingIdx !== null) {
+      editingIdxRef.current = editingIdx
+      setInput(editText)
+      inputRef.current?.focus()
+      setEditingIdx(null)
+    }
   }, [editingIdx])
 
   // Auto-load conversation after navigation (page reload preserves state via sessionStorage)
@@ -564,7 +570,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     const imgPreview = allAttachments.find(a => a.type === 'image' && a.previewUrl)?.previewUrl || null
     const userMsg = { role: 'user', content: displayMsg, timestamp: Date.now(), imagePreview: imgPreview }
     if (imgPreview) setImagePreview(null)
-    setMessages(prev => [...prev, userMsg])
+    // If editing a previous message, truncate conversation at that point
+    if (editingIdxRef.current !== null) {
+      const editIdx = editingIdxRef.current
+      editingIdxRef.current = null
+      setMessages(prev => [...prev.slice(0, editIdx), userMsg])
+    } else {
+      setMessages(prev => [...prev, userMsg])
+    }
     setStreaming(true); setStreamText(''); setToolStatus(null); setThinkingSteps([]); setShowSteps(false)
     streamingRef.current = true; streamTextRef.current = ''; lastQueryRef.current = msg || ''
 
