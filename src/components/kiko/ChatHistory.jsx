@@ -84,7 +84,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
 
   // Collapsed strip
   if (!open) return (
-    <div style={{ width: 28, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight: `1px solid ${T.border}`, cursor: 'pointer' }} onClick={onToggle}>
+    <div style={{ width: 28, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer' }} onClick={onToggle}>
       <ChevronRight size={14} style={{ color: T.textTertiary }} />
     </div>
   )
@@ -136,7 +136,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
   }
 
   return (
-    <div style={{ width: 300, flexShrink: 0, height: '100%', background: '#111114', borderRight: `1px solid ${T.border}`, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: 300, flexShrink: 0, height: '100%', background: '#111114', borderRight: '1px solid rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <div style={{ padding: '14px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 15, fontWeight: 500, color: '#fff', fontFamily: T.font }}>Chats</span>
