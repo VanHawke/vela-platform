@@ -12,8 +12,8 @@ export default async function handler(req, res) {
   const __hbStart = Date.now();
   const __hbId = await cronHeartbeat('cron-company-enrich', 'started');
   try {
-    // Get active deals with company names
-    const deals = await sbFetch('deals?select=data&data->>status=eq.active&order=updated_at.desc&limit=25');
+    // Get active/open deals with company names
+    const deals = await sbFetch('deals?select=data&or=(data->>status.eq.active,data->>status.eq.open,data->>status.is.null)&order=updated_at.desc&limit=50');
     const safe = Array.isArray(deals) ? deals : [];
     const companies = [...new Set(safe.map(d => d.data?.company).filter(Boolean))].slice(0, 20);
     if (!companies.length) {
