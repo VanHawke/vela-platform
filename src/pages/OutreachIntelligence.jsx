@@ -25,6 +25,8 @@ export default function OutreachIntelligence({ user }) {
   const [deals, setDeals] = useState([])
   const [activities, setActivities] = useState([])
   const [nextRace, setNextRace] = useState(null)
+  const [raceSeries, setRaceSeries] = useState('F1')
+  const [allNextRaces, setAllNextRaces] = useState({})
   const [tasks, setTasks] = useState([])
   const [selectedAction, setSelectedAction] = useState(null)
   const [kikoLoading, setKikoLoading] = useState(false)
@@ -38,12 +40,20 @@ export default function OutreachIntelligence({ user }) {
       const [dealsRes, actRes, raceRes, tasksRes] = await Promise.all([
         supabase.from('deals').select('id, data, updated_at').not('data->>status', 'in', '("won","lost")').order('updated_at', { ascending: false }),
         supabase.from('activities').select('*').order('created_at', { ascending: false }).limit(20),
-        supabase.from('race_calendar').select('name, date, circuit').gt('date', new Date().toISOString().split('T')[0]).order('date').limit(1),
+        supabase.from('race_calendar').select('name, date, circuit, series').gt('date', new Date().toISOString().split('T')[0]).order('date').limit(10),
         supabase.from('tasks').select('*').order('updated_at', { ascending: false }),
       ])
       setDeals(dealsRes.data || [])
       setActivities(actRes.data || [])
-      setNextRace(raceRes.data?.[0] || null)
+      // Group next races by series
+      const races = raceRes.data || []
+      const bySeriesMap = {}
+      for (const r of races) {
+        const s = r.series || 'F1'
+        if (!bySeriesMap[s]) bySeriesMap[s] = r
+      }
+      setAllNextRaces(bySeriesMap)
+      setNextRace(bySeriesMap['F1'] || races[0] || null)
       setTasks((tasksRes.data || []).filter(t => !t.data?.completed))
 
       // Build priority actions from deals
@@ -210,13 +220,22 @@ Be direct. Use web search for current company intelligence if needed.`
               </div>
             </div>
             {nextRace && (
-              <div onClick={() => navigate('/calendar')} style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', cursor: 'pointer', transition: 'all 0.15s' }}
+              <div style={{ ...card, flex: 1, display: 'flex', flexDirection: 'column', gap: 6, padding: '10px 14px', cursor: 'pointer', transition: 'all 0.15s' }}
+                onClick={() => navigate('/calendar')}
                 onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(0,212,170,0.2)' }}
                 onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}>
-                <Calendar size={14} style={{ color: daysToRace <= 14 ? 'rgba(0,212,170,0.5)' : 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
-                <div>
-                  <div style={{ fontSize: 17, fontWeight: 300, color: daysToRace <= 14 ? 'rgba(0,212,170,0.6)' : 'rgba(255,255,255,0.4)' }}>{daysToRace}d</div>
-                  <div style={{ fontSize: 10, color: T.textTertiary, fontWeight: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80 }}>{nextRace.name}</div>
+                <div style={{ display: 'flex', gap: 4, marginBottom: 2 }}>
+                  {['F1', 'MotoGP', 'WEC'].map(s => (
+                    <button key={s} onClick={e => { e.stopPropagation(); setRaceSeries(s); setNextRace(allNextRaces[s] || null) }}
+                      style={{ padding: '2px 8px', borderRadius: 50, border: raceSeries === s ? '1px solid rgba(0,212,170,0.3)' : '1px solid rgba(255,255,255,0.06)', background: raceSeries === s ? 'rgba(0,212,170,0.08)' : 'transparent', color: raceSeries === s ? 'rgba(0,212,170,0.7)' : 'rgba(255,255,255,0.25)', fontSize: 9, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, transition: 'all 0.15s' }}>{s}</button>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Calendar size={14} style={{ color: daysToRace <= 14 ? 'rgba(0,212,170,0.5)' : 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontSize: 17, fontWeight: 300, color: daysToRace <= 14 ? 'rgba(0,212,170,0.6)' : 'rgba(255,255,255,0.4)' }}>{daysToRace}d</div>
+                    <div style={{ fontSize: 10, color: T.textTertiary, fontWeight: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 100 }}>{nextRace.name}</div>
+                  </div>
                 </div>
               </div>
             )}
