@@ -10,17 +10,19 @@ const T = {
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   f1: '#E10600', f1Light: 'rgba(225,6,0,0.08)', f1Border: 'rgba(225,6,0,0.2)', f1Dark: '#FF4444',
   fe: '#0055CC', feLight: 'rgba(0,85,204,0.08)', feBorder: 'rgba(0,85,204,0.2)', feDark: '#6CB4FF',
+  mgp: '#BE1621', mgpLight: 'rgba(190,22,33,0.08)', mgpBorder: 'rgba(190,22,33,0.2)', mgpDark: '#FF5A65',
+  wec: '#00875A', wecLight: 'rgba(0,135,90,0.08)', wecBorder: 'rgba(0,135,90,0.2)', wecDark: '#4ADE80',
   amber: '#F59E0B', amberLight: 'rgba(245,158,11,0.08)', amberBorder: 'rgba(245,158,11,0.2)',
 }
 
 // ── Official logos — raw, no background box ───────────────
-const SeriesIcon = ({ series, size = 22 }) => (
-  <img
-    src={series === 'f1' ? '/f1-logo.png' : '/fe-logo.png'}
-    alt={series === 'f1' ? 'F1' : 'Formula E'}
-    style={{ width: size, height: size, objectFit: 'contain', display: 'block', flexShrink: 0 }}
-  />
-)
+const SeriesIcon = ({ series, size = 22 }) => {
+  const icons = { f1: '/f1-logo.png', fe: '/fe-logo.png', mgp: '/motogp-logo.png', wec: '/wec-logo.png' }
+  const alts = { f1: 'F1', fe: 'Formula E', mgp: 'MotoGP', wec: 'WEC' }
+  const src = icons[series]
+  if (!src) return <span style={{ fontSize: size * 0.5, color: T.textSecondary }}>{alts[series] || series}</span>
+  return <img src={src} alt={alts[series] || series} style={{ width: size, height: size, objectFit: 'contain', display: 'block', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; e.target.insertAdjacentHTML('afterend', `<span style="font-size:${size * 0.5}px;color:rgba(255,255,255,0.5)">${alts[series] || series}</span>`) }} />
+}
 
 // ── Race data (verified from formula1.com + fiaformulae.com) ─
 const F1_2026 = [
@@ -67,6 +69,39 @@ const FE_S12 = [
   { round: 17, name: 'London E-Prix 2',   city: 'London',      date: '2026-08-16', end: '2026-08-16' },
 ]
 
+const MOTOGP_2026 = [
+  { round: 1,  name: 'Thai Grand Prix',        city: 'Buriram',     date: '2026-02-27', end: '2026-03-01' },
+  { round: 2,  name: 'Brazilian Grand Prix',    city: 'Goiânia',     date: '2026-03-20', end: '2026-03-22' },
+  { round: 3,  name: 'Americas Grand Prix',     city: 'Austin',      date: '2026-03-27', end: '2026-03-29' },
+  { round: 4,  name: 'Spanish Grand Prix',      city: 'Jerez',       date: '2026-04-24', end: '2026-04-26' },
+  { round: 5,  name: 'French Grand Prix',       city: 'Le Mans',     date: '2026-05-08', end: '2026-05-10' },
+  { round: 6,  name: 'Catalan Grand Prix',      city: 'Barcelona',   date: '2026-05-15', end: '2026-05-17' },
+  { round: 7,  name: 'Italian Grand Prix',      city: 'Mugello',     date: '2026-05-29', end: '2026-05-31' },
+  { round: 8,  name: 'Hungarian Grand Prix',    city: 'Balaton',     date: '2026-06-05', end: '2026-06-07' },
+  { round: 9,  name: 'Czech Grand Prix',        city: 'Brno',        date: '2026-06-19', end: '2026-06-21' },
+  { round: 10, name: 'Dutch TT',                city: 'Assen',       date: '2026-06-26', end: '2026-06-28' },
+  { round: 11, name: 'German Grand Prix',       city: 'Sachsenring', date: '2026-07-10', end: '2026-07-12' },
+  { round: 12, name: 'British Grand Prix',      city: 'Silverstone', date: '2026-08-07', end: '2026-08-09' },
+  { round: 14, name: 'Austrian Grand Prix',     city: 'Spielberg',   date: '2026-09-18', end: '2026-09-20' },
+  { round: 15, name: 'San Marino Grand Prix',   city: 'Misano',      date: '2026-09-11', end: '2026-09-13' },
+  { round: 16, name: 'Indonesian Grand Prix',   city: 'Lombok',      date: '2026-10-09', end: '2026-10-11' },
+  { round: 17, name: 'Malaysian Grand Prix',    city: 'Sepang',      date: '2026-10-30', end: '2026-11-01' },
+  { round: 18, name: 'Qatar Grand Prix',        city: 'Lusail',      date: '2026-11-06', end: '2026-11-08' },
+  { round: 19, name: 'Portuguese Grand Prix',   city: 'Portimão',    date: '2026-11-20', end: '2026-11-22' },
+  { round: 20, name: 'Valencia Grand Prix',     city: 'Valencia',    date: '2026-11-27', end: '2026-11-29' },
+]
+
+const WEC_2026 = [
+  { round: 1, name: '6 Hours of Imola',     city: 'Imola',    date: '2026-04-19', end: '2026-04-19' },
+  { round: 2, name: '6 Hours of Spa',       city: 'Spa',      date: '2026-05-09', end: '2026-05-09' },
+  { round: 3, name: '24 Hours of Le Mans',  city: 'Le Mans',  date: '2026-06-13', end: '2026-06-14' },
+  { round: 4, name: '6 Hours of São Paulo', city: 'São Paulo', date: '2026-07-12', end: '2026-07-12' },
+  { round: 5, name: 'Lone Star Le Mans',    city: 'Austin',   date: '2026-09-06', end: '2026-09-06' },
+  { round: 6, name: '6 Hours of Fuji',      city: 'Fuji',     date: '2026-09-27', end: '2026-09-27' },
+  { round: 7, name: 'Qatar 1812km',         city: 'Lusail',   date: '2026-10-24', end: '2026-10-24' },
+  { round: 8, name: '8 Hours of Bahrain',   city: 'Sakhir',   date: '2026-11-07', end: '2026-11-07' },
+]
+
 // ── Helpers ───────────────────────────────────────────────
 const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 const MONTHS_FULL  = ['January','February','March','April','May','June','July','August','September','October','November','December']
@@ -107,36 +142,42 @@ function outreachTarget(dateStr) {
 }
 
 // Events overlapping a specific date
-function eventsOn(dateStr, showF1, showFE) {
+function eventsOn(dateStr, showF1, showFE, showMGP, showWEC) {
   const f1 = showF1 ? F1_2026.filter(e => dateStr >= e.date && dateStr <= e.end) : []
   const fe = showFE ? FE_S12.filter(e => dateStr >= e.date && dateStr <= e.end) : []
-  return { f1, fe }
+  const mgp = showMGP ? MOTOGP_2026.filter(e => dateStr >= e.date && dateStr <= e.end) : []
+  const wec = showWEC ? WEC_2026.filter(e => dateStr >= e.date && dateStr <= e.end) : []
+  return { f1, fe, mgp, wec }
 }
 
 // Cell styling logic
-function cellStyle(dateStr, selected, today, showF1, showFE) {
-  const { f1, fe } = eventsOn(dateStr, showF1, showFE)
-  const isRaceDay = f1.some(e => e.end === dateStr)
+function cellStyle(dateStr, selected, today, showF1, showFE, showMGP, showWEC) {
+  const { f1, fe, mgp, wec } = eventsOn(dateStr, showF1, showFE, showMGP, showWEC)
+  const isRaceDay = f1.some(e => e.end === dateStr) || mgp.some(e => e.end === dateStr) || wec.some(e => e.end === dateStr)
   const hasF1     = f1.length > 0
   const hasFE     = fe.length > 0
-  const isWindow  = !hasF1 && !hasFE && !!outreachTarget(dateStr)
+  const hasMGP    = mgp.length > 0
+  const hasWEC    = wec.length > 0
+  const isWindow  = !hasF1 && !hasFE && !hasMGP && !hasWEC && !!outreachTarget(dateStr)
   const isToday   = dateStr === today
   const isSel     = dateStr === selected
 
   let bg = T.surface, border = T.border
   if (isSel)       { bg = T.text;        border = T.text }
-  else if (isRaceDay) { bg = T.f1;       border = T.f1 }
+  else if (isRaceDay) { bg = hasF1 ? T.f1 : hasMGP ? T.mgp : hasWEC ? T.wec : T.f1; border = bg }
   else if (hasF1)  { bg = T.f1Light;     border = T.f1Border }
   else if (hasFE)  { bg = T.feLight;     border = T.feBorder }
+  else if (hasMGP) { bg = T.mgpLight;    border = T.mgpBorder }
+  else if (hasWEC) { bg = T.wecLight;    border = T.wecBorder }
   else if (isWindow) { bg = T.amberLight; border = T.amberBorder }
 
-  return { bg, border: isToday ? T.text : border, isToday, isSel, isRaceDay, hasF1, hasFE, isWindow, f1, fe }
+  return { bg, border: isToday ? T.text : border, isToday, isSel, isRaceDay, hasF1, hasFE, hasMGP, hasWEC, isWindow, f1, fe, mgp, wec }
 }
 
 // ── Calendar cell ─────────────────────────────────────────
-function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, onClick }) {
+function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, showMGP, showWEC, onClick }) {
   const day = parseInt(dateStr.slice(8))
-  const s   = cellStyle(dateStr, selected, today, showF1, showFE)
+  const s   = cellStyle(dateStr, selected, today, showF1, showFE, showMGP, showWEC)
 
   const numColor = s.isSel ? 'rgba(255,255,255,0.04)'
     : s.isRaceDay ? 'rgba(255,255,255,0.04)'
@@ -201,6 +242,22 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, onClick }) 
               )}
             </div>
           ))}
+          {s.hasMGP && s.mgp.slice(0, 1).map((e, i) => (
+            <div key={`mgp${i}`}>
+              {pill(
+                s.isSel || s.isRaceDay ? 'rgba(255,255,255,0.32)' : T.mgp,
+                <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.9)', fontFamily: T.font }}>🏍️ {e.city.slice(0, 3).toUpperCase()}</span>
+              )}
+            </div>
+          ))}
+          {s.hasWEC && s.wec.slice(0, 1).map((e, i) => (
+            <div key={`wec${i}`}>
+              {pill(
+                s.isSel ? 'rgba(255,255,255,0.32)' : T.wec,
+                <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.9)', fontFamily: T.font }}>🏁 {e.city.slice(0, 3).toUpperCase()}</span>
+              )}
+            </div>
+          ))}
           {s.isWindow && (
             <div style={{ width: 7, height: 7, borderRadius: 2, background: T.amber }} />
           )}
@@ -211,16 +268,22 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, onClick }) 
 }
 
 // ── Detail pane ───────────────────────────────────────────
-function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
+function DetailPane({ selected, today, showF1, showFE, showMGP, showWEC, viewYear, viewMonth }) {
+  const sColor = s => ({ f1: T.f1, fe: T.fe, mgp: T.mgp, wec: T.wec }[s] || T.f1)
+  const sColorDark = s => ({ f1: T.f1Dark, fe: T.feDark, mgp: T.mgpDark, wec: T.wecDark }[s] || T.f1Dark)
+  const sColorLight = s => ({ f1: T.f1Light, fe: T.feLight, mgp: T.mgpLight, wec: T.wecLight }[s] || T.f1Light)
+  const sColorBorder = s => ({ f1: T.f1Border, fe: T.feBorder, mgp: T.mgpBorder, wec: T.wecBorder }[s] || T.f1Border)
   const monthKey = `${viewYear}-${pad2(viewMonth + 1)}`
 
   // Events on the selected date
-  const { f1: selF1, fe: selFE } = selected
-    ? eventsOn(selected, showF1, showFE)
-    : { f1: [], fe: [] }
+  const { f1: selF1, fe: selFE, mgp: selMGP, wec: selWEC } = selected
+    ? eventsOn(selected, showF1, showFE, showMGP, showWEC)
+    : { f1: [], fe: [], mgp: [], wec: [] }
   const selEvents = [
     ...selF1.map(e => ({ ...e, series: 'f1' })),
     ...selFE.map(e => ({ ...e, series: 'fe' })),
+    ...selMGP.map(e => ({ ...e, series: 'mgp' })),
+    ...selWEC.map(e => ({ ...e, series: 'wec' })),
   ].sort((a, b) => a.date.localeCompare(b.date))
   const outreach = selected ? outreachTarget(selected) : null
 
@@ -229,16 +292,20 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
     const evts = []
     if (showF1) F1_2026.forEach(e => { if (e.date.startsWith(monthKey)) evts.push({ ...e, series: 'f1' }) })
     if (showFE) FE_S12.forEach(e => { if (e.date.startsWith(monthKey)) evts.push({ ...e, series: 'fe' }) })
+    if (showMGP) MOTOGP_2026.forEach(e => { if (e.date.startsWith(monthKey)) evts.push({ ...e, series: 'mgp' }) })
+    if (showWEC) WEC_2026.forEach(e => { if (e.date.startsWith(monthKey)) evts.push({ ...e, series: 'wec' }) })
     return evts.sort((a, b) => a.date.localeCompare(b.date))
-  }, [monthKey, showF1, showFE])
+  }, [monthKey, showF1, showFE, showMGP, showWEC])
 
   // Upcoming events across both series
   const upcoming = useMemo(() => {
     const evts = []
     if (showF1) F1_2026.forEach(e => { if (e.date >= today) evts.push({ ...e, series: 'f1' }) })
     if (showFE) FE_S12.forEach(e => { if (e.date >= today) evts.push({ ...e, series: 'fe' }) })
+    if (showMGP) MOTOGP_2026.forEach(e => { if (e.date >= today) evts.push({ ...e, series: 'mgp' }) })
+    if (showWEC) WEC_2026.forEach(e => { if (e.date >= today) evts.push({ ...e, series: 'wec' }) })
     return evts.sort((a, b) => a.date.localeCompare(b.date)).slice(0, 5)
-  }, [today, showF1, showFE])
+  }, [today, showF1, showFE, showMGP, showWEC])
 
   const isSelectedToday = selected === today
 
@@ -260,12 +327,12 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
         {selected && selEvents.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {selEvents.map((event, i) => (
-              <div key={i} style={{ padding: '12px 14px', borderRadius: 50, background: event.series === 'f1' ? T.f1Light : T.feLight, border: `1.5px solid ${event.series === 'f1' ? T.f1Border : T.feBorder}`, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <div key={i} style={{ padding: '12px 14px', borderRadius: 50, background: sColorLight(event.series), border: `1.5px solid ${sColorBorder(event.series)}`, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                 <SeriesIcon series={event.series} size={36} />
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 15, fontWeight: 500, color: event.series === 'f1' ? T.f1Dark : T.feDark, margin: 0, fontFamily: T.font }}>{event.name}</p>
-                  <p style={{ fontSize: 12, color: event.series === 'f1' ? T.f1 : T.fe, margin: '3px 0 0', fontFamily: T.font }}>
-                    {event.series === 'f1' ? 'Formula 1' : 'Formula E'} · {event.city}
+                  <p style={{ fontSize: 15, fontWeight: 500, color: sColorDark(event.series), margin: 0, fontFamily: T.font }}>{event.name}</p>
+                  <p style={{ fontSize: 12, color: sColor(event.series), margin: '3px 0 0', fontFamily: T.font }}>
+                    {event.series === 'f1' ? 'Formula 1' : event.series === 'fe' ? 'Formula E' : event.series === 'mgp' ? 'MotoGP' : 'WEC'} · {event.city}
                     {event.series === 'f1' ? ` · R${event.round}` : ` · S12 R${event.round}`}
                     {event.sprint ? ' · Sprint' : ''}{event.saturday ? ' · Saturday' : ''}
                   </p>
@@ -310,7 +377,7 @@ function DetailPane({ selected, today, showF1, showFE, viewYear, viewMonth }) {
                   <span style={{ flex: 1, fontSize: 13, fontWeight: isActive ? 500 : 400, color: T.text, fontFamily: T.font, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {e.name}{e.sprint ? ' ⚡' : ''}
                   </span>
-                  <span style={{ fontSize: 11, color: isActive ? (e.series === 'f1' ? T.f1 : T.fe) : T.textTertiary, flexShrink: 0, fontFamily: T.font }}>
+                  <span style={{ fontSize: 11, color: isActive ? sColor(e.series) : T.textTertiary, flexShrink: 0, fontFamily: T.font }}>
                     {isActive ? 'Today' : fmtRange(e.date, e.end)}{isPast ? ' ✓' : ''}
                   </span>
                 </div>
@@ -358,6 +425,8 @@ export default function CommercialCalendar() {
   const [selected,  setSelected]  = useState(null)
   const [showF1,    setShowF1]    = useState(true)
   const [showFE,    setShowFE]    = useState(true)
+  const [showMGP,   setShowMGP]   = useState(true)
+  const [showWEC,   setShowWEC]   = useState(true)
 
   const prevMonth = () => { if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1) } else setViewMonth(m => m - 1) }
   const nextMonth = () => { if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1) } else setViewMonth(m => m + 1) }
@@ -384,9 +453,13 @@ export default function CommercialCalendar() {
   // Stats for toggles
   const remF1 = F1_2026.filter(e => e.date >= today).length
   const remFE = FE_S12.filter(e => e.date >= today).length
+  const remMGP = MOTOGP_2026.filter(e => e.date >= today).length
+  const remWEC = WEC_2026.filter(e => e.date >= today).length
   const nextEvt = [
     ...(showF1 ? F1_2026 : []),
     ...(showFE ? FE_S12 : []),
+    ...(showMGP ? MOTOGP_2026 : []),
+    ...(showWEC ? WEC_2026 : []),
   ].filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date))[0]
   const nextD = nextEvt ? daysUntil(nextEvt.date) : null
 
@@ -414,9 +487,11 @@ export default function CommercialCalendar() {
           {[
             { id: 'f1', label: 'F1',         on: showF1, set: setShowF1, bg: T.f1, rem: remF1 },
             { id: 'fe', label: 'Formula E',  on: showFE, set: setShowFE, bg: T.fe, rem: remFE },
+            { id: 'mgp', label: 'MotoGP',    on: showMGP, set: setShowMGP, bg: T.mgp, rem: remMGP },
+            { id: 'wec', label: 'WEC',        on: showWEC, set: setShowWEC, bg: T.wec, rem: remWEC },
           ].map(({ id, label, on, set, bg, rem }) => (
             <button key={id} onClick={() => set(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 7px', borderRadius: 6, border: `1.5px solid ${on ? T.border : T.border}`, background: on ? 'rgba(255,255,255,0.04)' : 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}>
-              <img src={id === 'f1' ? '/f1-logo.png' : '/fe-logo.png'} alt={label} style={{ width: 16, height: 16, objectFit: 'contain', display: 'block', flexShrink: 0 }} />
+              <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 9, fontWeight: 600, color: on ? bg : T.textTertiary, fontFamily: T.font }}>{id === 'f1' ? 'F1' : id === 'fe' ? 'FE' : id === 'mgp' ? 'GP' : 'WE'}</span>
               <span style={{ fontSize: 12, fontWeight: 500, color: T.textSecondary, fontFamily: T.font }}>{label}</span>
               {on && <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font }}>{rem}</span>}
             </button>
@@ -444,7 +519,7 @@ export default function CommercialCalendar() {
         {/* Grid — 6 rows, fills remaining height */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gridTemplateRows: 'repeat(6, 1fr)', gap: 3, padding: '8px 12px 12px', flex: 1, minHeight: 0 }}>
           {cells.map((cell, idx) => (
-            <Cell key={idx} dateStr={cell.date} isCurrent={cell.current} selected={selected} today={today} showF1={showF1} showFE={showFE} onClick={handleClick} />
+            <Cell key={idx} dateStr={cell.date} isCurrent={cell.current} selected={selected} today={today} showF1={showF1} showFE={showFE} showMGP={showMGP} showWEC={showWEC} onClick={handleClick} />
           ))}
         </div>
 
@@ -453,6 +528,8 @@ export default function CommercialCalendar() {
           {[
             { bg: T.f1,    label: 'F1 weekend' },
             { bg: T.fe,    label: 'Formula E' },
+            { bg: T.mgp,   label: 'MotoGP' },
+            { bg: T.wec,   label: 'WEC' },
             { bg: T.amber, label: 'Outreach window' },
           ].map(({ bg, label }) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -469,6 +546,8 @@ export default function CommercialCalendar() {
         today={today}
         showF1={showF1}
         showFE={showFE}
+        showMGP={showMGP}
+        showWEC={showWEC}
         viewYear={viewYear}
         viewMonth={viewMonth}
       />
