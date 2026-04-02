@@ -1,7 +1,6 @@
 // src/components/kiko/EmailDraft.jsx — Email draft frame with tone CTAs and Gmail send
 import { useState, useRef } from 'react'
 import { Send, Pen, RotateCcw } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
 import T from '@/lib/theme'
 
 export function isEmailDraft(text) {
@@ -132,62 +131,33 @@ export default function EmailDraft({ text }) {
     }
   }
 
-  // In-place rewrite via Kiko API with auth
+  // In-place rewrite via lightweight API (no tools/memory overhead)
   const handleRewrite = async (prompt) => {
     setRewriting(true)
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token
-      const res = await fetch('/api/kiko', {
+      const res = await fetch('/api/rewrite-email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ message: prompt, voiceMode: false, greeting: false })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, body: currentBody })
       })
-      if (!res.ok) throw new Error('API error')
-      const reader = res.body.getReader()
-      const decoder = new TextDecoder()
-      let full = ''
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        const chunk = decoder.decode(value)
-        for (const line of chunk.split('\n')) {
-          if (line.startsWith('data: ')) {
-            try {
-              const d = JSON.parse(line.slice(6))
-              if (d.token) full += d.token
-            } catch {}
-          }
-        }
-      }
-      // Strip everything except the email body from rewrite response
-      console.log('[EmailDraft] Raw rewrite response:', full.slice(0, 200))
-      let rewritten = full
-        .replace(/\*\*/g, '')
-        .replace(/^.*Subject\s*:.*$/im, '')
-        .replace(/^.*To\s*:.*$/im, '')
-        .replace(/(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards),?\s*(Sunny|Van Hawke)[\s\S]*$/i, '')
-        .replace(/Sunny\s*Sidhu/gi, '')
-        .replace(/Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?\s*/gi, '')
-        .replace(/\n\s*\*\*(Analysis|My recommendation|Note)[\s\S]*$/i, '')
-        .replace(/^\s*#+.*$/gm, '')
-        .replace(/<[a-z_]+>[\s\S]*?<\/[a-z_]+>/gi, '')
-        .trim()
-      console.log('[EmailDraft] Stripped rewrite:', rewritten.slice(0, 200), '| length:', rewritten.length)
-      if (rewritten.length > 20) {
-        setCurrentBody(rewritten)
+      const data = await res.json()
+      console.log('[EmailDraft] Rewrite response:', data)
+      if (data.success && data.body && data.body.length > 20) {
+        setCurrentBody(data.body)
         setHasRewritten(true)
+      } else {
+        console.error('[EmailDraft] Rewrite returned empty or short body')
       }
-    } catch (e) { console.error('Rewrite failed:', e) }
+    } catch (e) { console.error('[EmailDraft] Rewrite failed:', e) }
     setRewriting(false)
   }
 
   const handleRevert = () => { setCurrentBody(originalBodyRef.current); setHasRewritten(false) }
 
   const tones = [
-    { label: 'More Direct', prompt: `Rewrite ONLY the email body below. Output nothing else — no subject, no greeting name, no sign-off, no analysis, no commentary. Just the rewritten paragraphs:\n\n${currentBody}` },
-    { label: 'Warmer Tone', prompt: `Rewrite ONLY the email body below with a warmer tone. Output nothing else — no subject, no greeting name, no sign-off, no analysis, no commentary. Just the rewritten paragraphs:\n\n${currentBody}` },
-    { label: 'Shorter', prompt: `Make the email body below much shorter. Output nothing else — no subject, no greeting name, no sign-off, no analysis, no commentary. Just the rewritten paragraphs:\n\n${currentBody}` },
+    { label: 'More Direct', prompt: 'Rewrite this email body more directly and concisely.' },
+    { label: 'Warmer Tone', prompt: 'Rewrite this email body with a warmer, more personable tone.' },
+    { label: 'Shorter', prompt: 'Make this email body much shorter while keeping the key message.' },
   ]
 
   return (
