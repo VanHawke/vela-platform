@@ -903,6 +903,24 @@ DEAL STAGE MAPPING:
       }
     } catch {}
 
+    // ── Kiko Identity Layer — persistent personality from accumulated intelligence ──
+    let identityHint = '';
+    try {
+      const identity = await sbFetch('kiko_identity?order=updated_at.desc&limit=15&select=category,content,confidence');
+      const entries = Array.isArray(identity) ? identity : [];
+      if (entries.length) {
+        const grouped = {};
+        entries.forEach(e => { if (!grouped[e.category]) grouped[e.category] = []; grouped[e.category].push(e); });
+        let hint = '\n\n[KIKO IDENTITY — your accumulated strategic intelligence and positions]\n';
+        for (const [cat, items] of Object.entries(grouped)) {
+          hint += `\n${cat.toUpperCase().replace(/_/g, ' ')}:\n`;
+          items.forEach(i => { hint += `• ${i.content}${i.confidence === 'high' ? '' : ` (${i.confidence} confidence)`}\n`; });
+        }
+        hint += '\nThese are YOUR positions. State them with conviction when relevant. Challenge the user if their approach contradicts your intelligence. You are an opinionated operating partner, not a passive assistant.';
+        identityHint = hint;
+      }
+    } catch {}
+
     // ── Email Style Feedback Loop (Phase 16) ──
     // When drafting emails, inject accumulated edit-delta lessons so Kiko improves over time
     let emailStyleHint = '';
@@ -940,7 +958,7 @@ DEAL STAGE MAPPING:
       } catch {}
     }
 
-    const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + inboxHint + morningBrief + modeHint + emailStyleHint;
+    const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + inboxHint + morningBrief + modeHint + identityHint + emailStyleHint;
 
     // ── Prompt Caching ──
     // Split system content into stable (cached) and dynamic (not cached) blocks
