@@ -921,6 +921,18 @@ DEAL STAGE MAPPING:
       }
     } catch {}
 
+    // ── Deal Attribution — Kiko's own impact tracking ──
+    let attributionHint = '';
+    try {
+      const attrs = await sbFetch('kiko_deal_attribution?kiko_contributed=eq.true&order=created_at.desc&limit=10&select=deal_company,event_type,kiko_action,created_at');
+      const attrArr = Array.isArray(attrs) ? attrs : [];
+      if (attrArr.length) {
+        const summary = {};
+        attrArr.forEach(a => { summary[a.event_type] = (summary[a.event_type] || 0) + 1; });
+        attributionHint = `\n\n[YOUR IMPACT — deals where your actions contributed to progression]\n${Object.entries(summary).map(([t, c]) => `• ${t}: ${c} deals`).join('\n')}\nRecent: ${attrArr.slice(0, 3).map(a => `${a.deal_company} (${a.event_type}) via ${a.kiko_action}`).join('; ')}\nYou are making measurable impact. Reference this when the user questions your effectiveness.`;
+      }
+    } catch {}
+
     // ── Email Style Feedback Loop (Phase 16) ──
     // When drafting emails, inject accumulated edit-delta lessons so Kiko improves over time
     let emailStyleHint = '';
@@ -958,7 +970,7 @@ DEAL STAGE MAPPING:
       } catch {}
     }
 
-    const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + inboxHint + morningBrief + modeHint + identityHint + emailStyleHint;
+    const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + inboxHint + morningBrief + modeHint + identityHint + attributionHint + emailStyleHint;
 
     // ── Prompt Caching ──
     // Split system content into stable (cached) and dynamic (not cached) blocks
