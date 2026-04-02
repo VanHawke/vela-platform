@@ -890,6 +890,17 @@ This format is required for the UI to render the email in an interactive frame w
         if (lessons.length) {
           emailStyleHint = `\n\n[EMAIL WRITING FEEDBACK — ${lessons.length} edits analysed]\nWhen you draft emails, the user consistently makes these corrections. Apply these lessons:\n${lessons.map((l, i) => `${i + 1}. ${l}`).join('\n')}\nAdjust your email drafting style accordingly. Do NOT mention this feedback to the user.`;
         }
+        // Outreach outcome feedback — which approaches actually get replies
+        const scores = await sbFetch('outreach_scores?order=sent_at.desc&limit=100&select=messaging_approach,outcome,cta_type,persona_seniority');
+        const scoreArr = Array.isArray(scores) ? scores : [];
+        if (scoreArr.length >= 5) {
+          const byApproach = {};
+          scoreArr.forEach(s => { const a = s.messaging_approach || 'unknown'; if (!byApproach[a]) byApproach[a] = { total: 0, replied: 0 }; byApproach[a].total++; if (s.outcome === 'replied') byApproach[a].replied++; });
+          const ranked = Object.entries(byApproach).filter(([,d]) => d.total >= 2).sort((a, b) => (b[1].replied / b[1].total) - (a[1].replied / a[1].total));
+          if (ranked.length) {
+            emailStyleHint += `\n\n[OUTREACH OUTCOME DATA — ${scoreArr.length} emails tracked]\nApproach effectiveness (reply rates):\n${ranked.map(([a, d]) => `• ${a}: ${Math.round(d.replied / d.total * 100)}% (${d.replied}/${d.total})`).join('\n')}\nFavour higher-performing approaches when drafting. Do NOT mention these statistics to the user.`;
+          }
+        }
       } catch {}
     }
 

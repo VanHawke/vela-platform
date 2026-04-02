@@ -38,6 +38,58 @@ const FEEDS = [
   // PR NEWSWIRE — press release wires where teams publish directly
   { name: 'PRN: F1 Motorsport', url: 'https://www.prnewswire.com/rss/news-releases-list.rss?category=SPT&subjectCode=SPT_F1&pageSize=50', category: 'f1_sponsorship' },
   { name: 'PRN: Sports Sponsorship', url: 'https://www.prnewswire.com/rss/news-releases-list.rss?category=SPT&subjectCode=SPT_EM&pageSize=50', category: 'sports_sponsorship' },
+  // BUSINESS PUBLICATIONS (free RSS)
+  { name: 'Forbes Business', url: 'https://www.forbes.com/business/feed/', category: 'business' },
+  { name: 'Forbes Innovation', url: 'https://www.forbes.com/innovation/feed/', category: 'technology' },
+  { name: 'TechCrunch', url: 'https://techcrunch.com/feed/', category: 'technology' },
+  { name: 'TechCrunch Fundraising', url: 'https://techcrunch.com/category/fundraising/feed/', category: 'funding' },
+  { name: 'Reuters Business', url: 'https://www.reutersagency.com/feed/?best-topics=business-finance', category: 'business' },
+  { name: 'CNBC Tech', url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=19854910', category: 'technology' },
+  { name: 'CNBC Economy', url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=20910258', category: 'macro' },
+  { name: 'Wired Business', url: 'https://www.wired.com/feed/category/business/latest/rss', category: 'business' },
+  { name: 'Wired Science', url: 'https://www.wired.com/feed/category/science/latest/rss', category: 'technology' },
+  { name: 'VentureBeat', url: 'https://venturebeat.com/feed/', category: 'technology' },
+  { name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml', category: 'technology' },
+  { name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/index', category: 'technology' },
+  { name: 'MIT Technology Review', url: 'https://www.technologyreview.com/feed/', category: 'technology' },
+  // PAYWALLED — headline capture via Google News
+  { name: 'GNews: Bloomberg Business', url: 'https://news.google.com/rss/search?q=site:bloomberg.com+business+OR+technology+OR+deal&hl=en&gl=US&ceid=US:en', category: 'business' },
+  { name: 'GNews: Financial Times', url: 'https://news.google.com/rss/search?q=site:ft.com+business+OR+technology+OR+acquisition&hl=en&gl=GB&ceid=GB:en', category: 'business' },
+  { name: 'GNews: Wall Street Journal', url: 'https://news.google.com/rss/search?q=site:wsj.com+technology+OR+deal+OR+acquisition+OR+funding&hl=en&gl=US&ceid=US:en', category: 'business' },
+  { name: 'GNews: The Times Business', url: 'https://news.google.com/rss/search?q=site:thetimes.com+business+OR+technology+OR+sponsorship&hl=en&gl=GB&ceid=GB:en', category: 'business' },
+  // VC / PE / FUNDING
+  { name: 'Crunchbase News', url: 'https://news.crunchbase.com/feed/', category: 'funding' },
+  { name: 'GNews: Series A Funding', url: 'https://news.google.com/rss/search?q=%22Series+A%22+OR+%22Series+B%22+OR+%22Series+C%22+funding+announced&hl=en&gl=US&ceid=US:en', category: 'funding' },
+  { name: 'GNews: IPO Filing', url: 'https://news.google.com/rss/search?q=IPO+filing+OR+%22goes+public%22+OR+%22IPO+plans%22+technology&hl=en&gl=US&ceid=US:en', category: 'funding' },
+  { name: 'GNews: Acquisitions', url: 'https://news.google.com/rss/search?q=%22acquires%22+OR+%22acquisition%22+OR+%22merger%22+technology+OR+software&hl=en&gl=US&ceid=US:en', category: 'market_activity' },
+  { name: 'GNews: PE Deals', url: 'https://news.google.com/rss/search?q=%22private+equity%22+OR+%22buyout%22+OR+%22LBO%22+technology&hl=en&gl=US&ceid=US:en', category: 'funding' },
+  { name: 'GlobeNewsWire', url: 'https://www.globenewswire.com/RssFeed/subjectcode/25-Mergers%20and%20Acquisitions/feedTitle/GlobeNewsWire%20-%20Mergers%20and%20Acquisitions', category: 'market_activity' },
+  { name: 'PRN: Technology', url: 'https://www.prnewswire.com/rss/news-releases-list.rss?category=TEC&pageSize=50', category: 'technology' },
+  { name: 'PRN: Business Finance', url: 'https://www.prnewswire.com/rss/news-releases-list.rss?category=FIN&pageSize=50', category: 'funding' },
+  // MARKETING / ADVERTISING / CAMPAIGNS
+  { name: 'Marketing Week', url: 'https://www.marketingweek.com/feed/', category: 'marketing' },
+  { name: 'The Drum', url: 'https://www.thedrum.com/feeds/all.xml', category: 'marketing' },
+  { name: 'AdAge', url: 'https://adage.com/arc/outboundfeeds/rss/', category: 'marketing' },
+  { name: 'Campaign', url: 'https://www.campaignlive.co.uk/feed', category: 'marketing' },
+  { name: 'Digiday', url: 'https://digiday.com/feed/', category: 'marketing' },
+  { name: 'GNews: CMO Moves', url: 'https://news.google.com/rss/search?q=%22new+CMO%22+OR+%22chief+marketing+officer+appointed%22+OR+%22head+of+marketing%22&hl=en&gl=US&ceid=US:en', category: 'leadership' },
+  { name: 'GNews: CTO Moves', url: 'https://news.google.com/rss/search?q=%22new+CTO%22+OR+%22chief+technology+officer+appointed%22+OR+%22VP+Engineering%22+hired&hl=en&gl=US&ceid=US:en', category: 'leadership' },
+  { name: 'GNews: CEO Moves', url: 'https://news.google.com/rss/search?q=%22new+CEO%22+OR+%22chief+executive+appointed%22+technology+OR+SaaS&hl=en&gl=US&ceid=US:en', category: 'leadership' },
+  // MACROECONOMICS / SECTORS
+  { name: 'GNews: Cybersecurity Market', url: 'https://news.google.com/rss/search?q=cybersecurity+market+OR+%22cyber+security%22+growth+OR+funding&hl=en&gl=US&ceid=US:en', category: 'sector_intel' },
+  { name: 'GNews: Cloud Computing', url: 'https://news.google.com/rss/search?q=cloud+computing+market+OR+%22cloud+infrastructure%22+growth+OR+deal&hl=en&gl=US&ceid=US:en', category: 'sector_intel' },
+  { name: 'GNews: AI Enterprise', url: 'https://news.google.com/rss/search?q=%22enterprise+AI%22+OR+%22AI+startup%22+funding+OR+launch+OR+partnership&hl=en&gl=US&ceid=US:en', category: 'sector_intel' },
+  { name: 'GNews: Semiconductor', url: 'https://news.google.com/rss/search?q=semiconductor+chip+market+OR+funding+OR+expansion+OR+partnership&hl=en&gl=US&ceid=US:en', category: 'sector_intel' },
+  // PSYCHOLOGY / BEHAVIORAL SCIENCE / PERSUASION
+  { name: 'Harvard Business Review', url: 'https://hbr.org/resources/rss', category: 'psychology_strategy' },
+  { name: 'Psychology Today', url: 'https://www.psychologytoday.com/intl/blog/feed', category: 'psychology_strategy' },
+  { name: 'BehavioralEconomics.com', url: 'https://www.behavioraleconomics.com/feed/', category: 'psychology_strategy' },
+  { name: 'GNews: Behavioral Science', url: 'https://news.google.com/rss/search?q=%22behavioral+science%22+OR+%22decision+making%22+OR+%22cognitive+bias%22+business&hl=en&gl=US&ceid=US:en', category: 'psychology_strategy' },
+  // DESIGN / CREATIVE / BRAND
+  { name: 'Creative Review', url: 'https://www.creativereview.co.uk/feed/', category: 'design' },
+  { name: 'It\'s Nice That', url: 'https://www.itsnicethat.com/rss/all', category: 'design' },
+  { name: 'Dezeen', url: 'https://www.dezeen.com/feed/', category: 'design' },
+  { name: 'Brand New (UnderConsideration)', url: 'https://www.underconsideration.com/brandnew/atom.xml', category: 'design' },
 ];
 
 // Simple XML RSS parser (no dependencies)
