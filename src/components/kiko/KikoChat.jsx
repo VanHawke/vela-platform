@@ -60,12 +60,39 @@ function md(text) {
     .replace(/^## (.+)$/gm, '<div style="font-size:15px;font-weight:500;color:rgba(255,255,255,0.85);margin:16px 0 8px">$1</div>')
     .replace(/^---$/gm, '<hr style="border:none;border-top:0.5px solid rgba(255,255,255,0.1);margin:16px 0"/>')
     .replace(/\n/g, '<br/>')
-  // Wrap consecutive thinking/tool-use lines in a collapsible section
-  const thinkingPattern = /(((?:(?:I'll |Let me |Now let me |I'm going to |Checking |I see |I found |I need to |Looking |Searching |Now I'll ).*?<br\/>){2,}))/gi
-  h = h.replace(thinkingPattern, (match) => {
-    const steps = match.split('<br/>').filter(s => s.trim()).length
-    return `<details style="margin:6px 0;cursor:pointer"><summary style="font-size:12px;color:rgba(255,255,255,0.3);font-weight:400;padding:4px 0;list-style:none;display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);font-size:9px;text-align:center;line-height:13px;flex-shrink:0">›</span> Kiko's reasoning · ${steps} steps</summary><div style="font-size:13px;color:rgba(255,255,255,0.35);padding:8px 0 4px;line-height:1.6">${match}</div></details>`
-  })
+  // Detect and collapse thinking/tool-use text blocks
+  // Matches continuous blocks starting with thinking phrases, even without line breaks
+  const thinkingPhrases = /^(I'll |Let me |Now let me |I'm going to |Checking |I see |I found |I need to |Looking |Searching |Now I'll |Perfect!|Based on )/i
+  const lines = h.split('<br/>')
+  let thinkingStart = -1
+  let thinkingEnd = -1
+  // Find consecutive thinking lines
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].replace(/<[^>]+>/g, '').trim()
+    const isThinking = thinkingPhrases.test(line) || (thinkingStart >= 0 && i - thinkingEnd <= 1 && (line.includes('Let me') || line.includes('Now let') || line.includes('I need') || line.includes('I see') || line.includes('I found') || line.includes('Perfect') || line.includes('Based on')))
+    if (isThinking) {
+      if (thinkingStart === -1) thinkingStart = i
+      thinkingEnd = i
+    }
+  }
+  // Also handle single-line thinking blocks (all concatenated on one line)
+  if (thinkingStart === -1) {
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].replace(/<[^>]+>/g, '').trim()
+      const thinkingCount = (line.match(/(?:I'll |Let me |Now let me |I need to |I see |I found |Looking |Searching |Now I'll )/gi) || []).length
+      if (thinkingCount >= 3) {
+        thinkingStart = i; thinkingEnd = i; break
+      }
+    }
+  }
+  if (thinkingStart >= 0 && thinkingEnd >= thinkingStart) {
+    const thinkingLines = lines.slice(thinkingStart, thinkingEnd + 1)
+    const thinkingHtml = thinkingLines.join('<br/>')
+    const stepCount = (thinkingHtml.match(/(?:Let me|Now let|I'll|I need|Checking|Searching|Looking|I found|I see)/gi) || []).length
+    const collapsed = `<details style="margin:6px 0;cursor:pointer"><summary style="font-size:12px;color:rgba(255,255,255,0.3);font-weight:400;padding:6px 0;list-style:none;display:flex;align-items:center;gap:6px"><span style="display:inline-flex;width:16px;height:16px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);font-size:10px;align-items:center;justify-content:center;flex-shrink:0;color:rgba(255,255,255,0.2)">›</span> Kiko's reasoning · ${stepCount} steps</summary><div style="font-size:13px;color:rgba(255,255,255,0.3);padding:8px 12px;line-height:1.7;border-left:2px solid rgba(255,255,255,0.06);margin:4px 0 8px 7px">${thinkingHtml}</div></details>`
+    lines.splice(thinkingStart, thinkingEnd - thinkingStart + 1, collapsed)
+    h = lines.join('<br/>')
+  }
   const result = DOMPurify.sanitize(h, { ADD_TAGS: ['details', 'summary'] })
   if (text.length < 50000) { mdCache.set(text, result); if (mdCache.size > 200) mdCache.delete(mdCache.keys().next().value) }
   return result
