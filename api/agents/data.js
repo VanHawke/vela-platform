@@ -250,7 +250,29 @@ async function getOutreachIntelligence({ focus = 'patterns', company, pipeline }
     scores.forEach(s => { const d = s.sent_day_of_week || 'Unknown'; if (!byDay[d]) byDay[d] = { total: 0, replied: 0 }; byDay[d].total++; if (s.outcome === 'replied') byDay[d].replied++; });
     return `SEND TIMING\n\n${Object.entries(byDay).map(([d, v]) => `${d}: ${v.replied}/${v.total} (${Math.round(v.replied / v.total * 100)}%)`).join('\n')}`;
   }
-  return `Outreach data: ${total} scored, ${replyRate}% reply rate. Ask about "patterns", "timing", "persona", or "company".`;
+  if (focus === 'race_windows') {
+    const races = await sbFetch(`race_calendar?date=gt.${new Date().toISOString().split('T')[0]}&order=date&limit=6&select=name,date,circuit,series`);
+    const deals = await sbFetch(`deals?select=data&data->>status=eq.active&limit=200`);
+    const now = new Date();
+    const raceData = (races || []).map(r => {
+      const daysTo = Math.ceil((new Date(r.date) - now) / 86400000);
+      const urgency = daysTo <= 14 ? '🔴 CRITICAL' : daysTo <= 30 ? '🟡 HIGH' : '🟢 NORMAL';
+      return { name: r.name, series: r.series, date: r.date, daysTo, urgency };
+    });
+    const staleDeals = (deals || []).filter(d => {
+      const last = d.data?.lastActivity ? new Date(d.data.lastActivity) : null;
+      return last && (now - last) > 14 * 86400000;
+    }).map(d => ({ company: d.data?.company, daysSince: Math.floor((now - new Date(d.data.lastActivity)) / 86400000), stage: d.data?.stage, contact: d.data?.contactName }));
+    let out = `RACE WINDOW INTELLIGENCE\n\nUpcoming races:\n`;
+    for (const r of raceData) out += `${r.urgency} ${r.series} ${r.name} — ${r.daysTo}d (${r.date})\n`;
+    if (staleDeals.length) {
+      out += `\n⚠️ ${staleDeals.length} DEALS STALE >14 DAYS (need contact before next race):\n`;
+      for (const d of staleDeals.slice(0, 15)) out += `• ${d.company} — ${d.daysSince}d silent, stage: ${d.stage}, contact: ${d.contact || 'unknown'}\n`;
+    }
+    out += `\nOUTREACH DOCTRINE: Ideal contact window is 21-28 days before race weekend. <14 days = last chance. Emails sent during race week get buried.`;
+    return out;
+  }
+  return `Outreach data: ${total} scored, ${replyRate}% reply rate. Ask about "patterns", "timing", "race_windows", "persona", or "company".`;
 }
 
 async function searchDocuments({ query, team, category }) {

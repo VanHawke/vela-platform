@@ -52,18 +52,27 @@ export default async function handler(req, res) {
 
     // Pull 5 data streams in parallel (safe array conversion)
     const safe = (v) => Array.isArray(v) ? v : [];
-    const [newsSignals_, outreachReplies_, stageChanges_, upcomingTasks_, staleDeals_] = await Promise.all([
+    const [newsSignals_, outreachReplies_, stageChanges_, upcomingTasks_, staleDeals_, upcomingRaces_] = await Promise.all([
       sbFetch(`news_articles?is_processed=eq.true&deal_signal=eq.true&published_at=gt.${oneDayAgo}&select=title,matched_companies,published_at&order=published_at.desc&limit=20`).catch(() => []),
       sbFetch(`outreach_scores?outcome=eq.replied&sent_at=gt.${oneDayAgo}&select=recipient_name,recipient_email,company,sent_at&order=sent_at.desc&limit=20`).catch(() => []),
       sbFetch(`deal_stage_history?changed_at=gt.${oneDayAgo}&select=deal_id,from_stage,to_stage,changed_at&order=changed_at.desc&limit=20`).catch(() => []),
       sbFetch(`tasks?select=data&order=updated_at.desc&limit=30`).catch(() => []),
       sbFetch(`deals?select=data&data->>status=eq.active&limit=200`).catch(() => []),
+      sbFetch(`race_calendar?date=gt.${now.toISOString().split('T')[0]}&order=date&limit=5&select=name,date,circuit,series`).catch(() => []),
     ]);
     const newsSignals = safe(newsSignals_);
     const outreachReplies = safe(outreachReplies_);
     const stageChanges = safe(stageChanges_);
     const upcomingTasks = safe(upcomingTasks_);
     const staleDeals = safe(staleDeals_);
+    const upcomingRaces = safe(upcomingRaces_);
+
+    // Race proximity analysis — identify outreach windows
+    const raceWindows = upcomingRaces.map(r => {
+      const daysTo = Math.ceil((new Date(r.date) - now) / 86400000);
+      return { name: r.name, series: r.series, circuit: r.circuit, daysTo, date: r.date,
+        urgency: daysTo <= 14 ? 'critical' : daysTo <= 30 ? 'high' : 'normal' };
+    });
 
 
     // Filter tasks
@@ -90,11 +99,12 @@ export default async function handler(req, res) {
       overdueTasks: overdue.slice(0, 5).map(t => ({ type: t.data.type, notes: t.data.notes, company: t.data.company })),
       dueSoonTasks: dueSoon.slice(0, 5).map(t => ({ type: t.data.type, notes: t.data.notes, company: t.data.company })),
       staleDeals: stale.slice(0, 10).map(s => ({ company: s.company, daysSince: s.daysSince, stage: s.stage })),
+      raceWindows: raceWindows.filter(r => r.daysTo <= 45),
     });
 
 
     // Skip if no data worth cross-referencing
-    const hasData = newsSignals.length + outreachReplies.length + stale.length + overdue.length;
+    const hasData = newsSignals.length + outreachReplies.length + stale.length + overdue.length + raceWindows.filter(r => r.urgency !== 'normal').length;
     if (hasData === 0) {
       await cronHeartbeat('cron-proactive', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 });
       return res.status(200).json({ ok: true, message: 'No signals to cross-reference', alerts: 0 });
@@ -104,8 +114,8 @@ export default async function handler(req, res) {
     const crossRef = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 1000,
-      system: `You identify CONVERGENCE MOMENTS in business data — where multiple signals point to the same company or opportunity. Return ONLY valid JSON array. Each item: { "entity": "Company Name", "severity": "high|medium|low", "title": "Short alert title", "detail": "2-3 sentence explanation of why these signals converge", "action": "Specific recommended next step, e.g. 'Draft authority follow-up email referencing their funding announcement'" }. If no convergence found, return empty array []. Maximum 5 alerts. ALWAYS include an action for each alert.`,
-      messages: [{ role: 'user', content: `Cross-reference these data streams from the last 24 hours. Find companies appearing in 2+ streams, or urgent patterns:\n\n${dataPayload}` }],
+      system: `You identify CONVERGENCE MOMENTS in business data — where multiple signals point to the same company or opportunity. You also identify RACE WINDOW URGENCY — when upcoming race weekends (F1, MotoGP, WEC, Formula E) create natural outreach deadlines for sponsorship deals. Stale deals within 30 days of a race are high-priority. Return ONLY valid JSON array. Each item: { "entity": "Company Name", "severity": "high|medium|low", "title": "Short alert title", "detail": "2-3 sentence explanation of why these signals converge", "action": "Specific recommended next step, e.g. 'Draft authority follow-up email referencing their funding announcement'" }. If no convergence found, return empty array []. Maximum 5 alerts. ALWAYS include an action for each alert.`,
+      messages: [{ role: 'user', content: `Cross-reference these 6 data streams from the last 24 hours. Find companies appearing in 2+ streams, urgent patterns, or stale deals that need outreach before an upcoming race weekend:\n\n${dataPayload}` }],
     });
 
     const rawText = crossRef.content[0]?.text || '[]';

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
@@ -7,21 +7,18 @@ import AuthCallback from '@/pages/AuthCallback'
 import Layout from '@/components/layout/Layout'
 import KikoChat from '@/components/kiko/KikoChat'
 import Settings from '@/components/settings/Settings'
-// Dashboard removed — KikoChat is the home page
-import Pipeline from '@/pages/Pipeline'
-import Contacts from '@/pages/Contacts'
-import ContactDetail from '@/pages/ContactDetail'
-import Organisations from '@/pages/Organisations'
-// Tasks page removed — merged into Command Centre
-// Documents page removed — uploads via Kiko chat drag-and-drop
-import OutreachIntelligence from '@/pages/OutreachIntelligence'
-// News page removed — replaced by Partnership Detection Engine alerts
-import PartnershipMatrix from '@/pages/PartnershipMatrix'
-import CommercialCalendar from '@/pages/CommercialCalendar'
-import KikoCode from '@/pages/KikoCode'
-import Admin from '@/pages/Admin'
-import MemoryConsole from '@/pages/MemoryConsole'
-import Lemlist from '@/pages/Lemlist'
+// Lazy-loaded pages (code-split for bundle size reduction)
+const Pipeline = lazy(() => import('@/pages/Pipeline'))
+const Contacts = lazy(() => import('@/pages/Contacts'))
+const ContactDetail = lazy(() => import('@/pages/ContactDetail'))
+const Organisations = lazy(() => import('@/pages/Organisations'))
+const OutreachIntelligence = lazy(() => import('@/pages/OutreachIntelligence'))
+const PartnershipMatrix = lazy(() => import('@/pages/PartnershipMatrix'))
+const CommercialCalendar = lazy(() => import('@/pages/CommercialCalendar'))
+const KikoCode = lazy(() => import('@/pages/KikoCode'))
+const Admin = lazy(() => import('@/pages/Admin'))
+const MemoryConsole = lazy(() => import('@/pages/MemoryConsole'))
+const Lemlist = lazy(() => import('@/pages/Lemlist'))
 
 const INACTIVITY_MS   = 20 * 60 * 1000
 const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click']
@@ -113,6 +110,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0A0A0C', color: 'rgba(255,255,255,0.3)', fontFamily: "'DM Sans', sans-serif", fontSize: 14 }}>Loading...</div>}>
       <Routes>
         <Route path="/login" element={session ? <Navigate to="/" replace /> : <LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
@@ -141,6 +139,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
+      </Suspense>
     </BrowserRouter>
   )
 }
