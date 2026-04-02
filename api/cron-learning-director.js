@@ -376,7 +376,7 @@ export default async function handler(req, res) {
 
     // ── CURIOSITY ENGINE: learn 1 topic — only if time allows (under 80s elapsed) ──
     let curiosityResult = null;
-    if (Date.now() - __hbStart < 80000) {
+    if (Date.now() - __hbStart < 50000) {
     try {
       const curious = await sbFetch('kiko_curiosity_queue?status=eq.queued&order=priority.desc&limit=1&select=id,topic,category,reason');
       if (curious?.[0]) {

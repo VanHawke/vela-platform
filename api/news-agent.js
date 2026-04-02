@@ -130,18 +130,26 @@ function parseRSS(xml, sourceName, sourceUrl) {
 // Fetch all RSS feeds and return deduplicated articles
 async function fetchAllFeeds() {
   const allArticles = [];
-  for (const feed of FEEDS) {
-    try {
-      const res = await fetch(feed.url, {
-        headers: { 'User-Agent': 'Kiko/1.0 (RSS Reader)', Accept: 'application/rss+xml, application/xml, text/xml' },
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!res.ok) { console.log(`[News] ${feed.name}: HTTP ${res.status}`); continue; }
-      const xml = await res.text();
+  const startTime = Date.now();
+  // Process feeds in parallel batches of 10 for speed
+  for (let i = 0; i < FEEDS.length; i += 10) {
+    if (Date.now() - startTime > 80000) { console.log(`[News] Time guard: processed ${i}/${FEEDS.length} feeds in 80s`); break; }
+    const batch = FEEDS.slice(i, i + 10);
+    const results = await Promise.allSettled(batch.map(async (feed) => {
+      try {
+        const res = await fetch(feed.url, {
+          headers: { 'User-Agent': 'Kiko/1.0 (RSS Reader)', Accept: 'application/rss+xml, application/xml, text/xml' },
+          signal: AbortSignal.timeout(8000),
+        });
+        if (!res.ok) return [];
+        const xml = await res.text();
       const articles = parseRSS(xml, feed.name, feed.url);
-      allArticles.push(...articles);
-    } catch (e) { console.log(`[News] ${feed.name}: ${e.message}`); }
+      return articles;
+    } catch (e) { return []; }
+    }));
+    for (const r of results) { if (r.status === 'fulfilled' && r.value?.length) allArticles.push(...r.value); }
   }
+  console.log(`[News] Fetched ${allArticles.length} articles from ${FEEDS.length} feeds in ${((Date.now() - startTime) / 1000).toFixed(1)}s`);
   return allArticles;
 }
 
