@@ -6,21 +6,38 @@ import T from '@/lib/theme'
 export function isEmailDraft(text) {
   if (!text || text.length < 80) return false
   const lower = text.toLowerCase()
-  if (!lower.includes('subject:') && !lower.includes('**subject**:') && !lower.includes('**subject:**')) return false
+  // Must have Subject: in some form
+  const hasSubject = /\*?\*?subject\*?\*?\s*:/i.test(text)
+  if (!hasSubject) return false
   const hasGreeting = /\b(dear|hi |hello |hey )\b/i.test(text)
   const hasSignoff = /\b(regards|sincerely|best,|sunny|cheers|thank)/i.test(lower)
-  const hasDraftLabel = lower.includes('suggested draft') || lower.includes('email draft') || lower.includes('draft email')
-  const hasTo = lower.includes('to:') || lower.includes('**to**:') || lower.includes('**to:**')
-  return hasGreeting || hasSignoff || hasDraftLabel || hasTo
+  const hasDraftLabel = lower.includes('suggested draft') || lower.includes('email draft') || lower.includes('draft email') || lower.includes('here\'s the email') || lower.includes('here is the email') || lower.includes('drafted')
+  const hasTo = /\*?\*?to\*?\*?\s*:/i.test(text)
+  // Also match when Subject: + To: appear together (strong signal even without greeting)
+  const hasSubjectAndTo = hasSubject && hasTo
+  return hasGreeting || hasSignoff || hasDraftLabel || hasSubjectAndTo
 }
 
 export function extractEmailSection(text) {
-  // Try SUGGESTED DRAFT header first
-  const draftHeaderIdx = text.search(/#{1,3}\s*\d*\.?\s*(SUGGESTED\s*DRAFT|EMAIL\s*DRAFT|DRAFT)/i)
-  // Then Subject:
-  const subjectIdx = text.search(/(?:^|\n|\.)\s*\*?\*?Subject\*?\*?\s*:/im)
-  if (draftHeaderIdx === -1 && subjectIdx === -1) return { pre: text, email: null }
-  const emailStart = draftHeaderIdx > -1 ? draftHeaderIdx : subjectIdx
+  // Try SUGGESTED DRAFT header first (most reliable)
+  const draftHeaderIdx = text.search(/#{1,3}\s*\d*\.?\s*(SUGGESTED\s*DRAFT|EMAIL\s*DRAFT|DRAFT\s*EMAIL)/i)
+  // Then try "Here's the email" / "Here is the draft" intro patterns
+  const hereIdx = text.search(/(?:Here(?:'|'|&#39;)?s the (?:email|draft)|Here is the (?:email|draft)|I(?:'|'|&#39;)?ve drafted)[^:]*:\s*/i)
+  // Then Subject: directly
+  const subjectIdx = text.search(/(?:^|\n|\.|\:)\s*\*?\*?Subject\*?\*?\s*:/im)
+  
+  if (draftHeaderIdx === -1 && hereIdx === -1 && subjectIdx === -1) return { pre: text, email: null }
+  
+  // Use the earliest reliable marker
+  let emailStart
+  if (draftHeaderIdx > -1) emailStart = draftHeaderIdx
+  else if (hereIdx > -1) {
+    // Find where the actual email starts after "Here's the email:"
+    const afterHere = text.slice(hereIdx).search(/\n\s*\*?\*?Subject\*?\*?\s*:/i)
+    emailStart = afterHere > -1 ? hereIdx + afterHere : hereIdx
+  }
+  else emailStart = subjectIdx > 0 ? subjectIdx : 0
+  
   return { pre: text.slice(0, emailStart).trim(), email: text.slice(emailStart).trim() }
 }
 

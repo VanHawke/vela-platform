@@ -892,8 +892,16 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             {msg.content}
           </> : (() => {
             // Strip ---DRAFT--- block from display text (rendered separately in DraftPreview)
-            const displayText = stripToolXml(msg.content.replace(/---DRAFT---[\s\S]*?---END DRAFT---/gi, ''))
-            if (isKiko && isEmailDraft(displayText)) {
+            let displayText = stripToolXml(msg.content.replace(/---DRAFT---[\s\S]*?---END DRAFT---/gi, ''))
+            // Strip thinking text before email detection (same logic as md() thinking collapse)
+            const thinkPhraseCount = (displayText.match(/(?:I'll |Let me |Now let me |I need to |I see |I found |Looking |Searching |Now I'll |Perfect!|I'm going to )/gi) || []).length
+            let responseText = displayText
+            if (thinkPhraseCount >= 2) {
+              const respMarkers = [/Here(?:'|')s /, /I(?:'|')ve drafted/, /I(?:'|')ve created/, /Email Draft/, /EMAIL DRAFT/, /Subject\s*:/, /SUGGESTED DRAFT/, /STRATEGIC/, /ANALYSIS/, /RECOMMENDATION/, /###\s/, /##\s/]
+              for (const m of respMarkers) { const idx = displayText.search(m); if (idx > 30) { responseText = displayText.slice(idx); break } }
+            }
+            if (isKiko && isEmailDraft(responseText)) {
+              // Use full displayText for extraction so thinking text goes into pre (md() collapses it)
               const { pre, email } = extractEmailSection(displayText)
               const signoffEnd = email ? email.search(/\n\s*(\*\*Key positioning|\*\*Strategic|\*\*Next steps|\*\*Timing|##\s*TIMING|This targets|The email positions|I've framed|I recommend|\*\*Analysis|\*\*My recommendation|I'd push back)/i) : -1
               const postEmail = signoffEnd > 20 ? email.slice(signoffEnd).trim() : ''

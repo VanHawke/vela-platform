@@ -635,6 +635,20 @@ export default async function handler(req, res) {
     let routingHint = '';
     if (agentMapping?.tool) {
       routingHint = `\n\n[ROUTING HINT: This message was classified as "${intent}". Start with the ${agentMapping.tool} tool. After getting results, you may call additional tools if the task requires multiple steps — you have up to 10 tool rounds. For example: research a company (web_search) → check CRM (ask_data_agent) → draft email (ask_outreach_agent). Think about what the user actually needs end-to-end, not just the first step.]`;
+      // Force consistent email draft format for UI rendering
+      if (intent === 'outreach') {
+        routingHint += `\n\n[EMAIL FORMAT RULE: When presenting an email draft in your response, ALWAYS use this exact structure:
+### SUGGESTED DRAFT
+Subject: [subject line]
+To: [recipient email]
+
+Dear [Name],
+
+[body paragraphs]
+
+Do NOT include a sign-off, your name, or job title — the user's Gmail signature handles this.
+This format is required for the UI to render the email in an interactive frame with tone adjustment and Gmail integration buttons. If you skip this format, the user loses access to those tools.]`;
+      }
     } else if (intent === 'email_read') {
       routingHint = '\n\n[ROUTING HINT: This is an EMAIL query. Use the read_email tool. Operations: unread (get unread count + recent), search (Gmail search query like "from:john subject:proposal"), read_message (read specific email by ID), inbox_summary. If the user mentions a person, search by their name. Give a clear summary — dates, senders, key content.]';
     } else if (intent === 'calendar') {
