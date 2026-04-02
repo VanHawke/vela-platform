@@ -30,7 +30,13 @@ function parseEmail(text) {
   t = t.replace(/(Subject\s*:)/i, '\n$1').replace(/(To\s*:)/i, '\n$1')
 
   const subMatch = t.match(/\*?\*?Subject\*?\*?\s*:\s*(.+?)(?:\n|$)/i)
-  const subject = subMatch ? subMatch[1].replace(/\*\*/g, '').replace(/â€"/g, '—').trim() : ''
+  const subject = subMatch ? subMatch[1]
+    .replace(/\*\*/g, '')
+    .replace(/â€"/g, '-').replace(/â€"/g, '-')
+    .replace(/[\u2014\u2013\u2015\u2012\u2010\u2011]/g, '-')
+    .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
+    .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+    .trim() : ''
   const toMatch = t.match(/\*?\*?To\*?\*?\s*:\s*(.+?)(?:\n|$)/i)
   let to = toMatch ? toMatch[1].replace(/\*\*/g, '').replace(/\[|\]/g, '').trim() : ''
 
@@ -70,8 +76,20 @@ function parseEmail(text) {
 
 function renderBody(text) {
   return text
+    // Nuclear strip — catch ANY remaining username/company/sign-off
+    .replace(/Best regards,?\s*/gi, '')
+    .replace(/Kind regards,?\s*/gi, '')
+    .replace(/Warm regards,?\s*/gi, '')
+    .replace(/Regards,?\s*/gi, '')
+    .replace(/Sincerely,?\s*/gi, '')
+    .replace(/Cheers,?\s*/gi, '')
+    .replace(/Sunny\s*Sidhu/gi, '')
+    .replace(/Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?\s*/gi, '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\n\s*\n\s*\n/g, '\n\n')
     .replace(/\n/g, '<br/>')
+    .replace(/<br\/>\s*<br\/>\s*<br\/>/g, '<br/><br/>')
+    .trim()
 }
 
 export default function EmailDraft({ text }) {
