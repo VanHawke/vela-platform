@@ -79,10 +79,15 @@ function parseEmail(text) {
     /\n\s*\*\*Strategic rationale/i,
     /\n\s*\*\*Next steps/i,
     /\n\s*\*\*Timing/i,
+    /\n\s*\*\*My recommendation/i,
+    /\n\s*\*\*Note:/i,
     /\n\s*##\s*TIMING/i,
     /\n\s*This targets/i,
     /\n\s*The email positions/i,
     /\n\s*I've framed/i,
+    /\n\s*I'd push back/i,
+    /\n\s*I recommend/i,
+    /\n\s*My recommendation/i,
   ]
   for (const marker of commentaryMarkers) {
     const idx = rawBody.search(marker)
@@ -92,10 +97,12 @@ function parseEmail(text) {
     }
   }
 
-  // Clean markdown bold markers and brackets
+  // Clean markdown bold markers, brackets, and sign-off name (Gmail adds signature)
   let body = rawBody
     .replace(/\*\*/g, '')
     .replace(/\[Current[^\]]*\]/gi, '')
+    .replace(/\n\s*(Best regards|Kind regards|Regards|Sincerely|Best|Cheers),?\s*\n?\s*(Sunny\s*Sidhu|Sunny)?\s*$/i, '')
+    .replace(/\n\s*Sunny\s*Sidhu\s*$/i, '')
     .trim()
 
   return { subject, to, body }
@@ -112,7 +119,14 @@ function renderBody(text) {
 
 export default function EmailDraft({ text, onRewrite }) {
   const [sent, setSent] = useState(false)
-  const { subject, to, body } = parseEmail(text)
+  const [rewriting, setRewriting] = useState(false)
+  const parsed = parseEmail(text)
+  const [currentBody, setCurrentBody] = useState(parsed.body)
+  const [originalBody] = useState(parsed.body)
+  const [hasRewritten, setHasRewritten] = useState(false)
+  const subject = parsed.subject
+  const to = parsed.to
+  const body = currentBody
 
   const handleSendGmail = () => {
     window.dispatchEvent(new CustomEvent('kiko_action', {
@@ -121,10 +135,42 @@ export default function EmailDraft({ text, onRewrite }) {
     setSent(true)
   }
 
+  const handleRewrite = async (prompt) => {
+    setRewriting(true)
+    try {
+      const res = await fetch('/api/kiko', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: prompt, voiceMode: false, greeting: false })
+      })
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let full = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        const chunk = decoder.decode(value)
+        for (const line of chunk.split('\n')) {
+          if (line.startsWith('data: ')) {
+            try { const d = JSON.parse(line.slice(6)); if (d.token) full += d.token } catch {}
+          }
+        }
+      }
+      // Extract just the email body from the rewrite response
+      const rewritten = full.replace(/\*\*/g, '').replace(/^.*Subject:.*\n/i, '').replace(/^.*To:.*\n/i, '').replace(/##.*$/gm, '').replace(/\n\s*(Best regards|Regards|Sincerely|Best),?\s*\n?\s*(Sunny\s*Sidhu|Sunny)?\s*$/i, '').trim()
+      if (rewritten.length > 20) {
+        setCurrentBody(rewritten)
+        setHasRewritten(true)
+      }
+    } catch (e) { console.error('Rewrite failed:', e) }
+    setRewriting(false)
+  }
+
+  const handleRevert = () => { setCurrentBody(originalBody); setHasRewritten(false) }
+
   const tones = [
-    { label: 'More Direct', prompt: `Rewrite this email more directly and concisely. Only output the email, no commentary:\n\nSubject: ${subject}\n\n${body}` },
-    { label: 'Warmer Tone', prompt: `Rewrite this email with a warmer, more personable tone. Only output the email, no commentary:\n\nSubject: ${subject}\n\n${body}` },
-    { label: 'Shorter', prompt: `Make this email significantly shorter. Only output the email, no commentary:\n\nSubject: ${subject}\n\n${body}` },
+    { label: 'More Direct', prompt: `Rewrite this email more directly and concisely. Output ONLY the email body text, no subject line, no commentary, no sign-off name:\n\n${body}` },
+    { label: 'Warmer Tone', prompt: `Rewrite this email with a warmer tone. Output ONLY the email body text, no subject line, no commentary, no sign-off name:\n\n${body}` },
+    { label: 'Shorter', prompt: `Make this email significantly shorter. Output ONLY the email body text, no subject line, no commentary, no sign-off name:\n\n${body}` },
   ]
 
   return (
@@ -134,11 +180,12 @@ export default function EmailDraft({ text, onRewrite }) {
         {to && <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', fontFamily: T.font, marginBottom: 4 }}><span style={{ color: 'rgba(255,255,255,0.25)' }}>To:</span> {to}</div>}
         <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.9)', fontFamily: T.font, fontWeight: 500 }}>{subject}</div>
       </div>
-      <div style={{ padding: '16px 18px', fontSize: 14, color: 'rgba(255,255,255,0.7)', fontFamily: T.font, lineHeight: '1.7' }}
+      <div style={{ padding: '16px 18px', fontSize: 14, color: 'rgba(255,255,255,0.7)', fontFamily: T.font, lineHeight: '1.7', position: 'relative' }}
         dangerouslySetInnerHTML={{ __html: renderBody(body) }} />
+      {rewriting && <div style={{ padding: '8px 18px', fontSize: 12, color: 'rgba(139,108,246,0.6)', fontFamily: T.font }}>Rewriting...</div>}
       <div style={{ padding: '10px 18px 12px', display: 'flex', alignItems: 'center', gap: 6, borderTop: '0.5px solid rgba(255,255,255,0.06)', flexWrap: 'wrap' }}>
         {tones.map(t => (
-          <button key={t.label} onClick={() => onRewrite?.(t.prompt)} style={{
+          <button key={t.label} onClick={() => handleRewrite(t.prompt)} disabled={rewriting} style={{
             padding: '5px 12px', borderRadius: 50, background: 'rgba(255,255,255,0.03)',
             border: '0.5px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)',
             fontSize: 11, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4,
@@ -149,6 +196,16 @@ export default function EmailDraft({ text, onRewrite }) {
           ><Pen size={9} /> {t.label}</button>
         ))}
         <div style={{ flex: 1 }} />
+        {hasRewritten && (
+          <button onClick={handleRevert} style={{
+            padding: '5px 12px', borderRadius: 50, background: 'rgba(255,255,255,0.03)',
+            border: '0.5px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)',
+            fontSize: 11, cursor: 'pointer', fontFamily: T.font, transition: 'all 0.15s',
+          }}
+            onMouseOver={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)' }}
+            onMouseOut={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.4)' }}
+          >↩ Revert</button>
+        )}
         <button onClick={handleSendGmail} disabled={sent} style={{
           padding: '6px 14px', borderRadius: 50,
           background: sent ? 'rgba(34,197,94,0.08)' : 'rgba(139,108,246,0.06)',

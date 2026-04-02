@@ -49,7 +49,13 @@ function md(text) {
     .replace(/^## (.+)$/gm, '<div style="font-size:15px;font-weight:500;color:rgba(255,255,255,0.85);margin:16px 0 8px">$1</div>')
     .replace(/^---$/gm, '<hr style="border:none;border-top:0.5px solid rgba(255,255,255,0.1);margin:16px 0"/>')
     .replace(/\n/g, '<br/>')
-  const result = DOMPurify.sanitize(h)
+  // Wrap consecutive thinking/tool-use lines in a collapsible section
+  const thinkingPattern = /(((?:(?:I'll |Let me |Now let me |I'm going to |Checking |I see |I found |I need to |Looking |Searching |Now I'll ).*?<br\/>){2,}))/gi
+  h = h.replace(thinkingPattern, (match) => {
+    const steps = match.split('<br/>').filter(s => s.trim()).length
+    return `<details style="margin:6px 0;cursor:pointer"><summary style="font-size:12px;color:rgba(255,255,255,0.3);font-weight:400;padding:4px 0;list-style:none;display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);font-size:9px;text-align:center;line-height:13px;flex-shrink:0">›</span> Kiko's reasoning · ${steps} steps</summary><div style="font-size:13px;color:rgba(255,255,255,0.35);padding:8px 0 4px;line-height:1.6">${match}</div></details>`
+  })
+  const result = DOMPurify.sanitize(h, { ADD_TAGS: ['details', 'summary'] })
   if (text.length < 50000) { mdCache.set(text, result); if (mdCache.size > 200) mdCache.delete(mdCache.keys().next().value) }
   return result
 }
@@ -430,6 +436,18 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   const resetKey = outletCtx.kikoResetKey
   useEffect(() => { if (resetKey > 0) startNewChat() }, [resetKey])
+
+  // Listen for kiko_action events (Send to Gmail, etc.)
+  useEffect(() => {
+    const handler = (e) => {
+      const { action, subject, to, body } = e.detail || {}
+      if (action === 'create_gmail_draft') {
+        handleSubmit(`Create a Gmail draft with this exact content — do not modify:\nTo: ${to}\nSubject: ${subject}\n\n${body}`)
+      }
+    }
+    window.addEventListener('kiko_action', handler)
+    return () => window.removeEventListener('kiko_action', handler)
+  }, [])
 
   // Auto-resize handled by CSS field-sizing: content
 
