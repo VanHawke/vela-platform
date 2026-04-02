@@ -3,13 +3,10 @@ import { useState } from 'react'
 import { Send, Pen } from 'lucide-react'
 import T from '@/lib/theme'
 
-// Detect if text contains an email draft — very inclusive
 export function isEmailDraft(text) {
   if (!text || text.length < 80) return false
   const lower = text.toLowerCase()
-  // Must have Subject:
   if (!lower.includes('subject:') && !lower.includes('**subject**:')) return false
-  // Must have some sign of email body (greeting or sign-off)
   const hasGreeting = /\b(dear|hi |hello |hey )\b/i.test(text)
   const hasSignoff = /\b(regards|sincerely|best,|sunny|cheers|thank)/i.test(lower)
   const hasDraftLabel = lower.includes('suggested draft') || lower.includes('email draft') || lower.includes('draft email')
@@ -17,12 +14,9 @@ export function isEmailDraft(text) {
   return hasGreeting || hasSignoff || hasDraftLabel || hasTo
 }
 
-// Extract email from text that may contain research + draft
 export function extractEmailSection(text) {
-  // Find where the email starts — look for Subject: line
   const subjectIdx = text.search(/(?:^|\n)\s*\*?\*?Subject\*?\*?\s*:/im)
   if (subjectIdx === -1) return { pre: text, email: null }
-  // Look for the start of the draft section (## SUGGESTED DRAFT, etc.)
   const draftHeaderIdx = text.search(/##\s*(SUGGESTED\s*DRAFT|EMAIL\s*DRAFT|DRAFT)/i)
   const emailStart = draftHeaderIdx > -1 ? draftHeaderIdx : subjectIdx
   const pre = text.slice(0, emailStart).trim()
@@ -34,28 +28,86 @@ function parseEmail(text) {
   let t = text
     .replace(/#{1,3}\s*(SUGGESTED\s*DRAFT|EMAIL\s*DRAFT|DRAFT)\s*/gi, '')
     .replace(/\*?\*?\[Subject to[^\]]*\]\*?\*?\s*/gi, '')
+
   // Insert newlines before Subject:/To: if concatenated
   t = t.replace(/(Subject\s*:)/i, '\n$1')
   t = t.replace(/(To\s*:)/i, '\n$1')
 
-  const subMatch = t.match(/Subject\s*:\s*(.+?)(?:\n|$)/i)
+  // Extract Subject
+  const subMatch = t.match(/\*?\*?Subject\*?\*?\s*:\s*(.+?)(?:\n|$)/i)
   const subject = subMatch ? subMatch[1].replace(/\*\*/g, '').trim() : ''
 
-  const toMatch = t.match(/To\s*:\s*(.+?)(?:\n|$)/i)
+  // Extract To
+  const toMatch = t.match(/\*?\*?To\*?\*?\s*:\s*(.+?)(?:\n|$)/i)
   let to = toMatch ? toMatch[1].replace(/\*\*/g, '').replace(/\[|\]/g, '').trim() : ''
 
-  // Body starts after the To: line, or after Subject: if no To
-  let bodyStart = 0
+  // Find where the actual email body starts (after To: line, or after Subject:)
+  let bodyStartIdx = 0
   if (toMatch) {
-    bodyStart = t.indexOf(toMatch[0]) + toMatch[0].length
+    bodyStartIdx = t.indexOf(toMatch[0]) + toMatch[0].length
   } else if (subMatch) {
-    bodyStart = t.indexOf(subMatch[0]) + subMatch[0].length
+    bodyStartIdx = t.indexOf(subMatch[0]) + subMatch[0].length
   }
-  let body = t.slice(bodyStart)
-    .replace(/##\s*TIMING[\s\S]*/i, '')
+
+  let rawBody = t.slice(bodyStartIdx)
+
+  // Cut body at the sign-off — everything after is Kiko's commentary
+  const signoffPatterns = [
+    /\n\s*(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Thank you|Thanks),?\s*\n\s*(Sunny\s*Sidhu|Sunny)\s*/i,
+    /\n\s*(Sunny\s*Sidhu)\s*\n/i,
+  ]
+  for (const pat of signoffPatterns) {
+    const m = rawBody.match(pat)
+    if (m) {
+      // Include the sign-off in the body, cut everything after
+      const signoffEnd = rawBody.indexOf(m[0]) + m[0].length
+      // Find end of sign-off block (next blank line or ## header)
+      const afterSignoff = rawBody.slice(signoffEnd)
+      const cutPoint = afterSignoff.search(/\n\s*(\*\*|##|Key |Strategic |Next |This |The |I |Note)/)
+      if (cutPoint > -1) {
+        rawBody = rawBody.slice(0, signoffEnd + cutPoint).trim()
+      } else {
+        rawBody = rawBody.slice(0, signoffEnd).trim()
+      }
+      break
+    }
+  }
+
+  // Also cut at common Kiko commentary markers if no sign-off found
+  const commentaryMarkers = [
+    /\n\s*\*\*Key positioning/i,
+    /\n\s*\*\*Strategic rationale/i,
+    /\n\s*\*\*Next steps/i,
+    /\n\s*\*\*Timing/i,
+    /\n\s*##\s*TIMING/i,
+    /\n\s*This targets/i,
+    /\n\s*The email positions/i,
+    /\n\s*I've framed/i,
+  ]
+  for (const marker of commentaryMarkers) {
+    const idx = rawBody.search(marker)
+    if (idx > 20) { // Only cut if there's real content before the marker
+      rawBody = rawBody.slice(0, idx).trim()
+      break
+    }
+  }
+
+  // Clean markdown bold markers and brackets
+  let body = rawBody
+    .replace(/\*\*/g, '')
     .replace(/\[Current[^\]]*\]/gi, '')
     .trim()
+
   return { subject, to, body }
+}
+
+// Simple inline markdown → HTML (bold, italic, links)
+function renderBody(text) {
+  return text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br/>')
 }
 
 export default function EmailDraft({ text, onRewrite }) {
@@ -70,12 +122,10 @@ export default function EmailDraft({ text, onRewrite }) {
   }
 
   const tones = [
-    { label: 'More Direct', prompt: `Rewrite this email more directly and concisely:\n\nSubject: ${subject}\n\n${body}` },
-    { label: 'Warmer Tone', prompt: `Rewrite this email with a warmer, more personable tone:\n\nSubject: ${subject}\n\n${body}` },
-    { label: 'Shorter', prompt: `Make this email significantly shorter while keeping the key message:\n\nSubject: ${subject}\n\n${body}` },
+    { label: 'More Direct', prompt: `Rewrite this email more directly and concisely. Only output the email, no commentary:\n\nSubject: ${subject}\n\n${body}` },
+    { label: 'Warmer Tone', prompt: `Rewrite this email with a warmer, more personable tone. Only output the email, no commentary:\n\nSubject: ${subject}\n\n${body}` },
+    { label: 'Shorter', prompt: `Make this email significantly shorter. Only output the email, no commentary:\n\nSubject: ${subject}\n\n${body}` },
   ]
-
-  const paragraphs = body.split(/\n\n+/).filter(p => p.trim())
 
   return (
     <div style={{ margin: '12px 0', borderRadius: 14, overflow: 'hidden', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.02)' }}>
@@ -84,11 +134,8 @@ export default function EmailDraft({ text, onRewrite }) {
         {to && <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', fontFamily: T.font, marginBottom: 4 }}><span style={{ color: 'rgba(255,255,255,0.25)' }}>To:</span> {to}</div>}
         <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.9)', fontFamily: T.font, fontWeight: 500 }}>{subject}</div>
       </div>
-      <div style={{ padding: '16px 18px', fontSize: 14, color: 'rgba(255,255,255,0.7)', fontFamily: T.font, lineHeight: '1.7' }}>
-        {paragraphs.map((p, i) => (
-          <p key={i} style={{ margin: i === 0 ? 0 : '12px 0 0' }}>{p.trim()}</p>
-        ))}
-      </div>
+      <div style={{ padding: '16px 18px', fontSize: 14, color: 'rgba(255,255,255,0.7)', fontFamily: T.font, lineHeight: '1.7' }}
+        dangerouslySetInnerHTML={{ __html: renderBody(body) }} />
       <div style={{ padding: '10px 18px 12px', display: 'flex', alignItems: 'center', gap: 6, borderTop: '0.5px solid rgba(255,255,255,0.06)', flexWrap: 'wrap' }}>
         {tones.map(t => (
           <button key={t.label} onClick={() => onRewrite?.(t.prompt)} style={{

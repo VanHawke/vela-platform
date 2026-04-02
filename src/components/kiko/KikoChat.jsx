@@ -854,9 +854,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             const displayText = stripToolXml(msg.content.replace(/---DRAFT---[\s\S]*?---END DRAFT---/gi, ''))
             if (isKiko && isEmailDraft(displayText)) {
               const { pre, email } = extractEmailSection(displayText)
+              // Find commentary after sign-off in the email section
+              const signoffEnd = email ? email.search(/\n\s*(\*\*Key positioning|\*\*Strategic|\*\*Next steps|\*\*Timing|##\s*TIMING|This targets|The email positions|I've framed|I recommend)/i) : -1
+              const postEmail = signoffEnd > 20 ? email.slice(signoffEnd).trim() : ''
+              const emailOnly = signoffEnd > 20 ? email.slice(0, signoffEnd).trim() : email
               return <>
                 {pre && <span dangerouslySetInnerHTML={{ __html: md(pre) }} />}
-                {email && <EmailDraft text={email} onRewrite={(prompt) => handleSubmit(prompt)} />}
+                {emailOnly && <EmailDraft text={emailOnly} onRewrite={(prompt) => handleSubmit(prompt)} />}
+                {postEmail && <span dangerouslySetInnerHTML={{ __html: md(postEmail) }} />}
               </>
             }
             return displayText ? <span dangerouslySetInnerHTML={{ __html: md(displayText) }} /> : null
