@@ -1,7 +1,7 @@
 // api/gmail-draft.js — Creates Gmail draft silently using stored Google OAuth tokens
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
 
 async function refreshToken(refreshToken) {
   const res = await fetch('https://oauth2.googleapis.com/token', {
