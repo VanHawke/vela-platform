@@ -101,25 +101,35 @@ export default function EmailDraft({ text }) {
   const [sent, setSent] = useState(false)
   const { subject, to } = parsed
 
-  // Open Gmail compose directly — clean encoding, no chat messages
-  const handleSendGmail = () => {
-    // Clean subject — replace ALL dash variants with plain ASCII hyphen
-    const cleanSubject = subject
-      .replace(/[\u2014\u2013\u2015\u2012\u2010\u2011]/g, '-')
-      .replace(/â€"/g, '-')
-      .replace(/â€"/g, '-')
-      .replace(/â€˜|â€™|â€œ|â€/g, "'")
-    // Clean body — strip any remaining username/sign-off
-    const cleanBody = currentBody
-      .replace(/Sunny\s*Sidhu/gi, '')
-      .replace(/Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?\s*/gi, '')
-      .replace(/Best regards,?\s*/gi, '')
-      .replace(/Kind regards,?\s*/gi, '')
-      .replace(/\n\s*\n\s*\n/g, '\n\n')
-      .trim()
-    const url = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(to)}&su=${encodeURIComponent(cleanSubject)}&body=${encodeURIComponent(cleanBody)}`
-    window.open(url, '_blank')
-    setSent(true)
+  // Create Gmail draft silently via API — no popup window
+  const handleSendGmail = async () => {
+    setSent('sending')
+    try {
+      const cleanBody = currentBody
+        .replace(/Sunny\s*Sidhu/gi, '')
+        .replace(/Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?\s*/gi, '')
+        .replace(/Best regards,?\s*/gi, '')
+        .replace(/Kind regards,?\s*/gi, '')
+        .replace(/\n\s*\n\s*\n/g, '\n\n')
+        .trim()
+      const res = await fetch('/api/gmail-draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to, subject, body: cleanBody })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setSent('done')
+      } else {
+        console.error('[EmailDraft] Gmail draft failed:', data.error)
+        setSent('error')
+        setTimeout(() => setSent(false), 3000)
+      }
+    } catch (e) {
+      console.error('[EmailDraft] Gmail draft error:', e)
+      setSent('error')
+      setTimeout(() => setSent(false), 3000)
+    }
   }
 
   // In-place rewrite via Kiko API with auth
@@ -212,17 +222,17 @@ export default function EmailDraft({ text }) {
             onMouseOut={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.4)' }}
           ><RotateCcw size={9} /> Revert</button>
         )}
-        <button onClick={handleSendGmail} disabled={sent} style={{
+        <button onClick={handleSendGmail} disabled={sent === 'sending' || sent === 'done'} style={{
           padding: '6px 14px', borderRadius: 50,
-          background: sent ? 'rgba(34,197,94,0.08)' : 'rgba(139,108,246,0.06)',
-          border: sent ? '1px solid rgba(34,197,94,0.15)' : '1px solid rgba(139,108,246,0.12)',
-          color: sent ? 'rgba(34,197,94,0.8)' : 'rgba(139,108,246,0.75)',
-          fontSize: 12, cursor: sent ? 'default' : 'pointer', fontFamily: T.font,
+          background: sent === 'done' ? 'rgba(34,197,94,0.08)' : sent === 'error' ? 'rgba(255,80,80,0.08)' : 'rgba(139,108,246,0.06)',
+          border: sent === 'done' ? '1px solid rgba(34,197,94,0.15)' : sent === 'error' ? '1px solid rgba(255,80,80,0.15)' : '1px solid rgba(139,108,246,0.12)',
+          color: sent === 'done' ? 'rgba(34,197,94,0.8)' : sent === 'error' ? 'rgba(255,80,80,0.8)' : 'rgba(139,108,246,0.75)',
+          fontSize: 12, cursor: (sent === 'sending' || sent === 'done') ? 'default' : 'pointer', fontFamily: T.font,
           display: 'flex', alignItems: 'center', gap: 5, fontWeight: 500, transition: 'all 0.15s',
         }}
           onMouseOver={e => { if (!sent) e.currentTarget.style.background = 'rgba(139,108,246,0.12)' }}
-          onMouseOut={e => { if (!sent) e.currentTarget.style.background = sent ? 'rgba(34,197,94,0.08)' : 'rgba(139,108,246,0.06)' }}
-        ><Send size={11} /> {sent ? 'Opened in Gmail' : 'Send to Gmail'}</button>
+          onMouseOut={e => { if (!sent) e.currentTarget.style.background = 'rgba(139,108,246,0.06)' }}
+        ><Send size={11} /> {sent === 'sending' ? 'Creating draft...' : sent === 'done' ? 'Draft saved' : sent === 'error' ? 'Failed — retry' : 'Send to Gmail'}</button>
       </div>
     </div>
   )
