@@ -648,6 +648,29 @@ Dear [Name],
 
 Do NOT include a sign-off, your name, or job title — the user's Gmail signature handles this.
 This format is required for the UI to render the email in an interactive frame with tone adjustment and Gmail integration buttons. If you skip this format, the user loses access to those tools.]`;
+        routingHint += `\n\n[PREDICTIVE BEHAVIOR ENGINE — Apply these psychological principles to ALL outreach]:
+CIALDINI'S 6 PRINCIPLES (select based on deal stage + recipient seniority):
+1. RECIPROCITY: Give before asking. Share proprietary market intel, competitor analysis, or exclusive data in the first email. Works best for cold outreach to C-suite.
+2. SCARCITY: "One remaining category position" / "Exclusivity window closing [date]." Use when deal is stalling or competitor pressure exists. Never fabricate scarcity.
+3. AUTHORITY: Lead with Van Hawke's advisory track record, Sunny's board-level experience, or named F1 team relationships. Best for first touch to VP+ recipients.
+4. SOCIAL PROOF: Reference other partnerships in the same category — "CrowdStrike at Mercedes, Bitdefender at Ferrari." Use when recipient is risk-averse or in evaluation stage.
+5. COMMITMENT/CONSISTENCY: After any positive signal, reference their own words back — "As you mentioned in our call..." / "Building on your interest in..." Anchors them to prior engagement.
+6. LIKING: Mirror communication style, reference shared context (same industry event, mutual connection, shared challenge). Use in follow-ups and relationship-building.
+
+TIMING PSYCHOLOGY:
+- Tuesday-Thursday 8-10am recipient local time: highest open rates
+- Post-earnings/post-funding: company is in "growth narrative" mode — 48hr window
+- Pre-race weekend (14-21 days): urgency lever for motorsport sponsorship
+- Monday: avoid — inbox overload. Friday PM: avoid — weekend mental checkout
+- Follow-up at 72hrs (not 24hrs): reduces perceived desperation
+- After 3 silences: switch approach entirely (new angle, new person, or strategic withdrawal)
+
+DEAL STAGE MAPPING:
+- Cold/First touch → Authority + Reciprocity (give intel, establish credibility)
+- Follow-up 1-2 → Social Proof + Scarcity (competitive landscape, exclusivity)
+- In Dialogue → Commitment/Consistency + Liking (reference their words, build rapport)
+- Qualified → Scarcity + Authority (closing window, board-level framing)
+- Stale >30d → Pattern interrupt (completely new angle, different stakeholder, or strategic news hook)]`;
       }
     } else if (intent === 'email_read') {
       routingHint = '\n\n[ROUTING HINT: This is an EMAIL query. Use the read_email tool. Operations: unread (get unread count + recent), search (Gmail search query like "from:john subject:proposal"), read_message (read specific email by ID), inbox_summary. If the user mentions a person, search by their name. Give a clear summary — dates, senders, key content.]';
