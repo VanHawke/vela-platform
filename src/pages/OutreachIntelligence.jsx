@@ -1,6 +1,7 @@
 // OutreachIntelligence.jsx — Predictive Command Centre
 // Surfaces: Today's priority actions, pipeline health, timing intelligence, activity stream
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
 import { Target, TrendingUp, Clock, Building2, Send, RefreshCw, Loader2, AlertTriangle, Calendar, ChevronRight, CheckSquare, Square } from 'lucide-react'
@@ -19,6 +20,7 @@ function md(text) {
 }
 
 export default function OutreachIntelligence({ user }) {
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [deals, setDeals] = useState([])
   const [activities, setActivities] = useState([])
@@ -180,21 +182,27 @@ Be direct. Use web search for current company intelligence if needed.`
 
           {/* Stats bar */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-            <div style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
+            <div onClick={() => navigate('/pipeline')} style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', cursor: 'pointer', transition: 'all 0.15s' }}
+              onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(139,108,246,0.2)' }}
+              onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}>
               <Target size={14} style={{ color: 'rgba(139,108,246,0.5)', flexShrink: 0 }} />
               <div>
                 <div style={{ fontSize: 17, fontWeight: 300, color: 'rgba(139,108,246,0.7)' }}>{deals.length}</div>
                 <div style={{ fontSize: 10, color: T.textTertiary, fontWeight: 300 }}>Active deals</div>
               </div>
             </div>
-            <div style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
+            <div onClick={() => navigate('/pipeline')} style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', cursor: 'pointer', transition: 'all 0.15s' }}
+              onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(0,212,170,0.2)' }}
+              onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}>
               <TrendingUp size={14} style={{ color: 'rgba(0,212,170,0.5)', flexShrink: 0 }} />
               <div>
                 <div style={{ fontSize: 17, fontWeight: 300, color: 'rgba(0,212,170,0.6)' }}>${(weightedPipeline / 1000000).toFixed(1)}M</div>
                 <div style={{ fontSize: 10, color: T.textTertiary, fontWeight: 300 }}>Weighted pipeline</div>
               </div>
             </div>
-            <div style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
+            <div onClick={() => navigate('/pipeline')} style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', cursor: 'pointer', transition: 'all 0.15s' }}
+              onMouseOver={e => { e.currentTarget.style.borderColor = staleCount > 0 ? 'rgba(255,59,48,0.2)' : 'rgba(6,214,160,0.2)' }}
+              onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}>
               <AlertTriangle size={14} style={{ color: staleCount > 0 ? 'rgba(255,59,48,0.5)' : 'rgba(6,214,160,0.4)', flexShrink: 0 }} />
               <div>
                 <div style={{ fontSize: 17, fontWeight: 300, color: staleCount > 0 ? 'rgba(255,59,48,0.6)' : 'rgba(6,214,160,0.5)' }}>{staleCount}</div>
@@ -202,7 +210,9 @@ Be direct. Use web search for current company intelligence if needed.`
               </div>
             </div>
             {nextRace && (
-              <div style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
+              <div onClick={() => navigate('/calendar')} style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', cursor: 'pointer', transition: 'all 0.15s' }}
+                onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(0,212,170,0.2)' }}
+                onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}>
                 <Calendar size={14} style={{ color: daysToRace <= 14 ? 'rgba(0,212,170,0.5)' : 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
                 <div>
                   <div style={{ fontSize: 17, fontWeight: 300, color: daysToRace <= 14 ? 'rgba(0,212,170,0.6)' : 'rgba(255,255,255,0.4)' }}>{daysToRace}d</div>
