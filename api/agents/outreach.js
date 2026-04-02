@@ -17,13 +17,25 @@ async function draftEmail({ to, subject, body, cc, thread_id }, userEmail) {
       const sigRows = await sbFetch('user_settings?select=email_signature&limit=1');
       if (sigRows?.[0]?.email_signature) sig = `<br><div style="margin-top:16px;padding-top:12px;border-top:1px solid #e0e0e0">${sigRows[0].email_signature}</div>`;
     } catch {}
-    const htmlBody = `<div style="font-family:-apple-system,system-ui,sans-serif;font-size:14px">${body.replace(/\n/g, '<br>')}${sig}</div>`;
+    // Clean body — strip sign-off and username (Gmail signature handles this)
+    const cleanBody = body
+      .replace(/Best regards,?\s*/gi, '').replace(/Kind regards,?\s*/gi, '').replace(/Warm regards,?\s*/gi, '')
+      .replace(/Regards,?\s*/gi, '').replace(/Sincerely,?\s*/gi, '').replace(/Cheers,?\s*/gi, '')
+      .replace(/Sunny\s*Sidhu/gi, '').replace(/Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?\s*/gi, '')
+      .replace(/\n\s*\n\s*\n/g, '\n\n').trim();
+    // Clean subject — fix dash encoding
+    const cleanSubject = (subject || '')
+      .replace(/[\u2014\u2013\u2015\u2012\u2010\u2011]/g, '-')
+      .replace(/â€"/g, '-').replace(/â€"/g, '-');
+    const htmlBody = `<div style="font-family:Helvetica,Arial,sans-serif;font-size:12pt">${cleanBody.replace(/\n/g, '<br>')}${sig}</div>`;
     const boundary = `b_${Date.now()}`;
-    let mime = `To: ${to}\r\nFrom: ${userEmail}\r\n`;
+    // Always send from vanhawke.agency alias for F1 prospecting
+    const fromAddr = userEmail.includes('vanhawke') ? userEmail.replace('vanhawke.com', 'vanhawke.agency') : userEmail;
+    let mime = `To: ${to}\r\nFrom: ${fromAddr}\r\n`;
     if (cc) mime += `Cc: ${cc}\r\n`;
-    if (subject) mime += `Subject: ${subject}\r\n`;
+    if (subject) mime += `Subject: ${cleanSubject}\r\n`;
     mime += `MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary="${boundary}"\r\n\r\n`;
-    mime += `--${boundary}\r\nContent-Type: text/plain; charset="UTF-8"\r\n\r\n${body}\r\n`;
+    mime += `--${boundary}\r\nContent-Type: text/plain; charset="UTF-8"\r\n\r\n${cleanBody}\r\n`;
     mime += `--${boundary}\r\nContent-Type: text/html; charset="UTF-8"\r\n\r\n${htmlBody}\r\n`;
     mime += `--${boundary}--`;
     const raw = Buffer.from(mime).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');

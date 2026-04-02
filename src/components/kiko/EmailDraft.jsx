@@ -6,27 +6,30 @@ import T from '@/lib/theme'
 export function isEmailDraft(text) {
   if (!text || text.length < 80) return false
   const lower = text.toLowerCase()
-  if (!lower.includes('subject:') && !lower.includes('**subject**:')) return false
+  if (!lower.includes('subject:') && !lower.includes('**subject**:') && !lower.includes('**subject:**')) return false
   const hasGreeting = /\b(dear|hi |hello |hey )\b/i.test(text)
   const hasSignoff = /\b(regards|sincerely|best,|sunny|cheers|thank)/i.test(lower)
   const hasDraftLabel = lower.includes('suggested draft') || lower.includes('email draft') || lower.includes('draft email')
-  const hasTo = lower.includes('to:') || lower.includes('**to**:')
+  const hasTo = lower.includes('to:') || lower.includes('**to**:') || lower.includes('**to:**')
   return hasGreeting || hasSignoff || hasDraftLabel || hasTo
 }
 
 export function extractEmailSection(text) {
-  const subjectIdx = text.search(/(?:^|\n)\s*\*?\*?Subject\*?\*?\s*:/im)
-  if (subjectIdx === -1) return { pre: text, email: null }
-  const draftHeaderIdx = text.search(/##\s*(SUGGESTED\s*DRAFT|EMAIL\s*DRAFT|DRAFT)/i)
+  // Try SUGGESTED DRAFT header first
+  const draftHeaderIdx = text.search(/#{1,3}\s*\d*\.?\s*(SUGGESTED\s*DRAFT|EMAIL\s*DRAFT|DRAFT)/i)
+  // Then Subject:
+  const subjectIdx = text.search(/(?:^|\n|\.)\s*\*?\*?Subject\*?\*?\s*:/im)
+  if (draftHeaderIdx === -1 && subjectIdx === -1) return { pre: text, email: null }
   const emailStart = draftHeaderIdx > -1 ? draftHeaderIdx : subjectIdx
   return { pre: text.slice(0, emailStart).trim(), email: text.slice(emailStart).trim() }
 }
 
 function parseEmail(text) {
   let t = text
-    .replace(/#{1,3}\s*(SUGGESTED\s*DRAFT|EMAIL\s*DRAFT|DRAFT)\s*/gi, '')
+    .replace(/#{1,3}\s*\d*\.?\s*(SUGGESTED\s*DRAFT|EMAIL\s*DRAFT|DRAFT)\s*/gi, '')
     .replace(/\*?\*?\[Subject to[^\]]*\]\*?\*?\s*/gi, '')
-  t = t.replace(/(Subject\s*:)/i, '\n$1').replace(/(To\s*:)/i, '\n$1')
+  // Insert newlines to split concatenated Subject/To/Dear
+  t = t.replace(/(Subject\s*:)/i, '\n$1').replace(/(To\s*:)/i, '\n$1').replace(/(Dear\s+\w)/i, '\n$1')
 
   const subMatch = t.match(/\*?\*?Subject\*?\*?\s*:\s*(.+?)(?:\n|$)/i)
   const subject = subMatch ? subMatch[1]
