@@ -1,12 +1,11 @@
-// src/components/kiko/KikoWaveform.jsx — Kiko Sleek Waveform avatar (Caffeine)
-// 9-bar bell-curve waveform · peach gradient · voice-reactive
-// Replaces canvas-based purple/teal waveform with exact Round 2 Sleek design
+// src/components/kiko/KikoWaveform.jsx — Kiko Filament Waveform avatar (Caffeine)
+// 11-bar Filament waveform · peach gradient · glow tips on speech peaks
+// Sharper bell-curve with whisper-tail outer bars
 // Integrates with window.__kikoFreqData for real audio in voice mode
 import { useState, useRef, useEffect, memo } from 'react'
 import T from '@/lib/theme'
 
 // ── Audio Hooks — simulate speech cadence ──
-// In voice mode, real audio data from window.__kikoFreqData overrides these
 function useBarLevels(count, active) {
   const [levels, setLevels] = useState(() => new Array(count).fill(0))
   const rafRef = useRef(null)
@@ -88,12 +87,12 @@ function useRealAudioLevels(count, active) {
   return levels
 }
 
-// ── Bell-curve envelope — exact Round 2 values ──
-const BAR_ENVELOPE = [0.3, 0.5, 0.7, 0.85, 1, 0.85, 0.7, 0.5, 0.3]
+// ── Filament envelope — 11 bars, sharper bell with whisper tails ──
+const BAR_ENVELOPE = [0.12, 0.25, 0.45, 0.68, 0.88, 1, 0.88, 0.68, 0.45, 0.25, 0.12]
 const BAR_COUNT = BAR_ENVELOPE.length
 
 /**
- * KikoWaveform — Sleek 9-bar waveform
+ * KikoWaveform — Filament 11-bar waveform
  * 
  * Props (backwards-compatible with old canvas API):
  *   width, height — dimensions
@@ -112,22 +111,20 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
   const realLevels = useRealAudioLevels(BAR_COUNT, hasRealAudio && state === 'speaking')
   const simLevels = useBarLevels(BAR_COUNT, !hasRealAudio && state === 'speaking')
   const barLevels = hasRealAudio ? realLevels : simLevels
-  // Always run breathing animation — active in all states except speaking
   const listenLevel = useAudioLevel(state !== 'speaking')
 
-  // Scale proportions from the Round 2 design (base size=72)
-  // Scale from the Round 2 prototype: height / 0.45 / 72 (inverse of maxH ratio)
-  const scale = height / 0.45 / 72
-  const bw = Math.max(1.5, 72 * 0.04 * scale)
-  const gap = 72 * 0.055 * scale
-  const maxH = height * 0.85
+  // Filament proportions — thinner bars, tighter gap
+  const scale = height / 0.46 / 72
+  const bw = Math.max(1, 72 * 0.015 * scale)
+  const gap = 72 * 0.038 * scale
+  const maxH = height * 0.46
 
   if (mini) {
     // Mini variant: glass circle shell with waveform inside
     const size = Math.min(width, height)
-    const shellBw = Math.max(1.5, size * 0.04)
-    const shellGap = size * 0.055
-    const shellMaxH = size * 0.45
+    const shellBw = Math.max(1, size * 0.015)
+    const shellGap = size * 0.038
+    const shellMaxH = size * 0.46
     const level = useAudioLevel(state === 'speaking')
     const active = state === 'speaking' || state === 'listening'
     const glowI = state === 'speaking' ? 0.08 + level * 0.18 : state === 'listening' ? 0.06 : 0
@@ -154,10 +151,10 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
         {/* Reactive glow ring */}
         {active && <div style={{
           position: 'absolute', inset: -2, borderRadius: 9999,
-          boxShadow: `0 0 ${8 + level * 14}px rgba(255,224,194,${glowI})`,
+          boxShadow: `0 0 ${12 + level * 20}px rgba(255,224,194,${glowI})`,
           pointerEvents: 'none',
         }} />}
-        {/* Sleek Waveform bars */}
+        {/* Filament Waveform bars */}
         <div style={{
           position: 'relative', zIndex: 1,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -165,15 +162,29 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
         }}>
           {BAR_ENVELOPE.map((env, i) => {
             let h
-            if (state === 'speaking') h = 0.08 + barLevels[i] * 0.92
-            else h = env * (0.55 + listenLevel * 0.45)
+            if (state === 'speaking') h = 0.06 + barLevels[i] * 0.94
+            else h = env * (0.55 + listenLevel * 0.35)
+            const tipGlow = state === 'speaking' && barLevels[i] > 0.4
             return (
-              <div key={i} style={{
-                width: shellBw, height: `${h * 100}%`, minHeight: 2, borderRadius: shellBw,
-                background: `linear-gradient(180deg, ${T.accent} 0%, rgba(255,224,194,0.2) 100%)`,
-                opacity: state === 'speaking' ? 0.5 + barLevels[i] * 0.5 : 0.4 + env * 0.4 + listenLevel * 0.2,
-                transition: state === 'speaking' ? 'height 50ms linear, opacity 50ms linear' : 'all 120ms cubic-bezier(0.22,1,0.36,1)',
-              }} />
+              <div key={i} style={{ position: 'relative', height: `${h * 100}%`, minHeight: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                {/* Glow tip — Filament signature: blooms on speech peaks */}
+                {tipGlow && (
+                  <div style={{
+                    position: 'absolute', top: -1, left: '50%', transform: 'translateX(-50%)',
+                    width: shellBw * 4, height: shellBw * 4,
+                    borderRadius: 9999,
+                    background: T.accent,
+                    filter: 'blur(2.5px)',
+                    opacity: (barLevels[i] - 0.4) * 0.5,
+                  }} />
+                )}
+                <div style={{
+                  width: shellBw, height: '100%', borderRadius: shellBw,
+                  background: `linear-gradient(180deg, ${T.accent} 0%, rgba(255,224,194,0.10) 100%)`,
+                  opacity: state === 'speaking' ? 0.45 + barLevels[i] * 0.55 : 0.3 + env * 0.55,
+                  transition: state === 'speaking' ? 'height 50ms linear, opacity 50ms linear' : 'all 500ms cubic-bezier(0.22,1,0.36,1)',
+                }} />
+              </div>
             )
           })}
         </div>
@@ -190,15 +201,29 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
     }}>
       {BAR_ENVELOPE.map((env, i) => {
         let h
-        if (state === 'speaking') h = 0.08 + barLevels[i] * 0.92
-        else h = env * (0.55 + listenLevel * 0.45)
+        if (state === 'speaking') h = 0.06 + barLevels[i] * 0.94
+        else h = env * (0.55 + listenLevel * 0.35)
+        const tipGlow = state === 'speaking' && barLevels[i] > 0.4
         return (
-          <div key={i} style={{
-            width: bw, height: `${h * 100}%`, minHeight: 2, borderRadius: bw,
-            background: `linear-gradient(180deg, ${T.accent} 0%, rgba(255,224,194,0.2) 100%)`,
-            opacity: state === 'speaking' ? 0.5 + barLevels[i] * 0.5 : 0.4 + env * 0.4 + listenLevel * 0.2,
-            transition: state === 'speaking' ? 'height 50ms linear, opacity 50ms linear' : 'all 120ms cubic-bezier(0.22,1,0.36,1)',
-          }} />
+          <div key={i} style={{ position: 'relative', height: `${h * 100}%`, minHeight: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {/* Glow tip — Filament signature */}
+            {tipGlow && (
+              <div style={{
+                position: 'absolute', top: -1, left: '50%', transform: 'translateX(-50%)',
+                width: bw * 4, height: bw * 4,
+                borderRadius: 9999,
+                background: T.accent,
+                filter: 'blur(2.5px)',
+                opacity: (barLevels[i] - 0.4) * 0.5,
+              }} />
+            )}
+            <div style={{
+              width: bw, height: '100%', borderRadius: bw,
+              background: `linear-gradient(180deg, ${T.accent} 0%, rgba(255,224,194,0.10) 100%)`,
+              opacity: state === 'speaking' ? 0.45 + barLevels[i] * 0.55 : 0.3 + env * 0.55,
+              transition: state === 'speaking' ? 'height 50ms linear, opacity 50ms linear' : 'all 500ms cubic-bezier(0.22,1,0.36,1)',
+            }} />
+          </div>
         )
       })}
     </div>
