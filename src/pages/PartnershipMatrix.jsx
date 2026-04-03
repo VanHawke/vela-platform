@@ -3,10 +3,10 @@ import { setPageContext } from '@/lib/pageContext'
 import { RefreshCw, Loader2, AlertTriangle, Plus, X, ExternalLink, FileDown, Check, Grid3X3, Target, Users } from 'lucide-react'
 
 const T = {
-  bg: '#000000', surface: 'rgba(255,255,255,0.04)', surfaceHover: 'rgba(255,255,255,0.06)',
-  border: 'rgba(255,255,255,0.08)', borderHover: 'rgba(255,255,255,0.1)',
-  text: 'rgba(255,255,255,0.95)', textSecondary: 'rgba(255,255,255,0.55)', textTertiary: 'rgba(255,255,255,0.32)',
-  accent: '#8B6CF6', accentSoft: 'rgba(139,108,246,0.08)',
+  bg: '#000000', surface: 'rgba(238,238,238,0.04)', surfaceHover: 'rgba(238,238,238,0.06)',
+  border: 'rgba(238,238,238,0.08)', borderHover: 'rgba(238,238,238,0.1)',
+  text: 'rgba(238,238,238,0.95)', textSecondary: 'rgba(238,238,238,0.55)', textTertiary: 'rgba(238,238,238,0.32)',
+  accent: '#ffe0c2', accentSoft: 'rgba(255,224,194,0.08)',
   blue: '#007AFF', red: '#FF3B30', yellow: '#FF9500', green: '#34C759',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   gap: 'rgba(255,59,48,0.06)', gapBorder: 'rgba(255,59,48,0.15)', filled: 'rgba(52,199,89,0.06)', filledBorder: 'rgba(52,199,89,0.15)',
@@ -31,12 +31,12 @@ function TeamLogo({ team, size = 20 }) {
   const [imgError, setImgError] = useState(false)
   const showImg = team.logo_url && !imgError
   return (
-    <div style={{ width: size, height: size, borderRadius: size * 0.3, background: team.color || 'rgba(255,255,255,0.7)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+    <div style={{ width: size, height: size, borderRadius: size * 0.3, background: team.color || 'rgba(238,238,238,0.7)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
       {showImg ? (
         <img src={team.logo_url} alt={team.name} style={{ width: size * 0.7, height: size * 0.7, objectFit: 'contain', filter: 'brightness(10)' }}
           onError={() => setImgError(true)} />
       ) : (
-        <span style={{ fontSize: Math.max(size * 0.35, 8), fontWeight: 500, color: 'rgba(255,255,255,0.9)', letterSpacing: '-0.02em' }}>
+        <span style={{ fontSize: Math.max(size * 0.35, 8), fontWeight: 500, color: 'rgba(238,238,238,0.9)', letterSpacing: '-0.02em' }}>
           {team.name?.slice(0,2).toUpperCase()}
         </span>
       )}
@@ -128,7 +128,7 @@ export default function PartnershipMatrix({ user }) {
           {TABS.map(t => { const I = t.icon; return (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
               display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: T.font, fontSize: 13, fontWeight: tab === t.id ? 600 : 400, transition: 'all 0.15s',
-              background: tab === t.id ? T.accent : 'transparent', color: tab === t.id ? 'rgba(255,255,255,0.9)' : T.textSecondary,
+              background: tab === t.id ? T.accent : 'transparent', color: tab === t.id ? 'rgba(238,238,238,0.9)' : T.textSecondary,
             }}><I size={13} />{t.label}</button>
           )})}
         </div>
@@ -137,7 +137,7 @@ export default function PartnershipMatrix({ user }) {
       {/* Add Modal */}
       {showAdd && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowAdd(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 20, padding: 20, width: 360, border: '0.5px solid rgba(255,255,255,0.1)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 16px 64px rgba(0,0,0,0.5)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'rgba(238,238,238,0.035)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 20, padding: 20, width: 360, border: '0.5px solid rgba(238,238,238,0.1)', boxShadow: 'inset 0 1px 0 rgba(238,238,238,0.08), 0 16px 64px rgba(0,0,0,0.5)' }}>
             <h3 style={{ fontSize: 15, fontWeight: 400, margin: '0 0 12px' }}>Add Partnership</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <select value={addForm.team_id} onChange={e => setAddForm(p => ({ ...p, team_id: e.target.value }))} style={{ fontSize: 13, padding: '6px 8px', borderRadius: 6, border: `1px solid ${T.border}`, fontFamily: T.font }}>
@@ -152,7 +152,7 @@ export default function PartnershipMatrix({ user }) {
               </select>
               <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                 <button onClick={() => setShowAdd(false)} style={{ flex: 1, fontSize: 13, padding: '6px 0', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
-                <button onClick={addPartnership} style={{ flex: 1, fontSize: 13, padding: '6px 0', borderRadius: 6, border: 'none', background: T.accent, color: 'rgba(255,255,255,0.9)', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>Add</button>
+                <button onClick={addPartnership} style={{ flex: 1, fontSize: 13, padding: '6px 0', borderRadius: 6, border: 'none', background: T.accent, color: 'rgba(238,238,238,0.9)', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>Add</button>
               </div>
             </div>
           </div>
@@ -286,7 +286,7 @@ export default function PartnershipMatrix({ user }) {
                       </p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                         {gaps.map(c => (
-                          <span key={c.id} style={{ fontSize: 12, padding: '3px 10px', borderRadius: 6, background: 'rgba(255,255,255,0.7)', color: '#991B1B', border: '1px solid rgba(226,75,74,0.2)', fontWeight: 500 }}>{c.name}</span>
+                          <span key={c.id} style={{ fontSize: 12, padding: '3px 10px', borderRadius: 6, background: 'rgba(238,238,238,0.7)', color: '#991B1B', border: '1px solid rgba(226,75,74,0.2)', fontWeight: 500 }}>{c.name}</span>
                         ))}
                       </div>
                     </div>

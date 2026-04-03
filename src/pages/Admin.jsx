@@ -147,7 +147,7 @@ export default function Admin() {
                   { key: 'platform_name', label: 'Platform Name', placeholder: 'Kiko' },
                   { key: 'logo_url', label: 'Logo URL', placeholder: 'https://...' },
                   { key: 'favicon_url', label: 'Favicon URL', placeholder: 'https://...' },
-                  { key: 'primary_colour', label: 'Primary Colour', placeholder: 'rgba(255,255,255,0.04)' },
+                  { key: 'primary_colour', label: 'Primary Colour', placeholder: 'rgba(238,238,238,0.04)' },
                 ].map(({ key, label, placeholder }) => (
                   <div key={key}>
                     <label className="text-xs text-white/40 block mb-1">{label}</label>

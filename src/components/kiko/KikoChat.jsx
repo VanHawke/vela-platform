@@ -730,20 +730,39 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const PromptBar = ({ welcome = false }) => {
     const ic = 15
     const hasContent = input.trim() || pendingAttachment
+    const [promptFocused, setPromptFocused] = useState(false)
+    const [mousePos, setMousePos] = useState({ x: 50, y: 50 })
+    const barRef = useRef(null)
+    const throttleRef = useRef(null)
+    const handleBarMouseMove = useCallback((e) => {
+      if (!barRef.current || throttleRef.current) return
+      throttleRef.current = setTimeout(() => {
+        const rect = barRef.current?.getBoundingClientRect()
+        if (rect) setMousePos({ x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 })
+        throttleRef.current = null
+      }, 40)
+    }, [])
     return (
-      <div style={{
+      <div ref={barRef} onMouseMove={handleBarMouseMove} style={{
         display: 'flex', flexDirection: 'column',
         background: 'rgba(25,25,25,0.30)', backdropFilter: 'blur(40px) saturate(1.4)', WebkitBackdropFilter: 'blur(40px) saturate(1.4)',
         borderRadius: 8,
         padding: welcome ? '8px 12px' : '14px 16px 8px',
         position: 'relative',
-        border: `0.5px solid ${transcribing ? 'rgba(34,197,94,0.2)' : 'rgba(32,30,24,0.50)'}`,
-        borderTop: `0.5px solid ${transcribing ? 'rgba(34,197,94,0.25)' : 'rgba(255,224,194,0.15)'}`,
-        boxShadow: 'inset 3px 3px 0.5px -3.5px rgba(255,224,194,0.12), inset -3px -3px 0.5px -3.5px rgba(255,224,194,0.10), inset 1px 1px 1px -0.5px rgba(255,224,194,0.08), inset -1px -1px 1px -0.5px rgba(255,224,194,0.08), 0 4px 16px rgba(0,0,0,0.25)',
-        transition: 'border-color 0.2s',
+        border: `0.5px solid ${promptFocused ? 'rgba(255,224,194,0.2)' : transcribing ? 'rgba(34,197,94,0.2)' : 'rgba(32,30,24,0.50)'}`,
+        borderTop: `0.5px solid ${promptFocused ? 'rgba(255,224,194,0.25)' : transcribing ? 'rgba(34,197,94,0.25)' : 'rgba(255,224,194,0.15)'}`,
+        boxShadow: promptFocused
+          ? '0 0 0 1px rgba(255,224,194,0.1), 0 0 20px rgba(255,224,194,0.06), inset 3px 3px 0.5px -3.5px rgba(255,224,194,0.12), inset -3px -3px 0.5px -3.5px rgba(255,224,194,0.10), inset 1px 1px 1px -0.5px rgba(255,224,194,0.08), inset -1px -1px 1px -0.5px rgba(255,224,194,0.08), 0 4px 16px rgba(0,0,0,0.25)'
+          : 'inset 3px 3px 0.5px -3.5px rgba(255,224,194,0.12), inset -3px -3px 0.5px -3.5px rgba(255,224,194,0.10), inset 1px 1px 1px -0.5px rgba(255,224,194,0.08), inset -1px -1px 1px -0.5px rgba(255,224,194,0.08), 0 4px 16px rgba(0,0,0,0.25)',
+        transition: 'all 0.4s cubic-bezier(0.22,1,0.36,1)',
         maxWidth: welcome ? 720 : (compact ? '100%' : 720),
         width: '100%', margin: '0 auto',
+        overflow: 'visible',
       }}>
+        {/* Peach cursor-following glow */}
+        {promptFocused && <div style={{ position: 'absolute', inset: 0, borderRadius: 8, pointerEvents: 'none', background: `radial-gradient(circle 140px at ${mousePos.x}% ${mousePos.y}%, rgba(255,224,194,0.06) 0%, transparent 70%)`, zIndex: 0 }} />}
+        {/* Shimmer edge on focus */}
+        {promptFocused && <div style={{ position: 'absolute', inset: -1, borderRadius: 9, pointerEvents: 'none', background: 'linear-gradient(90deg, transparent 0%, rgba(255,224,194,0.08) 25%, rgba(255,224,194,0.12) 50%, rgba(255,224,194,0.08) 75%, transparent 100%)', backgroundSize: '200% 100%', animation: 'glowShimmer 3s linear infinite', opacity: 0.6, zIndex: 0 }} />}
         {/* Pending image preview */}
         {pendingAttachment?.previewUrl && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 0 10px', marginBottom: 8, borderBottom: '0.5px solid rgba(255,224,194,0.06)' }}>
@@ -762,8 +781,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           </button>
           <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
             <textarea ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+              onFocus={() => setPromptFocused(true)} onBlur={() => setTimeout(() => setPromptFocused(false), 150)}
               placeholder="" autoFocus rows={1}
-              style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: 15, color: 'rgba(238,238,238,0.85)', fontFamily: T.font, minHeight: 24, maxHeight: 200, fontWeight: 400, resize: 'none', lineHeight: '24px', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content', verticalAlign: 'middle', display: 'block' }} />
+              style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: 15, color: 'rgba(238,238,238,0.85)', fontFamily: T.font, minHeight: 24, maxHeight: 200, fontWeight: 400, resize: 'none', lineHeight: '24px', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content', verticalAlign: 'middle', display: 'block', position: 'relative', zIndex: 2 }} />
             {!input && !fileUploading && !pendingAttachment && typewriterText && (
               <div style={{ position: 'absolute', top: 4, left: 0, fontSize: 15, color: 'rgba(238,238,238,0.25)', fontFamily: T.font, fontWeight: 400, pointerEvents: 'none', lineHeight: '24px' }}>
                 {typewriterText}<span style={{ opacity: typewriterText.length < 19 ? 1 : 0, animation: typewriterText.length < 19 ? 'kikoBreathe 0.6s step-end infinite' : 'none' }}>|</span>
@@ -792,9 +812,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         /* ── CONVERSATION: Two-row layout — textarea top, icons bottom ── */
         <>
         <textarea ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+          onFocus={() => setPromptFocused(true)} onBlur={() => setTimeout(() => setPromptFocused(false), 150)}
           placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment..." : "Ask me anything...."}
           autoFocus rows={1}
-          style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: 15, color: 'rgba(238,238,238,0.85)', fontFamily: T.font, minHeight: 44, maxHeight: 300, fontWeight: 400, resize: 'none', lineHeight: '1.5', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content' }} />
+          style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: 15, color: 'rgba(238,238,238,0.85)', fontFamily: T.font, minHeight: 44, maxHeight: 300, fontWeight: 400, resize: 'none', lineHeight: '1.5', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content', position: 'relative', zIndex: 2 }} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 6 }}>
           <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'transparent', color: 'rgba(238,238,238,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width={ic} height={ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
@@ -1000,7 +1021,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           }}
             onMouseEnter={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1.02)' }}
             onMouseLeave={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1)' }}>
-            <KikoWaveform width={900} height={100} speaking={voiceActive && voiceState.speaking} volume={voiceState.energy || 0} onClick={voiceActive ? undefined : () => startVoice()} />
+            <KikoWaveform width={900} height={48} speaking={voiceActive && voiceState.speaking} volume={voiceState.energy || 0} onClick={voiceActive ? undefined : () => startVoice()} />
           </div>
 
           {/* Voice controls — visible only in voice mode */}

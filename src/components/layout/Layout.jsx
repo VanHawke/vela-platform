@@ -225,7 +225,7 @@ export default function Layout({ user }) {
               <img src={customLogo} alt="Logo" style={{ height: 36, borderRadius: 8, maxWidth: 160, objectFit: 'contain' }} />
             ) : (
               <>
-                <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,0.55)', fontFamily: T.font, letterSpacing: '0.12em' }}>VAN HAWKE<sup style={{ fontSize: 8, verticalAlign: 'super', opacity: 0.5 }}>™</sup></span>
+                <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(238,238,238,0.55)', fontFamily: T.font, letterSpacing: '0.12em' }}>VAN HAWKE<sup style={{ fontSize: 8, verticalAlign: 'super', opacity: 0.5 }}>™</sup></span>
               </>
             )}
           </button>
@@ -242,14 +242,14 @@ export default function Layout({ user }) {
                   nav(tab.path)
                 }} style={{
                   padding: '7px 22px', borderRadius: 50, border: 'none',
-                  background: active ? 'rgba(255,255,255,0.1)' : 'transparent',
-                  color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)',
+                  background: active ? 'rgba(238,238,238,0.1)' : 'transparent',
+                  color: active ? 'rgba(238,238,238,0.9)' : 'rgba(238,238,238,0.3)',
                   fontSize: 13, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: T.font,
-                  boxShadow: active ? 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 8px rgba(0,0,0,0.2)' : 'none',
+                  boxShadow: active ? 'inset 0 1px 0 rgba(238,238,238,0.12), 0 2px 8px rgba(0,0,0,0.2)' : 'none',
                   transition: 'all 0.2s',
                 }}
-                  onMouseOver={e => { if (!active) { e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}}
-                  onMouseOut={e => { if (!active) { e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; e.currentTarget.style.background = 'transparent' }}}
+                  onMouseOver={e => { if (!active) { e.currentTarget.style.color = 'rgba(238,238,238,0.8)'; e.currentTarget.style.background = 'rgba(238,238,238,0.05)' }}}
+                  onMouseOut={e => { if (!active) { e.currentTarget.style.color = 'rgba(238,238,238,0.3)'; e.currentTarget.style.background = 'transparent' }}}
                 >{tab.label}</button>
               )
             })}
@@ -257,12 +257,12 @@ export default function Layout({ user }) {
             <div ref={moreRef} style={{ position: 'relative' }}>
               <button onClick={() => setMoreOpen(!moreOpen)} style={{
                 padding: '7px 22px', borderRadius: 50, border: 'none',
-                background: moreOpen ? 'rgba(255,255,255,0.07)' : 'transparent',
-                color: moreOpen ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)', fontSize: 13, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
+                background: moreOpen ? 'rgba(238,238,238,0.07)' : 'transparent',
+                color: moreOpen ? 'rgba(238,238,238,0.8)' : 'rgba(238,238,238,0.3)', fontSize: 13, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
                 display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.2s',
               }}
-                onMouseOver={e => { if (!moreOpen) { e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}}
-                onMouseOut={e => { if (!moreOpen) { e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; e.currentTarget.style.background = 'transparent' }}}
+                onMouseOver={e => { if (!moreOpen) { e.currentTarget.style.color = 'rgba(238,238,238,0.8)'; e.currentTarget.style.background = 'rgba(238,238,238,0.05)' }}}
+                onMouseOut={e => { if (!moreOpen) { e.currentTarget.style.color = 'rgba(238,238,238,0.3)'; e.currentTarget.style.background = 'transparent' }}}
               >
                 More <ChevronDown size={11} style={{ transition: 'transform 0.2s', transform: moreOpen ? 'rotate(180deg)' : 'none' }} />
               </button>
@@ -270,32 +270,32 @@ export default function Layout({ user }) {
                 <div style={{
                   position: 'absolute', top: 'calc(100% + 8px)', right: 0,
                   width: 240, background: 'rgba(12,12,18,0.82)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
-                  borderRadius: 14, border: `0.5px solid rgba(255,255,255,0.12)`,
-                  boxShadow: '0 12px 40px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.06) inset', padding: '6px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
+                  borderRadius: 14, border: `0.5px solid rgba(238,238,238,0.12)`,
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.5), 0 1px 0 rgba(238,238,238,0.06) inset', padding: '6px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
                 }}>
                   {MORE_ITEMS.map(item => {
                     const Icon = item.Icon || Building2
                     return (
                     <button key={item.label} onClick={() => { nav(item.path); setMoreOpen(false) }} style={{
                       width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none',
-                      background: loc.pathname === item.path ? 'rgba(255,255,255,0.08)' : 'transparent',
-                      color: loc.pathname === item.path ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.4)', textAlign: 'left',
+                      background: loc.pathname === item.path ? 'rgba(238,238,238,0.08)' : 'transparent',
+                      color: loc.pathname === item.path ? 'rgba(238,238,238,0.85)' : 'rgba(238,238,238,0.4)', textAlign: 'left',
                       fontSize: 13, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
                       display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
                     }}
-                      onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)' }}
-                      onMouseOut={e => { e.currentTarget.style.background = loc.pathname === item.path ? 'rgba(255,255,255,0.08)' : 'transparent'; e.currentTarget.style.color = loc.pathname === item.path ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.4)' }}
+                      onMouseOver={e => { e.currentTarget.style.background = 'rgba(238,238,238,0.06)'; e.currentTarget.style.color = 'rgba(238,238,238,0.8)' }}
+                      onMouseOut={e => { e.currentTarget.style.background = loc.pathname === item.path ? 'rgba(238,238,238,0.08)' : 'transparent'; e.currentTarget.style.color = loc.pathname === item.path ? 'rgba(238,238,238,0.85)' : 'rgba(238,238,238,0.4)' }}
                     ><Icon size={14} />{item.label}</button>
                   )})}
-                  {MORE_ITEMS.length > 0 && <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '4px 8px' }} />}
+                  {MORE_ITEMS.length > 0 && <div style={{ height: 1, background: 'rgba(238,238,238,0.05)', margin: '4px 8px' }} />}
                   <button onClick={() => { nav('/settings'); setMoreOpen(false) }} style={{
                     width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none',
-                    background: 'transparent', color: 'rgba(255,255,255,0.4)', textAlign: 'left',
+                    background: 'transparent', color: 'rgba(238,238,238,0.4)', textAlign: 'left',
                     fontSize: 13, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
                     display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
                   }}
-                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)' }}
-                    onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)' }}
+                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(238,238,238,0.06)'; e.currentTarget.style.color = 'rgba(238,238,238,0.8)' }}
+                    onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(238,238,238,0.4)' }}
                   ><Settings size={14} />Settings</button>
                 </div>
               )}
@@ -315,23 +315,23 @@ export default function Layout({ user }) {
           {/* Mobile hamburger — visible only below 768px */}
           <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{
             display: 'none', alignItems: 'center', justifyContent: 'center',
-            width: 36, height: 36, borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)',
-            background: mobileMenuOpen ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)',
+            width: 36, height: 36, borderRadius: 10, border: '1px solid rgba(238,238,238,0.1)',
+            background: mobileMenuOpen ? 'rgba(238,238,238,0.08)' : 'rgba(238,238,238,0.04)',
             cursor: 'pointer', transition: 'all 0.15s',
           }}>
-            {mobileMenuOpen ? <X size={16} color="rgba(255,255,255,0.7)" /> : <Menu size={16} color="rgba(255,255,255,0.5)" />}
+            {mobileMenuOpen ? <X size={16} color="rgba(238,238,238,0.7)" /> : <Menu size={16} color="rgba(238,238,238,0.5)" />}
           </button>
           {/* Command palette trigger */}
           <button onClick={() => setPaletteOpen(true)} style={{
             display: 'flex', alignItems: 'center', gap: 8,
-            padding: '7px 14px', borderRadius: 50, border: '0.5px solid rgba(255,255,255,0.1)',
-            background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+            padding: '7px 14px', borderRadius: 50, border: '0.5px solid rgba(238,238,238,0.1)',
+            background: 'rgba(238,238,238,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
             cursor: 'pointer', fontFamily: 'var(--font)',
-            color: 'rgba(255,255,255,0.25)', fontSize: 13, transition: 'all 0.15s',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+            color: 'rgba(238,238,238,0.25)', fontSize: 13, transition: 'all 0.15s',
+            boxShadow: 'inset 0 1px 0 rgba(238,238,238,0.06)',
           }}
-            onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
-            onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
+            onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(238,238,238,0.15)'; e.currentTarget.style.background = 'rgba(238,238,238,0.07)' }}
+            onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(238,238,238,0.1)'; e.currentTarget.style.background = 'rgba(238,238,238,0.04)' }}
           >
             <Search size={14} />
             <span style={{ fontSize: 12, fontWeight: 500, opacity: 0.6 }}>&#8984;K</span>
@@ -340,38 +340,38 @@ export default function Layout({ user }) {
           {/* User avatar dropdown */}
           <div ref={avatarRef} style={{ position: 'relative' }}>
             <button onClick={() => setAvatarOpen(!avatarOpen)} style={{
-              width: 28, height: 28, borderRadius: '50%', border: '0.5px solid rgba(255,255,255,0.08)', cursor: 'pointer',
+              width: 28, height: 28, borderRadius: '50%', border: '0.5px solid rgba(238,238,238,0.08)', cursor: 'pointer',
               background: profile.profile_photo_url ? 'transparent' : 'transparent',
               display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, overflow: 'hidden',
             }}>
               {profile.profile_photo_url ? (
                 <img src={profile.profile_photo_url} alt="" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
               ) : (
-                <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.9)', fontFamily: 'var(--font)' }}>{initials}</span>
+                <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(238,238,238,0.9)', fontFamily: 'var(--font)' }}>{initials}</span>
               )}
             </button>
             {avatarOpen && (
               <div style={{
                 position: 'absolute', top: '100%', right: 0, marginTop: 6,
-                width: 200, background: 'rgba(255,255,255,0.035)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
-                borderRadius: 18, border: '0.5px solid rgba(255,255,255,0.1)',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 40px rgba(0,0,0,0.5)',
+                width: 200, background: 'rgba(238,238,238,0.035)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
+                borderRadius: 18, border: '0.5px solid rgba(238,238,238,0.1)',
+                boxShadow: 'inset 0 1px 0 rgba(238,238,238,0.08), 0 8px 40px rgba(0,0,0,0.5)',
                 padding: '6px', zIndex: 400, animation: 'fadeIn 0.15s ease-out',
               }}>
-                <div style={{ padding: '8px 12px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.06)', marginBottom: 4 }}>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.8)', fontFamily: 'var(--font)' }}>
+                <div style={{ padding: '8px 12px 10px', borderBottom: '0.5px solid rgba(238,238,238,0.06)', marginBottom: 4 }}>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(238,238,238,0.8)', fontFamily: 'var(--font)' }}>
                     {profile.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : user?.email?.split('@')[0] || 'User'}
                   </div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font)', marginTop: 2 }}>{user?.email}</div>
+                  <div style={{ fontSize: 12, color: 'rgba(238,238,238,0.2)', fontFamily: 'var(--font)', marginTop: 2 }}>{user?.email}</div>
                 </div>
                 <button onClick={() => { nav('/settings'); setAvatarOpen(false) }} style={{
                   width: '100%', padding: '9px 12px', borderRadius: 10, border: 'none',
-                  background: 'transparent', color: 'rgba(255,255,255,0.4)', textAlign: 'left',
+                  background: 'transparent', color: 'rgba(238,238,238,0.4)', textAlign: 'left',
                   fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font)',
                   display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.15s',
                 }}
-                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)' }}
-                  onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)' }}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(238,238,238,0.06)'; e.currentTarget.style.color = 'rgba(238,238,238,0.8)' }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(238,238,238,0.4)' }}
                 ><Settings size={14} /> Settings</button>
                 <button onClick={() => { signOut(); setAvatarOpen(false) }} style={{
                   width: '100%', padding: '9px 12px', borderRadius: 10, border: 'none',
@@ -396,7 +396,7 @@ export default function Layout({ user }) {
           zIndex: 240, animation: 'fadeIn 0.15s ease-out',
         }} onClick={() => setMobileMenuOpen(false)}>
           <div style={{
-            background: 'rgba(255,255,255,0.035)', borderBottom: '0.5px solid rgba(255,255,255,0.08)',
+            background: 'rgba(238,238,238,0.035)', borderBottom: '0.5px solid rgba(238,238,238,0.08)',
             padding: '8px 12px', maxHeight: '70vh', overflowY: 'auto',
           }} onClick={e => e.stopPropagation()}>
             {ALL_NAV.map(item => {
@@ -408,8 +408,8 @@ export default function Layout({ user }) {
                   nav(item.path); setMobileMenuOpen(false)
                 }} style={{
                   width: '100%', padding: '12px 14px', borderRadius: 12, border: 'none',
-                  background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
-                  color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)',
+                  background: active ? 'rgba(238,238,238,0.08)' : 'transparent',
+                  color: active ? 'rgba(238,238,238,0.9)' : 'rgba(238,238,238,0.5)',
                   fontSize: 15, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: T.font,
                   display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', transition: 'all 0.15s',
                 }}>
@@ -417,10 +417,10 @@ export default function Layout({ user }) {
                 </button>
               )
             })}
-            <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '6px 8px' }} />
+            <div style={{ height: 1, background: 'rgba(238,238,238,0.06)', margin: '6px 8px' }} />
             <button onClick={() => { nav('/settings'); setMobileMenuOpen(false) }} style={{
               width: '100%', padding: '12px 14px', borderRadius: 12, border: 'none',
-              background: 'transparent', color: 'rgba(255,255,255,0.4)',
+              background: 'transparent', color: 'rgba(238,238,238,0.4)',
               fontSize: 15, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
               display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left',
             }}><Settings size={16} />Settings</button>
@@ -466,8 +466,8 @@ export default function Layout({ user }) {
       {/* Mobile bottom tab bar — visible only below 768px */}
       <nav className="mobile-bottom-nav" style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
-        background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
-        borderTop: '0.5px solid rgba(255,255,255,0.06)',
+        background: 'rgba(238,238,238,0.03)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
+        borderTop: '0.5px solid rgba(238,238,238,0.06)',
         display: 'none', // shown via CSS media query
         justifyContent: 'space-around', alignItems: 'center',
         padding: '6px 0 env(safe-area-inset-bottom, 8px)',
@@ -483,7 +483,7 @@ export default function Layout({ user }) {
             }} style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
               background: 'none', border: 'none', cursor: 'pointer', padding: '6px 16px',
-              color: active ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.32)',
+              color: active ? 'rgba(238,238,238,0.95)' : 'rgba(238,238,238,0.32)',
               transition: 'color 0.15s', fontFamily: T.font,
             }}>
               <Icon size={20} strokeWidth={active ? 2 : 1.5} />
@@ -494,7 +494,7 @@ export default function Layout({ user }) {
         <button onClick={() => setMoreOpen(!moreOpen)} style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
           background: 'none', border: 'none', cursor: 'pointer', padding: '6px 16px',
-          color: 'rgba(255,255,255,0.32)', fontFamily: T.font,
+          color: 'rgba(238,238,238,0.32)', fontFamily: T.font,
         }}>
           <MoreHorizontal size={20} strokeWidth={1.5} />
           <span style={{ fontSize: 10, fontWeight: 300 }}>More</span>

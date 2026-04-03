@@ -40,7 +40,7 @@ export const T = {
   // Accents — peach primary, coffee secondary
   purple: '#a78bfa', teal: '#2dd4bf', pink: '#EC4899', blue: '#60a5fa', amber: '#fbbf24',
   accent: '#ffe0c2',
-  accentTeal: '#2dd4bf',
+  accentTeal: '#ffe0c2',
   accentGradient: 'linear-gradient(135deg, #ffe0c2, #393028)',
   accentSoft: 'rgba(255,224,194,0.08)',
   accentBorder: 'rgba(255,224,194,0.16)',

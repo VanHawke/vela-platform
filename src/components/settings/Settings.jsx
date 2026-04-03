@@ -193,7 +193,7 @@ export default function Settings({ user }) {
     outline: 'none', background: T.surface, boxSizing: 'border-box',
   }
   const labelStyle = { fontSize: 14, fontWeight: 500, color: T.text, display: 'block', marginBottom: 6, fontFamily: T.font }
-  const cardStyle = { background: T.glass, backdropFilter: 'blur(24px) saturate(1.2)', WebkitBackdropFilter: 'blur(24px) saturate(1.2)', borderRadius: T.radius, border: `0.5px solid ${T.glassBorder}`, borderTop: `0.5px solid rgba(255,255,255,0.15)`, padding: 20, boxShadow: T.glassShadow }
+  const cardStyle = { background: T.glass, backdropFilter: 'blur(24px) saturate(1.2)', WebkitBackdropFilter: 'blur(24px) saturate(1.2)', borderRadius: T.radius, border: `0.5px solid ${T.glassBorder}`, borderTop: `0.5px solid rgba(238,238,238,0.15)`, padding: 20, boxShadow: T.glassShadow }
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'transparent' }}>
@@ -325,7 +325,7 @@ export default function Settings({ user }) {
                     <span style={{ fontSize: 15, color: T.textSecondary, fontFamily: T.font }}>{n}</span>
                     <div onClick={() => setSettings(p => ({ ...p, notification_prefs: { ...(p.notification_prefs || {}), [key]: !on } }))}
                       style={{ width: 44, height: 24, borderRadius: 50, background: on ? T.accent : T.border, position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}>
-                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px rgba(255,255,255,0.12)' }} />
+                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(238,238,238,0.07)', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px rgba(238,238,238,0.12)' }} />
                     </div>
                   </div>
                 )
@@ -338,7 +338,7 @@ export default function Settings({ user }) {
               bio: settings.bio, linkedin_url: settings.linkedin_url, profile_photo_url: settings.profile_photo_url,
               email_signature: settings.email_signature, notification_prefs: settings.notification_prefs,
             })}
-              style={{ height: 44, borderRadius: 50, background: T.accent, color: 'rgba(255,255,255,0.9)', border: 'none', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
+              style={{ height: 44, borderRadius: 50, background: T.accent, color: 'rgba(238,238,238,0.9)', border: 'none', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
               {saved ? 'Saved!' : 'Save changes'}
             </button>
           </div>
@@ -357,7 +357,7 @@ export default function Settings({ user }) {
                     <div key={v.id} style={{
                       padding: '10px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
                       background: isSelected ? T.accent : T.surface,
-                      color: isSelected ? 'rgba(255,255,255,0.9)' : T.text,
+                      color: isSelected ? 'rgba(238,238,238,0.9)' : T.text,
                       display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
                       transition: 'all 0.15s',
                     }} onClick={() => { saveSettings({ kiko_voice: v.id }); try { localStorage.setItem('kiko_voice', v.id) } catch {} }}>
@@ -367,8 +367,8 @@ export default function Settings({ user }) {
                       </div>
                       <button onClick={(e) => { e.stopPropagation(); previewVoice(v.id) }} style={{
                         width: 30, height: 30, borderRadius: '50%', border: 'none',
-                        background: isSelected ? 'rgba(255,255,255,0.2)' : T.accentSoft,
-                        color: isSelected ? 'rgba(255,255,255,0.9)' : T.textSecondary,
+                        background: isSelected ? 'rgba(238,238,238,0.2)' : T.accentSoft,
+                        color: isSelected ? 'rgba(238,238,238,0.9)' : T.textSecondary,
                         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 15, flexShrink: 0,
                       }}>{isPreviewing ? '■' : '▶'}</button>
@@ -384,7 +384,7 @@ export default function Settings({ user }) {
                   <button key={s.id} onClick={() => { saveSettings({ kiko_speed: s.id }); try { localStorage.setItem('kiko_speed', s.id) } catch {} }} style={{
                     padding: '8px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
                     background: parseFloat(settings.kiko_speed || 1.0) === s.id ? T.accent : T.surface,
-                    color: parseFloat(settings.kiko_speed || 1.0) === s.id ? 'rgba(255,255,255,0.9)' : T.textSecondary,
+                    color: parseFloat(settings.kiko_speed || 1.0) === s.id ? 'rgba(238,238,238,0.9)' : T.textSecondary,
                     fontSize: 13, cursor: 'pointer', fontFamily: T.font,
                   }}>{s.label}</button>
                 ))}
@@ -417,7 +417,7 @@ export default function Settings({ user }) {
                     <button key={p.id} onClick={() => { saveSettings({ kiko_personality: p.id }); try { localStorage.setItem('kiko_personality', p.id) } catch {} }} style={{
                       padding: '8px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
                       background: sel ? T.accent : T.surface,
-                      color: sel ? 'rgba(255,255,255,0.9)' : T.textSecondary,
+                      color: sel ? 'rgba(238,238,238,0.9)' : T.textSecondary,
                       fontSize: 13, cursor: 'pointer', fontFamily: T.font, textAlign: 'left',
                     }}>
                       <div style={{ fontWeight: 400 }}>{p.label}</div>
@@ -461,8 +461,8 @@ export default function Settings({ user }) {
                       {/* Reorder arrows */}
                       {isOn && !isHome ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 0, flexShrink: 0 }}>
-                          <button onClick={() => moveItem(-1)} disabled={!canMoveUp} style={{ background: 'none', border: 'none', cursor: canMoveUp ? 'pointer' : 'default', color: canMoveUp ? T.textSecondary : 'rgba(255,255,255,0.1)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▲</button>
-                          <button onClick={() => moveItem(1)} disabled={!canMoveDown} style={{ background: 'none', border: 'none', cursor: canMoveDown ? 'pointer' : 'default', color: canMoveDown ? T.textSecondary : 'rgba(255,255,255,0.1)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▼</button>
+                          <button onClick={() => moveItem(-1)} disabled={!canMoveUp} style={{ background: 'none', border: 'none', cursor: canMoveUp ? 'pointer' : 'default', color: canMoveUp ? T.textSecondary : 'rgba(238,238,238,0.1)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▲</button>
+                          <button onClick={() => moveItem(1)} disabled={!canMoveDown} style={{ background: 'none', border: 'none', cursor: canMoveDown ? 'pointer' : 'default', color: canMoveDown ? T.textSecondary : 'rgba(238,238,238,0.1)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▼</button>
                         </div>
                       ) : <div style={{ width: 14 }} />}
                       <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font }}>{item.label}</span>
@@ -476,13 +476,13 @@ export default function Settings({ user }) {
                           window.dispatchEvent(new Event('kiko_top_nav_updated'))
                         }} style={{
                           width: 38, height: 20, borderRadius: 50, border: 'none', cursor: 'pointer',
-                          background: isOn ? T.accent : 'rgba(255,255,255,0.08)',
+                          background: isOn ? T.accent : 'rgba(238,238,238,0.08)',
                           position: 'relative', transition: 'background 0.2s', padding: 0,
                         }}>
                           <div style={{
-                            width: 16, height: 16, borderRadius: '50%', background: 'rgba(255,255,255,0.07)',
+                            width: 16, height: 16, borderRadius: '50%', background: 'rgba(238,238,238,0.07)',
                             position: 'absolute', top: 2, left: isOn ? 20 : 2,
-                            transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(255,255,255,0.12)',
+                            transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(238,238,238,0.12)',
                           }} />
                         </button>
                       )}
@@ -519,8 +519,8 @@ export default function Settings({ user }) {
                     return (
                       <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 50, background: T.surface, border: `1px solid ${T.border}` }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 0, flexShrink: 0 }}>
-                          <button onClick={() => moveMore(-1)} disabled={!canUp} style={{ background: 'none', border: 'none', cursor: canUp ? 'pointer' : 'default', color: canUp ? T.textSecondary : 'rgba(255,255,255,0.1)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▲</button>
-                          <button onClick={() => moveMore(1)} disabled={!canDown} style={{ background: 'none', border: 'none', cursor: canDown ? 'pointer' : 'default', color: canDown ? T.textSecondary : 'rgba(255,255,255,0.1)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▼</button>
+                          <button onClick={() => moveMore(-1)} disabled={!canUp} style={{ background: 'none', border: 'none', cursor: canUp ? 'pointer' : 'default', color: canUp ? T.textSecondary : 'rgba(238,238,238,0.1)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▲</button>
+                          <button onClick={() => moveMore(1)} disabled={!canDown} style={{ background: 'none', border: 'none', cursor: canDown ? 'pointer' : 'default', color: canDown ? T.textSecondary : 'rgba(238,238,238,0.1)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▼</button>
                         </div>
                         <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font }}>{item.label}</span>
                       </div>
@@ -553,7 +553,7 @@ export default function Settings({ user }) {
                     {currentUserRole === 'super_admin' && <option value="super_admin">Super Admin</option>}
                   </select>
                   <button onClick={sendInvite} style={{
-                    height: 44, padding: '0 16px', borderRadius: 50, background: T.accent, color: 'rgba(255,255,255,0.9)',
+                    height: 44, padding: '0 16px', borderRadius: 50, background: T.accent, color: 'rgba(238,238,238,0.9)',
                     border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
                     display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
                   }}><UserPlus size={14} /> Add</button>
@@ -709,7 +709,7 @@ export default function Settings({ user }) {
                   </div>
                 ) : (
                   <button onClick={connectGoogle} style={{
-                    height: 36, padding: '0 16px', borderRadius: T.radiusSm, background: T.accent, color: 'rgba(255,255,255,0.9)',
+                    height: 36, padding: '0 16px', borderRadius: T.radiusSm, background: T.accent, color: 'rgba(238,238,238,0.9)',
                     border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
                     display: 'flex', alignItems: 'center', gap: 6,
                   }}><ExternalLink size={12} /> Connect</button>

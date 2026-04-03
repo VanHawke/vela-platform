@@ -77,7 +77,7 @@ export default function LoginPage() {
           display: 'flex', justifyContent: 'center', alignItems: 'center',
           WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
           maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
-          <KikoWaveform width={420} height={80} volume={0.15} />
+          <KikoWaveform width={260} height={48} volume={0.15} />
         </div>
 
         {/* Kiko name + tagline */}

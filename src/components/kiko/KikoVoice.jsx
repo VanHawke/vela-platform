@@ -313,7 +313,7 @@ RULES:
         WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
         maskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
       }}>
-        <KikoWaveform width={1100} height={140} speaking={speaking} volume={volume} />
+        <KikoWaveform width={1100} height={60} speaking={speaking} volume={volume} />
       </div>
 
       {/* Status bar */}
