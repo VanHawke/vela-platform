@@ -1,15 +1,15 @@
 import { useEffect, useRef, memo } from 'react'
 
-// Aurora orbs — balanced colour palette (less purple dominance, more teal/amber warmth)
+// Aurora orbs — very subtle warm ambient glow (barely perceptible)
 const ORBS = [
-  { x: 0.08, y: 0.04, r: 600, color: [139, 108, 246], speed: 0.00025, phase: 0 },
-  { x: 0.85, y: 0.65, r: 580, color: [6, 214, 160], speed: 0.0002, phase: 2 },
-  { x: 0.65, y: 0.08, r: 400, color: [236, 72, 153], speed: 0.0003, phase: 4 },
-  { x: 0.18, y: 0.75, r: 500, color: [59, 130, 246], speed: 0.00018, phase: 1 },
-  { x: 0.5, y: 0.4, r: 350, color: [245, 158, 11], speed: 0.00015, phase: 3 },
-  { x: 0.35, y: 0.2, r: 280, color: [6, 214, 160], speed: 0.00022, phase: 5 },
+  { x: 0.08, y: 0.04, r: 500, color: [180, 160, 140], speed: 0.00025, phase: 0 },     // warm grey (was peach — too gold)
+  { x: 0.85, y: 0.65, r: 480, color: [57, 48, 40], speed: 0.0002, phase: 2 },          // coffee brown
+  { x: 0.65, y: 0.08, r: 350, color: [120, 100, 140], speed: 0.0003, phase: 4 },       // muted purple
+  { x: 0.18, y: 0.75, r: 400, color: [45, 120, 110], speed: 0.00018, phase: 1 },       // muted teal
+  { x: 0.5, y: 0.4, r: 300, color: [140, 120, 80], speed: 0.00015, phase: 3 },         // warm amber (muted)
+  { x: 0.35, y: 0.2, r: 250, color: [140, 120, 100], speed: 0.00022, phase: 5 },       // warm grey
 ]
-const AMBER_ORB = { x: 0.5, y: 0.35, r: 400, color: [245, 158, 11], speed: 0.0003, phase: 2.0 }
+const AMBER_ORB = { x: 0.5, y: 0.35, r: 350, color: [140, 120, 80], speed: 0.0003, phase: 2.0 }
 
 function AuroraCanvas({ extraOrb = null }) {
   const canvasRef = useRef(null)
@@ -44,24 +44,23 @@ function AuroraCanvas({ extraOrb = null }) {
         const dx = Math.sin(t * orb.speed + orb.phase) * 80
         const dy = Math.cos(t * orb.speed * 0.7 + orb.phase) * 60
         const px = orb.cx + dx, py = orb.cy + dy
-        const pulse = 0.06 + Math.sin(t * 0.0004 + orb.phase) * 0.02
+        // Much lower alpha — barely visible ambient glow
+        const pulse = 0.03 + Math.sin(t * 0.0004 + orb.phase) * 0.01
         const [r, g, b] = orb.color
         const grad = ctx.createRadialGradient(px, py, 0, px, py, orb.r)
         grad.addColorStop(0, `rgba(${r},${g},${b},${pulse})`)
-        grad.addColorStop(0.3, `rgba(${r},${g},${b},${pulse * 0.5})`)
-        grad.addColorStop(0.6, `rgba(${r},${g},${b},${pulse * 0.2})`)
+        grad.addColorStop(0.3, `rgba(${r},${g},${b},${pulse * 0.4})`)
+        grad.addColorStop(0.6, `rgba(${r},${g},${b},${pulse * 0.15})`)
         grad.addColorStop(1, `rgba(${r},${g},${b},0)`)
         ctx.fillStyle = grad
         ctx.fillRect(0, 0, w, h)
       }
-      // Dark blue gradient from bottom — Render B treatment
-      const blueGrad = ctx.createLinearGradient(0, h * 0.3, 0, h)
-      blueGrad.addColorStop(0, 'rgba(10,25,60,0)')
-      blueGrad.addColorStop(0.35, 'rgba(10,25,60,0.2)')
-      blueGrad.addColorStop(0.6, 'rgba(15,35,80,0.3)')
-      blueGrad.addColorStop(0.85, 'rgba(18,40,90,0.28)')
-      blueGrad.addColorStop(1, 'rgba(20,45,100,0.22)')
-      ctx.fillStyle = blueGrad
+      // Subtle warm vignette from bottom
+      const warmGrad = ctx.createLinearGradient(0, h * 0.4, 0, h)
+      warmGrad.addColorStop(0, 'rgba(17,17,17,0)')
+      warmGrad.addColorStop(0.5, 'rgba(20,18,15,0.08)')
+      warmGrad.addColorStop(1, 'rgba(25,22,18,0.12)')
+      ctx.fillStyle = warmGrad
       ctx.fillRect(0, 0, w, h)
       animRef.current = requestAnimationFrame(draw)
     }

@@ -9,8 +9,8 @@ import T from '@/lib/theme'
 import { supabase } from '@/lib/supabase'
 
 const BAR_COLORS = {
-  connecting: '#F59E0B', listening: '#06D6A0', thinking: '#7C9CF6',
-  speaking: '#06D6A0', error: '#FF5050', idle: 'rgba(255,255,255,0.18)',
+  connecting: '#fbbf24', listening: '#ffe0c2', thinking: '#ffe0c2',
+  speaking: '#ffe0c2', error: '#f87171', idle: 'rgba(255,224,194,0.18)',
 }
 
 // ── Tool Execution: ONE tool routes to Claude brain, one handles nav ──
@@ -292,18 +292,18 @@ RULES:
 
   // ── Render ──
   return createPortal(
-    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: T.bg }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#111111' }}>
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}><AuroraCanvas /></div>
 
       {/* X close */}
       <button onClick={handleClose} style={{
         position: 'absolute', top: 20, right: 20, zIndex: 2, width: 32, height: 32, borderRadius: 10,
-        background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.08)',
+        background: 'rgba(255,224,194,0.04)', border: '1.5px solid rgba(32,30,24,0.40)',
         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: 'rgba(255,255,255,0.3)', transition: 'all 0.2s',
+        color: 'rgba(238,238,238,0.3)', transition: 'all 0.2s',
       }}
-        onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)' }}
-        onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.3)' }}
+        onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,224,194,0.2)'; e.currentTarget.style.color = 'rgba(238,238,238,0.6)' }}
+        onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(32,30,24,0.40)'; e.currentTarget.style.color = 'rgba(238,238,238,0.3)' }}
       ><X size={14} /></button>
 
       {/* KikoWaveform */}
@@ -330,12 +330,12 @@ RULES:
       {/* Goodbye Kiko */}
       <button onClick={handleClose} style={{
         position: 'relative', zIndex: 1, padding: '10px 28px', borderRadius: 50,
-        background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.08)',
-        color: 'rgba(255,255,255,0.25)', fontSize: 13, fontWeight: 300,
+        background: 'rgba(255,224,194,0.04)', border: '1.5px solid rgba(32,30,24,0.40)',
+        color: 'rgba(238,238,238,0.25)', fontSize: 13, fontWeight: 300,
         cursor: 'pointer', fontFamily: T.font, transition: 'all 0.25s',
       }}
         onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,80,80,0.2)'; e.currentTarget.style.color = 'rgba(255,80,80,0.5)'; e.currentTarget.style.background = 'rgba(255,80,80,0.06)' }}
-        onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.25)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
+        onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(32,30,24,0.40)'; e.currentTarget.style.color = 'rgba(238,238,238,0.25)'; e.currentTarget.style.background = 'rgba(255,224,194,0.04)' }}
       >Goodbye Kiko</button>
 
       <style>{`@keyframes kikoBarPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>

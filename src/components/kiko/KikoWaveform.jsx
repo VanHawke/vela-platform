@@ -1,130 +1,210 @@
-// src/components/kiko/KikoWaveform.jsx — Kiko soundwave avatar (v4)
-// Purple-biased double-sided waveform with independent up/down bars, edge fade
-import { useRef, useEffect, memo } from 'react'
+// src/components/kiko/KikoWaveform.jsx — Kiko Sleek Waveform avatar (Caffeine)
+// 9-bar bell-curve waveform · peach gradient · voice-reactive
+// Replaces canvas-based purple/teal waveform with exact Round 2 Sleek design
+// Integrates with window.__kikoFreqData for real audio in voice mode
+import { useState, useRef, useEffect, memo } from 'react'
+import T from '@/lib/theme'
 
-function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, energy = 0, mini = false, onClick }) {
-  const canvasRef = useRef(null)
-  const barsRef = useRef(null)
+// ── Audio Hooks — simulate speech cadence ──
+// In voice mode, real audio data from window.__kikoFreqData overrides these
+function useBarLevels(count, active) {
+  const [levels, setLevels] = useState(() => new Array(count).fill(0))
+  const rafRef = useRef(null)
   const tRef = useRef(0)
-  const volRef = useRef(0)
 
   useEffect(() => {
-    const cv = canvasRef.current
-    if (!cv) return
-    const cx = cv.getContext('2d')
-    const W = cv.width, H = cv.height, CY = H / 2
-    const N = mini ? 40 : 120
-
-    if (!barsRef.current || barsRef.current.length !== N || barsRef.current._mini !== mini) {
-      const arr = Array.from({ length: N }, (_, i) => {
-        const nx = (i - N / 2) / (N / 2)
-        const env = mini ? 1.0 : Math.pow(Math.exp(-nx * nx * 3.8), 1.5)
-        return { env, f1: 0.8 + Math.random() * 3, f2: 1.5 + Math.random() * 2.5, ph: Math.random() * Math.PI * 2, curU: 0, curD: 0 }
-      })
-      arr._mini = mini
-      barsRef.current = arr
-    }
-    const bars = barsRef.current
-    function lp(a, b, t) { return a + (b - a) * t }
-    let raf
-    function draw() {
-      tRef.current += 0.016
+    if (!active) { setLevels(new Array(count).fill(0)); return }
+    let running = true
+    const tick = () => {
+      if (!running) return
+      tRef.current += 0.04
       const t = tRef.current
-      // Use external volume or simulate idle breathing
-      let vol = volRef.current
-      if (!speaking && vol < 0.02) {
-        vol = 0.18 + 0.06 * Math.sin(t * 1.2) // strong idle breathing — bars always visible
+      const next = []
+      for (let i = 0; i < count; i++) {
+        const ph = i * 1.1
+        const raw = Math.sin(t * 5.5 + ph) * 0.3 + Math.sin(t * 8.8 + ph * 0.7) * 0.25 +
+          Math.sin(t * 13.2 + ph * 1.3) * 0.15 + Math.sin(t * 2.3 + ph * 0.4) * 0.2 + Math.random() * 0.1
+        const pause = Math.sin(t * 0.8) > 0.55 ? 0.35 : 1
+        next.push(Math.max(0.05, Math.min(1, raw * pause)))
       }
-      cx.clearRect(0, 0, W, H)
-      const bW = W / N, bw = Math.max(1, bW * 0.55)
-      const maxH = CY * 0.85
-      for (let i = 0; i < N; i++) {
-        const b = bars[i]
-        // Use real frequency data if available (from audio analyser)
-        const freq = window.__kikoFreqData
-        let eqU, eqD
-        if (freq && freq.length > 0 && vol > 0.02 && !mini) {
-          const fi = Math.floor((i / N) * freq.length)
-          const fv = (freq[fi] || 0) / 255
-          eqU = fv * 0.8 + Math.abs(Math.sin(t * b.f1 + b.ph)) * 0.2
-          eqD = fv * 0.7 + Math.abs(Math.sin(t * b.f2 + b.ph + 1.8)) * 0.3
-        } else if (vol < 0.25 || mini) {
-          // Uniform bars — scales with volume but stays horizontal (no diagonal)
-          const breathe = (0.35 + 0.2 * Math.sin(t * 1.5)) * (1 + vol * 2)
-          eqU = Math.min(breathe, 0.9)
-          eqD = Math.min(breathe * 0.85, 0.8)
-        } else {
-          eqU = Math.abs(Math.sin(t * b.f1 + b.ph))
-          eqD = Math.abs(Math.sin(t * b.f2 + b.ph + 1.8))
-        }
-        const tU = 1.5 + b.env * vol * maxH * eqU
-        const tD = 1.5 + b.env * vol * maxH * eqD
-        b.curU = lp(b.curU, tU, 0.14)
-        b.curD = lp(b.curD, tD, 0.14)
-        const hU = b.curU, hD = b.curD
-        const x = i * bW + (bW - bw) / 2
-        const fade = b.env
-        const p = i / N
-        const r = Math.round(lp(160, 100, p))
-        const g = Math.round(lp(100, 180, p))
-        const bl = Math.round(lp(255, 220, p))
-        const rB = Math.min(255, r + 60), gB = Math.min(255, g + 40), blB = Math.min(255, bl + 20)
-        const aBase = fade * (0.6 + vol * 0.35)
-        // Up bar
-        const gU = cx.createLinearGradient(x, CY - hU, x, CY)
-        gU.addColorStop(0, `rgba(${rB},${gB},${blB},${aBase * 0.95})`)
-        gU.addColorStop(0.6, `rgba(${r},${g},${bl},${aBase * 0.7})`)
-        gU.addColorStop(1, `rgba(${r},${g},${bl},${aBase * 0.3})`)
-        cx.fillStyle = gU
-        cx.fillRect(x, CY - hU, bw, hU)
-        // Down bar
-        const gD = cx.createLinearGradient(x, CY, x, CY + hD)
-        gD.addColorStop(0, `rgba(${r},${g},${bl},${aBase * 0.3})`)
-        gD.addColorStop(0.4, `rgba(${r},${g},${bl},${aBase * 0.7})`)
-        gD.addColorStop(1, `rgba(${rB},${gB},${blB},${aBase * 0.95})`)
-        cx.fillStyle = gD
-        cx.fillRect(x, CY, bw, hD)
-        // Tips glow
-        if (hU > maxH * 0.3 && vol > 0.25 && fade > 0.3) {
-          cx.fillStyle = `rgba(255,255,255,${Math.min(0.35, hU / maxH * 0.3) * fade})`
-          cx.fillRect(x, CY - hU, bw, 1.2)
-        }
-        if (hD > maxH * 0.3 && vol > 0.25 && fade > 0.3) {
-          cx.fillStyle = `rgba(255,255,255,${Math.min(0.35, hD / maxH * 0.3) * fade})`
-          cx.fillRect(x, CY + hD - 1.2, bw, 1.2)
-        }
-      }
-      // Edge fades removed — gaussian envelope handles natural taper
-      raf = requestAnimationFrame(draw)
+      setLevels(next)
+      rafRef.current = requestAnimationFrame(tick)
     }
-    draw()
-    return () => cancelAnimationFrame(raf)
-  }, [width, height, mini, speaking])
+    rafRef.current = requestAnimationFrame(tick)
+    return () => { running = false; cancelAnimationFrame(rafRef.current) }
+  }, [active, count])
+  return levels
+}
 
-  // Sync external volume/energy prop into ref (non-rerendering)
+function useAudioLevel(active) {
+  const [level, setLevel] = useState(0)
+  const rafRef = useRef(null)
+  const tRef = useRef(0)
+
   useEffect(() => {
-    volRef.current = volume || energy || 0
-  }, [volume, energy])
+    if (!active) { setLevel(0); return }
+    let running = true
+    const tick = () => {
+      if (!running) return
+      tRef.current += 0.035
+      const t = tRef.current
+      const raw = Math.sin(t * 4.2) * 0.3 + Math.sin(t * 7.1) * 0.2 +
+        Math.sin(t * 11.3) * 0.15 + Math.sin(t * 2.1) * 0.2 + Math.random() * 0.15
+      const pause = Math.sin(t * 0.7) > 0.6 ? 0.3 : 1
+      setLevel(Math.max(0, Math.min(1, raw * pause)))
+      rafRef.current = requestAnimationFrame(tick)
+    }
+    rafRef.current = requestAnimationFrame(tick)
+    return () => { running = false; cancelAnimationFrame(rafRef.current) }
+  }, [active])
+  return level
+}
 
-  const scale = mini ? 2 : 1
-  const cW = Math.round(width * scale)
-  const cH = Math.round(height * scale)
+// ── Real audio integration — reads from window.__kikoFreqData ──
+function useRealAudioLevels(count, active) {
+  const [levels, setLevels] = useState(() => new Array(count).fill(0))
+  const rafRef = useRef(null)
 
+  useEffect(() => {
+    if (!active) { setLevels(new Array(count).fill(0)); return }
+    let running = true
+    const tick = () => {
+      if (!running) return
+      const freq = window.__kikoFreqData
+      if (freq && freq.length > 0) {
+        const next = []
+        for (let i = 0; i < count; i++) {
+          const fi = Math.floor((i / count) * freq.length)
+          const fv = (freq[fi] || 0) / 255
+          next.push(Math.max(0.05, fv))
+        }
+        setLevels(next)
+      }
+      rafRef.current = requestAnimationFrame(tick)
+    }
+    rafRef.current = requestAnimationFrame(tick)
+    return () => { running = false; cancelAnimationFrame(rafRef.current) }
+  }, [active, count])
+  return levels
+}
+
+// ── Bell-curve envelope — exact Round 2 values ──
+const BAR_ENVELOPE = [0.3, 0.5, 0.7, 0.85, 1, 0.85, 0.7, 0.5, 0.3]
+const BAR_COUNT = BAR_ENVELOPE.length
+
+/**
+ * KikoWaveform — Sleek 9-bar waveform
+ * 
+ * Props (backwards-compatible with old canvas API):
+ *   width, height — dimensions
+ *   volume / energy — 0–1 audio level (for voice mode legacy compat)
+ *   speaking — boolean (legacy compat, maps to state="speaking")
+ *   mini — if true, renders smaller with glass shell
+ *   onClick — click handler
+ *   state — "idle" | "listening" | "speaking" (new API)
+ */
+function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, energy = 0, mini = false, onClick, state: stateProp }) {
+  // Backwards compat: derive state from legacy props if stateProp not given
+  const state = stateProp || (speaking ? 'speaking' : (volume > 0.02 || energy > 0.02) ? 'listening' : 'idle')
+  
+  // Use real audio data from voice mode if available, otherwise simulated
+  const hasRealAudio = typeof window !== 'undefined' && window.__kikoFreqData && window.__kikoFreqData.length > 0 && (volume > 0.02 || energy > 0.02)
+  const realLevels = useRealAudioLevels(BAR_COUNT, hasRealAudio && state === 'speaking')
+  const simLevels = useBarLevels(BAR_COUNT, !hasRealAudio && state === 'speaking')
+  const barLevels = hasRealAudio ? realLevels : simLevels
+  // Always run breathing animation — active in all states except speaking
+  const listenLevel = useAudioLevel(state !== 'speaking')
+
+  // Scale proportions from the Round 2 design (base size=72)
+  // Scale from the Round 2 prototype: height / 0.45 / 72 (inverse of maxH ratio)
+  const scale = height / 0.45 / 72
+  const bw = Math.max(1.5, 72 * 0.04 * scale)
+  const gap = 72 * 0.055 * scale
+  const maxH = height * 0.85
+
+  if (mini) {
+    // Mini variant: glass circle shell with waveform inside
+    const size = Math.min(width, height)
+    const shellBw = Math.max(1.5, size * 0.04)
+    const shellGap = size * 0.055
+    const shellMaxH = size * 0.45
+    const level = useAudioLevel(state === 'speaking')
+    const active = state === 'speaking' || state === 'listening'
+    const glowI = state === 'speaking' ? 0.08 + level * 0.18 : state === 'listening' ? 0.06 : 0
+
+    return (
+      <div onClick={onClick} style={{
+        position: 'relative', width: size, height: size,
+        borderRadius: 9999,
+        background: T.glass, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        border: `1px solid ${active ? `rgba(255,224,194,${0.18 + (state === 'speaking' ? level * 0.25 : 0.1)})` : T.glassBorder}`,
+        boxShadow: active
+          ? `0 0 16px rgba(255,224,194,0.12), 0 2px 10px rgba(0,0,0,0.15), inset 3px 3px 0.5px -3.5px rgba(255,224,194,0.30), inset -3px -3px 0.5px -3.5px rgba(255,224,194,0.22), inset 1px 1px 1px -0.5px rgba(255,224,194,0.18), inset -1px -1px 1px -0.5px rgba(255,224,194,0.18)`
+          : T.glassShadow,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        overflow: 'hidden', cursor: onClick ? 'pointer' : 'default',
+        transition: 'border-color 200ms cubic-bezier(0.4,0,0.2,1)',
+      }}>
+        {/* Top highlight */}
+        <div style={{
+          position: 'absolute', top: 0, left: '12%', right: '12%', height: 1,
+          background: `linear-gradient(90deg, transparent, rgba(255,224,194,${active ? 0.22 : 0.08}), transparent)`,
+          pointerEvents: 'none', zIndex: 3,
+        }} />
+        {/* Reactive glow ring */}
+        {active && <div style={{
+          position: 'absolute', inset: -2, borderRadius: 9999,
+          boxShadow: `0 0 ${8 + level * 14}px rgba(255,224,194,${glowI})`,
+          pointerEvents: 'none',
+        }} />}
+        {/* Sleek Waveform bars */}
+        <div style={{
+          position: 'relative', zIndex: 1,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          gap: shellGap, height: shellMaxH,
+        }}>
+          {BAR_ENVELOPE.map((env, i) => {
+            let h
+            if (state === 'speaking') h = 0.08 + barLevels[i] * 0.92
+            else h = env * (0.55 + listenLevel * 0.45)
+            return (
+              <div key={i} style={{
+                width: shellBw, height: `${h * 100}%`, minHeight: 2, borderRadius: shellBw,
+                background: `linear-gradient(180deg, ${T.accent} 0%, rgba(255,224,194,0.2) 100%)`,
+                opacity: state === 'speaking' ? 0.5 + barLevels[i] * 0.5 : 0.4 + env * 0.4 + listenLevel * 0.2,
+                transition: state === 'speaking' ? 'height 50ms linear, opacity 50ms linear' : 'all 120ms cubic-bezier(0.22,1,0.36,1)',
+              }} />
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
+  // Full-size bare waveform (homepage hero, voice page)
   return (
-    <canvas
-      ref={canvasRef}
-      width={cW}
-      height={cH}
-      onClick={onClick}
-      style={{
-        width, height,
-        display: 'block',
-        background: 'transparent',
-        cursor: onClick ? 'pointer' : 'default',
-        borderRadius: mini ? 4 : 0,
-      }}
-    />
+    <div onClick={onClick} style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      gap, height, width,
+      cursor: onClick ? 'pointer' : 'default',
+    }}>
+      {BAR_ENVELOPE.map((env, i) => {
+        let h
+        if (state === 'speaking') h = 0.08 + barLevels[i] * 0.92
+        else h = env * (0.55 + listenLevel * 0.45)
+        return (
+          <div key={i} style={{
+            width: bw, height: `${h * 100}%`, minHeight: 2, borderRadius: bw,
+            background: `linear-gradient(180deg, ${T.accent} 0%, rgba(255,224,194,0.2) 100%)`,
+            opacity: state === 'speaking' ? 0.5 + barLevels[i] * 0.5 : 0.4 + env * 0.4 + listenLevel * 0.2,
+            transition: state === 'speaking' ? 'height 50ms linear, opacity 50ms linear' : 'all 120ms cubic-bezier(0.22,1,0.36,1)',
+          }} />
+        )
+      })}
+    </div>
   )
 }
 
+// Named exports for direct use
+export { useBarLevels, useAudioLevel, BAR_ENVELOPE }
 export default memo(KikoWaveform)
