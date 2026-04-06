@@ -1,194 +1,182 @@
 # KIKO — NEXT SESSION MASTER BRIEF
-# Everything needed to continue the Sequences/Outreach build
-# Created: 6 April 2026 after massive build session
+# Complete continuation guide for Campaigns/Outreach system
+# Created: 6 April 2026 | Last commit: bbf04c8
 
 ---
 
-## CRITICAL ARCHITECTURAL DECISIONS
+## START HERE — READ THESE FILES FIRST
+1. /Users/sunny/Desktop/vela-platform/KIKO_SESSION_BRIEF.md
+2. /Users/sunny/Desktop/vela-platform/KIKO_EVOLUTION_PLAN.md
+3. This file (NEXT_SESSION_PROMPT.md)
 
-### 1. Sequences REPLACES Lemlist
-The /lemlist page currently pulls live data from Lemlist API. The /sequences page is the new native replacement. In the next session:
-- Remove "Lemlist" from navigation
-- Rename "Sequences" to "Outreach" or "Campaigns" in the nav
-- Move any useful Lemlist page analytics into the Sequences page
-- Lemlist subscription can be cancelled once Sequences is fully operational
-
-### 2. Campaigns vs Templates
-WRONG (current): 3 pre-built sequences called "Authority C-Suite 5-Touch", "Post-Funding Accelerator", "Re-Engagement"
-RIGHT: These are TEMPLATES/APPROACHES, not campaigns. A campaign is:
-- "Haas F1 - Cybersecurity" (category-specific, with leads enrolled)
-- "Haas F1 - Cloud Computing"
-- "Alpine F1 - Chemicals"
-
-The template (authority-led, scarcity, post-funding) is a PROPERTY of the campaign that determines how the emails are written. The "Generate Campaign" wizard should ask: category + team + approach template.
-
-### 3. Pre-built sequences need updating
-Current 3 sequences use a 5-step structure. Research says 7 touches over 14 days (4 emails + 3 LinkedIn) with omnichannel is 287% more effective. Update all templates to 7-touch structure.
+## PLATFORM
+- Live: https://vela-platform-one.vercel.app
+- Codebase: /Users/sunny/Desktop/vela-platform/
+- GitHub: https://github.com/VanHawke/vela-platform
+- Supabase: dwiywqeleyckzcxbwrlb
+- Deploy: npx vercel --prod --yes (NEVER --force or VERCEL_FORCE_NO_BUILD_CACHE=1)
+- Functions: 49/50 in vercel.json (1 slot remaining)
 
 ---
 
-## WRITING STYLE (from Lemlist review)
+## PRIORITY 1: LEADS MANAGEMENT (most critical)
 
-### Actual Van Hawke email style (extracted from live Lemlist campaigns):
+### Auto-populate leads
+When a campaign is created (e.g. "Haas F1 - Cybersecurity"), Kiko should:
+1. Search contacts table (5,006 records) by company industry matching the category
+2. Cross-reference with company_intelligence table for enriched companies
+3. Present suggested leads in the Leads tab automatically
+4. User ticks the ones they want → bulk enroll
 
-**Email 1 — Cloud Computing campaign:**
-- Subject: "Haas F1 Team × Cloud Infrastructure" (uses × not —)
-- Opens: "Dear {{firstName}},"
-- Para 1: "We work at principal level on the structuring of Formula One partnerships for teams and rights-holders."
-- Para 2: "Our role is not to place sponsorship assets, but to design closed, category-exclusive partnership systems tied to governance, access, and institutional credibility."
-- Para 3: Category-specific intelligence — explains WHY cloud computing matters operationally for F1 (simulation, telemetry, data pipelines, factory-to-track workflows)
-- Para 4: Reframe — "cloud capability is treated as an operating dependency, not a communications narrative"
-- Soft CTA: "The relevant question at this stage is simply whether this is strategic from your perspective."
-- Conditional next step: "If it is, we can outline how the cloud category is being approached within Haas' Formula One programme"
-- Sign-off: "Kind regards," + {{signature}}
+The "Kiko, find leads" button exists but needs refinement. It searches by category keyword in company name — should also search by industry/sub_sector in company_intelligence.
 
-**Email 2 — Cloud Computing campaign:**
-- Builds on team-specific context: "Haas operates with a lean and highly exposed technical model — privately owned, independent of OEM infrastructure"
-- Deepens the operational argument: "Simulation, race strategy, performance development rely on continuous data movement between factory and track"
-- Differentiates: "That profile creates a different context for cloud partners than at manufacturer teams with vertically integrated systems"
-- Board-level framing: "cloud capability is evaluated as an operational foundation rather than an overlay"
+### CRM contact data structure (IMPORTANT — fields use camelCase):
+- data->>'firstName' (NOT first_name)
+- data->>'lastName' (NOT last_name)
+- data->>'company'
+- data->>'email'
+- data->>'title' (job title)
+- data->>'linkedin' (profile URL)
+- data->>'phone'
+- data->>'companyLinkedin'
 
-### Style rules (NON-NEGOTIABLE):
-1. Every email starts with "Dear {firstName},"
-2. Every email ends with "Kind regards,\n\n{signature}"
-3. Subject format: "Haas F1 Team × {category}" (uses ×)
-4. No "I hope this finds you well" or any generic filler
-5. No "I think" or "maybe" — declarative authority
-6. Category-specific: explain WHY this category matters operationally for F1
-7. Board-level language: "principal level", "closed, category-exclusive", "governance, access, and institutional credibility"
-8. 50-125 words per email (research-backed optimal length)
-9. Soft CTA — "The relevant question is simply whether this is strategic from your perspective"
-10. Sender: Sunny Sidhu (sunny@vanhawke.agency)
+### Manual lead add
+Build a simple modal: name, email, company, title, LinkedIn URL → creates enrollment directly. Already partially built in the "Add from CRM" modal but needs a "Manual" tab.
+
+### Lemlist-style lead table
+The Leads tab should show columns like Lemlist: Full name | Company | Email | Status | Step | Next send | Actions
+Currently shows a simpler version. Match Lemlist's layout.
 
 ---
 
-## UI FIXES NEEDED
+## PRIORITY 2: MERGE LEMLIST PAGE INTO CAMPAIGNS
 
-### 1. Dropdown regeneration (FIXED in 2b7db57)
-When approach/psychology dropdown changes, amber bar appears: "Approach changed — regenerate content?" with [Regenerate] [Keep] buttons.
+### Current state
+- /lemlist page exists, pulls live Lemlist API data
+- /sequences (renamed to "Campaigns") is the new native system
+- Both exist in nav (Campaigns in top bar, Lemlist under More)
 
-### 2. Auto greeting + sign-off (FIXED in 2b7db57)
-New email steps pre-populate with "Dear {firstName}," and "Kind regards,\n\n{signature}"
-
-### 3. Writing quality (PARTIALLY FIXED)
-The askKiko prompt now references real Van Hawke style. But the generate-sequence API endpoint also needs updating to match.
-
-### 4. Sequences dashboard needs purpose (NOT YET FIXED)
-Current campaign list is basic. Should show:
-- Campaign cards with real metrics (enrolled, sent, replied, rate)
-- Active campaigns prominently displayed
-- Empty campaigns marked as "needs leads"
-- Quick action: "Add leads" directly from the card
-
-### 5. Lead import is the critical missing UX (BUILT but needs testing)
-The "Add from CRM" modal searches contacts by company name. Needs testing with real data.
+### What to do
+1. Look at /lemlist page (src/pages/Lemlist.jsx) for useful features
+2. Replicate any analytics, lead counts, campaign stats into the Campaigns page
+3. Keep Lemlist page accessible under More during transition
+4. Eventually remove once native system is fully operational
 
 ---
 
-## SEQUENCE FLOW (per Lemlist review)
+## PRIORITY 3: TEST EMAIL SEND
 
-Lemlist Cloud Computing campaign has this flow:
-1. Send immediately → Email (authority hook)
-2. Wait 3 days → Visit profile (LinkedIn)
-3. Wait 2 days → Email (deeper context)
-4. Wait 2 days → Invitation (LinkedIn connect)
-5. Wait 4 days → Email (conditional on LinkedIn acceptance)
-6. Wait 1 day → Chat message (LinkedIn DM)
-7. Wait 1 day → Visit profile
-8. Wait 6 days → Email
-9. Wait 8 days → Email
-10. Wait 1 day → Visit profile
-11. Wait 1 day → Chat message (LinkedIn)
-12. Wait 1 day → Visit profile
-13. Wait 6 days → Chat message (LinkedIn)
+### What's needed
+A "Send test email" button in the sequence builder that:
+1. Takes the current step's email content
+2. Sends it to sunny@vanhawke.agency as a test
+3. Uses the current step's subject + body with {firstName} replaced by "Sunny"
+4. Sends via the existing Gmail API integration
+5. Shows confirmation "Test email sent to your inbox"
 
-This is 13 steps over ~35 days — more aggressive than the 7-touch/14-day research recommendation. The actual campaign uses conditional branching (different path if LinkedIn invite accepted vs not).
+### Implementation
+Add a button next to "Ask Kiko to write this step" in the step editor:
+[✨ Ask Kiko to write this step] [📧 Send test]
 
-For Kiko's builder, start with the simpler 7-touch/14-day structure and add conditional branching later.
+The send test function calls /api/gmail-draft or sends directly via Gmail API.
 
 ---
 
-## RESEARCH DATA (for generate-sequence prompt)
+## PRIORITY 4: CHROME EXTENSION FOR LINKEDIN CAPTURE (future)
 
-Optimal outreach cadence (2025-2026 benchmarks):
-- Omnichannel (email + LinkedIn) = 287% more replies than email alone
-- 50-125 word emails = 50% higher reply rate
-- Personalised LinkedIn connect note = 9.36% reply (vs 5.44% without)
-- Profile visit + message = 11.87% reply rate
-- Monday launch, Wednesday follow-up = peak engagement
-- 9:30-11:30am recipient local time = optimal window
-- 93% of replies captured by day 10
-- 3-7-7 cadence (Day 0, Day 3, Day 10, Day 17) captures 93% of replies
-- Decision-makers receive 15 cold emails/week
-- 71% of ignored emails lack relevance
-- Personalisation beyond first name = 340% higher reply rates
-- LinkedIn max 20-30 connection requests/day to avoid throttling
+### What Lemlist does
+Chrome extension that reads LinkedIn profile data (name, title, company, LinkedIn URL) and pushes to their API. When on a LinkedIn profile page, click the extension → "Add to campaign" → selects campaign → lead added.
+
+### What Kiko would need
+1. Chrome extension (manifest v3) that activates on linkedin.com
+2. Reads: name, title, company, LinkedIn URL from the profile page DOM
+3. Popup shows available campaigns from Kiko's database
+4. Click "Add" → POST to /api/sequences endpoint → creates enrollment
+5. Optional: email enrichment via Hunter.io API ($49/month for 1,000 lookups)
+
+This is a separate 2-session project. Document but don't build yet.
 
 ---
 
-## BACKEND STATUS (all working, do not touch)
+## WRITING STYLE SYSTEM
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| kiko_sequences table | ✅ | 3 seeded (need updating to 7-touch) |
-| kiko_sequence_enrollments table | ✅ | Ready for leads |
-| kiko_outreach_queue table | ✅ | Email send queue |
-| kiko_linkedin_queue table | ✅ | LinkedIn message queue |
-| cron-sequence-enqueue.js | ✅ | Daily 6am, personalises emails |
-| cron-sequence-sender.js | ✅ | Every 30min 8am-6pm, sends via Gmail |
-| cron-sequence-reply-detect.js | ✅ | Every 2hrs, stops on reply/bounce |
-| generate-sequence.js | ✅ | AI campaign generation (bug fixed) |
-| data.js operations | ✅ | start/status/pause/cancel/linkedin_queue |
-| kiko.js routing | ✅ | Sequence intent routing |
-| kiko-tools.js enum | ✅ | All operations listed |
+### kiko_email_style_reference table (10 entries)
+Stores real emails extracted from Gmail (sent via Lemlist). Used as few-shot examples in the generate-sequence API.
+
+| Category | Step 1 | Step 2 |
+|---|---|---|
+| Cybersecurity | ✅ | ✅ |
+| CRM | ✅ | ✅ |
+| Cloud Computing | ✅ | ✅ |
+| Premium Spirits / Tequila | ✅ | ✅ |
+| Industrial Automation & Robotics | ✅ | ✅ (short) |
+
+### Still need to extract (from Gmail):
+- Semiconductor emails
+- Data/Analytics emails  
+- Logistics/Fulfilment emails
+- Whiskey emails
+
+Use: Gmail:gmail_search_messages with "from:sunny@vanhawke.agency subject:'Haas F1' in:sent"
+Then: Gmail:gmail_read_message to get full body
+Then: INSERT INTO kiko_email_style_reference
 
 ---
+
+## OPEN CATEGORIES FOR NEW CAMPAIGNS
+
+Cross-referenced from sponsor_categories table:
+
+| Category | Priority | Has Lemlist campaign? |
+|---|---|---|
+| Banking / Financial Services | High | No |
+| FinTech / Payments | High | No |
+| Telecoms / Connectivity | High | No |
+| Energy / Petrochemical | Medium | No |
+| Gaming / Entertainment | Medium | No |
+| Health / Wellness | Medium | No |
+| Hospitality / Travel | Medium | No |
+
+---
+
+## BACKEND STATUS (all working — do NOT modify)
+
+| Component | Status |
+|-----------|--------|
+| kiko_sequences table | ✅ (1 campaign: Haas F1 - Cybersecurity) |
+| kiko_sequence_enrollments table | ✅ |
+| kiko_outreach_queue table | ✅ |
+| kiko_linkedin_queue table | ✅ |
+| kiko_email_style_reference table | ✅ (10 real emails) |
+| cron-sequence-enqueue.js (6am daily) | ✅ |
+| cron-sequence-sender.js (30min 8am-6pm) | ✅ |
+| cron-sequence-reply-detect.js (2hr) | ✅ |
+| generate-sequence.js (AI generation) | ✅ (uses style references) |
+| data.js operations | ✅ (start/status/pause/cancel/linkedin_queue) |
+| kiko.js routing | ✅ |
+| kiko-tools.js enum | ✅ |
 
 ## FRONTEND STATUS
 
-| Page | Status | Issues |
-|------|--------|--------|
-| Sequences.jsx (campaign list) | ✅ Rebuilt | Pre-built templates show as campaigns (wrong) |
-| SequenceDetail.jsx (builder) | ✅ Rebuilt | Greeting/sign-off fixed, regen prompt added |
-| App.jsx routes | ✅ | /sequences and /sequences/:id |
-| Layout.jsx nav | ✅ | Under More → Sequences |
-| Lemlist.jsx | ❌ Should be removed | Replace with Sequences |
+| Page | File | Status |
+|------|------|--------|
+| Campaigns list | src/pages/Sequences.jsx | ✅ Clean card list + generate wizard |
+| Sequence builder | src/pages/SequenceDetail.jsx | ✅ 3 tabs (Sequence/Leads/Performance) |
+| Lemlist | src/pages/Lemlist.jsx | ✅ Kept under More, to be merged |
+
+## NAV STRUCTURE
+Top bar: Home | Command Centre | Pipeline | Partnership Matrix | Campaigns
+More dropdown: Calendar, Contacts, Organisations, Lemlist, KikoCode, Settings
 
 ---
 
-## WHAT TO BUILD NEXT SESSION
-
-Priority order:
-1. Delete the 3 template sequences, seed proper campaign templates instead
-2. Update generate-sequence.js to use Van Hawke writing style + 7-touch structure
-3. Merge Lemlist page analytics into Sequences page
-4. Remove Lemlist from nav
-5. Test end-to-end: generate "Haas F1 - Cybersecurity" → add CRM leads → verify queue
-6. Verify crons fire correctly (check heartbeats next morning)
-
----
-
-## DEPLOY RULES (NEVER BREAK THESE)
-- Deploy: `npx vercel --prod --yes` ONLY
-- NEVER use `VERCEL_FORCE_NO_BUILD_CACHE=1` or `--force`
-- NEVER use more than 50 functions in vercel.json (currently 49)
-- `ANTHROPIC_KEY` not ANTHROPIC_API_KEY
-- `VITE_SUPABASE_URL` not SUPABASE_URL
-- Gmail: sunny@vanhawke.agency, Helvetica 12pt
-
----
-
-## KEY FILES
-
-| File | Purpose |
-|------|---------|
-| NEXT_SESSION_PROMPT.md | This file — paste into next session |
-| KIKO_SESSION_BRIEF.md | Mandatory read before any code changes |
-| KIKO_EVOLUTION_PLAN.md | 710-line 19-phase engineering spec |
-| KIKO_DESIGN_BRIEF.md | 291-line design brief for Cowork UI sessions |
-| SEQUENCE_BUILDER_SPEC.md | 408-line definitive UI spec for sequences |
-| KIKO_OUTREACH_ENGINE_SPEC.md | Full outreach engine technical spec |
-| CLAUDE_CODE_SETUP.md | 452-line local dev workflow |
+## DEPLOY RULES
+- npx vercel --prod --yes ONLY
+- NEVER VERCEL_FORCE_NO_BUILD_CACHE=1 or --force
+- 49/50 functions in vercel.json
+- ANTHROPIC_KEY not ANTHROPIC_API_KEY
+- VITE_SUPABASE_URL not SUPABASE_URL
+- Contacts use camelCase: firstName, lastName, company, email, title, linkedin
 
 ---
 
@@ -197,19 +185,38 @@ Priority order:
 | Commit | Description |
 |--------|-------------|
 | 090706d | Closed-loop deal attribution engine |
-| 6f96631 | Updated master prompt with attribution |
+| 6f96631 | Master prompt with attribution |
 | 91179ed | Kiko design brief for Cowork (291 lines) |
 | 185d1f4 | Claude Code implementation brief (452 lines) |
-| 7ff59a3 | Outreach sequence engine — 3 crons, 4 tables, operations |
+| 7ff59a3 | Outreach sequence engine (3 crons, 4 tables) |
 | 935ee08 | Fix vercel.json 50-function limit |
-| f830c23 | Sequences page — campaign list + stats |
-| cf88a6f | Sequence builder UI spec (283 lines) |
-| 2f29a2e | Sequence builder — Lemlist-style flow + step editor |
+| f830c23 | Sequences page with stats |
+| cf88a6f | Sequence builder UI spec |
+| 2f29a2e | Lemlist-style sequence builder |
 | 61fcf8e | AI campaign generation wizard |
 | ba8e54f | Fix generate-sequence sbFetch bug |
 | 768df6a | Definitive sequence builder spec (408 lines) |
-| 9c8f387 | Complete rebuild — clean list + 3-tab builder + CRM lead search |
-| 2b7db57 | Fix greeting/sign-off, dropdown regen, Van Hawke writing style |
+| 9c8f387 | Complete rebuild — 3-tab builder + CRM lead search |
+| 2b7db57 | Auto greeting/sign-off + dropdown regen + writing style |
+| 5ea7cd3 | Architecture decisions documented |
+| 6eb2919 | Rewrite generation prompt with real Van Hawke style |
+| 8223200 | 10 real email style references from Gmail |
+| cf9b759 | Campaigns promoted to top nav, renamed from Sequences |
+| bbf04c8 | Fix CRM search fields, auto-suggest leads, fix build error |
+
+---
+
+## KEY FILES
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| NEXT_SESSION_PROMPT.md | This file | Paste into next session |
+| KIKO_SESSION_BRIEF.md | ~200 | Mandatory read before code |
+| KIKO_EVOLUTION_PLAN.md | 710 | 19-phase engineering spec |
+| KIKO_DESIGN_BRIEF.md | 291 | Cowork UI design brief |
+| SEQUENCE_BUILDER_SPEC.md | 408 | Definitive campaigns UI spec |
+| KIKO_OUTREACH_ENGINE_SPEC.md | ~300 | Outreach engine technical spec |
+| CLAUDE_CODE_SETUP.md | 452 | Local dev workflow |
 
 ---
 
