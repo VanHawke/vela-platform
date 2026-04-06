@@ -66,6 +66,8 @@ export default function SequenceDetail() {
   function upd(i, k, v) { const u=[...steps]; u[i]={...u[i],[k]:v}; setSteps(u); setDirty(true) }
   function updAndRegen(i, k, v) { upd(i, k, v); setRegenPrompt(true) }
   const [regenPrompt, setRegenPrompt] = useState(false)
+  const [testSending, setTestSending] = useState(false)
+  const [testSent, setTestSent] = useState(false)
   function del(i) { setSteps(steps.filter((_,j)=>j!==i).map((s,j)=>({...s,step:j+1}))); if(selStep>=steps.length-1) setSelStep(Math.max(0,steps.length-2)); setDirty(true) }
 
   async function askKiko(i) {
@@ -89,6 +91,21 @@ Context: Approach: ${s.approach}. Psychology: ${s.psychology}. Target: ${seq?.ta
 Return ONLY the message text, nothing else.`, stream:false }) })
       const d = await r.json(); upd(i, 'template', d?.content || d?.message || 'Error')
     } catch { upd(i, 'template', 'Error generating.') }
+  }
+
+  async function sendTest(i) {
+    const s=steps[i]; if(!s||s.channel!=='email') return
+    setTestSending(true); setTestSent(false)
+    try {
+      const category = seq?.name?.split(' - ')[1]||'Category'
+      const body = (s.template||'').replace(/\{firstName\}/g,'Sunny').replace(/\{lastName\}/g,'Sidhu').replace(/\{companyName\}/g,'Test Company').replace(/\{category\}/g,category).replace(/\{revenue\}/g,'$1B').replace(/\{ceo\}/g,'CEO Name').replace(/\{raceWindow\}/g,'Miami Grand Prix').replace(/\{recentNews\}/g,'recent development').replace(/\{prevSubject\}/g,'Previous subject').replace(/\{signature\}/g,'Sunny Sidhu\nCEO, Van Hawke Group\nsunny@vanhawke.agency')
+      const subject = '[TEST] '+(s.subject||'Test').replace(/\{category\}/g,category)
+      const r = await fetch('/api/gmail-draft', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ to:'sunny@vanhawke.agency', subject, body }) })
+      if(r.ok) { setTestSent(true); setTimeout(()=>setTestSent(false),5000) }
+      else { alert('Draft creation failed') }
+    } catch(err) { alert('Error: '+err.message) }
+    setTestSending(false)
   }
 
   async function searchContacts() {
@@ -237,7 +254,10 @@ Return ONLY the message text, nothing else.`, stream:false }) })
                     {VARS.map(v=><button key={v} onClick={()=>upd(selStep,'template',(cur.template||'')+v)} style={{padding:'2px 6px',borderRadius:3,border:`1px solid ${T.border}`,background:'transparent',color:T.purple,fontSize:9,cursor:'pointer',fontFamily:T.font}}>{v}</button>)}
                   </div>
                 </div>
-                <button onClick={()=>askKiko(selStep)} style={{display:'flex',alignItems:'center',gap:5,padding:'7px 14px',borderRadius:6,border:`1px solid rgba(124,92,252,0.3)`,background:'rgba(124,92,252,0.06)',color:T.purple,fontSize:11,cursor:'pointer',fontFamily:T.font,width:'100%',justifyContent:'center'}}><Sparkles size={12}/>Ask Kiko to write this step</button>
+                <div style={{display:'flex',gap:8}}>
+                  <button onClick={()=>askKiko(selStep)} style={{display:'flex',alignItems:'center',gap:5,padding:'7px 14px',borderRadius:6,border:`1px solid rgba(124,92,252,0.3)`,background:'rgba(124,92,252,0.06)',color:T.purple,fontSize:11,cursor:'pointer',fontFamily:T.font,flex:1,justifyContent:'center'}}><Sparkles size={12}/>Ask Kiko to write this step</button>
+                  {cur.channel==='email'&&<button onClick={()=>sendTest(selStep)} disabled={testSending} style={{display:'flex',alignItems:'center',gap:5,padding:'7px 14px',borderRadius:6,border:`1px solid ${testSent?'rgba(74,222,128,0.3)':T.border}`,background:testSent?'rgba(74,222,128,0.06)':'transparent',color:testSent?T.green:T.textSec,fontSize:11,cursor:'pointer',fontFamily:T.font,whiteSpace:'nowrap'}}>{testSending?'Sending...':testSent?'✓ Sent to inbox':'📧 Send test'}</button>}
+                </div>
               </>
             ):(
               <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:300,color:T.textTer,fontSize:12,gap:10}}>
