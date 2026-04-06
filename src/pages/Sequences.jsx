@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { Play, Pause, StopCircle, Plus, ChevronRight, Mail, Linkedin, Users, BarChart3, Clock, CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
+import { Play, Pause, StopCircle, Plus, ChevronRight, Mail, Linkedin, Users, BarChart3, Clock, CheckCircle, XCircle, AlertTriangle, Sparkles, X } from 'lucide-react'
 
 const T = {
   bg: '#000000', surface: 'rgba(255,255,255,0.04)', surfaceHover: 'rgba(255,255,255,0.07)',
@@ -141,6 +141,11 @@ export default function Sequences() {
   const [selectedSeq, setSelectedSeq] = useState(null)
   const [tab, setTab] = useState('sequences')
   const [loading, setLoading] = useState(true)
+  const [showWizard, setShowWizard] = useState(false)
+  const [wizCategory, setWizCategory] = useState('')
+  const [wizTeam, setWizTeam] = useState('Haas F1 Team')
+  const [wizPersona, setWizPersona] = useState('')
+  const [generating, setGenerating] = useState(false)
 
   useEffect(() => { loadData() }, [])
 
@@ -178,6 +183,26 @@ export default function Sequences() {
     loadData()
   }
 
+  async function generateCampaign() {
+    if (!wizCategory) return
+    setGenerating(true)
+    try {
+      const res = await fetch('/api/generate-sequence', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: wizCategory, team: wizTeam, persona: wizPersona || `C-suite at $500M-$5B ${wizCategory} companies`, numSteps: 5 })
+      })
+      const data = await res.json()
+      if (data.ok && data.id) {
+        setShowWizard(false); setWizCategory(''); setWizPersona('')
+        await loadData()
+        navigate(`/sequences/${data.id}`)
+      } else {
+        alert(data.error || 'Generation failed. Try again.')
+      }
+    } catch (err) { alert('Generation failed: ' + err.message) }
+    setGenerating(false)
+  }
+
   // Stats
   const totalActive = enrollments.filter(e => e.status === 'active').length
   const totalReplied = enrollments.filter(e => e.status === 'replied').length
@@ -201,9 +226,14 @@ export default function Sequences() {
           <h1 style={{ fontSize: 24, fontWeight: 500, margin: 0, color: T.text }}>Outreach Sequences</h1>
           <p style={{ fontSize: 13, color: T.textTertiary, margin: '4px 0 0' }}>Automated multi-step outreach · Replaces Lemlist</p>
         </div>
-        <button onClick={() => navigate('/sequences/new')} style={{ padding: '8px 18px', borderRadius: 6, border: 'none', background: T.purple, color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Plus size={14} /> New Sequence
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => navigate('/sequences/new')} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid ${T.border}`, background: 'transparent', color: T.textSecondary, fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Plus size={14} /> Manual
+          </button>
+          <button onClick={() => setShowWizard(true)} style={{ padding: '8px 18px', borderRadius: 6, border: 'none', background: T.purple, color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Sparkles size={14} /> Generate Campaign
+          </button>
+        </div>
       </div>
 
       {/* Stats Row */}
@@ -296,6 +326,41 @@ export default function Sequences() {
             <LinkedInItem key={item.id} item={item} onMarkSent={markLinkedinSent} onSkip={skipLinkedin} />
           ))}
           {!linkedinQueue.length && <div style={{ ...glass, padding: 32, textAlign: 'center', color: T.textTertiary, fontSize: 12 }}>No LinkedIn messages pending. Sequences with LinkedIn steps will populate this queue.</div>}
+        </div>
+      )}
+
+      {/* Generate Campaign Wizard Modal */}
+      {showWizard && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowWizard(false)}>
+          <div onClick={e => e.stopPropagation()} style={{ ...glass, padding: 28, width: 480, maxWidth: '90vw' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 500, color: T.text, fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8 }}><Sparkles size={18} style={{ color: T.purple }} /> Generate Campaign</div>
+                <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2 }}>Kiko creates the full sequence using her intelligence</div>
+              </div>
+              <button onClick={() => setShowWizard(false)} style={{ background: 'none', border: 'none', color: T.textTertiary, cursor: 'pointer' }}><X size={18} /></button>
+            </div>
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 11, color: T.textTertiary, display: 'block', marginBottom: 4 }}>Category *</label>
+              <input value={wizCategory} onChange={e => setWizCategory(e.target.value)} placeholder="e.g. Cybersecurity, Cloud, CRM, AI/ML, Data Analytics" style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.text, fontSize: 13, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} autoFocus />
+            </div>
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 11, color: T.textTertiary, display: 'block', marginBottom: 4 }}>F1 Team</label>
+              <select value={wizTeam} onChange={e => setWizTeam(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.text, fontSize: 13, fontFamily: T.font, outline: 'none' }}>
+                {['Haas F1 Team','Alpine F1 Team','Aston Martin F1 Team'].map(t => <option key={t} value={t} style={{ background: '#111' }}>{t}</option>)}
+              </select>
+            </div>
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ fontSize: 11, color: T.textTertiary, display: 'block', marginBottom: 4 }}>Target Persona (optional)</label>
+              <input value={wizPersona} onChange={e => setWizPersona(e.target.value)} placeholder="Auto: C-suite at $500M-$5B [category] companies" style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, fontSize: 13, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+            <div style={{ padding: 12, borderRadius: 8, background: 'rgba(124,92,252,0.06)', border: `1px solid rgba(124,92,252,0.15)`, marginBottom: 16, fontSize: 11, color: T.textSecondary, lineHeight: 1.5 }}>
+              Kiko generates 5 steps (3 emails + 1 LinkedIn + 1 final email) using authority-led messaging, Cialdini psychology, race calendar awareness, and Van Hawke communication style.
+            </div>
+            <button onClick={generateCampaign} disabled={generating || !wizCategory} style={{ width: '100%', padding: '10px 0', borderRadius: 6, border: 'none', background: generating ? T.surface : T.purple, color: generating ? T.textTertiary : '#fff', fontSize: 13, fontWeight: 500, cursor: generating ? 'default' : 'pointer', fontFamily: T.font }}>
+              {generating ? '⏳ Kiko is generating your campaign...' : '✨ Generate & Open'}
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -36,6 +36,7 @@
   ],
   "functions": {
     "api/kiko.js": { "maxDuration": 120 },
+    "api/generate-sequence.js": { "maxDuration": 60 },
     "api/file-extract.js": { "maxDuration": 30 },
     "api/kiko-research.js": { "maxDuration": 120 },
     "api/kiko-code.js": { "maxDuration": 30 },
