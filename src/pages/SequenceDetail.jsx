@@ -530,7 +530,21 @@ export default function SequenceDetail() {
                               <span style={{ fontSize: 11, fontWeight: 500, color: C.textSec, textTransform: 'capitalize' }}>{a.channel || 'email'} · Step {a.step_number} · {isSent ? 'Sent' : isFailed ? 'Failed' : isQueued ? 'Queued' : a.status}</span>
                             </div>
                             {a.subject && <div style={{ fontSize: 11, color: C.textTer, marginBottom: 2 }}>{a.subject}</div>}
-                            <div style={{ fontSize: 10, color: C.textMut }}>{a.sent_at ? new Date(a.sent_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : a.scheduled_for ? `Scheduled: ${new Date(a.scheduled_for).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}</div>
+                            {(a.opens_count > 0 || a.clicks_count > 0) && (
+                              <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                                {a.opens_count > 0 && (
+                                  <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 10, background: 'rgba(96,165,250,0.08)', border: '0.5px solid rgba(96,165,250,0.18)', color: C.blue }}>
+                                    👁 Opened {a.opens_count > 1 ? `×${a.opens_count}` : ''}
+                                  </span>
+                                )}
+                                {a.clicks_count > 0 && (
+                                  <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 10, background: 'rgba(167,139,250,0.08)', border: '0.5px solid rgba(167,139,250,0.18)', color: C.purple }}>
+                                    🔗 Clicked {a.clicks_count > 1 ? `×${a.clicks_count}` : ''}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            <div style={{ fontSize: 10, color: C.textMut, marginTop: 4 }}>{a.sent_at ? new Date(a.sent_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : a.scheduled_for ? `Scheduled: ${new Date(a.scheduled_for).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}</div>
                           </div>
                         </div>
                       )
@@ -566,20 +580,29 @@ export default function SequenceDetail() {
         <div>
           {enrollments.length > 0 ? (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 16 }}>
+              {(() => {
+                const openedQ = queue.filter(q => q.opened_at).length;
+                const clickedQ = queue.filter(q => q.clicked_at).length;
+                const sentQ = queue.filter(q => q.status === 'sent').length;
+                return (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10, marginBottom: 16 }}>
                 {[
                   { l: 'Enrolled', v: enrollments.length, c: C.purple },
-                  { l: 'Active', v: enrollments.filter(e => e.status === 'active').length, c: C.teal },
+                  { l: 'Sent', v: sentQ, c: C.text },
+                  { l: 'Opened', v: openedQ, sub: sentQ > 0 ? `${Math.round(openedQ/sentQ*100)}%` : null, c: C.blue },
+                  { l: 'Clicked', v: clickedQ, sub: sentQ > 0 ? `${Math.round(clickedQ/sentQ*100)}%` : null, c: C.purple },
                   { l: 'Replied', v: enrollments.filter(e => e.status === 'replied').length, c: C.teal },
                   { l: 'Reply rate', v: `${enrollments.length ? Math.round(enrollments.filter(e => e.status === 'replied').length / enrollments.length * 100) : 0}%`, c: C.amber },
                   { l: 'Bounced', v: enrollments.filter(e => e.status === 'bounced').length, c: C.red },
                 ].map((s, i) => (
-                  <div key={i} style={{ ...glass, padding: '14px 16px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 24, fontWeight: 500, color: s.c }}>{s.v}</div>
-                    <div style={{ fontSize: 10, color: C.textTer }}>{s.l}</div>
+                  <div key={i} style={{ ...glass, padding: '14px 12px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 22, fontWeight: 500, color: s.v && s.v !== '0%' ? s.c : C.textMut }}>{s.v}{s.sub && <span style={{ fontSize: 10, color: C.textSec, marginLeft: 3 }}>{s.sub}</span>}</div>
+                    <div style={{ fontSize: 9, color: C.textTer, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.l}</div>
                   </div>
                 ))}
               </div>
+                )
+              })()}
               <div style={{ ...glass, overflow: 'hidden' }}>
                 <div style={{ padding: '10px 14px', borderBottom: `0.5px solid ${C.border}`, fontSize: 12, fontWeight: 500 }}>Step breakdown</div>
                 {steps.map((s, i) => {

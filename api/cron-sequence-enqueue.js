@@ -105,8 +105,9 @@ export default async function handler(req, res) {
               break;
             }
             case 'email_opened': {
-              // Future: check open tracking events
-              conditionMet = false; // Default to no until open tracking is built
+              // Check if any prior email in this enrollment was opened
+              const prior = await sbFetch(`kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&channel=eq.email&status=eq.sent&opened_at=not.is.null&select=id&limit=1`);
+              conditionMet = Array.isArray(prior) && prior.length > 0;
               break;
             }
             default: conditionMet = false;

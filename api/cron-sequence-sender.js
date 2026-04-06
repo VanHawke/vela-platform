@@ -7,6 +7,32 @@ import { getActiveUsers, getGoogleToken } from './cron-utils.js';
 
 export const config = { maxDuration: 30 };
 
+const TRACK_BASE = 'https://vela-platform-one.vercel.app/api/track';
+
+// Inject open pixel + wrap all http(s) links with click tracker.
+// Recipient sees a normal email; we get open + click telemetry.
+function instrumentHtml(html, queueId) {
+  if (!html || !queueId) return html;
+  let out = html;
+  // 1. Wrap links: <a href="https://..."> → <a href="https://.../api/track?t=c&q=ID&u=BASE64URL">
+  // Skip mailto:, tel:, anchors, and links already pointing to our tracker
+  out = out.replace(/<a\s+([^>]*?)href=(["'])(https?:\/\/[^"']+)\2([^>]*)>/gi, (match, pre, quote, url, post) => {
+    if (url.includes('/api/track?')) return match;
+    const b64 = Buffer.from(url, 'utf8').toString('base64')
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const tracked = `${TRACK_BASE}?t=c&q=${queueId}&u=${b64}`;
+    return `<a ${pre}href=${quote}${tracked}${quote}${post}>`;
+  });
+  // 2. Inject open pixel at the very end of the body (after sign-off)
+  const pixel = `<img src="${TRACK_BASE}?t=o&q=${queueId}" width="1" height="1" alt="" style="display:block;width:1px;height:1px;border:0" />`;
+  if (/<\/div>\s*$/.test(out)) {
+    out = out.replace(/<\/div>\s*$/, pixel + '</div>');
+  } else {
+    out = out + pixel;
+  }
+  return out;
+}
+
 function buildRawEmail({ from, to, subject, bodyHtml, bodyPlain, threadId }) {
   const boundary = `b_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   // Clean subject: × → x for email compatibility, encode non-ASCII
@@ -70,7 +96,8 @@ export default async function handler(req, res) {
 
         const raw = buildRawEmail({
           from: fromEmail, to: email.to_email, subject: email.subject,
-          bodyHtml: email.body_html, bodyPlain: email.body_plain, threadId
+          bodyHtml: instrumentHtml(email.body_html, email.id),
+          bodyPlain: email.body_plain, threadId
         });
 
         // Send via Gmail API
