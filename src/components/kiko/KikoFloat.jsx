@@ -2,7 +2,27 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { X, ArrowUp, Mic } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useNavigate, useLocation } from 'react-router-dom'
-import T from '@/lib/theme'
+// Design tokens — hardcoded (matching Sequences.jsx)
+const C = {
+  bg: '#0D0D0F',
+  card: '#141416',
+  cardHover: '#1A1A1E',
+  border: 'rgba(255,255,255,0.06)',
+  borderHover: 'rgba(255,255,255,0.10)',
+  text: 'rgba(245,245,248,0.92)',
+  textSec: 'rgba(245,245,248,0.55)',
+  textTer: 'rgba(245,245,248,0.32)',
+  textMut: 'rgba(245,245,248,0.16)',
+  purple: '#A78BFA',
+  teal: '#2DD4BF',
+  green: '#34D399',
+  red: '#F87171',
+  amber: '#FBBF24',
+  blue: '#60A5FA',
+  linkedin: '#0077B5',
+  font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  r: 8,
+}
 import KikoWaveform from './KikoWaveform'
 import { useRealtimeVoice } from '@/hooks/useRealtimeVoice'
 // KikoVoice removed — voice stays in FAB circle
@@ -450,9 +470,9 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           zIndex: 100, borderRadius: 24,
           background: 'rgba(238,238,238,0.035)',
           backdropFilter: 'blur(40px) saturate(1.5)', WebkitBackdropFilter: 'blur(40px) saturate(1.5)',
-          border: `0.5px solid ${T.glassBorder}`,
+          border: `0.5px solid ${C.border}`,
           borderTop: `0.5px solid rgba(238,238,238,0.15)`,
-          boxShadow: T.glassShadowFloat || '0 16px 48px rgba(0,0,0,0.45), 0 4px 16px rgba(0,0,0,0.3), 0 1px 0 rgba(238,238,238,0.05) inset',
+          boxShadow: '0 12px 40px rgba(0,0,0,0.5)' || '0 16px 48px rgba(0,0,0,0.45), 0 4px 16px rgba(0,0,0,0.3), 0 1px 0 rgba(238,238,238,0.05) inset',
           display: 'flex', flexDirection: 'column',
           maxHeight: 'calc(100vh - 160px)',
           opacity: open ? 1 : 0,
@@ -465,15 +485,15 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               <div style={{ width: 24, height: 12, overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)', maskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)' }}>
                 <KikoWaveform width={24} height={12} mini />
               </div>
-              <span style={{ fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font }}>Kiko</span>
+              <span style={{ fontSize: 14, fontWeight: 500, color: C.text, fontFamily: C.font }}>Kiko</span>
               {voiceOpen && (
-                <span style={{ fontSize: 10, fontWeight: 500, color: voiceSpeaking ? '#06D6A0' : voiceStatus === 'thinking' ? '#7C9CF6' : voiceStatus === 'error' ? '#FF5050' : 'rgba(238,238,238,0.4)', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ fontSize: 10, fontWeight: 500, color: voiceSpeaking ? '#06D6A0' : voiceStatus === 'thinking' ? '#7C9CF6' : voiceStatus === 'error' ? '#FF5050' : 'rgba(238,238,238,0.4)', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: voiceSpeaking ? '#06D6A0' : voiceStatus === 'connecting' ? '#F59E0B' : '#06D6A0', animation: voiceSpeaking ? 'none' : 'pulse 1.5s ease-in-out infinite' }} />
                   {voiceSpeaking ? 'Speaking' : voiceStatus === 'thinking' ? 'Thinking' : voiceStatus === 'connecting' ? 'Connecting' : 'Listening'}
                 </span>
               )}
             </div>
-            <button onClick={toggleOpen} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.textTertiary, padding: 4, display: 'flex', borderRadius: 6, lineHeight: 1 }}>
+            <button onClick={toggleOpen} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textTer, padding: 4, display: 'flex', borderRadius: 6, lineHeight: 1 }}>
               <X size={13} />
             </button>
           </div>
@@ -485,11 +505,11 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                 <div key={i} style={{ marginBottom: msg.role !== 'user' ? 4 : 8 }}>
                   <div style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                   {msg.role !== 'user' && (
-                    <div style={{ width: 20, height: 20, borderRadius: 50, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
+                    <div style={{ width: 20, height: 20, borderRadius: 50, background: C.purple, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
                       <KikoWaveform width={18} height={10} mini />
                     </div>
                   )}
-                  <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : 8, background: msg.role === 'user' ? T.accent : T.accentSoft, color: msg.role === 'user' ? 'rgba(238,238,238,0.9)' : T.textSecondary, fontSize: 13, lineHeight: 1.55, fontFamily: T.font }}>
+                  <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : 8, background: msg.role === 'user' ? C.purple : 'rgba(167,139,250,0.06)', color: msg.role === 'user' ? 'rgba(238,238,238,0.9)' : C.textSec, fontSize: 13, lineHeight: 1.55, fontFamily: C.font }}>
                     {msg.role === 'user' ? msg.content : <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />}
                   </div>
                   </div>
@@ -509,16 +529,16 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               ))}
               {streaming && !streamText && (
                 <div style={{ marginBottom: 8, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                  <div style={{ width: 20, height: 20, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                  <div style={{ width: 20, height: 20, borderRadius: 6, background: C.purple, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
                     <KikoWaveform width={18} height={10} mini />
                   </div>
-                  <div style={{ padding: '7px 11px', borderRadius: 50, background: T.accentSoft }}>
+                  <div style={{ padding: '7px 11px', borderRadius: 50, background: 'rgba(167,139,250,0.06)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: T.accent, flexShrink: 0, animation: 'kikoBreathe 2s ease-in-out infinite' }} />
-                      <span style={{ fontSize: 12, color: T.textSecondary, fontFamily: T.font }}>{toolStatus || 'Thinking…'}</span>
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: C.purple, flexShrink: 0, animation: 'kikoBreathe 2s ease-in-out infinite' }} />
+                      <span style={{ fontSize: 12, color: C.textSec, fontFamily: C.font }}>{toolStatus || 'Thinking…'}</span>
                     </div>
                     <div style={{ height: 2, borderRadius: 1, background: 'rgba(238,238,238,0.04)', marginTop: 5, overflow: 'hidden', width: 120 }}>
-                      <div style={{ height: '100%', borderRadius: 1, background: T.accent, animation: 'kikoProgress 2.4s ease-in-out infinite' }} />
+                      <div style={{ height: '100%', borderRadius: 1, background: C.purple, animation: 'kikoProgress 2.4s ease-in-out infinite' }} />
                     </div>
                   </div>
                 </div>
@@ -526,17 +546,17 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               {streaming && streamText && (
                 <div style={{ marginBottom: 8 }}>
                   <div style={{ display: 'flex' }}>
-                    <div style={{ width: 20, height: 20, borderRadius: 6, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
+                    <div style={{ width: 20, height: 20, borderRadius: 6, background: C.purple, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
                       <KikoWaveform width={18} height={10} mini />
                     </div>
-                    <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: 50, background: T.accentSoft, fontSize: 13, color: T.textSecondary, lineHeight: 1.55, fontFamily: T.font }}>
+                    <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: 50, background: 'rgba(167,139,250,0.06)', fontSize: 13, color: C.textSec, lineHeight: 1.55, fontFamily: C.font }}>
                       <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
                       <span style={{ animation: 'kikoBreathe 1s infinite' }}>▍</span>
                     </div>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'center', marginTop: 6 }}>
                     <button onClick={() => { if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; if (streamText) setMessages(prev => [...prev, { role: 'assistant', content: streamText }]); setStreamText(''); setStreaming(false) } }}
-                      style={{ padding: '4px 12px', borderRadius: 14, border: '0.5px solid rgba(238,238,238,0.1)', background: 'rgba(238,238,238,0.03)', cursor: 'pointer', fontSize: 11, color: 'rgba(238,238,238,0.4)', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.1s' }}
+                      style={{ padding: '4px 12px', borderRadius: 14, border: '0.5px solid rgba(238,238,238,0.1)', background: 'rgba(238,238,238,0.03)', cursor: 'pointer', fontSize: 11, color: 'rgba(238,238,238,0.4)', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.1s' }}
                       onMouseOver={e => { e.currentTarget.style.background = 'rgba(238,238,238,0.06)'; e.currentTarget.style.color = 'rgba(238,238,238,0.6)' }}
                       onMouseOut={e => { e.currentTarget.style.background = 'rgba(238,238,238,0.03)'; e.currentTarget.style.color = 'rgba(238,238,238,0.4)' }}
                     ><span style={{ width: 8, height: 8, borderRadius: 1.5, background: 'currentColor', display: 'inline-block' }} /> Stop</button>
@@ -554,7 +574,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                 <button key={chip} onClick={() => handleSubmit(chip)} style={{
                   fontSize: 12, padding: '5px 10px', borderRadius: 50,
                   border: '0.5px solid rgba(238,238,238,0.1)', background: 'rgba(238,238,238,0.07)',
-                  color: T.textSecondary, cursor: 'pointer', fontFamily: T.font,
+                  color: C.textSec, cursor: 'pointer', fontFamily: C.font,
                   animation: `kikoChipIn 0.3s ease ${0.08 + i * 0.05}s both`,
                   transition: 'background 0.15s, border-color 0.15s',
                 }}
@@ -576,13 +596,13 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                   ? <img src={pendingFile.previewUrl} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
                   : <div style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(167,139,250,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'rgba(167,139,250,0.7)', fontWeight: 500 }}>{pendingFile.name.split('.').pop()?.toUpperCase()}</div>
                 }
-                <span style={{ fontSize: 11, color: 'rgba(238,238,238,0.5)', fontFamily: T.font, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pendingFile.name}</span>
+                <span style={{ fontSize: 11, color: 'rgba(238,238,238,0.5)', fontFamily: C.font, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pendingFile.name}</span>
                 <button onClick={clearPendingFile} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(238,238,238,0.3)', padding: 2, fontSize: 12, lineHeight: 1 }}>✕</button>
               </div>
             </div>
           )}
           <div style={{ padding: '8px 10px 10px', display: 'flex', alignItems: 'flex-end', gap: 6, borderTop: hasMessages ? '1.5px solid rgba(238,238,238,0.07)' : 'none', marginTop: hasMessages ? 0 : 8 }}>
-            <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} style={{ width: 26, height: 26, borderRadius: '50%', border: 'none', background: 'transparent', color: T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} style={{ width: 26, height: 26, borderRadius: '50%', border: 'none', background: 'transparent', color: C.textTer, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {fileUploading
                 ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'kikoVortexSpin 1s linear infinite' }}><circle cx="12" cy="12" r="10"/></svg>
                 : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>}
@@ -591,8 +611,8 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && input.trim()) { e.preventDefault(); handleSubmit() } }}
               placeholder="Ask me anything...."
               rows={1}
-              style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 14, color: T.text, fontFamily: T.font, resize: 'none', minHeight: 20, maxHeight: 120, lineHeight: '1.4', padding: '2px 0', overflowY: 'auto', fieldSizing: 'content' }} />
-            <button onClick={transcribing ? stopTranscribe : startTranscribe} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: transcribing ? 'rgba(34,197,94,0.12)' : 'transparent', color: transcribing ? 'rgba(34,197,94,0.9)' : T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
+              style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 14, color: C.text, fontFamily: C.font, resize: 'none', minHeight: 20, maxHeight: 120, lineHeight: '1.4', padding: '2px 0', overflowY: 'auto', fieldSizing: 'content' }} />
+            <button onClick={transcribing ? stopTranscribe : startTranscribe} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: transcribing ? 'rgba(34,197,94,0.12)' : 'transparent', color: transcribing ? 'rgba(34,197,94,0.9)' : C.textTer, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
               <Mic size={13} />
               {transcribing && <span style={{ position: 'absolute', top: 2, right: 2, width: 6, height: 6, borderRadius: '50%', background: 'rgba(34,197,94,0.9)', animation: 'kikoBreathe 1s ease-in-out infinite' }} />}
             </button>
@@ -600,7 +620,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               {voiceOpen ? <div style={{ width: 8, height: 8, borderRadius: 1.5, background: 'rgba(255,59,48,0.7)' }} /> : <EqIcon size={14} color="rgba(6,214,160,0.7)" />}
             </button>
             <button onClick={() => { if (pendingFile) submitWithFile(); else handleSubmit(); }} disabled={(!input.trim() && !pendingFile) || streaming}
-              style={{ width: 28, height: 28, borderRadius: 50, border: 'none', background: (input.trim() || pendingFile) && !streaming ? T.accentGradient : 'rgba(238,238,238,0.04)', color: (input.trim() || pendingFile) && !streaming ? 'rgba(238,238,238,0.9)' : T.textTertiary, cursor: (input.trim() || pendingFile) && !streaming ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s', boxShadow: (input.trim() || pendingFile) ? '0 2px 8px rgba(167,139,250,0.2)' : 'none' }}>
+              style={{ width: 28, height: 28, borderRadius: 50, border: 'none', background: (input.trim() || pendingFile) && !streaming ? 'linear-gradient(135deg, #7C5CFC, #2DD4BF)' : 'rgba(238,238,238,0.04)', color: (input.trim() || pendingFile) && !streaming ? 'rgba(238,238,238,0.9)' : C.textTer, cursor: (input.trim() || pendingFile) && !streaming ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s', boxShadow: (input.trim() || pendingFile) ? '0 2px 8px rgba(167,139,250,0.2)' : 'none' }}>
               <ArrowUp size={13} />
             </button>
           </div>

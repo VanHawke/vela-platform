@@ -2,7 +2,27 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
-import T from '@/lib/theme'
+// Design tokens — hardcoded (matching Sequences.jsx)
+const C = {
+  bg: '#0D0D0F',
+  card: '#141416',
+  cardHover: '#1A1A1E',
+  border: 'rgba(255,255,255,0.06)',
+  borderHover: 'rgba(255,255,255,0.10)',
+  text: 'rgba(245,245,248,0.92)',
+  textSec: 'rgba(245,245,248,0.55)',
+  textTer: 'rgba(245,245,248,0.32)',
+  textMut: 'rgba(245,245,248,0.16)',
+  purple: '#A78BFA',
+  teal: '#2DD4BF',
+  green: '#34D399',
+  red: '#F87171',
+  amber: '#FBBF24',
+  blue: '#60A5FA',
+  linkedin: '#0077B5',
+  font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  r: 8,
+}
 import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X, Zap } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
 import KikoVoice from '../kiko/KikoVoice'
@@ -202,7 +222,7 @@ export default function Layout({ user }) {
   }, [isHome, voiceFullscreen])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden', background: T.bg }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden', background: C.bg }}>
       {/* Aurora gradient orbs */}
       <AuroraCanvas extraOrb={loc.pathname === '/pipeline' ? 'amber' : null} />
 
@@ -226,7 +246,7 @@ export default function Layout({ user }) {
               <img src={customLogo} alt="Logo" style={{ height: 36, borderRadius: 8, maxWidth: 160, objectFit: 'contain' }} />
             ) : (
               <>
-                <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(238,238,238,0.55)', fontFamily: T.font, letterSpacing: '0.12em' }}>VAN HAWKE<sup style={{ fontSize: 8, verticalAlign: 'super', opacity: 0.5 }}>™</sup></span>
+                <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(238,238,238,0.55)', fontFamily: C.font, letterSpacing: '0.12em' }}>VAN HAWKE<sup style={{ fontSize: 8, verticalAlign: 'super', opacity: 0.5 }}>™</sup></span>
               </>
             )}
           </button>
@@ -234,7 +254,7 @@ export default function Layout({ user }) {
 
         {/* Center: Pill tab group — flex centered between logo and right controls */}
         <div className="desktop-top-nav" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: 3, background: T.glass, backdropFilter: T.glassBlur, WebkitBackdropFilter: T.glassBlur, borderRadius: 14, padding: 4, border: `0.5px solid ${T.glassBorder}`, borderTop: `0.5px solid ${T.glassBorderTop}`, boxShadow: T.glassShadow }}>
+          <div style={{ display: 'flex', gap: 3, background: 'rgba(20,20,24,0.65)', backdropFilter: 'blur(20px) saturate(1.2)', WebkitBackdropFilter: 'blur(20px) saturate(1.2)', borderRadius: 14, padding: 4, border: `0.5px solid ${C.border}`, borderTop: `0.5px solid ${'rgba(255,255,255,0.08)'}`, boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
             {TABS.map(tab => {
               const active = isTabActive(tab.path)
               return (
@@ -245,7 +265,7 @@ export default function Layout({ user }) {
                   padding: '7px 22px', borderRadius: 50, border: 'none',
                   background: active ? 'rgba(238,238,238,0.1)' : 'transparent',
                   color: active ? 'rgba(238,238,238,0.9)' : 'rgba(238,238,238,0.3)',
-                  fontSize: 13, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: T.font,
+                  fontSize: 13, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: C.font,
                   boxShadow: active ? 'inset 0 1px 0 rgba(238,238,238,0.12), 0 2px 8px rgba(0,0,0,0.2)' : 'none',
                   transition: 'all 0.2s',
                 }}
@@ -259,7 +279,7 @@ export default function Layout({ user }) {
               <button onClick={() => setMoreOpen(!moreOpen)} style={{
                 padding: '7px 22px', borderRadius: 50, border: 'none',
                 background: moreOpen ? 'rgba(238,238,238,0.07)' : 'transparent',
-                color: moreOpen ? 'rgba(238,238,238,0.8)' : 'rgba(238,238,238,0.3)', fontSize: 13, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
+                color: moreOpen ? 'rgba(238,238,238,0.8)' : 'rgba(238,238,238,0.3)', fontSize: 13, fontWeight: 300, cursor: 'pointer', fontFamily: C.font,
                 display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.2s',
               }}
                 onMouseOver={e => { if (!moreOpen) { e.currentTarget.style.color = 'rgba(238,238,238,0.8)'; e.currentTarget.style.background = 'rgba(238,238,238,0.05)' }}}
@@ -281,7 +301,7 @@ export default function Layout({ user }) {
                       width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none',
                       background: loc.pathname === item.path ? 'rgba(238,238,238,0.08)' : 'transparent',
                       color: loc.pathname === item.path ? 'rgba(238,238,238,0.85)' : 'rgba(238,238,238,0.4)', textAlign: 'left',
-                      fontSize: 13, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
+                      fontSize: 13, fontWeight: 300, cursor: 'pointer', fontFamily: C.font,
                       display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
                     }}
                       onMouseOver={e => { e.currentTarget.style.background = 'rgba(238,238,238,0.06)'; e.currentTarget.style.color = 'rgba(238,238,238,0.8)' }}
@@ -292,7 +312,7 @@ export default function Layout({ user }) {
                   <button onClick={() => { nav('/settings'); setMoreOpen(false) }} style={{
                     width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none',
                     background: 'transparent', color: 'rgba(238,238,238,0.4)', textAlign: 'left',
-                    fontSize: 13, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
+                    fontSize: 13, fontWeight: 300, cursor: 'pointer', fontFamily: C.font,
                     display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
                   }}
                     onMouseOver={e => { e.currentTarget.style.background = 'rgba(238,238,238,0.06)'; e.currentTarget.style.color = 'rgba(238,238,238,0.8)' }}
@@ -411,7 +431,7 @@ export default function Layout({ user }) {
                   width: '100%', padding: '12px 14px', borderRadius: 12, border: 'none',
                   background: active ? 'rgba(238,238,238,0.08)' : 'transparent',
                   color: active ? 'rgba(238,238,238,0.9)' : 'rgba(238,238,238,0.5)',
-                  fontSize: 15, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: T.font,
+                  fontSize: 15, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: C.font,
                   display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', transition: 'all 0.15s',
                 }}>
                   <Icon size={16} />{item.label}
@@ -422,7 +442,7 @@ export default function Layout({ user }) {
             <button onClick={() => { nav('/settings'); setMobileMenuOpen(false) }} style={{
               width: '100%', padding: '12px 14px', borderRadius: 12, border: 'none',
               background: 'transparent', color: 'rgba(238,238,238,0.4)',
-              fontSize: 15, fontWeight: 300, cursor: 'pointer', fontFamily: T.font,
+              fontSize: 15, fontWeight: 300, cursor: 'pointer', fontFamily: C.font,
               display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left',
             }}><Settings size={16} />Settings</button>
           </div>
@@ -485,7 +505,7 @@ export default function Layout({ user }) {
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
               background: 'none', border: 'none', cursor: 'pointer', padding: '6px 16px',
               color: active ? 'rgba(238,238,238,0.95)' : 'rgba(238,238,238,0.32)',
-              transition: 'color 0.15s', fontFamily: T.font,
+              transition: 'color 0.15s', fontFamily: C.font,
             }}>
               <Icon size={20} strokeWidth={active ? 2 : 1.5} />
               <span style={{ fontSize: 10, fontWeight: active ? 500 : 300, letterSpacing: '0.01em' }}>{tab.label}</span>
@@ -495,7 +515,7 @@ export default function Layout({ user }) {
         <button onClick={() => setMoreOpen(!moreOpen)} style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
           background: 'none', border: 'none', cursor: 'pointer', padding: '6px 16px',
-          color: 'rgba(238,238,238,0.32)', fontFamily: T.font,
+          color: 'rgba(238,238,238,0.32)', fontFamily: C.font,
         }}>
           <MoreHorizontal size={20} strokeWidth={1.5} />
           <span style={{ fontSize: 10, fontWeight: 300 }}>More</span>
