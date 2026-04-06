@@ -109,7 +109,7 @@ export default function SequenceDetail() {
       const r = await fetch('/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `Write a ${s.channel === 'email' ? 'outreach email' : '300-char LinkedIn message'} for step ${s.step} of a sequence.\n\nSTYLE RULES (non-negotiable):\n- ${s.channel === 'email' ? 'Start with "Dear {firstName}," and end with "Kind regards,\\n\\n{signature}"' : 'Start with "Hi {firstName},"'}\n- Write at principal/board level. No generic filler. No "I hope this finds you well".\n- Tone: "We work at principal level on the structuring of Formula One partnerships for teams and rights-holders."\n- Category-specific: explain WHY this category matters operationally for Formula One.\n- Soft CTA: "The relevant question at this stage is simply whether this is strategic from your perspective."\n- Subject format uses × not — (e.g. "Haas F1 Team × Cloud Infrastructure")\n- 50-125 words for emails. 300 chars max for LinkedIn.\n\nContext: Approach: ${s.approach}. Psychology: ${s.psychology}. Target: ${seq?.target_persona || 'C-suite'}. Subject: ${s.subject || 'F1 partnership'}.\n\nReturn ONLY the message text, nothing else.`, stream: false
+          message: `Write a ${s.channel === 'email' ? 'outreach email' : '300-char LinkedIn message'} for step ${s.step} of a sequence.\n\nSTYLE RULES (non-negotiable):\n- ${s.channel === 'email' ? 'Start with "Dear {firstName}," and end with "Kind regards,\\n\\n{signature}"' : 'Start with "Hi {firstName},"'}\n- Write at principal/board level. No generic filler. No "I hope this finds you well".\n- Tone: "We work at principal level on the structuring of Formula One partnerships for teams and rights-holders."\n- Category-specific: explain WHY this category matters operationally for Formula One.\n- Soft CTA: "The relevant question at this stage is simply whether this is strategic from your perspective."\n- Subject format uses x not special characters (e.g. "Haas F1 Team x Cloud Infrastructure")\n- 50-125 words for emails. 300 chars max for LinkedIn.\n\nContext: Approach: ${s.approach}. Psychology: ${s.psychology}. Target: ${seq?.target_persona || 'C-suite'}. Subject: ${s.subject || 'F1 partnership'}.\n\nReturn ONLY the message text, nothing else.`, stream: false
         })
       })
       const d = await r.json(); upd(i, 'template', d?.content || d?.message || 'Error')
@@ -293,7 +293,10 @@ export default function SequenceDetail() {
                       </div>
                     </div>
                     <div style={{ fontSize: 10, color: T.textTertiary, fontStyle: 'italic', lineHeight: 1.5 }}>
-                      Branch steps are configured with default messaging. Edit the raw sequence JSON for full control, or ask Kiko to generate a multichannel branching campaign.
+                      Branches auto-configured. Ask Kiko: "Generate a multichannel branching campaign for [category]" for full customisation.
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                      <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: T.radiusSm, border: `0.5px solid rgba(255,224,194,0.15)`, background: 'rgba(255,224,194,0.04)', color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to optimise branches</button>
                     </div>
                   </>
                 ) : (
@@ -311,7 +314,7 @@ export default function SequenceDetail() {
                     <select value={cur.psychology || ''} onChange={e => updAndRegen(selStep, 'psychology', e.target.value)} style={{ ...inputStyle, padding: '5px 6px', fontSize: 11 }}>{PSYCHOLOGY.map(p => <option key={p} value={p} style={{ background: '#111' }}>{p.replace(/_/g, ' ')}</option>)}</select></div>
                 </div>
                 {cur.channel === 'email' && <div style={{ marginBottom: 12 }}><label style={{ fontSize: 10, color: T.textTertiary, marginBottom: 2, display: 'block' }}>Subject</label>
-                  <input value={cur.subject || ''} onChange={e => upd(selStep, 'subject', e.target.value)} placeholder="Haas F1 Team × {category}" style={inputStyle} /></div>}
+                  <input value={cur.subject || ''} onChange={e => upd(selStep, 'subject', e.target.value)} placeholder="Haas F1 Team x {category}" style={inputStyle} /></div>}
                 {regenPrompt && <div style={{ padding: '8px 12px', borderRadius: T.radiusSm, background: 'rgba(251,191,36,0.04)', border: '0.5px solid rgba(251,191,36,0.12)', marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: 11, color: T.warning }}>Approach changed — regenerate content?</span>
                   <div style={{ display: 'flex', gap: 6 }}>
@@ -331,7 +334,7 @@ export default function SequenceDetail() {
                 </div></div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: T.radiusSm, border: `0.5px solid rgba(255,224,194,0.15)`, background: 'rgba(255,224,194,0.04)', color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to write this step</button>
-                  {cur.channel === 'email' && <button onClick={() => sendTest(selStep)} disabled={testSending} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: T.radiusSm, border: `0.5px solid ${testSent ? 'rgba(45,212,191,0.2)' : T.border}`, background: testSent ? 'rgba(45,212,191,0.04)' : 'transparent', color: testSent ? T.success : T.textSecondary, fontSize: 11, cursor: 'pointer', fontFamily: T.font, whiteSpace: 'nowrap' }}>{testSending ? 'Sending...' : testSent ? '✓ Sent to inbox' : '📧 Send test'}</button>}
+                  {cur.channel === 'email' && <button onClick={() => sendTest(selStep)} disabled={testSending} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: T.radiusSm, border: `0.5px solid ${testSent ? 'rgba(45,212,191,0.2)' : T.border}`, background: testSent ? 'rgba(45,212,191,0.04)' : 'transparent', color: testSent ? T.success : T.textSecondary, fontSize: 11, cursor: 'pointer', fontFamily: T.font, whiteSpace: 'nowrap' }}>{testSending ? 'Saving...' : testSent ? '✓ Draft created' : '📧 Create draft'}</button>}
                 </div>
                   </>
                 )}
@@ -342,6 +345,7 @@ export default function SequenceDetail() {
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button onClick={() => addStep('email')} style={{ padding: '6px 12px', borderRadius: 5, border: `0.5px solid rgba(255,224,194,0.15)`, background: 'rgba(255,224,194,0.04)', color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>+ Email</button>
                   <button onClick={() => addStep('linkedin')} style={{ padding: '6px 12px', borderRadius: 5, border: '0.5px solid rgba(0,119,181,0.15)', background: 'rgba(0,119,181,0.04)', color: '#0077B5', fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>+ LinkedIn</button>
+                  <button onClick={() => addStep('condition')} style={{ padding: '6px 12px', borderRadius: 5, border: '0.5px solid rgba(251,191,36,0.15)', background: 'rgba(251,191,36,0.04)', color: T.warning, fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>+ Condition</button>
                 </div>
               </div>
             )}

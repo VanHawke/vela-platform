@@ -76,7 +76,7 @@ Kind regards,
 
 ABSOLUTE RULES:
 - Every email MUST start with "Dear {firstName}," and end with "Kind regards,\\n\\n{signature}"
-- Subject format: "${teamName.replace(' Team', '')} × ${category}" for first email, variations for follow-ups
+- Subject format: "${teamName.replace(' Team', '')} x ${category}" for first email, variations for follow-ups
 - NO "I hope this finds you well", "I wanted to reach out", "I'm writing to", or ANY generic opener
 - NO "I think", "maybe", "hopefully" — declarative authority only
 - Explain why ${category} matters OPERATIONALLY for F1, not as brand exposure
