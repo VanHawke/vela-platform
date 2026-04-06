@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
 import T from '@/lib/theme'
-import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X } from 'lucide-react'
+import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X, Zap } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
 import KikoVoice from '../kiko/KikoVoice'
 import KikoToast from '../kiko/KikoToast'
@@ -21,6 +21,7 @@ const ALL_NAV = [
   { id: 'command-centre', label: 'Command Centre', path: '/command-centre', Icon: Target },
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
   { id: 'lemlist', label: 'Lemlist', path: '/lemlist', Icon: Send },
+  { id: 'sequences', label: 'Sequences', path: '/sequences', Icon: Zap },
 ]
 const VALID_NAV_IDS = new Set(ALL_NAV.map(n => n.id))
 const DEFAULT_TOP_IDS = ['home', 'pipeline', 'partnership-matrix', 'email']
@@ -45,7 +46,7 @@ function getTopNavIds() {
 const PAGE_LABELS = {
   '/pipeline': 'Pipeline', '/calendar': 'Race Calendar', '/contacts': 'Contacts',
   '/partnership-matrix': 'Partnership Matrix', '/email': 'Command Centre',
-  '/organisations': 'Organisations', '/lemlist': 'Lemlist',
+  '/organisations': 'Organisations', '/lemlist': 'Lemlist', '/sequences': 'Sequences',
   '/settings': 'Settings', '/dashboard': 'Dashboard',
 }
 
