@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
 import T, { glass } from '@/lib/theme'
-import { Mail, Linkedin, Plus, Clock, Trash2, Save, Sparkles, ArrowLeft, Search, UserPlus, X, ChevronRight, Eye, Reply, AlertTriangle, Send, GitBranch } from 'lucide-react'
+import { Mail, Linkedin, Plus, Clock, Trash2, Save, Sparkles, ArrowLeft, Search, UserPlus, X, ChevronRight, Eye, Reply, AlertTriangle, Send, GitBranch, Copy, MoreHorizontal } from 'lucide-react'
 
 const APPROACHES = ['authority-led','scarcity-led','social-proof','reciprocity','data-led','intelligence-led','competitive-led','relationship-led']
 const PSYCHOLOGY = ['reciprocity','scarcity','authority','social_proof','commitment','liking','strategic_withdrawal','pattern_interrupt']
@@ -88,6 +88,29 @@ export default function SequenceDetail() {
   }
 
   const isDraft = seq && !seq.is_active
+
+  async function duplicateCampaign() {
+    if (!seq) return
+    const { data } = await supabase.from('kiko_sequences').insert({
+      name: `${seq.name} (copy)`, description: seq.description, target_persona: seq.target_persona,
+      steps: seq.steps, is_active: false
+    }).select().single()
+    if (data) nav(`/sequences/${data.id}`)
+  }
+
+  async function deleteCampaign() {
+    if (!confirm(`Delete "${seq?.name}"? This cannot be undone.`)) return
+    // Delete enrollments first, then queue items, then the sequence
+    const enrollmentIds = enrollments.map(e => e.id)
+    if (enrollmentIds.length) {
+      for (const eid of enrollmentIds) {
+        await supabase.from('kiko_outreach_queue').delete().eq('enrollment_id', eid)
+      }
+      await supabase.from('kiko_sequence_enrollments').delete().eq('sequence_id', id)
+    }
+    await supabase.from('kiko_sequences').delete().eq('id', id)
+    nav('/sequences')
+  }
 
   function addStep(ch) {
     const emailTemplate = 'Dear {firstName},\n\n\n\nKind regards,\n\n{signature}'
@@ -186,8 +209,10 @@ export default function SequenceDetail() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
         <button onClick={() => nav('/sequences')} style={{ background: 'none', border: 'none', color: T.textSecondary, cursor: 'pointer', padding: 4 }}><ArrowLeft size={18} /></button>
         <input value={seq?.name || ''} onChange={e => { setSeq({ ...seq, name: e.target.value }); setDirty(true) }} placeholder="Campaign name..." style={{ fontSize: 20, fontWeight: 400, background: 'none', border: 'none', color: T.text, fontFamily: T.font, outline: 'none', flex: 1 }} />
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           {dirty && <span style={{ fontSize: 11, color: T.warning }}>Unsaved</span>}
+          {!isNew && <button onClick={duplicateCampaign} title="Duplicate campaign" style={{ padding: '7px 8px', borderRadius: T.radiusSm, border: `0.5px solid ${T.border}`, background: 'transparent', color: T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Copy size={12} /></button>}
+          {!isNew && <button onClick={deleteCampaign} title="Delete campaign" style={{ padding: '7px 8px', borderRadius: T.radiusSm, border: '0.5px solid rgba(248,113,113,0.15)', background: 'transparent', color: T.danger, cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Trash2 size={12} /></button>}
           <button onClick={save} disabled={saving} style={{ padding: '7px 16px', borderRadius: T.radiusSm, border: 'none', background: 'rgba(255,224,194,0.10)', color: T.accent, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, opacity: saving ? 0.5 : 1, display: 'flex', alignItems: 'center', gap: 5, boxShadow: T.liquidBtnShadow }}><Save size={12} />{saving ? 'Saving...' : 'Save'}</button>
         </div>
       </div>
