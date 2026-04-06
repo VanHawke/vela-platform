@@ -130,7 +130,7 @@ export default function Sequences() {
         </div>
       </div>
 
-      {totalEnrolled > 0 && (
+      {sequences.length > 0 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 20 }}>
           {[
             { label: 'Enrolled', value: totalEnrolled, color: T.accent },
@@ -232,8 +232,18 @@ export default function Sequences() {
                   )}
                 </div>
               ) : (
-                <div style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Users size={12} style={{ color: T.textMuted }} /> No leads enrolled — click to add contacts and launch
+                <div style={{ padding: '10px 0' }}>
+                  <div style={{ display: 'flex', gap: 0, alignItems: 'stretch', marginBottom: 8 }}>
+                    {['Enrolled', 'Sent', 'Replied', 'Bounced', 'Active'].map((label, i) => (
+                      <div key={i} style={{ flex: 1, padding: '6px 0', textAlign: 'center', borderRight: i < 4 ? `0.5px solid ${T.border}` : 'none' }}>
+                        <div style={{ fontSize: 16, fontWeight: 500, color: T.textMuted, lineHeight: 1 }}>0</div>
+                        <div style={{ fontSize: 9, color: T.textTertiary, marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Users size={12} style={{ color: T.textMuted }} /> No leads enrolled — click to add contacts and launch
+                  </div>
                 </div>
               )}
             </div>
