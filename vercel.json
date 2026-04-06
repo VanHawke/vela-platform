@@ -36,7 +36,6 @@
   ],
   "functions": {
     "api/kiko.js": { "maxDuration": 120 },
-    "api/realtime-token.js": { "maxDuration": 10 },
     "api/file-extract.js": { "maxDuration": 30 },
     "api/kiko-research.js": { "maxDuration": 120 },
     "api/kiko-code.js": { "maxDuration": 30 },
@@ -45,8 +44,6 @@
     "api/generate-doc.js": { "maxDuration": 30 },
     "api/generate-image.js": { "maxDuration": 30 },
     "api/fetch-url.js": { "maxDuration": 20 },
-    "api/generate-qr.js": { "maxDuration": 10 },
-    "api/lemlist-data.js": { "maxDuration": 15 },
     "api/email.js": { "maxDuration": 30 },
     "api/calendar.js": { "maxDuration": 20 },
     "api/enrichment-agent.js": { "maxDuration": 45 },
