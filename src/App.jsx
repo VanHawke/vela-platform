@@ -20,6 +20,7 @@ const Admin = lazy(() => import('@/pages/Admin'))
 const MemoryConsole = lazy(() => import('@/pages/MemoryConsole'))
 const Lemlist = lazy(() => import('@/pages/Lemlist'))
 const Sequences = lazy(() => import('@/pages/Sequences'))
+const SequenceDetail = lazy(() => import('@/pages/SequenceDetail'))
 
 const INACTIVITY_MS   = 20 * 60 * 1000
 const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click']
@@ -135,6 +136,7 @@ export default function App() {
           {/* Knowledge Library removed — documents accessible via Kiko chat upload */}
           <Route path="lemlist" element={<Lemlist user={user} />} />
           <Route path="sequences" element={<Sequences user={user} />} />
+          <Route path="sequences/:id" element={<SequenceDetail user={user} />} />
           <Route path="kikocode" element={<KikoCode user={user} />} />
           <Route path="settings" element={<Settings user={user} />} />
           <Route path="memory" element={<AdminRoute><MemoryConsole user={user} /></AdminRoute>} />

@@ -1,6 +1,7 @@
 // src/pages/Sequences.jsx — Outreach Sequence Manager
 // Visual UI for creating, managing, and analyzing automated email sequences
 import { useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { Play, Pause, StopCircle, Plus, ChevronRight, Mail, Linkedin, Users, BarChart3, Clock, CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
 
@@ -33,7 +34,7 @@ function StatCard({ icon: Icon, label, value, color }) {
 }
 
 // ── Sequence Card ──
-function SequenceCard({ seq, enrollments, onSelect, selected }) {
+function SequenceCard({ seq, enrollments, onSelect, selected, onOpen }) {
   const enrolled = enrollments.filter(e => e.sequence_id === seq.id)
   const active = enrolled.filter(e => e.status === 'active').length
   const replied = enrolled.filter(e => e.status === 'replied').length
@@ -42,14 +43,17 @@ function SequenceCard({ seq, enrollments, onSelect, selected }) {
   const isSel = selected === seq.id
 
   return (
-    <div onClick={() => onSelect(seq.id)} style={{ ...glass, padding: '16px 18px', cursor: 'pointer', borderColor: isSel ? T.purple : T.border, background: isSel ? 'rgba(124,92,252,0.06)' : glass.background, transition: 'all 0.15s' }}>
+    <div onClick={() => onSelect(seq.id)} onDoubleClick={() => onOpen(seq.id)} style={{ ...glass, padding: '16px 18px', cursor: 'pointer', borderColor: isSel ? T.purple : T.border, background: isSel ? 'rgba(124,92,252,0.06)' : glass.background, transition: 'all 0.15s' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-        <div>
+        <div style={{ flex: 1 }}>
           <div style={{ fontSize: 15, fontWeight: 500, color: T.text, fontFamily: T.font }}>{seq.name}</div>
           <div style={{ fontSize: 11, color: T.textTertiary, fontFamily: T.font, marginTop: 2 }}>{seq.target_persona}</div>
         </div>
-        <div style={{ fontSize: 10, padding: '3px 8px', borderRadius: 4, background: seq.is_active ? 'rgba(74,222,128,0.1)' : 'rgba(255,68,68,0.1)', color: seq.is_active ? T.green : T.red, fontFamily: T.font }}>
-          {seq.is_active ? 'Active' : 'Paused'}
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <button onClick={e => { e.stopPropagation(); onOpen(seq.id) }} style={{ padding: '3px 8px', borderRadius: 4, border: `1px solid ${T.border}`, background: 'transparent', color: T.purple, fontSize: 10, cursor: 'pointer', fontFamily: T.font }}>Edit</button>
+          <div style={{ fontSize: 10, padding: '3px 8px', borderRadius: 4, background: seq.is_active ? 'rgba(74,222,128,0.1)' : 'rgba(255,68,68,0.1)', color: seq.is_active ? T.green : T.red, fontFamily: T.font }}>
+            {seq.is_active ? 'Active' : 'Paused'}
+          </div>
         </div>
       </div>
       <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
@@ -129,6 +133,7 @@ function LinkedInItem({ item, onMarkSent, onSkip }) {
 
 // ── Main Page ──
 export default function Sequences() {
+  const navigate = useNavigate()
   const [sequences, setSequences] = useState([])
   const [enrollments, setEnrollments] = useState([])
   const [queue, setQueue] = useState([])
@@ -191,9 +196,14 @@ export default function Sequences() {
   return (
     <div style={{ padding: '24px 28px', fontFamily: T.font, color: T.text, maxWidth: 1200, margin: '0 auto' }}>
       {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 500, margin: 0, color: T.text }}>Outreach Sequences</h1>
-        <p style={{ fontSize: 13, color: T.textTertiary, margin: '4px 0 0' }}>Automated multi-step outreach · Replaces Lemlist</p>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 style={{ fontSize: 24, fontWeight: 500, margin: 0, color: T.text }}>Outreach Sequences</h1>
+          <p style={{ fontSize: 13, color: T.textTertiary, margin: '4px 0 0' }}>Automated multi-step outreach · Replaces Lemlist</p>
+        </div>
+        <button onClick={() => navigate('/sequences/new')} style={{ padding: '8px 18px', borderRadius: 6, border: 'none', background: T.purple, color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Plus size={14} /> New Sequence
+        </button>
       </div>
 
       {/* Stats Row */}
@@ -225,7 +235,7 @@ export default function Sequences() {
         <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 16 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {sequences.map(seq => (
-              <SequenceCard key={seq.id} seq={seq} enrollments={enrollments} onSelect={setSelectedSeq} selected={selectedSeq} />
+              <SequenceCard key={seq.id} seq={seq} enrollments={enrollments} onSelect={setSelectedSeq} selected={selectedSeq} onOpen={id => navigate(`/sequences/${id}`)} />
             ))}
             {!sequences.length && <div style={{ ...glass, padding: 32, textAlign: 'center', color: T.textTertiary, fontSize: 13 }}>No sequences yet. Ask Kiko to create one.</div>}
           </div>
