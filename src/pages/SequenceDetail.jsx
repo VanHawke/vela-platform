@@ -232,7 +232,9 @@ export default function SequenceDetail() {
         <>
         <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 14, minHeight: 480 }}>
           <div style={{ ...glass, padding: 14, overflowY: 'auto' }}>
-            <div style={{ textAlign: 'center', padding: '6px 0 12px', fontSize: 11, color: T.textTertiary, borderBottom: `0.5px solid ${T.border}`, marginBottom: 8 }}>Sequence start</div>
+            <div style={{ textAlign: 'center', padding: '6px 0 12px', fontSize: 11, color: T.textTertiary, borderBottom: `0.5px solid ${T.border}`, marginBottom: 8 }}>
+              {steps.length > 0 ? `${steps.length} steps · ${steps.reduce((s, st) => s + (st.delay_days || 0), 0)} days` : 'Sequence start'}
+            </div>
             {steps.map((s, i) => {
               const isLI = s.channel === 'linkedin'
               const sel = i === selStep
@@ -341,7 +343,15 @@ export default function SequenceDetail() {
                 <div style={{ marginBottom: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
                     <label style={{ fontSize: 10, color: T.textTertiary }}>{cur.channel === 'email' ? 'Email body' : 'Message'}</label>
-                    <span style={{ fontSize: 10, color: T.textTertiary }}>{(cur.template || '').length}{cur.channel === 'linkedin' ? ' / 300' : ''}</span>
+                    <span style={{ fontSize: 10, color: (() => {
+                      if (cur.channel === 'linkedin') return (cur.template || '').length > 280 ? T.danger : T.textTertiary
+                      const words = (cur.template || '').trim().split(/\s+/).filter(Boolean).length
+                      return words < 50 ? T.warning : words > 125 ? T.danger : T.success
+                    })() }}>
+                      {cur.channel === 'linkedin'
+                        ? `${(cur.template || '').length} / 300 chars`
+                        : `${(cur.template || '').trim().split(/\s+/).filter(Boolean).length} words (target: 50-125)`}
+                    </span>
                   </div>
                   <textarea value={cur.template || ''} onChange={e => upd(selStep, 'template', e.target.value)} rows={cur.channel === 'email' ? 10 : 3} maxLength={cur.channel === 'linkedin' ? 300 : undefined} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, padding: '8px 10px' }} />
                 </div>
@@ -555,10 +565,11 @@ export default function SequenceDetail() {
       {showManualAdd && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowManualAdd(false)}>
           <div onClick={e => e.stopPropagation()} style={{ ...glass, padding: 24, width: 440, maxWidth: '90vw', boxShadow: T.glassShadowFloat }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
               <div style={{ fontSize: 15, fontWeight: 500 }}>Add lead manually</div>
               <button onClick={() => setShowManualAdd(false)} style={{ background: 'none', border: 'none', color: T.textTertiary, cursor: 'pointer' }}><X size={16} /></button>
             </div>
+            <div style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300, marginBottom: 16 }}>Add a contact directly without searching the CRM. They'll be enrolled immediately.</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
               <div><label style={{ fontSize: 10, color: T.textTertiary, display: 'block', marginBottom: 3 }}>First name</label>
                 <input value={manualLead.firstName} onChange={e => setManualLead({ ...manualLead, firstName: e.target.value })} placeholder="John" style={inputStyle} autoFocus /></div>

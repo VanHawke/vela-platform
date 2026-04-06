@@ -246,9 +246,16 @@ export default function Sequences() {
         )}
         {!filtered.length && !search && (
           <div style={{ ...glass, padding: 48, textAlign: 'center' }}>
-            <TrendingUp size={28} style={{ color: T.textMuted, marginBottom: 10 }} />
-            <div style={{ fontSize: 14, color: T.textSecondary, marginBottom: 6 }}>No campaigns yet</div>
-            <div style={{ fontSize: 12, color: T.textTertiary, fontWeight: 300 }}>Click "Generate Campaign" to create your first outreach sequence</div>
+            <Rocket size={28} style={{ color: T.textMuted, marginBottom: 12 }} />
+            <div style={{ fontSize: 15, color: T.textSecondary, marginBottom: 6 }}>No campaigns yet</div>
+            <div style={{ fontSize: 12, color: T.textTertiary, fontWeight: 300, marginBottom: 20 }}>Generate your first outreach campaign with AI or create one manually</div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 16 }}>
+              <button onClick={() => setShowWizard(true)} style={{ padding: '10px 20px', borderRadius: T.radiusSm, border: 'none', background: 'rgba(255,224,194,0.10)', color: T.accent, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6, boxShadow: T.liquidBtnShadow }}><Sparkles size={14} /> Generate with AI</button>
+              <button onClick={() => navigate('/sequences/new')} style={{ padding: '10px 20px', borderRadius: T.radiusSm, border: `0.5px solid ${T.border}`, background: 'transparent', color: T.textSecondary, fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}><Plus size={14} /> Build manually</button>
+            </div>
+            <div style={{ fontSize: 10, color: T.textMuted, lineHeight: 1.6 }}>
+              Suggested categories: Banking · FinTech · Telecoms · Energy · Gaming
+            </div>
           </div>
         )}
       </div>
