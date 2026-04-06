@@ -4,11 +4,17 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
 import T, { glass } from '@/lib/theme'
-import { Mail, Linkedin, Plus, Clock, Trash2, Save, Sparkles, ArrowLeft, Search, UserPlus, X, ChevronRight, Eye, Reply, AlertTriangle, Send } from 'lucide-react'
+import { Mail, Linkedin, Plus, Clock, Trash2, Save, Sparkles, ArrowLeft, Search, UserPlus, X, ChevronRight, Eye, Reply, AlertTriangle, Send, GitBranch } from 'lucide-react'
 
 const APPROACHES = ['authority-led','scarcity-led','social-proof','reciprocity','data-led','intelligence-led','competitive-led','relationship-led']
 const PSYCHOLOGY = ['reciprocity','scarcity','authority','social_proof','commitment','liking','strategic_withdrawal','pattern_interrupt']
 const VARS = ['{firstName}','{companyName}','{category}','{revenue}','{ceo}','{raceWindow}','{recentNews}','{prevSubject}']
+const CONDITIONS = [
+  { value: 'no_reply', label: 'No reply after previous step' },
+  { value: 'has_linkedin', label: 'Lead has LinkedIn URL' },
+  { value: 'has_email', label: 'Lead has verified email' },
+  { value: 'email_opened', label: 'Email was opened (coming soon)' },
+]
 
 function timeAgo(d) {
   if (!d) return ''
@@ -86,7 +92,11 @@ export default function SequenceDetail() {
   function addStep(ch) {
     const emailTemplate = 'Dear {firstName},\n\n\n\nKind regards,\n\n{signature}'
     const linkedinTemplate = 'Hi {firstName}, '
-    setSteps([...steps, { step: steps.length + 1, delay_days: steps.length === 0 ? 0 : 3, channel: ch, approach: 'authority-led', psychology: 'reciprocity', subject: ch === 'email' ? 'Haas F1 Team × {category}' : '', template: ch === 'email' ? emailTemplate : linkedinTemplate }])
+    if (ch === 'condition') {
+      setSteps([...steps, { step: steps.length + 1, type: 'condition', delay_days: steps.length === 0 ? 0 : 3, condition_type: 'no_reply', condition_params: {}, yes_steps: [{ channel: 'linkedin', action: 'invite', template: linkedinTemplate, approach: 'authority-led', psychology: 'liking' }], no_steps: [{ channel: 'email', subject: 'Haas F1 Team x {category}', template: emailTemplate, approach: 'authority-led', psychology: 'reciprocity' }] }])
+    } else {
+      setSteps([...steps, { step: steps.length + 1, delay_days: steps.length === 0 ? 0 : 3, channel: ch, approach: 'authority-led', psychology: 'reciprocity', subject: ch === 'email' ? 'Haas F1 Team x {category}' : '', template: ch === 'email' ? emailTemplate : linkedinTemplate }])
+    }
     setSelStep(steps.length); setDirty(true)
   }
   function upd(i, k, v) { const u = [...steps]; u[i] = { ...u[i], [k]: v }; setSteps(u); setDirty(true) }
@@ -221,28 +231,74 @@ export default function SequenceDetail() {
                 </div>
                 <div onClick={() => setSelStep(i)} style={{ ...glass, padding: '8px 10px', cursor: 'pointer', borderColor: sel ? T.accent : T.glassBorder, background: sel ? 'rgba(255,224,194,0.04)' : glass.background, transition: 'all 0.15s' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 20, height: 20, borderRadius: 5, background: isLI ? 'rgba(0,119,181,0.12)' : 'rgba(255,224,194,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {isLI ? <Linkedin size={10} style={{ color: '#0077B5' }} /> : <Mail size={10} style={{ color: T.accent }} />}
+                    <div style={{ width: 20, height: 20, borderRadius: 5, background: s.type === 'condition' ? 'rgba(251,191,36,0.10)' : isLI ? 'rgba(0,119,181,0.12)' : 'rgba(255,224,194,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {s.type === 'condition' ? <GitBranch size={10} style={{ color: T.warning }} /> : isLI ? <Linkedin size={10} style={{ color: '#0077B5' }} /> : <Mail size={10} style={{ color: T.accent }} />}
                     </div>
-                    <span style={{ fontSize: 11, fontWeight: 500, flex: 1 }}>{isLI ? 'LinkedIn' : 'Email'} {i + 1}</span>
+                    <span style={{ fontSize: 11, fontWeight: 500, flex: 1 }}>{s.type === 'condition' ? 'Condition' : isLI ? 'LinkedIn' : 'Email'} {i + 1}</span>
                     <button onClick={e => { e.stopPropagation(); del(i) }} style={{ background: 'none', border: 'none', color: T.textTertiary, cursor: 'pointer', padding: 1 }}><Trash2 size={10} /></button>
                   </div>
                   {s.subject && <div style={{ fontSize: 10, color: T.textTertiary, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.subject}</div>}
+                  {s.type === 'condition' && <div style={{ fontSize: 10, color: T.warning, marginTop: 3 }}>{CONDITIONS.find(c => c.value === s.condition_type)?.label || s.condition_type} → Yes / No</div>}
                 </div>
               </div>)
             })}
             <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 12, paddingTop: 10, borderTop: `0.5px solid ${T.border}` }}>
               <button onClick={() => addStep('email')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '5px 10px', borderRadius: 5, border: `0.5px solid ${T.border}`, background: 'transparent', color: T.textSecondary, fontSize: 10, cursor: 'pointer', fontFamily: T.font }}><Plus size={10} />Email</button>
               <button onClick={() => addStep('linkedin')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '5px 10px', borderRadius: 5, border: `0.5px solid ${T.border}`, background: 'transparent', color: T.textSecondary, fontSize: 10, cursor: 'pointer', fontFamily: T.font }}><Plus size={10} />LinkedIn</button>
+              <button onClick={() => addStep('condition')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '5px 10px', borderRadius: 5, border: `0.5px solid rgba(251,191,36,0.2)`, background: 'rgba(251,191,36,0.04)', color: T.warning, fontSize: 10, cursor: 'pointer', fontFamily: T.font }}><GitBranch size={10} />Condition</button>
             </div>
           </div>
           <div style={{ ...glass, padding: 18 }}>
             {cur ? (
               <>
                 <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  {cur.channel === 'linkedin' ? <Linkedin size={14} style={{ color: '#0077B5' }} /> : <Mail size={14} style={{ color: T.accent }} />}
-                  Step {selStep + 1} · {cur.channel === 'email' ? 'Email' : 'LinkedIn message'}
+                  {cur.type === 'condition' ? <GitBranch size={14} style={{ color: T.warning }} /> : cur.channel === 'linkedin' ? <Linkedin size={14} style={{ color: '#0077B5' }} /> : <Mail size={14} style={{ color: T.accent }} />}
+                  Step {selStep + 1} · {cur.type === 'condition' ? 'Condition (branch)' : cur.channel === 'email' ? 'Email' : 'LinkedIn message'}
                 </div>
+                {/* ═══ CONDITION STEP EDITOR ═══ */}
+                {cur.type === 'condition' ? (
+                  <>
+                    <div style={{ marginBottom: 14 }}>
+                      <label style={{ fontSize: 10, color: T.textTertiary, marginBottom: 4, display: 'block' }}>Condition type</label>
+                      <select value={cur.condition_type || 'no_reply'} onChange={e => upd(selStep, 'condition_type', e.target.value)} style={{ ...inputStyle, fontSize: 12 }}>
+                        {CONDITIONS.map(c => <option key={c.value} value={c.value} style={{ background: '#111' }}>{c.label}</option>)}
+                      </select>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+                      {/* YES branch */}
+                      <div style={{ padding: 12, borderRadius: T.radiusSm, background: 'rgba(45,212,191,0.03)', border: '0.5px solid rgba(45,212,191,0.12)' }}>
+                        <div style={{ fontSize: 11, fontWeight: 500, color: T.success, marginBottom: 8 }}>✅ YES branch</div>
+                        <div style={{ fontSize: 10, color: T.textTertiary, marginBottom: 8 }}>
+                          {cur.condition_type === 'no_reply' ? 'Lead did NOT reply' : cur.condition_type === 'has_linkedin' ? 'Has LinkedIn URL' : cur.condition_type === 'has_email' ? 'Has verified email' : 'Condition met'}
+                        </div>
+                        {(cur.yes_steps || []).map((ys, yi) => (
+                          <div key={yi} style={{ padding: '6px 8px', borderRadius: 4, background: T.surface, border: `0.5px solid ${T.border}`, marginBottom: 4, fontSize: 10 }}>
+                            <div style={{ color: T.textSecondary }}>{ys.channel === 'linkedin' ? '💼 LinkedIn' : '📧 Email'} — {ys.approach || 'authority-led'}</div>
+                            {ys.subject && <div style={{ color: T.textTertiary, marginTop: 2 }}>{ys.subject}</div>}
+                          </div>
+                        ))}
+                      </div>
+                      {/* NO branch */}
+                      <div style={{ padding: 12, borderRadius: T.radiusSm, background: 'rgba(248,113,113,0.03)', border: '0.5px solid rgba(248,113,113,0.12)' }}>
+                        <div style={{ fontSize: 11, fontWeight: 500, color: T.danger, marginBottom: 8 }}>❌ NO branch</div>
+                        <div style={{ fontSize: 10, color: T.textTertiary, marginBottom: 8 }}>
+                          {cur.condition_type === 'no_reply' ? 'Lead DID reply (sequence stops)' : cur.condition_type === 'has_linkedin' ? 'No LinkedIn URL' : cur.condition_type === 'has_email' ? 'No verified email' : 'Condition not met'}
+                        </div>
+                        {(cur.no_steps || []).map((ns, ni) => (
+                          <div key={ni} style={{ padding: '6px 8px', borderRadius: 4, background: T.surface, border: `0.5px solid ${T.border}`, marginBottom: 4, fontSize: 10 }}>
+                            <div style={{ color: T.textSecondary }}>{ns.channel === 'linkedin' ? '💼 LinkedIn' : '📧 Email'} — {ns.approach || 'authority-led'}</div>
+                            {ns.subject && <div style={{ color: T.textTertiary, marginTop: 2 }}>{ns.subject}</div>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 10, color: T.textTertiary, fontStyle: 'italic', lineHeight: 1.5 }}>
+                      Branch steps are configured with default messaging. Edit the raw sequence JSON for full control, or ask Kiko to generate a multichannel branching campaign.
+                    </div>
+                  </>
+                ) : (
+                  <>
+                {/* ═══ EMAIL / LINKEDIN STEP EDITOR ═══ */}
                 <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
                   {[{ id: 'email', icon: Mail, c: T.accent }, { id: 'linkedin', icon: Linkedin, c: '#0077B5' }].map(ch => (
                     <button key={ch.id} onClick={() => upd(selStep, 'channel', ch.id)} style={{ padding: '4px 10px', borderRadius: 5, border: `0.5px solid ${cur.channel === ch.id ? ch.c : T.border}`, background: cur.channel === ch.id ? `${ch.c}10` : 'transparent', color: cur.channel === ch.id ? ch.c : T.textTertiary, fontSize: 11, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><ch.icon size={11} />{ch.id}</button>
@@ -277,6 +333,8 @@ export default function SequenceDetail() {
                   <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: T.radiusSm, border: `0.5px solid rgba(255,224,194,0.15)`, background: 'rgba(255,224,194,0.04)', color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to write this step</button>
                   {cur.channel === 'email' && <button onClick={() => sendTest(selStep)} disabled={testSending} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: T.radiusSm, border: `0.5px solid ${testSent ? 'rgba(45,212,191,0.2)' : T.border}`, background: testSent ? 'rgba(45,212,191,0.04)' : 'transparent', color: testSent ? T.success : T.textSecondary, fontSize: 11, cursor: 'pointer', fontFamily: T.font, whiteSpace: 'nowrap' }}>{testSending ? 'Sending...' : testSent ? '✓ Sent to inbox' : '📧 Send test'}</button>}
                 </div>
+                  </>
+                )}
               </>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, color: T.textTertiary, fontSize: 12, gap: 10 }}>

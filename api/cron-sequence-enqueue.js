@@ -142,6 +142,13 @@ export default async function handler(req, res) {
             message_type: actualStep.action || 'connection', message: actualStep.template || '', context: `Sequence: ${sequence.name}, Step ${actualStep.step || enrollment.current_step}`,
             priority: 8, status: 'pending'
           }) });
+          // Alert for LinkedIn action
+          await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
+            type: 'linkedin_action', severity: 'medium', entity_name: enrollment.company,
+            title: `LinkedIn: ${actualStep.action || 'Connect'} with ${enrollment.contact_name || enrollment.contact_email}`,
+            detail: `Campaign "${sequence.name}" requires a LinkedIn ${actualStep.action || 'connection request'} to ${enrollment.contact_name} at ${enrollment.company}. Message: "${(actualStep.template || '').slice(0, 150)}"`,
+            dismissed: false, expires_at: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString()
+          }) }).catch(() => {});
           // Advance to next step
           const nextStep = steps.find(s => s.step === enrollment.current_step + 1);
           await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({
