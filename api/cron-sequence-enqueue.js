@@ -81,11 +81,65 @@ export default async function handler(req, res) {
           continue; 
         }
 
+        // ═══ CONDITIONAL BRANCHING ═══
+        // If step is a condition, evaluate and resolve to the actual step to execute
+        let actualStep = step;
+        if (step.type === 'condition') {
+          let conditionMet = false;
+          const cp = step.condition_params || {};
+          switch (step.condition_type) {
+            case 'no_reply': {
+              // Check if lead has NOT replied within X days of a specific step
+              const checkStep = cp.after_step || enrollment.current_step - 1;
+              conditionMet = enrollment.status === 'active'; // Still active = no reply
+              break;
+            }
+            case 'has_linkedin': {
+              // Check if lead has a LinkedIn URL
+              const contacts = await sbFetch(`contacts?select=data&data->>email=eq.${encodeURIComponent(enrollment.contact_email)}&limit=1`);
+              conditionMet = !!(contacts?.[0]?.data?.linkedin);
+              break;
+            }
+            case 'has_email': {
+              conditionMet = !!(enrollment.contact_email && enrollment.contact_email.includes('@'));
+              break;
+            }
+            case 'email_opened': {
+              // Future: check open tracking events
+              conditionMet = false; // Default to no until open tracking is built
+              break;
+            }
+            default: conditionMet = false;
+          }
+          // Select the appropriate branch
+          const branch = conditionMet ? (step.yes_steps || []) : (step.no_steps || []);
+          if (branch.length > 0) {
+            actualStep = branch[0]; // Execute first step of the chosen branch
+          } else {
+            // No steps in this branch — advance to next main step
+            const nextMainStep = steps.find(s => s.step === enrollment.current_step + 1);
+            if (nextMainStep) {
+              await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({
+                current_step: enrollment.current_step + 1,
+                next_send_at: new Date(now.getTime() + (nextMainStep.delay_days || 3) * 86400000).toISOString()
+              }) });
+            } else {
+              await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'completed', completed_at: now.toISOString() }) });
+            }
+            continue;
+          }
+          // Log the branch decision
+          await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({
+            category: 'sequence_branch', entity_name: enrollment.company,
+            content: `Condition "${step.condition_type}" → ${conditionMet ? 'YES' : 'NO'} branch for ${enrollment.contact_name} at step ${step.step}`
+          }) }).catch(() => {});
+        }
+
         // Skip LinkedIn steps — those go to linkedin_queue separately
-        if (step.channel === 'linkedin') {
+        if (actualStep.channel === 'linkedin') {
           await sbFetch('kiko_linkedin_queue', { method: 'POST', body: JSON.stringify({
             enrollment_id: enrollment.id, contact_name: enrollment.contact_name || '', company: enrollment.company || '',
-            message_type: 'connection', message: step.template || '', context: `Sequence: ${sequence.name}, Step ${step.step}`,
+            message_type: actualStep.action || 'connection', message: actualStep.template || '', context: `Sequence: ${sequence.name}, Step ${actualStep.step || enrollment.current_step}`,
             priority: 8, status: 'pending'
           }) });
           // Advance to next step
@@ -125,8 +179,8 @@ export default async function handler(req, res) {
         };
 
         // Personalise template with Haiku
-        let subject = (step.subject || '').replace(/\{(\w+)\}/g, (_, k) => vars[k] || `{${k}}`);
-        let bodyPlain = (step.template || '').replace(/\{(\w+)\}/g, (_, k) => vars[k] || `{${k}}`);
+        let subject = (actualStep.subject || '').replace(/\{(\w+)\}/g, (_, k) => vars[k] || `{${k}}`);
+        let bodyPlain = (actualStep.template || '').replace(/\{(\w+)\}/g, (_, k) => vars[k] || `{${k}}`);
         
         // Use Haiku to refine the email with real context
         try {
