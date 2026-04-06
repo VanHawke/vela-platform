@@ -370,32 +370,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         transcribeRef.current.active = false
       }
     } else {
-      // Fallback: Whisper API
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-        transcribeRef.current.media = stream
-        const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' })
-        const chunks = []
-        transcribeRef.current.recorder = recorder
-        recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data) }
-        recorder.onstop = async () => {
-          stream.getTracks().forEach(t => t.stop())
-          const blob = new Blob(chunks, { type: 'audio/webm' })
-          if (blob.size < 500) { setTranscribing(false); return }
-          const base64 = await new Promise((res) => {
-            const r = new FileReader(); r.onload = () => res(r.result.split(',')[1]); r.readAsDataURL(blob)
-          })
-          const sttRes = await fetch('/api/voice', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'transcribe', audio: base64 })
-          })
-          const stt = await sttRes.json()
-          if (stt.text) setInput(prev => prev + (prev ? ' ' : '') + stt.text)
-          setTranscribing(false)
-        }
-        recorder.start()
-        setTranscribing(true)
-      } catch (err) { console.error('[Dictate] Whisper fallback failed:', err); setTranscribing(false) }
+      // Web Speech API unavailable (Safari/Firefox without flag) — graceful fail
+      // Whisper fallback removed: /api/voice endpoint never existed and silently 404'd
+      setDictateError('Voice dictation requires Chrome, Edge, or a Chromium browser. Try clicking the EQ button instead for full voice mode.')
+      setTranscribing(false)
     }
   }
   const stopTranscribe = () => {

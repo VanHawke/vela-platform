@@ -5,7 +5,8 @@
 - **Codebase:** /Users/sunny/Desktop/vela-platform/
 - **Deploy:** `npm run build → git commit → git push → npx vercel --prod --yes`
 - **NEVER** use `--force` or `VERCEL_FORCE_NO_BUILD_CACHE=1`
-- **Functions:** 49/50 in vercel.json (1 slot remaining)
+- **Functions:** ~97 deployed handlers (71 in api/ flat + 26 in api/agents/ + api/admin/orgs.js). Vercel does NOT impose a 50-function limit on Pro — the `functions:` block in vercel.json is per-function configuration overrides, not a registration list. Every `.js` with a default export is auto-deployed.
+- **Real cost driver:** the 32-cron schedule, not function count. Top spenders before Apr 6 audit: meeting-prep (was hourly 24/7, now every 4hrs business hrs MF), health-check (was hourly 24/7, now every 6hrs), learning-director (was daily, now MF only). Audit cut ~290 wasted invocations/wk.
 - **Env:** `ANTHROPIC_KEY` (not ANTHROPIC_API_KEY)
 
 ## WHAT'S OPERATIONAL
