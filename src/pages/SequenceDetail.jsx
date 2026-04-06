@@ -384,7 +384,17 @@ export default function SequenceDetail() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ ...glass, overflow: 'hidden' }}>
               <div style={{ padding: '12px 16px', borderBottom: `0.5px solid ${T.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 13, fontWeight: 500 }}>Leads · {enrollments.length} enrolled</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: 13, fontWeight: 500 }}>Leads</span>
+                  {enrollments.length > 0 && (
+                    <div style={{ display: 'flex', gap: 8, fontSize: 10, color: T.textTertiary }}>
+                      <span>{enrollments.length} enrolled</span>
+                      <span style={{ color: T.teal }}>{enrollments.filter(e => e.status === 'active').length} active</span>
+                      <span style={{ color: T.success }}>{enrollments.filter(e => e.status === 'replied').length} replied</span>
+                      <span style={{ color: T.danger }}>{enrollments.filter(e => e.status === 'bounced').length} bounced</span>
+                    </div>
+                  )}
+                </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button onClick={autoSuggestLeads} disabled={loadingSuggestions} style={{ padding: '5px 12px', borderRadius: 5, border: `0.5px solid ${T.border}`, background: T.surface, color: T.teal, fontSize: 11, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><Sparkles size={12} />{loadingSuggestions ? 'Finding...' : 'Kiko, find leads'}</button>
                   <button onClick={() => setShowManualAdd(true)} style={{ padding: '5px 12px', borderRadius: 5, border: `0.5px solid ${T.border}`, background: T.surface, color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><Plus size={12} />Manual add</button>

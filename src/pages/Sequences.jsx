@@ -8,8 +8,9 @@ import { Plus, Sparkles, X, Mail, Linkedin, Play, Pause, Users, Send, TrendingUp
 
 function pct(n, d) { return d > 0 ? Math.round((n / d) * 100) : 0 }
 
-function statusBadge(isActive) {
+function statusBadge(isActive, hasEnrollments) {
   if (isActive === true) return { bg: 'rgba(45,212,191,0.08)', color: 'rgba(45,212,191,0.8)', border: 'rgba(45,212,191,0.15)', label: 'Live' }
+  if (hasEnrollments) return { bg: 'rgba(248,113,113,0.08)', color: 'rgba(248,113,113,0.7)', border: 'rgba(248,113,113,0.15)', label: 'Paused' }
   return { bg: 'rgba(251,191,36,0.08)', color: 'rgba(251,191,36,0.8)', border: 'rgba(251,191,36,0.15)', label: 'Draft' }
 }
 
@@ -24,6 +25,7 @@ export default function Sequences() {
   const [wizPersona, setWizPersona] = useState('')
   const [generating, setGenerating] = useState(false)
   const [toggling, setToggling] = useState(null)
+  const [search, setSearch] = useState('')
 
   useEffect(() => { load() }, [])
 
@@ -88,13 +90,22 @@ export default function Sequences() {
   const card = { ...glass, padding: '16px 20px', cursor: 'pointer', transition: 'all 0.2s cubic-bezier(0.4,0,0.2,1)' }
   const statBox = { background: T.surface, border: `0.5px solid ${T.border}`, borderRadius: T.radius, padding: '14px 16px', textAlign: 'center' }
 
+  // Sort: live first, then drafts. Filter by search.
+  const filtered = sequences
+    .filter(s => !search || s.name.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => {
+      if (a.is_active && !b.is_active) return -1
+      if (!a.is_active && b.is_active) return 1
+      return new Date(b.created_at) - new Date(a.created_at)
+    })
+
   return (
     <div style={{ padding: '24px 28px', fontFamily: T.font, color: T.text, maxWidth: 960, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 400, margin: 0, color: T.text }}>Campaigns</h1>
-          <p style={{ fontSize: 12, color: T.textTertiary, fontWeight: 300, margin: '4px 0 0' }}>
-            {sequences.length} campaign{sequences.length !== 1 ? 's' : ''} · {totalEnrolled} leads enrolled
+          <p style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300, margin: '4px 0 0' }}>
+            {sequences.length} campaign{sequences.length !== 1 ? 's' : ''} · {totalEnrolled} leads · {totalSent} sent · {totalReplied} replied
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -138,15 +149,22 @@ export default function Sequences() {
         </div>
       )}
 
+      {/* Search filter */}
+      {sequences.length > 3 && (
+        <div style={{ marginBottom: 12 }}>
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Filter campaigns..." style={{ width: '100%', padding: '8px 12px', borderRadius: T.radiusSm, border: `0.5px solid ${T.border}`, background: T.surface, color: T.text, fontSize: 12, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
+        </div>
+      )}
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {sequences.map(seq => {
+        {filtered.map(seq => {
           const steps = seq.steps || []
           const emails = steps.filter(s => s.channel === 'email').length
           const linkedin = steps.filter(s => s.channel === 'linkedin').length
           const totalDays = steps.reduce((sum, s) => sum + (s.delay_days || 0), 0)
           const cs = campStats(seq.id)
           const replyRate = pct(cs.replied, cs.sent)
-          const sb = statusBadge(seq.is_active)
+          const sb = statusBadge(seq.is_active, cs.enrolled > 0)
 
           return (
             <div key={seq.id} onClick={() => navigate(`/sequences/${seq.id}`)}
@@ -221,7 +239,12 @@ export default function Sequences() {
             </div>
           )
         })}
-        {!sequences.length && (
+        {!filtered.length && search && (
+          <div style={{ ...glass, padding: 32, textAlign: 'center' }}>
+            <div style={{ fontSize: 13, color: T.textSecondary }}>No campaigns matching "{search}"</div>
+          </div>
+        )}
+        {!filtered.length && !search && (
           <div style={{ ...glass, padding: 48, textAlign: 'center' }}>
             <TrendingUp size={28} style={{ color: T.textMuted, marginBottom: 10 }} />
             <div style={{ fontSize: 14, color: T.textSecondary, marginBottom: 6 }}>No campaigns yet</div>
@@ -246,8 +269,19 @@ export default function Sequences() {
             </div>
             <div style={{ marginBottom: 14 }}>
               <label style={{ fontSize: 11, color: T.textTertiary, display: 'block', marginBottom: 4 }}>Category *</label>
-              <input value={wizCategory} onChange={e => setWizCategory(e.target.value)} placeholder="e.g. Cybersecurity, Cloud, CRM, AI/ML, Banking, FinTech, Telecoms" autoFocus
+              <input value={wizCategory} onChange={e => setWizCategory(e.target.value)} placeholder="Type or select a category below" autoFocus
                 style={{ width: '100%', padding: '10px 12px', borderRadius: T.radiusSm, border: `0.5px solid ${T.border}`, background: T.surface, color: T.text, fontSize: 13, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
+                {['Banking', 'FinTech', 'Telecoms', 'Cybersecurity', 'Cloud', 'CRM', 'AI/ML', 'Semiconductor', 'Robotics', 'Data', 'Logistics', 'Energy', 'Gaming', 'Tequila', 'Whiskey'].map(cat => (
+                  <button key={cat} onClick={() => setWizCategory(cat)} style={{
+                    padding: '3px 10px', borderRadius: 4, fontSize: 10, cursor: 'pointer', fontFamily: T.font,
+                    border: `0.5px solid ${wizCategory === cat ? 'rgba(255,224,194,0.25)' : T.border}`,
+                    background: wizCategory === cat ? 'rgba(255,224,194,0.08)' : 'transparent',
+                    color: wizCategory === cat ? T.accent : T.textTertiary,
+                    transition: 'all 0.15s',
+                  }}>{cat}</button>
+                ))}
+              </div>
             </div>
             <div style={{ marginBottom: 14 }}>
               <label style={{ fontSize: 11, color: T.textTertiary, display: 'block', marginBottom: 4 }}>F1 Team</label>
