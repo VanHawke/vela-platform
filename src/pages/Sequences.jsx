@@ -1,32 +1,58 @@
-// src/pages/Sequences.jsx — Clean campaign list
+// src/pages/Sequences.jsx — Lemlist-quality campaign dashboard
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { Plus, Sparkles, X, Mail, Linkedin, ChevronRight, Play, Pause, Users, BarChart3, Send, Search, ArrowUpRight } from 'lucide-react'
+import { setPageContext } from '@/lib/pageContext'
+import T, { glass } from '@/lib/theme'
+import { Plus, Sparkles, X, Mail, Linkedin, Play, Pause, Users, Send, TrendingUp, ChevronRight } from 'lucide-react'
 
-const T = {
-  surface: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.08)',
-  text: 'rgba(255,255,255,0.95)', textSec: 'rgba(255,255,255,0.55)', textTer: 'rgba(255,255,255,0.32)',
-  font: "'DM Sans', -apple-system, sans-serif",
-  purple: '#7C5CFC', teal: '#00D4AA', red: '#FF4444', amber: '#F59E0B', green: '#4ADE80',
+function pct(n, d) { return d > 0 ? Math.round((n / d) * 100) : 0 }
+
+function statusBadge(isActive) {
+  return isActive
+    ? { bg: 'rgba(45,212,191,0.08)', color: 'rgba(45,212,191,0.8)', border: 'rgba(45,212,191,0.15)', label: 'Running' }
+    : { bg: 'rgba(251,191,36,0.08)', color: 'rgba(251,191,36,0.8)', border: 'rgba(251,191,36,0.15)', label: 'Paused' }
 }
-const glass = { background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(20px)', border: `1px solid ${T.border}`, borderRadius: 12 }
 
 export default function Sequences() {
   const navigate = useNavigate()
   const [sequences, setSequences] = useState([])
   const [enrollments, setEnrollments] = useState([])
+  const [sentMap, setSentMap] = useState({})
   const [showWizard, setShowWizard] = useState(false)
   const [wizCategory, setWizCategory] = useState('')
   const [wizTeam, setWizTeam] = useState('Haas F1 Team')
   const [wizPersona, setWizPersona] = useState('')
   const [generating, setGenerating] = useState(false)
+  const [toggling, setToggling] = useState(null)
 
   useEffect(() => { load() }, [])
+
   async function load() {
-    const { data: s } = await supabase.from('kiko_sequences').select('*').order('created_at', { ascending: false })
-    const { data: e } = await supabase.from('kiko_sequence_enrollments').select('*')
-    setSequences(s || []); setEnrollments(e || [])
+    const [{ data: s }, { data: e }, { data: q }] = await Promise.all([
+      supabase.from('kiko_sequences').select('*').order('created_at', { ascending: false }),
+      supabase.from('kiko_sequence_enrollments').select('*'),
+      supabase.from('kiko_outreach_queue').select('enrollment_id').eq('status', 'sent'),
+    ])
+    setSequences(s || [])
+    setEnrollments(e || [])
+    const map = {}
+    for (const item of (q || [])) {
+      map[item.enrollment_id] = (map[item.enrollment_id] || 0) + 1
+    }
+    setSentMap(map)
+    setPageContext({
+      page: 'campaigns', summary: `Campaigns: ${(s||[]).length} sequences, ${(e||[]).length} enrolled leads`,
+      visibleItems: (s||[]).slice(0, 6).map(x => `${x.name} (${x.is_active ? 'running' : 'paused'})`).join(', ')
+    })
+  }
+
+  async function toggleActive(e, seqId, current) {
+    e.stopPropagation()
+    setToggling(seqId)
+    await supabase.from('kiko_sequences').update({ is_active: !current, updated_at: new Date().toISOString() }).eq('id', seqId)
+    setSequences(prev => prev.map(s => s.id === seqId ? { ...s, is_active: !current } : s))
+    setToggling(null)
   }
 
   async function generate() {
@@ -37,7 +63,7 @@ export default function Sequences() {
         body: JSON.stringify({ category: wizCategory, team: wizTeam, persona: wizPersona || undefined, numSteps: 7 }) })
       const data = await res.json()
       if (data.ok && data.id) { setShowWizard(false); navigate(`/sequences/${data.id}`) }
-      else alert(data.error || 'Generation failed — check console')
+      else alert(data.error || 'Generation failed')
     } catch (err) { alert(err.message) }
     setGenerating(false)
   }
@@ -45,105 +71,194 @@ export default function Sequences() {
   const totalEnrolled = enrollments.length
   const totalActive = enrollments.filter(e => e.status === 'active').length
   const totalReplied = enrollments.filter(e => e.status === 'replied').length
+  const totalBounced = enrollments.filter(e => e.status === 'bounced').length
+  const totalCompleted = enrollments.filter(e => e.status === 'completed').length
+  const totalSent = Object.values(sentMap).reduce((a, b) => a + b, 0)
+
+  function campStats(seqId) {
+    const enr = enrollments.filter(e => e.sequence_id === seqId)
+    const enrolled = enr.length
+    const active = enr.filter(e => e.status === 'active').length
+    const replied = enr.filter(e => e.status === 'replied').length
+    const bounced = enr.filter(e => e.status === 'bounced').length
+    const completed = enr.filter(e => e.status === 'completed').length
+    const sent = enr.reduce((sum, e) => sum + (sentMap[e.id] || 0), 0)
+    return { enrolled, active, replied, bounced, completed, sent }
+  }
+
+  const card = { ...glass, padding: '16px 20px', cursor: 'pointer', transition: 'all 0.2s cubic-bezier(0.4,0,0.2,1)' }
+  const statBox = { background: T.surface, border: `0.5px solid ${T.border}`, borderRadius: T.radius, padding: '14px 16px', textAlign: 'center' }
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: T.font, color: T.text, maxWidth: 900, margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+    <div style={{ padding: '24px 28px', fontFamily: T.font, color: T.text, maxWidth: 960, margin: '0 auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 500, margin: 0 }}>Campaigns</h1>
-          {totalEnrolled > 0 && <p style={{ fontSize: 12, color: T.textTer, margin: '4px 0 0' }}>{totalActive} active · {totalReplied} replied · {totalEnrolled} total enrolled</p>}
+          <h1 style={{ fontSize: 22, fontWeight: 400, margin: 0, color: T.text }}>Campaigns</h1>
+          <p style={{ fontSize: 12, color: T.textTertiary, fontWeight: 300, margin: '4px 0 0' }}>
+            {sequences.length} campaign{sequences.length !== 1 ? 's' : ''} · {totalEnrolled} leads enrolled
+          </p>
         </div>
-        <button onClick={() => setShowWizard(true)} style={{ padding: '8px 18px', borderRadius: 6, border: 'none', background: T.purple, color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <button onClick={() => setShowWizard(true)} style={{
+          padding: '8px 18px', borderRadius: T.radiusSm, border: 'none',
+          background: 'rgba(255,224,194,0.08)', color: T.accent, fontSize: 12, fontWeight: 500,
+          cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6,
+          boxShadow: T.liquidBtnShadow, transition: 'all 0.2s',
+        }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,224,194,0.14)'; e.currentTarget.style.boxShadow = T.liquidBtnHover }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,224,194,0.08)'; e.currentTarget.style.boxShadow = T.liquidBtnShadow }}
+        >
           <Sparkles size={14} /> Generate Campaign
         </button>
       </div>
 
-      {/* Campaign cards */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {totalEnrolled > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 20 }}>
+          {[
+            { label: 'Enrolled', value: totalEnrolled, color: T.accent },
+            { label: 'Sent', value: totalSent, color: 'rgba(238,238,238,0.70)' },
+            { label: 'Replied', value: totalReplied, sub: totalSent > 0 ? `${pct(totalReplied, totalSent)}%` : null, color: T.success },
+            { label: 'Active', value: totalActive, color: T.teal },
+            { label: 'Bounced', value: totalBounced, sub: totalSent > 0 ? `${pct(totalBounced, totalSent)}%` : null, color: T.danger },
+          ].map((s, i) => (
+            <div key={i} style={statBox}>
+              <div style={{ fontSize: 22, fontWeight: 500, color: s.color, lineHeight: 1 }}>{s.value}</div>
+              <div style={{ fontSize: 10, color: T.textTertiary, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {s.label}{s.sub && <span style={{ marginLeft: 4, color: T.textSecondary }}>{s.sub}</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {sequences.map(seq => {
           const steps = seq.steps || []
           const emails = steps.filter(s => s.channel === 'email').length
           const linkedin = steps.filter(s => s.channel === 'linkedin').length
           const totalDays = steps.reduce((sum, s) => sum + (s.delay_days || 0), 0)
-          const enr = enrollments.filter(e => e.sequence_id === seq.id)
-          const replied = enr.filter(e => e.status === 'replied').length
-          const active = enr.filter(e => e.status === 'active').length
-          const rate = enr.length > 0 ? Math.round(replied / enr.length * 100) : null
+          const cs = campStats(seq.id)
+          const replyRate = pct(cs.replied, cs.sent)
+          const sb = statusBadge(seq.is_active)
+
           return (
-            <div key={seq.id} onClick={() => navigate(`/sequences/${seq.id}`)} style={{ ...glass, padding: '16px 20px', cursor: 'pointer', transition: 'border-color 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)'}
-              onMouseLeave={e => e.currentTarget.style.borderColor = T.border}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 15, fontWeight: 500, marginBottom: 2 }}>{seq.name}</div>
-                  <div style={{ fontSize: 11, color: T.textTer }}>
-                    {emails} email{emails !== 1 ? 's' : ''} + {linkedin} LinkedIn · {totalDays} days · {steps[0]?.approach || 'authority-led'}
+            <div key={seq.id} onClick={() => navigate(`/sequences/${seq.id}`)}
+              style={card}
+              onMouseEnter={e => { e.currentTarget.style.background = T.glassHover; e.currentTarget.style.borderColor = T.glassBorderHover }}
+              onMouseLeave={e => { e.currentTarget.style.background = glass.background; e.currentTarget.style.borderColor = T.glassBorder }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 15, fontWeight: 500, color: T.text, marginBottom: 2 }}>{seq.name}</div>
+                  <div style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300 }}>
+                    {emails} email{emails !== 1 ? 's' : ''} · {linkedin} LinkedIn · {totalDays} days · {steps[0]?.approach || 'authority-led'}
                   </div>
                 </div>
-                <div style={{ fontSize: 10, padding: '3px 8px', borderRadius: 4, background: seq.is_active ? 'rgba(74,222,128,0.1)' : 'rgba(255,68,68,0.1)', color: seq.is_active ? T.green : T.red }}>{seq.is_active ? 'Active' : 'Paused'}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 6, fontWeight: 500, background: sb.bg, color: sb.color, border: `1px solid ${sb.border}` }}>{sb.label}</span>
+                  <button onClick={(e) => toggleActive(e, seq.id, seq.is_active)} disabled={toggling === seq.id}
+                    style={{ width: 28, height: 28, borderRadius: T.radiusSm, cursor: 'pointer',
+                      border: `0.5px solid ${seq.is_active ? 'rgba(251,191,36,0.2)' : 'rgba(45,212,191,0.2)'}`,
+                      background: seq.is_active ? 'rgba(251,191,36,0.06)' : 'rgba(45,212,191,0.06)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: toggling === seq.id ? 0.4 : 1 }}
+                    title={seq.is_active ? 'Pause campaign' : 'Resume campaign'}>
+                    {seq.is_active ? <Pause size={12} style={{ color: 'rgba(251,191,36,0.8)' }} /> : <Play size={12} style={{ color: 'rgba(45,212,191,0.8)' }} />}
+                  </button>
+                </div>
               </div>
-              {/* Step flow preview */}
-              <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ display: 'flex', gap: 3, alignItems: 'center', marginBottom: 12 }}>
                 {steps.map((s, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                    <div style={{ width: 20, height: 20, borderRadius: 5, background: s.channel === 'linkedin' ? 'rgba(0,119,181,0.12)' : 'rgba(124,92,252,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {s.channel === 'linkedin' ? <Linkedin size={10} style={{ color: '#0077B5' }} /> : <Mail size={10} style={{ color: T.purple }} />}
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <div style={{ width: 22, height: 22, borderRadius: 6,
+                      background: s.channel === 'linkedin' ? 'rgba(0,119,181,0.10)' : 'rgba(255,224,194,0.06)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      border: `0.5px solid ${s.channel === 'linkedin' ? 'rgba(0,119,181,0.15)' : 'rgba(255,224,194,0.08)'}` }}>
+                      {s.channel === 'linkedin' ? <Linkedin size={10} style={{ color: 'rgba(0,119,181,0.7)' }} /> : <Mail size={10} style={{ color: 'rgba(255,224,194,0.5)' }} />}
                     </div>
-                    {i < steps.length - 1 && <ChevronRight size={8} style={{ color: T.textTer }} />}
+                    {i < steps.length - 1 && <ChevronRight size={8} style={{ color: T.textMuted }} />}
                   </div>
                 ))}
               </div>
-              {/* Metrics */}
-              {enr.length > 0 ? (
-                <div style={{ display: 'flex', gap: 16, fontSize: 11, color: T.textSec }}>
-                  <span>{enr.length} enrolled</span>
-                  <span style={{ color: T.teal }}>{active} active</span>
-                  <span style={{ color: T.green }}>{replied} replied</span>
-                  {rate !== null && <span style={{ color: T.amber }}>{rate}% reply rate</span>}
+              {cs.enrolled > 0 ? (
+                <div style={{ display: 'flex', gap: 0, alignItems: 'stretch' }}>
+                  {[
+                    { label: 'Enrolled', value: cs.enrolled, color: T.accent },
+                    { label: 'Sent', value: cs.sent, color: 'rgba(238,238,238,0.60)' },
+                    { label: 'Replied', value: cs.replied, sub: cs.sent > 0 ? `${pct(cs.replied, cs.sent)}%` : null, color: T.success },
+                    { label: 'Bounced', value: cs.bounced, color: T.danger },
+                    { label: 'Active', value: cs.active, color: T.teal },
+                  ].map((m, i) => (
+                    <div key={i} style={{ flex: 1, padding: '8px 0', textAlign: 'center', borderRight: i < 4 ? `0.5px solid ${T.border}` : 'none' }}>
+                      <div style={{ fontSize: 16, fontWeight: 500, color: m.value > 0 ? m.color : T.textMuted, lineHeight: 1 }}>
+                        {m.value}{m.sub && <span style={{ fontSize: 10, fontWeight: 400, color: T.textTertiary, marginLeft: 3 }}>{m.sub}</span>}
+                      </div>
+                      <div style={{ fontSize: 9, color: T.textTertiary, marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{m.label}</div>
+                    </div>
+                  ))}
+                  {cs.sent > 0 && (
+                    <div style={{ width: 80, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', paddingLeft: 12 }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: replyRate >= 10 ? T.success : replyRate > 0 ? T.warning : T.textMuted }}>{replyRate}%</div>
+                      <div style={{ width: '100%', height: 3, background: T.surface, borderRadius: 2, marginTop: 4, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', borderRadius: 2, width: `${Math.min(replyRate, 100)}%`, background: replyRate >= 10 ? T.success : T.warning, transition: 'width 0.3s ease' }} />
+                      </div>
+                      <div style={{ fontSize: 8, color: T.textTertiary, marginTop: 2, textTransform: 'uppercase' }}>Reply rate</div>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div style={{ fontSize: 11, color: T.textTer }}>No leads enrolled yet — click to add contacts</div>
+                <div style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300 }}>No leads enrolled — click to add contacts</div>
               )}
             </div>
           )
         })}
         {!sequences.length && (
-          <div style={{ ...glass, padding: 40, textAlign: 'center' }}>
-            <div style={{ fontSize: 14, color: T.textSec, marginBottom: 8 }}>No campaigns yet</div>
-            <div style={{ fontSize: 12, color: T.textTer }}>Click "Generate Campaign" to create your first sequence</div>
+          <div style={{ ...glass, padding: 48, textAlign: 'center' }}>
+            <TrendingUp size={28} style={{ color: T.textMuted, marginBottom: 10 }} />
+            <div style={{ fontSize: 14, color: T.textSecondary, marginBottom: 6 }}>No campaigns yet</div>
+            <div style={{ fontSize: 12, color: T.textTertiary, fontWeight: 300 }}>Click "Generate Campaign" to create your first outreach sequence</div>
           </div>
         )}
       </div>
 
-      {/* Generate Campaign Wizard */}
       {showWizard && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowWizard(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ ...glass, padding: 28, width: 460, maxWidth: '90vw' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowWizard(false)}>
+          <div onClick={e => e.stopPropagation()} style={{ ...glass, padding: 28, width: 460, maxWidth: '90vw', boxShadow: T.glassShadowFloat }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
               <div>
-                <div style={{ fontSize: 17, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}><Sparkles size={16} style={{ color: T.purple }} /> Generate campaign</div>
-                <div style={{ fontSize: 12, color: T.textTer, marginTop: 2 }}>Kiko creates a 7-touch sequence using research-backed psychology</div>
+                <div style={{ fontSize: 17, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Sparkles size={16} style={{ color: T.accent }} /> Generate campaign
+                </div>
+                <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 2, fontWeight: 300 }}>
+                  Kiko creates a 7-touch sequence using research-backed psychology
+                </div>
               </div>
-              <button onClick={() => setShowWizard(false)} style={{ background: 'none', border: 'none', color: T.textTer, cursor: 'pointer' }}><X size={16} /></button>
+              <button onClick={() => setShowWizard(false)} style={{ background: 'none', border: 'none', color: T.textTertiary, cursor: 'pointer' }}><X size={16} /></button>
             </div>
             <div style={{ marginBottom: 14 }}>
-              <label style={{ fontSize: 11, color: T.textTer, display: 'block', marginBottom: 4 }}>Category *</label>
-              <input value={wizCategory} onChange={e => setWizCategory(e.target.value)} placeholder="e.g. Cybersecurity, Cloud, CRM, AI/ML" autoFocus style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.text, fontSize: 13, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
+              <label style={{ fontSize: 11, color: T.textTertiary, display: 'block', marginBottom: 4 }}>Category *</label>
+              <input value={wizCategory} onChange={e => setWizCategory(e.target.value)} placeholder="e.g. Cybersecurity, Cloud, CRM, AI/ML, Banking, FinTech, Telecoms" autoFocus
+                style={{ width: '100%', padding: '10px 12px', borderRadius: T.radiusSm, border: `0.5px solid ${T.border}`, background: T.surface, color: T.text, fontSize: 13, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
             </div>
             <div style={{ marginBottom: 14 }}>
-              <label style={{ fontSize: 11, color: T.textTer, display: 'block', marginBottom: 4 }}>F1 Team</label>
-              <select value={wizTeam} onChange={e => setWizTeam(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.text, fontSize: 13, fontFamily: T.font, outline: 'none' }}>
-                {['Haas F1 Team','Alpine F1 Team','Aston Martin F1 Team'].map(t => <option key={t} value={t} style={{ background: '#111' }}>{t}</option>)}
+              <label style={{ fontSize: 11, color: T.textTertiary, display: 'block', marginBottom: 4 }}>F1 Team</label>
+              <select value={wizTeam} onChange={e => setWizTeam(e.target.value)}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: T.radiusSm, border: `0.5px solid ${T.border}`, background: T.surface, color: T.text, fontSize: 13, fontFamily: T.font, outline: 'none' }}>
+                {['Haas F1 Team', 'Alpine F1 Team', 'Aston Martin F1 Team'].map(t => <option key={t} value={t} style={{ background: '#111' }}>{t}</option>)}
               </select>
             </div>
             <div style={{ marginBottom: 18 }}>
-              <label style={{ fontSize: 11, color: T.textTer, display: 'block', marginBottom: 4 }}>Target persona (optional)</label>
-              <input value={wizPersona} onChange={e => setWizPersona(e.target.value)} placeholder="Auto: C-suite at $500M-$5B companies" style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSec, fontSize: 13, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
+              <label style={{ fontSize: 11, color: T.textTertiary, display: 'block', marginBottom: 4 }}>Target persona (optional)</label>
+              <input value={wizPersona} onChange={e => setWizPersona(e.target.value)} placeholder="Auto: C-suite at $500M-$5B companies"
+                style={{ width: '100%', padding: '10px 12px', borderRadius: T.radiusSm, border: `0.5px solid ${T.border}`, background: T.surface, color: T.textSecondary, fontSize: 13, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
             </div>
-            <div style={{ padding: 10, borderRadius: 6, background: 'rgba(124,92,252,0.05)', border: '1px solid rgba(124,92,252,0.12)', marginBottom: 16, fontSize: 11, color: T.textSec, lineHeight: 1.5 }}>
+            <div style={{ padding: 10, borderRadius: T.radiusSm, background: 'rgba(255,224,194,0.03)', border: `0.5px solid rgba(255,224,194,0.08)`, marginBottom: 16, fontSize: 11, color: T.textSecondary, lineHeight: 1.5, fontWeight: 300 }}>
               4 emails + 3 LinkedIn touches over 14 days. Cialdini psychology progression. Race calendar awareness. Van Hawke communication style.
             </div>
-            <button onClick={generate} disabled={generating || !wizCategory} style={{ width: '100%', padding: '10px 0', borderRadius: 6, border: 'none', background: generating ? T.surface : T.purple, color: generating ? T.textTer : '#fff', fontSize: 13, fontWeight: 500, cursor: generating ? 'default' : 'pointer', fontFamily: T.font }}>
+            <button onClick={generate} disabled={generating || !wizCategory} style={{
+              width: '100%', padding: '10px 0', borderRadius: T.radiusSm, border: 'none',
+              background: generating ? T.surface : 'rgba(255,224,194,0.10)', color: generating ? T.textTertiary : T.accent,
+              fontSize: 13, fontWeight: 500, cursor: generating ? 'default' : 'pointer', fontFamily: T.font,
+              boxShadow: generating ? 'none' : T.liquidBtnShadow,
+            }}>
               {generating ? '⏳ Generating...' : '✨ Generate & open'}
             </button>
           </div>
