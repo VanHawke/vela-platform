@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { Plus, Sparkles, X, Mail, Linkedin, ChevronRight, Play, Pause } from 'lucide-react'
+import { Plus, Sparkles, X, Mail, Linkedin, ChevronRight, Play, Pause, Users, BarChart3, Send, Search, ArrowUpRight } from 'lucide-react'
 
 const T = {
   surface: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.08)',
