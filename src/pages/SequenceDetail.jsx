@@ -47,6 +47,8 @@ export default function SequenceDetail() {
   const [regenPrompt, setRegenPrompt] = useState(false)
   const [testSending, setTestSending] = useState(false)
   const [testSent, setTestSent] = useState(false)
+  const [launching, setLaunching] = useState(false)
+  const [showLaunchConfirm, setShowLaunchConfirm] = useState(false)
 
   useEffect(() => { if (!isNew) load() }, [id])
 
@@ -63,13 +65,23 @@ export default function SequenceDetail() {
   async function save() {
     setSaving(true)
     if (isNew) {
-      const { data } = await supabase.from('kiko_sequences').insert({ name: seq.name || 'New Campaign', description: seq.description, target_persona: seq.target_persona, steps, is_active: true }).select().single()
+      const { data } = await supabase.from('kiko_sequences').insert({ name: seq.name || 'New Campaign', description: seq.description, target_persona: seq.target_persona, steps, is_active: false }).select().single()
       if (data) nav(`/sequences/${data.id}`, { replace: true })
     } else {
       await supabase.from('kiko_sequences').update({ name: seq.name, description: seq.description, target_persona: seq.target_persona, steps, updated_at: new Date().toISOString() }).eq('id', id)
     }
     setSaving(false); setDirty(false)
   }
+
+  async function launchCampaign() {
+    setLaunching(true)
+    await supabase.from('kiko_sequences').update({ is_active: true, updated_at: new Date().toISOString() }).eq('id', id)
+    setSeq(prev => ({ ...prev, is_active: true }))
+    setShowLaunchConfirm(false)
+    setLaunching(false)
+  }
+
+  const isDraft = seq && !seq.is_active
 
   function addStep(ch) {
     const emailTemplate = 'Dear {firstName},\n\n\n\nKind regards,\n\n{signature}'
@@ -170,6 +182,17 @@ export default function SequenceDetail() {
         </div>
       </div>
       <input value={seq?.target_persona || ''} onChange={e => { setSeq({ ...seq, target_persona: e.target.value }); setDirty(true) }} placeholder="Target persona" style={{ ...inputStyle, marginBottom: 14 }} />
+      {/* Draft/Live status banner */}
+      {!isNew && isDraft && (
+        <div style={{ padding: '10px 16px', borderRadius: T.radiusSm, background: 'rgba(251,191,36,0.04)', border: '0.5px solid rgba(251,191,36,0.15)', marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: 12, color: T.warning, fontWeight: 500 }}>Draft — not sending. Build your sequence, add leads, then launch.</span>
+        </div>
+      )}
+      {!isNew && !isDraft && (
+        <div style={{ padding: '10px 16px', borderRadius: T.radiusSm, background: 'rgba(45,212,191,0.04)', border: '0.5px solid rgba(45,212,191,0.15)', marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: 12, color: T.success, fontWeight: 500 }}>Live — emails sending Mon-Fri 8am-6pm (30/day cap)</span>
+        </div>
+      )}
       <div style={{ display: 'flex', gap: 2, marginBottom: 14, background: T.surface, borderRadius: T.radius, padding: 3, width: 'fit-content' }}>
         {tabs.map(t => (
           <button key={t.id} onClick={() => { setTab(t.id); setSelectedLead(null) }} style={{ padding: '6px 14px', borderRadius: T.radiusSm, border: 'none', cursor: 'pointer', fontFamily: T.font, fontSize: 12, background: tab === t.id ? 'rgba(255,224,194,0.08)' : 'transparent', color: tab === t.id ? T.text : T.textSecondary, display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -180,6 +203,7 @@ export default function SequenceDetail() {
 
       {/* ═══ SEQUENCE TAB ═══ */}
       {tab === 'sequence' && (
+        <>
         <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 14, minHeight: 480 }}>
           <div style={{ ...glass, padding: 14, overflowY: 'auto' }}>
             <div style={{ textAlign: 'center', padding: '6px 0 12px', fontSize: 11, color: T.textTertiary, borderBottom: `0.5px solid ${T.border}`, marginBottom: 8 }}>Sequence start</div>
@@ -265,10 +289,19 @@ export default function SequenceDetail() {
             )}
           </div>
         </div>
-      )}
+        {/* Continue to Leads button (draft flow) */}
+        {isDraft && steps.length > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+            <button onClick={() => { if (dirty) save(); setTab('leads') }} style={{ padding: '10px 24px', borderRadius: T.radiusSm, border: 'none', background: 'rgba(255,224,194,0.10)', color: T.accent, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, boxShadow: T.liquidBtnShadow, display: 'flex', alignItems: 'center', gap: 6 }}>
+              Continue to Leads <ChevronRight size={14} />
+            </button>
+          </div>
+        )}
+      </>)}
 
       {/* ═══ LEADS TAB ═══ */}
       {tab === 'leads' && (
+        <>
         <div style={{ display: 'flex', gap: 0 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ ...glass, overflow: 'hidden' }}>
@@ -371,7 +404,18 @@ export default function SequenceDetail() {
             </div>
           )}
         </div>
-      )}
+        {/* Launch Campaign button (draft flow) */}
+        {isDraft && enrollments.length > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16, gap: 10 }}>
+            <button onClick={() => setTab('sequence')} style={{ padding: '10px 20px', borderRadius: T.radiusSm, border: `0.5px solid ${T.border}`, background: 'transparent', color: T.textSecondary, fontSize: 13, cursor: 'pointer', fontFamily: T.font }}>
+              ← Back to Sequence
+            </button>
+            <button onClick={() => setShowLaunchConfirm(true)} style={{ padding: '10px 28px', borderRadius: T.radiusSm, border: 'none', background: 'rgba(45,212,191,0.12)', color: T.success, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: T.font, boxShadow: T.liquidBtnShadow, display: 'flex', alignItems: 'center', gap: 6 }}>
+              🚀 Launch Campaign
+            </button>
+          </div>
+        )}
+      </>)}
 
       {/* ═══ PERFORMANCE TAB ═══ */}
       {tab === 'performance' && (
@@ -470,6 +514,26 @@ export default function SequenceDetail() {
               {searchResults.length === 0 && leadSearch && !searching && <div style={{ padding: 20, textAlign: 'center', color: T.textTertiary, fontSize: 11, fontWeight: 300 }}>No contacts found. Try a different search.</div>}
             </div>
             {selectedLeads.length > 0 && <button onClick={enrollSelected} style={{ width: '100%', padding: '9px 0', borderRadius: T.radiusSm, border: 'none', background: 'rgba(255,224,194,0.10)', color: T.accent, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font }}>Enroll {selectedLeads.length} contact{selectedLeads.length > 1 ? 's' : ''}</button>}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ LAUNCH CONFIRMATION ═══ */}
+      {showLaunchConfirm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowLaunchConfirm(false)}>
+          <div onClick={e => e.stopPropagation()} style={{ ...glass, padding: 28, width: 440, maxWidth: '90vw', boxShadow: T.glassShadowFloat, textAlign: 'center' }}>
+            <div style={{ fontSize: 32, marginBottom: 12 }}>🚀</div>
+            <div style={{ fontSize: 17, fontWeight: 500, marginBottom: 8 }}>Launch "{seq?.name}"?</div>
+            <div style={{ fontSize: 12, color: T.textTertiary, marginBottom: 20, lineHeight: 1.6, fontWeight: 300 }}>
+              {steps.length} steps · {enrollments.length} leads enrolled<br/>
+              Emails will be personalised at 6am and sent Mon-Fri 8am-6pm (30/day cap).<br/>
+              Timing adapts to each prospect's timezone for optimal open rates.<br/>
+              You can pause at any time.
+            </div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+              <button onClick={() => setShowLaunchConfirm(false)} style={{ padding: '10px 20px', borderRadius: T.radiusSm, border: `0.5px solid ${T.border}`, background: 'transparent', color: T.textSecondary, fontSize: 13, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
+              <button onClick={launchCampaign} disabled={launching} style={{ padding: '10px 28px', borderRadius: T.radiusSm, border: 'none', background: 'rgba(45,212,191,0.15)', color: T.success, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: T.font, boxShadow: T.liquidBtnShadow }}>{launching ? '⏳ Launching...' : '🚀 Go Live'}</button>
+            </div>
           </div>
         </div>
       )}

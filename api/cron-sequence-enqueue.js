@@ -8,6 +8,46 @@ import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 export const config = { maxDuration: 60 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
+// ═══ TIMEZONE HELPERS — prospect location → UTC offset ═══
+// Maps company HQ / prospect location to approximate UTC offset for send timing
+function getTimezoneOffset(company, companyIntel) {
+  // Check company_intelligence for HQ location
+  const hq = (companyIntel?.hq_location || companyIntel?.headquarters || '').toLowerCase();
+  const domain = (companyIntel?.domain || '').toLowerCase();
+  const companyLower = (company || '').toLowerCase();
+  const text = `${hq} ${domain} ${companyLower}`;
+  
+  // US timezones (most common targets)
+  if (/new york|nyc|boston|washington|dc|philadelphia|charlotte|atlanta|miami|florida|east coast|\.us$/.test(text)) return -5; // ET
+  if (/chicago|dallas|houston|austin|denver|nashville|minneapolis|central/.test(text)) return -6; // CT
+  if (/phoenix|salt lake|mountain/.test(text)) return -7; // MT
+  if (/san francisco|sf|los angeles|la|seattle|portland|silicon valley|palo alto|menlo park|california|pacific|\.com$/.test(text) && !/uk|london/.test(text)) return -8; // PT (default for .com US tech)
+  // UK
+  if (/london|uk|united kingdom|england|manchester|cambridge|oxford|weybridge|\.co\.uk/.test(text)) return 0; // GMT/BST
+  // Europe
+  if (/paris|berlin|amsterdam|munich|zurich|stockholm|madrid|rome|milan|frankfurt|\.de$|\.fr$|\.nl$/.test(text)) return 1; // CET
+  if (/helsinki|athens|bucharest|istanbul|\.fi$/.test(text)) return 2; // EET
+  // Middle East
+  if (/dubai|abu dhabi|riyadh|saudi|uae|qatar|bahrain/.test(text)) return 4; // GST
+  // Asia
+  if (/mumbai|bangalore|india|hyderabad|\.in$/.test(text)) return 5.5; // IST
+  if (/singapore|hong kong|beijing|shanghai|taipei|\.sg$|\.hk$|\.cn$/.test(text)) return 8; // SGT/HKT
+  if (/tokyo|japan|\.jp$/.test(text)) return 9; // JST
+  if (/sydney|melbourne|australia|\.au$/.test(text)) return 10; // AEST
+  // Default: assume US East Coast (most B2B targets)
+  return -5;
+}
+
+function isDST(date) {
+  // Approximate UK DST: last Sunday of March → last Sunday of October
+  const year = date.getFullYear();
+  const marchLast = new Date(year, 2, 31);
+  const dstStart = new Date(year, 2, 31 - marchLast.getDay(), 1);
+  const octLast = new Date(year, 9, 31);
+  const dstEnd = new Date(year, 9, 31 - octLast.getDay(), 1);
+  return date >= dstStart && date < dstEnd;
+}
+
 export default async function handler(req, res) {
   const __hbStart = Date.now();
   const __hbId = await cronHeartbeat('cron-sequence-enqueue', 'started');
@@ -33,6 +73,7 @@ export default async function handler(req, res) {
         const seqs = await sbFetch(`kiko_sequences?id=eq.${enrollment.sequence_id}&limit=1`);
         if (!seqs?.length) continue;
         const sequence = seqs[0];
+        if (!sequence.is_active) continue; // Skip draft/paused campaigns — nothing sends until launched
         const steps = sequence.steps || [];
         const step = steps.find(s => s.step === enrollment.current_step);
         if (!step) { 
@@ -100,15 +141,35 @@ export default async function handler(req, res) {
 
         const bodyHtml = `<div style="font-family:Helvetica,Arial,sans-serif;font-size:12pt;color:#333">${bodyPlain.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}</div>`;
 
-        // Calculate optimal send time (Tue-Thu 8-10am UK, skip Mon/Fri/weekend)
+        // ═══ TIMEZONE-AWARE SEND TIMING ═══
+        // Target: 9-10am in the prospect's local timezone for maximum open rate
+        // Best days: Tue-Thu (highest open rates), Mon/Fri acceptable, never Sat/Sun
+        const prospectTz = getTimezoneOffset(enrollment.company, ci);
+        const ukOffsetHours = isDST(now) ? 1 : 0; // BST = UTC+1, GMT = UTC+0
+        // Target 9-10am local for the prospect
+        const targetLocalHour = 9 + (Math.random() > 0.5 ? 1 : 0); // 9 or 10am local
+        const targetMinute = Math.floor(Math.random() * 45) + 5; // 5-50 min (looks natural)
+        // Convert prospect local time to UTC: UTC = local - offset
+        const targetUTC = targetLocalHour - prospectTz;
+        // Convert UTC to UK time: UK = UTC + ukOffset
+        const targetUKHour = targetUTC + ukOffsetHours;
+        
         let sendAt = new Date(now);
-        sendAt.setHours(8 + Math.floor(Math.random() * 2), Math.floor(Math.random() * 45), 0, 0);
+        sendAt.setHours(Math.max(8, Math.min(18, targetUKHour)), targetMinute, 0, 0);
+        // If target UK hour is outside 8am-6pm window, clamp to nearest edge
+        if (targetUKHour < 8) sendAt.setHours(8, targetMinute, 0, 0);
+        if (targetUKHour > 18) sendAt.setHours(17, targetMinute, 0, 0);
+        // Skip weekends — move to next Tue-Thu
         const day = sendAt.getDay();
         if (day === 0) sendAt.setDate(sendAt.getDate() + 2); // Sun → Tue
-        else if (day === 1) sendAt.setDate(sendAt.getDate() + 1); // Mon → Tue
-        else if (day === 5) sendAt.setDate(sendAt.getDate() + 4); // Fri → Tue
         else if (day === 6) sendAt.setDate(sendAt.getDate() + 3); // Sat → Tue
-        if (sendAt < now) sendAt.setDate(sendAt.getDate() + 1); // If today's window passed, tomorrow
+        // If window already passed today, push to tomorrow (still skip weekends)
+        if (sendAt < now) {
+          sendAt.setDate(sendAt.getDate() + 1);
+          const newDay = sendAt.getDay();
+          if (newDay === 0) sendAt.setDate(sendAt.getDate() + 1);
+          if (newDay === 6) sendAt.setDate(sendAt.getDate() + 2);
+        }
 
         // Queue the email
         await sbFetch('kiko_outreach_queue', { method: 'POST', body: JSON.stringify({

@@ -119,7 +119,7 @@ Return ONLY valid JSON array, no markdown, no backticks:
     const seqName = `${teamName.replace(' Team', '')} - ${category}`;
     const created = await sbFetch('kiko_sequences', {
       method: 'POST', headers: { Prefer: 'return=representation' },
-      body: JSON.stringify({ name: seqName, description: `AI-generated ${steps}-step ${category} outreach for ${teamName}`, target_persona: targetPersona, steps: generatedSteps, is_active: true })
+      body: JSON.stringify({ name: seqName, description: `AI-generated ${steps}-step ${category} outreach for ${teamName}`, target_persona: targetPersona, steps: generatedSteps, is_active: false })
     });
     const seqId = Array.isArray(created) ? created[0]?.id : created?.id;
 
