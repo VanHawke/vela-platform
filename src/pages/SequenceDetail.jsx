@@ -33,6 +33,8 @@ export default function SequenceDetail() {
   const [searchResults, setSearchResults] = useState([])
   const [selectedLeads, setSelectedLeads] = useState([])
   const [searching, setSearching] = useState(false)
+  const [suggestions, setSuggestions] = useState([])
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false)
 
   useEffect(() => { if (!isNew) load() }, [id])
 
@@ -91,9 +93,24 @@ Return ONLY the message text, nothing else.`, stream:false }) })
 
   async function searchContacts() {
     if (!leadSearch.trim()) return; setSearching(true)
-    const { data } = await supabase.from('contacts').select('id,data').ilike('data->>company', `%${leadSearch}%`).limit(20)
-    const results = (data||[]).map(c => ({ id:c.id, name:c.data?.name||c.data?.first_name+' '+c.data?.last_name, email:c.data?.email, company:c.data?.company, title:c.data?.title||c.data?.job_title })).filter(r => r.email)
+    const { data } = await supabase.from('contacts').select('id,data').or(`data->>company.ilike.%${leadSearch}%,data->>title.ilike.%${leadSearch}%`).limit(30)
+    const results = (data||[]).map(c => ({ id:c.id, name:[c.data?.firstName,c.data?.lastName].filter(Boolean).join(' ')||'Unknown', email:c.data?.email, company:c.data?.company, title:c.data?.title, linkedin:c.data?.linkedin })).filter(r => r.email)
     setSearchResults(results); setSearching(false)
+  }
+
+  async function autoSuggestLeads() {
+    if (!seq?.name) return; setLoadingSuggestions(true)
+    // Extract category from campaign name (e.g. "Haas F1 - Cybersecurity" → "Cybersecurity")
+    const category = seq.name.split(' - ')[1] || seq.name
+    // Search company_intelligence for companies matching the category
+    const { data: intel } = await supabase.from('company_intelligence').select('company_name,industry,sub_sector,sponsorship_fit_score').or(`industry.ilike.%${category}%,sub_sector.ilike.%${category}%`).order('sponsorship_fit_score', { ascending: false }).limit(20)
+    // Also search contacts directly by company category keywords
+    const categoryWords = category.toLowerCase().split(/[\s\/&]+/).filter(w => w.length > 3)
+    const queries = categoryWords.map(w => `data->>company.ilike.%${w}%`).join(',')
+    const { data: contacts } = await supabase.from('contacts').select('id,data').or(queries || `data->>company.ilike.%${category}%`).limit(50)
+    const enrolledEmails = new Set(enrollments.map(e => e.contact_email?.toLowerCase()))
+    const results = (contacts||[]).map(c => ({ id:c.id, name:[c.data?.firstName,c.data?.lastName].filter(Boolean).join(' ')||'Unknown', email:c.data?.email, company:c.data?.company, title:c.data?.title, linkedin:c.data?.linkedin })).filter(r => r.email && !enrolledEmails.has(r.email.toLowerCase()))
+    setSuggestions(results); setLoadingSuggestions(false)
   }
 
   async function enrollSelected() {
@@ -241,9 +258,37 @@ Return ONLY the message text, nothing else.`, stream:false }) })
           <div style={{...glass,overflow:'hidden'}}>
             <div style={{padding:'12px 16px',borderBottom:`1px solid ${T.border}`,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
               <span style={{fontSize:13,fontWeight:500}}>Leads · {enrollments.length} enrolled</span>
-              <button onClick={()=>setShowAddLeads(true)} style={{padding:'5px 12px',borderRadius:5,border:'none',background:T.purple,color:'#fff',fontSize:11,cursor:'pointer',fontFamily:T.font,display:'flex',alignItems:'center',gap:4}}><UserPlus size={12}/>Add from CRM</button>
+              <div style={{display:'flex',gap:6}}>
+                <button onClick={autoSuggestLeads} disabled={loadingSuggestions} style={{padding:'5px 12px',borderRadius:5,border:`1px solid ${T.border}`,background:T.surface,color:T.teal,fontSize:11,cursor:'pointer',fontFamily:T.font,display:'flex',alignItems:'center',gap:4}}><Sparkles size={12}/>{loadingSuggestions?'Finding...':'Kiko, find leads'}</button>
+                <button onClick={()=>setShowAddLeads(true)} style={{padding:'5px 12px',borderRadius:5,border:'none',background:T.purple,color:'#fff',fontSize:11,cursor:'pointer',fontFamily:T.font,display:'flex',alignItems:'center',gap:4}}><UserPlus size={12}/>Add from CRM</button>
+              </div>
             </div>
-            {enrollments.length?enrollments.map(e=>(
+            {/* Kiko suggestions */}
+            {suggestions.length>0&&(
+              <div style={{padding:'10px 16px',borderBottom:`1px solid ${T.border}`,background:'rgba(0,212,170,0.03)'}}>
+                <div style={{fontSize:11,color:T.teal,marginBottom:8,display:'flex',alignItems:'center',gap:4}}><Sparkles size={11}/>Kiko found {suggestions.length} potential leads for this campaign</div>
+                <div style={{maxHeight:200,overflowY:'auto'}}>
+                  {suggestions.map(s=>{
+                    const checked=selectedLeads.some(l=>l.id===s.id)
+                    return(
+                      <div key={s.id} onClick={()=>checked?setSelectedLeads(selectedLeads.filter(l=>l.id!==s.id)):setSelectedLeads([...selectedLeads,s])} style={{display:'flex',alignItems:'center',gap:8,padding:'5px 8px',cursor:'pointer',borderRadius:4,background:checked?'rgba(124,92,252,0.04)':'transparent'}}>
+                        <div style={{width:14,height:14,borderRadius:3,border:`1px solid ${checked?T.purple:T.border}`,background:checked?T.purple:'transparent',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{checked&&<span style={{color:'#fff',fontSize:9}}>✓</span>}</div>
+                        <span style={{fontSize:11,color:T.text,minWidth:100}}>{s.name}</span>
+                        <span style={{fontSize:10,color:T.textTer,flex:1}}>{s.company} · {s.title||'—'}</span>
+                        <span style={{fontSize:10,color:T.textTer}}>{s.email}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+                {selectedLeads.length>0&&<button onClick={enrollSelected} style={{marginTop:8,padding:'6px 14px',borderRadius:5,border:'none',background:T.purple,color:'#fff',fontSize:11,cursor:'pointer',fontFamily:T.font}}>Enroll {selectedLeads.length} contact{selectedLeads.length>1?'s':''}</button>}
+              </div>
+            )}
+            {/* Enrolled leads table */}
+            {enrollments.length?(<div>
+              <div style={{display:'flex',padding:'8px 16px',borderBottom:`1px solid ${T.border}`,fontSize:10,color:T.textTer,fontWeight:500}}>
+                <span style={{flex:1}}>Name</span><span style={{width:120}}>Company</span><span style={{width:80,textAlign:'center'}}>Step</span><span style={{width:70,textAlign:'center'}}>Status</span><span style={{width:70,textAlign:'right'}}>Next</span><span style={{width:100}}></span>
+              </div>
+              {enrollments.map(e=>(
               <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 16px',borderBottom:`1px solid ${T.border}`,fontSize:12}}>
                 <div style={{width:8,height:8,borderRadius:'50%',background:e.status==='active'?T.teal:e.status==='replied'?T.green:e.status==='bounced'?T.red:T.textTer}}/>
                 <div style={{flex:1,minWidth:0}}>
@@ -259,7 +304,8 @@ Return ONLY the message text, nothing else.`, stream:false }) })
                 {e.status==='active'&&<button onClick={()=>pauseEnr(e.id)} style={{padding:'3px 6px',borderRadius:3,border:`1px solid ${T.border}`,background:'transparent',color:T.textSec,fontSize:9,cursor:'pointer'}}>Pause</button>}
                 {(e.status==='active'||e.status==='paused')&&<button onClick={()=>cancelEnr(e.id)} style={{padding:'3px 6px',borderRadius:3,border:'1px solid rgba(255,68,68,0.2)',background:'transparent',color:T.red,fontSize:9,cursor:'pointer'}}>Cancel</button>}
               </div>
-            )):<div style={{padding:40,textAlign:'center',color:T.textTer,fontSize:12}}>No leads enrolled. Click "Add from CRM" to search your 5,006 contacts.</div>}
+            ))}
+            </div>):<div style={{padding:40,textAlign:'center',color:T.textTer,fontSize:12}}>No leads enrolled. Click "Kiko, find leads" or "Add from CRM".</div>}
           </div>
 
           {/* Add Leads Modal */}
