@@ -17,21 +17,30 @@ export default async function handler(req, res) {
   const steps = numSteps || 5;
 
   try {
-    // Pull real context: race calendar, existing partnerships, identity
-    const [races, partnerships, identity] = await Promise.all([
+    // Pull real context: race calendar, existing partnerships, identity, STYLE REFERENCE
+    const [races, partnerships, identity, styleEmails] = await Promise.all([
       sbFetch('race_calendar?date=gte.' + new Date().toISOString().split('T')[0] + '&series=eq.F1&order=date&limit=6').catch(() => []),
       sbFetch(`partnerships?team=ilike.*${encodeURIComponent(teamName.split(' ')[0])}*&limit=20`).catch(() => []),
       sbFetch('kiko_identity?category=in.(communication_style,strategic_position)&limit=10').catch(() => []),
+      sbFetch('kiko_email_style_reference?order=step_number&limit=6').catch(() => []),
     ]);
     const raceArr = Array.isArray(races) ? races : [];
     const partArr = Array.isArray(partnerships) ? partnerships : [];
     const idArr = Array.isArray(identity) ? identity : [];
+    const styleArr = Array.isArray(styleEmails) ? styleEmails : [];
 
     const nextRace = raceArr[0];
     const existingSponsors = partArr.map(p => p.company).filter(Boolean).slice(0, 5);
     const styleRules = idArr.map(i => i.content).join('\n');
+    const styleExamples = styleArr.slice(0, 4).map(e => `[${e.category} Step ${e.step_number}]\nSubject: ${e.subject}\n${e.body}`).join('\n\n---\n\n');
 
     const prompt = `Generate a ${steps}-step B2B outreach sequence for the ${category} category with ${teamName}.
+
+REAL EMAIL EXAMPLES FROM VAN HAWKE'S ACTIVE CAMPAIGNS — match this exact tone and structure:
+
+${styleExamples || 'No style examples available — use the style rules below.'}
+
+--- END EXAMPLES ---
 
 THIS IS HOW THE EMAILS MUST READ (real examples from Van Hawke's active campaigns):
 
