@@ -72,14 +72,15 @@ Return ONLY valid JSON array, no markdown, no backticks:
 
     // Create the sequence in the database
     const seqName = `${teamName.replace(' Team', '')} - ${category}`;
-    const { data: created } = await sbFetch('kiko_sequences', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' },
+    const created = await sbFetch('kiko_sequences', {
+      method: 'POST', headers: { Prefer: 'return=representation' },
       body: JSON.stringify({ name: seqName, description: `AI-generated ${steps}-step ${category} outreach for ${teamName}`, target_persona: targetPersona, steps: generatedSteps, is_active: true })
     });
+    const seqId = Array.isArray(created) ? created[0]?.id : created?.id;
 
-    return res.status(200).json({ ok: true, sequence: { name: seqName, target_persona: targetPersona, steps: generatedSteps }, id: created?.[0]?.id || created?.id });
+    return res.status(200).json({ ok: true, sequence: { name: seqName, target_persona: targetPersona, steps: generatedSteps }, id: seqId });
   } catch (err) {
-    console.error('[GenerateSequence]', err.message);
-    return res.status(500).json({ ok: false, error: err.message });
+    console.error('[GenerateSequence]', err.message, err.stack);
+    return res.status(200).json({ ok: false, error: err.message });
   }
 }
