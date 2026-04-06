@@ -9,11 +9,19 @@ export const config = { maxDuration: 30 };
 
 function buildRawEmail({ from, to, subject, bodyHtml, bodyPlain, threadId }) {
   const boundary = `b_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-  let mime = `From: Sunny Sidhu <${from}>\r\nTo: ${to}\r\nSubject: ${subject}\r\n`;
+  // Clean subject: × → x for email compatibility, encode non-ASCII
+  const cleanSubj = (subject || '').replace(/\u00D7/g, 'x').replace(/[\u2014\u2013\u2015]/g, '-');
+  const encodedSubj = /^[\x20-\x7E]*$/.test(cleanSubj) ? cleanSubj : `=?UTF-8?B?${Buffer.from(cleanSubj).toString('base64')}?=`;
+  // Auto-append signature if not present
+  const SIG = '\n\nSunny Sidhu\nCEO, Van Hawke Group\nsunny@vanhawke.agency';
+  const plainWithSig = (bodyPlain || '').includes('sunny@vanhawke.agency') ? bodyPlain : (bodyPlain || '').trimEnd() + SIG;
+  const htmlSig = '<br><br>Sunny Sidhu<br>CEO, Van Hawke Group<br>sunny@vanhawke.agency';
+  const htmlWithSig = (bodyHtml || '').includes('sunny@vanhawke.agency') ? bodyHtml : (bodyHtml || '').replace(/<\/div>\s*$/, htmlSig + '</div>');
+  let mime = `From: Sunny Sidhu <${from}>\r\nTo: ${to}\r\nSubject: ${encodedSubj}\r\n`;
   mime += `MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary="${boundary}"\r\n`;
   if (threadId) mime += `In-Reply-To: ${threadId}\r\nReferences: ${threadId}\r\n`;
-  mime += `\r\n--${boundary}\r\nContent-Type: text/plain; charset="UTF-8"\r\n\r\n${bodyPlain}\r\n`;
-  mime += `--${boundary}\r\nContent-Type: text/html; charset="UTF-8"\r\n\r\n${bodyHtml}\r\n`;
+  mime += `\r\n--${boundary}\r\nContent-Type: text/plain; charset="UTF-8"\r\n\r\n${plainWithSig}\r\n`;
+  mime += `--${boundary}\r\nContent-Type: text/html; charset="UTF-8"\r\n\r\n${htmlWithSig}\r\n`;
   mime += `--${boundary}--`;
   return Buffer.from(mime).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }

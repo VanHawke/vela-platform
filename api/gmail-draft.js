@@ -19,24 +19,30 @@ async function refreshToken(refreshToken) {
 }
 
 function buildRawEmail({ from, to, subject, body }) {
-  // Clean subject — replace all special dashes
+  // Clean subject — replace special dashes, encode × properly for email
   const cleanSubject = (subject || '')
     .replace(/[\u2014\u2013\u2015\u2012\u2010\u2011]/g, '-')
+    .replace(/\u00D7/g, 'x')  // × → x for email subject compatibility
     .replace(/â€"/g, '-')
-  // Build RFC 2822 email with HTML body for Helvetica 12pt
-  const htmlBody = `<div style="font-family: Helvetica, Arial, sans-serif; font-size: 12pt; color: #000;">${body.replace(/\n/g, '<br>')}</div>`
+  // RFC 2047 encode subject for non-ASCII safety
+  const encodedSubject = /^[\x20-\x7E]*$/.test(cleanSubject) ? cleanSubject : `=?UTF-8?B?${Buffer.from(cleanSubject).toString('base64')}?=`
+  // Auto-append signature if not already present
+  const SIG = '\n\nSunny Sidhu\nCEO, Van Hawke Group\nsunny@vanhawke.agency'
+  const bodyWithSig = body.includes('sunny@vanhawke.agency') ? body : body.trimEnd() + SIG
+  // Build RFC 2822 email — Helvetica 12pt regular, black text, no extra styling
+  const htmlBody = `<div style="font-family: Helvetica, Arial, sans-serif; font-size: 12pt; font-weight: 400; color: #000; line-height: 1.5;">${bodyWithSig.replace(/\n\n/g, '</p><p style="margin:0 0 12px 0;">').replace(/\n/g, '<br>')}</div>`
   const boundary = 'boundary_' + Date.now()
   const lines = [
     `From: ${from}`,
     `To: ${to}`,
-    `Subject: ${cleanSubject}`,
+    `Subject: ${encodedSubject}`,
     `MIME-Version: 1.0`,
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
     ``,
     `--${boundary}`,
     `Content-Type: text/plain; charset="UTF-8"`,
     ``,
-    body,
+    bodyWithSig,
     ``,
     `--${boundary}`,
     `Content-Type: text/html; charset="UTF-8"`,
