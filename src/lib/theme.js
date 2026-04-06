@@ -1,124 +1,124 @@
-// Vela — Caffeine Theme (dark warm peach)
-// Inspired by 21st.dev Caffeine · #ffe0c2 peach primary · #393028 coffee brown
-// 0.5rem (8px) radius · System font · Liquid glass depth
+// Vela — Amethyst Glass Theme (dark purple/blue)
+// Purple #A78BFA primary · Teal #2DD4BF secondary · Deep glass depth
+// 0.5px borders · System font · Natural spring animations
 
 export const T = {
-  bg: '#111111',
-  card: '#191919',
-  surface: 'rgba(25,25,25,0.45)',
-  surfaceHover: 'rgba(25,25,25,0.55)',
-  surfaceAlt: 'rgba(25,25,25,0.35)',
+  bg: '#0A0A0C',
+  card: '#111114',
+  surface: 'rgba(18,18,24,0.50)',
+  surfaceHover: 'rgba(18,18,24,0.65)',
+  surfaceAlt: 'rgba(18,18,24,0.35)',
 
-  // Glass — warm peach-tinted liquid glass system
-  glass: 'rgba(25,25,25,0.30)',
-  glassHover: 'rgba(255,224,194,0.22)',
-  glassBorder: 'rgba(32,30,24,0.50)',
-  glassBorderTop: 'rgba(255,224,194,0.12)',
-  glassBorderHover: 'rgba(255,224,194,0.25)',
-  glassBlur: 'blur(40px) saturate(1.4)',
-  glassSaturate: 'blur(40px) saturate(1.4)',
-  glassBlurLight: 'blur(24px) saturate(1.2)',
-  glassBlurHeavy: 'blur(40px) saturate(1.5)',
-  // Liquid glass shadow — warm peach insets (full 21st.dev treatment)
-  glassShadow: '0 4px 16px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,224,194,0.06), inset 3px 3px 0.5px -3.5px rgba(255,224,194,0.12), inset -3px -3px 0.5px -3.5px rgba(255,224,194,0.10), inset 1px 1px 1px -0.5px rgba(255,224,194,0.08), inset -1px -1px 1px -0.5px rgba(255,224,194,0.08), inset 0 0 6px 6px rgba(255,224,194,0.04)',
-  glassShadowHover: '0 0 10px rgba(255,224,194,0.06), 0 2px 8px rgba(0,0,0,0.12), inset 3px 3px 0.5px -3.5px rgba(255,224,194,0.22), inset -3px -3px 0.5px -3.5px rgba(255,224,194,0.16), inset 1px 1px 1px -0.5px rgba(255,224,194,0.14), inset -1px -1px 1px -0.5px rgba(255,224,194,0.14), inset 0 0 6px 6px rgba(255,224,194,0.07), 0 0 20px rgba(255,224,194,0.10)',
-  glassShadowDeep: '0 12px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,224,194,0.06)',
-  glassShadowFloat: '0 16px 48px rgba(0,0,0,0.45), 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,224,194,0.08)',
-  glassInner: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,224,194,0.06)',
-  glassGlow: '0 8px 32px rgba(255,224,194,0.06), 0 0 0 1px rgba(255,224,194,0.12)',
+  // Glass — purple-tinted liquid glass system
+  glass: 'rgba(16,14,22,0.35)',
+  glassHover: 'rgba(167,139,250,0.06)',
+  glassBorder: 'rgba(167,139,250,0.06)',
+  glassBorderTop: 'rgba(167,139,250,0.10)',
+  glassBorderHover: 'rgba(167,139,250,0.16)',
+  glassBlur: 'blur(40px) saturate(1.5)',
+  glassSaturate: 'blur(40px) saturate(1.5)',
+  glassBlurLight: 'blur(24px) saturate(1.3)',
+  glassBlurHeavy: 'blur(48px) saturate(1.6)',
+  // Liquid glass shadows — purple insets
+  glassShadow: '0 4px 16px rgba(0,0,0,0.30), 0 0 0 0.5px rgba(167,139,250,0.04), inset 3px 3px 0.5px -3.5px rgba(167,139,250,0.08), inset -3px -3px 0.5px -3.5px rgba(167,139,250,0.06), inset 1px 1px 1px -0.5px rgba(167,139,250,0.05), inset -1px -1px 1px -0.5px rgba(167,139,250,0.05), inset 0 0 6px 6px rgba(167,139,250,0.02)',
+  glassShadowHover: '0 0 10px rgba(167,139,250,0.05), 0 2px 8px rgba(0,0,0,0.15), inset 3px 3px 0.5px -3.5px rgba(167,139,250,0.14), inset -3px -3px 0.5px -3.5px rgba(167,139,250,0.10), inset 1px 1px 1px -0.5px rgba(167,139,250,0.09), inset -1px -1px 1px -0.5px rgba(167,139,250,0.09), inset 0 0 6px 6px rgba(167,139,250,0.04), 0 0 18px rgba(167,139,250,0.06)',
+  glassShadowDeep: '0 12px 40px rgba(0,0,0,0.40), inset 0 1px 0 rgba(167,139,250,0.05)',
+  glassShadowFloat: '0 16px 48px rgba(0,0,0,0.50), 0 4px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(167,139,250,0.06)',
+  glassInner: '0 4px 16px rgba(0,0,0,0.30), inset 0 1px 0 rgba(167,139,250,0.05)',
+  glassGlow: '0 8px 32px rgba(167,139,250,0.04), 0 0 0 0.5px rgba(167,139,250,0.08)',
   glassBorderWidth: '0.5px',
 
-  // Liquid glass button shadows (from 21st.dev LiquidGlassButton)
-  liquidShadow: '0 0 8px rgba(0,0,0,0.03), 0 2px 6px rgba(0,0,0,0.08), inset 3px 3px 0.5px -3.5px rgba(255,224,194,0.12), inset -3px -3px 0.5px -3.5px rgba(255,224,194,0.10), inset 1px 1px 1px -0.5px rgba(255,224,194,0.08), inset -1px -1px 1px -0.5px rgba(255,224,194,0.08), inset 0 0 6px 6px rgba(255,224,194,0.04), inset 0 0 2px 2px rgba(255,224,194,0.03), 0 0 12px rgba(0,0,0,0.15)',
-  liquidHoverShadow: '0 0 10px rgba(255,224,194,0.06), 0 2px 8px rgba(0,0,0,0.12), inset 3px 3px 0.5px -3.5px rgba(255,224,194,0.22), inset -3px -3px 0.5px -3.5px rgba(255,224,194,0.16), inset 1px 1px 1px -0.5px rgba(255,224,194,0.14), inset -1px -1px 1px -0.5px rgba(255,224,194,0.14), inset 0 0 6px 6px rgba(255,224,194,0.07), inset 0 0 2px 2px rgba(255,224,194,0.05), 0 0 20px rgba(255,224,194,0.10)',
-  liquidActiveShadow: '0 0 16px rgba(255,224,194,0.12), 0 2px 10px rgba(0,0,0,0.15), inset 3px 3px 0.5px -3.5px rgba(255,224,194,0.30), inset -3px -3px 0.5px -3.5px rgba(255,224,194,0.22), inset 1px 1px 1px -0.5px rgba(255,224,194,0.18), inset -1px -1px 1px -0.5px rgba(255,224,194,0.18), inset 0 0 6px 6px rgba(255,224,194,0.10), inset 0 0 2px 2px rgba(255,224,194,0.08), 0 0 28px rgba(255,224,194,0.16)',
-  liquidBtnShadow: '0 0 6px rgba(0,0,0,0.03), 0 2px 4px rgba(0,0,0,0.06), inset 2px 2px 0.5px -2px rgba(255,224,194,0.15), inset -2px -2px 0.5px -2px rgba(255,224,194,0.12), inset 1px 1px 1px -0.5px rgba(255,224,194,0.10), inset -1px -1px 1px -0.5px rgba(255,224,194,0.10), inset 0 0 4px 4px rgba(255,224,194,0.05), 0 0 8px rgba(0,0,0,0.12)',
-  liquidBtnHover: '0 0 8px rgba(255,224,194,0.08), 0 2px 6px rgba(0,0,0,0.08), inset 2px 2px 0.5px -2px rgba(255,224,194,0.25), inset -2px -2px 0.5px -2px rgba(255,224,194,0.20), inset 1px 1px 1px -0.5px rgba(255,224,194,0.16), inset -1px -1px 1px -0.5px rgba(255,224,194,0.16), inset 0 0 4px 4px rgba(255,224,194,0.08), 0 0 14px rgba(255,224,194,0.12)',
+  // Liquid glass button shadows
+  liquidShadow: '0 0 8px rgba(0,0,0,0.04), 0 2px 6px rgba(0,0,0,0.10), inset 2px 2px 0.5px -2px rgba(167,139,250,0.08), inset -2px -2px 0.5px -2px rgba(167,139,250,0.06), inset 0 0 4px 4px rgba(167,139,250,0.03)',
+  liquidHoverShadow: '0 0 10px rgba(167,139,250,0.05), 0 2px 8px rgba(0,0,0,0.12), inset 2px 2px 0.5px -2px rgba(167,139,250,0.16), inset -2px -2px 0.5px -2px rgba(167,139,250,0.12), inset 0 0 4px 4px rgba(167,139,250,0.05), 0 0 16px rgba(167,139,250,0.06)',
+  liquidActiveShadow: '0 0 16px rgba(167,139,250,0.08), 0 2px 10px rgba(0,0,0,0.18), inset 3px 3px 0.5px -3.5px rgba(167,139,250,0.22), inset -3px -3px 0.5px -3.5px rgba(167,139,250,0.16), inset 0 0 6px 6px rgba(167,139,250,0.06), 0 0 24px rgba(167,139,250,0.10)',
+  liquidBtnShadow: '0 0 6px rgba(0,0,0,0.04), 0 2px 4px rgba(0,0,0,0.08), inset 2px 2px 0.5px -2px rgba(167,139,250,0.10), inset -2px -2px 0.5px -2px rgba(167,139,250,0.08), inset 0 0 4px 4px rgba(167,139,250,0.03)',
+  liquidBtnHover: '0 0 8px rgba(167,139,250,0.06), 0 2px 6px rgba(0,0,0,0.10), inset 2px 2px 0.5px -2px rgba(167,139,250,0.18), inset -2px -2px 0.5px -2px rgba(167,139,250,0.14), inset 0 0 4px 4px rgba(167,139,250,0.05), 0 0 12px rgba(167,139,250,0.08)',
 
-  // Borders
-  border: 'rgba(32,30,24,0.50)',
-  borderHover: 'rgba(255,224,194,0.20)',
-  borderStrong: 'rgba(255,224,194,0.30)',
+  // Borders — ultra-thin purple tint
+  border: 'rgba(167,139,250,0.06)',
+  borderHover: 'rgba(167,139,250,0.14)',
+  borderStrong: 'rgba(167,139,250,0.22)',
 
-  // Text
-  text: 'rgba(238,238,238,0.95)',
-  textSecondary: 'rgba(238,238,238,0.55)',
-  textTertiary: 'rgba(238,238,238,0.32)',
-  textMuted: 'rgba(238,238,238,0.18)',
+  // Text — cool neutral with slight warmth
+  text: 'rgba(235,235,245,0.92)',
+  textSecondary: 'rgba(235,235,245,0.52)',
+  textTertiary: 'rgba(235,235,245,0.28)',
+  textMuted: 'rgba(235,235,245,0.14)',
 
-  // Accents — peach primary, coffee secondary
-  purple: '#a78bfa', teal: '#2dd4bf', pink: '#EC4899', blue: '#60a5fa', amber: '#fbbf24',
-  accent: '#ffe0c2',
-  accentTeal: '#ffe0c2',
-  accentGradient: 'linear-gradient(135deg, #ffe0c2, #393028)',
-  accentSoft: 'rgba(255,224,194,0.08)',
-  accentBorder: 'rgba(255,224,194,0.16)',
+  // Accents — purple primary, teal secondary
+  purple: '#A78BFA', teal: '#2DD4BF', pink: '#EC4899', blue: '#818CF8', amber: '#FBBF24',
+  accent: '#A78BFA',
+  accentTeal: '#2DD4BF',
+  accentGradient: 'linear-gradient(135deg, #7C5CFC, #2DD4BF)',
+  accentSoft: 'rgba(167,139,250,0.06)',
+  accentBorder: 'rgba(167,139,250,0.12)',
 
-  // Accent glass variants — peach-based
-  accentGlass: 'rgba(255,224,194,0.06)',
-  accentGlassBorder: 'rgba(255,224,194,0.16)',
-  accentGlassHover: 'rgba(255,224,194,0.12)',
-  accentGlassBorderHover: 'rgba(255,224,194,0.28)',
-  tealGlass: 'rgba(45,212,191,0.05)',
-  tealGlassBorder: 'rgba(45,212,191,0.14)',
-  tealGlassHover: 'rgba(45,212,191,0.1)',
-  tealGlassBorderHover: 'rgba(45,212,191,0.25)',
-  amberGlass: 'rgba(251,191,36,0.04)',
-  amberGlassBorder: 'rgba(251,191,36,0.14)',
+  // Accent glass variants — purple-based
+  accentGlass: 'rgba(167,139,250,0.04)',
+  accentGlassBorder: 'rgba(167,139,250,0.12)',
+  accentGlassHover: 'rgba(167,139,250,0.08)',
+  accentGlassBorderHover: 'rgba(167,139,250,0.20)',
+  tealGlass: 'rgba(45,212,191,0.04)',
+  tealGlassBorder: 'rgba(45,212,191,0.10)',
+  tealGlassHover: 'rgba(45,212,191,0.08)',
+  tealGlassBorderHover: 'rgba(45,212,191,0.18)',
+  amberGlass: 'rgba(251,191,36,0.03)',
+  amberGlassBorder: 'rgba(251,191,36,0.10)',
 
   // Derived — soft/mid/glow variants
-  primarySoft: 'rgba(255,224,194,0.08)',
-  primaryMid: 'rgba(255,224,194,0.15)',
-  primaryGlow: 'rgba(255,224,194,0.25)',
-  dimText: '#777777',
-  ghostText: '#555555',
-  input: '#484848',
+  primarySoft: 'rgba(167,139,250,0.06)',
+  primaryMid: 'rgba(167,139,250,0.12)',
+  primaryGlow: 'rgba(167,139,250,0.20)',
+  dimText: '#666670',
+  ghostText: '#44444D',
+  input: '#3A3A44',
 
   // Status
-  success: 'rgba(45,212,191,0.7)',
-  warning: 'rgba(251,191,36,0.7)',
-  danger: 'rgba(248,113,113,0.7)',
+  success: 'rgba(45,212,191,0.75)',
+  warning: 'rgba(251,191,36,0.70)',
+  danger: 'rgba(248,113,113,0.70)',
 
-  // Typography — system font stack (no DM Sans)
+  // Typography — system font stack
   font: "ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   mono: "ui-monospace, 'SF Mono', 'Fira Code', monospace",
   weightThin: 200, weightLight: 300, weightNormal: 400, weightMedium: 500,
 
-  // Radius — 0.5rem (8px) base, not pills
-  radius: 8, radiusSm: 6, radiusLg: 12, radiusXl: 16, radius2Xl: 20, radiusPill: 50, radiusFull: 9999,
+  // Radius — slightly softer
+  radius: 10, radiusSm: 6, radiusLg: 14, radiusXl: 18, radius2Xl: 22, radiusPill: 50, radiusFull: 9999,
 
   // Shadows
-  shadow1: '0 1px 2px rgba(0,0,0,0.3)',
-  shadow2: '0 2px 8px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3)',
-  shadow3: '0 8px 30px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)',
+  shadow1: '0 1px 2px rgba(0,0,0,0.35)',
+  shadow2: '0 2px 8px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.35)',
+  shadow3: '0 8px 30px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.35)',
 
-  // Easing
-  spring: 'cubic-bezier(0.22, 1, 0.36, 1)',
-  ease: 'cubic-bezier(0.4, 0, 0.2, 1)',
+  // Easing — natural spring
+  spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+  ease: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
 
-  // User messages — peach tinted
-  userMsg: 'rgba(255,224,194,0.08)',
-  userMsgBorder: 'rgba(255,224,194,0.16)',
+  // User messages — purple tinted
+  userMsg: 'rgba(167,139,250,0.06)',
+  userMsgBorder: 'rgba(167,139,250,0.10)',
 
-  // Gradient edges — peach-based
-  edgePurple: 'linear-gradient(180deg, rgba(167,139,250,0.6) 0%, rgba(167,139,250,0) 100%)',
-  edgeTeal: 'linear-gradient(180deg, rgba(45,212,191,0.6) 0%, rgba(45,212,191,0) 100%)',
-  edgeAmber: 'linear-gradient(180deg, rgba(251,191,36,0.6) 0%, rgba(251,191,36,0) 100%)',
-  edgePink: 'linear-gradient(180deg, rgba(236,72,153,0.6) 0%, rgba(236,72,153,0) 100%)',
+  // Gradient edges — purple/teal
+  edgePurple: 'linear-gradient(180deg, rgba(167,139,250,0.5) 0%, rgba(167,139,250,0) 100%)',
+  edgeTeal: 'linear-gradient(180deg, rgba(45,212,191,0.5) 0%, rgba(45,212,191,0) 100%)',
+  edgeAmber: 'linear-gradient(180deg, rgba(251,191,36,0.5) 0%, rgba(251,191,36,0) 100%)',
+  edgePink: 'linear-gradient(180deg, rgba(236,72,153,0.5) 0%, rgba(236,72,153,0) 100%)',
 
-  // Aurora orb config — warm Caffeine palette
+  // Aurora orb config — Amethyst palette (purple/teal)
   auroraOrbs: [
-    { x: 0.08, y: 0.04, r: 600, c: [255, 224, 194], s: 0.25, p: 0 },
-    { x: 0.85, y: 0.65, r: 580, c: [57, 48, 40], s: 0.2, p: 2 },
-    { x: 0.65, y: 0.08, r: 400, c: [167, 139, 250], s: 0.3, p: 4 },
-    { x: 0.18, y: 0.75, r: 500, c: [45, 212, 191], s: 0.18, p: 1 },
-    { x: 0.5, y: 0.4, r: 350, c: [251, 191, 36], s: 0.15, p: 3 },
-    { x: 0.35, y: 0.2, r: 280, c: [255, 224, 194], s: 0.22, p: 5 },
+    { x: 0.12, y: 0.06, r: 550, c: [124, 92, 252], s: 0.22, p: 0 },
+    { x: 0.80, y: 0.60, r: 500, c: [45, 212, 191], s: 0.18, p: 2 },
+    { x: 0.60, y: 0.10, r: 380, c: [129, 140, 248], s: 0.25, p: 4 },
+    { x: 0.20, y: 0.70, r: 450, c: [167, 139, 250], s: 0.16, p: 1 },
+    { x: 0.45, y: 0.35, r: 320, c: [0, 212, 170], s: 0.14, p: 3 },
+    { x: 0.30, y: 0.15, r: 260, c: [99, 102, 241], s: 0.20, p: 5 },
   ],
-  auroraAlpha: 0.3,
+  auroraAlpha: 0.25,
 }
 
-// Glass helper — elevated frosted slab (peach-tinted)
+// Glass helper — elevated frosted slab (purple-tinted)
 export const glass = {
   background: T.glass,
   backdropFilter: T.glassBlur,
@@ -127,7 +127,7 @@ export const glass = {
   borderTop: `0.5px solid ${T.glassBorderTop}`,
   borderRadius: T.radius,
   boxShadow: T.glassShadow,
-  transition: 'all 0.2s cubic-bezier(0.4,0,0.2,1)',
+  transition: 'all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)',
 }
 
 // Glass hover helper

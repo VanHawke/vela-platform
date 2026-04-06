@@ -118,12 +118,12 @@ export default function Sequences() {
           </button>
           <button onClick={() => setShowWizard(true)} style={{
             padding: '8px 18px', borderRadius: T.radiusSm, border: 'none',
-            background: 'rgba(255,224,194,0.08)', color: T.accent, fontSize: 12, fontWeight: 500,
+            background: 'rgba(167,139,250,0.08)', color: T.accent, fontSize: 12, fontWeight: 500,
             cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6,
             boxShadow: T.liquidBtnShadow, transition: 'all 0.2s',
           }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,224,194,0.14)'; e.currentTarget.style.boxShadow = T.liquidBtnHover }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,224,194,0.08)'; e.currentTarget.style.boxShadow = T.liquidBtnShadow }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(167,139,250,0.14)'; e.currentTarget.style.boxShadow = T.liquidBtnHover }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(167,139,250,0.08)'; e.currentTarget.style.boxShadow = T.liquidBtnShadow }}
           >
             <Sparkles size={14} /> Generate with AI
           </button>
@@ -196,10 +196,10 @@ export default function Sequences() {
                 {steps.map((s, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <div style={{ width: 22, height: 22, borderRadius: 6,
-                      background: s.type === 'condition' ? 'rgba(251,191,36,0.08)' : s.channel === 'linkedin' ? 'rgba(0,119,181,0.10)' : 'rgba(255,224,194,0.06)',
+                      background: s.type === 'condition' ? 'rgba(251,191,36,0.08)' : s.channel === 'linkedin' ? 'rgba(0,119,181,0.10)' : 'rgba(167,139,250,0.06)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      border: `0.5px solid ${s.type === 'condition' ? 'rgba(251,191,36,0.15)' : s.channel === 'linkedin' ? 'rgba(0,119,181,0.15)' : 'rgba(255,224,194,0.08)'}` }}>
-                      {s.type === 'condition' ? <GitBranch size={10} style={{ color: 'rgba(251,191,36,0.7)' }} /> : s.channel === 'linkedin' ? <Linkedin size={10} style={{ color: 'rgba(0,119,181,0.7)' }} /> : <Mail size={10} style={{ color: 'rgba(255,224,194,0.5)' }} />}
+                      border: `0.5px solid ${s.type === 'condition' ? 'rgba(251,191,36,0.15)' : s.channel === 'linkedin' ? 'rgba(0,119,181,0.15)' : 'rgba(167,139,250,0.08)'}` }}>
+                      {s.type === 'condition' ? <GitBranch size={10} style={{ color: 'rgba(251,191,36,0.7)' }} /> : s.channel === 'linkedin' ? <Linkedin size={10} style={{ color: 'rgba(0,119,181,0.7)' }} /> : <Mail size={10} style={{ color: 'rgba(167,139,250,0.5)' }} />}
                     </div>
                     {i < steps.length - 1 && <ChevronRight size={8} style={{ color: T.textMuted }} />}
                   </div>
@@ -260,7 +260,7 @@ export default function Sequences() {
             <div style={{ fontSize: 15, color: T.textSecondary, marginBottom: 6 }}>No campaigns yet</div>
             <div style={{ fontSize: 12, color: T.textTertiary, fontWeight: 300, marginBottom: 20 }}>Generate your first outreach campaign with AI or create one manually</div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 16 }}>
-              <button onClick={() => setShowWizard(true)} style={{ padding: '10px 20px', borderRadius: T.radiusSm, border: 'none', background: 'rgba(255,224,194,0.10)', color: T.accent, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6, boxShadow: T.liquidBtnShadow }}><Sparkles size={14} /> Generate with AI</button>
+              <button onClick={() => setShowWizard(true)} style={{ padding: '10px 20px', borderRadius: T.radiusSm, border: 'none', background: 'rgba(167,139,250,0.10)', color: T.accent, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6, boxShadow: T.liquidBtnShadow }}><Sparkles size={14} /> Generate with AI</button>
               <button onClick={() => navigate('/sequences/new')} style={{ padding: '10px 20px', borderRadius: T.radiusSm, border: `0.5px solid ${T.border}`, background: 'transparent', color: T.textSecondary, fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}><Plus size={14} /> Build manually</button>
             </div>
             <div style={{ fontSize: 10, color: T.textMuted, lineHeight: 1.6 }}>
@@ -292,8 +292,8 @@ export default function Sequences() {
                 {['Banking', 'FinTech', 'Telecoms', 'Cybersecurity', 'Cloud', 'CRM', 'AI/ML', 'Semiconductor', 'Robotics', 'Data', 'Logistics', 'Energy', 'Gaming', 'Tequila', 'Whiskey'].map(cat => (
                   <button key={cat} onClick={() => setWizCategory(cat)} style={{
                     padding: '3px 10px', borderRadius: 4, fontSize: 10, cursor: 'pointer', fontFamily: T.font,
-                    border: `0.5px solid ${wizCategory === cat ? 'rgba(255,224,194,0.25)' : T.border}`,
-                    background: wizCategory === cat ? 'rgba(255,224,194,0.08)' : 'transparent',
+                    border: `0.5px solid ${wizCategory === cat ? 'rgba(167,139,250,0.25)' : T.border}`,
+                    background: wizCategory === cat ? 'rgba(167,139,250,0.08)' : 'transparent',
                     color: wizCategory === cat ? T.accent : T.textTertiary,
                     transition: 'all 0.15s',
                   }}>{cat}</button>
@@ -312,12 +312,12 @@ export default function Sequences() {
               <input value={wizPersona} onChange={e => setWizPersona(e.target.value)} placeholder="Auto: C-suite at $500M-$5B companies"
                 style={{ width: '100%', padding: '10px 12px', borderRadius: T.radiusSm, border: `0.5px solid ${T.border}`, background: T.surface, color: T.textSecondary, fontSize: 13, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
             </div>
-            <div style={{ padding: 10, borderRadius: T.radiusSm, background: 'rgba(255,224,194,0.03)', border: `0.5px solid rgba(255,224,194,0.08)`, marginBottom: 16, fontSize: 11, color: T.textSecondary, lineHeight: 1.5, fontWeight: 300 }}>
+            <div style={{ padding: 10, borderRadius: T.radiusSm, background: 'rgba(167,139,250,0.03)', border: `0.5px solid rgba(167,139,250,0.08)`, marginBottom: 16, fontSize: 11, color: T.textSecondary, lineHeight: 1.5, fontWeight: 300 }}>
               4 emails + 3 LinkedIn touches over 14 days. Cialdini psychology progression. Race calendar awareness. Van Hawke communication style.
             </div>
             <button onClick={generate} disabled={generating || !wizCategory} style={{
               width: '100%', padding: '10px 0', borderRadius: T.radiusSm, border: 'none',
-              background: generating ? T.surface : 'rgba(255,224,194,0.10)', color: generating ? T.textTertiary : T.accent,
+              background: generating ? T.surface : 'rgba(167,139,250,0.10)', color: generating ? T.textTertiary : T.accent,
               fontSize: 13, fontWeight: 500, cursor: generating ? 'default' : 'pointer', fontFamily: T.font,
               boxShadow: generating ? 'none' : T.liquidBtnShadow,
             }}>

@@ -3,10 +3,10 @@ import { setPageContext } from '@/lib/pageContext'
 import { RefreshCw, Loader2, AlertTriangle, Plus, X, ExternalLink, FileDown, Check, Grid3X3, Target, Users } from 'lucide-react'
 
 const T = {
-  bg: '#000000', surface: 'rgba(25,25,25,0.40)', surfaceHover: 'rgba(255,224,194,0.06)',
-  border: 'rgba(255,224,194,0.08)', borderHover: 'rgba(255,224,194,0.10)',
-  text: 'rgba(238,232,220,0.95)', textSecondary: 'rgba(255,224,194,0.55)', textTertiary: 'rgba(238,238,238,0.32)',
-  accent: '#ffe0c2', accentSoft: 'rgba(255,224,194,0.08)',
+  bg: '#000000', surface: 'rgba(25,25,25,0.40)', surfaceHover: 'rgba(167,139,250,0.06)',
+  border: 'rgba(167,139,250,0.08)', borderHover: 'rgba(167,139,250,0.10)',
+  text: 'rgba(238,232,220,0.95)', textSecondary: 'rgba(167,139,250,0.55)', textTertiary: 'rgba(238,238,238,0.32)',
+  accent: '#A78BFA', accentSoft: 'rgba(167,139,250,0.08)',
   blue: '#007AFF', red: '#FF3B30', yellow: '#FF9500', green: '#34C759',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   gap: 'rgba(255,59,48,0.06)', gapBorder: 'rgba(255,59,48,0.15)', filled: 'rgba(52,199,89,0.06)', filledBorder: 'rgba(52,199,89,0.15)',
@@ -137,7 +137,7 @@ export default function PartnershipMatrix({ user }) {
       {/* Add Modal */}
       {showAdd && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowAdd(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: 'rgba(25,25,25,0.50)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 20, padding: 20, width: 360, border: '0.5px solid rgba(32,30,24,0.50)', boxShadow: 'inset 0 1px 0 rgba(255,224,194,0.08), 0 16px 64px rgba(0,0,0,0.5)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'rgba(25,25,25,0.50)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 20, padding: 20, width: 360, border: '0.5px solid rgba(167,139,250,0.50)', boxShadow: 'inset 0 1px 0 rgba(167,139,250,0.08), 0 16px 64px rgba(0,0,0,0.5)' }}>
             <h3 style={{ fontSize: 15, fontWeight: 400, margin: '0 0 12px' }}>Add Partnership</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <select value={addForm.team_id} onChange={e => setAddForm(p => ({ ...p, team_id: e.target.value }))} style={{ fontSize: 13, padding: '6px 8px', borderRadius: 6, border: `1px solid ${T.border}`, fontFamily: T.font }}>

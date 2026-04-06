@@ -213,7 +213,7 @@ export default function SequenceDetail() {
           {dirty && <span style={{ fontSize: 11, color: T.warning }}>Unsaved</span>}
           {!isNew && <button onClick={duplicateCampaign} title="Duplicate campaign" style={{ padding: '7px 8px', borderRadius: T.radiusSm, border: `0.5px solid ${T.border}`, background: 'transparent', color: T.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Copy size={12} /></button>}
           {!isNew && <button onClick={deleteCampaign} title="Delete campaign" style={{ padding: '7px 8px', borderRadius: T.radiusSm, border: '0.5px solid rgba(248,113,113,0.15)', background: 'transparent', color: T.danger, cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Trash2 size={12} /></button>}
-          <button onClick={save} disabled={saving} style={{ padding: '7px 16px', borderRadius: T.radiusSm, border: 'none', background: 'rgba(255,224,194,0.10)', color: T.accent, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, opacity: saving ? 0.5 : 1, display: 'flex', alignItems: 'center', gap: 5, boxShadow: T.liquidBtnShadow }}><Save size={12} />{saving ? 'Saving...' : 'Save'}</button>
+          <button onClick={save} disabled={saving} style={{ padding: '7px 16px', borderRadius: T.radiusSm, border: 'none', background: 'rgba(167,139,250,0.10)', color: T.accent, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, opacity: saving ? 0.5 : 1, display: 'flex', alignItems: 'center', gap: 5, boxShadow: T.liquidBtnShadow }}><Save size={12} />{saving ? 'Saving...' : 'Save'}</button>
         </div>
       </div>
       <input value={seq?.target_persona || ''} onChange={e => { setSeq({ ...seq, target_persona: e.target.value }); setDirty(true) }} placeholder="Target persona" style={{ ...inputStyle, marginBottom: 14 }} />
@@ -228,9 +228,9 @@ export default function SequenceDetail() {
             {['Sequence', 'Leads', 'Launch'].map((s, i) => (
               <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <div style={{ width: 20, height: 20, borderRadius: '50%', fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: (i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? 'rgba(255,224,194,0.12)' : 'transparent',
+                  background: (i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? 'rgba(167,139,250,0.12)' : 'transparent',
                   color: (i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? T.accent : T.textTertiary,
-                  border: `1px solid ${(i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? 'rgba(255,224,194,0.2)' : T.border}`
+                  border: `1px solid ${(i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? 'rgba(167,139,250,0.2)' : T.border}`
                 }}>{i + 1}</div>
                 {i < 2 && <ChevronRight size={10} style={{ color: T.textMuted }} />}
               </div>
@@ -246,8 +246,8 @@ export default function SequenceDetail() {
       )}
       <div style={{ display: 'flex', gap: 2, marginBottom: 14, background: T.surface, borderRadius: T.radius, padding: 3, width: 'fit-content' }}>
         {tabs.map(t => (
-          <button key={t.id} onClick={() => { setTab(t.id); setSelectedLead(null) }} style={{ padding: '6px 14px', borderRadius: T.radiusSm, border: 'none', cursor: 'pointer', fontFamily: T.font, fontSize: 12, background: tab === t.id ? 'rgba(255,224,194,0.08)' : 'transparent', color: tab === t.id ? T.text : T.textSecondary, display: 'flex', alignItems: 'center', gap: 5 }}>
-            {t.label}{t.ct !== undefined && <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 3, background: 'rgba(255,224,194,0.06)', color: T.accent }}>{t.ct}</span>}
+          <button key={t.id} onClick={() => { setTab(t.id); setSelectedLead(null) }} style={{ padding: '6px 14px', borderRadius: T.radiusSm, border: 'none', cursor: 'pointer', fontFamily: T.font, fontSize: 12, background: tab === t.id ? 'rgba(167,139,250,0.08)' : 'transparent', color: tab === t.id ? T.text : T.textSecondary, display: 'flex', alignItems: 'center', gap: 5 }}>
+            {t.label}{t.ct !== undefined && <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 3, background: 'rgba(167,139,250,0.06)', color: T.accent }}>{t.ct}</span>}
           </button>
         ))}
       </div>
@@ -272,9 +272,9 @@ export default function SequenceDetail() {
                     {[1, 2, 3, 4, 5, 7, 10, 14].map(d => <option key={d} value={d} style={{ background: '#111' }}>Wait {d}d</option>)}
                   </select>
                 </div>
-                <div onClick={() => setSelStep(i)} style={{ ...glass, padding: '8px 10px', cursor: 'pointer', borderColor: sel ? T.accent : T.glassBorder, background: sel ? 'rgba(255,224,194,0.04)' : glass.background, transition: 'all 0.15s' }}>
+                <div onClick={() => setSelStep(i)} style={{ ...glass, padding: '8px 10px', cursor: 'pointer', borderColor: sel ? T.accent : T.glassBorder, background: sel ? 'rgba(167,139,250,0.04)' : glass.background, transition: 'all 0.15s' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 20, height: 20, borderRadius: 5, background: s.type === 'condition' ? 'rgba(251,191,36,0.10)' : isLI ? 'rgba(0,119,181,0.12)' : 'rgba(255,224,194,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: 20, height: 20, borderRadius: 5, background: s.type === 'condition' ? 'rgba(251,191,36,0.10)' : isLI ? 'rgba(0,119,181,0.12)' : 'rgba(167,139,250,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {s.type === 'condition' ? <GitBranch size={10} style={{ color: T.warning }} /> : isLI ? <Linkedin size={10} style={{ color: '#0077B5' }} /> : <Mail size={10} style={{ color: T.accent }} />}
                     </div>
                     <span style={{ fontSize: 11, fontWeight: 500, flex: 1 }}>{s.type === 'condition' ? 'Condition' : isLI ? 'LinkedIn' : 'Email'} {i + 1}</span>
@@ -339,7 +339,7 @@ export default function SequenceDetail() {
                       Branches auto-configured. Ask Kiko: "Generate a multichannel branching campaign for [category]" for full customisation.
                     </div>
                     <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                      <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: T.radiusSm, border: `0.5px solid rgba(255,224,194,0.15)`, background: 'rgba(255,224,194,0.04)', color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to optimise branches</button>
+                      <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: T.radiusSm, border: `0.5px solid rgba(167,139,250,0.15)`, background: 'rgba(167,139,250,0.04)', color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to optimise branches</button>
                     </div>
                   </>
                 ) : (
@@ -361,7 +361,7 @@ export default function SequenceDetail() {
                 {regenPrompt && <div style={{ padding: '8px 12px', borderRadius: T.radiusSm, background: 'rgba(251,191,36,0.04)', border: '0.5px solid rgba(251,191,36,0.12)', marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: 11, color: T.warning }}>Approach changed — regenerate content?</span>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <button onClick={() => { askKiko(selStep); setRegenPrompt(false) }} style={{ padding: '4px 10px', borderRadius: 4, border: 'none', background: 'rgba(255,224,194,0.10)', color: T.accent, fontSize: 10, cursor: 'pointer', fontFamily: T.font }}>Regenerate</button>
+                    <button onClick={() => { askKiko(selStep); setRegenPrompt(false) }} style={{ padding: '4px 10px', borderRadius: 4, border: 'none', background: 'rgba(167,139,250,0.10)', color: T.accent, fontSize: 10, cursor: 'pointer', fontFamily: T.font }}>Regenerate</button>
                     <button onClick={() => setRegenPrompt(false)} style={{ padding: '4px 10px', borderRadius: 4, border: `0.5px solid ${T.border}`, background: 'transparent', color: T.textTertiary, fontSize: 10, cursor: 'pointer', fontFamily: T.font }}>Keep</button>
                   </div>
                 </div>}
@@ -384,7 +384,7 @@ export default function SequenceDetail() {
                   {VARS.map(v => <button key={v} onClick={() => upd(selStep, 'template', (cur.template || '') + v)} style={{ padding: '2px 6px', borderRadius: 3, border: `0.5px solid ${T.border}`, background: 'transparent', color: T.accent, fontSize: 9, cursor: 'pointer', fontFamily: T.font }}>{v}</button>)}
                 </div></div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: T.radiusSm, border: `0.5px solid rgba(255,224,194,0.15)`, background: 'rgba(255,224,194,0.04)', color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to write this step</button>
+                  <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: T.radiusSm, border: `0.5px solid rgba(167,139,250,0.15)`, background: 'rgba(167,139,250,0.04)', color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to write this step</button>
                   {cur.channel === 'email' && <button onClick={() => sendTest(selStep)} disabled={testSending} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: T.radiusSm, border: `0.5px solid ${testSent ? 'rgba(45,212,191,0.2)' : T.border}`, background: testSent ? 'rgba(45,212,191,0.04)' : 'transparent', color: testSent ? T.success : T.textSecondary, fontSize: 11, cursor: 'pointer', fontFamily: T.font, whiteSpace: 'nowrap' }}>{testSending ? 'Saving...' : testSent ? '✓ Draft created' : '📧 Create draft'}</button>}
                 </div>
                   </>
@@ -394,7 +394,7 @@ export default function SequenceDetail() {
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, color: T.textTertiary, fontSize: 12, gap: 10 }}>
                 <span>Add a step to start building</span>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <button onClick={() => addStep('email')} style={{ padding: '6px 12px', borderRadius: 5, border: `0.5px solid rgba(255,224,194,0.15)`, background: 'rgba(255,224,194,0.04)', color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>+ Email</button>
+                  <button onClick={() => addStep('email')} style={{ padding: '6px 12px', borderRadius: 5, border: `0.5px solid rgba(167,139,250,0.15)`, background: 'rgba(167,139,250,0.04)', color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>+ Email</button>
                   <button onClick={() => addStep('linkedin')} style={{ padding: '6px 12px', borderRadius: 5, border: '0.5px solid rgba(0,119,181,0.15)', background: 'rgba(0,119,181,0.04)', color: '#0077B5', fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>+ LinkedIn</button>
                   <button onClick={() => addStep('condition')} style={{ padding: '6px 12px', borderRadius: 5, border: '0.5px solid rgba(251,191,36,0.15)', background: 'rgba(251,191,36,0.04)', color: T.warning, fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>+ Condition</button>
                 </div>
@@ -405,7 +405,7 @@ export default function SequenceDetail() {
         {/* Continue to Leads button (draft flow) */}
         {isDraft && steps.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
-            <button onClick={() => { if (dirty) save(); setTab('leads') }} style={{ padding: '10px 24px', borderRadius: T.radiusSm, border: 'none', background: 'rgba(255,224,194,0.10)', color: T.accent, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, boxShadow: T.liquidBtnShadow, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button onClick={() => { if (dirty) save(); setTab('leads') }} style={{ padding: '10px 24px', borderRadius: T.radiusSm, border: 'none', background: 'rgba(167,139,250,0.10)', color: T.accent, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, boxShadow: T.liquidBtnShadow, display: 'flex', alignItems: 'center', gap: 6 }}>
               Continue to Leads <ChevronRight size={14} />
             </button>
           </div>
@@ -433,7 +433,7 @@ export default function SequenceDetail() {
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button onClick={autoSuggestLeads} disabled={loadingSuggestions} style={{ padding: '5px 12px', borderRadius: 5, border: `0.5px solid ${T.border}`, background: T.surface, color: T.teal, fontSize: 11, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><Sparkles size={12} />{loadingSuggestions ? 'Finding...' : 'Kiko, find leads'}</button>
                   <button onClick={() => setShowManualAdd(true)} style={{ padding: '5px 12px', borderRadius: 5, border: `0.5px solid ${T.border}`, background: T.surface, color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><Plus size={12} />Manual add</button>
-                  <button onClick={() => setShowAddLeads(true)} style={{ padding: '5px 12px', borderRadius: 5, border: 'none', background: 'rgba(255,224,194,0.10)', color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><UserPlus size={12} />Add from CRM</button>
+                  <button onClick={() => setShowAddLeads(true)} style={{ padding: '5px 12px', borderRadius: 5, border: 'none', background: 'rgba(167,139,250,0.10)', color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><UserPlus size={12} />Add from CRM</button>
                 </div>
               </div>
               {suggestions.length > 0 && (
@@ -443,7 +443,7 @@ export default function SequenceDetail() {
                     {suggestions.map(s => {
                       const checked = selectedLeads.some(l => l.id === s.id)
                       return (
-                        <div key={s.id} onClick={() => checked ? setSelectedLeads(selectedLeads.filter(l => l.id !== s.id)) : setSelectedLeads([...selectedLeads, s])} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 8px', cursor: 'pointer', borderRadius: 4, background: checked ? 'rgba(255,224,194,0.03)' : 'transparent' }}>
+                        <div key={s.id} onClick={() => checked ? setSelectedLeads(selectedLeads.filter(l => l.id !== s.id)) : setSelectedLeads([...selectedLeads, s])} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 8px', cursor: 'pointer', borderRadius: 4, background: checked ? 'rgba(167,139,250,0.03)' : 'transparent' }}>
                           <div style={{ width: 14, height: 14, borderRadius: 3, border: `1px solid ${checked ? T.accent : T.border}`, background: checked ? T.accent : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{checked && <span style={{ color: '#111', fontSize: 9 }}>✓</span>}</div>
                           <span style={{ fontSize: 11, color: T.text, minWidth: 100 }}>{s.name}</span>
                           <span style={{ fontSize: 10, color: T.textTertiary, flex: 1 }}>{s.company} · {s.title || '—'}</span>
@@ -452,7 +452,7 @@ export default function SequenceDetail() {
                       )
                     })}
                   </div>
-                  {selectedLeads.length > 0 && <button onClick={enrollSelected} style={{ marginTop: 8, padding: '6px 14px', borderRadius: 5, border: 'none', background: 'rgba(255,224,194,0.10)', color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>Enroll {selectedLeads.length} contact{selectedLeads.length > 1 ? 's' : ''}</button>}
+                  {selectedLeads.length > 0 && <button onClick={enrollSelected} style={{ marginTop: 8, padding: '6px 14px', borderRadius: 5, border: 'none', background: 'rgba(167,139,250,0.10)', color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>Enroll {selectedLeads.length} contact{selectedLeads.length > 1 ? 's' : ''}</button>}
                 </div>
               )}
               {enrollments.length ? (<div>
@@ -462,8 +462,8 @@ export default function SequenceDetail() {
                 {enrollments.map(e => {
                   const isSelected = selectedLead?.id === e.id
                   return (
-                    <div key={e.id} onClick={() => selectLeadForTimeline(e)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderBottom: `0.5px solid ${T.border}`, fontSize: 12, cursor: 'pointer', transition: 'all 0.15s', background: isSelected ? 'rgba(255,224,194,0.04)' : 'transparent' }}
-                      onMouseEnter={ev => { if (!isSelected) ev.currentTarget.style.background = 'rgba(255,224,194,0.02)' }}
+                    <div key={e.id} onClick={() => selectLeadForTimeline(e)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderBottom: `0.5px solid ${T.border}`, fontSize: 12, cursor: 'pointer', transition: 'all 0.15s', background: isSelected ? 'rgba(167,139,250,0.04)' : 'transparent' }}
+                      onMouseEnter={ev => { if (!isSelected) ev.currentTarget.style.background = 'rgba(167,139,250,0.02)' }}
                       onMouseLeave={ev => { if (!isSelected) ev.currentTarget.style.background = 'transparent' }}>
                       <div style={{ width: 8, height: 8, borderRadius: '50%', background: e.status === 'active' ? T.teal : e.status === 'replied' ? T.success : e.status === 'bounced' ? T.danger : T.textTertiary }} />
                       <div style={{ flex: 1, minWidth: 0 }}><div style={{ color: T.text }}>{e.contact_name || e.contact_email}</div><div style={{ fontSize: 10, color: T.textTertiary }}>{e.company}</div></div>
@@ -515,7 +515,7 @@ export default function SequenceDetail() {
                       )
                     })}
                     <div style={{ display: 'flex', gap: 10, padding: '8px 0', position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: -15, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#111', border: `2px solid rgba(255,224,194,0.3)`, zIndex: 1 }} />
+                      <div style={{ position: 'absolute', left: -15, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#111', border: `2px solid rgba(167,139,250,0.3)`, zIndex: 1 }} />
                       <div style={{ flex: 1, background: T.surface, border: `0.5px solid ${T.border}`, borderRadius: T.radiusSm, padding: '8px 10px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><UserPlus size={11} style={{ color: T.accent }} /><span style={{ fontSize: 11, fontWeight: 500, color: T.textSecondary }}>Enrolled</span></div>
                         <div style={{ fontSize: 10, color: T.textMuted, marginTop: 2 }}>{selectedLead.created_at ? new Date(selectedLead.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}</div>
@@ -566,7 +566,7 @@ export default function SequenceDetail() {
                   const pctSent = enrollments.length > 0 ? Math.round(sentQ / enrollments.length * 100) : 0
                   return (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderBottom: `0.5px solid ${T.border}`, fontSize: 11 }}>
-                      <div style={{ width: 20, height: 20, borderRadius: 5, background: s.type === 'condition' ? 'rgba(251,191,36,0.10)' : s.channel === 'linkedin' ? 'rgba(0,119,181,0.12)' : 'rgba(255,224,194,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: 20, height: 20, borderRadius: 5, background: s.type === 'condition' ? 'rgba(251,191,36,0.10)' : s.channel === 'linkedin' ? 'rgba(0,119,181,0.12)' : 'rgba(167,139,250,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {s.type === 'condition' ? <GitBranch size={9} style={{ color: T.warning }} /> : s.channel === 'linkedin' ? <Linkedin size={9} style={{ color: '#0077B5' }} /> : <Mail size={9} style={{ color: T.accent }} />}
                       </div>
                       <span style={{ width: 60, color: T.textTertiary }}>Step {i + 1}</span>
@@ -611,7 +611,7 @@ export default function SequenceDetail() {
             </div>
             <div style={{ marginBottom: 16 }}><label style={{ fontSize: 10, color: T.textTertiary, display: 'block', marginBottom: 3 }}>LinkedIn URL</label>
               <input value={manualLead.linkedin} onChange={e => setManualLead({ ...manualLead, linkedin: e.target.value })} placeholder="https://linkedin.com/in/..." style={inputStyle} /></div>
-            <button onClick={addManualLead} disabled={manualAdding || !manualLead.email.trim()} style={{ width: '100%', padding: '9px 0', borderRadius: T.radiusSm, border: 'none', background: manualAdding ? T.surface : 'rgba(255,224,194,0.10)', color: manualAdding ? T.textTertiary : T.accent, fontSize: 12, fontWeight: 500, cursor: manualAdding ? 'default' : 'pointer', fontFamily: T.font }}>
+            <button onClick={addManualLead} disabled={manualAdding || !manualLead.email.trim()} style={{ width: '100%', padding: '9px 0', borderRadius: T.radiusSm, border: 'none', background: manualAdding ? T.surface : 'rgba(167,139,250,0.10)', color: manualAdding ? T.textTertiary : T.accent, fontSize: 12, fontWeight: 500, cursor: manualAdding ? 'default' : 'pointer', fontFamily: T.font }}>
               {manualAdding ? '⏳ Adding...' : 'Enroll lead'}
             </button>
           </div>
@@ -628,13 +628,13 @@ export default function SequenceDetail() {
             </div>
             <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
               <input value={leadSearch} onChange={e => setLeadSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && searchContacts()} placeholder="Search by company, name, or title..." style={{ ...inputStyle, flex: 1 }} />
-              <button onClick={searchContacts} disabled={searching} style={{ padding: '8px 14px', borderRadius: T.radiusSm, border: 'none', background: 'rgba(255,224,194,0.10)', color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font }}><Search size={12} /></button>
+              <button onClick={searchContacts} disabled={searching} style={{ padding: '8px 14px', borderRadius: T.radiusSm, border: 'none', background: 'rgba(167,139,250,0.10)', color: T.accent, fontSize: 11, cursor: 'pointer', fontFamily: T.font }}><Search size={12} /></button>
             </div>
             <div style={{ flex: 1, overflowY: 'auto', marginBottom: 14 }}>
               {searchResults.map(r => {
                 const checked = selectedLeads.some(l => l.id === r.id)
                 return (
-                  <div key={r.id} onClick={() => checked ? setSelectedLeads(selectedLeads.filter(l => l.id !== r.id)) : setSelectedLeads([...selectedLeads, r])} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderBottom: `0.5px solid ${T.border}`, cursor: 'pointer', background: checked ? 'rgba(255,224,194,0.03)' : 'transparent' }}>
+                  <div key={r.id} onClick={() => checked ? setSelectedLeads(selectedLeads.filter(l => l.id !== r.id)) : setSelectedLeads([...selectedLeads, r])} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderBottom: `0.5px solid ${T.border}`, cursor: 'pointer', background: checked ? 'rgba(167,139,250,0.03)' : 'transparent' }}>
                     <div style={{ width: 16, height: 16, borderRadius: 3, border: `1px solid ${checked ? T.accent : T.border}`, background: checked ? T.accent : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{checked && <span style={{ color: '#111', fontSize: 10 }}>✓</span>}</div>
                     <div style={{ flex: 1 }}><div style={{ fontSize: 12, color: T.text }}>{r.name}</div><div style={{ fontSize: 10, color: T.textTertiary }}>{r.company} · {r.title || 'No title'} · {r.email}</div></div>
                   </div>
@@ -642,7 +642,7 @@ export default function SequenceDetail() {
               })}
               {searchResults.length === 0 && leadSearch && !searching && <div style={{ padding: 20, textAlign: 'center', color: T.textTertiary, fontSize: 11, fontWeight: 300 }}>No contacts found. Try a different search.</div>}
             </div>
-            {selectedLeads.length > 0 && <button onClick={enrollSelected} style={{ width: '100%', padding: '9px 0', borderRadius: T.radiusSm, border: 'none', background: 'rgba(255,224,194,0.10)', color: T.accent, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font }}>Enroll {selectedLeads.length} contact{selectedLeads.length > 1 ? 's' : ''}</button>}
+            {selectedLeads.length > 0 && <button onClick={enrollSelected} style={{ width: '100%', padding: '9px 0', borderRadius: T.radiusSm, border: 'none', background: 'rgba(167,139,250,0.10)', color: T.accent, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font }}>Enroll {selectedLeads.length} contact{selectedLeads.length > 1 ? 's' : ''}</button>}
           </div>
         </div>
       )}

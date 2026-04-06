@@ -4,9 +4,9 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 // ── Platform tokens ───────────────────────────────────────
 const T = {
-  bg: '#000000', surface: 'rgba(25,25,25,0.40)', surfaceHover: 'rgba(255,224,194,0.06)',
-  border: 'rgba(255,224,194,0.08)', borderHover: 'rgba(255,224,194,0.12)',
-  text: 'rgba(238,232,220,0.95)', textSecondary: 'rgba(255,224,194,0.55)', textTertiary: 'rgba(238,238,238,0.32)',
+  bg: '#000000', surface: 'rgba(25,25,25,0.40)', surfaceHover: 'rgba(167,139,250,0.06)',
+  border: 'rgba(167,139,250,0.08)', borderHover: 'rgba(167,139,250,0.12)',
+  text: 'rgba(238,232,220,0.95)', textSecondary: 'rgba(167,139,250,0.55)', textTertiary: 'rgba(238,238,238,0.32)',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   f1: '#E10600', f1Light: 'rgba(225,6,0,0.08)', f1Border: 'rgba(225,6,0,0.2)', f1Dark: '#FF4444',
   fe: '#0055CC', feLight: 'rgba(0,85,204,0.08)', feBorder: 'rgba(0,85,204,0.2)', feDark: '#6CB4FF',
@@ -21,7 +21,7 @@ const SeriesIcon = ({ series, size = 22 }) => {
   const alts = { f1: 'F1', fe: 'Formula E', mgp: 'MotoGP', wec: 'WEC' }
   const src = icons[series]
   if (!src) return <span style={{ fontSize: size * 0.5, color: T.textSecondary }}>{alts[series] || series}</span>
-  return <img src={src} alt={alts[series] || series} style={{ width: size, height: size, objectFit: 'contain', display: 'block', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; e.target.insertAdjacentHTML('afterend', `<span style="font-size:${size * 0.5}px;color:rgba(255,224,194,0.55)">${alts[series] || series}</span>`) }} />
+  return <img src={src} alt={alts[series] || series} style={{ width: size, height: size, objectFit: 'contain', display: 'block', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; e.target.insertAdjacentHTML('afterend', `<span style="font-size:${size * 0.5}px;color:rgba(167,139,250,0.55)">${alts[series] || series}</span>`) }} />
 }
 
 // ── Race data (verified from formula1.com + fiaformulae.com) ─

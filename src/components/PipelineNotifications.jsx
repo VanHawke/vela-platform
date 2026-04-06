@@ -14,7 +14,7 @@ const TYPE_CONFIG = {
   reply: { icon: MessageSquare, color: T.red, bg: 'rgba(255,59,48,0.08)', label: 'Reply' },
   interested: { icon: UserCheck, color: T.green, bg: 'rgba(52,199,89,0.08)', label: 'Interested' },
   new_lead: { icon: Zap, color: T.blue, bg: 'rgba(0,122,255,0.08)', label: 'New Lead' },
-  new_partnership: { icon: Trophy, color: '#ffe0c2', bg: 'rgba(255,224,194,0.08)', label: 'F1 Partnership' },
+  new_partnership: { icon: Trophy, color: '#A78BFA', bg: 'rgba(167,139,250,0.08)', label: 'F1 Partnership' },
   engagement: { icon: Mail, color: T.yellow, bg: 'rgba(255,149,0,0.08)', label: 'Engaged' },
   stage_change: { icon: ChevronRight, color: T.blue, bg: 'rgba(0,122,255,0.08)', label: 'Stage Change' },
   deal_won: { icon: Check, color: T.green, bg: 'rgba(52,199,89,0.08)', label: 'Won' },

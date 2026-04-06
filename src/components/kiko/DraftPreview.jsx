@@ -147,8 +147,8 @@ export default function DraftPreview({ draft, onToneAdjust, onCopy, onSendToGmai
           placeholder="Edit instruction... (e.g. change CTA to phone call)"
           style={{ flex: 1, background: 'rgba(238,238,238,0.02)', border: '1px solid rgba(238,238,238,0.05)', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: 'rgba(238,238,238,0.65)', fontFamily: T.font, fontWeight: 300, outline: 'none' }} />
         {editInput.trim() && <button onClick={() => { onToneAdjust?.(editInput.trim()); setEditInput('') }} style={{
-          padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,224,194,0.15)', background: 'rgba(255,224,194,0.06)',
-          color: 'rgba(255,224,194,0.6)', fontSize: 11, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, flexShrink: 0,
+          padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(167,139,250,0.15)', background: 'rgba(167,139,250,0.06)',
+          color: 'rgba(167,139,250,0.6)', fontSize: 11, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, flexShrink: 0,
         }}>Apply</button>}
       </div>
     </div>
