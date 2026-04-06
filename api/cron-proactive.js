@@ -179,6 +179,35 @@ export default async function handler(req, res) {
       }
     }
 
+    // ═══ CATEGORY RECOMMENDER: Suggest open categories for new campaigns ═══
+    try {
+      const allSeqs = await sbFetch('kiko_sequences?select=name');
+      const seqNames = (Array.isArray(allSeqs) ? allSeqs : []).map(s => (s.name || '').toLowerCase());
+      const highPriority = [
+        { cat: 'Banking', keywords: ['bank', 'financial', 'capital', 'investment'] },
+        { cat: 'FinTech', keywords: ['fintech', 'payment', 'stripe', 'square', 'paypal'] },
+        { cat: 'Telecoms', keywords: ['telecom', 'mobile', 'wireless', 'connectivity', 'vodafone', 't-mobile'] },
+        { cat: 'Energy', keywords: ['energy', 'oil', 'gas', 'petrochemical', 'renewable'] },
+        { cat: 'Gaming', keywords: ['gaming', 'esports', 'entertainment', 'activision', 'ea sports'] },
+      ];
+      for (const p of highPriority) {
+        const hasCampaign = seqNames.some(n => p.keywords.some(k => n.includes(k)) || n.includes(p.cat.toLowerCase()));
+        if (!hasCampaign) {
+          // Count CRM contacts in this category
+          const contactQ = p.keywords.slice(0, 2).map(k => `data->>company.ilike.%${k}%`).join(',');
+          const contacts = await sbFetch(`contacts?select=id&or=(${contactQ})&limit=1`, { method: 'HEAD' }).catch(() => null);
+          await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
+            type: 'category_recommendation', severity: 'medium',
+            title: `Campaign gap: ${p.cat} — no active campaign`,
+            detail: `${p.cat} is a HIGH-priority open category with zero active campaigns. CRM has contacts in this space. Consider launching a "${p.cat}" campaign for Haas F1 Team.`,
+            entity_name: p.cat, dismissed: false,
+            expires_at: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          }) });
+          written++;
+        }
+      }
+    } catch (catErr) { console.error('[Proactive] Category recommender error:', catErr.message); }
+
     // Send email notification for high-severity alerts to all active users
     const users = await getActiveUsers();
     for (const u of users) { try { await sendAlertEmail(alerts, u.email); } catch {} }

@@ -60,6 +60,23 @@ export default async function handler(req, res) {
             event_detail: `Reply to automated sequence step ${enrollment.current_step - 1}`,
             source: 'sequence_engine', kiko_contributed: true, kiko_action: `Sequence email triggered reply`
           }) });
+          // ═══ REPLY → PIPELINE BRIDGE: Create/update CRM deal ═══
+          try {
+            // Check if deal already exists for this company
+            const existingDeals = await sbFetch(`deals?select=id,data&data->>company=ilike.*${encodeURIComponent(enrollment.company)}*&limit=1`);
+            if (existingDeals?.length) {
+              // Update existing deal to "Contact made" stage
+              const deal = existingDeals[0];
+              const updatedData = { ...deal.data, status: 'active', stage: 'Contact made', last_activity: `Reply received from ${enrollment.contact_name || email} via automated sequence`, updated_at: new Date().toISOString() };
+              await sbFetch(`deals?id=eq.${deal.id}`, { method: 'PATCH', body: JSON.stringify({ data: updatedData }) });
+            } else {
+              // Create new deal
+              await sbFetch('deals', { method: 'POST', body: JSON.stringify({
+                org_id: ORG_ID,
+                data: { company: enrollment.company, contact: enrollment.contact_name || email, status: 'active', stage: 'Contact made', value: null, source: 'Kiko Sequence Engine', notes: `Auto-created: ${enrollment.contact_name} replied to outreach sequence step ${enrollment.current_step - 1}`, created_at: new Date().toISOString() }
+              }) });
+            }
+          } catch (dealErr) { console.error(`[ReplyDetect] Deal bridge error for ${enrollment.company}:`, dealErr.message); }
           // Learning log
           await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({
             org_id: ORG_ID, category: 'sequence_outcome', entity_name: enrollment.company,

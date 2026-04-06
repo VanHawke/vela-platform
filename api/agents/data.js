@@ -729,7 +729,190 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
         out += `Say "I sent the LinkedIn message to [name]" to mark as sent.`;
         return out;
       }
-      default: return `Unknown data operation: ${operation}. Available: search_contacts, search_companies, search_deals, entity_detail, alerts, email_analytics, outreach_intelligence, outreach_timing, stale_contacts, news, partnership_matrix, pipeline_notifications, deal_history, activity_feed, search_documents, past_conversations, recent_conversations, learning_search, learning_save, skills, bookmark, warm_path, win_loss, thread_history, deal_prediction, company_intel, enrich_company, start_sequence, sequence_status, pause_sequence, cancel_sequence, linkedin_queue`;
+      case 'campaign_overview': {
+        const seqs = await sbFetch('kiko_sequences?order=created_at.desc&select=id,name,is_active,steps,created_at');
+        const allSeqs = Array.isArray(seqs) ? seqs : [];
+        if (!allSeqs.length) return 'No campaigns exist yet. Use create_campaign to generate one.';
+        const enr = await sbFetch('kiko_sequence_enrollments?select=sequence_id,status');
+        const allEnr = Array.isArray(enr) ? enr : [];
+        const sent = await sbFetch('kiko_outreach_queue?status=eq.sent&select=enrollment_id');
+        const allSent = Array.isArray(sent) ? sent : [];
+        // Build enrollment map
+        const enrBySeq = {};
+        for (const e of allEnr) { if (!enrBySeq[e.sequence_id]) enrBySeq[e.sequence_id] = []; enrBySeq[e.sequence_id].push(e); }
+        let out = `CAMPAIGNS (${allSeqs.length}):\n\n`;
+        for (const s of allSeqs) {
+          const e = enrBySeq[s.id] || [];
+          const active = e.filter(x => x.status === 'active').length;
+          const replied = e.filter(x => x.status === 'replied').length;
+          const bounced = e.filter(x => x.status === 'bounced').length;
+          out += `${s.is_active ? '🟢' : '⏸️'} ${s.name} — ${(s.steps||[]).length} steps\n`;
+          out += `   Enrolled: ${e.length} | Active: ${active} | Replied: ${replied} | Bounced: ${bounced}\n\n`;
+        }
+        out += `\nOpen HIGH-priority categories with no campaigns: Banking/Financial Services, FinTech/Payments, Telecoms/Connectivity.`;
+        return out;
+      }
+      case 'create_campaign': {
+        const category = params?.category;
+        const team = params?.team || 'Haas F1 Team';
+        const persona = params?.persona || `C-suite at $500M-$5B ${category} companies`;
+        if (!category) return 'Please provide a category (e.g. Banking, FinTech, Telecoms, Cybersecurity).';
+        // Check if campaign already exists
+        const existing = await sbFetch(`kiko_sequences?name=ilike.*${encodeURIComponent(category)}*&limit=1`);
+        if (existing?.length) return `Campaign "${existing[0].name}" already exists for ${category}. Use campaign_overview to see all campaigns.`;
+        // Generate via internal API call
+        try {
+          const apiUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://vela-platform-one.vercel.app';
+          const genRes = await fetch(`${apiUrl}/api/generate-sequence`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ category, team, persona, numSteps: 7 })
+          });
+          const genData = await genRes.json();
+          if (genData.ok && genData.id) {
+            return `✅ CAMPAIGN CREATED: "${genData.sequence?.name}"\nID: ${genData.id}\nSteps: ${genData.sequence?.steps?.length || 7}\nTarget: ${persona}\n\nNext: Use source_companies with category="${category}" to find target companies, then source_contacts to find decision-makers, then bulk_enroll to add them.`;
+          }
+          return `Campaign generation failed: ${genData.error || 'Unknown error'}. Try again or use the Campaigns page wizard.`;
+        } catch (err) { return `Campaign generation failed: ${err.message}`; }
+      }
+      case 'source_companies': {
+        const category = params?.category;
+        if (!category) return 'Please provide a category to source companies for (e.g. Banking, Cloud, Cybersecurity).';
+        // First check CRM for existing companies in this category
+        const crmCos = await sbFetch(`contacts?select=data&data->>company=not.is.null&limit=100`);
+        const allCos = Array.isArray(crmCos) ? crmCos : [];
+        const uniqueCos = [...new Set(allCos.map(c => c.data?.company).filter(Boolean))];
+        // Check company_intelligence for enriched companies in this sector
+        const intel = await sbFetch(`company_intelligence?or=(industry.ilike.*${encodeURIComponent(category)}*,sub_sector.ilike.*${encodeURIComponent(category)}*)&order=sponsorship_fit_score.desc&limit=20`);
+        const enriched = Array.isArray(intel) ? intel : [];
+        // Web search for new companies
+        const Anthropic = (await import('@anthropic-ai/sdk')).default;
+        const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
+        const searchRes = await anthropic.messages.create({
+          model: 'claude-sonnet-4-20250514', max_tokens: 2000,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          messages: [{ role: 'user', content: `Find 15-20 companies in the ${category} sector that would be strong Formula One sponsorship prospects. Focus on:
+- Companies with $500M+ revenue or $100M+ funding
+- Companies with active marketing/brand budgets (conference sponsorships, sports partnerships)
+- Companies with C-suite who are known sports/motorsport enthusiasts
+- Companies NOT already F1 sponsors
+
+Return ONLY a JSON array with no other text: [{"company":"Name","reason":"Why they fit","revenue":"estimate","hq":"location"}]` }]
+        });
+        const textBlocks = searchRes.content.filter(b => b.type === 'text').map(b => b.text).join('');
+        let sourced = [];
+        try {
+          const cleaned = textBlocks.replace(/```json|```/g, '').trim();
+          const match = cleaned.match(/\[[\s\S]*\]/);
+          if (match) sourced = JSON.parse(match[0]);
+        } catch {}
+        // Cross-reference with CRM
+        const inCRM = new Set(uniqueCos.map(c => c.toLowerCase()));
+        let out = `COMPANIES FOR ${category.toUpperCase()} CAMPAIGN:\n\n`;
+        if (enriched.length) {
+          out += `═══ ALREADY ENRICHED (${enriched.length}):\n`;
+          for (const c of enriched.slice(0, 10)) {
+            out += `  ★ ${c.company_name} — ${c.industry}/${c.sub_sector} | Revenue: ${c.revenue_estimate || '?'} | Fit: ${c.sponsorship_fit_score || '?'}/100 | ${inCRM.has((c.company_name||'').toLowerCase()) ? '✅ In CRM' : '❌ Not in CRM'}\n`;
+          }
+          out += '\n';
+        }
+        if (sourced.length) {
+          out += `═══ WEB-SOURCED (${sourced.length}):\n`;
+          for (const c of sourced) {
+            out += `  → ${c.company} — ${c.reason} | Revenue: ${c.revenue || '?'} | HQ: ${c.hq || '?'} | ${inCRM.has((c.company||'').toLowerCase()) ? '✅ In CRM' : '🆕 New'}\n`;
+          }
+        }
+        out += `\nNext: Use source_contacts with company="[name]" to find decision-makers at target companies.`;
+        return out;
+      }
+      case 'source_contacts': {
+        const company = params?.company;
+        if (!company) return 'Please provide a company name to find contacts for.';
+        // Check CRM first
+        const crmContacts = await sbFetch(`contacts?select=data&data->>company=ilike.*${encodeURIComponent(company)}*&limit=20`);
+        const crmArr = Array.isArray(crmContacts) ? crmContacts : [];
+        const crmPeople = crmArr.map(c => ({ name: [c.data?.firstName, c.data?.lastName].filter(Boolean).join(' '), email: c.data?.email, title: c.data?.title, linkedin: c.data?.linkedin, source: 'CRM' })).filter(p => p.email);
+        // Web search for additional contacts
+        const Anthropic = (await import('@anthropic-ai/sdk')).default;
+        const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
+        const searchRes = await anthropic.messages.create({
+          model: 'claude-sonnet-4-20250514', max_tokens: 1500,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          messages: [{ role: 'user', content: `Find senior executives at ${company} who would be decision-makers for Formula One sponsorship partnerships. Look for: CMO, VP Marketing, VP Partnerships, VP Brand, Head of Sponsorship, CEO, CTO (if tech company). Return ONLY a JSON array: [{"name":"Full Name","title":"Job Title","linkedin":"URL if found","email_guess":"first.last@domain.com if determinable"}]` }]
+        });
+        const textBlocks = searchRes.content.filter(b => b.type === 'text').map(b => b.text).join('');
+        let webPeople = [];
+        try {
+          const cleaned = textBlocks.replace(/```json|```/g, '').trim();
+          const match = cleaned.match(/\[[\s\S]*\]/);
+          if (match) webPeople = JSON.parse(match[0]);
+        } catch {}
+        let out = `CONTACTS AT ${company.toUpperCase()}:\n\n`;
+        if (crmPeople.length) {
+          out += `═══ IN CRM (${crmPeople.length}):\n`;
+          for (const p of crmPeople) {
+            out += `  ✅ ${p.name} — ${p.title || 'No title'} | ${p.email} ${p.linkedin ? '| LinkedIn ✓' : ''}\n`;
+          }
+          out += '\n';
+        }
+        if (webPeople.length) {
+          out += `═══ WEB-SOURCED (${webPeople.length}):\n`;
+          for (const p of webPeople) {
+            out += `  🔍 ${p.name} — ${p.title || '?'} | ${p.email_guess || 'email unknown'} ${p.linkedin ? '| LinkedIn ✓' : ''}\n`;
+          }
+        }
+        if (!crmPeople.length && !webPeople.length) out += 'No contacts found. Try enriching the company first with enrich_company.';
+        else out += `\nNext: Use bulk_enroll with company="${company}" and sequence="[campaign name]" to enroll CRM contacts into a campaign.`;
+        return out;
+      }
+      case 'bulk_enroll': {
+        const company = params?.company;
+        const sequenceName = params?.sequence || params?.campaign;
+        const category = params?.category;
+        if (!sequenceName && !category) return 'Please provide sequence (campaign name) or category to enroll into.';
+        // Find the sequence
+        const searchTerm = sequenceName || category;
+        const seqs = await sbFetch(`kiko_sequences?name=ilike.*${encodeURIComponent(searchTerm)}*&limit=1`);
+        if (!seqs?.length) return `No campaign found matching "${searchTerm}". Use campaign_overview to see all campaigns.`;
+        const seq = seqs[0];
+        // Find contacts to enroll
+        let contacts = [];
+        if (company) {
+          const crmContacts = await sbFetch(`contacts?select=id,data&data->>company=ilike.*${encodeURIComponent(company)}*&limit=20`);
+          contacts = (Array.isArray(crmContacts) ? crmContacts : []).map(c => ({
+            email: c.data?.email, name: [c.data?.firstName, c.data?.lastName].filter(Boolean).join(' '),
+            company: c.data?.company, title: c.data?.title
+          })).filter(c => c.email);
+        } else if (category) {
+          const catWords = category.toLowerCase().split(/[\s\/&]+/).filter(w => w.length > 3);
+          const queries = catWords.map(w => `data->>company.ilike.%${w}%`).join(',');
+          const crmContacts = await sbFetch(`contacts?select=id,data&or=(${queries || `data->>company.ilike.%${category}%`})&limit=50`);
+          contacts = (Array.isArray(crmContacts) ? crmContacts : []).map(c => ({
+            email: c.data?.email, name: [c.data?.firstName, c.data?.lastName].filter(Boolean).join(' '),
+            company: c.data?.company, title: c.data?.title
+          })).filter(c => c.email);
+        }
+        if (!contacts.length) return `No contacts found for "${company || category}" in CRM. Use source_contacts to find contacts first.`;
+        // Check for existing enrollments
+        const existingEnr = await sbFetch(`kiko_sequence_enrollments?sequence_id=eq.${seq.id}&select=contact_email`);
+        const enrolledEmails = new Set((Array.isArray(existingEnr) ? existingEnr : []).map(e => e.contact_email?.toLowerCase()));
+        const toEnroll = contacts.filter(c => !enrolledEmails.has(c.email.toLowerCase()));
+        if (!toEnroll.length) return `All ${contacts.length} contacts are already enrolled in "${seq.name}".`;
+        // Enroll
+        const firstStep = (seq.steps || [])[0];
+        let enrolled = 0;
+        for (const c of toEnroll.slice(0, 50)) { // Max 50 per batch
+          try {
+            await sbFetch('kiko_sequence_enrollments', { method: 'POST', body: JSON.stringify({
+              sequence_id: seq.id, contact_email: c.email, contact_name: c.name || null,
+              company: c.company || company, current_step: 1, status: 'active',
+              next_send_at: new Date(Date.now() + (firstStep?.delay_days || 0) * 86400000).toISOString()
+            }) });
+            enrolled++;
+          } catch {}
+        }
+        return `✅ ENROLLED ${enrolled} contacts into "${seq.name}"\n${toEnroll.slice(0, 10).map(c => `  → ${c.name} (${c.email}) at ${c.company}`).join('\n')}${toEnroll.length > 10 ? `\n  ... and ${toEnroll.length - 10} more` : ''}\n\nFirst emails will be personalised at 6am and sent starting 8am Mon-Fri (30/day cap).`;
+      }
+      default: return `Unknown data operation: ${operation}. Available: search_contacts, search_companies, search_deals, entity_detail, alerts, email_analytics, outreach_intelligence, outreach_timing, stale_contacts, news, partnership_matrix, pipeline_notifications, deal_history, activity_feed, search_documents, past_conversations, recent_conversations, learning_search, learning_save, skills, bookmark, warm_path, win_loss, thread_history, deal_prediction, company_intel, enrich_company, start_sequence, sequence_status, pause_sequence, cancel_sequence, linkedin_queue, campaign_overview, create_campaign, source_companies, source_contacts, bulk_enroll`;
     }
   } catch (err) {
     return `Data Agent error (${operation}): ${err.message}`;
