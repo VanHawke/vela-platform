@@ -4,9 +4,9 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 // ── Platform tokens ───────────────────────────────────────
 const T = {
-  bg: '#000000', surface: 'rgba(238,238,238,0.04)', surfaceHover: 'rgba(238,238,238,0.06)',
-  border: 'rgba(238,238,238,0.08)', borderHover: 'rgba(238,238,238,0.12)',
-  text: 'rgba(238,238,238,0.95)', textSecondary: 'rgba(238,238,238,0.55)', textTertiary: 'rgba(238,238,238,0.32)',
+  bg: '#000000', surface: 'rgba(25,25,25,0.40)', surfaceHover: 'rgba(255,224,194,0.06)',
+  border: 'rgba(255,224,194,0.08)', borderHover: 'rgba(255,224,194,0.12)',
+  text: 'rgba(238,232,220,0.95)', textSecondary: 'rgba(255,224,194,0.55)', textTertiary: 'rgba(238,238,238,0.32)',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   f1: '#E10600', f1Light: 'rgba(225,6,0,0.08)', f1Border: 'rgba(225,6,0,0.2)', f1Dark: '#FF4444',
   fe: '#0055CC', feLight: 'rgba(0,85,204,0.08)', feBorder: 'rgba(0,85,204,0.2)', feDark: '#6CB4FF',
@@ -21,7 +21,7 @@ const SeriesIcon = ({ series, size = 22 }) => {
   const alts = { f1: 'F1', fe: 'Formula E', mgp: 'MotoGP', wec: 'WEC' }
   const src = icons[series]
   if (!src) return <span style={{ fontSize: size * 0.5, color: T.textSecondary }}>{alts[series] || series}</span>
-  return <img src={src} alt={alts[series] || series} style={{ width: size, height: size, objectFit: 'contain', display: 'block', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; e.target.insertAdjacentHTML('afterend', `<span style="font-size:${size * 0.5}px;color:rgba(238,238,238,0.5)">${alts[series] || series}</span>`) }} />
+  return <img src={src} alt={alts[series] || series} style={{ width: size, height: size, objectFit: 'contain', display: 'block', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; e.target.insertAdjacentHTML('afterend', `<span style="font-size:${size * 0.5}px;color:rgba(255,224,194,0.55)">${alts[series] || series}</span>`) }} />
 }
 
 // ── Race data (verified from formula1.com + fiaformulae.com) ─
@@ -179,8 +179,8 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, showMGP, sh
   const day = parseInt(dateStr.slice(8))
   const s   = cellStyle(dateStr, selected, today, showF1, showFE, showMGP, showWEC)
 
-  const numColor = s.isSel ? 'rgba(238,238,238,0.04)'
-    : s.isRaceDay ? 'rgba(238,238,238,0.04)'
+  const numColor = s.isSel ? 'rgba(25,25,25,0.40)'
+    : s.isRaceDay ? 'rgba(25,25,25,0.40)'
     : s.hasF1  ? T.f1Dark
     : s.hasFE  ? T.feDark
     : s.isWindow ? T.amber
@@ -222,7 +222,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, showMGP, sh
                 s.isSel || s.isRaceDay ? 'rgba(238,238,238,0.32)' : T.f1,
                 <>
                   <img src="/f1-logo.png" alt="F1" style={{ width: 8, height: 8, objectFit: 'contain', display: 'block' }} />
-                  <span style={{ fontSize: 9, color: 'rgba(238,238,238,0.9)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
+                  <span style={{ fontSize: 9, color: 'rgba(238,232,220,0.90)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
                     {s.isRaceDay ? 'Race day' : `${e.city.slice(0, 3).toUpperCase()}${e.sprint ? ' ⚡' : ''}`}
                   </span>
                 </>
@@ -235,7 +235,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, showMGP, sh
                 s.isSel ? 'rgba(238,238,238,0.32)' : T.fe,
                 <>
                   <img src="/fe-logo.png" alt="FE" style={{ width: 8, height: 8, objectFit: 'contain', display: 'block' }} />
-                  <span style={{ fontSize: 9, color: 'rgba(238,238,238,0.9)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
+                  <span style={{ fontSize: 9, color: 'rgba(238,232,220,0.90)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
                     {e.city.slice(0, 3).toUpperCase()}
                   </span>
                 </>
@@ -246,7 +246,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, showMGP, sh
             <div key={`mgp${i}`}>
               {pill(
                 s.isSel || s.isRaceDay ? 'rgba(238,238,238,0.32)' : T.mgp,
-                <span style={{ fontSize: 9, color: 'rgba(238,238,238,0.9)', fontFamily: T.font }}>🏍️ {e.city.slice(0, 3).toUpperCase()}</span>
+                <span style={{ fontSize: 9, color: 'rgba(238,232,220,0.90)', fontFamily: T.font }}>🏍️ {e.city.slice(0, 3).toUpperCase()}</span>
               )}
             </div>
           ))}
@@ -254,7 +254,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, showMGP, sh
             <div key={`wec${i}`}>
               {pill(
                 s.isSel ? 'rgba(238,238,238,0.32)' : T.wec,
-                <span style={{ fontSize: 9, color: 'rgba(238,238,238,0.9)', fontFamily: T.font }}>🏁 {e.city.slice(0, 3).toUpperCase()}</span>
+                <span style={{ fontSize: 9, color: 'rgba(238,232,220,0.90)', fontFamily: T.font }}>🏁 {e.city.slice(0, 3).toUpperCase()}</span>
               )}
             </div>
           ))}
@@ -490,7 +490,7 @@ export default function CommercialCalendar() {
             { id: 'mgp', label: 'MotoGP',    on: showMGP, set: setShowMGP, bg: T.mgp, rem: remMGP },
             { id: 'wec', label: 'WEC',        on: showWEC, set: setShowWEC, bg: T.wec, rem: remWEC },
           ].map(({ id, label, on, set, bg, rem }) => (
-            <button key={id} onClick={() => set(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 7px', borderRadius: 6, border: `1.5px solid ${on ? T.border : T.border}`, background: on ? 'rgba(238,238,238,0.04)' : 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}>
+            <button key={id} onClick={() => set(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 7px', borderRadius: 6, border: `1.5px solid ${on ? T.border : T.border}`, background: on ? 'rgba(25,25,25,0.40)' : 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}>
               <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 9, fontWeight: 600, color: on ? bg : T.textTertiary, fontFamily: T.font }}>{id === 'f1' ? 'F1' : id === 'fe' ? 'FE' : id === 'mgp' ? 'GP' : 'WE'}</span>
               <span style={{ fontSize: 12, fontWeight: 500, color: T.textSecondary, fontFamily: T.font }}>{label}</span>
               {on && <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font }}>{rem}</span>}

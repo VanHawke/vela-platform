@@ -5,9 +5,9 @@
 export const T = {
   bg: '#111111',
   card: '#191919',
-  surface: 'rgba(255,224,194,0.04)',
-  surfaceHover: 'rgba(255,224,194,0.07)',
-  surfaceAlt: 'rgba(255,224,194,0.03)',
+  surface: 'rgba(25,25,25,0.45)',
+  surfaceHover: 'rgba(25,25,25,0.55)',
+  surfaceAlt: 'rgba(25,25,25,0.35)',
 
   // Glass — warm peach-tinted liquid glass system
   glass: 'rgba(25,25,25,0.30)',

@@ -731,6 +731,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     const ic = 15
     const hasContent = input.trim() || pendingAttachment
     const [promptFocused, setPromptFocused] = useState(false)
+    const [menuOpen, setMenuOpen] = useState(false)
+    const [shimmerDone, setShimmerDone] = useState(false)
     const [mousePos, setMousePos] = useState({ x: 50, y: 50 })
     const barRef = useRef(null)
     const throttleRef = useRef(null)
@@ -760,8 +762,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       }}>
         {/* Peach cursor-following glow */}
         {promptFocused && <div style={{ position: 'absolute', inset: 0, borderRadius: 24, pointerEvents: 'none', background: `radial-gradient(circle 140px at ${mousePos.x}% ${mousePos.y}%, rgba(255,224,194,0.06) 0%, transparent 70%)`, transition: `opacity 300ms ${T.ease}`, opacity: 1, zIndex: 0 }} />}
-        {/* Shimmer edge on focus */}
-        {promptFocused && <div style={{ position: 'absolute', inset: -1, borderRadius: 25, pointerEvents: 'none', background: 'linear-gradient(90deg, transparent 0%, rgba(255,224,194,0.08) 25%, rgba(255,224,194,0.12) 50%, rgba(255,224,194,0.08) 75%, transparent 100%)', backgroundSize: '200% 100%', animation: 'glowShimmer 3s linear infinite', opacity: 0.6, zIndex: 0 }} />}
+        {/* Shimmer edge on focus — plays once then settles */}
+        {promptFocused && <div onAnimationEnd={() => setShimmerDone(true)} style={{ position: 'absolute', inset: -1, borderRadius: 25, pointerEvents: 'none', background: 'linear-gradient(90deg, transparent 0%, rgba(255,224,194,0.08) 25%, rgba(255,224,194,0.12) 50%, rgba(255,224,194,0.08) 75%, transparent 100%)', backgroundSize: '200% 100%', animation: shimmerDone ? 'none' : 'glowShimmer 1.5s linear forwards', opacity: shimmerDone ? 0.15 : 0.6, transition: 'opacity 600ms ease', zIndex: 0 }} />}
         {/* Pending image preview */}
         {pendingAttachment?.previewUrl && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 0 10px', marginBottom: 8, borderBottom: '0.5px solid rgba(255,224,194,0.06)' }}>
@@ -773,13 +775,30 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         <input ref={fileInputRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx" onChange={e => { const f = e.target.files?.[0]; if (f) processFileForKiko(f); e.target.value = '' }} style={{ display: 'none' }} />
 
         {welcome ? (
-        /* ── HOMEPAGE: Single row [attach] [textarea] [mic] [EQ] [send] ── */
+        /* ── HOMEPAGE: Single row [+menu] [textarea] [mic] [EQ] [send] ── */
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, position: 'relative', zIndex: 2 }}>
-          <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} style={{ width: 30, height: 30, borderRadius: 9999, background: T.accentSoft, border: `1px solid ${T.border}`, color: T.dimText, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: T.liquidBtnShadow, transition: `all 250ms ${T.spring}` }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = T.input; e.currentTarget.style.color = '#b4b4b4'; e.currentTarget.style.boxShadow = T.liquidBtnHover }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.dimText; e.currentTarget.style.boxShadow = T.liquidBtnShadow }}>
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          </button>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <button onClick={() => setMenuOpen(!menuOpen)} disabled={fileUploading || streaming} style={{ width: 30, height: 30, borderRadius: 9999, background: T.accentSoft, border: `1px solid ${menuOpen ? 'rgba(255,224,194,0.2)' : T.border}`, color: menuOpen ? T.primary : T.dimText, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: T.liquidBtnShadow, transition: `all 250ms ${T.spring}`, transform: menuOpen ? 'rotate(45deg)' : 'rotate(0deg)' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = T.input; e.currentTarget.style.color = '#b4b4b4'; e.currentTarget.style.boxShadow = T.liquidBtnHover }}
+              onMouseLeave={e => { if (!menuOpen) { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.dimText } e.currentTarget.style.boxShadow = T.liquidBtnShadow }}>
+              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            {menuOpen && (
+              <div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: 0, background: T.card, border: `1px solid ${T.border}`, borderRadius: T.radiusLg || 12, padding: 4, minWidth: 170, boxShadow: T.shadow3 || '0 8px 32px rgba(0,0,0,0.5)', animation: 'enterScale 180ms cubic-bezier(0.34,1.56,0.64,1)', zIndex: 30 }}>
+                {[
+                  { id: 'attach', label: 'Attach files', icon: <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke={T.primary} strokeWidth="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> },
+                  { id: 'research', label: 'Deep research', icon: <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke={T.primary} strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg> },
+                  { id: 'brief', label: 'Brief me', icon: <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke={T.primary} strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 7V5a4 4 0 0 0-8 0v2"/></svg> },
+                ].map(m => (
+                  <button key={m.id} onClick={() => { setMenuOpen(false); if (m.id === 'attach') fileInputRef.current?.click(); else if (m.id === 'research') { setInput('Deep research: '); inputRef.current?.focus(); } else if (m.id === 'brief') { setInput('Brief me on '); inputRef.current?.focus(); } }} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 12px', background: 'transparent', border: 'none', color: 'rgba(238,238,238,0.75)', fontSize: 13, fontFamily: T.font, cursor: 'pointer', borderRadius: 8, transition: 'background 150ms ease' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,224,194,0.06)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                    {m.icon}<span>{m.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
             <textarea ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
               onFocus={() => setPromptFocused(true)} onBlur={() => setTimeout(() => setPromptFocused(false), 150)}
@@ -814,45 +833,60 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           )}
         </div>
         ) : (
-        /* ── CONVERSATION: Two-row layout — textarea top, icons bottom ── */
-        <>
-        <textarea ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
-          onFocus={() => setPromptFocused(true)} onBlur={() => setTimeout(() => setPromptFocused(false), 150)}
-          placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment..." : "Ask me anything...."}
-          autoFocus rows={1}
-          style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: 15, color: 'rgba(238,238,238,0.85)', fontFamily: T.font, minHeight: 44, maxHeight: 300, fontWeight: 400, resize: 'none', lineHeight: '1.5', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content', position: 'relative', zIndex: 2 }} />
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 6 }}>
-          <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} style={{ width: 30, height: 30, borderRadius: 9999, background: T.accentSoft, border: `1px solid ${T.border}`, color: T.dimText, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: T.liquidBtnShadow, transition: `all 250ms ${T.spring}` }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = T.input; e.currentTarget.style.color = '#b4b4b4'; e.currentTarget.style.boxShadow = T.liquidBtnHover }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.dimText; e.currentTarget.style.boxShadow = T.liquidBtnShadow }}>
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            {voiceActive ? (
-              <button onClick={stopVoice} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(239,68,68,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
-            ) : (<>
-              <button onClick={transcribing ? stopTranscribe : startTranscribe} style={{ width: 30, height: 30, borderRadius: 9999, border: `1px solid ${transcribing ? 'rgba(34,197,94,0.25)' : 'rgba(255,224,194,0.12)'}`, background: transcribing ? 'rgba(34,197,94,0.08)' : T.glass, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', color: transcribing ? 'rgba(34,197,94,0.9)' : T.ghostText, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', boxShadow: T.liquidBtnShadow, transition: `all 250ms ${T.spring}` }}
-                onMouseEnter={e => { if (!transcribing) { e.currentTarget.style.boxShadow = T.liquidBtnHover; e.currentTarget.style.color = '#b4b4b4' }}}
-                onMouseLeave={e => { if (!transcribing) { e.currentTarget.style.boxShadow = T.liquidBtnShadow; e.currentTarget.style.color = T.ghostText }}}>
-                <svg width={ic + 1} height={ic + 1} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
-                {transcribing && <span style={{ position: 'absolute', top: 2, right: 2, width: 7, height: 7, borderRadius: '50%', background: 'rgba(34,197,94,0.9)' }} />}
-              </button>
-              <button onClick={startVoice} style={{ width: 30, height: 30, borderRadius: 9999, border: '1px solid rgba(255,224,194,0.12)', background: T.primarySoft, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', color: 'rgba(255,224,194,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: T.liquidBtnShadow, transition: `all 250ms ${T.spring}` }}
-                onMouseEnter={e => { e.currentTarget.style.boxShadow = T.liquidBtnHover; e.currentTarget.style.transform = 'scale(1.05)' }}
-                onMouseLeave={e => { e.currentTarget.style.boxShadow = T.liquidBtnShadow; e.currentTarget.style.transform = 'scale(1)' }}>
-                <svg width={ic} height={ic} viewBox="0 0 24 24" fill="none"><rect x="4" y="8" width="2" height="8" rx="1" fill="rgba(255,224,194,0.6)" /><rect x="8" y="5" width="2" height="14" rx="1" fill="rgba(255,224,194,0.8)" /><rect x="12" y="7" width="2" height="10" rx="1" fill="rgba(255,224,194,1)" /><rect x="16" y="4" width="2" height="16" rx="1" fill="rgba(255,224,194,0.8)" /><rect x="20" y="9" width="2" height="6" rx="1" fill="rgba(255,224,194,0.6)" /></svg>
-              </button>
-            </>)}
-            {streaming ? (
-              <button onClick={stopKiko} style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: T.liquidBtnShadow }}><div style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
-            ) : (
-              <button onClick={() => handleSubmit()} disabled={!hasContent} style={{ width: 30, height: 30, borderRadius: 9999, background: hasContent ? T.accentGradient : T.glass, border: hasContent ? 'none' : `1px solid ${T.border}`, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', color: 'rgba(238,238,238,0.95)', cursor: hasContent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: hasContent ? 1 : 0.25, boxShadow: hasContent ? '0 4px 16px rgba(255,224,194,0.3)' : T.liquidBtnShadow, transition: `all 250ms ${T.spring}` }}>
-                <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              </button>
+        /* ── CONVERSATION: Single row matching homepage [+menu] [textarea] [mic] [EQ] [send] ── */
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, position: 'relative', zIndex: 2 }}>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <button onClick={() => setMenuOpen(!menuOpen)} disabled={fileUploading || streaming} style={{ width: 30, height: 30, borderRadius: 9999, background: T.accentSoft, border: `1px solid ${menuOpen ? 'rgba(255,224,194,0.2)' : T.border}`, color: menuOpen ? T.primary : T.dimText, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: T.liquidBtnShadow, transition: `all 250ms ${T.spring}`, transform: menuOpen ? 'rotate(45deg)' : 'rotate(0deg)' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = T.input; e.currentTarget.style.color = '#b4b4b4'; e.currentTarget.style.boxShadow = T.liquidBtnHover }}
+              onMouseLeave={e => { if (!menuOpen) { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.dimText } e.currentTarget.style.boxShadow = T.liquidBtnShadow }}>
+              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            {menuOpen && (
+              <div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: 0, background: T.card, border: `1px solid ${T.border}`, borderRadius: T.radiusLg || 12, padding: 4, minWidth: 170, boxShadow: T.shadow3 || '0 8px 32px rgba(0,0,0,0.5)', animation: 'enterScale 180ms cubic-bezier(0.34,1.56,0.64,1)', zIndex: 30 }}>
+                {[
+                  { id: 'attach', label: 'Attach files', icon: <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke={T.primary} strokeWidth="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> },
+                  { id: 'research', label: 'Deep research', icon: <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke={T.primary} strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg> },
+                  { id: 'brief', label: 'Brief me', icon: <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke={T.primary} strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 7V5a4 4 0 0 0-8 0v2"/></svg> },
+                ].map(m => (
+                  <button key={m.id} onClick={() => { setMenuOpen(false); if (m.id === 'attach') fileInputRef.current?.click(); else if (m.id === 'research') { setInput('Deep research: '); inputRef.current?.focus(); } else if (m.id === 'brief') { setInput('Brief me on '); inputRef.current?.focus(); } }} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 12px', background: 'transparent', border: 'none', color: 'rgba(238,238,238,0.75)', fontSize: 13, fontFamily: T.font, cursor: 'pointer', borderRadius: 8, transition: 'background 150ms ease' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,224,194,0.06)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                    {m.icon}<span>{m.label}</span>
+                  </button>
+                ))}
+              </div>
             )}
           </div>
+          <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
+            <textarea ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+              onFocus={() => setPromptFocused(true)} onBlur={() => setTimeout(() => setPromptFocused(false), 150)}
+              placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment..." : "Ask me anything...."}
+              autoFocus rows={1}
+              style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: 15, color: 'rgba(238,238,238,0.85)', fontFamily: T.font, minHeight: 24, maxHeight: 200, fontWeight: 400, resize: 'none', lineHeight: '24px', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content', verticalAlign: 'middle', display: 'block', position: 'relative', zIndex: 2 }} />
+          </div>
+          {voiceActive ? (
+            <button onClick={stopVoice} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'rgba(239,68,68,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
+          ) : (<>
+            <button onClick={transcribing ? stopTranscribe : startTranscribe} style={{ width: 30, height: 30, borderRadius: 9999, border: `1px solid ${transcribing ? 'rgba(34,197,94,0.25)' : 'rgba(255,224,194,0.12)'}`, background: transcribing ? 'rgba(34,197,94,0.08)' : T.glass, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', color: transcribing ? 'rgba(34,197,94,0.9)' : T.ghostText, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', boxShadow: T.liquidBtnShadow, transition: `all 250ms ${T.spring}` }}
+              onMouseEnter={e => { if (!transcribing) { e.currentTarget.style.boxShadow = T.liquidBtnHover; e.currentTarget.style.color = '#b4b4b4' }}}
+              onMouseLeave={e => { if (!transcribing) { e.currentTarget.style.boxShadow = T.liquidBtnShadow; e.currentTarget.style.color = T.ghostText }}}>
+              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+              {transcribing && <span style={{ position: 'absolute', top: 2, right: 2, width: 7, height: 7, borderRadius: '50%', background: 'rgba(34,197,94,0.9)' }} />}
+            </button>
+            <button onClick={startVoice} style={{ width: 30, height: 30, borderRadius: 9999, border: '1px solid rgba(255,224,194,0.12)', background: T.primarySoft, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', color: 'rgba(255,224,194,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: T.liquidBtnShadow, transition: `all 250ms ${T.spring}` }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = T.liquidBtnHover; e.currentTarget.style.transform = 'scale(1.05)' }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = T.liquidBtnShadow; e.currentTarget.style.transform = 'scale(1)' }}>
+              <svg width={14} height={14} viewBox="0 0 24 24" fill="none"><rect x="4" y="8" width="2" height="8" rx="1" fill="rgba(255,224,194,0.6)" /><rect x="8" y="5" width="2" height="14" rx="1" fill="rgba(255,224,194,0.8)" /><rect x="12" y="7" width="2" height="10" rx="1" fill="rgba(255,224,194,1)" /><rect x="16" y="4" width="2" height="16" rx="1" fill="rgba(255,224,194,0.8)" /><rect x="20" y="9" width="2" height="6" rx="1" fill="rgba(255,224,194,0.6)" /></svg>
+            </button>
+          </>)}
+          {streaming ? (
+            <button onClick={stopKiko} style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: T.liquidBtnShadow }}><div style={{ width: 8, height: 8, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
+          ) : (
+            <button onClick={() => handleSubmit()} disabled={!hasContent} style={{ width: 30, height: 30, borderRadius: 9999, background: hasContent ? T.accentGradient : T.glass, border: hasContent ? 'none' : `1px solid ${T.border}`, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', color: 'rgba(238,238,238,0.95)', cursor: hasContent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: hasContent ? 1 : 0.25, boxShadow: hasContent ? `0 4px 16px rgba(255,224,194,0.3)` : T.liquidBtnShadow, transition: `all 250ms ${T.spring}` }}>
+              <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          )}
         </div>
-        </>
         )}
       </div>
     )
@@ -875,8 +909,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     return (
       <div key={i} style={{ marginBottom: 24, position: 'relative' }}
         onMouseEnter={() => setHoveredMsg(i)} onMouseLeave={() => setHoveredMsg(null)}>
-        {/* Kiko label for assistant messages */}
-        {isKiko && <div style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,224,194,0.55)', fontFamily: T.font, marginBottom: 6 }}>Kiko</div>}
+        {/* Kiko label with animated waveform avatar */}
+        {isKiko && <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 10, background: 'rgba(25,25,25,0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '0.5px solid rgba(255,224,194,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 1px 0 rgba(255,224,194,0.08), 0 2px 8px rgba(0,0,0,0.2)' }}>
+            <KikoWaveform width={22} height={16} mini />
+          </div>
+          <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,224,194,0.55)', fontFamily: T.font }}>Kiko</span>
+        </div>}
         {/* Collapsible reasoning steps on completed messages */}
         {isKiko && msg.steps?.length > 0 && (() => {
           const isOpen = expandedSteps === i
@@ -1010,10 +1049,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             })()}
           </div>
         )}
-        {/* Kiko Waveform — below the action icons */}
+        {/* Kiko Waveform signature — below the action icons */}
         {isKiko && !streaming && (
-          <div style={{ marginTop: 4 }}>
-            <KikoWaveform width={60} height={14} mini />
+          <div style={{ marginTop: 6, opacity: 0.7 }}>
+            <KikoWaveform width={80} height={18} mini />
           </div>
         )}
       </div>
@@ -1063,7 +1102,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           }}
             onMouseEnter={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1.02)' }}
             onMouseLeave={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1)' }}>
-            <KikoWaveform width={900} height={48} speaking={voiceActive && voiceState.speaking} volume={voiceState.energy || 0} onClick={voiceActive ? undefined : () => startVoice()} />
+            <KikoWaveform width={900} height={96} speaking={voiceActive && voiceState.speaking} volume={voiceState.energy || 0} onClick={voiceActive ? undefined : () => startVoice()} />
           </div>
 
           {/* Voice controls — visible only in voice mode */}
@@ -1236,37 +1275,43 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             </button>
           )}
           {renderMessages(showAllMsgs ? messages : messages.slice(-40))}
-          {/* Thinking indicator — prominent pulsing orb */}
+          {/* Thinking indicator — glass panel with animated waveform */}
           {streaming && !streamText && (
-            <div style={{ marginBottom: 24, display: 'flex', gap: 14, alignItems: 'center', padding: '12px 0' }}>
-              <div style={{ width: 36, height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <KikoWaveform width={36} height={36} mini />
-              </div>
-              <div style={{ flex: 1, maxWidth: 400 }}>
+            <div style={{ marginBottom: 24, padding: '12px 0' }}>
+              <div style={{ maxWidth: 480 }}>
                 <div style={{
-                  padding: '14px 18px', borderRadius: 8,
-                  background: 'rgba(255,224,194,0.06)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-                  border: '1.5px solid rgba(255,224,194,0.15)',
-                  boxShadow: '0 0 20px rgba(255,224,194,0.08)',
+                  padding: '16px 20px', borderRadius: 16,
+                  background: 'rgba(25,25,25,0.60)', backdropFilter: 'blur(20px) saturate(1.3)', WebkitBackdropFilter: 'blur(20px) saturate(1.3)',
+                  border: '0.5px solid rgba(32,30,24,0.50)',
+                  borderTop: '0.5px solid rgba(255,224,194,0.12)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,224,194,0.06)',
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 15, color: 'rgba(255,224,194,0.8)', fontFamily: T.font, fontWeight: 400, flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,224,194,0.04)', border: '0.5px solid rgba(255,224,194,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <KikoWaveform width={24} height={20} mini />
+                    </div>
+                    <span style={{ fontSize: 14, color: 'rgba(255,224,194,0.75)', fontFamily: T.font, fontWeight: 400, flex: 1 }}>
                       {toolStatus || 'Kiko is thinking...'}
                     </span>
-                    <button onClick={stopKiko} style={{ padding: '4px 12px', borderRadius: 8, background: 'rgba(255,224,194,0.06)', border: '1px solid rgba(32,30,24,0.50)', color: 'rgba(238,238,238,0.4)', fontSize: 12, cursor: 'pointer', fontFamily: T.font, flexShrink: 0 }}
-                      onMouseOver={e => { e.currentTarget.style.background = 'rgba(32,30,24,0.50)'; e.currentTarget.style.color = 'rgba(238,238,238,0.7)' }}
-                      onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,224,194,0.06)'; e.currentTarget.style.color = 'rgba(238,238,238,0.4)' }}
+                    <button onClick={stopKiko} style={{ padding: '5px 14px', borderRadius: 10, background: 'rgba(255,224,194,0.04)', border: '0.5px solid rgba(32,30,24,0.50)', color: 'rgba(238,238,238,0.35)', fontSize: 12, cursor: 'pointer', fontFamily: T.font, flexShrink: 0, transition: 'all 0.15s' }}
+                      onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,224,194,0.08)'; e.currentTarget.style.color = 'rgba(238,238,238,0.7)' }}
+                      onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,224,194,0.04)'; e.currentTarget.style.color = 'rgba(238,238,238,0.35)' }}
                     >Stop</button>
+                  </div>
+                  {/* Progress shimmer bar */}
+                  <div style={{ height: 2, borderRadius: 9999, background: 'rgba(255,224,194,0.06)', marginTop: 12, overflow: 'hidden' }}>
+                    <div style={{ width: '40%', height: '100%', borderRadius: 9999, background: 'linear-gradient(90deg, rgba(255,224,194,0.3), rgba(255,224,194,0.6), rgba(255,224,194,0.3))', backgroundSize: '200% 100%', animation: 'glowShimmer 2s linear infinite' }} />
                   </div>
                 </div>
                 {thinkingSteps.length > 0 && (
                   <div style={{ marginTop: 6 }}>
                     <button onClick={() => setShowSteps(!showSteps)} style={{
                       display: 'flex', alignItems: 'center', gap: 8, width: '100%',
-                      fontSize: 12, color: 'rgba(255,224,194,0.6)', background: 'rgba(255,224,194,0.04)',
-                      border: '1px solid rgba(255,224,194,0.1)', borderRadius: 10,
+                      fontSize: 12, color: 'rgba(255,224,194,0.6)', background: 'rgba(25,25,25,0.50)',
+                      backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                      border: '0.5px solid rgba(32,30,24,0.50)', borderRadius: 10,
                       cursor: 'pointer', fontFamily: T.font, padding: '8px 12px', fontWeight: 500,
-                      transition: 'all 0.2s',
+                      transition: 'all 0.2s', boxShadow: 'inset 0 1px 0 rgba(255,224,194,0.05)',
                     }}>
                       <span style={{ width: 16, height: 16, borderRadius: '50%', border: '1.5px solid rgba(255,224,194,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,224,194,0.6)" strokeWidth="2.5"><path d={showSteps ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"}/></svg>

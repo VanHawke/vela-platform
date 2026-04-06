@@ -86,8 +86,8 @@ const STYLES = `
   50% { transform: scale(1.2); }
 }
 @keyframes kikoBarPulse {
-  0% { height: 6px; }
-  100% { height: 22px; }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 .kiko-panel { transform-origin: bottom right; }
 .kiko-panel.entering { animation: kikoSpringIn 0.42s cubic-bezier(0.34,1.56,0.64,1) forwards; }
@@ -640,20 +640,10 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'rgba(255,224,194,0.18)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4)' : '0 0 0 3px rgba(255,224,194,0.05), 0 0 20px rgba(255,224,194,0.08), 0 8px 28px rgba(0,0,0,0.4)' }}}
         >
           {voiceOpen
-            ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, width: 40, height: 40, transform: open ? 'rotate(-45deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}>
-                {[1,1,1,1,1,1,1].map((_, i) => (
-                  <div key={i} style={{
-                    width: 2.5, borderRadius: 1.5,
-                    background: 'linear-gradient(0deg, rgba(6,214,160,0.6), rgba(255,224,194,0.9))',
-                    height: voiceSpeaking ? 18 : 10,
-                    transition: 'height 0.15s ease',
-                    animation: voiceSpeaking ? `kikoBarPulse ${0.3 + i * 0.08}s ease-in-out infinite alternate` : 'none',
-                  }} />
-                ))}
-              </div>
+            ? <div style={{ transform: open ? 'rotate(-45deg)' : 'none', transition: 'transform 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><KikoWaveform width={40} height={40} mini volume={floatVoiceState.energy || 0.12} speaking={voiceSpeaking} /></div>
             : open
               ? <X size={18} />
-              : <KikoWaveform width={40} height={40} mini volume={voiceOpen ? (floatVoiceState.energy || 0.12) : 0} speaking={voiceOpen && floatVoiceState.speaking} />
+              : <KikoWaveform width={40} height={40} mini volume={0} speaking={false} />
           }
         </button>
       </div>

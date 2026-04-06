@@ -9,8 +9,8 @@ import T from '@/lib/theme'
 import { supabase } from '@/lib/supabase'
 
 const BAR_COLORS = {
-  connecting: '#fbbf24', listening: '#ffe0c2', thinking: '#ffe0c2',
-  speaking: '#ffe0c2', error: '#f87171', idle: 'rgba(255,224,194,0.18)',
+  connecting: '#f59e0b', listening: '#22c55e', thinking: '#8b5cf6',
+  speaking: '#22c55e', error: '#f87171', idle: 'rgba(255,224,194,0.18)',
 }
 
 // ── Tool Execution: ONE tool routes to Claude brain, one handles nav ──
@@ -178,16 +178,13 @@ export default function KikoVoice({ onClose, user, onVoiceState }) {
           dc.send(JSON.stringify({
             type: 'session.update',
             session: {
-              type: 'realtime',
-              audio: {
-                input: {
-                  turn_detection: {
-                    type: 'server_vad',
-                    threshold: 0.6,
-                    prefix_padding_ms: 300,
-                    silence_duration_ms: 500,
-                  }
-                }
+              modalities: ['text', 'audio'],
+              voice: voice,
+              turn_detection: {
+                type: 'server_vad',
+                threshold: 0.6,
+                prefix_padding_ms: 300,
+                silence_duration_ms: 500,
               },
               instructions: `You are Kiko, the AI voice assistant for Van Hawke Group. You work with Sunny Sidhu, the CEO, based in Weybridge, UK.
 
@@ -313,11 +310,11 @@ RULES:
         WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
         maskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
       }}>
-        <KikoWaveform width={1100} height={60} speaking={speaking} volume={volume} />
+        <KikoWaveform width={1100} height={110} speaking={speaking} volume={volume} />
       </div>
 
-      {/* Status bar */}
-      <div style={{ position: 'relative', zIndex: 1, width: 220, height: 2.5, borderRadius: 50, overflow: 'hidden', marginBottom: 40 }}>
+      {/* Status bar — color-coded: amber=connecting, green=active, purple=thinking */}
+      <div style={{ position: 'relative', zIndex: 1, width: 280, height: 3, borderRadius: 50, overflow: 'hidden', marginBottom: 40 }}>
         <div style={{
           width: '100%', height: '100%', borderRadius: 50,
           background: `linear-gradient(90deg, transparent, ${color}, transparent)`,

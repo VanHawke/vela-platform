@@ -661,7 +661,75 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
           return `✅ ENRICHED: ${intel.company_name || name}\nRevenue: ${intel.revenue_estimate || '?'} | Funding: ${intel.funding_total || '?'} (${intel.last_funding_round || '?'})\nEmployees: ${intel.employee_count || '?'} | CEO: ${intel.ceo || '?'} | CMO: ${intel.cmo || '?'}\nIndustry: ${intel.industry || '?'} / ${intel.sub_sector || '?'}\nF1 Fit: ${intel.sponsorship_fit_score || '?'}/100 | Marketing: ${intel.marketing_budget_signal || '?'}`;
         } catch (err) { return `Enrichment failed for "${name}": ${err.message}`; }
       }
-      default: return `Unknown data operation: ${operation}. Available: search_contacts, search_companies, search_deals, entity_detail, alerts, email_analytics, outreach_intelligence, outreach_timing, stale_contacts, news, partnership_matrix, pipeline_notifications, deal_history, activity_feed, search_documents, past_conversations, recent_conversations, learning_search, learning_save, skills, bookmark, warm_path, win_loss, thread_history, deal_prediction, company_intel, enrich_company`;
+      case 'start_sequence': {
+        const company = params?.company;
+        const contactEmail = params?.contact_email || params?.email;
+        const contactName = params?.contact_name || params?.name;
+        const sequenceName = params?.sequence;
+        if (!company || !contactEmail) return 'Please provide company and contact_email to start a sequence.';
+        // Find best matching sequence
+        const seqs = await sbFetch('kiko_sequences?is_active=eq.true&select=*');
+        const allSeqs = Array.isArray(seqs) ? seqs : [];
+        let seq = sequenceName ? allSeqs.find(s => s.name.toLowerCase().includes(sequenceName.toLowerCase())) : allSeqs[0];
+        if (!seq) return 'No active sequences found.';
+        // Check duplicate enrollment
+        const existing = await sbFetch(`kiko_sequence_enrollments?contact_email=eq.${encodeURIComponent(contactEmail)}&sequence_id=eq.${seq.id}&status=eq.active&limit=1`);
+        if (existing?.length) return `${contactName || contactEmail} is already enrolled in "${seq.name}".`;
+        // Get company intelligence
+        const intel = await sbFetch(`company_intelligence?company_name=ilike.*${encodeURIComponent(company)}*&limit=1`);
+        const ci = intel?.[0] || {};
+        const steps = seq.steps || [];
+        const firstStep = steps[0];
+        const nextSendAt = new Date(Date.now() + (firstStep?.delay_days || 0) * 86400000).toISOString();
+        await sbFetch('kiko_sequence_enrollments', { method: 'POST', body: JSON.stringify({
+          sequence_id: seq.id, contact_email: contactEmail, contact_name: contactName || null,
+          company, company_intel: ci, current_step: 1, status: 'active', next_send_at: nextSendAt,
+          personalisation: { revenue: ci.revenue_estimate, ceo: ci.ceo, cmo: ci.cmo, industry: ci.industry, sub_sector: ci.sub_sector }
+        }) });
+        return `✅ ENROLLED: ${contactName || contactEmail} at ${company} in "${seq.name}" (${steps.length} steps)\nFirst email scheduled for: ${new Date(nextSendAt).toLocaleDateString('en-GB')}\nSequence: ${steps.map(s => `Step ${s.step}: ${s.channel} (${s.approach})`).join(' → ')}`;
+      }
+      case 'sequence_status': {
+        const enrollments = await sbFetch('kiko_sequence_enrollments?order=created_at.desc&limit=20&select=contact_name,company,status,current_step,next_send_at,sequence_id');
+        const arr = Array.isArray(enrollments) ? enrollments : [];
+        if (!arr.length) return 'No sequence enrollments found. Use start_sequence to enroll contacts.';
+        const seqs = await sbFetch('kiko_sequences?select=id,name,steps');
+        const seqMap = {};
+        (Array.isArray(seqs) ? seqs : []).forEach(s => { seqMap[s.id] = s; });
+        let out = `ACTIVE SEQUENCES (${arr.length} enrollments):\n\n`;
+        for (const e of arr) {
+          const seq = seqMap[e.sequence_id];
+          const totalSteps = seq?.steps?.length || '?';
+          out += `${e.status === 'active' ? '🟢' : e.status === 'replied' ? '✅' : e.status === 'bounced' ? '❌' : '⏸️'} ${e.contact_name || 'Unknown'} at ${e.company} — ${seq?.name || 'Unknown sequence'}\n`;
+          out += `   Step ${e.current_step}/${totalSteps} | Status: ${e.status} | Next: ${e.next_send_at ? new Date(e.next_send_at).toLocaleDateString('en-GB') : 'n/a'}\n\n`;
+        }
+        return out;
+      }
+      case 'pause_sequence': case 'cancel_sequence': {
+        const company = params?.company;
+        const email = params?.contact_email || params?.email;
+        if (!company && !email) return 'Please provide company or contact_email to pause/cancel.';
+        const filter = email ? `contact_email=eq.${encodeURIComponent(email)}` : `company=ilike.*${encodeURIComponent(company)}*`;
+        const enrollments = await sbFetch(`kiko_sequence_enrollments?${filter}&status=eq.active&limit=5`);
+        if (!enrollments?.length) return `No active enrollments found for "${company || email}".`;
+        const newStatus = operation === 'pause_sequence' ? 'paused' : 'cancelled';
+        for (const e of enrollments) {
+          await sbFetch(`kiko_sequence_enrollments?id=eq.${e.id}`, { method: 'PATCH', body: JSON.stringify({ status: newStatus }) });
+          await sbFetch(`kiko_outreach_queue?enrollment_id=eq.${e.id}&status=eq.queued`, { method: 'PATCH', body: JSON.stringify({ status: 'cancelled' }) });
+        }
+        return `✅ ${newStatus === 'paused' ? 'Paused' : 'Cancelled'} ${enrollments.length} enrollment(s) for "${company || email}". All queued emails cancelled.`;
+      }
+      case 'linkedin_queue': {
+        const pending = await sbFetch('kiko_linkedin_queue?status=eq.pending&order=priority.desc&limit=10&select=contact_name,company,message_type,message,context,priority');
+        const arr = Array.isArray(pending) ? pending : [];
+        if (!arr.length) return 'No pending LinkedIn messages. Enroll contacts in sequences with LinkedIn steps, or ask me to draft a LinkedIn message.';
+        let out = `LINKEDIN QUEUE (${arr.length} pending):\n\n`;
+        for (const m of arr) {
+          out += `📱 ${m.contact_name} at ${m.company} (${m.message_type})\nPriority: ${'★'.repeat(Math.min(m.priority, 5))}\nMessage: "${m.message}"\nContext: ${m.context || 'n/a'}\n\n`;
+        }
+        out += `Say "I sent the LinkedIn message to [name]" to mark as sent.`;
+        return out;
+      }
+      default: return `Unknown data operation: ${operation}. Available: search_contacts, search_companies, search_deals, entity_detail, alerts, email_analytics, outreach_intelligence, outreach_timing, stale_contacts, news, partnership_matrix, pipeline_notifications, deal_history, activity_feed, search_documents, past_conversations, recent_conversations, learning_search, learning_save, skills, bookmark, warm_path, win_loss, thread_history, deal_prediction, company_intel, enrich_company, start_sequence, sequence_status, pause_sequence, cancel_sequence, linkedin_queue`;
     }
   } catch (err) {
     return `Data Agent error (${operation}): ${err.message}`;
