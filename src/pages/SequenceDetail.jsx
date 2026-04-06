@@ -195,12 +195,28 @@ export default function SequenceDetail() {
       {/* Draft/Live status banner */}
       {!isNew && isDraft && (
         <div style={{ padding: '10px 16px', borderRadius: T.radiusSm, background: 'rgba(251,191,36,0.04)', border: '0.5px solid rgba(251,191,36,0.15)', marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 12, color: T.warning, fontWeight: 500 }}>Draft — not sending. Build your sequence, add leads, then launch.</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 12, color: T.warning, fontWeight: 500 }}>Draft</span>
+            <span style={{ fontSize: 11, color: T.textTertiary }}>Build sequence → Add leads → Launch</span>
+          </div>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {['Sequence', 'Leads', 'Launch'].map((s, i) => (
+              <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div style={{ width: 20, height: 20, borderRadius: '50%', fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: (i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? 'rgba(255,224,194,0.12)' : 'transparent',
+                  color: (i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? T.accent : T.textTertiary,
+                  border: `1px solid ${(i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? 'rgba(255,224,194,0.2)' : T.border}`
+                }}>{i + 1}</div>
+                {i < 2 && <ChevronRight size={10} style={{ color: T.textMuted }} />}
+              </div>
+            ))}
+          </div>
         </div>
       )}
       {!isNew && !isDraft && (
         <div style={{ padding: '10px 16px', borderRadius: T.radiusSm, background: 'rgba(45,212,191,0.04)', border: '0.5px solid rgba(45,212,191,0.15)', marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 12, color: T.success, fontWeight: 500 }}>Live — emails sending Mon-Fri 8am-6pm (30/day cap)</span>
+          <span style={{ fontSize: 12, color: T.success, fontWeight: 500 }}>Live — emails sending Mon-Fri 8am-6pm, timed to prospect timezone</span>
+          <button onClick={async () => { await supabase.from('kiko_sequences').update({ is_active: false }).eq('id', id); setSeq(prev => ({ ...prev, is_active: false })) }} style={{ padding: '4px 12px', borderRadius: 4, border: '0.5px solid rgba(248,113,113,0.2)', background: 'transparent', color: T.danger, fontSize: 10, cursor: 'pointer', fontFamily: T.font }}>Pause campaign</button>
         </div>
       )}
       <div style={{ display: 'flex', gap: 2, marginBottom: 14, background: T.surface, borderRadius: T.radius, padding: 3, width: 'fit-content' }}>
@@ -502,13 +518,18 @@ export default function SequenceDetail() {
                 <div style={{ padding: '10px 14px', borderBottom: `0.5px solid ${T.border}`, fontSize: 12, fontWeight: 500 }}>Step breakdown</div>
                 {steps.map((s, i) => {
                   const sentQ = queue.filter(q => q.step_number === i + 1 && q.status === 'sent').length
+                  const pctSent = enrollments.length > 0 ? Math.round(sentQ / enrollments.length * 100) : 0
                   return (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderBottom: `0.5px solid ${T.border}`, fontSize: 11 }}>
-                      <div style={{ width: 20, height: 20, borderRadius: 5, background: s.channel === 'linkedin' ? 'rgba(0,119,181,0.12)' : 'rgba(255,224,194,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {s.channel === 'linkedin' ? <Linkedin size={9} style={{ color: '#0077B5' }} /> : <Mail size={9} style={{ color: T.accent }} />}
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderBottom: `0.5px solid ${T.border}`, fontSize: 11 }}>
+                      <div style={{ width: 20, height: 20, borderRadius: 5, background: s.type === 'condition' ? 'rgba(251,191,36,0.10)' : s.channel === 'linkedin' ? 'rgba(0,119,181,0.12)' : 'rgba(255,224,194,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {s.type === 'condition' ? <GitBranch size={9} style={{ color: T.warning }} /> : s.channel === 'linkedin' ? <Linkedin size={9} style={{ color: '#0077B5' }} /> : <Mail size={9} style={{ color: T.accent }} />}
                       </div>
-                      <span style={{ flex: 1, color: T.textSecondary }}>Step {i + 1}: {s.approach}</span>
-                      <span style={{ color: T.textSecondary }}>{sentQ} sent</span>
+                      <span style={{ width: 60, color: T.textTertiary }}>Step {i + 1}</span>
+                      <span style={{ flex: 1, color: T.textSecondary }}>{s.type === 'condition' ? 'Condition' : s.approach || 'authority-led'}</span>
+                      <div style={{ width: 80, height: 4, background: T.surface, borderRadius: 2, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', borderRadius: 2, width: `${pctSent}%`, background: T.success, transition: 'width 0.3s' }} />
+                      </div>
+                      <span style={{ width: 50, textAlign: 'right', color: T.textSecondary }}>{sentQ} sent</span>
                     </div>
                   )
                 })}

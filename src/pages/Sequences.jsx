@@ -4,14 +4,13 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
 import T, { glass } from '@/lib/theme'
-import { Plus, Sparkles, X, Mail, Linkedin, Play, Pause, Users, Send, TrendingUp, ChevronRight } from 'lucide-react'
+import { Plus, Sparkles, X, Mail, Linkedin, Play, Pause, Users, Send, TrendingUp, ChevronRight, GitBranch, Rocket } from 'lucide-react'
 
 function pct(n, d) { return d > 0 ? Math.round((n / d) * 100) : 0 }
 
 function statusBadge(isActive) {
-  return isActive
-    ? { bg: 'rgba(45,212,191,0.08)', color: 'rgba(45,212,191,0.8)', border: 'rgba(45,212,191,0.15)', label: 'Running' }
-    : { bg: 'rgba(251,191,36,0.08)', color: 'rgba(251,191,36,0.8)', border: 'rgba(251,191,36,0.15)', label: 'Paused' }
+  if (isActive === true) return { bg: 'rgba(45,212,191,0.08)', color: 'rgba(45,212,191,0.8)', border: 'rgba(45,212,191,0.15)', label: 'Live' }
+  return { bg: 'rgba(251,191,36,0.08)', color: 'rgba(251,191,36,0.8)', border: 'rgba(251,191,36,0.15)', label: 'Draft' }
 }
 
 export default function Sequences() {
@@ -98,17 +97,26 @@ export default function Sequences() {
             {sequences.length} campaign{sequences.length !== 1 ? 's' : ''} · {totalEnrolled} leads enrolled
           </p>
         </div>
-        <button onClick={() => setShowWizard(true)} style={{
-          padding: '8px 18px', borderRadius: T.radiusSm, border: 'none',
-          background: 'rgba(255,224,194,0.08)', color: T.accent, fontSize: 12, fontWeight: 500,
-          cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6,
-          boxShadow: T.liquidBtnShadow, transition: 'all 0.2s',
-        }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,224,194,0.14)'; e.currentTarget.style.boxShadow = T.liquidBtnHover }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,224,194,0.08)'; e.currentTarget.style.boxShadow = T.liquidBtnShadow }}
-        >
-          <Sparkles size={14} /> Generate Campaign
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => navigate('/sequences/new')} style={{
+            padding: '8px 16px', borderRadius: T.radiusSm, border: `0.5px solid ${T.border}`,
+            background: 'transparent', color: T.textSecondary, fontSize: 12, fontWeight: 400,
+            cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            <Plus size={14} /> New
+          </button>
+          <button onClick={() => setShowWizard(true)} style={{
+            padding: '8px 18px', borderRadius: T.radiusSm, border: 'none',
+            background: 'rgba(255,224,194,0.08)', color: T.accent, fontSize: 12, fontWeight: 500,
+            cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6,
+            boxShadow: T.liquidBtnShadow, transition: 'all 0.2s',
+          }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,224,194,0.14)'; e.currentTarget.style.boxShadow = T.liquidBtnHover }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,224,194,0.08)'; e.currentTarget.style.boxShadow = T.liquidBtnShadow }}
+          >
+            <Sparkles size={14} /> Generate with AI
+          </button>
+        </div>
       </div>
 
       {totalEnrolled > 0 && (
@@ -150,7 +158,8 @@ export default function Sequences() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 15, fontWeight: 500, color: T.text, marginBottom: 2 }}>{seq.name}</div>
                   <div style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300 }}>
-                    {emails} email{emails !== 1 ? 's' : ''} · {linkedin} LinkedIn · {totalDays} days · {steps[0]?.approach || 'authority-led'}
+                    {emails} email{emails !== 1 ? 's' : ''} · {linkedin} LinkedIn{steps.some(s => s.type === 'condition') ? ' · branching' : ''} · {totalDays} days
+                    {seq.created_at && <span> · Created {new Date(seq.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>}
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -169,10 +178,10 @@ export default function Sequences() {
                 {steps.map((s, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <div style={{ width: 22, height: 22, borderRadius: 6,
-                      background: s.channel === 'linkedin' ? 'rgba(0,119,181,0.10)' : 'rgba(255,224,194,0.06)',
+                      background: s.type === 'condition' ? 'rgba(251,191,36,0.08)' : s.channel === 'linkedin' ? 'rgba(0,119,181,0.10)' : 'rgba(255,224,194,0.06)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      border: `0.5px solid ${s.channel === 'linkedin' ? 'rgba(0,119,181,0.15)' : 'rgba(255,224,194,0.08)'}` }}>
-                      {s.channel === 'linkedin' ? <Linkedin size={10} style={{ color: 'rgba(0,119,181,0.7)' }} /> : <Mail size={10} style={{ color: 'rgba(255,224,194,0.5)' }} />}
+                      border: `0.5px solid ${s.type === 'condition' ? 'rgba(251,191,36,0.15)' : s.channel === 'linkedin' ? 'rgba(0,119,181,0.15)' : 'rgba(255,224,194,0.08)'}` }}>
+                      {s.type === 'condition' ? <GitBranch size={10} style={{ color: 'rgba(251,191,36,0.7)' }} /> : s.channel === 'linkedin' ? <Linkedin size={10} style={{ color: 'rgba(0,119,181,0.7)' }} /> : <Mail size={10} style={{ color: 'rgba(255,224,194,0.5)' }} />}
                     </div>
                     {i < steps.length - 1 && <ChevronRight size={8} style={{ color: T.textMuted }} />}
                   </div>
@@ -205,7 +214,9 @@ export default function Sequences() {
                   )}
                 </div>
               ) : (
-                <div style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300 }}>No leads enrolled — click to add contacts</div>
+                <div style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Users size={12} style={{ color: T.textMuted }} /> No leads enrolled — click to add contacts and launch
+                </div>
               )}
             </div>
           )
