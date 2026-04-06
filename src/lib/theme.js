@@ -118,23 +118,21 @@ export const T = {
   auroraAlpha: 0.18,
 }
 
-// Glass helper — clean frosted panel
+// Glass helper — clean flat panel (matching mockup renders)
 export const glass = {
-  background: T.glass,
-  backdropFilter: T.glassBlur,
-  WebkitBackdropFilter: T.glassBlur,
-  border: `0.5px solid ${T.glassBorder}`,
-  borderTop: `0.5px solid ${T.glassBorderTop}`,
+  background: '#141416',
+  border: `0.5px solid rgba(255,255,255,0.06)`,
+  borderTop: `0.5px solid rgba(255,255,255,0.08)`,
   borderRadius: T.radius,
-  boxShadow: T.glassShadow,
+  boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
   transition: 'all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1)',
 }
 
 // Glass hover helper
 export const glassHover = {
-  background: T.glassHover,
-  borderColor: T.glassBorderHover,
-  boxShadow: T.glassShadowHover,
+  background: '#1A1A1E',
+  borderColor: 'rgba(255,255,255,0.10)',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.35)',
 }
 
 export default T
