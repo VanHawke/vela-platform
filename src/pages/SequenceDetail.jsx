@@ -56,15 +56,35 @@ export default function SequenceDetail() {
     setSaving(false); setDirty(false)
   }
 
-  function addStep(ch) { setSteps([...steps, { step: steps.length+1, delay_days: steps.length===0?0:3, channel: ch, approach:'authority-led', psychology:'reciprocity', subject:'', template:'' }]); setSelStep(steps.length); setDirty(true) }
+  function addStep(ch) { 
+    const emailTemplate = 'Dear {firstName},\n\n\n\nKind regards,\n\n{signature}'
+    const linkedinTemplate = 'Hi {firstName}, '
+    setSteps([...steps, { step: steps.length+1, delay_days: steps.length===0?0:3, channel: ch, approach:'authority-led', psychology:'reciprocity', subject: ch==='email' ? 'Haas F1 Team × {category}' : '', template: ch==='email' ? emailTemplate : linkedinTemplate }]); setSelStep(steps.length); setDirty(true) 
+  }
   function upd(i, k, v) { const u=[...steps]; u[i]={...u[i],[k]:v}; setSteps(u); setDirty(true) }
+  function updAndRegen(i, k, v) { upd(i, k, v); setRegenPrompt(true) }
+  const [regenPrompt, setRegenPrompt] = useState(false)
   function del(i) { setSteps(steps.filter((_,j)=>j!==i).map((s,j)=>({...s,step:j+1}))); if(selStep>=steps.length-1) setSelStep(Math.max(0,steps.length-2)); setDirty(true) }
 
   async function askKiko(i) {
     const s=steps[i]; if(!s) return; upd(i,'template','⏳ Kiko is writing...')
     try {
       const r = await fetch('/api/kiko', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ message:`Write a ${s.channel==='email'?'50-125 word email':'300-char LinkedIn message'} for step ${s.step}. Approach: ${s.approach}. Psychology: ${s.psychology}. Target: ${seq?.target_persona||'C-suite'}. Subject: ${s.subject||'F1 partnership'}. ${s.channel==='email'?'2 paragraphs. No sign-off.':'Personal tone.'} Return ONLY the text.`, stream:false }) })
+        body: JSON.stringify({ message:`Write a ${s.channel==='email'?'outreach email':'300-char LinkedIn message'} for step ${s.step} of a sequence.
+
+STYLE RULES (non-negotiable):
+- ${s.channel==='email' ? 'Start with "Dear {firstName}," and end with "Kind regards,\\n\\n{signature}"' : 'Start with "Hi {firstName},"'}
+- Write at principal/board level. No generic filler. No "I hope this finds you well".
+- Tone: "We work at principal level on the structuring of Formula One partnerships for teams and rights-holders."
+- Differentiate: "Our role is not to place sponsorship assets, but to design closed, category-exclusive partnership systems tied to governance, access, and institutional credibility."
+- Category-specific: explain WHY this category matters operationally for Formula One, not just as brand exposure.
+- Soft CTA: "The relevant question at this stage is simply whether this is strategic from your perspective."
+- Subject format uses × not — (e.g. "Haas F1 Team × Cloud Infrastructure")
+- 50-125 words for emails. 300 chars max for LinkedIn.
+
+Context: Approach: ${s.approach}. Psychology: ${s.psychology}. Target: ${seq?.target_persona||'C-suite'}. Subject: ${s.subject||'F1 partnership'}.
+
+Return ONLY the message text, nothing else.`, stream:false }) })
       const d = await r.json(); upd(i, 'template', d?.content || d?.message || 'Error')
     } catch { upd(i, 'template', 'Error generating.') }
   }
@@ -170,16 +190,23 @@ export default function SequenceDetail() {
                 <div style={{display:'flex',gap:8,marginBottom:12}}>
                   <div style={{flex:1}}>
                     <label style={{fontSize:10,color:T.textTer,marginBottom:2,display:'block'}}>Approach</label>
-                    <select value={cur.approach||''} onChange={e=>upd(selStep,'approach',e.target.value)} style={{width:'100%',padding:'5px 6px',borderRadius:5,border:`1px solid ${T.border}`,background:T.surface,color:T.textSec,fontSize:11,fontFamily:T.font,outline:'none'}}>{APPROACHES.map(a=><option key={a} value={a} style={{background:'#111'}}>{a}</option>)}</select>
+                    <select value={cur.approach||''} onChange={e=>updAndRegen(selStep,'approach',e.target.value)} style={{width:'100%',padding:'5px 6px',borderRadius:5,border:`1px solid ${T.border}`,background:T.surface,color:T.textSec,fontSize:11,fontFamily:T.font,outline:'none'}}>{APPROACHES.map(a=><option key={a} value={a} style={{background:'#111'}}>{a}</option>)}</select>
                   </div>
                   <div style={{flex:1}}>
                     <label style={{fontSize:10,color:T.textTer,marginBottom:2,display:'block'}}>Psychology</label>
-                    <select value={cur.psychology||''} onChange={e=>upd(selStep,'psychology',e.target.value)} style={{width:'100%',padding:'5px 6px',borderRadius:5,border:`1px solid ${T.border}`,background:T.surface,color:T.textSec,fontSize:11,fontFamily:T.font,outline:'none'}}>{PSYCHOLOGY.map(p=><option key={p} value={p} style={{background:'#111'}}>{p.replace(/_/g,' ')}</option>)}</select>
+                    <select value={cur.psychology||''} onChange={e=>updAndRegen(selStep,'psychology',e.target.value)} style={{width:'100%',padding:'5px 6px',borderRadius:5,border:`1px solid ${T.border}`,background:T.surface,color:T.textSec,fontSize:11,fontFamily:T.font,outline:'none'}}>{PSYCHOLOGY.map(p=><option key={p} value={p} style={{background:'#111'}}>{p.replace(/_/g,' ')}</option>)}</select>
                   </div>
                 </div>
                 {cur.channel==='email'&&<div style={{marginBottom:12}}>
                   <label style={{fontSize:10,color:T.textTer,marginBottom:2,display:'block'}}>Subject</label>
-                  <input value={cur.subject||''} onChange={e=>upd(selStep,'subject',e.target.value)} placeholder="Haas F1 Team — {category} Partnership" style={{width:'100%',padding:'7px 10px',borderRadius:6,border:`1px solid ${T.border}`,background:T.surface,color:T.text,fontSize:12,fontFamily:T.font,outline:'none',boxSizing:'border-box'}}/>
+                  <input value={cur.subject||''} onChange={e=>upd(selStep,'subject',e.target.value)} placeholder="Haas F1 Team × {category}" style={{width:'100%',padding:'7px 10px',borderRadius:6,border:`1px solid ${T.border}`,background:T.surface,color:T.text,fontSize:12,fontFamily:T.font,outline:'none',boxSizing:'border-box'}}/>
+                </div>}
+                {regenPrompt&&<div style={{padding:'8px 12px',borderRadius:6,background:'rgba(245,158,11,0.06)',border:'1px solid rgba(245,158,11,0.15)',marginBottom:12,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  <span style={{fontSize:11,color:T.amber}}>Approach changed — regenerate content?</span>
+                  <div style={{display:'flex',gap:6}}>
+                    <button onClick={()=>{askKiko(selStep);setRegenPrompt(false)}} style={{padding:'4px 10px',borderRadius:4,border:'none',background:T.purple,color:'#fff',fontSize:10,cursor:'pointer',fontFamily:T.font}}>Regenerate</button>
+                    <button onClick={()=>setRegenPrompt(false)} style={{padding:'4px 10px',borderRadius:4,border:`1px solid ${T.border}`,background:'transparent',color:T.textTer,fontSize:10,cursor:'pointer',fontFamily:T.font}}>Keep</button>
+                  </div>
                 </div>}
                 <div style={{marginBottom:10}}>
                   <div style={{display:'flex',justifyContent:'space-between',marginBottom:2}}>
