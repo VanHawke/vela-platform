@@ -72,14 +72,18 @@ export default async function handler(req, res) {
           // Cancel all queued emails for this enrollment
           await sbFetch(`kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&status=eq.queued`, { method: 'PATCH', body: JSON.stringify({ status: 'cancelled' }) });
 
-          // Create alert
+          // Create alert — schema-correct (type=reply_from_prospect to match Command Centre + Sequences UI queries)
           await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
-            org_id: ORG_ID, type: 'sequence_reply', entity: enrollment.company,
-            severity: 'high', title: `REPLY: ${enrollment.contact_name || email} responded`,
-            detail: `${enrollment.contact_name} at ${enrollment.company} replied to sequence step ${enrollment.current_step - 1}. Sequence auto-stopped.`,
-            action: `Read the reply and respond personally. This is a warm lead — move to In Dialogue stage.`,
+            type: 'reply_from_prospect',
+            severity: 'high',
+            title: `Reply: ${enrollment.contact_name || email}`,
+            detail: `${enrollment.contact_name} at ${enrollment.company} replied to sequence step ${enrollment.current_step - 1}. Sequence auto-stopped. Snippet: ${(snippet || '').slice(0, 200)}`,
+            entity_type: 'contact',
+            entity_name: enrollment.contact_name || email,
+            entity_id: enrollment.contact_id || null,
+            metadata: { gmail_id: msgId, thread_id: threadId, sequence_id: enrollment.sequence_id, enrollment_id: enrollment.id, source: 'sequence_reply_detect' },
             created_at: new Date().toISOString()
-          }) });
+          }) }).catch(() => {});
           // Attribution
           await sbFetch('kiko_deal_attribution', { method: 'POST', body: JSON.stringify({
             deal_company: enrollment.company, event_type: 'reply_received',
