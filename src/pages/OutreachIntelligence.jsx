@@ -266,44 +266,51 @@ Be direct. Use web search for current company intelligence if needed.`
         {/* Priority action list */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px' }}>
 
-          {/* Prospect Replies section (Morning Brief surface) */}
-          {prospectReplies.length > 0 && (<>
-            <div style={{ fontSize: 11, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Send size={12} style={{ color: 'rgba(248,113,113,0.6)' }} />
-              Prospect Replies ({prospectReplies.length}) — need your response
-            </div>
-            {prospectReplies.map(reply => {
-              const company = reply.metadata?.company || ''
-              const fromEmail = reply.metadata?.from || ''
-              const subject = reply.metadata?.subject || ''
-              return (
-                <div key={reply.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '9px 12px', borderRadius: 10, marginBottom: 4, background: 'rgba(248,113,113,0.03)', border: '0.5px solid rgba(248,113,113,0.25)', cursor: 'pointer', transition: 'all 0.15s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.06)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.03)' }}
-                  onClick={() => {
-                    const taskShim = { id: reply.id, data: { company, contact: reply.entity_name || fromEmail }, isTask: true, taskData: { type: 'Prospect Reply', company, contact: reply.entity_name || fromEmail, notes: `Subject: ${subject}\n\n${reply.detail || ''}`, dueDate: null } }
-                    setSelectedAction(taskShim)
-                    getKikoRec(taskShim)
-                  }}>
-                  <Send size={14} style={{ color: 'rgba(248,113,113,0.6)', flexShrink: 0, marginTop: 3 }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                      <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(248,113,113,0.7)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Reply</span>
-                      <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 6, background: 'rgba(248,113,113,0.08)', color: 'rgba(248,113,113,0.6)', fontWeight: 500 }}>NEEDS ACTION</span>
-                    </div>
-                    <div style={{ fontSize: 14, fontWeight: 400, color: 'rgba(238,238,238,0.75)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {reply.entity_name || fromEmail}{company ? ` — ${company}` : ''}
-                    </div>
-                    <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {subject || (reply.detail || '').slice(0, 80)}
-                    </div>
+          {/* ══════ PRIORITY (always visible — merges replies + stale deals + overdue tasks + signals) ══════ */}
+          {(() => {
+            const now = Date.now()
+            const overdueTasks = tasks.filter(t => !t.data?.completed && t.data?.dueDate && new Date(t.data.dueDate).getTime() < now).slice(0, 3)
+            const topStale = priorityActions.filter(a => a.daysSinceUpdate > 14 && a.value > 0).slice(0, 3)
+            const priorityItems = [
+              ...prospectReplies.map(r => ({ kind: 'reply', id: r.id, icon: 'send', color: 'rgba(248,113,113,0.6)', bg: 'rgba(248,113,113,0.04)', border: 'rgba(248,113,113,0.28)', tag: 'REPLY NEEDED', title: `${r.entity_name || r.metadata?.from || 'Unknown'}${r.metadata?.company ? ' — ' + r.metadata.company : ''}`, sub: r.metadata?.subject || (r.detail || '').slice(0, 80), onClick: () => { const shim = { id: r.id, data: { company: r.metadata?.company || '', contact: r.entity_name || r.metadata?.from || '' }, isTask: true, taskData: { type: 'Prospect Reply', company: r.metadata?.company || '', contact: r.entity_name || r.metadata?.from || '', notes: `Subject: ${r.metadata?.subject || ''}\n\n${r.detail || ''}`, dueDate: null } }; setSelectedAction(shim); getKikoRec(shim) } })),
+              ...overdueTasks.map(t => ({ kind: 'overdue', id: t.id, icon: 'clock', color: 'rgba(255,59,48,0.6)', bg: 'rgba(255,59,48,0.03)', border: 'rgba(255,59,48,0.22)', tag: 'OVERDUE', title: t.data?.company || t.data?.notes || 'Untitled task', sub: `${t.data?.type || 'Task'} · due ${t.data?.dueDate}${t.data?.contact ? ' · ' + t.data.contact : ''}`, onClick: () => { const shim = { id: t.id, data: { company: t.data?.company || '', contact: t.data?.contact || '' }, isTask: true, taskData: t.data }; setSelectedAction(shim); getKikoRec(shim) } })),
+              ...topStale.slice(0, 2).map(a => ({ kind: 'stale', id: a.id, icon: 'alert', color: 'rgba(251,191,36,0.7)', bg: 'rgba(251,191,36,0.03)', border: 'rgba(251,191,36,0.22)', tag: `STALE ${a.daysSinceUpdate}D`, title: `${a.data?.company || 'Unknown'}${a.data?.contact ? ' — ' + a.data.contact : ''}`, sub: `${a.stage} · $${(a.value / 1000).toFixed(0)}k · ${a.actionType}`, onClick: () => getKikoRec(a) })),
+              ...signals.slice(0, 2).map(s => ({ kind: 'signal', id: s.id, icon: 'trending', color: 'rgba(0,212,170,0.6)', bg: 'rgba(0,212,170,0.03)', border: 'rgba(0,212,170,0.22)', tag: (s.type || 'SIGNAL').toUpperCase(), title: s.title || s.entity_name || 'Signal', sub: (s.detail || '').slice(0, 90), onClick: () => {} })),
+            ].slice(0, 8)
+            return (
+              <>
+                <div style={{ fontSize: 11, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Target size={12} style={{ color: 'rgba(167,139,250,0.7)' }} />
+                    Priority ({priorityItems.length}){priorityItems.length > 0 ? ' — act on these first' : ''}
                   </div>
-                  <ChevronRight size={12} style={{ color: 'rgba(248,113,113,0.4)', flexShrink: 0, marginTop: 8 }} />
                 </div>
-              )
-            })}
-            <div style={{ height: 16 }} />
-          </>)}
+                {priorityItems.length === 0 ? (
+                  <div style={{ padding: '14px 16px', borderRadius: 10, marginBottom: 16, background: 'rgba(167,139,250,0.03)', border: '0.5px dashed rgba(167,139,250,0.20)', fontSize: 12, color: T.textTertiary, fontWeight: 300, lineHeight: 1.5 }}>
+                    Nothing critical right now. Kiko will surface prospect replies, overdue tasks, stale high-value deals, and signals here as they arrive.
+                  </div>
+                ) : (
+                  priorityItems.map(item => (
+                    <div key={`${item.kind}-${item.id}`} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 12px', borderRadius: 10, marginBottom: 4, background: item.bg, border: `0.5px solid ${item.border}`, cursor: 'pointer', transition: 'all 0.15s' }}
+                      onMouseEnter={e => { e.currentTarget.style.filter = 'brightness(1.2)' }}
+                      onMouseLeave={e => { e.currentTarget.style.filter = 'none' }}
+                      onClick={item.onClick}>
+                      <div style={{ width: 3, height: 36, borderRadius: 2, flexShrink: 0, marginTop: 2, background: item.color }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                          <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 6, background: item.bg, color: item.color, fontWeight: 600, letterSpacing: '0.04em' }}>{item.tag}</span>
+                        </div>
+                        <div style={{ fontSize: 14, fontWeight: 400, color: 'rgba(238,238,238,0.80)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
+                        <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.sub}</div>
+                      </div>
+                      <ChevronRight size={12} style={{ color: item.color, opacity: 0.5, flexShrink: 0, marginTop: 8 }} />
+                    </div>
+                  ))
+                )}
+                <div style={{ height: 20, borderBottom: '0.5px solid rgba(167,139,250,0.08)', marginBottom: 16 }} />
+              </>
+            )
+          })()}
 
           {/* Tasks Due section */}
           {tasks.length > 0 && (<>

@@ -1,41 +1,55 @@
 // api/agents/outreach.js — Outreach Agent
 // Email drafting, Lemlist campaigns, follow-ups, recipient analysis.
-// Absorbs all outbound communication tools from kiko-tools.js.
+// Uses voice profile learned from user's actual sent emails + global signature wrapper.
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from '../kiko-tools.js';
 import { generateFollowup, getFollowupQueue } from '../kiko-followup.js';
+import { wrapEmailBody, loadUserSignatures, loadVoiceProfile, voiceProfileToPrompt } from '../lib/email-format.js';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
-// ── Gmail Draft ──
-async function draftEmail({ to, subject, body, cc, thread_id }, userEmail) {
+// ── Gmail Draft (voice-aware, signature-wrapped) ──
+async function draftEmail({ to, subject, body, cc, thread_id, contact_status = 'cold' }, userEmail, userId) {
   try {
     const { getGoogleToken } = await import('../google-token.js');
     const token = await getGoogleToken(userEmail);
-    let sig = '';
-    try {
-      const sigRows = await sbFetch('user_settings?select=email_signature&limit=1');
-      if (sigRows?.[0]?.email_signature) sig = `<br><div style="margin-top:16px;padding-top:12px;border-top:1px solid #e0e0e0">${sigRows[0].email_signature}</div>`;
-    } catch {}
-    // Clean body — strip sign-off and username (Gmail signature handles this)
-    const cleanBody = body
-      .replace(/Best regards,?\s*/gi, '').replace(/Kind regards,?\s*/gi, '').replace(/Warm regards,?\s*/gi, '')
-      .replace(/Regards,?\s*/gi, '').replace(/Sincerely,?\s*/gi, '').replace(/Cheers,?\s*/gi, '')
-      .replace(/Sunny\s*Sidhu/gi, '').replace(/Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?\s*/gi, '')
-      .replace(/\n\s*\n\s*\n/g, '\n\n').trim();
-    // Clean subject — fix dash encoding
+
+    // Load voice + signatures
+    const [signatures, voiceProfile] = await Promise.all([
+      loadUserSignatures(sbFetch, userId),
+      loadVoiceProfile(sbFetch, userId),
+    ]);
+
+    // If voice profile exists, re-run the body through it for alignment
+    let finalBody = body;
+    if (voiceProfile && body && body.length > 40) {
+      try {
+        const voicePrompt = voiceProfileToPrompt(voiceProfile);
+        const alignRes = await anthropic.messages.create({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 800,
+          messages: [{ role: 'user', content: `${voicePrompt}\n\nRewrite the following email in the user's voice above. Preserve the meaning and structure but match tone, length, openings, closings, and avoid any forbidden phrases. Return ONLY the rewritten email body — no commentary, no subject line.\n\nEmail to rewrite:\n${body}` }],
+        });
+        const rewritten = alignRes.content[0]?.text?.trim();
+        if (rewritten && rewritten.length > 40) finalBody = rewritten;
+      } catch {}
+    }
+
+    // Clean subject
     const cleanSubject = (subject || '')
       .replace(/[\u2014\u2013\u2015\u2012\u2010\u2011]/g, '-')
-      .replace(/â€"/g, '-').replace(/â€"/g, '-');
-    const htmlBody = `<div style="font-family:Helvetica,Arial,sans-serif;font-size:12pt">${cleanBody.replace(/\n/g, '<br>')}${sig}</div>`;
+      .replace(/â€"/g, '-');
+
+    // Wrap body with global format (Helvetica 12 + signature)
+    const { html: htmlBody, text: plainBody } = wrapEmailBody(finalBody, { contactStatus: contact_status, signature: signatures.signature, coldSignature: signatures.coldSignature });
+
     const boundary = `b_${Date.now()}`;
-    // Always send from vanhawke.agency alias for F1 prospecting
     const fromAddr = userEmail.includes('vanhawke') ? userEmail.replace('vanhawke.com', 'vanhawke.agency') : userEmail;
     let mime = `To: ${to}\r\nFrom: ${fromAddr}\r\n`;
     if (cc) mime += `Cc: ${cc}\r\n`;
     if (subject) mime += `Subject: ${cleanSubject}\r\n`;
     mime += `MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary="${boundary}"\r\n\r\n`;
-    mime += `--${boundary}\r\nContent-Type: text/plain; charset="UTF-8"\r\n\r\n${cleanBody}\r\n`;
+    mime += `--${boundary}\r\nContent-Type: text/plain; charset="UTF-8"\r\n\r\n${plainBody}\r\n`;
     mime += `--${boundary}\r\nContent-Type: text/html; charset="UTF-8"\r\n\r\n${htmlBody}\r\n`;
     mime += `--${boundary}--`;
     const raw = Buffer.from(mime).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -47,10 +61,9 @@ async function draftEmail({ to, subject, body, cc, thread_id }, userEmail) {
     });
     const draft = await draftRes.json();
     if (!draftRes.ok) return `Failed to create draft: ${JSON.stringify(draft)}`;
-    try { await sbFetch('activities', { method: 'POST', body: JSON.stringify({ type: 'email_drafted', entity_name: to, subject: subject || 'No subject', status: 'draft', metadata: { to, subject, draft_id: draft?.id } }) }); } catch {}
-    // Phase 16: Track draft for edit delta learning
-    try { await sbFetch('kiko_draft_tracking', { method: 'POST', body: JSON.stringify({ user_id: userId, gmail_draft_id: draft?.id, gmail_message_id: draft?.message?.id, original_content: body.slice(0, 2000), recipient: to, subject: subject || '', status: 'drafted' }) }); } catch {}
-    return `Draft created. To: ${to}${subject ? `, Subject: "${subject}"` : ''}. Saved in Gmail Drafts.`;
+    try { await sbFetch('activities', { method: 'POST', body: JSON.stringify({ type: 'email_drafted', entity_name: to, subject: subject || 'No subject', status: 'draft', metadata: { to, subject, draft_id: draft?.id, voice_applied: !!voiceProfile, contact_status } }) }); } catch {}
+    try { await sbFetch('kiko_draft_tracking', { method: 'POST', body: JSON.stringify({ user_id: userId, gmail_draft_id: draft?.id, gmail_message_id: draft?.message?.id, original_content: finalBody.slice(0, 2000), recipient: to, subject: subject || '', status: 'drafted' }) }); } catch {}
+    return `Draft created. To: ${to}${subject ? `, Subject: "${subject}"` : ''}. Saved in Gmail Drafts. ${voiceProfile ? '[voice-matched]' : '[no voice profile — run cron-email-voice-learning]'}`;
   } catch (e) { return `Draft error: ${e.message}`; }
 }
 
@@ -140,7 +153,7 @@ async function lemlistGetActivities({ campaign_id, type }) {
 export async function callOutreachAgent(operation, params = {}, userEmail = 'sunny@vanhawke.com', userId = null) {
   try {
     switch (operation) {
-      case 'draft_email': return await draftEmail(params, userEmail);
+      case 'draft_email': return await draftEmail(params, userEmail, userId);
       case 'recipient_style': return await getRecipientStyle(params, userEmail);
       case 'generate_followup': return await generateFollowup(params, userEmail);
       case 'get_followup_queue': return await getFollowupQueue(params, userEmail);
