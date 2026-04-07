@@ -23,11 +23,12 @@ function extractBody(payload) {
 }
 
 async function learnForUser(userId, email, token) {
-  // Fetch last 100 sent messages to filter down to ~50 usable ones
-  const searchRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages?q=in:sent -category:promotions -category:social&maxResults=100', { headers: { Authorization: `Bearer ${token}` } });
+  // Fetch last 100 sent messages — use labelIds=SENT (the actual Gmail label) instead of q=in:sent which can fail silently
+  const searchRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages?labelIds=SENT&maxResults=100', { headers: { Authorization: `Bearer ${token}` } });
   const searchData = await searchRes.json();
+  if (searchData.error) return { ok: false, error: `gmail api error: ${searchData.error.message || JSON.stringify(searchData.error)}` };
   const ids = (searchData.messages || []).map(m => m.id);
-  if (!ids.length) return { ok: false, error: 'no sent emails' };
+  if (!ids.length) return { ok: false, error: `no sent emails returned (resultSizeEstimate: ${searchData.resultSizeEstimate ?? 'unknown'})` };
 
   // Get already-analysed ids
   const existing = await sbFetch(`kiko_sent_email_analysis?user_id=eq.${userId}&select=gmail_message_id&limit=500`);

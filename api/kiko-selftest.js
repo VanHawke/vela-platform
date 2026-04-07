@@ -17,7 +17,8 @@ export default async function handler(req, res) {
 
   // 1. Environment variables
   addCheck('env.ANTHROPIC_KEY', !!process.env.ANTHROPIC_KEY, process.env.ANTHROPIC_KEY ? 'set' : 'MISSING');
-  addCheck('env.SUPABASE_URL', !!process.env.SUPABASE_URL, process.env.SUPABASE_URL ? 'set' : 'MISSING');
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  addCheck('env.SUPABASE_URL', !!supabaseUrl, supabaseUrl ? 'set' : 'MISSING');
   addCheck('env.SUPABASE_SERVICE_ROLE_KEY', !!process.env.SUPABASE_SERVICE_ROLE_KEY, process.env.SUPABASE_SERVICE_ROLE_KEY ? 'set' : 'MISSING');
 
   // 2. Core tables exist
