@@ -48,6 +48,69 @@ function isDST(date) {
   return date >= dstStart && date < dstEnd;
 }
 
+// ═══ TRIGGER CONDITIONS ENGINE ═══
+// Evaluates a single condition row against the current enrollment state.
+// Returns true / false. Used by the per-step pre-send check in the main loop.
+async function evaluateCondition(cond, enrollment, sbFetch) {
+  const refStep = cond.reference_step || 1;
+  try {
+    switch (cond.condition_type) {
+      case 'opened':
+      case 'not_opened': {
+        const rows = await sbFetch(
+          `kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&step_number=eq.${refStep}&status=eq.sent&opened_at=not.is.null&select=id&limit=1`
+        );
+        const wasOpened = Array.isArray(rows) && rows.length > 0;
+        return cond.condition_type === 'opened' ? wasOpened : !wasOpened;
+      }
+      case 'clicked':
+      case 'not_clicked': {
+        const rows = await sbFetch(
+          `kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&step_number=eq.${refStep}&status=eq.sent&clicked_at=not.is.null&select=id&limit=1`
+        );
+        const wasClicked = Array.isArray(rows) && rows.length > 0;
+        return cond.condition_type === 'clicked' ? wasClicked : !wasClicked;
+      }
+      case 'replied':
+      case 'not_replied': {
+        const isReplied = enrollment.status === 'replied';
+        return cond.condition_type === 'replied' ? isReplied : !isReplied;
+      }
+      case 'days_since_last_action': {
+        const lastSent = await sbFetch(
+          `kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&status=eq.sent&order=sent_at.desc&limit=1&select=sent_at`
+        );
+        if (!lastSent?.[0]?.sent_at) return false;
+        const daysSince = (Date.now() - new Date(lastSent[0].sent_at).getTime()) / 86400000;
+        const threshold = parseFloat(cond.value || '0');
+        if (cond.operator === 'gt' || cond.operator === 'gte') return daysSince >= threshold;
+        if (cond.operator === 'lt' || cond.operator === 'lte') return daysSince <= threshold;
+        return Math.round(daysSince) === Math.round(threshold);
+      }
+      case 'company_attribute': {
+        const ci = enrollment.company_intel || {};
+        const fieldVal = String(ci[cond.value?.split(':')[0] || 'industry'] || '').toLowerCase();
+        const target = (cond.value?.split(':')[1] || '').toLowerCase();
+        if (cond.operator === 'is') return fieldVal === target;
+        if (cond.operator === 'is_not') return fieldVal !== target;
+        if (cond.operator === 'contains') return fieldVal.includes(target);
+        return false;
+      }
+      case 'has_meeting': {
+        const meetings = await sbFetch(
+          `kiko_meeting_prep?contact_email=eq.${encodeURIComponent(enrollment.contact_email)}&select=id&limit=1`
+        );
+        return Array.isArray(meetings) && meetings.length > 0;
+      }
+      default:
+        return false;
+    }
+  } catch (e) {
+    console.error(`[Conditions] eval failed for ${cond.condition_type}:`, e.message);
+    return false;
+  }
+}
+
 export default async function handler(req, res) {
   const __hbStart = Date.now();
   const __hbId = await cronHeartbeat('cron-sequence-enqueue', 'started');
@@ -103,6 +166,63 @@ export default async function handler(req, res) {
         if (!step) { 
           await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'completed', completed_at: now.toISOString() }) });
           continue; 
+        }
+
+        // ═══ TRIGGER CONDITIONS ENGINE ═══
+        // Check kiko_sequence_conditions for rules attached to this step.
+        // If conditions exist, evaluate them BEFORE sending. The first matching
+        // condition jumps to true_next_step or false_next_step. If no condition
+        // matches and there's no default, the step proceeds normally.
+        const conditions = await sbFetch(
+          `kiko_sequence_conditions?sequence_id=eq.${enrollment.sequence_id}&step_number=eq.${enrollment.current_step}&order=created_at.asc`
+        ).catch(() => []);
+
+        if (Array.isArray(conditions) && conditions.length > 0) {
+          let jumpToStep = null;
+          let conditionsAllPassed = true;
+
+          for (const cond of conditions) {
+            const result = await evaluateCondition(cond, enrollment, sbFetch);
+            if (result === true && cond.true_next_step !== null && cond.true_next_step !== undefined) {
+              jumpToStep = cond.true_next_step;
+              break;
+            }
+            if (result === false && cond.false_next_step !== null && cond.false_next_step !== undefined) {
+              jumpToStep = cond.false_next_step;
+              conditionsAllPassed = false;
+              break;
+            }
+            if (result === false) conditionsAllPassed = false;
+          }
+
+          // If a jump was set, advance enrollment and skip this step's send
+          if (jumpToStep !== null) {
+            const targetStep = steps.find(s => s.step === jumpToStep);
+            const waitMs = (conditions[0]?.wait_hours || 0) * 3600000;
+            await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, {
+              method: 'PATCH',
+              body: JSON.stringify({
+                current_step: jumpToStep,
+                next_send_at: new Date(now.getTime() + waitMs).toISOString(),
+                status: targetStep ? 'active' : 'completed',
+                completed_at: targetStep ? null : now.toISOString(),
+              }),
+            });
+            await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({
+              category: 'sequence_trigger', entity_name: enrollment.company || enrollment.contact_email,
+              content: `Step ${enrollment.current_step} conditions evaluated → jumped to step ${jumpToStep} for ${enrollment.contact_name || enrollment.contact_email}`
+            }) }).catch(() => {});
+            continue;
+          }
+
+          // If all conditions evaluated false and no jump set, pause the lead
+          if (!conditionsAllPassed) {
+            await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, {
+              method: 'PATCH',
+              body: JSON.stringify({ status: 'paused', paused_reason: 'condition_not_met' }),
+            });
+            continue;
+          }
         }
 
         // ═══ CONDITIONAL BRANCHING ═══

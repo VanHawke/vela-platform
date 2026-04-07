@@ -72,6 +72,9 @@ export default function SequenceDetail() {
   const [selectedLead, setSelectedLead] = useState(null)
   const [leadActivity, setLeadActivity] = useState([])
   const [topPatterns, setTopPatterns] = useState([])
+  const [conditions, setConditions] = useState([])
+  const [showAddCondition, setShowAddCondition] = useState(false)
+  const [newCondition, setNewCondition] = useState({ condition_type: 'opened', operator: 'is', value: '', reference_step: 1, true_next_step: '', false_next_step: '', wait_hours: 0 })
   const [regenPrompt, setRegenPrompt] = useState(false)
   const [testSending, setTestSending] = useState(false)
   const [testSent, setTestSent] = useState(false)
@@ -94,6 +97,43 @@ export default function SequenceDetail() {
     })()
     return () => { cancelled = true }
   }, [tab])
+
+  // Load trigger conditions for this sequence (loaded once on sequence load)
+  useEffect(() => {
+    if (isNew || !id) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const r = await fetch(`/api/sequence-conditions?sequence_id=${id}`)
+        const j = await r.json()
+        if (!cancelled && Array.isArray(j.conditions)) setConditions(j.conditions)
+      } catch {}
+    })()
+    return () => { cancelled = true }
+  }, [id, isNew])
+
+  async function addCondition() {
+    try {
+      const r = await fetch('/api/sequence-conditions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...newCondition, sequence_id: id, step_number: selStep + 1 }),
+      })
+      const j = await r.json()
+      if (j.condition) {
+        setConditions([...conditions, j.condition])
+        setShowAddCondition(false)
+        setNewCondition({ condition_type: 'opened', operator: 'is', value: '', reference_step: 1, true_next_step: '', false_next_step: '', wait_hours: 0 })
+      }
+    } catch (e) { console.error(e) }
+  }
+
+  async function deleteCondition(condId) {
+    try {
+      await fetch(`/api/sequence-conditions?id=${condId}`, { method: 'DELETE' })
+      setConditions(conditions.filter(c => c.id !== condId))
+    } catch (e) { console.error(e) }
+  }
 
   async function load() {
     const { data } = await supabase.from('kiko_sequences').select('*').eq('id', id).single()
@@ -424,6 +464,86 @@ export default function SequenceDetail() {
                   <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid rgba(167,139,250,0.15)`, background: 'rgba(167,139,250,0.04)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to write this step</button>
                   {cur.channel === 'email' && <button onClick={() => sendTest(selStep)} disabled={testSending} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid ${testSent ? 'rgba(45,212,191,0.2)' : C.border}`, background: testSent ? 'rgba(45,212,191,0.04)' : 'transparent', color: testSent ? C.teal : C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{testSending ? 'Saving...' : testSent ? '✓ Draft created' : '📧 Create draft'}</button>}
                 </div>
+
+                {/* ═══ TRIGGER CONDITIONS — only for non-condition steps ═══ */}
+                {cur.type !== 'condition' && !isNew && (
+                  <div style={{ marginTop: 18, paddingTop: 14, borderTop: `0.5px solid ${C.border}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.amber }} />
+                        <span style={{ fontSize: 12, fontWeight: 500, color: C.text }}>Triggers</span>
+                        <span style={{ fontSize: 9, color: C.textTer }}>· evaluated before this step sends</span>
+                      </div>
+                      <button onClick={() => setShowAddCondition(true)} style={{ padding: '4px 10px', borderRadius: 5, border: `0.5px solid ${C.border}`, background: 'rgba(167,139,250,0.04)', color: C.purple, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>+ Add trigger</button>
+                    </div>
+
+                    {conditions.filter(c => c.step_number === selStep + 1).length === 0 && !showAddCondition && (
+                      <div style={{ fontSize: 10, color: C.textTer, padding: '8px 0', fontStyle: 'italic' }}>No triggers — this step always sends on schedule. Add a trigger to make it conditional (e.g. only send if previous step was opened).</div>
+                    )}
+
+                    {conditions.filter(c => c.step_number === selStep + 1).map(cond => (
+                      <div key={cond.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', marginBottom: 6, borderRadius: 6, background: 'rgba(251,191,36,0.04)', border: `0.5px solid rgba(251,191,36,0.10)`, fontSize: 11 }}>
+                        <span style={{ color: C.amber, fontWeight: 500 }}>IF</span>
+                        <span style={{ color: C.text }}>{cond.condition_type.replace(/_/g, ' ')}</span>
+                        {cond.reference_step && <span style={{ color: C.textTer }}>step {cond.reference_step}</span>}
+                        {cond.value && <span style={{ color: C.textSec }}>= {cond.value}</span>}
+                        {cond.true_next_step && <><span style={{ color: C.textTer }}>→ TRUE: jump to step</span><span style={{ color: C.teal, fontWeight: 500 }}>{cond.true_next_step}</span></>}
+                        {cond.false_next_step && <><span style={{ color: C.textTer }}>· FALSE: jump to step</span><span style={{ color: C.red, fontWeight: 500 }}>{cond.false_next_step}</span></>}
+                        {cond.wait_hours > 0 && <span style={{ color: C.textTer }}>· wait {cond.wait_hours}h</span>}
+                        <button onClick={() => deleteCondition(cond.id)} style={{ marginLeft: 'auto', background: 'transparent', border: 'none', color: C.textTer, cursor: 'pointer', fontSize: 12, padding: 2 }}>×</button>
+                      </div>
+                    ))}
+
+                    {showAddCondition && (
+                      <div style={{ padding: 12, marginTop: 6, borderRadius: 6, background: 'rgba(167,139,250,0.04)', border: `0.5px solid ${C.border}` }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+                          <div>
+                            <div style={{ fontSize: 9, color: C.textTer, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>If</div>
+                            <select value={newCondition.condition_type} onChange={e => setNewCondition({ ...newCondition, condition_type: e.target.value })} style={{ ...inputStyle, fontSize: 11, padding: '6px 8px' }}>
+                              <option value="opened" style={{ background: '#111' }}>opened</option>
+                              <option value="not_opened" style={{ background: '#111' }}>not opened</option>
+                              <option value="clicked" style={{ background: '#111' }}>clicked</option>
+                              <option value="not_clicked" style={{ background: '#111' }}>not clicked</option>
+                              <option value="replied" style={{ background: '#111' }}>replied</option>
+                              <option value="not_replied" style={{ background: '#111' }}>not replied</option>
+                              <option value="days_since_last_action" style={{ background: '#111' }}>days since last action</option>
+                              <option value="company_attribute" style={{ background: '#111' }}>company attribute</option>
+                              <option value="has_meeting" style={{ background: '#111' }}>has meeting booked</option>
+                            </select>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 9, color: C.textTer, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Reference step</div>
+                            <input type="number" min="1" max={steps.length} value={newCondition.reference_step} onChange={e => setNewCondition({ ...newCondition, reference_step: parseInt(e.target.value) || 1 })} style={{ ...inputStyle, fontSize: 11, padding: '6px 8px' }} />
+                          </div>
+                        </div>
+                        {(newCondition.condition_type === 'days_since_last_action' || newCondition.condition_type === 'company_attribute') && (
+                          <div style={{ marginBottom: 8 }}>
+                            <div style={{ fontSize: 9, color: C.textTer, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Value</div>
+                            <input value={newCondition.value} onChange={e => setNewCondition({ ...newCondition, value: e.target.value })} placeholder={newCondition.condition_type === 'days_since_last_action' ? 'e.g. 3' : 'e.g. industry:fintech'} style={{ ...inputStyle, fontSize: 11, padding: '6px 8px' }} />
+                          </div>
+                        )}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 10 }}>
+                          <div>
+                            <div style={{ fontSize: 9, color: C.teal, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>If TRUE → step</div>
+                            <input type="number" min="1" max={steps.length} value={newCondition.true_next_step} onChange={e => setNewCondition({ ...newCondition, true_next_step: e.target.value })} placeholder="next" style={{ ...inputStyle, fontSize: 11, padding: '6px 8px' }} />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 9, color: C.red, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>If FALSE → step</div>
+                            <input type="number" min="1" max={steps.length} value={newCondition.false_next_step} onChange={e => setNewCondition({ ...newCondition, false_next_step: e.target.value })} placeholder="pause" style={{ ...inputStyle, fontSize: 11, padding: '6px 8px' }} />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 9, color: C.textTer, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Wait (hrs)</div>
+                            <input type="number" min="0" value={newCondition.wait_hours} onChange={e => setNewCondition({ ...newCondition, wait_hours: parseInt(e.target.value) || 0 })} style={{ ...inputStyle, fontSize: 11, padding: '6px 8px' }} />
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                          <button onClick={() => setShowAddCondition(false)} style={{ padding: '6px 12px', borderRadius: 5, border: `0.5px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
+                          <button onClick={addCondition} style={{ padding: '6px 14px', borderRadius: 5, border: 'none', background: 'rgba(167,139,250,0.10)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>Save trigger</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
                   </>
                 )}
               </>
