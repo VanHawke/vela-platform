@@ -28,6 +28,8 @@ export default function OutreachIntelligence({ user }) {
   const [raceSeries, setRaceSeries] = useState('F1')
   const [allNextRaces, setAllNextRaces] = useState({})
   const [tasks, setTasks] = useState([])
+  const [prospectReplies, setProspectReplies] = useState([])
+  const [signals, setSignals] = useState([])
   const [selectedAction, setSelectedAction] = useState(null)
   const [kikoLoading, setKikoLoading] = useState(false)
   const [kikoRec, setKikoRec] = useState(null)
@@ -37,14 +39,19 @@ export default function OutreachIntelligence({ user }) {
   const loadData = async () => {
     setLoading(true)
     try {
-      const [dealsRes, actRes, raceRes, tasksRes] = await Promise.all([
+      const yesterdayISO = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+      const [dealsRes, actRes, raceRes, tasksRes, repliesRes, signalsRes] = await Promise.all([
         supabase.from('deals').select('id, data, updated_at').not('data->>status', 'in', '("won","lost")').order('updated_at', { ascending: false }),
         supabase.from('activities').select('*').order('created_at', { ascending: false }).limit(20),
         supabase.from('race_calendar').select('name, date, circuit, series').gt('date', new Date().toISOString().split('T')[0]).order('date').limit(10),
         supabase.from('tasks').select('*').order('updated_at', { ascending: false }),
+        supabase.from('kiko_alerts').select('id, title, detail, entity_name, entity_id, metadata, created_at').eq('type', 'reply_from_prospect').gte('created_at', yesterdayISO).order('created_at', { ascending: false }).limit(10),
+        supabase.from('kiko_alerts').select('id, type, severity, title, detail, entity_name, created_at').in('type', ['partnership', 'promotion', 'funding', 'competitor_sponsorship']).order('created_at', { ascending: false }).limit(6),
       ])
       setDeals(dealsRes.data || [])
       setActivities(actRes.data || [])
+      setProspectReplies(repliesRes.data || [])
+      setSignals(signalsRes.data || [])
       // Group next races by series
       const races = raceRes.data || []
       const bySeriesMap = {}
@@ -84,7 +91,21 @@ export default function OutreachIntelligence({ user }) {
       }).sort((a, b) => b.priorityScore - a.priorityScore)
 
       const topActions = actions.slice(0, 10).map(a => `${a.data?.company || '?'} (${a.stage}, ${a.daysSinceUpdate}d)`).join(', ')
-      setPageContext({ page: 'outreach-intelligence', summary: `Command Centre: ${actions.length} active deals, ${actions.filter(a => a.isStale).length} stale`, visibleItems: topActions })
+      const overdueTasksCount = (tasksRes.data || []).filter(t => !t.data?.completed && t.data?.dueDate && new Date(t.data.dueDate) < new Date()).length
+      const ctxSummary = `Command Centre — ${actions.length} active deals, ${actions.filter(a => a.isStale).length} stale (>30d), ${overdueTasksCount} overdue tasks, ${(repliesRes.data || []).length} prospect replies awaiting response in last 24h, ${(signalsRes.data || []).length} active signals`
+      setPageContext({
+        page: 'command-centre',
+        summary: ctxSummary,
+        visibleItems: topActions,
+        data: {
+          deals: actions.length,
+          staleDeals: actions.filter(a => a.isStale).length,
+          overdueTasks: overdueTasksCount,
+          prospectReplies: (repliesRes.data || []).length,
+          signals: (signalsRes.data || []).length,
+          topPriorityCompanies: actions.slice(0, 5).map(a => a.data?.company).filter(Boolean),
+        },
+      })
     } catch (e) { console.error('[CommandCentre]', e) }
     finally { setLoading(false) }
   }
@@ -244,6 +265,45 @@ Be direct. Use web search for current company intelligence if needed.`
 
         {/* Priority action list */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px' }}>
+
+          {/* Prospect Replies section (Morning Brief surface) */}
+          {prospectReplies.length > 0 && (<>
+            <div style={{ fontSize: 11, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Send size={12} style={{ color: 'rgba(248,113,113,0.6)' }} />
+              Prospect Replies ({prospectReplies.length}) — need your response
+            </div>
+            {prospectReplies.map(reply => {
+              const company = reply.metadata?.company || ''
+              const fromEmail = reply.metadata?.from || ''
+              const subject = reply.metadata?.subject || ''
+              return (
+                <div key={reply.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '9px 12px', borderRadius: 10, marginBottom: 4, background: 'rgba(248,113,113,0.03)', border: '0.5px solid rgba(248,113,113,0.25)', cursor: 'pointer', transition: 'all 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.06)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.03)' }}
+                  onClick={() => {
+                    const taskShim = { id: reply.id, data: { company, contact: reply.entity_name || fromEmail }, isTask: true, taskData: { type: 'Prospect Reply', company, contact: reply.entity_name || fromEmail, notes: `Subject: ${subject}\n\n${reply.detail || ''}`, dueDate: null } }
+                    setSelectedAction(taskShim)
+                    getKikoRec(taskShim)
+                  }}>
+                  <Send size={14} style={{ color: 'rgba(248,113,113,0.6)', flexShrink: 0, marginTop: 3 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                      <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(248,113,113,0.7)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Reply</span>
+                      <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 6, background: 'rgba(248,113,113,0.08)', color: 'rgba(248,113,113,0.6)', fontWeight: 500 }}>NEEDS ACTION</span>
+                    </div>
+                    <div style={{ fontSize: 14, fontWeight: 400, color: 'rgba(238,238,238,0.75)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {reply.entity_name || fromEmail}{company ? ` — ${company}` : ''}
+                    </div>
+                    <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {subject || (reply.detail || '').slice(0, 80)}
+                    </div>
+                  </div>
+                  <ChevronRight size={12} style={{ color: 'rgba(248,113,113,0.4)', flexShrink: 0, marginTop: 8 }} />
+                </div>
+              )
+            })}
+            <div style={{ height: 16 }} />
+          </>)}
 
           {/* Tasks Due section */}
           {tasks.length > 0 && (<>

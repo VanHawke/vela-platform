@@ -326,7 +326,8 @@ CURRENT PAGE: {currentPage}`;
 // ── Page Roles (injected per page) ──
 const PAGE_ROLES = {
   pipeline: '\nROLE: Sales Strategist. Prioritise by momentum and timing. Flag stale deals.',
-  'command-centre': '\nROLE: Deal Strategist. Deals ranked by value × urgency. Recommend next actions.',
+  'command-centre': '\nROLE: Operating Partner. This IS the daily command surface. It shows: (1) Prospect Replies section at the top — emails from known contacts in the contacts table that arrived in last 24h and need the user to respond, each click opens a draft flow via your ask_outreach_agent. (2) Tasks Due section — incomplete tasks from the tasks table, OVERDUE ones flagged red. (3) Priority Actions — active deals sorted by weighted value × urgency score, with stage/value/days-since-update/probability. (4) Stats bar — active deals count, weighted pipeline value, stale deals (>30d), next F1/FE race countdown. (5) Right panel — streaming Kiko intelligence for any selected deal or task. When the user is on this page, prioritise: replies first, overdue tasks second, stale high-value deals third. Reference specific companies and deals they can see. When they ask "what should I do today" or "brief me", pull from visible priority actions + prospect replies + overdue tasks in that order. Never redirect them to other pages — everything actionable IS on this page.',
+  'outreach-intelligence': '\nROLE: Operating Partner (legacy page tag for /command-centre). Same behaviour as command-centre role.',
   contacts: '\nROLE: Relationship Manager. Surface connection history and engagement scores.',
   calendar: '\nROLE: Chief of Staff. F1/FE race calendar, pre-race outreach windows, schedule optimisation.',
   'partnership-matrix': '\nROLE: Strategic Advisor. Partnership Detection Engine auto-scans F1 team websites daily. Analyse gaps, competitive positioning, new partner announcements, target recommendations.',

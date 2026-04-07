@@ -13,7 +13,6 @@ const Contacts = lazy(() => import('@/pages/Contacts'))
 const ContactDetail = lazy(() => import('@/pages/ContactDetail'))
 const Organisations = lazy(() => import('@/pages/Organisations'))
 const OutreachIntelligence = lazy(() => import('@/pages/OutreachIntelligence'))
-const CommandCentre = lazy(() => import('@/pages/CommandCentre'))
 const PartnershipMatrix = lazy(() => import('@/pages/PartnershipMatrix'))
 const CommercialCalendar = lazy(() => import('@/pages/CommercialCalendar'))
 const KikoCode = lazy(() => import('@/pages/KikoCode'))
@@ -21,10 +20,7 @@ const Admin = lazy(() => import('@/pages/Admin'))
 const MemoryConsole = lazy(() => import('@/pages/MemoryConsole'))
 
 const Sequences = lazy(() => import('@/pages/Sequences'))
-const Inbox = lazy(() => import('@/pages/Inbox'))
-const Segments = lazy(() => import('@/pages/Segments'))
-const Packs = lazy(() => import('@/pages/Packs'))
-const Targets = lazy(() => import('@/pages/Targets'))
+
 const SequenceDetail = lazy(() => import('@/pages/SequenceDetail'))
 
 const INACTIVITY_MS   = 20 * 60 * 1000
@@ -134,7 +130,7 @@ export default function App() {
           <Route path="deals" element={<Navigate to="/pipeline" replace />} />
           <Route path="tasks" element={<Navigate to="/command-centre" replace />} />
           <Route path="email" element={<Navigate to="/command-centre" replace />} />
-          <Route path="command-centre" element={<CommandCentre user={user} />} />
+          <Route path="command-centre" element={<OutreachIntelligence user={user} />} />
           {/* News Signals removed — replaced by Partnership Detection alerts */}
           <Route path="partnership-matrix" element={<PartnershipMatrix user={user} />} />
           <Route path="calendar" element={<CommercialCalendar user={user} />} />
@@ -142,10 +138,10 @@ export default function App() {
 
           <Route path="sequences" element={<Sequences user={user} />} />
           <Route path="sequences/:id" element={<SequenceDetail user={user} />} />
-          <Route path="inbox" element={<Inbox user={user} />} />
-          <Route path="segments" element={<Segments user={user} />} />
-          <Route path="packs" element={<Packs user={user} />} />
-          <Route path="targets" element={<Targets user={user} />} />
+          <Route path="inbox" element={<Navigate to="/command-centre" replace />} />
+          <Route path="segments" element={<Navigate to="/sequences" replace />} />
+          <Route path="packs" element={<Navigate to="/settings" replace />} />
+          <Route path="targets" element={<Navigate to="/command-centre" replace />} />
           <Route path="kikocode" element={<KikoCode user={user} />} />
           <Route path="settings" element={<Settings user={user} />} />
           <Route path="memory" element={<AdminRoute><MemoryConsole user={user} /></AdminRoute>} />

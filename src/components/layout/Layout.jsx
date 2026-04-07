@@ -41,10 +41,6 @@ const ALL_NAV = [
   { id: 'command-centre', label: 'Command Centre', path: '/command-centre', Icon: Target },
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
   { id: 'sequences', label: 'Campaigns', path: '/sequences', Icon: Zap },
-  { id: 'inbox', label: 'Inbox', path: '/inbox', Icon: Mail },
-  { id: 'segments', label: 'Segments', path: '/segments', Icon: Filter },
-  { id: 'packs', label: 'Vertical Pack', path: '/packs', Icon: Layers },
-  { id: 'targets', label: 'Targets', path: '/targets', Icon: Target },
 ]
 const VALID_NAV_IDS = new Set(ALL_NAV.map(n => n.id))
 const DEFAULT_TOP_IDS = ['home', 'command-centre', 'pipeline', 'partnership-matrix', 'sequences', 'inbox', 'segments']
