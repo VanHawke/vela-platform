@@ -38,13 +38,18 @@ export async function sbFetch(path, opts = {}) {
   return text ? JSON.parse(text) : null;
 }
 
-// Google token helper
+// Google token helper — proactively refreshes if missing/near-expiry and returns null on failure (no stale fallback)
 export async function getGoogleToken(email) {
   const rows = await sbFetch(`user_tokens?user_email=eq.${encodeURIComponent(email)}&provider=eq.google&select=access_token,refresh_token,expires_at&limit=1`);
   if (!rows?.[0]) return null;
   const token = rows[0];
-  // Check if expired and refresh if needed
-  if (new Date(token.expires_at) < new Date() && token.refresh_token) {
+  // Refresh if: no expires_at OR within 5 min of expiry OR already past expiry
+  const needsRefresh = !token.expires_at || (new Date(token.expires_at).getTime() - Date.now() < 5 * 60 * 1000);
+  if (needsRefresh) {
+    if (!token.refresh_token) {
+      console.error(`[getGoogleToken] ${email}: no refresh_token, cannot refresh`);
+      return null;
+    }
     try {
       const res = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
@@ -57,14 +62,19 @@ export async function getGoogleToken(email) {
         }),
       });
       const data = await res.json();
-      if (data.access_token) {
-        await sbFetch(`user_tokens?user_email=eq.${encodeURIComponent(email)}&provider=eq.google`, {
-          method: 'PATCH',
-          body: JSON.stringify({ access_token: data.access_token, expires_at: new Date(Date.now() + 3600000).toISOString() }),
-        });
-        return data.access_token;
+      if (!data.access_token) {
+        console.error(`[getGoogleToken] ${email}: refresh failed`, data);
+        return null;
       }
-    } catch {}
+      await sbFetch(`user_tokens?user_email=eq.${encodeURIComponent(email)}&provider=eq.google`, {
+        method: 'PATCH',
+        body: JSON.stringify({ access_token: data.access_token, expires_at: new Date(Date.now() + (data.expires_in || 3600) * 1000).toISOString() }),
+      });
+      return data.access_token;
+    } catch (err) {
+      console.error(`[getGoogleToken] ${email}: refresh threw`, err.message);
+      return null;
+    }
   }
   return token.access_token;
 }
