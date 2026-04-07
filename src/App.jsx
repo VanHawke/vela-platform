@@ -20,6 +20,7 @@ const Admin = lazy(() => import('@/pages/Admin'))
 const MemoryConsole = lazy(() => import('@/pages/MemoryConsole'))
 const Lemlist = lazy(() => import('@/pages/Lemlist'))
 const LemlistDrain = lazy(() => import('@/pages/LemlistDrain'))
+const Sourcing = lazy(() => import('@/pages/Sourcing'))
 const Sequences = lazy(() => import('@/pages/Sequences'))
 const Inbox = lazy(() => import('@/pages/Inbox'))
 const Segments = lazy(() => import('@/pages/Segments'))
@@ -141,6 +142,7 @@ export default function App() {
           {/* Knowledge Library removed — documents accessible via Kiko chat upload */}
           <Route path="lemlist" element={<Lemlist user={user} />} />
           <Route path="lemlist-drain" element={<LemlistDrain user={user} />} />
+          <Route path="sourcing" element={<Sourcing user={user} />} />
           <Route path="sequences" element={<Sequences user={user} />} />
           <Route path="sequences/:id" element={<SequenceDetail user={user} />} />
           <Route path="inbox" element={<Inbox user={user} />} />
