@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kiko · Morning Brief — Preview</title>
+<style>
+  :root {
+    --bg: #0A0A0C;
+    --panel: rgba(20,20,22,0.55);
+    --border: rgba(255,255,255,0.06);
+    --border-strong: rgba(255,255,255,0.10);
+    --text: rgba(245,245,248,0.92);
+    --text-sec: rgba(245,245,248,0.55);
+    --text-ter: rgba(245,245,248,0.32);
+    --text-mut: rgba(245,245,248,0.18);
+    --purple: #A78BFA;
+    --purple-deep: #7C5CFC;
+    --teal: #2DD4BF;
+    --teal-deep: #00D4AA;
+    --green: #34D399;
+    --amber: #FBBF24;
+    --red: #F87171;
+    --rose: #FB7185;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  body {
+    position: relative;
+    overflow-x: hidden;
+  }
+  /* Ambient gradient orbs */
+  body::before, body::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::before {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, var(--purple-deep) 0%, transparent 70%);
+    top: -200px; left: -150px;
+  }
+  body::after {
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, var(--teal-deep) 0%, transparent 70%);
+    bottom: -300px; right: -200px;
+  }
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 40px 80px;
+    position: relative;
+    z-index: 1;
+  }
+  .glass {
+    background: var(--panel);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
+    border: 0.5px solid var(--border);
+    border-radius: 14px;
+  }
+  /* ── HEADER ── */
+  .topnav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 0 32px;
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 32px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-mark {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--purple-deep), var(--teal-deep));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 13px; color: white;
+  }
+  .brand-name { font-size: 15px; font-weight: 500; letter-spacing: -0.01em; }
+  .brand-sub { font-size: 10px; color: var(--text-ter); text-transform: uppercase; letter-spacing: 0.08em; }
+  .nav-pills { display: flex; gap: 6px; }
+  .pill {
+    padding: 7px 14px; border-radius: 8px; font-size: 12px; color: var(--text-sec);
+    background: transparent; border: 0.5px solid transparent; cursor: pointer;
+  }
+  .pill.active {
+    background: rgba(167,139,250,0.10); color: var(--purple);
+    border-color: rgba(167,139,250,0.20);
+  }
+  .pill:hover:not(.active) { background: rgba(255,255,255,0.03); color: var(--text); }
+</content>
+  /* ── HERO ── */
+  .hero {
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .hero-greeting {
+    font-size: 32px; font-weight: 300; letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--text) 0%, var(--purple) 60%, var(--teal) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    margin-bottom: 6px;
+  }
+  .hero-meta {
+    font-size: 12px; color: var(--text-ter);
+    display: flex; gap: 14px; align-items: center;
+  }
+  .hero-meta-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-mut); }
+  .hero-headline {
+    margin-top: 18px; padding: 18px 22px;
+    background: var(--panel);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    border-left: 2px solid var(--purple);
+  }
+  .hero-headline-text { font-size: 14px; color: var(--text); }
+  .hero-headline-text strong { color: var(--purple); font-weight: 500; }
+  .hero-headline-time { font-size: 10px; color: var(--text-ter); white-space: nowrap; }
+
+  /* ── SECTION HEADER ── */
+  .section { margin-bottom: 28px; }
+  .section-header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 14px; padding: 0 4px;
+  }
+  .section-title {
+    font-size: 10px; font-weight: 500; letter-spacing: 0.12em;
+    color: var(--text-sec); text-transform: uppercase;
+  }
+  .section-meta { font-size: 10px; color: var(--text-ter); }
+
+  /* ── YESTERDAY (4-up grid) ── */
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .stat-card {
+    padding: 16px 18px;
+    background: var(--panel);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+  }
+  .stat-label {
+    font-size: 9px; color: var(--text-ter); text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 8px;
+  }
+  .stat-value {
+    font-size: 24px; font-weight: 400; letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+  .stat-value.purple { color: var(--purple); }
+  .stat-value.teal { color: var(--teal); }
+  .stat-value.green { color: var(--green); }
+  .stat-value.amber { color: var(--amber); }
+  .stat-detail { font-size: 10px; color: var(--text-sec); }
+
+  /* ── TOP 3 PRIORITIES ── */
+  .priority {
+    padding: 22px 24px;
+    background: var(--panel);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    transition: border-color 0.2s;
+  }
+  .priority:hover { border-color: var(--border-strong); }
+  .priority-header {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 14px;
+  }
+  .priority-number {
+    width: 26px; height: 26px; border-radius: 8px;
+    background: rgba(167,139,250,0.10); border: 0.5px solid rgba(167,139,250,0.20);
+    color: var(--purple); font-size: 11px; font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .priority-meta { flex: 1; }
+  .priority-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .priority-context { font-size: 11px; color: var(--text-ter); }
+  .priority-tag {
+    padding: 4px 10px; border-radius: 10px; font-size: 9px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .tag-urgent { background: rgba(248,113,113,0.10); color: var(--red); border: 0.5px solid rgba(248,113,113,0.20); }
+  .tag-warm { background: rgba(251,191,36,0.10); color: var(--amber); border: 0.5px solid rgba(251,191,36,0.20); }
+  .tag-action { background: rgba(167,139,250,0.10); color: var(--purple); border: 0.5px solid rgba(167,139,250,0.20); }
+
+  .priority-body {
+    padding: 14px 16px; border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+    border: 0.5px solid rgba(255,255,255,0.04);
+    font-size: 12px; color: var(--text-sec); line-height: 1.65;
+    margin-bottom: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .priority-body em { font-style: normal; color: var(--text); font-weight: 400; }
+  .priority-actions { display: flex; gap: 8px; }
+  .btn {
+    padding: 8px 16px; border-radius: 7px; font-size: 11px; font-weight: 500;
+    border: 0.5px solid var(--border-strong); background: transparent;
+    color: var(--text-sec); cursor: pointer; font-family: inherit;
+  }
+  .btn-primary {
+    background: rgba(167,139,250,0.12); color: var(--purple);
+    border-color: rgba(167,139,250,0.30);
+  }
+  .btn-success {
+    background: rgba(52,211,153,0.12); color: var(--green);
+    border-color: rgba(52,211,153,0.30);
+  }
+  .btn:hover { background: rgba(255,255,255,0.04); }
+</content>
+  /* ── METRICS GRID (This Week) ── */
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .metric-card {
+    padding: 16px 18px;
+    background: var(--panel);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+  }
+  .metric-label {
+    font-size: 9px; color: var(--text-ter); text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 10px;
+  }
+  .metric-value {
+    font-size: 22px; font-weight: 400; letter-spacing: -0.01em;
+    color: var(--text); margin-bottom: 4px;
+  }
+  .metric-delta { font-size: 10px; }
+  .delta-up { color: var(--green); }
+  .delta-down { color: var(--red); }
+  .delta-flat { color: var(--text-ter); }
+  .sparkline {
+    display: inline-block; width: 60px; height: 14px; vertical-align: middle;
+    margin-left: 8px;
+  }
+
+  /* ── SIGNALS feed ── */
+  .signal {
+    padding: 14px 18px;
+    background: var(--panel);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    display: flex; align-items: flex-start; gap: 14px;
+    margin-bottom: 8px;
+  }
+  .signal-icon {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  .icon-promo { background: rgba(52,211,153,0.10); border: 0.5px solid rgba(52,211,153,0.20); }
+  .icon-comp { background: rgba(248,113,113,0.10); border: 0.5px solid rgba(248,113,113,0.20); }
+  .icon-stale { background: rgba(251,191,36,0.10); border: 0.5px solid rgba(251,191,36,0.20); }
+  .icon-fund { background: rgba(45,212,191,0.10); border: 0.5px solid rgba(45,212,191,0.20); }
+  .signal-body { flex: 1; }
+  .signal-title { font-size: 12px; color: var(--text); font-weight: 400; margin-bottom: 3px; }
+  .signal-title strong { color: var(--purple); font-weight: 500; }
+  .signal-detail { font-size: 10px; color: var(--text-ter); }
+  .signal-cta { font-size: 10px; color: var(--purple); cursor: pointer; flex-shrink: 0; }
+
+  /* ── INTELLIGENCE (Learning Layer) ── */
+  .intel-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; }
+  .intel-card {
+    padding: 20px 22px;
+    background: var(--panel);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+  }
+  .intel-card-title {
+    font-size: 11px; font-weight: 500; color: var(--text-sec);
+    margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .intel-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0; border-bottom: 0.5px solid rgba(255,255,255,0.03);
+  }
+  .intel-row:last-child { border-bottom: none; }
+  .intel-row-label { font-size: 11px; color: var(--text); flex: 1; }
+  .intel-row-value { font-size: 12px; font-weight: 500; }
+  .intel-row-delta { font-size: 10px; color: var(--text-ter); }
+
+  /* ── ACTIONABLE CHANGES ── */
+  .change-card {
+    padding: 16px 20px;
+    background: var(--panel);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    border-left: 2px solid var(--teal);
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    margin-bottom: 8px;
+  }
+  .change-text { font-size: 12px; color: var(--text); }
+  .change-text strong { color: var(--teal); font-weight: 500; }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 40px; padding-top: 24px;
+    border-top: 0.5px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 10px; color: var(--text-mut);
+  }
+  .footer-status { display: flex; align-items: center; gap: 8px; }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 8px rgba(52,211,153,0.6);
+  }
+
+  /* ── MISC ── */
+  .row-spaced { display: flex; justify-content: space-between; align-items: center; }
+  .gap-md { gap: 16px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- TOP NAV -->
+  <nav class="topnav">
+    <div class="brand">
+      <div class="brand-mark">VH</div>
+      <div>
+        <div class="brand-name">Van Hawke</div>
+        <div class="brand-sub">Kiko OS · v14.6</div>
+      </div>
+    </div>
+    <div class="nav-pills">
+      <button class="pill active">Command Centre</button>
+      <button class="pill">Pipeline</button>
+      <button class="pill">Campaigns</button>
+      <button class="pill">Contacts</button>
+      <button class="pill">Settings</button>
+    </div>
+  </nav>
+</content>
+  <!-- HERO -->
+  <header class="hero">
+    <h1 class="hero-greeting">Good morning, Sunny.</h1>
+    <div class="hero-meta">
+      <span>Tuesday, 7 April 2026</span>
+      <span class="hero-meta-dot"></span>
+      <span>Weybridge · 12°C overcast</span>
+      <span class="hero-meta-dot"></span>
+      <span>Bahrain GP this weekend · Haas P11 in constructors</span>
+    </div>
+    <div class="hero-headline">
+      <div class="hero-headline-text">
+        <strong>3 priorities today</strong> · 2 prospect replies need your eyes · Cybersecurity outperforming fintech by 8.1pp this week — Kiko recommends shifting next campaign focus.
+      </div>
+      <div class="hero-headline-time">Brief generated 7:32am</div>
+    </div>
+  </header>
+
+  <!-- ── YESTERDAY ── -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title">Yesterday</div>
+      <div class="section-meta">Mon 6 Apr · 24h activity</div>
+    </div>
+    <div class="grid-4">
+      <div class="stat-card">
+        <div class="stat-label">Replies received</div>
+        <div class="stat-value purple">2</div>
+        <div class="stat-detail">Jim Lake · Lofted Spirits<br/>Marcus Webb · Trade Republic</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pipeline movement</div>
+        <div class="stat-value teal">3</div>
+        <div class="stat-detail">Decagon → Negotiation<br/>Crown Castle → Qualified<br/>SOITEC → In Dialogue</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Touches sent</div>
+        <div class="stat-value">142</div>
+        <div class="stat-detail">86 email · 56 LinkedIn<br/>via legacy Lemlist queue</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Alerts fired</div>
+        <div class="stat-value amber">7</div>
+        <div class="stat-detail">2 reply · 3 stale deal<br/>1 promotion · 1 funding</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TODAY: TOP 3 PRIORITIES ── -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title">Today — Your top 3</div>
+      <div class="section-meta">Drafts ready · 1-click execute</div>
+    </div>
+
+    <!-- PRIORITY 1 -->
+    <div class="priority">
+      <div class="priority-header">
+        <div class="priority-number">1</div>
+        <div class="priority-meta">
+          <div class="priority-title">Reply to Jim Lake — Lofted Spirits whisky</div>
+          <div class="priority-context">Replied 15:20 yesterday · Politely declined 2026, F1 fan, "loving the new style" · Soft 2027 nurture opportunity</div>
+        </div>
+        <div class="priority-tag tag-urgent">Reply needed</div>
+      </div>
+      <div class="priority-body">
+        Jim, appreciate the candour — a clean "not this year" is more useful than a maybe.<br/><br/>
+        One observation, then I'll leave you to it: the on-track product you're enjoying is the same product turning into the most concentrated brand-building window in global sport — 24 races, 1.6 billion viewers, US audience quadrupled since Drive to Survive. Spirits brands moving early on F1 — Diageo with McLaren, Heineken across the championship — have built positions competitors can't unwind.<br/><br/>
+        No pitch today. Two things: <em>(1)</em> I'd like to keep you on SponsorSignal — our weekly read on sponsorship moves across the grid. Reply "in" and I'll add you. <em>(2)</em> When the conversation does become relevant — H2 2026 for 2027 activation — I'd like to be the first call.<br/><br/>
+        Enjoy the rest of the season. Bahrain was a statement.<br/><br/>
+        Sunny
+      </div>
+      <div class="priority-actions">
+        <button class="btn btn-success">✓ Approve & send via Gmail</button>
+        <button class="btn">Edit draft</button>
+        <button class="btn">Tone: warmer</button>
+        <button class="btn">View thread in Gmail</button>
+      </div>
+    </div>
+
+    <!-- PRIORITY 2 -->
+    <div class="priority">
+      <div class="priority-header">
+        <div class="priority-number">2</div>
+        <div class="priority-meta">
+          <div class="priority-title">Re-engage Decagon — deal stalled 16 days</div>
+          <div class="priority-context">Ryan Levy · CMO · $250k partnership · Last touch: 22 Mar · Stage: In Dialogue → at risk of decay</div>
+        </div>
+        <div class="priority-tag tag-warm">Stale 16d</div>
+      </div>
+      <div class="priority-body">
+        Ryan,<br/><br/>
+        Quick re-up. Two updates worth flagging since we spoke: Decagon's Series C announcement gives the AI category a clean signal we can build a narrative around, and Mercedes just locked in Fortinet for the cyber slot — which collapses our window for the AI category on Haas to roughly 4 weeks before alternative conversations open up.<br/><br/>
+        Worth a 20 minute call this week to walk through what category control looks like at this point in the season?<br/><br/>
+        Sunny
+      </div>
+      <div class="priority-actions">
+        <button class="btn btn-primary">Approve & send</button>
+        <button class="btn">Edit draft</button>
+        <button class="btn">Open deal record</button>
+      </div>
+    </div>
+
+    <!-- PRIORITY 3 -->
+    <div class="priority">
+      <div class="priority-header">
+        <div class="priority-number">3</div>
+        <div class="priority-meta">
+          <div class="priority-title">Source 15 cybersecurity prospects for Haas</div>
+          <div class="priority-context">Sector outperforming by 8.1pp this week · CISO conversion 2.1× CMO · Mercedes/Fortinet news creates urgency</div>
+        </div>
+        <div class="priority-tag tag-action">Run sourcing</div>
+      </div>
+      <div class="priority-body">
+        Kiko ready to web-search 15 cybersecurity companies over $100M revenue across US/UK/EU, dedupe against your 2,244 existing companies, score via SponsorSignal, and surface only the Tier 1 candidates for your review. Estimated runtime 40 seconds. No new spend.
+      </div>
+      <div class="priority-actions">
+        <button class="btn btn-primary">Run sourcing now</button>
+        <button class="btn">Adjust filters</button>
+        <button class="btn">Schedule for tomorrow 5am</button>
+      </div>
+    </div>
+  </section>
+</content>
+  <!-- ── THIS WEEK ── -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title">This week</div>
+      <div class="section-meta">Mon 6 Apr — Sun 12 Apr · vs prior week</div>
+    </div>
+    <div class="grid-6">
+      <div class="metric-card">
+        <div class="metric-label">Pipeline value</div>
+        <div class="metric-value">$2.4M</div>
+        <div class="metric-delta delta-up">▲ 8.2% WoW</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Weighted forecast</div>
+        <div class="metric-value">$487k</div>
+        <div class="metric-delta delta-up">▲ 12.4% WoW</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Reply rate</div>
+        <div class="metric-value">11.3%</div>
+        <div class="metric-delta delta-up">▲ 1.4pp WoW</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Active campaigns</div>
+        <div class="metric-value">12</div>
+        <div class="metric-delta delta-flat">→ 2 paused</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Touches sent</div>
+        <div class="metric-value">847</div>
+        <div class="metric-delta delta-down">▼ 4.1% WoW</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">New companies sourced</div>
+        <div class="metric-value">23</div>
+        <div class="metric-delta delta-up">▲ 9 vs avg</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SIGNALS ── -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title">Signals</div>
+      <div class="section-meta">Curated · last 24h</div>
+    </div>
+
+    <div class="signal">
+      <div class="signal-icon icon-comp">🏎️</div>
+      <div class="signal-body">
+        <div class="signal-title"><strong>Mercedes F1</strong> announced new partnership with <strong>Fortinet</strong> — cybersecurity category</div>
+        <div class="signal-detail">Multi-year deal covering 2026-2028. Removes one category competitor from Haas-cyber pitch. Affects 4 active prospects in your pipeline.</div>
+      </div>
+      <div class="signal-cta">Adjust strategy →</div>
+    </div>
+
+    <div class="signal">
+      <div class="signal-icon icon-promo">🎯</div>
+      <div class="signal-body">
+        <div class="signal-title"><strong>Sarah Chen</strong> moved from CMO Adyen → CRO Stripe</div>
+        <div class="signal-detail">She's in your CRM (warm contact, 3 prior touches). Promotion = natural reason to re-engage. Stripe is currently uncovered in your Haas pipeline.</div>
+      </div>
+      <div class="signal-cta">Draft congrats →</div>
+    </div>
+
+    <div class="signal">
+      <div class="signal-icon icon-fund">💰</div>
+      <div class="signal-body">
+        <div class="signal-title"><strong>Klarna</strong> confirmed €15B IPO valuation · public Sept 2025</div>
+        <div class="signal-detail">Active deal in fintech sequence (Sebastian Siemiatkowski). Liquidity event = brand-spend uplift incoming. Reprioritise.</div>
+      </div>
+      <div class="signal-cta">Open deal →</div>
+    </div>
+
+    <div class="signal">
+      <div class="signal-icon icon-stale">⚠️</div>
+      <div class="signal-body">
+        <div class="signal-title"><strong>3 deals untouched > 14 days</strong> — drifting toward decay</div>
+        <div class="signal-detail">Decagon ($250k, 16d) · Camtek ($180k, 19d) · MVB Bank ($120k, 22d). Combined value $550k at risk.</div>
+      </div>
+      <div class="signal-cta">Triage all 3 →</div>
+    </div>
+  </section>
+
+  <!-- ── INTELLIGENCE (Learning Layer 2) ── -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title">This week's intelligence — Learning System</div>
+      <div class="section-meta">Updated Mon 3am · structured insights only</div>
+    </div>
+    <div class="intel-grid">
+      <div class="intel-card">
+        <div class="intel-card-title">Sector performance</div>
+        <div class="intel-row">
+          <div class="intel-row-label">Cybersecurity</div>
+          <div class="intel-row-value" style="color: var(--green);">14.2% reply</div>
+          <div class="intel-row-delta">▲ 2.1pp · 89 sends</div>
+        </div>
+        <div class="intel-row">
+          <div class="intel-row-label">Enterprise AI</div>
+          <div class="intel-row-value" style="color: var(--green);">11.8% reply</div>
+          <div class="intel-row-delta">▲ 0.4pp · 64 sends</div>
+        </div>
+        <div class="intel-row">
+          <div class="intel-row-label">Cloud Infrastructure</div>
+          <div class="intel-row-value">9.4% reply</div>
+          <div class="intel-row-delta">→ flat · 51 sends</div>
+        </div>
+        <div class="intel-row">
+          <div class="intel-row-label">Fintech & Banking</div>
+          <div class="intel-row-value" style="color: var(--red);">6.1% reply</div>
+          <div class="intel-row-delta">▼ 1.3pp · 142 sends</div>
+        </div>
+      </div>
+      <div class="intel-card">
+        <div class="intel-card-title">Role effectiveness</div>
+        <div class="intel-row">
+          <div class="intel-row-label">CISO</div>
+          <div class="intel-row-value" style="color: var(--green);">17.2% reply</div>
+        </div>
+        <div class="intel-row">
+          <div class="intel-row-label">CMO</div>
+          <div class="intel-row-value">8.1% reply</div>
+        </div>
+        <div class="intel-row">
+          <div class="intel-row-label">CRO</div>
+          <div class="intel-row-value">6.4% reply</div>
+        </div>
+        <div class="intel-row">
+          <div class="intel-row-label">CEO</div>
+          <div class="intel-row-value">4.9% reply</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top: 12px; padding: 14px 18px; background: rgba(248,113,113,0.04); border: 0.5px solid rgba(248,113,113,0.15); border-radius: 10px; font-size: 11px; color: var(--text-sec);">
+      ⚠️ <strong style="color: var(--red);">Message diagnostic:</strong> Email step 2 in cyber sequence underperforming by -35% vs benchmark. Variant B (revised opener) shows +18% open rate on the 23 sends so far — minimum threshold reached, eligible for promotion to default.
+    </div>
+  </section>
+
+  <!-- ── ACTIONABLE CHANGES (Behavioural Integration) ── -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title">Actionable changes — apply with one click</div>
+      <div class="section-meta">Behavioural integration · changes scoring/targeting/messaging</div>
+    </div>
+
+    <div class="change-card">
+      <div class="change-text">Switch next sourcing run focus to <strong>Cybersecurity</strong> (outperforming Fintech by 8.1pp this week)</div>
+      <button class="btn btn-primary">Apply</button>
+    </div>
+    <div class="change-card">
+      <div class="change-text">Promote <strong>Email step 2 variant B</strong> to default in cyber sequence (+18% open rate, threshold met)</div>
+      <button class="btn btn-primary">Apply</button>
+    </div>
+    <div class="change-card">
+      <div class="change-text">Increase <strong>CISO targeting weight</strong> by 25% in next enrichment run (converting 2.1× CMO)</div>
+      <button class="btn btn-primary">Apply</button>
+    </div>
+    <div class="change-card">
+      <div class="change-text">Reduce <strong>Fintech sourcing</strong> weight pending message refresh (reply rate down 1.3pp on 142 sends)</div>
+      <button class="btn btn-primary">Apply</button>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <div class="footer-status">
+      <div class="status-dot"></div>
+      <span>Kiko OS v14.6 · 33 active crons · 4,193 contacts · 2,244 companies · 308 deals · learning from 847 sends this week</span>
+    </div>
+    <div>Last updated 7:32am · next refresh 9:00am</div>
+  </footer>
+
+</div>
+</body>
+</html>
+</content>

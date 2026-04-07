@@ -13,6 +13,7 @@ const Contacts = lazy(() => import('@/pages/Contacts'))
 const ContactDetail = lazy(() => import('@/pages/ContactDetail'))
 const Organisations = lazy(() => import('@/pages/Organisations'))
 const OutreachIntelligence = lazy(() => import('@/pages/OutreachIntelligence'))
+const CommandCentre = lazy(() => import('@/pages/CommandCentre'))
 const PartnershipMatrix = lazy(() => import('@/pages/PartnershipMatrix'))
 const CommercialCalendar = lazy(() => import('@/pages/CommercialCalendar'))
 const KikoCode = lazy(() => import('@/pages/KikoCode'))
@@ -133,7 +134,7 @@ export default function App() {
           <Route path="deals" element={<Navigate to="/pipeline" replace />} />
           <Route path="tasks" element={<Navigate to="/command-centre" replace />} />
           <Route path="email" element={<Navigate to="/command-centre" replace />} />
-          <Route path="command-centre" element={<OutreachIntelligence user={user} />} />
+          <Route path="command-centre" element={<CommandCentre user={user} />} />
           {/* News Signals removed — replaced by Partnership Detection alerts */}
           <Route path="partnership-matrix" element={<PartnershipMatrix user={user} />} />
           <Route path="calendar" element={<CommercialCalendar user={user} />} />
