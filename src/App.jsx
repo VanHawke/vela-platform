@@ -21,6 +21,7 @@ const MemoryConsole = lazy(() => import('@/pages/MemoryConsole'))
 const Lemlist = lazy(() => import('@/pages/Lemlist'))
 const Sequences = lazy(() => import('@/pages/Sequences'))
 const Inbox = lazy(() => import('@/pages/Inbox'))
+const Segments = lazy(() => import('@/pages/Segments'))
 const SequenceDetail = lazy(() => import('@/pages/SequenceDetail'))
 
 const INACTIVITY_MS   = 20 * 60 * 1000
@@ -139,6 +140,7 @@ export default function App() {
           <Route path="sequences" element={<Sequences user={user} />} />
           <Route path="sequences/:id" element={<SequenceDetail user={user} />} />
           <Route path="inbox" element={<Inbox user={user} />} />
+          <Route path="segments" element={<Segments user={user} />} />
           <Route path="kikocode" element={<KikoCode user={user} />} />
           <Route path="settings" element={<Settings user={user} />} />
           <Route path="memory" element={<AdminRoute><MemoryConsole user={user} /></AdminRoute>} />
