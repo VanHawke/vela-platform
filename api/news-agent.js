@@ -1,20 +1,12 @@
 // api/news-agent.js — RSS feed aggregator + Haiku intelligence classifier
-// Fetches from 10+ sports business/F1/sponsorship RSS feeds, deduplicates, classifies via Haiku
+// Fetches from 60+ sports business/F1/sponsorship RSS feeds, deduplicates, classifies via Haiku
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
-import crypto from 'crypto';
 import { cronHeartbeat, logError } from './kiko-tools.js';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
-
-// Compute deterministic hash of article_url for dedup. Without this the upsert
-// onConflict='article_url_hash' is meaningless — NULL never equals NULL in Postgres
-// unique constraints, so every run silently inserts duplicates as new rows.
-function urlHash(url) {
-  return crypto.createHash('sha256').update(url || '').digest('hex').slice(0, 32);
-}
 
 // RSS Feed sources — sponsorship-first, all verified working
 const FEEDS = [
@@ -125,7 +117,7 @@ function parseRSS(xml, sourceName, sourceUrl) {
     if (title && link) {
       articles.push({
         source_name: sourceName, source_url: sourceUrl, article_url: link,
-        article_url_hash: urlHash(link),
+        // article_url_hash is GENERATED ALWAYS AS md5(article_url) — do NOT send it
         title: title.slice(0, 500), summary: desc?.slice(0, 1000) || '',
         image_url: imageMatch?.[1] || null, author: author || null,
         published_at: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(),
@@ -164,14 +156,17 @@ async function fetchAllFeeds() {
 
 // Store articles in BATCH (1 round-trip instead of 300+).
 // Previously did sequential upserts which alone took ~30-60s for a typical run.
+// Note: article_url_hash is a GENERATED column (md5(article_url)) — Postgres
+// computes it automatically, we never set it.
 async function storeArticles(articles) {
   if (!articles?.length) return { stored: 0, skipped: 0, total: 0 };
-  // Dedupe by hash within this batch first (RSS feeds frequently overlap)
+  // In-memory dedup by article_url before sending to Postgres
+  // (RSS feeds frequently overlap; same article syndicated multiple places)
   const seen = new Set();
   const unique = [];
   for (const a of articles) {
-    if (a.article_url_hash && !seen.has(a.article_url_hash)) {
-      seen.add(a.article_url_hash);
+    if (a.article_url && !seen.has(a.article_url)) {
+      seen.add(a.article_url);
       unique.push(a);
     }
   }
