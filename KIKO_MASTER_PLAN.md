@@ -85,7 +85,7 @@ First pack: **Van Hawke F1 Sponsorship**
 | Legacy | C | Unified reply inbox | ✅ shipped | 2a45068 |
 | Legacy | C | Lead segments + auto-enrollment | ✅ shipped | b1101e3 |
 | **A1** | A | Vertical Pack Infrastructure | ✅ shipped | 119d6d8 |
-| A2 | A | SponsorSignal Scoring Engine | ⏭️ | — |
+| A2 | A | SponsorSignal Scoring Engine | ✅ shipped | 21a96a8 |
 | A3 | A | Scoring UI + Workflow Integration | ⏭️ | — |
 | B1 | B | Lead Sourcing Module (Apollo) | ⏭️ | — |
 | B2 | B | Sourcing Automation | ⏭️ | — |
