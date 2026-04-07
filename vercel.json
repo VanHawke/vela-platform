@@ -85,8 +85,7 @@
     "api/cron-self-improvement.js": { "maxDuration": 60 },
     "api/cron-weekly-report.js": { "maxDuration": 60 },
     "api/cron-partnership-verify.js": { "maxDuration": 120 },
-    "api/cron-health-check.js": { "maxDuration": 45 },
-    "api/track.js": { "maxDuration": 10 }
+    "api/cron-health-check.js": { "maxDuration": 45 }
   },
   "rewrites": [
     { "source": "/api/google-auth/callback", "destination": "/api/google-auth" },
