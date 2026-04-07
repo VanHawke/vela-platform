@@ -23,21 +23,23 @@ async function fetchJSON(url) {
 }
 
 function mapLead(l, source) {
+  // Activities use leadFirstName/leadLastName/leadEmail; campaign leads use firstName/etc
   return {
-    firstName: l.firstName || l.first_name || '',
-    lastName: l.lastName || l.last_name || '',
-    email: (l.email || '').trim().toLowerCase(),
+    firstName: l.firstName || l.leadFirstName || l.first_name || '',
+    lastName: l.lastName || l.leadLastName || l.last_name || '',
+    email: (l.email || l.leadEmail || '').trim().toLowerCase(),
     title: l.jobTitle || l.title || l.position || '',
-    company: l.companyName || l.company || '',
+    company: l.companyName || l.leadCompanyName || l.company || '',
     linkedin: l.linkedinUrl || l.linkedin_url || l.linkedIn || '',
     phone: l.phone || l.phoneNumber || '',
     location: l.location || [l.city, l.country].filter(Boolean).join(', ') || '',
     industry: l.industry || '',
-    picture: l.picture || l.pictureUrl || '',
+    picture: l.picture || l.leadPicture || l.pictureUrl || '',
     companyLinkedin: l.companyLinkedinUrl || l.companyLinkedin || '',
     companyDomain: l.companyDomain || l.domain || '',
     source: 'lemlist',
-    lemlistId: l._id || l.id || null,
+    lemlistId: l.leadId || l._id || l.id || null,
+    lemlistContactId: l.contactId || null,
     lemlistSource: source,
     lastSyncedFromLemlistAt: new Date().toISOString(),
   };
@@ -149,15 +151,25 @@ export default async function handler(req, res) {
       return res.json({ ok: true, fetched: arr.length, done: arr.length < PAGE, ...stats });
     }
 
-    // ─── DRAIN ONE PAGE OF ONE CAMPAIGN ───
+    // ─── DRAIN ONE PAGE OF ONE CAMPAIGN (via activities — rich data) ───
     if (action === 'campaign' && req.method === 'POST') {
       const id = req.query.id;
       const offset = parseInt(req.query.offset) || 0;
       if (!id) return res.status(400).json({ error: 'id required' });
-      const page = await fetchJSON(`https://api.lemlist.com/api/campaigns/${id}/leads?limit=${PAGE}&offset=${offset}`);
+      // Use /api/activities — returns full lead data per event. Dedupe by leadId server-side.
+      const page = await fetchJSON(`https://api.lemlist.com/api/activities?campaignId=${id}&limit=${PAGE}&offset=${offset}`);
       const arr = Array.isArray(page) ? page : (page?.data || []);
-      const stats = await processBatch(arr, `campaign:${id}`, dryRun);
-      return res.json({ ok: true, fetched: arr.length, done: arr.length < PAGE, ...stats });
+      // Dedupe by leadId or email — same lead may appear in multiple activities
+      const seen = new Set();
+      const uniqueLeads = [];
+      for (const a of arr) {
+        const key = a.leadId || a.leadEmail || a.email;
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        uniqueLeads.push(a);
+      }
+      const stats = await processBatch(uniqueLeads, `campaign:${id}`, dryRun);
+      return res.json({ ok: true, fetched: arr.length, uniqueLeads: uniqueLeads.length, done: arr.length < PAGE, ...stats });
     }
 
     // ─── PERSIST FINAL SUMMARY ALERT ───
