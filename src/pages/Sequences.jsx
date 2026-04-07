@@ -51,10 +51,19 @@ export default function Sequences() {
     const [{ data: s }, { data: e }, { data: q }] = await Promise.all([
       supabase.from('kiko_sequences').select('*').order('created_at', { ascending: false }),
       supabase.from('kiko_sequence_enrollments').select('*'),
-      supabase.from('kiko_outreach_queue').select('enrollment_id').eq('status', 'sent'),
+      supabase.from('kiko_outreach_queue').select('enrollment_id, status, opens_count, clicks_count, reply_received_at, reply_handled, sent_at'),
     ])
     setSequences(s || []); setEnrollments(e || [])
-    const map = {}; for (const item of (q || [])) map[item.enrollment_id] = (map[item.enrollment_id] || 0) + 1
+    // Build rich stats map keyed by enrollment_id
+    const map = {}
+    for (const item of (q || [])) {
+      if (!map[item.enrollment_id]) map[item.enrollment_id] = { sent: 0, opens: 0, clicks: 0, replies: 0, unhandledReplies: 0 }
+      if (item.status === 'sent' || item.sent_at) map[item.enrollment_id].sent += 1
+      if ((item.opens_count || 0) > 0) map[item.enrollment_id].opens += 1
+      if ((item.clicks_count || 0) > 0) map[item.enrollment_id].clicks += 1
+      if (item.reply_received_at) map[item.enrollment_id].replies += 1
+      if (item.reply_received_at && !item.reply_handled) map[item.enrollment_id].unhandledReplies += 1
+    }
     setSentMap(map)
     setPageContext({ page: 'campaigns', summary: `Campaigns: ${(s||[]).length} sequences, ${(e||[]).length} enrolled leads`,
       visibleItems: (s||[]).slice(0, 6).map(x => `${x.name} (${x.is_active ? 'live' : 'draft'})`).join(', ') })
@@ -82,12 +91,40 @@ export default function Sequences() {
   const totalActive = enrollments.filter(e => e.status === 'active').length
   const totalReplied = enrollments.filter(e => e.status === 'replied').length
   const totalBounced = enrollments.filter(e => e.status === 'bounced').length
-  const totalSent = Object.values(sentMap).reduce((a, b) => a + b, 0)
+  const aggregateAll = Object.values(sentMap).reduce((acc, m) => ({
+    sent: acc.sent + (m.sent || 0),
+    opens: acc.opens + (m.opens || 0),
+    clicks: acc.clicks + (m.clicks || 0),
+    replies: acc.replies + (m.replies || 0),
+    unhandledReplies: acc.unhandledReplies + (m.unhandledReplies || 0),
+  }), { sent: 0, opens: 0, clicks: 0, replies: 0, unhandledReplies: 0 })
+  const totalSent = aggregateAll.sent
+  const totalOpens = aggregateAll.opens
+  const totalClicks = aggregateAll.clicks
+  const totalUnhandled = aggregateAll.unhandledReplies
 
   function cs(seqId) {
     const enr = enrollments.filter(e => e.sequence_id === seqId)
-    return { enrolled: enr.length, active: enr.filter(e => e.status === 'active').length, replied: enr.filter(e => e.status === 'replied').length,
-      bounced: enr.filter(e => e.status === 'bounced').length, sent: enr.reduce((sum, e) => sum + (sentMap[e.id] || 0), 0) }
+    const agg = enr.reduce((acc, e) => {
+      const m = sentMap[e.id] || {}
+      return {
+        sent: acc.sent + (m.sent || 0),
+        opens: acc.opens + (m.opens || 0),
+        clicks: acc.clicks + (m.clicks || 0),
+        replies: acc.replies + (m.replies || 0),
+        unhandled: acc.unhandled + (m.unhandledReplies || 0),
+      }
+    }, { sent: 0, opens: 0, clicks: 0, replies: 0, unhandled: 0 })
+    return {
+      enrolled: enr.length,
+      active: enr.filter(e => e.status === 'active').length,
+      replied: enr.filter(e => e.status === 'replied').length || agg.replies,
+      bounced: enr.filter(e => e.status === 'bounced').length,
+      sent: agg.sent,
+      opens: agg.opens,
+      clicks: agg.clicks,
+      unhandledReplies: agg.unhandled,
+    }
   }
 
   const filtered = sequences
@@ -110,19 +147,29 @@ export default function Sequences() {
 
       {/* ═══ GLOBAL STATS ═══ */}
       {sequences.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10, marginBottom: 20 }}>
           {[
             { label: 'Enrolled', val: totalEnrolled, color: C.purple },
             { label: 'Sent', val: totalSent, color: C.text },
-            { label: 'Replied', val: totalReplied, sub: totalSent > 0 ? `${pct(totalReplied, totalSent)}%` : null, color: C.green },
-            { label: 'Active', val: totalActive, color: C.teal },
-            { label: 'Bounced', val: totalBounced, sub: totalSent > 0 ? `${pct(totalBounced, totalSent)}%` : null, color: C.red },
+            { label: 'Opens', val: totalOpens, sub: totalSent > 0 ? `${pct(totalOpens, totalSent)}%` : null, color: C.blue },
+            { label: 'Clicks', val: totalClicks, sub: totalSent > 0 ? `${pct(totalClicks, totalSent)}%` : null, color: C.teal },
+            { label: 'Replied', val: totalReplied || aggregateAll.replies, sub: totalSent > 0 ? `${pct(totalReplied || aggregateAll.replies, totalSent)}%` : null, color: C.green },
+            { label: 'Unhandled', val: totalUnhandled, color: totalUnhandled > 0 ? C.red : C.textMut },
           ].map((s, i) => (
-            <div key={i} style={{ background: C.card, border: `0.5px solid ${C.border}`, borderRadius: C.r, padding: '16px', textAlign: 'center' }}>
-              <div style={{ fontSize: 24, fontWeight: 500, color: s.val > 0 ? s.color : C.textMut, lineHeight: 1 }}>{s.val.toLocaleString()}{s.sub && <span style={{ fontSize: 12, fontWeight: 400, color: C.textSec, marginLeft: 4 }}>{s.sub}</span>}</div>
-              <div style={{ fontSize: 10, color: C.textTer, marginTop: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
+            <div key={i} style={{ background: C.card, border: `0.5px solid ${C.border}`, borderRadius: C.r, padding: '14px', textAlign: 'center' }}>
+              <div style={{ fontSize: 22, fontWeight: 500, color: s.val > 0 ? s.color : C.textMut, lineHeight: 1 }}>{s.val.toLocaleString()}{s.sub && <span style={{ fontSize: 11, fontWeight: 400, color: C.textSec, marginLeft: 4 }}>{s.sub}</span>}</div>
+              <div style={{ fontSize: 9, color: C.textTer, marginTop: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</div>
             </div>
           ))}
+        </div>
+      )}
+      {/* Unhandled replies banner */}
+      {totalUnhandled > 0 && (
+        <div style={{ background: 'rgba(248,113,113,0.06)', border: `0.5px solid rgba(248,113,113,0.30)`, borderRadius: C.r, padding: '12px 16px', marginBottom: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontSize: 12, color: C.text }}>
+            <strong style={{ color: C.red }}>{totalUnhandled}</strong> {totalUnhandled === 1 ? 'reply' : 'replies'} need your response — drafts ready in Command Centre Priority section
+          </div>
+          <button onClick={() => nav('/command-centre')} style={{ padding: '6px 12px', borderRadius: 6, fontSize: 11, background: 'rgba(248,113,113,0.12)', color: C.red, border: `0.5px solid rgba(248,113,113,0.30)`, cursor: 'pointer', fontFamily: C.font }}>Open triage</button>
         </div>
       )}
 
@@ -182,12 +229,13 @@ export default function Sequences() {
                 {[
                   { label: 'Enrolled', val: stats.enrolled, color: C.purple },
                   { label: 'Sent', val: stats.sent, color: C.text },
+                  { label: 'Opens', val: stats.opens, sub: stats.sent > 0 ? `${pct(stats.opens, stats.sent)}%` : null, color: C.blue },
+                  { label: 'Clicks', val: stats.clicks, sub: stats.sent > 0 ? `${pct(stats.clicks, stats.sent)}%` : null, color: C.teal },
                   { label: 'Replied', val: stats.replied, sub: stats.sent > 0 ? `${pct(stats.replied, stats.sent)}%` : null, color: C.green },
                   { label: 'Bounced', val: stats.bounced, color: C.red },
-                  { label: 'Active', val: stats.active, color: C.teal },
                 ].map((m, i) => (
-                  <div key={i} style={{ flex: 1, padding: '8px 0', textAlign: 'center', borderRight: i < 4 ? `0.5px solid ${C.border}` : 'none' }}>
-                    <div style={{ fontSize: 17, fontWeight: 500, color: m.val > 0 ? m.color : C.textMut }}>{m.val}{m.sub && <span style={{ fontSize: 10, color: C.textSec, marginLeft: 3 }}>{m.sub}</span>}</div>
+                  <div key={i} style={{ flex: 1, padding: '8px 0', textAlign: 'center', borderRight: i < 5 ? `0.5px solid ${C.border}` : 'none' }}>
+                    <div style={{ fontSize: 16, fontWeight: 500, color: m.val > 0 ? m.color : C.textMut }}>{m.val}{m.sub && <span style={{ fontSize: 9, color: C.textSec, marginLeft: 3 }}>{m.sub}</span>}</div>
                     <div style={{ fontSize: 9, color: C.textTer, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{m.label}</div>
                   </div>
                 ))}
@@ -202,6 +250,13 @@ export default function Sequences() {
                   </div>
                 )}
               </div>
+
+              {/* Unhandled reply badge */}
+              {stats.unhandledReplies > 0 && (
+                <div style={{ marginTop: 8, padding: '6px 10px', borderRadius: 6, background: 'rgba(248,113,113,0.06)', border: `0.5px solid rgba(248,113,113,0.20)`, fontSize: 11, color: C.red, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  ⚠ {stats.unhandledReplies} unhandled {stats.unhandledReplies === 1 ? 'reply' : 'replies'} — needs response
+                </div>
+              )}
 
               {/* Empty state for 0 leads */}
               {stats.enrolled === 0 && (

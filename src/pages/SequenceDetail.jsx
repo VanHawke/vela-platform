@@ -70,6 +70,10 @@ export default function SequenceDetail() {
   const [manualLead, setManualLead] = useState({ firstName: '', lastName: '', email: '', company: '', title: '', linkedin: '' })
   const [manualAdding, setManualAdding] = useState(false)
   const [selectedLead, setSelectedLead] = useState(null)
+  const [activityFeed, setActivityFeed] = useState([])
+  const [activityLoading, setActivityLoading] = useState(false)
+  const [bgSourcing, setBgSourcing] = useState(false)
+  const [bgJobMsg, setBgJobMsg] = useState(null)
   const [leadActivity, setLeadActivity] = useState([])
   const [topPatterns, setTopPatterns] = useState([])
   const [conditions, setConditions] = useState([])
@@ -82,6 +86,11 @@ export default function SequenceDetail() {
   const [showLaunchConfirm, setShowLaunchConfirm] = useState(false)
 
   useEffect(() => { if (!isNew) load() }, [id])
+
+  // Activity tab — load when opened
+  useEffect(() => {
+    if (tab === 'activity' && enrollments.length) loadActivity()
+  }, [tab, enrollments.length])
 
   // Load top-performing patterns once when Performance tab opens.
   // Returns empty array when no send data exists yet — card hidden in that case.
@@ -273,11 +282,61 @@ export default function SequenceDetail() {
     setLeadActivity(q || [])
   }
 
+  // Activity tab — chronological feed of all sends/opens/clicks/replies for this campaign
+  async function loadActivity() {
+    setActivityLoading(true)
+    try {
+      const enrIds = enrollments.map(e => e.id)
+      if (!enrIds.length) { setActivityFeed([]); setActivityLoading(false); return }
+      const { data } = await supabase.from('kiko_outreach_queue')
+        .select('id, enrollment_id, to_email, to_name, company, subject, channel, step_number, status, sent_at, opened_at, last_opened_at, opens_count, clicked_at, clicks_count, reply_received_at, reply_snippet, reply_handled, error, created_at')
+        .in('enrollment_id', enrIds)
+        .order('created_at', { ascending: false })
+        .limit(200)
+      const events = []
+      for (const r of (data || [])) {
+        if (r.sent_at) events.push({ id: r.id + '-sent', ts: r.sent_at, type: 'sent', row: r })
+        if (r.opened_at) events.push({ id: r.id + '-opened', ts: r.last_opened_at || r.opened_at, type: 'opened', row: r })
+        if (r.clicked_at) events.push({ id: r.id + '-clicked', ts: r.clicked_at, type: 'clicked', row: r })
+        if (r.reply_received_at) events.push({ id: r.id + '-replied', ts: r.reply_received_at, type: 'replied', row: r })
+        if (r.error) events.push({ id: r.id + '-error', ts: r.created_at, type: 'error', row: r })
+      }
+      events.sort((a, b) => new Date(b.ts) - new Date(a.ts))
+      setActivityFeed(events.slice(0, 100))
+    } catch (e) { console.error('activity load failed', e) }
+    setActivityLoading(false)
+  }
+
+  // Background sourcing — queues source_companies_bg job via /api/kiko-jobs
+  async function queueBackgroundSource() {
+    setBgSourcing(true); setBgJobMsg(null)
+    try {
+      const userId = '9f486437-4bf5-4111-abfe-fe19bfa76063'
+      const category = seq?.target_persona || seq?.name || 'cybersecurity'
+      const res = await fetch(`/api/kiko-jobs?user_id=${userId}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          job_type: 'source_companies_bg',
+          title: `Source contacts for "${seq?.name || 'campaign'}"`,
+          params: { category, count: 15, sequence_id: id },
+          related_entity_type: 'sequence',
+          related_entity_id: id,
+          user_id: userId,
+        }),
+      })
+      const data = await res.json()
+      if (data.ok) setBgJobMsg(`✅ Queued — Kiko will source contacts in the background. Worker runs every 5 min.`)
+      else setBgJobMsg(`❌ ${data.error || 'queue failed'}`)
+    } catch (e) { setBgJobMsg(`❌ ${e.message}`) }
+    setBgSourcing(false)
+    setTimeout(() => setBgJobMsg(null), 8000)
+  }
+
   async function pauseEnr(eid) { await supabase.from('kiko_sequence_enrollments').update({ status: 'paused' }).eq('id', eid); await supabase.from('kiko_outreach_queue').update({ status: 'cancelled' }).eq('enrollment_id', eid).eq('status', 'queued'); load() }
   async function cancelEnr(eid) { await supabase.from('kiko_sequence_enrollments').update({ status: 'cancelled' }).eq('id', eid); await supabase.from('kiko_outreach_queue').update({ status: 'cancelled' }).eq('enrollment_id', eid).eq('status', 'queued'); load() }
 
   const cur = steps[selStep]
-  const tabs = [{ id: 'sequence', label: 'Sequence' }, { id: 'leads', label: 'Leads', ct: enrollments.length }, { id: 'performance', label: 'Performance' }]
+  const tabs = [{ id: 'sequence', label: 'Sequence' }, { id: 'leads', label: 'Leads', ct: enrollments.length }, { id: 'activity', label: 'Activity' }, { id: 'performance', label: 'Performance' }]
   const inputStyle = { width: '100%', padding: '8px 10px', borderRadius: 6, border: `0.5px solid ${C.border}`, background: C.cardHover, color: C.text, fontSize: 12, fontFamily: C.font, outline: 'none', boxSizing: 'border-box' }
 
   return (
@@ -620,10 +679,16 @@ export default function SequenceDetail() {
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button onClick={autoSuggestLeads} disabled={loadingSuggestions} style={{ padding: '5px 12px', borderRadius: 5, border: `0.5px solid ${C.border}`, background: C.cardHover, color: C.teal, fontSize: 11, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><Sparkles size={12} />{loadingSuggestions ? 'Finding...' : 'Kiko, find leads'}</button>
+                  <button onClick={queueBackgroundSource} disabled={bgSourcing} style={{ padding: '5px 12px', borderRadius: 5, border: `0.5px solid rgba(167,139,250,0.30)`, background: 'rgba(167,139,250,0.06)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }} title="Queues a background job. Kiko sources contacts via Sonnet+web search while you do other work.">⚡{bgSourcing ? 'Queueing…' : 'Source in background'}</button>
                   <button onClick={() => setShowManualAdd(true)} style={{ padding: '5px 12px', borderRadius: 5, border: `0.5px solid ${C.border}`, background: C.cardHover, color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><Plus size={12} />Manual add</button>
                   <button onClick={() => setShowAddLeads(true)} style={{ padding: '5px 12px', borderRadius: 5, border: 'none', background: 'rgba(167,139,250,0.10)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><UserPlus size={12} />Add from CRM</button>
                 </div>
               </div>
+              {bgJobMsg && (
+                <div style={{ padding: '8px 16px', borderBottom: `0.5px solid ${C.border}`, background: bgJobMsg.startsWith('✅') ? 'rgba(167,139,250,0.04)' : 'rgba(248,113,113,0.04)', fontSize: 11, color: bgJobMsg.startsWith('✅') ? C.purple : C.red }}>
+                  {bgJobMsg}
+                </div>
+              )}
               {suggestions.length > 0 && (
                 <div style={{ padding: '10px 16px', borderBottom: `0.5px solid ${C.border}`, background: 'rgba(45,212,191,0.02)' }}>
                   <div style={{ fontSize: 11, color: C.teal, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}><Sparkles size={11} />Kiko found {suggestions.length} potential leads</div>
@@ -741,6 +806,53 @@ export default function SequenceDetail() {
           </div>
         )}
       </>)}
+
+      {/* ═══ ACTIVITY TAB ═══ */}
+      {tab === 'activity' && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 500, color: C.textTer, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              Activity feed · {activityFeed.length} events
+            </div>
+            <button onClick={loadActivity} disabled={activityLoading} style={{ padding: '5px 12px', borderRadius: 5, border: `0.5px solid ${C.border}`, background: C.cardHover, color: C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>
+              {activityLoading ? 'Loading…' : '↻ Refresh'}
+            </button>
+          </div>
+          {activityFeed.length === 0 && !activityLoading && (
+            <div style={{ padding: 32, textAlign: 'center', background: C.card, border: `0.5px solid ${C.border}`, borderRadius: C.r }}>
+              <div style={{ fontSize: 13, color: C.textSec, marginBottom: 4 }}>No activity yet</div>
+              <div style={{ fontSize: 11, color: C.textTer }}>
+                {enrollments.length === 0 ? 'Add leads and launch the campaign to see sends, opens, clicks and replies here.' : 'Sends will appear here once the sequencer starts processing this campaign.'}
+              </div>
+            </div>
+          )}
+          {activityFeed.map(ev => {
+            const isReply = ev.type === 'replied'
+            const isError = ev.type === 'error'
+            const color = isReply ? C.green : isError ? C.red : ev.type === 'opened' ? C.blue : ev.type === 'clicked' ? C.teal : C.purple
+            const icon = isReply ? '↩' : isError ? '⚠' : ev.type === 'opened' ? '👁' : ev.type === 'clicked' ? '🔗' : '✉'
+            return (
+              <div key={ev.id} style={{ display: 'flex', gap: 12, padding: '11px 14px', borderRadius: 6, marginBottom: 4, background: isReply ? 'rgba(52,211,153,0.04)' : isError ? 'rgba(248,113,113,0.04)' : 'transparent', border: `0.5px solid ${isReply ? 'rgba(52,211,153,0.20)' : isError ? 'rgba(248,113,113,0.20)' : C.border}` }}>
+                <div style={{ width: 24, height: 24, borderRadius: 6, background: `${color}10`, border: `0.5px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0 }}>{icon}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                    <span style={{ fontSize: 10, fontWeight: 500, color, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{ev.type}</span>
+                    <span style={{ fontSize: 10, color: C.textTer }}>Step {ev.row.step_number} · {ev.row.channel}</span>
+                    {isReply && !ev.row.reply_handled && <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: 'rgba(248,113,113,0.10)', color: C.red, fontWeight: 500 }}>UNHANDLED</span>}
+                  </div>
+                  <div style={{ fontSize: 13, color: C.text, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {ev.row.to_name || ev.row.to_email}{ev.row.company ? ` — ${ev.row.company}` : ''}
+                  </div>
+                  <div style={{ fontSize: 11, color: C.textTer, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {isReply ? (ev.row.reply_snippet || 'Reply received') : isError ? ev.row.error : ev.row.subject}
+                  </div>
+                </div>
+                <div style={{ fontSize: 10, color: C.textTer, flexShrink: 0, alignSelf: 'flex-start', marginTop: 4 }}>{timeAgo(ev.ts)}</div>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* ═══ PERFORMANCE TAB ═══ */}
       {tab === 'performance' && (
