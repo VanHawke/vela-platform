@@ -192,15 +192,33 @@ MemoryConsole, KikoCode, Admin (super_admin only)
 |---|---|---|
 | 1 | Lock reset protocol | ✅ Done |
 | 2 | Audit (`KIKO_REALITY.md`) | ✅ Done |
-| 3 | Strip + cut crons + smoke test | 🟢 **THIS SESSION** |
-| 4 | Build Morning Brief surface | ⏭️ Next session |
-| 5 | Email signature wrapper | ⏭️ Fold into Step 4 |
-| 6 | Rebuild Campaigns page (Lemlist parity) | ⏭️ |
-| 7 | First real Kiko-sent campaign | ⏭️ Lemlist replaceable here |
-| 8 | Learning System Layer 1 (Tactical) | ⏭️ Per Section G locked architecture |
-| 9 | Learning System Layer 2 (Strategic) | ⏭️ |
-| 10 | Behavioural integration | ⏭️ |
-| 11 | Cost discipline rule | Permanent from now |
+| 3 | Strip + cut crons (-72%) + smoke test | ✅ Shipped |
+| 4 | Command Centre + page-aware Kiko + selftest | ✅ Shipped |
+| 5 | Voice profile (38 emails) + signatures + jobs queue | ✅ Shipped |
+| 6 | Campaigns Lemlist-parity rebuild (Parts 1+2) | ✅ Shipped |
+| 7 | First real Kiko-sent campaign — wired & verified | ✅ Shipped |
+| 8 | Learning System Layer 1 (Tactical) | ⏭️ Locked, blocked on real send data |
+| 9 | Learning System Layer 2 (Strategic) | ⏭️ Locked, blocked on Step 8 |
+| 10 | Behavioural integration | ⏭️ Locked, blocked on Steps 8-9 |
+| 11 | Cost discipline rule | ✅ Permanent |
+
+**Step 7 verification (7 April 2026):** Test enrollment for sunny@vanhawke.com → Haas F1 Cybersecurity sequence → manual cron-sequence-enqueue trigger → queued row inspected. Helvetica wrapper applied ✅, signature appended ✅, voice patterns from Sunny's 38 sent emails injected into Haiku refinement ✅ ("At this level, the structuring of Formula One partnerships requires a foundational layer..."), UK BST timezone bug fixed ✅ (lands at 09:26 UK morning, not afternoon). Selftest 32/32. The 3 sequencer crons are live in vercel.json: enqueue 6am M-F, sender every 30min 8-18 M-F, reply-detect every 2hr M-F. cron-sequence-reply-detect kiko_alerts schema drift fixed (now writes type='reply_from_prospect' matching Command Centre + Sequences UI filters).
+
+**What ships when Sunny launches first real campaign tomorrow:**
+- Settings → paste real Gmail signature (warm) + text-only signature (cold)
+- Pick one of 4 draft Haas F1 campaigns (Banking / FinTech / Telecoms / Gaming)
+- Add 3-5 real prospects via Add from CRM or Manual add
+- Click Launch → next 6am cron-sequence-enqueue picks it up → wraps with voice + sig → cron-sequence-sender ships it
+- Activity tab on /sequences/:id streams events live (sent / opened / clicked / replied)
+- Inline reply triage banner appears at top of campaign when reply detected
+- Command Centre Priority section also surfaces it
+- Reply alerts type=reply_from_prospect in kiko_alerts (verified schema-correct)
+
+**What needs to happen before Lemlist subscription is cancelled:**
+1. Sunny launches one real campaign through Kiko (his move)
+2. First real reply triaged through Command Centre (depends on #1)
+3. Migrate remaining Lemlist campaigns one at a time (depends on #2)
+4. Cancel Lemlist subscription (final)
 
 **Build rule (permanent):** Every new feature must declare (1) what it does, (2) run frequency, (3) monthly $, (4) revenue/pipeline/decision-quality justification. Missing or weak answer → don't build.
 
