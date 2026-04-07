@@ -23,7 +23,7 @@ const C = {
   font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   r: 8,
 }
-import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X, Zap, Mail, Filter, Layers } from 'lucide-react'
+import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X, Zap, Mail, Filter, Layers, Database } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
 import KikoVoice from '../kiko/KikoVoice'
 import KikoToast from '../kiko/KikoToast'
@@ -46,6 +46,7 @@ const ALL_NAV = [
   { id: 'segments', label: 'Segments', path: '/segments', Icon: Filter },
   { id: 'packs', label: 'Vertical Pack', path: '/packs', Icon: Layers },
   { id: 'targets', label: 'Targets', path: '/targets', Icon: Target },
+  { id: 'lemlist-drain', label: 'Lemlist Drain', path: '/lemlist-drain', Icon: Database },
 ]
 const VALID_NAV_IDS = new Set(ALL_NAV.map(n => n.id))
 const DEFAULT_TOP_IDS = ['home', 'command-centre', 'pipeline', 'partnership-matrix', 'sequences', 'inbox', 'segments']
@@ -70,7 +71,7 @@ function getTopNavIds() {
 const PAGE_LABELS = {
   '/pipeline': 'Pipeline', '/calendar': 'Race Calendar', '/contacts': 'Contacts',
   '/partnership-matrix': 'Partnership Matrix', '/email': 'Command Centre',
-  '/organisations': 'Organisations', '/lemlist': 'Lemlist', '/sequences': 'Campaigns', '/inbox': 'Inbox', '/segments': 'Segments', '/packs': 'Vertical Pack', '/targets': 'Targets',
+  '/organisations': 'Organisations', '/lemlist': 'Lemlist', '/lemlist-drain': 'Lemlist Drain', '/sequences': 'Campaigns', '/inbox': 'Inbox', '/segments': 'Segments', '/packs': 'Vertical Pack', '/targets': 'Targets',
   '/settings': 'Settings', '/dashboard': 'Dashboard',
 }
 
