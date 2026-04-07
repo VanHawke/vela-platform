@@ -221,13 +221,13 @@ export async function scoreCompanyById(companyId, ctx = null) {
   const context = ctx || await loadActivePackContext();
   const { data: company } = await supabase
     .from('companies')
-    .select('id, name, data')
+    .select('id, data')
     .eq('id', companyId)
     .maybeSingle();
   if (!company) throw new Error(`Company ${companyId} not found`);
   const result = await scoreCompany(company, context);
   const { previousComposite, delta } = await persistScore(company.id, context.pack.id, context.model.id, result);
-  return { company_id: company.id, ...result, previous_composite: previousComposite, delta };
+  return { company_id: company.id, name: company.data?.name, ...result, previous_composite: previousComposite, delta };
 }
 
 export default async function handler(req, res) {
@@ -261,7 +261,7 @@ export default async function handler(req, res) {
 
       const { data: allCompanies } = await supabase
         .from('companies')
-        .select('id, name, data')
+        .select('id, data')
         .limit(500);
 
       const candidates = (allCompanies || [])
@@ -274,7 +274,7 @@ export default async function handler(req, res) {
         try {
           const scoreResult = await scoreCompany(company, ctx);
           await persistScore(company.id, ctx.pack.id, ctx.model.id, scoreResult);
-          results.push({ company_id: company.id, name: company.name, score: scoreResult.composite_score });
+          results.push({ company_id: company.id, name: company.data?.name, score: scoreResult.composite_score });
           succeeded++;
         } catch (e) {
           console.error(`[Score] Failed for ${company.id}:`, e.message);
