@@ -84,7 +84,7 @@ First pack: **Van Hawke F1 Sponsorship**
 | Legacy | C | A/B testing engine + UI | ✅ shipped | 9ce2a37 |
 | Legacy | C | Unified reply inbox | ✅ shipped | 2a45068 |
 | Legacy | C | Lead segments + auto-enrollment | ✅ shipped | b1101e3 |
-| **A1** | A | Vertical Pack Infrastructure | 🔄 in progress | — |
+| **A1** | A | Vertical Pack Infrastructure | ✅ shipped | 119d6d8 |
 | A2 | A | SponsorSignal Scoring Engine | ⏭️ | — |
 | A3 | A | Scoring UI + Workflow Integration | ⏭️ | — |
 | B1 | B | Lead Sourcing Module (Apollo) | ⏭️ | — |
@@ -96,3 +96,13 @@ First pack: **Van Hawke F1 Sponsorship**
 | D1 | D | Score Feedback Loop | ⏭️ | — |
 | D2 | D | Performance Dashboard | ⏭️ | — |
 | E1 | E | Pack Marketplace | ⏭️ | — |
+
+
+---
+
+## KNOWN ISSUES (logged, scheduled, not blocking)
+| Issue | Found | Severity | Fix slot |
+|---|---|---|---|
+| `cron-news-classify` errors with HTML response (calls authenticated /api/news-agent over HTTP) | Sprint A1 smoke test | Medium | End of Phase A — refactor to import classify function directly instead of HTTP call |
+| News-agent classification backlog (~5,000 unclassified articles) | Sprint A1 | Low | Self-resolving once cron-news-classify is fixed (above) |
+| Performance learning loop has zero data | Sprint A1 | Low (dormant, not broken) | Activates automatically when first real campaign sends |
