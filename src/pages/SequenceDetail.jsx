@@ -380,6 +380,26 @@ export default function SequenceDetail() {
           <button onClick={async () => { await supabase.from('kiko_sequences').update({ is_active: false }).eq('id', id); setSeq(prev => ({ ...prev, is_active: false })) }} style={{ padding: '4px 12px', borderRadius: 4, border: '0.5px solid rgba(248,113,113,0.2)', background: 'transparent', color: C.red, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Pause campaign</button>
         </div>
       )}
+      {/* Inline reply triage banner — when any enrollment has detected replies needing response */}
+      {(() => {
+        const repliedEnr = enrollments.filter(e => e.reply_detected_at || e.status === 'replied')
+        if (repliedEnr.length === 0) return null
+        return (
+          <div style={{ padding: '12px 16px', borderRadius: 6, background: 'rgba(248,113,113,0.05)', border: '0.5px solid rgba(248,113,113,0.25)', marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Reply size={14} style={{ color: C.red }} />
+              <div>
+                <div style={{ fontSize: 12, color: C.text, fontWeight: 500 }}>{repliedEnr.length} {repliedEnr.length === 1 ? 'reply' : 'replies'} need your response</div>
+                <div style={{ fontSize: 11, color: C.textTer, marginTop: 1 }}>{repliedEnr.slice(0, 3).map(e => e.contact_name || e.contact_email).join(' · ')}{repliedEnr.length > 3 ? ` · +${repliedEnr.length - 3} more` : ''}</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button onClick={() => { setTab('activity') }} style={{ padding: '6px 12px', borderRadius: 5, border: '0.5px solid rgba(248,113,113,0.30)', background: 'rgba(248,113,113,0.08)', color: C.red, fontSize: 11, cursor: 'pointer', fontFamily: C.font, fontWeight: 500 }}>Triage in Activity</button>
+              <button onClick={() => nav('/command-centre')} style={{ padding: '6px 12px', borderRadius: 5, border: `0.5px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>Command Centre</button>
+            </div>
+          </div>
+        )
+      })()}
       <div style={{ display: 'flex', gap: 2, marginBottom: 14, background: C.cardHover, borderRadius: C.r, padding: 3, width: 'fit-content' }}>
         {tabs.map(t => (
           <button key={t.id} onClick={() => { setTab(t.id); setSelectedLead(null) }} style={{ padding: '6px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', fontFamily: C.font, fontSize: 12, background: tab === t.id ? 'rgba(167,139,250,0.08)' : 'transparent', color: tab === t.id ? C.text : C.textSec, display: 'flex', alignItems: 'center', gap: 5 }}>

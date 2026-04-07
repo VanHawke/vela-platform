@@ -110,12 +110,26 @@ export default function Settings({ user }) {
     try {
       const { data } = await supabase.from('user_settings').select('*').eq('user_id', user?.id).single()
       if (data) setSettings(data)
+      // Voice profile + sent_emails_analyzed + voice_last_learned live in kiko_user_config
+      try {
+        const { data: kc } = await supabase.from('kiko_user_config').select('email_voice_profile, voice_last_learned, sent_emails_analyzed, email_signature_html, email_signature_cold_html').eq('user_id', user?.id).maybeSingle()
+        if (kc) setSettings(prev => ({ ...prev, email_voice_profile: kc.email_voice_profile, voice_last_learned: kc.voice_last_learned, sent_emails_analyzed: kc.sent_emails_analyzed, email_signature_html: prev?.email_signature_html || kc.email_signature_html, email_signature_cold_html: prev?.email_signature_cold_html || kc.email_signature_cold_html }))
+      } catch {}
     } catch {}
   }
 
   const saveSettings = async (updates) => {
     try {
       await supabase.from('user_settings').upsert({ user_id: user?.id, ...updates, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
+      // Mirror signature fields to kiko_user_config so the email-format wrapper finds them
+      if (updates.email_signature_html !== undefined || updates.email_signature_cold_html !== undefined) {
+        try {
+          const mirror = {}
+          if (updates.email_signature_html !== undefined) mirror.email_signature_html = updates.email_signature_html
+          if (updates.email_signature_cold_html !== undefined) mirror.email_signature_cold_html = updates.email_signature_cold_html
+          await supabase.from('kiko_user_config').update(mirror).eq('user_id', user?.id)
+        } catch {}
+      }
       setSettings(prev => ({ ...prev, ...updates }))
       setSaved(true); setTimeout(() => setSaved(false), 2000)
       window.dispatchEvent(new Event('kiko_profile_updated'))
@@ -292,26 +306,56 @@ export default function Settings({ user }) {
               </div>
             </div>
 
-            {/* Email Signature */}
+            {/* Email Signature + Voice Profile */}
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Email Signature</h3>
-              <p style={{ fontSize: 12, color: T.textTertiary, marginBottom: 8, fontFamily: T.font }}>
-                Paste your HTML signature from Gmail or type one. Auto-appended to outgoing emails.
-              </p>
+              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Email Signature & Voice</h3>
+
+              {/* Voice profile status */}
+              {settings.email_voice_profile && (
+                <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(45,212,191,0.05)', border: '0.5px solid rgba(45,212,191,0.20)', marginBottom: 14, fontSize: 12, color: T.textSecondary, fontFamily: T.font }}>
+                  ✓ Kiko learned your voice from <strong style={{ color: T.text }}>{settings.sent_emails_analyzed || 0} emails</strong>
+                  {settings.voice_last_learned && <> · last updated {new Date(settings.voice_last_learned).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</>}
+                  {settings.email_voice_profile?.tone && <> · tone: <strong style={{ color: T.text }}>{settings.email_voice_profile.tone}</strong></>}
+                  {settings.email_voice_profile?.formality && <> · formality: <strong style={{ color: T.text }}>{settings.email_voice_profile.formality}</strong></>}
+                </div>
+              )}
+              {!settings.email_voice_profile && (
+                <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(251,191,36,0.05)', border: '0.5px solid rgba(251,191,36,0.20)', marginBottom: 14, fontSize: 12, color: T.textSecondary, fontFamily: T.font }}>
+                  ⚠ No voice profile yet — runs Sundays at 4am, or trigger manually:&nbsp;
+                  <button onClick={async () => { await fetch('/api/cron-email-voice-learning', { method: 'POST' }); alert('Voice learning queued — refresh in ~30s') }} style={{ padding: '3px 10px', borderRadius: 5, background: 'rgba(167,139,250,0.10)', color: T.accent, border: '0.5px solid rgba(167,139,250,0.30)', fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>Run now</button>
+                </div>
+              )}
+
+              {/* Warm signature (full + logo) */}
+              <label style={{ ...labelStyle, marginTop: 4 }}>Warm signature (used after a contact has replied)</label>
+              <p style={{ fontSize: 11, color: T.textTertiary, marginTop: 0, marginBottom: 6, fontFamily: T.font }}>Paste your full Gmail signature HTML — image + name + title + links.</p>
               <div
                 contentEditable
                 suppressContentEditableWarning
-                dangerouslySetInnerHTML={{ __html: settings.email_signature || '' }}
-                onBlur={e => setSettings(p => ({ ...p, email_signature: e.currentTarget.innerHTML }))}
+                dangerouslySetInnerHTML={{ __html: settings.email_signature_html || settings.email_signature || '' }}
+                onBlur={e => setSettings(p => ({ ...p, email_signature_html: e.currentTarget.innerHTML }))}
                 onPaste={e => {
                   const html = e.clipboardData?.getData('text/html')
                   if (html) { e.preventDefault(); document.execCommand('insertHTML', false, html) }
                 }}
-                style={{
-                  ...inputStyle, height: 'auto', minHeight: 120, padding: '12px 14px',
-                  lineHeight: 1.5, overflow: 'auto', whiteSpace: 'pre-wrap',
-                }}
+                style={{ ...inputStyle, height: 'auto', minHeight: 100, padding: '12px 14px', lineHeight: 1.5, overflow: 'auto', whiteSpace: 'pre-wrap' }}
               />
+
+              {/* Cold signature (text-only) */}
+              <label style={{ ...labelStyle, marginTop: 14 }}>Cold outreach signature (text-only — better deliverability)</label>
+              <p style={{ fontSize: 11, color: T.textTertiary, marginTop: 0, marginBottom: 6, fontFamily: T.font }}>Used on first-touch cold emails. Strip images and links to avoid spam filters.</p>
+              <div
+                contentEditable
+                suppressContentEditableWarning
+                dangerouslySetInnerHTML={{ __html: settings.email_signature_cold_html || '' }}
+                onBlur={e => setSettings(p => ({ ...p, email_signature_cold_html: e.currentTarget.innerHTML }))}
+                onPaste={e => {
+                  const html = e.clipboardData?.getData('text/html')
+                  if (html) { e.preventDefault(); document.execCommand('insertHTML', false, html) }
+                }}
+                style={{ ...inputStyle, height: 'auto', minHeight: 80, padding: '12px 14px', lineHeight: 1.5, overflow: 'auto', whiteSpace: 'pre-wrap', fontFamily: 'Helvetica, Arial, sans-serif', fontSize: 12 }}
+              />
+              <p style={{ fontSize: 10, color: T.textTertiary, marginTop: 6, fontFamily: T.font }}>Both signatures auto-render Helvetica 12 / line-height 1.5 in outbound emails.</p>
             </div>
 
             {/* Notifications */}
@@ -336,7 +380,8 @@ export default function Settings({ user }) {
               display_name: settings.display_name, first_name: settings.first_name, last_name: settings.last_name,
               role_title: settings.role_title, phone: settings.phone, timezone: settings.timezone,
               bio: settings.bio, linkedin_url: settings.linkedin_url, profile_photo_url: settings.profile_photo_url,
-              email_signature: settings.email_signature, notification_prefs: settings.notification_prefs,
+              email_signature: settings.email_signature, email_signature_html: settings.email_signature_html, email_signature_cold_html: settings.email_signature_cold_html,
+              notification_prefs: settings.notification_prefs,
             })}
               style={{ height: 44, borderRadius: 50, background: T.accent, color: 'rgba(238,238,238,0.9)', border: 'none', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
               {saved ? 'Saved!' : 'Save changes'}
