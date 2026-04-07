@@ -435,6 +435,37 @@ export default function SequenceDetail() {
                 </div>
                 {cur.channel === 'email' && <div style={{ marginBottom: 12 }}><label style={{ fontSize: 10, color: C.textTer, marginBottom: 2, display: 'block' }}>Subject</label>
                   <input value={cur.subject || ''} onChange={e => upd(selStep, 'subject', e.target.value)} placeholder="Haas F1 Team x {category}" style={inputStyle} /></div>}
+
+                {/* ═══ A/B VARIANTS ═══ Add up to 4 variants — randomly assigned at send time */}
+                {cur.channel === 'email' && cur.type !== 'condition' && (
+                  <div style={{ marginTop: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: C.blue }} />
+                        <span style={{ fontSize: 10, fontWeight: 500, color: C.text, textTransform: 'uppercase', letterSpacing: '0.06em' }}>A/B Variants</span>
+                        {(cur.variants?.length || 0) > 0 && <span style={{ fontSize: 9, color: C.textTer }}>· {cur.variants.length} active · randomly assigned</span>}
+                      </div>
+                      {(cur.variants?.length || 0) < 4 && (
+                        <button onClick={() => { const id = `v${Date.now()}`; const next = [...(cur.variants || []), { id, label: `Variant ${String.fromCharCode(65 + (cur.variants?.length || 0))}`, subject: cur.subject || '', template: cur.template || '', weight: 1 }]; upd(selStep, 'variants', next); }} style={{ padding: '3px 8px', borderRadius: 4, border: `0.5px solid ${C.border}`, background: 'rgba(96,165,250,0.05)', color: C.blue, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>+ Add variant</button>
+                      )}
+                    </div>
+                    {(cur.variants || []).map((v, vi) => (
+                      <div key={v.id} style={{ padding: 10, marginBottom: 6, borderRadius: 6, background: 'rgba(96,165,250,0.03)', border: `0.5px solid rgba(96,165,250,0.10)` }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                          <span style={{ fontSize: 10, fontWeight: 500, color: C.blue, padding: '2px 7px', borderRadius: 10, background: 'rgba(96,165,250,0.10)' }}>{v.label || `Variant ${String.fromCharCode(65 + vi)}`}</span>
+                          <span style={{ fontSize: 9, color: C.textTer }}>weight</span>
+                          <input type="number" min="1" max="10" value={v.weight || 1} onChange={e => { const next = [...cur.variants]; next[vi] = { ...v, weight: parseInt(e.target.value) || 1 }; upd(selStep, 'variants', next); }} style={{ width: 40, ...inputStyle, padding: '3px 6px', fontSize: 10 }} />
+                          <button onClick={() => { upd(selStep, 'variants', cur.variants.filter((_, i) => i !== vi)); }} style={{ marginLeft: 'auto', background: 'transparent', border: 'none', color: C.textTer, cursor: 'pointer', fontSize: 12 }}>×</button>
+                        </div>
+                        <input value={v.subject || ''} onChange={e => { const next = [...cur.variants]; next[vi] = { ...v, subject: e.target.value }; upd(selStep, 'variants', next); }} placeholder="Variant subject line" style={{ ...inputStyle, padding: '5px 8px', fontSize: 11, marginBottom: 4 }} />
+                        <textarea value={v.template || ''} onChange={e => { const next = [...cur.variants]; next[vi] = { ...v, template: e.target.value }; upd(selStep, 'variants', next); }} rows={3} placeholder="Variant body" style={{ ...inputStyle, padding: '5px 8px', fontSize: 11, resize: 'vertical', lineHeight: 1.5 }} />
+                      </div>
+                    ))}
+                    {(cur.variants?.length || 0) === 0 && (
+                      <div style={{ fontSize: 10, color: C.textTer, fontStyle: 'italic', padding: '6px 0' }}>No variants — all leads receive the base subject + body above. Add 2+ variants to A/B test.</div>
+                    )}
+                  </div>
+                )}
                 {regenPrompt && <div style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(251,191,36,0.04)', border: '0.5px solid rgba(251,191,36,0.12)', marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: 11, color: C.amber }}>Approach changed — regenerate content?</span>
                   <div style={{ display: 'flex', gap: 6 }}>

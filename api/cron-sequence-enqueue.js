@@ -331,8 +331,26 @@ export default async function handler(req, res) {
         };
 
         // Personalise template with Haiku
-        let subject = (actualStep.subject || '').replace(/\{(\w+)\}/g, (_, k) => vars[k] || `{${k}}`);
-        let bodyPlain = (actualStep.template || '').replace(/\{(\w+)\}/g, (_, k) => vars[k] || `{${k}}`);
+        // ═══ A/B VARIANT SELECTION ═══
+        // If the step has variants, pick one weighted-randomly. Falls through
+        // to the base subject/template if no variants exist.
+        let chosenVariant = null;
+        let stepSubject = actualStep.subject || '';
+        let stepTemplate = actualStep.template || '';
+        if (Array.isArray(actualStep.variants) && actualStep.variants.length > 0) {
+          const totalWeight = actualStep.variants.reduce((sum, v) => sum + (v.weight || 1), 0);
+          let pick = Math.random() * totalWeight;
+          for (const v of actualStep.variants) {
+            pick -= (v.weight || 1);
+            if (pick <= 0) { chosenVariant = v; break; }
+          }
+          if (!chosenVariant) chosenVariant = actualStep.variants[0];
+          stepSubject = chosenVariant.subject || stepSubject;
+          stepTemplate = chosenVariant.template || stepTemplate;
+        }
+
+        let subject = stepSubject.replace(/\{(\w+)\}/g, (_, k) => vars[k] || `{${k}}`);
+        let bodyPlain = stepTemplate.replace(/\{(\w+)\}/g, (_, k) => vars[k] || `{${k}}`);
         
         // Use Haiku to refine the email with real context + performance learning
         try {
@@ -383,6 +401,8 @@ export default async function handler(req, res) {
           to_name: enrollment.contact_name, company: enrollment.company,
           subject, body_html: bodyHtml, body_plain: bodyPlain,
           channel: 'email', step_number: enrollment.current_step,
+          variant_id: chosenVariant?.id || null,
+          variant_label: chosenVariant?.label || chosenVariant?.id || null,
           scheduled_for: sendAt.toISOString(), status: 'queued'
         }) });
 
