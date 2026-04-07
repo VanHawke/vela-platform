@@ -69,8 +69,6 @@
     "api/cron-meeting-prep.js": { "maxDuration": 45 },
     "api/cron-inbox-triage.js": { "maxDuration": 45 },
     "api/cron-task-automation.js": { "maxDuration": 45 },
-    "api/cron-lemlist-enrich.js": { "maxDuration": 45 },
-    "api/cron-lemlist-signals.js": { "maxDuration": 30 },
     "api/import-conversations.js": { "maxDuration": 120 },
     "api/ingest-knowledge.js": { "maxDuration": 60 },
     "api/cron-learning-director.js": { "maxDuration": 120 },
