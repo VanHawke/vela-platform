@@ -11,32 +11,36 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
 // ═══ TIMEZONE HELPERS — prospect location → UTC offset ═══
 // Maps company HQ / prospect location to approximate UTC offset for send timing
-function getTimezoneOffset(company, companyIntel) {
+function getTimezoneOffset(company, companyIntel, contactEmail) {
   // Check company_intelligence for HQ location
   const hq = (companyIntel?.hq_location || companyIntel?.headquarters || '').toLowerCase();
   const domain = (companyIntel?.domain || '').toLowerCase();
   const companyLower = (company || '').toLowerCase();
-  const text = `${hq} ${domain} ${companyLower}`;
+  // Pull email TLD from recipient email (e.g. john@acme.co.uk → .co.uk)
+  const emailDomain = (contactEmail || '').toLowerCase().split('@')[1] || '';
+  const text = `${hq} ${domain} ${companyLower} ${emailDomain}`;
   
-  // US timezones (most common targets)
-  if (/new york|nyc|boston|washington|dc|philadelphia|charlotte|atlanta|miami|florida|east coast|\.us$/.test(text)) return -5; // ET
-  if (/chicago|dallas|houston|austin|denver|nashville|minneapolis|central/.test(text)) return -6; // CT
-  if (/phoenix|salt lake|mountain/.test(text)) return -7; // MT
-  if (/san francisco|sf|los angeles|la|seattle|portland|silicon valley|palo alto|menlo park|california|pacific|\.com$/.test(text) && !/uk|london/.test(text)) return -8; // PT (default for .com US tech)
-  // UK
-  if (/london|uk|united kingdom|england|manchester|cambridge|oxford|weybridge|\.co\.uk/.test(text)) return 0; // GMT/BST
+  // UK first — most explicit signals (Sunny is UK-based, many targets are EU)
+  if (/london|uk\b|united kingdom|britain|british|england|english|scotland|wales|manchester|cambridge|oxford|weybridge|edinburgh|glasgow|birmingham|leeds|bristol|liverpool|van hawke|vanhawke|\.co\.uk|\.uk\b/.test(text)) return 0; // GMT/BST
   // Europe
-  if (/paris|berlin|amsterdam|munich|zurich|stockholm|madrid|rome|milan|frankfurt|\.de$|\.fr$|\.nl$/.test(text)) return 1; // CET
-  if (/helsinki|athens|bucharest|istanbul|\.fi$/.test(text)) return 2; // EET
+  if (/paris|berlin|amsterdam|munich|zurich|stockholm|madrid|rome|milan|frankfurt|vienna|brussels|dublin|\.de\b|\.fr\b|\.nl\b|\.es\b|\.it\b|\.ie\b|\.ch\b|\.at\b|\.be\b|\.se\b/.test(text)) return 1; // CET
+  if (/helsinki|athens|bucharest|istanbul|warsaw|prague|\.fi\b|\.gr\b|\.pl\b|\.cz\b/.test(text)) return 2; // EET
   // Middle East
-  if (/dubai|abu dhabi|riyadh|saudi|uae|qatar|bahrain/.test(text)) return 4; // GST
+  if (/dubai|abu dhabi|riyadh|saudi|uae|qatar|bahrain|tel aviv|israel|\.ae\b|\.sa\b|\.il\b/.test(text)) return 4; // GST
   // Asia
-  if (/mumbai|bangalore|india|hyderabad|\.in$/.test(text)) return 5.5; // IST
-  if (/singapore|hong kong|beijing|shanghai|taipei|\.sg$|\.hk$|\.cn$/.test(text)) return 8; // SGT/HKT
-  if (/tokyo|japan|\.jp$/.test(text)) return 9; // JST
-  if (/sydney|melbourne|australia|\.au$/.test(text)) return 10; // AEST
-  // Default: assume US East Coast (most B2B targets)
-  return -5;
+  if (/mumbai|bangalore|india|hyderabad|delhi|\.in\b/.test(text)) return 5.5; // IST
+  if (/singapore|hong kong|beijing|shanghai|taipei|seoul|\.sg\b|\.hk\b|\.cn\b|\.tw\b|\.kr\b/.test(text)) return 8; // SGT/HKT
+  if (/tokyo|japan|osaka|\.jp\b/.test(text)) return 9; // JST
+  if (/sydney|melbourne|australia|brisbane|perth|\.au\b/.test(text)) return 10; // AEST
+  // US — most common B2B target geography
+  if (/new york|nyc|boston|washington|dc\b|philadelphia|charlotte|atlanta|miami|florida|east coast|\.us\b/.test(text)) return -5; // ET
+  if (/chicago|dallas|houston|austin|denver|nashville|minneapolis|central time/.test(text)) return -6; // CT
+  if (/phoenix|salt lake|mountain time/.test(text)) return -7; // MT
+  if (/san francisco|sf\b|los angeles|la\b|seattle|portland|silicon valley|palo alto|menlo park|california|pacific/.test(text)) return -8; // PT
+  // .com fallback — most US tech but ambiguous
+  if (/\.com$/.test(emailDomain)) return -5; // ET (US-biased B2B default)
+  // Final default: UK time (Sunny operates from Weybridge; safer than guessing US)
+  return 0;
 }
 
 function isDST(date) {
@@ -384,7 +388,7 @@ export default async function handler(req, res) {
         // ═══ TIMEZONE-AWARE SEND TIMING ═══
         // Target: 9-10am in the prospect's local timezone for maximum open rate
         // Best days: Tue-Thu (highest open rates), Mon/Fri acceptable, never Sat/Sun
-        const prospectTz = getTimezoneOffset(enrollment.company, ci);
+        const prospectTz = getTimezoneOffset(enrollment.company, ci, enrollment.contact_email);
         const ukOffsetHours = isDST(now) ? 1 : 0; // BST = UTC+1, GMT = UTC+0
         // Target 9-10am local for the prospect
         const targetLocalHour = 9 + (Math.random() > 0.5 ? 1 : 0); // 9 or 10am local
