@@ -15,12 +15,23 @@ export function wrapEmailBody(body, { contactStatus = 'cold', signature = '', co
     .split('\n\n')
     .map(p => `<p style="margin:0 0 12px 0">${p.replace(/\n/g, '<br>')}</p>`)
     .join('');
+  // Normalize: if signature was pasted as plain text (no HTML tags), convert \n → <br>
   const sigToUse = contactStatus === 'cold'
-    ? (coldSignature || stripLogoFromSignature(signature) || DEFAULT_COLD_SIG)
-    : (signature || DEFAULT_WARM_SIG);
+    ? normalizeSig(coldSignature || stripLogoFromSignature(signature) || DEFAULT_COLD_SIG)
+    : normalizeSig(signature || DEFAULT_WARM_SIG);
   const wrapped = `<div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:400;line-height:1.5;color:#000000">${htmlBody}${sigToUse ? `<div style="margin-top:20px">${sigToUse}</div>` : ''}</div>`;
   const plainText = `${cleanBody}\n\n${stripHtml(sigToUse)}`.trim();
   return { html: wrapped, text: plainText };
+}
+
+// If signature has no HTML tags, treat as plain text and convert newlines to <br>
+function normalizeSig(sig) {
+  if (!sig) return '';
+  const trimmed = sig.trim();
+  if (!/<[a-z][\s\S]*>/i.test(trimmed)) {
+    return trimmed.replace(/\n/g, '<br>');
+  }
+  return trimmed;
 }
 
 function stripLogoFromSignature(sig) {

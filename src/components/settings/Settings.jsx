@@ -32,6 +32,7 @@ export default function Settings({ user }) {
   const navigate = useNavigate()
   const [tab, setTab] = useState('Profile')
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState(null)
   const [settings, setSettings] = useState({})
   const [googleStatus, setGoogleStatus] = useState(null)
   const [teamMembers, setTeamMembers] = useState([])
@@ -119,31 +120,53 @@ export default function Settings({ user }) {
   }
 
   const saveSettings = async (updates) => {
+    // Pre-flight: warn about Gmail inline images that won't render outside email
+    const sigFields = [updates.email_signature_html, updates.email_signature_cold_html, updates.email_signature].filter(Boolean)
+    for (const sig of sigFields) {
+      if (typeof sig === 'string' && sig.length > 200000) {
+        setSaveError('Signature too large (>200KB). Gmail inline images are embedded as base64 and exceed storage limits. Right-click any image in Gmail → "Copy image address", then re-paste with the image URL.')
+        return
+      }
+    }
     try {
-      await supabase.from('user_settings').upsert({ user_id: user?.id, ...updates, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
-      // Mirror signature fields to kiko_user_config so the email-format wrapper finds them
+      const { error: usErr } = await supabase.from('user_settings').upsert({ user_id: user?.id, ...updates, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
+      if (usErr) {
+        console.error('[Settings] user_settings upsert failed:', usErr)
+        setSaveError(`Save failed: ${usErr.message || 'unknown error'}`)
+        return
+      }
+      // Mirror signature fields to kiko_user_config (canonical source for email-format wrapper)
       if (updates.email_signature_html !== undefined || updates.email_signature_cold_html !== undefined) {
-        try {
-          const mirror = {}
-          if (updates.email_signature_html !== undefined) mirror.email_signature_html = updates.email_signature_html
-          if (updates.email_signature_cold_html !== undefined) mirror.email_signature_cold_html = updates.email_signature_cold_html
-          await supabase.from('kiko_user_config').update(mirror).eq('user_id', user?.id)
-        } catch {}
+        const mirror = {}
+        if (updates.email_signature_html !== undefined) mirror.email_signature_html = updates.email_signature_html
+        if (updates.email_signature_cold_html !== undefined) mirror.email_signature_cold_html = updates.email_signature_cold_html
+        const { error: kcErr } = await supabase.from('kiko_user_config').update(mirror).eq('user_id', user?.id)
+        if (kcErr) {
+          console.error('[Settings] kiko_user_config mirror failed:', kcErr)
+          // Non-fatal — primary save to user_settings already succeeded.
+          // Show a soft warning so we know mirror is broken but don't block.
+          setSaveError(`Saved to user_settings, but Kiko mirror failed: ${kcErr.message}. Outbound emails may not pick up the new signature until this is resolved.`)
+        }
       }
       setSettings(prev => ({ ...prev, ...updates }))
-      setSaved(true); setTimeout(() => setSaved(false), 2000)
+      setSaved(true); setSaveError(null); setTimeout(() => setSaved(false), 2500)
       window.dispatchEvent(new Event('kiko_profile_updated'))
       // Sync brand logo to organisations table for login page (anon-accessible)
       if (updates.kiko_avatar_url !== undefined) {
-        const orgId = user?.app_metadata?.org_id
-        if (orgId) {
-          const { data: org } = await supabase.from('organisations').select('branding').eq('id', orgId).maybeSingle()
-          if (org) {
-            await supabase.from('organisations').update({ branding: { ...(org.branding || {}), logo_url: updates.kiko_avatar_url } }).eq('id', orgId)
+        try {
+          const orgId = user?.app_metadata?.org_id
+          if (orgId) {
+            const { data: org } = await supabase.from('organisations').select('branding').eq('id', orgId).maybeSingle()
+            if (org) {
+              await supabase.from('organisations').update({ branding: { ...(org.branding || {}), logo_url: updates.kiko_avatar_url } }).eq('id', orgId)
+            }
           }
-        }
+        } catch (orgErr) { console.error('[Settings] org branding sync failed:', orgErr) }
       }
-    } catch {}
+    } catch (e) {
+      console.error('[Settings] saveSettings fatal:', e)
+      setSaveError(`Save crashed: ${e.message || String(e)}`)
+    }
   }
 
   const checkGoogleStatus = async () => {
@@ -310,6 +333,22 @@ export default function Settings({ user }) {
             <div style={cardStyle}>
               <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Email Signature & Voice</h3>
 
+              {/* Save error banner — visible feedback when save fails */}
+              {saveError && (
+                <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(248,113,113,0.06)', border: '0.5px solid rgba(248,113,113,0.30)', marginBottom: 14, fontSize: 12, color: 'rgba(248,113,113,0.95)', fontFamily: T.font, lineHeight: 1.5 }}>
+                  ⚠ {saveError}
+                  <button onClick={() => setSaveError(null)} style={{ marginLeft: 10, padding: '2px 8px', borderRadius: 4, background: 'transparent', color: 'rgba(248,113,113,0.7)', border: '0.5px solid rgba(248,113,113,0.30)', fontSize: 10, cursor: 'pointer', fontFamily: T.font }}>dismiss</button>
+                </div>
+              )}
+
+              {/* Image guidance — Gmail signatures with cid: refs won't render */}
+              <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(96,165,250,0.05)', border: '0.5px solid rgba(96,165,250,0.20)', marginBottom: 14, fontSize: 11, color: T.textSecondary, fontFamily: T.font, lineHeight: 1.6 }}>
+                <strong style={{ color: T.text }}>Image not appearing?</strong> Gmail uses internal <code style={{ background: 'rgba(255,255,255,0.04)', padding: '1px 5px', borderRadius: 3 }}>cid:</code> references for inline images that only resolve inside email clients. To make your logo show up here:<br/>
+                <span style={{ display: 'block', marginTop: 4 }}>1. In Gmail, right-click your logo image → <em>Copy image address</em> (gives you a public https:// URL)</span>
+                <span style={{ display: 'block' }}>2. Paste your signature, then replace the broken image with: <code style={{ background: 'rgba(255,255,255,0.04)', padding: '1px 5px', borderRadius: 3 }}>&lt;img src="HTTPS_URL_HERE" width="120" /&gt;</code></span>
+                <span style={{ display: 'block', marginTop: 4 }}>Or upload your logo via Profile photo above and reference it.</span>
+              </div>
+
               {/* Voice profile status */}
               {settings.email_voice_profile && (
                 <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(45,212,191,0.05)', border: '0.5px solid rgba(45,212,191,0.20)', marginBottom: 14, fontSize: 12, color: T.textSecondary, fontFamily: T.font }}>
@@ -326,36 +365,34 @@ export default function Settings({ user }) {
                 </div>
               )}
 
-              {/* Warm signature (full + logo) */}
-              <label style={{ ...labelStyle, marginTop: 4 }}>Warm signature (used after a contact has replied)</label>
-              <p style={{ fontSize: 11, color: T.textTertiary, marginTop: 0, marginBottom: 6, fontFamily: T.font }}>Paste your full Gmail signature HTML — image + name + title + links.</p>
-              <div
-                contentEditable
-                suppressContentEditableWarning
-                dangerouslySetInnerHTML={{ __html: settings.email_signature_html || settings.email_signature || '' }}
-                onBlur={e => setSettings(p => ({ ...p, email_signature_html: e.currentTarget.innerHTML }))}
-                onPaste={e => {
-                  const html = e.clipboardData?.getData('text/html')
-                  if (html) { e.preventDefault(); document.execCommand('insertHTML', false, html) }
-                }}
-                style={{ ...inputStyle, height: 'auto', minHeight: 100, padding: '12px 14px', lineHeight: 1.5, overflow: 'auto', whiteSpace: 'pre-wrap' }}
+              {/* Warm signature (full + logo) — TEXTAREA: avoids contentEditable+React reconciler crash */}
+              <label style={{ ...labelStyle, marginTop: 4 }}>Warm signature HTML (used after a contact has replied)</label>
+              <p style={{ fontSize: 11, color: T.textTertiary, marginTop: 0, marginBottom: 6, fontFamily: T.font }}>Paste raw HTML. <strong style={{ color: T.text }}>Tip:</strong> in Gmail, right-click your logo → Copy image address, then use <code style={{ background: 'rgba(255,255,255,0.04)', padding: '1px 5px', borderRadius: 3 }}>&lt;img src="https://..." width="120" /&gt;</code> instead of cid: references.</p>
+              <textarea
+                value={settings.email_signature_html || ''}
+                onChange={e => setSettings(p => ({ ...p, email_signature_html: e.target.value }))}
+                placeholder='<table><tr><td><img src="https://yourdomain.com/logo.png" width="120" /></td></tr></table><br><strong>Sunny Sidhu</strong><br>Founder &amp; CEO, Van Hawke<br><a href="mailto:sunny@vanhawke.com">sunny@vanhawke.com</a>'
+                spellCheck={false}
+                style={{ ...inputStyle, width: '100%', height: 'auto', minHeight: 140, padding: '12px 14px', lineHeight: 1.5, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 11, resize: 'vertical', boxSizing: 'border-box' }}
               />
+              {settings.email_signature_html && (
+                <div style={{ marginTop: 6, padding: '12px 14px', borderRadius: 6, background: '#fff', border: '0.5px solid rgba(255,255,255,0.10)', fontFamily: 'Helvetica, Arial, sans-serif', fontSize: 12, color: '#000', lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 9, color: '#888', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Live preview</div>
+                  <div dangerouslySetInnerHTML={{ __html: settings.email_signature_html }} />
+                </div>
+              )}
 
               {/* Cold signature (text-only) */}
-              <label style={{ ...labelStyle, marginTop: 14 }}>Cold outreach signature (text-only — better deliverability)</label>
+              <label style={{ ...labelStyle, marginTop: 16 }}>Cold outreach signature (text-only — better deliverability)</label>
               <p style={{ fontSize: 11, color: T.textTertiary, marginTop: 0, marginBottom: 6, fontFamily: T.font }}>Used on first-touch cold emails. Strip images and links to avoid spam filters.</p>
-              <div
-                contentEditable
-                suppressContentEditableWarning
-                dangerouslySetInnerHTML={{ __html: settings.email_signature_cold_html || '' }}
-                onBlur={e => setSettings(p => ({ ...p, email_signature_cold_html: e.currentTarget.innerHTML }))}
-                onPaste={e => {
-                  const html = e.clipboardData?.getData('text/html')
-                  if (html) { e.preventDefault(); document.execCommand('insertHTML', false, html) }
-                }}
-                style={{ ...inputStyle, height: 'auto', minHeight: 80, padding: '12px 14px', lineHeight: 1.5, overflow: 'auto', whiteSpace: 'pre-wrap', fontFamily: 'Helvetica, Arial, sans-serif', fontSize: 12 }}
+              <textarea
+                value={settings.email_signature_cold_html || ''}
+                onChange={e => setSettings(p => ({ ...p, email_signature_cold_html: e.target.value }))}
+                placeholder={'Sunny Sidhu\nFounder & CEO, Van Hawke\nsunny@vanhawke.com'}
+                spellCheck={false}
+                style={{ ...inputStyle, width: '100%', height: 'auto', minHeight: 90, padding: '12px 14px', lineHeight: 1.5, fontFamily: 'Helvetica, Arial, sans-serif', fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }}
               />
-              <p style={{ fontSize: 10, color: T.textTertiary, marginTop: 6, fontFamily: T.font }}>Both signatures auto-render Helvetica 12 / line-height 1.5 in outbound emails.</p>
+              <p style={{ fontSize: 10, color: T.textTertiary, marginTop: 6, fontFamily: T.font }}>Both signatures auto-render Helvetica 12 / line-height 1.5 in outbound emails. Plain newlines become &lt;br&gt; tags.</p>
             </div>
 
             {/* Notifications */}
