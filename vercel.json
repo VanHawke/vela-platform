@@ -1,94 +1,316 @@
 {
   "crons": [
-    { "path": "/api/cron-enrich", "schedule": "0 6 * * 1" },
-    { "path": "/api/news-agent", "schedule": "0 8 * * 1" },
-    { "path": "/api/cron-news-classify", "schedule": "15 8 * * 1" },
-    { "path": "/api/cron-health-watcher", "schedule": "0 6 * * 1-5" },
-    { "path": "/api/cron-segment-enroller", "schedule": "0 7 * * 1-5" },
-    { "path": "/api/cron-score-companies", "schedule": "0 5 * * 1" },
-    { "path": "/api/cron-outreach-score", "schedule": "0 9 * * 1" },
-    { "path": "/api/cron-partnership-scan", "schedule": "0 7 * * 1" },
-    { "path": "/api/cron-task-automation", "schedule": "30 6 * * 1-5" },
-    { "path": "/api/cron-proactive", "schedule": "0 7 * * 1-5" },
-    { "path": "/api/cron-preference-synthesis", "schedule": "0 6 * * 0" },
-    { "path": "/api/cron-profile-synthesis", "schedule": "0 4 * * 0" },
-    { "path": "/api/cron-company-enrich", "schedule": "30 4 * * 0" },
-    { "path": "/api/cron-people-verify", "schedule": "30 5 * * 0" },
-    { "path": "/api/cron-pipeline-hygiene", "schedule": "30 6 * * 0" },
-    { "path": "/api/cron-deal-attribution", "schedule": "30 22 * * 1-5" },
-    { "path": "/api/cron-edit-delta", "schedule": "0 22 * * 1-5" },
-    { "path": "/api/cron-relationship-intel", "schedule": "0 5 * * 0" },
-    { "path": "/api/cron-meeting-prep", "schedule": "0 7 * * 1-5" },
-    { "path": "/api/cron-health-check", "schedule": "0 6 * * *" },
-    { "path": "/api/cron-inbox-triage", "schedule": "15 7 * * 1-5" },
-    { "path": "/api/cron-inbox-triage", "schedule": "0 9-19/2 * * 1-5" },
-    { "path": "/api/cron-document-scan", "schedule": "0 6 * * 0" },
-    { "path": "/api/ingest-knowledge", "schedule": "0 5 * * 1" },
-    { "path": "/api/cron-learning-director", "schedule": "0 3 * * 1" },
-    { "path": "/api/cron-self-reflection", "schedule": "0 4 * * 0" },
-    { "path": "/api/cron-morning-intelligence", "schedule": "30 7 * * 1-5" },
-    { "path": "/api/cron-competitive-intel", "schedule": "0 2 * * 1" },
-    { "path": "/api/cron-task-executor", "schedule": "30 8 * * 1-5" },
-    { "path": "/api/cron-email-template-learning", "schedule": "0 10 * * 0" },
-    { "path": "/api/cron-self-improvement", "schedule": "0 3 * * 0" },
-    { "path": "/api/cron-weekly-report", "schedule": "0 19 * * 0" },
-    { "path": "/api/cron-partnership-verify", "schedule": "0 5 * * 0" },
-    { "path": "/api/cron-email-voice-learning", "schedule": "0 4 * * 0" },
-    { "path": "/api/cron-jobs-worker", "schedule": "*/5 * * * *" }
+    {
+      "path": "/api/cron-enrich",
+      "schedule": "0 6 * * 1"
+    },
+    {
+      "path": "/api/news-agent",
+      "schedule": "0 8 * * 1"
+    },
+    {
+      "path": "/api/cron-news-classify",
+      "schedule": "15 8 * * 1"
+    },
+    {
+      "path": "/api/cron-health-watcher",
+      "schedule": "0 6 * * 1-5"
+    },
+    {
+      "path": "/api/cron-segment-enroller",
+      "schedule": "0 7 * * 1-5"
+    },
+    {
+      "path": "/api/cron-score-companies",
+      "schedule": "0 5 * * 1"
+    },
+    {
+      "path": "/api/cron-outreach-score",
+      "schedule": "0 9 * * 1"
+    },
+    {
+      "path": "/api/cron-partnership-scan",
+      "schedule": "0 7 * * 1"
+    },
+    {
+      "path": "/api/cron-task-automation",
+      "schedule": "30 6 * * 1-5"
+    },
+    {
+      "path": "/api/cron-proactive",
+      "schedule": "0 7 * * 1-5"
+    },
+    {
+      "path": "/api/cron-preference-synthesis",
+      "schedule": "0 6 * * 0"
+    },
+    {
+      "path": "/api/cron-profile-synthesis",
+      "schedule": "0 4 * * 0"
+    },
+    {
+      "path": "/api/cron-company-enrich",
+      "schedule": "30 4 * * 0"
+    },
+    {
+      "path": "/api/cron-people-verify",
+      "schedule": "30 5 * * 0"
+    },
+    {
+      "path": "/api/cron-pipeline-hygiene",
+      "schedule": "30 6 * * 0"
+    },
+    {
+      "path": "/api/cron-deal-attribution",
+      "schedule": "30 22 * * 1-5"
+    },
+    {
+      "path": "/api/cron-edit-delta",
+      "schedule": "0 22 * * 1-5"
+    },
+    {
+      "path": "/api/cron-relationship-intel",
+      "schedule": "0 5 * * 0"
+    },
+    {
+      "path": "/api/cron-meeting-prep",
+      "schedule": "0 7 * * 1-5"
+    },
+    {
+      "path": "/api/cron-health-check",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron-inbox-triage",
+      "schedule": "15 7 * * 1-5"
+    },
+    {
+      "path": "/api/cron-inbox-triage",
+      "schedule": "0 9-19/2 * * 1-5"
+    },
+    {
+      "path": "/api/cron-document-scan",
+      "schedule": "0 6 * * 0"
+    },
+    {
+      "path": "/api/ingest-knowledge",
+      "schedule": "0 5 * * 1"
+    },
+    {
+      "path": "/api/cron-learning-director",
+      "schedule": "0 3 * * 1"
+    },
+    {
+      "path": "/api/cron-self-reflection",
+      "schedule": "0 4 * * 0"
+    },
+    {
+      "path": "/api/cron-morning-intelligence",
+      "schedule": "30 7 * * 1-5"
+    },
+    {
+      "path": "/api/cron-competitive-intel",
+      "schedule": "0 2 * * 1"
+    },
+    {
+      "path": "/api/cron-task-executor",
+      "schedule": "30 8 * * 1-5"
+    },
+    {
+      "path": "/api/cron-email-template-learning",
+      "schedule": "0 10 * * 0"
+    },
+    {
+      "path": "/api/cron-self-improvement",
+      "schedule": "0 3 * * 0"
+    },
+    {
+      "path": "/api/cron-weekly-report",
+      "schedule": "0 19 * * 0"
+    },
+    {
+      "path": "/api/cron-partnership-verify",
+      "schedule": "0 5 * * 0"
+    },
+    {
+      "path": "/api/cron-email-voice-learning",
+      "schedule": "0 4 * * 0"
+    },
+    {
+      "path": "/api/cron-jobs-worker",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron-sequence-enqueue",
+      "schedule": "0 6 * * 1-5"
+    },
+    {
+      "path": "/api/cron-sequence-sender",
+      "schedule": "*/30 8-18 * * 1-5"
+    },
+    {
+      "path": "/api/cron-sequence-reply-detect",
+      "schedule": "0 */2 * * 1-5"
+    }
   ],
   "functions": {
-    "api/kiko.js": { "maxDuration": 120 },
-    "api/generate-sequence.js": { "maxDuration": 60 },
-    "api/file-extract.js": { "maxDuration": 30 },
-    "api/kiko-research.js": { "maxDuration": 120 },
-    "api/kiko-code.js": { "maxDuration": 30 },
-    "api/news-agent.js": { "maxDuration": 300 },
-    "api/cron-news-classify.js": { "maxDuration": 300 },
-    "api/health.js": { "maxDuration": 45 },
-    "api/generate-doc.js": { "maxDuration": 30 },
-    "api/generate-image.js": { "maxDuration": 30 },
-    "api/fetch-url.js": { "maxDuration": 20 },
-    "api/email.js": { "maxDuration": 30 },
-    "api/calendar.js": { "maxDuration": 20 },
-    "api/enrichment-agent.js": { "maxDuration": 45 },
-    "api/cron-enrich.js": { "maxDuration": 45 },
-    "api/cron-outreach-score.js": { "maxDuration": 45 },
-    "api/cron-partnership-scan.js": { "maxDuration": 45 },
-    "api/documents.js": { "maxDuration": 30 },
-    "api/cron-document-scan.js": { "maxDuration": 30 },
-    "api/cron-proactive.js": { "maxDuration": 45 },
-    "api/cron-preference-synthesis.js": { "maxDuration": 45 },
-    "api/cron-profile-synthesis.js": { "maxDuration": 45 },
-    "api/cron-company-enrich.js": { "maxDuration": 60 },
-    "api/cron-people-verify.js": { "maxDuration": 60 },
-    "api/cron-pipeline-hygiene.js": { "maxDuration": 30 },
-    "api/cron-deal-attribution.js": { "maxDuration": 30 },
-    "api/cron-sequence-enqueue.js": { "maxDuration": 60 },
-    "api/cron-sequence-sender.js": { "maxDuration": 30 },
-    "api/cron-sequence-reply-detect.js": { "maxDuration": 30 },
-    "api/cron-edit-delta.js": { "maxDuration": 30 },
-    "api/cron-relationship-intel.js": { "maxDuration": 45 },
-    "api/cron-meeting-prep.js": { "maxDuration": 45 },
-    "api/cron-inbox-triage.js": { "maxDuration": 45 },
-    "api/cron-task-automation.js": { "maxDuration": 45 },
-    "api/import-conversations.js": { "maxDuration": 120 },
-    "api/ingest-knowledge.js": { "maxDuration": 60 },
-    "api/cron-learning-director.js": { "maxDuration": 120 },
-    "api/cron-self-reflection.js": { "maxDuration": 60 },
-    "api/cron-morning-intelligence.js": { "maxDuration": 90 },
-    "api/cron-competitive-intel.js": { "maxDuration": 120 },
-    "api/embed-conversations.js": { "maxDuration": 120 },
-    "api/kiko-draft-actions.js": { "maxDuration": 30 },
-    "api/cron-task-executor.js": { "maxDuration": 45 },
-    "api/cron-email-template-learning.js": { "maxDuration": 45 },
-    "api/cron-self-improvement.js": { "maxDuration": 60 },
-    "api/cron-weekly-report.js": { "maxDuration": 60 },
-    "api/cron-partnership-verify.js": { "maxDuration": 120 },
-    "api/cron-health-check.js": { "maxDuration": 45 }
+    "api/kiko.js": {
+      "maxDuration": 120
+    },
+    "api/generate-sequence.js": {
+      "maxDuration": 60
+    },
+    "api/file-extract.js": {
+      "maxDuration": 30
+    },
+    "api/kiko-research.js": {
+      "maxDuration": 120
+    },
+    "api/kiko-code.js": {
+      "maxDuration": 30
+    },
+    "api/news-agent.js": {
+      "maxDuration": 300
+    },
+    "api/cron-news-classify.js": {
+      "maxDuration": 300
+    },
+    "api/health.js": {
+      "maxDuration": 45
+    },
+    "api/generate-doc.js": {
+      "maxDuration": 30
+    },
+    "api/generate-image.js": {
+      "maxDuration": 30
+    },
+    "api/fetch-url.js": {
+      "maxDuration": 20
+    },
+    "api/email.js": {
+      "maxDuration": 30
+    },
+    "api/calendar.js": {
+      "maxDuration": 20
+    },
+    "api/enrichment-agent.js": {
+      "maxDuration": 45
+    },
+    "api/cron-enrich.js": {
+      "maxDuration": 45
+    },
+    "api/cron-outreach-score.js": {
+      "maxDuration": 45
+    },
+    "api/cron-partnership-scan.js": {
+      "maxDuration": 45
+    },
+    "api/documents.js": {
+      "maxDuration": 30
+    },
+    "api/cron-document-scan.js": {
+      "maxDuration": 30
+    },
+    "api/cron-proactive.js": {
+      "maxDuration": 45
+    },
+    "api/cron-preference-synthesis.js": {
+      "maxDuration": 45
+    },
+    "api/cron-profile-synthesis.js": {
+      "maxDuration": 45
+    },
+    "api/cron-company-enrich.js": {
+      "maxDuration": 60
+    },
+    "api/cron-people-verify.js": {
+      "maxDuration": 60
+    },
+    "api/cron-pipeline-hygiene.js": {
+      "maxDuration": 30
+    },
+    "api/cron-deal-attribution.js": {
+      "maxDuration": 30
+    },
+    "api/cron-sequence-enqueue.js": {
+      "maxDuration": 60
+    },
+    "api/cron-sequence-sender.js": {
+      "maxDuration": 30
+    },
+    "api/cron-sequence-reply-detect.js": {
+      "maxDuration": 30
+    },
+    "api/cron-edit-delta.js": {
+      "maxDuration": 30
+    },
+    "api/cron-relationship-intel.js": {
+      "maxDuration": 45
+    },
+    "api/cron-meeting-prep.js": {
+      "maxDuration": 45
+    },
+    "api/cron-inbox-triage.js": {
+      "maxDuration": 45
+    },
+    "api/cron-task-automation.js": {
+      "maxDuration": 45
+    },
+    "api/import-conversations.js": {
+      "maxDuration": 120
+    },
+    "api/ingest-knowledge.js": {
+      "maxDuration": 60
+    },
+    "api/cron-learning-director.js": {
+      "maxDuration": 120
+    },
+    "api/cron-self-reflection.js": {
+      "maxDuration": 60
+    },
+    "api/cron-morning-intelligence.js": {
+      "maxDuration": 90
+    },
+    "api/cron-competitive-intel.js": {
+      "maxDuration": 120
+    },
+    "api/embed-conversations.js": {
+      "maxDuration": 120
+    },
+    "api/kiko-draft-actions.js": {
+      "maxDuration": 30
+    },
+    "api/cron-task-executor.js": {
+      "maxDuration": 45
+    },
+    "api/cron-email-template-learning.js": {
+      "maxDuration": 45
+    },
+    "api/cron-self-improvement.js": {
+      "maxDuration": 60
+    },
+    "api/cron-weekly-report.js": {
+      "maxDuration": 60
+    },
+    "api/cron-partnership-verify.js": {
+      "maxDuration": 120
+    },
+    "api/cron-health-check.js": {
+      "maxDuration": 45
+    }
   },
   "rewrites": [
-    { "source": "/api/google-auth/callback", "destination": "/api/google-auth" },
-    { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    {
+      "source": "/api/google-auth/callback",
+      "destination": "/api/google-auth"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
   ]
 }

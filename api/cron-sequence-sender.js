@@ -38,11 +38,11 @@ function buildRawEmail({ from, to, subject, bodyHtml, bodyPlain, threadId }) {
   // Clean subject: × → x for email compatibility, encode non-ASCII
   const cleanSubj = (subject || '').replace(/\u00D7/g, 'x').replace(/[\u2014\u2013\u2015]/g, '-');
   const encodedSubj = /^[\x20-\x7E]*$/.test(cleanSubj) ? cleanSubj : `=?UTF-8?B?${Buffer.from(cleanSubj).toString('base64')}?=`;
-  // Auto-append signature if not present
-  const SIG = '\n\nSunny Sidhu\nCEO, Van Hawke Group\nsunny@vanhawke.agency';
-  const plainWithSig = (bodyPlain || '').includes('sunny@vanhawke.agency') ? bodyPlain : (bodyPlain || '').trimEnd() + SIG;
-  const htmlSig = '<br><br>Sunny Sidhu<br>CEO, Van Hawke Group<br>sunny@vanhawke.agency';
-  const htmlWithSig = (bodyHtml || '').includes('sunny@vanhawke.agency') ? bodyHtml : (bodyHtml || '').replace(/<\/div>\s*$/, htmlSig + '</div>');
+  // Signature is now injected by wrapEmailBody at enqueue time — DO NOT double-append.
+  // (Previously this function appended a hardcoded "Sunny Sidhu, CEO" sig, causing duplicates
+  // and bypassing the user's actual signature from Settings. Removed 2026-04-07.)
+  const plainWithSig = bodyPlain || '';
+  const htmlWithSig = bodyHtml || '';
   let mime = `From: Sunny Sidhu <${from}>\r\nTo: ${to}\r\nSubject: ${encodedSubj}\r\n`;
   mime += `MIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary="${boundary}"\r\n`;
   if (threadId) mime += `In-Reply-To: ${threadId}\r\nReferences: ${threadId}\r\n`;

@@ -4,6 +4,7 @@
 // STANDALONE — if this fails, nothing else breaks.
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
+import { wrapEmailBody, loadUserSignatures, loadVoiceProfile, voiceProfileToPrompt } from './lib/email-format.js';
 
 export const config = { maxDuration: 60 };
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
@@ -118,6 +119,16 @@ export default async function handler(req, res) {
     const now = new Date();
     const todayEnd = new Date(now);
     todayEnd.setHours(23, 59, 59, 999);
+
+    // Load Sunny's voice profile + signatures ONCE for this run
+    // Voice profile = patterns learned from his actual sent emails (Sun 4am cron)
+    // Signatures = warm (full+logo) and cold (text-only) from Settings UI
+    const SUNNY_USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063';
+    const [voiceProfile, signatures] = await Promise.all([
+      loadVoiceProfile(sbFetch, SUNNY_USER_ID),
+      loadUserSignatures(sbFetch, SUNNY_USER_ID),
+    ]);
+    const voicePromptInjection = voiceProfileToPrompt(voiceProfile);
 
     // Get active enrollments due today
     const enrollments = await sbFetch(
@@ -352,18 +363,23 @@ export default async function handler(req, res) {
         let subject = stepSubject.replace(/\{(\w+)\}/g, (_, k) => vars[k] || `{${k}}`);
         let bodyPlain = stepTemplate.replace(/\{(\w+)\}/g, (_, k) => vars[k] || `{${k}}`);
         
-        // Use Haiku to refine the email with real context + performance learning
+        // Use Haiku to refine the email with real context + performance learning + Sunny's voice
         try {
           const refine = await anthropic.messages.create({
             model: 'claude-haiku-4-5-20251001', max_tokens: 600,
-            system: 'You refine outreach email drafts. Keep the structure and approach intact but make it feel natural and specific. Replace any remaining {placeholder} tokens with intelligent defaults. Keep to 2 paragraphs max. No sign-off or name. Return ONLY the refined email body, nothing else.' + patternGuidance,
+            system: 'You refine outreach email drafts. Keep the structure and approach intact but make it feel natural and specific. Replace any remaining {placeholder} tokens with intelligent defaults. Keep to 2 paragraphs max. No sign-off or name (signature is appended separately). Return ONLY the refined email body, nothing else.\n\n' + voicePromptInjection + patternGuidance,
             messages: [{ role: 'user', content: `Refine this email for ${vars.name} at ${vars.company} (${vars.category}):\n\n${bodyPlain}\n\nCompany intel: Revenue ${vars.revenue_estimate}, ${vars.employee_count} employees, CEO ${vars.ceo}, funding ${vars.funding_round}\n\nThis step uses approach=${actualStep.approach || 'authority-led'}, psychology=${actualStep.psychology || 'reciprocity'}.` }]
           });
           const refined = refine.content[0]?.text?.trim();
           if (refined && refined.length > 50) bodyPlain = refined;
         } catch {}
 
-        const bodyHtml = `<div style="font-family:Helvetica,Arial,sans-serif;font-size:12pt;color:#333">${bodyPlain.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}</div>`;
+        // Wrap with Helvetica 12 / line-height 1.5 / black, inject correct signature
+        // contactStatus: 'cold' for steps 1-2 (text-only sig), 'warm' for steps 3+ (full sig)
+        const contactStatus = (enrollment.current_step <= 2) ? 'cold' : 'warm';
+        const wrapped = wrapEmailBody(bodyPlain, { contactStatus, signature: signatures.signature, coldSignature: signatures.coldSignature });
+        const bodyHtml = wrapped.html;
+        bodyPlain = wrapped.text;
 
         // ═══ TIMEZONE-AWARE SEND TIMING ═══
         // Target: 9-10am in the prospect's local timezone for maximum open rate
