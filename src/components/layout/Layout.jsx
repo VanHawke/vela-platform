@@ -40,14 +40,11 @@ const ALL_NAV = [
   { id: 'organisations', label: 'Organisations', path: '/organisations', Icon: Building2 },
   { id: 'command-centre', label: 'Command Centre', path: '/command-centre', Icon: Target },
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
-  { id: 'lemlist', label: 'Lemlist', path: '/lemlist', Icon: Send },
   { id: 'sequences', label: 'Campaigns', path: '/sequences', Icon: Zap },
   { id: 'inbox', label: 'Inbox', path: '/inbox', Icon: Mail },
   { id: 'segments', label: 'Segments', path: '/segments', Icon: Filter },
   { id: 'packs', label: 'Vertical Pack', path: '/packs', Icon: Layers },
   { id: 'targets', label: 'Targets', path: '/targets', Icon: Target },
-  { id: 'sourcing', label: 'Sourcing', path: '/sourcing', Icon: Compass },
-  { id: 'lemlist-drain', label: 'Lemlist Drain', path: '/lemlist-drain', Icon: Database },
 ]
 const VALID_NAV_IDS = new Set(ALL_NAV.map(n => n.id))
 const DEFAULT_TOP_IDS = ['home', 'command-centre', 'pipeline', 'partnership-matrix', 'sequences', 'inbox', 'segments']
@@ -72,7 +69,7 @@ function getTopNavIds() {
 const PAGE_LABELS = {
   '/pipeline': 'Pipeline', '/calendar': 'Race Calendar', '/contacts': 'Contacts',
   '/partnership-matrix': 'Partnership Matrix', '/email': 'Command Centre',
-  '/organisations': 'Organisations', '/lemlist': 'Lemlist', '/lemlist-drain': 'Lemlist Drain', '/sequences': 'Campaigns', '/inbox': 'Inbox', '/segments': 'Segments', '/packs': 'Vertical Pack', '/targets': 'Targets',
+  '/organisations': 'Organisations', '/sequences': 'Campaigns', '/inbox': 'Inbox', '/segments': 'Segments', '/packs': 'Vertical Pack', '/targets': 'Targets',
   '/settings': 'Settings', '/dashboard': 'Dashboard',
 }
 

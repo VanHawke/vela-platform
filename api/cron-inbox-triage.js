@@ -35,21 +35,33 @@ export default async function handler(req, res) {
 }
 
 async function triageUser(userId, email, token, today) {
+    // Look back 6 hours for incremental runs, 24h for the morning run
+    const lookback = (new Date().getHours() < 9) ? '1d' : '6h';
     const searchRes = await fetch(
-      `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=is:unread newer_than:1d -category:promotions -category:social&maxResults=20`,
+      `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=is:unread newer_than:${lookback} -category:promotions -category:social&maxResults=30`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     const searchData = await searchRes.json();
     const ids = (searchData.messages || []).map(m => m.id);
 
     if (!ids.length) {
-      await writeTriage(userId, today, 'Inbox clear — no unread emails in the last 24 hours.', []);
+      await writeTriage(userId, today, 'Inbox clear — no unread emails in the lookback window.', []);
       return { ok: true, emails: 0 };
+    }
+
+    // Load known contact emails for cross-reference (Lemlist-era + Kiko-era + Pipedrive)
+    const knownContactsRaw = await sbFetch(`contacts?select=id,data&data->>email=not.is.null&limit=10000`);
+    const knownByEmail = new Map();
+    if (Array.isArray(knownContactsRaw)) {
+      for (const c of knownContactsRaw) {
+        const e = (c.data?.email || '').trim().toLowerCase();
+        if (e) knownByEmail.set(e, { id: c.id, name: `${c.data?.firstName || ''} ${c.data?.lastName || ''}`.trim(), company: c.data?.company || '' });
+      }
     }
 
     // Fetch metadata for each email
     const emails = [];
-    for (const id of ids.slice(0, 15)) {
+    for (const id of ids.slice(0, 25)) {
       try {
         const msgRes = await fetch(
           `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`,
@@ -59,8 +71,39 @@ async function triageUser(userId, email, token, today) {
         const from = (msg.payload?.headers || []).find(h => h.name === 'From')?.value || '';
         const subject = (msg.payload?.headers || []).find(h => h.name === 'Subject')?.value || '';
         const snippet = msg.snippet || '';
-        emails.push({ id, from: from.slice(0, 80), subject: subject.slice(0, 100), snippet: snippet.slice(0, 150) });
+        // Extract bare email from "Name <email@x.com>"
+        const fromEmailMatch = from.match(/<([^>]+)>/);
+        const fromEmail = (fromEmailMatch ? fromEmailMatch[1] : from).trim().toLowerCase();
+        const knownContact = knownByEmail.get(fromEmail);
+        emails.push({ id, from: from.slice(0, 80), fromEmail, subject: subject.slice(0, 100), snippet: snippet.slice(0, 150), knownContact });
       } catch {}
+    }
+
+    // CRITICAL: For any email from a known contact, fire an alert immediately
+    // This catches Lemlist-era replies that the sequence-reply-detect cron misses
+    const fromKnownProspects = emails.filter(e => e.knownContact);
+    for (const e of fromKnownProspects) {
+      try {
+        // Dedupe: don't fire alert if we already alerted for this gmail message id today
+        const existingAlert = await sbFetch(`kiko_alerts?type=eq.reply_from_prospect&metadata->>gmail_id=eq.${e.id}&limit=1`);
+        if (Array.isArray(existingAlert) && existingAlert.length) continue;
+        await sbFetch('kiko_alerts', {
+          method: 'POST',
+          body: JSON.stringify({
+            type: 'reply_from_prospect',
+            severity: 'high',
+            title: `Reply from ${e.knownContact.name || e.fromEmail}${e.knownContact.company ? ' (' + e.knownContact.company + ')' : ''}`,
+            detail: `Subject: ${e.subject}\n\nPreview: ${e.snippet}`,
+            entity_type: 'contact',
+            entity_name: e.knownContact.name || e.fromEmail,
+            entity_id: e.knownContact.id,
+            metadata: { gmail_id: e.id, from: e.fromEmail, subject: e.subject, company: e.knownContact.company },
+            expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          })
+        });
+      } catch (alertErr) {
+        await logError('cron:inbox-triage:alert', alertErr.message);
+      }
     }
 
     if (!emails.length) {
