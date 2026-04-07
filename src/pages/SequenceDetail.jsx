@@ -71,6 +71,7 @@ export default function SequenceDetail() {
   const [manualAdding, setManualAdding] = useState(false)
   const [selectedLead, setSelectedLead] = useState(null)
   const [leadActivity, setLeadActivity] = useState([])
+  const [topPatterns, setTopPatterns] = useState([])
   const [regenPrompt, setRegenPrompt] = useState(false)
   const [testSending, setTestSending] = useState(false)
   const [testSent, setTestSent] = useState(false)
@@ -78,6 +79,21 @@ export default function SequenceDetail() {
   const [showLaunchConfirm, setShowLaunchConfirm] = useState(false)
 
   useEffect(() => { if (!isNew) load() }, [id])
+
+  // Load top-performing patterns once when Performance tab opens.
+  // Returns empty array when no send data exists yet — card hidden in that case.
+  useEffect(() => {
+    if (tab !== 'performance') return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const { data, error } = await supabase.rpc('get_top_email_patterns', { min_sample_size: 3, max_results: 3 })
+        if (cancelled || error) return
+        setTopPatterns(Array.isArray(data) ? data : [])
+      } catch {}
+    })()
+    return () => { cancelled = true }
+  }, [tab])
 
   async function load() {
     const { data } = await supabase.from('kiko_sequences').select('*').eq('id', id).single()
@@ -603,6 +619,52 @@ export default function SequenceDetail() {
               </div>
                 )
               })()}
+
+              {/* ═══ TOP PERFORMING PATTERNS — Learning Loop ═══
+                  Hidden until min_sample_size=3 sends per pattern accumulate.
+                  Auto-populated by get_top_email_patterns SQL function. */}
+              {topPatterns.length > 0 && (
+                <div style={{ ...glass, padding: '14px 16px', marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.purple, boxShadow: `0 0 8px ${C.purple}` }} />
+                    <span style={{ fontSize: 12, fontWeight: 500, color: C.text, letterSpacing: '0.02em' }}>What's working</span>
+                    <span style={{ fontSize: 9, color: C.textTer, marginLeft: 4 }}>· Kiko learns from real send data and biases new emails toward these patterns</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(topPatterns.length, 3)}, 1fr)`, gap: 10 }}>
+                    {topPatterns.map((p, i) => (
+                      <div key={i} style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(167,139,250,0.04)', border: `0.5px solid ${C.border}` }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                          <span style={{ fontSize: 10, fontWeight: 500, color: C.purple, padding: '2px 7px', borderRadius: 10, background: 'rgba(167,139,250,0.10)', border: '0.5px solid rgba(167,139,250,0.20)' }}>#{i + 1}</span>
+                          <span style={{ fontSize: 11, color: C.textSec, fontWeight: 500, textTransform: 'capitalize' }}>{p.approach}</span>
+                          <span style={{ fontSize: 9, color: C.textTer }}>×</span>
+                          <span style={{ fontSize: 11, color: C.textSec, fontWeight: 500, textTransform: 'capitalize' }}>{p.psychology}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
+                          <div>
+                            <div style={{ fontSize: 14, fontWeight: 500, color: C.blue }}>{p.open_rate}%</div>
+                            <div style={{ fontSize: 8, color: C.textTer, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 1 }}>Open</div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 14, fontWeight: 500, color: C.purple }}>{p.click_rate}%</div>
+                            <div style={{ fontSize: 8, color: C.textTer, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 1 }}>Click</div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 14, fontWeight: 500, color: C.teal }}>{p.reply_rate}%</div>
+                            <div style={{ fontSize: 8, color: C.textTer, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 1 }}>Reply</div>
+                          </div>
+                        </div>
+                        {p.example_subject && (
+                          <div style={{ fontSize: 10, color: C.textTer, fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', borderTop: `0.5px solid ${C.border}`, paddingTop: 6 }}>
+                            "{p.example_subject}"
+                          </div>
+                        )}
+                        <div style={{ fontSize: 9, color: C.textMut, marginTop: 4 }}>n={p.sample_size}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div style={{ ...glass, overflow: 'hidden' }}>
                 <div style={{ padding: '10px 14px', borderBottom: `0.5px solid ${C.border}`, fontSize: 12, fontWeight: 500 }}>Step breakdown</div>
                 {steps.map((s, i) => {
