@@ -19,7 +19,7 @@ const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
 
 async function loadActivePack() {
   const { data: assignment } = await supabase
-    .from('kiko_pack_assignments').select('pack_id').eq('org_id', ORG_ID).eq('active', true).limit(1).maybeSingle();
+    .from('kiko_pack_assignments').select('pack_id').eq('org_id', ORG_ID).eq('is_active', true).limit(1).maybeSingle();
   if (!assignment) return null;
   const { data: pack } = await supabase
     .from('kiko_vertical_packs').select('*').eq('id', assignment.pack_id).maybeSingle();
@@ -85,7 +85,7 @@ async function sourceCompanies({ sector_id, count, geo_override, extra_criteria 
   const prompt = buildPrompt(sector, count, geo_override, extra_criteria);
 
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-5',
+    model: 'claude-sonnet-4-6',
     max_tokens: 4000,
     tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 5 }],
     messages: [{ role: 'user', content: prompt }],
