@@ -162,14 +162,30 @@ async function fetchAllFeeds() {
   return allArticles;
 }
 
-// Store articles, skip duplicates via article_url_hash unique constraint
+// Store articles in BATCH (1 round-trip instead of 300+).
+// Previously did sequential upserts which alone took ~30-60s for a typical run.
 async function storeArticles(articles) {
-  let stored = 0, skipped = 0;
+  if (!articles?.length) return { stored: 0, skipped: 0, total: 0 };
+  // Dedupe by hash within this batch first (RSS feeds frequently overlap)
+  const seen = new Set();
+  const unique = [];
   for (const a of articles) {
-    const { error } = await supabase.from('news_articles').upsert(a, { onConflict: 'article_url_hash', ignoreDuplicates: true });
-    if (error) skipped++; else stored++;
+    if (a.article_url_hash && !seen.has(a.article_url_hash)) {
+      seen.add(a.article_url_hash);
+      unique.push(a);
+    }
   }
-  return { stored, skipped, total: articles.length };
+  // Single batched upsert — Supabase accepts arrays
+  const { data, error } = await supabase
+    .from('news_articles')
+    .upsert(unique, { onConflict: 'article_url_hash', ignoreDuplicates: true })
+    .select('id');
+  if (error) {
+    console.error('[News] storeArticles batch failed:', error.message);
+    return { stored: 0, skipped: unique.length, total: articles.length, error: error.message };
+  }
+  const stored = data?.length || 0;
+  return { stored, skipped: unique.length - stored, total: articles.length };
 }
 
 // Classify articles via Claude Haiku — category, relevance, deal signals
@@ -400,22 +416,21 @@ export default async function handler(req, res) {
     return res.json({ ok: true });
   }
 
-  // Default for GET (cron trigger) — run sync with heartbeat
+  // Default for GET (cron trigger) — FETCH ONLY mode
+  // Classification is handled by a SEPARATE cron at 8:15am.
+  // This split solves the timeout: 60+ feeds + Haiku classification together
+  // exceeded 300s. Now each cron gets its own 300s budget.
   if (req.method === 'GET' && !action) {
     const __hbStart = Date.now();
     const __hbId = await cronHeartbeat('news-agent', 'started');
     try {
       const articles = await fetchAllFeeds();
       const storeResult = await storeArticles(articles);
-      // Reduced from 20 → 10 to fit inside maxDuration. Remaining articles
-      // get classified on subsequent runs (lazy classification is fine — articles
-      // accumulate and the next 8am cron picks up the backlog).
-      const classifyResult = await classifyBatch(10);
       await cronHeartbeat('news-agent', 'finished', {
         heartbeatId: __hbId, durationMs: Date.now() - __hbStart,
-        recordsProcessed: (storeResult?.stored || 0) + (classifyResult?.classified || 0),
+        recordsProcessed: storeResult?.stored || 0,
       });
-      return res.json({ action: 'cron-sync', fetched: storeResult, classified: classifyResult });
+      return res.json({ action: 'cron-fetch-only', fetched: storeResult });
     } catch (err) {
       await cronHeartbeat('news-agent', 'error', { heartbeatId: __hbId, errorMessage: err.message });
       await logError('news-agent', err.message).catch(() => {});

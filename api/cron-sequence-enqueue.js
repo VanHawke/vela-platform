@@ -67,6 +67,30 @@ export default async function handler(req, res) {
     }
 
     let queued = 0;
+
+    // ═══ PERFORMANCE LEARNING ═══
+    // Load top-performing (approach × psychology) patterns from past sends.
+    // Falls back to empty array silently when there's no data yet — the Haiku
+    // refine call below just omits the "PROVEN PATTERNS" section in that case.
+    let topPatterns = [];
+    try {
+      const patternRows = await sbFetch(`rpc/get_top_email_patterns`, {
+        method: 'POST',
+        body: JSON.stringify({ min_sample_size: 3, max_results: 5 }),
+      });
+      if (Array.isArray(patternRows)) topPatterns = patternRows;
+      console.log(`[SeqEnqueue] Loaded ${topPatterns.length} top patterns from learning loop`);
+    } catch (e) {
+      console.log(`[SeqEnqueue] Pattern learning unavailable: ${e.message} — using default prompt`);
+    }
+    // Format patterns into a string the Haiku model can actually use.
+    // Empty string when no data → behaves identically to the old prompt.
+    const patternGuidance = topPatterns.length > 0
+      ? `\n\nPROVEN PATTERNS (from real send data — these have been measured to perform well):\n${topPatterns.map((p, i) =>
+          `${i + 1}. ${p.approach} approach + ${p.psychology} psychology on ${p.channel}: ${p.open_rate}% open, ${p.click_rate}% click, ${p.reply_rate}% reply (n=${p.sample_size})${p.example_subject ? ` — top subject: "${p.example_subject}"` : ''}`
+        ).join('\n')}\n\nLean toward these patterns when refining. Match their tone, cadence, and specificity level.`
+      : '';
+
     for (const enrollment of safe) {
       try {
         // Get the sequence
@@ -190,12 +214,12 @@ export default async function handler(req, res) {
         let subject = (actualStep.subject || '').replace(/\{(\w+)\}/g, (_, k) => vars[k] || `{${k}}`);
         let bodyPlain = (actualStep.template || '').replace(/\{(\w+)\}/g, (_, k) => vars[k] || `{${k}}`);
         
-        // Use Haiku to refine the email with real context
+        // Use Haiku to refine the email with real context + performance learning
         try {
           const refine = await anthropic.messages.create({
             model: 'claude-haiku-4-5-20251001', max_tokens: 600,
-            system: 'You refine outreach email drafts. Keep the structure and approach intact but make it feel natural and specific. Replace any remaining {placeholder} tokens with intelligent defaults. Keep to 2 paragraphs max. No sign-off or name. Return ONLY the refined email body, nothing else.',
-            messages: [{ role: 'user', content: `Refine this email for ${vars.name} at ${vars.company} (${vars.category}):\n\n${bodyPlain}\n\nCompany intel: Revenue ${vars.revenue_estimate}, ${vars.employee_count} employees, CEO ${vars.ceo}, funding ${vars.funding_round}` }]
+            system: 'You refine outreach email drafts. Keep the structure and approach intact but make it feel natural and specific. Replace any remaining {placeholder} tokens with intelligent defaults. Keep to 2 paragraphs max. No sign-off or name. Return ONLY the refined email body, nothing else.' + patternGuidance,
+            messages: [{ role: 'user', content: `Refine this email for ${vars.name} at ${vars.company} (${vars.category}):\n\n${bodyPlain}\n\nCompany intel: Revenue ${vars.revenue_estimate}, ${vars.employee_count} employees, CEO ${vars.ceo}, funding ${vars.funding_round}\n\nThis step uses approach=${actualStep.approach || 'authority-led'}, psychology=${actualStep.psychology || 'reciprocity'}.` }]
           });
           const refined = refine.content[0]?.text?.trim();
           if (refined && refined.length > 50) bodyPlain = refined;
