@@ -45,14 +45,36 @@ function mapLead(l, source) {
 
 
 async function mergeLead(mapped, dryRun) {
-  if (!mapped.email && !mapped.lemlistId) return { action: 'skipped' };
+  if (!mapped.email && !mapped.lemlistId && !(mapped.firstName && mapped.lastName)) return { action: 'skipped' };
 
   let existing = null;
-  if (mapped.email) {
+
+  // 1) lemlistId match (most authoritative — same Lemlist record we synced before)
+  if (mapped.lemlistId) {
+    const { data } = await supabase
+      .from('contacts').select('id, data').eq('data->>lemlistId', mapped.lemlistId).limit(1);
+    if (data && data[0]) existing = data[0];
+  }
+
+  // 2) email exact match
+  if (!existing && mapped.email) {
     const { data } = await supabase
       .from('contacts').select('id, data').eq('data->>email', mapped.email).limit(1);
     if (data && data[0]) existing = data[0];
   }
+
+  // 3) firstName + lastName + company (most reliable for unmatched name records)
+  if (!existing && mapped.firstName && mapped.lastName && mapped.company) {
+    const { data } = await supabase
+      .from('contacts').select('id, data')
+      .eq('data->>firstName', mapped.firstName)
+      .eq('data->>lastName', mapped.lastName)
+      .eq('data->>company', mapped.company)
+      .limit(1);
+    if (data && data[0]) existing = data[0];
+  }
+
+  // 4) firstName + lastName only (last resort, may collide)
   if (!existing && mapped.firstName && mapped.lastName) {
     const { data } = await supabase
       .from('contacts').select('id, data')
