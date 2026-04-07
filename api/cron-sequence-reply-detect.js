@@ -39,6 +39,32 @@ export default async function handler(req, res) {
         const searchData = await searchRes.json();
 
         if (searchData.messages?.length) {
+          // ═══ Backfill the outreach queue row with reply metadata for the Inbox UI ═══
+          // Fetch the first matched message for thread ID + snippet
+          let threadId = null, snippet = null, msgId = null;
+          try {
+            const firstMsg = searchData.messages[0];
+            const detailRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${firstMsg.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=Message-ID`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            const detail = await detailRes.json();
+            threadId = detail.threadId;
+            snippet = detail.snippet;
+            const headers = (detail.payload?.headers || []).reduce((acc, h) => { acc[h.name.toLowerCase()] = h.value; return acc; }, {});
+            msgId = headers['message-id'];
+          } catch {}
+
+          // Update the most recent sent queue row for this enrollment with the thread/snippet
+          await sbFetch(`kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&status=eq.sent&order=sent_at.desc&limit=1`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+              gmail_thread_id: threadId,
+              gmail_message_id: msgId,
+              reply_received_at: new Date().toISOString(),
+              reply_snippet: snippet || '',
+            }),
+          }).catch(() => {});
+
           // Reply detected — stop the sequence
           await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({
             status: 'replied', reply_detected_at: new Date().toISOString()
