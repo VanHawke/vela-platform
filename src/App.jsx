@@ -23,6 +23,7 @@ const Sequences = lazy(() => import('@/pages/Sequences'))
 const Inbox = lazy(() => import('@/pages/Inbox'))
 const Segments = lazy(() => import('@/pages/Segments'))
 const Packs = lazy(() => import('@/pages/Packs'))
+const Targets = lazy(() => import('@/pages/Targets'))
 const SequenceDetail = lazy(() => import('@/pages/SequenceDetail'))
 
 const INACTIVITY_MS   = 20 * 60 * 1000
@@ -143,6 +144,7 @@ export default function App() {
           <Route path="inbox" element={<Inbox user={user} />} />
           <Route path="segments" element={<Segments user={user} />} />
           <Route path="packs" element={<Packs user={user} />} />
+          <Route path="targets" element={<Targets user={user} />} />
           <Route path="kikocode" element={<KikoCode user={user} />} />
           <Route path="settings" element={<Settings user={user} />} />
           <Route path="memory" element={<AdminRoute><MemoryConsole user={user} /></AdminRoute>} />

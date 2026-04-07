@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
     for (const segment of safe) {
       try {
-        const matches = await matchSegment(segment.criteria, 5000);
+        const matches = await matchSegment(segment.criteria, 5000, parseFloat(segment.min_score) || 0);
         if (matches.length === 0) {
           await supabase.from('kiko_lead_segments').update({
             last_run_at: new Date().toISOString(),

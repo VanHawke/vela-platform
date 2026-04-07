@@ -47,7 +47,7 @@ export default function Segments() {
   const [sequences, setSequences] = useState([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(null) // null | 'new' | segment
-  const [form, setForm] = useState({ name: '', description: '', criteria: { and: [] }, sequence_id: '', auto_enroll: false })
+  const [form, setForm] = useState({ name: '', description: '', criteria: { and: [] }, sequence_id: '', auto_enroll: false, min_score: 0 })
   const [previewCount, setPreviewCount] = useState(null)
   const [previewSample, setPreviewSample] = useState([])
   const [previewing, setPreviewing] = useState(false)
@@ -68,14 +68,14 @@ export default function Segments() {
   }
 
   function startNew() {
-    setForm({ name: '', description: '', criteria: { and: [{ field: 'data.title', op: 'contains', value: '' }] }, sequence_id: '', auto_enroll: false })
+    setForm({ name: '', description: '', criteria: { and: [{ field: 'data.title', op: 'contains', value: '' }] }, sequence_id: '', auto_enroll: false, min_score: 0 })
     setPreviewCount(null)
     setPreviewSample([])
     setEditing('new')
   }
 
   function startEdit(seg) {
-    setForm({ name: seg.name, description: seg.description || '', criteria: seg.criteria || { and: [] }, sequence_id: seg.sequence_id || '', auto_enroll: !!seg.auto_enroll })
+    setForm({ name: seg.name, description: seg.description || '', criteria: seg.criteria || { and: [] }, sequence_id: seg.sequence_id || '', auto_enroll: !!seg.auto_enroll, min_score: parseFloat(seg.min_score) || 0 })
     setPreviewCount(seg.last_match_count || null)
     setPreviewSample([])
     setEditing(seg)
@@ -84,7 +84,7 @@ export default function Segments() {
   async function preview() {
     setPreviewing(true)
     try {
-      const url = `/api/segments?action=preview_criteria&criteria=${encodeURIComponent(JSON.stringify(form.criteria))}`
+      const url = `/api/segments?action=preview_criteria&criteria=${encodeURIComponent(JSON.stringify(form.criteria))}&min_score=${form.min_score || 0}`
       const r = await fetch(url)
       const j = await r.json()
       setPreviewCount(j.count ?? 0)
@@ -208,6 +208,15 @@ export default function Segments() {
               {(form.criteria.and || []).length === 0 && (
                 <div style={{ padding: 14, textAlign: 'center', color: C.textTer, fontSize: 11, fontStyle: 'italic', border: `0.5px dashed ${C.border}`, borderRadius: 6 }}>No rules — segment will match all contacts. Add a rule to filter.</div>
               )}
+            </div>
+
+            <div style={{ marginBottom: 16, padding: 14, borderRadius: 8, background: 'rgba(167,139,250,0.04)', border: `0.5px solid rgba(167,139,250,0.10)` }}>
+              <div style={{ fontSize: 9, color: C.purple, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>SponsorSignal Quality Gate</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 11, color: C.textSec, flex: 1 }}>Minimum company score (0 = no gate)</span>
+                <input type="number" min="0" max="100" value={form.min_score} onChange={e => setForm({ ...form, min_score: parseFloat(e.target.value) || 0 })} style={{ width: 70, ...inputStyle, fontSize: 11, padding: '5px 8px', textAlign: 'right' }} />
+              </div>
+              <div style={{ fontSize: 9, color: C.textTer, marginTop: 6, fontStyle: 'italic' }}>Only enrolls contacts whose company has a SponsorSignal score at or above this threshold. Outreach default: 65. Priority: 85.</div>
             </div>
 
             <div style={{ marginBottom: 16, padding: 14, borderRadius: 8, background: 'rgba(45,212,191,0.04)', border: `0.5px solid rgba(45,212,191,0.10)` }}>

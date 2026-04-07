@@ -43,7 +43,7 @@ function evalCriteria(criteria, contact) {
   return evalRule(criteria, contact);
 }
 
-async function matchSegment(criteria, limit = 5000) {
+async function matchSegment(criteria, limit = 5000, minScore = 0) {
   // Pull all contacts (cap at limit) joined with company intel
   const { data: contacts } = await supabase
     .from('contacts')
@@ -53,16 +53,34 @@ async function matchSegment(criteria, limit = 5000) {
   // Pull company intel for the matched company_ids
   const companyIds = [...new Set(contacts.map(c => c.company_id).filter(Boolean))];
   let companyMap = {};
+  let scoreMap = {};
   if (companyIds.length > 0) {
     const { data: companies } = await supabase
       .from('companies')
       .select('id, data')
       .in('id', companyIds);
     if (companies) companyMap = Object.fromEntries(companies.map(c => [c.id, c.data || {}]));
+    // Pull SponsorSignal scores for quality gating
+    if (minScore > 0) {
+      const { data: scores } = await supabase
+        .from('kiko_company_scores')
+        .select('company_id, composite_score')
+        .in('company_id', companyIds);
+      if (scores) scoreMap = Object.fromEntries(scores.map(s => [s.company_id, parseFloat(s.composite_score)]));
+    }
   }
-  // Attach company_data to each contact and evaluate
-  const enriched = contacts.map(c => ({ ...c, company_data: companyMap[c.company_id] || {} }));
-  return enriched.filter(c => evalCriteria(criteria, c));
+  // Attach company_data + score to each contact and evaluate
+  const enriched = contacts.map(c => ({
+    ...c,
+    company_data: companyMap[c.company_id] || {},
+    sponsor_score: scoreMap[c.company_id] || null,
+  }));
+  return enriched.filter(c => {
+    if (!evalCriteria(criteria, c)) return false;
+    // SponsorSignal quality gate: skip if score below threshold
+    if (minScore > 0 && (c.sponsor_score === null || c.sponsor_score < minScore)) return false;
+    return true;
+  });
 }
 
 export default async function handler(req, res) {
@@ -77,17 +95,18 @@ export default async function handler(req, res) {
       if (action === 'preview') {
         const { id } = req.query;
         if (!id) return res.status(400).json({ error: 'id required' });
-        const { data: seg } = await supabase.from('kiko_lead_segments').select('criteria').eq('id', id).single();
+        const { data: seg } = await supabase.from('kiko_lead_segments').select('criteria, min_score').eq('id', id).single();
         if (!seg) return res.status(404).json({ error: 'not found' });
-        const matches = await matchSegment(seg.criteria, 1000);
-        return res.status(200).json({ count: matches.length, sample: matches.slice(0, 10).map(c => ({ id: c.id, name: c.data?.name, email: c.data?.email, company: c.data?.company, title: c.data?.title })) });
+        const matches = await matchSegment(seg.criteria, 1000, parseFloat(seg.min_score) || 0);
+        return res.status(200).json({ count: matches.length, sample: matches.slice(0, 10).map(c => ({ id: c.id, name: c.data?.name, email: c.data?.email, company: c.data?.company, title: c.data?.title, score: c.sponsor_score })) });
       }
       if (action === 'preview_criteria') {
         // Preview an unsaved criteria object passed as ?criteria=<urlencoded JSON>
         try {
           const criteria = JSON.parse(decodeURIComponent(req.query.criteria || '{}'));
-          const matches = await matchSegment(criteria, 1000);
-          return res.status(200).json({ count: matches.length, sample: matches.slice(0, 10).map(c => ({ id: c.id, name: c.data?.name, email: c.data?.email, company: c.data?.company, title: c.data?.title })) });
+          const minScore = parseFloat(req.query.min_score) || 0;
+          const matches = await matchSegment(criteria, 1000, minScore);
+          return res.status(200).json({ count: matches.length, sample: matches.slice(0, 10).map(c => ({ id: c.id, name: c.data?.name, email: c.data?.email, company: c.data?.company, title: c.data?.title, score: c.sponsor_score })) });
         } catch (e) { return res.status(400).json({ error: 'invalid criteria JSON' }); }
       }
     }
@@ -100,6 +119,7 @@ export default async function handler(req, res) {
         criteria: body.criteria || { and: [] },
         sequence_id: body.sequence_id || null,
         auto_enroll: !!body.auto_enroll,
+        min_score: parseFloat(body.min_score) || 0,
         org_id: ORG_ID,
       };
       const { data, error } = await supabase.from('kiko_lead_segments').insert(row).select().single();
