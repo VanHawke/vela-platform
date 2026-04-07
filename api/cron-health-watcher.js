@@ -27,8 +27,12 @@ export default async function handler(req, res) {
     if (hbErr) throw new Error(`Heartbeat query failed: ${hbErr.message}`);
 
     // Bucket by cron_name and find latest state for each
+    // Skip backfilled historical rows (marked with 'pre-fix' in error_message)
+    // to avoid alerting on bugs that have already been fixed.
     const cronStates = {};
     for (const hb of (heartbeats || [])) {
+      const isBackfill = hb.error_message && hb.error_message.includes('pre-fix');
+      if (isBackfill) continue;
       if (!cronStates[hb.cron_name]) cronStates[hb.cron_name] = { latest: hb, errors24h: 0, hungRows: [] };
       if (hb.status === 'error') cronStates[hb.cron_name].errors24h += 1;
       // Detect hung: started but never finished, age >10min
