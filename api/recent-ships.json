@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-08T18:57:27.005Z",
+  "generated_at": "2026-04-08T19:20:25.405Z",
   "commits": [
+    {
+      "hash": "df45b73",
+      "subject": "(1) Wipe remaining conversation tables: conversations (187 rows), kiko_imported_conversations (384 rows), conversation_embeddings (389 orphaned vectors). Memory FULLY preserved: 1135 conversation_insi",
+      "when": "23 minutes ago"
+    },
     {
       "hash": "cd82e00",
       "subject": "KikoVoice: add inline prop. When inline=true, render as position:absolute inset:0 inside parent container instead of position:fixed createPortal fullscreen overlay. Smaller waveform (600x80 vs 1100x11",
-      "when": "8 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "353e79f",
       "subject": "(1) Contact name cleanup: stripped emoji + symbol prefixes from 31 contacts in DB. Names like '🚀 Briana' / 'Ogle' -> 'Briana' / 'Ogle'. Where firstName held the full name and lastName was just emoji,",
-      "when": "16 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "d828ca2",
@@ -19,7 +24,7 @@
     {
       "hash": "6d4138a",
       "subject": "loadUserSignatures: match by sendAsEmail (alias) instead of always picking primary. Pass FROM_ADDRESS=sunny@vanhawke.agency from gmail-draft + cron-sequence-enqueue so we get the Van Hawke Agency sign",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "27281f8",
@@ -29,7 +34,7 @@
     {
       "hash": "d289f7a",
       "subject": "(1) gmail-draft.js: removed hardcoded text-only signature stub, now imports loadUserSignatures + wrapEmailBody from email-format.js, pulls real Gmail signature via sendAs API (same as cron path). Adde",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "fdabbf3",
@@ -44,12 +49,12 @@
     {
       "hash": "bac1607",
       "subject": "(1) lift bg from #0D0D0F to #1C1C1F charcoal — better text contrast across all pages, (2) signature image upload: file picker uploads to Supabase Storage brand-assets/signatures/, returns public URL, ",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "119661b",
       "subject": "Campaigns.jsx: Prospecting view with left rail (campaign list) + main table (one row per prospect: name, company, title, step, engagement, last action, next, status, actions). Real Supabase data, real",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "018f9bc",
@@ -69,12 +74,12 @@
     {
       "hash": "411cbbd",
       "subject": "Block C preview: HomePreview.jsx mockup using canonical shadcn primitives — Card, Button, Tailwind classes only. Mounted at /preview/home (public route, no auth) for design sign-off before rebuilding ",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "15682e6",
       "subject": "Block C: restore canonical shadcn primitives. card.jsx and button.jsx had been clobbered with inline-style versions — restored to forwardRef + cn() + Tailwind classes + cva variants. Required for prop",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "f5b5f48",
@@ -94,11 +99,6 @@
     {
       "hash": "e39603e",
       "subject": "Block C rebuild start: index.css contains exact amber theme spec from user. tokens.js is single source of truth — every component imports from here. theme.js is now a re-export shim for backward compa",
-      "when": "8 hours ago"
-    },
-    {
-      "hash": "c841fd6",
-      "subject": "Block C correction: dark amber is default :root, light amber opt-in via .light class. Components were designed for dark mode (297 hardcoded white-on-dark rgba values across 30+ files), so dark stays t",
       "when": "8 hours ago"
     }
   ]
