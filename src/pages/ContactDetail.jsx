@@ -130,16 +130,16 @@ export default function ContactDetail() {
     return map[type] || type
   }
 
-  const urgencyColor = (u) => u === 'overdue' ? '#ef4444' : u === 'high' ? '#f59e0b' : u === 'due' ? '#3b82f6' : 'var(--text-tertiary)'
+  const urgencyColor = (u) => u === 'overdue' ? '#ef4444' : u === 'high' ? 'var(--primary)' : u === 'due' ? '#3b82f6' : 'var(--text-tertiary)'
 
-  const glass = { background: 'rgba(238,238,238,0.04)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: '0.5px solid rgba(238,238,238,0.1)', boxShadow: '0 8px 36px rgba(0,0,0,0.3)' }
-  const card = { background: 'rgba(238,238,238,0.04)', borderRadius: 18, padding: 24, border: '0.5px solid rgba(238,238,238,0.1)', boxShadow: 'none' }
-  const inputStyle = { width: '100%', background: 'rgba(238,238,238,0.04)', border: '1px solid var(--border)', borderRadius: 50, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
+  const glass = { background: 'var(--border)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: '0.5px solid var(--border)', boxShadow: '0 8px 36px rgba(0,0,0,0.3)' }
+  const card = { background: 'var(--border)', borderRadius: 18, padding: 24, border: '0.5px solid var(--border)', boxShadow: 'none' }
+  const inputStyle = { width: '100%', background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 50, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
   const labelStyle = { fontSize: 12, fontWeight: 500, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }
   const sectionTitle = { fontSize: 13, fontWeight: 400, color: 'var(--text)', fontFamily: 'var(--font)', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.04em' }
   const emptyText = { fontSize: 13, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', fontStyle: 'italic' }
 
-  if (loading) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 24, height: 24, border: '2px solid rgba(238,238,238,0.08)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /></div>
+  if (loading) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 24, height: 24, border: '2px solid var(--border)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /></div>
   if (!contact) return <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}><p style={{ fontSize: 15, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>Contact not found</p><button onClick={() => nav('/contacts')} style={{ fontSize: 14, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Back to Contacts</button></div>
 
   return (
@@ -147,7 +147,7 @@ export default function ContactDetail() {
       {/* Glass toolbar */}
       <div style={{ margin: '0 16px', padding: '10px 20px', borderRadius: 18, ...glass, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={() => nav('/contacts')} style={{ background: 'rgba(238,238,238,0.04)', border: 'none', borderRadius: 50, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+          <button onClick={() => nav('/contacts')} style={{ background: 'var(--border)', border: 'none', borderRadius: 50, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)' }}>
             <ArrowLeft style={{ width: 16, height: 16 }} />
           </button>
           <div>
@@ -170,7 +170,7 @@ export default function ContactDetail() {
               {contact.picture ? (
                 <img src={contact.picture} alt="" style={{ width: 56, height: 56, borderRadius: 18, objectFit: 'cover' }} />
               ) : (
-                <div style={{ width: 56, height: 56, borderRadius: 18, background: 'rgba(238,238,238,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 56, height: 56, borderRadius: 18, background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ fontSize: 23, fontWeight: 400, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{(contact.firstName || contact.lastName || '?')[0]?.toUpperCase()}</span>
                 </div>
               )}
@@ -186,9 +186,9 @@ export default function ContactDetail() {
             </div>
             {/* Quick actions */}
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {contact.email && <a href={`mailto:${contact.email}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(238,238,238,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(238,238,238,0.08)' }}><Mail style={{ width: 13, height: 13 }} /> Email</a>}
-              {contact.phone && <a href={`tel:${contact.phone}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(238,238,238,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(238,238,238,0.08)' }}><Phone style={{ width: 13, height: 13 }} /> Call</a>}
-              {contact.linkedin && <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'rgba(238,238,238,0.04)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid rgba(238,238,238,0.08)' }}><Linkedin style={{ width: 13, height: 13 }} /> LinkedIn</a>}
+              {contact.email && <a href={`mailto:${contact.email}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'var(--border)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid var(--border)' }}><Mail style={{ width: 13, height: 13 }} /> Email</a>}
+              {contact.phone && <a href={`tel:${contact.phone}`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'var(--border)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid var(--border)' }}><Phone style={{ width: 13, height: 13 }} /> Call</a>}
+              {contact.linkedin && <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', background: 'var(--border)', padding: '6px 12px', borderRadius: 50, textDecoration: 'none', fontFamily: 'var(--font)', border: '0.5px solid var(--border)' }}><Linkedin style={{ width: 13, height: 13 }} /> LinkedIn</a>}
             </div>
           </div>
 
@@ -259,7 +259,7 @@ export default function ContactDetail() {
                     <div key={f.key}><p style={labelStyle}>{f.label}</p><input value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} style={inputStyle} /></div>
                   ))}
                   <div><p style={labelStyle}>Notes</p><textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} rows={3} style={{ ...inputStyle, resize: 'none' }} /></div>
-                  <button onClick={save} style={{ alignSelf: 'flex-end', fontSize: 14, fontWeight: 500, background: 'var(--accent)', color: 'rgba(238,238,238,0.9)', padding: '8px 20px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Save Changes</button>
+                  <button onClick={save} style={{ alignSelf: 'flex-end', fontSize: 14, fontWeight: 500, background: 'var(--accent)', color: 'var(--foreground)', padding: '8px 20px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Save Changes</button>
                 </div>
               </>
             ) : (
@@ -289,7 +289,7 @@ export default function ContactDetail() {
                   ))}
                 </div>
                 {contact.notes && contact.notes !== '[]' && (
-                  <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(238,238,238,0.04)' }}>
+                  <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
                     <p style={{ ...labelStyle, marginBottom: 8 }}>Notes</p>
                     <p style={{ fontSize: 14, color: 'var(--text-secondary)', fontFamily: 'var(--font)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>{contact.notes}</p>
                   </div>

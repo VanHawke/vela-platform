@@ -4,8 +4,8 @@ import { supabase } from '@/lib/supabase'
 import { Search, BarChart3, Grid3X3, Building2, Mic, Settings, Users, GitBranch, Calendar, Send, Target } from 'lucide-react'
 
 const T = {
-  text: 'rgba(238,238,238,0.95)', sub: 'rgba(238,238,238,0.55)', muted: 'rgba(238,238,238,0.32)',
-  border: 'rgba(238,238,238,0.08)', soft: 'rgba(238,238,238,0.04)',
+  text: 'var(--foreground)', sub: 'var(--muted-foreground)', muted: 'var(--muted-foreground)',
+  border: 'var(--border)', soft: 'var(--border)',
   font: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'DM Sans', 'Segoe UI', sans-serif",
 }
 
@@ -92,15 +92,15 @@ export default function CommandPalette({ open, onClose, onVoice }) {
   let lastSection = ''
 
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 'min(20vh, 160px)' }}>
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'var(--foreground)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 'min(20vh, 160px)' }}>
       <div onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()} style={{
         width: 480, background: 'rgba(14,14,20,0.95)', borderRadius: 20,
-        boxShadow: 'inset 0 1px 0 rgba(238,238,238,0.08), 0 16px 64px rgba(0,0,0,0.5)',
-        border: '1.5px solid rgba(238,238,238,0.1)', overflow: 'hidden',
+        boxShadow: 'inset 0 1px 0 var(--border), 0 16px 64px rgba(0,0,0,0.5)',
+        border: '1.5px solid var(--border)', overflow: 'hidden',
         animation: 'scaleIn 0.15s ease-out',
       }}>
         {/* Search input */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '1.5px solid rgba(238,238,238,0.07)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '1.5px solid var(--border)' }}>
           <Search size={16} color={T.muted} />
           <input ref={inputRef} value={query} onChange={e => setQuery(e.target.value)} onKeyDown={handleKeyDown}
             placeholder="Search pages, contacts, deals..." autoFocus
@@ -123,7 +123,7 @@ export default function CommandPalette({ open, onClose, onVoice }) {
                 <button onClick={() => handleSelect(item)} style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 10,
                   padding: '9px 10px', borderRadius: 50, border: 'none', textAlign: 'left',
-                  background: i === selected ? 'rgba(238,238,238,0.07)' : 'transparent',
+                  background: i === selected ? 'var(--border)' : 'transparent',
                   cursor: 'pointer', fontFamily: T.font, transition: 'background 0.1s',
                 }}
                   onMouseEnter={() => setSelected(i)}
@@ -144,10 +144,10 @@ export default function CommandPalette({ open, onClose, onVoice }) {
         </div>
 
         {/* Keyboard hints */}
-        <div style={{ padding: '8px 16px', borderTop: '1.5px solid rgba(238,238,238,0.07)', display: 'flex', gap: 16, justifyContent: 'center' }}>
+        <div style={{ padding: '8px 16px', borderTop: '1.5px solid var(--border)', display: 'flex', gap: 16, justifyContent: 'center' }}>
           {[['↑↓', 'navigate'], ['↵', 'open'], ['esc', 'close']].map(([key, label]) => (
             <span key={key} style={{ fontSize: 11, color: T.muted, fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}>
-              <kbd style={{ padding: '1px 5px', borderRadius: 4, background: 'rgba(238,238,238,0.04)', border: '1.5px solid rgba(238,238,238,0.1)', fontSize: 11, fontFamily: 'inherit' }}>{key}</kbd>
+              <kbd style={{ padding: '1px 5px', borderRadius: 4, background: 'var(--border)', border: '1.5px solid var(--border)', fontSize: 11, fontFamily: 'inherit' }}>{key}</kbd>
               {label}
             </span>
           ))}

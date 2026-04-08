@@ -47,7 +47,7 @@ export default function SkillsManager() {
   }
 
   const card = { background: T.surface, borderRadius: 16, padding: 20, border: `1px solid ${T.border}` }
-  const inp = { width: '100%', background: 'rgba(238,238,238,0.03)', border: `1px solid ${T.border}`, borderRadius: 10, padding: '8px 12px', fontSize: 14, color: T.text, fontFamily: T.font, fontWeight: 300, outline: 'none' }
+  const inp = { width: '100%', background: 'var(--border)', border: `1px solid ${T.border}`, borderRadius: 10, padding: '8px 12px', fontSize: 14, color: T.text, fontFamily: T.font, fontWeight: 300, outline: 'none' }
 
   if (loading) return <div style={{ color: T.textTertiary, fontSize: 14 }}>Loading skills...</div>
 
@@ -58,7 +58,7 @@ export default function SkillsManager() {
           <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: 0, fontFamily: T.font }}>Kiko Skills</h3>
           <p style={{ fontSize: 12, color: T.textTertiary, margin: '2px 0 0', fontFamily: T.font }}>{skills.length} skills — auto-injected into Kiko by keyword match</p>
         </div>
-        <button onClick={startNew} style={{ padding: '6px 16px', borderRadius: 50, background: T.accentSoft, border: `1px solid ${T.accentBorder}`, color: 'rgba(167,139,250,0.7)', fontSize: 13, cursor: 'pointer', fontFamily: T.font, fontWeight: 400 }}>+ New Skill</button>
+        <button onClick={startNew} style={{ padding: '6px 16px', borderRadius: 50, background: T.accentSoft, border: `1px solid ${T.accentBorder}`, color: 'var(--primary)', fontSize: 13, cursor: 'pointer', fontFamily: T.font, fontWeight: 400 }}>+ New Skill</button>
       </div>
 
       {/* Edit form */}
@@ -70,7 +70,7 @@ export default function SkillsManager() {
             <textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} placeholder="Skill content — the knowledge Kiko will use when this skill is triggered..." rows={8} style={{ ...inp, resize: 'vertical', lineHeight: 1.6 }} />
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button onClick={() => setEditing(null)} style={{ padding: '6px 16px', borderRadius: 50, background: 'transparent', border: `1px solid ${T.border}`, color: T.textTertiary, fontSize: 13, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
-              <button onClick={save} disabled={!form.name || !form.content} style={{ padding: '6px 16px', borderRadius: 50, background: T.accentGradient, border: 'none', color: 'rgba(238,238,238,0.9)', fontSize: 13, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, opacity: form.name && form.content ? 1 : 0.4 }}>Save</button>
+              <button onClick={save} disabled={!form.name || !form.content} style={{ padding: '6px 16px', borderRadius: 50, background: T.accentGradient, border: 'none', color: 'var(--foreground)', fontSize: 13, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, opacity: form.name && form.content ? 1 : 0.4 }}>Save</button>
             </div>
           </div>
         </div>

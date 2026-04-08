@@ -271,7 +271,7 @@ export default function Sequences() {
 
       {/* ═══ GENERATE WIZARD MODAL ═══ */}
       {showWiz && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowWiz(false)}>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--foreground)', backdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowWiz(false)}>
           <div onClick={e => e.stopPropagation()} style={{ background: '#161618', border: `0.5px solid ${C.border}`, borderRadius: 12, padding: 28, width: 460, maxWidth: '90vw', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
               <div>

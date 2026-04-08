@@ -98,57 +98,57 @@ export default function DraftPreview({ draft, onToneAdjust, onCopy, onSendToGmai
   const toneChips = ['More professional', 'More concise', 'More friendly', 'Add urgency', 'Soften tone', 'Make shorter']
 
   return (
-    <div style={{ background: 'rgba(238,238,238,0.025)', border: '1.5px solid rgba(238,238,238,0.08)', borderRadius: 16, overflow: 'hidden', marginTop: 12, maxWidth: 580, backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', boxShadow: 'inset 0 1px 0 rgba(238,238,238,0.06), 0 8px 32px rgba(0,0,0,0.2)' }}>
+    <div style={{ background: 'var(--border)', border: '1.5px solid var(--border)', borderRadius: 16, overflow: 'hidden', marginTop: 12, maxWidth: 580, backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', boxShadow: 'inset 0 1px 0 var(--border), 0 8px 32px rgba(0,0,0,0.2)' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderBottom: '1px solid rgba(238,238,238,0.04)' }}>
-        <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(238,238,238,0.55)', fontFamily: T.font }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>
+        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--muted-foreground)', fontFamily: T.font }}>
           {draft.type === 'email' ? '✉️ Email Draft' : '💬 Message Draft'}
         </span>
         <div style={{ display: 'flex', gap: 5 }}>
-          <button onClick={handleCopy} style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(238,238,238,0.1)', background: 'transparent', color: 'rgba(238,238,238,0.4)', fontSize: 12, cursor: 'pointer', fontFamily: T.font, fontWeight: 400 }}>{copied ? '✓ Copied' : 'Copy'}</button>
+          <button onClick={handleCopy} style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted-foreground)', fontSize: 12, cursor: 'pointer', fontFamily: T.font, fontWeight: 400 }}>{copied ? '✓ Copied' : 'Copy'}</button>
           {draft.type === 'email' && <button onClick={onSendToGmail} style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(6,214,160,0.14)', background: 'rgba(6,214,160,0.06)', color: 'rgba(6,214,160,0.6)', fontSize: 12, cursor: 'pointer', fontFamily: T.font, fontWeight: 400 }}>Send to Gmail ↗</button>}
         </div>
       </div>
 
       {/* Meta fields */}
       {(draft.to || draft.subject) && (
-        <div style={{ padding: '10px 14px', borderBottom: '1px solid rgba(238,238,238,0.03)', display: 'flex', flexDirection: 'column', gap: 5 }}>
+        <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 5 }}>
           {draft.to && <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 11, color: 'rgba(238,238,238,0.15)', width: 42, textAlign: 'right', fontFamily: T.font }}>To:</span>
-            <span style={{ fontSize: 13, color: 'rgba(238,238,238,0.55)', fontFamily: T.font, fontWeight: 300 }}>{draft.to}</span>
+            <span style={{ fontSize: 11, color: 'var(--border)', width: 42, textAlign: 'right', fontFamily: T.font }}>To:</span>
+            <span style={{ fontSize: 13, color: 'var(--muted-foreground)', fontFamily: T.font, fontWeight: 300 }}>{draft.to}</span>
           </div>}
           {draft.subject && <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 11, color: 'rgba(238,238,238,0.15)', width: 42, textAlign: 'right', fontFamily: T.font }}>Subject:</span>
-            <span style={{ fontSize: 13, color: 'rgba(238,238,238,0.55)', fontFamily: T.font, fontWeight: 300 }}>{draft.subject}</span>
+            <span style={{ fontSize: 11, color: 'var(--border)', width: 42, textAlign: 'right', fontFamily: T.font }}>Subject:</span>
+            <span style={{ fontSize: 13, color: 'var(--muted-foreground)', fontFamily: T.font, fontWeight: 300 }}>{draft.subject}</span>
           </div>}
         </div>
       )}
 
       {/* Body */}
-      <div style={{ padding: '12px 14px', fontSize: 15, lineHeight: 1.85, color: 'rgba(238,238,238,0.85)', fontFamily: T.font, fontWeight: 400, whiteSpace: 'pre-wrap' }}>
+      <div style={{ padding: '12px 14px', fontSize: 15, lineHeight: 1.85, color: 'var(--foreground)', fontFamily: T.font, fontWeight: 400, whiteSpace: 'pre-wrap' }}>
         {draft.body}
       </div>
 
       {/* Tone shortcuts */}
-      <div style={{ display: 'flex', gap: 5, padding: '10px 14px', borderTop: '1px solid rgba(238,238,238,0.03)', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 5, padding: '10px 14px', borderTop: '1px solid var(--border)', flexWrap: 'wrap' }}>
         {toneChips.map(tone => (
           <button key={tone} onClick={() => onToneAdjust?.(tone)} style={{
-            padding: '3px 9px', borderRadius: 50, border: '1px solid rgba(238,238,238,0.06)',
-            background: 'rgba(238,238,238,0.03)', color: 'rgba(238,238,238,0.32)',
+            padding: '3px 9px', borderRadius: 50, border: '1px solid var(--border)',
+            background: 'var(--border)', color: 'var(--muted-foreground)',
             fontSize: 11, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, transition: 'all 0.15s',
           }}>{tone}</button>
         ))}
       </div>
 
       {/* Free-form edit input */}
-      <div style={{ display: 'flex', gap: 6, padding: '8px 14px', borderTop: '1px solid rgba(238,238,238,0.03)' }}>
+      <div style={{ display: 'flex', gap: 6, padding: '8px 14px', borderTop: '1px solid var(--border)' }}>
         <input value={editInput} onChange={e => setEditInput(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && editInput.trim()) { onToneAdjust?.(editInput.trim()); setEditInput('') } }}
           placeholder="Edit instruction... (e.g. change CTA to phone call)"
-          style={{ flex: 1, background: 'rgba(238,238,238,0.02)', border: '1px solid rgba(238,238,238,0.05)', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: 'rgba(238,238,238,0.65)', fontFamily: T.font, fontWeight: 300, outline: 'none' }} />
+          style={{ flex: 1, background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: 'var(--foreground)', fontFamily: T.font, fontWeight: 300, outline: 'none' }} />
         {editInput.trim() && <button onClick={() => { onToneAdjust?.(editInput.trim()); setEditInput('') }} style={{
-          padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(167,139,250,0.15)', background: 'rgba(167,139,250,0.06)',
-          color: 'rgba(167,139,250,0.6)', fontSize: 11, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, flexShrink: 0,
+          padding: '6px 12px', borderRadius: 8, border: '1px solid var(--accent)', background: 'var(--accent)',
+          color: 'var(--primary)', fontSize: 11, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, flexShrink: 0,
         }}>Apply</button>}
       </div>
     </div>

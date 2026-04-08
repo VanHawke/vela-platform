@@ -192,8 +192,8 @@ Be direct. Use web search for current company intelligence if needed.`
   const staleCount = priorityActions.filter(a => a.isStale).length
   const daysToRace = nextRace ? Math.ceil((new Date(nextRace.date) - now) / 86400000) : null
 
-  const urgencyColor = (u) => u >= 3 ? 'rgba(255,59,48,0.6)' : u >= 2 ? 'rgba(245,158,11,0.5)' : u >= 1 ? 'rgba(167,139,250,0.4)' : 'rgba(167,139,250,0.10)'
-  const card = { background: 'rgba(25,25,25,0.50)', backdropFilter: 'blur(24px) saturate(1.2)', WebkitBackdropFilter: 'blur(24px) saturate(1.2)', border: '0.5px solid rgba(167,139,250,0.50)', borderRadius: 14, padding: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 1px 0 rgba(167,139,250,0.50) inset' }
+  const urgencyColor = (u) => u >= 3 ? 'rgba(255,59,48,0.6)' : u >= 2 ? 'rgba(245,158,11,0.5)' : u >= 1 ? 'var(--primary)' : 'var(--accent)'
+  const card = { background: 'rgba(25,25,25,0.50)', backdropFilter: 'blur(24px) saturate(1.2)', WebkitBackdropFilter: 'blur(24px) saturate(1.2)', border: '0.5px solid var(--ring)', borderRadius: 14, padding: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 1px 0 var(--ring) inset' }
 
   if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}><Loader2 style={{ width: 24, height: 24, animation: 'spin 1s linear infinite', color: T.textTertiary }} /></div>
 
@@ -208,23 +208,23 @@ Be direct. Use web search for current company intelligence if needed.`
               <h1 style={{ fontSize: 21, fontWeight: 400, color: T.text, margin: 0 }}>Command Centre</h1>
               <p style={{ fontSize: 12, color: T.textTertiary, fontWeight: 300, marginTop: 2 }}>Priority actions ranked by deal value × urgency</p>
             </div>
-            <button onClick={loadData} style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(25,25,25,0.40)', border: '0.5px solid rgba(167,139,250,0.50)', color: T.textTertiary, fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Refresh</button>
+            <button onClick={loadData} style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(25,25,25,0.40)', border: '0.5px solid var(--ring)', color: T.textTertiary, fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Refresh</button>
           </div>
 
           {/* Stats bar */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
             <div onClick={() => navigate('/pipeline')} style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', cursor: 'pointer', transition: 'all 0.15s' }}
-              onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.2)' }}
-              onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.06)' }}>
-              <Target size={14} style={{ color: 'rgba(167,139,250,0.5)', flexShrink: 0 }} />
+              onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}
+              onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}>
+              <Target size={14} style={{ color: 'var(--primary)', flexShrink: 0 }} />
               <div>
-                <div style={{ fontSize: 17, fontWeight: 300, color: 'rgba(167,139,250,0.7)' }}>{deals.length}</div>
+                <div style={{ fontSize: 17, fontWeight: 300, color: 'var(--primary)' }}>{deals.length}</div>
                 <div style={{ fontSize: 10, color: T.textTertiary, fontWeight: 300 }}>Active deals</div>
               </div>
             </div>
             <div onClick={() => navigate('/pipeline')} style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', cursor: 'pointer', transition: 'all 0.15s' }}
               onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(0,212,170,0.2)' }}
-              onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.06)' }}>
+              onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}>
               <TrendingUp size={14} style={{ color: 'rgba(0,212,170,0.5)', flexShrink: 0 }} />
               <div>
                 <div style={{ fontSize: 17, fontWeight: 300, color: 'rgba(0,212,170,0.6)' }}>${(weightedPipeline / 1000000).toFixed(1)}M</div>
@@ -233,7 +233,7 @@ Be direct. Use web search for current company intelligence if needed.`
             </div>
             <div onClick={() => navigate('/pipeline')} style={{ ...card, flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', cursor: 'pointer', transition: 'all 0.15s' }}
               onMouseOver={e => { e.currentTarget.style.borderColor = staleCount > 0 ? 'rgba(255,59,48,0.2)' : 'rgba(6,214,160,0.2)' }}
-              onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.06)' }}>
+              onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}>
               <AlertTriangle size={14} style={{ color: staleCount > 0 ? 'rgba(255,59,48,0.5)' : 'rgba(6,214,160,0.4)', flexShrink: 0 }} />
               <div>
                 <div style={{ fontSize: 17, fontWeight: 300, color: staleCount > 0 ? 'rgba(255,59,48,0.6)' : 'rgba(6,214,160,0.5)' }}>{staleCount}</div>
@@ -244,17 +244,17 @@ Be direct. Use web search for current company intelligence if needed.`
               <div style={{ ...card, flex: 1, display: 'flex', flexDirection: 'column', gap: 6, padding: '10px 14px', cursor: 'pointer', transition: 'all 0.15s' }}
                 onClick={() => navigate('/calendar')}
                 onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(0,212,170,0.2)' }}
-                onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.06)' }}>
+                onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}>
                 <div style={{ display: 'flex', gap: 4, marginBottom: 2 }}>
                   {['F1', 'Formula E', 'MotoGP', 'WEC'].map(s => (
                     <button key={s} onClick={e => { e.stopPropagation(); setRaceSeries(s); setNextRace(allNextRaces[s] || null) }}
-                      style={{ padding: '2px 8px', borderRadius: 50, border: raceSeries === s ? '1px solid rgba(0,212,170,0.3)' : '1px solid rgba(167,139,250,0.06)', background: raceSeries === s ? 'rgba(0,212,170,0.08)' : 'transparent', color: raceSeries === s ? 'rgba(0,212,170,0.7)' : 'rgba(167,139,250,0.30)', fontSize: 9, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, transition: 'all 0.15s' }}>{s}</button>
+                      style={{ padding: '2px 8px', borderRadius: 50, border: raceSeries === s ? '1px solid rgba(0,212,170,0.3)' : '1px solid var(--accent)', background: raceSeries === s ? 'rgba(0,212,170,0.08)' : 'transparent', color: raceSeries === s ? 'rgba(0,212,170,0.7)' : 'var(--ring)', fontSize: 9, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, transition: 'all 0.15s' }}>{s}</button>
                   ))}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <Calendar size={14} style={{ color: daysToRace <= 14 ? 'rgba(0,212,170,0.5)' : 'rgba(167,139,250,0.25)', flexShrink: 0 }} />
+                  <Calendar size={14} style={{ color: daysToRace <= 14 ? 'rgba(0,212,170,0.5)' : 'var(--ring)', flexShrink: 0 }} />
                   <div>
-                    <div style={{ fontSize: 17, fontWeight: 300, color: daysToRace <= 14 ? 'rgba(0,212,170,0.6)' : 'rgba(167,139,250,0.45)' }}>{daysToRace}d</div>
+                    <div style={{ fontSize: 17, fontWeight: 300, color: daysToRace <= 14 ? 'rgba(0,212,170,0.6)' : 'var(--ring)' }}>{daysToRace}d</div>
                     <div style={{ fontSize: 10, color: T.textTertiary, fontWeight: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 100 }}>{nextRace.name}</div>
                   </div>
                 </div>
@@ -281,12 +281,12 @@ Be direct. Use web search for current company intelligence if needed.`
               <>
                 <div style={{ fontSize: 11, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Target size={12} style={{ color: 'rgba(167,139,250,0.7)' }} />
+                    <Target size={12} style={{ color: 'var(--primary)' }} />
                     Priority ({priorityItems.length}){priorityItems.length > 0 ? ' — act on these first' : ''}
                   </div>
                 </div>
                 {priorityItems.length === 0 ? (
-                  <div style={{ padding: '14px 16px', borderRadius: 10, marginBottom: 16, background: 'rgba(167,139,250,0.03)', border: '0.5px dashed rgba(167,139,250,0.20)', fontSize: 12, color: T.textTertiary, fontWeight: 300, lineHeight: 1.5 }}>
+                  <div style={{ padding: '14px 16px', borderRadius: 10, marginBottom: 16, background: 'var(--accent)', border: '0.5px dashed var(--accent)', fontSize: 12, color: T.textTertiary, fontWeight: 300, lineHeight: 1.5 }}>
                     Nothing critical right now. Kiko will surface prospect replies, overdue tasks, stale high-value deals, and signals here as they arrive.
                   </div>
                 ) : (
@@ -300,14 +300,14 @@ Be direct. Use web search for current company intelligence if needed.`
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                           <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 6, background: item.bg, color: item.color, fontWeight: 600, letterSpacing: '0.04em' }}>{item.tag}</span>
                         </div>
-                        <div style={{ fontSize: 14, fontWeight: 400, color: 'rgba(238,238,238,0.80)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
+                        <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--foreground)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
                         <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.sub}</div>
                       </div>
                       <ChevronRight size={12} style={{ color: item.color, opacity: 0.5, flexShrink: 0, marginTop: 8 }} />
                     </div>
                   ))
                 )}
-                <div style={{ height: 20, borderBottom: '0.5px solid rgba(167,139,250,0.08)', marginBottom: 16 }} />
+                <div style={{ height: 20, borderBottom: '0.5px solid var(--accent)', marginBottom: 16 }} />
               </>
             )
           })()}
@@ -322,14 +322,14 @@ Be direct. Use web search for current company intelligence if needed.`
               const d = task.data || {}
               const isOverdue = d.dueDate && new Date(d.dueDate) < new Date()
               return (
-                <div key={task.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '9px 12px', borderRadius: 10, marginBottom: 4, background: 'rgba(167,139,250,0.03)', border: '0.5px solid rgba(167,139,250,0.50)', cursor: 'pointer', transition: 'all 0.15s' }}
+                <div key={task.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '9px 12px', borderRadius: 10, marginBottom: 4, background: 'var(--accent)', border: '0.5px solid var(--ring)', cursor: 'pointer', transition: 'all 0.15s' }}
                   onMouseEnter={e => { e.currentTarget.style.background = 'rgba(25,25,25,0.35)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(238,238,238,0.015)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'var(--border)' }}
                   onClick={() => {
                     setSelectedAction({ id: task.id, data: { company: d.company || '', contact: d.contact || '' }, isTask: true, taskData: d })
                     getKikoRec({ id: task.id, data: { company: d.company || '', contact: d.contact || '' }, isTask: true, taskData: d })
                   }}>
-                  <button onClick={(e) => { e.stopPropagation(); toggleTask(task) }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 2, color: 'rgba(167,139,250,0.25)' }}>
+                  <button onClick={(e) => { e.stopPropagation(); toggleTask(task) }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 2, color: 'var(--ring)' }}>
                     <Square size={14} />
                   </button>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -337,7 +337,7 @@ Be direct. Use web search for current company intelligence if needed.`
                       <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(6,214,160,0.6)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{d.type || 'Task'}</span>
                       {isOverdue && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 6, background: 'rgba(255,59,48,0.08)', color: 'rgba(255,59,48,0.6)', fontWeight: 500 }}>OVERDUE</span>}
                     </div>
-                    <div style={{ fontSize: 14, fontWeight: 400, color: 'rgba(238,238,238,0.75)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--foreground)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {d.company || d.notes || 'Untitled task'}{d.contact ? ` — ${d.contact}` : ''}
                     </div>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 3 }}>
@@ -345,7 +345,7 @@ Be direct. Use web search for current company intelligence if needed.`
                       {d.notes && d.company && <span style={{ fontSize: 11, color: T.textTertiary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.notes.slice(0, 50)}</span>}
                     </div>
                   </div>
-                  <ChevronRight size={12} style={{ color: 'rgba(167,139,250,0.08)', flexShrink: 0, marginTop: 8 }} />
+                  <ChevronRight size={12} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 8 }} />
                 </div>
               )
             })}
@@ -364,14 +364,14 @@ Be direct. Use web search for current company intelligence if needed.`
             return (
               <div key={action.id} onClick={() => getKikoRec(action)} style={{
                 display: 'flex', gap: 10, alignItems: 'flex-start', padding: '11px 12px', borderRadius: 10, marginBottom: 4, cursor: 'pointer', transition: 'all 0.15s',
-                background: isSelected ? 'rgba(167,139,250,0.03)' : 'rgba(238,238,238,0.015)',
-                border: `1px solid ${isSelected ? 'rgba(167,139,250,0.2)' : 'rgba(25,25,25,0.35)'}`,
+                background: isSelected ? 'var(--accent)' : 'var(--border)',
+                border: `1px solid ${isSelected ? 'var(--accent)' : 'rgba(25,25,25,0.35)'}`,
               }}
-                onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.background = 'rgba(25,25,25,0.35)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.06)' }}}
-                onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.background = 'rgba(238,238,238,0.015)'; e.currentTarget.style.borderColor = 'rgba(25,25,25,0.35)' }}}
+                onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.background = 'rgba(25,25,25,0.35)'; e.currentTarget.style.borderColor = 'var(--accent)' }}}
+                onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.background = 'var(--border)'; e.currentTarget.style.borderColor = 'rgba(25,25,25,0.35)' }}}
               >
                 {/* Rank */}
-                <span style={{ fontSize: 11, color: i < 3 ? 'rgba(167,139,250,0.6)' : T.textTertiary, fontWeight: 500, width: 16, textAlign: 'center', flexShrink: 0, marginTop: 3 }}>{i + 1}</span>
+                <span style={{ fontSize: 11, color: i < 3 ? 'var(--primary)' : T.textTertiary, fontWeight: 500, width: 16, textAlign: 'center', flexShrink: 0, marginTop: 3 }}>{i + 1}</span>
                 {/* Company logo */}
                 <CompanyLogo name={d.company} size={28} />
                 {/* Urgency bar */}
@@ -382,15 +382,15 @@ Be direct. Use web search for current company intelligence if needed.`
                     <span style={{ fontSize: 10, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{action.actionType}</span>
                     {action.isStale && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 6, background: 'rgba(255,59,48,0.08)', color: 'rgba(255,59,48,0.6)', fontWeight: 500 }}>STALE</span>}
                   </div>
-                  <div style={{ fontSize: 14, fontWeight: 400, color: 'rgba(238,238,238,0.75)', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.company || 'Unknown'}{d.contact ? ` — ${d.contact}` : ''}</div>
+                  <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--foreground)', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.company || 'Unknown'}{d.contact ? ` — ${d.contact}` : ''}</div>
                   <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                     <span style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300 }}>{action.stage}</span>
                     {action.value > 0 && <span style={{ fontSize: 11, color: 'rgba(0,212,170,0.4)', fontWeight: 300 }}>${(action.value / 1000000).toFixed(1)}M</span>}
                     <span style={{ fontSize: 11, color: action.daysSinceUpdate > 30 ? 'rgba(255,59,48,0.5)' : T.textTertiary, fontWeight: 300 }}>{action.daysSinceUpdate}d ago</span>
-                    <span style={{ fontSize: 11, color: 'rgba(167,139,250,0.3)', fontWeight: 300 }}>{action.prob}%</span>
+                    <span style={{ fontSize: 11, color: 'var(--ring)', fontWeight: 300 }}>{action.prob}%</span>
                   </div>
                 </div>
-                <ChevronRight size={12} style={{ color: 'rgba(167,139,250,0.08)', flexShrink: 0, marginTop: 8 }} />
+                <ChevronRight size={12} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 8 }} />
               </div>
             )
           })}
@@ -398,16 +398,16 @@ Be direct. Use web search for current company intelligence if needed.`
       </div>
 
       {/* RIGHT — Kiko Intelligence Panel */}
-      <div style={{ flex: 1, borderLeft: '1px solid rgba(25,25,25,0.40)', display: 'flex', flexDirection: 'column', background: 'rgba(238,238,238,0.01)', flexShrink: 0, minWidth: 0 }}>
+      <div style={{ flex: 1, borderLeft: '1px solid rgba(25,25,25,0.40)', display: 'flex', flexDirection: 'column', background: 'var(--border)', flexShrink: 0, minWidth: 0 }}>
         <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(25,25,25,0.40)', display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 40, height: 12, overflow: 'hidden' }}><KikoWaveform width={40} height={12} mini /></div>
-          <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(167,139,250,0.6)', letterSpacing: '0.04em' }}>Kiko Intelligence</span>
+          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--primary)', letterSpacing: '0.04em' }}>Kiko Intelligence</span>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
           {!selectedAction && !kikoLoading && (
             <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-              <Target size={20} style={{ color: 'rgba(167,139,250,0.08)', margin: '0 auto 10px', display: 'block' }} />
+              <Target size={20} style={{ color: 'var(--accent)', margin: '0 auto 10px', display: 'block' }} />
               <p style={{ fontSize: 13, color: T.textTertiary, fontWeight: 300, lineHeight: 1.5 }}>Select a deal to get Kiko's recommendation — analysis, timing, and draft message.</p>
             </div>
           )}
@@ -415,7 +415,7 @@ Be direct. Use web search for current company intelligence if needed.`
           {kikoLoading && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '40px 0' }}>
               <div style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><KikoWaveform width={48} height={48} mini /></div>
-              <span style={{ fontSize: 13, color: 'rgba(167,139,250,0.6)', fontWeight: 400 }}>Analysing deal...</span>
+              <span style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 400 }}>Analysing deal...</span>
             </div>
           )}
 
@@ -445,7 +445,7 @@ Be direct. Use web search for current company intelligence if needed.`
                 </div>
               </div>
               {/* Kiko's analysis */}
-              <div style={{ fontSize: 14, color: 'rgba(238,238,238,0.72)', fontWeight: 300, lineHeight: 1.65 }}>
+              <div style={{ fontSize: 14, color: 'var(--foreground)', fontWeight: 300, lineHeight: 1.65 }}>
                 <span dangerouslySetInnerHTML={{ __html: md(kikoRec) }} />
               </div>
             </div>
@@ -455,8 +455,8 @@ Be direct. Use web search for current company intelligence if needed.`
         {/* Action buttons */}
         {selectedAction && kikoRec && !kikoLoading && (
           <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(25,25,25,0.40)', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button onClick={() => getKikoRec(selectedAction)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(167,139,250,0.15)', background: 'rgba(167,139,250,0.04)', color: 'rgba(167,139,250,0.7)', cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Regenerate</button>
-            <button onClick={() => navigator.clipboard.writeText(kikoRec)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '0.5px solid rgba(167,139,250,0.50)', background: 'transparent', color: T.textTertiary, cursor: 'pointer', fontFamily: T.font }}>Copy</button>
+            <button onClick={() => getKikoRec(selectedAction)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid var(--accent)', background: 'var(--accent)', color: 'var(--primary)', cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Regenerate</button>
+            <button onClick={() => navigator.clipboard.writeText(kikoRec)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '0.5px solid var(--ring)', background: 'transparent', color: T.textTertiary, cursor: 'pointer', fontFamily: T.font }}>Copy</button>
           </div>
         )}
       </div>

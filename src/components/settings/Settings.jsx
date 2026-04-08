@@ -230,7 +230,7 @@ export default function Settings({ user }) {
     outline: 'none', background: T.surface, boxSizing: 'border-box',
   }
   const labelStyle = { fontSize: 14, fontWeight: 500, color: T.text, display: 'block', marginBottom: 6, fontFamily: T.font }
-  const cardStyle = { background: T.glass, backdropFilter: 'blur(24px) saturate(1.2)', WebkitBackdropFilter: 'blur(24px) saturate(1.2)', borderRadius: T.radius, border: `0.5px solid ${T.glassBorder}`, borderTop: `0.5px solid rgba(238,238,238,0.15)`, padding: 20, boxShadow: T.glassShadow }
+  const cardStyle = { background: T.glass, backdropFilter: 'blur(24px) saturate(1.2)', WebkitBackdropFilter: 'blur(24px) saturate(1.2)', borderRadius: T.radius, border: `0.5px solid ${T.glassBorder}`, borderTop: `0.5px solid var(--border)`, padding: 20, boxShadow: T.glassShadow }
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'transparent' }}>
@@ -343,9 +343,9 @@ export default function Settings({ user }) {
 
               {/* Image guidance — Gmail signatures with cid: refs won't render */}
               <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(96,165,250,0.05)', border: '0.5px solid rgba(96,165,250,0.20)', marginBottom: 14, fontSize: 11, color: T.textSecondary, fontFamily: T.font, lineHeight: 1.6 }}>
-                <strong style={{ color: T.text }}>Image not appearing?</strong> Gmail uses internal <code style={{ background: 'rgba(255,255,255,0.04)', padding: '1px 5px', borderRadius: 3 }}>cid:</code> references for inline images that only resolve inside email clients. To make your logo show up here:<br/>
+                <strong style={{ color: T.text }}>Image not appearing?</strong> Gmail uses internal <code style={{ background: 'var(--border)', padding: '1px 5px', borderRadius: 3 }}>cid:</code> references for inline images that only resolve inside email clients. To make your logo show up here:<br/>
                 <span style={{ display: 'block', marginTop: 4 }}>1. In Gmail, right-click your logo image → <em>Copy image address</em> (gives you a public https:// URL)</span>
-                <span style={{ display: 'block' }}>2. Paste your signature, then replace the broken image with: <code style={{ background: 'rgba(255,255,255,0.04)', padding: '1px 5px', borderRadius: 3 }}>&lt;img src="HTTPS_URL_HERE" width="120" /&gt;</code></span>
+                <span style={{ display: 'block' }}>2. Paste your signature, then replace the broken image with: <code style={{ background: 'var(--border)', padding: '1px 5px', borderRadius: 3 }}>&lt;img src="HTTPS_URL_HERE" width="120" /&gt;</code></span>
                 <span style={{ display: 'block', marginTop: 4 }}>Or upload your logo via Profile photo above and reference it.</span>
               </div>
 
@@ -361,13 +361,13 @@ export default function Settings({ user }) {
               {!settings.email_voice_profile && (
                 <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(251,191,36,0.05)', border: '0.5px solid rgba(251,191,36,0.20)', marginBottom: 14, fontSize: 12, color: T.textSecondary, fontFamily: T.font }}>
                   ⚠ No voice profile yet — runs Sundays at 4am, or trigger manually:&nbsp;
-                  <button onClick={async () => { await fetch('/api/cron-email-voice-learning', { method: 'POST' }); alert('Voice learning queued — refresh in ~30s') }} style={{ padding: '3px 10px', borderRadius: 5, background: 'rgba(167,139,250,0.10)', color: T.accent, border: '0.5px solid rgba(167,139,250,0.30)', fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>Run now</button>
+                  <button onClick={async () => { await fetch('/api/cron-email-voice-learning', { method: 'POST' }); alert('Voice learning queued — refresh in ~30s') }} style={{ padding: '3px 10px', borderRadius: 5, background: 'var(--accent)', color: T.accent, border: '0.5px solid var(--ring)', fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>Run now</button>
                 </div>
               )}
 
               {/* Warm signature (full + logo) — TEXTAREA: avoids contentEditable+React reconciler crash */}
               <label style={{ ...labelStyle, marginTop: 4 }}>Warm signature HTML (used after a contact has replied)</label>
-              <p style={{ fontSize: 11, color: T.textTertiary, marginTop: 0, marginBottom: 6, fontFamily: T.font }}>Paste raw HTML. <strong style={{ color: T.text }}>Tip:</strong> in Gmail, right-click your logo → Copy image address, then use <code style={{ background: 'rgba(255,255,255,0.04)', padding: '1px 5px', borderRadius: 3 }}>&lt;img src="https://..." width="120" /&gt;</code> instead of cid: references.</p>
+              <p style={{ fontSize: 11, color: T.textTertiary, marginTop: 0, marginBottom: 6, fontFamily: T.font }}>Paste raw HTML. <strong style={{ color: T.text }}>Tip:</strong> in Gmail, right-click your logo → Copy image address, then use <code style={{ background: 'var(--border)', padding: '1px 5px', borderRadius: 3 }}>&lt;img src="https://..." width="120" /&gt;</code> instead of cid: references.</p>
               <textarea
                 value={settings.email_signature_html || ''}
                 onChange={e => setSettings(p => ({ ...p, email_signature_html: e.target.value }))}
@@ -376,7 +376,7 @@ export default function Settings({ user }) {
                 style={{ ...inputStyle, width: '100%', height: 'auto', minHeight: 140, padding: '12px 14px', lineHeight: 1.5, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 11, resize: 'vertical', boxSizing: 'border-box' }}
               />
               {settings.email_signature_html && (
-                <div style={{ marginTop: 6, padding: '12px 14px', borderRadius: 6, background: '#fff', border: '0.5px solid rgba(255,255,255,0.10)', fontFamily: 'Helvetica, Arial, sans-serif', fontSize: 12, color: '#000', lineHeight: 1.5 }}>
+                <div style={{ marginTop: 6, padding: '12px 14px', borderRadius: 6, background: '#fff', border: '0.5px solid var(--border)', fontFamily: 'Helvetica, Arial, sans-serif', fontSize: 12, color: '#000', lineHeight: 1.5 }}>
                   <div style={{ fontSize: 9, color: '#888', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Live preview</div>
                   <div dangerouslySetInnerHTML={{ __html: settings.email_signature_html }} />
                 </div>
@@ -406,7 +406,7 @@ export default function Settings({ user }) {
                     <span style={{ fontSize: 15, color: T.textSecondary, fontFamily: T.font }}>{n}</span>
                     <div onClick={() => setSettings(p => ({ ...p, notification_prefs: { ...(p.notification_prefs || {}), [key]: !on } }))}
                       style={{ width: 44, height: 24, borderRadius: 50, background: on ? T.accent : T.border, position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}>
-                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(238,238,238,0.07)', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px rgba(238,238,238,0.12)' }} />
+                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--border)', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px var(--border)' }} />
                     </div>
                   </div>
                 )
@@ -420,7 +420,7 @@ export default function Settings({ user }) {
               email_signature: settings.email_signature, email_signature_html: settings.email_signature_html, email_signature_cold_html: settings.email_signature_cold_html,
               notification_prefs: settings.notification_prefs,
             })}
-              style={{ height: 44, borderRadius: 50, background: T.accent, color: 'rgba(238,238,238,0.9)', border: 'none', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
+              style={{ height: 44, borderRadius: 50, background: T.accent, color: 'var(--foreground)', border: 'none', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
               {saved ? 'Saved!' : 'Save changes'}
             </button>
           </div>
@@ -439,7 +439,7 @@ export default function Settings({ user }) {
                     <div key={v.id} style={{
                       padding: '10px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
                       background: isSelected ? T.accent : T.surface,
-                      color: isSelected ? 'rgba(238,238,238,0.9)' : T.text,
+                      color: isSelected ? 'var(--foreground)' : T.text,
                       display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
                       transition: 'all 0.15s',
                     }} onClick={() => { saveSettings({ kiko_voice: v.id }); try { localStorage.setItem('kiko_voice', v.id) } catch {} }}>
@@ -449,8 +449,8 @@ export default function Settings({ user }) {
                       </div>
                       <button onClick={(e) => { e.stopPropagation(); previewVoice(v.id) }} style={{
                         width: 30, height: 30, borderRadius: '50%', border: 'none',
-                        background: isSelected ? 'rgba(238,238,238,0.2)' : T.accentSoft,
-                        color: isSelected ? 'rgba(238,238,238,0.9)' : T.textSecondary,
+                        background: isSelected ? 'var(--border)' : T.accentSoft,
+                        color: isSelected ? 'var(--foreground)' : T.textSecondary,
                         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 15, flexShrink: 0,
                       }}>{isPreviewing ? '■' : '▶'}</button>
@@ -466,7 +466,7 @@ export default function Settings({ user }) {
                   <button key={s.id} onClick={() => { saveSettings({ kiko_speed: s.id }); try { localStorage.setItem('kiko_speed', s.id) } catch {} }} style={{
                     padding: '8px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
                     background: parseFloat(settings.kiko_speed || 1.0) === s.id ? T.accent : T.surface,
-                    color: parseFloat(settings.kiko_speed || 1.0) === s.id ? 'rgba(238,238,238,0.9)' : T.textSecondary,
+                    color: parseFloat(settings.kiko_speed || 1.0) === s.id ? 'var(--foreground)' : T.textSecondary,
                     fontSize: 13, cursor: 'pointer', fontFamily: T.font,
                   }}>{s.label}</button>
                 ))}
@@ -499,7 +499,7 @@ export default function Settings({ user }) {
                     <button key={p.id} onClick={() => { saveSettings({ kiko_personality: p.id }); try { localStorage.setItem('kiko_personality', p.id) } catch {} }} style={{
                       padding: '8px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
                       background: sel ? T.accent : T.surface,
-                      color: sel ? 'rgba(238,238,238,0.9)' : T.textSecondary,
+                      color: sel ? 'var(--foreground)' : T.textSecondary,
                       fontSize: 13, cursor: 'pointer', fontFamily: T.font, textAlign: 'left',
                     }}>
                       <div style={{ fontWeight: 400 }}>{p.label}</div>
@@ -543,8 +543,8 @@ export default function Settings({ user }) {
                       {/* Reorder arrows */}
                       {isOn && !isHome ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 0, flexShrink: 0 }}>
-                          <button onClick={() => moveItem(-1)} disabled={!canMoveUp} style={{ background: 'none', border: 'none', cursor: canMoveUp ? 'pointer' : 'default', color: canMoveUp ? T.textSecondary : 'rgba(238,238,238,0.1)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▲</button>
-                          <button onClick={() => moveItem(1)} disabled={!canMoveDown} style={{ background: 'none', border: 'none', cursor: canMoveDown ? 'pointer' : 'default', color: canMoveDown ? T.textSecondary : 'rgba(238,238,238,0.1)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▼</button>
+                          <button onClick={() => moveItem(-1)} disabled={!canMoveUp} style={{ background: 'none', border: 'none', cursor: canMoveUp ? 'pointer' : 'default', color: canMoveUp ? T.textSecondary : 'var(--border)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▲</button>
+                          <button onClick={() => moveItem(1)} disabled={!canMoveDown} style={{ background: 'none', border: 'none', cursor: canMoveDown ? 'pointer' : 'default', color: canMoveDown ? T.textSecondary : 'var(--border)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▼</button>
                         </div>
                       ) : <div style={{ width: 14 }} />}
                       <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font }}>{item.label}</span>
@@ -558,13 +558,13 @@ export default function Settings({ user }) {
                           window.dispatchEvent(new Event('kiko_top_nav_updated'))
                         }} style={{
                           width: 38, height: 20, borderRadius: 50, border: 'none', cursor: 'pointer',
-                          background: isOn ? T.accent : 'rgba(238,238,238,0.08)',
+                          background: isOn ? T.accent : 'var(--border)',
                           position: 'relative', transition: 'background 0.2s', padding: 0,
                         }}>
                           <div style={{
-                            width: 16, height: 16, borderRadius: '50%', background: 'rgba(238,238,238,0.07)',
+                            width: 16, height: 16, borderRadius: '50%', background: 'var(--border)',
                             position: 'absolute', top: 2, left: isOn ? 20 : 2,
-                            transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(238,238,238,0.12)',
+                            transition: 'left 0.2s', boxShadow: '0 1px 3px var(--border)',
                           }} />
                         </button>
                       )}
@@ -601,8 +601,8 @@ export default function Settings({ user }) {
                     return (
                       <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 50, background: T.surface, border: `1px solid ${T.border}` }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 0, flexShrink: 0 }}>
-                          <button onClick={() => moveMore(-1)} disabled={!canUp} style={{ background: 'none', border: 'none', cursor: canUp ? 'pointer' : 'default', color: canUp ? T.textSecondary : 'rgba(238,238,238,0.1)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▲</button>
-                          <button onClick={() => moveMore(1)} disabled={!canDown} style={{ background: 'none', border: 'none', cursor: canDown ? 'pointer' : 'default', color: canDown ? T.textSecondary : 'rgba(238,238,238,0.1)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▼</button>
+                          <button onClick={() => moveMore(-1)} disabled={!canUp} style={{ background: 'none', border: 'none', cursor: canUp ? 'pointer' : 'default', color: canUp ? T.textSecondary : 'var(--border)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▲</button>
+                          <button onClick={() => moveMore(1)} disabled={!canDown} style={{ background: 'none', border: 'none', cursor: canDown ? 'pointer' : 'default', color: canDown ? T.textSecondary : 'var(--border)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▼</button>
                         </div>
                         <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font }}>{item.label}</span>
                       </div>
@@ -635,7 +635,7 @@ export default function Settings({ user }) {
                     {currentUserRole === 'super_admin' && <option value="super_admin">Super Admin</option>}
                   </select>
                   <button onClick={sendInvite} style={{
-                    height: 44, padding: '0 16px', borderRadius: 50, background: T.accent, color: 'rgba(238,238,238,0.9)',
+                    height: 44, padding: '0 16px', borderRadius: 50, background: T.accent, color: 'var(--foreground)',
                     border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
                     display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
                   }}><UserPlus size={14} /> Add</button>
@@ -656,7 +656,7 @@ export default function Settings({ user }) {
                     <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
                       background: m.role === 'super_admin' ? 'rgba(124,92,252,0.15)' : m.role === 'admin' ? 'rgba(0,212,170,0.15)' : T.accentSoft,
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 500,
-                      color: m.role === 'super_admin' ? '#7C5CFC' : m.role === 'admin' ? '#00D4AA' : T.textSecondary,
+                      color: m.role === 'super_admin' ? 'var(--primary)' : m.role === 'admin' ? '#00D4AA' : T.textSecondary,
                       fontFamily: T.font,
                     }}>
                       {(m.display_name || m.email)?.[0]?.toUpperCase()}
@@ -684,7 +684,7 @@ export default function Settings({ user }) {
                     ) : (
                       <span style={{ fontSize: 12, padding: '5px 12px', borderRadius: 50, fontWeight: 500,
                         background: m.role === 'super_admin' ? 'rgba(124,92,252,0.12)' : m.role === 'admin' ? 'rgba(0,212,170,0.12)' : `${T.accentSoft}`,
-                        color: m.role === 'super_admin' ? '#7C5CFC' : m.role === 'admin' ? '#00D4AA' : T.textSecondary,
+                        color: m.role === 'super_admin' ? 'var(--primary)' : m.role === 'admin' ? '#00D4AA' : T.textSecondary,
                         fontFamily: T.font,
                       }}>{m.role === 'super_admin' ? 'Super Admin' : m.role === 'admin' ? 'Admin' : 'User'}</span>
                     )}
@@ -724,8 +724,8 @@ export default function Settings({ user }) {
               <div style={{ display: 'flex', gap: 8 }}>
                 {[
                   { id: 'light', label: 'Light Amber', swatch: '#FAF8F4', accent: '#B8651C' },
-                  { id: 'dark', label: 'Dark Amber', swatch: '#0E0B07', accent: '#FBBF24' },
-                  { id: 'system', label: 'System', swatch: 'linear-gradient(135deg, #FAF8F4 50%, #0E0B07 50%)', accent: '#B8651C' },
+                  { id: 'dark', label: 'Dark Amber', swatch: 'var(--background)', accent: 'var(--primary)' },
+                  { id: 'system', label: 'System', swatch: 'linear-gradient(135deg, #FAF8F4 50%, var(--background) 50%)', accent: '#B8651C' },
                 ].map(opt => {
                   const current = (typeof window !== 'undefined') ? (localStorage.getItem('kiko_theme') || 'light') : 'light'
                   const isActive = current === opt.id
@@ -836,7 +836,7 @@ export default function Settings({ user }) {
                   </div>
                 ) : (
                   <button onClick={connectGoogle} style={{
-                    height: 36, padding: '0 16px', borderRadius: T.radiusSm, background: T.accent, color: 'rgba(238,238,238,0.9)',
+                    height: 36, padding: '0 16px', borderRadius: T.radiusSm, background: T.accent, color: 'var(--foreground)',
                     border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
                     display: 'flex', alignItems: 'center', gap: 6,
                   }}><ExternalLink size={12} /> Connect</button>

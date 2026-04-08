@@ -4,10 +4,10 @@ import { setPageContext } from '@/lib/pageContext'
 import { Upload, FileText, Image, File, X, Loader2, Eye, RefreshCw, Search, Filter, ChevronDown, ChevronUp, Building2, Tag, Brain } from 'lucide-react'
 
 const T = {
-  bg: 'transparent', surface: 'rgba(238,238,238,0.65)', surfaceHover: 'rgba(238,232,220,0.80)',
-  border: 'rgba(167,139,250,0.08)', borderHover: 'rgba(238,232,220,0.70)', borderSubtle: 'rgba(25,25,25,0.40)',
-  text: 'rgba(238,232,220,0.95)', textSecondary: 'rgba(167,139,250,0.55)', textTertiary: 'rgba(238,238,238,0.32)',
-  accent: 'rgba(167,139,250,0.12)', accentSoft: 'rgba(25,25,25,0.40)',
+  bg: 'transparent', surface: 'var(--foreground)', surfaceHover: 'rgba(238,232,220,0.80)',
+  border: 'var(--accent)', borderHover: 'rgba(238,232,220,0.70)', borderSubtle: 'rgba(25,25,25,0.40)',
+  text: 'rgba(238,232,220,0.95)', textSecondary: 'var(--ring)', textTertiary: 'var(--muted-foreground)',
+  accent: 'var(--accent)', accentSoft: 'rgba(25,25,25,0.40)',
   blue: '#007AFF', red: '#FF3B30', green: '#34C759', yellow: '#FF9500', purple: '#AF52DE',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 }
@@ -148,7 +148,7 @@ export default function Documents({ user }) {
     return true
   })
 
-  const cardStyle = { background: 'rgba(25,25,25,0.55)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', borderRadius: 16, border: '0.5px solid rgba(167,139,250,0.50)', boxShadow: 'inset 0 1px 0 rgba(167,139,250,0.50), 0 4px 24px rgba(0,0,0,0.2)', padding: 16, transition: 'all 0.2s' }
+  const cardStyle = { background: 'rgba(25,25,25,0.55)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', borderRadius: 16, border: '0.5px solid var(--ring)', boxShadow: 'inset 0 1px 0 var(--ring), 0 4px 24px rgba(0,0,0,0.2)', padding: 16, transition: 'all 0.2s' }
   const pillStyle = (color) => ({ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 50, fontSize: 11, fontWeight: 500, background: `${color}12`, color, fontFamily: T.font })
   const inputStyle = { height: 36, borderRadius: 50, border: `1.5px solid ${T.border}`, padding: '0 10px', fontSize: 13, color: T.text, fontFamily: T.font, outline: 'none', background: T.surface }
 
@@ -163,10 +163,10 @@ export default function Documents({ user }) {
           position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(25,25,25,0.50)',
           backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          border: '2px dashed rgba(167,139,250,0.35)', borderRadius: 18, margin: 8,
+          border: '2px dashed var(--ring)', borderRadius: 18, margin: 8,
           pointerEvents: 'none',
         }}>
-          <Upload size={40} color="rgba(167,139,250,0.12)" style={{ marginBottom: 12, opacity: 0.7 }} />
+          <Upload size={40} color="var(--accent)" style={{ marginBottom: 12, opacity: 0.7 }} />
           <p style={{ fontSize: 17, fontWeight: 400, color: T.text }}>Drop file to upload</p>
           <p style={{ fontSize: 13, color: T.textTertiary, marginTop: 4 }}>PDF, PPTX, DOCX, images, text files</p>
         </div>
