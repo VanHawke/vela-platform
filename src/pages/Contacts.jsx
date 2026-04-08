@@ -79,7 +79,13 @@ export default function Contacts({ user }) {
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
   useEffect(() => { setPage(0) }, [search])
 
-  const displayName = (c) => [c.firstName, c.lastName].filter(Boolean).join(' ') || 'Unnamed'
+  const cleanName = (s) => (s || '').replace(/^[^\p{L}]+/u, '').trim()
+  const parseName = (c) => {
+    let f = cleanName(c.firstName), l = cleanName(c.lastName)
+    if (!f && l && l.includes(' ')) { const p = l.split(/\s+/); f = p[0]; l = p.slice(1).join(' ') }
+    return { first: f, last: l }
+  }
+  const displayName = (c) => { const { first, last } = parseName(c); return [first, last].filter(Boolean).join(' ') || 'Unnamed' }
 
   const glass = { padding: '12px 20px', borderRadius: 20, background: 'rgba(25,25,25,0.40)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', border: '0.5px solid rgba(167,139,250,0.50)', boxShadow: 'inset 0 1px 0 rgba(167,139,250,0.10), 0 8px 32px rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
   const inputStyle = { width: '100%', background: 'rgba(25,25,25,0.40)', border: '0.5px solid rgba(167,139,250,0.50)', borderRadius: 50, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }

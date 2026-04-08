@@ -61,7 +61,27 @@ export default function ContactDetail() {
     load()
   }
 
-  const displayName = (c) => [c.firstName, c.lastName].filter(Boolean).join(' ') || 'Unnamed'
+  // Strip emoji + symbol prefixes, parse "{emoji} First Last" patterns from corrupted scraped data
+  function cleanName(s) {
+    if (!s) return ''
+    // Remove leading emoji/symbols/punctuation, keep letters/spaces/hyphens/apostrophes
+    return s.replace(/^[^\p{L}]+/u, '').trim()
+  }
+  function parseDisplayName(c) {
+    let first = cleanName(c.firstName || '')
+    let last = cleanName(c.lastName || '')
+    // If firstName empty but lastName looks like full name, split it
+    if (!first && last && last.includes(' ')) {
+      const parts = last.split(/\s+/)
+      first = parts[0]
+      last = parts.slice(1).join(' ')
+    }
+    return { first, last }
+  }
+  const displayName = (c) => {
+    const { first, last } = parseDisplayName(c)
+    return [first, last].filter(Boolean).join(' ') || 'Unnamed'
+  }
 
   const daysAgo = (dateStr) => {
     if (!dateStr) return null
@@ -267,8 +287,8 @@ export default function ContactDetail() {
                 <p style={sectionTitle}>Contact Details</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                   {[
-                    { label: 'First Name', value: contact.firstName },
-                    { label: 'Last Name', value: contact.lastName },
+                    { label: 'First Name', value: parseDisplayName(contact).first },
+                    { label: 'Last Name', value: parseDisplayName(contact).last },
                     { label: 'Job Title', value: contact.title },
                     { label: 'Company', value: contact.company, onClick: orgId ? () => nav(`/organisations?org=${orgId}`) : null },
                     { label: 'Email', value: contact.email, link: contact.email ? `mailto:${contact.email}` : null },

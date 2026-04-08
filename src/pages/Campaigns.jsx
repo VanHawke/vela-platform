@@ -23,6 +23,14 @@ function timeAgo(d) {
 }
 function pct(n, d) { return d > 0 ? Math.round((n / d) * 100) : 0 }
 
+// Strip emoji/symbol prefixes from corrupted scraped names
+function cleanName(s) { return (s || '').replace(/^[^\p{L}]+/u, '').trim() }
+function parseContactName(name, email) {
+  const cleaned = cleanName(name)
+  if (cleaned) return cleaned
+  return email?.split('@')[0] || 'Unknown'
+}
+
 // Status pill colors per prospect status
 function statusBadge(status) {
   const map = {
@@ -146,7 +154,7 @@ export default function Campaigns({ user }) {
       return {
         id: e.id,
         contact_email: e.contact_email,
-        contact_name: e.contact_name || e.contact_email?.split('@')[0] || 'Unknown',
+        contact_name: parseContactName(e.contact_name, e.contact_email),
         company: e.company || (e.contact_email?.split('@')[1] || ''),
         title: e.title || '',
         current_step: e.current_step || 1,
@@ -170,22 +178,26 @@ export default function Campaigns({ user }) {
 
   useEffect(() => { if (selectedId) loadProspects(selectedId) }, [selectedId, loadProspects])
 
-  // Realtime subscription — refresh prospects when queue or enrollments change
+  // Realtime subscription — refresh prospects when queue or enrollments change,
+  // refresh campaigns list when any sequence's is_active flag flips so the rail dot updates
   useEffect(() => {
     if (!selectedId) return
     const ch = supabase
       .channel(`campaign_${selectedId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'kiko_sequence_enrollments', filter: `sequence_id=eq.${selectedId}` }, () => loadProspects(selectedId))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'kiko_outreach_queue' }, () => loadProspects(selectedId))
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'kiko_sequences' }, () => loadCampaigns())
       .subscribe()
     return () => { supabase.removeChannel(ch) }
-  }, [selectedId, loadProspects])
+  }, [selectedId, loadProspects, loadCampaigns])
 
   // ── actions ──
   async function toggleCampaign(seq) {
     const newState = !seq.is_active
     await supabase.from('kiko_sequences').update({ is_active: newState }).eq('id', seq.id)
     setCampaigns(prev => prev.map(c => c.id === seq.id ? { ...c, is_active: newState } : c))
+    // Also reload to make sure rail sort + dot reflects truth
+    loadCampaigns()
   }
 
   async function pauseProspect(p) {

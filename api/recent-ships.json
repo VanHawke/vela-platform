@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-08T16:58:54.100Z",
+  "generated_at": "2026-04-08T18:40:44.315Z",
   "commits": [
+    {
+      "hash": "d828ca2",
+      "subject": "(1) Home layout centred — top spacer 0.8->0.5, bottom 0.3->0.5, removed overflow:auto, added justifyContent:center, padding 20/24/40. Fixes iPad cut-off. (2) 5 dead pages deleted: Sequences.jsx, Calen",
+      "when": "2 hours ago"
+    },
     {
       "hash": "6d4138a",
       "subject": "loadUserSignatures: match by sendAsEmail (alias) instead of always picking primary. Pass FROM_ADDRESS=sunny@vanhawke.agency from gmail-draft + cron-sequence-enqueue so we get the Van Hawke Agency sign",
-      "when": "13 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "27281f8",
       "subject": "gmail-draft: use canonical getGoogleToken helper instead of homegrown token refresh logic. Same path the cron uses successfully — auto-refreshes with 5min buffer.",
-      "when": "67 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "d289f7a",
       "subject": "(1) gmail-draft.js: removed hardcoded text-only signature stub, now imports loadUserSignatures + wrapEmailBody from email-format.js, pulls real Gmail signature via sendAs API (same as cron path). Adde",
-      "when": "71 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "fdabbf3",
       "subject": "(1) SignatureEditor: handles data:/blob:/cid: image refs, reads clipboardData.items for Gmail PNG attachments, manual upload fallback button. (2) Top nav: pill text contrast lifted from rgba(238,238,2",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "869873e",
       "subject": "(1) SignatureEditor: single contentEditable paste box. Paste your full Gmail/Apple Mail signature including images — base64 inline images auto-upload to Supabase Storage in background and src is rewri",
-      "when": "2 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "bac1607",
       "subject": "(1) lift bg from #0D0D0F to #1C1C1F charcoal — better text contrast across all pages, (2) signature image upload: file picker uploads to Supabase Storage brand-assets/signatures/, returns public URL, ",
-      "when": "2 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "119661b",
       "subject": "Campaigns.jsx: Prospecting view with left rail (campaign list) + main table (one row per prospect: name, company, title, step, engagement, last action, next, status, actions). Real Supabase data, real",
-      "when": "2 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "018f9bc",
       "subject": "restore Campaigns.jsx (Lemlist-style left rail + main canvas) at /sequences and /campaigns routes. Rewired data layer from deleted /api/lemlist-data to direct Supabase queries against kiko_sequences/k",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "4d1c0d0",
       "subject": "REVERT: roll frontend back to b04c353 (last working state). Removes all Block C theme work, preview routes, mass-conversion scripts. Backend (Bible, multi-task, learning loops, voice) stays intact.",
-      "when": "4 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "80c5f05",
       "subject": "fix: remove global * { margin/padding: 0 } reset that was nuking all Tailwind padding/margin utilities. Tailwind preflight handles resets correctly. This was the root cause of broken layout in HomePre",
-      "when": "4 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "411cbbd",
       "subject": "Block C preview: HomePreview.jsx mockup using canonical shadcn primitives — Card, Button, Tailwind classes only. Mounted at /preview/home (public route, no auth) for design sign-off before rebuilding ",
-      "when": "4 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "15682e6",
       "subject": "Block C: restore canonical shadcn primitives. card.jsx and button.jsx had been clobbered with inline-style versions — restored to forwardRef + cn() + Tailwind classes + cva variants. Required for prop",
-      "when": "4 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "f5b5f48",
       "subject": "fix: dark amber is the default theme. Components were designed for dark backgrounds — light mode requires per-component conversion that isn't done. Storage key bumped to v3 to invalidate stale 'light'",
-      "when": "5 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "ed9d442",
       "subject": "theme convert pass 3: dark glass surfaces (rgba 25/20/0) + hex leftovers (#3A3A3E #555558 #191919) → tokens. KikoChat input bar should now render correctly on light bg.",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "9cbe3ce",
       "subject": "Block C: full theme conversion. 62 files swept clean of hardcoded colors. (1) src/index.css now contains user's exact amber theme verbatim — :root light, .dark dark, @theme inline. (2) src/lib/tokens.",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "e39603e",
       "subject": "Block C rebuild start: index.css contains exact amber theme spec from user. tokens.js is single source of truth — every component imports from here. theme.js is now a re-export shim for backward compa",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "c841fd6",
       "subject": "Block C correction: dark amber is default :root, light amber opt-in via .light class. Components were designed for dark mode (297 hardcoded white-on-dark rgba values across 30+ files), so dark stays t",
-      "when": "6 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "1c5e8d3",
       "subject": "Block C: amber-minimal theme system. src/index.css holds full token sets for :root (light) + .dark. Inter/JetBrains Mono/Source Serif 4 loaded from Google Fonts. src/lib/theme.js exports T (named toke",
-      "when": "6 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "97ac6eb",
       "subject": "audit fix: handleSubmit (streaming path) now also persists to kiko_conversations + kiko_messages so the multi-task sidebar reflects all chat history. closes the gap where sendAsync existed but was nev",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "0ba3649",
-      "subject": "fix Q5: capture-recent-ships.js writes to api/ folder so Vercel bundles it with serverless functions. kiko-self-knowledge.js tries multiple paths (api/, root, public/) since Vercel cwd is unreliable a",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     }
   ]
 }
