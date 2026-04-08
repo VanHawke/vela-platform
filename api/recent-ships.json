@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-08T14:34:13.706Z",
+  "generated_at": "2026-04-08T14:41:50.235Z",
   "commits": [
+    {
+      "hash": "119661b",
+      "subject": "Campaigns.jsx: Prospecting view with left rail (campaign list) + main table (one row per prospect: name, company, title, step, engagement, last action, next, status, actions). Real Supabase data, real",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "018f9bc",
       "subject": "restore Campaigns.jsx (Lemlist-style left rail + main canvas) at /sequences and /campaigns routes. Rewired data layer from deleted /api/lemlist-data to direct Supabase queries against kiko_sequences/k",
-      "when": "16 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "4d1c0d0",
@@ -29,7 +34,7 @@
     {
       "hash": "f5b5f48",
       "subject": "fix: dark amber is the default theme. Components were designed for dark backgrounds — light mode requires per-component conversion that isn't done. Storage key bumped to v3 to invalidate stale 'light'",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "ed9d442",
@@ -64,7 +69,7 @@
     {
       "hash": "0ba3649",
       "subject": "fix Q5: capture-recent-ships.js writes to api/ folder so Vercel bundles it with serverless functions. kiko-self-knowledge.js tries multiple paths (api/, root, public/) since Vercel cwd is unreliable a",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "8c6e70d",
@@ -94,11 +99,6 @@
     {
       "hash": "0da819a",
       "subject": "drop legacy cron-self-improvement + cron-self-reflection stubs (replaced by cron-self-awareness + cron-rule-promotion). frees vercel function slot.",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "f3f19f5",
-      "subject": "Block A.5 + Block E: (A.5) Build-time git log capture — scripts/capture-recent-ships.js runs in npm build, writes recent-ships.json that kiko-self-knowledge.js reads. Fixes Q5 'what did you ship' perm",
       "when": "5 hours ago"
     }
   ]

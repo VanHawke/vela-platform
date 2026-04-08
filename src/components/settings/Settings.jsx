@@ -119,6 +119,33 @@ export default function Settings({ user }) {
     } catch {}
   }
 
+  const [sigUploading, setSigUploading] = useState(false)
+  const [sigUploadError, setSigUploadError] = useState('')
+
+  const uploadSignatureImage = async (file) => {
+    if (!file) return
+    setSigUploadError('')
+    if (!file.type.startsWith('image/')) { setSigUploadError('Only image files'); return }
+    if (file.size > 2 * 1024 * 1024) { setSigUploadError('Image too large (max 2MB)'); return }
+    setSigUploading(true)
+    try {
+      const ext = file.name.split('.').pop() || 'png'
+      const path = `signatures/${user?.id || 'anon'}-${Date.now()}.${ext}`
+      const { error: upErr } = await supabase.storage.from('brand-assets').upload(path, file, { contentType: file.type, upsert: true })
+      if (upErr) throw upErr
+      const { data } = supabase.storage.from('brand-assets').getPublicUrl(path)
+      const publicUrl = data?.publicUrl
+      if (!publicUrl) throw new Error('No public URL returned')
+      const imgTag = `<img src="${publicUrl}" width="120" alt="logo" />`
+      // Append to current warm signature, or replace if empty
+      setSettings(p => ({ ...p, email_signature_html: (p.email_signature_html || '') + (p.email_signature_html ? '\n' : '') + imgTag }))
+    } catch (e) {
+      setSigUploadError(e.message || 'Upload failed')
+    } finally {
+      setSigUploading(false)
+    }
+  }
+
   const saveSettings = async (updates) => {
     // Pre-flight: warn about Gmail inline images that won't render outside email
     const sigFields = [updates.email_signature_html, updates.email_signature_cold_html, updates.email_signature].filter(Boolean)
@@ -367,7 +394,14 @@ export default function Settings({ user }) {
 
               {/* Warm signature (full + logo) — TEXTAREA: avoids contentEditable+React reconciler crash */}
               <label style={{ ...labelStyle, marginTop: 4 }}>Warm signature HTML (used after a contact has replied)</label>
-              <p style={{ fontSize: 11, color: T.textTertiary, marginTop: 0, marginBottom: 6, fontFamily: T.font }}>Paste raw HTML. <strong style={{ color: T.text }}>Tip:</strong> in Gmail, right-click your logo → Copy image address, then use <code style={{ background: 'rgba(255,255,255,0.04)', padding: '1px 5px', borderRadius: 3 }}>&lt;img src="https://..." width="120" /&gt;</code> instead of cid: references.</p>
+              <p style={{ fontSize: 11, color: T.textTertiary, marginTop: 0, marginBottom: 6, fontFamily: T.font }}>Paste raw HTML, or upload a logo image to insert an &lt;img&gt; tag automatically.</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(167,139,250,0.30)', background: 'rgba(167,139,250,0.10)', color: '#a78bfa', fontSize: 11, fontWeight: 500, cursor: sigUploading ? 'wait' : 'pointer', fontFamily: T.font }}>
+                  {sigUploading ? 'Uploading...' : '+ Upload logo image'}
+                  <input type="file" accept="image/*" disabled={sigUploading} onChange={e => uploadSignatureImage(e.target.files?.[0])} style={{ display: 'none' }} />
+                </label>
+                {sigUploadError && <span style={{ fontSize: 11, color: '#f87171' }}>{sigUploadError}</span>}
+              </div>
               <textarea
                 value={settings.email_signature_html || ''}
                 onChange={e => setSettings(p => ({ ...p, email_signature_html: e.target.value }))}

@@ -3,7 +3,7 @@
 // Matches the exact design language from the campaign dashboard mockups
 
 export const T = {
-  bg: '#0D0D0F',
+  bg: '#1C1C1F',
   card: '#141416',
   surface: '#1A1A1E',
   surfaceHover: '#1E1E22',
