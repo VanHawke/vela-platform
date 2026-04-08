@@ -6,26 +6,7 @@ import { setPageContext } from '@/lib/pageContext'
 import { Plus, Sparkles, X, Mail, Linkedin, Play, Pause, Users, ChevronRight, GitBranch, Rocket } from 'lucide-react'
 
 // Design tokens — hardcoded to match mockup renders
-const C = {
-  bg: '#0D0D0F',
-  card: '#141416',
-  cardHover: '#1A1A1E',
-  border: 'rgba(255,255,255,0.06)',
-  borderHover: 'rgba(255,255,255,0.10)',
-  text: 'rgba(245,245,248,0.92)',
-  textSec: 'rgba(245,245,248,0.55)',
-  textTer: 'rgba(245,245,248,0.32)',
-  textMut: 'rgba(245,245,248,0.16)',
-  purple: '#A78BFA',
-  teal: '#2DD4BF',
-  green: '#34D399',
-  red: '#F87171',
-  amber: '#FBBF24',
-  blue: '#60A5FA',
-  linkedin: '#0077B5',
-  font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-  r: 8,
-}
+import { C } from '@/lib/theme'
 const pct = (n, d) => d > 0 ? Math.round((n / d) * 100) : 0
 
 function Badge({ label, color }) {

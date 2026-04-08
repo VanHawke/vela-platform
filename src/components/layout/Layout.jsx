@@ -2,27 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
-// Design tokens — hardcoded (matching Sequences.jsx)
-const C = {
-  bg: '#0D0D0F',
-  card: '#141416',
-  cardHover: '#1A1A1E',
-  border: 'rgba(255,255,255,0.06)',
-  borderHover: 'rgba(255,255,255,0.10)',
-  text: 'rgba(245,245,248,0.92)',
-  textSec: 'rgba(245,245,248,0.55)',
-  textTer: 'rgba(245,245,248,0.32)',
-  textMut: 'rgba(245,245,248,0.16)',
-  purple: '#A78BFA',
-  teal: '#2DD4BF',
-  green: '#34D399',
-  red: '#F87171',
-  amber: '#FBBF24',
-  blue: '#60A5FA',
-  linkedin: '#0077B5',
-  font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-  r: 8,
-}
+import { C } from '@/lib/theme'
 import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X, Zap, Mail, Filter, Layers, Database, Compass } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
 import KikoVoice from '../kiko/KikoVoice'

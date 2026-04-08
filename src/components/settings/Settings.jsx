@@ -715,6 +715,51 @@ export default function Settings({ user }) {
         {/* Appearance */}
         {tab === 'Appearance' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Theme picker — amber-minimal Light/Dark/System */}
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Theme</h3>
+              <p style={{ fontSize: 13, color: T.textTertiary, lineHeight: 1.5, margin: '0 0 16px', fontFamily: T.font }}>
+                Switch between light amber, dark amber, or follow your system preference.
+              </p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {[
+                  { id: 'light', label: 'Light Amber', swatch: '#FAF8F4', accent: '#B8651C' },
+                  { id: 'dark', label: 'Dark Amber', swatch: '#0E0B07', accent: '#FBBF24' },
+                  { id: 'system', label: 'System', swatch: 'linear-gradient(135deg, #FAF8F4 50%, #0E0B07 50%)', accent: '#B8651C' },
+                ].map(opt => {
+                  const current = (typeof window !== 'undefined') ? (localStorage.getItem('kiko_theme') || 'light') : 'light'
+                  const isActive = current === opt.id
+                  return (
+                    <button
+                      key={opt.id}
+                      onClick={async () => {
+                        const { setTheme } = await import('@/lib/theme')
+                        setTheme(opt.id)
+                        // Force a re-render by updating settings state
+                        setSettings(p => ({ ...p, _themeRefresh: Date.now() }))
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '12px 14px',
+                        background: isActive ? T.accentSoft : 'transparent',
+                        border: `1px solid ${isActive ? T.accent : T.border}`,
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        fontFamily: T.font,
+                        transition: 'all 0.15s'
+                      }}
+                    >
+                      <div style={{ width: 22, height: 22, borderRadius: '50%', background: opt.swatch, border: `1px solid ${T.border}`, flexShrink: 0 }} />
+                      <span style={{ fontSize: 13, color: isActive ? T.accent : T.text, fontWeight: isActive ? 500 : 400 }}>{opt.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
             <div style={cardStyle}>
               <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Branding</h3>
               <p style={{ fontSize: 13, color: T.textTertiary, lineHeight: 1.5, margin: '0 0 16px', fontFamily: T.font }}>
