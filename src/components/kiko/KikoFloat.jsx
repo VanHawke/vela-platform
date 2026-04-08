@@ -440,7 +440,38 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
       const kikoMsg = { role: 'assistant', content: full }
       setMessages(prev => [...prev, kikoMsg]); setStreamText('')
       const allMsgs = [...messages, userMsg, kikoMsg]
-      // Save conversation BEFORE navigation (navigation reloads the page)
+
+      // ═══ Multi-task: also persist to kiko_conversations + kiko_messages so the sidebar populates ═══
+      try {
+        if (user?.id) {
+          let convForSidebar = activeConvId
+          if (!convForSidebar) {
+            const { data: newConv } = await supabase.from('kiko_conversations').insert({
+              user_id: user.id,
+              title: msg.slice(0, 80),
+              status: 'done',
+              unread: false,
+              last_message_at: new Date().toISOString(),
+              message_count: 2,
+            }).select('id').single()
+            if (newConv?.id) { convForSidebar = newConv.id; setActiveConvId(newConv.id) }
+          } else {
+            await supabase.from('kiko_conversations').update({
+              status: 'done',
+              last_message_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }).eq('id', convForSidebar)
+          }
+          if (convForSidebar) {
+            await supabase.from('kiko_messages').insert([
+              { conversation_id: convForSidebar, role: 'user', content: msg },
+              { conversation_id: convForSidebar, role: 'assistant', content: full },
+            ])
+          }
+        }
+      } catch (e) { console.error('[KikoFloat] sidebar persist failed:', e) }
+
+      // Legacy persistence (kept for backward compat with old conversations table)
       let savedConvId = convId
       if (user?.id) {
         const orgId = user?.app_metadata?.org_id
