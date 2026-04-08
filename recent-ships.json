@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-08T09:22:39.722Z",
+  "generated_at": "2026-04-08T09:35:00.645Z",
   "commits": [
+    {
+      "hash": "0da819a",
+      "subject": "drop legacy cron-self-improvement + cron-self-reflection stubs (replaced by cron-self-awareness + cron-rule-promotion). frees vercel function slot.",
+      "when": "12 minutes ago"
+    },
     {
       "hash": "f3f19f5",
       "subject": "Block A.5 + Block E: (A.5) Build-time git log capture — scripts/capture-recent-ships.js runs in npm build, writes recent-ships.json that kiko-self-knowledge.js reads. Fixes Q5 'what did you ship' perm",
-      "when": "74 seconds ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "6e71c65",
       "subject": "fix: remove orphaned brace from KikoFloat voice transcript wiring",
-      "when": "9 minutes ago"
+      "when": "21 minutes ago"
     },
     {
       "hash": "024ef43",
       "subject": "Block A.5 + Block D wiring: (A.5) intent-classifier no longer routes ship/commit/release questions to code_review — they now route to general so the git log injection in self-knowledge surfaces. (D) V",
-      "when": "12 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "e274dd8",
       "subject": "Block A: Kiko Bible v1.0 wired into system prompt. KIKO_BIBLE.md governing layer loaded from disk on every request via kiko-self-knowledge.js. Self-critique protocol + behavioural permission added to ",
-      "when": "59 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "6723a9b",
       "subject": "Self-awareness feedback loop: kiko_meta_learning table + cron-self-awareness (nightly 2:30am) detects repetition loops in learning_log (5+ identical Q→A) and writes refusal_directive. kiko-self-knowle",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "b04c353",
       "subject": "Settings signature card: replace contentEditable+dangerouslySetInnerHTML with plain textarea (avoids React reconciler crash on Gmail HTML paste + onBlur/onClick race that prevented save). Live preview",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "95bb361",
@@ -54,7 +59,7 @@
     {
       "hash": "5026bfb",
       "subject": "Step 7: Wire wrapEmailBody + voice profile + signatures into cron-sequence-enqueue. Remove hardcoded sig from cron-sequence-sender (wrapper handles it). Re-add 3 sequencer cron schedules: enqueue 6am ",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "1e07866",
@@ -74,7 +79,7 @@
     {
       "hash": "ae35121",
       "subject": "fix: voice learning use labelIds=SENT (q=in:sent fails silently); selftest accept VITE_SUPABASE_URL fallback",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "6a1587a",
@@ -94,12 +99,7 @@
     {
       "hash": "057236a",
       "subject": "fix(vercel): remove deleted lemlist files from functions block (frees 2 of 50 slots)",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "56df091",
-      "subject": "Step 3: strip & consolidate per KIKO_REALITY.md audit",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     }
   ]
 }

@@ -47,13 +47,15 @@ export default async function handler(req, res) {
       body: JSON.stringify({ conversation_id: convId, role: 'user', content: message })
     });
 
-    // 3. Return immediately so the user can fire another conversation
-    res.status(202).json({ ok: true, conversation_id: convId, status: 'processing' });
-
-    // 4. Background work — run Kiko, then write the response
-    // CRITICAL: this runs after res.json() returns. Vercel keeps the function alive
-    // up to maxDuration (300s) but we MUST not await anything that holds res.
-    processInBackground(convId, message, userEmail, currentPage, user_id).catch(async (e) => {
+    // 3. AWAIT the background work BEFORE responding.
+    // Vercel serverless kills the function the moment res.json() completes —
+    // fire-and-forget after res.json() does NOT work on Vercel. We must await,
+    // then respond. The "parallel" feel comes from the client firing multiple
+    // requests in parallel against this endpoint, not from Node continuing after res.
+    // Each request runs in its own serverless instance, so they're genuinely concurrent.
+    try {
+      await processInBackground(convId, message, userEmail, currentPage, user_id);
+    } catch (e) {
       console.error('[KikoAsync] Background error:', e);
       try {
         await sbFetch('kiko_messages', {
@@ -65,7 +67,8 @@ export default async function handler(req, res) {
           body: JSON.stringify({ status: 'error', unread: true, last_message_at: new Date().toISOString() })
         });
       } catch {}
-    });
+    }
+    return res.status(200).json({ ok: true, conversation_id: convId, status: 'done' });
   } catch (err) {
     console.error('[KikoAsync] Fatal:', err);
     return res.status(500).json({ error: err.message });
