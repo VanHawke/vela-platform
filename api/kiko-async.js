@@ -80,19 +80,45 @@ async function processInBackground(convId, message, userEmail, currentPage, user
   const history = await sbFetch(`kiko_messages?conversation_id=eq.${convId}&order=created_at&limit=40&select=role,content`);
   const conversationHistory = (history || []).slice(0, -1).map(m => ({ role: m.role, content: m.content }));
 
-  // Call /api/kiko via internal fetch — same response handling as the streaming endpoint
-  // but we collect the full text instead of streaming to client
+  // Call /api/kiko via internal fetch — properly consume the SSE stream
   const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://vela-platform-one.vercel.app';
   const r = await fetch(`${baseUrl}/api/kiko`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message, userEmail, currentPage, conversationHistory })
   });
-  const text = await r.text();
-  const deltas = text.split('\n').filter(l => l.startsWith('data: ')).map(l => {
-    try { return JSON.parse(l.slice(6)) } catch { return null }
-  }).filter(Boolean);
-  const fullResponse = deltas.map(d => d.delta || '').join('').trim() || 'No response';
+
+  // Read the SSE stream chunk by chunk until done
+  const reader = r.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let fullResponse = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    // Split on newlines, keep last incomplete line in buffer
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith('data: ')) continue;
+      const payload = trimmed.slice(6);
+      if (payload === '[DONE]') continue;
+      try {
+        const parsed = JSON.parse(payload);
+        if (parsed.delta) fullResponse += parsed.delta;
+      } catch {}
+    }
+  }
+  // Process any remaining buffered line
+  if (buffer.trim().startsWith('data: ')) {
+    try {
+      const parsed = JSON.parse(buffer.trim().slice(6));
+      if (parsed.delta) fullResponse += parsed.delta;
+    } catch {}
+  }
+  fullResponse = fullResponse.trim() || 'No response';
 
   // Persist assistant message + flip conversation to done with unread badge
   await sbFetch('kiko_messages', {
