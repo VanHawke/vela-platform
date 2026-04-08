@@ -80,66 +80,21 @@ async function processInBackground(convId, message, userEmail, currentPage, user
   const history = await sbFetch(`kiko_messages?conversation_id=eq.${convId}&order=created_at&limit=40&select=role,content`);
   const conversationHistory = (history || []).slice(0, -1).map(m => ({ role: m.role, content: m.content }));
 
-  // Call /api/kiko via internal fetch — collect ALL chunks to completion
+  // Call /api/kiko in nostream mode — returns plain JSON instead of SSE.
+  // This avoids Vercel's broken server-to-server SSE consumption.
   const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://vela-platform-one.vercel.app';
-  console.log('[KikoAsync] calling internal kiko with msg:', message?.slice(0, 80));
-  const r = await fetch(`${baseUrl}/api/kiko`, {
+  const r = await fetch(`${baseUrl}/api/kiko?nostream=1`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
-    body: JSON.stringify({ message, userEmail, currentPage, conversationHistory })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, userEmail, currentPage, conversationHistory, nostream: true })
   });
-  console.log('[KikoAsync] response status:', r.status, 'has body:', !!r.body);
-
-  let fullResponse = '';
-  let chunkCount = 0;
-
-  if (r.body && typeof r.body.getReader === 'function') {
-    // Streaming path
-    const reader = r.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      chunkCount++;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-      for (const line of lines) {
-        const t = line.trim();
-        if (!t.startsWith('data: ')) continue;
-        const p = t.slice(6);
-        if (p === '[DONE]') continue;
-        try {
-          const parsed = JSON.parse(p);
-          if (parsed.delta) fullResponse += parsed.delta;
-        } catch {}
-      }
-    }
-    if (buffer.trim().startsWith('data: ')) {
-      try {
-        const parsed = JSON.parse(buffer.trim().slice(6));
-        if (parsed.delta) fullResponse += parsed.delta;
-      } catch {}
-    }
-  } else {
-    // Fallback: read as text (for runtimes that don't expose body reader)
-    const text = await r.text();
-    chunkCount = text.split('\n').length;
-    for (const line of text.split('\n')) {
-      const t = line.trim();
-      if (!t.startsWith('data: ')) continue;
-      const p = t.slice(6);
-      if (p === '[DONE]') continue;
-      try {
-        const parsed = JSON.parse(p);
-        if (parsed.delta) fullResponse += parsed.delta;
-      } catch {}
-    }
+  let fullResponse = 'No response';
+  try {
+    const data = await r.json();
+    if (data?.response) fullResponse = data.response.trim() || 'No response';
+  } catch (e) {
+    console.error('[KikoAsync] JSON parse failed:', e.message);
   }
-
-  console.log('[KikoAsync] collected response:', fullResponse.length, 'chars from', chunkCount, 'chunks');
-  fullResponse = fullResponse.trim() || 'No response';
 
   // Persist assistant message + flip conversation to done with unread badge
   await sbFetch('kiko_messages', {

@@ -537,13 +537,33 @@ export default async function handler(req, res) {
     + `\n\n[CRITICAL IDENTITY: The user you are speaking with RIGHT NOW is ${userConfig.display_name}. Address them as ${userConfig.display_name.split(' ')[0]}. Do NOT use any other name.]`
     + (isSuperAdmin ? '' : `\n\n[MEMORY ISOLATION — CRITICAL: You may have memories stored from other users who share this system. You MUST completely ignore ALL memories that reference people, families, children, personal details, locations, or private matters that were NOT told to you by ${userConfig.display_name} in THIS conversation or in the personal context section above. If you have NO personal context items for this user, then you know NOTHING about their personal life — do not reference any memories about daughters, children, family, schools, addresses, books, legal matters, or any other personal details. Any such memories belong to a DIFFERENT user and are CONFIDENTIAL. Respond only with "I don't have any personal information about you yet" when asked about personal matters you have no data for.]`);
 
+  // ── nostream mode (for kiko-async internal calls) — buffer SSE deltas, return JSON ──
+  // This avoids Vercel's SSE-over-fetch consumption issue when one serverless function
+  // calls another. Browser clients still get streaming.
+  const noStream = req.query?.nostream === '1' || req.body?.nostream === true;
+  const sseBuffer = [];
   // ── SSE setup ──
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache, no-transform');
-  res.setHeader('Connection', 'keep-alive');
-  res.setHeader('X-Vercel-No-Buffering', '1');
-  if (res.flushHeaders) res.flushHeaders();
-  const write = (d) => { try { res.write(`data: ${JSON.stringify(d)}\n\n`); } catch {} };
+  if (!noStream) {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Vercel-No-Buffering', '1');
+    if (res.flushHeaders) res.flushHeaders();
+  }
+  const write = (d) => {
+    if (noStream) { sseBuffer.push(d); return; }
+    try { res.write(`data: ${JSON.stringify(d)}\n\n`); } catch {}
+  };
+  // finishResponse: in noStream mode returns buffered JSON, in stream mode ends SSE
+  const finishResponse = () => {
+    if (noStream) {
+      const responseText = sseBuffer.map(d => d.delta || '').join('');
+      try { return res.status(200).json({ response: responseText, buffered_events: sseBuffer.length }); } catch {}
+      return;
+    }
+    try { res.write('data: [DONE]\n\n'); } catch {}
+    try { res.end(); } catch {}
+  };
 
   // Watchdog: if handler takes >55s, force-send an error and close
   let finished = false;
@@ -551,7 +571,7 @@ export default async function handler(req, res) {
     if (!finished) {
       finished = true;
       write({ delta: '\n\nRequest timed out. Try a simpler question or try again.' });
-      try { res.write('data: [DONE]\n\n'); res.end(); } catch {}
+      finishResponse();
     }
   }, 115000);
 
@@ -631,8 +651,7 @@ export default async function handler(req, res) {
       write({ delta: `Opening ${target.replace(/-/g, ' ')}.` });
       write({ meta: { done: true, model: 'classifier', intent: 'navigate', version: 'v16.1' } });
       finished = true; clearTimeout(watchdog);
-      res.write('data: [DONE]\n\n');
-      res.end();
+      finishResponse();
       return;
     }
 
@@ -651,8 +670,7 @@ export default async function handler(req, res) {
       }
       write({ meta: { done: true, model: MODEL, intent: 'screen', version: 'v16.1' } });
       finished = true; clearTimeout(watchdog);
-      res.write('data: [DONE]\n\n');
-      res.end();
+      finishResponse();
       return;
     }
 
@@ -1172,8 +1190,7 @@ DEAL STAGE MAPPING:
     finished = true; clearTimeout(watchdog);
     // Audit: log completion with duration
     auditLog('response_complete', { userId, userEmail, intent, durationMs: totalDuration, detail: `model=${actualModel} tools=${toolRounds} tokens=${usage.input_tokens||0}+${usage.output_tokens||0}` });
-    res.write('data: [DONE]\n\n');
-    res.end();
+    finishResponse();
 
     // ── Memory Engine: auto-extract facts (registered users only) ──
     const userMsgCount = messages.filter(m => m.role === 'user' && typeof m.content === 'string').length;
@@ -1249,7 +1266,6 @@ If nothing worth saving, return empty arrays.`,
     finished = true; clearTimeout(watchdog);
     try { logError('coordinator', err?.message || 'unknown', (message || '').slice(0, 100), 'critical'); } catch {}
     try { write({ delta: `\n\nSomething went wrong: ${err?.message || 'Unknown error'}. Try again.` }); } catch {}
-    try { res.write('data: [DONE]\n\n'); } catch {}
-    try { res.end(); } catch {}
+    try { finishResponse(); } catch {}
   }
 }
