@@ -195,7 +195,6 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
       voiceAssistantBufferRef.current = ''
     },
   })
-  })
   const [floatVoiceState, setFloatVoiceState] = useState({ speaking: false, status: 'connecting', energy: 0, pitch: 0 })
   const [fileUploading, setFileUploading] = useState(false)
   const [pendingFile, setPendingFile] = useState(null) // { file, previewUrl, name, type }
