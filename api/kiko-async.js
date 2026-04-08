@@ -75,25 +75,44 @@ export default async function handler(req, res) {
   }
 }
 
+// Direct in-process call to api/kiko.js — no HTTP, no Vercel function-to-function issues.
+// Builds fake req/res, lets the handler buffer in nostream mode, captures the JSON it would have written.
+async function callKikoInProcess({ message, userEmail, currentPage, conversationHistory }) {
+  const kikoModule = await import('./kiko.js');
+  const handler = kikoModule.default;
+  let captured = null;
+  const fakeReq = {
+    method: 'POST',
+    query: { nostream: '1' },
+    body: { message, userEmail, currentPage, conversationHistory, nostream: true }
+  };
+  const fakeRes = {
+    statusCode: 200,
+    headers: {},
+    setHeader(k, v) { this.headers[k] = v; },
+    flushHeaders() {},
+    write() {},  // ignored in nostream mode
+    end() {},
+    status(code) { this.statusCode = code; return this; },
+    json(obj) { captured = obj; return this; },
+    on() {},
+  };
+  await handler(fakeReq, fakeRes);
+  return captured?.response || '';
+}
+
 async function processInBackground(convId, message, userEmail, currentPage, user_id) {
   // Pull conversation history for shared-memory continuity
   const history = await sbFetch(`kiko_messages?conversation_id=eq.${convId}&order=created_at&limit=40&select=role,content`);
   const conversationHistory = (history || []).slice(0, -1).map(m => ({ role: m.role, content: m.content }));
 
-  // Call /api/kiko in nostream mode — returns plain JSON instead of SSE.
-  // This avoids Vercel's broken server-to-server SSE consumption.
-  const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://vela-platform-one.vercel.app';
-  const r = await fetch(`${baseUrl}/api/kiko?nostream=1`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, userEmail, currentPage, conversationHistory, nostream: true })
-  });
   let fullResponse = 'No response';
   try {
-    const data = await r.json();
-    if (data?.response) fullResponse = data.response.trim() || 'No response';
+    const responseText = await callKikoInProcess({ message, userEmail, currentPage, conversationHistory });
+    if (responseText && responseText.trim().length > 0) fullResponse = responseText.trim();
   } catch (e) {
-    console.error('[KikoAsync] JSON parse failed:', e.message);
+    console.error('[KikoAsync] In-process call failed:', e.message, e.stack);
+    fullResponse = `Error: ${e.message}`;
   }
 
   // Persist assistant message + flip conversation to done with unread badge

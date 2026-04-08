@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-04-08T09:51:26.915Z",
+  "generated_at": "2026-04-08T09:59:23.163Z",
   "commits": [
+    {
+      "hash": "2438094",
+      "subject": "kiko-async fix: api/kiko.js now supports ?nostream=1 — buffers SSE deltas and returns plain JSON {response, buffered_events}. kiko-async calls with nostream=1 and reads JSON body. Bypasses Vercel's br",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "2f8807c",
       "subject": "kiko-async: add diagnostic logging + handle both stream and text fallback paths",
-      "when": "10 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "7bf15fb",
       "subject": "kiko-async: properly consume SSE stream via reader. r.text() resolved with empty body before deltas streamed in. Now uses ReadableStream reader, decodes chunk-by-chunk, parses each data: line as it ar",
-      "when": "13 minutes ago"
+      "when": "21 minutes ago"
     },
     {
       "hash": "58bba4a",
       "subject": "fix kiko-async: await processInBackground before response. Vercel kills serverless function after res.json — fire-and-forget post-response does NOT work. Parallelism comes from client firing multiple ",
-      "when": "16 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "0da819a",
       "subject": "drop legacy cron-self-improvement + cron-self-reflection stubs (replaced by cron-self-awareness + cron-rule-promotion). frees vercel function slot.",
-      "when": "29 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "f3f19f5",
       "subject": "Block A.5 + Block E: (A.5) Build-time git log capture — scripts/capture-recent-ships.js runs in npm build, writes recent-ships.json that kiko-self-knowledge.js reads. Fixes Q5 'what did you ship' perm",
-      "when": "30 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "6e71c65",
       "subject": "fix: remove orphaned brace from KikoFloat voice transcript wiring",
-      "when": "38 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "024ef43",
       "subject": "Block A.5 + Block D wiring: (A.5) intent-classifier no longer routes ship/commit/release questions to code_review — they now route to general so the git log injection in self-knowledge surfaces. (D) V",
-      "when": "41 minutes ago"
+      "when": "49 minutes ago"
     },
     {
       "hash": "e274dd8",
       "subject": "Block A: Kiko Bible v1.0 wired into system prompt. KIKO_BIBLE.md governing layer loaded from disk on every request via kiko-self-knowledge.js. Self-critique protocol + behavioural permission added to ",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "6723a9b",
@@ -59,7 +64,7 @@
     {
       "hash": "ed4bc08",
       "subject": "Step 7 polish: fix kiko_alerts schema drift in cron-sequence-reply-detect. Was writing org_id/entity/action — none exist. Now writes type=reply_from_prospect (matching Command Centre + Sequences page ",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "d11ecc6",
@@ -94,11 +99,6 @@
     {
       "hash": "ae35121",
       "subject": "fix: voice learning use labelIds=SENT (q=in:sent fails silently); selftest accept VITE_SUPABASE_URL fallback",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "6a1587a",
-      "subject": "Step 4+5+infra: voice learning + signatures + multi-task + self-test + Command Centre split",
       "when": "15 hours ago"
     }
   ]
