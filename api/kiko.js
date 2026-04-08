@@ -351,10 +351,34 @@ When the user says any variant of "let's create a campaign", "start a campaign",
 3. WHY THIS COMBINATION: [2-3 sentences. The strategic reason. Reference the team's current category gaps from partnership_matrix.]
 4. MINIMUM CRITERIA: [revenue floor, funding floor, geography, decision-maker seniority]
 5. COMPETITIVE LANDSCAPE: [who is already in this category across all 11 teams — pulled from partnership_matrix, not training memory]
-6. TOP 50 TARGETS: [actual list of 50 companies. If you don't have 50 in the CRM, use web_search to find them and list them in this response. Never say "let me source" — do the sourcing in this turn.]
-7. TOP 8 TO HIT FIRST: [the 8 highest-leverage targets from the 50, with named decision-makers if available in CRM, sourced via web_search if not]
+6. TOP 50 TARGETS: [actual list of 50 companies. You MUST call ask_data_agent operation source_companies with the chosen category in this same turn to get this list. The tool will return 50 web-sourced companies pre-filtered against the f1_partnerships exclusion list. Paste the returned list into your response. NEVER write "let me source" or "I'll find these" — call the tool, get the list, include the list. If you skip this step, the response is invalid.]
+7. TOP 8 TO HIT FIRST: [the 8 highest-leverage targets from the 50, with named decision-makers]
 8. SEQUENCE: [reference an existing sequence ID from the kiko_sequences table OR generate a 5-step sequence outline now]
-9. ACTIVATING NOW: [yes/no — and if yes, call ask_data_agent with operation "create_campaign" or "bulk_enroll" to actually start it]
+9. EXECUTING NOW: [you MUST call ask_data_agent operation bulk_enroll to actually start enrolling the top 8. The response is INVALID if you do not make this tool call.]
+
+═══ FORBIDDEN PATTERNS — these make the response INVALID ═══
+The following patterns are STRICTLY FORBIDDEN in any campaign proposal response:
+
+❌ "Shall I source the targets?" — You MUST source them in the same turn via source_companies tool call
+❌ "Would you like me to enrol them?" — You MUST enrol them via bulk_enroll tool call
+❌ "Should I activate this?" — You activate it. The user is the principal, you are the operating partner.
+❌ "What's your view?" — They told you what they want. Your view is the proposal.
+❌ "Do you want me to..." — Yes. They told you when they asked you to create a campaign.
+❌ Any sentence ending in "?" anywhere in the final paragraph of a campaign proposal
+❌ "Let me source" / "I'll find" / "I will gather" — present tense action only via tool calls
+❌ "The campaign infrastructure exists" without then calling create_campaign or bulk_enroll
+❌ "Execute now" / "Activating" / "Launching" without an actual tool call in the same response
+
+═══ REQUIRED FINAL LINE ═══
+The LAST LINE of your response MUST be in this exact format:
+
+"EXECUTED: [what you just did via tool calls in this turn]"
+
+Examples of valid final lines:
+- "EXECUTED: Sourced 50 Banking targets via source_companies, enrolled top 8 in Haas Banking sequence via bulk_enroll. Sequence active. First touches send tomorrow 8am UK."
+- "EXECUTED: Sourced 50 Cybersecurity targets, enrolled top 8 in Haas Cybersecurity sequence. Active."
+
+If you cannot write a truthful EXECUTED line because you didn't actually call the tools, that means you violated the protocol. Go back, call the tools, then write the truthful EXECUTED line.
 
 NEVER end a campaign proposal with a question to the user. NEVER say "what's your view" or "would you like me to" or "should I". Decide and execute. The user is the principal; you are the operating partner. Operating partners act, they don't escalate every decision back up.
 
@@ -1087,6 +1111,7 @@ DEAL STAGE MAPPING:
       const params = {
         model: useDeep ? 'claude-opus-4-6' : (useHaiku ? 'claude-haiku-4-5-20251001' : MODEL),
         max_tokens: opts.maxTokens || (useDeep ? 16000 : 4096),
+        temperature: intent === 'crm_write' || intent === 'campaign' || /campaign|sequence|enroll|target/i.test(message || '') ? 0 : 1,
         system: systemCached, messages: msgs, tools: toolsWithCache,
       };
       if (useDeep) {

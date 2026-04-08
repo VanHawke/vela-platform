@@ -777,26 +777,44 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
       case 'source_companies': {
         const category = params?.category;
         if (!category) return 'Please provide a category to source companies for (e.g. Banking, Cloud, Cybersecurity).';
-        // First check CRM for existing companies in this category
+        // 1. CRM existing companies
         const crmCos = await sbFetch(`contacts?select=data&data->>company=not.is.null&limit=100`);
         const allCos = Array.isArray(crmCos) ? crmCos : [];
         const uniqueCos = [...new Set(allCos.map(c => c.data?.company).filter(Boolean))];
-        // Check company_intelligence for enriched companies in this sector
+        // 2. Already-enriched companies
         const intel = await sbFetch(`company_intelligence?or=(industry.ilike.*${encodeURIComponent(category)}*,sub_sector.ilike.*${encodeURIComponent(category)}*)&order=sponsorship_fit_score.desc&limit=20`);
         const enriched = Array.isArray(intel) ? intel : [];
-        // Web search for new companies
+        // 3. F1 PARTNERSHIPS — load all so we can EXCLUDE companies already partnered with any F1 team
+        const allPartnerships = await sbFetch('f1_partnerships?status=eq.active&select=partner_name,team_id');
+        const teamLookup = await sbFetch('f1_teams?select=id,name');
+        const teamMap = Object.fromEntries((teamLookup || []).map(t => [t.id, t.name]));
+        const partnerExclusions = new Map(); // lowercased name → "Team (tier)"
+        for (const p of (allPartnerships || [])) {
+          const key = (p.partner_name || '').toLowerCase().trim();
+          if (key && key !== 'unknown' && !key.includes('not specified') && !key.includes('not named')) {
+            partnerExclusions.set(key, teamMap[p.team_id] || 'F1 team');
+          }
+        }
+        // 4. Web search — explicitly request 50, with exclusion list passed in
+        const exclusionList = [...partnerExclusions.keys()].slice(0, 80).join(', ');
         const Anthropic = (await import('@anthropic-ai/sdk')).default;
         const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
         const searchRes = await anthropic.messages.create({
-          model: 'claude-sonnet-4-20250514', max_tokens: 2000,
+          model: 'claude-sonnet-4-20250514', max_tokens: 6000,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-          messages: [{ role: 'user', content: `Find 15-20 companies in the ${category} sector that would be strong Formula One sponsorship prospects. Focus on:
-- Companies with $500M+ revenue or $100M+ funding
-- Companies with active marketing/brand budgets (conference sponsorships, sports partnerships)
-- Companies with C-suite who are known sports/motorsport enthusiasts
-- Companies NOT already F1 sponsors
+          messages: [{ role: 'user', content: `Find exactly 50 companies in the ${category} sector that would be strong Formula One sponsorship prospects. This is a real outreach campaign — quality matters.
 
-Return ONLY a JSON array with no other text: [{"company":"Name","reason":"Why they fit","revenue":"estimate","hq":"location"}]` }]
+CRITERIA:
+- $500M+ annual revenue OR $100M+ recent funding
+- Active brand/marketing budget (visible recent sponsorships, ad campaigns, or sports partnerships)
+- Global or US/EU market presence
+- C-suite reachable (CMO, CRO, CEO with marketing oversight)
+
+EXCLUSION RULE — CRITICAL: You MUST NOT include any of these companies because they are already F1 partners with another team. Do not list them under any circumstances: ${exclusionList}
+
+If you find a company already in that exclusion list, skip it and find another one. The list of 50 must contain ZERO companies from the exclusion list.
+
+Return ONLY a JSON array of exactly 50 entries with no other text: [{"company":"Name","reason":"Why they fit F1 sponsorship","revenue":"estimate","hq":"location","decision_maker":"name + title if known"}]` }]
         });
         const textBlocks = searchRes.content.filter(b => b.type === 'text').map(b => b.text).join('');
         let sourced = [];
@@ -805,23 +823,37 @@ Return ONLY a JSON array with no other text: [{"company":"Name","reason":"Why th
           const match = cleaned.match(/\[[\s\S]*\]/);
           if (match) sourced = JSON.parse(match[0]);
         } catch {}
-        // Cross-reference with CRM
+        // 5. Hard-filter the output one more time on our side — defense in depth
+        const filteredSourced = sourced.filter(c => {
+          const key = (c.company || '').toLowerCase().trim();
+          return key && !partnerExclusions.has(key);
+        });
+        // Track any that the LLM still tried to include despite the rule
+        const violatedExclusion = sourced.filter(c => {
+          const key = (c.company || '').toLowerCase().trim();
+          return key && partnerExclusions.has(key);
+        });
         const inCRM = new Set(uniqueCos.map(c => c.toLowerCase()));
-        let out = `COMPANIES FOR ${category.toUpperCase()} CAMPAIGN:\n\n`;
+        let out = `═══ ${category.toUpperCase()} CAMPAIGN — TARGET LIST ═══\n`;
+        out += `Filtered against ${partnerExclusions.size} known F1 partnerships. ${filteredSourced.length} clean targets returned.\n`;
+        if (violatedExclusion.length) {
+          out += `\n⚠️ Excluded mid-stream (already F1 partners): ${violatedExclusion.map(c => `${c.company} (${partnerExclusions.get((c.company||'').toLowerCase())})`).join(', ')}\n`;
+        }
+        out += '\n';
         if (enriched.length) {
-          out += `═══ ALREADY ENRICHED (${enriched.length}):\n`;
-          for (const c of enriched.slice(0, 10)) {
-            out += `  ★ ${c.company_name} — ${c.industry}/${c.sub_sector} | Revenue: ${c.revenue_estimate || '?'} | Fit: ${c.sponsorship_fit_score || '?'}/100 | ${inCRM.has((c.company_name||'').toLowerCase()) ? '✅ In CRM' : '❌ Not in CRM'}\n`;
+          out += `★ ALREADY ENRICHED IN CRM (${enriched.length}):\n`;
+          for (const c of enriched.slice(0, 15)) {
+            out += `  ${c.company_name} | ${c.industry}/${c.sub_sector} | Rev: ${c.revenue_estimate || '?'} | Fit: ${c.sponsorship_fit_score || '?'}/100\n`;
           }
           out += '\n';
         }
-        if (sourced.length) {
-          out += `═══ WEB-SOURCED (${sourced.length}):\n`;
-          for (const c of sourced) {
-            out += `  → ${c.company} — ${c.reason} | Revenue: ${c.revenue || '?'} | HQ: ${c.hq || '?'} | ${inCRM.has((c.company||'').toLowerCase()) ? '✅ In CRM' : '🆕 New'}\n`;
-          }
+        out += `→ FRESH TARGETS (${filteredSourced.length}):\n`;
+        for (let i = 0; i < filteredSourced.length; i++) {
+          const c = filteredSourced[i];
+          out += `${(i + 1).toString().padStart(2, ' ')}. ${c.company} | ${c.revenue || '?'} | ${c.hq || '?'} | ${c.decision_maker || 'DM unknown'} | ${inCRM.has((c.company||'').toLowerCase()) ? '✅ In CRM' : '🆕 New'}\n`;
+          out += `    → ${c.reason}\n`;
         }
-        out += `\nNext: Use source_contacts with company="[name]" to find decision-makers at target companies.`;
+        out += `\nNext step: bulk_enroll these into the campaign sequence. Top 8 should be hit first.`;
         return out;
       }
       case 'source_contacts': {

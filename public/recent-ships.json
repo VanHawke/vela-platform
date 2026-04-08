@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-08T19:20:25.405Z",
+  "generated_at": "2026-04-08T19:29:30.182Z",
   "commits": [
+    {
+      "hash": "e270624",
+      "subject": "FUNDAMENTAL FIX: Kiko was hallucinating F1 partnership status from training memory while ignoring the f1_partnerships database (406 active partnerships, Revolut/Audi confirmed since March 16). Three n",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "df45b73",
       "subject": "(1) Wipe remaining conversation tables: conversations (187 rows), kiko_imported_conversations (384 rows), conversation_embeddings (389 orphaned vectors). Memory FULLY preserved: 1135 conversation_insi",
-      "when": "23 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "cd82e00",
       "subject": "KikoVoice: add inline prop. When inline=true, render as position:absolute inset:0 inside parent container instead of position:fixed createPortal fullscreen overlay. Smaller waveform (600x80 vs 1100x11",
-      "when": "31 minutes ago"
+      "when": "40 minutes ago"
     },
     {
       "hash": "353e79f",
       "subject": "(1) Contact name cleanup: stripped emoji + symbol prefixes from 31 contacts in DB. Names like '🚀 Briana' / 'Ogle' -> 'Briana' / 'Ogle'. Where firstName held the full name and lastName was just emoji,",
-      "when": "39 minutes ago"
+      "when": "49 minutes ago"
     },
     {
       "hash": "d828ca2",
       "subject": "(1) Home layout centred — top spacer 0.8->0.5, bottom 0.3->0.5, removed overflow:auto, added justifyContent:center, padding 20/24/40. Fixes iPad cut-off. (2) 5 dead pages deleted: Sequences.jsx, Calen",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "6d4138a",
@@ -29,7 +34,7 @@
     {
       "hash": "27281f8",
       "subject": "gmail-draft: use canonical getGoogleToken helper instead of homegrown token refresh logic. Same path the cron uses successfully — auto-refreshes with 5min buffer.",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "d289f7a",
@@ -44,7 +49,7 @@
     {
       "hash": "869873e",
       "subject": "(1) SignatureEditor: single contentEditable paste box. Paste your full Gmail/Apple Mail signature including images — base64 inline images auto-upload to Supabase Storage in background and src is rewri",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "bac1607",
@@ -69,7 +74,7 @@
     {
       "hash": "80c5f05",
       "subject": "fix: remove global * { margin/padding: 0 } reset that was nuking all Tailwind padding/margin utilities. Tailwind preflight handles resets correctly. This was the root cause of broken layout in HomePre",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "411cbbd",
@@ -94,11 +99,6 @@
     {
       "hash": "9cbe3ce",
       "subject": "Block C: full theme conversion. 62 files swept clean of hardcoded colors. (1) src/index.css now contains user's exact amber theme verbatim — :root light, .dark dark, @theme inline. (2) src/lib/tokens.",
-      "when": "8 hours ago"
-    },
-    {
-      "hash": "e39603e",
-      "subject": "Block C rebuild start: index.css contains exact amber theme spec from user. tokens.js is single source of truth — every component imports from here. theme.js is now a re-export shim for backward compa",
       "when": "8 hours ago"
     }
   ]
