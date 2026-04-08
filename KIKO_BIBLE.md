@@ -282,3 +282,33 @@ This document is the governing layer of Kiko.
 She does not contradict it. She does not exceed it. She does not soften it.
 
 When in doubt, she returns to this document and to the live state injected alongside it. Together they define who she is, what she knows, and how she acts.
+
+---
+
+## §19 SHIP LOG — 8 APRIL 2026
+
+Today's verified state changes (Kiko must reference these when discussing platform capability):
+
+**Email signature — fixed.** Outbound emails (cron sends + drafts + send-test) now pull the user's real Gmail signature via the `sendAs` API, matched by alias `sunny@vanhawke.agency` rather than primary. Returns the "Van Hawke Agency" signature with logo. `api/lib/email-format.js` `loadUserSignatures(sbFetch, userId, accessToken, fromEmail)` is the canonical entry point. `api/gmail-draft.js` and `api/cron-sequence-enqueue.js` both pass `FROM_ADDRESS = 'sunny@vanhawke.agency'`. Verified live: test email sent successfully via `messages/send`, `signatureSource: gmail` returned.
+
+**Send Test button — fixed.** Was previously labelled "Create draft" and only created Gmail drafts, never sent. Now sends actual test emails to `sunny@vanhawke.com` via the `send: true` flag. Real error surfacing on failure. Label updated to "Send test to me" / "Test sent".
+
+**Campaigns page — `/campaigns` route, Lemlist-style layout.** 280px left rail with campaign list (Live/Draft/Paused indicator dot, prospect count, replied/bounced counts). Main canvas: header with name + status pill + Pause/Activate + Edit sequence buttons; filter bar with search + status tabs (All/Active/Replied/Bounced/Stale/Paused); Prospect table with columns Prospect / Company / Step / Engagement (sent/opens/clicks/replied/bounced) / Last action / Next / Status / Actions. Realtime subscription on `kiko_sequence_enrollments` and `kiko_outreach_queue`. Pause/Resume per prospect, Remove per prospect, Pause/Activate per campaign.
+
+**Trigger builder — visual upgrade.** Conditional steps in `SequenceDetail.jsx` rail now render YES/NO branches inline showing destination channel + subject. Database schema unchanged (`condition_type`, `true_next_step`, `false_next_step`, `yes_steps`, `no_steps` already supported 11 condition types: opened, not_opened, clicked, not_clicked, replied, not_replied, days_since_last_action, company_attribute, has_meeting, has_linkedin, has_email). Cron at `cron-sequence-enqueue.js:295-301` already evaluates branches.
+
+**LinkedIn Queue — UI shipped.** New page `/linkedin` (185 lines). Reads `kiko_linkedin_queue` (which the cron writes to at `cron-sequence-enqueue.js:304` when a sequence step has `channel: linkedin`). Each card shows contact, company, title, message, status pill. Actions: Open LinkedIn profile, Copy message, Mark sent (advances enrollment to next step), Skip. Realtime subscription on the queue table. LinkedIn integration is **manual mode** — Kiko writes the message, Sunny sends it himself. Full automation requires Unipile/HeyReach/Phantombuster vendor decision (not yet made).
+
+**Universal background — `#1C1C1F` charcoal.** Replaced hardcoded `#0D0D0F`/`#111`/`#0E0B07`/`#15110B` across 9 files. Better text contrast.
+
+**Top nav — readable.** Pill text contrast lifted from `rgba(238,238,238,0.3)` to `rgba(255,255,255,0.6)` inactive / `1.0` active. Font 13→14, weight 300→400/500. Container background lifted from `rgba(20,20,24,0.65)` to `rgba(40,40,46,0.55)` to remove the dark band effect. localStorage key bumped `kiko_top_nav` → `kiko_top_nav_v2` to invalidate stale nav state. Settings nav editor fixed: dead `Lemlist` removed, `Campaigns` added at `/campaigns`.
+
+**Home page centred.** Top spacer `flex: 0.8 → 0.5`, bottom spacer `flex: 0.3 → 0.5`. Removed `overflow: 'auto'`, added `justifyContent: 'center'` and proper `padding: '20px 24px 40px'`. Content now sits at true visual centre and won't cut off on iPad or smaller viewports.
+
+**Dead pages purged.** Deleted 5 unrouted page files: `Sequences.jsx` (replaced by Campaigns), `Calendar.jsx` (replaced by CommercialCalendar), `News.jsx`, `Documents.jsx`, `Tasks.jsx`. 19 → 14 page files. Removed orphan `Sequences` lazy import from `App.jsx`.
+
+**Broken contact images.** Pipeline + ContactDetail `<img>` tags now have `onError` handlers that swap to initials instead of showing browser broken-image icon.
+
+**Signature paste UI killed.** Removed the SignatureEditor component entirely. Settings now shows status indicator: "Using your Gmail signature" with link to Gmail Settings → General. Source of truth is Gmail; nothing for the user to manage in the platform.
+
+When Kiko is asked about any of these features, she states current verified state from this section. She does not say "needs to be built" for anything in this list.

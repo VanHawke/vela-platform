@@ -439,7 +439,28 @@ export default function SequenceDetail() {
                     <button onClick={e => { e.stopPropagation(); del(i) }} style={{ background: 'none', border: 'none', color: C.textTer, cursor: 'pointer', padding: 1 }}><Trash2 size={10} /></button>
                   </div>
                   {s.subject && <div style={{ fontSize: 10, color: C.textTer, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.subject}</div>}
-                  {s.type === 'condition' && <div style={{ fontSize: 10, color: C.amber, marginTop: 3 }}>{CONDITIONS.find(c => c.value === s.condition_type)?.label || s.condition_type} → Yes / No</div>}
+                  {s.type === 'condition' && (() => {
+                    const condLabel = CONDITIONS.find(c => c.value === s.condition_type)?.label || s.condition_type
+                    const yesStep = s.yes_steps?.[0]
+                    const noStep = s.no_steps?.[0]
+                    const yesIcon = yesStep?.channel === 'linkedin' ? '💼' : yesStep?.channel === 'email' ? '📧' : '→'
+                    const noIcon = noStep?.channel === 'linkedin' ? '💼' : noStep?.channel === 'email' ? '📧' : '→'
+                    return (
+                      <div style={{ marginTop: 5, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <div style={{ fontSize: 10, color: C.amber, fontWeight: 500 }}>If: {condLabel}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingLeft: 8, fontSize: 10 }}>
+                          <span style={{ color: C.teal, fontWeight: 500 }}>✓ YES</span>
+                          <span style={{ color: C.textTer }}>→</span>
+                          <span style={{ color: C.text }}>{yesIcon} {yesStep?.subject || yesStep?.channel || 'next step'}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingLeft: 8, fontSize: 10 }}>
+                          <span style={{ color: C.red, fontWeight: 500 }}>✗ NO</span>
+                          <span style={{ color: C.textTer }}>→</span>
+                          <span style={{ color: C.text }}>{noIcon} {noStep?.subject || noStep?.channel || 'pause'}</span>
+                        </div>
+                      </div>
+                    )
+                  })()}
                 </div>
               </div>)
             })}

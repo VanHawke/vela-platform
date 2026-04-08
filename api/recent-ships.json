@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-08T16:45:57.592Z",
+  "generated_at": "2026-04-08T16:58:54.100Z",
   "commits": [
+    {
+      "hash": "6d4138a",
+      "subject": "loadUserSignatures: match by sendAsEmail (alias) instead of always picking primary. Pass FROM_ADDRESS=sunny@vanhawke.agency from gmail-draft + cron-sequence-enqueue so we get the Van Hawke Agency sign",
+      "when": "13 minutes ago"
+    },
     {
       "hash": "27281f8",
       "subject": "gmail-draft: use canonical getGoogleToken helper instead of homegrown token refresh logic. Same path the cron uses successfully — auto-refreshes with 5min buffer.",
-      "when": "54 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "d289f7a",
       "subject": "(1) gmail-draft.js: removed hardcoded text-only signature stub, now imports loadUserSignatures + wrapEmailBody from email-format.js, pulls real Gmail signature via sendAs API (same as cron path). Adde",
-      "when": "58 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "fdabbf3",
       "subject": "(1) SignatureEditor: handles data:/blob:/cid: image refs, reads clipboardData.items for Gmail PNG attachments, manual upload fallback button. (2) Top nav: pill text contrast lifted from rgba(238,238,2",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "869873e",
@@ -34,7 +39,7 @@
     {
       "hash": "018f9bc",
       "subject": "restore Campaigns.jsx (Lemlist-style left rail + main canvas) at /sequences and /campaigns routes. Rewired data layer from deleted /api/lemlist-data to direct Supabase queries against kiko_sequences/k",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "4d1c0d0",
@@ -64,12 +69,12 @@
     {
       "hash": "ed9d442",
       "subject": "theme convert pass 3: dark glass surfaces (rgba 25/20/0) + hex leftovers (#3A3A3E #555558 #191919) → tokens. KikoChat input bar should now render correctly on light bg.",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "9cbe3ce",
       "subject": "Block C: full theme conversion. 62 files swept clean of hardcoded colors. (1) src/index.css now contains user's exact amber theme verbatim — :root light, .dark dark, @theme inline. (2) src/lib/tokens.",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "e39603e",
@@ -89,16 +94,11 @@
     {
       "hash": "97ac6eb",
       "subject": "audit fix: handleSubmit (streaming path) now also persists to kiko_conversations + kiko_messages so the multi-task sidebar reflects all chat history. closes the gap where sendAsync existed but was nev",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "0ba3649",
       "subject": "fix Q5: capture-recent-ships.js writes to api/ folder so Vercel bundles it with serverless functions. kiko-self-knowledge.js tries multiple paths (api/, root, public/) since Vercel cwd is unreliable a",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "8c6e70d",
-      "subject": "kiko-async: in-process call via fake req/res — bypasses HTTP entirely. Imports kiko handler default export, builds fake req with nostream=1, fake res that captures res.json() into local var. No HTTP r",
       "when": "7 hours ago"
     }
   ]

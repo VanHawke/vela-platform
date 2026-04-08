@@ -1084,10 +1084,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             onClose={() => setAllChatsData(null)}
           />
         ) : (
-        <div id="kikoHomeContent" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', transition: trans, overflow: 'auto', minHeight: 0, padding: '0 24px 20px' }}>
+        <div id="kikoHomeContent" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: trans, minHeight: 0, padding: '20px 24px 40px' }}>
 
-          {/* Top spacer — pushes avatar to visual centre */}
-          <div style={{ flex: voiceActive ? 1 : 0.8, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
+          {/* Top spacer — balanced 0.5/0.5 for true centre, voice mode pushes more */}
+          <div style={{ flex: voiceActive ? 1 : 0.5, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
 
           {/* Wave — always visible, scales up in voice mode */}
           <div id="kikoWaveHome" style={{
@@ -1180,8 +1180,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 ))}
               </div>
 
-          {/* Bottom spacer */}
-          <div style={{ flex: voiceActive ? 1 : 0.3, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
+          {/* Bottom spacer — equal to top so content sits at true visual centre */}
+          <div style={{ flex: voiceActive ? 1 : 0.5, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
         </div>
         )}
 

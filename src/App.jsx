@@ -19,7 +19,6 @@ const KikoCode = lazy(() => import('@/pages/KikoCode'))
 const Admin = lazy(() => import('@/pages/Admin'))
 const MemoryConsole = lazy(() => import('@/pages/MemoryConsole'))
 
-const Sequences = lazy(() => import('@/pages/Sequences'))
 const Campaigns = lazy(() => import('@/pages/Campaigns'))
 const LinkedInQueue = lazy(() => import('@/pages/LinkedInQueue'))
 
