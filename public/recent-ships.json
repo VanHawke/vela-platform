@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-08T12:44:08.504Z",
+  "generated_at": "2026-04-08T12:54:51.568Z",
   "commits": [
+    {
+      "hash": "411cbbd",
+      "subject": "Block C preview: HomePreview.jsx mockup using canonical shadcn primitives — Card, Button, Tailwind classes only. Mounted at /preview/home (public route, no auth) for design sign-off before rebuilding ",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "15682e6",
       "subject": "Block C: restore canonical shadcn primitives. card.jsx and button.jsx had been clobbered with inline-style versions — restored to forwardRef + cn() + Tailwind classes + cva variants. Required for prop",
-      "when": "7 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "f5b5f48",
       "subject": "fix: dark amber is the default theme. Components were designed for dark backgrounds — light mode requires per-component conversion that isn't done. Storage key bumped to v3 to invalidate stale 'light'",
-      "when": "36 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "ed9d442",
       "subject": "theme convert pass 3: dark glass surfaces (rgba 25/20/0) + hex leftovers (#3A3A3E #555558 #191919) → tokens. KikoChat input bar should now render correctly on light bg.",
-      "when": "77 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "9cbe3ce",
       "subject": "Block C: full theme conversion. 62 files swept clean of hardcoded colors. (1) src/index.css now contains user's exact amber theme verbatim — :root light, .dark dark, @theme inline. (2) src/lib/tokens.",
-      "when": "81 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "e39603e",
@@ -39,7 +44,7 @@
     {
       "hash": "97ac6eb",
       "subject": "audit fix: handleSubmit (streaming path) now also persists to kiko_conversations + kiko_messages so the multi-task sidebar reflects all chat history. closes the gap where sendAsync existed but was nev",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "0ba3649",
@@ -74,12 +79,12 @@
     {
       "hash": "0da819a",
       "subject": "drop legacy cron-self-improvement + cron-self-reflection stubs (replaced by cron-self-awareness + cron-rule-promotion). frees vercel function slot.",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "f3f19f5",
       "subject": "Block A.5 + Block E: (A.5) Build-time git log capture — scripts/capture-recent-ships.js runs in npm build, writes recent-ships.json that kiko-self-knowledge.js reads. Fixes Q5 'what did you ship' perm",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "6e71c65",
@@ -94,11 +99,6 @@
     {
       "hash": "e274dd8",
       "subject": "Block A: Kiko Bible v1.0 wired into system prompt. KIKO_BIBLE.md governing layer loaded from disk on every request via kiko-self-knowledge.js. Self-critique protocol + behavioural permission added to ",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "6723a9b",
-      "subject": "Self-awareness feedback loop: kiko_meta_learning table + cron-self-awareness (nightly 2:30am) detects repetition loops in learning_log (5+ identical Q→A) and writes refusal_directive. kiko-self-knowle",
       "when": "5 hours ago"
     }
   ]

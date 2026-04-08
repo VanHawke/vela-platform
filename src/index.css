@@ -124,8 +124,6 @@
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 html, body, #root { height: 100%; width: 100%; }
 body {
   font-family: var(--font-sans);
