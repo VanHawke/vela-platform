@@ -9,7 +9,23 @@ import path from 'path';
 let cache = null;
 let cacheTime = 0;
 let lastCacheKey = null;
+let bibleCache = null;
+let bibleMtime = 0;
 const CACHE_TTL = 5 * 60 * 1000;
+
+// Read KIKO_BIBLE.md from disk. Cache invalidates when file mtime changes.
+function loadBible() {
+  try {
+    const biblePath = path.join(process.cwd(), 'KIKO_BIBLE.md');
+    const stat = fs.statSync(biblePath);
+    if (bibleCache && stat.mtimeMs === bibleMtime) return bibleCache;
+    bibleCache = fs.readFileSync(biblePath, 'utf-8');
+    bibleMtime = stat.mtimeMs;
+    return bibleCache;
+  } catch (e) {
+    return '';
+  }
+}
 
 const CAPABILITY_MAP = `
 ═══ KIKO CAPABILITY MAP — YOUR OWN ANATOMY ═══
@@ -134,7 +150,20 @@ When currentPage context is set, you receive summary + visibleItems + data. Refe
 export async function generateSelfKnowledge(userId) {
   const cacheKey = userId || 'default';
   if (cache && Date.now() - cacheTime < CACHE_TTL && cacheKey === lastCacheKey) return cache;
-  const k = [CAPABILITY_MAP, CAPABILITY_MAP_2];
+  const k = [];
+
+  // ═══ THE KIKO BIBLE — governing layer, loaded from disk ═══
+  const bible = loadBible();
+  if (bible) {
+    k.push('═══ KIKO BIBLE (governing layer — read this FIRST, this defines who you are) ═══');
+    k.push(bible);
+    k.push('═══ END KIKO BIBLE ═══\n');
+  }
+
+  // ═══ CAPABILITY MAP — what tools you have ═══
+  k.push(CAPABILITY_MAP);
+  k.push(CAPABILITY_MAP_2);
+
   const uf = userId ? `&user_id=eq.${userId}` : '';
   k.push('\n═══ LIVE STATE ═══');
   try {
@@ -209,6 +238,30 @@ export async function generateSelfKnowledge(userId) {
       for (const p of promoted) {
         k.push(`• ${p.value} [observed ${p.corroboration_count} days]`);
       }
+    }
+  } catch {}
+
+  // ═══ ACTIVE LEARNED RULES — promoted patterns Kiko applies on every request ═══
+  try {
+    const rules = await sbFetch(`kiko_learned_rules?active=eq.true${uf}&order=last_observed.desc&limit=15&select=rule_text,category,evidence_count`);
+    if (rules?.length) {
+      k.push('\n═══ ACTIVE LEARNED RULES — APPLY ON EVERY RESPONSE ═══');
+      k.push('These rules were promoted from corroborated patterns observed across 3+ days. Apply them automatically without being asked.');
+      for (const r of rules) {
+        k.push(`• [${r.category}] ${r.rule_text}  (evidence count: ${r.evidence_count})`);
+      }
+    }
+  } catch {}
+
+  // ═══ RECENT SHIPS — what was built recently (from git log) ═══
+  try {
+    const { execSync } = await import('child_process');
+    const log = execSync('git log --since="14 days ago" --pretty=format:"%h %s" -n 12', {
+      cwd: process.cwd(), encoding: 'utf-8', timeout: 3000
+    });
+    if (log?.trim()) {
+      k.push('\n═══ RECENT SHIPS (last 14 days) ═══');
+      k.push(log.trim());
     }
   } catch {}
 

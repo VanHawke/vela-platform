@@ -155,6 +155,10 @@
     {
       "path": "/api/cron-self-awareness",
       "schedule": "30 2 * * *"
+    },
+    {
+      "path": "/api/cron-rule-promotion",
+      "schedule": "0 3 * * 0"
     }
   ],
   "functions": {
@@ -303,6 +307,9 @@
       "maxDuration": 45
     },
     "api/cron-self-awareness.js": {
+      "maxDuration": 60
+    },
+    "api/cron-rule-promotion.js": {
       "maxDuration": 60
     }
   },

@@ -135,17 +135,28 @@ export default async function handler(req, res) {
       for (const d of draftActions) intel += `• ${d.payload?.suggested_action || d.action_type}\n`;
     }
 
+    // Recent learned rules — what Kiko changed about herself this week
+    try {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+      const recentRules = await sbFetch(`kiko_learned_rules?active=eq.true&last_observed=gte.${sevenDaysAgo}&select=rule_text,category&order=last_observed.desc&limit=5`);
+      if (recentRules?.length) {
+        intel += `\nWHAT I LEARNED THIS WEEK (apply these rules going forward):\n`;
+        for (const r of recentRules) intel += `• [${r.category}] ${r.rule_text}\n`;
+      }
+    } catch {}
+
     // Synthesise via Sonnet into actionable morning brief
     const synthesis = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+      model: 'claude-sonnet-4-20250514', max_tokens: 1200,
       system: `You are Kiko, writing Sunny's morning intelligence brief. Be DIRECT. Lead with what needs action TODAY. Structure:
 
 1. 🔴 IMMEDIATE (things that need action in the next 4 hours)
 2. ⚡ TODAY (should happen today but not urgent)
 3. 📊 PIPELINE HEALTH (1-2 sentences on overall momentum)
 4. 🎯 RECOMMENDED FOCUS (the ONE thing that would create the most value today)
+5. 🧠 WHAT I LEARNED THIS WEEK (3 bullets max — what you have observed and are now applying differently. If nothing meaningful was learned, say "Nothing material this week" and move on. Be honest, do not invent.)
 
-Max 250 words. No pleasantries. No "good morning." Start with the most important thing.`,
+Max 300 words. No pleasantries. No "good morning." Start with the most important thing.`,
       messages: [{ role: 'user', content: intel }],
     });
     const briefText = synthesis.content[0]?.text || 'Could not generate brief.';
