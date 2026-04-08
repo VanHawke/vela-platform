@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-08T09:21:13.572Z",
+  "generated_at": "2026-04-08T09:22:39.722Z",
   "commits": [
+    {
+      "hash": "f3f19f5",
+      "subject": "Block A.5 + Block E: (A.5) Build-time git log capture — scripts/capture-recent-ships.js runs in npm build, writes recent-ships.json that kiko-self-knowledge.js reads. Fixes Q5 'what did you ship' perm",
+      "when": "74 seconds ago"
+    },
     {
       "hash": "6e71c65",
       "subject": "fix: remove orphaned brace from KikoFloat voice transcript wiring",
-      "when": "8 minutes ago"
+      "when": "9 minutes ago"
     },
     {
       "hash": "024ef43",
       "subject": "Block A.5 + Block D wiring: (A.5) intent-classifier no longer routes ship/commit/release questions to code_review — they now route to general so the git log injection in self-knowledge surfaces. (D) V",
-      "when": "10 minutes ago"
+      "when": "12 minutes ago"
     },
     {
       "hash": "e274dd8",
       "subject": "Block A: Kiko Bible v1.0 wired into system prompt. KIKO_BIBLE.md governing layer loaded from disk on every request via kiko-self-knowledge.js. Self-critique protocol + behavioural permission added to ",
-      "when": "58 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "6723a9b",
       "subject": "Self-awareness feedback loop: kiko_meta_learning table + cron-self-awareness (nightly 2:30am) detects repetition loops in learning_log (5+ identical Q→A) and writes refusal_directive. kiko-self-knowle",
-      "when": "87 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "b04c353",
@@ -95,11 +100,6 @@
       "hash": "56df091",
       "subject": "Step 3: strip & consolidate per KIKO_REALITY.md audit",
       "when": "16 hours ago"
-    },
-    {
-      "hash": "a3890f0",
-      "subject": "docs(master-plan): mark B1 ✅ shipped (web search engine, NOT Apollo)",
-      "when": "18 hours ago"
     }
   ]
 }
