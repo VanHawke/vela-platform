@@ -2,17 +2,27 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { X, ArrowUp, Mic } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { C } from '@/lib/theme'
-
-function timeAgoShort(d) {
-  if (!d) return ''
-  const s = Math.floor((Date.now() - new Date(d).getTime()) / 1000)
-  if (s < 60) return 'just now'
-  if (s < 3600) return `${Math.floor(s / 60)}m`
-  if (s < 86400) return `${Math.floor(s / 3600)}h`
-  return `${Math.floor(s / 86400)}d`
+// Design tokens — hardcoded (matching Sequences.jsx)
+const C = {
+  bg: '#0D0D0F',
+  card: '#141416',
+  cardHover: '#1A1A1E',
+  border: 'rgba(255,255,255,0.06)',
+  borderHover: 'rgba(255,255,255,0.10)',
+  text: 'rgba(245,245,248,0.92)',
+  textSec: 'rgba(245,245,248,0.55)',
+  textTer: 'rgba(245,245,248,0.32)',
+  textMut: 'rgba(245,245,248,0.16)',
+  purple: '#A78BFA',
+  teal: '#2DD4BF',
+  green: '#34D399',
+  red: '#F87171',
+  amber: '#FBBF24',
+  blue: '#60A5FA',
+  linkedin: '#0077B5',
+  font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  r: 8,
 }
-// Design tokens imported from @/lib/theme above
 import KikoWaveform from './KikoWaveform'
 import { useRealtimeVoice } from '@/hooks/useRealtimeVoice'
 // KikoVoice removed — voice stays in FAB circle
@@ -115,8 +125,8 @@ function md(text) {
   if (!text) return ''
   let h = text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/```([\s\S]*?)```/g, '<pre style="background:var(--border);padding:8px;border-radius:8px;font-size:11px;overflow-x:auto;margin:4px 0;border:0.5px solid var(--border)"><code>$1</code></pre>')
-    .replace(/`([^`]+)`/g, '<code style="background:var(--border);padding:1px 4px;border-radius:3px;font-size:11px">$1</code>')
+    .replace(/```([\s\S]*?)```/g, '<pre style="background:rgba(238,238,238,0.07);padding:8px;border-radius:8px;font-size:11px;overflow-x:auto;margin:4px 0;border:0.5px solid rgba(238,238,238,0.1)"><code>$1</code></pre>')
+    .replace(/`([^`]+)`/g, '<code style="background:rgba(238,238,238,0.07);padding:1px 4px;border-radius:3px;font-size:11px">$1</code>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/\n/g, '<br/>')
@@ -153,143 +163,12 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   const [streamText, setStreamText] = useState('')
   const [transcribing, setTranscribing] = useState(false)
   const [voiceOpen, setVoiceOpen] = useState(false)
-  const voiceAssistantBufferRef = useRef('')
   const { status: voiceStatus, speaking: voiceSpeaking } = useRealtimeVoice({
     active: voiceOpen,
     onClose: () => { setVoiceOpen(false); window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: false } })) },
-    // Voice-in-chat: spoken words appear live in the chat message stream
-    onUserTranscript: (text) => {
-      if (!text) return
-      setMessages(prev => [...prev, { role: 'user', content: text, _voice: true }])
-    },
-    onAssistantTranscriptDelta: (delta) => {
-      voiceAssistantBufferRef.current += delta
-      // Live updating: replace last assistant placeholder if it's flagged _voice_streaming
-      setMessages(prev => {
-        const last = prev[prev.length - 1]
-        if (last && last.role === 'assistant' && last._voice_streaming) {
-          return [...prev.slice(0, -1), { ...last, content: voiceAssistantBufferRef.current }]
-        }
-        return [...prev, { role: 'assistant', content: voiceAssistantBufferRef.current, _voice: true, _voice_streaming: true }]
-      })
-    },
-    onAssistantTranscriptDone: (text) => {
-      // Finalize: strip _voice_streaming flag, lock content
-      setMessages(prev => {
-        const last = prev[prev.length - 1]
-        if (last && last.role === 'assistant' && last._voice_streaming) {
-          return [...prev.slice(0, -1), { role: 'assistant', content: text || voiceAssistantBufferRef.current, _voice: true }]
-        }
-        return prev
-      })
-      voiceAssistantBufferRef.current = ''
-    },
   })
   const [floatVoiceState, setFloatVoiceState] = useState({ speaking: false, status: 'connecting', energy: 0, pitch: 0 })
   const [fileUploading, setFileUploading] = useState(false)
-
-  // ═══ MULTI-TASK CONVERSATIONS — parallel chat threads with shared memory ═══
-  const [conversations, setConversations] = useState([])      // [{id, title, status, unread, last_message_at}]
-  const [activeConvId, setActiveConvId] = useState(null)      // currently focused conversation
-  const [showSidebar, setShowSidebar] = useState(false)       // toggle conversation sidebar
-  const realtimeSubRef = useRef(null)
-
-  // Load conversations + subscribe to realtime updates
-  useEffect(() => {
-    if (!user?.id) return
-    let cancelled = false
-    ;(async () => {
-      const { data } = await supabase
-        .from('kiko_conversations')
-        .select('id,title,status,unread,last_message_at,message_count')
-        .eq('user_id', user.id)
-        .eq('archived', false)
-        .order('updated_at', { ascending: false })
-        .limit(20)
-      if (!cancelled && data) setConversations(data)
-    })()
-    // Subscribe to live updates — when ANY conversation flips status (e.g. background job done), the sidebar updates
-    const sub = supabase
-      .channel(`kiko_conv_${user.id}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'kiko_conversations', filter: `user_id=eq.${user.id}` }, (payload) => {
-        setConversations(prev => {
-          const updated = payload.new
-          if (!updated) return prev
-          const exists = prev.findIndex(c => c.id === updated.id)
-          if (exists >= 0) {
-            const next = [...prev]
-            next[exists] = { ...next[exists], ...updated }
-            return next.sort((a, b) => new Date(b.last_message_at || 0) - new Date(a.last_message_at || 0))
-          }
-          return [updated, ...prev].slice(0, 20)
-        })
-      })
-      .subscribe()
-    realtimeSubRef.current = sub
-    return () => { cancelled = true; supabase.removeChannel(sub) }
-  }, [user?.id])
-
-  // Load messages when switching active conversation, mark unread → read
-  useEffect(() => {
-    if (!activeConvId) return
-    let cancelled = false
-    ;(async () => {
-      const { data } = await supabase
-        .from('kiko_messages')
-        .select('role,content,metadata,created_at')
-        .eq('conversation_id', activeConvId)
-        .order('created_at', { ascending: true })
-      if (cancelled || !data) return
-      setMessages(data.map(m => ({ role: m.role, content: m.content })))
-      // Mark as read
-      await supabase.from('kiko_conversations').update({ unread: false }).eq('id', activeConvId)
-    })()
-    // Subscribe to new messages on the active conversation (so async responses appear live)
-    const msgSub = supabase
-      .channel(`kiko_msg_${activeConvId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'kiko_messages', filter: `conversation_id=eq.${activeConvId}` }, (payload) => {
-        const m = payload.new
-        if (!m) return
-        setMessages(prev => {
-          // Avoid duplicates if we already inserted optimistically
-          if (prev.some(x => x.content === m.content && x.role === m.role)) return prev
-          return [...prev, { role: m.role, content: m.content }]
-        })
-      })
-      .subscribe()
-    return () => { cancelled = true; supabase.removeChannel(msgSub) }
-  }, [activeConvId])
-
-  // Send a message via the async endpoint (fire-and-forget — returns immediately)
-  async function sendAsync(text) {
-    if (!text?.trim() || !user?.id) return
-    try {
-      const res = await fetch('/api/kiko-async', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conversation_id: activeConvId,
-          message: text,
-          userEmail: user.email,
-          currentPage,
-          user_id: user.id
-        })
-      })
-      const data = await res.json()
-      if (data.conversation_id && !activeConvId) setActiveConvId(data.conversation_id)
-      // Optimistic: add user message to current view immediately
-      setMessages(prev => [...prev, { role: 'user', content: text }])
-    } catch (e) {
-      console.error('[KikoFloat] sendAsync failed:', e)
-    }
-  }
-
-  function newConversation() {
-    setActiveConvId(null)
-    setMessages([])
-    setInput('')
-  }
-
   const [pendingFile, setPendingFile] = useState(null) // { file, previewUrl, name, type }
   const [fileDragging, setFileDragging] = useState(false)
   const [fabClass, setFabClass] = useState('')
@@ -421,38 +300,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
       const kikoMsg = { role: 'assistant', content: full }
       setMessages(prev => [...prev, kikoMsg]); setStreamText('')
       const allMsgs = [...messages, userMsg, kikoMsg]
-
-      // ═══ Multi-task: also persist to kiko_conversations + kiko_messages so the sidebar populates ═══
-      try {
-        if (user?.id) {
-          let convForSidebar = activeConvId
-          if (!convForSidebar) {
-            const { data: newConv } = await supabase.from('kiko_conversations').insert({
-              user_id: user.id,
-              title: msg.slice(0, 80),
-              status: 'done',
-              unread: false,
-              last_message_at: new Date().toISOString(),
-              message_count: 2,
-            }).select('id').single()
-            if (newConv?.id) { convForSidebar = newConv.id; setActiveConvId(newConv.id) }
-          } else {
-            await supabase.from('kiko_conversations').update({
-              status: 'done',
-              last_message_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            }).eq('id', convForSidebar)
-          }
-          if (convForSidebar) {
-            await supabase.from('kiko_messages').insert([
-              { conversation_id: convForSidebar, role: 'user', content: msg },
-              { conversation_id: convForSidebar, role: 'assistant', content: full },
-            ])
-          }
-        }
-      } catch (e) { console.error('[KikoFloat] sidebar persist failed:', e) }
-
-      // Legacy persistence (kept for backward compat with old conversations table)
+      // Save conversation BEFORE navigation (navigation reloads the page)
       let savedConvId = convId
       if (user?.id) {
         const orgId = user?.app_metadata?.org_id
@@ -602,11 +450,11 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           style={{
           position: 'fixed', bottom: 88, right: 24, width: panelW,
           zIndex: 100, borderRadius: 24,
-          background: 'var(--border)',
+          background: 'rgba(238,238,238,0.035)',
           backdropFilter: 'blur(40px) saturate(1.5)', WebkitBackdropFilter: 'blur(40px) saturate(1.5)',
           border: `0.5px solid ${C.border}`,
-          borderTop: `0.5px solid var(--border)`,
-          boxShadow: '0 12px 40px var(--border)' || '0 16px 48px var(--border), 0 4px 16px var(--border), 0 1px 0 var(--border) inset',
+          borderTop: `0.5px solid rgba(238,238,238,0.15)`,
+          boxShadow: '0 12px 40px rgba(0,0,0,0.5)' || '0 16px 48px rgba(0,0,0,0.45), 0 4px 16px rgba(0,0,0,0.3), 0 1px 0 rgba(238,238,238,0.05) inset',
           display: 'flex', flexDirection: 'column',
           maxHeight: 'calc(100vh - 160px)',
           opacity: open ? 1 : 0,
@@ -614,58 +462,23 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           pointerEvents: open ? 'all' : 'none',
         }}>
           {/* Header */}
-          <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: hasMessages ? '1.5px solid var(--border)' : 'none' }}>
+          <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: hasMessages ? '1.5px solid rgba(238,238,238,0.07)' : 'none' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 24, height: 12, overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)', maskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)' }}>
                 <KikoWaveform width={24} height={12} mini />
               </div>
               <span style={{ fontSize: 14, fontWeight: 500, color: C.text, fontFamily: C.font }}>Kiko</span>
               {voiceOpen && (
-                <span style={{ fontSize: 10, fontWeight: 500, color: voiceSpeaking ? '#06D6A0' : voiceStatus === 'thinking' ? '#7C9CF6' : voiceStatus === 'error' ? '#FF5050' : 'var(--muted-foreground)', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: voiceSpeaking ? '#06D6A0' : voiceStatus === 'connecting' ? 'var(--primary)' : '#06D6A0', animation: voiceSpeaking ? 'none' : 'pulse 1.5s ease-in-out infinite' }} />
+                <span style={{ fontSize: 10, fontWeight: 500, color: voiceSpeaking ? '#06D6A0' : voiceStatus === 'thinking' ? '#7C9CF6' : voiceStatus === 'error' ? '#FF5050' : 'rgba(238,238,238,0.4)', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: voiceSpeaking ? '#06D6A0' : voiceStatus === 'connecting' ? '#F59E0B' : '#06D6A0', animation: voiceSpeaking ? 'none' : 'pulse 1.5s ease-in-out infinite' }} />
                   {voiceSpeaking ? 'Speaking' : voiceStatus === 'thinking' ? 'Thinking' : voiceStatus === 'connecting' ? 'Connecting' : 'Listening'}
                 </span>
               )}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <button onClick={() => setShowSidebar(s => !s)} title={`${conversations.length} conversations${conversations.filter(c => c.unread).length > 0 ? ` · ${conversations.filter(c => c.unread).length} unread` : ''}`} style={{ background: showSidebar ? 'var(--accent)' : 'none', border: 'none', cursor: 'pointer', color: showSidebar ? C.purple : C.textTer, padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 4, borderRadius: 6, fontSize: 11, fontFamily: C.font, position: 'relative' }}>
-                ☰ {conversations.length}
-                {conversations.filter(c => c.unread && c.id !== activeConvId).length > 0 && (
-                  <span style={{ position: 'absolute', top: -2, right: -2, width: 7, height: 7, borderRadius: '50%', background: '#F87171' }} />
-                )}
-              </button>
-              <button onClick={newConversation} title="New conversation" style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textTer, padding: '4px 8px', borderRadius: 6, fontSize: 14, lineHeight: 1, fontFamily: C.font }}>+</button>
-              <button onClick={toggleOpen} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textTer, padding: 4, display: 'flex', borderRadius: 6, lineHeight: 1 }}>
-                <X size={13} />
-              </button>
-            </div>
+            <button onClick={toggleOpen} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textTer, padding: 4, display: 'flex', borderRadius: 6, lineHeight: 1 }}>
+              <X size={13} />
+            </button>
           </div>
-
-          {/* Conversation sidebar (collapsible) */}
-          {showSidebar && (
-            <div style={{ borderBottom: '1.5px solid var(--border)', maxHeight: 240, overflowY: 'auto', background: 'var(--border)' }}>
-              {conversations.length === 0 && (
-                <div style={{ padding: '14px', fontSize: 11, color: C.textTer, textAlign: 'center', fontFamily: C.font }}>No conversations yet. Start chatting.</div>
-              )}
-              {conversations.map(c => {
-                const isActive = c.id === activeConvId
-                const isProcessing = c.status === 'processing'
-                const isUnread = c.unread && !isActive
-                return (
-                  <div key={c.id} onClick={() => { setActiveConvId(c.id); setShowSidebar(false) }} style={{ padding: '10px 14px', cursor: 'pointer', borderBottom: '0.5px solid var(--border)', background: isActive ? 'var(--accent)' : 'transparent', display: 'flex', alignItems: 'center', gap: 8, fontFamily: C.font }}>
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: isProcessing ? 'var(--primary)' : isUnread ? '#F87171' : c.status === 'done' ? '#34D399' : 'var(--border)', flexShrink: 0, animation: isProcessing ? 'pulse 1.4s ease-in-out infinite' : 'none' }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12, color: isUnread ? C.text : C.textSec, fontWeight: isUnread ? 500 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
-                      <div style={{ fontSize: 9, color: C.textTer, marginTop: 2 }}>
-                        {isProcessing ? 'Kiko is thinking...' : c.last_message_at ? timeAgoShort(c.last_message_at) : 'new'}
-                        {c.message_count > 0 && ` · ${c.message_count} msgs`}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
 
           {/* Messages */}
           {hasMessages && (
@@ -678,19 +491,19 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                       <KikoWaveform width={18} height={10} mini />
                     </div>
                   )}
-                  <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : 8, background: msg.role === 'user' ? C.purple : 'var(--accent)', color: msg.role === 'user' ? 'var(--foreground)' : C.textSec, fontSize: 13, lineHeight: 1.55, fontFamily: C.font }}>
+                  <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : 8, background: msg.role === 'user' ? C.purple : 'rgba(167,139,250,0.06)', color: msg.role === 'user' ? 'rgba(238,238,238,0.9)' : C.textSec, fontSize: 13, lineHeight: 1.55, fontFamily: C.font }}>
                     {msg.role === 'user' ? msg.content : <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />}
                   </div>
                   </div>
                   {msg.role !== 'user' && !streaming && (
                     <div style={{ display: 'flex', gap: 1, marginTop: 2, paddingLeft: 28 }}>
-                      <button onClick={() => { navigator.clipboard?.writeText(msg.content); }} title="Copy" style={{ width: 24, height: 24, borderRadius: 5, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.1s' }}
-                        onMouseOver={e => { e.currentTarget.style.background = 'var(--border)'; e.currentTarget.style.color = 'var(--muted-foreground)' }}
-                        onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--border)' }}
+                      <button onClick={() => { navigator.clipboard?.writeText(msg.content); }} title="Copy" style={{ width: 24, height: 24, borderRadius: 5, background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(238,238,238,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.1s' }}
+                        onMouseOver={e => { e.currentTarget.style.background = 'rgba(238,238,238,0.06)'; e.currentTarget.style.color = 'rgba(238,238,238,0.5)' }}
+                        onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(238,238,238,0.2)' }}
                       ><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
-                      <button onClick={() => { if (i > 0) { const ui = messages.slice(0, i).findLastIndex(m => m.role === 'user'); if (ui >= 0) handleSubmit(messages[ui].content) } }} title="Retry" style={{ width: 24, height: 24, borderRadius: 5, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.1s' }}
-                        onMouseOver={e => { e.currentTarget.style.background = 'var(--border)'; e.currentTarget.style.color = 'var(--muted-foreground)' }}
-                        onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--border)' }}
+                      <button onClick={() => { if (i > 0) { const ui = messages.slice(0, i).findLastIndex(m => m.role === 'user'); if (ui >= 0) handleSubmit(messages[ui].content) } }} title="Retry" style={{ width: 24, height: 24, borderRadius: 5, background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(238,238,238,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.1s' }}
+                        onMouseOver={e => { e.currentTarget.style.background = 'rgba(238,238,238,0.06)'; e.currentTarget.style.color = 'rgba(238,238,238,0.5)' }}
+                        onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(238,238,238,0.2)' }}
                       ><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg></button>
                     </div>
                   )}
@@ -701,12 +514,12 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                   <div style={{ width: 20, height: 20, borderRadius: 6, background: C.purple, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
                     <KikoWaveform width={18} height={10} mini />
                   </div>
-                  <div style={{ padding: '7px 11px', borderRadius: 50, background: 'var(--accent)' }}>
+                  <div style={{ padding: '7px 11px', borderRadius: 50, background: 'rgba(167,139,250,0.06)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <span style={{ width: 5, height: 5, borderRadius: '50%', background: C.purple, flexShrink: 0, animation: 'kikoBreathe 2s ease-in-out infinite' }} />
                       <span style={{ fontSize: 12, color: C.textSec, fontFamily: C.font }}>{toolStatus || 'Thinking…'}</span>
                     </div>
-                    <div style={{ height: 2, borderRadius: 1, background: 'var(--border)', marginTop: 5, overflow: 'hidden', width: 120 }}>
+                    <div style={{ height: 2, borderRadius: 1, background: 'rgba(238,238,238,0.04)', marginTop: 5, overflow: 'hidden', width: 120 }}>
                       <div style={{ height: '100%', borderRadius: 1, background: C.purple, animation: 'kikoProgress 2.4s ease-in-out infinite' }} />
                     </div>
                   </div>
@@ -718,16 +531,16 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                     <div style={{ width: 20, height: 20, borderRadius: 6, background: C.purple, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
                       <KikoWaveform width={18} height={10} mini />
                     </div>
-                    <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: 50, background: 'var(--accent)', fontSize: 13, color: C.textSec, lineHeight: 1.55, fontFamily: C.font }}>
+                    <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: 50, background: 'rgba(167,139,250,0.06)', fontSize: 13, color: C.textSec, lineHeight: 1.55, fontFamily: C.font }}>
                       <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
                       <span style={{ animation: 'kikoBreathe 1s infinite' }}>▍</span>
                     </div>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'center', marginTop: 6 }}>
                     <button onClick={() => { if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; if (streamText) setMessages(prev => [...prev, { role: 'assistant', content: streamText }]); setStreamText(''); setStreaming(false) } }}
-                      style={{ padding: '4px 12px', borderRadius: 14, border: '0.5px solid var(--border)', background: 'var(--border)', cursor: 'pointer', fontSize: 11, color: 'var(--muted-foreground)', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.1s' }}
-                      onMouseOver={e => { e.currentTarget.style.background = 'var(--border)'; e.currentTarget.style.color = 'var(--foreground)' }}
-                      onMouseOut={e => { e.currentTarget.style.background = 'var(--border)'; e.currentTarget.style.color = 'var(--muted-foreground)' }}
+                      style={{ padding: '4px 12px', borderRadius: 14, border: '0.5px solid rgba(238,238,238,0.1)', background: 'rgba(238,238,238,0.03)', cursor: 'pointer', fontSize: 11, color: 'rgba(238,238,238,0.4)', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.1s' }}
+                      onMouseOver={e => { e.currentTarget.style.background = 'rgba(238,238,238,0.06)'; e.currentTarget.style.color = 'rgba(238,238,238,0.6)' }}
+                      onMouseOut={e => { e.currentTarget.style.background = 'rgba(238,238,238,0.03)'; e.currentTarget.style.color = 'rgba(238,238,238,0.4)' }}
                     ><span style={{ width: 8, height: 8, borderRadius: 1.5, background: 'currentColor', display: 'inline-block' }} /> Stop</button>
                   </div>
                 </div>
@@ -742,13 +555,13 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               {dynamicChips.map((chip, i) => (
                 <button key={chip} onClick={() => handleSubmit(chip)} style={{
                   fontSize: 12, padding: '5px 10px', borderRadius: 50,
-                  border: '0.5px solid var(--border)', background: 'var(--border)',
+                  border: '0.5px solid rgba(238,238,238,0.1)', background: 'rgba(238,238,238,0.07)',
                   color: C.textSec, cursor: 'pointer', fontFamily: C.font,
                   animation: `kikoChipIn 0.3s ease ${0.08 + i * 0.05}s both`,
                   transition: 'background 0.15s, border-color 0.15s',
                 }}
-                  onMouseOver={e => { e.currentTarget.style.background = 'var(--border)'; e.currentTarget.style.borderColor = 'var(--border)' }}
-                  onMouseOut={e => { e.currentTarget.style.background = 'var(--border)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(238,238,238,0.07)'; e.currentTarget.style.borderColor = 'rgba(238,238,238,0.1)' }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(238,238,238,0.07)'; e.currentTarget.style.borderColor = 'rgba(238,238,238,0.07)' }}
                 >
                   {chip}
                 </button>
@@ -759,18 +572,18 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           {/* Input bar inside panel */}
           {/* File preview strip */}
           {pendingFile && (
-            <div style={{ padding: '8px 12px 0', borderTop: '0.5px solid var(--border)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 10, background: 'var(--border)', border: '0.5px solid var(--border)' }}>
+            <div style={{ padding: '8px 12px 0', borderTop: '0.5px solid rgba(238,238,238,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 10, background: 'rgba(238,238,238,0.03)', border: '0.5px solid rgba(238,238,238,0.08)' }}>
                 {pendingFile.previewUrl
                   ? <img src={pendingFile.previewUrl} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
-                  : <div style={{ width: 36, height: 36, borderRadius: 6, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--primary)', fontWeight: 500 }}>{pendingFile.name.split('.').pop()?.toUpperCase()}</div>
+                  : <div style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(167,139,250,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'rgba(167,139,250,0.7)', fontWeight: 500 }}>{pendingFile.name.split('.').pop()?.toUpperCase()}</div>
                 }
-                <span style={{ fontSize: 11, color: 'var(--muted-foreground)', fontFamily: C.font, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pendingFile.name}</span>
-                <button onClick={clearPendingFile} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-foreground)', padding: 2, fontSize: 12, lineHeight: 1 }}>✕</button>
+                <span style={{ fontSize: 11, color: 'rgba(238,238,238,0.5)', fontFamily: C.font, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pendingFile.name}</span>
+                <button onClick={clearPendingFile} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(238,238,238,0.3)', padding: 2, fontSize: 12, lineHeight: 1 }}>✕</button>
               </div>
             </div>
           )}
-          <div style={{ padding: '8px 10px 10px', display: 'flex', alignItems: 'flex-end', gap: 6, borderTop: hasMessages ? '1.5px solid var(--border)' : 'none', marginTop: hasMessages ? 0 : 8 }}>
+          <div style={{ padding: '8px 10px 10px', display: 'flex', alignItems: 'flex-end', gap: 6, borderTop: hasMessages ? '1.5px solid rgba(238,238,238,0.07)' : 'none', marginTop: hasMessages ? 0 : 8 }}>
             <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} style={{ width: 26, height: 26, borderRadius: '50%', border: 'none', background: 'transparent', color: C.textTer, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {fileUploading
                 ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'kikoVortexSpin 1s linear infinite' }}><circle cx="12" cy="12" r="10"/></svg>
@@ -789,7 +602,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               {voiceOpen ? <div style={{ width: 8, height: 8, borderRadius: 1.5, background: 'rgba(255,59,48,0.7)' }} /> : <EqIcon size={14} color="rgba(6,214,160,0.7)" />}
             </button>
             <button onClick={() => { if (pendingFile) submitWithFile(); else handleSubmit(); }} disabled={(!input.trim() && !pendingFile) || streaming}
-              style={{ width: 28, height: 28, borderRadius: 50, border: 'none', background: (input.trim() || pendingFile) && !streaming ? 'linear-gradient(135deg, var(--primary), #2DD4BF)' : 'var(--border)', color: (input.trim() || pendingFile) && !streaming ? 'var(--foreground)' : C.textTer, cursor: (input.trim() || pendingFile) && !streaming ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s', boxShadow: (input.trim() || pendingFile) ? '0 2px 8px var(--accent)' : 'none' }}>
+              style={{ width: 28, height: 28, borderRadius: 50, border: 'none', background: (input.trim() || pendingFile) && !streaming ? 'linear-gradient(135deg, #7C5CFC, #2DD4BF)' : 'rgba(238,238,238,0.04)', color: (input.trim() || pendingFile) && !streaming ? 'rgba(238,238,238,0.9)' : C.textTer, cursor: (input.trim() || pendingFile) && !streaming ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s', boxShadow: (input.trim() || pendingFile) ? '0 2px 8px rgba(167,139,250,0.2)' : 'none' }}>
               <ArrowUp size={13} />
             </button>
           </div>
@@ -805,28 +618,28 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         </>}
         {/* Idle breathing ring — subtle purple */}
         {!open && !voiceOpen && <>
-          <div style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: '2px solid var(--ring)', animation: 'kikoPulseRing 4s ease-in-out infinite', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', inset: -14, borderRadius: '50%', border: '1.5px solid var(--accent)', animation: 'kikoPulseRing 4s ease-in-out 1s infinite', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: '2px solid rgba(167,139,250,0.25)', animation: 'kikoPulseRing 4s ease-in-out infinite', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', inset: -14, borderRadius: '50%', border: '1.5px solid rgba(167,139,250,0.12)', animation: 'kikoPulseRing 4s ease-in-out 1s infinite', pointerEvents: 'none' }} />
         </>}
         <button onClick={toggleOpen} className={fabClass} style={{
           width: 60, height: 60, borderRadius: '50%',
           background: voiceOpen
             ? 'radial-gradient(circle at 40% 35%, rgba(10,28,24,1), rgba(8,8,12,1))'
             : 'radial-gradient(circle at 40% 35%, rgba(35,28,55,1), rgba(15,13,22,1))',
-          border: voiceOpen ? '2px solid rgba(6,214,160,0.25)' : '2px solid var(--ring)',
-          color: 'var(--foreground)',
+          border: voiceOpen ? '2px solid rgba(6,214,160,0.25)' : '2px solid rgba(167,139,250,0.35)',
+          color: 'rgba(238,238,238,0.9)',
           cursor: 'pointer',
           boxShadow: voiceOpen
-            ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px var(--border), inset 0 1px 0 var(--border)'
-            : '0 0 0 3px var(--accent), 0 0 28px var(--accent), 0 8px 28px var(--border), inset 0 1px 0 var(--border)',
+            ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(238,238,238,0.06)'
+            : '0 0 0 3px rgba(167,139,250,0.1), 0 0 28px rgba(167,139,250,0.15), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(238,238,238,0.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           overflow: 'hidden',
           transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
           transformOrigin: 'center',
           position: 'relative',
         }}
-          onMouseEnter={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.4)' : 'var(--ring)'; e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 5px rgba(6,214,160,0.12), 0 0 40px rgba(6,214,160,0.2), 0 12px 36px var(--border)' : '0 0 0 4px var(--accent), 0 0 32px var(--accent), 0 12px 36px var(--border)' }}}
-          onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'var(--accent)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px var(--border)' : '0 0 0 3px var(--accent), 0 0 20px var(--accent), 0 8px 28px var(--border)' }}}
+          onMouseEnter={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.4)' : 'rgba(167,139,250,0.35)'; e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 5px rgba(6,214,160,0.12), 0 0 40px rgba(6,214,160,0.2), 0 12px 36px rgba(0,0,0,0.5)' : '0 0 0 4px rgba(167,139,250,0.08), 0 0 32px rgba(167,139,250,0.12), 0 12px 36px rgba(0,0,0,0.5)' }}}
+          onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'rgba(167,139,250,0.18)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4)' : '0 0 0 3px rgba(167,139,250,0.05), 0 0 20px rgba(167,139,250,0.08), 0 8px 28px rgba(0,0,0,0.4)' }}}
         >
           {voiceOpen
             ? <div style={{ transform: open ? 'rotate(-45deg)' : 'none', transition: 'transform 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><KikoWaveform width={40} height={40} mini volume={floatVoiceState.energy || 0.12} speaking={voiceSpeaking} /></div>

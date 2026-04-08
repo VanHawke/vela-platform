@@ -15,7 +15,7 @@ import {
 
 const CATEGORY_COLORS = {
   meeting: '#3b82f6',
-  f1: 'var(--primary)',
+  f1: '#A78BFA',
   investor: '#eab308',
   personal: '#22c55e',
   deadline: '#ef4444',
@@ -165,7 +165,7 @@ export default function Calendar({ user }) {
             <Button
               onClick={() => { setShowCreate(true); setSelectedEvent(null) }}
               size="sm"
-              className="bg-[var(--primary)] text-[#081a1b] hover:bg-[var(--primary)]/90"
+              className="bg-[#A78BFA] text-[#081a1b] hover:bg-[#A78BFA]/90"
             >
               <Plus className="h-4 w-4 mr-1" /> New Event
             </Button>

@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-08T12:54:51.568Z",
+  "generated_at": "2026-04-08T13:02:29.825Z",
   "commits": [
+    {
+      "hash": "80c5f05",
+      "subject": "fix: remove global * { margin/padding: 0 } reset that was nuking all Tailwind padding/margin utilities. Tailwind preflight handles resets correctly. This was the root cause of broken layout in HomePre",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "411cbbd",
       "subject": "Block C preview: HomePreview.jsx mockup using canonical shadcn primitives — Card, Button, Tailwind classes only. Mounted at /preview/home (public route, no auth) for design sign-off before rebuilding ",
-      "when": "10 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "15682e6",
       "subject": "Block C: restore canonical shadcn primitives. card.jsx and button.jsx had been clobbered with inline-style versions — restored to forwardRef + cn() + Tailwind classes + cva variants. Required for prop",
-      "when": "18 minutes ago"
+      "when": "26 minutes ago"
     },
     {
       "hash": "f5b5f48",
       "subject": "fix: dark amber is the default theme. Components were designed for dark backgrounds — light mode requires per-component conversion that isn't done. Storage key bumped to v3 to invalidate stale 'light'",
-      "when": "46 minutes ago"
+      "when": "54 minutes ago"
     },
     {
       "hash": "ed9d442",
       "subject": "theme convert pass 3: dark glass surfaces (rgba 25/20/0) + hex leftovers (#3A3A3E #555558 #191919) → tokens. KikoChat input bar should now render correctly on light bg.",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "9cbe3ce",
@@ -95,11 +100,6 @@
       "hash": "024ef43",
       "subject": "Block A.5 + Block D wiring: (A.5) intent-classifier no longer routes ship/commit/release questions to code_review — they now route to general so the git log injection in self-knowledge surfaces. (D) V",
       "when": "4 hours ago"
-    },
-    {
-      "hash": "e274dd8",
-      "subject": "Block A: Kiko Bible v1.0 wired into system prompt. KIKO_BIBLE.md governing layer loaded from disk on every request via kiko-self-knowledge.js. Self-critique protocol + behavioural permission added to ",
-      "when": "5 hours ago"
     }
   ]
 }

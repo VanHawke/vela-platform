@@ -6,7 +6,26 @@ import { setPageContext } from '@/lib/pageContext'
 import { Plus, Sparkles, X, Mail, Linkedin, Play, Pause, Users, ChevronRight, GitBranch, Rocket } from 'lucide-react'
 
 // Design tokens — hardcoded to match mockup renders
-import { C } from '@/lib/theme'
+const C = {
+  bg: '#0D0D0F',
+  card: '#141416',
+  cardHover: '#1A1A1E',
+  border: 'rgba(255,255,255,0.06)',
+  borderHover: 'rgba(255,255,255,0.10)',
+  text: 'rgba(245,245,248,0.92)',
+  textSec: 'rgba(245,245,248,0.55)',
+  textTer: 'rgba(245,245,248,0.32)',
+  textMut: 'rgba(245,245,248,0.16)',
+  purple: '#A78BFA',
+  teal: '#2DD4BF',
+  green: '#34D399',
+  red: '#F87171',
+  amber: '#FBBF24',
+  blue: '#60A5FA',
+  linkedin: '#0077B5',
+  font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  r: 8,
+}
 const pct = (n, d) => d > 0 ? Math.round((n / d) * 100) : 0
 
 function Badge({ label, color }) {
@@ -271,8 +290,8 @@ export default function Sequences() {
 
       {/* ═══ GENERATE WIZARD MODAL ═══ */}
       {showWiz && (
-        <div style={{ position: 'fixed', inset: 0, background: 'var(--foreground)', backdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowWiz(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#161618', border: `0.5px solid ${C.border}`, borderRadius: 12, padding: 28, width: 460, maxWidth: '90vw', boxShadow: '0 24px 64px var(--border)' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowWiz(false)}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#161618', border: `0.5px solid ${C.border}`, borderRadius: 12, padding: 28, width: 460, maxWidth: '90vw', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
               <div>
                 <div style={{ fontSize: 18, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}><Sparkles size={16} style={{ color: C.purple }} /> Generate campaign</div>

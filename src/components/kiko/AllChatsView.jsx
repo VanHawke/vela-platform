@@ -61,36 +61,36 @@ export default function AllChatsView({ convos, onSelect, onDelete, onClose, user
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 600, color: '#fff', fontFamily: T.font, margin: 0 }}>Chats</h1>
-        <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 50, border: 'none', background: 'var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted-foreground)', transition: 'background 0.15s' }}
-          onMouseOver={e => e.currentTarget.style.background = 'var(--border)'}
-          onMouseOut={e => e.currentTarget.style.background = 'var(--border)'}>
+        <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 50, border: 'none', background: 'rgba(238,238,238,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(238,238,238,0.5)', transition: 'background 0.15s' }}
+          onMouseOver={e => e.currentTarget.style.background = 'rgba(238,238,238,0.1)'}
+          onMouseOut={e => e.currentTarget.style.background = 'rgba(238,238,238,0.06)'}>
           <X size={18} />
         </button>
       </div>
 
       {/* Search */}
       <div style={{ position: 'relative', marginBottom: 20 }}>
-        <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted-foreground)' }} />
+        <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgba(238,238,238,0.3)' }} />
         <input ref={inputRef} value={search} onChange={e => handleSearch(e.target.value)}
           placeholder="Search your chats…"
           style={{ width: '100%', padding: '12px 14px 12px 40px', borderRadius: 12, border: `1.5px solid ${T.glassBorder}`, background: T.glass, backdropFilter: T.glassBlur, color: '#fff', fontSize: 14, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
       </div>
 
       {/* Count */}
-      <div style={{ fontSize: 12, color: 'var(--muted-foreground)', fontFamily: T.font, marginBottom: 12, padding: '0 4px' }}>
+      <div style={{ fontSize: 12, color: 'rgba(238,238,238,0.35)', fontFamily: T.font, marginBottom: 12, padding: '0 4px' }}>
         {searching ? 'Searching…' : search ? `${displayed.length} results` : `${convos.length} conversations`}
       </div>
 
       {/* Conversation list */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {!searching && displayed.length === 0 ? (
-          <p style={{ textAlign: 'center', padding: 40, color: 'var(--muted-foreground)', fontSize: 14, fontFamily: T.font }}>
+          <p style={{ textAlign: 'center', padding: 40, color: 'rgba(238,238,238,0.3)', fontSize: 14, fontFamily: T.font }}>
             {search ? 'No chats match your search' : 'No conversations yet'}
           </p>
         ) : (
           displayed.map(conv => (
             <div key={conv.id} onClick={() => { onSelect(conv); onClose() }}
-              style={{ padding: '14px 16px', borderBottom: `1px solid var(--border)`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'background 0.1s', borderRadius: 8 }}
+              style={{ padding: '14px 16px', borderBottom: `1px solid rgba(238,238,238,0.04)`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'background 0.1s', borderRadius: 8 }}
               onMouseOver={e => e.currentTarget.style.background = T.surfaceHover}
               onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -98,16 +98,16 @@ export default function AllChatsView({ convos, onSelect, onDelete, onClose, user
                   {(conv.title || 'Untitled').replace('🎤 ', '')}
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
-                  <span style={{ fontSize: 12, color: 'var(--muted-foreground)', fontFamily: T.font }}>{conv.date ? timeAgo(conv.date) : ''}</span>
+                  <span style={{ fontSize: 12, color: 'rgba(238,238,238,0.3)', fontFamily: T.font }}>{conv.date ? timeAgo(conv.date) : ''}</span>
                   {conv.matchType === 'content' && search && (
-                    <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 50, background: 'var(--accent)', color: 'var(--primary)', fontFamily: T.font }}>in messages</span>
+                    <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 50, background: 'rgba(167,139,250,0.12)', color: 'rgba(167,139,250,0.7)', fontFamily: T.font }}>in messages</span>
                   )}
                 </div>
               </div>
               <button onClick={(e) => { e.stopPropagation(); onDelete(conv) }}
-                style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--border)', transition: 'color 0.15s', flexShrink: 0 }}
+                style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(238,238,238,0.15)', transition: 'color 0.15s', flexShrink: 0 }}
                 onMouseOver={e => e.currentTarget.style.color = 'rgba(198,40,40,0.8)'}
-                onMouseOut={e => e.currentTarget.style.color = 'var(--border)'}>
+                onMouseOut={e => e.currentTarget.style.color = 'rgba(238,238,238,0.15)'}>
                 <Trash2 size={14} />
               </button>
             </div>

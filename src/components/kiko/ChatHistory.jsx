@@ -84,7 +84,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
 
   // Collapsed strip
   if (!open) return (
-    <div style={{ width: 28, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight: '1px solid var(--border)', cursor: 'pointer' }} onClick={onToggle}>
+    <div style={{ width: 28, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight: '1px solid rgba(238,238,238,0.04)', cursor: 'pointer' }} onClick={onToggle}>
       <ChevronRight size={14} style={{ color: T.textTertiary }} />
     </div>
   )
@@ -104,24 +104,24 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
               onBlur={() => renameConversation(conv)} autoFocus onClick={e => e.stopPropagation()}
               style={{ width: '100%', fontSize: 13, fontWeight: 500, color: '#fff', fontFamily: T.font, border: `1px solid ${T.border}`, borderRadius: 6, padding: '2px 6px', outline: 'none', background: T.bg }} />
           ) : (
-            <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--foreground)', fontFamily: T.font, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block', maxWidth: 280 }}>
+            <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(238,238,238,0.8)', fontFamily: T.font, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block', maxWidth: 280 }}>
               {(conv.title || 'Untitled').replace('🎤 ', '')}
             </span>
           )}
         </div>
         <div style={{ position: 'relative', flexShrink: 0 }} ref={menuOpenId === conv.id ? menuRef : null}>
           <button onClick={(e) => { e.stopPropagation(); setMenuOpenId(menuOpenId === conv.id ? null : conv.id) }}
-            style={{ width: 24, height: 24, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--border)', transition: 'color 0.15s' }}
-            onMouseOver={e => e.currentTarget.style.color = 'var(--muted-foreground)'}
-            onMouseOut={e => { if (menuOpenId !== conv.id) e.currentTarget.style.color = 'var(--border)' }}>
+            style={{ width: 24, height: 24, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(238,238,238,0.15)', transition: 'color 0.15s' }}
+            onMouseOver={e => e.currentTarget.style.color = 'rgba(238,238,238,0.5)'}
+            onMouseOut={e => { if (menuOpenId !== conv.id) e.currentTarget.style.color = 'rgba(238,238,238,0.15)' }}>
             <MoreHorizontal size={14} />
           </button>
           {menuOpenId === conv.id && (
-            <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', right: 0, top: '100%', marginTop: 4, width: 140, background: 'rgba(20,20,26,0.95)', backdropFilter: 'blur(20px)', borderRadius: 10, border: `1px solid ${T.glassBorder}`, boxShadow: '0 8px 24px var(--border)', padding: 4, zIndex: 300 }}>
+            <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', right: 0, top: '100%', marginTop: 4, width: 140, background: 'rgba(20,20,26,0.95)', backdropFilter: 'blur(20px)', borderRadius: 10, border: `1px solid ${T.glassBorder}`, boxShadow: '0 8px 24px rgba(0,0,0,0.4)', padding: 4, zIndex: 300 }}>
               <button onClick={() => { setMenuOpenId(null); setRenamingId(conv.id); setRenameValue(conv.title || '') }}
                 style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: 'none', background: 'transparent', color: '#fff', textAlign: 'left', fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 7 }}
-                onMouseOver={e => e.currentTarget.style.background = 'var(--border)'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
-                <Pencil size={12} style={{ color: 'var(--muted-foreground)' }} /> Rename
+                onMouseOver={e => e.currentTarget.style.background = 'rgba(238,238,238,0.06)'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
+                <Pencil size={12} style={{ color: 'rgba(238,238,238,0.4)' }} /> Rename
               </button>
               <button onClick={() => deleteConversation(conv)}
                 style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: 'none', background: 'transparent', color: '#C62828', textAlign: 'left', fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 7 }}
@@ -136,27 +136,27 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
   }
 
   return (
-    <div style={{ width: 300, flexShrink: 0, height: '100%', background: '#111114', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: 300, flexShrink: 0, height: '100%', background: '#111114', borderRight: '1px solid rgba(238,238,238,0.04)', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <div style={{ padding: '14px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 15, fontWeight: 500, color: '#fff', fontFamily: T.font }}>Chats</span>
         <div style={{ display: 'flex', gap: 4 }}>
           <button onClick={() => { onNewChat(); }} title="New chat" style={{ width: 30, height: 30, borderRadius: 50, border: 'none', background: T.accentSoft, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}><Plus size={14} /></button>
-          <button onClick={onToggle} style={{ width: 30, height: 30, borderRadius: 50, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted-foreground)' }}><ChevronLeft size={14} /></button>
+          <button onClick={onToggle} style={{ width: 30, height: 30, borderRadius: 50, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(238,238,238,0.4)' }}><ChevronLeft size={14} /></button>
         </div>
       </div>
 
       {/* Recents label */}
-      <div style={{ padding: '4px 16px 8px', fontSize: 11, fontWeight: 500, color: 'var(--muted-foreground)', fontFamily: T.font, letterSpacing: '0.03em' }}>
+      <div style={{ padding: '4px 16px 8px', fontSize: 11, fontWeight: 500, color: 'rgba(238,238,238,0.35)', fontFamily: T.font, letterSpacing: '0.03em' }}>
         Recents
       </div>
 
       {/* Recent conversations — top 20 */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 6px' }}>
         {loading ? (
-          <p style={{ textAlign: 'center', padding: 20, color: 'var(--muted-foreground)', fontSize: 13, fontFamily: T.font }}>Loading…</p>
+          <p style={{ textAlign: 'center', padding: 20, color: 'rgba(238,238,238,0.3)', fontSize: 13, fontFamily: T.font }}>Loading…</p>
         ) : recents.length === 0 ? (
-          <p style={{ textAlign: 'center', padding: 20, color: 'var(--muted-foreground)', fontSize: 13, fontFamily: T.font }}>No conversations yet</p>
+          <p style={{ textAlign: 'center', padding: 20, color: 'rgba(238,238,238,0.3)', fontSize: 13, fontFamily: T.font }}>No conversations yet</p>
         ) : (
           recents.map(conv => <ConvRow key={conv.id} conv={conv} />)
         )}
@@ -165,9 +165,9 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
       {/* All chats button — bottom */}
       {allConvos.length > 0 && (
         <button onClick={() => onShowAllChats?.(allConvos, selectConversation, deleteConversation)}
-          style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderTop: `1px solid ${T.border}`, background: 'transparent', border: 'none', borderTop: `1px solid ${T.border}`, cursor: 'pointer', color: 'var(--muted-foreground)', fontFamily: T.font, fontSize: 13, fontWeight: 400, transition: 'color 0.15s', width: '100%', textAlign: 'left' }}
-          onMouseOver={e => e.currentTarget.style.color = 'var(--foreground)'}
-          onMouseOut={e => e.currentTarget.style.color = 'var(--muted-foreground)'}>
+          style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderTop: `1px solid ${T.border}`, background: 'transparent', border: 'none', borderTop: `1px solid ${T.border}`, cursor: 'pointer', color: 'rgba(238,238,238,0.5)', fontFamily: T.font, fontSize: 13, fontWeight: 400, transition: 'color 0.15s', width: '100%', textAlign: 'left' }}
+          onMouseOver={e => e.currentTarget.style.color = 'rgba(238,238,238,0.8)'}
+          onMouseOut={e => e.currentTarget.style.color = 'rgba(238,238,238,0.5)'}>
           <MessageCircle size={16} />
           All chats
         </button>

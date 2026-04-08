@@ -77,20 +77,20 @@ export default function DocumentSection({ linkedCompanyId, linkedDealId, linkedT
   const emptyText = { fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', margin: 0, lineHeight: 1.5 }
 
   return (
-    <div style={{ background: 'var(--border)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid var(--border)', boxShadow: 'none' }}>
+    <div style={{ background: 'rgba(238,238,238,0.07)', borderRadius: 18, padding: '16px 20px', border: '1.5px solid rgba(238,238,238,0.1)', boxShadow: 'none' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
         <p style={sectionTitle}>
           <FileText style={{ width: 12, height: 12 }} /> {entityLabel} ({documents.length})
         </p>
         <input ref={fileRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.png,.jpg,.jpeg,.webp,.xlsx" onChange={e => { const f = e.target.files?.[0]; if (f) handleUpload(f); e.target.value = '' }} style={{ display: 'none' }} />
-        <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 500, color: 'var(--accent)', background: 'var(--border)', border: '1.5px solid var(--border)', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+        <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 500, color: 'var(--accent)', background: 'rgba(238,238,238,0.07)', border: '1.5px solid rgba(238,238,238,0.1)', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', fontFamily: 'var(--font)' }}>
           {uploading ? <Loader2 style={{ width: 10, height: 10, animation: 'spin 1s linear infinite' }} /> : <Plus style={{ width: 10, height: 10 }} />}
           {uploading ? uploadStatus : 'Add'}
         </button>
       </div>
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {[...Array(2)].map((_, i) => <div key={i} style={{ height: 40, background: 'var(--border)', borderRadius: 50, animation: 'pulse 1.5s infinite' }} />)}
+          {[...Array(2)].map((_, i) => <div key={i} style={{ height: 40, background: 'rgba(238,238,238,0.07)', borderRadius: 50, animation: 'pulse 1.5s infinite' }} />)}
         </div>
       ) : documents.length === 0 ? (
         <p style={emptyText}>No documents linked yet</p>

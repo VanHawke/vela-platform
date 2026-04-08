@@ -4,7 +4,6 @@ import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
 import LoginPage from '@/components/auth/LoginPage'
 import AuthCallback from '@/pages/AuthCallback'
-import HomePreview from '@/pages/preview/HomePreview'
 import Layout from '@/components/layout/Layout'
 import KikoChat from '@/components/kiko/KikoChat'
 import Settings from '@/components/settings/Settings'
@@ -40,8 +39,8 @@ function AdminRoute({ children }) {
 }
 
 const Spinner = () => (
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--border)' }}>
-    <div style={{ width: 24, height: 24, border: '2px solid var(--border)', borderTopColor: 'var(--border)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'rgba(255,255,255,0.04)' }}>
+    <div style={{ width: 24, height: 24, border: '2px solid rgba(0,0,0,0.1)', borderTopColor: 'rgba(255,255,255,0.12)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
   </div>
 )
 
@@ -114,11 +113,10 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0A0A0C', color: 'var(--muted-foreground)', fontFamily: "'DM Sans', sans-serif", fontSize: 14 }}>Loading...</div>}>
+      <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0A0A0C', color: 'rgba(255,255,255,0.3)', fontFamily: "'DM Sans', sans-serif", fontSize: 14 }}>Loading...</div>}>
       <Routes>
         <Route path="/login" element={session ? <Navigate to="/" replace /> : <LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/preview/home" element={<HomePreview />} />
         <Route path="/admin" element={session ? <AdminRoute><Admin /></AdminRoute> : <Navigate to="/login" replace />} />
         <Route element={session ? <Layout key="app" user={user} /> : <Navigate to="/login" replace />}>
           <Route index element={<KikoChat user={user} />} />
