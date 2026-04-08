@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
 import LoginPage from '@/components/auth/LoginPage'
 import AuthCallback from '@/pages/AuthCallback'
+import HomePreview from '@/pages/preview/HomePreview'
 import Layout from '@/components/layout/Layout'
 import KikoChat from '@/components/kiko/KikoChat'
 import Settings from '@/components/settings/Settings'
@@ -117,6 +118,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={session ? <Navigate to="/" replace /> : <LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/preview/home" element={<HomePreview />} />
         <Route path="/admin" element={session ? <AdminRoute><Admin /></AdminRoute> : <Navigate to="/login" replace />} />
         <Route element={session ? <Layout key="app" user={user} /> : <Navigate to="/login" replace />}>
           <Route index element={<KikoChat user={user} />} />
