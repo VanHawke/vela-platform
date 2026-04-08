@@ -1,50 +1,55 @@
 {
-  "generated_at": "2026-04-08T10:45:34.319Z",
+  "generated_at": "2026-04-08T10:58:34.133Z",
   "commits": [
+    {
+      "hash": "1c5e8d3",
+      "subject": "Block C: amber-minimal theme system. src/index.css holds full token sets for :root (light) + .dark. Inter/JetBrains Mono/Source Serif 4 loaded from Google Fonts. src/lib/theme.js exports T (named toke",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "97ac6eb",
       "subject": "audit fix: handleSubmit (streaming path) now also persists to kiko_conversations + kiko_messages so the multi-task sidebar reflects all chat history. closes the gap where sendAsync existed but was nev",
-      "when": "26 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "0ba3649",
       "subject": "fix Q5: capture-recent-ships.js writes to api/ folder so Vercel bundles it with serverless functions. kiko-self-knowledge.js tries multiple paths (api/, root, public/) since Vercel cwd is unreliable a",
-      "when": "37 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "8c6e70d",
       "subject": "kiko-async: in-process call via fake req/res — bypasses HTTP entirely. Imports kiko handler default export, builds fake req with nostream=1, fake res that captures res.json() into local var. No HTTP r",
-      "when": "46 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "2438094",
       "subject": "kiko-async fix: api/kiko.js now supports ?nostream=1 — buffers SSE deltas and returns plain JSON {response, buffered_events}. kiko-async calls with nostream=1 and reads JSON body. Bypasses Vercel's br",
-      "when": "54 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "2f8807c",
       "subject": "kiko-async: add diagnostic logging + handle both stream and text fallback paths",
-      "when": "64 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "7bf15fb",
       "subject": "kiko-async: properly consume SSE stream via reader. r.text() resolved with empty body before deltas streamed in. Now uses ReadableStream reader, decodes chunk-by-chunk, parses each data: line as it ar",
-      "when": "67 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "58bba4a",
       "subject": "fix kiko-async: await processInBackground before response. Vercel kills serverless function after res.json — fire-and-forget post-response does NOT work. Parallelism comes from client firing multiple ",
-      "when": "71 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "0da819a",
       "subject": "drop legacy cron-self-improvement + cron-self-reflection stubs (replaced by cron-self-awareness + cron-rule-promotion). frees vercel function slot.",
-      "when": "83 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "f3f19f5",
       "subject": "Block A.5 + Block E: (A.5) Build-time git log capture — scripts/capture-recent-ships.js runs in npm build, writes recent-ships.json that kiko-self-knowledge.js reads. Fixes Q5 'what did you ship' perm",
-      "when": "84 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "6e71c65",
@@ -59,7 +64,7 @@
     {
       "hash": "e274dd8",
       "subject": "Block A: Kiko Bible v1.0 wired into system prompt. KIKO_BIBLE.md governing layer loaded from disk on every request via kiko-self-knowledge.js. Self-critique protocol + behavioural permission added to ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "6723a9b",
@@ -94,11 +99,6 @@
     {
       "hash": "5026bfb",
       "subject": "Step 7: Wire wrapEmailBody + voice profile + signatures into cron-sequence-enqueue. Remove hardcoded sig from cron-sequence-sender (wrapper handles it). Re-add 3 sequencer cron schedules: enqueue 6am ",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "1e07866",
-      "subject": "Step 6 part 2: Settings exposes 2 signature fields (warm + cold) + voice profile status. Inline reply triage banner on SequenceDetail when enrollments have replies. Migration: user_settings.email_sign",
       "when": "15 hours ago"
     }
   ]

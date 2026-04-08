@@ -72,7 +72,8 @@ export const C = {
   r: 8,
 };
 
-// Theme switcher — writes to localStorage and toggles .dark on <html>
+// Theme switcher — writes to localStorage and toggles .light on <html>.
+// Dark amber is the default (no class). Light amber adds .light.
 export function setTheme(mode) {
   // mode: 'light' | 'dark' | 'system'
   const root = document.documentElement;
@@ -80,12 +81,13 @@ export function setTheme(mode) {
   if (mode === 'system') {
     effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
-  root.classList.toggle('dark', effective === 'dark');
+  root.classList.toggle('light', effective === 'light');
+  root.classList.remove('dark'); // legacy
   localStorage.setItem('kiko_theme', mode);
 }
 
 export function getTheme() {
-  return localStorage.getItem('kiko_theme') || 'light';
+  return localStorage.getItem('kiko_theme') || 'dark';
 }
 
 export function initTheme() {
