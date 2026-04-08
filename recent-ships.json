@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-08T09:38:13.925Z",
+  "generated_at": "2026-04-08T09:41:50.567Z",
   "commits": [
+    {
+      "hash": "7bf15fb",
+      "subject": "kiko-async: properly consume SSE stream via reader. r.text() resolved with empty body before deltas streamed in. Now uses ReadableStream reader, decodes chunk-by-chunk, parses each data: line as it ar",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "58bba4a",
       "subject": "fix kiko-async: await processInBackground before response. Vercel kills serverless function after res.json — fire-and-forget post-response does NOT work. Parallelism comes from client firing multiple ",
-      "when": "3 minutes ago"
+      "when": "7 minutes ago"
     },
     {
       "hash": "0da819a",
       "subject": "drop legacy cron-self-improvement + cron-self-reflection stubs (replaced by cron-self-awareness + cron-rule-promotion). frees vercel function slot.",
-      "when": "16 minutes ago"
+      "when": "19 minutes ago"
     },
     {
       "hash": "f3f19f5",
       "subject": "Block A.5 + Block E: (A.5) Build-time git log capture — scripts/capture-recent-ships.js runs in npm build, writes recent-ships.json that kiko-self-knowledge.js reads. Fixes Q5 'what did you ship' perm",
-      "when": "17 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "6e71c65",
       "subject": "fix: remove orphaned brace from KikoFloat voice transcript wiring",
-      "when": "25 minutes ago"
+      "when": "28 minutes ago"
     },
     {
       "hash": "024ef43",
       "subject": "Block A.5 + Block D wiring: (A.5) intent-classifier no longer routes ship/commit/release questions to code_review — they now route to general so the git log injection in self-knowledge surfaces. (D) V",
-      "when": "27 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "e274dd8",
       "subject": "Block A: Kiko Bible v1.0 wired into system prompt. KIKO_BIBLE.md governing layer loaded from disk on every request via kiko-self-knowledge.js. Self-critique protocol + behavioural permission added to ",
-      "when": "75 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "6723a9b",
@@ -59,7 +64,7 @@
     {
       "hash": "0cf1b6d",
       "subject": "Step 7 polish: timezone helper now accepts contact email + checks TLD. UK detection includes van hawke / vanhawke / .uk / .co.uk / scotland / wales / glasgow / edinburgh / birmingham / leeds / bristol",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "5026bfb",
@@ -94,11 +99,6 @@
     {
       "hash": "2648729",
       "subject": "Step 4 final: surgical add of Prospect Replies section to existing Command Centre (OutreachIntelligence.jsx left column, above Tasks Due). NO rewrites. Deletes 4 redundant pages (Inbox/Segments/Packs/",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "48efdd8",
-      "subject": "Step 4: Morning Brief as Command Centre (operating partner surface)",
       "when": "16 hours ago"
     }
   ]

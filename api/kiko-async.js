@@ -80,44 +80,65 @@ async function processInBackground(convId, message, userEmail, currentPage, user
   const history = await sbFetch(`kiko_messages?conversation_id=eq.${convId}&order=created_at&limit=40&select=role,content`);
   const conversationHistory = (history || []).slice(0, -1).map(m => ({ role: m.role, content: m.content }));
 
-  // Call /api/kiko via internal fetch — properly consume the SSE stream
+  // Call /api/kiko via internal fetch — collect ALL chunks to completion
   const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://vela-platform-one.vercel.app';
+  console.log('[KikoAsync] calling internal kiko with msg:', message?.slice(0, 80));
   const r = await fetch(`${baseUrl}/api/kiko`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
     body: JSON.stringify({ message, userEmail, currentPage, conversationHistory })
   });
+  console.log('[KikoAsync] response status:', r.status, 'has body:', !!r.body);
 
-  // Read the SSE stream chunk by chunk until done
-  const reader = r.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
   let fullResponse = '';
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    // Split on newlines, keep last incomplete line in buffer
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed.startsWith('data: ')) continue;
-      const payload = trimmed.slice(6);
-      if (payload === '[DONE]') continue;
+  let chunkCount = 0;
+
+  if (r.body && typeof r.body.getReader === 'function') {
+    // Streaming path
+    const reader = r.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunkCount++;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+      for (const line of lines) {
+        const t = line.trim();
+        if (!t.startsWith('data: ')) continue;
+        const p = t.slice(6);
+        if (p === '[DONE]') continue;
+        try {
+          const parsed = JSON.parse(p);
+          if (parsed.delta) fullResponse += parsed.delta;
+        } catch {}
+      }
+    }
+    if (buffer.trim().startsWith('data: ')) {
       try {
-        const parsed = JSON.parse(payload);
+        const parsed = JSON.parse(buffer.trim().slice(6));
+        if (parsed.delta) fullResponse += parsed.delta;
+      } catch {}
+    }
+  } else {
+    // Fallback: read as text (for runtimes that don't expose body reader)
+    const text = await r.text();
+    chunkCount = text.split('\n').length;
+    for (const line of text.split('\n')) {
+      const t = line.trim();
+      if (!t.startsWith('data: ')) continue;
+      const p = t.slice(6);
+      if (p === '[DONE]') continue;
+      try {
+        const parsed = JSON.parse(p);
         if (parsed.delta) fullResponse += parsed.delta;
       } catch {}
     }
   }
-  // Process any remaining buffered line
-  if (buffer.trim().startsWith('data: ')) {
-    try {
-      const parsed = JSON.parse(buffer.trim().slice(6));
-      if (parsed.delta) fullResponse += parsed.delta;
-    } catch {}
-  }
+
+  console.log('[KikoAsync] collected response:', fullResponse.length, 'chars from', chunkCount, 'chunks');
   fullResponse = fullResponse.trim() || 'No response';
 
   // Persist assistant message + flip conversation to done with unread badge
