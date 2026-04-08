@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-08T12:08:19.675Z",
+  "generated_at": "2026-04-08T12:33:55.882Z",
   "commits": [
+    {
+      "hash": "f5b5f48",
+      "subject": "fix: dark amber is the default theme. Components were designed for dark backgrounds — light mode requires per-component conversion that isn't done. Storage key bumped to v3 to invalidate stale 'light'",
+      "when": "26 minutes ago"
+    },
     {
       "hash": "ed9d442",
       "subject": "theme convert pass 3: dark glass surfaces (rgba 25/20/0) + hex leftovers (#3A3A3E #555558 #191919) → tokens. KikoChat input bar should now render correctly on light bg.",
-      "when": "41 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "9cbe3ce",
       "subject": "Block C: full theme conversion. 62 files swept clean of hardcoded colors. (1) src/index.css now contains user's exact amber theme verbatim — :root light, .dark dark, @theme inline. (2) src/lib/tokens.",
-      "when": "45 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "e39603e",
       "subject": "Block C rebuild start: index.css contains exact amber theme spec from user. tokens.js is single source of truth — every component imports from here. theme.js is now a re-export shim for backward compa",
-      "when": "55 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "c841fd6",
       "subject": "Block C correction: dark amber is default :root, light amber opt-in via .light class. Components were designed for dark mode (297 hardcoded white-on-dark rgba values across 30+ files), so dark stays t",
-      "when": "70 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "1c5e8d3",
       "subject": "Block C: amber-minimal theme system. src/index.css holds full token sets for :root (light) + .dark. Inter/JetBrains Mono/Source Serif 4 loaded from Google Fonts. src/lib/theme.js exports T (named toke",
-      "when": "74 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "97ac6eb",
@@ -39,17 +44,17 @@
     {
       "hash": "8c6e70d",
       "subject": "kiko-async: in-process call via fake req/res — bypasses HTTP entirely. Imports kiko handler default export, builds fake req with nostream=1, fake res that captures res.json() into local var. No HTTP r",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "2438094",
       "subject": "kiko-async fix: api/kiko.js now supports ?nostream=1 — buffers SSE deltas and returns plain JSON {response, buffered_events}. kiko-async calls with nostream=1 and reads JSON body. Bypasses Vercel's br",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "2f8807c",
       "subject": "kiko-async: add diagnostic logging + handle both stream and text fallback paths",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "7bf15fb",
@@ -89,17 +94,12 @@
     {
       "hash": "6723a9b",
       "subject": "Self-awareness feedback loop: kiko_meta_learning table + cron-self-awareness (nightly 2:30am) detects repetition loops in learning_log (5+ identical Q→A) and writes refusal_directive. kiko-self-knowle",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "b04c353",
       "subject": "Settings signature card: replace contentEditable+dangerouslySetInnerHTML with plain textarea (avoids React reconciler crash on Gmail HTML paste + onBlur/onClick race that prevented save). Live preview",
       "when": "15 hours ago"
-    },
-    {
-      "hash": "95bb361",
-      "subject": "KIKO_REALITY.md: update execution order to reflect Steps 1-7 shipped + Step 7 verification details + cron-sequence-reply-detect schema fix",
-      "when": "16 hours ago"
     }
   ]
 }
