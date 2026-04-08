@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-08T11:27:09.218Z",
+  "generated_at": "2026-04-08T12:08:19.675Z",
   "commits": [
+    {
+      "hash": "ed9d442",
+      "subject": "theme convert pass 3: dark glass surfaces (rgba 25/20/0) + hex leftovers (#3A3A3E #555558 #191919) → tokens. KikoChat input bar should now render correctly on light bg.",
+      "when": "41 minutes ago"
+    },
     {
       "hash": "9cbe3ce",
       "subject": "Block C: full theme conversion. 62 files swept clean of hardcoded colors. (1) src/index.css now contains user's exact amber theme verbatim — :root light, .dark dark, @theme inline. (2) src/lib/tokens.",
-      "when": "4 minutes ago"
+      "when": "45 minutes ago"
     },
     {
       "hash": "e39603e",
       "subject": "Block C rebuild start: index.css contains exact amber theme spec from user. tokens.js is single source of truth — every component imports from here. theme.js is now a re-export shim for backward compa",
-      "when": "14 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "c841fd6",
       "subject": "Block C correction: dark amber is default :root, light amber opt-in via .light class. Components were designed for dark mode (297 hardcoded white-on-dark rgba values across 30+ files), so dark stays t",
-      "when": "29 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "1c5e8d3",
       "subject": "Block C: amber-minimal theme system. src/index.css holds full token sets for :root (light) + .dark. Inter/JetBrains Mono/Source Serif 4 loaded from Google Fonts. src/lib/theme.js exports T (named toke",
-      "when": "33 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "97ac6eb",
       "subject": "audit fix: handleSubmit (streaming path) now also persists to kiko_conversations + kiko_messages so the multi-task sidebar reflects all chat history. closes the gap where sendAsync existed but was nev",
-      "when": "67 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "0ba3649",
       "subject": "fix Q5: capture-recent-ships.js writes to api/ folder so Vercel bundles it with serverless functions. kiko-self-knowledge.js tries multiple paths (api/, root, public/) since Vercel cwd is unreliable a",
-      "when": "79 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "8c6e70d",
       "subject": "kiko-async: in-process call via fake req/res — bypasses HTTP entirely. Imports kiko handler default export, builds fake req with nostream=1, fake res that captures res.json() into local var. No HTTP r",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "2438094",
@@ -49,37 +54,37 @@
     {
       "hash": "7bf15fb",
       "subject": "kiko-async: properly consume SSE stream via reader. r.text() resolved with empty body before deltas streamed in. Now uses ReadableStream reader, decodes chunk-by-chunk, parses each data: line as it ar",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "58bba4a",
       "subject": "fix kiko-async: await processInBackground before response. Vercel kills serverless function after res.json — fire-and-forget post-response does NOT work. Parallelism comes from client firing multiple ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "0da819a",
       "subject": "drop legacy cron-self-improvement + cron-self-reflection stubs (replaced by cron-self-awareness + cron-rule-promotion). frees vercel function slot.",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f3f19f5",
       "subject": "Block A.5 + Block E: (A.5) Build-time git log capture — scripts/capture-recent-ships.js runs in npm build, writes recent-ships.json that kiko-self-knowledge.js reads. Fixes Q5 'what did you ship' perm",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "6e71c65",
       "subject": "fix: remove orphaned brace from KikoFloat voice transcript wiring",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "024ef43",
       "subject": "Block A.5 + Block D wiring: (A.5) intent-classifier no longer routes ship/commit/release questions to code_review — they now route to general so the git log injection in self-knowledge surfaces. (D) V",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "e274dd8",
       "subject": "Block A: Kiko Bible v1.0 wired into system prompt. KIKO_BIBLE.md governing layer loaded from disk on every request via kiko-self-knowledge.js. Self-critique protocol + behavioural permission added to ",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "6723a9b",
@@ -89,17 +94,12 @@
     {
       "hash": "b04c353",
       "subject": "Settings signature card: replace contentEditable+dangerouslySetInnerHTML with plain textarea (avoids React reconciler crash on Gmail HTML paste + onBlur/onClick race that prevented save). Live preview",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "95bb361",
       "subject": "KIKO_REALITY.md: update execution order to reflect Steps 1-7 shipped + Step 7 verification details + cron-sequence-reply-detect schema fix",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "ed4bc08",
-      "subject": "Step 7 polish: fix kiko_alerts schema drift in cron-sequence-reply-detect. Was writing org_id/entity/action — none exist. Now writes type=reply_from_prospect (matching Command Centre + Sequences page ",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     }
   ]
 }

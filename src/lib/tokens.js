@@ -66,7 +66,7 @@ export const t = {
 };
 
 // Theme switcher
-const STORAGE_KEY = 'kiko_theme';
+const STORAGE_KEY = 'kiko_theme_v3'; // bumped to invalidate stale 'light' values
 
 export function setTheme(mode) {
   // mode: 'light' | 'dark' | 'system'
@@ -80,7 +80,7 @@ export function setTheme(mode) {
 }
 
 export function getTheme() {
-  return localStorage.getItem(STORAGE_KEY) || 'light';
+  return localStorage.getItem(STORAGE_KEY) || 'dark';
 }
 
 export function initTheme() {
