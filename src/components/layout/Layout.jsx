@@ -43,17 +43,18 @@ const ALL_NAV = [
   { id: 'sequences', label: 'Campaigns', path: '/campaigns', Icon: Zap },
 ]
 const VALID_NAV_IDS = new Set(ALL_NAV.map(n => n.id))
-const DEFAULT_TOP_IDS = ['home', 'command-centre', 'pipeline', 'partnership-matrix', 'sequences', 'inbox', 'segments']
+const DEFAULT_TOP_IDS = ['home', 'command-centre', 'pipeline', 'partnership-matrix', 'sequences']
+const TOP_NAV_STORAGE_KEY = 'kiko_top_nav_v2'
 
 function getTopNavIds() {
   try {
-    const s = localStorage.getItem('kiko_top_nav')
+    const s = localStorage.getItem(TOP_NAV_STORAGE_KEY)
     if (s) {
       const parsed = JSON.parse(s)
       // Remove stale items that no longer exist in nav
       const cleaned = parsed.filter(id => VALID_NAV_IDS.has(id))
       if (cleaned.length !== parsed.length) {
-        localStorage.setItem('kiko_top_nav', JSON.stringify(cleaned.length > 0 ? cleaned : DEFAULT_TOP_IDS))
+        localStorage.setItem('kiko_top_nav_v2', JSON.stringify(cleaned.length > 0 ? cleaned : DEFAULT_TOP_IDS))
         return cleaned.length > 0 ? cleaned : DEFAULT_TOP_IDS
       }
       return parsed
@@ -253,7 +254,7 @@ export default function Layout({ user }) {
 
         {/* Center: Pill tab group — flex centered between logo and right controls */}
         <div className="desktop-top-nav" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: 3, background: 'rgba(20,20,24,0.65)', backdropFilter: 'blur(20px) saturate(1.2)', WebkitBackdropFilter: 'blur(20px) saturate(1.2)', borderRadius: 14, padding: 4, border: `0.5px solid ${C.border}`, borderTop: `0.5px solid ${'rgba(255,255,255,0.08)'}`, boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
+          <div style={{ display: 'flex', gap: 3, background: 'rgba(40,40,46,0.55)', backdropFilter: 'blur(20px) saturate(1.2)', WebkitBackdropFilter: 'blur(20px) saturate(1.2)', borderRadius: 14, padding: 4, border: `0.5px solid rgba(255,255,255,0.08)`, borderTop: `0.5px solid rgba(255,255,255,0.12)`, boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}>
             {TABS.map(tab => {
               const active = isTabActive(tab.path)
               return (
@@ -261,28 +262,28 @@ export default function Layout({ user }) {
                   if (tab.path === '/') { setKikoMessages([]); setKikoConvId(null); setKikoResetKey(k => k + 1) }
                   nav(tab.path)
                 }} style={{
-                  padding: '7px 22px', borderRadius: 50, border: 'none',
-                  background: active ? 'rgba(238,238,238,0.1)' : 'transparent',
-                  color: active ? 'rgba(238,238,238,0.9)' : 'rgba(238,238,238,0.3)',
-                  fontSize: 13, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: C.font,
-                  boxShadow: active ? 'inset 0 1px 0 rgba(238,238,238,0.12), 0 2px 8px rgba(0,0,0,0.2)' : 'none',
+                  padding: '8px 22px', borderRadius: 50, border: 'none',
+                  background: active ? 'rgba(255,255,255,0.12)' : 'transparent',
+                  color: active ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.6)',
+                  fontSize: 14, fontWeight: active ? 500 : 400, cursor: 'pointer', fontFamily: C.font,
+                  boxShadow: active ? 'inset 0 1px 0 rgba(255,255,255,0.15), 0 2px 8px rgba(0,0,0,0.2)' : 'none',
                   transition: 'all 0.2s',
                 }}
-                  onMouseOver={e => { if (!active) { e.currentTarget.style.color = 'rgba(238,238,238,0.8)'; e.currentTarget.style.background = 'rgba(238,238,238,0.05)' }}}
-                  onMouseOut={e => { if (!active) { e.currentTarget.style.color = 'rgba(238,238,238,0.3)'; e.currentTarget.style.background = 'transparent' }}}
+                  onMouseOver={e => { if (!active) { e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}}
+                  onMouseOut={e => { if (!active) { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent' }}}
                 >{tab.label}</button>
               )
             })}
             {/* More tab with dropdown */}
             <div ref={moreRef} style={{ position: 'relative' }}>
               <button onClick={() => setMoreOpen(!moreOpen)} style={{
-                padding: '7px 22px', borderRadius: 50, border: 'none',
-                background: moreOpen ? 'rgba(238,238,238,0.07)' : 'transparent',
-                color: moreOpen ? 'rgba(238,238,238,0.8)' : 'rgba(238,238,238,0.3)', fontSize: 13, fontWeight: 300, cursor: 'pointer', fontFamily: C.font,
+                padding: '8px 22px', borderRadius: 50, border: 'none',
+                background: moreOpen ? 'rgba(255,255,255,0.10)' : 'transparent',
+                color: moreOpen ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: 400, cursor: 'pointer', fontFamily: C.font,
                 display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.2s',
               }}
-                onMouseOver={e => { if (!moreOpen) { e.currentTarget.style.color = 'rgba(238,238,238,0.8)'; e.currentTarget.style.background = 'rgba(238,238,238,0.05)' }}}
-                onMouseOut={e => { if (!moreOpen) { e.currentTarget.style.color = 'rgba(238,238,238,0.3)'; e.currentTarget.style.background = 'transparent' }}}
+                onMouseOver={e => { if (!moreOpen) { e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}}
+                onMouseOut={e => { if (!moreOpen) { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent' }}}
               >
                 More <ChevronDown size={11} style={{ transition: 'transform 0.2s', transform: moreOpen ? 'rotate(180deg)' : 'none' }} />
               </button>

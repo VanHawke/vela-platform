@@ -64,16 +64,16 @@ export default function Settings({ user }) {
     { id: 'organisations', label: 'Organisations', path: '/organisations' },
     { id: 'command-centre', label: 'Command Centre', path: '/command-centre' },
     { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix' },
-    { id: 'lemlist', label: 'Lemlist', path: '/lemlist' },
+    { id: 'sequences', label: 'Campaigns', path: '/campaigns' },
   ]
-  const DEFAULT_TOP_NAV = ['home', 'pipeline', 'partnership-matrix', 'command-centre']
+  const DEFAULT_TOP_NAV = ['home', 'command-centre', 'pipeline', 'partnership-matrix', 'sequences']
   const [topNavItems, setTopNavItems] = useState(DEFAULT_TOP_NAV)
   const [moreOrder, setMoreOrder] = useState(() => { try { const s = localStorage.getItem('kiko_more_order'); return s ? JSON.parse(s) : null } catch { return null } })
 
   useEffect(() => {
     const stored = localStorage.getItem('kiko_nav_order')
     if (stored) try { setNavOrder(JSON.parse(stored)) } catch {}
-    const storedTop = localStorage.getItem('kiko_top_nav')
+    const storedTop = localStorage.getItem('kiko_top_nav_v2')
     if (storedTop) try { setTopNavItems(JSON.parse(storedTop)) } catch {}
   }, [])
 
@@ -548,7 +548,7 @@ export default function Settings({ user }) {
                     if (to < 0 || to >= arr.length) return
                     ;[arr[from], arr[to]] = [arr[to], arr[from]]
                     setTopNavItems(arr)
-                    localStorage.setItem('kiko_top_nav', JSON.stringify(arr))
+                    localStorage.setItem('kiko_top_nav_v2', JSON.stringify(arr))
                     window.dispatchEvent(new Event('kiko_top_nav_updated'))
                   }
                   return (
@@ -567,7 +567,7 @@ export default function Settings({ user }) {
                         <button onClick={() => {
                           const next = isOn ? topNavItems.filter(id => id !== item.id) : [...topNavItems, item.id]
                           setTopNavItems(next)
-                          localStorage.setItem('kiko_top_nav', JSON.stringify(next))
+                          localStorage.setItem('kiko_top_nav_v2', JSON.stringify(next))
                           window.dispatchEvent(new Event('kiko_top_nav_updated'))
                         }} style={{
                           width: 38, height: 20, borderRadius: 50, border: 'none', cursor: 'pointer',
@@ -585,7 +585,7 @@ export default function Settings({ user }) {
                   )
                 })}
               </div>
-              <button onClick={() => { setTopNavItems(DEFAULT_TOP_NAV); localStorage.setItem('kiko_top_nav', JSON.stringify(DEFAULT_TOP_NAV)); window.dispatchEvent(new Event('kiko_top_nav_updated')) }}
+              <button onClick={() => { setTopNavItems(DEFAULT_TOP_NAV); localStorage.setItem('kiko_top_nav_v2', JSON.stringify(DEFAULT_TOP_NAV)); window.dispatchEvent(new Event('kiko_top_nav_updated')) }}
                 style={{ marginTop: 12, fontSize: 12, padding: '6px 12px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font }}>Reset to Default</button>
             </div>
 

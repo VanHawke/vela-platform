@@ -168,7 +168,7 @@ export default function ContactDetail() {
           <div style={card}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
               {contact.picture ? (
-                <img src={contact.picture} alt="" style={{ width: 56, height: 56, borderRadius: 18, objectFit: 'cover' }} />
+                <img src={contact.picture} alt="" style={{ width: 56, height: 56, borderRadius: 18, objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = `<span style="font-size:24px;font-weight:600;color:rgba(167,139,250,0.7)">${(contact.firstName || '?')[0]?.toUpperCase()}${(contact.lastName || '')[0]?.toUpperCase() || ''}</span>` }} />
               ) : (
                 <div style={{ width: 56, height: 56, borderRadius: 18, background: 'rgba(238,238,238,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ fontSize: 23, fontWeight: 400, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{(contact.firstName || contact.lastName || '?')[0]?.toUpperCase()}</span>

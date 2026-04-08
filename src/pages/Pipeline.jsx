@@ -593,7 +593,7 @@ export default function Pipeline({ user }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     {companyDomains[selectedDeal.company] ? (
                       <div style={{ width: 40, height: 40, borderRadius: 50, background: 'rgba(25,25,25,0.40)', border: '0.5px solid rgba(167,139,250,0.50)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-                        <img src={`https://www.google.com/s2/favicons?domain=${companyDomains[selectedDeal.company]}&sz=128`} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                        <img src={`https://www.google.com/s2/favicons?domain=${companyDomains[selectedDeal.company]}&sz=128`} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} onError={e => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = `<span style="font-size:14px;font-weight:600;color:rgba(167,139,250,0.7)">${(selectedDeal.company || '?')[0].toUpperCase()}</span>` }} />
                       </div>
                     ) : (
                       <CompanyLogo name={selectedDeal.company} domain={companyDomains[selectedDeal.company]} size={40} />
@@ -630,7 +630,7 @@ export default function Pipeline({ user }) {
                         style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 50, cursor: 'pointer', transition: 'background 0.15s', background: i === 0 ? 'rgba(59,130,246,0.06)' : 'transparent', border: i === 0 ? '1.5px solid rgba(59,130,246,0.12)' : '1.5px solid transparent' }}
                         onMouseEnter={e => e.currentTarget.style.background = 'rgba(25,25,25,0.40)'}
                         onMouseLeave={e => e.currentTarget.style.background = i === 0 ? 'rgba(59,130,246,0.06)' : 'transparent'}>
-                        {ct.picture ? <img src={ct.picture} alt="" style={{ width: 28, height: 28, borderRadius: 50, objectFit: 'cover' }} /> : (
+                        {ct.picture ? <img src={ct.picture} alt="" style={{ width: 28, height: 28, borderRadius: 50, objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = `<span style="font-size:11px;font-weight:600;color:rgba(167,139,250,0.7)">${(ct.firstName || '?')[0]?.toUpperCase()}${(ct.lastName || '')[0]?.toUpperCase() || ''}</span>` }} /> : (
                           <div style={{ width: 28, height: 28, borderRadius: 50, background: 'rgba(25,25,25,0.40)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(167,139,250,0.45)', fontFamily: 'var(--font)' }}>{(ct.firstName || '?')[0]?.toUpperCase()}</span>
                           </div>

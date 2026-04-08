@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-08T14:55:26.333Z",
+  "generated_at": "2026-04-08T15:16:49.741Z",
   "commits": [
+    {
+      "hash": "869873e",
+      "subject": "(1) SignatureEditor: single contentEditable paste box. Paste your full Gmail/Apple Mail signature including images — base64 inline images auto-upload to Supabase Storage in background and src is rewri",
+      "when": "21 minutes ago"
+    },
     {
       "hash": "bac1607",
       "subject": "(1) lift bg from #0D0D0F to #1C1C1F charcoal — better text contrast across all pages, (2) signature image upload: file picker uploads to Supabase Storage brand-assets/signatures/, returns public URL, ",
-      "when": "13 minutes ago"
+      "when": "35 minutes ago"
     },
     {
       "hash": "119661b",
       "subject": "Campaigns.jsx: Prospecting view with left rail (campaign list) + main table (one row per prospect: name, company, title, step, engagement, last action, next, status, actions). Real Supabase data, real",
-      "when": "21 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "018f9bc",
       "subject": "restore Campaigns.jsx (Lemlist-style left rail + main canvas) at /sequences and /campaigns routes. Rewired data layer from deleted /api/lemlist-data to direct Supabase queries against kiko_sequences/k",
-      "when": "37 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "4d1c0d0",
@@ -29,12 +34,12 @@
     {
       "hash": "411cbbd",
       "subject": "Block C preview: HomePreview.jsx mockup using canonical shadcn primitives — Card, Button, Tailwind classes only. Mounted at /preview/home (public route, no auth) for design sign-off before rebuilding ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "15682e6",
       "subject": "Block C: restore canonical shadcn primitives. card.jsx and button.jsx had been clobbered with inline-style versions — restored to forwardRef + cn() + Tailwind classes + cva variants. Required for prop",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f5b5f48",
@@ -44,7 +49,7 @@
     {
       "hash": "ed9d442",
       "subject": "theme convert pass 3: dark glass surfaces (rgba 25/20/0) + hex leftovers (#3A3A3E #555558 #191919) → tokens. KikoChat input bar should now render correctly on light bg.",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "9cbe3ce",
@@ -89,17 +94,12 @@
     {
       "hash": "2f8807c",
       "subject": "kiko-async: add diagnostic logging + handle both stream and text fallback paths",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "7bf15fb",
       "subject": "kiko-async: properly consume SSE stream via reader. r.text() resolved with empty body before deltas streamed in. Now uses ReadableStream reader, decodes chunk-by-chunk, parses each data: line as it ar",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "58bba4a",
-      "subject": "fix kiko-async: await processInBackground before response. Vercel kills serverless function after res.json — fire-and-forget post-response does NOT work. Parallelism comes from client firing multiple ",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     }
   ]
 }
