@@ -108,8 +108,8 @@ export default function Tasks({ user }) {
     return 'var(--ring)'
   }
 
-  const card = { background: 'rgba(25,25,25,0.30)', border: `1px solid rgba(25,25,25,0.40)`, borderRadius: 12, padding: '12px 14px', marginBottom: 6, cursor: 'pointer', display: 'flex', gap: 10, alignItems: 'flex-start', transition: 'all 0.15s' }
-  const inp = { width: '100%', background: 'rgba(25,25,25,0.35)', border: `0.5px solid var(--accent)`, borderRadius: 8, padding: '8px 12px', fontSize: 14, color: T.text, fontFamily: T.font, fontWeight: 300, outline: 'none' }
+  const card = { background: 'var(--card)', border: `1px solid var(--card)`, borderRadius: 12, padding: '12px 14px', marginBottom: 6, cursor: 'pointer', display: 'flex', gap: 10, alignItems: 'flex-start', transition: 'all 0.15s' }
+  const inp = { width: '100%', background: 'var(--card)', border: `0.5px solid var(--accent)`, borderRadius: 8, padding: '8px 12px', fontSize: 14, color: T.text, fontFamily: T.font, fontWeight: 300, outline: 'none' }
 
   if (loading) return <div style={{ padding: 40, textAlign: 'center', color: T.textTertiary, fontFamily: T.font, fontWeight: 300 }}>Loading tasks...</div>
 
@@ -179,11 +179,11 @@ export default function Tasks({ user }) {
             return (
               <div key={task.id} onClick={() => getKikoRec(task)} style={{
                 ...card,
-                borderColor: isSelected ? 'var(--ring)' : 'rgba(25,25,25,0.40)',
-                background: isSelected ? 'var(--accent)' : 'rgba(25,25,25,0.30)',
+                borderColor: isSelected ? 'var(--ring)' : 'var(--card)',
+                background: isSelected ? 'var(--accent)' : 'var(--card)',
               }}
-                onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.background = 'rgba(25,25,25,0.40)'; e.currentTarget.style.borderColor = 'var(--accent)' }}}
-                onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.background = 'rgba(25,25,25,0.30)'; e.currentTarget.style.borderColor = 'rgba(25,25,25,0.40)' }}}
+                onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.background = 'var(--card)'; e.currentTarget.style.borderColor = 'var(--accent)' }}}
+                onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.background = 'var(--card)'; e.currentTarget.style.borderColor = 'var(--card)' }}}
               >
                 {/* Priority bar */}
                 <div style={{ width: 3, height: 36, borderRadius: 2, flexShrink: 0, marginTop: 2, background: priorityColor(task) }} />
@@ -213,9 +213,9 @@ export default function Tasks({ user }) {
       </div>
 
       {/* RIGHT — Kiko Recommendation Panel */}
-      <div style={{ flex: 1, borderLeft: `1px solid rgba(25,25,25,0.40)`, display: 'flex', flexDirection: 'column', background: 'var(--border)', flexShrink: 0, minWidth: 0 }}>
+      <div style={{ flex: 1, borderLeft: `1px solid var(--card)`, display: 'flex', flexDirection: 'column', background: 'var(--border)', flexShrink: 0, minWidth: 0 }}>
         {/* Panel header */}
-        <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(25,25,25,0.40)', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--card)', display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 40, height: 12, overflow: 'hidden' }}>
             <KikoWaveform width={40} height={12} mini />
           </div>
@@ -243,7 +243,7 @@ export default function Tasks({ user }) {
           {kikoRec && selected && (
             <div style={{ fontSize: 14, color: 'var(--foreground)', fontWeight: 300, lineHeight: 1.65 }}>
               {/* Task context header */}
-              <div style={{ marginBottom: 12, padding: '8px 10px', borderRadius: 8, background: 'rgba(25,25,25,0.30)', border: '1px solid rgba(25,25,25,0.40)' }}>
+              <div style={{ marginBottom: 12, padding: '8px 10px', borderRadius: 8, background: 'var(--card)', border: '1px solid var(--card)' }}>
                 <div style={{ fontSize: 11, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>{selected.data?.type}</div>
                 <div style={{ fontSize: 13, color: 'rgba(238,232,220,0.60)', fontWeight: 400 }}>{selected.data?.company}{selected.data?.contact ? ` · ${selected.data.contact}` : ''}</div>
               </div>
@@ -254,7 +254,7 @@ export default function Tasks({ user }) {
 
         {/* Action buttons */}
         {selected && kikoRec && !kikoLoading && (
-          <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(25,25,25,0.40)', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <div style={{ padding: '10px 16px', borderTop: '1px solid var(--card)', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             <button onClick={() => getKikoRec(selected)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid var(--accent)', background: 'var(--accent)', color: 'var(--primary)', cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Regenerate</button>
             <button onClick={() => { toggle(selected); setSelected(null); setKikoRec(null) }} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid rgba(6,214,160,0.15)', background: 'rgba(6,214,160,0.04)', color: 'rgba(6,214,160,0.6)', cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><CheckSquare size={10} /> Complete</button>
             <button onClick={() => { navigator.clipboard.writeText(kikoRec) }} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '0.5px solid var(--ring)', background: 'transparent', color: T.textTertiary, cursor: 'pointer', fontFamily: T.font }}>Copy</button>

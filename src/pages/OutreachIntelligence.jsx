@@ -193,7 +193,7 @@ Be direct. Use web search for current company intelligence if needed.`
   const daysToRace = nextRace ? Math.ceil((new Date(nextRace.date) - now) / 86400000) : null
 
   const urgencyColor = (u) => u >= 3 ? 'rgba(255,59,48,0.6)' : u >= 2 ? 'rgba(245,158,11,0.5)' : u >= 1 ? 'var(--primary)' : 'var(--accent)'
-  const card = { background: 'rgba(25,25,25,0.50)', backdropFilter: 'blur(24px) saturate(1.2)', WebkitBackdropFilter: 'blur(24px) saturate(1.2)', border: '0.5px solid var(--ring)', borderRadius: 14, padding: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 1px 0 var(--ring) inset' }
+  const card = { background: 'var(--card)', backdropFilter: 'blur(24px) saturate(1.2)', WebkitBackdropFilter: 'blur(24px) saturate(1.2)', border: '0.5px solid var(--ring)', borderRadius: 14, padding: 16, boxShadow: '0 8px 32px var(--border), 0 1px 0 var(--ring) inset' }
 
   if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}><Loader2 style={{ width: 24, height: 24, animation: 'spin 1s linear infinite', color: T.textTertiary }} /></div>
 
@@ -208,7 +208,7 @@ Be direct. Use web search for current company intelligence if needed.`
               <h1 style={{ fontSize: 21, fontWeight: 400, color: T.text, margin: 0 }}>Command Centre</h1>
               <p style={{ fontSize: 12, color: T.textTertiary, fontWeight: 300, marginTop: 2 }}>Priority actions ranked by deal value × urgency</p>
             </div>
-            <button onClick={loadData} style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(25,25,25,0.40)', border: '0.5px solid var(--ring)', color: T.textTertiary, fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Refresh</button>
+            <button onClick={loadData} style={{ padding: '6px 12px', borderRadius: 8, background: 'var(--card)', border: '0.5px solid var(--ring)', color: T.textTertiary, fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Refresh</button>
           </div>
 
           {/* Stats bar */}
@@ -323,7 +323,7 @@ Be direct. Use web search for current company intelligence if needed.`
               const isOverdue = d.dueDate && new Date(d.dueDate) < new Date()
               return (
                 <div key={task.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '9px 12px', borderRadius: 10, marginBottom: 4, background: 'var(--accent)', border: '0.5px solid var(--ring)', cursor: 'pointer', transition: 'all 0.15s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(25,25,25,0.35)' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--card)' }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'var(--border)' }}
                   onClick={() => {
                     setSelectedAction({ id: task.id, data: { company: d.company || '', contact: d.contact || '' }, isTask: true, taskData: d })
@@ -365,10 +365,10 @@ Be direct. Use web search for current company intelligence if needed.`
               <div key={action.id} onClick={() => getKikoRec(action)} style={{
                 display: 'flex', gap: 10, alignItems: 'flex-start', padding: '11px 12px', borderRadius: 10, marginBottom: 4, cursor: 'pointer', transition: 'all 0.15s',
                 background: isSelected ? 'var(--accent)' : 'var(--border)',
-                border: `1px solid ${isSelected ? 'var(--accent)' : 'rgba(25,25,25,0.35)'}`,
+                border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--card)'}`,
               }}
-                onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.background = 'rgba(25,25,25,0.35)'; e.currentTarget.style.borderColor = 'var(--accent)' }}}
-                onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.background = 'var(--border)'; e.currentTarget.style.borderColor = 'rgba(25,25,25,0.35)' }}}
+                onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.background = 'var(--card)'; e.currentTarget.style.borderColor = 'var(--accent)' }}}
+                onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.background = 'var(--border)'; e.currentTarget.style.borderColor = 'var(--card)' }}}
               >
                 {/* Rank */}
                 <span style={{ fontSize: 11, color: i < 3 ? 'var(--primary)' : T.textTertiary, fontWeight: 500, width: 16, textAlign: 'center', flexShrink: 0, marginTop: 3 }}>{i + 1}</span>
@@ -398,8 +398,8 @@ Be direct. Use web search for current company intelligence if needed.`
       </div>
 
       {/* RIGHT — Kiko Intelligence Panel */}
-      <div style={{ flex: 1, borderLeft: '1px solid rgba(25,25,25,0.40)', display: 'flex', flexDirection: 'column', background: 'var(--border)', flexShrink: 0, minWidth: 0 }}>
-        <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(25,25,25,0.40)', display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ flex: 1, borderLeft: '1px solid var(--card)', display: 'flex', flexDirection: 'column', background: 'var(--border)', flexShrink: 0, minWidth: 0 }}>
+        <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--card)', display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 40, height: 12, overflow: 'hidden' }}><KikoWaveform width={40} height={12} mini /></div>
           <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--primary)', letterSpacing: '0.04em' }}>Kiko Intelligence</span>
         </div>
@@ -422,7 +422,7 @@ Be direct. Use web search for current company intelligence if needed.`
           {kikoRec && selectedAction && (
             <div>
               {/* Context header */}
-              <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'rgba(25,25,25,0.30)', border: '1px solid rgba(25,25,25,0.40)' }}>
+              <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--card)', border: '1px solid var(--card)' }}>
                 <div style={{ fontSize: 11, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 }}>
                   {selectedAction.isTask ? (selectedAction.taskData?.type || 'Task') : selectedAction.actionType}
                 </div>
@@ -454,7 +454,7 @@ Be direct. Use web search for current company intelligence if needed.`
 
         {/* Action buttons */}
         {selectedAction && kikoRec && !kikoLoading && (
-          <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(25,25,25,0.40)', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <div style={{ padding: '10px 16px', borderTop: '1px solid var(--card)', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             <button onClick={() => getKikoRec(selectedAction)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '1px solid var(--accent)', background: 'var(--accent)', color: 'var(--primary)', cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}><RefreshCw size={10} /> Regenerate</button>
             <button onClick={() => navigator.clipboard.writeText(kikoRec)} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 400, border: '0.5px solid var(--ring)', background: 'transparent', color: T.textTertiary, cursor: 'pointer', fontFamily: T.font }}>Copy</button>
           </div>

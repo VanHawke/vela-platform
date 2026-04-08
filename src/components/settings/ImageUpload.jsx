@@ -96,7 +96,7 @@ export default function ImageUpload({ label, storageKey, folder = 'uploads', asp
 
       {/* Crop modal */}
       {showCrop && rawUrl && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(24px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'var(--border)', backdropFilter: 'blur(24px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: T.surface, borderRadius: 18, padding: 24, maxWidth: 520, width: '90%', boxShadow: '0 24px 80px var(--border)' }}>
             <p style={{ fontSize: 16, fontWeight: 400, color: T.text, margin: '0 0 16px' }}>Crop {label}</p>
             <div style={{ maxHeight: 400, overflow: 'auto', borderRadius: 50, background: T.bg, display: 'flex', justifyContent: 'center' }}>

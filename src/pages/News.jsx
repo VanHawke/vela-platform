@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
 
 const T = {
-  bg: '#000000', surface: 'rgba(25,25,25,0.40)',
+  bg: '#000000', surface: 'var(--card)',
   border: 'var(--accent)', borderHover: 'var(--accent)',
   text: 'rgba(238,232,220,0.95)', textSecondary: 'var(--ring)', textTertiary: 'var(--muted-foreground)',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",

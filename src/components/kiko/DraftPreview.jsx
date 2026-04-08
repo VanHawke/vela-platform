@@ -98,7 +98,7 @@ export default function DraftPreview({ draft, onToneAdjust, onCopy, onSendToGmai
   const toneChips = ['More professional', 'More concise', 'More friendly', 'Add urgency', 'Soften tone', 'Make shorter']
 
   return (
-    <div style={{ background: 'var(--border)', border: '1.5px solid var(--border)', borderRadius: 16, overflow: 'hidden', marginTop: 12, maxWidth: 580, backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', boxShadow: 'inset 0 1px 0 var(--border), 0 8px 32px rgba(0,0,0,0.2)' }}>
+    <div style={{ background: 'var(--border)', border: '1.5px solid var(--border)', borderRadius: 16, overflow: 'hidden', marginTop: 12, maxWidth: 580, backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', boxShadow: 'inset 0 1px 0 var(--border), 0 8px 32px var(--border)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderBottom: '1px solid var(--border)' }}>
         <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--muted-foreground)', fontFamily: T.font }}>

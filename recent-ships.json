@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-08T11:22:46.374Z",
+  "generated_at": "2026-04-08T11:27:09.218Z",
   "commits": [
+    {
+      "hash": "9cbe3ce",
+      "subject": "Block C: full theme conversion. 62 files swept clean of hardcoded colors. (1) src/index.css now contains user's exact amber theme verbatim — :root light, .dark dark, @theme inline. (2) src/lib/tokens.",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "e39603e",
       "subject": "Block C rebuild start: index.css contains exact amber theme spec from user. tokens.js is single source of truth — every component imports from here. theme.js is now a re-export shim for backward compa",
-      "when": "10 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "c841fd6",
       "subject": "Block C correction: dark amber is default :root, light amber opt-in via .light class. Components were designed for dark mode (297 hardcoded white-on-dark rgba values across 30+ files), so dark stays t",
-      "when": "24 minutes ago"
+      "when": "29 minutes ago"
     },
     {
       "hash": "1c5e8d3",
       "subject": "Block C: amber-minimal theme system. src/index.css holds full token sets for :root (light) + .dark. Inter/JetBrains Mono/Source Serif 4 loaded from Google Fonts. src/lib/theme.js exports T (named toke",
-      "when": "29 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "97ac6eb",
       "subject": "audit fix: handleSubmit (streaming path) now also persists to kiko_conversations + kiko_messages so the multi-task sidebar reflects all chat history. closes the gap where sendAsync existed but was nev",
-      "when": "63 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "0ba3649",
       "subject": "fix Q5: capture-recent-ships.js writes to api/ folder so Vercel bundles it with serverless functions. kiko-self-knowledge.js tries multiple paths (api/, root, public/) since Vercel cwd is unreliable a",
-      "when": "75 minutes ago"
+      "when": "79 minutes ago"
     },
     {
       "hash": "8c6e70d",
       "subject": "kiko-async: in-process call via fake req/res — bypasses HTTP entirely. Imports kiko handler default export, builds fake req with nostream=1, fake res that captures res.json() into local var. No HTTP r",
-      "when": "83 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "2438094",
@@ -79,7 +84,7 @@
     {
       "hash": "6723a9b",
       "subject": "Self-awareness feedback loop: kiko_meta_learning table + cron-self-awareness (nightly 2:30am) detects repetition loops in learning_log (5+ identical Q→A) and writes refusal_directive. kiko-self-knowle",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "b04c353",
@@ -94,11 +99,6 @@
     {
       "hash": "ed4bc08",
       "subject": "Step 7 polish: fix kiko_alerts schema drift in cron-sequence-reply-detect. Was writing org_id/entity/action — none exist. Now writes type=reply_from_prospect (matching Command Centre + Sequences page ",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "d11ecc6",
-      "subject": "Step 7 polish: fix UK BST timezone double-shift in cron-sequence-enqueue. Was using setHours() which writes UTC on Vercel servers, but adding ukOffsetHours to the variable made it shift forward by an ",
       "when": "15 hours ago"
     }
   ]

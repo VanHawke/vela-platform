@@ -7,12 +7,12 @@ export default function KikoThinking({ steps = [], isActive = false }) {
       margin: '8px 0 8px 36px',
       padding: '10px 14px',
       borderRadius: 8,
-      background: 'rgba(25,25,25,0.30)',
+      background: 'var(--card)',
       backdropFilter: 'blur(16px) saturate(1.4)',
       WebkitBackdropFilter: 'blur(16px) saturate(1.4)',
       border: '0.5px solid var(--ring)',
       borderTop: '0.5px solid var(--accent)',
-      boxShadow: 'inset 3px 3px 0.5px -3.5px var(--accent), inset -3px -3px 0.5px -3.5px var(--accent), inset 1px 1px 1px -0.5px var(--accent), inset -1px -1px 1px -0.5px var(--accent), 0 4px 16px rgba(0,0,0,0.20)',
+      boxShadow: 'inset 3px 3px 0.5px -3.5px var(--accent), inset -3px -3px 0.5px -3.5px var(--accent), inset 1px 1px 1px -0.5px var(--accent), inset -1px -1px 1px -0.5px var(--accent), 0 4px 16px var(--border)',
       borderLeft: isActive ? '2px solid var(--ring)' : '2px solid var(--ring)',
     }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>

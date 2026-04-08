@@ -95,7 +95,7 @@ export default function CommandPalette({ open, onClose, onVoice }) {
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'var(--foreground)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 'min(20vh, 160px)' }}>
       <div onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()} style={{
         width: 480, background: 'rgba(14,14,20,0.95)', borderRadius: 20,
-        boxShadow: 'inset 0 1px 0 var(--border), 0 16px 64px rgba(0,0,0,0.5)',
+        boxShadow: 'inset 0 1px 0 var(--border), 0 16px 64px var(--border)',
         border: '1.5px solid var(--border)', overflow: 'hidden',
         animation: 'scaleIn 0.15s ease-out',
       }}>

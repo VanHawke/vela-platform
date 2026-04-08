@@ -146,7 +146,7 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
         background: 'var(--surface)',
         borderRadius: 50,
         border: '1.5px solid var(--border-hover)',
-        boxShadow: '0 8px 40px rgba(0,0,0,0.13), 0 2px 8px rgba(25,25,25,0.40)',
+        boxShadow: '0 8px 40px var(--border), 0 2px 8px var(--card)',
         overflow: 'hidden',
       }}
     >
@@ -482,9 +482,9 @@ export default function Pipeline({ user }) {
       {/* Toolbar */}
       <div style={{
         margin: '0 16px', padding: '12px 20px', borderRadius: 14,
-        background: 'rgba(25,25,25,0.55)', backdropFilter: 'blur(30px) saturate(1.3)', WebkitBackdropFilter: 'blur(30px) saturate(1.3)',
+        background: 'var(--card)', backdropFilter: 'blur(30px) saturate(1.3)', WebkitBackdropFilter: 'blur(30px) saturate(1.3)',
         border: '0.5px solid var(--ring)', borderTop: '0.5px solid var(--accent)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 var(--accent)',
+        boxShadow: '0 8px 32px var(--border), inset 0 1px 0 var(--accent)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div>
@@ -522,19 +522,19 @@ export default function Pipeline({ user }) {
                   style={{
                     width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column',
                     borderRadius: 16, border: isOver ? '1px dashed var(--ring)' : '0.5px solid var(--accent)',
-                    background: isOver ? 'rgba(25,25,25,0.40)' : 'rgba(25,25,25,0.30)', backdropFilter: 'blur(20px) saturate(1.15)', WebkitBackdropFilter: 'blur(20px) saturate(1.15)',
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.35), 0 1px 0 rgba(25,25,25,0.30) inset',
+                    background: isOver ? 'var(--card)' : 'var(--card)', backdropFilter: 'blur(20px) saturate(1.15)', WebkitBackdropFilter: 'blur(20px) saturate(1.15)',
+                    boxShadow: '0 12px 40px var(--border), 0 1px 0 var(--card) inset',
                     transition: 'all 0.15s ease',
                   }}>
                   <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{ fontSize: 11, fontWeight: 400, color: stageTextColor[stage.id] || 'var(--ring)', fontFamily: 'var(--font)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{stage.label}</span>
-                      <span style={{ fontSize: 10, fontWeight: 300, color: stageTextColor[stage.id] || 'var(--ring)', fontFamily: 'var(--font)', background: `${stageAccent[stage.id] || 'rgba(25,25,25,0.40)'}33`, borderRadius: 50, padding: '2px 6px' }}>{stageDeals.length}</span>
+                      <span style={{ fontSize: 10, fontWeight: 300, color: stageTextColor[stage.id] || 'var(--ring)', fontFamily: 'var(--font)', background: `${stageAccent[stage.id] || 'var(--card)'}33`, borderRadius: 50, padding: '2px 6px' }}>{stageDeals.length}</span>
                     </div>
                   </div>
                   <div style={{ flex: 1, overflowY: 'auto', padding: '4px 8px 8px', display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {loading ? (
-                      [...Array(2)].map((_, i) => <div key={i} style={{ height: 70, background: 'rgba(25,25,25,0.30)', borderRadius: 12 }} />)
+                      [...Array(2)].map((_, i) => <div key={i} style={{ height: 70, background: 'var(--card)', borderRadius: 12 }} />)
                     ) : stageDeals.length === 0 ? (
                       <p style={{ fontSize: 12, color: 'var(--accent)', textAlign: 'center', padding: '20px 0', fontFamily: 'var(--font)', fontWeight: 300 }}>No deals</p>
                     ) : stageDeals.map(deal => (
@@ -543,9 +543,9 @@ export default function Pipeline({ user }) {
                         onDragStart={e => handleDragStart(e, deal)}
                         onDragEnd={handleDragEnd}
                         onClick={() => selectDeal(deal)}
-                        style={{ background: 'rgba(25,25,25,0.40)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 10, padding: '12px 14px', border: '0.5px solid var(--ring)', borderTop: '0.5px solid var(--accent)', borderLeft: `3px solid ${stageAccent[stage.id] || 'var(--accent)'}`, cursor: 'grab', transition: 'all 0.15s ease', position: 'relative', boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 var(--accent)' }}
+                        style={{ background: 'var(--card)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 10, padding: '12px 14px', border: '0.5px solid var(--ring)', borderTop: '0.5px solid var(--accent)', borderLeft: `3px solid ${stageAccent[stage.id] || 'var(--accent)'}`, cursor: 'grab', transition: 'all 0.15s ease', position: 'relative', boxShadow: '0 4px 16px var(--border), inset 0 1px 0 var(--accent)' }}
                         onMouseEnter={e => { e.currentTarget.style.background = 'var(--ring)'; e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.borderLeftColor = stageAccent[stage.id] || 'var(--accent)' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(25,25,25,0.55)'; e.currentTarget.style.borderColor = 'var(--ring)'; e.currentTarget.style.borderLeftColor = stageAccent[stage.id] || 'var(--accent)' }}>
+                        onMouseLeave={e => { e.currentTarget.style.background = 'var(--card)'; e.currentTarget.style.borderColor = 'var(--ring)'; e.currentTarget.style.borderLeftColor = stageAccent[stage.id] || 'var(--accent)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           {companyDomains[deal.company] ? (
                             <CompanyLogo name={deal.company} domain={companyDomains[deal.company]} size={18} />
@@ -588,11 +588,11 @@ export default function Pipeline({ user }) {
         <div style={{ width: panelOpen ? 380 : 0, minWidth: panelOpen ? 380 : 0, transition: 'width 0.3s ease, min-width 0.3s ease, opacity 0.2s ease', opacity: panelOpen ? 1 : 0, overflow: 'hidden', marginLeft: panelOpen ? 16 : 0 }}>
           {selectedDeal && (
             <div style={{ width: 380, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 16 }}>
-              <div style={{ background: 'rgba(25,25,25,0.40)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '20px 20px 16px', border: '0.5px solid var(--ring)' }}>
+              <div style={{ background: 'var(--card)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '20px 20px 16px', border: '0.5px solid var(--ring)' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     {companyDomains[selectedDeal.company] ? (
-                      <div style={{ width: 40, height: 40, borderRadius: 50, background: 'rgba(25,25,25,0.40)', border: '0.5px solid var(--ring)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 50, background: 'var(--card)', border: '0.5px solid var(--ring)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
                         <img src={`https://www.google.com/s2/favicons?domain=${companyDomains[selectedDeal.company]}&sz=128`} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
                       </div>
                     ) : (
@@ -603,7 +603,7 @@ export default function Pipeline({ user }) {
                       {dealCompany?.industry && <p style={{ fontSize: 13, color: 'var(--ring)', margin: '3px 0 0', fontFamily: 'var(--font)', fontWeight: 300 }}>{dealCompany.industry}{dealCompany.country ? ` · ${dealCompany.country}` : ''}</p>}
                     </div>
                   </div>
-                  <button onClick={closePanel} style={{ background: 'rgba(25,25,25,0.40)', border: '0.5px solid var(--ring)', borderRadius: 50, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ring)', flexShrink: 0 }}><X style={{ width: 14, height: 14 }} /></button>
+                  <button onClick={closePanel} style={{ background: 'var(--card)', border: '0.5px solid var(--ring)', borderRadius: 50, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ring)', flexShrink: 0 }}><X style={{ width: 14, height: 14 }} /></button>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
@@ -619,19 +619,19 @@ export default function Pipeline({ user }) {
                   </button>
                 )}
               </div>
-              <div style={{ background: 'rgba(25,25,25,0.40)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid var(--ring)' }}>
+              <div style={{ background: 'var(--card)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid var(--ring)' }}>
                 <p style={sectionTitle}><Users style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Contacts ({dealContacts.length})</p>
                 {loadingPanel ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{[...Array(2)].map((_, i) => <div key={i} style={{ height: 40, background: 'rgba(25,25,25,0.30)', borderRadius: 50 }} />)}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{[...Array(2)].map((_, i) => <div key={i} style={{ height: 40, background: 'var(--card)', borderRadius: 50 }} />)}</div>
                 ) : dealContacts.length === 0 ? <p style={emptyText}>No contacts linked</p> : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {dealContacts.map((ct, i) => (
                       <div key={ct.id} onClick={() => nav(`/contacts/${ct.id}`)}
                         style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 50, cursor: 'pointer', transition: 'background 0.15s', background: i === 0 ? 'rgba(59,130,246,0.06)' : 'transparent', border: i === 0 ? '1.5px solid rgba(59,130,246,0.12)' : '1.5px solid transparent' }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(25,25,25,0.40)'}
+                        onMouseEnter={e => e.currentTarget.style.background = 'var(--card)'}
                         onMouseLeave={e => e.currentTarget.style.background = i === 0 ? 'rgba(59,130,246,0.06)' : 'transparent'}>
                         {ct.picture ? <img src={ct.picture} alt="" style={{ width: 28, height: 28, borderRadius: 50, objectFit: 'cover' }} /> : (
-                          <div style={{ width: 28, height: 28, borderRadius: 50, background: 'rgba(25,25,25,0.40)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <div style={{ width: 28, height: 28, borderRadius: 50, background: 'var(--card)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--ring)', fontFamily: 'var(--font)' }}>{(ct.firstName || '?')[0]?.toUpperCase()}</span>
                           </div>
                         )}
@@ -644,7 +644,7 @@ export default function Pipeline({ user }) {
                   </div>
                 )}
               </div>
-              <div style={{ background: 'rgba(25,25,25,0.40)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid var(--ring)' }}>
+              <div style={{ background: 'var(--card)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid var(--ring)' }}>
                 <p style={sectionTitle}><Send style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Lemlist Campaigns</p>
                 {dealCampaigns.length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -659,7 +659,7 @@ export default function Pipeline({ user }) {
               </div>
               {/* Tasks Due for this deal */}
               {dealTasks.length > 0 && (
-                <div style={{ background: 'rgba(25,25,25,0.40)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid var(--ring)' }}>
+                <div style={{ background: 'var(--card)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid var(--ring)' }}>
                   <p style={sectionTitle}><CheckSquare style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Tasks Due ({dealTasks.length})</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {dealTasks.map(task => {
@@ -682,19 +682,19 @@ export default function Pipeline({ user }) {
                 </div>
               )}
               {/* Quick Activity Logger */}
-              <div style={{ background: 'rgba(25,25,25,0.40)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid var(--ring)' }}>
+              <div style={{ background: 'var(--card)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 18, padding: '16px 20px', border: '0.5px solid var(--ring)' }}>
                 <p style={sectionTitle}><Clock style={{ width: 12, height: 12, display: 'inline', verticalAlign: -1, marginRight: 6 }} />Log Activity</p>
                 <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
                   {['Call', 'Meeting', 'Email Sent', 'LinkedIn', 'Note'].map(t => (
                     <button key={t} onClick={() => activityType === t ? setActivityType(null) : setActivityType(t)}
-                      style={{ padding: '4px 10px', borderRadius: 8, fontSize: 11, fontWeight: 400, fontFamily: 'var(--font)', cursor: 'pointer', border: `1px solid ${activityType === t ? 'var(--ring)' : 'var(--accent)'}`, background: activityType === t ? 'var(--accent)' : 'rgba(25,25,25,0.30)', color: activityType === t ? 'var(--primary)' : 'var(--ring)', transition: 'all 0.15s' }}>{t}</button>
+                      style={{ padding: '4px 10px', borderRadius: 8, fontSize: 11, fontWeight: 400, fontFamily: 'var(--font)', cursor: 'pointer', border: `1px solid ${activityType === t ? 'var(--ring)' : 'var(--accent)'}`, background: activityType === t ? 'var(--accent)' : 'var(--card)', color: activityType === t ? 'var(--primary)' : 'var(--ring)', transition: 'all 0.15s' }}>{t}</button>
                   ))}
                 </div>
                 {activityType && (
                   <div style={{ display: 'flex', gap: 6 }}>
                     <input value={activityNote} onChange={e => setActivityNote(e.target.value)} placeholder={`Notes for ${activityType}...`}
                       onKeyDown={e => e.key === 'Enter' && logActivity(activityType.toLowerCase().replace(' ', '_'))}
-                      style={{ flex: 1, background: 'rgba(25,25,25,0.30)', border: '0.5px solid var(--ring)', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: 'rgba(238,232,220,0.70)', fontFamily: 'var(--font)', outline: 'none' }} />
+                      style={{ flex: 1, background: 'var(--card)', border: '0.5px solid var(--ring)', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: 'rgba(238,232,220,0.70)', fontFamily: 'var(--font)', outline: 'none' }} />
                     <button onClick={() => logActivity(activityType.toLowerCase().replace(' ', '_'))} disabled={savingActivity}
                       style={{ padding: '6px 14px', borderRadius: 8, fontSize: 11, fontFamily: 'var(--font)', cursor: 'pointer', border: '1px solid rgba(6,214,160,0.2)', background: 'rgba(6,214,160,0.06)', color: 'rgba(6,214,160,0.7)' }}>{savingActivity ? '...' : 'Log'}</button>
                   </div>

@@ -117,7 +117,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
             <MoreHorizontal size={14} />
           </button>
           {menuOpenId === conv.id && (
-            <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', right: 0, top: '100%', marginTop: 4, width: 140, background: 'rgba(20,20,26,0.95)', backdropFilter: 'blur(20px)', borderRadius: 10, border: `1px solid ${T.glassBorder}`, boxShadow: '0 8px 24px rgba(0,0,0,0.4)', padding: 4, zIndex: 300 }}>
+            <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', right: 0, top: '100%', marginTop: 4, width: 140, background: 'rgba(20,20,26,0.95)', backdropFilter: 'blur(20px)', borderRadius: 10, border: `1px solid ${T.glassBorder}`, boxShadow: '0 8px 24px var(--border)', padding: 4, zIndex: 300 }}>
               <button onClick={() => { setMenuOpenId(null); setRenamingId(conv.id); setRenameValue(conv.title || '') }}
                 style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: 'none', background: 'transparent', color: '#fff', textAlign: 'left', fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 7 }}
                 onMouseOver={e => e.currentTarget.style.background = 'var(--border)'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>

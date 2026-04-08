@@ -606,7 +606,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           backdropFilter: 'blur(40px) saturate(1.5)', WebkitBackdropFilter: 'blur(40px) saturate(1.5)',
           border: `0.5px solid ${C.border}`,
           borderTop: `0.5px solid var(--border)`,
-          boxShadow: '0 12px 40px rgba(0,0,0,0.5)' || '0 16px 48px rgba(0,0,0,0.45), 0 4px 16px rgba(0,0,0,0.3), 0 1px 0 var(--border) inset',
+          boxShadow: '0 12px 40px var(--border)' || '0 16px 48px var(--border), 0 4px 16px var(--border), 0 1px 0 var(--border) inset',
           display: 'flex', flexDirection: 'column',
           maxHeight: 'calc(100vh - 160px)',
           opacity: open ? 1 : 0,
@@ -643,7 +643,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
 
           {/* Conversation sidebar (collapsible) */}
           {showSidebar && (
-            <div style={{ borderBottom: '1.5px solid var(--border)', maxHeight: 240, overflowY: 'auto', background: 'rgba(0,0,0,0.15)' }}>
+            <div style={{ borderBottom: '1.5px solid var(--border)', maxHeight: 240, overflowY: 'auto', background: 'var(--border)' }}>
               {conversations.length === 0 && (
                 <div style={{ padding: '14px', fontSize: 11, color: C.textTer, textAlign: 'center', fontFamily: C.font }}>No conversations yet. Start chatting.</div>
               )}
@@ -817,16 +817,16 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           color: 'var(--foreground)',
           cursor: 'pointer',
           boxShadow: voiceOpen
-            ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 var(--border)'
-            : '0 0 0 3px var(--accent), 0 0 28px var(--accent), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 var(--border)',
+            ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px var(--border), inset 0 1px 0 var(--border)'
+            : '0 0 0 3px var(--accent), 0 0 28px var(--accent), 0 8px 28px var(--border), inset 0 1px 0 var(--border)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           overflow: 'hidden',
           transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
           transformOrigin: 'center',
           position: 'relative',
         }}
-          onMouseEnter={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.4)' : 'var(--ring)'; e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 5px rgba(6,214,160,0.12), 0 0 40px rgba(6,214,160,0.2), 0 12px 36px rgba(0,0,0,0.5)' : '0 0 0 4px var(--accent), 0 0 32px var(--accent), 0 12px 36px rgba(0,0,0,0.5)' }}}
-          onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'var(--accent)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4)' : '0 0 0 3px var(--accent), 0 0 20px var(--accent), 0 8px 28px rgba(0,0,0,0.4)' }}}
+          onMouseEnter={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.4)' : 'var(--ring)'; e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 5px rgba(6,214,160,0.12), 0 0 40px rgba(6,214,160,0.2), 0 12px 36px var(--border)' : '0 0 0 4px var(--accent), 0 0 32px var(--accent), 0 12px 36px var(--border)' }}}
+          onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'var(--accent)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px var(--border)' : '0 0 0 3px var(--accent), 0 0 20px var(--accent), 0 8px 28px var(--border)' }}}
         >
           {voiceOpen
             ? <div style={{ transform: open ? 'rotate(-45deg)' : 'none', transition: 'transform 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><KikoWaveform width={40} height={40} mini volume={floatVoiceState.energy || 0.12} speaking={voiceSpeaking} /></div>

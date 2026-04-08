@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 // ── Platform tokens ───────────────────────────────────────
 const T = {
-  bg: '#000000', surface: 'rgba(25,25,25,0.40)', surfaceHover: 'var(--accent)',
+  bg: '#000000', surface: 'var(--card)', surfaceHover: 'var(--accent)',
   border: 'var(--accent)', borderHover: 'var(--accent)',
   text: 'rgba(238,232,220,0.95)', textSecondary: 'var(--ring)', textTertiary: 'var(--muted-foreground)',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
@@ -179,8 +179,8 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, showMGP, sh
   const day = parseInt(dateStr.slice(8))
   const s   = cellStyle(dateStr, selected, today, showF1, showFE, showMGP, showWEC)
 
-  const numColor = s.isSel ? 'rgba(25,25,25,0.40)'
-    : s.isRaceDay ? 'rgba(25,25,25,0.40)'
+  const numColor = s.isSel ? 'var(--card)'
+    : s.isRaceDay ? 'var(--card)'
     : s.hasF1  ? T.f1Dark
     : s.hasFE  ? T.feDark
     : s.isWindow ? T.amber
@@ -490,7 +490,7 @@ export default function CommercialCalendar() {
             { id: 'mgp', label: 'MotoGP',    on: showMGP, set: setShowMGP, bg: T.mgp, rem: remMGP },
             { id: 'wec', label: 'WEC',        on: showWEC, set: setShowWEC, bg: T.wec, rem: remWEC },
           ].map(({ id, label, on, set, bg, rem }) => (
-            <button key={id} onClick={() => set(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 7px', borderRadius: 6, border: `1.5px solid ${on ? T.border : T.border}`, background: on ? 'rgba(25,25,25,0.40)' : 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}>
+            <button key={id} onClick={() => set(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 7px', borderRadius: 6, border: `1.5px solid ${on ? T.border : T.border}`, background: on ? 'var(--card)' : 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}>
               <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 9, fontWeight: 600, color: on ? bg : T.textTertiary, fontFamily: T.font }}>{id === 'f1' ? 'F1' : id === 'fe' ? 'FE' : id === 'mgp' ? 'GP' : 'WE'}</span>
               <span style={{ fontSize: 12, fontWeight: 500, color: T.textSecondary, fontFamily: T.font }}>{label}</span>
               {on && <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font }}>{rem}</span>}

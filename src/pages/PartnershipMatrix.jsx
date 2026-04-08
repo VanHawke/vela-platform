@@ -3,7 +3,7 @@ import { setPageContext } from '@/lib/pageContext'
 import { RefreshCw, Loader2, AlertTriangle, Plus, X, ExternalLink, FileDown, Check, Grid3X3, Target, Users } from 'lucide-react'
 
 const T = {
-  bg: '#000000', surface: 'rgba(25,25,25,0.40)', surfaceHover: 'var(--accent)',
+  bg: '#000000', surface: 'var(--card)', surfaceHover: 'var(--accent)',
   border: 'var(--accent)', borderHover: 'var(--accent)',
   text: 'rgba(238,232,220,0.95)', textSecondary: 'var(--ring)', textTertiary: 'var(--muted-foreground)',
   accent: 'var(--primary)', accentSoft: 'var(--accent)',
@@ -136,8 +136,8 @@ export default function PartnershipMatrix({ user }) {
 
       {/* Add Modal */}
       {showAdd && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowAdd(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: 'rgba(25,25,25,0.50)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 20, padding: 20, width: 360, border: '0.5px solid var(--ring)', boxShadow: 'inset 0 1px 0 var(--accent), 0 16px 64px rgba(0,0,0,0.5)' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--border)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowAdd(false)}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--card)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 20, padding: 20, width: 360, border: '0.5px solid var(--ring)', boxShadow: 'inset 0 1px 0 var(--accent), 0 16px 64px var(--border)' }}>
             <h3 style={{ fontSize: 15, fontWeight: 400, margin: '0 0 12px' }}>Add Partnership</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <select value={addForm.team_id} onChange={e => setAddForm(p => ({ ...p, team_id: e.target.value }))} style={{ fontSize: 13, padding: '6px 8px', borderRadius: 6, border: `1px solid ${T.border}`, fontFamily: T.font }}>

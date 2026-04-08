@@ -32,7 +32,7 @@ export default function KikoToast() {
           background: 'rgba(10,10,14,0.95)', backdropFilter: 'blur(40px)',
           border: '1px solid rgba(6,214,160,0.15)', borderRadius: 14,
           padding: '12px 16px', minWidth: 280, maxWidth: 360,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgba(6,214,160,0.05)',
+          boxShadow: '0 8px 32px var(--border), 0 0 20px rgba(6,214,160,0.05)',
           animation: 'kikoFadeUp 0.3s ease-out',
           display: 'flex', alignItems: 'center', gap: 10,
         }}>

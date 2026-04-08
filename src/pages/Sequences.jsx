@@ -272,7 +272,7 @@ export default function Sequences() {
       {/* ═══ GENERATE WIZARD MODAL ═══ */}
       {showWiz && (
         <div style={{ position: 'fixed', inset: 0, background: 'var(--foreground)', backdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowWiz(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#161618', border: `0.5px solid ${C.border}`, borderRadius: 12, padding: 28, width: 460, maxWidth: '90vw', boxShadow: '0 24px 64px rgba(0,0,0,0.5)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#161618', border: `0.5px solid ${C.border}`, borderRadius: 12, padding: 28, width: 460, maxWidth: '90vw', boxShadow: '0 24px 64px var(--border)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
               <div>
                 <div style={{ fontSize: 18, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}><Sparkles size={16} style={{ color: C.purple }} /> Generate campaign</div>

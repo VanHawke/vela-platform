@@ -136,7 +136,7 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
         background: T.glass, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         border: `1px solid ${active ? `rgba(167,139,250,${0.18 + (state === 'speaking' ? level * 0.25 : 0.1)})` : T.glassBorder}`,
         boxShadow: active
-          ? `0 0 16px var(--accent), 0 2px 10px rgba(0,0,0,0.15), inset 3px 3px 0.5px -3.5px var(--ring), inset -3px -3px 0.5px -3.5px var(--accent), inset 1px 1px 1px -0.5px var(--accent), inset -1px -1px 1px -0.5px var(--accent)`
+          ? `0 0 16px var(--accent), 0 2px 10px var(--border), inset 3px 3px 0.5px -3.5px var(--ring), inset -3px -3px 0.5px -3.5px var(--accent), inset 1px 1px 1px -0.5px var(--accent), inset -1px -1px 1px -0.5px var(--accent)`
           : T.glassShadow,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden', cursor: onClick ? 'pointer' : 'default',

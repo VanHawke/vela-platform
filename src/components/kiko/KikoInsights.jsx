@@ -85,7 +85,7 @@ export default function KikoInsights({ onAction, open, onClose }) {
   return (
     <>
       {/* Overlay backdrop */}
-      {open && <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 299 }} />}
+      {open && <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'var(--border)', zIndex: 299 }} />}
 
       {/* Right slide panel */}
       <div style={{
@@ -94,7 +94,7 @@ export default function KikoInsights({ onAction, open, onClose }) {
         zIndex: 300, display: 'flex', flexDirection: 'column',
         transform: open ? 'translateX(0)' : 'translateX(100%)',
         transition: 'transform 0.25s cubic-bezier(0.4,0,0.2,1)',
-        boxShadow: open ? '-8px 0 32px rgba(0,0,0,0.4)' : 'none',
+        boxShadow: open ? '-8px 0 32px var(--border)' : 'none',
       }}>
         {/* Header */}
         <div style={{ padding: '14px 16px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

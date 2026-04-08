@@ -81,11 +81,11 @@ export default function Contacts({ user }) {
 
   const displayName = (c) => [c.firstName, c.lastName].filter(Boolean).join(' ') || 'Unnamed'
 
-  const glass = { padding: '12px 20px', borderRadius: 20, background: 'rgba(25,25,25,0.40)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', border: '0.5px solid var(--ring)', boxShadow: 'inset 0 1px 0 var(--accent), 0 8px 32px rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
-  const inputStyle = { width: '100%', background: 'rgba(25,25,25,0.40)', border: '0.5px solid var(--ring)', borderRadius: 50, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
-  const pillBtn = (bg, bc, col) => ({ padding: '8px 18px', borderRadius: 50, background: bg, border: `1.5px solid ${bc}`, fontSize: 12, color: col, fontWeight: 400, cursor: 'pointer', boxShadow: 'inset 0 1px 0 rgba(25,25,25,0.40)', fontFamily: 'var(--font)' })
-  const actionBtn = { width: 30, height: 30, borderRadius: 50, background: 'rgba(25,25,25,0.40)', border: '0.5px solid var(--ring)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'inset 0 1px 0 rgba(25,25,25,0.35)', flexShrink: 0 }
-  const stageColors = { 'To revisit': ['rgba(25,25,25,0.40)','var(--accent)','var(--ring)'], 'Contact made': ['var(--accent)','var(--accent)','var(--ring)'], 'In Dialogue': ['rgba(245,158,11,0.08)','rgba(245,158,11,0.15)','rgba(245,158,11,0.6)'], 'Qualified': ['rgba(6,214,160,0.08)','rgba(6,214,160,0.15)','rgba(6,214,160,0.55)'], 'Meeting arranged (brand x RH)': ['rgba(59,130,246,0.08)','rgba(59,130,246,0.15)','rgba(59,130,246,0.55)'] }
+  const glass = { padding: '12px 20px', borderRadius: 20, background: 'var(--card)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', border: '0.5px solid var(--ring)', boxShadow: 'inset 0 1px 0 var(--accent), 0 8px 32px var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
+  const inputStyle = { width: '100%', background: 'var(--card)', border: '0.5px solid var(--ring)', borderRadius: 50, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
+  const pillBtn = (bg, bc, col) => ({ padding: '8px 18px', borderRadius: 50, background: bg, border: `1.5px solid ${bc}`, fontSize: 12, color: col, fontWeight: 400, cursor: 'pointer', boxShadow: 'inset 0 1px 0 var(--card)', fontFamily: 'var(--font)' })
+  const actionBtn = { width: 30, height: 30, borderRadius: 50, background: 'var(--card)', border: '0.5px solid var(--ring)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'inset 0 1px 0 var(--card)', flexShrink: 0 }
+  const stageColors = { 'To revisit': ['var(--card)','var(--accent)','var(--ring)'], 'Contact made': ['var(--accent)','var(--accent)','var(--ring)'], 'In Dialogue': ['rgba(245,158,11,0.08)','rgba(245,158,11,0.15)','rgba(245,158,11,0.6)'], 'Qualified': ['rgba(6,214,160,0.08)','rgba(6,214,160,0.15)','rgba(6,214,160,0.55)'], 'Meeting arranged (brand x RH)': ['rgba(59,130,246,0.08)','rgba(59,130,246,0.15)','rgba(59,130,246,0.55)'] }
   const avatarColors = ['var(--accent)', 'rgba(6,214,160,0.15)', 'rgba(236,72,153,0.15)', 'rgba(59,130,246,0.15)', 'rgba(245,158,11,0.15)']
   const avatarTextColors = ['var(--primary)', 'rgba(6,214,160,0.7)', 'rgba(236,72,153,0.7)', 'rgba(59,130,246,0.7)', 'rgba(245,158,11,0.7)']
   const getAvatarColor = (name) => { const i = (name || '').charCodeAt(0) % 5; return [avatarColors[i], avatarTextColors[i]] }
@@ -100,7 +100,7 @@ export default function Contacts({ user }) {
           <div style={{ fontSize: 14, color: 'var(--ring)', fontWeight: 300, marginTop: 2, fontFamily: 'var(--font)' }}>{filtered.length.toLocaleString()} contacts</div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', width: 260, background: 'rgba(25,25,25,0.40)', backdropFilter: 'blur(40px) saturate(1.6)', border: '0.5px solid var(--ring)', borderRadius: 50, padding: '0 16px', boxShadow: 'inset 0 2px 0 var(--accent), inset 0 -1px 0 var(--accent)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', width: 260, background: 'var(--card)', backdropFilter: 'blur(40px) saturate(1.6)', border: '0.5px solid var(--ring)', borderRadius: 50, padding: '0 16px', boxShadow: 'inset 0 2px 0 var(--accent), inset 0 -1px 0 var(--accent)' }}>
             <Search style={{ width: 14, height: 14, color: 'var(--ring)', flexShrink: 0, marginRight: 8 }} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search contacts..." style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 14, color: 'rgba(238,232,220,0.70)', fontFamily: 'var(--font)', height: 38, fontWeight: 300 }} />
           </div>
@@ -123,7 +123,7 @@ export default function Contacts({ user }) {
             <div style={{ flex: 1 }}>Email</div>
           </div>
           {loading ? (
-            [...Array(8)].map((_, i) => <div key={i} style={{ height: 48, background: 'rgba(25,25,25,0.35)', borderRadius: 12, animation: 'shimmer 1.5s infinite' }} />)
+            [...Array(8)].map((_, i) => <div key={i} style={{ height: 48, background: 'var(--card)', borderRadius: 12, animation: 'shimmer 1.5s infinite' }} />)
           ) : paged.length === 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--accent)' }}>
               <User style={{ width: 32, height: 32, marginBottom: 12, opacity: 0.3 }} />
@@ -137,11 +137,11 @@ export default function Contacts({ user }) {
                 const showLogo = domain && !['gmail.com','yahoo.com','hotmail.com','outlook.com','icloud.com','aol.com','protonmail.com','me.com'].includes(domain)
                 return (
                   <div key={contact.id} onClick={() => nav(`/contacts/${contact.id}`)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 18px', borderRadius: 12, background: 'rgba(25,25,25,0.55)', border: '0.5px solid var(--ring)', cursor: 'pointer', transition: 'all 0.15s' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 18px', borderRadius: 12, background: 'var(--card)', border: '0.5px solid var(--ring)', cursor: 'pointer', transition: 'all 0.15s' }}
                     onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent)'; e.currentTarget.style.borderColor = 'var(--accent)' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(25,25,25,0.55)'; e.currentTarget.style.borderColor = 'var(--ring)' }}>
+                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--card)'; e.currentTarget.style.borderColor = 'var(--ring)' }}>
                     {/* Avatar with company favicon */}
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: showLogo ? 'rgba(25,25,25,0.40)' : abg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: showLogo ? 'var(--card)' : abg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
                       {showLogo ? (
                         <img src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} onError={e => { e.target.style.display = 'none'; e.target.parentElement.style.background = abg; e.target.parentElement.innerHTML = `<span style="font-size:10px;font-weight:500;color:${atc};font-family:var(--font)">${(contact.firstName || '?')[0]?.toUpperCase()}${(contact.lastName || '')[0]?.toUpperCase() || ''}</span>` }} />
                       ) : (
@@ -174,7 +174,7 @@ export default function Contacts({ user }) {
 
       {showForm && (
         <div onClick={e => e.target === e.currentTarget && reset()} style={{ position: 'fixed', inset: 0, background: 'var(--foreground)', backdropFilter: 'blur(12px)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div style={{ background: 'rgba(25,25,25,0.50)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 24, border: '0.5px solid var(--ring)', boxShadow: 'inset 0 1px 0 var(--accent), 0 24px 80px rgba(0,0,0,0.5)', width: '100%', maxWidth: 420, padding: 24 }}>
+          <div style={{ background: 'var(--card)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 24, border: '0.5px solid var(--ring)', boxShadow: 'inset 0 1px 0 var(--accent), 0 24px 80px var(--border)', width: '100%', maxWidth: 420, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <h2 style={{ fontSize: 17, fontWeight: 200, color: 'rgba(238,232,220,0.90)', margin: 0, fontFamily: 'var(--font)' }}>{editing ? 'Edit Contact' : 'Add Contact'}</h2>
               <button onClick={reset} style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer' }}><X style={{ width: 16, height: 16 }} /></button>

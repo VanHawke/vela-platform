@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
 // Design tokens — hardcoded (matching Sequences.jsx)
 import { C } from '@/lib/theme'
-const glass = { background: C.card, border: `0.5px solid ${C.border}`, borderTop: `0.5px solid var(--border)`, borderRadius: C.r, boxShadow: '0 1px 3px rgba(0,0,0,0.3)', transition: 'all 0.2s ease' }
+const glass = { background: C.card, border: `0.5px solid ${C.border}`, borderTop: `0.5px solid var(--border)`, borderRadius: C.r, boxShadow: '0 1px 3px var(--border)', transition: 'all 0.2s ease' }
 import { Mail, Linkedin, Plus, Clock, Trash2, Save, Sparkles, ArrowLeft, Search, UserPlus, X, ChevronRight, Eye, Reply, AlertTriangle, Send, GitBranch, Copy, MoreHorizontal } from 'lucide-react'
 
 const APPROACHES = ['authority-led','scarcity-led','social-proof','reciprocity','data-led','intelligence-led','competitive-led','relationship-led']
@@ -330,7 +330,7 @@ export default function SequenceDetail() {
           {dirty && <span style={{ fontSize: 11, color: C.amber }}>Unsaved</span>}
           {!isNew && <button onClick={duplicateCampaign} title="Duplicate campaign" style={{ padding: '7px 8px', borderRadius: 6, border: `0.5px solid ${C.border}`, background: 'transparent', color: C.textTer, cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Copy size={12} /></button>}
           {!isNew && <button onClick={deleteCampaign} title="Delete campaign" style={{ padding: '7px 8px', borderRadius: 6, border: '0.5px solid rgba(248,113,113,0.15)', background: 'transparent', color: C.red, cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Trash2 size={12} /></button>}
-          <button onClick={save} disabled={saving} style={{ padding: '7px 16px', borderRadius: 6, border: 'none', background: 'var(--accent)', color: C.purple, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, opacity: saving ? 0.5 : 1, display: 'flex', alignItems: 'center', gap: 5, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}><Save size={12} />{saving ? 'Saving...' : 'Save'}</button>
+          <button onClick={save} disabled={saving} style={{ padding: '7px 16px', borderRadius: 6, border: 'none', background: 'var(--accent)', color: C.purple, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, opacity: saving ? 0.5 : 1, display: 'flex', alignItems: 'center', gap: 5, boxShadow: '0 1px 2px var(--border)' }}><Save size={12} />{saving ? 'Saving...' : 'Save'}</button>
         </div>
       </div>
       <input value={seq?.target_persona || ''} onChange={e => { setSeq({ ...seq, target_persona: e.target.value }); setDirty(true) }} placeholder="Target persona" style={{ ...inputStyle, marginBottom: 14 }} />
@@ -653,7 +653,7 @@ export default function SequenceDetail() {
         {/* Continue to Leads button (draft flow) */}
         {isDraft && steps.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
-            <button onClick={() => { if (dirty) save(); setTab('leads') }} style={{ padding: '10px 24px', borderRadius: 6, border: 'none', background: 'var(--accent)', color: C.purple, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 1px 2px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button onClick={() => { if (dirty) save(); setTab('leads') }} style={{ padding: '10px 24px', borderRadius: 6, border: 'none', background: 'var(--accent)', color: C.purple, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 1px 2px var(--border)', display: 'flex', alignItems: 'center', gap: 6 }}>
               Continue to Leads <ChevronRight size={14} />
             </button>
           </div>
@@ -801,7 +801,7 @@ export default function SequenceDetail() {
             <button onClick={() => setTab('sequence')} style={{ padding: '10px 20px', borderRadius: 6, border: `0.5px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 13, cursor: 'pointer', fontFamily: C.font }}>
               ← Back to Sequence
             </button>
-            <button onClick={() => setShowLaunchConfirm(true)} style={{ padding: '10px 28px', borderRadius: 6, border: 'none', background: 'rgba(45,212,191,0.12)', color: C.teal, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 1px 2px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button onClick={() => setShowLaunchConfirm(true)} style={{ padding: '10px 28px', borderRadius: 6, border: 'none', background: 'rgba(45,212,191,0.12)', color: C.teal, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 1px 2px var(--border)', display: 'flex', alignItems: 'center', gap: 6 }}>
               🚀 Launch Campaign
             </button>
           </div>
@@ -959,7 +959,7 @@ export default function SequenceDetail() {
       {/* ═══ MANUAL ADD LEAD MODAL ═══ */}
       {showManualAdd && (
         <div style={{ position: 'fixed', inset: 0, background: 'var(--foreground)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowManualAdd(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ ...glass, padding: 24, width: 440, maxWidth: '90vw', boxShadow: '0 12px 40px rgba(0,0,0,0.5)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ ...glass, padding: 24, width: 440, maxWidth: '90vw', boxShadow: '0 12px 40px var(--border)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
               <div style={{ fontSize: 15, fontWeight: 500 }}>Add lead manually</div>
               <button onClick={() => setShowManualAdd(false)} style={{ background: 'none', border: 'none', color: C.textTer, cursor: 'pointer' }}><X size={16} /></button>
@@ -991,7 +991,7 @@ export default function SequenceDetail() {
       {/* ═══ ADD FROM CRM MODAL ═══ */}
       {showAddLeads && (
         <div style={{ position: 'fixed', inset: 0, background: 'var(--foreground)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowAddLeads(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ ...glass, padding: 24, width: 500, maxWidth: '90vw', maxHeight: '70vh', display: 'flex', flexDirection: 'column', boxShadow: '0 12px 40px rgba(0,0,0,0.5)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ ...glass, padding: 24, width: 500, maxWidth: '90vw', maxHeight: '70vh', display: 'flex', flexDirection: 'column', boxShadow: '0 12px 40px var(--border)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
               <div style={{ fontSize: 15, fontWeight: 500 }}>Add leads from CRM</div>
               <button onClick={() => setShowAddLeads(false)} style={{ background: 'none', border: 'none', color: C.textTer, cursor: 'pointer' }}><X size={16} /></button>
@@ -1020,7 +1020,7 @@ export default function SequenceDetail() {
       {/* ═══ LAUNCH CONFIRMATION ═══ */}
       {showLaunchConfirm && (
         <div style={{ position: 'fixed', inset: 0, background: 'var(--foreground)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowLaunchConfirm(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ ...glass, padding: 28, width: 440, maxWidth: '90vw', boxShadow: '0 12px 40px rgba(0,0,0,0.5)', textAlign: 'center' }}>
+          <div onClick={e => e.stopPropagation()} style={{ ...glass, padding: 28, width: 440, maxWidth: '90vw', boxShadow: '0 12px 40px var(--border)', textAlign: 'center' }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>🚀</div>
             <div style={{ fontSize: 17, fontWeight: 500, marginBottom: 8 }}>Launch "{seq?.name}"?</div>
             <div style={{ fontSize: 12, color: C.textTer, marginBottom: 20, lineHeight: 1.6, fontWeight: 300 }}>
@@ -1031,7 +1031,7 @@ export default function SequenceDetail() {
             </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
               <button onClick={() => setShowLaunchConfirm(false)} style={{ padding: '10px 20px', borderRadius: 6, border: `0.5px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 13, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
-              <button onClick={launchCampaign} disabled={launching} style={{ padding: '10px 28px', borderRadius: 6, border: 'none', background: 'rgba(45,212,191,0.15)', color: C.teal, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}>{launching ? '⏳ Launching...' : '🚀 Go Live'}</button>
+              <button onClick={launchCampaign} disabled={launching} style={{ padding: '10px 28px', borderRadius: 6, border: 'none', background: 'rgba(45,212,191,0.15)', color: C.teal, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 1px 2px var(--border)' }}>{launching ? '⏳ Launching...' : '🚀 Go Live'}</button>
             </div>
           </div>
         </div>
