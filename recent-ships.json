@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-04-08T10:58:34.133Z",
+  "generated_at": "2026-04-08T11:12:54.278Z",
   "commits": [
+    {
+      "hash": "c841fd6",
+      "subject": "Block C correction: dark amber is default :root, light amber opt-in via .light class. Components were designed for dark mode (297 hardcoded white-on-dark rgba values across 30+ files), so dark stays t",
+      "when": "14 minutes ago"
+    },
     {
       "hash": "1c5e8d3",
       "subject": "Block C: amber-minimal theme system. src/index.css holds full token sets for :root (light) + .dark. Inter/JetBrains Mono/Source Serif 4 loaded from Google Fonts. src/lib/theme.js exports T (named toke",
-      "when": "4 minutes ago"
+      "when": "19 minutes ago"
     },
     {
       "hash": "97ac6eb",
       "subject": "audit fix: handleSubmit (streaming path) now also persists to kiko_conversations + kiko_messages so the multi-task sidebar reflects all chat history. closes the gap where sendAsync existed but was nev",
-      "when": "39 minutes ago"
+      "when": "53 minutes ago"
     },
     {
       "hash": "0ba3649",
       "subject": "fix Q5: capture-recent-ships.js writes to api/ folder so Vercel bundles it with serverless functions. kiko-self-knowledge.js tries multiple paths (api/, root, public/) since Vercel cwd is unreliable a",
-      "when": "50 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "8c6e70d",
       "subject": "kiko-async: in-process call via fake req/res — bypasses HTTP entirely. Imports kiko handler default export, builds fake req with nostream=1, fake res that captures res.json() into local var. No HTTP r",
-      "when": "59 minutes ago"
+      "when": "73 minutes ago"
     },
     {
       "hash": "2438094",
       "subject": "kiko-async fix: api/kiko.js now supports ?nostream=1 — buffers SSE deltas and returns plain JSON {response, buffered_events}. kiko-async calls with nostream=1 and reads JSON body. Bypasses Vercel's br",
-      "when": "67 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "2f8807c",
       "subject": "kiko-async: add diagnostic logging + handle both stream and text fallback paths",
-      "when": "77 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "7bf15fb",
       "subject": "kiko-async: properly consume SSE stream via reader. r.text() resolved with empty body before deltas streamed in. Now uses ReadableStream reader, decodes chunk-by-chunk, parses each data: line as it ar",
-      "when": "80 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "58bba4a",
       "subject": "fix kiko-async: await processInBackground before response. Vercel kills serverless function after res.json — fire-and-forget post-response does NOT work. Parallelism comes from client firing multiple ",
-      "when": "84 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "0da819a",
@@ -79,12 +84,12 @@
     {
       "hash": "95bb361",
       "subject": "KIKO_REALITY.md: update execution order to reflect Steps 1-7 shipped + Step 7 verification details + cron-sequence-reply-detect schema fix",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "ed4bc08",
       "subject": "Step 7 polish: fix kiko_alerts schema drift in cron-sequence-reply-detect. Was writing org_id/entity/action — none exist. Now writes type=reply_from_prospect (matching Command Centre + Sequences page ",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "d11ecc6",
@@ -94,11 +99,6 @@
     {
       "hash": "0cf1b6d",
       "subject": "Step 7 polish: timezone helper now accepts contact email + checks TLD. UK detection includes van hawke / vanhawke / .uk / .co.uk / scotland / wales / glasgow / edinburgh / birmingham / leeds / bristol",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "5026bfb",
-      "subject": "Step 7: Wire wrapEmailBody + voice profile + signatures into cron-sequence-enqueue. Remove hardcoded sig from cron-sequence-sender (wrapper handles it). Re-add 3 sequencer cron schedules: enqueue 6am ",
       "when": "15 hours ago"
     }
   ]

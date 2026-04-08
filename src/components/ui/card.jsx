@@ -1,114 +1,39 @@
-import * as React from "react"
+// src/components/ui/Card.jsx — base card primitive
+import { t } from '@/lib/tokens'
 
-import { cn } from "@/lib/utils"
-
-function Card({
-  className,
-  size = "default",
-  ...props
-}) {
+export function Card({ children, style = {}, padding = 20, hover = false, onClick, ...rest }) {
   return (
     <div
-      data-slot="card"
-      data-size={size}
-      className={cn(
-        "group/card flex flex-col gap-4 overflow-hidden rounded-xl bg-card py-4 text-sm text-card-foreground ring-1 ring-foreground/10 has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-3 data-[size=sm]:py-3 data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
-        className
-      )}
-      {...props} />
-  );
+      onClick={onClick}
+      style={{
+        background: t.card,
+        color: t.cardFg,
+        border: `1px solid ${t.border}`,
+        borderRadius: t.radiusLg,
+        padding,
+        boxShadow: t.shadowSm,
+        transition: hover ? 'all 0.15s' : 'none',
+        cursor: onClick || hover ? 'pointer' : 'default',
+        fontFamily: t.fontSans,
+        ...style,
+      }}
+      onMouseEnter={hover ? (e) => { e.currentTarget.style.boxShadow = t.shadowMd; e.currentTarget.style.borderColor = t.ring } : undefined}
+      onMouseLeave={hover ? (e) => { e.currentTarget.style.boxShadow = t.shadowSm; e.currentTarget.style.borderColor = t.border } : undefined}
+      {...rest}
+    >
+      {children}
+    </div>
+  )
 }
 
-function CardHeader({
-  className,
-  ...props
-}) {
-  return (
-    <div
-      data-slot="card-header"
-      className={cn(
-        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-xl px-4 group-data-[size=sm]/card:px-3 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-4 group-data-[size=sm]/card:[.border-b]:pb-3",
-        className
-      )}
-      {...props} />
-  );
+export function CardHeader({ children, style = {} }) {
+  return <div style={{ marginBottom: 12, ...style }}>{children}</div>
 }
 
-function CardTitle({
-  className,
-  ...props
-}) {
-  return (
-    <div
-      data-slot="card-title"
-      className={cn(
-        "text-base leading-snug font-medium group-data-[size=sm]/card:text-sm",
-        className
-      )}
-      {...props} />
-  );
+export function CardTitle({ children, style = {} }) {
+  return <h3 style={{ fontSize: 15, fontWeight: 600, color: t.cardFg, margin: 0, fontFamily: t.fontSans, ...style }}>{children}</h3>
 }
 
-function CardDescription({
-  className,
-  ...props
-}) {
-  return (
-    <div
-      data-slot="card-description"
-      className={cn("text-sm text-muted-foreground", className)}
-      {...props} />
-  );
-}
-
-function CardAction({
-  className,
-  ...props
-}) {
-  return (
-    <div
-      data-slot="card-action"
-      className={cn(
-        "col-start-2 row-span-2 row-start-1 self-start justify-self-end",
-        className
-      )}
-      {...props} />
-  );
-}
-
-function CardContent({
-  className,
-  ...props
-}) {
-  return (
-    <div
-      data-slot="card-content"
-      className={cn("px-4 group-data-[size=sm]/card:px-3", className)}
-      {...props} />
-  );
-}
-
-function CardFooter({
-  className,
-  ...props
-}) {
-  return (
-    <div
-      data-slot="card-footer"
-      className={cn(
-        "flex items-center rounded-b-xl border-t bg-muted/50 p-4 group-data-[size=sm]/card:p-3",
-        className
-      )}
-      {...props} />
-  );
-}
-
-export {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardAction,
-  CardDescription,
-  CardContent,
+export function CardDescription({ children, style = {} }) {
+  return <p style={{ fontSize: 13, color: t.mutedFg, margin: '4px 0 0', fontFamily: t.fontSans, ...style }}>{children}</p>
 }

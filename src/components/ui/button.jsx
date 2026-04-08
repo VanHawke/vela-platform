@@ -1,57 +1,53 @@
-import { Button as ButtonPrimitive } from "@base-ui/react/button"
-import { cva } from "class-variance-authority";
+// src/components/ui/Button.jsx — button primitive
+import { t } from '@/lib/tokens'
 
-import { cn } from "@/lib/utils"
-
-const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
-        outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
-        ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
-        destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
-        link: "text-primary underline-offset-4 hover:underline",
-      },
-      size: {
-        default:
-          "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        xs: "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
-        icon: "size-8",
-        "icon-xs":
-          "size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm":
-          "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
-        "icon-lg": "size-9",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-)
-
-function Button({
-  className,
-  variant = "default",
-  size = "default",
-  ...props
-}) {
-  return (
-    <ButtonPrimitive
-      data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props} />
-  );
+const variants = {
+  primary: { bg: t.primary, color: t.primaryFg, border: t.primary, hoverBg: '#d97706' },
+  secondary: { bg: t.secondary, color: t.secondaryFg, border: t.border, hoverBg: t.muted },
+  ghost: { bg: 'transparent', color: t.fg, border: 'transparent', hoverBg: t.muted },
+  outline: { bg: 'transparent', color: t.fg, border: t.border, hoverBg: t.accent },
+  destructive: { bg: t.destructive, color: t.destructiveFg, border: t.destructive, hoverBg: '#dc2626' },
 }
 
-export { Button, buttonVariants }
+const sizes = {
+  sm: { padding: '6px 12px', fontSize: 12, height: 30 },
+  md: { padding: '8px 16px', fontSize: 13, height: 36 },
+  lg: { padding: '10px 20px', fontSize: 14, height: 42 },
+}
+
+export function Button({ children, variant = 'primary', size = 'md', onClick, disabled, style = {}, type = 'button', ...rest }) {
+  const v = variants[variant] || variants.primary
+  const s = sizes[size] || sizes.md
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        background: v.bg,
+        color: v.color,
+        border: `1px solid ${v.border}`,
+        borderRadius: t.radius,
+        padding: s.padding,
+        fontSize: s.fontSize,
+        height: s.height,
+        fontWeight: 500,
+        fontFamily: t.fontSans,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.5 : 1,
+        transition: 'all 0.15s',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        whiteSpace: 'nowrap',
+        ...style,
+      }}
+      onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.background = v.hoverBg }}
+      onMouseLeave={(e) => { if (!disabled) e.currentTarget.style.background = v.bg }}
+      {...rest}
+    >
+      {children}
+    </button>
+  )
+}
