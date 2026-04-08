@@ -129,11 +129,12 @@ export default async function handler(req, res) {
     // Signatures = pulled live from Gmail API (native sendAs signature) — no Settings UI needed
     const SUNNY_USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063';
     const SUNNY_EMAIL = 'sunny@vanhawke.com';
+    const FROM_ADDRESS = 'sunny@vanhawke.agency';
     const { getGoogleToken } = await import('./google-token.js');
     const accessToken = await getGoogleToken(SUNNY_EMAIL).catch(() => null);
     const [voiceProfile, signatures] = await Promise.all([
       loadVoiceProfile(sbFetch, SUNNY_USER_ID),
-      loadUserSignatures(sbFetch, SUNNY_USER_ID, accessToken),
+      loadUserSignatures(sbFetch, SUNNY_USER_ID, accessToken, FROM_ADDRESS),
     ]);
     console.log(`[cron-sequence-enqueue] signature source: ${signatures.source}`);
     const voicePromptInjection = voiceProfileToPrompt(voiceProfile);

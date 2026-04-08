@@ -51,7 +51,7 @@ function stripHtml(html) {
 const DEFAULT_COLD_SIG = `—<br><strong>Sunny</strong><br>Founder &amp; CEO<br>Van Hawke<br><a href="mailto:sunny@vanhawke.com">sunny@vanhawke.com</a><br><a href="https://www.vanhawke.com">www.vanhawke.com</a>`;
 const DEFAULT_WARM_SIG = `${DEFAULT_COLD_SIG}<br>(786) 828-6126`;
 
-export async function loadUserSignatures(sbFetch, userId, accessToken = null) {
+export async function loadUserSignatures(sbFetch, userId, accessToken = null, fromEmail = null) {
   // PRIORITY 1: Native Gmail signature via Gmail API (single source of truth)
   // Uses the user's actual Gmail signature configured at https://mail.google.com/mail/u/0/#settings/general
   if (accessToken) {
@@ -61,7 +61,12 @@ export async function loadUserSignatures(sbFetch, userId, accessToken = null) {
       });
       if (r.ok) {
         const data = await r.json();
-        const primary = (data.sendAs || []).find(s => s.isPrimary) || data.sendAs?.[0];
+        // Match by sendAsEmail when fromEmail provided (e.g. sunny@vanhawke.agency alias),
+        // otherwise fall back to primary. This ensures the right signature for the right alias.
+        const sendAsList = data.sendAs || [];
+        const primary = (fromEmail && sendAsList.find(s => s.sendAsEmail?.toLowerCase() === fromEmail.toLowerCase()))
+          || sendAsList.find(s => s.isPrimary)
+          || sendAsList[0];
         if (primary?.signature) {
           // Gmail returns HTML signature with images embedded as cid: refs that resolve client-side
           // OR as https:// URLs if user uploaded via "Insert image from URL". Either way, use as-is.

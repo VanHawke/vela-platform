@@ -66,7 +66,8 @@ export default async function handler(req, res) {
 
     // Pull real signature from Gmail sendAs API + wrap body with real Helvetica/signature template
     const SUNNY_USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063'
-    const signatures = await loadUserSignatures(sbFetch, SUNNY_USER_ID, accessToken).catch(() => ({ signature: '', coldSignature: '' }))
+    const FROM_ADDRESS = 'sunny@vanhawke.agency'
+    const signatures = await loadUserSignatures(sbFetch, SUNNY_USER_ID, accessToken, FROM_ADDRESS).catch(() => ({ signature: '', coldSignature: '' }))
     const { html: htmlBody, text: plainBody } = wrapEmailBody(body, {
       contactStatus,
       signature: signatures.signature,
