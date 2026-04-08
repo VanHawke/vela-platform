@@ -289,7 +289,7 @@ RULES:
 
   // ── Render ──
   return createPortal(
-    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#111111' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#1C1C1F' }}>
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}><AuroraCanvas /></div>
 
       {/* X close */}

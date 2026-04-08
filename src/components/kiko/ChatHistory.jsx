@@ -136,7 +136,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
   }
 
   return (
-    <div style={{ width: 300, flexShrink: 0, height: '100%', background: '#111114', borderRight: '1px solid rgba(238,238,238,0.04)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: 300, flexShrink: 0, height: '100%', background: '#1C1C1F', borderRight: '1px solid rgba(238,238,238,0.04)', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <div style={{ padding: '14px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 15, fontWeight: 500, color: '#fff', fontFamily: T.font }}>Chats</span>

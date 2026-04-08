@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
 // Design tokens — hardcoded (matching Sequences.jsx)
 const C = {
-  bg: '#0D0D0F',
+  bg: '#1C1C1F',
   card: '#141416',
   cardHover: '#1A1A1E',
   border: 'rgba(255,255,255,0.06)',

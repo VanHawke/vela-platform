@@ -90,7 +90,7 @@ export default function KikoInsights({ onAction, open, onClose }) {
       {/* Right slide panel */}
       <div style={{
         position: 'fixed', top: 48, right: 0, width: 380, height: 'calc(100% - 48px)',
-        background: '#111114', borderLeft: `1px solid ${T.border}`,
+        background: '#1C1C1F', borderLeft: `1px solid ${T.border}`,
         zIndex: 300, display: 'flex', flexDirection: 'column',
         transform: open ? 'translateX(0)' : 'translateX(100%)',
         transition: 'transform 0.25s cubic-bezier(0.4,0,0.2,1)',

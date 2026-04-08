@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import T from '@/lib/theme'
 import ImageUpload from './ImageUpload'
 import SkillsManager from './SkillsManager'
+import SignatureEditor from './SignatureEditor'
 import { Check, ExternalLink, Unplug, UserPlus, Trash2, LogOut, X } from 'lucide-react'
 
 const VOICES = [
@@ -368,14 +369,6 @@ export default function Settings({ user }) {
                 </div>
               )}
 
-              {/* Image guidance — Gmail signatures with cid: refs won't render */}
-              <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(96,165,250,0.05)', border: '0.5px solid rgba(96,165,250,0.20)', marginBottom: 14, fontSize: 11, color: T.textSecondary, fontFamily: T.font, lineHeight: 1.6 }}>
-                <strong style={{ color: T.text }}>Image not appearing?</strong> Gmail uses internal <code style={{ background: 'rgba(255,255,255,0.04)', padding: '1px 5px', borderRadius: 3 }}>cid:</code> references for inline images that only resolve inside email clients. To make your logo show up here:<br/>
-                <span style={{ display: 'block', marginTop: 4 }}>1. In Gmail, right-click your logo image → <em>Copy image address</em> (gives you a public https:// URL)</span>
-                <span style={{ display: 'block' }}>2. Paste your signature, then replace the broken image with: <code style={{ background: 'rgba(255,255,255,0.04)', padding: '1px 5px', borderRadius: 3 }}>&lt;img src="HTTPS_URL_HERE" width="120" /&gt;</code></span>
-                <span style={{ display: 'block', marginTop: 4 }}>Or upload your logo via Profile photo above and reference it.</span>
-              </div>
-
               {/* Voice profile status */}
               {settings.email_voice_profile && (
                 <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(45,212,191,0.05)', border: '0.5px solid rgba(45,212,191,0.20)', marginBottom: 14, fontSize: 12, color: T.textSecondary, fontFamily: T.font }}>
@@ -392,29 +385,15 @@ export default function Settings({ user }) {
                 </div>
               )}
 
-              {/* Warm signature (full + logo) — TEXTAREA: avoids contentEditable+React reconciler crash */}
-              <label style={{ ...labelStyle, marginTop: 4 }}>Warm signature HTML (used after a contact has replied)</label>
-              <p style={{ fontSize: 11, color: T.textTertiary, marginTop: 0, marginBottom: 6, fontFamily: T.font }}>Paste raw HTML, or upload a logo image to insert an &lt;img&gt; tag automatically.</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(167,139,250,0.30)', background: 'rgba(167,139,250,0.10)', color: '#a78bfa', fontSize: 11, fontWeight: 500, cursor: sigUploading ? 'wait' : 'pointer', fontFamily: T.font }}>
-                  {sigUploading ? 'Uploading...' : '+ Upload logo image'}
-                  <input type="file" accept="image/*" disabled={sigUploading} onChange={e => uploadSignatureImage(e.target.files?.[0])} style={{ display: 'none' }} />
-                </label>
-                {sigUploadError && <span style={{ fontSize: 11, color: '#f87171' }}>{sigUploadError}</span>}
-              </div>
-              <textarea
+              {/* Warm signature — single paste box, auto-uploads images */}
+              <SignatureEditor
+                label="Warm signature (used after a contact has replied)"
                 value={settings.email_signature_html || ''}
-                onChange={e => setSettings(p => ({ ...p, email_signature_html: e.target.value }))}
-                placeholder='<table><tr><td><img src="https://yourdomain.com/logo.png" width="120" /></td></tr></table><br><strong>Sunny Sidhu</strong><br>Founder &amp; CEO, Van Hawke<br><a href="mailto:sunny@vanhawke.com">sunny@vanhawke.com</a>'
-                spellCheck={false}
-                style={{ ...inputStyle, width: '100%', height: 'auto', minHeight: 140, padding: '12px 14px', lineHeight: 1.5, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 11, resize: 'vertical', boxSizing: 'border-box' }}
+                onChange={(html) => setSettings(p => ({ ...p, email_signature_html: html }))}
+                userId={user?.id}
+                minHeight={160}
               />
-              {settings.email_signature_html && (
-                <div style={{ marginTop: 6, padding: '12px 14px', borderRadius: 6, background: '#fff', border: '0.5px solid rgba(255,255,255,0.10)', fontFamily: 'Helvetica, Arial, sans-serif', fontSize: 12, color: '#000', lineHeight: 1.5 }}>
-                  <div style={{ fontSize: 9, color: '#888', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Live preview</div>
-                  <div dangerouslySetInnerHTML={{ __html: settings.email_signature_html }} />
-                </div>
-              )}
+              <div style={{ height: 18 }} />
 
               {/* Cold signature (text-only) */}
               <label style={{ ...labelStyle, marginTop: 16 }}>Cold outreach signature (text-only — better deliverability)</label>

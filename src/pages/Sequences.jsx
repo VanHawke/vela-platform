@@ -7,7 +7,7 @@ import { Plus, Sparkles, X, Mail, Linkedin, Play, Pause, Users, ChevronRight, Gi
 
 // Design tokens — hardcoded to match mockup renders
 const C = {
-  bg: '#0D0D0F',
+  bg: '#1C1C1F',
   card: '#141416',
   cardHover: '#1A1A1E',
   border: 'rgba(255,255,255,0.06)',
@@ -311,7 +311,7 @@ export default function Sequences() {
             <div style={{ marginBottom: 16 }}>
               <label style={{ fontSize: 12, color: C.textTer, display: 'block', marginBottom: 5 }}>F1 Team</label>
               <select value={wizTeam} onChange={e => setWizTeam(e.target.value)} style={{ width: '100%', padding: '10px 14px', borderRadius: C.r, border: `0.5px solid ${C.border}`, background: C.card, color: C.text, fontSize: 14, fontFamily: C.font, outline: 'none' }}>
-                {['Haas F1 Team', 'Alpine F1 Team', 'Aston Martin F1 Team'].map(t => <option key={t} value={t} style={{ background: '#111' }}>{t}</option>)}
+                {['Haas F1 Team', 'Alpine F1 Team', 'Aston Martin F1 Team'].map(t => <option key={t} value={t} style={{ background: '#1C1C1F' }}>{t}</option>)}
               </select>
             </div>
             <div style={{ marginBottom: 20 }}>

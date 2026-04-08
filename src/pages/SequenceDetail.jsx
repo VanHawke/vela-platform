@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
 // Design tokens — hardcoded (matching Sequences.jsx)
 const C = {
-  bg: '#0D0D0F',
+  bg: '#1C1C1F',
   card: '#141416',
   cardHover: '#1A1A1E',
   border: 'rgba(255,255,255,0.06)',
@@ -424,8 +424,8 @@ export default function SequenceDetail() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, marginBottom: 3 }}>
                   <Clock size={9} style={{ color: C.textTer }} />
                   <select value={s.delay_days} onChange={e => upd(i, 'delay_days', +e.target.value)} style={{ background: 'transparent', border: 'none', color: C.amber, fontSize: 10, fontFamily: C.font, cursor: 'pointer', outline: 'none' }}>
-                    <option value={0} style={{ background: '#111' }}>Immediately</option>
-                    {[1, 2, 3, 4, 5, 7, 10, 14].map(d => <option key={d} value={d} style={{ background: '#111' }}>Wait {d}d</option>)}
+                    <option value={0} style={{ background: '#1C1C1F' }}>Immediately</option>
+                    {[1, 2, 3, 4, 5, 7, 10, 14].map(d => <option key={d} value={d} style={{ background: '#1C1C1F' }}>Wait {d}d</option>)}
                   </select>
                 </div>
                 <div onClick={() => setSelStep(i)} style={{ ...glass, padding: '8px 10px', cursor: 'pointer', borderColor: sel ? C.purple : C.border, background: sel ? 'rgba(167,139,250,0.04)' : glass.background, transition: 'all 0.15s' }}>
@@ -460,7 +460,7 @@ export default function SequenceDetail() {
                     <div style={{ marginBottom: 14 }}>
                       <label style={{ fontSize: 10, color: C.textTer, marginBottom: 4, display: 'block' }}>Condition type</label>
                       <select value={cur.condition_type || 'no_reply'} onChange={e => upd(selStep, 'condition_type', e.target.value)} style={{ ...inputStyle, fontSize: 12 }}>
-                        {CONDITIONS.map(c => <option key={c.value} value={c.value} style={{ background: '#111' }}>{c.label}</option>)}
+                        {CONDITIONS.map(c => <option key={c.value} value={c.value} style={{ background: '#1C1C1F' }}>{c.label}</option>)}
                       </select>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
@@ -508,9 +508,9 @@ export default function SequenceDetail() {
                 </div>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
                   <div style={{ flex: 1 }}><label style={{ fontSize: 10, color: C.textTer, marginBottom: 2, display: 'block' }}>Approach</label>
-                    <select value={cur.approach || ''} onChange={e => updAndRegen(selStep, 'approach', e.target.value)} style={{ ...inputStyle, padding: '5px 6px', fontSize: 11 }}>{APPROACHES.map(a => <option key={a} value={a} style={{ background: '#111' }}>{a}</option>)}</select></div>
+                    <select value={cur.approach || ''} onChange={e => updAndRegen(selStep, 'approach', e.target.value)} style={{ ...inputStyle, padding: '5px 6px', fontSize: 11 }}>{APPROACHES.map(a => <option key={a} value={a} style={{ background: '#1C1C1F' }}>{a}</option>)}</select></div>
                   <div style={{ flex: 1 }}><label style={{ fontSize: 10, color: C.textTer, marginBottom: 2, display: 'block' }}>Psychology</label>
-                    <select value={cur.psychology || ''} onChange={e => updAndRegen(selStep, 'psychology', e.target.value)} style={{ ...inputStyle, padding: '5px 6px', fontSize: 11 }}>{PSYCHOLOGY.map(p => <option key={p} value={p} style={{ background: '#111' }}>{p.replace(/_/g, ' ')}</option>)}</select></div>
+                    <select value={cur.psychology || ''} onChange={e => updAndRegen(selStep, 'psychology', e.target.value)} style={{ ...inputStyle, padding: '5px 6px', fontSize: 11 }}>{PSYCHOLOGY.map(p => <option key={p} value={p} style={{ background: '#1C1C1F' }}>{p.replace(/_/g, ' ')}</option>)}</select></div>
                 </div>
                 {cur.channel === 'email' && <div style={{ marginBottom: 12 }}><label style={{ fontSize: 10, color: C.textTer, marginBottom: 2, display: 'block' }}>Subject</label>
                   <input value={cur.subject || ''} onChange={e => upd(selStep, 'subject', e.target.value)} placeholder="Haas F1 Team x {category}" style={inputStyle} /></div>}
@@ -610,15 +610,15 @@ export default function SequenceDetail() {
                           <div>
                             <div style={{ fontSize: 9, color: C.textTer, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>If</div>
                             <select value={newCondition.condition_type} onChange={e => setNewCondition({ ...newCondition, condition_type: e.target.value })} style={{ ...inputStyle, fontSize: 11, padding: '6px 8px' }}>
-                              <option value="opened" style={{ background: '#111' }}>opened</option>
-                              <option value="not_opened" style={{ background: '#111' }}>not opened</option>
-                              <option value="clicked" style={{ background: '#111' }}>clicked</option>
-                              <option value="not_clicked" style={{ background: '#111' }}>not clicked</option>
-                              <option value="replied" style={{ background: '#111' }}>replied</option>
-                              <option value="not_replied" style={{ background: '#111' }}>not replied</option>
-                              <option value="days_since_last_action" style={{ background: '#111' }}>days since last action</option>
-                              <option value="company_attribute" style={{ background: '#111' }}>company attribute</option>
-                              <option value="has_meeting" style={{ background: '#111' }}>has meeting booked</option>
+                              <option value="opened" style={{ background: '#1C1C1F' }}>opened</option>
+                              <option value="not_opened" style={{ background: '#1C1C1F' }}>not opened</option>
+                              <option value="clicked" style={{ background: '#1C1C1F' }}>clicked</option>
+                              <option value="not_clicked" style={{ background: '#1C1C1F' }}>not clicked</option>
+                              <option value="replied" style={{ background: '#1C1C1F' }}>replied</option>
+                              <option value="not_replied" style={{ background: '#1C1C1F' }}>not replied</option>
+                              <option value="days_since_last_action" style={{ background: '#1C1C1F' }}>days since last action</option>
+                              <option value="company_attribute" style={{ background: '#1C1C1F' }}>company attribute</option>
+                              <option value="has_meeting" style={{ background: '#1C1C1F' }}>has meeting booked</option>
                             </select>
                           </div>
                           <div>
@@ -775,7 +775,7 @@ export default function SequenceDetail() {
                       const isSent = a.status === 'sent'; const isFailed = a.status === 'failed'; const isQueued = a.status === 'queued'
                       return (
                         <div key={a.id || i} style={{ display: 'flex', gap: 10, padding: '8px 0', position: 'relative' }}>
-                          <div style={{ position: 'absolute', left: -15, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#111', border: `2px solid ${isSent ? 'rgba(45,212,191,0.5)' : isFailed ? 'rgba(248,113,113,0.5)' : 'rgba(238,238,238,0.2)'}`, zIndex: 1 }} />
+                          <div style={{ position: 'absolute', left: -15, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#1C1C1F', border: `2px solid ${isSent ? 'rgba(45,212,191,0.5)' : isFailed ? 'rgba(248,113,113,0.5)' : 'rgba(238,238,238,0.2)'}`, zIndex: 1 }} />
                           <div style={{ flex: 1, background: C.cardHover, border: `0.5px solid ${C.border}`, borderRadius: 6, padding: '8px 10px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
                               {isSent ? <Send size={11} style={{ color: C.teal }} /> : isFailed ? <AlertTriangle size={11} style={{ color: C.red }} /> : <Clock size={11} style={{ color: C.textTer }} />}
@@ -802,7 +802,7 @@ export default function SequenceDetail() {
                       )
                     })}
                     <div style={{ display: 'flex', gap: 10, padding: '8px 0', position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: -15, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#111', border: `2px solid rgba(167,139,250,0.3)`, zIndex: 1 }} />
+                      <div style={{ position: 'absolute', left: -15, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#1C1C1F', border: `2px solid rgba(167,139,250,0.3)`, zIndex: 1 }} />
                       <div style={{ flex: 1, background: C.cardHover, border: `0.5px solid ${C.border}`, borderRadius: 6, padding: '8px 10px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><UserPlus size={11} style={{ color: C.purple }} /><span style={{ fontSize: 11, fontWeight: 500, color: C.textSec }}>Enrolled</span></div>
                         <div style={{ fontSize: 10, color: C.textMut, marginTop: 2 }}>{selectedLead.created_at ? new Date(selectedLead.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}</div>
