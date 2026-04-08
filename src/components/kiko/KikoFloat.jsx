@@ -2,6 +2,15 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { X, ArrowUp, Mic } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useNavigate, useLocation } from 'react-router-dom'
+
+function timeAgoShort(d) {
+  if (!d) return ''
+  const s = Math.floor((Date.now() - new Date(d).getTime()) / 1000)
+  if (s < 60) return 'just now'
+  if (s < 3600) return `${Math.floor(s / 60)}m`
+  if (s < 86400) return `${Math.floor(s / 3600)}h`
+  return `${Math.floor(s / 86400)}d`
+}
 // Design tokens — hardcoded (matching Sequences.jsx)
 const C = {
   bg: '#0D0D0F',
@@ -197,6 +206,109 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   })
   const [floatVoiceState, setFloatVoiceState] = useState({ speaking: false, status: 'connecting', energy: 0, pitch: 0 })
   const [fileUploading, setFileUploading] = useState(false)
+
+  // ═══ MULTI-TASK CONVERSATIONS — parallel chat threads with shared memory ═══
+  const [conversations, setConversations] = useState([])      // [{id, title, status, unread, last_message_at}]
+  const [activeConvId, setActiveConvId] = useState(null)      // currently focused conversation
+  const [showSidebar, setShowSidebar] = useState(false)       // toggle conversation sidebar
+  const realtimeSubRef = useRef(null)
+
+  // Load conversations + subscribe to realtime updates
+  useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    ;(async () => {
+      const { data } = await supabase
+        .from('kiko_conversations')
+        .select('id,title,status,unread,last_message_at,message_count')
+        .eq('user_id', user.id)
+        .eq('archived', false)
+        .order('updated_at', { ascending: false })
+        .limit(20)
+      if (!cancelled && data) setConversations(data)
+    })()
+    // Subscribe to live updates — when ANY conversation flips status (e.g. background job done), the sidebar updates
+    const sub = supabase
+      .channel(`kiko_conv_${user.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'kiko_conversations', filter: `user_id=eq.${user.id}` }, (payload) => {
+        setConversations(prev => {
+          const updated = payload.new
+          if (!updated) return prev
+          const exists = prev.findIndex(c => c.id === updated.id)
+          if (exists >= 0) {
+            const next = [...prev]
+            next[exists] = { ...next[exists], ...updated }
+            return next.sort((a, b) => new Date(b.last_message_at || 0) - new Date(a.last_message_at || 0))
+          }
+          return [updated, ...prev].slice(0, 20)
+        })
+      })
+      .subscribe()
+    realtimeSubRef.current = sub
+    return () => { cancelled = true; supabase.removeChannel(sub) }
+  }, [user?.id])
+
+  // Load messages when switching active conversation, mark unread → read
+  useEffect(() => {
+    if (!activeConvId) return
+    let cancelled = false
+    ;(async () => {
+      const { data } = await supabase
+        .from('kiko_messages')
+        .select('role,content,metadata,created_at')
+        .eq('conversation_id', activeConvId)
+        .order('created_at', { ascending: true })
+      if (cancelled || !data) return
+      setMessages(data.map(m => ({ role: m.role, content: m.content })))
+      // Mark as read
+      await supabase.from('kiko_conversations').update({ unread: false }).eq('id', activeConvId)
+    })()
+    // Subscribe to new messages on the active conversation (so async responses appear live)
+    const msgSub = supabase
+      .channel(`kiko_msg_${activeConvId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'kiko_messages', filter: `conversation_id=eq.${activeConvId}` }, (payload) => {
+        const m = payload.new
+        if (!m) return
+        setMessages(prev => {
+          // Avoid duplicates if we already inserted optimistically
+          if (prev.some(x => x.content === m.content && x.role === m.role)) return prev
+          return [...prev, { role: m.role, content: m.content }]
+        })
+      })
+      .subscribe()
+    return () => { cancelled = true; supabase.removeChannel(msgSub) }
+  }, [activeConvId])
+
+  // Send a message via the async endpoint (fire-and-forget — returns immediately)
+  async function sendAsync(text) {
+    if (!text?.trim() || !user?.id) return
+    try {
+      const res = await fetch('/api/kiko-async', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conversation_id: activeConvId,
+          message: text,
+          userEmail: user.email,
+          currentPage,
+          user_id: user.id
+        })
+      })
+      const data = await res.json()
+      if (data.conversation_id && !activeConvId) setActiveConvId(data.conversation_id)
+      // Optimistic: add user message to current view immediately
+      setMessages(prev => [...prev, { role: 'user', content: text }])
+    } catch (e) {
+      console.error('[KikoFloat] sendAsync failed:', e)
+    }
+  }
+
+  function newConversation() {
+    setActiveConvId(null)
+    setMessages([])
+    setInput('')
+  }
+
   const [pendingFile, setPendingFile] = useState(null) // { file, previewUrl, name, type }
   const [fileDragging, setFileDragging] = useState(false)
   const [fabClass, setFabClass] = useState('')
@@ -503,10 +615,45 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                 </span>
               )}
             </div>
-            <button onClick={toggleOpen} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textTer, padding: 4, display: 'flex', borderRadius: 6, lineHeight: 1 }}>
-              <X size={13} />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <button onClick={() => setShowSidebar(s => !s)} title={`${conversations.length} conversations${conversations.filter(c => c.unread).length > 0 ? ` · ${conversations.filter(c => c.unread).length} unread` : ''}`} style={{ background: showSidebar ? 'rgba(167,139,250,0.10)' : 'none', border: 'none', cursor: 'pointer', color: showSidebar ? C.purple : C.textTer, padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 4, borderRadius: 6, fontSize: 11, fontFamily: C.font, position: 'relative' }}>
+                ☰ {conversations.length}
+                {conversations.filter(c => c.unread && c.id !== activeConvId).length > 0 && (
+                  <span style={{ position: 'absolute', top: -2, right: -2, width: 7, height: 7, borderRadius: '50%', background: '#F87171' }} />
+                )}
+              </button>
+              <button onClick={newConversation} title="New conversation" style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textTer, padding: '4px 8px', borderRadius: 6, fontSize: 14, lineHeight: 1, fontFamily: C.font }}>+</button>
+              <button onClick={toggleOpen} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textTer, padding: 4, display: 'flex', borderRadius: 6, lineHeight: 1 }}>
+                <X size={13} />
+              </button>
+            </div>
           </div>
+
+          {/* Conversation sidebar (collapsible) */}
+          {showSidebar && (
+            <div style={{ borderBottom: '1.5px solid rgba(238,238,238,0.07)', maxHeight: 240, overflowY: 'auto', background: 'rgba(0,0,0,0.15)' }}>
+              {conversations.length === 0 && (
+                <div style={{ padding: '14px', fontSize: 11, color: C.textTer, textAlign: 'center', fontFamily: C.font }}>No conversations yet. Start chatting.</div>
+              )}
+              {conversations.map(c => {
+                const isActive = c.id === activeConvId
+                const isProcessing = c.status === 'processing'
+                const isUnread = c.unread && !isActive
+                return (
+                  <div key={c.id} onClick={() => { setActiveConvId(c.id); setShowSidebar(false) }} style={{ padding: '10px 14px', cursor: 'pointer', borderBottom: '0.5px solid rgba(238,238,238,0.04)', background: isActive ? 'rgba(167,139,250,0.06)' : 'transparent', display: 'flex', alignItems: 'center', gap: 8, fontFamily: C.font }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: isProcessing ? '#FBBF24' : isUnread ? '#F87171' : c.status === 'done' ? '#34D399' : 'rgba(255,255,255,0.15)', flexShrink: 0, animation: isProcessing ? 'pulse 1.4s ease-in-out infinite' : 'none' }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12, color: isUnread ? C.text : C.textSec, fontWeight: isUnread ? 500 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</div>
+                      <div style={{ fontSize: 9, color: C.textTer, marginTop: 2 }}>
+                        {isProcessing ? 'Kiko is thinking...' : c.last_message_at ? timeAgoShort(c.last_message_at) : 'new'}
+                        {c.message_count > 0 && ` · ${c.message_count} msgs`}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
 
           {/* Messages */}
           {hasMessages && (

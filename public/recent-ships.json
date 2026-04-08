@@ -1,0 +1,105 @@
+{
+  "generated_at": "2026-04-08T09:21:13.572Z",
+  "commits": [
+    {
+      "hash": "6e71c65",
+      "subject": "fix: remove orphaned brace from KikoFloat voice transcript wiring",
+      "when": "8 minutes ago"
+    },
+    {
+      "hash": "024ef43",
+      "subject": "Block A.5 + Block D wiring: (A.5) intent-classifier no longer routes ship/commit/release questions to code_review — they now route to general so the git log injection in self-knowledge surfaces. (D) V",
+      "when": "10 minutes ago"
+    },
+    {
+      "hash": "e274dd8",
+      "subject": "Block A: Kiko Bible v1.0 wired into system prompt. KIKO_BIBLE.md governing layer loaded from disk on every request via kiko-self-knowledge.js. Self-critique protocol + behavioural permission added to ",
+      "when": "58 minutes ago"
+    },
+    {
+      "hash": "6723a9b",
+      "subject": "Self-awareness feedback loop: kiko_meta_learning table + cron-self-awareness (nightly 2:30am) detects repetition loops in learning_log (5+ identical Q→A) and writes refusal_directive. kiko-self-knowle",
+      "when": "87 minutes ago"
+    },
+    {
+      "hash": "b04c353",
+      "subject": "Settings signature card: replace contentEditable+dangerouslySetInnerHTML with plain textarea (avoids React reconciler crash on Gmail HTML paste + onBlur/onClick race that prevented save). Live preview",
+      "when": "12 hours ago"
+    },
+    {
+      "hash": "95bb361",
+      "subject": "KIKO_REALITY.md: update execution order to reflect Steps 1-7 shipped + Step 7 verification details + cron-sequence-reply-detect schema fix",
+      "when": "13 hours ago"
+    },
+    {
+      "hash": "ed4bc08",
+      "subject": "Step 7 polish: fix kiko_alerts schema drift in cron-sequence-reply-detect. Was writing org_id/entity/action — none exist. Now writes type=reply_from_prospect (matching Command Centre + Sequences page ",
+      "when": "13 hours ago"
+    },
+    {
+      "hash": "d11ecc6",
+      "subject": "Step 7 polish: fix UK BST timezone double-shift in cron-sequence-enqueue. Was using setHours() which writes UTC on Vercel servers, but adding ukOffsetHours to the variable made it shift forward by an ",
+      "when": "13 hours ago"
+    },
+    {
+      "hash": "0cf1b6d",
+      "subject": "Step 7 polish: timezone helper now accepts contact email + checks TLD. UK detection includes van hawke / vanhawke / .uk / .co.uk / scotland / wales / glasgow / edinburgh / birmingham / leeds / bristol",
+      "when": "13 hours ago"
+    },
+    {
+      "hash": "5026bfb",
+      "subject": "Step 7: Wire wrapEmailBody + voice profile + signatures into cron-sequence-enqueue. Remove hardcoded sig from cron-sequence-sender (wrapper handles it). Re-add 3 sequencer cron schedules: enqueue 6am ",
+      "when": "13 hours ago"
+    },
+    {
+      "hash": "1e07866",
+      "subject": "Step 6 part 2: Settings exposes 2 signature fields (warm + cold) + voice profile status. Inline reply triage banner on SequenceDetail when enrollments have replies. Migration: user_settings.email_sign",
+      "when": "14 hours ago"
+    },
+    {
+      "hash": "d9015a9",
+      "subject": "Step 6 part 1: Lemlist-parity stats (opens/clicks/replies/unhandled) on Sequences list + Activity tab on SequenceDetail (chronological feed of sends/opens/clicks/replies/errors) + 'Source in backgroun",
+      "when": "14 hours ago"
+    },
+    {
+      "hash": "e3f8f52",
+      "subject": "fix(cron-utils): proactive Google token refresh + null on failure (no stale fallback)",
+      "when": "14 hours ago"
+    },
+    {
+      "hash": "ae35121",
+      "subject": "fix: voice learning use labelIds=SENT (q=in:sent fails silently); selftest accept VITE_SUPABASE_URL fallback",
+      "when": "14 hours ago"
+    },
+    {
+      "hash": "6a1587a",
+      "subject": "Step 4+5+infra: voice learning + signatures + multi-task + self-test + Command Centre split",
+      "when": "15 hours ago"
+    },
+    {
+      "hash": "2648729",
+      "subject": "Step 4 final: surgical add of Prospect Replies section to existing Command Centre (OutreachIntelligence.jsx left column, above Tasks Due). NO rewrites. Deletes 4 redundant pages (Inbox/Segments/Packs/",
+      "when": "15 hours ago"
+    },
+    {
+      "hash": "48efdd8",
+      "subject": "Step 4: Morning Brief as Command Centre (operating partner surface)",
+      "when": "16 hours ago"
+    },
+    {
+      "hash": "057236a",
+      "subject": "fix(vercel): remove deleted lemlist files from functions block (frees 2 of 50 slots)",
+      "when": "16 hours ago"
+    },
+    {
+      "hash": "56df091",
+      "subject": "Step 3: strip & consolidate per KIKO_REALITY.md audit",
+      "when": "16 hours ago"
+    },
+    {
+      "hash": "a3890f0",
+      "subject": "docs(master-plan): mark B1 ✅ shipped (web search engine, NOT Apollo)",
+      "when": "18 hours ago"
+    }
+  ]
+}

@@ -311,6 +311,9 @@
     },
     "api/cron-rule-promotion.js": {
       "maxDuration": 60
+    },
+    "api/kiko-async.js": {
+      "maxDuration": 300
     }
   },
   "rewrites": [

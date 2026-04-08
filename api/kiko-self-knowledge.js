@@ -253,15 +253,18 @@ export async function generateSelfKnowledge(userId) {
     }
   } catch {}
 
-  // ═══ RECENT SHIPS — what was built recently (from git log) ═══
+  // ═══ RECENT SHIPS — captured at build time, read from disk (works in serverless) ═══
   try {
-    const { execSync } = await import('child_process');
-    const log = execSync('git log --since="14 days ago" --pretty=format:"%h %s" -n 12', {
-      cwd: process.cwd(), encoding: 'utf-8', timeout: 3000
-    });
-    if (log?.trim()) {
-      k.push('\n═══ RECENT SHIPS (last 14 days) ═══');
-      k.push(log.trim());
+    const shipsPath = path.join(process.cwd(), 'recent-ships.json');
+    if (fs.existsSync(shipsPath)) {
+      const data = JSON.parse(fs.readFileSync(shipsPath, 'utf-8'));
+      if (data?.commits?.length) {
+        k.push('\n═══ RECENT SHIPS (last 14 days, captured at build time) ═══');
+        k.push('You shipped these. When asked "what did you ship recently" or "what commits did you make", reference this list — DO NOT say you cannot access git history. This list IS your access.');
+        for (const c of data.commits) {
+          k.push(`• ${c.hash} — ${c.subject} (${c.when})`);
+        }
+      }
     }
   } catch {}
 

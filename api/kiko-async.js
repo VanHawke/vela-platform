@@ -1,0 +1,109 @@
+// api/kiko-async.js — Fire-and-forget endpoint for parallel multi-tasking
+// Returns immediately with conversation_id + processing status.
+// Spawns the actual Kiko call in the background.
+// Response streams into kiko_messages table — frontend subscribes via Supabase realtime.
+// This is what makes ChatGPT-style parallel conversations possible.
+import { sbFetch } from './kiko-tools.js';
+
+export const config = { maxDuration: 300 };
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+
+  const { conversation_id, message, userEmail, currentPage = 'home', user_id } = req.body || {};
+  if (!message || !user_id) return res.status(400).json({ error: 'message + user_id required' });
+
+  try {
+    // 1. Get or create the conversation
+    let convId = conversation_id;
+    if (!convId) {
+      const created = await sbFetch('kiko_conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' },
+        body: JSON.stringify({
+          user_id,
+          title: message.slice(0, 80),
+          status: 'processing',
+          last_message_at: new Date().toISOString()
+        })
+      });
+      convId = created?.[0]?.id;
+      if (!convId) throw new Error('Failed to create conversation');
+    } else {
+      // Mark existing conversation as processing
+      await sbFetch(`kiko_conversations?id=eq.${convId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'processing', updated_at: new Date().toISOString() })
+      });
+    }
+
+    // 2. Persist user message immediately
+    await sbFetch('kiko_messages', {
+      method: 'POST',
+      body: JSON.stringify({ conversation_id: convId, role: 'user', content: message })
+    });
+
+    // 3. Return immediately so the user can fire another conversation
+    res.status(202).json({ ok: true, conversation_id: convId, status: 'processing' });
+
+    // 4. Background work — run Kiko, then write the response
+    // CRITICAL: this runs after res.json() returns. Vercel keeps the function alive
+    // up to maxDuration (300s) but we MUST not await anything that holds res.
+    processInBackground(convId, message, userEmail, currentPage, user_id).catch(async (e) => {
+      console.error('[KikoAsync] Background error:', e);
+      try {
+        await sbFetch('kiko_messages', {
+          method: 'POST',
+          body: JSON.stringify({ conversation_id: convId, role: 'assistant', content: `Error: ${e.message}`, metadata: { error: true } })
+        });
+        await sbFetch(`kiko_conversations?id=eq.${convId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'error', unread: true, last_message_at: new Date().toISOString() })
+        });
+      } catch {}
+    });
+  } catch (err) {
+    console.error('[KikoAsync] Fatal:', err);
+    return res.status(500).json({ error: err.message });
+  }
+}
+
+async function processInBackground(convId, message, userEmail, currentPage, user_id) {
+  // Pull conversation history for shared-memory continuity
+  const history = await sbFetch(`kiko_messages?conversation_id=eq.${convId}&order=created_at&limit=40&select=role,content`);
+  const conversationHistory = (history || []).slice(0, -1).map(m => ({ role: m.role, content: m.content }));
+
+  // Call /api/kiko via internal fetch — same response handling as the streaming endpoint
+  // but we collect the full text instead of streaming to client
+  const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://vela-platform-one.vercel.app';
+  const r = await fetch(`${baseUrl}/api/kiko`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, userEmail, currentPage, conversationHistory })
+  });
+  const text = await r.text();
+  const deltas = text.split('\n').filter(l => l.startsWith('data: ')).map(l => {
+    try { return JSON.parse(l.slice(6)) } catch { return null }
+  }).filter(Boolean);
+  const fullResponse = deltas.map(d => d.delta || '').join('').trim() || 'No response';
+
+  // Persist assistant message + flip conversation to done with unread badge
+  await sbFetch('kiko_messages', {
+    method: 'POST',
+    body: JSON.stringify({ conversation_id: convId, role: 'assistant', content: fullResponse })
+  });
+  await sbFetch(`kiko_conversations?id=eq.${convId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      status: 'done',
+      unread: true,
+      last_message_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      message_count: (history?.length || 0) + 2
+    })
+  });
+}
