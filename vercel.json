@@ -151,6 +151,10 @@
     {
       "path": "/api/cron-sequence-reply-detect",
       "schedule": "0 */2 * * 1-5"
+    },
+    {
+      "path": "/api/cron-self-awareness",
+      "schedule": "30 2 * * *"
     }
   ],
   "functions": {
@@ -297,6 +301,9 @@
     },
     "api/cron-health-check.js": {
       "maxDuration": 45
+    },
+    "api/cron-self-awareness.js": {
+      "maxDuration": 60
     }
   },
   "rewrites": [

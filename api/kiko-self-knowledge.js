@@ -176,9 +176,42 @@ export async function generateSelfKnowledge(userId) {
     }
   } catch {}
   try {
-    const pc = await sbFetch(`kiko_personal_context?select=category${uf}`);
-    if (pc?.length) k.push(`Personal context: ${pc.length} items — you know this user personally`);
+    const pc = await sbFetch(`kiko_personal_context?select=category,promoted${uf}`);
+    if (pc?.length) {
+      const promoted = pc.filter(p => p.promoted).length;
+      k.push(`Personal context: ${pc.length} items total, ${promoted} corroborated (≥3 days)`);
+    }
   } catch {}
+
+  // ═══ META-LEARNING — pattern-detected behavioural loops ═══
+  // This is what closes the feedback loop. If a question has been asked 5+ times
+  // with the same verdict, Kiko sees the refusal directive here and STOPS re-answering.
+  try {
+    const meta = await sbFetch(`kiko_meta_learning?active=eq.true${uf}&order=last_seen.desc&limit=10&select=pattern_type,pattern_signature,occurrences,prior_verdict,refusal_directive`);
+    if (meta?.length) {
+      k.push('\n═══ DETECTED BEHAVIOURAL LOOPS — REFUSE TO REPEAT ═══');
+      k.push('The following questions have been asked repeatedly. Before answering ANY question, check if it matches a signature below. If yes, follow the refusal directive verbatim. Do not re-answer.');
+      for (const m of meta) {
+        k.push(`\n• PATTERN [${m.pattern_type}, ${m.occurrences}× occurrences]`);
+        k.push(`  Signature: "${m.pattern_signature}"`);
+        if (m.prior_verdict) k.push(`  Prior verdict: ${m.prior_verdict}`);
+        k.push(`  DIRECTIVE: ${m.refusal_directive}`);
+      }
+    }
+  } catch {}
+
+  // ═══ CORROBORATED PERSONAL INSIGHTS — promoted from inferred context ═══
+  try {
+    const promoted = await sbFetch(`kiko_personal_context?promoted=eq.true${uf}&order=last_corroborated_at.desc&limit=15&select=key,value,corroboration_count`);
+    if (promoted?.length) {
+      k.push('\n═══ CORROBORATED INSIGHTS ABOUT THIS USER ═══');
+      k.push('These have been independently observed across 3+ separate days. Treat as high-confidence facts about how this user works.');
+      for (const p of promoted) {
+        k.push(`• ${p.value} [observed ${p.corroboration_count} days]`);
+      }
+    }
+  } catch {}
+
   const result = k.join('\n');
   cache = result;
   cacheTime = Date.now();
