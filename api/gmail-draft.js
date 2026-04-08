@@ -2,6 +2,7 @@
 // Signature is pulled from the user's actual Gmail signature via the sendAs API — not hardcoded.
 import { createClient } from '@supabase/supabase-js'
 import { wrapEmailBody, loadUserSignatures } from './lib/email-format.js'
+import { getGoogleToken } from './google-token.js'
 
 const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
 
@@ -19,21 +20,6 @@ async function sbFetch(path, opts = {}) {
   })
   if (!r.ok) throw new Error(`sbFetch ${path}: ${r.status}`)
   return r.json()
-}
-
-async function refreshToken(refreshToken) {
-  const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      client_id: process.env.GOOGLE_CLIENT_ID,
-      client_secret: process.env.GOOGLE_CLIENT_SECRET,
-      refresh_token: refreshToken,
-      grant_type: 'refresh_token'
-    })
-  })
-  const data = await res.json()
-  return data.access_token
 }
 
 function buildRawEmail({ from, to, subject, htmlBody, plainBody }) {
@@ -73,24 +59,10 @@ export default async function handler(req, res) {
   if (!subject || !body) return res.status(400).json({ error: 'Missing subject or body' })
 
   try {
-    // Get stored Google token
-    const { data: tokens } = await supabase
-      .from('user_tokens')
-      .select('access_token, refresh_token, expires_at')
-      .eq('user_email', 'sunny@vanhawke.com')
-      .eq('provider', 'google')
-      .single()
-    if (!tokens) return res.status(401).json({ error: 'No Google token' })
-
-    // Refresh if expired
-    let accessToken = tokens.access_token
-    if (new Date(tokens.expires_at) < new Date()) {
-      accessToken = await refreshToken(tokens.refresh_token)
-      await supabase.from('user_tokens').update({
-        access_token: accessToken,
-        expires_at: new Date(Date.now() + 3600000).toISOString()
-      }).eq('user_email', 'sunny@vanhawke.com').eq('provider', 'google')
-    }
+    // Use the canonical token helper (same one the cron uses successfully)
+    // Auto-refreshes if expired or expiring within 5 minutes
+    const accessToken = await getGoogleToken('sunny@vanhawke.com')
+    if (!accessToken) return res.status(401).json({ error: 'No Google token' })
 
     // Pull real signature from Gmail sendAs API + wrap body with real Helvetica/signature template
     const SUNNY_USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063'

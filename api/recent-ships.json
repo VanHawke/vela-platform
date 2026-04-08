@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-08T15:47:15.571Z",
+  "generated_at": "2026-04-08T15:51:32.678Z",
   "commits": [
+    {
+      "hash": "d289f7a",
+      "subject": "(1) gmail-draft.js: removed hardcoded text-only signature stub, now imports loadUserSignatures + wrapEmailBody from email-format.js, pulls real Gmail signature via sendAs API (same as cron path). Adde",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "fdabbf3",
       "subject": "(1) SignatureEditor: handles data:/blob:/cid: image refs, reads clipboardData.items for Gmail PNG attachments, manual upload fallback button. (2) Top nav: pill text contrast lifted from rgba(238,238,2",
-      "when": "30 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "869873e",
       "subject": "(1) SignatureEditor: single contentEditable paste box. Paste your full Gmail/Apple Mail signature including images — base64 inline images auto-upload to Supabase Storage in background and src is rewri",
-      "when": "52 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "bac1607",
       "subject": "(1) lift bg from #0D0D0F to #1C1C1F charcoal — better text contrast across all pages, (2) signature image upload: file picker uploads to Supabase Storage brand-assets/signatures/, returns public URL, ",
-      "when": "65 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "119661b",
       "subject": "Campaigns.jsx: Prospecting view with left rail (campaign list) + main table (one row per prospect: name, company, title, step, engagement, last action, next, status, actions). Real Supabase data, real",
-      "when": "73 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "018f9bc",
       "subject": "restore Campaigns.jsx (Lemlist-style left rail + main canvas) at /sequences and /campaigns routes. Rewired data layer from deleted /api/lemlist-data to direct Supabase queries against kiko_sequences/k",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "4d1c0d0",
@@ -79,7 +84,7 @@
     {
       "hash": "97ac6eb",
       "subject": "audit fix: handleSubmit (streaming path) now also persists to kiko_conversations + kiko_messages so the multi-task sidebar reflects all chat history. closes the gap where sendAsync existed but was nev",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "0ba3649",
@@ -94,11 +99,6 @@
     {
       "hash": "2438094",
       "subject": "kiko-async fix: api/kiko.js now supports ?nostream=1 — buffers SSE deltas and returns plain JSON {response, buffered_events}. kiko-async calls with nostream=1 and reads JSON body. Bypasses Vercel's br",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "2f8807c",
-      "subject": "kiko-async: add diagnostic logging + handle both stream and text fallback paths",
       "when": "6 hours ago"
     }
   ]
