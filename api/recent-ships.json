@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-08T19:29:30.182Z",
+  "generated_at": "2026-04-08T19:46:01.717Z",
   "commits": [
+    {
+      "hash": "3ad2c7d",
+      "subject": "Kiko campaign protocol enforcement v2: (1) source_companies bumped from 15-20 to 50, with hard exclusion against f1_partnerships table — Revolut and 405 other already-partnered companies are filtered ",
+      "when": "16 minutes ago"
+    },
     {
       "hash": "e270624",
       "subject": "FUNDAMENTAL FIX: Kiko was hallucinating F1 partnership status from training memory while ignoring the f1_partnerships database (406 active partnerships, Revolut/Audi confirmed since March 16). Three n",
-      "when": "9 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "df45b73",
       "subject": "(1) Wipe remaining conversation tables: conversations (187 rows), kiko_imported_conversations (384 rows), conversation_embeddings (389 orphaned vectors). Memory FULLY preserved: 1135 conversation_insi",
-      "when": "32 minutes ago"
+      "when": "48 minutes ago"
     },
     {
       "hash": "cd82e00",
       "subject": "KikoVoice: add inline prop. When inline=true, render as position:absolute inset:0 inside parent container instead of position:fixed createPortal fullscreen overlay. Smaller waveform (600x80 vs 1100x11",
-      "when": "40 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "353e79f",
       "subject": "(1) Contact name cleanup: stripped emoji + symbol prefixes from 31 contacts in DB. Names like '🚀 Briana' / 'Ogle' -> 'Briana' / 'Ogle'. Where firstName held the full name and lastName was just emoji,",
-      "when": "49 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "d828ca2",
@@ -69,7 +74,7 @@
     {
       "hash": "4d1c0d0",
       "subject": "REVERT: roll frontend back to b04c353 (last working state). Removes all Block C theme work, preview routes, mass-conversion scripts. Backend (Bible, multi-task, learning loops, voice) stays intact.",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "80c5f05",
@@ -89,16 +94,11 @@
     {
       "hash": "f5b5f48",
       "subject": "fix: dark amber is the default theme. Components were designed for dark backgrounds — light mode requires per-component conversion that isn't done. Storage key bumped to v3 to invalidate stale 'light'",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "ed9d442",
       "subject": "theme convert pass 3: dark glass surfaces (rgba 25/20/0) + hex leftovers (#3A3A3E #555558 #191919) → tokens. KikoChat input bar should now render correctly on light bg.",
-      "when": "8 hours ago"
-    },
-    {
-      "hash": "9cbe3ce",
-      "subject": "Block C: full theme conversion. 62 files swept clean of hardcoded colors. (1) src/index.css now contains user's exact amber theme verbatim — :root light, .dark dark, @theme inline. (2) src/lib/tokens.",
       "when": "8 hours ago"
     }
   ]

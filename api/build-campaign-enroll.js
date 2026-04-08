@@ -1,0 +1,68 @@
+// api/build-campaign-enroll.js
+// Companion to build-campaign. Takes a sequence_id and enrolls the top 8 sourced targets.
+// Separate endpoint so the user reviews before activation.
+
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+  const { campaign_id } = req.body || {};
+  if (!campaign_id) return res.status(400).json({ error: 'campaign_id required' });
+
+  try {
+    // Pull the top 8 sourced targets for this campaign
+    const { data: targets, error: tErr } = await supabase
+      .from('campaign_targets')
+      .select('*')
+      .eq('campaign_id', campaign_id)
+      .eq('enrollment_status', 'sourced')
+      .order('rank')
+      .limit(8);
+    if (tErr) throw tErr;
+    if (!targets || targets.length === 0) {
+      return res.status(404).json({ error: 'No sourced targets found for this campaign. Run /api/build-campaign first.' });
+    }
+
+    // Insert into kiko_sequence_enrollments — one row per target
+    const now = new Date().toISOString();
+    const enrollments = targets.map(t => ({
+      sequence_id: campaign_id,
+      contact_email: t.decision_maker_email || `${(t.decision_maker_name || 'unknown').toLowerCase().replace(/\s+/g, '.')}@${(t.company_name || 'unknown').toLowerCase().replace(/\s+/g, '')}.com`,
+      contact_name: t.decision_maker_name || t.company_name,
+      company: t.company_name,
+      current_step: 0,
+      status: 'pending',
+      enrolled_at: now,
+      next_send_at: now,
+    }));
+
+    const { data: inserted, error: eErr } = await supabase
+      .from('kiko_sequence_enrollments')
+      .insert(enrollments)
+      .select();
+    if (eErr) throw eErr;
+
+    // Update the targets to mark them enrolled
+    const targetIds = targets.map(t => t.id);
+    await supabase
+      .from('campaign_targets')
+      .update({ enrollment_status: 'enrolled', enrolled_at: now })
+      .in('id', targetIds);
+
+    // Activate the sequence
+    await supabase.from('kiko_sequences').update({ is_active: true }).eq('id', campaign_id);
+
+    return res.status(200).json({
+      success: true,
+      enrolled: inserted?.length || 0,
+      sequence_activated: true,
+      campaign_id,
+      enrolled_companies: targets.map(t => ({ rank: t.rank, company: t.company_name, dm: t.decision_maker_name })),
+    });
+  } catch (err) {
+    console.error('[build-campaign-enroll] error:', err);
+    return res.status(500).json({ error: err.message });
+  }
+}
