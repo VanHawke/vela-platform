@@ -15,12 +15,15 @@ try {
     return { hash, subject: subject?.slice(0, 200), when };
   });
   const out = { generated_at: new Date().toISOString(), commits };
-  const outPath = path.join(process.cwd(), 'public', 'recent-ships.json');
-  fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, JSON.stringify(out, null, 2));
-  // Also write to repo root so kiko-self-knowledge.js can read it server-side
-  fs.writeFileSync(path.join(process.cwd(), 'recent-ships.json'), JSON.stringify(out, null, 2));
-  console.log(`[capture-ships] Captured ${commits.length} commits`);
+  // Write to multiple locations so Vercel bundles it with serverless functions
+  const publicPath = path.join(process.cwd(), 'public', 'recent-ships.json');
+  const rootPath = path.join(process.cwd(), 'recent-ships.json');
+  const apiPath = path.join(process.cwd(), 'api', 'recent-ships.json');
+  fs.mkdirSync(path.dirname(publicPath), { recursive: true });
+  fs.writeFileSync(publicPath, JSON.stringify(out, null, 2));
+  fs.writeFileSync(rootPath, JSON.stringify(out, null, 2));
+  fs.writeFileSync(apiPath, JSON.stringify(out, null, 2));
+  console.log(`[capture-ships] Captured ${commits.length} commits → public/, root, api/`);
 } catch (e) {
   console.error('[capture-ships] Failed:', e.message);
   // Write empty file so the read doesn't fail
