@@ -163,9 +163,38 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   const [streamText, setStreamText] = useState('')
   const [transcribing, setTranscribing] = useState(false)
   const [voiceOpen, setVoiceOpen] = useState(false)
+  const voiceAssistantBufferRef = useRef('')
   const { status: voiceStatus, speaking: voiceSpeaking } = useRealtimeVoice({
     active: voiceOpen,
     onClose: () => { setVoiceOpen(false); window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: false } })) },
+    // Voice-in-chat: spoken words appear live in the chat message stream
+    onUserTranscript: (text) => {
+      if (!text) return
+      setMessages(prev => [...prev, { role: 'user', content: text, _voice: true }])
+    },
+    onAssistantTranscriptDelta: (delta) => {
+      voiceAssistantBufferRef.current += delta
+      // Live updating: replace last assistant placeholder if it's flagged _voice_streaming
+      setMessages(prev => {
+        const last = prev[prev.length - 1]
+        if (last && last.role === 'assistant' && last._voice_streaming) {
+          return [...prev.slice(0, -1), { ...last, content: voiceAssistantBufferRef.current }]
+        }
+        return [...prev, { role: 'assistant', content: voiceAssistantBufferRef.current, _voice: true, _voice_streaming: true }]
+      })
+    },
+    onAssistantTranscriptDone: (text) => {
+      // Finalize: strip _voice_streaming flag, lock content
+      setMessages(prev => {
+        const last = prev[prev.length - 1]
+        if (last && last.role === 'assistant' && last._voice_streaming) {
+          return [...prev.slice(0, -1), { role: 'assistant', content: text || voiceAssistantBufferRef.current, _voice: true }]
+        }
+        return prev
+      })
+      voiceAssistantBufferRef.current = ''
+    },
+  })
   })
   const [floatVoiceState, setFloatVoiceState] = useState({ speaking: false, status: 'connecting', energy: 0, pitch: 0 })
   const [fileUploading, setFileUploading] = useState(false)

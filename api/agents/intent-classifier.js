@@ -63,7 +63,7 @@ INTENTS:
 - self_monitor: System health, errors, "are you working", "what broke", "diagnose yourself", "is inbox triage running", cron status, agent stats
 - knowledge: Knowledge management — "learn from this URL", "add this source", "what do you know about X", "show me your sources", "remember this", "save this insight", "create an agent for Y", "show my agents", "run the X agent", managing Kiko's knowledge base and custom agents
 - conversation_search: Recall past conversations — "we discussed X before", "you mentioned Y", "what did we talk about last week", "recall our conversation about Z", references to prior discussions
-- code_review: Self-analysis — "review your code", "analyse your architecture", "how can you improve", "suggest improvements", "your weaknesses", "performance report", "read your source code", introspection about Kiko's own capabilities and code
+- code_review: Self-analysis — "review your code", "analyse your architecture", "how can you improve", "suggest improvements", "your weaknesses", "performance report", "read your source code", introspection about Kiko's own capabilities and code. NOT for ship/commit/release history (those use git log injection — route to 'general').
 - general: General conversation, greetings, questions Claude can answer from knowledge
 
 Respond with ONLY the intent name. Nothing else.`;
@@ -87,6 +87,10 @@ export async function classifyIntent(message, currentPage = 'home') {
   if (lower.includes('we discussed') || lower.includes('you mentioned') || lower.includes('what did we talk') || lower.includes('recall our conversation') || lower.includes('we talked about') || lower.includes('previous conversation') || lower.includes('earlier conversation') || lower.includes('last time we spoke')) return { intent: 'conversation_search' };
 
   // Code review / self-analysis shortcuts
+  // SHIP / COMMIT / HISTORY questions go to general (uses git log injection in self-knowledge), NOT code_review
+  if (/\b(ship(ped)?|commit(s|ted)?|deploy(ed|ment)?|release(s|d)?|build(s|t)?\s*(yesterday|recently|today|this week|last week|last \d+ days?))\b/i.test(message) && /\b(you|your)\b/i.test(message)) {
+    return { intent: 'general' };
+  }
   if (lower.includes('review your code') || lower.includes('your architecture') || lower.includes('how can you improve') || lower.includes('suggest improvements') || lower.includes('your weaknesses') || lower.includes('performance report') || lower.includes('read your source') || lower.includes('analyse yourself') || lower.includes('self-analysis') || lower.includes('your own code')) return { intent: 'code_review' };
 
   // Step 3: Haiku classification for everything else (~100-200ms)

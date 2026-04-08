@@ -64,7 +64,7 @@ const TOOLS = [
   { type: 'function', name: 'close_voice', description: 'Close voice mode on goodbye/bye/stop.', parameters: { type: 'object', properties: {} } },
 ]
 
-export function useRealtimeVoice({ active, onClose }) {
+export function useRealtimeVoice({ active, onClose, onUserTranscript, onAssistantTranscriptDelta, onAssistantTranscriptDone }) {
   const [status, setStatus] = useState('idle') // idle|connecting|listening|speaking|thinking|error
   const [speaking, setSpeaking] = useState(false)
   const pcRef = useRef(null)
@@ -74,9 +74,16 @@ export function useRealtimeVoice({ active, onClose }) {
   const deadRef = useRef(false)
   const connectingRef = useRef(false) // Guard against double-mount in React strict mode
 
-  // Expose close handler for close_voice tool
+  // Expose callbacks via refs so handleDCMessage closure stays stable
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
+  const onUserTranscriptRef = useRef(onUserTranscript)
+  onUserTranscriptRef.current = onUserTranscript
+  const onAssistantTranscriptDeltaRef = useRef(onAssistantTranscriptDelta)
+  onAssistantTranscriptDeltaRef.current = onAssistantTranscriptDelta
+  const onAssistantTranscriptDoneRef = useRef(onAssistantTranscriptDone)
+  onAssistantTranscriptDoneRef.current = onAssistantTranscriptDone
+
   useEffect(() => {
     window.__kikoVoiceClose = () => onCloseRef.current?.()
     return () => { window.__kikoVoiceClose = null }
@@ -102,6 +109,23 @@ export function useRealtimeVoice({ active, onClose }) {
       if (msg.type === 'input_audio_buffer.speech_started') setStatus('listening')
       if (msg.type === 'response.done') setStatus('listening')
       if (msg.type === 'error') { console.error('[RealtimeVoice] Error:', msg.error); setStatus('error') }
+
+      // ═══ TRANSCRIPTION EVENTS — wire spoken words into chat ═══
+      // User finished speaking — full transcript ready
+      if (msg.type === 'conversation.item.input_audio_transcription.completed') {
+        const txt = (msg.transcript || '').trim()
+        if (txt && onUserTranscriptRef.current) onUserTranscriptRef.current(txt)
+      }
+      // Kiko speaking — streaming transcript deltas (live character-by-character)
+      if (msg.type === 'response.audio_transcript.delta') {
+        const delta = msg.delta || ''
+        if (delta && onAssistantTranscriptDeltaRef.current) onAssistantTranscriptDeltaRef.current(delta)
+      }
+      // Kiko finished speaking — full transcript ready
+      if (msg.type === 'response.audio_transcript.done') {
+        const txt = (msg.transcript || '').trim()
+        if (txt && onAssistantTranscriptDoneRef.current) onAssistantTranscriptDoneRef.current(txt)
+      }
     } catch (e) { console.error('[RealtimeVoice] DC error:', e) }
   }, [])
 
@@ -163,7 +187,12 @@ export function useRealtimeVoice({ active, onClose }) {
           type: 'session.update',
           session: {
             type: 'realtime',
-            audio: { input: { turn_detection: { type: 'server_vad', threshold: 0.6, prefix_padding_ms: 300, silence_duration_ms: 500 } } },
+            audio: {
+              input: {
+                turn_detection: { type: 'server_vad', threshold: 0.6, prefix_padding_ms: 300, silence_duration_ms: 500 },
+                transcription: { model: 'whisper-1' }
+              }
+            },
             instructions: SESSION_INSTRUCTIONS,
             tools: TOOLS,
             tool_choice: 'auto',
