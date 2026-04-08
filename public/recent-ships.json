@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-08T18:40:44.315Z",
+  "generated_at": "2026-04-08T18:49:36.859Z",
   "commits": [
+    {
+      "hash": "353e79f",
+      "subject": "(1) Contact name cleanup: stripped emoji + symbol prefixes from 31 contacts in DB. Names like '🚀 Briana' / 'Ogle' -> 'Briana' / 'Ogle'. Where firstName held the full name and lastName was just emoji,",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "d828ca2",
       "subject": "(1) Home layout centred — top spacer 0.8->0.5, bottom 0.3->0.5, removed overflow:auto, added justifyContent:center, padding 20/24/40. Fixes iPad cut-off. (2) 5 dead pages deleted: Sequences.jsx, Calen",
@@ -24,7 +29,7 @@
     {
       "hash": "fdabbf3",
       "subject": "(1) SignatureEditor: handles data:/blob:/cid: image refs, reads clipboardData.items for Gmail PNG attachments, manual upload fallback button. (2) Top nav: pill text contrast lifted from rgba(238,238,2",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "869873e",
@@ -44,7 +49,7 @@
     {
       "hash": "018f9bc",
       "subject": "restore Campaigns.jsx (Lemlist-style left rail + main canvas) at /sequences and /campaigns routes. Rewired data layer from deleted /api/lemlist-data to direct Supabase queries against kiko_sequences/k",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "4d1c0d0",
@@ -84,7 +89,7 @@
     {
       "hash": "e39603e",
       "subject": "Block C rebuild start: index.css contains exact amber theme spec from user. tokens.js is single source of truth — every component imports from here. theme.js is now a re-export shim for backward compa",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "c841fd6",
@@ -94,11 +99,6 @@
     {
       "hash": "1c5e8d3",
       "subject": "Block C: amber-minimal theme system. src/index.css holds full token sets for :root (light) + .dark. Inter/JetBrains Mono/Source Serif 4 loaded from Google Fonts. src/lib/theme.js exports T (named toke",
-      "when": "8 hours ago"
-    },
-    {
-      "hash": "97ac6eb",
-      "subject": "audit fix: handleSubmit (streaming path) now also persists to kiko_conversations + kiko_messages so the multi-task sidebar reflects all chat history. closes the gap where sendAsync existed but was nev",
       "when": "8 hours ago"
     }
   ]

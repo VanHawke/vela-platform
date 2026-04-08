@@ -46,7 +46,7 @@ async function executeTool(name, args) {
   } catch (err) { console.error('[KikoVoice] Tool error:', err); return JSON.stringify({ error: err.message }) }
 }
 
-export default function KikoVoice({ onClose, user, onVoiceState }) {
+export default function KikoVoice({ onClose, user, onVoiceState, inline = false }) {
   const [status, setStatus] = useState('connecting')
   const [speaking, setSpeaking] = useState(false)
   const [volume, setVolume] = useState(0)
@@ -288,9 +288,12 @@ RULES:
   }, [onClose])
 
   // ── Render ──
-  return createPortal(
-    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#1C1C1F' }}>
-      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}><AuroraCanvas /></div>
+  const voiceUI = (
+    <div style={inline
+      ? { position: 'absolute', inset: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(28,28,31,0.96)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }
+      : { position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#1C1C1F' }
+    }>
+      {!inline && <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}><AuroraCanvas /></div>}
 
       {/* X close */}
       <button onClick={handleClose} style={{
@@ -303,14 +306,14 @@ RULES:
         onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.40)'; e.currentTarget.style.color = 'rgba(238,238,238,0.3)' }}
       ><X size={14} /></button>
 
-      {/* KikoWaveform */}
+      {/* KikoWaveform — smaller in inline mode */}
       <div style={{
-        position: 'relative', zIndex: 1, width: '95%', maxWidth: 1100, marginBottom: 24,
-        overflow: 'visible', padding: '48px 0',
+        position: 'relative', zIndex: 1, width: inline ? '85%' : '95%', maxWidth: inline ? 600 : 1100, marginBottom: 24,
+        overflow: 'visible', padding: inline ? '24px 0' : '48px 0',
         WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
         maskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
       }}>
-        <KikoWaveform width={1100} height={110} speaking={speaking} volume={volume} />
+        <KikoWaveform width={inline ? 600 : 1100} height={inline ? 80 : 110} speaking={speaking} volume={volume} />
       </div>
 
       {/* Status bar — color-coded: amber=connecting, green=active, purple=thinking */}
@@ -336,7 +339,8 @@ RULES:
       >Goodbye Kiko</button>
 
       <style>{`@keyframes kikoBarPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
-    </div>,
-    document.body
+    </div>
   )
+  // Inline mode renders into the parent container; fullscreen renders into document.body via portal
+  return inline ? voiceUI : createPortal(voiceUI, document.body)
 }
