@@ -126,12 +126,16 @@ export default async function handler(req, res) {
 
     // Load Sunny's voice profile + signatures ONCE for this run
     // Voice profile = patterns learned from his actual sent emails (Sun 4am cron)
-    // Signatures = warm (full+logo) and cold (text-only) from Settings UI
+    // Signatures = pulled live from Gmail API (native sendAs signature) — no Settings UI needed
     const SUNNY_USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063';
+    const SUNNY_EMAIL = 'sunny@vanhawke.com';
+    const { getGoogleToken } = await import('./google-token.js');
+    const accessToken = await getGoogleToken(SUNNY_EMAIL).catch(() => null);
     const [voiceProfile, signatures] = await Promise.all([
       loadVoiceProfile(sbFetch, SUNNY_USER_ID),
-      loadUserSignatures(sbFetch, SUNNY_USER_ID),
+      loadUserSignatures(sbFetch, SUNNY_USER_ID, accessToken),
     ]);
+    console.log(`[cron-sequence-enqueue] signature source: ${signatures.source}`);
     const voicePromptInjection = voiceProfileToPrompt(voiceProfile);
 
     // Get active enrollments due today

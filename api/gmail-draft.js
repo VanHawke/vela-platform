@@ -1,7 +1,25 @@
-// api/gmail-draft.js — Creates Gmail draft silently using stored Google OAuth tokens
+// api/gmail-draft.js — Creates Gmail draft (or sends test email) using stored Google OAuth tokens
+// Signature is pulled from the user's actual Gmail signature via the sendAs API — not hardcoded.
 import { createClient } from '@supabase/supabase-js'
+import { wrapEmailBody, loadUserSignatures } from './lib/email-format.js'
 
 const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+
+async function sbFetch(path, opts = {}) {
+  const url = `${process.env.VITE_SUPABASE_URL}/rest/v1/${path}`
+  const r = await fetch(url, {
+    ...opts,
+    headers: {
+      apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation',
+      ...(opts.headers || {})
+    }
+  })
+  if (!r.ok) throw new Error(`sbFetch ${path}: ${r.status}`)
+  return r.json()
+}
 
 async function refreshToken(refreshToken) {
   const res = await fetch('https://oauth2.googleapis.com/token', {
@@ -18,19 +36,13 @@ async function refreshToken(refreshToken) {
   return data.access_token
 }
 
-function buildRawEmail({ from, to, subject, body }) {
+function buildRawEmail({ from, to, subject, htmlBody, plainBody }) {
   // Clean subject — replace special dashes, encode × properly for email
   const cleanSubject = (subject || '')
     .replace(/[\u2014\u2013\u2015\u2012\u2010\u2011]/g, '-')
-    .replace(/\u00D7/g, 'x')  // × → x for email subject compatibility
+    .replace(/\u00D7/g, 'x')
     .replace(/â€"/g, '-')
-  // RFC 2047 encode subject for non-ASCII safety
   const encodedSubject = /^[\x20-\x7E]*$/.test(cleanSubject) ? cleanSubject : `=?UTF-8?B?${Buffer.from(cleanSubject).toString('base64')}?=`
-  // Auto-append signature if not already present
-  const SIG = '\n\nSunny Sidhu\nCEO, Van Hawke Group\nsunny@vanhawke.agency'
-  const bodyWithSig = body.includes('sunny@vanhawke.agency') ? body : body.trimEnd() + SIG
-  // Build RFC 2822 email — Helvetica 12pt regular, black text, no extra styling
-  const htmlBody = `<div style="font-family: Helvetica, Arial, sans-serif; font-size: 12pt; font-weight: 400; color: #000; line-height: 1.5;">${bodyWithSig.replace(/\n\n/g, '</p><p style="margin:0 0 12px 0;">').replace(/\n/g, '<br>')}</div>`
   const boundary = 'boundary_' + Date.now()
   const lines = [
     `From: ${from}`,
@@ -42,7 +54,7 @@ function buildRawEmail({ from, to, subject, body }) {
     `--${boundary}`,
     `Content-Type: text/plain; charset="UTF-8"`,
     ``,
-    bodyWithSig,
+    plainBody,
     ``,
     `--${boundary}`,
     `Content-Type: text/html; charset="UTF-8"`,
@@ -57,7 +69,7 @@ function buildRawEmail({ from, to, subject, body }) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' })
-  const { to, subject, body } = req.body || {}
+  const { to, subject, body, send = false, contactStatus = 'cold' } = req.body || {}
   if (!subject || !body) return res.status(400).json({ error: 'Missing subject or body' })
 
   try {
@@ -74,47 +86,63 @@ export default async function handler(req, res) {
     let accessToken = tokens.access_token
     if (new Date(tokens.expires_at) < new Date()) {
       accessToken = await refreshToken(tokens.refresh_token)
-      // Update stored token
       await supabase.from('user_tokens').update({
         access_token: accessToken,
         expires_at: new Date(Date.now() + 3600000).toISOString()
       }).eq('user_email', 'sunny@vanhawke.com').eq('provider', 'google')
     }
 
+    // Pull real signature from Gmail sendAs API + wrap body with real Helvetica/signature template
+    const SUNNY_USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063'
+    const signatures = await loadUserSignatures(sbFetch, SUNNY_USER_ID, accessToken).catch(() => ({ signature: '', coldSignature: '' }))
+    const { html: htmlBody, text: plainBody } = wrapEmailBody(body, {
+      contactStatus,
+      signature: signatures.signature,
+      coldSignature: signatures.coldSignature
+    })
+
     // Build email with vanhawke.agency alias
     const raw = buildRawEmail({
       from: 'Sunny Sidhu <sunny@vanhawke.agency>',
       to: to || '',
       subject,
-      body
+      htmlBody,
+      plainBody
     })
 
-    // Create Gmail draft
-    const gmailRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/drafts', {
+    // Send OR Draft depending on `send` flag
+    const endpoint = send
+      ? 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send'
+      : 'https://gmail.googleapis.com/gmail/v1/users/me/drafts'
+    const payload = send ? { raw } : { message: { raw } }
+
+    const gmailRes = await fetch(endpoint, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ message: { raw } })
+      body: JSON.stringify(payload)
     })
     const result = await gmailRes.json()
     if (!gmailRes.ok) {
       console.error('[gmail-draft] API error:', result)
       return res.status(gmailRes.status).json({ error: result.error?.message || 'Gmail API error' })
     }
-    // Track draft for edit-delta learning (Phase 16)
-    try {
-      await supabase.from('kiko_draft_tracking').insert({
-        gmail_draft_id: result.id,
-        gmail_message_id: result.message?.id,
-        original_content: (body || '').slice(0, 2000),
-        recipient: to,
-        subject: subject || '',
-        status: 'drafted'
-      })
-    } catch (trackErr) { console.error('[gmail-draft] Tracking insert failed:', trackErr.message) }
-    return res.status(200).json({ success: true, draftId: result.id })
+    // Track draft for edit-delta learning (Phase 16) — only when drafting, not sending
+    if (!send) {
+      try {
+        await supabase.from('kiko_draft_tracking').insert({
+          gmail_draft_id: result.id,
+          gmail_message_id: result.message?.id,
+          original_content: (body || '').slice(0, 2000),
+          recipient: to,
+          subject: subject || '',
+          status: 'drafted'
+        })
+      } catch (trackErr) { console.error('[gmail-draft] Tracking insert failed:', trackErr.message) }
+    }
+    return res.status(200).json({ success: true, mode: send ? 'sent' : 'drafted', id: result.id, signatureSource: signatures.source || 'unknown' })
   } catch (e) {
     console.error('[gmail-draft] Error:', e)
     return res.status(500).json({ error: e.message })

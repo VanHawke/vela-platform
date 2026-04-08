@@ -23,7 +23,7 @@ const C = {
   font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   r: 8,
 }
-import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X, Zap, Mail, Filter, Layers, Database, Compass } from 'lucide-react'
+import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X, Zap, Mail, Filter, Layers, Database, Compass, Linkedin } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
 import KikoVoice from '../kiko/KikoVoice'
 import KikoToast from '../kiko/KikoToast'
@@ -41,6 +41,7 @@ const ALL_NAV = [
   { id: 'command-centre', label: 'Command Centre', path: '/command-centre', Icon: Target },
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
   { id: 'sequences', label: 'Campaigns', path: '/campaigns', Icon: Zap },
+  { id: 'linkedin', label: 'LinkedIn Queue', path: '/linkedin', Icon: Linkedin },
 ]
 const VALID_NAV_IDS = new Set(ALL_NAV.map(n => n.id))
 const DEFAULT_TOP_IDS = ['home', 'command-centre', 'pipeline', 'partnership-matrix', 'sequences']

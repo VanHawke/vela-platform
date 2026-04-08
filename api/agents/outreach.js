@@ -14,9 +14,9 @@ async function draftEmail({ to, subject, body, cc, thread_id, contact_status = '
     const { getGoogleToken } = await import('../google-token.js');
     const token = await getGoogleToken(userEmail);
 
-    // Load voice + signatures
+    // Load voice + signatures (signatures come from Gmail API native sendAs)
     const [signatures, voiceProfile] = await Promise.all([
-      loadUserSignatures(sbFetch, userId),
+      loadUserSignatures(sbFetch, userId, token),
       loadVoiceProfile(sbFetch, userId),
     ]);
 

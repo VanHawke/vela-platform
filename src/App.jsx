@@ -21,6 +21,7 @@ const MemoryConsole = lazy(() => import('@/pages/MemoryConsole'))
 
 const Sequences = lazy(() => import('@/pages/Sequences'))
 const Campaigns = lazy(() => import('@/pages/Campaigns'))
+const LinkedInQueue = lazy(() => import('@/pages/LinkedInQueue'))
 
 const SequenceDetail = lazy(() => import('@/pages/SequenceDetail'))
 
@@ -141,6 +142,7 @@ export default function App() {
           <Route path="sequences" element={<Navigate to="/campaigns" replace />} />
           <Route path="campaigns/:id" element={<SequenceDetail user={user} />} />
           <Route path="sequences/:id" element={<SequenceDetail user={user} />} />
+          <Route path="linkedin" element={<LinkedInQueue user={user} />} />
           <Route path="inbox" element={<Navigate to="/command-centre" replace />} />
           <Route path="segments" element={<Navigate to="/campaigns" replace />} />
           <Route path="packs" element={<Navigate to="/settings" replace />} />

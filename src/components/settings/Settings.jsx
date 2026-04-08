@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import T from '@/lib/theme'
 import ImageUpload from './ImageUpload'
 import SkillsManager from './SkillsManager'
-import SignatureEditor from './SignatureEditor'
 import { Check, ExternalLink, Unplug, UserPlus, Trash2, LogOut, X } from 'lucide-react'
 
 const VOICES = [
@@ -385,27 +384,16 @@ export default function Settings({ user }) {
                 </div>
               )}
 
-              {/* Warm signature — single paste box, auto-uploads images */}
-              <SignatureEditor
-                label="Warm signature (used after a contact has replied)"
-                value={settings.email_signature_html || ''}
-                onChange={(html) => setSettings(p => ({ ...p, email_signature_html: html }))}
-                userId={user?.id}
-                minHeight={160}
-              />
-              <div style={{ height: 18 }} />
-
-              {/* Cold signature (text-only) */}
-              <label style={{ ...labelStyle, marginTop: 16 }}>Cold outreach signature (text-only — better deliverability)</label>
-              <p style={{ fontSize: 11, color: T.textTertiary, marginTop: 0, marginBottom: 6, fontFamily: T.font }}>Used on first-touch cold emails. Strip images and links to avoid spam filters.</p>
-              <textarea
-                value={settings.email_signature_cold_html || ''}
-                onChange={e => setSettings(p => ({ ...p, email_signature_cold_html: e.target.value }))}
-                placeholder={'Sunny Sidhu\nFounder & CEO, Van Hawke\nsunny@vanhawke.com'}
-                spellCheck={false}
-                style={{ ...inputStyle, width: '100%', height: 'auto', minHeight: 90, padding: '12px 14px', lineHeight: 1.5, fontFamily: 'Helvetica, Arial, sans-serif', fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }}
-              />
-              <p style={{ fontSize: 10, color: T.textTertiary, marginTop: 6, fontFamily: T.font }}>Both signatures auto-render Helvetica 12 / line-height 1.5 in outbound emails. Plain newlines become &lt;br&gt; tags.</p>
+              {/* Signature status — Gmail is the source of truth, no editor needed */}
+              <div style={{ padding: '14px 16px', borderRadius: 8, background: 'rgba(45,212,191,0.05)', border: '0.5px solid rgba(45,212,191,0.20)', marginBottom: 14, fontSize: 12, color: T.textSecondary, fontFamily: T.font, lineHeight: 1.6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <span style={{ color: '#2dd4bf', fontSize: 14 }}>✓</span>
+                  <strong style={{ color: T.text, fontSize: 13 }}>Using your Gmail signature</strong>
+                </div>
+                <div style={{ marginLeft: 22, color: T.textTertiary }}>
+                  When Kiko sends emails on your behalf, it uses the signature you have configured in Gmail (including your logo). To change it, update your signature directly in <a href="https://mail.google.com/mail/u/0/#settings/general" target="_blank" rel="noopener" style={{ color: T.accent || '#a78bfa', textDecoration: 'none' }}>Gmail Settings → General → Signature</a>.
+                </div>
+              </div>
             </div>
 
             {/* Notifications */}

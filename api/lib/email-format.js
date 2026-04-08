@@ -51,7 +51,33 @@ function stripHtml(html) {
 const DEFAULT_COLD_SIG = `—<br><strong>Sunny</strong><br>Founder &amp; CEO<br>Van Hawke<br><a href="mailto:sunny@vanhawke.com">sunny@vanhawke.com</a><br><a href="https://www.vanhawke.com">www.vanhawke.com</a>`;
 const DEFAULT_WARM_SIG = `${DEFAULT_COLD_SIG}<br>(786) 828-6126`;
 
-export async function loadUserSignatures(sbFetch, userId) {
+export async function loadUserSignatures(sbFetch, userId, accessToken = null) {
+  // PRIORITY 1: Native Gmail signature via Gmail API (single source of truth)
+  // Uses the user's actual Gmail signature configured at https://mail.google.com/mail/u/0/#settings/general
+  if (accessToken) {
+    try {
+      const r = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/settings/sendAs', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      if (r.ok) {
+        const data = await r.json();
+        const primary = (data.sendAs || []).find(s => s.isPrimary) || data.sendAs?.[0];
+        if (primary?.signature) {
+          // Gmail returns HTML signature with images embedded as cid: refs that resolve client-side
+          // OR as https:// URLs if user uploaded via "Insert image from URL". Either way, use as-is.
+          return {
+            signature: primary.signature,
+            coldSignature: stripLogoFromSignature(primary.signature) || primary.signature,
+            source: 'gmail',
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('[email-format] Gmail signature fetch failed, falling back to Supabase:', e.message);
+    }
+  }
+
+  // PRIORITY 2: Supabase stored signature (legacy fallback only)
   try {
     const uf = userId ? `&user_id=eq.${userId}` : '';
     const rows = await sbFetch(`kiko_user_config?select=email_signature_html,email_signature_cold_html${uf}&limit=1`);
@@ -59,10 +85,11 @@ export async function loadUserSignatures(sbFetch, userId) {
       return {
         signature: rows[0].email_signature_html || DEFAULT_WARM_SIG,
         coldSignature: rows[0].email_signature_cold_html || DEFAULT_COLD_SIG,
+        source: 'supabase',
       };
     }
   } catch {}
-  return { signature: DEFAULT_WARM_SIG, coldSignature: DEFAULT_COLD_SIG };
+  return { signature: DEFAULT_WARM_SIG, coldSignature: DEFAULT_COLD_SIG, source: 'default' };
 }
 
 export async function loadVoiceProfile(sbFetch, userId) {

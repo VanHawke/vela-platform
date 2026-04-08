@@ -230,11 +230,13 @@ export default function SequenceDetail() {
     setTestSending(true); setTestSent(false)
     try {
       const category = seq?.name?.split(' - ')[1] || 'Category'
-      const body = (s.template || '').replace(/\{firstName\}/g, 'Sunny').replace(/\{lastName\}/g, 'Sidhu').replace(/\{companyName\}/g, 'Test Company').replace(/\{category\}/g, category).replace(/\{revenue\}/g, '$1B').replace(/\{ceo\}/g, 'CEO Name').replace(/\{raceWindow\}/g, 'Miami Grand Prix').replace(/\{recentNews\}/g, 'recent development').replace(/\{prevSubject\}/g, 'Previous subject').replace(/\{signature\}/g, 'Sunny Sidhu\nCEO, Van Hawke Group\nsunny@vanhawke.agency')
+      // Strip any {signature} placeholder — the backend appends the real Gmail signature
+      const body = (s.template || '').replace(/\{firstName\}/g, 'Sunny').replace(/\{lastName\}/g, 'Sidhu').replace(/\{companyName\}/g, 'Test Company').replace(/\{category\}/g, category).replace(/\{revenue\}/g, '$1B').replace(/\{ceo\}/g, 'CEO Name').replace(/\{raceWindow\}/g, 'Miami Grand Prix').replace(/\{recentNews\}/g, 'recent development').replace(/\{prevSubject\}/g, 'Previous subject').replace(/\{signature\}/g, '').replace(/\n\n+$/, '')
       const subject = '[TEST] ' + (s.subject || 'Test').replace(/\{category\}/g, category)
-      const r = await fetch('/api/gmail-draft', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: 'sunny@vanhawke.agency', subject, body }) })
+      const r = await fetch('/api/gmail-draft', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: 'sunny@vanhawke.com', subject, body, send: true, contactStatus: 'cold' }) })
+      const data = await r.json().catch(() => ({}))
       if (r.ok) { setTestSent(true); setTimeout(() => setTestSent(false), 5000) }
-      else { alert('Draft creation failed') }
+      else { alert('Test send failed: ' + (data.error || r.statusText)) }
     } catch (err) { alert('Error: ' + err.message) }
     setTestSending(false)
   }
@@ -572,7 +574,7 @@ export default function SequenceDetail() {
                 </div></div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid rgba(167,139,250,0.15)`, background: 'rgba(167,139,250,0.04)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to write this step</button>
-                  {cur.channel === 'email' && <button onClick={() => sendTest(selStep)} disabled={testSending} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid ${testSent ? 'rgba(45,212,191,0.2)' : C.border}`, background: testSent ? 'rgba(45,212,191,0.04)' : 'transparent', color: testSent ? C.teal : C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{testSending ? 'Saving...' : testSent ? '✓ Draft created' : '📧 Create draft'}</button>}
+                  {cur.channel === 'email' && <button onClick={() => sendTest(selStep)} disabled={testSending} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid ${testSent ? 'rgba(45,212,191,0.2)' : C.border}`, background: testSent ? 'rgba(45,212,191,0.04)' : 'transparent', color: testSent ? C.teal : C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{testSending ? 'Sending...' : testSent ? '✓ Test sent' : '📧 Send test to me'}</button>}
                 </div>
 
                 {/* ═══ TRIGGER CONDITIONS — only for non-condition steps ═══ */}
