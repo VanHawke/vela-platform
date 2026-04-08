@@ -40,7 +40,7 @@ const ALL_NAV = [
   { id: 'organisations', label: 'Organisations', path: '/organisations', Icon: Building2 },
   { id: 'command-centre', label: 'Command Centre', path: '/command-centre', Icon: Target },
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
-  { id: 'sequences', label: 'Campaigns', path: '/sequences', Icon: Zap },
+  { id: 'sequences', label: 'Campaigns', path: '/campaigns', Icon: Zap },
 ]
 const VALID_NAV_IDS = new Set(ALL_NAV.map(n => n.id))
 const DEFAULT_TOP_IDS = ['home', 'command-centre', 'pipeline', 'partnership-matrix', 'sequences', 'inbox', 'segments']
@@ -65,7 +65,7 @@ function getTopNavIds() {
 const PAGE_LABELS = {
   '/pipeline': 'Pipeline', '/calendar': 'Race Calendar', '/contacts': 'Contacts',
   '/partnership-matrix': 'Partnership Matrix', '/email': 'Command Centre',
-  '/organisations': 'Organisations', '/sequences': 'Campaigns', '/inbox': 'Inbox', '/segments': 'Segments', '/packs': 'Vertical Pack', '/targets': 'Targets',
+  '/organisations': 'Organisations', '/campaigns': 'Campaigns', '/sequences': 'Campaigns', '/inbox': 'Inbox', '/segments': 'Segments', '/packs': 'Vertical Pack', '/targets': 'Targets',
   '/settings': 'Settings', '/dashboard': 'Dashboard',
 }
 
