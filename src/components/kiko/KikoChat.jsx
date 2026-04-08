@@ -1387,7 +1387,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(167,139,250,0.12)', fontFamily: C.font, margin: '8px 0 0', fontWeight: 300 }}>Kiko is AI and can make mistakes. Please double-check responses.</p>
         </div>
       </div>
-      {/* Voice overlay in conversation — inline so it stays inside the conversation pane */}
+      {/* Voice overlay — child of conversation pane (position:relative parent) so it stays inside the chat */}
       {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} inline={true} />}
     </div>
     </div>

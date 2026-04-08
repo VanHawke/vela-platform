@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-08T18:49:36.859Z",
+  "generated_at": "2026-04-08T18:57:27.005Z",
   "commits": [
+    {
+      "hash": "cd82e00",
+      "subject": "KikoVoice: add inline prop. When inline=true, render as position:absolute inset:0 inside parent container instead of position:fixed createPortal fullscreen overlay. Smaller waveform (600x80 vs 1100x11",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "353e79f",
       "subject": "(1) Contact name cleanup: stripped emoji + symbol prefixes from 31 contacts in DB. Names like '🚀 Briana' / 'Ogle' -> 'Briana' / 'Ogle'. Where firstName held the full name and lastName was just emoji,",
-      "when": "9 minutes ago"
+      "when": "16 minutes ago"
     },
     {
       "hash": "d828ca2",
@@ -79,12 +84,12 @@
     {
       "hash": "ed9d442",
       "subject": "theme convert pass 3: dark glass surfaces (rgba 25/20/0) + hex leftovers (#3A3A3E #555558 #191919) → tokens. KikoChat input bar should now render correctly on light bg.",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "9cbe3ce",
       "subject": "Block C: full theme conversion. 62 files swept clean of hardcoded colors. (1) src/index.css now contains user's exact amber theme verbatim — :root light, .dark dark, @theme inline. (2) src/lib/tokens.",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "e39603e",
@@ -94,11 +99,6 @@
     {
       "hash": "c841fd6",
       "subject": "Block C correction: dark amber is default :root, light amber opt-in via .light class. Components were designed for dark mode (297 hardcoded white-on-dark rgba values across 30+ files), so dark stays t",
-      "when": "8 hours ago"
-    },
-    {
-      "hash": "1c5e8d3",
-      "subject": "Block C: amber-minimal theme system. src/index.css holds full token sets for :root (light) + .dark. Inter/JetBrains Mono/Source Serif 4 loaded from Google Fonts. src/lib/theme.js exports T (named toke",
       "when": "8 hours ago"
     }
   ]
