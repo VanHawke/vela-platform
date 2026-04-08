@@ -82,6 +82,12 @@ export default function Campaigns({ user }) {
   const [detailLoading, setDetailLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  // Build-campaign modal state
+  const [buildOpen, setBuildOpen] = useState(false)
+  const [buildCategory, setBuildCategory] = useState('banking')
+  const [buildPhase, setBuildPhase] = useState('idle') // idle, building, review, enrolling, done, error
+  const [buildResult, setBuildResult] = useState(null)
+  const [buildError, setBuildError] = useState(null)
 
   // Load all campaigns for the left rail
   const loadCampaigns = useCallback(async () => {
@@ -200,6 +206,56 @@ export default function Campaigns({ user }) {
     loadCampaigns()
   }
 
+  // ── Deterministic campaign builder ──
+  async function runBuildCampaign() {
+    setBuildPhase('building')
+    setBuildError(null)
+    setBuildResult(null)
+    try {
+      const r = await fetch('/api/build-campaign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: buildCategory }),
+      })
+      const data = await r.json()
+      if (!r.ok || !data.success) throw new Error(data.error || 'Build failed')
+      setBuildResult(data)
+      setBuildPhase('review')
+    } catch (err) {
+      setBuildError(err.message)
+      setBuildPhase('error')
+    }
+  }
+
+  async function runEnroll() {
+    if (!buildResult?.sequence_id) return
+    setBuildPhase('enrolling')
+    try {
+      const r = await fetch('/api/build-campaign-enroll', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaign_id: buildResult.sequence_id }),
+      })
+      const data = await r.json()
+      if (!r.ok || !data.success) throw new Error(data.error || 'Enroll failed')
+      setBuildPhase('done')
+      // Refresh the rail to show the newly active campaign
+      await loadCampaigns()
+      // Auto-select the new campaign
+      setSelectedId(buildResult.sequence_id)
+    } catch (err) {
+      setBuildError(err.message)
+      setBuildPhase('error')
+    }
+  }
+
+  function closeBuildModal() {
+    setBuildOpen(false)
+    setBuildPhase('idle')
+    setBuildResult(null)
+    setBuildError(null)
+  }
+
   async function pauseProspect(p) {
     const newStatus = p.status === 'paused' ? 'active' : 'paused'
     await supabase.from('kiko_sequence_enrollments').update({ status: newStatus }).eq('id', p.id)
@@ -242,11 +298,18 @@ export default function Campaigns({ user }) {
             <div style={{ fontSize: 14, fontWeight: 500, color: C.text }}>Campaigns</div>
             <div style={{ fontSize: 11, color: C.textTertiary, marginTop: 2 }}>{campaigns.length} total</div>
           </div>
-          <button
-            onClick={() => nav('/campaigns/new')}
-            title="New campaign"
-            style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          ><Plus size={14} /></button>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button
+              onClick={() => { setBuildOpen(true); setBuildPhase('idle') }}
+              title="Auto-build campaign (deterministic — picks team, sources 50 targets, identifies decision-makers)"
+              style={{ padding: '0 10px', height: 28, borderRadius: 6, border: `1px solid rgba(167,139,250,0.35)`, background: 'rgba(167,139,250,0.08)', color: '#A78BFA', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: 'inherit', fontWeight: 500 }}
+            >⚡ Build</button>
+            <button
+              onClick={() => nav('/campaigns/new')}
+              title="New blank campaign"
+              style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            ><Plus size={14} /></button>
+          </div>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px 12px' }}>
           {loading ? (
@@ -447,6 +510,129 @@ export default function Campaigns({ user }) {
           </>
         )}
       </main>
+
+      {/* ── Build Campaign modal ── */}
+      {buildOpen && (
+        <div onClick={closeBuildModal} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 720, maxHeight: '85vh', overflowY: 'auto', background: '#1C1C1F', border: '1px solid rgba(167,139,250,0.18)', borderRadius: 14, padding: 28, boxShadow: '0 24px 80px rgba(0,0,0,0.6)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 500, color: C.text }}>⚡ Build Campaign</div>
+                <div style={{ fontSize: 11, color: C.textTertiary, marginTop: 3 }}>Deterministic. Picks team, sources 50 targets, identifies decision-makers, filters against {buildResult?.excluded_companies_count ?? 'all'} known F1 partners.</div>
+              </div>
+              <button onClick={closeBuildModal} style={{ background: 'transparent', border: 'none', color: C.textTertiary, cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 6 }}>✕</button>
+            </div>
+
+            {buildPhase === 'idle' && (
+              <div>
+                <div style={{ fontSize: 11, color: C.textSecondary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Category</div>
+                <select value={buildCategory} onChange={e => setBuildCategory(e.target.value)} style={{ width: '100%', padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: '#141416', color: C.text, fontSize: 14, fontFamily: 'inherit', marginBottom: 16 }}>
+                  <option value="banking">Banking / Financial Services</option>
+                  <option value="fintech">FinTech / Payments</option>
+                  <option value="cybersecurity">Cybersecurity</option>
+                  <option value="cloud">Cloud / IT Infrastructure</option>
+                  <option value="ai_data">AI / Data Analytics</option>
+                  <option value="software">Enterprise Software</option>
+                  <option value="semiconductors">Semiconductors / Hardware</option>
+                  <option value="telecom">Telecoms / Connectivity</option>
+                  <option value="gaming">Gaming / Entertainment</option>
+                  <option value="crypto">Crypto / Web3</option>
+                  <option value="energy">Energy / Petrochemical</option>
+                  <option value="automotive">Automotive / Engineering</option>
+                  <option value="hospitality">Hospitality / Travel</option>
+                  <option value="fashion">Fashion / Lifestyle</option>
+                  <option value="watches">Watches / Luxury</option>
+                  <option value="food_bev">Food & Beverage</option>
+                  <option value="health">Health / Wellness</option>
+                  <option value="logistics">Logistics / Shipping</option>
+                  <option value="legal">Legal / Professional Services</option>
+                  <option value="robotics">Robotics / Manufacturing</option>
+                </select>
+                <div style={{ fontSize: 11, color: C.textTertiary, marginBottom: 16, lineHeight: 1.5 }}>
+                  Pipeline: pick team via SQL (alphabetical first eligible) → source 50 companies via web search with 320+ company exclusion list → cross-reference CRM → identify decision-makers for top 8 → save to <code>campaign_targets</code>. ~80 seconds.
+                </div>
+                <button onClick={runBuildCampaign} style={{ width: '100%', padding: '13px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #7C5CFC, #2DD4BF)', color: 'white', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  Build campaign for {buildCategory}
+                </button>
+              </div>
+            )}
+
+            {buildPhase === 'building' && (
+              <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                <div style={{ fontSize: 13, color: C.text, marginBottom: 12 }}>Building campaign...</div>
+                <div style={{ fontSize: 11, color: C.textTertiary, lineHeight: 1.6 }}>
+                  Picking team via SQL → loading exclusion set → web-searching 50 targets → identifying decision-makers
+                </div>
+                <div style={{ marginTop: 24, fontSize: 11, color: C.textTertiary }}>This takes ~80 seconds. Don't close this window.</div>
+              </div>
+            )}
+
+            {buildPhase === 'review' && buildResult && (
+              <div>
+                <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(45,212,191,0.08)', border: '1px solid rgba(45,212,191,0.2)', marginBottom: 16 }}>
+                  <div style={{ fontSize: 13, color: C.text, fontWeight: 500 }}>{buildResult.team.name} F1 — {buildResult.category.name}</div>
+                  <div style={{ fontSize: 11, color: C.textSecondary, marginTop: 4, lineHeight: 1.5 }}>{buildResult.why}</div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 16 }}>
+                  <div style={{ padding: '10px', borderRadius: 6, background: '#141416', textAlign: 'center' }}>
+                    <div style={{ fontSize: 18, fontWeight: 500, color: C.text }}>{buildResult.top_50.length}</div>
+                    <div style={{ fontSize: 10, color: C.textTertiary, marginTop: 2 }}>TARGETS SOURCED</div>
+                  </div>
+                  <div style={{ padding: '10px', borderRadius: 6, background: '#141416', textAlign: 'center' }}>
+                    <div style={{ fontSize: 18, fontWeight: 500, color: C.text }}>{buildResult.violations_caught}</div>
+                    <div style={{ fontSize: 10, color: C.textTertiary, marginTop: 2 }}>EXCLUSIONS CAUGHT</div>
+                  </div>
+                  <div style={{ padding: '10px', borderRadius: 6, background: '#141416', textAlign: 'center' }}>
+                    <div style={{ fontSize: 18, fontWeight: 500, color: C.text }}>{buildResult.blocked_teams.length}/11</div>
+                    <div style={{ fontSize: 10, color: C.textTertiary, marginTop: 2 }}>TEAMS BLOCKED</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 11, color: C.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Top 8 to hit first</div>
+                <div style={{ marginBottom: 18, maxHeight: 280, overflowY: 'auto', border: `1px solid ${C.border}`, borderRadius: 8 }}>
+                  {buildResult.top_8.map((t, i) => (
+                    <div key={i} style={{ padding: '10px 14px', borderBottom: i < 7 ? `1px solid ${C.border}` : 'none', display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(167,139,250,0.12)', color: '#A78BFA', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, flexShrink: 0 }}>{i + 1}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, color: C.text, fontWeight: 500 }}>{t.company}</div>
+                        <div style={{ fontSize: 11, color: C.textTertiary, marginTop: 2 }}>{t.decision_maker_name} · {t.decision_maker_title} · {t.revenue} · {t.hq}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button onClick={closeBuildModal} style={{ flex: 1, padding: '12px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSecondary, cursor: 'pointer', fontSize: 13, fontFamily: 'inherit' }}>Cancel</button>
+                  <button onClick={runEnroll} style={{ flex: 2, padding: '12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #7C5CFC, #2DD4BF)', color: 'white', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    Enrol top 8 & activate sequence
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {buildPhase === 'enrolling' && (
+              <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                <div style={{ fontSize: 13, color: C.text, marginBottom: 12 }}>Enrolling top 8 into sequence...</div>
+              </div>
+            )}
+
+            {buildPhase === 'done' && (
+              <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                <div style={{ fontSize: 32, marginBottom: 12 }}>✓</div>
+                <div style={{ fontSize: 14, color: C.text, marginBottom: 6 }}>Campaign live</div>
+                <div style={{ fontSize: 11, color: C.textTertiary, marginBottom: 24 }}>8 prospects enrolled. Sequence activated. First touches send tomorrow at 8am UK.</div>
+                <button onClick={closeBuildModal} style={{ padding: '10px 24px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, cursor: 'pointer', fontSize: 13, fontFamily: 'inherit' }}>Close</button>
+              </div>
+            )}
+
+            {buildPhase === 'error' && (
+              <div style={{ padding: '24px 20px' }}>
+                <div style={{ fontSize: 13, color: '#F87171', marginBottom: 8 }}>Build failed</div>
+                <div style={{ fontSize: 11, color: C.textSecondary, marginBottom: 16, fontFamily: 'monospace', padding: 10, background: '#141416', borderRadius: 6 }}>{buildError}</div>
+                <button onClick={() => setBuildPhase('idle')} style={{ padding: '10px 24px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, cursor: 'pointer', fontSize: 13, fontFamily: 'inherit' }}>Try again</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
