@@ -20,6 +20,7 @@ const Admin = lazy(() => import('@/pages/Admin'))
 const MemoryConsole = lazy(() => import('@/pages/MemoryConsole'))
 
 const Sequences = lazy(() => import('@/pages/Sequences'))
+const Campaigns = lazy(() => import('@/pages/Campaigns'))
 
 const SequenceDetail = lazy(() => import('@/pages/SequenceDetail'))
 
@@ -136,7 +137,8 @@ export default function App() {
           <Route path="calendar" element={<CommercialCalendar user={user} />} />
           {/* Knowledge Library removed — documents accessible via Kiko chat upload */}
 
-          <Route path="sequences" element={<Sequences user={user} />} />
+          <Route path="sequences" element={<Campaigns user={user} />} />
+          <Route path="campaigns" element={<Campaigns user={user} />} />
           <Route path="sequences/:id" element={<SequenceDetail user={user} />} />
           <Route path="inbox" element={<Navigate to="/command-centre" replace />} />
           <Route path="segments" element={<Navigate to="/sequences" replace />} />
