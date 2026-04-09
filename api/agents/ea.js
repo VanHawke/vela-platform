@@ -50,7 +50,7 @@ async function morningBrief() {
   const [tasks, deals, alerts, activities, news, outreachScores, pipelineNotifs, stageHistory, draftActions, calendarEvents, preferences] = await Promise.all([
     sbFetch('tasks?select=data&order=updated_at.desc&limit=30'),
     sbFetch('deals?select=id,data&data->>status=eq.active&limit=200'),
-    sbFetch('kiko_alerts?dismissed=eq.false&expires_at=gt.' + now.toISOString() + '&select=type,severity,title,detail,entity_name&order=created_at.desc&limit=10'),
+    sbFetch(`kiko_alerts?dismissed=eq.false&or=(expires_at.is.null,expires_at.gt.${now.toISOString()})&select=type,severity,title,detail,entity_name&order=created_at.desc&limit=10`),
     sbFetch('activities?select=type,entity_name,subject,created_at&order=created_at.desc&limit=10'),
     sbFetch('news_articles?is_processed=eq.true&deal_signal=eq.true&published_at=gt.' + sevenDaysAgo + '&select=title,source_name,published_at,matched_companies,category&order=published_at.desc&limit=10'),
     sbFetch('outreach_scores?outcome=eq.replied&order=sent_at.desc&limit=10'),

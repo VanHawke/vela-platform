@@ -100,9 +100,12 @@ async function getEntityDetail({ entity_type, id, name: entityName }) {
 }
 
 async function getAlerts() {
-  const alerts = await sbFetch('kiko_alerts?dismissed=eq.false&expires_at=gt.' + new Date().toISOString() + '&select=type,severity,title,detail,entity_name&order=created_at.desc&limit=10');
+  // Accept alerts with no expires_at (partnership_detected, auto-pause) OR with expires_at in future.
+  // Previous version filtered expires_at=gt.NOW which silently dropped the auto-pause trigger's alerts.
+  const now = new Date().toISOString();
+  const alerts = await sbFetch(`kiko_alerts?dismissed=eq.false&or=(expires_at.is.null,expires_at.gt.${now})&select=type,severity,title,detail,entity_name,created_at&order=created_at.desc&limit=10`);
   if (!alerts?.length) return 'No active alerts. Pipeline is clean.';
-  return `${alerts.length} active alert${alerts.length > 1 ? 's' : ''}:\n${alerts.map(a => `[${a.severity?.toUpperCase()}] ${a.title}\n  ${a.detail}`).join('\n\n')}`;
+  return `${alerts.length} active alert${alerts.length > 1 ? 's' : ''}:\n${alerts.map(a => `[${a.severity?.toUpperCase()}] ${a.title}\n  ${a.detail || ''}`).join('\n\n')}`;
 }
 
 async function getStaleContacts({ min_staleness = 40 }, userEmail) {

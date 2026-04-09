@@ -17,7 +17,7 @@ async function planTrip(destination, context = '') {
   try {
     const races = await sbFetch('race_calendar?select=*&order=date.asc&limit=30');
     if (races?.length) {
-      const relevant = races.filter(r => r.location?.toLowerCase().includes((destination || '').toLowerCase()) || r.name?.toLowerCase().includes((destination || '').toLowerCase()));
+      const relevant = races.filter(r => r.city?.toLowerCase().includes((destination || '').toLowerCase()) || r.country?.toLowerCase().includes((destination || '').toLowerCase()) || r.name?.toLowerCase().includes((destination || '').toLowerCase()));
       if (relevant.length) raceContext = `\nRace: ${relevant.map(r => `${r.name} — ${r.date} at ${r.circuit}, ${r.city}`).join('; ')}`;
     }
   } catch {}

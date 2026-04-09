@@ -21,7 +21,7 @@ export async function describeScreen(currentPage) {
     case 'tasks': return await describeTasks();
     case 'news': return 'News Signals has been replaced by the Partnership Detection Engine. Partnership announcements are now detected automatically and appear as alerts on the Home page. Say "show me the partnership matrix" to see the latest F1 partnerships.';
     case 'partnership-matrix': return await describeMatrix();
-    case 'lemlist': return await describeLemlist();
+    case 'lemlist': case 'campaigns': return await describeLemlist();
     case 'calendar': return 'You are on the Race Calendar page. It shows F1 2026 and Formula E Season 12 race calendars with pre-race outreach windows and upcoming events.';
     case 'documents': return 'Knowledge Library has been removed. Documents can be uploaded directly in chat — just drag and drop a file and I will learn from it.';
     case 'home': return 'You are on the Home page — Kiko\'s main interface. You can ask me anything, use the quick action chips (Brief me, Pipeline update, Check emails, Race calendar), or navigate to any page.';
@@ -58,9 +58,7 @@ async function describePipeline() {
 }
 
 async function describeContacts() {
-  const count = await sbFetch('contacts?select=id&limit=1&order=updated_at.desc', { headers: { Prefer: 'count=exact' } });
   const recent = await sbFetch('contacts?select=data&order=updated_at.desc&limit=5');
-  const total = Array.isArray(count) ? 'many' : '?';
   let out = `CONTACTS — showing your contact database.\n\nRecent contacts:\n`;
   for (const c of (recent || [])) {
     const d = c.data || {};
@@ -111,32 +109,43 @@ async function describeTasks() {
   return out;
 }
 
-async function describeNews() {
-  const articles = await sbFetch('news_articles?is_processed=eq.true&order=published_at.desc&limit=5&select=title,source_name,relevance_score,deal_signal');
-  let out = `NEWS SIGNALS — latest articles:\n\n`;
-  for (const a of (articles || [])) {
-    out += `  • ${a.title} (${a.source_name})${a.deal_signal ? ' 🔴 DEAL SIGNAL' : ''}\n`;
-  }
-  return out;
-}
-
 async function describeMatrix() {
-  const teams = await sbFetch('f1_teams?order=sort_order&select=name&limit=10');
-  const partnerships = await sbFetch('f1_partnerships?status=eq.active&select=team_id,partner_name,category_id&limit=200');
-  const categories = await sbFetch('sponsor_categories?order=sort_order&select=id,name&limit=20');
-  const totalGaps = (teams || []).length * (categories || []).length - (partnerships || []).length;
-  return `PARTNERSHIP MATRIX — ${(teams||[]).length} F1 teams, ${(partnerships||[]).length} active partnerships, ~${totalGaps} open categories.\n\nTeams: ${(teams||[]).map(t=>t.name).join(', ')}`;
+  // Live partnership matrix summary — reads f1_partnerships to show real state
+  const partnerships = await sbFetch('f1_partnerships?status=eq.active&select=team_id,category_id,partner_name&limit=500');
+  const teams = await sbFetch('f1_teams?select=id,name&order=name');
+  const categories = await sbFetch('sponsor_categories?select=id,name');
+  if (!partnerships?.length || !teams?.length || !categories?.length) {
+    return 'PARTNERSHIP MATRIX — data still loading. Try refreshing.';
+  }
+  const total = partnerships.length;
+  // Coverage per category
+  const catMap = {};
+  for (const p of partnerships) {
+    if (!p.category_id || !p.team_id) continue;
+    if (!catMap[p.category_id]) catMap[p.category_id] = new Set();
+    catMap[p.category_id].add(p.team_id);
+  }
+  const thinCategories = categories
+    .map(c => ({ id: c.id, name: c.name, teamCount: (catMap[c.id] || new Set()).size }))
+    .filter(c => c.teamCount > 0 && c.teamCount <= 4)
+    .sort((a, b) => a.teamCount - b.teamCount)
+    .slice(0, 5);
+  let out = `PARTNERSHIP MATRIX — ${total} active partnerships across ${teams.length} teams and ${categories.length} categories.\n\n`;
+  out += `Most-open categories (fewest teams with a partner — biggest opportunity):\n`;
+  for (const c of thinCategories) out += `  • ${c.name}: ${c.teamCount}/11 teams filled\n`;
+  out += `\nClick a team tab to see their full partner list, or ask "which category is open for [team]" for a live gap analysis.`;
+  return out;
 }
 
 async function describeLemlist() {
-  const campaigns = await sbFetch('lemlist_campaigns?select=name,status&limit=10&order=created_at.desc');
-  const activeCampaigns = (campaigns || []).filter(c => c.status === 'active');
-  return `LEMLIST — ${(campaigns||[]).length} campaigns (${activeCampaigns.length} active).\n\nRecent: ${(campaigns||[]).slice(0,5).map(c => `${c.name} [${c.status}]`).join(', ')}`;
-}
-
-async function describeDocuments() {
-  const docs = await sbFetch('documents?select=name,category,linked_team&order=created_at.desc&limit=5');
-  let out = `KNOWLEDGE LIBRARY — your uploaded documents.\n\nRecent:\n`;
-  for (const d of (docs || [])) out += `  • ${d.name}${d.category ? ` [${d.category}]` : ''}${d.linked_team ? ` — ${d.linked_team}` : ''}\n`;
-  return out;
+  // Summarise local sequence enrollments — live Lemlist stats need the ask_lemlist_live tool
+  try {
+    const seqs = await sbFetch('kiko_sequences?select=name,is_active&order=created_at.desc&limit=5');
+    const enrollments = await sbFetch('kiko_sequence_enrollments?select=status&limit=200');
+    const activeEnr = (enrollments || []).filter(e => e.status === 'active').length;
+    const repliedEnr = (enrollments || []).filter(e => e.status === 'replied').length;
+    return `LEMLIST / CAMPAIGNS — ${(seqs||[]).length} local sequences, ${activeEnr} active enrollments, ${repliedEnr} replied.\n\nRecent: ${(seqs||[]).slice(0,5).map(s => `${s.name} ${s.is_active ? '[active]' : '[paused]'}`).join(', ')}\n\nFor live Lemlist campaign stats, say "show Lemlist campaign stats".`;
+  } catch {
+    return 'LEMLIST page is open. Say "show Lemlist campaign stats" for live performance data from the Lemlist API.';
+  }
 }
