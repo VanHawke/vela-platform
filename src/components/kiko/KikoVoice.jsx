@@ -352,6 +352,6 @@ RULES:
       <style>{`@keyframes kikoBarPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
     </div>
   )
-  // Inline mode renders into the parent container; fullscreen renders into document.body via portal
-  return inline ? voiceUI : createPortal(voiceUI, document.body)
+  // Always fullscreen — renders into document.body via portal
+  return createPortal(voiceUI, document.body)
 }

@@ -218,11 +218,38 @@ export default function SequenceDetail() {
       const r = await fetch('/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `Write a ${s.channel === 'email' ? 'outreach email' : '300-char LinkedIn message'} for step ${s.step} of a sequence.\n\nSTYLE RULES (non-negotiable):\n- ${s.channel === 'email' ? 'Start with "Dear {firstName}," and end with "Kind regards,\\n\\n{signature}"' : 'Start with "Hi {firstName},"'}\n- Write at principal/board level. No generic filler. No "I hope this finds you well".\n- Tone: "We work at principal level on the structuring of Formula One partnerships for teams and rights-holders."\n- Category-specific: explain WHY this category matters operationally for Formula One.\n- Soft CTA: "The relevant question at this stage is simply whether this is strategic from your perspective."\n- Subject format uses x not special characters (e.g. "Haas F1 Team x Cloud Infrastructure")\n- 50-125 words for emails. 300 chars max for LinkedIn.\n\nContext: Approach: ${s.approach}. Psychology: ${s.psychology}. Target: ${seq?.target_persona || 'C-suite'}. Subject: ${s.subject || 'F1 partnership'}.\n\nReturn ONLY the message text, nothing else.`, stream: false
+          message: `Write a ${s.channel === 'email' ? 'outreach email' : '300-char LinkedIn message'} for step ${s.step} of a sequence.\n\nSTYLE RULES (non-negotiable):\n- ${s.channel === 'email' ? 'Start with "Dear {firstName}," and end with "Kind regards,\\n\\n{signature}"' : 'Start with "Hi {firstName},"'}\n- Write at principal/board level. No generic filler. No "I hope this finds you well".\n- Tone: "We work at principal level on the structuring of Formula One partnerships for teams and rights-holders."\n- Category-specific: explain WHY this category matters operationally for Formula One.\n- Soft CTA: "The relevant question at this stage is simply whether this is strategic from your perspective."\n- Subject format uses x not special characters (e.g. "Haas F1 Team x Cloud Infrastructure")\n- 50-125 words for emails. 300 chars max for LinkedIn.\n\nContext: Approach: ${s.approach}. Psychology: ${s.psychology}. Target: ${seq?.target_persona || 'C-suite'}. Subject: ${s.subject || 'F1 partnership'}.\n\nReturn ONLY the message text, nothing else.`,
+          userEmail: 'sunny@vanhawke.com', currentPage: 'sequences', conversationHistory: []
         })
       })
-      const d = await r.json(); upd(i, 'template', d?.content || d?.message || 'Error')
-    } catch { upd(i, 'template', 'Error generating.') }
+      // /api/kiko is a streaming SSE endpoint — parse "data: {...}" lines and accumulate delta fields
+      if (!r.ok || !r.body) { upd(i, 'template', `Error: ${r.status} ${r.statusText}`); return }
+      const reader = r.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let accumulated = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          try {
+            const payload = JSON.parse(line.slice(6))
+            if (typeof payload.delta === 'string') {
+              accumulated += payload.delta
+              upd(i, 'template', accumulated)  // live-stream into the textarea as it writes
+            }
+          } catch { /* ignore malformed chunk */ }
+        }
+      }
+      if (!accumulated.trim()) upd(i, 'template', 'Kiko returned an empty response. Try again or adjust the approach.')
+    } catch (err) {
+      console.error('[askKiko] error:', err)
+      upd(i, 'template', `Error generating: ${err.message || 'unknown'}`)
+    }
   }
 
   async function sendTest(i) {
