@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-09T07:09:07.011Z",
+  "generated_at": "2026-04-09T07:12:56.066Z",
   "commits": [
+    {
+      "hash": "b77de72",
+      "subject": "Chat campaign redirect: when user asks to create a campaign in chat, Kiko redirects to /campaigns page ⚡ Build button instead of attempting to run the 80s deterministic pipeline inline (which caused 1",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "0005172",
       "subject": "Campaigns UI: ⚡ Build button + modal. Phases: idle (category dropdown) -> building (~80s loading) -> review (team, why, top 8 with DMs, exclusion stats) -> enrolling -> done. Calls /api/build-campaign",
@@ -39,7 +44,7 @@
     {
       "hash": "353e79f",
       "subject": "(1) Contact name cleanup: stripped emoji + symbol prefixes from 31 contacts in DB. Names like '🚀 Briana' / 'Ogle' -> 'Briana' / 'Ogle'. Where firstName held the full name and lastName was just emoji,",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "d828ca2",
@@ -74,7 +79,7 @@
     {
       "hash": "bac1607",
       "subject": "(1) lift bg from #0D0D0F to #1C1C1F charcoal — better text contrast across all pages, (2) signature image upload: file picker uploads to Supabase Storage brand-assets/signatures/, returns public URL, ",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "119661b",
@@ -94,11 +99,6 @@
     {
       "hash": "80c5f05",
       "subject": "fix: remove global * { margin/padding: 0 } reset that was nuking all Tailwind padding/margin utilities. Tailwind preflight handles resets correctly. This was the root cause of broken layout in HomePre",
-      "when": "18 hours ago"
-    },
-    {
-      "hash": "411cbbd",
-      "subject": "Block C preview: HomePreview.jsx mockup using canonical shadcn primitives — Card, Button, Tailwind classes only. Mounted at /preview/home (public route, no auth) for design sign-off before rebuilding ",
       "when": "18 hours ago"
     }
   ]
