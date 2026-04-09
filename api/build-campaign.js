@@ -85,7 +85,30 @@ export default async function handler(req, res) {
         blocked_teams: [...blockedTeamIds],
       });
     }
-    const team = openTeams[0]; // Deterministic: alphabetical first
+    // RESPECT USER TEAM CHOICE: if preferredTeam is supplied and it's open, use it.
+    // If preferredTeam is supplied but BLOCKED, refuse — don't silently fall back.
+    // If no preferredTeam, pick alphabetically first (deterministic default).
+    const preferredTeam = (req.body?.preferredTeam || req.query?.preferredTeam || '').toLowerCase().trim();
+    let team;
+    if (preferredTeam) {
+      const match = openTeams.find(t => t.id === preferredTeam);
+      if (match) {
+        team = match;
+      } else {
+        // User asked for a specific team but it's blocked. Return a clear error with the reason.
+        const blockedBy = (allPartnerships || []).filter(p => p.team_id === preferredTeam &&
+          (p.category_id === catRow.id || (Array.isArray(p.related_categories) && p.related_categories.some(rc => expandedCategories.includes(rc)))));
+        return res.status(409).json({
+          error: 'preferred_team_blocked',
+          message: `${preferredTeam} is blocked in ${catRow.name} by: ${blockedBy.map(b => b.partner_name).join(', ') || 'an overlapping category partner'}. Open teams in this category: ${openTeams.map(t => t.id).join(', ')}.`,
+          preferred_team: preferredTeam,
+          open_teams: openTeams.map(t => t.id),
+          blocked_by: blockedBy.map(b => ({ partner: b.partner_name, category: b.category_id })),
+        });
+      }
+    } else {
+      team = openTeams[0]; // Deterministic fallback: alphabetical first
+    }
 
     // ─── STEP 5: Build the exclusion set (every clean partner name across all teams) ───
     const exclusionSet = new Set();

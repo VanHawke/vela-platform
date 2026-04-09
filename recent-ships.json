@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-09T11:52:21.054Z",
+  "generated_at": "2026-04-09T12:15:06.918Z",
   "commits": [
+    {
+      "hash": "8ebc6fb",
+      "subject": "Blueprint + self-audit + proactive partner reconciliation: (1) KIKO_SYSTEM_MAP.md single source of truth — every table, endpoint, cron, deterministic vs LLM path documented. Every session starts by re",
+      "when": "23 minutes ago"
+    },
     {
       "hash": "5eca279",
       "subject": "category-gap: inline sbFetch instead of HTTP hop (preview URL has SSO auth, was returning HTML). Handler now builds overlap map, expands categories, filters blocked teams, formats response — all inlin",
-      "when": "55 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "f8a8115",
       "subject": "Deterministic category-gap analysis + nav fixes + sanitiser. (1) NEW /api/category-gaps endpoint queries f1_partnerships + category_overlaps (primary_category/blocking_category cols) directly — zero L",
-      "when": "61 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "6279055",
@@ -54,7 +59,7 @@
     {
       "hash": "3ad2c7d",
       "subject": "Kiko campaign protocol enforcement v2: (1) source_companies bumped from 15-20 to 50, with hard exclusion against f1_partnerships table — Revolut and 405 other already-partnered companies are filtered ",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "e270624",
@@ -74,7 +79,7 @@
     {
       "hash": "353e79f",
       "subject": "(1) Contact name cleanup: stripped emoji + symbol prefixes from 31 contacts in DB. Names like '🚀 Briana' / 'Ogle' -> 'Briana' / 'Ogle'. Where firstName held the full name and lastName was just emoji,",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "d828ca2",
@@ -95,11 +100,6 @@
       "hash": "d289f7a",
       "subject": "(1) gmail-draft.js: removed hardcoded text-only signature stub, now imports loadUserSignatures + wrapEmailBody from email-format.js, pulls real Gmail signature via sendAs API (same as cron path). Adde",
       "when": "20 hours ago"
-    },
-    {
-      "hash": "fdabbf3",
-      "subject": "(1) SignatureEditor: handles data:/blob:/cid: image refs, reads clipboardData.items for Gmail PNG attachments, manual upload fallback button. (2) Top nav: pill text contrast lifted from rgba(238,238,2",
-      "when": "21 hours ago"
     }
   ]
 }

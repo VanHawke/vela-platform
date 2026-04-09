@@ -85,6 +85,7 @@ export default function Campaigns({ user }) {
   // Build-campaign modal state
   const [buildOpen, setBuildOpen] = useState(false)
   const [buildCategory, setBuildCategory] = useState('banking')
+  const [buildTeam, setBuildTeam] = useState('auto') // 'auto' or a team id
   const [buildPhase, setBuildPhase] = useState('idle') // idle, building, review, enrolling, done, error
   const [buildResult, setBuildResult] = useState(null)
   const [buildError, setBuildError] = useState(null)
@@ -212,13 +213,15 @@ export default function Campaigns({ user }) {
     setBuildError(null)
     setBuildResult(null)
     try {
+      const payload = { category: buildCategory }
+      if (buildTeam && buildTeam !== 'auto') payload.preferredTeam = buildTeam
       const r = await fetch('/api/build-campaign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: buildCategory }),
+        body: JSON.stringify(payload),
       })
       const data = await r.json()
-      if (!r.ok || !data.success) throw new Error(data.error || 'Build failed')
+      if (!r.ok || !data.success) throw new Error(data.message || data.error || 'Build failed')
       setBuildResult(data)
       setBuildPhase('review')
     } catch (err) {
@@ -548,11 +551,27 @@ export default function Campaigns({ user }) {
                   <option value="legal">Legal / Professional Services</option>
                   <option value="robotics">Robotics / Manufacturing</option>
                 </select>
+
+                <div style={{ fontSize: 11, color: C.textSecondary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>F1 Team</div>
+                <select value={buildTeam} onChange={e => setBuildTeam(e.target.value)} style={{ width: '100%', padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: '#141416', color: C.text, fontSize: 14, fontFamily: 'inherit', marginBottom: 16 }}>
+                  <option value="auto">Auto — pick first open team alphabetically</option>
+                  <option value="haas">Haas F1</option>
+                  <option value="cadillac">Cadillac F1</option>
+                  <option value="audi">Audi F1</option>
+                  <option value="aston_martin">Aston Martin</option>
+                  <option value="alpine">Alpine</option>
+                  <option value="williams">Williams</option>
+                  <option value="racing_bulls">Racing Bulls</option>
+                  <option value="mclaren">McLaren</option>
+                  <option value="ferrari">Ferrari</option>
+                  <option value="mercedes">Mercedes</option>
+                  <option value="red_bull">Red Bull</option>
+                </select>
                 <div style={{ fontSize: 11, color: C.textTertiary, marginBottom: 16, lineHeight: 1.5 }}>
-                  Pipeline: pick team via SQL (alphabetical first eligible) → source 50 companies via web search with 320+ company exclusion list → cross-reference CRM → identify decision-makers for top 8 → save to <code>campaign_targets</code>. ~80 seconds.
+                  Pipeline: pick team (your choice or alphabetical default) → verify slot is open → source 50 companies via web search with 320+ company exclusion list → identify decision-makers for top 8. ~80 seconds. If you pick a team that's already blocked in this category, the builder will refuse and tell you why.
                 </div>
                 <button onClick={runBuildCampaign} style={{ width: '100%', padding: '13px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #7C5CFC, #2DD4BF)', color: 'white', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
-                  Build campaign for {buildCategory}
+                  Build {buildCategory} campaign{buildTeam !== 'auto' ? ` for ${buildTeam.replace('_', ' ')}` : ''}
                 </button>
               </div>
             )}
