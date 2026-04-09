@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-09T18:42:33.110Z",
+  "generated_at": "2026-04-09T18:50:45.535Z",
   "commits": [
+    {
+      "hash": "6147ec1",
+      "subject": "v0.0.12 — CRITICAL FIXES: voice blank screen + sequence draft button",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "6f0b2e0",
       "subject": "master log: session A0 — voice refactor, identity fix, enroll bug, heartbeat evidence (17/18 PASS)",
-      "when": "39 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "80e7883",
       "subject": "v0.0.11 — voice refactor + identity fast-path + enroll fix + cron heartbeat",
-      "when": "48 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "06f22d1",
@@ -44,7 +49,7 @@
     {
       "hash": "a38555c",
       "subject": "Ship Campaigns modal team selector (was in source already but needed redeploy). Modal has F1 team dropdown: 'Auto' default picks alphabetical first, or user can pick Haas/Cadillac/any team explicitly.",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "8ebc6fb",
@@ -64,7 +69,7 @@
     {
       "hash": "6279055",
       "subject": "REVERT sanitiser regex (caused FUNCTION_INVOCATION_FAILED crash), keep system prompt TOOL INVOCATION rule only. Frontend fixes from previous commit (voice hasMessages gate, brighter icons) are untouch",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "ceb5f9b",
@@ -74,12 +79,12 @@
     {
       "hash": "9a331e2",
       "subject": "version: 0.0.0 -> 0.0.1 to bust Vercel build cache — previous deploys were serving stale bundle GHndoLhp despite new commits",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "e7b891c",
       "subject": "build: force rebuild to flush stale bundle (voice inline fix + chat redirect not in live bundle)",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "b77de72",
@@ -94,11 +99,6 @@
     {
       "hash": "fb2b162",
       "subject": "build-campaign: fix sequence insert (target_persona not persona, surface error)",
-      "when": "23 hours ago"
-    },
-    {
-      "hash": "a7e2df3",
-      "subject": "DETERMINISTIC CAMPAIGN BUILDER — architecture rebuild after 3 failed prompt-engineering iterations.",
       "when": "23 hours ago"
     }
   ]

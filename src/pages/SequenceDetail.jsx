@@ -80,6 +80,8 @@ export default function SequenceDetail() {
   const [showAddCondition, setShowAddCondition] = useState(false)
   const [newCondition, setNewCondition] = useState({ condition_type: 'opened', operator: 'is', value: '', reference_step: 1, true_next_step: '', false_next_step: '', wait_hours: 0 })
   const [regenPrompt, setRegenPrompt] = useState(false)
+  const [refineText, setRefineText] = useState('')  // feedback input for refine-with-feedback loop
+  const [refining, setRefining] = useState(false)
   const [testSending, setTestSending] = useState(false)
   const [testSent, setTestSent] = useState(false)
   const [launching, setLaunching] = useState(false)
@@ -249,6 +251,86 @@ export default function SequenceDetail() {
     } catch (err) {
       console.error('[askKiko] error:', err)
       upd(i, 'template', `Error generating: ${err.message || 'unknown'}`)
+    }
+  }
+
+  // Refine current draft with user feedback — iterate back and forth with Kiko.
+  // Preserves what the user liked, changes what they asked for.
+  async function refineStep(i, feedback) {
+    const s = steps[i]
+    if (!s || !feedback?.trim()) return
+    const currentDraft = s.template || ''
+    if (!currentDraft.trim() || currentDraft.startsWith('⏳') || currentDraft.startsWith('Error')) {
+      alert('Write or generate a draft first, then refine it with feedback.')
+      return
+    }
+    setRefining(true)
+    const originalDraft = currentDraft
+    upd(i, 'template', '⏳ Kiko is refining...')
+    try {
+      const r = await fetch('/api/kiko', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `Refine this ${s.channel === 'email' ? 'outreach email' : 'LinkedIn message'} based on my feedback.
+
+CURRENT DRAFT:
+"""
+${originalDraft}
+"""
+
+MY FEEDBACK:
+"""
+${feedback.trim()}
+"""
+
+RULES:
+- Apply the feedback. Do not start from scratch unless I explicitly asked you to.
+- Preserve anything I did not ask you to change — structure, tone, specific phrases I kept.
+- ${s.channel === 'email' ? 'Keep "Dear {firstName}," opener and "Kind regards,\\n\\n{signature}" closer' : 'Keep "Hi {firstName}," opener'}
+- ${s.channel === 'email' ? '50-125 words for emails' : '300 chars max for LinkedIn'}
+- No generic filler. No "I hope this finds you well". Principal/board level tone.
+- Return ONLY the refined message text, nothing else. No preamble, no explanation, no quote marks around it.`,
+          userEmail: 'sunny@vanhawke.com', currentPage: 'sequences', conversationHistory: []
+        })
+      })
+      if (!r.ok || !r.body) {
+        upd(i, 'template', originalDraft)  // restore on error
+        alert(`Refine failed: ${r.status} ${r.statusText}`)
+        return
+      }
+      const reader = r.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let accumulated = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          try {
+            const payload = JSON.parse(line.slice(6))
+            if (typeof payload.delta === 'string') {
+              accumulated += payload.delta
+              upd(i, 'template', accumulated)
+            }
+          } catch { /* ignore malformed chunk */ }
+        }
+      }
+      if (!accumulated.trim()) {
+        upd(i, 'template', originalDraft)
+        alert('Kiko returned an empty response. Your original draft is preserved.')
+      } else {
+        setRefineText('')  // clear feedback input on success
+      }
+    } catch (err) {
+      console.error('[refineStep] error:', err)
+      upd(i, 'template', originalDraft)
+      alert(`Refine error: ${err.message || 'unknown'}`)
+    } finally {
+      setRefining(false)
     }
   }
 
@@ -624,6 +706,43 @@ export default function SequenceDetail() {
                   <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid rgba(167,139,250,0.15)`, background: 'rgba(167,139,250,0.04)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to write this step</button>
                   {cur.channel === 'email' && <button onClick={() => sendTest(selStep)} disabled={testSending} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid ${testSent ? 'rgba(45,212,191,0.2)' : C.border}`, background: testSent ? 'rgba(45,212,191,0.04)' : 'transparent', color: testSent ? C.teal : C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{testSending ? 'Sending...' : testSent ? '✓ Test sent' : '📧 Send test to me'}</button>}
                 </div>
+
+                {/* ═══ REFINE WITH FEEDBACK — iterate back and forth with Kiko ═══ */}
+                {cur.template && !cur.template.startsWith('⏳') && !cur.template.startsWith('Error') && (
+                  <div style={{ marginTop: 10, padding: 10, borderRadius: 6, background: 'rgba(167,139,250,0.025)', border: `0.5px solid rgba(167,139,250,0.10)` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                      <Sparkles size={11} color={C.purple} />
+                      <span style={{ fontSize: 10, fontWeight: 500, color: C.purple }}>Refine with feedback</span>
+                      <span style={{ fontSize: 9, color: C.textTer }}>— tell Kiko what to change, she rewrites preserving what you kept</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <textarea
+                        value={refineText}
+                        onChange={e => setRefineText(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); refineStep(selStep, refineText) } }}
+                        rows={2}
+                        placeholder='e.g. "make it shorter", "drop the second paragraph", "mention their recent funding round", "less formal"'
+                        style={{ ...inputStyle, flex: 1, padding: '6px 8px', fontSize: 11, resize: 'vertical', lineHeight: 1.5 }}
+                        disabled={refining}
+                      />
+                      <button
+                        onClick={() => refineStep(selStep, refineText)}
+                        disabled={refining || !refineText.trim()}
+                        style={{
+                          padding: '0 14px', borderRadius: 6,
+                          border: 'none',
+                          background: refining || !refineText.trim() ? 'rgba(167,139,250,0.05)' : 'rgba(167,139,250,0.12)',
+                          color: refining || !refineText.trim() ? C.textTer : C.purple,
+                          fontSize: 11, fontWeight: 500, cursor: refining || !refineText.trim() ? 'not-allowed' : 'pointer',
+                          fontFamily: C.font, whiteSpace: 'nowrap', alignSelf: 'stretch',
+                        }}
+                      >
+                        {refining ? 'Refining...' : 'Refine'}
+                      </button>
+                    </div>
+                    <div style={{ fontSize: 9, color: C.textTer, marginTop: 4 }}>⌘/Ctrl + Enter to submit</div>
+                  </div>
+                )}
 
                 {/* ═══ TRIGGER CONDITIONS — only for non-condition steps ═══ */}
                 {cur.type !== 'condition' && !isNew && (
