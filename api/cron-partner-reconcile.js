@@ -32,7 +32,9 @@ const TEAM_PARTNER_URLS = {
 
 // Fallback: when a team's official page is a JS-rendered SPA and returns near-empty static HTML,
 // use Claude Sonnet 4 with web_search to extract the current partner list.
-const JS_RENDERED_TEAMS = new Set(['red_bull', 'ferrari', 'mclaren']);
+// Teams whose /partners pages are JS-rendered SPAs — must use web_search fallback.
+// Verified via live test 2026-04-09: page_scrape returns ≤1 partner for these teams.
+const JS_RENDERED_TEAMS = new Set(['red_bull', 'ferrari', 'mclaren', 'aston_martin', 'racing_bulls']);
 
 const CATEGORIES = ['fintech','cloud','ai_data','cybersecurity','banking','energy','telecom','automotive','fashion','food_bev','watches','crypto','software','legal','hospitality','gaming','health','logistics','semiconductors','robotics'];
 

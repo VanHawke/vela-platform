@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-09T15:39:42.697Z",
+  "generated_at": "2026-04-09T15:53:59.214Z",
   "commits": [
+    {
+      "hash": "48ecb7e",
+      "subject": "P1: deploy cron-partner-reconcile with corrected URLs (Alpine, Williams, Haas, Audi) + web_search fallback for JS-rendered teams (Red Bull, Ferrari, McLaren). maxDuration bumped to 800s for web_search",
+      "when": "14 minutes ago"
+    },
     {
       "hash": "84860d3",
       "subject": "Option C audit complete + ea.js expires_at fix. (1) Read all 4829 lines of kiko-tools.js + 26 agent files line-by-line. (2) Found and fixed second expires_at bug in ea.js morningBrief — same pattern a",
-      "when": "28 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "51a4b55",
@@ -24,7 +29,7 @@
     {
       "hash": "a38555c",
       "subject": "Ship Campaigns modal team selector (was in source already but needed redeploy). Modal has F1 team dropdown: 'Auto' default picks alphabetical first, or user can pick Haas/Cadillac/any team explicitly.",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "8ebc6fb",
@@ -44,7 +49,7 @@
     {
       "hash": "6279055",
       "subject": "REVERT sanitiser regex (caused FUNCTION_INVOCATION_FAILED crash), keep system prompt TOOL INVOCATION rule only. Frontend fixes from previous commit (voice hasMessages gate, brighter icons) are untouch",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "ceb5f9b",
@@ -54,12 +59,12 @@
     {
       "hash": "9a331e2",
       "subject": "version: 0.0.0 -> 0.0.1 to bust Vercel build cache — previous deploys were serving stale bundle GHndoLhp despite new commits",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "e7b891c",
       "subject": "build: force rebuild to flush stale bundle (voice inline fix + chat redirect not in live bundle)",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "b77de72",
@@ -89,16 +94,11 @@
     {
       "hash": "e270624",
       "subject": "FUNDAMENTAL FIX: Kiko was hallucinating F1 partnership status from training memory while ignoring the f1_partnerships database (406 active partnerships, Revolut/Audi confirmed since March 16). Three n",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "df45b73",
       "subject": "(1) Wipe remaining conversation tables: conversations (187 rows), kiko_imported_conversations (384 rows), conversation_embeddings (389 orphaned vectors). Memory FULLY preserved: 1135 conversation_insi",
-      "when": "21 hours ago"
-    },
-    {
-      "hash": "cd82e00",
-      "subject": "KikoVoice: add inline prop. When inline=true, render as position:absolute inset:0 inside parent container instead of position:fixed createPortal fullscreen overlay. Smaller waveform (600x80 vs 1100x11",
       "when": "21 hours ago"
     }
   ]
