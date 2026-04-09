@@ -928,7 +928,7 @@ DEAL STAGE MAPPING:
 
     // ── UNIVERSAL ENTITY AUTO-RECALL — parallelized (registered users only) ──
     // Skip for fast intents (greeting, navigate, screen, calendar_read, email_read)
-    const SKIP_ENTITY_RECALL = ['greeting', 'outreach', 'content', 'navigate', 'screen', 'calendar_read', 'email_read'];
+    const SKIP_ENTITY_RECALL = ['greeting', 'identity', 'outreach', 'content', 'navigate', 'screen', 'calendar_read', 'email_read'];
     if (!voiceMode && isRegistered && !SKIP_ENTITY_RECALL.includes(intent)) {
       try {
         const capWords = message.match(/\b[A-Z][a-zA-Z]{2,}(?:\s+[A-Z][a-zA-Z]+)*/g) || [];
@@ -967,7 +967,7 @@ DEAL STAGE MAPPING:
     let morningBrief = '';
     if (isRegistered) { // All modes get personal context (voice uses light queries for speed)
     // ── CONTEXT LOADING — intent-aware (light for greetings, full for everything else) ──
-    const isLightIntent = voiceMode || ['greeting', 'navigate', 'screen'].includes(intent);
+    const isLightIntent = voiceMode || ['greeting', 'identity', 'navigate', 'screen'].includes(intent);
     try {
       const queries = isLightIntent
         ? [ // Light: only 3 queries for greeting speed
@@ -1201,18 +1201,20 @@ DEAL STAGE MAPPING:
       strategy: 'Evaluating strategic opportunity...', partnership: 'Analysing partnership landscape...',
       negotiation: 'Preparing negotiation analysis...', outreach: 'Drafting outreach...', content: 'Generating content...',
       brief: 'Preparing your morning brief...', screen: 'Reading current screen...', category: 'Analysing sponsorship categories...',
-      navigation: 'Navigating...', memory: 'Searching your history...', general: 'Thinking...',
+      navigation: 'Navigating...', memory: 'Searching your history...', general: 'Thinking...', identity: 'Thinking...',
       code_review: 'Analysing platform code...', email: 'Checking emails...', document: 'Processing document...',
     };
     write({ toolStatus: INTENT_LABELS[intent] || 'Thinking...' });
     let responseText = '';
     const requestStart = Date.now();
 
-    // Fast-path for greetings and simple queries — skip tool loop, use Haiku for speed
+    // Fast-path for greetings and identity queries — skip tool loop, answer from system prompt only
     // Voice: ALL greetings use Haiku (speed > proactive context). Text: first-message greetings use Sonnet.
-    const FAST_RESPONSE_INTENTS = ['greeting'];
+    // Identity ("who are you") previously stalled in tool loop because Claude called ask_memory_engine
+    // after answering. Now: hard-skip tools, answer from KIKO_BIBLE system prompt only.
+    const FAST_RESPONSE_INTENTS = ['greeting', 'identity'];
     const isSimpleGreeting = FAST_RESPONSE_INTENTS.includes(intent);
-    const useHaikuForGreeting = isSimpleGreeting && (voiceMode || !isFirstMessage);
+    const useHaikuForGreeting = intent === 'greeting' && (voiceMode || !isFirstMessage);
     const skipTools = isSimpleGreeting;
     let response = await streamCall(messages, skipTools ? { noTools: true, maxTokens: voiceMode ? 300 : 1500, useHaiku: useHaikuForGreeting } : {});
     let toolRounds = 0;

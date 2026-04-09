@@ -264,45 +264,65 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   }, [])
   const hasVoiceMessages = voiceMessages.length > 0
 
-  // Start voice mode — don't pre-acquire mic, let KikoVoice handle it
-  // If already in a conversation, voice stays INLINE inside the conversation pane.
-  // Only on the home page does it take over the full screen.
+  // Voice is ALWAYS fullscreen now (2026-04-09 UX decision).
+  // Two entry paths tracked via voiceStartedFromConvId ref:
+  //   (a) From homepage / no active chat → creates a NEW conversation on stop
+  //   (b) From within an existing chat   → appends transcript to that chat on stop
+  const voiceStartedFromConvId = useRef(null)
+
   const startVoice = async () => {
+    voiceStartedFromConvId.current = activeConvId  // null = home, otherwise append target
     setVoiceActive(true)
     setVoiceMessages([])
-    // Only collapse the top header when voice is in fullscreen home mode,
-    // NOT when voice is inline inside a conversation
-    if (!hasMessages) {
-      window.dispatchEvent(new CustomEvent('kiko_voice_fullscreen', { detail: { active: true } }))
-    }
+    // Always fullscreen — dispatch header-collapse event unconditionally
+    window.dispatchEvent(new CustomEvent('kiko_voice_fullscreen', { detail: { active: true } }))
   }
 
-  // Stop voice mode — save transcript to history, return to homepage
   const stopVoice = async () => {
     setVoiceActive(false)
     if (voiceMicStream) { voiceMicStream.getTracks().forEach(t => t.stop()); setVoiceMicStream(null) }
     window.dispatchEvent(new CustomEvent('kiko_voice_fullscreen', { detail: { active: false } }))
-    // Clear audio globals so helix stops reacting
     window.__kikoAudioEnergy = 0
     window.__kikoAudioPitch = 0
 
-    // Save voice conversation to chat history if there are messages
-    if (voiceMessages.length > 0) {
-      try {
-        const convId = `voice_${Date.now()}`
-        const mapped = voiceMessages.map(m => ({ role: m.role === 'kiko' ? 'assistant' : 'user', content: m.content }))
-        // Auto-rename from first user message
-        const firstUserMsg = voiceMessages.find(m => m.role === 'user')
-        const title = firstUserMsg ? firstUserMsg.content.slice(0, 60) + (firstUserMsg.content.length > 60 ? '...' : '') : 'Voice conversation'
-        await supabase.from('conversations').insert({
-          user_id: user?.id, org_id: user?.app_metadata?.org_id, title,
-          messages: mapped,
-        })
-      } catch (e) { console.warn('Failed to save voice transcript:', e) }
-    }
+    const startedFromConvId = voiceStartedFromConvId.current
+    voiceStartedFromConvId.current = null
 
-    // Clear messages to return to homepage
-    setMessages([])
+    if (voiceMessages.length > 0) {
+      const mapped = voiceMessages.map(m => ({ role: m.role === 'kiko' ? 'assistant' : 'user', content: m.content }))
+
+      if (startedFromConvId) {
+        // APPEND to existing chat
+        try {
+          const { data: existing } = await supabase
+            .from('conversations').select('messages').eq('id', startedFromConvId).single()
+          const prior = Array.isArray(existing?.messages) ? existing.messages : []
+          const combined = [...prior, ...mapped]
+          await supabase.from('conversations')
+            .update({ messages: combined, updated_at: new Date().toISOString() })
+            .eq('id', startedFromConvId)
+          setMessages(combined)  // reflect merged chat in UI
+        } catch (e) { console.warn('Failed to append voice to existing chat:', e) }
+      } else {
+        // CREATE new conversation from home
+        try {
+          const firstUserMsg = voiceMessages.find(m => m.role === 'user')
+          const title = firstUserMsg
+            ? firstUserMsg.content.slice(0, 60) + (firstUserMsg.content.length > 60 ? '...' : '')
+            : 'Voice conversation'
+          const { data: newConv } = await supabase.from('conversations').insert({
+            user_id: user?.id, org_id: user?.app_metadata?.org_id, title, messages: mapped,
+          }).select().single()
+          if (newConv?.id) {
+            setActiveConvId(newConv.id)
+            setMessages(mapped)
+          }
+        } catch (e) { console.warn('Failed to save voice transcript:', e) }
+      }
+    } else if (!startedFromConvId) {
+      // Empty voice session from home — stay on home
+      setMessages([])
+    }
     setVoiceMessages([])
   }
 
@@ -1190,8 +1210,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         </div>
         )}
 
-        {/* LiveKit Voice overlay */}
-        {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} />}
+        {/* Voice overlay — always fullscreen, captures transcript via onMessage */}
+        {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} onMessage={handleVoiceMessage} />}
 
         {/* Notifications panel — slides from right */}
         <KikoInsights open={insightsOpen} onClose={() => setInsightsOpen(false)} onAction={(text) => { setInsightsOpen(false); handleSubmit(text) }} />
@@ -1392,8 +1412,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(167,139,250,0.12)', fontFamily: C.font, margin: '8px 0 0', fontWeight: 300 }}>Kiko is AI and can make mistakes. Please double-check responses.</p>
         </div>
       </div>
-      {/* Voice overlay — child of conversation pane (position:relative parent) so it stays inside the chat */}
-      {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} inline={true} />}
+      {/* Voice overlay — always fullscreen, captures transcript via onMessage */}
+      {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} onMessage={handleVoiceMessage} />}
     </div>
     </div>
   )

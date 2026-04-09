@@ -159,6 +159,18 @@ export async function classifyIntent(message, currentPage = 'home', conversation
   }
   if (lower.includes('review your code') || lower.includes('your architecture') || lower.includes('how can you improve') || lower.includes('suggest improvements') || lower.includes('your weaknesses') || lower.includes('performance report') || lower.includes('read your source') || lower.includes('analyse yourself') || lower.includes('self-analysis') || lower.includes('your own code')) return { intent: 'code_review' };
 
+  // Identity fast-path — "who are you", "what are you", "what can you do", "introduce yourself"
+  // These stall in the tool loop because Claude "helpfully" calls ask_memory_engine after answering.
+  // Answer from KIKO_BIBLE system prompt only. No tools. Fast response.
+  if (
+    /^(kiko[,\s]+)?(who|what) (are|r) (you|u|kiko)\b/i.test(message.trim()) ||
+    /^(tell me |can you )?(who|what) is kiko\b/i.test(message.trim()) ||
+    /^(what (can|do) you do|introduce yourself|tell me about yourself|describe yourself|your purpose|your role)\b/i.test(message.trim()) ||
+    /^kiko\??$/i.test(message.trim())
+  ) {
+    return { intent: 'identity' };
+  }
+
   // Step 3: Haiku classification for everything else (~100-200ms)
   try {
     const response = await anthropic.messages.create({
@@ -168,7 +180,7 @@ export async function classifyIntent(message, currentPage = 'home', conversation
       messages: [{ role: 'user', content: `[Current page: ${currentPage}] ${message}` }],
     });
     const intentText = (response.content?.[0]?.text || 'general').trim().toLowerCase().replace(/[^a-z_]/g, '');
-    const validIntents = ['navigate','screen','crm_write','data','outreach','lemlist','signal','brief','strategy','content','research','memory','finance','document','negotiation','category','legal','dispute','investment','pricing','travel','calendar','email_read','self_monitor','knowledge','conversation_search','code_review','general'];
+    const validIntents = ['navigate','screen','crm_write','data','outreach','lemlist','signal','brief','strategy','content','research','memory','finance','document','negotiation','category','legal','dispute','investment','pricing','travel','calendar','email_read','self_monitor','knowledge','conversation_search','code_review','identity','general'];
     const intent = validIntents.includes(intentText) ? intentText : 'general';
     console.log(`[Intent] "${message.slice(0,60)}" → ${intent} (${response.usage?.input_tokens || '?'}in/${response.usage?.output_tokens || '?'}out)`);
     return { intent };
@@ -207,5 +219,6 @@ export const INTENT_TO_AGENT = {
   knowledge:    { tool: 'manage_knowledge' },
   conversation_search: { tool: 'search_conversations' },
   code_review: { tool: 'ask_code_review' },
+  identity:    { tool: null, directResponse: true },
   general:     { tool: null, directResponse: true },
 };

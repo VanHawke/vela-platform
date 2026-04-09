@@ -46,7 +46,8 @@ async function executeTool(name, args) {
   } catch (err) { console.error('[KikoVoice] Tool error:', err); return JSON.stringify({ error: err.message }) }
 }
 
-export default function KikoVoice({ onClose, user, onVoiceState, inline = false }) {
+export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
+  // inline prop removed — voice is always fullscreen now per UX decision 2026-04-09
   const [status, setStatus] = useState('connecting')
   const [speaking, setSpeaking] = useState(false)
   const [volume, setVolume] = useState(0)
@@ -117,6 +118,19 @@ export default function KikoVoice({ onClose, user, onVoiceState, inline = false 
       if (msg.type === 'response.audio.delta') setStatus('speaking')
       if (msg.type === 'response.audio.done') setStatus('listening')
       if (msg.type === 'input_audio_buffer.speech_started') setStatus('listening')
+
+      // ── Transcript capture for chat-history save ──
+      // User speech transcript (Whisper on input audio)
+      if (msg.type === 'conversation.item.input_audio_transcription.completed') {
+        const userText = (msg.transcript || '').trim()
+        if (userText && onMessage) onMessage({ role: 'user', content: userText, at: Date.now() })
+      }
+      // Kiko speech transcript (GPT-4o assistant response)
+      if (msg.type === 'response.audio_transcript.done') {
+        const kikoText = (msg.transcript || '').trim()
+        if (kikoText && onMessage) onMessage({ role: 'kiko', content: kikoText, at: Date.now() })
+      }
+
       if (msg.type === 'error') {
         console.error('[KikoVoice] API Error:', JSON.stringify(msg.error || msg))
         setStatus('error')
@@ -287,13 +301,10 @@ RULES:
     onClose?.()
   }, [onClose])
 
-  // ── Render ──
+  // ── Render — always fullscreen now ──
   const voiceUI = (
-    <div style={inline
-      ? { position: 'absolute', left: 16, right: 16, bottom: 90, height: 180, zIndex: 10, display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', background: 'rgba(20,20,24,0.92)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderRadius: 16, border: '1px solid rgba(167,139,250,0.18)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }
-      : { position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#1C1C1F' }
-    }>
-      {!inline && <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}><AuroraCanvas /></div>}
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#1C1C1F' }}>
+      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}><AuroraCanvas /></div>
 
       {/* X close */}
       <button onClick={handleClose} style={{
@@ -306,14 +317,14 @@ RULES:
         onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.40)'; e.currentTarget.style.color = 'rgba(238,238,238,0.3)' }}
       ><X size={14} /></button>
 
-      {/* KikoWaveform — smaller in inline mode */}
+      {/* KikoWaveform — fullscreen size */}
       <div style={{
-        position: 'relative', zIndex: 1, width: inline ? '85%' : '95%', maxWidth: inline ? 600 : 1100, marginBottom: 24,
-        overflow: 'visible', padding: inline ? '24px 0' : '48px 0',
+        position: 'relative', zIndex: 1, width: '95%', maxWidth: 1100, marginBottom: 24,
+        overflow: 'visible', padding: '48px 0',
         WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
         maskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
       }}>
-        <KikoWaveform width={inline ? 600 : 1100} height={inline ? 80 : 110} speaking={speaking} volume={volume} />
+        <KikoWaveform width={1100} height={110} speaking={speaking} volume={volume} />
       </div>
 
       {/* Status bar — color-coded: amber=connecting, green=active, purple=thinking */}

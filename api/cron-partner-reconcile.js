@@ -8,6 +8,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { cronHeartbeat } from './kiko-tools.js';
 
 export const config = { maxDuration: 800 };
 
@@ -221,40 +222,57 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'unauthorised — add ?force=1 to run manually' });
   }
 
+  const heartbeatId = await cronHeartbeat('cron-partner-reconcile', 'started');
   const startedAt = Date.now();
   const teamResults = [];
   let totalNew = 0;
 
-  for (const [teamId, url] of Object.entries(TEAM_PARTNER_URLS)) {
-    try {
-      const stats = await reconcileTeam(teamId, url);
-      teamResults.push(stats);
-      totalNew += stats.new;
-    } catch (err) {
-      teamResults.push({ team_id: teamId, url, errors: [err.message] });
-    }
-    // Small delay between teams to avoid rate limits
-    await new Promise(r => setTimeout(r, 500));
-  }
-
-  const summary = {
-    ok: true,
-    duration_ms: Date.now() - startedAt,
-    teams_processed: teamResults.length,
-    new_partnerships: totalNew,
-    results: teamResults,
-    timestamp: new Date().toISOString(),
-  };
-
-  // Log to cron_runs if the table exists
   try {
-    await supabase.from('cron_runs').insert({
-      cron_name: 'partner-reconcile',
-      status: 'ok',
-      duration_ms: summary.duration_ms,
-      metadata: { new_partnerships: totalNew, teams: teamResults.length },
-    });
-  } catch { /* optional table */ }
+    for (const [teamId, url] of Object.entries(TEAM_PARTNER_URLS)) {
+      try {
+        const stats = await reconcileTeam(teamId, url);
+        teamResults.push(stats);
+        totalNew += stats.new;
+      } catch (err) {
+        teamResults.push({ team_id: teamId, url, errors: [err.message] });
+      }
+      // Small delay between teams to avoid rate limits
+      await new Promise(r => setTimeout(r, 500));
+    }
 
-  return res.status(200).json(summary);
+    const summary = {
+      ok: true,
+      duration_ms: Date.now() - startedAt,
+      teams_processed: teamResults.length,
+      new_partnerships: totalNew,
+      results: teamResults,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Log to cron_runs if the table exists (legacy)
+    try {
+      await supabase.from('cron_runs').insert({
+        cron_name: 'partner-reconcile',
+        status: 'ok',
+        duration_ms: summary.duration_ms,
+        metadata: { new_partnerships: totalNew, teams: teamResults.length },
+      });
+    } catch { /* optional table */ }
+
+    // Write finished heartbeat so selfcheck can see the run
+    await cronHeartbeat('cron-partner-reconcile', 'finished', {
+      heartbeatId,
+      durationMs: summary.duration_ms,
+      recordsProcessed: totalNew,
+    });
+
+    return res.status(200).json(summary);
+  } catch (err) {
+    await cronHeartbeat('cron-partner-reconcile', 'error', {
+      heartbeatId,
+      durationMs: Date.now() - startedAt,
+      errorMessage: err.message || String(err),
+    });
+    return res.status(500).json({ ok: false, error: err.message });
+  }
 }

@@ -33,7 +33,7 @@ export default async function handler(req, res) {
       contact_name: t.decision_maker_name || t.company_name,
       company: t.company_name,
       current_step: 0,
-      status: 'pending',
+      status: 'active',  // Must be 'active' — cron-sequence-enqueue.js line 144 filters for status=eq.active
       enrolled_at: now,
       next_send_at: now,
     }));
