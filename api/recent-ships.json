@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-09T10:51:26.720Z",
+  "generated_at": "2026-04-09T10:57:06.494Z",
   "commits": [
+    {
+      "hash": "f8a8115",
+      "subject": "Deterministic category-gap analysis + nav fixes + sanitiser. (1) NEW /api/category-gaps endpoint queries f1_partnerships + category_overlaps (primary_category/blocking_category cols) directly — zero L",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "6279055",
       "subject": "REVERT sanitiser regex (caused FUNCTION_INVOCATION_FAILED crash), keep system prompt TOOL INVOCATION rule only. Frontend fixes from previous commit (voice hasMessages gate, brighter icons) are untouch",
-      "when": "35 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "ceb5f9b",
       "subject": "Batch fixes: (1) voice mic in conversation no longer collapses header or redirects to home (!hasMessages gate on kiko_voice_fullscreen event), (2) output sanitiser strips hallucinated <invoke>/<parame",
-      "when": "62 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "9a331e2",
@@ -94,11 +99,6 @@
     {
       "hash": "869873e",
       "subject": "(1) SignatureEditor: single contentEditable paste box. Paste your full Gmail/Apple Mail signature including images — base64 inline images auto-upload to Supabase Storage in background and src is rewri",
-      "when": "20 hours ago"
-    },
-    {
-      "hash": "bac1607",
-      "subject": "(1) lift bg from #0D0D0F to #1C1C1F charcoal — better text contrast across all pages, (2) signature image upload: file picker uploads to Supabase Storage brand-assets/signatures/, returns public URL, ",
       "when": "20 hours ago"
     }
   ]

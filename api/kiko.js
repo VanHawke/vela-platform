@@ -690,61 +690,70 @@ export default async function handler(req, res) {
     }
 
     // Handle deterministic category-gap analysis — no Claude needed
-    // Queries f1_partnerships + category_overlaps directly, returns formatted card.
-    // This replaces the hallucination-prone LLM path for "which sector should we target" queries.
+    // Queries f1_partnerships + category_overlaps directly via sbFetch (no HTTP hop).
     if (intent === 'category_gap') {
       write({ toolStatus: 'Analysing partnership matrix...' });
       try {
-        const teamArg = target ? `?team=${encodeURIComponent(target)}` : '';
-        const base = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://vela-platform-one.vercel.app';
-        const gapRes = await fetch(`${base}/api/category-gaps${teamArg}`, {
-          method: 'GET',
-          headers: { 'content-type': 'application/json' },
-        });
-        const gapData = await gapRes.json();
-        write({ toolStatus: null });
-
-        // Format the response deterministically — no LLM creativity possible
-        let out = '';
-        if (target) {
-          // Team-specific response
-          const teamName = {
-            haas: 'Haas F1', ferrari: 'Ferrari', mercedes: 'Mercedes', mclaren: 'McLaren',
-            red_bull: 'Red Bull Racing', williams: 'Williams', aston_martin: 'Aston Martin',
-            alpine: 'Alpine', racing_bulls: 'Racing Bulls', cadillac: 'Cadillac F1', audi: 'Audi',
-          }[target] || target;
-          const open = gapData.open_categories || [];
-          if (open.length === 0) {
-            out = `${teamName} has no open category slots. Every sponsorship category has a conflict either directly or via overlap rules. Check /partnership-matrix for the full view.`;
-          } else {
-            // Sort by urgency: fewer open teams globally = higher urgency
-            const sorted = [...open].sort((a, b) => a.open_count - b.open_count);
-            out = `**${teamName} — Open Category Slots**\n\n`;
-            out += `Based on 374 verified F1 partnerships and 18 category-overlap rules, ${teamName} has ${open.length} open categories:\n\n`;
-            for (const cat of sorted.slice(0, 10)) {
-              const competitorCount = cat.blocked_teams.length;
-              const competitorSample = cat.blocked_teams.slice(0, 3).map(bt => {
-                const tName = { haas: 'Haas', ferrari: 'Ferrari', mercedes: 'Mercedes', mclaren: 'McLaren', red_bull: 'Red Bull', williams: 'Williams', aston_martin: 'Aston Martin', alpine: 'Alpine', racing_bulls: 'Racing Bulls', cadillac: 'Cadillac', audi: 'Audi' }[bt.team_id] || bt.team_id;
-                return `${tName} (${bt.partners[0]})`;
-              }).join(', ');
-              out += `• **${cat.category_name}** — ${competitorCount}/11 teams taken. Competitors: ${competitorSample || 'none'}${competitorCount > 3 ? ` +${competitorCount - 3} more` : ''}\n`;
+        const [partnerships, overlaps, categories, teamsList] = await Promise.all([
+          sbFetch('f1_partnerships?select=team_id,partner_name,category_id,related_categories&status=eq.active'),
+          sbFetch('category_overlaps?select=primary_category,blocking_category'),
+          sbFetch('sponsor_categories?select=id,name&order=name.asc'),
+          sbFetch('f1_teams?select=id,name&order=name.asc'),
+        ]);
+        const overlapMap = new Map();
+        for (const o of (overlaps || [])) {
+          const a = o.primary_category, b = o.blocking_category;
+          if (!a || !b) continue;
+          if (!overlapMap.has(a)) overlapMap.set(a, new Set());
+          if (!overlapMap.has(b)) overlapMap.set(b, new Set());
+          overlapMap.get(a).add(b);
+          overlapMap.get(b).add(a);
+        }
+        const expand = (c) => { const s = new Set([c]); for (const n of (overlapMap.get(c)||[])) s.add(n); return s; };
+        const teamIds = (teamsList||[]).map(t => t.id);
+        const teamName = (id) => ({ haas:'Haas F1', ferrari:'Ferrari', mercedes:'Mercedes', mclaren:'McLaren', red_bull:'Red Bull Racing', williams:'Williams', aston_martin:'Aston Martin', alpine:'Alpine', racing_bulls:'Racing Bulls', cadillac:'Cadillac F1', audi:'Audi' }[id] || id);
+        const results = [];
+        for (const cat of (categories||[])) {
+          const exp = expand(cat.id);
+          const blocked = new Map();
+          for (const p of (partnerships||[])) {
+            if (!p.team_id || !p.partner_name) continue;
+            const primary = p.category_id && exp.has(p.category_id);
+            const related = Array.isArray(p.related_categories) && p.related_categories.some(rc => exp.has(rc));
+            if (primary || related) {
+              if (!blocked.has(p.team_id)) blocked.set(p.team_id, []);
+              blocked.get(p.team_id).push(p.partner_name);
             }
-            out += `\n**Recommended:** ${sorted[0].category_name} — fewest open slots remaining (${sorted[0].open_count}/11 teams), highest urgency. `;
-            out += `\n\nTo launch: open /campaigns, click ⚡ Build, select ${sorted[0].category_name}, wait ~80 seconds. The builder will auto-pick the optimal team and source 50 targets.`;
           }
-        } else {
-          // No team specified — show high-urgency categories across all teams
-          const cats = (gapData.categories || []).filter(c => c.open_count > 0).slice(0, 8);
-          out = `**F1 Category Gap Analysis** — based on 374 verified partnerships\n\n`;
-          out += `Highest urgency (fewest open slots):\n\n`;
-          for (const c of cats) {
-            const openNames = c.open_teams.map(t => ({ haas: 'Haas', ferrari: 'Ferrari', mercedes: 'Mercedes', mclaren: 'McLaren', red_bull: 'Red Bull', williams: 'Williams', aston_martin: 'Aston Martin', alpine: 'Alpine', racing_bulls: 'Racing Bulls', cadillac: 'Cadillac', audi: 'Audi' }[t] || t)).join(', ');
-            out += `• **${c.category_name}** — ${c.open_count}/11 teams open: ${openNames}\n`;
-          }
-          out += `\nTo launch a campaign: open /campaigns, click ⚡ Build, select a category. The builder picks the team automatically and sources 50 targets.`;
+          const openTeams = teamIds.filter(t => !blocked.has(t));
+          results.push({ id: cat.id, name: cat.name, open: openTeams, open_count: openTeams.length, blocked: Array.from(blocked.entries()) });
         }
 
-        // Stream it in chunks so it feels like normal Kiko output
+        let out = '';
+        if (target) {
+          const teamFiltered = results.filter(r => r.open.includes(target));
+          if (teamFiltered.length === 0) {
+            out = `${teamName(target)} has no open category slots based on 374 verified F1 partnerships. Every category has a direct or overlap conflict. Check /partnership-matrix for the detailed view.`;
+          } else {
+            const sorted = [...teamFiltered].sort((a,b) => a.open_count - b.open_count);
+            out = `**${teamName(target)} — Open Category Slots**\n\nBased on 374 verified F1 partnerships in the database, ${teamName(target)} has ${teamFiltered.length} categories open (sorted by urgency — fewest open slots first):\n\n`;
+            for (const c of sorted.slice(0, 10)) {
+              const compSample = c.blocked.slice(0, 4).map(([tid, parts]) => `${teamName(tid)} (${parts[0]})`).join(', ');
+              out += `• **${c.name}** — ${c.open_count}/11 teams open. Taken by: ${compSample || 'no one yet'}${c.blocked.length > 4 ? ` +${c.blocked.length - 4} more` : ''}\n`;
+            }
+            const top = sorted[0];
+            out += `\n**Recommendation:** ${top.name} — only ${top.open_count}/11 teams still open, highest urgency and clearest competitive positioning. `;
+            out += `\n\nTo launch: open /campaigns, click ⚡ Build, select ${top.name}. The builder picks the team, sources 50 targets, and identifies decision-makers in ~80 seconds.`;
+          }
+        } else {
+          const sorted = results.filter(r => r.open_count > 0).sort((a,b) => a.open_count - b.open_count).slice(0, 8);
+          out = `**F1 Category Gap Analysis** — 374 verified partnerships\n\nHighest urgency (fewest open teams):\n\n`;
+          for (const c of sorted) {
+            const openNames = c.open.map(teamName).join(', ');
+            out += `• **${c.name}** — ${c.open_count}/11 open: ${openNames}\n`;
+          }
+          out += `\nTo launch a campaign: /campaigns → ⚡ Build → pick category. Builder picks team automatically.`;
+        }
         const chunks = out.match(/.{1,80}/g) || [out];
         for (const chunk of chunks) write({ delta: chunk });
         write({ meta: { done: true, model: 'deterministic', intent: 'category_gap', version: 'v16.1' } });
