@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-09T09:48:41.717Z",
+  "generated_at": "2026-04-09T10:16:14.406Z",
   "commits": [
+    {
+      "hash": "ceb5f9b",
+      "subject": "Batch fixes: (1) voice mic in conversation no longer collapses header or redirects to home (!hasMessages gate on kiko_voice_fullscreen event), (2) output sanitiser strips hallucinated <invoke>/<parame",
+      "when": "27 minutes ago"
+    },
     {
       "hash": "9a331e2",
       "subject": "version: 0.0.0 -> 0.0.1 to bust Vercel build cache — previous deploys were serving stale bundle GHndoLhp despite new commits",
@@ -29,17 +34,17 @@
     {
       "hash": "a7e2df3",
       "subject": "DETERMINISTIC CAMPAIGN BUILDER — architecture rebuild after 3 failed prompt-engineering iterations.",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "3ad2c7d",
       "subject": "Kiko campaign protocol enforcement v2: (1) source_companies bumped from 15-20 to 50, with hard exclusion against f1_partnerships table — Revolut and 405 other already-partnered companies are filtered ",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "e270624",
       "subject": "FUNDAMENTAL FIX: Kiko was hallucinating F1 partnership status from training memory while ignoring the f1_partnerships database (406 active partnerships, Revolut/Audi confirmed since March 16). Three n",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "df45b73",
@@ -54,7 +59,7 @@
     {
       "hash": "353e79f",
       "subject": "(1) Contact name cleanup: stripped emoji + symbol prefixes from 31 contacts in DB. Names like '🚀 Briana' / 'Ogle' -> 'Briana' / 'Ogle'. Where firstName held the full name and lastName was just emoji,",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "d828ca2",
@@ -64,7 +69,7 @@
     {
       "hash": "6d4138a",
       "subject": "loadUserSignatures: match by sendAsEmail (alias) instead of always picking primary. Pass FROM_ADDRESS=sunny@vanhawke.agency from gmail-draft + cron-sequence-enqueue so we get the Van Hawke Agency sign",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "27281f8",
@@ -89,16 +94,11 @@
     {
       "hash": "bac1607",
       "subject": "(1) lift bg from #0D0D0F to #1C1C1F charcoal — better text contrast across all pages, (2) signature image upload: file picker uploads to Supabase Storage brand-assets/signatures/, returns public URL, ",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "119661b",
       "subject": "Campaigns.jsx: Prospecting view with left rail (campaign list) + main table (one row per prospect: name, company, title, step, engagement, last action, next, status, actions). Real Supabase data, real",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "018f9bc",
-      "subject": "restore Campaigns.jsx (Lemlist-style left rail + main canvas) at /sequences and /campaigns routes. Rewired data layer from deleted /api/lemlist-data to direct Supabase queries against kiko_sequences/k",
       "when": "20 hours ago"
     }
   ]
