@@ -1,104 +1,104 @@
 {
-  "generated_at": "2026-04-09T12:49:23.514Z",
+  "generated_at": "2026-04-09T13:56:24.155Z",
   "commits": [
+    {
+      "hash": "32ab6be",
+      "subject": "KIKO_TODO.md session 2026-04-09 evidence log — what's verified vs what's gaps",
+      "when": "63 minutes ago"
+    },
+    {
+      "hash": "7639944",
+      "subject": "KIKO_TODO.md + voice inline bottom-dock panel. (1) KIKO_TODO.md — living checklist read at session start, updated at session end. P0/P1/P2/P3 tasks with evidence status. (2) KikoVoice inline mode: cha",
+      "when": "67 minutes ago"
+    },
     {
       "hash": "a38555c",
       "subject": "Ship Campaigns modal team selector (was in source already but needed redeploy). Modal has F1 team dropdown: 'Auto' default picks alphabetical first, or user can pick Haas/Cadillac/any team explicitly.",
-      "when": "34 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "8ebc6fb",
       "subject": "Blueprint + self-audit + proactive partner reconciliation: (1) KIKO_SYSTEM_MAP.md single source of truth — every table, endpoint, cron, deterministic vs LLM path documented. Every session starts by re",
-      "when": "57 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "5eca279",
       "subject": "category-gap: inline sbFetch instead of HTTP hop (preview URL has SSO auth, was returning HTML). Handler now builds overlap map, expands categories, filters blocked teams, formats response — all inlin",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f8a8115",
       "subject": "Deterministic category-gap analysis + nav fixes + sanitiser. (1) NEW /api/category-gaps endpoint queries f1_partnerships + category_overlaps (primary_category/blocking_category cols) directly — zero L",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "6279055",
       "subject": "REVERT sanitiser regex (caused FUNCTION_INVOCATION_FAILED crash), keep system prompt TOOL INVOCATION rule only. Frontend fixes from previous commit (voice hasMessages gate, brighter icons) are untouch",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "ceb5f9b",
       "subject": "Batch fixes: (1) voice mic in conversation no longer collapses header or redirects to home (!hasMessages gate on kiko_voice_fullscreen event), (2) output sanitiser strips hallucinated <invoke>/<parame",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "9a331e2",
       "subject": "version: 0.0.0 -> 0.0.1 to bust Vercel build cache — previous deploys were serving stale bundle GHndoLhp despite new commits",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "e7b891c",
       "subject": "build: force rebuild to flush stale bundle (voice inline fix + chat redirect not in live bundle)",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "b77de72",
       "subject": "Chat campaign redirect: when user asks to create a campaign in chat, Kiko redirects to /campaigns page ⚡ Build button instead of attempting to run the 80s deterministic pipeline inline (which caused 1",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "0005172",
       "subject": "Campaigns UI: ⚡ Build button + modal. Phases: idle (category dropdown) -> building (~80s loading) -> review (team, why, top 8 with DMs, exclusion stats) -> enrolling -> done. Calls /api/build-campaign",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "fb2b162",
       "subject": "build-campaign: fix sequence insert (target_persona not persona, surface error)",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "a7e2df3",
       "subject": "DETERMINISTIC CAMPAIGN BUILDER — architecture rebuild after 3 failed prompt-engineering iterations.",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "3ad2c7d",
       "subject": "Kiko campaign protocol enforcement v2: (1) source_companies bumped from 15-20 to 50, with hard exclusion against f1_partnerships table — Revolut and 405 other already-partnered companies are filtered ",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "e270624",
       "subject": "FUNDAMENTAL FIX: Kiko was hallucinating F1 partnership status from training memory while ignoring the f1_partnerships database (406 active partnerships, Revolut/Audi confirmed since March 16). Three n",
-      "when": "17 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "df45b73",
       "subject": "(1) Wipe remaining conversation tables: conversations (187 rows), kiko_imported_conversations (384 rows), conversation_embeddings (389 orphaned vectors). Memory FULLY preserved: 1135 conversation_insi",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "cd82e00",
       "subject": "KikoVoice: add inline prop. When inline=true, render as position:absolute inset:0 inside parent container instead of position:fixed createPortal fullscreen overlay. Smaller waveform (600x80 vs 1100x11",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "353e79f",
       "subject": "(1) Contact name cleanup: stripped emoji + symbol prefixes from 31 contacts in DB. Names like '🚀 Briana' / 'Ogle' -> 'Briana' / 'Ogle'. Where firstName held the full name and lastName was just emoji,",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "d828ca2",
       "subject": "(1) Home layout centred — top spacer 0.8->0.5, bottom 0.3->0.5, removed overflow:auto, added justifyContent:center, padding 20/24/40. Fixes iPad cut-off. (2) 5 dead pages deleted: Sequences.jsx, Calen",
-      "when": "20 hours ago"
-    },
-    {
-      "hash": "6d4138a",
-      "subject": "loadUserSignatures: match by sendAsEmail (alias) instead of always picking primary. Pass FROM_ADDRESS=sunny@vanhawke.agency from gmail-draft + cron-sequence-enqueue so we get the Van Hawke Agency sign",
-      "when": "20 hours ago"
-    },
-    {
-      "hash": "27281f8",
-      "subject": "gmail-draft: use canonical getGoogleToken helper instead of homegrown token refresh logic. Same path the cron uses successfully — auto-refreshes with 5min buffer.",
       "when": "21 hours ago"
     }
   ]
