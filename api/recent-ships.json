@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-09T10:16:14.406Z",
+  "generated_at": "2026-04-09T10:51:26.720Z",
   "commits": [
+    {
+      "hash": "6279055",
+      "subject": "REVERT sanitiser regex (caused FUNCTION_INVOCATION_FAILED crash), keep system prompt TOOL INVOCATION rule only. Frontend fixes from previous commit (voice hasMessages gate, brighter icons) are untouch",
+      "when": "35 minutes ago"
+    },
     {
       "hash": "ceb5f9b",
       "subject": "Batch fixes: (1) voice mic in conversation no longer collapses header or redirects to home (!hasMessages gate on kiko_voice_fullscreen event), (2) output sanitiser strips hallucinated <invoke>/<parame",
-      "when": "27 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "9a331e2",
       "subject": "version: 0.0.0 -> 0.0.1 to bust Vercel build cache — previous deploys were serving stale bundle GHndoLhp despite new commits",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "e7b891c",
       "subject": "build: force rebuild to flush stale bundle (voice inline fix + chat redirect not in live bundle)",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "b77de72",
       "subject": "Chat campaign redirect: when user asks to create a campaign in chat, Kiko redirects to /campaigns page ⚡ Build button instead of attempting to run the 80s deterministic pipeline inline (which caused 1",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "0005172",
       "subject": "Campaigns UI: ⚡ Build button + modal. Phases: idle (category dropdown) -> building (~80s loading) -> review (team, why, top 8 with DMs, exclusion stats) -> enrolling -> done. Calls /api/build-campaign",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "fb2b162",
       "subject": "build-campaign: fix sequence insert (target_persona not persona, surface error)",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "a7e2df3",
@@ -44,17 +49,17 @@
     {
       "hash": "e270624",
       "subject": "FUNDAMENTAL FIX: Kiko was hallucinating F1 partnership status from training memory while ignoring the f1_partnerships database (406 active partnerships, Revolut/Audi confirmed since March 16). Three n",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "df45b73",
       "subject": "(1) Wipe remaining conversation tables: conversations (187 rows), kiko_imported_conversations (384 rows), conversation_embeddings (389 orphaned vectors). Memory FULLY preserved: 1135 conversation_insi",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "cd82e00",
       "subject": "KikoVoice: add inline prop. When inline=true, render as position:absolute inset:0 inside parent container instead of position:fixed createPortal fullscreen overlay. Smaller waveform (600x80 vs 1100x11",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "353e79f",
@@ -64,7 +69,7 @@
     {
       "hash": "d828ca2",
       "subject": "(1) Home layout centred — top spacer 0.8->0.5, bottom 0.3->0.5, removed overflow:auto, added justifyContent:center, padding 20/24/40. Fixes iPad cut-off. (2) 5 dead pages deleted: Sequences.jsx, Calen",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "6d4138a",
@@ -74,31 +79,26 @@
     {
       "hash": "27281f8",
       "subject": "gmail-draft: use canonical getGoogleToken helper instead of homegrown token refresh logic. Same path the cron uses successfully — auto-refreshes with 5min buffer.",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "d289f7a",
       "subject": "(1) gmail-draft.js: removed hardcoded text-only signature stub, now imports loadUserSignatures + wrapEmailBody from email-format.js, pulls real Gmail signature via sendAs API (same as cron path). Adde",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "fdabbf3",
       "subject": "(1) SignatureEditor: handles data:/blob:/cid: image refs, reads clipboardData.items for Gmail PNG attachments, manual upload fallback button. (2) Top nav: pill text contrast lifted from rgba(238,238,2",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "869873e",
       "subject": "(1) SignatureEditor: single contentEditable paste box. Paste your full Gmail/Apple Mail signature including images — base64 inline images auto-upload to Supabase Storage in background and src is rewri",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "bac1607",
       "subject": "(1) lift bg from #0D0D0F to #1C1C1F charcoal — better text contrast across all pages, (2) signature image upload: file picker uploads to Supabase Storage brand-assets/signatures/, returns public URL, ",
-      "when": "20 hours ago"
-    },
-    {
-      "hash": "119661b",
-      "subject": "Campaigns.jsx: Prospecting view with left rail (campaign list) + main table (one row per prospect: name, company, title, step, engagement, last action, next, status, actions). Real Supabase data, real",
       "when": "20 hours ago"
     }
   ]

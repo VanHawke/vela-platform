@@ -5,25 +5,88 @@ import Anthropic from '@anthropic-ai/sdk';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
+// ── Deterministic category-gap detector ──
+// Catches queries like "which sector should we target for Haas" / "what categories
+// are open" / "where's the best opportunity" — routes to /api/category-gaps which
+// queries f1_partnerships directly. ZERO LLM involvement = zero hallucination.
+const GAP_TRIGGERS = [
+  'which sector', 'which category', 'which categories', 'which sectors',
+  'what sector', 'what category', 'what categories', 'what sectors',
+  'which industry', 'which industries', 'what industry', 'what industries',
+  'where should we target', 'what should we target', 'who should we target',
+  'best opportunity', 'best opportunities', 'best sector', 'best category',
+  'category gap', 'category gaps', 'open category', 'open categories',
+  'open slot', 'open slots', 'open sector', 'open sectors',
+  'identify.*potential.*sector', 'identify.*potential.*category', 'identify.*industries',
+  'categor.*potential', 'sector.*target', 'gap analysis',
+];
+const F1_TEAM_ALIASES = {
+  'haas': 'haas', 'haas f1': 'haas',
+  'ferrari': 'ferrari', 'scuderia ferrari': 'ferrari',
+  'mercedes': 'mercedes', 'mercedes-amg': 'mercedes',
+  'mclaren': 'mclaren',
+  'red bull': 'red_bull', 'redbull': 'red_bull',
+  'williams': 'williams',
+  'aston martin': 'aston_martin',
+  'alpine': 'alpine',
+  'racing bulls': 'racing_bulls', 'rb': 'racing_bulls', 'visa cash app': 'racing_bulls',
+  'cadillac': 'cadillac',
+  'audi': 'audi', 'sauber': 'audi',
+};
+
+function detectCategoryGap(message) {
+  const lower = (message || '').toLowerCase();
+  // Must have a gap-trigger phrase
+  const hasTrigger = GAP_TRIGGERS.some(t => {
+    if (t.includes('.*')) return new RegExp(t, 'i').test(lower);
+    return lower.includes(t);
+  });
+  if (!hasTrigger) return null;
+  // Find team reference (optional — defaults to whichever team has most open slots)
+  let teamId = null;
+  const sortedTeams = Object.entries(F1_TEAM_ALIASES).sort((a, b) => b[0].length - a[0].length);
+  for (const [alias, tid] of sortedTeams) {
+    if (lower.includes(alias)) { teamId = tid; break; }
+  }
+  return { intent: 'category_gap', team: teamId };
+}
+
 // ── Deterministic navigation — no LLM needed ──
-const NAV_TRIGGERS = ['take me to', 'go to', 'open the', 'navigate to', 'switch to', 'pull up'];
+// Broader trigger set: includes short commands like "take me there" after a recent
+// campaign-redirect turn, plus generic "show me / bring up" phrasings.
+const NAV_TRIGGERS = [
+  'take me to', 'take me there', 'go to', 'open the', 'open campaigns', 'open pipeline',
+  'navigate to', 'switch to', 'pull up', 'bring up', 'show me', 'jump to', 'head to',
+];
 const PAGE_ALIASES = {
+  'campaign builder': 'campaigns', 'campaign page': 'campaigns', 'campaigns page': 'campaigns',
+  'campaigns': 'campaigns', 'campaign': 'campaigns', 'there': 'campaigns', // "take me there" after campaign redirect
   'pipeline': 'pipeline', 'deals': 'pipeline', 'deal pipeline': 'pipeline',
   'command centre': 'command-centre', 'command center': 'command-centre', 'outreach intelligence': 'command-centre',
   'contacts': 'contacts', 'people': 'contacts',
   'organisations': 'organisations', 'organizations': 'organisations', 'companies': 'organisations',
   'tasks': 'command-centre', 'to do': 'command-centre', 'todo': 'command-centre', 'task list': 'command-centre',
   'calendar': 'calendar', 'schedule': 'calendar', 'race calendar': 'calendar', 'races': 'calendar',
-  'partnership': 'strategy', 'partnership matrix': 'strategy', 'partnerships': 'strategy',
   'partnership matrix': 'partnership-matrix', 'matrix': 'partnership-matrix', 'partnerships': 'partnership-matrix',
-  'lemlist': 'lemlist', 'campaigns': 'lemlist',
-  'lemlist': 'lemlist', 'campaigns': 'lemlist',
+  'lemlist': 'lemlist',
   'home': 'home', 'dashboard': 'home', 'homepage': 'home',
   'settings': 'settings',
 };
 
-function detectNavigation(message) {
-  const lower = message.toLowerCase();
+function detectNavigation(message, conversationHistory = []) {
+  const lower = (message || '').toLowerCase().trim();
+  // Short commands like "take me there" / "go there" / "yes take me" after a
+  // recent campaign-redirect turn should navigate to /campaigns.
+  const shortNavPhrases = ['take me there', 'go there', 'yes take me', 'take me', 'there please', 'ok take me', 'yes go'];
+  if (shortNavPhrases.some(p => lower === p || lower === p + '.' || lower === p + '!')) {
+    // Check if the last assistant turn mentioned /campaigns
+    const lastAssistant = [...(conversationHistory || [])].reverse().find(m => m.role === 'assistant');
+    if (lastAssistant && /\/campaigns|campaign builder|⚡ build/i.test(lastAssistant.content || '')) {
+      return { intent: 'navigate', target: 'campaigns' };
+    }
+    // Default for bare "take me there" = campaigns (most common context)
+    return { intent: 'navigate', target: 'campaigns' };
+  }
   const hasNavTrigger = NAV_TRIGGERS.some(t => lower.includes(t));
   if (!hasNavTrigger) return null;
   // Sort by length descending — match "command centre" before "contacts"
@@ -68,9 +131,12 @@ INTENTS:
 
 Respond with ONLY the intent name. Nothing else.`;
 
-export async function classifyIntent(message, currentPage = 'home') {
+export async function classifyIntent(message, currentPage = 'home', conversationHistory = []) {
+  // Step 0: Deterministic category-gap detection — bypasses LLM entirely
+  const gap = detectCategoryGap(message);
+  if (gap) return { intent: 'category_gap', target: gap.team, confidence: 0.99, useMCP: false };
   // Step 1: Check deterministic navigation first (0ms)
-  const nav = detectNavigation(message);
+  const nav = detectNavigation(message, conversationHistory);
   if (nav) return nav;
 
   // Step 2: Quick keyword checks for common high-confidence intents (0ms)

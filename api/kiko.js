@@ -651,7 +651,7 @@ export default async function handler(req, res) {
     if (fastMatch) {
       classification = { intent: fastMatch[0], confidence: 0.99, useMCP: false };
     } else {
-      classification = await classifyIntent(message, currentPage);
+      classification = await classifyIntent(message, currentPage, conversationHistory);
     }
     const { intent, target } = classification;
 
@@ -689,6 +689,78 @@ export default async function handler(req, res) {
       return;
     }
 
+    // Handle deterministic category-gap analysis — no Claude needed
+    // Queries f1_partnerships + category_overlaps directly, returns formatted card.
+    // This replaces the hallucination-prone LLM path for "which sector should we target" queries.
+    if (intent === 'category_gap') {
+      write({ toolStatus: 'Analysing partnership matrix...' });
+      try {
+        const teamArg = target ? `?team=${encodeURIComponent(target)}` : '';
+        const base = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://vela-platform-one.vercel.app';
+        const gapRes = await fetch(`${base}/api/category-gaps${teamArg}`, {
+          method: 'GET',
+          headers: { 'content-type': 'application/json' },
+        });
+        const gapData = await gapRes.json();
+        write({ toolStatus: null });
+
+        // Format the response deterministically — no LLM creativity possible
+        let out = '';
+        if (target) {
+          // Team-specific response
+          const teamName = {
+            haas: 'Haas F1', ferrari: 'Ferrari', mercedes: 'Mercedes', mclaren: 'McLaren',
+            red_bull: 'Red Bull Racing', williams: 'Williams', aston_martin: 'Aston Martin',
+            alpine: 'Alpine', racing_bulls: 'Racing Bulls', cadillac: 'Cadillac F1', audi: 'Audi',
+          }[target] || target;
+          const open = gapData.open_categories || [];
+          if (open.length === 0) {
+            out = `${teamName} has no open category slots. Every sponsorship category has a conflict either directly or via overlap rules. Check /partnership-matrix for the full view.`;
+          } else {
+            // Sort by urgency: fewer open teams globally = higher urgency
+            const sorted = [...open].sort((a, b) => a.open_count - b.open_count);
+            out = `**${teamName} — Open Category Slots**\n\n`;
+            out += `Based on 374 verified F1 partnerships and 18 category-overlap rules, ${teamName} has ${open.length} open categories:\n\n`;
+            for (const cat of sorted.slice(0, 10)) {
+              const competitorCount = cat.blocked_teams.length;
+              const competitorSample = cat.blocked_teams.slice(0, 3).map(bt => {
+                const tName = { haas: 'Haas', ferrari: 'Ferrari', mercedes: 'Mercedes', mclaren: 'McLaren', red_bull: 'Red Bull', williams: 'Williams', aston_martin: 'Aston Martin', alpine: 'Alpine', racing_bulls: 'Racing Bulls', cadillac: 'Cadillac', audi: 'Audi' }[bt.team_id] || bt.team_id;
+                return `${tName} (${bt.partners[0]})`;
+              }).join(', ');
+              out += `• **${cat.category_name}** — ${competitorCount}/11 teams taken. Competitors: ${competitorSample || 'none'}${competitorCount > 3 ? ` +${competitorCount - 3} more` : ''}\n`;
+            }
+            out += `\n**Recommended:** ${sorted[0].category_name} — fewest open slots remaining (${sorted[0].open_count}/11 teams), highest urgency. `;
+            out += `\n\nTo launch: open /campaigns, click ⚡ Build, select ${sorted[0].category_name}, wait ~80 seconds. The builder will auto-pick the optimal team and source 50 targets.`;
+          }
+        } else {
+          // No team specified — show high-urgency categories across all teams
+          const cats = (gapData.categories || []).filter(c => c.open_count > 0).slice(0, 8);
+          out = `**F1 Category Gap Analysis** — based on 374 verified partnerships\n\n`;
+          out += `Highest urgency (fewest open slots):\n\n`;
+          for (const c of cats) {
+            const openNames = c.open_teams.map(t => ({ haas: 'Haas', ferrari: 'Ferrari', mercedes: 'Mercedes', mclaren: 'McLaren', red_bull: 'Red Bull', williams: 'Williams', aston_martin: 'Aston Martin', alpine: 'Alpine', racing_bulls: 'Racing Bulls', cadillac: 'Cadillac', audi: 'Audi' }[t] || t)).join(', ');
+            out += `• **${c.category_name}** — ${c.open_count}/11 teams open: ${openNames}\n`;
+          }
+          out += `\nTo launch a campaign: open /campaigns, click ⚡ Build, select a category. The builder picks the team automatically and sources 50 targets.`;
+        }
+
+        // Stream it in chunks so it feels like normal Kiko output
+        const chunks = out.match(/.{1,80}/g) || [out];
+        for (const chunk of chunks) write({ delta: chunk });
+        write({ meta: { done: true, model: 'deterministic', intent: 'category_gap', version: 'v16.1' } });
+        finished = true; clearTimeout(watchdog);
+        finishResponse();
+        return;
+      } catch (err) {
+        console.error('[category_gap] error:', err);
+        write({ delta: `Unable to query partnership matrix: ${err.message}. Try /partnership-matrix for the full view.` });
+        write({ meta: { done: true, intent: 'category_gap_error' } });
+        finished = true; clearTimeout(watchdog);
+        finishResponse();
+        return;
+      }
+    }
+
     // Handle screen description — live Supabase data, no stale pageContext
     if (intent === 'screen') {
       write({ toolStatus: 'Reading screen data...' });
@@ -700,7 +772,11 @@ export default async function handler(req, res) {
         model: MODEL, max_tokens: 600, system: screenSystem, messages,
       });
       for await (const event of screenStream) {
-        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') write({ delta: event.delta.text });
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+          const raw = event.delta.text || '';
+          const cleaned = raw.replace(/<\/?invoke[^>]*>/gi, '').replace(/<\/?parameter[^>]*>/gi, '').replace(/<\/?antml:\w+[^>]*>/gi, '');
+          if (cleaned.length > 0) write({ delta: cleaned });
+        }
       }
       write({ meta: { done: true, model: MODEL, intent: 'screen', version: 'v16.1' } });
       finished = true; clearTimeout(watchdog);
@@ -1100,7 +1176,11 @@ DEAL STAGE MAPPING:
         ? anthropic.beta.messages.stream(params)
         : anthropic.messages.stream(params);
       for await (const event of stream) {
-        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') { write({ delta: event.delta.text }); responseText += event.delta.text; }
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+          const raw = event.delta.text || '';
+          const cleaned = raw.replace(/<\/?invoke[^>]*>/gi, '').replace(/<\/?parameter[^>]*>/gi, '').replace(/<\/?antml:\w+[^>]*>/gi, '');
+          if (cleaned.length > 0) { write({ delta: cleaned }); responseText += cleaned; }
+        }
         if (event.type === 'content_block_delta' && event.delta?.type === 'thinking_delta') write({ thinking: event.delta.thinking });
       }
       return await stream.finalMessage();
