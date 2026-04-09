@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-08T20:06:19.123Z",
+  "generated_at": "2026-04-09T07:09:07.011Z",
   "commits": [
+    {
+      "hash": "0005172",
+      "subject": "Campaigns UI: ⚡ Build button + modal. Phases: idle (category dropdown) -> building (~80s loading) -> review (team, why, top 8 with DMs, exclusion stats) -> enrolling -> done. Calls /api/build-campaign",
+      "when": "11 hours ago"
+    },
     {
       "hash": "fb2b162",
       "subject": "build-campaign: fix sequence insert (target_persona not persona, surface error)",
-      "when": "12 minutes ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "a7e2df3",
       "subject": "DETERMINISTIC CAMPAIGN BUILDER — architecture rebuild after 3 failed prompt-engineering iterations.",
-      "when": "20 minutes ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "3ad2c7d",
       "subject": "Kiko campaign protocol enforcement v2: (1) source_companies bumped from 15-20 to 50, with hard exclusion against f1_partnerships table — Revolut and 405 other already-partnered companies are filtered ",
-      "when": "37 minutes ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "e270624",
       "subject": "FUNDAMENTAL FIX: Kiko was hallucinating F1 partnership status from training memory while ignoring the f1_partnerships database (406 active partnerships, Revolut/Audi confirmed since March 16). Three n",
-      "when": "46 minutes ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "df45b73",
       "subject": "(1) Wipe remaining conversation tables: conversations (187 rows), kiko_imported_conversations (384 rows), conversation_embeddings (389 orphaned vectors). Memory FULLY preserved: 1135 conversation_insi",
-      "when": "69 minutes ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "cd82e00",
       "subject": "KikoVoice: add inline prop. When inline=true, render as position:absolute inset:0 inside parent container instead of position:fixed createPortal fullscreen overlay. Smaller waveform (600x80 vs 1100x11",
-      "when": "77 minutes ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "353e79f",
       "subject": "(1) Contact name cleanup: stripped emoji + symbol prefixes from 31 contacts in DB. Names like '🚀 Briana' / 'Ogle' -> 'Briana' / 'Ogle'. Where firstName held the full name and lastName was just emoji,",
-      "when": "85 minutes ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "d828ca2",
       "subject": "(1) Home layout centred — top spacer 0.8->0.5, bottom 0.3->0.5, removed overflow:auto, added justifyContent:center, padding 20/24/40. Fixes iPad cut-off. (2) 5 dead pages deleted: Sequences.jsx, Calen",
-      "when": "3 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "6d4138a",
       "subject": "loadUserSignatures: match by sendAsEmail (alias) instead of always picking primary. Pass FROM_ADDRESS=sunny@vanhawke.agency from gmail-draft + cron-sequence-enqueue so we get the Van Hawke Agency sign",
-      "when": "3 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "27281f8",
       "subject": "gmail-draft: use canonical getGoogleToken helper instead of homegrown token refresh logic. Same path the cron uses successfully — auto-refreshes with 5min buffer.",
-      "when": "4 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "d289f7a",
       "subject": "(1) gmail-draft.js: removed hardcoded text-only signature stub, now imports loadUserSignatures + wrapEmailBody from email-format.js, pulls real Gmail signature via sendAs API (same as cron path). Adde",
-      "when": "4 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "fdabbf3",
       "subject": "(1) SignatureEditor: handles data:/blob:/cid: image refs, reads clipboardData.items for Gmail PNG attachments, manual upload fallback button. (2) Top nav: pill text contrast lifted from rgba(238,238,2",
-      "when": "5 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "869873e",
       "subject": "(1) SignatureEditor: single contentEditable paste box. Paste your full Gmail/Apple Mail signature including images — base64 inline images auto-upload to Supabase Storage in background and src is rewri",
-      "when": "5 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "bac1607",
       "subject": "(1) lift bg from #0D0D0F to #1C1C1F charcoal — better text contrast across all pages, (2) signature image upload: file picker uploads to Supabase Storage brand-assets/signatures/, returns public URL, ",
-      "when": "5 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "119661b",
       "subject": "Campaigns.jsx: Prospecting view with left rail (campaign list) + main table (one row per prospect: name, company, title, step, engagement, last action, next, status, actions). Real Supabase data, real",
-      "when": "6 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "018f9bc",
       "subject": "restore Campaigns.jsx (Lemlist-style left rail + main canvas) at /sequences and /campaigns routes. Rewired data layer from deleted /api/lemlist-data to direct Supabase queries against kiko_sequences/k",
-      "when": "6 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "4d1c0d0",
       "subject": "REVERT: roll frontend back to b04c353 (last working state). Removes all Block C theme work, preview routes, mass-conversion scripts. Backend (Bible, multi-task, learning loops, voice) stays intact.",
-      "when": "7 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "80c5f05",
       "subject": "fix: remove global * { margin/padding: 0 } reset that was nuking all Tailwind padding/margin utilities. Tailwind preflight handles resets correctly. This was the root cause of broken layout in HomePre",
-      "when": "7 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "411cbbd",
       "subject": "Block C preview: HomePreview.jsx mockup using canonical shadcn primitives — Card, Button, Tailwind classes only. Mounted at /preview/home (public route, no auth) for design sign-off before rebuilding ",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "15682e6",
-      "subject": "Block C: restore canonical shadcn primitives. card.jsx and button.jsx had been clobbered with inline-style versions — restored to forwardRef + cn() + Tailwind classes + cva variants. Required for prop",
-      "when": "7 hours ago"
+      "when": "18 hours ago"
     }
   ]
 }
