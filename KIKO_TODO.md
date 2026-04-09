@@ -4,68 +4,75 @@
 > Status: [ ] not started | [~] in progress | [x] verified working | [!] broken
 > "Verified" means I have concrete evidence (curl output, screenshot, SQL result).
 
-## P0 — Blocking Sunny's launch today
+## P0 — Blocking launch today
 
-- [x] `/api/build-campaign` honours `preferredTeam` — Haas request returns Haas, Mercedes request returns 409 blocked_by CrowdStrike. Verified via curl 2026-04-09.
-- [x] Cybersecurity ground truth: only Cadillac + Haas open. Verified via SQL.
-- [x] `/campaigns` page ⚡ Build modal has F1 team dropdown. Source verified.
-- [ ] End-to-end browser test: Sunny clicks Build with Haas selected, modal shows Haas review, enrols 8. NOT YET SCREENSHOTTED THIS SESSION.
+- [x] `/api/build-campaign` honours `preferredTeam` (verified curl: Haas→success, Mercedes→409)
+- [x] Cybersecurity ground truth: Cadillac + Haas only open (verified SQL)
+- [x] `/campaigns` modal has F1 Team dropdown (verified source line 556)
+- [ ] Sunny browser-tests Haas cybersecurity build end-to-end (NOT tested this session — session expired)
 
 ## P1 — Critical for trust
 
-- [~] Voice-in-chat fullscreen bug. Half-fixed (header no longer collapses). Inline voice panel still covers conversation pane via `inset: 0`. Needs bottom-dock styling.
-- [~] `<invoke>` XML sanitiser. Code shipped in streaming path + system prompt rule. Not yet caught a live hallucination in a test.
-- [x] Auto-pause SQL trigger applied to Supabase. NOT YET TESTED with a real INSERT.
-- [x] `/api/selfcheck` live — returns 9/10 passing, 1 coverage failure.
-- [x] `/api/cron-partner-reconcile` deployed. NOT YET RUN.
-- [x] `KIKO_SYSTEM_MAP.md` in repo.
-- [ ] `KIKO_TODO.md` (this file) in repo — NEW this turn.
+- [x] Auto-pause SQL trigger — VERIFIED working live: inserted fake `TEST_TRIGGER_SENTINEL_CORP`, alert fired with correct title + detail + metadata, cleaned up
+- [x] `/api/selfcheck` — VERIFIED 9/10 passing, coverage FAIL flagged 3 thin categories
+- [x] `/api/cron-partner-reconcile` — VERIFIED ran successfully, 8 new partnerships inserted (Mercedes +2, Cadillac +5, Racing Bulls +1)
+- [x] `KIKO_SYSTEM_MAP.md` in repo
+- [x] `KIKO_TODO.md` in repo (this file)
+- [~] Voice bottom-dock panel — deployed in bundle `CKuGi_pE`, NOT yet visually verified in browser
+- [~] `<invoke>` XML sanitiser — system prompt rule live, regex sanitiser NOT re-added (caused crash last time, need safer approach)
+
+## P1 — Critical bugs discovered this session
+
+- [!] 4 team partner pages return 404/wrong URL: Alpine, Williams, Haas, Audi. Cron-partner-reconcile can't fetch them.
+- [!] 3 team partner pages are JS-rendered SPAs with empty static HTML: Red Bull, Ferrari, McLaren. Need headless browser or direct RSS feed to scrape them.
+- [!] Thin categories unchanged by reconcile: semiconductors (3/11), logistics (4/11), legal (4/11). These need targeted manual research or different data source.
 
 ## P2 — Data completeness
 
-- [x] Cybersecurity category: 9 blocked teams + 2 open (Cadillac, Haas). Verified.
-- [ ] Energy: thin but not critical (selfcheck says has coverage but Haas-specific results look off)
-- [ ] Semiconductors: FAIL — only 3/11 teams have partner data. Reconcile cron should fix.
-- [ ] Logistics: FAIL — only 4/11 teams have partner data.
-- [ ] Legal: FAIL — only 4/11 teams have partner data.
-- [ ] Other 14 categories: not audited. Might have stale/missing/wrong data.
+- [x] Cybersecurity: 9 blocked teams + Cadillac/Haas open. Verified.
+- [x] Partnerships total: 385 active (up from 377)
+- [ ] Semiconductors: 3/11 teams only — 8 missing
+- [ ] Logistics: 4/11 — 7 missing
+- [ ] Legal: 4/11 — 7 missing
+- [ ] 44 rows still have NULL category_id (obscure brands)
+- [ ] 17 other categories: not audited for accuracy, only for coverage count
 
 ## P2 — Architectural
 
-- [ ] Schedule cron-partner-reconcile in vercel.json. Currently hits 38-cron ceiling — need to retire an unused cron first.
-- [ ] Bottom-dock voice panel styling (inside of P1 voice bug).
-- [ ] Deterministic handler for "tell me about company X" queries (hallucination-prone path).
-- [ ] Deterministic handler for "what's the status of deal Y" (queries deals table directly).
-- [ ] Refactor KikoChat.jsx (1400 lines) into smaller components.
-- [ ] Automated test suite for `/api/kiko` intent routing.
+- [ ] Fix 4 broken team partner page URLs (Alpine/Williams/Haas/Audi)
+- [ ] Headless browser approach for Red Bull/Ferrari/McLaren JS-rendered pages (or find alternative data source like press release RSS)
+- [ ] Schedule `cron-partner-reconcile` in vercel.json (hits 38-cron ceiling — retire unused cron first)
+- [ ] Re-add safer `<invoke>` sanitiser with null guards and local unit test
+- [ ] Deterministic handler for "tell me about company X" queries
+- [ ] Refactor KikoChat.jsx (1400 lines)
 
 ## P3 — Nice to have
 
-- [ ] Haas campaign `kiko_alerts` panel on home page.
-- [ ] Weekly email summary of new partnerships detected.
-- [ ] Campaign pause/resume history in `/campaigns` detail view.
+- [ ] Haas campaign `kiko_alerts` panel on home page
+- [ ] Weekly email summary of new partnerships detected
+- [ ] Campaign pause/resume history in `/campaigns` detail
 
-## Broken / stale notes
+## Session 2026-04-09 evidence log
 
-- Vercel cron ceiling hit at 38. Cannot add `cron-partner-reconcile` to vercel.json crons without retiring one.
-- 44 `f1_partnerships` rows still have NULL `category_id` (obscure brands, manual categorisation needed).
-- Voice fix discipline: shipped and reverted twice. Must actually browser-test after each deploy.
+**Verified with concrete evidence this session:**
 
-## Session 2026-04-09 summary
+| Claim | Evidence |
+|---|---|
+| Cybersecurity matrix correct | SQL: only Cadillac + Haas open, 9 others blocked with real partner names |
+| `/api/build-campaign` respects preferredTeam | Curl: Haas→200, Mercedes→409 blocked_by CrowdStrike |
+| `/api/selfcheck` returns 9/10 pass | Curl: JSON response 2350ms, lists each check |
+| Auto-pause trigger fires | SQL: INSERT → kiko_alerts row with `paused_campaigns: 0`, correct title/detail |
+| cron-partner-reconcile actually scrapes | Curl: 33s duration, 11 teams processed, 8 new partnerships, per-team stats |
+| partnerships count 377→385 | SQL: before/after counts |
+| Deleted software↔cybersecurity overlap | SQL: `no_software_cybersecurity_overlap` check passes |
+| Bundle deployed | 3 bundle hash changes verified via curl HTML grep |
 
-**What shipped this session (verified):**
-- `/api/selfcheck` live
-- `/api/cron-partner-reconcile` live (deployed, not yet run)
-- Auto-pause SQL trigger installed
-- `KIKO_SYSTEM_MAP.md` in repo
-- `build-campaign` preferredTeam logic (existed, verified live via curl)
-- Cybersecurity data reconciliation: McLaren/Aston Martin/Audi/Racing Bulls
-- Deleted software↔cybersecurity overlap rule
-- System prompt TOOL INVOCATION rule re-added without crashing function
+**NOT verified this session (honest gaps):**
+- Voice bottom-dock panel visual rendering (deployed but not screenshotted — session expired)
+- End-to-end browser flow for Haas Build
+- `<invoke>` sanitiser catching a real hallucination (only prompt rule live)
+- Fetch failures on 4 teams (URL 404s)
+- JS-rendered scraping for 3 teams (empty text extraction)
 
 **What I broke and fixed this session:**
-- `/api/kiko` crashed with FUNCTION_INVOCATION_FAILED after I added a sanitiser regex. Reverted, redeployed, kiko alive again.
-
-**What I claimed and couldn't deliver:**
-- Voice inline panel fix — still covers chat pane
-- End-to-end browser verification of the Haas Build flow
+- First auto-pause trigger referenced non-existent columns `kiko_sequences.team/category`. Fixed by joining through `campaign_targets`. Verified working.
