@@ -1,60 +1,65 @@
 {
-  "generated_at": "2026-04-09T12:15:06.918Z",
+  "generated_at": "2026-04-09T12:49:23.514Z",
   "commits": [
+    {
+      "hash": "a38555c",
+      "subject": "Ship Campaigns modal team selector (was in source already but needed redeploy). Modal has F1 team dropdown: 'Auto' default picks alphabetical first, or user can pick Haas/Cadillac/any team explicitly.",
+      "when": "34 minutes ago"
+    },
     {
       "hash": "8ebc6fb",
       "subject": "Blueprint + self-audit + proactive partner reconciliation: (1) KIKO_SYSTEM_MAP.md single source of truth — every table, endpoint, cron, deterministic vs LLM path documented. Every session starts by re",
-      "when": "23 minutes ago"
+      "when": "57 minutes ago"
     },
     {
       "hash": "5eca279",
       "subject": "category-gap: inline sbFetch instead of HTTP hop (preview URL has SSO auth, was returning HTML). Handler now builds overlap map, expands categories, filters blocked teams, formats response — all inlin",
-      "when": "78 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "f8a8115",
       "subject": "Deterministic category-gap analysis + nav fixes + sanitiser. (1) NEW /api/category-gaps endpoint queries f1_partnerships + category_overlaps (primary_category/blocking_category cols) directly — zero L",
-      "when": "83 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "6279055",
       "subject": "REVERT sanitiser regex (caused FUNCTION_INVOCATION_FAILED crash), keep system prompt TOOL INVOCATION rule only. Frontend fixes from previous commit (voice hasMessages gate, brighter icons) are untouch",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "ceb5f9b",
       "subject": "Batch fixes: (1) voice mic in conversation no longer collapses header or redirects to home (!hasMessages gate on kiko_voice_fullscreen event), (2) output sanitiser strips hallucinated <invoke>/<parame",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "9a331e2",
       "subject": "version: 0.0.0 -> 0.0.1 to bust Vercel build cache — previous deploys were serving stale bundle GHndoLhp despite new commits",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "e7b891c",
       "subject": "build: force rebuild to flush stale bundle (voice inline fix + chat redirect not in live bundle)",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "b77de72",
       "subject": "Chat campaign redirect: when user asks to create a campaign in chat, Kiko redirects to /campaigns page ⚡ Build button instead of attempting to run the 80s deterministic pipeline inline (which caused 1",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "0005172",
       "subject": "Campaigns UI: ⚡ Build button + modal. Phases: idle (category dropdown) -> building (~80s loading) -> review (team, why, top 8 with DMs, exclusion stats) -> enrolling -> done. Calls /api/build-campaign",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "fb2b162",
       "subject": "build-campaign: fix sequence insert (target_persona not persona, surface error)",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "a7e2df3",
       "subject": "DETERMINISTIC CAMPAIGN BUILDER — architecture rebuild after 3 failed prompt-engineering iterations.",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "3ad2c7d",
@@ -69,12 +74,12 @@
     {
       "hash": "df45b73",
       "subject": "(1) Wipe remaining conversation tables: conversations (187 rows), kiko_imported_conversations (384 rows), conversation_embeddings (389 orphaned vectors). Memory FULLY preserved: 1135 conversation_insi",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "cd82e00",
       "subject": "KikoVoice: add inline prop. When inline=true, render as position:absolute inset:0 inside parent container instead of position:fixed createPortal fullscreen overlay. Smaller waveform (600x80 vs 1100x11",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "353e79f",
@@ -84,22 +89,17 @@
     {
       "hash": "d828ca2",
       "subject": "(1) Home layout centred — top spacer 0.8->0.5, bottom 0.3->0.5, removed overflow:auto, added justifyContent:center, padding 20/24/40. Fixes iPad cut-off. (2) 5 dead pages deleted: Sequences.jsx, Calen",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "6d4138a",
       "subject": "loadUserSignatures: match by sendAsEmail (alias) instead of always picking primary. Pass FROM_ADDRESS=sunny@vanhawke.agency from gmail-draft + cron-sequence-enqueue so we get the Van Hawke Agency sign",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "27281f8",
       "subject": "gmail-draft: use canonical getGoogleToken helper instead of homegrown token refresh logic. Same path the cron uses successfully — auto-refreshes with 5min buffer.",
-      "when": "20 hours ago"
-    },
-    {
-      "hash": "d289f7a",
-      "subject": "(1) gmail-draft.js: removed hardcoded text-only signature stub, now imports loadUserSignatures + wrapEmailBody from email-format.js, pulls real Gmail signature via sendAs API (same as cron path). Adde",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     }
   ]
 }

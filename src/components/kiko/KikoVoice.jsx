@@ -290,7 +290,7 @@ RULES:
   // ── Render ──
   const voiceUI = (
     <div style={inline
-      ? { position: 'absolute', inset: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(28,28,31,0.96)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }
+      ? { position: 'absolute', left: 16, right: 16, bottom: 90, height: 180, zIndex: 10, display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', background: 'rgba(20,20,24,0.92)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderRadius: 16, border: '1px solid rgba(167,139,250,0.18)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }
       : { position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#1C1C1F' }
     }>
       {!inline && <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}><AuroraCanvas /></div>}
