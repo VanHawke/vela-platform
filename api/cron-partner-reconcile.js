@@ -9,25 +9,30 @@
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
 
-export const config = { maxDuration: 300 };
+export const config = { maxDuration: 800 };
 
 const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
 // Each team's official partners/sponsors page. These are the canonical sources.
+// URLs verified live 2026-04-09. Previous broken ones documented in git history.
 const TEAM_PARTNER_URLS = {
   red_bull: 'https://www.redbullracing.com/int-en/partners',
   ferrari: 'https://www.ferrari.com/en-EN/formula1/partners',
   mercedes: 'https://www.mercedesamgf1.com/partners',
   mclaren: 'https://www.mclaren.com/racing/partners/',
   aston_martin: 'https://www.astonmartinf1.com/en-GB/partners',
-  alpine: 'https://www.alpinecars.com/en/formula-1/partners/',
+  alpine: 'https://www.alpinef1.com/partners',
   williams: 'https://www.williamsf1.com/partners',
-  haas: 'https://www.haasf1team.com/team/partners',
+  haas: 'https://www.haasf1team.com/partners',
   racing_bulls: 'https://www.visacashapprb.com/en-GB/partners',
-  audi: 'https://www.audi.com/en/company/motorsport/formula-1/partners.html',
+  audi: 'https://www.sauber-group.com/motorsport/formula-1/partners/',
   cadillac: 'https://www.cadillacf1.com/partners',
 };
+
+// Fallback: when a team's official page is a JS-rendered SPA and returns near-empty static HTML,
+// use Claude Sonnet 4 with web_search to extract the current partner list.
+const JS_RENDERED_TEAMS = new Set(['red_bull', 'ferrari', 'mclaren']);
 
 const CATEGORIES = ['fintech','cloud','ai_data','cybersecurity','banking','energy','telecom','automotive','fashion','food_bev','watches','crypto','software','legal','hospitality','gaming','health','logistics','semiconductors','robotics'];
 
@@ -92,17 +97,83 @@ Return: []  if no partners found.`,
   }
 }
 
-async function reconcileTeam(teamId, url) {
-  const stats = { team_id: teamId, url, fetched: false, extracted: 0, new: 0, existing: 0, errors: [] };
+// Fallback: use Claude Sonnet 4 with web_search when scraping returns empty.
+// This is how we handle JS-rendered SPAs (Red Bull, Ferrari, McLaren).
+const TEAM_DISPLAY_NAMES = {
+  red_bull: 'Oracle Red Bull Racing',
+  ferrari: 'Scuderia Ferrari',
+  mclaren: 'McLaren F1 Team',
+  mercedes: 'Mercedes-AMG Petronas F1 Team',
+  aston_martin: 'Aston Martin Aramco F1 Team',
+  alpine: 'BWT Alpine F1 Team',
+  williams: 'Atlassian Williams Racing',
+  haas: 'MoneyGram Haas F1 Team',
+  racing_bulls: 'Visa Cash App Racing Bulls',
+  audi: 'Audi F1 Project (Sauber)',
+  cadillac: 'Cadillac F1 Team',
+};
 
-  const pageText = await fetchPageText(url);
-  if (!pageText) {
-    stats.errors.push('fetch_failed');
-    return stats;
+async function extractPartnersViaWebSearch(teamId) {
+  const teamName = TEAM_DISPLAY_NAMES[teamId] || teamId;
+  try {
+    const resp = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 3000,
+      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+      messages: [{
+        role: 'user',
+        content: `List every current 2026 official partner and sponsor of ${teamName} Formula 1 team. Search their official partners page, press releases, and recent news. Include title sponsor, principal partners, official partners, technical partners, and suppliers.
+
+Return ONLY a JSON array with no prose:
+[{"partner_name":"Clean brand name","category_id":"one of: ${CATEGORIES.join(', ')}","tier":"title|principal|official|technical|partner|supplier","confidence":0.0-1.0}]
+
+Rules:
+- Official brand name only (e.g. "Oracle" not "Oracle Corporation")
+- Pick the most specific category (CrowdStrike=cybersecurity, Salesforce=software, AWS=cloud)
+- confidence 0.9+ if confirmed via official source, 0.7-0.8 if inferred from reliable news
+- Exclude logo-level suppliers and historical (pre-2024) partners
+- Return empty array [] if nothing found`
+      }]
+    });
+    const textBlocks = resp.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const cleaned = textBlocks.replace(/```json|```/g, '').trim();
+    const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) return [];
+    const parsed = JSON.parse(jsonMatch[0]);
+    return Array.isArray(parsed) ? parsed.filter(p => p.confidence >= 0.7 && p.partner_name) : [];
+  } catch (err) {
+    console.error(`[reconcile] web_search fallback failed for ${teamId}:`, err.message);
+    return [];
   }
-  stats.fetched = true;
+}
 
-  const discovered = await extractPartnersFromText(teamId, pageText);
+async function reconcileTeam(teamId, url) {
+  const stats = { team_id: teamId, url, fetched: false, extracted: 0, new: 0, existing: 0, via: 'none', errors: [] };
+
+  let discovered = [];
+
+  // Phase 1: try direct page scrape (unless we know it's JS-rendered)
+  if (!JS_RENDERED_TEAMS.has(teamId)) {
+    const pageText = await fetchPageText(url);
+    if (pageText) {
+      stats.fetched = true;
+      discovered = await extractPartnersFromText(teamId, pageText);
+    } else {
+      stats.errors.push('fetch_failed');
+    }
+  }
+
+  // Phase 2: if we got nothing (fetch failed, JS-rendered, or empty extraction), fall back to web_search
+  if (discovered.length === 0) {
+    const viaSearch = await extractPartnersViaWebSearch(teamId);
+    if (viaSearch.length > 0) {
+      discovered = viaSearch;
+      stats.via = 'web_search';
+    }
+  } else {
+    stats.via = 'page_scrape';
+  }
+
   stats.extracted = discovered.length;
   if (discovered.length === 0) return stats;
 
@@ -128,7 +199,7 @@ async function reconcileTeam(teamId, url) {
       tier: p.tier || 'partner',
       status: 'active',
       source_url: url,
-      notes: `Auto-detected by cron-partner-reconcile (confidence ${p.confidence})`,
+      notes: `Auto-detected by cron-partner-reconcile via ${stats.via} (confidence ${p.confidence})`,
       verified: true,
       last_verified_at: new Date().toISOString(),
     });

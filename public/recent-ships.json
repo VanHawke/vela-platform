@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-09T15:11:18.931Z",
+  "generated_at": "2026-04-09T15:39:42.697Z",
   "commits": [
+    {
+      "hash": "84860d3",
+      "subject": "Option C audit complete + ea.js expires_at fix. (1) Read all 4829 lines of kiko-tools.js + 26 agent files line-by-line. (2) Found and fixed second expires_at bug in ea.js morningBrief — same pattern a",
+      "when": "28 minutes ago"
+    },
     {
       "hash": "51a4b55",
       "subject": "Master audit + partner-reconcile cron scheduled. (1) KIKO_MASTER_LOG.md: full audit of 123 API files (all syntactically valid), 138 Supabase tables, 38->39 crons, 20-category live matrix, 29 routes, 6",
-      "when": "75 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "32ab6be",
       "subject": "KIKO_TODO.md session 2026-04-09 evidence log — what's verified vs what's gaps",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "7639944",
       "subject": "KIKO_TODO.md + voice inline bottom-dock panel. (1) KIKO_TODO.md — living checklist read at session start, updated at session end. P0/P1/P2/P3 tasks with evidence status. (2) KikoVoice inline mode: cha",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "a38555c",
@@ -24,17 +29,17 @@
     {
       "hash": "8ebc6fb",
       "subject": "Blueprint + self-audit + proactive partner reconciliation: (1) KIKO_SYSTEM_MAP.md single source of truth — every table, endpoint, cron, deterministic vs LLM path documented. Every session starts by re",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "5eca279",
       "subject": "category-gap: inline sbFetch instead of HTTP hop (preview URL has SSO auth, was returning HTML). Handler now builds overlap map, expands categories, filters blocked teams, formats response — all inlin",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "f8a8115",
       "subject": "Deterministic category-gap analysis + nav fixes + sanitiser. (1) NEW /api/category-gaps endpoint queries f1_partnerships + category_overlaps (primary_category/blocking_category cols) directly — zero L",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "6279055",
@@ -44,7 +49,7 @@
     {
       "hash": "ceb5f9b",
       "subject": "Batch fixes: (1) voice mic in conversation no longer collapses header or redirects to home (!hasMessages gate on kiko_voice_fullscreen event), (2) output sanitiser strips hallucinated <invoke>/<parame",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "9a331e2",
@@ -59,22 +64,22 @@
     {
       "hash": "b77de72",
       "subject": "Chat campaign redirect: when user asks to create a campaign in chat, Kiko redirects to /campaigns page ⚡ Build button instead of attempting to run the 80s deterministic pipeline inline (which caused 1",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "0005172",
       "subject": "Campaigns UI: ⚡ Build button + modal. Phases: idle (category dropdown) -> building (~80s loading) -> review (team, why, top 8 with DMs, exclusion stats) -> enrolling -> done. Calls /api/build-campaign",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "fb2b162",
       "subject": "build-campaign: fix sequence insert (target_persona not persona, surface error)",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "a7e2df3",
       "subject": "DETERMINISTIC CAMPAIGN BUILDER — architecture rebuild after 3 failed prompt-engineering iterations.",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "3ad2c7d",
@@ -89,16 +94,11 @@
     {
       "hash": "df45b73",
       "subject": "(1) Wipe remaining conversation tables: conversations (187 rows), kiko_imported_conversations (384 rows), conversation_embeddings (389 orphaned vectors). Memory FULLY preserved: 1135 conversation_insi",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "cd82e00",
       "subject": "KikoVoice: add inline prop. When inline=true, render as position:absolute inset:0 inside parent container instead of position:fixed createPortal fullscreen overlay. Smaller waveform (600x80 vs 1100x11",
-      "when": "20 hours ago"
-    },
-    {
-      "hash": "353e79f",
-      "subject": "(1) Contact name cleanup: stripped emoji + symbol prefixes from 31 contacts in DB. Names like '🚀 Briana' / 'Ogle' -> 'Briana' / 'Ogle'. Where firstName held the full name and lastName was just emoji,",
       "when": "21 hours ago"
     }
   ]
