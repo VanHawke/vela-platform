@@ -265,11 +265,16 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const hasVoiceMessages = voiceMessages.length > 0
 
   // Start voice mode — don't pre-acquire mic, let KikoVoice handle it
+  // If already in a conversation, voice stays INLINE inside the conversation pane.
+  // Only on the home page does it take over the full screen.
   const startVoice = async () => {
     setVoiceActive(true)
     setVoiceMessages([])
-    // Tell Layout to hide header for full-screen voice
-    window.dispatchEvent(new CustomEvent('kiko_voice_fullscreen', { detail: { active: true } }))
+    // Only collapse the top header when voice is in fullscreen home mode,
+    // NOT when voice is inline inside a conversation
+    if (!hasMessages) {
+      window.dispatchEvent(new CustomEvent('kiko_voice_fullscreen', { detail: { active: true } }))
+    }
   }
 
   // Stop voice mode — save transcript to history, return to homepage
@@ -1025,14 +1030,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         {!streaming && (
           <div style={{ display: 'flex', gap: 2, alignItems: 'center', marginTop: 6, justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
             {/* Timestamp */}
-            <span style={{ fontSize: 11, color: 'rgba(167,139,250,0.15)', fontFamily: C.font, marginRight: 4 }}>
+            <span style={{ fontSize: 11, color: 'rgba(238,238,238,0.4)', fontFamily: C.font, marginRight: 4 }}>
               {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''}
             </span>
             {(() => {
               const abtn = (onClick, title, children) => (
-                <button onClick={onClick} title={title} style={{ width: 28, height: 28, borderRadius: 6, background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(167,139,250,0.2)', transition: 'all 0.12s', padding: 0 }}
-                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(167,139,250,0.06)'; e.currentTarget.style.color = 'rgba(238,238,238,0.55)' }}
-                  onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(167,139,250,0.2)' }}
+                <button onClick={onClick} title={title} style={{ width: 28, height: 28, borderRadius: 6, background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(238,238,238,0.55)', transition: 'all 0.12s', padding: 0 }}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(167,139,250,0.1)'; e.currentTarget.style.color = 'rgba(238,238,238,0.9)' }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(238,238,238,0.55)' }}
                 >{children}</button>
               )
               const iconSz = { width: 14, height: 14, stroke: 'currentColor', fill: 'none', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }

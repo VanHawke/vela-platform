@@ -362,6 +362,8 @@ If the user has already run the builder and wants to discuss results, you CAN ca
 
 SELF-CORRECTION: If you call a tool and the result doesn't fully answer the question, call another tool. Don't stop short. If you searched the CRM and found nothing, search the web. If you drafted an email and it needs contact details, look them up. Complete the task.
 
+TOOL INVOCATION — ABSOLUTE RULE: NEVER write `<invoke>`, `<parameter>`, or any tool-use XML as text in your response. Real tool calls happen via the tool mechanism — they are invisible to you as text. If you want to navigate, use the actual navigate tool. If you want to query data, use the actual data tool. Typing tool-call XML as message text is a bug and produces broken output the user will see. Just describe what you're doing in natural language ("Taking you to campaigns now.") and let the tool system handle the actual call.
+
 ERROR HANDLING: If an agent returns an error, explain the agent failed and what went wrong. Do NOT attempt to handle the task yourself — you are a coordinator, not an executor. Say "The [Agent Name] hit an error: [details]. Let me know if you want me to try again."
 
 CURRENT PAGE: {currentPage}`;
@@ -698,7 +700,13 @@ export default async function handler(req, res) {
         model: MODEL, max_tokens: 600, system: screenSystem, messages,
       });
       for await (const event of screenStream) {
-        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') write({ delta: event.delta.text });
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+          const cleaned = event.delta.text
+            .replace(/<\/?invoke[^>]*>/gi, '')
+            .replace(/<\/?parameter[^>]*>/gi, '')
+            .replace(/<\/?antml:\w+[^>]*>/gi, '');
+          if (cleaned) write({ delta: cleaned });
+        }
       }
       write({ meta: { done: true, model: MODEL, intent: 'screen', version: 'v16.1' } });
       finished = true; clearTimeout(watchdog);
@@ -1098,7 +1106,16 @@ DEAL STAGE MAPPING:
         ? anthropic.beta.messages.stream(params)
         : anthropic.messages.stream(params);
       for await (const event of stream) {
-        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') { write({ delta: event.delta.text }); responseText += event.delta.text; }
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+          // Sanitise: strip hallucinated tool-call XML that models sometimes emit as text.
+          // Real tool calls never come through text_delta — they arrive as separate tool_use blocks.
+          // So any <invoke>/<parameter> tags in text output ARE hallucinations and should be suppressed.
+          const cleaned = event.delta.text
+            .replace(/<\/?invoke[^>]*>/gi, '')
+            .replace(/<\/?parameter[^>]*>/gi, '')
+            .replace(/<\/?antml:\w+[^>]*>/gi, '');
+          if (cleaned) { write({ delta: cleaned }); responseText += cleaned; }
+        }
         if (event.type === 'content_block_delta' && event.delta?.type === 'thinking_delta') write({ thinking: event.delta.thinking });
       }
       return await stream.finalMessage();
