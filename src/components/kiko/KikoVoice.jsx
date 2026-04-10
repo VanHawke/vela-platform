@@ -316,7 +316,7 @@ RULES:
 
   // ── Render — always fullscreen now ──
   const voiceUI = (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#1C1C1F' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#262624' }}>
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}><AuroraCanvas /></div>
 
       {/* X close */}

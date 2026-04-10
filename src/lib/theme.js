@@ -1,7 +1,7 @@
 // Vela — Clean Dark Theme (matching mockup renders)
 // Flat surfaces · Subtle borders · Clean typography · Minimal glass
 // Updated 2026-04-10 to use Claude.ai warm-dark palette per Sunny's request.
-// Previous: cool grey #1C1C1F (too dark, hard to read).
+// Previous: cool grey #262624 (too dark, hard to read).
 // New: warm near-black #262624 — same family as Claude.ai canvas, slight beige tint.
 
 export const T = {
@@ -122,7 +122,7 @@ export const T = {
 
 // Glass helper — clean flat panel (matching mockup renders)
 export const glass = {
-  background: '#141416',
+  background: '#1F1F1D',
   border: `0.5px solid rgba(255,255,255,0.06)`,
   borderTop: `0.5px solid rgba(255,255,255,0.08)`,
   borderRadius: T.radius,
@@ -132,7 +132,7 @@ export const glass = {
 
 // Glass hover helper
 export const glassHover = {
-  background: '#1A1A1E',
+  background: '#2C2C2A',
   borderColor: 'rgba(255,255,255,0.10)',
   boxShadow: '0 2px 8px rgba(0,0,0,0.35)',
 }

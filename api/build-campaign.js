@@ -11,6 +11,10 @@
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
 
+// CRITICAL: Pro plan default is 60s. Build does CRM queries + auto-draft Claude
+// + web_search Claude — easily exceeds 60s. Set to 300s (Pro max).
+export const config = { maxDuration: 300 };
+
 const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
@@ -379,20 +383,29 @@ async function sourceFromCRM(category, exclusionSet, maxCompanies = 30) {
     return !exclusionSet.has(name);
   });
 
-  // 3. For each eligible company, find sponsorship-relevant contacts
+  // 3. For each eligible company, find sponsorship-relevant contacts IN PARALLEL
+  // Was sequential (30 companies × ~50ms = 1.5s plus client overhead), now Promise.all
+  const contactResults = await Promise.all(
+    eligible.slice(0, maxCompanies).map(async (company) => {
+      const companyName = company.data?.name || '';
+      if (!companyName) return null;
+      const { data: contacts } = await supabase
+        .from('contacts')
+        .select('id, data, last_verified_at, still_at_company, verified_title')
+        .filter('data->>company', 'ilike', companyName)
+        .limit(20);
+      return { company, companyName, contacts: contacts || [] };
+    })
+  );
+
   const results = [];
-  for (const company of eligible.slice(0, maxCompanies)) {
-    const companyName = company.data?.name || '';
-    if (!companyName) continue;
-    const { data: contacts } = await supabase
-      .from('contacts')
-      .select('id, data, last_verified_at, still_at_company, verified_title')
-      .filter('data->>company', 'ilike', companyName)
-      .limit(20);
+  for (const item of contactResults) {
+    if (!item) continue;
+    const { company, companyName, contacts } = item;
 
     // Quality filter: must have a real email, first+last name, and relevant title
     // Also EXCLUDES anyone we already verified as moved/left the company.
-    const scoredContacts = (contacts || [])
+    const scoredContacts = contacts
       .filter(ct => {
         const d = ct.data || {};
         if (!d.email || !d.email.includes('@')) return false;  // No email = no contact

@@ -3,14 +3,37 @@
 // Loads voice profile learned from user's actual sent emails
 
 export function wrapEmailBody(body, { contactStatus = 'cold', signature = '', coldSignature = '' } = {}) {
-  const cleanBody = (body || '')
-    .replace(/Best regards,?\s*Sunny\s*(Sidhu)?/gi, '')
-    .replace(/Kind regards,?\s*Sunny\s*(Sidhu)?/gi, '')
-    .replace(/Regards,?\s*Sunny\s*(Sidhu)?/gi, '')
-    .replace(/Sincerely,?\s*Sunny\s*(Sidhu)?/gi, '')
-    .replace(/\n\s*Van Hawke.*$/gim, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
+  // Aggressive sign-off stripping. Drafts should NEVER include a name/title/sig
+  // because the user's Gmail signature is auto-appended at send time. Multiple
+  // layers because LLMs sometimes ignore the prompt instruction.
+  let cleanBody = (body || '').trim();
+
+  // Layer 1: cut at any sign-off opener line if found (everything after is signature block)
+  // This catches the WHOLE sign-off block including all lines that follow
+  const signOffOpener = /\n\s*(Best regards|Kind regards|Warm regards|Best wishes|Regards|Sincerely|Cheers|Thanks(?: again)?|Thank you|All the best|Yours sincerely|Yours truly|Speak soon|Talk soon|Best,|Cheers,)[\s,.]*(\n|$)/i;
+  const m = cleanBody.match(signOffOpener);
+  if (m) cleanBody = cleanBody.slice(0, m.index).trimEnd();
+
+  // Layer 2: strip any trailing lines that look like name/title/company (defensive)
+  // Iterate from the end, drop lines until we hit a real content line
+  const lines = cleanBody.split('\n');
+  while (lines.length > 0) {
+    const last = lines[lines.length - 1].trim();
+    if (!last) { lines.pop(); continue; }  // empty trailing
+    // Trailing line patterns to strip
+    if (/^(sunny\s*sidhu|sunny\b)$/i.test(last)) { lines.pop(); continue; }
+    if (/^(ceo|founder|founder\s*&\s*(principal|ceo)|principal|chief\s+\w+\s+officer)\s*[,.]?\s*van\s*hawke/i.test(last)) { lines.pop(); continue; }
+    if (/^(ceo|founder|founder\s*&\s*(principal|ceo)|principal)\s*[,.]?\s*$/i.test(last)) { lines.pop(); continue; }
+    if (/^van\s*hawke\b/i.test(last)) { lines.pop(); continue; }
+    if (/^—+\s*sunny/i.test(last)) { lines.pop(); continue; }
+    // No more match — stop trimming
+    break;
+  }
+  cleanBody = lines.join('\n').trimEnd();
+
+  // Layer 3: collapse triple newlines
+  cleanBody = cleanBody.replace(/\n{3,}/g, '\n\n').trim();
+
   const htmlBody = cleanBody
     .split('\n\n')
     .map(p => `<p style="margin:0 0 12px 0">${p.replace(/\n/g, '<br>')}</p>`)

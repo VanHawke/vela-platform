@@ -1,25 +1,35 @@
 {
-  "generated_at": "2026-04-10T15:30:52.944Z",
+  "generated_at": "2026-04-10T16:03:43.919Z",
   "commits": [
+    {
+      "hash": "3241c0e",
+      "subject": "master log: A0c session — v0.0.19 → v0.0.23 (Phase 1-5 + CRM-first sourcing + verification gate + timezone sender)",
+      "when": "27 minutes ago"
+    },
+    {
+      "hash": "71731b5",
+      "subject": "v0.0.23 — Phase 3 Command Centre alignment + Phase 5 timezone-aware sender (true 24h)",
+      "when": "32 minutes ago"
+    },
     {
       "hash": "7b1a853",
       "subject": "v0.0.22 — Verify+Activate UI buttons + Claude.ai warm dark palette + clean test data",
-      "when": "16 minutes ago"
+      "when": "49 minutes ago"
     },
     {
       "hash": "47c5b48",
       "subject": "v0.0.21 — CRM-first sourcing + freshness verification + sign-off fix + no caps",
-      "when": "33 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "4da830c",
       "subject": "v0.0.20 — Phase 2a/2b/2e — campaigns paused by default + auto-draft + title in prospects",
-      "when": "67 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "c4cf6b6",
       "subject": "v0.0.20 — Phase 2 campaign builder safety + auto-draft + UX",
-      "when": "80 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "9256e1c",
@@ -34,22 +44,22 @@
     {
       "hash": "8b15dcb",
       "subject": "v0.0.18 — brief deterministic short-circuit (morning brief banner now actually appears)",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "eb40426",
       "subject": "v0.0.17 — company lookup endpoint + morning brief system health surfacing + dashboard cron dedup",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "a9010f1",
       "subject": "v0.0.16 — fix cron-selfcheck-watcher env var (VITE_SUPABASE_URL)",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "9ac6791",
       "subject": "v0.0.15 — hourly selfcheck watcher with auto-alert + auto-resolve",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "70d2304",
@@ -59,7 +69,7 @@
     {
       "hash": "b5ec52f",
       "subject": "URGENT COST FIX: ignoreCommand skips builds for doc-only commits",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "c441835",
@@ -74,7 +84,7 @@
     {
       "hash": "6f0b2e0",
       "subject": "master log: session A0 — voice refactor, identity fix, enroll bug, heartbeat evidence (17/18 PASS)",
-      "when": "21 hours ago"
+      "when": "22 hours ago"
     },
     {
       "hash": "80e7883",
@@ -90,16 +100,6 @@
       "hash": "48ecb7e",
       "subject": "P1: deploy cron-partner-reconcile with corrected URLs (Alpine, Williams, Haas, Audi) + web_search fallback for JS-rendered teams (Red Bull, Ferrari, McLaren). maxDuration bumped to 800s for web_search",
       "when": "24 hours ago"
-    },
-    {
-      "hash": "84860d3",
-      "subject": "Option C audit complete + ea.js expires_at fix. (1) Read all 4829 lines of kiko-tools.js + 26 agent files line-by-line. (2) Found and fixed second expires_at bug in ea.js morningBrief — same pattern a",
-      "when": "24 hours ago"
-    },
-    {
-      "hash": "51a4b55",
-      "subject": "Master audit + partner-reconcile cron scheduled. (1) KIKO_MASTER_LOG.md: full audit of 123 API files (all syntactically valid), 138 Supabase tables, 38->39 crons, 20-category live matrix, 29 routes, 6",
-      "when": "26 hours ago"
     }
   ]
 }

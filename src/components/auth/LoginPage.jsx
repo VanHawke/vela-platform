@@ -53,7 +53,7 @@ export default function LoginPage() {
     fontFamily: T.font, fontWeight: 300, transition: 'all 0.2s',
   }
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100vw', height: '100vh', background: '#1C1C1F', fontFamily: T.font, position: 'relative', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100vw', height: '100vh', background: '#262624', fontFamily: T.font, position: 'relative', overflow: 'hidden' }}>
       <AuroraCanvas />
 
       {/* Ambient glow behind waveform */}
