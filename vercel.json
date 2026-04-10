@@ -1,4 +1,10 @@
 {
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
+  "ignoreCommand": "bash -c 'git diff HEAD^ HEAD --quiet ./src ./api ./public ./package.json ./package-lock.json ./vite.config.js ./vercel.json'",
   "crons": [
     {
       "path": "/api/cron-enrich",
