@@ -49,6 +49,38 @@ function sanitizeUnicode(str) {
   return result;
 }
 
+// Strip leaked tool XML from streaming text deltas + detect navigation tags.
+// Returns { cleaned, navigateTo } — if LLM wrote <navigate_page>X</navigate_page>
+// as prose instead of calling the tool, we intercept, strip it, and return
+// navigateTo so the caller fires write({ navigate: X }).
+//
+// Handles single-chunk cases. For multi-chunk leaks, the buffer on the caller
+// side is responsible (pendingXmlBuffer pattern used in the streaming loops below).
+function stripToolXml(raw) {
+  if (!raw || typeof raw !== 'string') return { cleaned: raw || '', navigateTo: null };
+  let navigateTo = null;
+  let out = raw;
+
+  // Intercept <navigate_page>X</navigate_page> — fire navigation, strip from text
+  out = out.replace(/<navigate_page>\s*\/?([a-z0-9\-_/]+)\s*<\/navigate_page>/gi, (_m, page) => {
+    if (!navigateTo) navigateTo = page.replace(/^\//, '');
+    return '';
+  });
+
+  // Strip any leaked <tool_use>/<invoke>/<parameter>/<*> blocks
+  out = out.replace(/<\/?invoke[^>]*>/gi, '');
+  out = out.replace(/<\/?parameter[^>]*>/gi, '');
+  out = out.replace(/<\/?antml:\w+[^>]*>/gi, '');
+  out = out.replace(/<\/?tool_use[^>]*>/gi, '');
+  out = out.replace(/<\/?function_call[^>]*>/gi, '');
+  // Generic tool-ish pattern: <snake_case_name>...</snake_case_name> on a single line
+  out = out.replace(/<([a-z][a-z0-9_]*)>[^<\n]{0,120}<\/\1>/gi, '');
+  // Stray open/close tags of known tool-ish names
+  out = out.replace(/<\/?(navigate_page|ask_kiko|ask_data_agent|ask_ea_agent|ask_strategy_agent|close_voice|fetch_tool|call_tool)[^>]*>/gi, '');
+
+  return { cleaned: out, navigateTo };
+}
+
 // Phase 8: Learning Loop — log decisions for pattern matching
 const DECISION_TOOLS = ['ask_strategy_agent', 'ask_deal_agent', 'ask_negotiation_agent', 'ask_pricing_agent', 'ask_investment_agent'];
 
@@ -365,6 +397,8 @@ If the user has already run the builder and wants to discuss results, you CAN ca
 SELF-CORRECTION: If you call a tool and the result doesn't fully answer the question, call another tool. Don't stop short. If you searched the CRM and found nothing, search the web. If you drafted an email and it needs contact details, look them up. Complete the task.
 
 TOOL INVOCATION ABSOLUTE RULE: NEVER type tool-use XML as text in your response. When you want to use a tool, the tool mechanism handles it — tool calls are invisible to you as text. If you find yourself writing angle-bracket tool tags in your reply, that is a bug. Use the actual tool mechanism or describe what you are doing in plain English.
+
+NAVIGATION RULE — CRITICAL: When the user says "take me there", "open X", "navigate to X", "go to X" — you MUST call the ask_navigator tool with the page name. DO NOT write "<navigate_page>/x</navigate_page>" or any XML tag as text. If you type it, it will NOT navigate — you will just be writing words. Either call the real tool via the tool_use mechanism, or respond in plain English explaining how to navigate manually. NEVER EVER write angle-bracket tags as prose.
 
 ERROR HANDLING: If an agent returns an error, explain the agent failed and what went wrong. Do NOT attempt to handle the task yourself — you are a coordinator, not an executor. Say "The [Agent Name] hit an error: [details]. Let me know if you want me to try again."
 
@@ -842,7 +876,8 @@ export default async function handler(req, res) {
       for await (const event of screenStream) {
         if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
           const raw = event.delta.text || '';
-          const cleaned = raw.replace(/<\/?invoke[^>]*>/gi, '').replace(/<\/?parameter[^>]*>/gi, '').replace(/<\/?antml:\w+[^>]*>/gi, '');
+          const { cleaned, navigateTo } = stripToolXml(raw);
+          if (navigateTo) write({ navigate: navigateTo });
           if (cleaned.length > 0) write({ delta: cleaned });
         }
       }
@@ -1243,13 +1278,29 @@ DEAL STAGE MAPPING:
       const stream = isSuperAdmin
         ? anthropic.beta.messages.stream(params)
         : anthropic.messages.stream(params);
+      let xmlBuffer = '';  // accumulates raw text until safe to flush (handles cross-chunk navigate_page tags)
       for await (const event of stream) {
         if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-          const raw = event.delta.text || '';
-          const cleaned = raw.replace(/<\/?invoke[^>]*>/gi, '').replace(/<\/?parameter[^>]*>/gi, '').replace(/<\/?antml:\w+[^>]*>/gi, '');
-          if (cleaned.length > 0) { write({ delta: cleaned }); responseText += cleaned; }
+          xmlBuffer += event.delta.text || '';
+          // Flush when we have a safe cut point (no open angle bracket in last 40 chars) or buffer is large
+          const openBracket = xmlBuffer.lastIndexOf('<');
+          const safeCut = openBracket === -1 ? xmlBuffer.length : openBracket;
+          if (xmlBuffer.length > 500 || (safeCut > 0 && xmlBuffer.length - safeCut < 2)) {
+            const flushable = xmlBuffer.slice(0, safeCut || xmlBuffer.length);
+            xmlBuffer = xmlBuffer.slice(safeCut || xmlBuffer.length);
+            const { cleaned, navigateTo } = stripToolXml(flushable);
+            if (navigateTo) write({ navigate: navigateTo });
+            if (cleaned.length > 0) { write({ delta: cleaned }); responseText += cleaned; }
+          }
         }
         if (event.type === 'content_block_delta' && event.delta?.type === 'thinking_delta') write({ thinking: event.delta.thinking });
+      }
+      // Final flush of whatever is left in the buffer
+      if (xmlBuffer.length > 0) {
+        const { cleaned, navigateTo } = stripToolXml(xmlBuffer);
+        if (navigateTo) write({ navigate: navigateTo });
+        if (cleaned.length > 0) { write({ delta: cleaned }); responseText += cleaned; }
+        xmlBuffer = '';
       }
       return await stream.finalMessage();
     }

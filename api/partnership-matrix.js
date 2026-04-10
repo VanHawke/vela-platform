@@ -24,8 +24,20 @@ export default async function handler(req, res) {
       for (const cat of (categories || [])) { matrix[team.id].categories[cat.id] = []; }
     }
     for (const p of (partnerships || [])) {
-      if (matrix[p.team_id] && p.category_id) {
+      if (!matrix[p.team_id]) continue;
+      // Index under primary category_id
+      if (p.category_id && matrix[p.team_id].categories[p.category_id]) {
         matrix[p.team_id].categories[p.category_id].push(p);
+      }
+      // ALSO index under related_categories — e.g. RebelDot is software but also cybersecurity
+      // This is why Racing Bulls was incorrectly showing as "no cybersecurity partner"
+      if (Array.isArray(p.related_categories)) {
+        for (const rc of p.related_categories) {
+          if (rc === p.category_id) continue;  // already added above
+          if (matrix[p.team_id].categories[rc]) {
+            matrix[p.team_id].categories[rc].push(p);
+          }
+        }
       }
     }
 
@@ -43,8 +55,15 @@ export default async function handler(req, res) {
   if (action === 'gaps') {
     const { data: teams } = await supabase.from('f1_teams').select('id, name').order('sort_order');
     const { data: categories } = await supabase.from('sponsor_categories').select('id, name').order('sort_order');
-    const { data: partnerships } = await supabase.from('f1_partnerships').select('team_id, category_id').eq('status', 'active');
-    const filled = new Set((partnerships || []).map(p => `${p.team_id}:${p.category_id}`));
+    const { data: partnerships } = await supabase.from('f1_partnerships').select('team_id, category_id, related_categories').eq('status', 'active');
+    // Honor related_categories — a partner tagged as both software + cybersecurity fills BOTH slots
+    const filled = new Set();
+    for (const p of (partnerships || [])) {
+      if (p.category_id) filled.add(`${p.team_id}:${p.category_id}`);
+      if (Array.isArray(p.related_categories)) {
+        for (const rc of p.related_categories) filled.add(`${p.team_id}:${rc}`);
+      }
+    }
     const gaps = [];
     for (const t of (teams || [])) {
       for (const c of (categories || [])) {

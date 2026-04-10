@@ -67,7 +67,10 @@ export default function OutreachIntelligence({ user }) {
       const now = new Date()
       const actions = (dealsRes.data || []).map(deal => {
         const d = deal.data || {}
-        const daysSinceUpdate = Math.floor((now - new Date(deal.updated_at)) / 86400000)
+        // Use deal.data.lastActivity (business-logic) not row updated_at (any edit bumps this)
+        // This is why Decagon showed 16d instead of the real 271d stale.
+        const activityDate = deal.data?.lastActivity ? new Date(deal.data.lastActivity) : new Date(deal.updated_at)
+        const daysSinceUpdate = Math.floor((now - activityDate) / 86400000)
         const stage = d.stage || 'Unknown'
         const stageProb = { 'To revisit': 10, 'Contact made': 20, 'Qualified': 35, 'In Dialogue': 50, 'Meeting arranged (brand x RH)': 55, 'Proposal Sent': 60, 'Negotiation': 70, 'Verbal Agreement': 85, 'Contract Review': 92 }
         const prob = stageProb[stage] || 10
@@ -175,7 +178,9 @@ Be direct. Use web search for current company intelligence if needed.`
   const stageProb = { 'To revisit': 10, 'Contact made': 20, 'Qualified': 35, 'In Dialogue': 50, 'Meeting arranged (brand x RH)': 55, 'Proposal Sent': 60, 'Negotiation': 70, 'Verbal Agreement': 85, 'Contract Review': 92 }
   const priorityActions = deals.map(deal => {
     const d = deal.data || {}
-    const daysSinceUpdate = Math.floor((now - new Date(deal.updated_at)) / 86400000)
+    // Prefer deal.data.lastActivity (business activity) over row updated_at (edit timestamp)
+    const activityDate = deal.data?.lastActivity ? new Date(deal.data.lastActivity) : new Date(deal.updated_at)
+    const daysSinceUpdate = Math.floor((now - activityDate) / 86400000)
     const stage = d.stage || 'Unknown'
     const prob = stageProb[stage] || 10
     const value = parseFloat(d.value) || 0

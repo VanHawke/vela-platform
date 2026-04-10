@@ -90,7 +90,13 @@ export default function PartnershipMatrix({ user }) {
 
   const getTeamPartners = useCallback((teamId) => partnerships.filter(p => p.team_id === teamId), [partnerships])
   const getTeamGaps = useCallback((teamId) => {
-    const filled = new Set(getTeamPartners(teamId).map(p => p.category_id))
+    // Honor related_categories so overlap-tagged partners count toward the filled set
+    const tp = getTeamPartners(teamId)
+    const filled = new Set()
+    for (const p of tp) {
+      if (p.category_id) filled.add(p.category_id)
+      if (Array.isArray(p.related_categories)) p.related_categories.forEach(rc => filled.add(rc))
+    }
     return categories.filter(c => !filled.has(c.id))
   }, [categories, getTeamPartners])
 
@@ -179,7 +185,12 @@ export default function PartnershipMatrix({ user }) {
               <tbody>
                 {filteredTeams.map(team => {
                   const tp = getTeamPartners(team.id)
-                  const filledCats = new Set(tp.map(p => p.category_id))
+                  // Honor related_categories — e.g. RebelDot is category_id=software but also cybersecurity
+                  const filledCats = new Set()
+                  for (const p of tp) {
+                    if (p.category_id) filledCats.add(p.category_id)
+                    if (Array.isArray(p.related_categories)) p.related_categories.forEach(rc => filledCats.add(rc))
+                  }
                   const gapCount = filteredCats.filter(c => !filledCats.has(c.id)).length
                   return (
                     <tr key={team.id} style={{ borderBottom: `1px solid ${T.border}` }}>

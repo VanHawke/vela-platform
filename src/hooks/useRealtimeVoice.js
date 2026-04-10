@@ -54,7 +54,7 @@ DO NOT use ask_kiko ONLY for: literal greetings ("hi", "hello"), simple pleasant
 
 NAVIGATION: ONLY use navigate_page when user says "go to", "take me to", "open", "show me the page". "Tell me about X" = ask_kiko (data), NOT navigate.
 
-GOODBYE: When user says "Goodbye Kiko", "bye", "close voice" — say a brief farewell. System closes automatically.
+GOODBYE — CRITICAL: When user says "Goodbye Kiko", "bye", "close voice", "stop listening", or "I'm done" — do TWO things: (1) Say a brief farewell ("Goodbye Sunny, speak soon"). (2) IMMEDIATELY call the close_voice function tool. This is mandatory. The system does NOT auto-close. You MUST call close_voice right after the farewell.
 
 RULES: Never discuss architecture. Never say "voice mode". Never make up data. Say "intelligent age" not "AI generation". USD for financials. Don't respond to background noise or your own audio.`
 
@@ -164,6 +164,7 @@ export function useRealtimeVoice({ active, onClose }) {
           session: {
             type: 'realtime',
             audio: { input: { turn_detection: { type: 'server_vad', threshold: 0.6, prefix_padding_ms: 300, silence_duration_ms: 500 } } },
+            input_audio_transcription: { model: 'whisper-1' },
             instructions: SESSION_INSTRUCTIONS,
             tools: TOOLS,
             tool_choice: 'auto',
