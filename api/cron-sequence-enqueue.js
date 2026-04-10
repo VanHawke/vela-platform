@@ -393,40 +393,36 @@ export default async function handler(req, res) {
         // ═══ TIMEZONE-AWARE SEND TIMING ═══
         // Target: 9-10am in the prospect's local timezone for maximum open rate
         // Best days: Tue-Thu (highest open rates), Mon/Fri acceptable, never Sat/Sun
-        // NOTE: Vercel runs in UTC. setHours() therefore writes UTC. We compute the UTC
+        // NOTE: Vercel runs in UTC. setUTCHours() writes UTC. We compute the UTC
         // hour that corresponds to 9-10am in the prospect's local zone.
+        // The sender cron now runs every hour Mon-Fri (was 8am-6pm UK), so we
+        // no longer clamp to UK working hours — prospects in Tokyo/Sydney/SF
+        // get scheduled at their actual 9-10am local, picked up by the next
+        // hourly sender tick.
         const prospectTz = getTimezoneOffset(enrollment.company, ci, enrollment.contact_email);
-        const ukOffsetHours = isDST(now) ? 1 : 0; // BST = UTC+1 (used only for UK clamp window)
         // Target 9-10am in PROSPECT local timezone
         const targetLocalHour = 9 + (Math.random() > 0.5 ? 1 : 0); // 9 or 10am local
         const targetMinute = Math.floor(Math.random() * 45) + 5; // 5-50 min (looks natural)
         // Convert prospect local time to UTC: UTC = local - prospectTz
-        // (ET is -5, so 10am ET = 15 UTC. UK is 0, so 10am GMT = 10 UTC; 10am BST = 9 UTC)
         let targetUTC = targetLocalHour - prospectTz;
-        // For UK in summer (BST), local 10am = 9 UTC, so subtract BST offset for UK prospects
-        if (prospectTz === 0) targetUTC -= ukOffsetHours;
-        // Compute the UK clock-hour this UTC corresponds to (for the working-window clamp below)
-        const ukClockHour = targetUTC + ukOffsetHours;
-        
+        // Wrap into 0-23 if negative or >24
+        let dayOffset = 0;
+        while (targetUTC < 0) { targetUTC += 24; dayOffset -= 1; }
+        while (targetUTC >= 24) { targetUTC -= 24; dayOffset += 1; }
+
         let sendAt = new Date(now);
-        // Clamp to UK working window 8am-6pm (we operate from UK, sender cron only fires 8-18 UK)
-        let finalUTC = targetUTC;
-        if (ukClockHour < 8) finalUTC = 8 - ukOffsetHours;   // bump to UK 08:00
-        if (ukClockHour > 18) finalUTC = 17 - ukOffsetHours; // pull back to UK 17:00
-        // If finalUTC ends up negative or >24, wrap into next day appropriately
-        if (finalUTC < 0) { finalUTC += 24; sendAt.setDate(sendAt.getDate() + 1); }
-        if (finalUTC >= 24) { finalUTC -= 24; sendAt.setDate(sendAt.getDate() + 1); }
-        sendAt.setUTCHours(finalUTC, targetMinute, 0, 0);
-        // Skip weekends — move to next Tue-Thu
-        const day = sendAt.getDay();
-        if (day === 0) sendAt.setDate(sendAt.getDate() + 2); // Sun → Tue
-        else if (day === 6) sendAt.setDate(sendAt.getDate() + 3); // Sat → Tue
+        if (dayOffset !== 0) sendAt.setUTCDate(sendAt.getUTCDate() + dayOffset);
+        sendAt.setUTCHours(targetUTC, targetMinute, 0, 0);
+        // Skip weekends in PROSPECT local time — move to next Tue
+        const localDay = new Date(sendAt.getTime() + prospectTz * 3600000).getUTCDay();
+        if (localDay === 0) sendAt.setUTCDate(sendAt.getUTCDate() + 2); // Sun → Tue
+        else if (localDay === 6) sendAt.setUTCDate(sendAt.getUTCDate() + 3); // Sat → Tue
         // If window already passed today, push to tomorrow (still skip weekends)
         if (sendAt < now) {
-          sendAt.setDate(sendAt.getDate() + 1);
-          const newDay = sendAt.getDay();
-          if (newDay === 0) sendAt.setDate(sendAt.getDate() + 1);
-          if (newDay === 6) sendAt.setDate(sendAt.getDate() + 2);
+          sendAt.setUTCDate(sendAt.getUTCDate() + 1);
+          const newLocalDay = new Date(sendAt.getTime() + prospectTz * 3600000).getUTCDay();
+          if (newLocalDay === 0) sendAt.setUTCDate(sendAt.getUTCDate() + 1);
+          if (newLocalDay === 6) sendAt.setUTCDate(sendAt.getUTCDate() + 2);
         }
 
         // Queue the email

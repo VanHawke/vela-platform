@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-10T15:14:15.390Z",
+  "generated_at": "2026-04-10T15:30:52.944Z",
   "commits": [
+    {
+      "hash": "7b1a853",
+      "subject": "v0.0.22 — Verify+Activate UI buttons + Claude.ai warm dark palette + clean test data",
+      "when": "16 minutes ago"
+    },
     {
       "hash": "47c5b48",
       "subject": "v0.0.21 — CRM-first sourcing + freshness verification + sign-off fix + no caps",
-      "when": "16 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "4da830c",
       "subject": "v0.0.20 — Phase 2a/2b/2e — campaigns paused by default + auto-draft + title in prospects",
-      "when": "51 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "c4cf6b6",
       "subject": "v0.0.20 — Phase 2 campaign builder safety + auto-draft + UX",
-      "when": "63 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "9256e1c",
@@ -59,7 +64,7 @@
     {
       "hash": "c441835",
       "subject": "v0.0.13 — refine-with-feedback loop for sequence drafting",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "6147ec1",
@@ -74,12 +79,12 @@
     {
       "hash": "80e7883",
       "subject": "v0.0.11 — voice refactor + identity fast-path + enroll fix + cron heartbeat",
-      "when": "21 hours ago"
+      "when": "22 hours ago"
     },
     {
       "hash": "06f22d1",
       "subject": "P1/P2 — selfcheck v2 (19 checks), clean stale data, Nowu rows removed. (1) selfcheck expanded from 10 to 19 checks: null_category, anthropic_key, supabase_key, cron_heartbeats_24h, error_budget, activ",
-      "when": "23 hours ago"
+      "when": "24 hours ago"
     },
     {
       "hash": "48ecb7e",
@@ -94,11 +99,6 @@
     {
       "hash": "51a4b55",
       "subject": "Master audit + partner-reconcile cron scheduled. (1) KIKO_MASTER_LOG.md: full audit of 123 API files (all syntactically valid), 138 Supabase tables, 38->39 crons, 20-category live matrix, 29 routes, 6",
-      "when": "25 hours ago"
-    },
-    {
-      "hash": "32ab6be",
-      "subject": "KIKO_TODO.md session 2026-04-09 evidence log — what's verified vs what's gaps",
       "when": "26 hours ago"
     }
   ]

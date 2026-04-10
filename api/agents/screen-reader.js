@@ -78,20 +78,69 @@ async function describeOrganisations() {
 }
 
 async function describeCommandCentre() {
-  const deals = await sbFetch('deals?select=data&data->>status=eq.active&limit=100');
+  // Mirror EXACTLY what OutreachIntelligence.jsx renders for the priority list,
+  // so when Sunny is on /command-centre and asks "what should I prioritize",
+  // the answer matches the visible top 5, not a generic deals digest.
+  // CRITICAL: use data.lastActivity (real business activity) not row updated_at
+  // (which bumps on any field edit and is meaningless — was the Decagon 16-day bug).
+  const [deals, tasks] = await Promise.all([
+    sbFetch('deals?select=id,data,updated_at&data->>status=eq.active&limit=200'),
+    sbFetch('tasks?select=data&order=updated_at.desc&limit=30'),
+  ]);
   const active = deals || [];
-  let totalWeighted = 0;
-  let staleCount = 0;
-  const topDeals = [];
-  for (const d of active) {
+  const now = Date.now();
+
+  // Score deals same way OutreachIntelligence.jsx does
+  const scoredDeals = active.map(d => {
     const data = d.data || {};
-    const prob = STAGE_PROB[data.stage] || 0.1;
-    totalWeighted += (data.value || 0) * prob;
-    const last = data.lastActivity ? new Date(data.lastActivity) : null;
-    if (last && (Date.now() - last) > 30 * 86400000) staleCount++;
-    if (topDeals.length < 5) topDeals.push(`${data.company} (${data.stage}, ${data.contactName || '?'})`);
+    const stage = data.stage || 'lead';
+    const prob = STAGE_PROB[stage] || 0.1;
+    const value = data.value || 0;
+    const weightedValue = value * prob;
+    const activityDate = data.lastActivity ? new Date(data.lastActivity) : new Date(d.updated_at);
+    const daysSinceUpdate = Math.floor((now - activityDate) / 86400000);
+    const isStale = daysSinceUpdate > 30;
+    const urgency = daysSinceUpdate > 30 ? 3 : daysSinceUpdate > 14 ? 2 : daysSinceUpdate > 7 ? 1 : 0;
+    const actionType = isStale ? 'Re-engage' : daysSinceUpdate > 14 ? 'Follow-up' : daysSinceUpdate > 7 ? 'Touch base' : 'Active';
+    // priorityScore matches OutreachIntelligence: weightedValue * (1 + urgency)
+    const priorityScore = weightedValue * (1 + urgency);
+    return { company: data.company || '?', contact: data.contactName || data.contact || '?', stage, value, weightedValue, daysSinceUpdate, isStale, urgency, actionType, priorityScore };
+  }).sort((a, b) => b.priorityScore - a.priorityScore);
+
+  const topPriority = scoredDeals.slice(0, 5);
+  const totalWeighted = scoredDeals.reduce((s, d) => s + d.weightedValue, 0);
+  const staleCount = scoredDeals.filter(d => d.isStale).length;
+
+  // Tasks (overdue + due today)
+  const outstanding = (tasks || []).filter(t => !t.data?.completed);
+  const overdue = outstanding.filter(t => t.data?.dueDate && new Date(t.data.dueDate) < new Date());
+  const dueToday = outstanding.filter(t => {
+    if (!t.data?.dueDate) return false;
+    return new Date(t.data.dueDate).toDateString() === new Date().toDateString();
+  });
+
+  // Build the response — this is what you SEE on the page right now, in priority order
+  const lines = [];
+  lines.push(`COMMAND CENTRE — VISIBLE PRIORITY LIST (top of page, sorted by weighted value × urgency)`);
+  lines.push('');
+  lines.push(`Stats: ${active.length} active deals | ${fmt(totalWeighted)} weighted pipeline | ${staleCount} stale (>30d) | ${overdue.length} overdue tasks | ${dueToday.length} due today`);
+  lines.push('');
+  lines.push('ACT ON THESE FIRST (top 5 priority actions exactly as the user sees them on screen):');
+  topPriority.forEach((d, i) => {
+    lines.push(`  ${i + 1}. ${d.company}${d.contact !== '?' ? ' — ' + d.contact : ''}: ${d.stage}, $${(d.value / 1000).toFixed(0)}k, ${d.daysSinceUpdate}d since real activity, action: ${d.actionType}${d.isStale ? ' [STALE]' : ''}`);
+  });
+  if (overdue.length > 0) {
+    lines.push('');
+    lines.push(`OVERDUE TASKS (${overdue.length} total):`);
+    overdue.slice(0, 5).forEach(t => {
+      const d = t.data || {};
+      const days = Math.floor((Date.now() - new Date(d.dueDate)) / 86400000);
+      lines.push(`  • ${d.type || 'task'}: ${d.notes || d.title || 'no description'}${d.company ? ' (' + d.company + ')' : ''} — ${days}d overdue`);
+    });
   }
-  return `COMMAND CENTRE — ${active.length} active deals | ${fmt(totalWeighted)} weighted | ${staleCount} stale (30d+)\n\nTop deals:\n${topDeals.map(d => `  • ${d}`).join('\n')}`;
+  lines.push('');
+  lines.push(`When the user asks "what should I prioritize" on this page, the answer is the top 5 priority actions ABOVE — already sorted by weighted value × urgency. Use those exact deals in that exact order. Reference companies and contacts BY NAME from this list.`);
+  return lines.join('\n');
 }
 
 async function describeTasks() {

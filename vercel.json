@@ -144,7 +144,7 @@
     },
     {
       "path": "/api/cron-sequence-sender",
-      "schedule": "*/30 8-18 * * 1-5"
+      "schedule": "0 * * * 1-5"
     },
     {
       "path": "/api/cron-sequence-reply-detect",

@@ -144,6 +144,19 @@ export async function classifyIntent(message, currentPage = 'home', conversation
   if (/^(hi|hey|hello|good morning|good evening|thanks|thank you|bye|goodbye)\b/i.test(lower)) return { intent: 'general' };
   if (lower.includes('brief me') || lower.includes('morning brief') || lower === 'brief') return { intent: 'brief' };
   if (lower.includes('what am i looking at') || lower.includes('what\'s on screen') || lower.includes('where am i') || lower.includes('describe this page')) return { intent: 'screen' };
+
+  // Command Centre fast-path — when on /command-centre, priority/focus questions
+  // MUST route to screen intent so describeCommandCentre's visible priority list
+  // is fed into the prompt. Otherwise the LLM defaults to a generic deals digest
+  // and ignores the on-page priority order Sunny actually sees.
+  if (currentPage === 'command-centre' || currentPage === 'outreach-intelligence') {
+    if (
+      /\b(prioriti[sz]e|priorities|focus|act on|tackle|do (today|first|next)|what should i|where (do i|should i) start|first thing|biggest|top \d|act first|hot|urgent)\b/i.test(message) ||
+      /^(brief|brief me|status|status update)$/i.test(message.trim())
+    ) {
+      return { intent: 'screen' };
+    }
+  }
   if (lower.includes('correspondence with') || lower.includes('last email') || lower.includes('email from') || lower.includes('email to') || lower.includes('emails from') || lower.includes('emails to') || lower.includes('check my email') || lower.includes('check my inbox') || lower.includes('unread email')) return { intent: 'email_read' };
 
   // Knowledge management shortcuts (includes agent creation)
