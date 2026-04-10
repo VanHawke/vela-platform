@@ -101,6 +101,13 @@ async function morningBrief() {
   // ── SOURCE 6: Pipeline notifications ──
   const unreadNotifs = (pipelineNotifs || []).filter(n => !n.is_read);
 
+  // ── SOURCE 7: System health failures (highest priority — always surfaced at top) ──
+  // The selfcheck-watcher cron writes these hourly. Surface them BEFORE the synthesised
+  // narrative so they can never be buried by Claude's prose. If anything is broken at
+  // the system level, Sunny needs to see it first thing.
+  const selfcheckFails = (alerts || []).filter(a => a.type === 'selfcheck_fail');
+  const otherAlerts = (alerts || []).filter(a => a.type !== 'selfcheck_fail');
+
   // ══════ SYNTHESISE VIA CLAUDE (not a formatted list) ══════
   // Also pull recent decisions from learning log for context
   let recentDecisions = [];
@@ -130,7 +137,7 @@ async function morningBrief() {
     momentum: recentMoves.slice(0,5).map(m => ({ company: movedDealNames[m.deal_id] || '?', from: m.from_stage, to: m.to_stage })),
     hotLeads: hotLeads.slice(0,5).map(h => ({ name: h.recipient_name || h.recipient_email, company: h.company })),
     dealSignals: dealSignals.slice(0,5).map(s => ({ title: s.title, companies: (s.matched_companies||[]).map(c => c.name||c) })),
-    alerts: (alerts||[]).slice(0,5).map(a => ({ severity: a.severity, title: a.title, entity: a.entity_name })),
+    alerts: (otherAlerts||[]).slice(0,5).map(a => ({ severity: a.severity, title: a.title, entity: a.entity_name })),
     notifications: unreadNotifs.slice(0,3).map(n => ({ type: n.type, title: n.title })),
     recentDecisions: recentDecisions.slice(0,3).map(d => ({ entity: d.entity_name, content: (d.content||'').slice(0,100), date: d.created_at })),
     pendingDraftActions: (Array.isArray(draftActions) ? draftActions : []).slice(0,3).map(d => ({ type: d.action_type, entity: d.payload?.entity, action: d.payload?.suggested_action })),
@@ -159,10 +166,34 @@ RULES:
 - All values in USD.`,
       messages: [{ role: 'user', content: briefData }],
     });
-    return briefResponse.content[0]?.text || 'Brief generation failed — data was gathered but synthesis errored.';
+    const briefText = briefResponse.content[0]?.text || 'Brief generation failed — data was gathered but synthesis errored.';
+
+    // Prepend SYSTEM HEALTH banner if any selfcheck failures exist (always at top, never buried)
+    if (selfcheckFails.length > 0) {
+      const lines = [];
+      lines.push('🚨 **SYSTEM HEALTH — ATTENTION REQUIRED**');
+      lines.push('');
+      lines.push(`${selfcheckFails.length} system check${selfcheckFails.length === 1 ? '' : 's'} ${selfcheckFails.length === 1 ? 'is' : 'are'} failing. The hourly watcher detected ${selfcheckFails.length === 1 ? 'this' : 'these'} since the last successful run:`);
+      lines.push('');
+      for (const fail of selfcheckFails.slice(0, 5)) {
+        lines.push(`• **${fail.title || fail.entity_name || 'Unknown check'}**${fail.detail ? ` — ${fail.detail.slice(0, 140)}` : ''}`);
+      }
+      lines.push('');
+      lines.push('_Open `/admin/system` to investigate. These alerts auto-resolve when the check passes again._');
+      lines.push('');
+      lines.push('---');
+      lines.push('');
+      return lines.join('\n') + briefText;
+    }
+
+    return briefText;
   } catch (err) {
     // Fallback: return raw data summary if Claude fails
-    return `BRIEF DATA (synthesis unavailable): ${outstanding.length} tasks (${overdue.length} overdue), ${allDeals.length} deals (${fmt(totalWeighted)} weighted), ${hotLeads.length} hot leads, ${dealSignals.length} signals, ${(alerts||[]).length} alerts. Error: ${err.message}`;
+    const fallbackBrief = `BRIEF DATA (synthesis unavailable): ${outstanding.length} tasks (${overdue.length} overdue), ${allDeals.length} deals (${fmt(totalWeighted)} weighted), ${hotLeads.length} hot leads, ${dealSignals.length} signals, ${(otherAlerts||[]).length} alerts. Error: ${err.message}`;
+    if (selfcheckFails.length > 0) {
+      return `🚨 SYSTEM HEALTH: ${selfcheckFails.length} check${selfcheckFails.length === 1 ? '' : 's'} failing — open /admin/system to investigate.\n\n${fallbackBrief}`;
+    }
+    return fallbackBrief;
   }
 }
 

@@ -1,6 +1,16 @@
 {
-  "generated_at": "2026-04-10T09:25:33.796Z",
+  "generated_at": "2026-04-10T10:09:58.854Z",
   "commits": [
+    {
+      "hash": "a9010f1",
+      "subject": "v0.0.16 — fix cron-selfcheck-watcher env var (VITE_SUPABASE_URL)",
+      "when": "39 minutes ago"
+    },
+    {
+      "hash": "9ac6791",
+      "subject": "v0.0.15 — hourly selfcheck watcher with auto-alert + auto-resolve",
+      "when": "44 minutes ago"
+    },
     {
       "hash": "70d2304",
       "subject": "v0.0.14 — Admin system control room (/admin/system)",
@@ -9,7 +19,7 @@
     {
       "hash": "b5ec52f",
       "subject": "URGENT COST FIX: ignoreCommand skips builds for doc-only commits",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "c441835",
@@ -24,7 +34,7 @@
     {
       "hash": "6f0b2e0",
       "subject": "master log: session A0 — voice refactor, identity fix, enroll bug, heartbeat evidence (17/18 PASS)",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "80e7883",
@@ -39,17 +49,17 @@
     {
       "hash": "48ecb7e",
       "subject": "P1: deploy cron-partner-reconcile with corrected URLs (Alpine, Williams, Haas, Audi) + web_search fallback for JS-rendered teams (Red Bull, Ferrari, McLaren). maxDuration bumped to 800s for web_search",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "84860d3",
       "subject": "Option C audit complete + ea.js expires_at fix. (1) Read all 4829 lines of kiko-tools.js + 26 agent files line-by-line. (2) Found and fixed second expires_at bug in ea.js morningBrief — same pattern a",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "51a4b55",
       "subject": "Master audit + partner-reconcile cron scheduled. (1) KIKO_MASTER_LOG.md: full audit of 123 API files (all syntactically valid), 138 Supabase tables, 38->39 crons, 20-category live matrix, 29 routes, 6",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "32ab6be",
@@ -64,7 +74,7 @@
     {
       "hash": "a38555c",
       "subject": "Ship Campaigns modal team selector (was in source already but needed redeploy). Modal has F1 team dropdown: 'Auto' default picks alphabetical first, or user can pick Haas/Cadillac/any team explicitly.",
-      "when": "21 hours ago"
+      "when": "22 hours ago"
     },
     {
       "hash": "8ebc6fb",
@@ -74,7 +84,7 @@
     {
       "hash": "5eca279",
       "subject": "category-gap: inline sbFetch instead of HTTP hop (preview URL has SSO auth, was returning HTML). Handler now builds overlap map, expands categories, filters blocked teams, formats response — all inlin",
-      "when": "22 hours ago"
+      "when": "23 hours ago"
     },
     {
       "hash": "f8a8115",
@@ -84,22 +94,12 @@
     {
       "hash": "6279055",
       "subject": "REVERT sanitiser regex (caused FUNCTION_INVOCATION_FAILED crash), keep system prompt TOOL INVOCATION rule only. Frontend fixes from previous commit (voice hasMessages gate, brighter icons) are untouch",
-      "when": "23 hours ago"
+      "when": "24 hours ago"
     },
     {
       "hash": "ceb5f9b",
       "subject": "Batch fixes: (1) voice mic in conversation no longer collapses header or redirects to home (!hasMessages gate on kiko_voice_fullscreen event), (2) output sanitiser strips hallucinated <invoke>/<parame",
       "when": "24 hours ago"
-    },
-    {
-      "hash": "9a331e2",
-      "subject": "version: 0.0.0 -> 0.0.1 to bust Vercel build cache — previous deploys were serving stale bundle GHndoLhp despite new commits",
-      "when": "26 hours ago"
-    },
-    {
-      "hash": "e7b891c",
-      "subject": "build: force rebuild to flush stale bundle (voice inline fix + chat redirect not in live bundle)",
-      "when": "26 hours ago"
     }
   ]
 }

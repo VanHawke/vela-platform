@@ -54,14 +54,23 @@ export default function AdminSystem() {
       ])
       setStats({ partnerships, nullCat, sequences, enrollments, queuedEmails, linkedinQueue, activeAlerts, contacts, organisations, deals })
 
-      // 3. Recent cron heartbeats (last 24h, most recent 15)
-      const { data: hbData } = await supabase
+      // 3. Recent cron heartbeats — most recent run PER cron (deduped by cron_name)
+      // Otherwise jobs-worker dominates the feed (288 runs/day at every-5-min)
+      // Pull last 200 raw rows then dedupe in JS to keep one row per cron_name.
+      const { data: hbRaw } = await supabase
         .from('kiko_cron_heartbeats')
-        .select('cron_name, status, started_at, duration_ms, records_processed, error_message')
+        .select('cron_name, status, started_at, finished_at, duration_ms, records_processed, error_message')
         .gte('started_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
         .order('started_at', { ascending: false })
-        .limit(15)
-      setHeartbeats(hbData || [])
+        .limit(200)
+      const seenCrons = new Set()
+      const dedupedHb = []
+      for (const row of (hbRaw || [])) {
+        if (seenCrons.has(row.cron_name)) continue
+        seenCrons.add(row.cron_name)
+        dedupedHb.push(row)
+      }
+      setHeartbeats(dedupedHb)
 
       // 4. Recent errors (last 24h, most recent 10)
       const { data: errData } = await supabase
@@ -209,7 +218,7 @@ export default function AdminSystem() {
 
       {/* ═══ CRON ACTIVITY ═══ */}
       <div style={card}>
-        <div style={cardHeader}><Clock size={12} /><span>Cron Activity (last 24h · {heartbeats.length} events)</span></div>
+        <div style={cardHeader}><Clock size={12} /><span>Cron Activity (last 24h · {heartbeats.length} unique crons · most recent run per cron)</span></div>
         {heartbeats.length === 0 ? (
           <div style={{ fontSize: 11, color: T.textTertiary, fontStyle: 'italic' }}>No cron activity in the last 24 hours.</div>
         ) : (

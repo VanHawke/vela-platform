@@ -6,6 +6,7 @@ import { TOOL_DEFINITIONS, executeTool, fetchEntityContext, sbFetch, logError } 
 import { classifyIntent, INTENT_TO_AGENT } from './agents/intent-classifier.js';
 import { generateSelfKnowledge } from './kiko-self-knowledge.js';
 import { describeScreen } from './agents/screen-reader.js';
+import { lookupCompany } from './company-lookup.js';
 
 export const config = { supportsResponseStreaming: true, maxDuration: 120, api: { bodyParser: { sizeLimit: '12mb' } } };
 
@@ -764,6 +765,38 @@ export default async function handler(req, res) {
         console.error('[category_gap] error:', err);
         write({ delta: `Unable to query partnership matrix: ${err.message}. Try /partnership-matrix for the full view.` });
         write({ meta: { done: true, intent: 'category_gap_error' } });
+        finished = true; clearTimeout(watchdog);
+        finishResponse();
+        return;
+      }
+    }
+
+    // Handle deterministic company lookup — no Claude needed
+    // Queries company_intelligence + companies + contacts + deals via lookupCompany() helper.
+    // Pure SQL, zero LLM, zero hallucination on facts.
+    if (intent === 'company_lookup') {
+      const companyQuery = (target || message || '').trim();
+      write({ toolStatus: `Looking up ${companyQuery}...` });
+      try {
+        const result = await lookupCompany(companyQuery);
+        if (!result.found) {
+          const notFoundMsg = `${result.message}\n\n_If this is a real company, ask Kiko to "research ${companyQuery}" for live web intel, or "enrich ${companyQuery}" to add it to your database._`;
+          const chunks = notFoundMsg.match(/.{1,80}/g) || [notFoundMsg];
+          for (const chunk of chunks) write({ delta: chunk });
+          write({ meta: { done: true, model: 'deterministic', intent: 'company_lookup_not_found' } });
+        } else {
+          const md = result.markdown || JSON.stringify(result.card, null, 2);
+          const chunks = md.match(/[\s\S]{1,80}/g) || [md];
+          for (const chunk of chunks) write({ delta: chunk });
+          write({ meta: { done: true, model: 'deterministic', intent: 'company_lookup', matched_via: result.matched_via, matched_name: result.matched_name } });
+        }
+        finished = true; clearTimeout(watchdog);
+        finishResponse();
+        return;
+      } catch (err) {
+        console.error('[company_lookup] error:', err);
+        write({ delta: `Unable to look up ${companyQuery}: ${err.message}. Try the search bar in /organisations.` });
+        write({ meta: { done: true, intent: 'company_lookup_error' } });
         finished = true; clearTimeout(watchdog);
         finishResponse();
         return;

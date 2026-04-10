@@ -171,6 +171,27 @@ export async function classifyIntent(message, currentPage = 'home', conversation
     return { intent: 'identity' };
   }
 
+  // Company lookup fast-path — "tell me about Acme", "info on Stripe", "intel on X", "lookup Y"
+  // Routes to deterministic /api/company-lookup. Zero LLM hallucination on facts.
+  // Excludes self-referential ("yourself", "kiko") and CRM meta queries ("my pipeline", "my deals").
+  const companyLookupPatterns = [
+    /^tell me (about|more about) (.+?)(?:\?|$)/i,
+    /^(?:what|who) is (?!kiko\b)(.+?)(?:\?|$)/i,
+    /^(?:info|intel|details|background|the latest) on (.+?)(?:\?|$)/i,
+    /^(?:lookup|look up|company lookup) (.+?)(?:\?|$)/i,
+  ];
+  for (const re of companyLookupPatterns) {
+    const m = message.trim().match(re);
+    if (!m) continue;
+    const captured = (m[2] || m[1] || '').trim();
+    // Reject self-referential or meta-CRM queries
+    if (!captured) continue;
+    if (/^(yourself|me|us|kiko|my|the )/i.test(captured)) continue;
+    if (/^(pipeline|deals|contacts|inbox|calendar|tasks|sequences|campaigns|partnerships|alerts)\b/i.test(captured)) continue;
+    if (captured.length < 2 || captured.length > 80) continue;
+    return { intent: 'company_lookup', target: captured };
+  }
+
   // Step 3: Haiku classification for everything else (~100-200ms)
   try {
     const response = await anthropic.messages.create({
@@ -180,7 +201,7 @@ export async function classifyIntent(message, currentPage = 'home', conversation
       messages: [{ role: 'user', content: `[Current page: ${currentPage}] ${message}` }],
     });
     const intentText = (response.content?.[0]?.text || 'general').trim().toLowerCase().replace(/[^a-z_]/g, '');
-    const validIntents = ['navigate','screen','crm_write','data','outreach','lemlist','signal','brief','strategy','content','research','memory','finance','document','negotiation','category','legal','dispute','investment','pricing','travel','calendar','email_read','self_monitor','knowledge','conversation_search','code_review','identity','general'];
+    const validIntents = ['navigate','screen','crm_write','data','outreach','lemlist','signal','brief','strategy','content','research','memory','finance','document','negotiation','category','legal','dispute','investment','pricing','travel','calendar','email_read','self_monitor','knowledge','conversation_search','code_review','identity','company_lookup','general'];
     const intent = validIntents.includes(intentText) ? intentText : 'general';
     console.log(`[Intent] "${message.slice(0,60)}" → ${intent} (${response.usage?.input_tokens || '?'}in/${response.usage?.output_tokens || '?'}out)`);
     return { intent };
@@ -220,5 +241,6 @@ export const INTENT_TO_AGENT = {
   conversation_search: { tool: 'search_conversations' },
   code_review: { tool: 'ask_code_review' },
   identity:    { tool: null, directResponse: true },
+  company_lookup: { tool: null, directResponse: true },
   general:     { tool: null, directResponse: true },
 };
