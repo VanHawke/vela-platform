@@ -85,6 +85,7 @@ export default function SequenceDetail() {
   const [testSending, setTestSending] = useState(false)
   const [testSent, setTestSent] = useState(false)
   const [launching, setLaunching] = useState(false)
+  const [verifying, setVerifying] = useState(false)
   const [showLaunchConfirm, setShowLaunchConfirm] = useState(false)
 
   useEffect(() => { if (!isNew) load() }, [id])
@@ -169,10 +170,64 @@ export default function SequenceDetail() {
 
   async function launchCampaign() {
     setLaunching(true)
-    await supabase.from('kiko_sequences').update({ is_active: true, updated_at: new Date().toISOString() }).eq('id', id)
-    setSeq(prev => ({ ...prev, is_active: true }))
-    setShowLaunchConfirm(false)
-    setLaunching(false)
+    try {
+      // Call the proper /api/activate-campaign endpoint that runs sanity checks
+      // (no placeholder steps, all targets verified, no moved/left contacts)
+      // before flipping the sequence + enrollments live.
+      const res = await fetch('/api/activate-campaign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaign_id: id }),
+      })
+      const json = await res.json()
+      if (!res.ok || !json.success) {
+        // Show the precise error from the activation guard
+        let errMsg = json.error || 'Activation failed'
+        if (json.message) errMsg += '\n\n' + json.message
+        if (json.unverified_sample) errMsg += '\n\nFirst few unverified:\n' + json.unverified_sample.join('\n')
+        if (json.moved_sample) errMsg += '\n\nMoved/left:\n' + json.moved_sample.join('\n')
+        if (json.blank_step_count) errMsg += `\n\n${json.blank_step_count} of ${json.total_steps} steps still have placeholder content. Use the refine loop on each step.`
+        alert(errMsg)
+        setLaunching(false)
+        return
+      }
+      // Success — sequence is now live, all paused enrollments flipped to active
+      setSeq(prev => ({ ...prev, is_active: true }))
+      alert(`Campaign activated.\n\n${json.enrollments_activated} enrollments will start sending at ${new Date(json.first_send_at).toLocaleString()}.`)
+    } catch (err) {
+      alert(`Activation failed: ${err.message}`)
+    } finally {
+      setShowLaunchConfirm(false)
+      setLaunching(false)
+    }
+  }
+
+  // ─── Verify all unverified targets via /api/verify-campaign-targets ───
+  async function verifyTargets() {
+    setVerifying(true)
+    try {
+      const res = await fetch('/api/verify-campaign-targets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaign_id: id }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        alert(`Verification failed: ${json.error || 'unknown error'}`)
+        return
+      }
+      let msg = `Verification complete.\n\n${json.verified} verified at company\n${json.moved} moved companies\n${json.unreachable} unreachable\n\nDuration: ${(json.duration_ms / 1000).toFixed(1)}s`
+      if (json.moved_details && json.moved_details.length > 0) {
+        msg += '\n\nMoved contacts (will be excluded):\n' + json.moved_details.slice(0, 5).map(m => `${m.name}: ${m.was_at} → ${m.now_at || 'unknown'}`).join('\n')
+      }
+      alert(msg)
+      // Refresh enrollments + sequence
+      window.location.reload()
+    } catch (err) {
+      alert(`Verification failed: ${err.message}`)
+    } finally {
+      setVerifying(false)
+    }
   }
 
   const isDraft = seq && !seq.is_active
@@ -989,8 +1044,11 @@ RULES:
             <button onClick={() => setTab('sequence')} style={{ padding: '10px 20px', borderRadius: 6, border: `0.5px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 13, cursor: 'pointer', fontFamily: C.font }}>
               ← Back to Sequence
             </button>
-            <button onClick={() => setShowLaunchConfirm(true)} style={{ padding: '10px 28px', borderRadius: 6, border: 'none', background: 'rgba(45,212,191,0.12)', color: C.teal, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 1px 2px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: 6 }}>
-              🚀 Launch Campaign
+            <button onClick={verifyTargets} disabled={verifying} style={{ padding: '10px 20px', borderRadius: 6, border: `0.5px solid ${C.border}`, background: verifying ? 'rgba(167,139,250,0.05)' : 'rgba(167,139,250,0.10)', color: '#a78bfa', fontSize: 13, fontWeight: 500, cursor: verifying ? 'wait' : 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6, opacity: verifying ? 0.6 : 1 }}>
+              {verifying ? '⏳ Verifying targets...' : '🔍 Verify all targets'}
+            </button>
+            <button onClick={() => setShowLaunchConfirm(true)} disabled={launching} style={{ padding: '10px 28px', borderRadius: 6, border: 'none', background: 'rgba(45,212,191,0.12)', color: C.teal, fontSize: 13, fontWeight: 600, cursor: launching ? 'wait' : 'pointer', fontFamily: C.font, boxShadow: '0 1px 2px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: 6, opacity: launching ? 0.6 : 1 }}>
+              {launching ? '⏳ Activating...' : '🚀 Activate Campaign'}
             </button>
           </div>
         )}

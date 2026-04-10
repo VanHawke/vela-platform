@@ -1,13 +1,15 @@
 // Vela — Clean Dark Theme (matching mockup renders)
 // Flat surfaces · Subtle borders · Clean typography · Minimal glass
-// Matches the exact design language from the campaign dashboard mockups
+// Updated 2026-04-10 to use Claude.ai warm-dark palette per Sunny's request.
+// Previous: cool grey #1C1C1F (too dark, hard to read).
+// New: warm near-black #262624 — same family as Claude.ai canvas, slight beige tint.
 
 export const T = {
-  bg: '#1C1C1F',
-  card: '#141416',
-  surface: '#1A1A1E',
-  surfaceHover: '#1E1E22',
-  surfaceAlt: '#161618',
+  bg: '#262624',
+  card: '#1F1F1D',
+  surface: '#2C2C2A',
+  surfaceHover: '#33332F',
+  surfaceAlt: '#2A2A28',
 
   // Glass — barely-there frosted effect, NOT heavy
   glass: 'rgba(20,20,24,0.65)',

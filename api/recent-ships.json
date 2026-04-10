@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-10T14:57:47.567Z",
+  "generated_at": "2026-04-10T15:14:15.390Z",
   "commits": [
+    {
+      "hash": "47c5b48",
+      "subject": "v0.0.21 — CRM-first sourcing + freshness verification + sign-off fix + no caps",
+      "when": "16 minutes ago"
+    },
     {
       "hash": "4da830c",
       "subject": "v0.0.20 — Phase 2a/2b/2e — campaigns paused by default + auto-draft + title in prospects",
-      "when": "34 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "c4cf6b6",
       "subject": "v0.0.20 — Phase 2 campaign builder safety + auto-draft + UX",
-      "when": "46 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "9256e1c",
       "subject": "v0.0.19 — Phase 1 critical bugs (voice goodbye, XML leak, nav, Decagon, Racing Bulls, matrix)",
-      "when": "74 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "3132d0f",
       "subject": "master log: session A0b — admin/system, watcher cron, company-lookup, brief banner (v0.0.14-v0.0.18)",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "8b15dcb",
       "subject": "v0.0.18 — brief deterministic short-circuit (morning brief banner now actually appears)",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "eb40426",
@@ -34,7 +39,7 @@
     {
       "hash": "a9010f1",
       "subject": "v0.0.16 — fix cron-selfcheck-watcher env var (VITE_SUPABASE_URL)",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "9ac6791",
@@ -44,7 +49,7 @@
     {
       "hash": "70d2304",
       "subject": "v0.0.14 — Admin system control room (/admin/system)",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "b5ec52f",
@@ -59,7 +64,7 @@
     {
       "hash": "6147ec1",
       "subject": "v0.0.12 — CRITICAL FIXES: voice blank screen + sequence draft button",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "6f0b2e0",
@@ -79,7 +84,7 @@
     {
       "hash": "48ecb7e",
       "subject": "P1: deploy cron-partner-reconcile with corrected URLs (Alpine, Williams, Haas, Audi) + web_search fallback for JS-rendered teams (Red Bull, Ferrari, McLaren). maxDuration bumped to 800s for web_search",
-      "when": "23 hours ago"
+      "when": "24 hours ago"
     },
     {
       "hash": "84860d3",
@@ -94,11 +99,6 @@
     {
       "hash": "32ab6be",
       "subject": "KIKO_TODO.md session 2026-04-09 evidence log — what's verified vs what's gaps",
-      "when": "26 hours ago"
-    },
-    {
-      "hash": "7639944",
-      "subject": "KIKO_TODO.md + voice inline bottom-dock panel. (1) KIKO_TODO.md — living checklist read at session start, updated at session end. P0/P1/P2/P3 tasks with evidence status. (2) KikoVoice inline mode: cha",
       "when": "26 hours ago"
     }
   ]
