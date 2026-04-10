@@ -144,10 +144,55 @@ export default async function handler(req, res) {
       sequenceName = newSeq.name;
     }
 
-    // ─── STEP 7: Source 50 targets via Claude + web_search, with exclusion list ───
-    // Limit exclusion list passed to LLM to avoid token explosion
-    const exclusionListForPrompt = [...exclusionSet].slice(0, 100).join(', ');
-    const sourcingPrompt = `You are sourcing 50 companies in the ${catRow.name} sector for an F1 sponsorship campaign with ${team.name}. This is a real outreach list.
+    // ─── STEP 7: CRM-FIRST sourcing — query our own database BEFORE web search ───
+    const crmResults = await sourceFromCRM(category, exclusionSet, 30);
+
+    // Build CRM target rows — one row per (company, decision_maker) pair
+    // Include contact_id link + verification status from contacts table
+    const crmTargetRows = [];
+    let rankCounter = 1;
+    for (const crmCompany of crmResults) {
+      for (const dm of crmCompany.decision_makers) {
+        // Determine verification status from contact's last_verified_at + still_at_company
+        let verStatus = 'unverified';
+        if (dm.still_at_company === true && dm.last_verified_at) {
+          const ageDays = (Date.now() - new Date(dm.last_verified_at).getTime()) / 86400000;
+          verStatus = ageDays < 30 ? 'verified_at_company' : 'unverified';  // Re-verify if older than 30d
+        }
+        crmTargetRows.push({
+          campaign_id: sequenceId,
+          category_id: category,
+          team_id: team.id,
+          rank: rankCounter++,
+          company_name: crmCompany.company,
+          revenue_estimate: crmCompany.revenue,
+          hq_location: crmCompany.hq,
+          rationale: crmCompany.rationale,
+          decision_maker_name: dm.name,
+          decision_maker_title: dm.title,
+          decision_maker_email: dm.email,
+          enrollment_status: 'sourced',
+          source: 'crm',
+          contact_id: dm.contact_id,
+          verification_status: verStatus,
+          verified_at: verStatus === 'verified_at_company' ? dm.last_verified_at : null,
+        });
+      }
+    }
+
+    // ─── STEP 8: Web search to fill the gap up to 50 total companies ───
+    // Add CRM company names to the exclusion set so the LLM doesn't duplicate them
+    const crmCompanyNamesLower = new Set(crmResults.map(c => c.company.toLowerCase()));
+    const combinedExclusion = new Set([...exclusionSet, ...crmCompanyNamesLower]);
+    const exclusionListForPrompt = [...combinedExclusion].slice(0, 100).join(', ');
+
+    // How many additional companies do we need from the web?
+    const crmCompanyCount = crmResults.length;
+    const webGap = Math.max(20, 50 - crmCompanyCount);  // Always source at least 20 from web for diversity
+
+    const sourcingPrompt = `You are sourcing ${webGap} companies in the ${catRow.name} sector for an F1 sponsorship campaign with ${team.name}. This is a real outreach list.
+
+CONTEXT: ${crmCompanyCount} ${catRow.name} companies are ALREADY in our CRM and being added separately. You are sourcing FRESH companies that are NOT in our CRM and NOT already F1 partners.
 
 CRITERIA (all must be met):
 - Annual revenue: ${CATEGORY_CRITERIA[category]?.revenue_min || '$500M+'}
@@ -156,11 +201,13 @@ ${CATEGORY_CRITERIA[category]?.funding_min ? `- OR recent funding: ${CATEGORY_CR
 - Active brand/marketing budget visible (sports sponsorships, ad campaigns, conference presence)
 - Decision-maker reachable: ${CATEGORY_CRITERIA[category]?.dm_seniority || 'CMO / VP Marketing'}
 
-CRITICAL EXCLUSION RULE: The following companies are ALREADY F1 partners with another team and MUST NOT appear in your list under any circumstances. If you find one, skip it and find another company instead. Exclusion list: ${exclusionListForPrompt}
+CRITICAL EXCLUSION RULE: The following companies are EITHER already F1 partners OR already in our CRM. They MUST NOT appear in your list. Find DIFFERENT companies. Exclusion list: ${exclusionListForPrompt}
 
-Return ONLY a JSON array of EXACTLY 50 entries. No explanation, no markdown fences, just the array. Each entry must have: company, revenue, hq, rationale, decision_maker_name, decision_maker_title.
+For each company, return 2-3 decision-makers with sponsorship-relevant titles (CMO, VP Marketing, Head of Brand, Head of Sponsorship, CRO, CEO, CFO, Head of BD, Head of Strategy).
 
-[{"company":"...","revenue":"...","hq":"...","rationale":"...","decision_maker_name":"...","decision_maker_title":"..."}]`;
+Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdown fences, just the array. Each entry must have: company, revenue, hq, rationale, decision_makers (array of {name, title}).
+
+[{"company":"...","revenue":"...","hq":"...","rationale":"...","decision_makers":[{"name":"...","title":"..."},{"name":"...","title":"..."}]}]`;
 
     const sourcingRes = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
@@ -180,36 +227,50 @@ Return ONLY a JSON array of EXACTLY 50 entries. No explanation, no markdown fenc
       console.error('[build-campaign] JSON parse failed:', err.message);
     }
 
-    // ─── STEP 8: Hard-filter against exclusion set (defense in depth) ───
+    // ─── STEP 9: Hard-filter web results against combined exclusion (defense in depth) ───
     const filtered = sourced.filter(c => {
       const name = (c.company || '').toLowerCase().trim();
-      return name && !exclusionSet.has(name);
+      return name && !combinedExclusion.has(name);
     });
     const violations = sourced.filter(c => {
       const name = (c.company || '').toLowerCase().trim();
-      return name && exclusionSet.has(name);
+      return name && combinedExclusion.has(name);
     });
 
-    // ─── STEP 9: Insert top 50 into campaign_targets ───
+    // ─── STEP 10: Build web target rows — one row per (company, decision_maker) ───
+    const webTargetRows = [];
+    for (const c of filtered) {
+      const dms = Array.isArray(c.decision_makers) && c.decision_makers.length > 0
+        ? c.decision_makers
+        : (c.decision_maker_name ? [{ name: c.decision_maker_name, title: c.decision_maker_title }] : [{ name: 'Unknown', title: 'CMO' }]);
+      for (const dm of dms.slice(0, 5)) {
+        webTargetRows.push({
+          campaign_id: sequenceId,
+          category_id: category,
+          team_id: team.id,
+          rank: rankCounter++,
+          company_name: c.company,
+          revenue_estimate: c.revenue,
+          hq_location: c.hq,
+          rationale: c.rationale,
+          decision_maker_name: dm.name,
+          decision_maker_title: dm.title,
+          decision_maker_email: dm.email || null,
+          enrollment_status: 'sourced',
+          source: 'web_search',
+          verification_status: 'unverified',  // Web-sourced contacts always need verification
+        });
+      }
+    }
+
+    // ─── STEP 11: Insert all targets (CRM-first, then web) ───
     // Wipe any previous targets for this campaign first
     await supabase.from('campaign_targets').delete().eq('campaign_id', sequenceId);
-    const top50 = filtered.slice(0, 50);
-    if (top50.length > 0) {
-      const rows = top50.map((c, i) => ({
-        campaign_id: sequenceId,
-        category_id: category,
-        team_id: team.id,
-        rank: i + 1,
-        company_name: c.company,
-        revenue_estimate: c.revenue,
-        hq_location: c.hq,
-        rationale: c.rationale,
-        decision_maker_name: c.decision_maker_name,
-        decision_maker_title: c.decision_maker_title,
-        enrollment_status: 'sourced',
-      }));
-      await supabase.from('campaign_targets').insert(rows);
+    const allTargetRows = [...crmTargetRows, ...webTargetRows];
+    if (allTargetRows.length > 0) {
+      await supabase.from('campaign_targets').insert(allTargetRows);
     }
+    const top50 = allTargetRows;  // for the response shape below
 
     // ─── STEP 10: Build competitive landscape from real data ───
     const competitiveLandscape = (allPartnerships || [])
@@ -247,6 +308,159 @@ Return ONLY a JSON array of EXACTLY 50 entries. No explanation, no markdown fenc
 }
 
 
+// ─── CRM-FIRST SOURCING ──────────────────────────────────────────────
+// Before going to web_search, query our own database for matching companies
+// and decision-makers. Sunny has 2,244 companies + 4,193 contacts already
+// in Supabase — many tagged with the right industry. Cold web sourcing was
+// ignoring all of this and generating duplicate outreach to people we already
+// know. Now: CRM matches go in FIRST as high-rank targets, web_search only
+// fills the gap.
+
+// Map category code → array of industry strings as they appear in companies.data->>'industry'
+const CATEGORY_INDUSTRY_MAP = {
+  banking:        ['Banking', 'FinTech'],
+  fintech:        ['FinTech', 'Banking', 'InsurTech'],
+  cybersecurity:  ['Cybersecurity'],
+  cloud:          ['Cloud Infrastructure', 'SaaS', 'DevOps', 'Data Centers'],
+  ai_data:        ['AI/ML', 'Data Analytics', 'Quantum Computing'],
+  software:       ['SaaS', 'DevOps', 'Developer Tools'],
+  semiconductors: ['Semiconductors', 'Semiconductor', 'Consumer Electronics'],
+  telecom:        ['Telecommunications'],
+  gaming:         ['Gaming'],
+  crypto:         ['Blockchain'],
+  energy:         ['Energy', 'Mining'],
+  automotive:     ['Automotive'],
+  hospitality:    ['Hospitality', 'Travel'],
+  fashion:        ['Fashion', 'Luxury Goods'],
+  watches:        ['Watches', 'Luxury Goods'],
+  food_bev:       ['Food & Beverage', 'Beverages', 'Food Tech'],
+  health:         ['HealthTech', 'Healthcare'],
+  logistics:      ['Supply Chain', 'Logistics'],
+  legal:          ['Legal Tech', 'Legal'],
+  robotics:       ['Robotics'],
+};
+
+// Sponsorship-relevant title patterns (priority order — highest first)
+const RELEVANT_TITLE_PATTERNS = [
+  /chief marketing officer|^cmo$|\bcmo\b/i,
+  /head of (sponsorship|partnerships?|brand|marketing)/i,
+  /vp.*marketing|vice president.*marketing|svp.*marketing/i,
+  /director.*(brand|marketing|sponsorship|partnership)/i,
+  /chief (revenue|brand|growth|commercial) officer|cro\b|cbo\b|cco\b/i,
+  /chief executive officer|^ceo$|\bceo\b/i,
+  /chief financial officer|^cfo$|\bcfo\b/i,
+  /head of (business development|bd|strategy|growth)/i,
+  /vp.*(business development|bd|strategy|growth)/i,
+];
+
+async function sourceFromCRM(category, exclusionSet, maxCompanies = 30) {
+  const industries = CATEGORY_INDUSTRY_MAP[category] || [];
+  if (industries.length === 0) {
+    console.log(`[sourceFromCRM] no industry mapping for category=${category}, skipping CRM lookup`);
+    return [];
+  }
+
+  // 1. Pull all companies in matching industries
+  const { data: crmCompanies, error: cErr } = await supabase
+    .from('companies')
+    .select('id, data, updated_at')
+    .in('data->>industry', industries)
+    .limit(200);
+  if (cErr) {
+    console.error('[sourceFromCRM] companies query error:', cErr.message);
+    return [];
+  }
+  if (!crmCompanies || crmCompanies.length === 0) return [];
+
+  // 2. Filter out F1-blocked companies (exclusion set is lowercased names)
+  const eligible = crmCompanies.filter(c => {
+    const name = (c.data?.name || '').trim().toLowerCase();
+    if (!name) return false;
+    return !exclusionSet.has(name);
+  });
+
+  // 3. For each eligible company, find sponsorship-relevant contacts
+  const results = [];
+  for (const company of eligible.slice(0, maxCompanies)) {
+    const companyName = company.data?.name || '';
+    if (!companyName) continue;
+    const { data: contacts } = await supabase
+      .from('contacts')
+      .select('id, data, last_verified_at, still_at_company, verified_title')
+      .filter('data->>company', 'ilike', companyName)
+      .limit(20);
+
+    // Quality filter: must have a real email, first+last name, and relevant title
+    // Also EXCLUDES anyone we already verified as moved/left the company.
+    const scoredContacts = (contacts || [])
+      .filter(ct => {
+        const d = ct.data || {};
+        if (!d.email || !d.email.includes('@')) return false;  // No email = no contact
+        const firstName = (d.firstName || '').trim();
+        const lastName = (d.lastName || '').trim();
+        if (!firstName || firstName.toLowerCase() === 'unknown') return false;
+        if (!lastName || lastName.toLowerCase() === 'unknown') return false;
+        // EXCLUDE contacts we've verified are no longer at the company
+        if (ct.still_at_company === false) return false;
+        return true;
+      })
+      .map(ct => {
+        const title = ct.data?.title || '';
+        let score = 0;
+        for (let i = 0; i < RELEVANT_TITLE_PATTERNS.length; i++) {
+          if (RELEVANT_TITLE_PATTERNS[i].test(title)) { score = RELEVANT_TITLE_PATTERNS.length - i; break; }
+        }
+        return { ct, score };
+      })
+      .filter(x => x.score > 0)
+      .sort((a, b) => b.score - a.score);
+
+    if (scoredContacts.length === 0) continue;  // No relevant contacts — skip company
+
+    // Take top 5 decision-makers per company
+    const topContacts = scoredContacts.slice(0, 5).map(x => ({
+      contact_id: x.ct.id,
+      name: `${x.ct.data?.firstName || ''} ${x.ct.data?.lastName || ''}`.trim(),
+      title: x.ct.verified_title || x.ct.data?.title || '',
+      email: x.ct.data?.email || null,
+      last_verified_at: x.ct.last_verified_at || null,
+      still_at_company: x.ct.still_at_company,  // null=unverified, true=verified, false would have been filtered out
+    }));
+
+    results.push({
+      company: companyName,
+      revenue: company.data?.revenue || company.data?.annualRevenue || 'unknown',
+      hq: company.data?.hq || company.data?.location || company.data?.country || 'unknown',
+      industry: company.data?.industry || '',
+      rationale: `Already in CRM. ${topContacts.length} relevant decision-maker${topContacts.length === 1 ? '' : 's'} identified.`,
+      decision_makers: topContacts,
+      source: 'crm',
+      crm_company_id: company.id,
+    });
+  }
+
+  console.log(`[sourceFromCRM] found ${results.length} CRM companies with ${results.reduce((s, r) => s + r.decision_makers.length, 0)} relevant contacts for category=${category}`);
+  return results;
+}
+
+// ─── Strip any AI-generated sign-off from email bodies ───────────────
+// Gmail auto-appends the user's real signature with logo on send. If we let
+// the AI add one too, the recipient sees "Sunny Sidhu / CEO, Van Hawke Group"
+// followed by Sunny's real "Founder & Principal" signature with logo — duplicate.
+// This function defensively strips anything that looks like a sign-off block.
+function stripAiSignOff(body) {
+  if (!body || typeof body !== 'string') return body || '';
+  // Cut at the first sign-off opener line
+  const signOffOpeners = /\n\s*(Kind regards|Best regards|Best wishes|Warm regards|Regards|Sincerely|Cheers|Thanks|Thank you|All the best|Yours sincerely|Yours truly|Speak soon|Talk soon)\s*[,.]?\s*\n/i;
+  const m = body.match(signOffOpeners);
+  if (m) body = body.slice(0, m.index).trimEnd();
+  // Remove any trailing "Sunny Sidhu" / "CEO" / "Van Hawke" lines on their own
+  body = body.replace(/\n\s*Sunny Sidhu\b.*$/i, '');
+  body = body.replace(/\n\s*(CEO|Founder|Founder & Principal|Principal)\s*,?\s*Van Hawke.*$/i, '');
+  body = body.replace(/\n\s*Van Hawke (Group|Agency|Maison)\b.*$/i, '');
+  return body.trimEnd();
+}
+
 // ─── Auto-draft 5 sequence steps using Sunny's commercial doctrine ───
 async function draftSequenceSteps(teamName, categoryName) {
   const prompt = `Draft 5 outreach steps for an F1 sponsorship campaign with ${teamName} targeting ${categoryName} companies. Sunny Sidhu (CEO of Van Hawke Group, F1 sponsorship advisory) is the sender.
@@ -261,7 +475,7 @@ CONSTRAINTS PER STEP:
 - DO NOT include sponsorship pricing
 - DO NOT reference any "secured funding"
 - USD only if mentioning numbers
-- Sign off: "Kind regards,\\nSunny Sidhu\\nCEO, Van Hawke Group"
+- DO NOT add a sign-off, name, title, or signature of any kind. The user's Gmail signature is auto-appended when the email sends — adding one here causes a duplicate "Sunny Sidhu / CEO, Van Hawke Group" in the sent email. End the body with the CTA sentence and STOP. No "Best", no "Kind regards", no name, no title, nothing.
 
 5 STEPS REQUIRED:
 1. Day 0 — Email — Authority-led intro. Reference ${teamName}'s 2026 ${categoryName} category opportunity. Concrete competitive context. End with a specific 15-min slot ask.
@@ -289,8 +503,8 @@ Return ONLY a valid JSON array of EXACTLY 5 entries, no markdown, no preamble. E
       channel: s.channel || 'email',
       delay_days: typeof s.delay_days === 'number' ? s.delay_days : 0,
       subject: s.subject || '',
-      body: s.body || s.template || '',
-      template: s.body || s.template || '',  // SequenceDetail reads .template OR .body
+      body: stripAiSignOff(s.body || s.template || ''),
+      template: stripAiSignOff(s.body || s.template || ''),  // SequenceDetail reads .template OR .body
     }));
   } catch (err) {
     console.error('[draftSequenceSteps] failed, falling back to placeholders:', err.message);

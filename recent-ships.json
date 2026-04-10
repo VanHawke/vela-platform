@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-10T14:23:08.752Z",
+  "generated_at": "2026-04-10T14:57:47.567Z",
   "commits": [
+    {
+      "hash": "4da830c",
+      "subject": "v0.0.20 — Phase 2a/2b/2e — campaigns paused by default + auto-draft + title in prospects",
+      "when": "34 minutes ago"
+    },
     {
       "hash": "c4cf6b6",
       "subject": "v0.0.20 — Phase 2 campaign builder safety + auto-draft + UX",
-      "when": "12 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "9256e1c",
       "subject": "v0.0.19 — Phase 1 critical bugs (voice goodbye, XML leak, nav, Decagon, Racing Bulls, matrix)",
-      "when": "40 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "3132d0f",
@@ -24,7 +29,7 @@
     {
       "hash": "eb40426",
       "subject": "v0.0.17 — company lookup endpoint + morning brief system health surfacing + dashboard cron dedup",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "a9010f1",
@@ -34,7 +39,7 @@
     {
       "hash": "9ac6791",
       "subject": "v0.0.15 — hourly selfcheck watcher with auto-alert + auto-resolve",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "70d2304",
@@ -44,7 +49,7 @@
     {
       "hash": "b5ec52f",
       "subject": "URGENT COST FIX: ignoreCommand skips builds for doc-only commits",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "c441835",
@@ -59,17 +64,17 @@
     {
       "hash": "6f0b2e0",
       "subject": "master log: session A0 — voice refactor, identity fix, enroll bug, heartbeat evidence (17/18 PASS)",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "80e7883",
       "subject": "v0.0.11 — voice refactor + identity fast-path + enroll fix + cron heartbeat",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "06f22d1",
       "subject": "P1/P2 — selfcheck v2 (19 checks), clean stale data, Nowu rows removed. (1) selfcheck expanded from 10 to 19 checks: null_category, anthropic_key, supabase_key, cron_heartbeats_24h, error_budget, activ",
-      "when": "22 hours ago"
+      "when": "23 hours ago"
     },
     {
       "hash": "48ecb7e",
@@ -79,12 +84,12 @@
     {
       "hash": "84860d3",
       "subject": "Option C audit complete + ea.js expires_at fix. (1) Read all 4829 lines of kiko-tools.js + 26 agent files line-by-line. (2) Found and fixed second expires_at bug in ea.js morningBrief — same pattern a",
-      "when": "23 hours ago"
+      "when": "24 hours ago"
     },
     {
       "hash": "51a4b55",
       "subject": "Master audit + partner-reconcile cron scheduled. (1) KIKO_MASTER_LOG.md: full audit of 123 API files (all syntactically valid), 138 Supabase tables, 38->39 crons, 20-category live matrix, 29 routes, 6",
-      "when": "24 hours ago"
+      "when": "25 hours ago"
     },
     {
       "hash": "32ab6be",
@@ -94,11 +99,6 @@
     {
       "hash": "7639944",
       "subject": "KIKO_TODO.md + voice inline bottom-dock panel. (1) KIKO_TODO.md — living checklist read at session start, updated at session end. P0/P1/P2/P3 tasks with evidence status. (2) KikoVoice inline mode: cha",
-      "when": "26 hours ago"
-    },
-    {
-      "hash": "a38555c",
-      "subject": "Ship Campaigns modal team selector (was in source already but needed redeploy). Modal has F1 team dropdown: 'Auto' default picks alphabetical first, or user can pick Haas/Cadillac/any team explicitly.",
       "when": "26 hours ago"
     }
   ]

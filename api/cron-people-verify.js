@@ -69,6 +69,33 @@ Return ONLY the JSON object.` }]
 
         verified++;
 
+        // PERSIST verification result back to the contacts table so it carries
+        // forward into future campaign sourcing. Without this write, every
+        // verification is throwaway and the CRM never gets fresher.
+        try {
+          const contactRows = await sbFetch(`contacts?data->>company=ilike.${encodeURIComponent(contact.company)}&limit=10`);
+          const matchingContact = (contactRows || []).find(c => {
+            const fn = (c.data?.firstName || '').toLowerCase();
+            const ln = (c.data?.lastName || '').toLowerCase();
+            const fullName = `${fn} ${ln}`.trim();
+            return fullName === contact.name.toLowerCase();
+          });
+          if (matchingContact?.id) {
+            await sbFetch(`contacts?id=eq.${matchingContact.id}`, {
+              method: 'PATCH',
+              body: JSON.stringify({
+                last_verified_at: new Date().toISOString(),
+                still_at_company: result.still_at_company === true,
+                verified_title: result.current_title || null,
+                verification_notes: result.notes || (result.still_at_company === false && result.new_company ? `Moved to ${result.new_company}` : null),
+                verification_source: 'cron-people-verify',
+              }),
+            });
+          }
+        } catch (writeErr) {
+          console.error(`[PeopleVerify] write-back failed for ${contact.name}:`, writeErr.message);
+        }
+
         // If person departed or role changed significantly, create an alert
         if (result.still_at_company === false || (result.current_title && contact.title && result.current_title.toLowerCase() !== contact.title.toLowerCase())) {
           flagged++;

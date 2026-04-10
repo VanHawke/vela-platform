@@ -50,6 +50,33 @@ export default async function handler(req, res) {
       });
     }
 
+    // 2b. Verification check — refuse to activate if any targets are unverified or moved/left
+    // Sunny's rule: never email someone who is no longer at the company
+    const { data: allTargets } = await supabase
+      .from('campaign_targets')
+      .select('id, decision_maker_name, company_name, verification_status')
+      .eq('campaign_id', id);
+    const unverified = (allTargets || []).filter(t => !t.verification_status || t.verification_status === 'unverified');
+    const movedOrLeft = (allTargets || []).filter(t => t.verification_status === 'moved_company' || t.verification_status === 'left_company');
+    if (unverified.length > 0) {
+      return res.status(400).json({
+        error: 'Cannot activate — some targets have not been verified',
+        unverified_count: unverified.length,
+        total_targets: allTargets?.length || 0,
+        message: `${unverified.length} of ${allTargets?.length || 0} targets are still unverified. POST to /api/verify-campaign-targets with this campaign_id to run live verification before activation.`,
+        unverified_sample: unverified.slice(0, 5).map(t => `${t.decision_maker_name} @ ${t.company_name}`),
+      });
+    }
+    if (movedOrLeft.length > 0) {
+      return res.status(400).json({
+        error: 'Cannot activate — some targets have moved companies or left their role',
+        moved_or_left_count: movedOrLeft.length,
+        total_targets: allTargets?.length || 0,
+        message: `${movedOrLeft.length} targets are no longer at their company. Remove these from the campaign or replace them before activating.`,
+        moved_sample: movedOrLeft.slice(0, 5).map(t => `${t.decision_maker_name} @ ${t.company_name} (status: ${t.verification_status})`),
+      });
+    }
+
     // 3. Flip sequence to active
     const { error: updSeqErr } = await supabase
       .from('kiko_sequences')

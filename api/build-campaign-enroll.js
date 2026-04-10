@@ -12,14 +12,15 @@ export default async function handler(req, res) {
   if (!campaign_id) return res.status(400).json({ error: 'campaign_id required' });
 
   try {
-    // Pull the top 8 sourced targets for this campaign
+    // Pull ALL sourced targets for this campaign (no cap — Sunny's spec).
+    // Volume is fine because cron-sequence-sender staggers sends per-contact timezone
+    // across business hours, not all at once. Whatever volume is sourced gets enrolled.
     const { data: targets, error: tErr } = await supabase
       .from('campaign_targets')
       .select('*')
       .eq('campaign_id', campaign_id)
       .eq('enrollment_status', 'sourced')
-      .order('rank')
-      .limit(8);
+      .order('rank');
     if (tErr) throw tErr;
     if (!targets || targets.length === 0) {
       return res.status(404).json({ error: 'No sourced targets found for this campaign. Run /api/build-campaign first.' });
