@@ -455,12 +455,18 @@ export default function Campaigns({ user }) {
                     {filteredProspects.map(p => (
                       <tr key={p.id} style={{ transition: 'background 0.1s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                         <td style={{ ...cell, paddingLeft: 28 }}>
-                          <div style={{ fontSize: 13, color: C.text, fontWeight: 500 }}>{p.contact_name}</div>
+                          <div
+                            onClick={() => nav(`/contacts?email=${encodeURIComponent(p.contact_email || '')}`)}
+                            style={{ fontSize: 13, color: C.text, fontWeight: 500, cursor: 'pointer', textDecoration: 'none' }}
+                            onMouseEnter={e => e.currentTarget.style.color = '#a78bfa'}
+                            onMouseLeave={e => e.currentTarget.style.color = C.text}
+                            title="Open contact record"
+                          >{p.contact_name}</div>
                           <div style={{ fontSize: 11, color: C.textTertiary, marginTop: 2 }}>{p.contact_email}</div>
+                          {p.title && <div style={{ fontSize: 11, color: C.textSecondary, marginTop: 2, fontStyle: 'italic' }}>{p.title}</div>}
                         </td>
                         <td style={cell}>
                           <div style={{ fontSize: 12, color: C.text }}>{p.company || '—'}</div>
-                          <div style={{ fontSize: 11, color: C.textTertiary, marginTop: 2 }}>{p.title || ''}</div>
                         </td>
                         <td style={{ ...cell, textAlign: 'center' }}>
                           <div style={{ fontSize: 12, color: C.text, fontWeight: 500 }}>{p.current_step}<span style={{ color: C.textTertiary, fontWeight: 400 }}> / {totalSteps || '?'}</span></div>

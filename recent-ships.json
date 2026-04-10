@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-10T13:43:02.217Z",
+  "generated_at": "2026-04-10T14:10:55.304Z",
   "commits": [
+    {
+      "hash": "9256e1c",
+      "subject": "v0.0.19 — Phase 1 critical bugs (voice goodbye, XML leak, nav, Decagon, Racing Bulls, matrix)",
+      "when": "27 minutes ago"
+    },
     {
       "hash": "3132d0f",
       "subject": "master log: session A0b — admin/system, watcher cron, company-lookup, brief banner (v0.0.14-v0.0.18)",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "8b15dcb",
       "subject": "v0.0.18 — brief deterministic short-circuit (morning brief banner now actually appears)",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "eb40426",
@@ -19,12 +24,12 @@
     {
       "hash": "a9010f1",
       "subject": "v0.0.16 — fix cron-selfcheck-watcher env var (VITE_SUPABASE_URL)",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "9ac6791",
       "subject": "v0.0.15 — hourly selfcheck watcher with auto-alert + auto-resolve",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "70d2304",
@@ -34,7 +39,7 @@
     {
       "hash": "b5ec52f",
       "subject": "URGENT COST FIX: ignoreCommand skips builds for doc-only commits",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "c441835",
@@ -64,7 +69,7 @@
     {
       "hash": "48ecb7e",
       "subject": "P1: deploy cron-partner-reconcile with corrected URLs (Alpine, Williams, Haas, Audi) + web_search fallback for JS-rendered teams (Red Bull, Ferrari, McLaren). maxDuration bumped to 800s for web_search",
-      "when": "22 hours ago"
+      "when": "23 hours ago"
     },
     {
       "hash": "84860d3",
@@ -89,17 +94,12 @@
     {
       "hash": "a38555c",
       "subject": "Ship Campaigns modal team selector (was in source already but needed redeploy). Modal has F1 team dropdown: 'Auto' default picks alphabetical first, or user can pick Haas/Cadillac/any team explicitly.",
-      "when": "25 hours ago"
+      "when": "26 hours ago"
     },
     {
       "hash": "8ebc6fb",
       "subject": "Blueprint + self-audit + proactive partner reconciliation: (1) KIKO_SYSTEM_MAP.md single source of truth — every table, endpoint, cron, deterministic vs LLM path documented. Every session starts by re",
       "when": "26 hours ago"
-    },
-    {
-      "hash": "5eca279",
-      "subject": "category-gap: inline sbFetch instead of HTTP hop (preview URL has SSO auth, was returning HTML). Handler now builds overlap map, expands categories, filters blocked teams, formats response — all inlin",
-      "when": "27 hours ago"
     }
   ]
 }

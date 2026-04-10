@@ -26,6 +26,9 @@ export default async function handler(req, res) {
     }
 
     // Insert into kiko_sequence_enrollments — one row per target
+    // PAUSED BY DEFAULT — user must explicitly activate via /api/activate-campaign
+    // after reviewing drafts and sending a test email.
+    // This was the bug Sunny hit: campaigns were going live immediately after build.
     const now = new Date().toISOString();
     const enrollments = targets.map(t => ({
       sequence_id: campaign_id,
@@ -33,9 +36,9 @@ export default async function handler(req, res) {
       contact_name: t.decision_maker_name || t.company_name,
       company: t.company_name,
       current_step: 0,
-      status: 'active',  // Must be 'active' — cron-sequence-enqueue.js line 144 filters for status=eq.active
+      status: 'paused',  // PAUSED — will flip to 'active' on explicit user activation
       enrolled_at: now,
-      next_send_at: now,
+      next_send_at: null,  // No send scheduled until activation
     }));
 
     const { data: inserted, error: eErr } = await supabase
@@ -44,22 +47,24 @@ export default async function handler(req, res) {
       .select();
     if (eErr) throw eErr;
 
-    // Update the targets to mark them enrolled
+    // Update the targets to mark them enrolled (but not yet live)
     const targetIds = targets.map(t => t.id);
     await supabase
       .from('campaign_targets')
       .update({ enrollment_status: 'enrolled', enrolled_at: now })
       .in('id', targetIds);
 
-    // Activate the sequence
-    await supabase.from('kiko_sequences').update({ is_active: true }).eq('id', campaign_id);
+    // DO NOT activate the sequence — stays is_active=false until explicit user activation
+    // await supabase.from('kiko_sequences').update({ is_active: true }).eq('id', campaign_id);
 
     return res.status(200).json({
       success: true,
       enrolled: inserted?.length || 0,
-      sequence_activated: true,
+      sequence_activated: false,  // Paused — user must explicitly activate
+      status: 'paused',
       campaign_id,
       enrolled_companies: targets.map(t => ({ rank: t.rank, company: t.company_name, dm: t.decision_maker_name })),
+      next_step: 'Review sequence drafts, refine messaging, send test email to yourself, then click Activate to go live.',
     });
   } catch (err) {
     console.error('[build-campaign-enroll] error:', err);
