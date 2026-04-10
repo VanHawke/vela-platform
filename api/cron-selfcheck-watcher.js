@@ -13,7 +13,7 @@ import { cronHeartbeat } from './kiko-tools.js';
 export const config = { maxDuration: 60 };
 
 const supabase = createClient(
-  process.env.SUPABASE_URL,
+  process.env.VITE_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
