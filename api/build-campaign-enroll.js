@@ -34,6 +34,7 @@ export default async function handler(req, res) {
       sequence_id: campaign_id,
       contact_email: t.decision_maker_email || `${(t.decision_maker_name || 'unknown').toLowerCase().replace(/\s+/g, '.')}@${(t.company_name || 'unknown').toLowerCase().replace(/\s+/g, '')}.com`,
       contact_name: t.decision_maker_name || t.company_name,
+      title: t.decision_maker_title || null,  // Title from sourcing — surfaces on Campaigns page
       company: t.company_name,
       current_step: 0,
       status: 'paused',  // PAUSED — will flip to 'active' on explicit user activation

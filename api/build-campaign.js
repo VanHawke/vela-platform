@@ -290,6 +290,7 @@ Return ONLY a valid JSON array of EXACTLY 5 entries, no markdown, no preamble. E
       delay_days: typeof s.delay_days === 'number' ? s.delay_days : 0,
       subject: s.subject || '',
       body: s.body || s.template || '',
+      template: s.body || s.template || '',  // SequenceDetail reads .template OR .body
     }));
   } catch (err) {
     console.error('[draftSequenceSteps] failed, falling back to placeholders:', err.message);

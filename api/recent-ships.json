@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-10T14:10:55.304Z",
+  "generated_at": "2026-04-10T14:23:08.752Z",
   "commits": [
+    {
+      "hash": "c4cf6b6",
+      "subject": "v0.0.20 — Phase 2 campaign builder safety + auto-draft + UX",
+      "when": "12 minutes ago"
+    },
     {
       "hash": "9256e1c",
       "subject": "v0.0.19 — Phase 1 critical bugs (voice goodbye, XML leak, nav, Decagon, Racing Bulls, matrix)",
-      "when": "27 minutes ago"
+      "when": "40 minutes ago"
     },
     {
       "hash": "3132d0f",
@@ -34,7 +39,7 @@
     {
       "hash": "70d2304",
       "subject": "v0.0.14 — Admin system control room (/admin/system)",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "b5ec52f",
@@ -44,12 +49,12 @@
     {
       "hash": "c441835",
       "subject": "v0.0.13 — refine-with-feedback loop for sequence drafting",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "6147ec1",
       "subject": "v0.0.12 — CRITICAL FIXES: voice blank screen + sequence draft button",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "6f0b2e0",
@@ -84,21 +89,16 @@
     {
       "hash": "32ab6be",
       "subject": "KIKO_TODO.md session 2026-04-09 evidence log — what's verified vs what's gaps",
-      "when": "25 hours ago"
+      "when": "26 hours ago"
     },
     {
       "hash": "7639944",
       "subject": "KIKO_TODO.md + voice inline bottom-dock panel. (1) KIKO_TODO.md — living checklist read at session start, updated at session end. P0/P1/P2/P3 tasks with evidence status. (2) KikoVoice inline mode: cha",
-      "when": "25 hours ago"
+      "when": "26 hours ago"
     },
     {
       "hash": "a38555c",
       "subject": "Ship Campaigns modal team selector (was in source already but needed redeploy). Modal has F1 team dropdown: 'Auto' default picks alphabetical first, or user can pick Haas/Cadillac/any team explicitly.",
-      "when": "26 hours ago"
-    },
-    {
-      "hash": "8ebc6fb",
-      "subject": "Blueprint + self-audit + proactive partner reconciliation: (1) KIKO_SYSTEM_MAP.md single source of truth — every table, endpoint, cron, deterministic vs LLM path documented. Every session starts by re",
       "when": "26 hours ago"
     }
   ]
