@@ -7,6 +7,29 @@
 
 ## SECTION A — Full audit (2026-04-09, this session)
 
+### A0d. 2026-04-10 (evening) — Build campaign timeout fix + UI segmentation removal + Lemlist research (v0.0.24 → v0.0.25)
+
+**Final state: v0.0.25 LIVE | bundle DVwiwiAL | selfcheck 17/18 | clean test data baseline**
+
+#### v0.0.24 — Critical bug fixes
+- ✅ **Build campaign timeout root cause** — `api/build-campaign.js` had no `maxDuration`, defaulted to 60s, but build does CRM queries + Claude auto-draft + Claude web_search → exceeded 60s → silent kill → orphan sequence row → enroll endpoint then said "No sourced targets found". Fixed: added `export const config = { maxDuration: 300 }` (Pro max). Plus parallelized `sourceFromCRM` contact lookups via `Promise.all` (was 30 sequential queries, now batch parallel — 30x faster on the CRM step).
+- ✅ **"Top 8 only" UI bug** — `Campaigns.jsx` review modal was hardcoded to render `buildResult.top_8` only. The build endpoint already returned full `top_50`. Fixed: now renders all targets, each row shows all decision-makers joined together. All "8" hardcoded labels removed across review/enrolling/done states.
+- ✅ **CRM/web segmentation removed from UI** — no source labels render anywhere in the campaign view. Targets are treated equal in display per Sunny's request.
+- ✅ **Background color inconsistency** — global sed find/replace across 10 JSX/JS files: `#1C1C1F→#262624`, `#141416→#1F1F1D`, `#1A1A1E→#2C2C2A`, `#1E1E22→#33332F`, `#161618→#2A2A28`. Files: LoginPage, Layout, ChatHistory, KikoFloat, KikoChat, KikoVoice, KikoInsights, theme.js, Campaigns, SequenceDetail. Build modal background also bumped.
+- ✅ **Email rendering bug** — `wrapEmailBody` rewritten with 3-layer sign-off stripping: (1) cut at any sign-off opener, (2) iteratively trim trailing name/title/company lines, (3) collapse triple newlines. Old regex only matched lines starting with "Van Hawke", so "CEO, Van Hawke Group" survived as orphan title line.
+- ✅ **Phase 2c Sports sponsorship enrichment** — new `api/enrich-campaign-sponsorship.js` (~120 lines), POST `{campaign_id, top_n=10}`, parallel batches of 4, returns motorsport_history + f1_fit_score + decision-maker who signed each deal. Migration applied: `campaign_targets.sponsorship_history jsonb`. New 🏎 amber button in SequenceDetail footer.
+- ✅ **Build modal centering** — `margin: 0 auto`, `maxWidth: calc(100vw - 48px)`.
+
+#### v0.0.25 — Polish + research
+- ✅ **Top nav true viewport centering** — `Layout.jsx` desktop-top-nav switched from `flex:1` (off-center because logo width varied vs fixed right controls) to absolute `left:50% top:50% translate(-50%,-50%)`.
+- ✅ **"Previously in CRM" badge on contact records** — `ContactDetail.jsx` new `campaignHistory` state, queries `campaign_targets WHERE contact_id = id` (linked via build-campaign CRM sourcing) UNION `WHERE decision_maker_email = email AND contact_id IS NULL` (fallback for older campaigns), deduped by campaign. Renders purple "Previously in CRM · N campaigns" pill plus up to 3 clickable campaign chips with verification status, in the contact header. This is the per-contact CRM history visibility Sunny asked for, moved from the campaign list (which is no longer source-segmented) to where it actually belongs.
+- ✅ **Category gap output tightened** — `api/kiko.js` deterministic short-circuit handler. Removed verbose "Taken by: X +N more" trail, removed long "Recommendation:" paragraph, removed "~80 seconds" marketing copy. Output ~60% shorter, ~40% fewer words.
+- ✅ **Phase 6 Lemlist research doc** — new `KIKO_LEMLIST_RESEARCH.md` (377 lines): full architecture analysis, 25-feature gap table, recommendation to build Kiko Chrome extension v1 (visit/invite/message via polling API + content script, ~3 day effort), visual sequence flow editor via ReactFlow (~3 days), link click tracking (~3 hours). 7-8 day total path to Lemlist parity + features Lemlist doesn't have, $1,188-3,500/yr saving vs Lemlist Pro. 4 open questions for Sunny.
+
+---
+
+## SECTION A — Full audit (2026-04-09, this session)
+
 ### A0c. 2026-04-10 (afternoon) — Critical bugs + campaign builder overhaul + CRM-first sourcing + verification gate + timezone-aware sender (v0.0.19 → v0.0.23)
 
 **Final state: v0.0.23 LIVE | bundle BoeewjIZ | selfcheck 17/18 (only diagnostic category_coverage) | 0 active selfcheck_fail alerts | clean test data baseline**
