@@ -7,6 +7,7 @@ import { classifyIntent, INTENT_TO_AGENT } from './agents/intent-classifier.js';
 import { generateSelfKnowledge } from './kiko-self-knowledge.js';
 import { describeScreen } from './agents/screen-reader.js';
 import { lookupCompany } from './company-lookup.js';
+import { callEAAgent } from './agents/ea.js';
 
 export const config = { supportsResponseStreaming: true, maxDuration: 120, api: { bodyParser: { sizeLimit: '12mb' } } };
 
@@ -797,6 +798,31 @@ export default async function handler(req, res) {
         console.error('[company_lookup] error:', err);
         write({ delta: `Unable to look up ${companyQuery}: ${err.message}. Try the search bar in /organisations.` });
         write({ meta: { done: true, intent: 'company_lookup_error' } });
+        finished = true; clearTimeout(watchdog);
+        finishResponse();
+        return;
+      }
+    }
+
+    // Handle deterministic morning brief — bypass LLM completely so the system
+    // health banner from ea.js morningBrief() is never paraphrased away.
+    // The LLM-tool-loop path was rewriting the brief in its own words and
+    // stripping the 🚨 SYSTEM HEALTH header that prepends selfcheck failures.
+    if (intent === 'brief') {
+      write({ toolStatus: 'Compiling your morning brief...' });
+      try {
+        const briefText = await callEAAgent('brief', {});
+        const text = typeof briefText === 'string' ? briefText : JSON.stringify(briefText);
+        const chunks = text.match(/[\s\S]{1,80}/g) || [text];
+        for (const chunk of chunks) write({ delta: chunk });
+        write({ meta: { done: true, model: 'deterministic', intent: 'brief' } });
+        finished = true; clearTimeout(watchdog);
+        finishResponse();
+        return;
+      } catch (err) {
+        console.error('[brief] error:', err);
+        write({ delta: `Unable to compile brief: ${err.message}.` });
+        write({ meta: { done: true, intent: 'brief_error' } });
         finished = true; clearTimeout(watchdog);
         finishResponse();
         return;
