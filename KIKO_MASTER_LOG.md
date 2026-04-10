@@ -7,6 +7,71 @@
 
 ## SECTION A — Full audit (2026-04-09, this session)
 
+### A0b. 2026-04-10 SESSION — Admin dashboard, selfcheck watcher, company lookup, brief banner (v0.0.14 → v0.0.18)
+
+**Final state:** v0.0.18 deployed | Selfcheck 17/18 PASS | 0 errors 24h | 0 active selfcheck_fail alerts
+
+**Shipped this session:**
+
+1. **`/admin/system` live control room** (v0.0.14)
+   - New page: `src/pages/AdminSystem.jsx` (~270 lines)
+   - Headline status banner (X/Y invariants, green or amber)
+   - 10-tile data snapshot (partnerships, sequences, contacts, deals, alerts, etc.)
+   - 18-tile selfcheck health grid (one tile per invariant)
+   - Cron activity feed (deduped to 1 row per cron)
+   - Error log feed (last 24h)
+   - Auto-refresh every 30s, manual refresh button, live bundle hash display
+   - Lazy-loaded route, AdminRoute-guarded (super_admin only)
+
+2. **Hourly selfcheck watcher cron** (v0.0.15 / v0.0.16)
+   - New file: `api/cron-selfcheck-watcher.js` (~140 lines)
+   - Runs `0 * * * *` (top of every hour)
+   - Calls `/api/selfcheck`, creates `kiko_alerts` row for new FAILs, auto-dismisses on recovery
+   - Idempotent: one active alert per check name, dedup via entity_id
+   - NO_ALERT exclusion list: category_coverage (diagnostic, not actionable)
+   - Bug fixed mid-session: `SUPABASE_URL` → `VITE_SUPABASE_URL` (the actual env var name)
+   - Live-tested: returns `{ok:true, alerts_created:0, alerts_resolved:0, failing_checks:["category_coverage"]}`
+   - vercel.json: 39 → 40 crons (Pro plan ceiling reached)
+
+3. **`withHeartbeat` HOF utility** (v0.0.17)
+   - Added to `api/cron-utils.js`
+   - Wraps any handler with full lifecycle tracking (started/finished/error)
+   - Captures HTTP status via res.status spy
+   - Skips writing for unauthorized requests
+   - Available for future crons that don't self-instrument
+   - The 37 existing crons already self-instrument with `cronHeartbeat` from kiko-tools.js — confirmed via live SQL showing 18+ unique crons writing heartbeats in last 24h
+
+4. **Dashboard cron activity dedup** (v0.0.17)
+   - `AdminSystem.jsx`: query rewritten to fetch last 200 raw heartbeats then dedupe by `cron_name` in JS
+   - Previously LIMIT 15 made cron-jobs-worker (288 runs/day) drown out everything
+   - Now shows all 18+ unique crons cleanly
+
+5. **Deterministic `/api/company-lookup` endpoint** (v0.0.17)
+   - New file: `api/company-lookup.js` (~260 lines)
+   - `findCompany()`: 4-tier fuzzy match (exact CI, partial CI, exact companies, partial companies). Picks shortest match for specificity.
+   - `lookupCompany()`: exported helper, parallel fetch of company_intelligence + companies + contacts + deals
+   - Returns structured card: identity, financials, people (CEO/CTO/CMO/CFO/VPs), strategy (products/competitors/sponsorships/fit_score), internal CRM (contacts + deals), freshness
+   - Pre-formatted markdown ready to stream
+   - intent-classifier.js: 4 regex patterns ("tell me about X", "what is X", "info on X", "lookup X"), excludes self-referential and meta-CRM
+   - kiko.js: deterministic short-circuit for `intent === 'company_lookup'`, streams card via `write({delta})`
+   - **Live-verified**: `curl /api/kiko {"message":"tell me about Synthesia"}` returned full structured card with real CEO (Victor Riparbelli), real funding (Series E $200M on 2025-10-30), real CRM contacts (5), real deal ($1M Contact stage). Meta confirmed `model:deterministic, intent:company_lookup, matched_via:company_intelligence`.
+
+6. **Morning brief system health surfacing** (v0.0.17 → v0.0.18 fix)
+   - `ea.js morningBrief()`: splits alerts into selfcheckFails vs otherAlerts, prepends 🚨 SYSTEM HEALTH banner if any failures exist
+   - **Bug discovered in v0.0.17**: brief intent routed through LLM tool loop (`ask_ea_agent`), LLM paraphrased the brief and stripped the banner
+   - **Fixed in v0.0.18**: deterministic short-circuit for `intent === 'brief'` in kiko.js. Imports `callEAAgent`, calls it directly, streams verbatim. LLM never sees the brief.
+   - **Live-verified WITH synthetic alert**: banner appeared at top with bullet list, meta confirmed `model:deterministic, intent:brief`
+   - **Live-verified WITHOUT synthetic alert**: brief starts directly with content, no banner
+   - Test alerts injected and cleaned up: 0 active selfcheck_fail rows after testing
+
+**Deploy chain:** v0.0.13 → v0.0.14 (admin/system) → v0.0.15 (watcher cron, env bug) → v0.0.16 (env fix) → v0.0.17 (company-lookup + brief banner attempt + dashboard dedup) → v0.0.18 (brief deterministic short-circuit)
+
+**Bundle hashes seen:** D9MC2WDl → CSuVLPK8 → DWo3YQMa (steady; v0.0.18 was server-side only)
+
+---
+
+## SECTION A — Full audit (2026-04-09, this session)
+
 ### A0. 2026-04-09 LATE SESSION — Voice refactor, identity fix, enroll bug, heartbeat wiring (v0.0.11)
 
 **Deployed bundle:** `index-D4cpmwxQ.js`  |  **Backend version:** v0.0.11  |  **Selfcheck:** 17/18 PASS
