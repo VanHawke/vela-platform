@@ -7,6 +7,49 @@
 
 ## SECTION A — Full audit (2026-04-09, this session)
 
+### A0c. 2026-04-10 (afternoon) — Critical bugs + campaign builder overhaul + CRM-first sourcing + verification gate + timezone-aware sender (v0.0.19 → v0.0.23)
+
+**Final state: v0.0.23 LIVE | bundle BoeewjIZ | selfcheck 17/18 (only diagnostic category_coverage) | 0 active selfcheck_fail alerts | clean test data baseline**
+
+#### v0.0.19 — Phase 1 critical bugs (6 items)
+- ✅ Voice goodbye fullscreen — KikoVoice.jsx + useRealtimeVoice.js instructions explicit + 5s safety net
+- ✅ XML tag leak — new stripToolXml() helper, both streaming paths, cross-chunk buffer
+- ✅ Navigation via prose — same fix, hardened NAVIGATION RULE in system prompt
+- ✅ Decagon "16 days" bug — uses data.lastActivity not row updated_at
+- ✅ Racing Bulls cybersecurity — partnership-matrix API + UI both honor related_categories
+- ✅ Partnership Matrix UI — same v0.0.19 ship
+
+#### v0.0.20 — Phase 2 campaign builder safety (3 items)
+- ✅ Phase 2a — Campaigns paused by default (build-campaign-enroll.js)
+- ✅ NEW api/activate-campaign.js — explicit activation with sanity gates
+- ✅ Phase 2b — Auto-draft sequence steps at build time
+- ✅ Phase 2e — Job title + click-to-contact
+
+#### v0.0.21 — CRM-FIRST sourcing + verification gate (architectural rewrites)
+- ✅ build-campaign.js sourceFromCRM() — queries 2,244 companies + 4,193 contacts FIRST
+- ✅ Migration: contacts verification fields (last_verified_at, still_at_company, etc.)
+- ✅ Migration: campaign_targets verification fields (verification_status, verified_at, contact_id)
+- ✅ NEW api/verify-campaign-targets.js — parallel batches of 5, persists to contacts table
+- ✅ api/activate-campaign hardened — refuses unverified or moved/left targets
+- ✅ NO CAPS — build-campaign-enroll.js processes ALL sourced
+- ✅ Sign-off duplication FIXED — prompt + stripAiSignOff() defensive stripper
+- ✅ cron-people-verify writes back to contacts table
+
+#### v0.0.22 — UI buttons + Claude.ai warm dark + clean baseline
+- ✅ UI Verify all targets button (purple)
+- ✅ UI Activate Campaign button — calls /api/activate-campaign with full gate
+- ✅ Claude.ai warm dark palette (#262624)
+- ✅ Test data wiped clean — 3 sequences, 138 targets, 24 enrollments deleted
+
+#### v0.0.23 — Phase 3 Command Centre alignment + Phase 5 timezone-aware sender (true 24h)
+- ✅ Phase 3 — describeCommandCentre() rewritten to mirror visible priority list
+- ✅ Phase 3 — Intent classifier fast-path for command-centre priority questions
+- ✅ Phase 5 — vercel.json cron-sequence-sender now '0 * * * 1-5' (every hour 24h)
+- ✅ Phase 5 — UK working window clamp REMOVED from enqueue, prospects scheduled in true local 9-10am
+- ⚠️ Phase 4 — Learning loop audit: wired correctly, inert until first real campaign send
+
+---
+
 ### A0b. 2026-04-10 SESSION — Admin dashboard, selfcheck watcher, company lookup, brief banner (v0.0.14 → v0.0.18)
 
 **Final state:** v0.0.18 deployed | Selfcheck 17/18 PASS | 0 errors 24h | 0 active selfcheck_fail alerts
