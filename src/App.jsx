@@ -17,6 +17,7 @@ const PartnershipMatrix = lazy(() => import('@/pages/PartnershipMatrix'))
 const CommercialCalendar = lazy(() => import('@/pages/CommercialCalendar'))
 const KikoCode = lazy(() => import('@/pages/KikoCode'))
 const Admin = lazy(() => import('@/pages/Admin'))
+const AdminSystem = lazy(() => import('@/pages/AdminSystem'))
 const MemoryConsole = lazy(() => import('@/pages/MemoryConsole'))
 
 const Campaigns = lazy(() => import('@/pages/Campaigns'))
@@ -119,6 +120,7 @@ export default function App() {
         <Route path="/login" element={session ? <Navigate to="/" replace /> : <LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/admin" element={session ? <AdminRoute><Admin /></AdminRoute> : <Navigate to="/login" replace />} />
+        <Route path="/admin/system" element={session ? <AdminRoute><AdminSystem /></AdminRoute> : <Navigate to="/login" replace />} />
         <Route element={session ? <Layout key="app" user={user} /> : <Navigate to="/login" replace />}>
           <Route index element={<KikoChat user={user} />} />
           <Route path="home" element={<KikoChat user={user} />} />

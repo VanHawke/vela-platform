@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-09T18:50:45.535Z",
+  "generated_at": "2026-04-10T07:44:15.526Z",
   "commits": [
+    {
+      "hash": "b5ec52f",
+      "subject": "URGENT COST FIX: ignoreCommand skips builds for doc-only commits",
+      "when": "22 minutes ago"
+    },
+    {
+      "hash": "c441835",
+      "subject": "v0.0.13 — refine-with-feedback loop for sequence drafting",
+      "when": "13 hours ago"
+    },
     {
       "hash": "6147ec1",
       "subject": "v0.0.12 — CRITICAL FIXES: voice blank screen + sequence draft button",
-      "when": "8 minutes ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "6f0b2e0",
       "subject": "master log: session A0 — voice refactor, identity fix, enroll bug, heartbeat evidence (17/18 PASS)",
-      "when": "47 minutes ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "80e7883",
       "subject": "v0.0.11 — voice refactor + identity fast-path + enroll fix + cron heartbeat",
-      "when": "56 minutes ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "06f22d1",
       "subject": "P1/P2 — selfcheck v2 (19 checks), clean stale data, Nowu rows removed. (1) selfcheck expanded from 10 to 19 checks: null_category, anthropic_key, supabase_key, cron_heartbeats_24h, error_budget, activ",
-      "when": "3 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "48ecb7e",
       "subject": "P1: deploy cron-partner-reconcile with corrected URLs (Alpine, Williams, Haas, Audi) + web_search fallback for JS-rendered teams (Red Bull, Ferrari, McLaren). maxDuration bumped to 800s for web_search",
-      "when": "3 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "84860d3",
       "subject": "Option C audit complete + ea.js expires_at fix. (1) Read all 4829 lines of kiko-tools.js + 26 agent files line-by-line. (2) Found and fixed second expires_at bug in ea.js morningBrief — same pattern a",
-      "when": "4 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "51a4b55",
       "subject": "Master audit + partner-reconcile cron scheduled. (1) KIKO_MASTER_LOG.md: full audit of 123 API files (all syntactically valid), 138 Supabase tables, 38->39 crons, 20-category live matrix, 29 routes, 6",
-      "when": "5 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "32ab6be",
       "subject": "KIKO_TODO.md session 2026-04-09 evidence log — what's verified vs what's gaps",
-      "when": "6 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "7639944",
       "subject": "KIKO_TODO.md + voice inline bottom-dock panel. (1) KIKO_TODO.md — living checklist read at session start, updated at session end. P0/P1/P2/P3 tasks with evidence status. (2) KikoVoice inline mode: cha",
-      "when": "6 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "a38555c",
       "subject": "Ship Campaigns modal team selector (was in source already but needed redeploy). Modal has F1 team dropdown: 'Auto' default picks alphabetical first, or user can pick Haas/Cadillac/any team explicitly.",
-      "when": "7 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "8ebc6fb",
       "subject": "Blueprint + self-audit + proactive partner reconciliation: (1) KIKO_SYSTEM_MAP.md single source of truth — every table, endpoint, cron, deterministic vs LLM path documented. Every session starts by re",
-      "when": "7 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "5eca279",
       "subject": "category-gap: inline sbFetch instead of HTTP hop (preview URL has SSO auth, was returning HTML). Handler now builds overlap map, expands categories, filters blocked teams, formats response — all inlin",
-      "when": "8 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "f8a8115",
       "subject": "Deterministic category-gap analysis + nav fixes + sanitiser. (1) NEW /api/category-gaps endpoint queries f1_partnerships + category_overlaps (primary_category/blocking_category cols) directly — zero L",
-      "when": "8 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "6279055",
       "subject": "REVERT sanitiser regex (caused FUNCTION_INVOCATION_FAILED crash), keep system prompt TOOL INVOCATION rule only. Frontend fixes from previous commit (voice hasMessages gate, brighter icons) are untouch",
-      "when": "9 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "ceb5f9b",
       "subject": "Batch fixes: (1) voice mic in conversation no longer collapses header or redirects to home (!hasMessages gate on kiko_voice_fullscreen event), (2) output sanitiser strips hallucinated <invoke>/<parame",
-      "when": "9 hours ago"
+      "when": "22 hours ago"
     },
     {
       "hash": "9a331e2",
       "subject": "version: 0.0.0 -> 0.0.1 to bust Vercel build cache — previous deploys were serving stale bundle GHndoLhp despite new commits",
-      "when": "12 hours ago"
+      "when": "24 hours ago"
     },
     {
       "hash": "e7b891c",
       "subject": "build: force rebuild to flush stale bundle (voice inline fix + chat redirect not in live bundle)",
-      "when": "12 hours ago"
+      "when": "25 hours ago"
     },
     {
       "hash": "b77de72",
       "subject": "Chat campaign redirect: when user asks to create a campaign in chat, Kiko redirects to /campaigns page ⚡ Build button instead of attempting to run the 80s deterministic pipeline inline (which caused 1",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "0005172",
-      "subject": "Campaigns UI: ⚡ Build button + modal. Phases: idle (category dropdown) -> building (~80s loading) -> review (team, why, top 8 with DMs, exclusion stats) -> enrolling -> done. Calls /api/build-campaign",
-      "when": "23 hours ago"
-    },
-    {
-      "hash": "fb2b162",
-      "subject": "build-campaign: fix sequence insert (target_persona not persona, surface error)",
-      "when": "23 hours ago"
+      "when": "25 hours ago"
     }
   ]
 }
