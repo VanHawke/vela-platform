@@ -14,6 +14,7 @@ export default function ContactDetail() {
   const [activities, setActivities] = useState([])
   const [orgId, setOrgId] = useState(null)
   const [dealInfo, setDealInfo] = useState(null)
+  const [campaignHistory, setCampaignHistory] = useState([])
 
   useEffect(() => { load() }, [id])
 
@@ -46,6 +47,28 @@ export default function ContactDetail() {
           .filter('data->>company', 'eq', c.company).limit(1)
         if (dealRows && dealRows.length > 0) setDealInfo(dealRows[0].data)
       }
+
+      // Load campaign history — every campaign that has ever included this contact
+      // (links via campaign_targets.contact_id which is set when build-campaign sources
+      // from CRM in v0.0.21+). Plus campaigns where the contact's email matches as a
+      // fallback for older campaigns built before contact_id was wired.
+      const { data: byContactId } = await supabase.from('campaign_targets')
+        .select('id, campaign_id, decision_maker_email, verification_status, created_at, kiko_sequences(name, is_active)')
+        .eq('contact_id', data.id)
+      const { data: byEmail } = c.email ? await supabase.from('campaign_targets')
+        .select('id, campaign_id, decision_maker_email, verification_status, created_at, kiko_sequences(name, is_active)')
+        .eq('decision_maker_email', c.email)
+        .is('contact_id', null) : { data: [] }
+      const allCampaigns = [...(byContactId || []), ...(byEmail || [])]
+      // Dedupe by campaign_id (keep most recent)
+      const seen = new Set()
+      const unique = []
+      for (const ct of allCampaigns) {
+        if (seen.has(ct.campaign_id)) continue
+        seen.add(ct.campaign_id)
+        unique.push(ct)
+      }
+      setCampaignHistory(unique)
     }
     setLoading(false)
   }
@@ -173,6 +196,23 @@ export default function ContactDetail() {
           <div>
             <h1 style={{ fontSize: 19, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>{displayName(contact)}</h1>
             {contact.title && <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{contact.title}</p>}
+            {campaignHistory.length > 0 && (
+              <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 50, background: 'rgba(167,139,250,0.10)', border: '0.5px solid rgba(167,139,250,0.20)', color: '#A78BFA', fontSize: 10, fontWeight: 500, fontFamily: 'var(--font)' }}>
+                  Previously in CRM · {campaignHistory.length} campaign{campaignHistory.length === 1 ? '' : 's'}
+                </span>
+                {campaignHistory.slice(0, 3).map(ct => (
+                  <span key={ct.id} onClick={() => nav(`/sequences/${ct.campaign_id}`)} style={{ cursor: 'pointer', padding: '3px 9px', borderRadius: 50, background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)', color: 'var(--text-secondary)', fontSize: 10, fontFamily: 'var(--font)' }} title={ct.kiko_sequences?.is_active ? 'Active campaign' : 'Paused campaign'}>
+                    {ct.kiko_sequences?.name || 'Campaign'} {ct.verification_status === 'verified_at_company' ? '✓' : ''}
+                  </span>
+                ))}
+                {campaignHistory.length > 3 && (
+                  <span style={{ padding: '3px 9px', color: 'var(--text-tertiary)', fontSize: 10, fontFamily: 'var(--font)' }}>
+                    +{campaignHistory.length - 3} more
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
         <button onClick={() => setEditing(!editing)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 500, background: editing ? 'transparent' : 'var(--accent)', color: editing ? 'var(--text-secondary)' : '#fff', padding: '6px 14px', borderRadius: 50, border: editing ? '1px solid var(--border)' : 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>

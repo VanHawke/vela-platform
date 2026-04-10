@@ -253,8 +253,10 @@ export default function Layout({ user }) {
           </button>
         </div>
 
-        {/* Center: Pill tab group — flex centered between logo and right controls */}
-        <div className="desktop-top-nav" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        {/* Center: Pill tab group — absolute-positioned for true viewport centering
+            (was flex:1 between logo and kiko avatar, which made the centering depend
+            on whichever side had more content — looked off-center to Sunny) */}
+        <div className="desktop-top-nav" style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
           <div style={{ display: 'flex', gap: 3, background: 'rgba(40,40,46,0.55)', backdropFilter: 'blur(20px) saturate(1.2)', WebkitBackdropFilter: 'blur(20px) saturate(1.2)', borderRadius: 14, padding: 4, border: `0.5px solid rgba(255,255,255,0.08)`, borderTop: `0.5px solid rgba(255,255,255,0.12)`, boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}>
             {TABS.map(tab => {
               const active = isTabActive(tab.path)

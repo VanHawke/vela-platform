@@ -769,26 +769,24 @@ export default async function handler(req, res) {
         if (target) {
           const teamFiltered = results.filter(r => r.open.includes(target));
           if (teamFiltered.length === 0) {
-            out = `${teamName(target)} has no open category slots based on 374 verified F1 partnerships. Every category has a direct or overlap conflict. Check /partnership-matrix for the detailed view.`;
+            out = `${teamName(target)} has zero open categories. Every slot is taken by direct or overlap conflict.`;
           } else {
             const sorted = [...teamFiltered].sort((a,b) => a.open_count - b.open_count);
-            out = `**${teamName(target)} — Open Category Slots**\n\nBased on 374 verified F1 partnerships in the database, ${teamName(target)} has ${teamFiltered.length} categories open (sorted by urgency — fewest open slots first):\n\n`;
+            out = `**${teamName(target)} — ${teamFiltered.length} open categories**\n\n`;
             for (const c of sorted.slice(0, 10)) {
-              const compSample = c.blocked.slice(0, 4).map(([tid, parts]) => `${teamName(tid)} (${parts[0]})`).join(', ');
-              out += `• **${c.name}** — ${c.open_count}/11 teams open. Taken by: ${compSample || 'no one yet'}${c.blocked.length > 4 ? ` +${c.blocked.length - 4} more` : ''}\n`;
+              out += `• **${c.name}** — ${c.open_count}/11 teams open\n`;
             }
             const top = sorted[0];
-            out += `\n**Recommendation:** ${top.name} — only ${top.open_count}/11 teams still open, highest urgency and clearest competitive positioning. `;
-            out += `\n\nTo launch: open /campaigns, click ⚡ Build, select ${top.name}. The builder picks the team, sources 50 targets, and identifies decision-makers in ~80 seconds.`;
+            out += `\nHighest urgency: **${top.name}** (${top.open_count}/11 open).\n\nLaunch: /campaigns → ⚡ Build → ${top.name}.`;
           }
         } else {
           const sorted = results.filter(r => r.open_count > 0).sort((a,b) => a.open_count - b.open_count).slice(0, 8);
-          out = `**F1 Category Gap Analysis** — 374 verified partnerships\n\nHighest urgency (fewest open teams):\n\n`;
+          out = `**F1 Category Gaps** — sorted by urgency (fewest open teams first)\n\n`;
           for (const c of sorted) {
             const openNames = c.open.map(teamName).join(', ');
-            out += `• **${c.name}** — ${c.open_count}/11 open: ${openNames}\n`;
+            out += `• **${c.name}** — ${c.open_count}/11: ${openNames}\n`;
           }
-          out += `\nTo launch a campaign: /campaigns → ⚡ Build → pick category. Builder picks team automatically.`;
+          out += `\nLaunch: /campaigns → ⚡ Build → pick category.`;
         }
         const chunks = out.match(/.{1,80}/g) || [out];
         for (const chunk of chunks) write({ delta: chunk });
