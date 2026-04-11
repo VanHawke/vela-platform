@@ -82,7 +82,21 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'DELETE') {
+      // Single delete: ?id=xxx
+      // Bulk delete:   ?ids=uuid1,uuid2,uuid3  (max 200 per call)
       const id = req.query?.id;
+      const idsParam = req.query?.ids;
+
+      if (idsParam) {
+        const ids = String(idsParam).split(',').map(s => s.trim()).filter(Boolean);
+        if (ids.length === 0) return res.status(400).json({ error: 'no ids provided' });
+        if (ids.length > 200) return res.status(400).json({ error: 'max 200 ids per bulk delete' });
+        if (!ids.every(isUuid)) return res.status(400).json({ error: 'all ids must be valid uuids' });
+        const idList = ids.join(',');
+        await sbFetch(`kiko_personal_context?id=in.(${idList})`, { method: 'DELETE' });
+        return res.status(200).json({ ok: true, deleted: ids.length });
+      }
+
       if (!isUuid(id)) return res.status(400).json({ error: 'invalid id' });
       await sbFetch(`kiko_personal_context?id=eq.${id}`, { method: 'DELETE' });
       return res.status(200).json({ ok: true });

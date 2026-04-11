@@ -836,3 +836,43 @@ Real family with explicit names: "Daughters named Nyla and Maya"
 - 26 deploys today, ~58 build minutes consumed
 - 7 SQL DELETE statements (free)
 - v0.0.27 cron diet still locked
+
+
+---
+
+## Section A0j — v0.0.42 (April 12, 2026)
+
+**Theme:** Memory tab UX improvements — search-within-category + bulk select/delete + CSV export
+
+### Item 1 — Search-within-category combo
+- `MemoryTab.jsx`: search box placeholder now reflects active category
+  - "all" selected → "Search all facts… (press Enter)"
+  - "family" selected → "Search within family… (press Enter)"
+- Backend already supported combined category + query filtering — just needed UI affordance to make it discoverable
+
+### Item 2 — Bulk select + delete
+- `api/memory-tab.js`: DELETE endpoint extended to accept `?ids=uuid1,uuid2,uuid3` (comma-separated, max 200 per call)
+- Validates each id is uuid, batches into single PostgREST `id=in.(...)` call
+- `MemoryTab.jsx`:
+  - New `bulkMode` state (off by default)
+  - New `selectedIds` Set state
+  - "Bulk select" toggle button in header (purple, switches between Square and CheckSquare icons)
+  - When bulkMode active: each row shows a checkbox, selected rows highlighted purple
+  - Bulk action toolbar appears above row list: count + Select all visible / Clear / Delete (N) buttons
+  - `onBulkDelete` posts comma-separated ids to backend, removes from local state, exits bulk mode
+  - Confirm dialog before bulk delete
+
+### Item 3 — Export to CSV
+- `MemoryTab.jsx`: new `onExportCSV` function (pure client-side, no backend)
+- Generates CSV from currently-loaded `rows` array (respects current category + search filters)
+- Columns: category, key, value, source, created_at
+- Handles CSV escaping (commas, quotes, newlines)
+- Filename: `kiko-memory-{category}-{YYYY-MM-DD}.csv`
+- Triggers download via Blob URL + temporary anchor click
+- "Export CSV" teal button in header next to Bulk select
+- Disabled when rows.length === 0
+
+### Cost status at end of A0j
+- 27 deploys today, ~60 build minutes consumed
+- No schema changes
+- v0.0.27 cron diet still locked

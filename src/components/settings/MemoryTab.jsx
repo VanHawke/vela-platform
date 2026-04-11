@@ -15,7 +15,7 @@
 //   └──────────────────────────────────────────┘
 
 import { useState, useEffect } from 'react'
-import { Search, Plus, Trash2, Edit3, X, Check } from 'lucide-react'
+import { Search, Plus, Trash2, Edit3, X, Check, Download, CheckSquare, Square } from 'lucide-react'
 
 const T = {
   text: '#EEEEEE',
@@ -58,6 +58,9 @@ export default function MemoryTab({ user }) {
   const [editValue, setEditValue] = useState('')
   const [adding, setAdding] = useState(false)
   const [newFact, setNewFact] = useState({ category: 'manual', key: '', value: '' })
+  // v0.0.42: bulk select state
+  const [selectedIds, setSelectedIds] = useState(new Set())
+  const [bulkMode, setBulkMode] = useState(false)
 
   const PAGE_SIZE = 100
 
@@ -144,6 +147,66 @@ export default function MemoryTab({ user }) {
     }
   }
 
+  // ── v0.0.42: Bulk select + delete ──
+  const toggleSelect = (id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+
+  const selectAllVisible = () => {
+    setSelectedIds(new Set(rows.map(r => r.id)))
+  }
+
+  const clearSelection = () => {
+    setSelectedIds(new Set())
+  }
+
+  const onBulkDelete = async () => {
+    if (selectedIds.size === 0) return
+    if (!confirm(`Delete ${selectedIds.size} facts? This cannot be undone.`)) return
+    try {
+      const ids = [...selectedIds].join(',')
+      const r = await fetch(`/api/memory-tab?ids=${encodeURIComponent(ids)}`, { method: 'DELETE' })
+      if (!r.ok) throw new Error((await r.json())?.error || 'bulk delete failed')
+      setRows(prev => prev.filter(x => !selectedIds.has(x.id)))
+      setTotal(t => Math.max(0, t - selectedIds.size))
+      setSelectedIds(new Set())
+      setBulkMode(false)
+    } catch (err) {
+      alert('Failed to bulk delete: ' + err.message)
+    }
+  }
+
+  // ── v0.0.42: CSV export ──
+  const onExportCSV = () => {
+    if (rows.length === 0) return
+    const header = ['category', 'key', 'value', 'source', 'created_at']
+    const escape = (v) => {
+      if (v == null) return ''
+      const s = String(v).replace(/"/g, '""')
+      return /[",\n]/.test(s) ? `"${s}"` : s
+    }
+    const csvLines = [header.join(',')]
+    for (const r of rows) {
+      csvLines.push(header.map(h => escape(r[h])).join(','))
+    }
+    const csv = csvLines.join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    const datestamp = new Date().toISOString().split('T')[0]
+    const cat = category === 'all' ? 'all' : category
+    a.download = `kiko-memory-${cat}-${datestamp}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
   const categoryList = [
     { id: 'all', label: 'All', count: total },
     ...Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([cat, count]) => ({ id: cat, label: cat, count }))
@@ -167,14 +230,40 @@ export default function MemoryTab({ user }) {
               {total} total facts. Edit or delete anything Kiko has learned. New facts you add are tagged "manual" and never auto-deleted.
             </div>
           </div>
-          <button onClick={() => setAdding(true)} style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '8px 14px', borderRadius: 8,
-            background: 'rgba(167,139,250,0.12)', border: `1px solid ${T.accent}`,
-            color: T.accent, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
-          }}>
-            <Plus size={13} /> Add fact
-          </button>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button onClick={onExportCSV} disabled={rows.length === 0} title="Export current view to CSV"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '8px 12px', borderRadius: 8,
+                background: 'rgba(45,212,191,0.10)', border: `1px solid rgba(45,212,191,0.30)`,
+                color: T.accentTeal, fontSize: 11, fontWeight: 500,
+                cursor: rows.length === 0 ? 'not-allowed' : 'pointer',
+                fontFamily: T.font, opacity: rows.length === 0 ? 0.5 : 1,
+              }}>
+              <Download size={11} /> Export CSV
+            </button>
+            <button onClick={() => { setBulkMode(!bulkMode); if (bulkMode) clearSelection() }}
+              title={bulkMode ? "Exit bulk select mode" : "Enter bulk select mode"}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '8px 12px', borderRadius: 8,
+                background: bulkMode ? 'rgba(167,139,250,0.18)' : 'rgba(167,139,250,0.06)',
+                border: `1px solid ${bulkMode ? T.accent : 'rgba(167,139,250,0.20)'}`,
+                color: T.accent, fontSize: 11, fontWeight: 500,
+                cursor: 'pointer', fontFamily: T.font,
+              }}>
+              {bulkMode ? <CheckSquare size={11} /> : <Square size={11} />}
+              {bulkMode ? 'Bulk on' : 'Bulk select'}
+            </button>
+            <button onClick={() => setAdding(true)} style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '8px 14px', borderRadius: 8,
+              background: 'rgba(167,139,250,0.12)', border: `1px solid ${T.accent}`,
+              color: T.accent, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
+            }}>
+              <Plus size={13} /> Add fact
+            </button>
+          </div>
         </div>
 
         {/* Search bar */}
@@ -188,7 +277,7 @@ export default function MemoryTab({ user }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onSearch}
-            placeholder="Search facts… (press Enter)"
+            placeholder={category === 'all' ? 'Search all facts… (press Enter)' : `Search within ${category}… (press Enter)`}
             style={{
               flex: 1, background: 'transparent', border: 'none', outline: 'none',
               color: T.text, fontSize: 12, fontFamily: T.font,
@@ -260,6 +349,38 @@ export default function MemoryTab({ user }) {
 
         {/* Rows */}
         <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Bulk action toolbar — only when bulk mode active */}
+          {bulkMode && rows.length > 0 && (
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '8px 12px', marginBottom: 8, borderRadius: 8,
+              background: 'rgba(167,139,250,0.08)', border: `1px solid rgba(167,139,250,0.20)`,
+            }}>
+              <div style={{ fontSize: 11, color: T.text, fontWeight: 500 }}>
+                {selectedIds.size} selected
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button onClick={selectAllVisible} style={{
+                  padding: '5px 10px', borderRadius: 5, background: 'transparent',
+                  border: `1px solid ${T.border}`, color: T.textTertiary, fontSize: 10, cursor: 'pointer', fontFamily: T.font,
+                }}>Select all visible ({rows.length})</button>
+                <button onClick={clearSelection} style={{
+                  padding: '5px 10px', borderRadius: 5, background: 'transparent',
+                  border: `1px solid ${T.border}`, color: T.textTertiary, fontSize: 10, cursor: 'pointer', fontFamily: T.font,
+                }}>Clear</button>
+                <button onClick={onBulkDelete} disabled={selectedIds.size === 0} style={{
+                  padding: '5px 12px', borderRadius: 5,
+                  background: selectedIds.size === 0 ? 'transparent' : 'rgba(248,113,113,0.15)',
+                  border: `1px solid ${selectedIds.size === 0 ? T.border : 'rgba(248,113,113,0.40)'}`,
+                  color: selectedIds.size === 0 ? T.textTertiary : '#F87171',
+                  fontSize: 10, fontWeight: 500, cursor: selectedIds.size === 0 ? 'not-allowed' : 'pointer', fontFamily: T.font,
+                  display: 'flex', alignItems: 'center', gap: 4,
+                }}>
+                  <Trash2 size={10} /> Delete {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
+                </button>
+              </div>
+            </div>
+          )}
           {loading && (
             <div style={{ padding: 20, fontSize: 12, color: T.textTertiary, textAlign: 'center' }}>Loading…</div>
           )}
@@ -272,10 +393,21 @@ export default function MemoryTab({ user }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 480, overflowY: 'auto' }}>
               {rows.map(row => (
                 <div key={row.id} style={{
-                  background: T.surface, borderRadius: 8,
-                  border: `0.5px solid ${T.border}`, padding: 12,
+                  background: selectedIds.has(row.id) ? 'rgba(167,139,250,0.10)' : T.surface,
+                  borderRadius: 8,
+                  border: `0.5px solid ${selectedIds.has(row.id) ? T.accent : T.border}`,
+                  padding: 12,
                   transition: 'background 0.12s',
+                  display: 'flex', alignItems: 'flex-start', gap: 10,
                 }}>
+                  {bulkMode && (
+                    <input type="checkbox"
+                      checked={selectedIds.has(row.id)}
+                      onChange={() => toggleSelect(row.id)}
+                      style={{ accentColor: T.accent, marginTop: 2, flexShrink: 0, cursor: 'pointer' }}
+                    />
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
                   {editingId === row.id ? (
                     <div>
                       <textarea value={editValue} onChange={(e) => setEditValue(e.target.value)} rows={3}
@@ -311,6 +443,7 @@ export default function MemoryTab({ user }) {
                       </div>
                     </>
                   )}
+                  </div>
                 </div>
               ))}
               {hasMore && (
