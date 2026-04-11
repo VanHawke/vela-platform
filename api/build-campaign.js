@@ -303,8 +303,30 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
     // Wipe any previous targets for this campaign first
     await supabase.from('campaign_targets').delete().eq('campaign_id', sequenceId);
     const allTargetRows = [...crmTargetRows, ...webTargetRows];
+    let insertedCount = 0;
     if (allTargetRows.length > 0) {
-      await supabase.from('campaign_targets').insert(allTargetRows);
+      // Chunk inserts in 50s — Supabase has a 1000-row limit per insert and we want
+      // partial success rather than all-or-nothing if a single row violates a constraint.
+      const chunkSize = 50;
+      for (let i = 0; i < allTargetRows.length; i += chunkSize) {
+        const chunk = allTargetRows.slice(i, i + chunkSize);
+        const { data: insData, error: insErr } = await supabase
+          .from('campaign_targets')
+          .insert(chunk)
+          .select('id');
+        if (insErr) {
+          console.error(`[build-campaign] Insert chunk ${i}-${i + chunkSize} failed:`, insErr.message, insErr.details);
+          // Try one-by-one for this chunk so a single bad row doesn't kill the rest
+          for (const row of chunk) {
+            const { error: singleErr } = await supabase.from('campaign_targets').insert(row);
+            if (!singleErr) insertedCount++;
+            else console.error(`[build-campaign] Single row failed: ${row.company_name}/${row.decision_maker_email}: ${singleErr.message}`);
+          }
+        } else {
+          insertedCount += (insData || []).length;
+        }
+      }
+      console.log(`[build-campaign] Inserted ${insertedCount} of ${allTargetRows.length} target rows`);
     }
     const top50 = allTargetRows;  // for the response shape below
 
@@ -328,6 +350,7 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
       competitive_landscape: competitiveLandscape,
       top_50: top50,
       top_8: top50.slice(0, 8),
+      inserted_count: insertedCount,
       sequence_id: sequenceId,
       sequence_name: sequenceName,
       sourced_total: sourced.length,
