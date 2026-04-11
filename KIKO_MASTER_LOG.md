@@ -531,3 +531,112 @@ Plan preserved in `KIKO_VOICE_PIPECAT_MIGRATION.md`. Backup option if forced ask
 - No rogue crons running
 - OpenAI Realtime usage: ~$16/month at current pace (NOT hundreds, earlier overstatement corrected)
 - Target monthly Vercel cost: $35-40 (cron diet keeps this achievable)
+
+
+---
+
+## Section A0f — v0.0.36 → v0.0.38 (April 12, 2026)
+
+**Theme:** Multi-conversation UI + audit-driven cleanup + build campaign live progress
+
+**Total deploys this period:** 3 (v0.0.36, v0.0.37, v0.0.38)
+**Final bundle hash:** TBD (v0.0.38 deploy in progress)
+
+### v0.0.36 — Memory extraction noise cleanup + multi-conversation UI
+
+**Memory extraction (B from Sunny's task list):**
+- Rewrote Haiku extractor prompt in `api/kiko.js` with explicit DO/DON'T examples
+- Demands verifiable concrete facts only: people, places, dates, relationships, preferences
+- Forbids psychological inferences ("User exhibits...", "User shows pattern...", etc.)
+- Returns empty arrays if only speculation found ("empty is better than noisy")
+- Added `SPECULATION_REGEX` filter as defence in depth
+- 30-day dedup query before insert
+
+**Live database cleanup (one-time):**
+- 111 speculation rows deleted (User exhibits/shows/appears/has pattern/etc.)
+- 237 duplicate rows deleted (kept most recent per user_id+key pair)
+- Total: 348 noise/dup rows removed from kiko_personal_context
+
+**Multi-conversation UI (A from Sunny's task list):**
+- NEW `src/components/kiko/ThreadIndicator.jsx` (180 lines)
+- Polls user's `conversations` table every 30s for rows updated in last 60min
+- Excludes current thread, shows purple "N active" pill in top nav
+- Click → dropdown lists parallel threads with title + voice/text icon + relative time
+- Click thread → loads its messages, dispatches `kiko_load_conversation` event
+- `Layout.jsx` imports + renders ThreadIndicator before Listening pill
+- Pairs with `[OTHER ACTIVE THREADS]` system-prompt injection from v0.0.35
+
+### v0.0.37 — Audit fixes: selfcheck WARN + navigate enums + KikoChat listener + voice→text handoff
+
+**Selfcheck `category_coverage` → WARN level:**
+- `check()` now accepts `opts.level`. Marked `category_coverage` as `level: 'warn'`
+- WARN status excluded from FAIL count
+- Selfcheck now correctly reports PASS overall (was FAIL despite all real checks passing)
+- Live verification: 17 PASS, 0 FAIL, 1 WARN (legal/logistics/semiconductors thin = real opportunity gaps, not bugs)
+
+**`navigate_page` enum audit fix (in both voice paths):**
+- Removed phantom routes that don't exist: `news`, `documents`, `intelligence`, `outreach`, `companies` (alias), `sequences` (alias), `tasks` (alias)
+- Added missing real routes: `linkedin`, `kikocode`, `settings`, `memory`, `admin/system`
+- Tool description rewritten to list every page slug + what each does
+- Files: `src/hooks/useRealtimeVoice.js` + `src/components/kiko/KikoVoice.jsx`
+
+**KikoChat `kiko_load_conversation` listener:**
+- ThreadIndicator was dispatching the event but KikoChat wasn't listening
+- Added `useEffect` listener that calls existing `loadConversation()` function
+- Multi-conversation thread switching now actually works end-to-end
+
+**Voice → text handoff button:**
+- New teal "Continue in chat" button next to close X in fullscreen voice mode
+- Click → dispatches `kiko_voice_handoff` event → `handleClose()`
+- `Layout.jsx` flush-on-close path: detects handoff flag, saves transcript (UPDATE or INSERT), navigates to `/`, dispatches `kiko_load_conversation` after 200ms
+- Voice transcript continues in text chat with full context preserved
+
+### v0.0.38 — Memory regex tightening + Build campaign live progress
+
+**Memory extraction quality verification:**
+- Live query confirmed v0.0.36 cleanup held: 0 speculation rows by original regex, 0 new rows since cleanup
+- BUT: random sample of remaining 1,562 inferred rows showed many speculation patterns the original regex MISSED:
+  - "Avoids harder execution work by reframing as strategic evaluation"
+  - "Exhibits procrastination pattern around major business decisions"
+  - "Experiences decision fatigue and execution paralysis"
+  - "Tendency to revisit and elevate strategic decisions"
+  - "Struggles with execution of strategic decisions"
+- Original regex was too narrow (word-boundary issues, narrow vocabulary)
+
+**Aggressive second-pass cleanup:**
+- Broad ILIKE patterns: struggles, avoids, exhibits, paralys, procrastinat, tendency, fatigue, addiction, pattern of, behaviour, may be, appears to, would benefit, lacks, suffers from, neglect, overthinking, re-evaluat, reframes, inclination
+- **445 additional rows deleted**
+- Final state: 1,110 rows remaining (down from 1,570), 0 speculation rows
+
+**Live extractor regex tightened in `api/kiko.js`:**
+- New `SPECULATION_KEYWORDS` regex covering all the patterns the cleanup found
+- Min length raised from 8 → 15 chars
+- The 445 patterns that slipped through last time will now be blocked at extraction time
+
+**Build campaign live progress (Item 5):**
+- New table `kiko_active_jobs` (id uuid PRIMARY KEY, job_type, user_id, status, current_stage, total_stages, stage_label, stage_detail, started_at, updated_at, completed_at, result jsonb, error text)
+- Indexes on (user_id, status, started_at DESC) and (started_at DESC)
+- RLS policies: users see own jobs, service role full access
+- New endpoint `api/job-status.js` (34 lines): GET `?id=<uuid>`, validates uuid shape, returns row from `kiko_active_jobs`
+- `api/build-campaign.js` instrumented with `stageStart()` and `stageDone()` helpers
+- Accepts `job_id` and `user_id` from request body
+- 6 stages instrumented:
+  1. Selecting team (validates category, finds open F1 teams)
+  2. Building exclusion set (indexes existing partnerships across 11 teams)
+  3. Querying CRM (looks for existing contacts in DB)
+  4. Web sourcing fresh companies (Claude + web_search)
+  5. Identifying decision makers (filters against exclusion list)
+  6. Saving targets (persists to campaign_targets table)
+- `stageDone('completed', result)` on success, `stageDone('failed', null, error)` on error
+- `src/pages/Campaigns.jsx runBuildCampaign()`: generates fresh uuid via `crypto.randomUUID()`, stores in `buildJobId` state, passes `job_id` + `user_id` in build request body
+- `BuildingProgress` component rewritten to accept `jobId` prop and poll `/api/job-status?id={jobId}` every 1.5s
+- Live "● LIVE" indicator appears in header when polling kicks in
+- Stage detail subtitle pulls from backend `stage_detail` field when active
+- Falls back to timer estimation if no jobId or backend hasn't inserted row yet (backward compat)
+- Polling stops on `status === 'completed'` or `'failed'`
+
+### Cost status at end of Section A0f
+- 22 deploys today across April 11-12 (~50 build minutes consumed)
+- v0.0.27 cron diet still locked: 9,000+ invocations/month removed
+- New `kiko_active_jobs` table writes are minimal (one row per build, ~7 updates per row)
+- Job rows accumulate but can be cleaned by a future cron (out of scope for v0.0.38)

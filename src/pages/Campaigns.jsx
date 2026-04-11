@@ -208,12 +208,21 @@ export default function Campaigns({ user }) {
   }
 
   // ── Deterministic campaign builder ──
+  // v0.0.38: passes a job_id (uuid) so the backend can write live stage progress
+  // and BuildingProgress can poll /api/job-status?id=xxx for real backend state
+  // instead of relying on a frontend timer estimate.
+  const [buildJobId, setBuildJobId] = useState(null)
   async function runBuildCampaign() {
     setBuildPhase('building')
     setBuildError(null)
     setBuildResult(null)
+    // Generate a fresh uuid for this build run
+    const jobId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+    setBuildJobId(jobId)
     try {
-      const payload = { category: buildCategory }
+      const payload = { category: buildCategory, job_id: jobId, user_id: user?.id }
       if (buildTeam && buildTeam !== 'auto') payload.preferredTeam = buildTeam
       const r = await fetch('/api/build-campaign', {
         method: 'POST',
@@ -583,7 +592,7 @@ export default function Campaigns({ user }) {
             )}
 
             {buildPhase === 'building' && (
-              <BuildingProgress />
+              <BuildingProgress jobId={buildJobId} />
             )}
 
             {buildPhase === 'review' && buildResult && (
@@ -664,28 +673,62 @@ export default function Campaigns({ user }) {
 
 
 // ─────────────────────────────────────────────────────────────────────
-// BuildingProgress — animated multi-stage progress for the campaign builder.
-// Walks through 6 stages with timed labels + a live elapsed counter.
-// Visually keeps the user engaged while the backend takes 60-90 seconds.
+// BuildingProgress — multi-stage progress for the campaign builder.
+// v0.0.38 (Sunny spec 2026-04-12): polls /api/job-status?id={jobId} every 1.5s
+// for real backend stage progress instead of frontend timer estimation.
+// Falls back to timer mode if no jobId is provided (backward compat).
 // ─────────────────────────────────────────────────────────────────────
-function BuildingProgress() {
+function BuildingProgress({ jobId }) {
   const stages = [
-    { label: 'Selecting team via partnership matrix', sub: 'Querying 381 active F1 partnerships', durationMs: 3000 },
+    { label: 'Selecting team via partnership matrix', sub: 'Querying active F1 partnerships', durationMs: 3000 },
     { label: 'Loading category exclusion set', sub: 'Filtering blocked teams + overlap conflicts', durationMs: 3000 },
-    { label: 'Querying CRM for industry matches', sub: 'Scoring 2,244 companies + 4,193 contacts', durationMs: 8000 },
+    { label: 'Querying CRM for industry matches', sub: 'Scoring companies + contacts', durationMs: 8000 },
     { label: 'Web search for fresh prospects', sub: 'Real-time sourcing via Claude + web_search', durationMs: 35000 },
     { label: 'Identifying decision-makers', sub: 'CMO / VP Marketing / Head of Brand / CRO', durationMs: 15000 },
     { label: 'Validating against partner exclusions', sub: 'Defense in depth — no F1 partner duplicates', durationMs: 6000 },
   ]
   const [currentStage, setCurrentStage] = React.useState(0)
   const [elapsed, setElapsed] = React.useState(0)
+  const [backendDetail, setBackendDetail] = React.useState(null)
+  const [pollMode, setPollMode] = React.useState(false)  // true once we get a real job status
 
   React.useEffect(() => {
     const startTime = Date.now()
-    const timer = setInterval(() => {
+    const elapsedTimer = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startTime) / 1000))
+    }, 250)
+
+    // ── Real backend polling path (v0.0.38) ──
+    let pollInterval = null
+    let timerInterval = null
+    if (jobId) {
+      pollInterval = setInterval(async () => {
+        try {
+          const r = await fetch(`/api/job-status?id=${jobId}`, { cache: 'no-store' })
+          if (!r.ok) return  // 404 ok — backend might not have inserted the row yet
+          const job = await r.json()
+          if (job?.current_stage != null) {
+            // Convert 1-indexed backend stage → 0-indexed frontend stage
+            // Stage N is currently running, so frontend "active" should be N-1
+            setCurrentStage(Math.max(0, job.current_stage - 1))
+            setBackendDetail(job.stage_detail || job.stage_label || null)
+            setPollMode(true)
+          }
+          if (job?.status === 'completed') {
+            setCurrentStage(stages.length)  // all done
+            clearInterval(pollInterval)
+          } else if (job?.status === 'failed') {
+            clearInterval(pollInterval)
+          }
+        } catch {} // non-fatal
+      }, 1500)
+    }
+
+    // ── Timer fallback (only when poll mode hasn't kicked in yet) ──
+    timerInterval = setInterval(() => {
+      // If we're already in poll mode, the backend is driving the stage state
+      if (pollMode) return
       const e = Math.floor((Date.now() - startTime) / 1000)
-      setElapsed(e)
-      // Compute current stage based on cumulative duration
       let cumulative = 0
       for (let i = 0; i < stages.length; i++) {
         cumulative += stages[i].durationMs
@@ -696,14 +739,22 @@ function BuildingProgress() {
       }
       setCurrentStage(stages.length - 1)
     }, 250)
-    return () => clearInterval(timer)
-  }, [])
+
+    return () => {
+      clearInterval(elapsedTimer)
+      if (pollInterval) clearInterval(pollInterval)
+      if (timerInterval) clearInterval(timerInterval)
+    }
+  }, [jobId, pollMode])
 
   return (
     <div style={{ padding: '32px 24px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div style={{ fontSize: 14, color: '#fff', fontWeight: 500 }}>⚡ Building campaign...</div>
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontFamily: 'ui-monospace,monospace' }}>{elapsed}s elapsed</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {pollMode && <span style={{ fontSize: 9, color: 'rgba(45,212,191,0.7)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>● live</span>}
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontFamily: 'ui-monospace,monospace' }}>{elapsed}s elapsed</div>
+        </div>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -731,7 +782,9 @@ function BuildingProgress() {
                 <div style={{ fontSize: 12, color: isActive ? '#fff' : isDone ? 'rgba(45,212,191,0.85)' : 'rgba(255,255,255,0.55)', fontWeight: 500, marginBottom: 2 }}>
                   {stage.label}
                 </div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.40)' }}>{stage.sub}</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.40)' }}>
+                  {isActive && backendDetail ? backendDetail : stage.sub}
+                </div>
               </div>
             </div>
           )
@@ -739,7 +792,7 @@ function BuildingProgress() {
       </div>
 
       <div style={{ marginTop: 20, fontSize: 10, color: 'rgba(255,255,255,0.35)', textAlign: 'center', lineHeight: 1.6 }}>
-        Total expected: 60-90 seconds. Don't close this window.
+        {pollMode ? 'Live backend progress. Don\'t close this window.' : 'Total expected: 60-90 seconds. Don\'t close this window.'}
       </div>
       <style>{`
         @keyframes pulse {

@@ -47,7 +47,40 @@ export default async function handler(req, res) {
   const { category } = req.body || {};
   if (!category) return res.status(400).json({ error: 'category required' });
 
+  // ─── Job tracking (Sunny spec 2026-04-12 v0.0.38) ───
+  // Frontend can pass a job_id (uuid). We INSERT a row at start, UPDATE at each
+  // stage, mark complete at end. Frontend polls /api/job-status?id=xxx for live
+  // progress instead of relying on a frontend timer.
+  const jobId = req.body?.job_id || null;
+  const userId = req.body?.user_id || null;
+  const stageStart = async (stage, label, detail) => {
+    if (!jobId) return;
+    try {
+      await supabase.from('kiko_active_jobs').upsert({
+        id: jobId,
+        job_type: 'build-campaign',
+        user_id: userId,
+        status: 'running',
+        current_stage: stage,
+        total_stages: 6,
+        stage_label: label,
+        stage_detail: detail || null,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'id' });
+    } catch (e) { console.warn('[build-campaign] job upsert failed:', e?.message); }
+  };
+  const stageDone = async (status, result, error) => {
+    if (!jobId) return;
+    try {
+      await supabase.from('kiko_active_jobs').update({
+        status, result: result || null, error: error || null,
+        completed_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+      }).eq('id', jobId);
+    } catch (e) { console.warn('[build-campaign] job complete failed:', e?.message); }
+  };
+
   try {
+    await stageStart(1, 'Selecting team', `Validating ${category} category and finding open F1 teams`);
     // ─── STEP 1: Validate category exists ───
     const { data: catRow } = await supabase
       .from('sponsor_categories').select('*').eq('id', category).maybeSingle();
@@ -115,6 +148,7 @@ export default async function handler(req, res) {
     }
 
     // ─── STEP 5: Build the exclusion set (every clean partner name across all teams) ───
+    await stageStart(2, 'Building exclusion set', `Indexing existing F1 partnerships across all 11 teams`);
     const exclusionSet = new Set();
     for (const p of allPartnerships || []) {
       const name = (p.partner_name || '').trim();
@@ -181,6 +215,7 @@ export default async function handler(req, res) {
     }
 
     // ─── STEP 7: CRM-FIRST sourcing — query our own database BEFORE web search ───
+    await stageStart(3, 'Querying CRM', `Looking for existing ${catRow.name} contacts in your database`);
     const crmResults = await sourceFromCRM(category, exclusionSet, 30);
 
     // Build CRM target rows — one row per (company, decision_maker) pair
@@ -217,6 +252,7 @@ export default async function handler(req, res) {
     }
 
     // ─── STEP 8: Web search to fill the gap up to 50 total companies ───
+    await stageStart(4, 'Web sourcing fresh companies', `Found ${crmResults.length} in CRM, web-searching for additional ${catRow.name} prospects`);
     // Add CRM company names to the exclusion set so the LLM doesn't duplicate them
     const crmCompanyNamesLower = new Set(crmResults.map(c => c.company.toLowerCase()));
     const combinedExclusion = new Set([...exclusionSet, ...crmCompanyNamesLower]);
@@ -264,6 +300,7 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
     }
 
     // ─── STEP 9: Hard-filter web results against combined exclusion (defense in depth) ───
+    await stageStart(5, 'Identifying decision makers', `Filtering ${sourced.length} sourced companies against exclusion list`);
     const filtered = sourced.filter(c => {
       const name = (c.company || '').toLowerCase().trim();
       return name && !combinedExclusion.has(name);
@@ -300,6 +337,7 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
     }
 
     // ─── STEP 11: Insert all targets (CRM-first, then web) ───
+    await stageStart(6, 'Saving targets', `Persisting ${crmTargetRows.length + webTargetRows.length} target rows to database`);
     // Wipe any previous targets for this campaign first
     await supabase.from('campaign_targets').delete().eq('campaign_id', sequenceId);
     const allTargetRows = [...crmTargetRows, ...webTargetRows];
@@ -341,7 +379,7 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
       .map(p => ({ team_id: p.team_id, partner: p.partner_name, tier: p.tier, category: p.category_id }));
 
     // ─── STEP 11: Return the structured campaign spec ───
-    return res.status(200).json({
+    const responsePayload = {
       success: true,
       team: { id: team.id, name: team.name, full_name: team.full_name, principal: team.team_principal },
       category: { id: category, name: catRow.name },
@@ -359,9 +397,12 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
       excluded_companies_count: exclusionSet.size,
       blocked_teams: [...blockedTeamIds],
       next_action: `Review top 8 then call POST /api/build-campaign/enroll with { campaign_id: "${sequenceId}" } to enroll the top 8 into the sequence.`,
-    });
+    };
+    await stageDone('completed', { sequence_id: sequenceId, inserted_count: insertedCount, sourced_total: sourced.length });
+    return res.status(200).json(responsePayload);
   } catch (err) {
     console.error('[build-campaign] error:', err);
+    await stageDone('failed', null, err.message || 'unknown error');
     return res.status(500).json({ error: err.message, stack: err.stack });
   }
 }

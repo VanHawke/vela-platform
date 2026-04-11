@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-11T20:06:03.390Z",
+  "generated_at": "2026-04-11T20:28:13.572Z",
   "commits": [
+    {
+      "hash": "9f747fc",
+      "subject": "v0.0.37 — Session 1 batch B: selfcheck WARN level + navigate enums + KikoChat listener + voice→text handoff",
+      "when": "22 minutes ago"
+    },
     {
       "hash": "f6f3ffa",
       "subject": "v0.0.36 — memory extraction noise cleanup + multi-conversation UI",
-      "when": "27 minutes ago"
+      "when": "49 minutes ago"
     },
     {
       "hash": "7be8805",
       "subject": "docs: KIKO_MASTER_LOG.md Section A0e v0.0.27 → v0.0.35 (no code changes, doc only)",
-      "when": "35 minutes ago"
+      "when": "57 minutes ago"
     },
     {
       "hash": "2efb5dd",
       "subject": "v0.0.35 — voice transcript race fix + avatar volume hardcode + chat history timestamps + multi-conversation foundation",
-      "when": "65 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "77d805c",
@@ -29,7 +34,7 @@
     {
       "hash": "592ccbf",
       "subject": "v0.0.32 — avatar still + Kiko transcript event name + memory threshold",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "eac8735",
@@ -49,17 +54,17 @@
     {
       "hash": "57c2a6d",
       "subject": "v0.0.28 — voice goodbye instant + voice fast endpoint + morning email guards",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "b14ba8e",
       "subject": "v0.0.27 — CRITICAL cost cuts + build campaign cache fix + morning email iterable guards",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "1e74c59",
       "subject": "v0.0.26 — voice goodbye + voice→history + xml leak + kill emails + Health Center + morning email cron",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "ed85d26",
@@ -94,11 +99,6 @@
     {
       "hash": "47c5b48",
       "subject": "v0.0.21 — CRM-first sourcing + freshness verification + sign-off fix + no caps",
-      "when": "29 hours ago"
-    },
-    {
-      "hash": "4da830c",
-      "subject": "v0.0.20 — Phase 2a/2b/2e — campaigns paused by default + auto-draft + title in prospects",
       "when": "30 hours ago"
     }
   ]

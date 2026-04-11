@@ -1551,11 +1551,15 @@ If you only see speculation/patterns and no concrete facts, return empty arrays.
 
         // Low-value filter — drop any extracted item matching speculation patterns.
         // Defence in depth: even if Haiku ignores the prompt, these patterns get blocked.
+        // Expanded 2026-04-12 v0.0.38 after live audit revealed 445 speculation rows
+        // the original narrow regex missed. Now matches the broader patterns directly.
         const SPECULATION_REGEX = /^(user|the user|sunny)\s+(exhibits|shows|appears|may|might|tends|seems|has\s+pattern|has\s+execution\s+gap|needs\s+accountability|is\s+experiencing|is\s+procrastinating|is\s+relitigating)/i;
+        const SPECULATION_KEYWORDS = /(struggles?|avoids?|exhibits?|experienc(es|ing)|paralys|procrastinat|tendency|tends?\s+to|tends?\s+toward|fatigue|addiction|pattern\s+of|pattern\s+around|behaviou?r|hesitat|indecis|may\s+be|might\s+be|appears?\s+to|seems?\s+to|would\s+benefit|could\s+benefit|lacks?\s+|suffers?\s+from|neglect|overthinking|re-?evaluat|reframes?|reframing|inclination|compulsiv)/i;
         const isLowValue = (str) => {
           if (!str || typeof str !== 'string') return true;
-          if (str.length < 8) return true;  // too short to be useful
+          if (str.length < 15) return true;  // too short to be useful
           if (SPECULATION_REGEX.test(str.trim())) return true;
+          if (SPECULATION_KEYWORDS.test(str)) return true;
           return false;
         };
 
