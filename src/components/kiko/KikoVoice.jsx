@@ -2,7 +2,7 @@
 // Speech-to-speech. Function calling for real data. No pipeline.
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { X } from 'lucide-react'
+import { X, MessageSquare } from 'lucide-react'
 import KikoWaveform from './KikoWaveform'
 import AuroraCanvas from '../AuroraCanvas'
 import T from '@/lib/theme'
@@ -292,7 +292,7 @@ Warm, direct, intelligent female voice. 1-3 sentences per turn. Sound like a tru
 - Never respond to background noise, echoes, or your own audio playing back`,
               tools: [
                 { type: 'function', name: 'ask_kiko', description: 'MANDATORY for every user query that is not a pure greeting/thanks/goodbye. This is the ONLY way to access Kiko intelligence: pipeline, deals, contacts, partnerships, calendar, email, tasks, memory, news, web search, briefings, strategy. The user expects you to use this on every real question.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'The full question or request, exactly as the user said it' } }, required: ['query'] } },
-                { type: 'function', name: 'navigate_page', description: 'Navigate the platform UI. ONLY when the user explicitly says go to / take me to / open / show me [page name].', parameters: { type: 'object', properties: { page: { type: 'string', enum: ['home','pipeline','contacts','companies','organisations','campaigns','sequences','command-centre','calendar','tasks','partnership-matrix','news','documents','intelligence','outreach','admin'] } }, required: ['page'] } },
+                { type: 'function', name: 'navigate_page', description: 'Navigate the platform UI. ONLY when the user explicitly says go to / take me to / open / show me [page name]. Page list: home (chat), pipeline (deals), contacts (CRM), organisations (companies), command-centre (tasks/email/inbox hub), partnership-matrix (F1 sponsorship landscape), calendar (race calendar), campaigns (outreach campaigns), linkedin (LinkedIn queue), kikocode (code workspace), settings, memory (admin), admin, admin/system. Use exact slug.', parameters: { type: 'object', properties: { page: { type: 'string', enum: ['home','pipeline','contacts','organisations','command-centre','partnership-matrix','calendar','campaigns','linkedin','kikocode','settings','memory','admin','admin/system'] } }, required: ['page'] } },
               ],
               tool_choice: 'auto',
             }
@@ -367,6 +367,26 @@ Warm, direct, intelligent female voice. 1-3 sentences per turn. Sound like a tru
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}><AuroraCanvas /></div>
 
       {/* X close */}
+      {/* Continue in chat — voice → text handoff (Sunny spec 2026-04-12) */}
+      <button onClick={() => {
+        try {
+          window.dispatchEvent(new CustomEvent('kiko_voice_handoff', { detail: { source: 'voice' } }))
+        } catch {}
+        handleClose()
+      }} style={{
+        position: 'absolute', top: 20, right: 60, zIndex: 2,
+        display: 'flex', alignItems: 'center', gap: 6,
+        padding: '0 12px', height: 32, borderRadius: 10,
+        background: 'rgba(45,212,191,0.06)', border: '1.5px solid rgba(45,212,191,0.30)',
+        cursor: 'pointer', color: 'rgba(45,212,191,0.85)',
+        fontSize: 11, fontWeight: 500, fontFamily: 'inherit',
+        transition: 'all 0.2s',
+      }}
+        onMouseOver={e => { e.currentTarget.style.background = 'rgba(45,212,191,0.10)'; e.currentTarget.style.borderColor = 'rgba(45,212,191,0.50)' }}
+        onMouseOut={e => { e.currentTarget.style.background = 'rgba(45,212,191,0.06)'; e.currentTarget.style.borderColor = 'rgba(45,212,191,0.30)' }}
+        title="Close voice and continue in text chat with full transcript"
+      ><MessageSquare size={12} />Continue in chat</button>
+
       <button onClick={handleClose} style={{
         position: 'absolute', top: 20, right: 20, zIndex: 2, width: 32, height: 32, borderRadius: 10,
         background: 'rgba(167,139,250,0.04)', border: '1.5px solid rgba(167,139,250,0.40)',

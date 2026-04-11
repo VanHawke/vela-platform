@@ -415,6 +415,17 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     setMessages(conv.messages.map(m => ({ role: m.role, content: m.content })))
     setActiveConvId(conv.id); setStreamText(''); setStreaming(false); setShowAllMsgs(false)
   }
+
+  // Listen for cross-thread switch events from ThreadIndicator
+  // Sunny spec 2026-04-12: clicking a thread in the multi-conv dropdown
+  // should immediately load that thread's messages into the active chat.
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.detail) loadConversation(e.detail)
+    }
+    window.addEventListener('kiko_load_conversation', handler)
+    return () => window.removeEventListener('kiko_load_conversation', handler)
+  }, [])
   const startNewChat = () => {
     setMessages([]); setActiveConvId(null); setStreamText(''); setStreaming(false); setInput('')
     setVoiceActive(false); setVoiceMessages([])

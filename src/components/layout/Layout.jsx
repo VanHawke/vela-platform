@@ -233,6 +233,13 @@ export default function Layout({ user }) {
   }, [user])
 
   // Reset voice buffer when voice mode closes — next voice session starts a new conversation
+  const handoffPendingRef = useRef(false)
+  useEffect(() => {
+    const handler = () => { handoffPendingRef.current = true }
+    window.addEventListener('kiko_voice_handoff', handler)
+    return () => window.removeEventListener('kiko_voice_handoff', handler)
+  }, [])
+
   useEffect(() => {
     if (!globalVoiceMode && !voiceFullscreen) {
       // Flush any pending save immediately, then reset
@@ -247,6 +254,8 @@ export default function Layout({ user }) {
       // Without (b), every short voice session lost its transcript.
       if (voiceMsgsRef.current.length > 0 && user?.id) {
         const finalMsgs = voiceMsgsRef.current
+        const wasHandoff = handoffPendingRef.current
+        handoffPendingRef.current = false
         if (voiceConvIdRef.current) {
           const finalConvId = voiceConvIdRef.current
           supabase.from('conversations').update({
@@ -254,6 +263,15 @@ export default function Layout({ user }) {
             updated_at: new Date().toISOString()
           }).eq('id', finalConvId).then(() => {
             console.log('[Layout] Voice conv UPDATED on close:', finalConvId, finalMsgs.length, 'msgs')
+            // If user clicked Continue in chat, navigate to / and load this conv
+            if (wasHandoff) {
+              nav('/')
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('kiko_load_conversation', {
+                  detail: { id: finalConvId, messages: finalMsgs, title: '🎙 Voice handoff', type: 'voice' }
+                }))
+              }, 200)
+            }
           })
         } else {
           // First save never fired — INSERT fresh row now
@@ -265,8 +283,16 @@ export default function Layout({ user }) {
             title,
             messages: finalMsgs,
             metadata: { source: 'voice', started_at: new Date().toISOString() }
-          }).then(() => {
+          }).select('id').single().then(({ data }) => {
             console.log('[Layout] Voice conv INSERTED on close:', finalMsgs.length, 'msgs')
+            if (wasHandoff && data?.id) {
+              nav('/')
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('kiko_load_conversation', {
+                  detail: { id: data.id, messages: finalMsgs, title, type: 'voice' }
+                }))
+              }, 200)
+            }
           })
         }
       }

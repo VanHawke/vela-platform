@@ -13,12 +13,16 @@ export default async function handler(req, res) {
   const checks = [];
   const t0 = Date.now();
 
-  async function check(name, fn) {
+  async function check(name, fn, opts = {}) {
     try {
       const result = await fn();
-      checks.push({ name, status: result.pass ? 'PASS' : 'FAIL', ...result });
+      // level: 'warn' means failures are diagnostic, not hard failures.
+      // Used for things like category_coverage which surface gaps but aren't errors.
+      const status = result.pass ? 'PASS' : (opts.level === 'warn' ? 'WARN' : 'FAIL');
+      checks.push({ name, status, level: opts.level || 'error', ...result });
     } catch (err) {
-      checks.push({ name, status: 'FAIL', error: err.message || String(err) });
+      const status = opts.level === 'warn' ? 'WARN' : 'FAIL';
+      checks.push({ name, status, level: opts.level || 'error', error: err.message || String(err) });
     }
   }
 
@@ -76,6 +80,8 @@ export default async function handler(req, res) {
   });
 
   // ─── Coverage per category (diagnostic only — < 5 teams with a partner) ───
+  // WARN level: this surfaces opportunity gaps in real data, not bugs. Categories
+  // with few partnered teams are sales opportunities, not system failures.
   await check('category_coverage', async () => {
     const partnerships = await sbFetch('f1_partnerships?select=team_id,category_id&status=eq.active');
     const byCategory = {};
@@ -93,7 +99,7 @@ export default async function handler(req, res) {
       expected: '0 thin',
       thin: thinCategories,
     };
-  });
+  }, { level: 'warn' });
 
   // ─── Kiko sequences sanity ───
   await check('kiko_sequences_table_reachable', async () => {
@@ -180,15 +186,17 @@ export default async function handler(req, res) {
   });
 
   // ─── Summary ───
+  // FAIL = hard failures only (level !== 'warn'). WARN doesn't block overall pass.
   const passed = checks.filter(c => c.status === 'PASS').length;
+  const warned = checks.filter(c => c.status === 'WARN').length;
   const failed = checks.filter(c => c.status === 'FAIL').length;
   const overall = failed === 0 ? 'PASS' : 'FAIL';
 
   res.status(200).json({
     overall,
-    summary: `${passed}/${checks.length} passed, ${failed} failed`,
+    summary: `${passed}/${checks.length} passed, ${failed} failed${warned ? `, ${warned} warned` : ''}`,
     duration_ms: Date.now() - t0,
-    version: 'v2',
+    version: 'v2.1',
     checks,
     timestamp: new Date().toISOString(),
   });

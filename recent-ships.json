@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-11T19:38:52.957Z",
+  "generated_at": "2026-04-11T20:06:03.390Z",
   "commits": [
+    {
+      "hash": "f6f3ffa",
+      "subject": "v0.0.36 — memory extraction noise cleanup + multi-conversation UI",
+      "when": "27 minutes ago"
+    },
     {
       "hash": "7be8805",
       "subject": "docs: KIKO_MASTER_LOG.md Section A0e v0.0.27 → v0.0.35 (no code changes, doc only)",
-      "when": "8 minutes ago"
+      "when": "35 minutes ago"
     },
     {
       "hash": "2efb5dd",
       "subject": "v0.0.35 — voice transcript race fix + avatar volume hardcode + chat history timestamps + multi-conversation foundation",
-      "when": "38 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "77d805c",
       "subject": "v0.0.34 — REAL Gmail signature fix: stop stripping images on cold outreach",
-      "when": "68 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "970cf27",
       "subject": "v0.0.33 — voice fixes batch + Gmail signature inline base64 + geo-location + sig-diag",
-      "when": "83 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "592ccbf",
@@ -29,17 +34,17 @@
     {
       "hash": "eac8735",
       "subject": "v0.0.31 — voice forced ask_kiko (full Sonnet) + goodbye 3 phrases + Gmail sig CID fix + email fixes + build progress",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "34c18b5",
       "subject": "v0.0.30 — voice goodbye + transcription ROOT CAUSE FIX + Kiko find leads + auto verified end-to-end",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "cf232ac",
       "subject": "v0.0.29 — REAL ROOT CAUSE FIX for build campaign",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "57c2a6d",
@@ -59,12 +64,12 @@
     {
       "hash": "ed85d26",
       "subject": "master log: A0d session — v0.0.24 → v0.0.25 (build timeout fix, top-8 removal, palette fix, CRM badge, Lemlist research)",
-      "when": "27 hours ago"
+      "when": "28 hours ago"
     },
     {
       "hash": "be13dc9",
       "subject": "v0.0.25 — top nav viewport-centred + Previously in CRM badge + category gap formatting tightened + Lemlist research doc",
-      "when": "27 hours ago"
+      "when": "28 hours ago"
     },
     {
       "hash": "8edd203",
@@ -74,17 +79,17 @@
     {
       "hash": "3241c0e",
       "subject": "master log: A0c session — v0.0.19 → v0.0.23 (Phase 1-5 + CRM-first sourcing + verification gate + timezone sender)",
-      "when": "28 hours ago"
+      "when": "29 hours ago"
     },
     {
       "hash": "71731b5",
       "subject": "v0.0.23 — Phase 3 Command Centre alignment + Phase 5 timezone-aware sender (true 24h)",
-      "when": "28 hours ago"
+      "when": "29 hours ago"
     },
     {
       "hash": "7b1a853",
       "subject": "v0.0.22 — Verify+Activate UI buttons + Claude.ai warm dark palette + clean test data",
-      "when": "28 hours ago"
+      "when": "29 hours ago"
     },
     {
       "hash": "47c5b48",
@@ -94,12 +99,7 @@
     {
       "hash": "4da830c",
       "subject": "v0.0.20 — Phase 2a/2b/2e — campaigns paused by default + auto-draft + title in prospects",
-      "when": "29 hours ago"
-    },
-    {
-      "hash": "c4cf6b6",
-      "subject": "v0.0.20 — Phase 2 campaign builder safety + auto-draft + UX",
-      "when": "29 hours ago"
+      "when": "30 hours ago"
     }
   ]
 }
