@@ -1,7 +1,7 @@
 // api/gmail-draft.js — Creates Gmail draft (or sends test email) using stored Google OAuth tokens
 // Signature is pulled from the user's actual Gmail signature via the sendAs API — not hardcoded.
 import { createClient } from '@supabase/supabase-js'
-import { wrapEmailBody, loadUserSignatures } from './lib/email-format.js'
+import { wrapEmailBody, loadUserSignatures, buildMimeWithInlineImages } from './lib/email-format.js'
 import { getGoogleToken } from './google-token.js'
 
 const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
@@ -74,13 +74,22 @@ export default async function handler(req, res) {
       coldSignature: signatures.coldSignature
     })
 
-    // Build email with vanhawke.agency alias
-    const raw = buildRawEmail({
+    // Build email with vanhawke.agency alias.
+    // If signature has inline cid: images, build multipart/related MIME so the
+    // images render correctly in the recipient's inbox.
+    const cleanSubject = (subject || '')
+      .replace(/[\u2014\u2013\u2015\u2012\u2010\u2011]/g, '-')
+      .replace(/\u00D7/g, 'x')
+      .replace(/â€"/g, '-')
+    const encodedSubject = /^[\x20-\x7E]*$/.test(cleanSubject) ? cleanSubject : `=?UTF-8?B?${Buffer.from(cleanSubject).toString('base64')}?=`
+
+    const raw = buildMimeWithInlineImages({
       from: 'Sunny Sidhu <sunny@vanhawke.agency>',
       to: to || '',
-      subject,
+      subject: encodedSubject,
       htmlBody,
-      plainBody
+      plainBody,
+      inlineImages: signatures.inlineImages || [],
     })
 
     // Send OR Draft depending on `send` flag

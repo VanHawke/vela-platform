@@ -535,15 +535,25 @@ async function draftSequenceSteps(teamName, categoryName) {
 
 VOICE: Direct, corporate, commanding authority. No "hope you're well". No "circle back". No generic mission language. Open with strategic context, close with a specific next step. Sentences are complex-compound and confident.
 
+MANDATORY EMAIL STRUCTURE — every email step MUST follow this exact shape:
+Line 1: "Dear {firstName}," (or "Hi {firstName}," for warmer steps 4-5)
+Line 2: blank
+Line 3+: body paragraphs (separated by blank lines)
+Last paragraph: the CTA sentence
+Line N: blank
+Line N+1: "Kind regards," (or "Best regards," / "Best," / "Many thanks,")
+Line N+2: "{signature}"
+
+DO NOT write Sunny's name, title, or company anywhere. The {signature} placeholder is replaced server-side with the user's real Gmail signature including logo. If you write "Sunny Sidhu" or "Founder & Principal" or "Van Hawke" anywhere in the body, the result will be a duplicate signature and the user will be angry.
+
 CONSTRAINTS PER STEP:
-- Email body: under 150 words
-- LinkedIn message: under 120 words
+- Email body: 80-150 words (excluding greeting and sign-off)
+- LinkedIn message: under 120 words, starts with "Hi {firstName},"
 - Subject lines: under 8 words, specific (no "Quick question" or "Following up")
 - Use {firstName} for first name, {company} for company name
 - DO NOT include sponsorship pricing
 - DO NOT reference any "secured funding"
 - USD only if mentioning numbers
-- DO NOT add a sign-off, name, title, or signature of any kind. The user's Gmail signature is auto-appended when the email sends — adding one here causes a duplicate "Sunny Sidhu / CEO, Van Hawke Group" in the sent email. End the body with the CTA sentence and STOP. No "Best", no "Kind regards", no name, no title, nothing.
 
 5 STEPS REQUIRED:
 1. Day 0 — Email — Authority-led intro. Reference ${teamName}'s 2026 ${categoryName} category opportunity. Concrete competitive context. End with a specific 15-min slot ask.
@@ -552,7 +562,7 @@ CONSTRAINTS PER STEP:
 4. Day 7 — Email — Scarcity / window. Note that ${teamName} is in active conversation with two other ${categoryName} brands and the window closes within 14 days. Specific CTA.
 5. Day 14 — Email — Final note. Direct, no fluff, "if now is not the right time, here is who else to contact internally / when would be better". Door-open close.
 
-Return ONLY a valid JSON array of EXACTLY 5 entries, no markdown, no preamble. Each entry must have: { "type", "channel", "delay_days", "subject", "body" }. type is always "email". channel is "email" or "linkedin". delay_days as integer. body uses \\n for line breaks.`;
+Return ONLY a valid JSON array of EXACTLY 5 entries, no markdown, no preamble, no explanation. Each entry must have: { "type", "channel", "delay_days", "subject", "body" }. type is always "email". channel is "email" or "linkedin". delay_days as integer. body uses \\n for line breaks and INCLUDES the greeting + sign-off + {signature} placeholder per the mandatory structure above.`;
 
   try {
     const res = await anthropic.messages.create({

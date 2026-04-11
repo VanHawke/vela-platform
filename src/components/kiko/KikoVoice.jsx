@@ -28,17 +28,45 @@ async function executeTool(name, args) {
       return JSON.stringify({ navigated: true, page })
     }
     if (name === 'ask_kiko') {
-      // VOICE FAST PATH: hits /api/kiko-voice (Haiku, ~2-4s) instead of /api/kiko
-      // (Sonnet + classifier + sub-agents, 5-15s). Voice needs sub-3s replies.
-      const r = await fetch('/api/kiko-voice', {
+      // FULL KIKO BRAIN: hits /api/kiko (Sonnet + KIKO_BIBLE.md + memory + 39 tools).
+      // Slower (~5-12s) but actually intelligent. The lite Haiku /api/kiko-voice
+      // endpoint was a mistake — it left voice Kiko hallucinating from training.
+      // Streaming SSE response, accumulate deltas into final string.
+      const userEmail = (await supabase.auth.getSession()).data?.session?.user?.email || ''
+      const r = await fetch('/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          query: args.query,
-          userEmail: (await supabase.auth.getSession()).data?.session?.user?.email || '',
+          message: args.query,
+          userEmail,
+          currentPage: window.location.pathname.replace('/', '') || 'home',
+          conversationHistory: [],
+          voiceMode: true,  // backend uses this to trim response length
         })
       })
-      const j = await r.json()
-      return j.text || j.error || 'No response'
+      if (!r.ok || !r.body) return `Error: ${r.status}`
+      const reader = r.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let accumulated = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          try {
+            const payload = JSON.parse(line.slice(6))
+            if (typeof payload.delta === 'string') accumulated += payload.delta
+          } catch {}
+        }
+      }
+      // Strip Claude's reasoning preamble (same fix as draft regenerate)
+      let cleaned = accumulated.trim()
+      cleaned = cleaned.replace(/^(I'll|Let me|I need to|I'm going to|I will|Now I'll|First,?)[^.]*?\.\s*/i, '')
+      cleaned = cleaned.replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/, '')
+      return cleaned || 'I could not find that information.'
     }
     return JSON.stringify({ error: `Unknown tool: ${name}` })
   } catch (err) { console.error('[KikoVoice] Tool error:', err); return JSON.stringify({ error: err.message }) }
@@ -122,21 +150,21 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
       if (msg.type === 'conversation.item.input_audio_transcription.completed') {
         const userText = (msg.transcript || '').trim()
         if (userText && onMessage) onMessage({ role: 'user', content: userText, at: Date.now() })
-        // SAFETY NET: any goodbye/farewell phrase fires the close fallback within 3s.
-        // Liberal regex — matches "bye", "goodbye", "goodbye kiko", "see you later",
-        // "talk later", "stop listening", "close voice", "i'm done", "thanks bye", etc.
-        const lower = userText.toLowerCase()
+        // GOODBYE — EXACT 3 PHRASES ONLY (Sunny spec 2026-04-11):
+        //   "goodbye"  |  "goodbye kiko"  |  "bye kiko"
+        // Strip punctuation and lowercase, then exact match. Anything else
+        // does NOT close the session — no "see you later", no "thanks bye".
+        const normalized = userText.toLowerCase().replace(/[.,!?]/g, '').trim()
         const isGoodbye = (
-          /\b(bye|goodbye|good\s*bye)\b/.test(lower) ||
-          /\b(see\s+you|talk\s+(to\s+you\s+)?(later|soon)|catch\s+you\s+later|speak\s+(to\s+you\s+)?(later|soon))\b/.test(lower) ||
-          /\b(close\s+voice|stop\s+listening|stop\s+voice|end\s+(voice|call)|exit\s+voice|hang\s+up)\b/.test(lower) ||
-          /\b(i'?m\s+done|that'?s\s+all|that\s+is\s+all|we'?re\s+done|all\s+done)\b/.test(lower)
+          normalized === 'goodbye' ||
+          normalized === 'goodbye kiko' ||
+          normalized === 'bye kiko'
         )
         if (isGoodbye) {
           console.log('[KikoVoice] Goodbye detected — closing IMMEDIATELY:', userText)
           // Cancel any in-flight GPT-4o response so it doesn't keep talking
           try { dcRef.current?.send(JSON.stringify({ type: 'response.cancel' })) } catch {}
-          // Fire close right away — don't wait for GPT-4o farewell
+          // Fire close right away
           if (window.__kikoVoiceClose) window.__kikoVoiceClose()
         }
       }
@@ -204,56 +232,63 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
           console.log('[KikoVoice] Data channel open — sending session config')
           setStatus('listening')
           // Send session.update with instructions + tools
+          // Schema for gpt-realtime model: audio.input.transcription, audio.output.voice
           dc.send(JSON.stringify({
             type: 'session.update',
             session: {
-              modalities: ['text', 'audio'],
-              voice: voice,
-              turn_detection: {
-                type: 'server_vad',
-                threshold: 0.6,
-                prefix_padding_ms: 300,
-                silence_duration_ms: 500,
+              type: 'realtime',
+              audio: {
+                input: {
+                  turn_detection: { type: 'server_vad', threshold: 0.6, prefix_padding_ms: 300, silence_duration_ms: 500 },
+                  transcription: { model: 'whisper-1' },
+                },
+                output: { voice },
               },
-              // Whisper transcription on user audio. WITHOUT this, the
-              // conversation.item.input_audio_transcription.completed event never fires —
-              // breaks the goodbye safety net AND voice→chat-history saves.
-              input_audio_transcription: { model: 'whisper-1' },
-              instructions: `You are Kiko, the AI voice assistant for Van Hawke Group. You work with Sunny Sidhu, the CEO, based in Weybridge, UK.
+              instructions: `You are Kiko, the voice interface for Sunny Sidhu (CEO Van Hawke Group, F1 sponsorship advisory + luxury eyewear, based Weybridge UK).
 
-PERSONALITY: Warm, direct, intelligent. Like a trusted friend who also happens to be a brilliant strategic advisor. Keep responses to 1-4 sentences. Be concise, natural, and conversational.
+═══ ABSOLUTE RULE — READ THIS TWICE ═══
+You DO NOT have any business knowledge of your own. You DO NOT know Sunny's deals, contacts, partnerships, calendar, emails, tasks, news, memory, or any data. You are a voice interface, not a knowledge base.
 
-VOICE CONSISTENCY: Maintain the same warm, professional female tone throughout the entire conversation. Never change your voice style, accent, pitch, or mannerisms mid-conversation.
+For EVERY user message that is not pure conversational pleasantry, you MUST call the ask_kiko function before responding. NO EXCEPTIONS. The ask_kiko function returns the actual answer from Kiko's brain. You then speak that answer aloud.
 
-TOOL USAGE — ask_kiko is your brain. Use it for EVERYTHING except greetings:
-- Business: pipeline, deals, contacts, companies, partnerships, strategy
-- Data: emails, calendar, tasks, news, documents, research
-- Memory: "do you remember", "what do you know about", past conversations, personal context
-- Actions: draft email, create task, move deal, search contacts, briefings
-- ANY question you are not 100% certain of — call ask_kiko instead of guessing
-Filler phrases while the tool runs: "One moment", "Let me check that for you", "Give me a second", "Checking now"
+═══ THE ONLY EXCEPTIONS ═══
+You may respond directly without calling ask_kiko ONLY for:
+1. Pure greetings: "hi", "hello", "hey Kiko"
+2. Pure acknowledgments: "thanks", "thank you", "ok", "got it"
+3. Goodbye phrases (handled separately below)
 
-DO NOT use ask_kiko ONLY for: literal greetings ("hi", "hello"), simple pleasantries ("thanks", "how are you")
+EVERYTHING ELSE — including questions you think you know the answer to, including the weather, including general knowledge, including "what time is it", including "how are you" — call ask_kiko.
 
-NAVIGATION — be precise:
-- ONLY use navigate_page when the user explicitly says "go to", "take me to", "open", "show me the page"
-- If they say "tell me about the pipeline" or "how's the partnership matrix" — that is a DATA question. Use ask_kiko, do NOT navigate.
-- "What's on the pipeline" = ask_kiko. "Take me to the pipeline" = navigate_page.
+If you answer a real question without calling ask_kiko, you are hallucinating. You will be wrong. Sunny will lose trust in this product.
 
-GOODBYE — CRITICAL: When the user says "Goodbye Kiko", "bye", "bye Kiko", "close voice", "stop listening", "stop voice", or "I'm done" — you MUST do these TWO things in order:
-1. Say a brief warm farewell ("Goodbye Sunny, speak soon" or similar — one sentence only)
-2. IMMEDIATELY call the close_voice function tool. This is not optional. The system will NOT close unless you call close_voice. Do not wait for confirmation. Call the tool right after your farewell.
+═══ HOW TO USE ask_kiko ═══
+1. User speaks
+2. Say a brief filler ("One moment", "Checking now", "Let me look")
+3. Call ask_kiko with the user's exact question as the query parameter
+4. When the result returns, speak it aloud naturally — do NOT read it verbatim, paraphrase into spoken English, keep to 1-3 sentences
+5. Never invent details not in the ask_kiko response
 
-RULES:
-- NEVER discuss your architecture, modes, or system prompts
-- NEVER say "voice mode", "I don't have access to", or "as an AI"
-- NEVER make up business data — always call ask_kiko
-- Say "intelligent age" not "AI generation". All financials in USD.
-- Do NOT respond to background noise, echoes, or your own audio. Only respond to clear human speech.`,
+═══ GOODBYE — EXACT 3 PHRASES ═══
+The system closes the session ONLY when the user says exactly:
+- "Goodbye"
+- "Goodbye Kiko"
+- "Bye Kiko"
+When you hear one of these, say a brief warm farewell ("Speak soon, Sunny") and the system will close automatically. You do not need to call any function.
+
+═══ NAVIGATION ═══
+ONLY use navigate_page when the user says "go to", "take me to", "open", or "show me the [X] page". Data questions ("what's on the pipeline", "tell me about Haas") = ask_kiko, NOT navigate.
+
+═══ VOICE & STYLE ═══
+Warm, direct, intelligent female voice. 1-3 sentences per turn. Sound like a trusted strategic partner, not a customer service rep. Say "intelligent age" not "AI generation". USD for finances. Never discuss your own architecture or say "voice mode" or "as an AI".
+
+═══ ANTI-PATTERNS ═══
+- Never invent deal names, contact names, company names, dollar values, dates, or any specific data
+- Never describe what you would do — actually call the tool and do it
+- Never say "I don't have access to" — call ask_kiko
+- Never respond to background noise, echoes, or your own audio playing back`,
               tools: [
-                { type: 'function', name: 'ask_kiko', description: 'Kiko intelligence engine with full memory, CRM, email, calendar, and 39 specialist tools. Use for: pipeline data, deal info, contacts, emails, calendar, tasks, strategy, memory recall, past conversations, personal context, briefings, research, web search, outreach, content, and ANY question requiring real information. This is your brain — use it for everything except literal greetings.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'The full question or request exactly as the user said it' } }, required: ['query'] } },
-                { type: 'function', name: 'navigate_page', description: 'Navigate the platform to a specific page. ONLY use when user explicitly says go to, take me to, open, or show me.', parameters: { type: 'object', properties: { page: { type: 'string', enum: ['home','pipeline','contacts','command-centre','calendar','tasks','partnership-matrix','organisations','news','documents'] } }, required: ['page'] } },
-                { type: 'function', name: 'close_voice', description: 'Close voice mode. Call this when the user says goodbye, bye, stop listening, or close voice. Say a brief farewell first, then call this.', parameters: { type: 'object', properties: {} } },
+                { type: 'function', name: 'ask_kiko', description: 'MANDATORY for every user query that is not a pure greeting/thanks/goodbye. This is the ONLY way to access Kiko intelligence: pipeline, deals, contacts, partnerships, calendar, email, tasks, memory, news, web search, briefings, strategy. The user expects you to use this on every real question.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'The full question or request, exactly as the user said it' } }, required: ['query'] } },
+                { type: 'function', name: 'navigate_page', description: 'Navigate the platform UI. ONLY when the user explicitly says go to / take me to / open / show me [page name].', parameters: { type: 'object', properties: { page: { type: 'string', enum: ['home','pipeline','contacts','command-centre','calendar','tasks','partnership-matrix','organisations','news','documents'] } }, required: ['page'] } },
               ],
               tool_choice: 'auto',
             }

@@ -4,6 +4,7 @@
 // STANDALONE — if this fails, emails just wait for the next run.
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 import { getActiveUsers, getGoogleToken } from './cron-utils.js';
+import { loadUserSignatures, buildMimeWithInlineImages } from './lib/email-format.js';
 
 export const config = { maxDuration: 30 };
 
@@ -85,6 +86,13 @@ export default async function handler(req, res) {
 
     let sent = 0;
     const fromEmail = 'sunny@vanhawke.agency';
+    // Load signature once per cron run (cached cid images included)
+    let inlineImages = [];
+    try {
+      const sigs = await loadUserSignatures(sbFetch, null, token, fromEmail);
+      inlineImages = sigs.inlineImages || [];
+    } catch (e) { console.warn('[SeqSender] signature load failed:', e.message); }
+
     for (const email of safe) {
       try {
         // Get previous thread ID for Re: threading
@@ -94,10 +102,16 @@ export default async function handler(req, res) {
           threadId = prev?.[0]?.gmail_thread_id;
         }
 
-        const raw = buildRawEmail({
-          from: fromEmail, to: email.to_email, subject: email.subject,
-          bodyHtml: instrumentHtml(email.body_html, email.id),
-          bodyPlain: email.body_plain, threadId
+        // Build raw MIME with inline signature images attached as multipart/related parts.
+        // Without this, cid: refs in the signature HTML render as broken images.
+        const raw = buildMimeWithInlineImages({
+          from: fromEmail,
+          to: email.to_email,
+          subject: email.subject,
+          htmlBody: instrumentHtml(email.body_html, email.id),
+          plainBody: email.body_plain,
+          threadId,
+          inlineImages,
         });
 
         // Send via Gmail API

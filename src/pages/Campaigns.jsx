@@ -1,7 +1,7 @@
 // src/pages/Campaigns.jsx — Campaign Prospecting view
 // Left rail: campaign list. Main: prospects table for selected campaign.
 // Real data from Supabase. Realtime updates. Pause/activate per-campaign and per-prospect.
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
@@ -583,13 +583,7 @@ export default function Campaigns({ user }) {
             )}
 
             {buildPhase === 'building' && (
-              <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-                <div style={{ fontSize: 13, color: C.text, marginBottom: 12 }}>Building campaign...</div>
-                <div style={{ fontSize: 11, color: C.textTertiary, lineHeight: 1.6 }}>
-                  Picking team via SQL → loading exclusion set → web-searching 50 targets → identifying decision-makers
-                </div>
-                <div style={{ marginTop: 24, fontSize: 11, color: C.textTertiary }}>This takes ~80 seconds. Don't close this window.</div>
-              </div>
+              <BuildingProgress />
             )}
 
             {buildPhase === 'review' && buildResult && (
@@ -664,6 +658,95 @@ export default function Campaigns({ user }) {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+
+// ─────────────────────────────────────────────────────────────────────
+// BuildingProgress — animated multi-stage progress for the campaign builder.
+// Walks through 6 stages with timed labels + a live elapsed counter.
+// Visually keeps the user engaged while the backend takes 60-90 seconds.
+// ─────────────────────────────────────────────────────────────────────
+function BuildingProgress() {
+  const stages = [
+    { label: 'Selecting team via partnership matrix', sub: 'Querying 381 active F1 partnerships', durationMs: 3000 },
+    { label: 'Loading category exclusion set', sub: 'Filtering blocked teams + overlap conflicts', durationMs: 3000 },
+    { label: 'Querying CRM for industry matches', sub: 'Scoring 2,244 companies + 4,193 contacts', durationMs: 8000 },
+    { label: 'Web search for fresh prospects', sub: 'Real-time sourcing via Claude + web_search', durationMs: 35000 },
+    { label: 'Identifying decision-makers', sub: 'CMO / VP Marketing / Head of Brand / CRO', durationMs: 15000 },
+    { label: 'Validating against partner exclusions', sub: 'Defense in depth — no F1 partner duplicates', durationMs: 6000 },
+  ]
+  const [currentStage, setCurrentStage] = React.useState(0)
+  const [elapsed, setElapsed] = React.useState(0)
+
+  React.useEffect(() => {
+    const startTime = Date.now()
+    const timer = setInterval(() => {
+      const e = Math.floor((Date.now() - startTime) / 1000)
+      setElapsed(e)
+      // Compute current stage based on cumulative duration
+      let cumulative = 0
+      for (let i = 0; i < stages.length; i++) {
+        cumulative += stages[i].durationMs
+        if (e * 1000 < cumulative) {
+          setCurrentStage(i)
+          return
+        }
+      }
+      setCurrentStage(stages.length - 1)
+    }, 250)
+    return () => clearInterval(timer)
+  }, [])
+
+  return (
+    <div style={{ padding: '32px 24px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+        <div style={{ fontSize: 14, color: '#fff', fontWeight: 500 }}>⚡ Building campaign...</div>
+        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontFamily: 'ui-monospace,monospace' }}>{elapsed}s elapsed</div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {stages.map((stage, i) => {
+          const isActive = i === currentStage
+          const isDone = i < currentStage
+          const isPending = i > currentStage
+          return (
+            <div key={i} style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 12,
+              padding: '12px 14px',
+              borderRadius: 8,
+              background: isActive ? 'rgba(167,139,250,0.10)' : isDone ? 'rgba(45,212,191,0.05)' : 'transparent',
+              border: `0.5px solid ${isActive ? 'rgba(167,139,250,0.30)' : isDone ? 'rgba(45,212,191,0.20)' : 'rgba(255,255,255,0.06)'}`,
+              transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)',
+              opacity: isPending ? 0.4 : 1,
+            }}>
+              <div style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0, marginTop: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isDone ? '#2DD4BF' : isActive ? 'transparent' : 'rgba(255,255,255,0.06)', border: isActive ? '1.5px solid #A78BFA' : 'none' }}>
+                {isDone && <span style={{ color: '#1F1F1D', fontSize: 11, fontWeight: 700 }}>✓</span>}
+                {isActive && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#A78BFA', animation: 'pulse 1.2s ease-in-out infinite' }} />}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 12, color: isActive ? '#fff' : isDone ? 'rgba(45,212,191,0.85)' : 'rgba(255,255,255,0.55)', fontWeight: 500, marginBottom: 2 }}>
+                  {stage.label}
+                </div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.40)' }}>{stage.sub}</div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <div style={{ marginTop: 20, fontSize: 10, color: 'rgba(255,255,255,0.35)', textAlign: 'center', lineHeight: 1.6 }}>
+        Total expected: 60-90 seconds. Don't close this window.
+      </div>
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(0.85); }
+        }
+      `}</style>
     </div>
   )
 }

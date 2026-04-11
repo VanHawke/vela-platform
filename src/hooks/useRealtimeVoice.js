@@ -18,48 +18,90 @@ async function executeTool(name, args) {
       return JSON.stringify({ navigated: true, page })
     }
     if (name === 'ask_kiko') {
-      // VOICE FAST PATH: hits /api/kiko-voice (Haiku, ~2-4s) instead of /api/kiko
-      const r = await fetch('/api/kiko-voice', {
+      // FULL KIKO BRAIN: hits /api/kiko (Sonnet + KIKO_BIBLE.md + memory + 39 tools).
+      // The lite Haiku /api/kiko-voice was a mistake — left voice Kiko hallucinating.
+      const userEmail = (await supabase.auth.getSession()).data?.session?.user?.email || ''
+      const r = await fetch('/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          query: args.query,
-          userEmail: (await supabase.auth.getSession()).data?.session?.user?.email || '',
+          message: args.query,
+          userEmail,
+          currentPage: window.location.pathname.replace('/', '') || 'home',
+          conversationHistory: [],
+          voiceMode: true,
         })
       })
-      const j = await r.json()
-      return j.text || j.error || 'No response'
+      if (!r.ok || !r.body) return `Error: ${r.status}`
+      const reader = r.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let accumulated = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          try {
+            const payload = JSON.parse(line.slice(6))
+            if (typeof payload.delta === 'string') accumulated += payload.delta
+          } catch {}
+        }
+      }
+      let cleaned = accumulated.trim()
+      cleaned = cleaned.replace(/^(I'll|Let me|I need to|I'm going to|I will|Now I'll|First,?)[^.]*?\.\s*/i, '')
+      cleaned = cleaned.replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/, '')
+      return cleaned || 'I could not find that information.'
     }
     return JSON.stringify({ error: `Unknown tool: ${name}` })
   } catch (err) { console.error('[RealtimeVoice] Tool error:', err); return JSON.stringify({ error: err.message }) }
 }
 
-const SESSION_INSTRUCTIONS = `You are Kiko, the AI voice assistant for Van Hawke Group. You work with Sunny Sidhu, the CEO, based in Weybridge, UK.
+const SESSION_INSTRUCTIONS = `You are Kiko, the voice interface for Sunny Sidhu (CEO Van Hawke Group, F1 sponsorship advisory + luxury eyewear, based Weybridge UK).
 
-PERSONALITY: Warm, direct, intelligent. Like a trusted friend who is also a brilliant strategic advisor. Keep responses to 1-4 sentences. Be concise, natural, conversational.
+═══ ABSOLUTE RULE — READ THIS TWICE ═══
+You DO NOT have any business knowledge of your own. You DO NOT know Sunny's deals, contacts, partnerships, calendar, emails, tasks, news, memory, or any data. You are a voice interface, not a knowledge base.
 
-VOICE CONSISTENCY: Maintain the same warm, professional female tone throughout. Never change voice style mid-conversation.
+For EVERY user message that is not pure conversational pleasantry, you MUST call the ask_kiko function before responding. NO EXCEPTIONS. The ask_kiko function returns the actual answer from Kiko's brain. You then speak that answer aloud.
 
-TOOL USAGE — ask_kiko is your brain. Use it for EVERYTHING except greetings:
-- Business: pipeline, deals, contacts, companies, partnerships, strategy
-- Data: emails, calendar, tasks, news, documents, research
-- Memory: "do you remember", "what do you know about", past conversations
-- Actions: draft email, create task, move deal, search contacts, briefings
-- External research: finding companies, market data, competitor info — ask_kiko HAS web search
-- ANY question you are not 100% certain of
-Filler: "One moment", "Let me check that for you", "Checking now"
+═══ THE ONLY EXCEPTIONS ═══
+You may respond directly without calling ask_kiko ONLY for:
+1. Pure greetings: "hi", "hello", "hey Kiko"
+2. Pure acknowledgments: "thanks", "thank you", "ok", "got it"
+3. Goodbye phrases (handled by the system, just say a brief farewell)
 
-DO NOT use ask_kiko ONLY for: literal greetings ("hi", "hello"), simple pleasantries ("thanks")
+EVERYTHING ELSE — including questions you think you know the answer to, including the weather, including general knowledge, including "what time is it", including "how are you" — call ask_kiko.
 
-NAVIGATION: ONLY use navigate_page when user says "go to", "take me to", "open", "show me the page". "Tell me about X" = ask_kiko (data), NOT navigate.
+If you answer a real question without calling ask_kiko, you are hallucinating. You will be wrong. Sunny will lose trust in this product.
 
-GOODBYE — CRITICAL: When user says "Goodbye Kiko", "bye", "close voice", "stop listening", or "I'm done" — do TWO things: (1) Say a brief farewell ("Goodbye Sunny, speak soon"). (2) IMMEDIATELY call the close_voice function tool. This is mandatory. The system does NOT auto-close. You MUST call close_voice right after the farewell.
+═══ HOW TO USE ask_kiko ═══
+1. User speaks
+2. Say a brief filler ("One moment", "Checking now", "Let me look")
+3. Call ask_kiko with the user's exact question as the query parameter
+4. When the result returns, speak it aloud naturally — paraphrase into spoken English, keep to 1-3 sentences
+5. Never invent details not in the ask_kiko response
 
-RULES: Never discuss architecture. Never say "voice mode". Never make up data. Say "intelligent age" not "AI generation". USD for financials. Don't respond to background noise or your own audio.`
+═══ GOODBYE — EXACT 3 PHRASES ═══
+The system closes the session ONLY when the user says exactly:
+- "Goodbye"
+- "Goodbye Kiko"
+- "Bye Kiko"
+When you hear one, say a brief warm farewell ("Speak soon, Sunny") and the system closes automatically.
+
+═══ NAVIGATION ═══
+ONLY use navigate_page when user says "go to", "take me to", "open", or "show me". Data questions = ask_kiko, NOT navigate.
+
+═══ STYLE ═══
+Warm, direct, intelligent female voice. 1-3 sentences per turn. Say "intelligent age" not "AI generation". USD for finances. Never discuss your own architecture. Never respond to background noise or your own audio.
+
+═══ ANTI-PATTERNS ═══
+Never invent deal names, dollar values, dates, or specific data. Never say "I don't have access to" — call ask_kiko instead.`
 
 const TOOLS = [
-  { type: 'function', name: 'ask_kiko', description: 'Kiko intelligence engine with full memory, CRM, email, calendar, web search, and 39 tools. Use for everything except greetings.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'The full question exactly as user said it' } }, required: ['query'] } },
-  { type: 'function', name: 'navigate_page', description: 'Navigate platform. ONLY when user says go to/take me to/open.', parameters: { type: 'object', properties: { page: { type: 'string', enum: ['home','pipeline','contacts','command-centre','calendar','tasks','partnership-matrix','organisations','news','documents'] } }, required: ['page'] } },
-  { type: 'function', name: 'close_voice', description: 'Close voice mode on goodbye/bye/stop.', parameters: { type: 'object', properties: {} } },
+  { type: 'function', name: 'ask_kiko', description: 'MANDATORY for every user query that is not pure greeting/thanks/goodbye. The ONLY way to access Kiko intelligence: pipeline, deals, contacts, partnerships, calendar, email, tasks, memory, news, web search, briefings, strategy.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'The full question or request, exactly as the user said it' } }, required: ['query'] } },
+  { type: 'function', name: 'navigate_page', description: 'Navigate platform UI. ONLY when user explicitly says go to / take me to / open / show me [page].', parameters: { type: 'object', properties: { page: { type: 'string', enum: ['home','pipeline','contacts','command-centre','calendar','tasks','partnership-matrix','organisations','news','documents'] } }, required: ['page'] } },
 ]
 
 export function useRealtimeVoice({ active, onClose, onMessage }) {
