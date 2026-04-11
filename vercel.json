@@ -140,7 +140,7 @@
     },
     {
       "path": "/api/cron-jobs-worker",
-      "schedule": "*/5 * * * *"
+      "schedule": "*/15 8-19 * * 1-5"
     },
     {
       "path": "/api/cron-sequence-enqueue",
@@ -148,7 +148,7 @@
     },
     {
       "path": "/api/cron-sequence-sender",
-      "schedule": "0 * * * 1-5"
+      "schedule": "0 6-22 * * 1-5"
     },
     {
       "path": "/api/cron-sequence-reply-detect",
@@ -168,7 +168,7 @@
     },
     {
       "path": "/api/cron-selfcheck-watcher",
-      "schedule": "0 * * * *"
+      "schedule": "0 8-19 * * 1-5"
     }
   ],
   "functions": {
@@ -188,10 +188,10 @@
       "maxDuration": 30
     },
     "api/news-agent.js": {
-      "maxDuration": 300
+      "maxDuration": 120
     },
     "api/cron-news-classify.js": {
-      "maxDuration": 300
+      "maxDuration": 120
     },
     "api/health.js": {
       "maxDuration": 45

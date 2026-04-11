@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-11T11:51:14.930Z",
+  "generated_at": "2026-04-11T12:42:53.551Z",
   "commits": [
+    {
+      "hash": "1e74c59",
+      "subject": "v0.0.26 — voice goodbye + voice→history + xml leak + kill emails + Health Center + morning email cron",
+      "when": "51 minutes ago"
+    },
     {
       "hash": "ed85d26",
       "subject": "master log: A0d session — v0.0.24 → v0.0.25 (build timeout fix, top-8 removal, palette fix, CRM badge, Lemlist research)",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "be13dc9",
@@ -14,17 +19,17 @@
     {
       "hash": "8edd203",
       "subject": "v0.0.24 — Build campaign timeout fix + global palette fix + remove top-8 segmentation + email rendering 3-layer",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "3241c0e",
       "subject": "master log: A0c session — v0.0.19 → v0.0.23 (Phase 1-5 + CRM-first sourcing + verification gate + timezone sender)",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "71731b5",
       "subject": "v0.0.23 — Phase 3 Command Centre alignment + Phase 5 timezone-aware sender (true 24h)",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "7b1a853",
@@ -34,57 +39,57 @@
     {
       "hash": "47c5b48",
       "subject": "v0.0.21 — CRM-first sourcing + freshness verification + sign-off fix + no caps",
-      "when": "21 hours ago"
+      "when": "22 hours ago"
     },
     {
       "hash": "4da830c",
       "subject": "v0.0.20 — Phase 2a/2b/2e — campaigns paused by default + auto-draft + title in prospects",
-      "when": "21 hours ago"
+      "when": "22 hours ago"
     },
     {
       "hash": "c4cf6b6",
       "subject": "v0.0.20 — Phase 2 campaign builder safety + auto-draft + UX",
-      "when": "22 hours ago"
+      "when": "23 hours ago"
     },
     {
       "hash": "9256e1c",
       "subject": "v0.0.19 — Phase 1 critical bugs (voice goodbye, XML leak, nav, Decagon, Racing Bulls, matrix)",
-      "when": "22 hours ago"
+      "when": "23 hours ago"
     },
     {
       "hash": "3132d0f",
       "subject": "master log: session A0b — admin/system, watcher cron, company-lookup, brief banner (v0.0.14-v0.0.18)",
-      "when": "24 hours ago"
+      "when": "25 hours ago"
     },
     {
       "hash": "8b15dcb",
       "subject": "v0.0.18 — brief deterministic short-circuit (morning brief banner now actually appears)",
-      "when": "24 hours ago"
+      "when": "25 hours ago"
     },
     {
       "hash": "eb40426",
       "subject": "v0.0.17 — company lookup endpoint + morning brief system health surfacing + dashboard cron dedup",
-      "when": "26 hours ago"
+      "when": "27 hours ago"
     },
     {
       "hash": "a9010f1",
       "subject": "v0.0.16 — fix cron-selfcheck-watcher env var (VITE_SUPABASE_URL)",
-      "when": "26 hours ago"
+      "when": "27 hours ago"
     },
     {
       "hash": "9ac6791",
       "subject": "v0.0.15 — hourly selfcheck watcher with auto-alert + auto-resolve",
-      "when": "26 hours ago"
+      "when": "27 hours ago"
     },
     {
       "hash": "70d2304",
       "subject": "v0.0.14 — Admin system control room (/admin/system)",
-      "when": "28 hours ago"
+      "when": "29 hours ago"
     },
     {
       "hash": "b5ec52f",
       "subject": "URGENT COST FIX: ignoreCommand skips builds for doc-only commits",
-      "when": "28 hours ago"
+      "when": "29 hours ago"
     },
     {
       "hash": "c441835",
@@ -94,11 +99,6 @@
     {
       "hash": "6147ec1",
       "subject": "v0.0.12 — CRITICAL FIXES: voice blank screen + sequence draft button",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "6f0b2e0",
-      "subject": "master log: session A0 — voice refactor, identity fix, enroll bug, heartbeat evidence (17/18 PASS)",
       "when": "2 days ago"
     }
   ]

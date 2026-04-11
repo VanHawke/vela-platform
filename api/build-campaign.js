@@ -124,16 +124,48 @@ export default async function handler(req, res) {
     }
 
     // ─── STEP 6: Find or create the campaign sequence ───
+    // CRITICAL: If a sequence already exists for this team+category combo AND it
+    // already has targets, return early. Re-running build burns credits and risks
+    // wiping targets if the second sourcing call fails. User can manually delete
+    // the sequence if they want a fresh build.
     const { data: existingSeq } = await supabase
       .from('kiko_sequences').select('*')
       .ilike('name', `%${team.name}%${catRow.name.split(' ')[0]}%`)
       .limit(1).maybeSingle();
+
+    if (existingSeq?.id) {
+      const { data: existingTargets, count } = await supabase
+        .from('campaign_targets')
+        .select('*', { count: 'exact' })
+        .eq('campaign_id', existingSeq.id);
+      if (count && count > 0) {
+        // Already built — return the existing sequence + targets without re-sourcing
+        return res.status(200).json({
+          success: true,
+          team: { id: team.id, name: team.name, full_name: team.full_name, principal: team.team_principal },
+          category: { id: category, name: catRow.name },
+          why: `Existing campaign found with ${count} targets — returning cached. Delete the sequence first if you want to re-source.`,
+          criteria: CATEGORY_CRITERIA[category] || { revenue_min: '$500M', dm_seniority: 'CMO / VP Marketing' },
+          competitive_landscape: [],
+          top_50: existingTargets || [],
+          top_8: (existingTargets || []).slice(0, 8),
+          sequence_id: existingSeq.id,
+          sequence_name: existingSeq.name,
+          sourced_total: count,
+          filtered_count: count,
+          violations_caught: 0,
+          excluded_companies_count: exclusionSet.size,
+          blocked_teams: [...blockedTeamIds],
+          cached: true,
+          next_action: `Existing campaign returned. To rebuild from scratch, delete the sequence "${existingSeq.name}" first.`,
+        });
+      }
+    }
+
     let sequenceId = existingSeq?.id;
     let sequenceName = existingSeq?.name;
     if (!sequenceId) {
       // Auto-draft the 5 sequence steps using Sunny's commercial doctrine
-      // Template: Dear {firstName}, [body] Kind regards, Sunny Sidhu
-      // Each step has a distinct persuasion lever (authority, reciprocity, social proof, scarcity, final)
       const draftedSteps = await draftSequenceSteps(team.name, catRow.name);
 
       const { data: newSeq, error: seqErr } = await supabase.from('kiko_sequences').insert({

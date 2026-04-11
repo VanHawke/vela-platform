@@ -40,27 +40,32 @@ export default async function handler(req, res) {
     ]);
 
     // ── Campaign performance metrics ──
-    const sentCount = (sentLast7 || []).length;
-    const sentPrevCount = (sentPrev7 || []).length;
-    const repliedCount = (repliedLast7 || []).length;
-    const repliedPrevCount = (repliedPrev7 || []).length;
+    const sentList = Array.isArray(sentLast7) ? sentLast7 : [];
+    const sentPrevList = Array.isArray(sentPrev7) ? sentPrev7 : [];
+    const repliedList = Array.isArray(repliedLast7) ? repliedLast7 : [];
+    const repliedPrevList = Array.isArray(repliedPrev7) ? repliedPrev7 : [];
+    const sequencesList = Array.isArray(sequences) ? sequences : [];
+    const sentCount = sentList.length;
+    const sentPrevCount = sentPrevList.length;
+    const repliedCount = repliedList.length;
+    const repliedPrevCount = repliedPrevList.length;
     const replyRate = sentCount > 0 ? (repliedCount / sentCount * 100) : 0;
     const replyRatePrev = sentPrevCount > 0 ? (repliedPrevCount / sentPrevCount * 100) : 0;
     const sentDelta = sentCount - sentPrevCount;
     const repliedDelta = repliedCount - repliedPrevCount;
     const replyRateDelta = replyRate - replyRatePrev;
-    const activeCampaigns = (sequences || []).filter(s => s.is_active).length;
+    const activeCampaigns = sequencesList.filter(s => s.is_active).length;
 
     // ── Per-campaign breakdown for best/worst ──
-    const seqMap = new Map((sequences || []).map(s => [s.id, s]));
+    const seqMap = new Map(sequencesList.map(s => [s.id, s]));
     const perCampaign = new Map();
-    for (const r of (sentLast7 || [])) {
+    for (const r of sentList) {
       if (!r.sequence_id) continue;
       const c = perCampaign.get(r.sequence_id) || { sent: 0, replied: 0 };
       c.sent++;
       perCampaign.set(r.sequence_id, c);
     }
-    for (const r of (repliedLast7 || [])) {
+    for (const r of repliedList) {
       if (!r.sequence_id) continue;
       const c = perCampaign.get(r.sequence_id) || { sent: 0, replied: 0 };
       c.replied++;
