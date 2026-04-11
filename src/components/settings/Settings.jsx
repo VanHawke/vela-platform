@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import T from '@/lib/theme'
 import ImageUpload from './ImageUpload'
 import SkillsManager from './SkillsManager'
+import MemoryTab from './MemoryTab'
 import { Check, ExternalLink, Unplug, UserPlus, Trash2, LogOut, X } from 'lucide-react'
 
 const VOICES = [
@@ -23,7 +24,7 @@ const SPEEDS = [
   { id: 1.1, label: 'Brisk' },
   { id: 1.2, label: 'Fast' },
 ]
-const TABS = ['Profile', 'Kiko', 'Skills', 'Navigation', 'Team', 'Appearance', 'Accounts']
+const TABS = ['Profile', 'Kiko', 'Memory', 'Skills', 'Navigation', 'Team', 'Appearance', 'Accounts']
 const SUPER_ADMIN_TABS = ['Kiko', 'Team'] // Only visible to super_admin
 
 // Theme imported from @/lib/theme.js
@@ -617,6 +618,8 @@ export default function Settings({ user }) {
 
         {/* Skills */}
         {tab === 'Skills' && <SkillsManager />}
+
+        {tab === 'Memory' && <MemoryTab user={user} />}
 
         {/* Team */}
         {tab === 'Team' && (

@@ -640,3 +640,103 @@ Plan preserved in `KIKO_VOICE_PIPECAT_MIGRATION.md`. Backup option if forced ask
 - v0.0.27 cron diet still locked: 9,000+ invocations/month removed
 - New `kiko_active_jobs` table writes are minimal (one row per build, ~7 updates per row)
 - Job rows accumulate but can be cleaned by a future cron (out of scope for v0.0.38)
+
+
+---
+
+## Section A0g — v0.0.39 (April 12, 2026)
+
+**Theme:** P3 polish backlog — all 5 items in one deploy
+
+**Sunny directive:** "I think we need to mark this as the last item after multi conversation whatever it was. Voice mode UI affordances comes after multitasking. Then proceed with P3 to get all of this done."
+
+**Priority list updated:**
+1. Background task system (Phases 1-4 — the big "fire query in chat A, switch to chat B" feature) — STILL P1
+2. Voice mode UI affordances (thinking indicator, barge-in button, mic volume meter) — DEFERRED to AFTER background task system
+
+### Item 1 — Job row cleanup cron
+- NEW `api/cron-job-cleanup.js` (60 lines)
+- Deletes completed jobs older than 7 days
+- Deletes failed jobs older than 14 days (keeps failures longer for debugging)
+- Marks "stuck running" jobs (>10 min no update) as failed with auto-marker
+- vercel.json schedule: `0 4 * * 0` (Sundays 04:00 UTC, 1 invocation/week)
+- Negligible cost addition
+
+### Item 2 — ThreadIndicator realtime subscription
+- `src/components/kiko/ThreadIndicator.jsx`: replaced 30s polling with Supabase realtime channel
+- Subscribes to `*` events on `conversations` table filtered by `user_id`
+- Refetches threads on any INSERT/UPDATE
+- 60s safety poll fallback in case realtime channel silently drops
+- Migration applied live: `ALTER PUBLICATION supabase_realtime ADD TABLE public.conversations`
+- Cost reduction: 120 polls/hour → ~0 polls/hour (only fires when data actually changes)
+
+### Item 3 — Memory tab in Settings
+- NEW `api/memory-tab.js` (97 lines)
+- GET (list with category filter + search + counts), POST (add manual fact),
+  PATCH (edit value), DELETE (remove fact)
+- UUID validation, 3-1000 char value bounds
+- NEW `src/components/settings/MemoryTab.jsx` (311 lines)
+- Search bar, category sidebar with row counts, fact list with inline edit + delete
+- "Add fact" form, manual facts tagged in purple, time-ago labels
+- `src/components/settings/Settings.jsx`: imports MemoryTab, adds 'Memory' to TABS array
+  between Kiko and Skills, renders `<MemoryTab user={user} />`
+
+### Item 4a — CRM company match preview
+- NEW `api/crm-match-preview.js` (117 lines)
+- GET `?category=<id>` returns company count, contact count, sample companies (top 5),
+  sample contacts (top 8)
+- Filters contacts by sponsorship-relevant title regex (CMO, VP Marketing, etc.)
+- `src/pages/Campaigns.jsx`: new `CrmMatchPreview` component renders inside build modal
+  between help text and Build button
+- Auto-fetches when category changes
+- Teal pill if matches found, grey pill if not
+- Lists top 4 sample companies with contact counts
+- User now knows exactly what they're getting BEFORE clicking Build (~80 second commitment)
+
+### Item 4b — Clone campaign (with targets)
+- NEW `api/clone-campaign.js` (97 lines)
+- POST `{sequence_id}` → fetches original sequence, inserts copy with `is_active=false`
+  and "(Copy)" suffix, fetches all `campaign_targets`, resets to
+  `enrollment_status='sourced'`, chunks inserts in 50s
+- Returns `{ok, new_sequence_id, target_count}`
+- `src/pages/SequenceDetail.jsx`: upgraded existing `duplicateCampaign()` function
+  to call `/api/clone-campaign` first (which copies targets), with fallback to old
+  client-side bare-duplicate if endpoint fails
+- Clone button already exists in UI at line 657 — no UI changes needed
+- Old behaviour: clone copied steps + name + description, ZERO targets (had to rebuild)
+- New behaviour: clone copies everything including all targets ready to enrol
+
+### Item 4c — Bulk-edit step content (DEFERRED)
+- More complex than other 4c sub-items: needs target sequence selector, change preview,
+  conflict resolution if step counts differ, undo capability
+- Tracking as separate P3 backlog item to scope later
+- Clone + CRM preview deliver ~80% of build campaign UX value for ~20% of work
+
+### Item 5 — Notifications for sequence sends
+**Schema migration applied live:**
+- NEW table `kiko_notifications` (id uuid PK, user_id, type, title, body, link, metadata jsonb, read, created_at)
+- Index on (user_id, read, created_at DESC)
+- RLS policies: users see + update own; service role full access
+- Added to `supabase_realtime` publication
+
+**Backend wiring (`api/cron-sequence-sender.js`):**
+- When `sent > 0`, fetches active users from `user_settings` (limit 20)
+- Writes one notification row per user with `type='sequence_send'`, title `"N emails sent"`,
+  body with daily total, `link='/campaigns'`
+- Non-blocking, errors logged but don't block the cron
+
+**Frontend (`src/components/kiko/NotificationToast.jsx`, 135 lines):**
+- Subscribes via Supabase realtime to INSERT events on `kiko_notifications` filtered by user_id
+- Pops stacked toast in bottom-right corner (max 4)
+- Auto-dismisses after 8 seconds
+- Click to navigate to `notification.link` and mark as read
+- Color-coded by type (sequence_send=teal, alert=red, success=teal, default=purple)
+- slideInRight CSS animation
+- `Layout.jsx`: imports NotificationToast, renders `<NotificationToast user={user} />`
+  next to KikoFloat (always-on, every page)
+
+### Cost status at end of Section A0g
+- 23 deploys today, ~52 build minutes consumed
+- New cron-job-cleanup adds 1 invocation/week (negligible)
+- Realtime subscriptions on conversations + kiko_notifications: ~free at low usage
+- ThreadIndicator polling reduction: 120/hour → ~0/hour (event-driven)

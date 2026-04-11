@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-11T20:28:13.572Z",
+  "generated_at": "2026-04-11T20:50:01.080Z",
   "commits": [
+    {
+      "hash": "d57d201",
+      "subject": "v0.0.38 — memory regex tightening + build campaign live progress",
+      "when": "21 minutes ago"
+    },
     {
       "hash": "9f747fc",
       "subject": "v0.0.37 — Session 1 batch B: selfcheck WARN level + navigate enums + KikoChat listener + voice→text handoff",
-      "when": "22 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "f6f3ffa",
       "subject": "v0.0.36 — memory extraction noise cleanup + multi-conversation UI",
-      "when": "49 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "7be8805",
       "subject": "docs: KIKO_MASTER_LOG.md Section A0e v0.0.27 → v0.0.35 (no code changes, doc only)",
-      "when": "57 minutes ago"
+      "when": "79 minutes ago"
     },
     {
       "hash": "2efb5dd",
       "subject": "v0.0.35 — voice transcript race fix + avatar volume hardcode + chat history timestamps + multi-conversation foundation",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "77d805c",
@@ -29,7 +34,7 @@
     {
       "hash": "970cf27",
       "subject": "v0.0.33 — voice fixes batch + Gmail signature inline base64 + geo-location + sig-diag",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "592ccbf",
@@ -49,7 +54,7 @@
     {
       "hash": "cf232ac",
       "subject": "v0.0.29 — REAL ROOT CAUSE FIX for build campaign",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "57c2a6d",
@@ -74,12 +79,12 @@
     {
       "hash": "be13dc9",
       "subject": "v0.0.25 — top nav viewport-centred + Previously in CRM badge + category gap formatting tightened + Lemlist research doc",
-      "when": "28 hours ago"
+      "when": "29 hours ago"
     },
     {
       "hash": "8edd203",
       "subject": "v0.0.24 — Build campaign timeout fix + global palette fix + remove top-8 segmentation + email rendering 3-layer",
-      "when": "28 hours ago"
+      "when": "29 hours ago"
     },
     {
       "hash": "3241c0e",
@@ -94,11 +99,6 @@
     {
       "hash": "7b1a853",
       "subject": "v0.0.22 — Verify+Activate UI buttons + Claude.ai warm dark palette + clean test data",
-      "when": "29 hours ago"
-    },
-    {
-      "hash": "47c5b48",
-      "subject": "v0.0.21 — CRM-first sourcing + freshness verification + sign-off fix + no caps",
       "when": "30 hours ago"
     }
   ]

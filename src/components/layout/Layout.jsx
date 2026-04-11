@@ -26,6 +26,7 @@ const C = {
 import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X, Zap, Mail, Filter, Layers, Database, Compass, Linkedin, Activity } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
 import ThreadIndicator from '../kiko/ThreadIndicator'
+import NotificationToast from '../kiko/NotificationToast'
 import KikoVoice from '../kiko/KikoVoice'
 import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
@@ -602,6 +603,9 @@ export default function Layout({ user }) {
       <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1 }}>
         <Outlet context={{ kikoMessages, setKikoMessages, kikoConvId, setKikoConvId, kikoNavigate, kikoResetKey, openPalette: () => setPaletteOpen(true) }} />
       </main>
+
+      {/* Realtime notifications toast (v0.0.39) */}
+      <NotificationToast user={user} />
 
       {/* Kiko floating — present on every page except home */}
       {!isHome && (

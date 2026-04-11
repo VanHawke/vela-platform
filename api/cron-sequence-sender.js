@@ -160,6 +160,26 @@ export default async function handler(req, res) {
     }
 
     await cronHeartbeat('cron-sequence-sender', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: sent });
+
+    // ─── Notification (v0.0.39) ───
+    // Write a notification row per active user when emails are sent so the
+    // frontend (subscribed via Supabase realtime) can pop a toast.
+    if (sent > 0) {
+      try {
+        const activeUsers = await sbFetch('user_settings?select=user_id&limit=20');
+        for (const u of (activeUsers || [])) {
+          await sbFetch('kiko_notifications', { method: 'POST', body: JSON.stringify({
+            user_id: u.user_id,
+            type: 'sequence_send',
+            title: `${sent} ${sent === 1 ? 'email' : 'emails'} sent`,
+            body: `Kiko just sent ${sent} sequence ${sent === 1 ? 'email' : 'emails'} from your active campaigns. Daily total: ${dailyCount + sent}/30.`,
+            link: '/campaigns',
+            metadata: { sent, daily_total: dailyCount + sent },
+          })}).catch(() => {});
+        }
+      } catch (notifErr) { console.warn('[SeqSender] notification write failed:', notifErr?.message); }
+    }
+
     return res.status(200).json({ ok: true, checked: safe.length, sent, daily_total: dailyCount + sent });
   } catch (err) {
     console.error('[SeqSender] Fatal:', err.message);

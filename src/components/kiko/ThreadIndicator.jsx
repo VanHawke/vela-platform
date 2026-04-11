@@ -28,10 +28,14 @@ export default function ThreadIndicator({ user, currentConvId, onSwitchThread })
   const dropdownRef = useRef(null)
   const navigate = useNavigate()
 
-  // Poll active threads every 30s
+  // ── Realtime subscription on conversations table (v0.0.39) ──
+  // Replaces the previous 30s polling. Subscribes to INSERT/UPDATE events on
+  // the user's conversations and refetches the active threads list when fired.
+  // Falls back to a 60s safety poll in case the realtime channel drops.
   useEffect(() => {
     if (!user?.id) return
     let alive = true
+
     const fetchThreads = async () => {
       try {
         const cutoff = new Date(Date.now() - 60 * 60 * 1000).toISOString()
@@ -43,14 +47,31 @@ export default function ThreadIndicator({ user, currentConvId, onSwitchThread })
           .order('updated_at', { ascending: false })
           .limit(8)
         if (!alive || error) return
-        // Filter out current thread
         const others = (data || []).filter(t => t.id !== currentConvId)
         setThreads(others)
       } catch {}
     }
+
+    // Initial fetch
     fetchThreads()
-    const interval = setInterval(fetchThreads, 30000)
-    return () => { alive = false; clearInterval(interval) }
+
+    // Realtime channel — INSERT or UPDATE on this user's rows
+    const channel = supabase
+      .channel(`thread_indicator:${user.id}`)
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'conversations', filter: `user_id=eq.${user.id}` },
+        () => { fetchThreads() }
+      )
+      .subscribe()
+
+    // Safety net: refetch every 60s in case channel silently drops
+    const safetyPoll = setInterval(fetchThreads, 60_000)
+
+    return () => {
+      alive = false
+      clearInterval(safetyPoll)
+      try { supabase.removeChannel(channel) } catch {}
+    }
   }, [user, currentConvId])
 
   // Click outside to close

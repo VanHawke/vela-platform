@@ -1,0 +1,134 @@
+// src/components/kiko/NotificationToast.jsx
+// Shows realtime toast notifications when kiko_notifications rows are inserted.
+// Sunny spec 2026-04-12 v0.0.39: powers sequence-send toasts (and any future
+// notification type — meeting reminders, deal updates, etc.).
+//
+// Behaviour:
+// - Subscribes to INSERT events on kiko_notifications filtered by user_id
+// - Pops a toast in the bottom-right corner
+// - Auto-dismisses after 8 seconds
+// - Click toast to navigate to notification.link
+// - Stacks up to 4 toasts at once
+
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { supabase } from '@/lib/supabase'
+import { Bell, X, Check, Mail, AlertCircle } from 'lucide-react'
+
+const ICONS = {
+  sequence_send: Mail,
+  default: Bell,
+  alert: AlertCircle,
+  success: Check,
+}
+
+const COLORS = {
+  sequence_send: { bg: 'rgba(45,212,191,0.10)', border: 'rgba(45,212,191,0.30)', icon: '#2DD4BF' },
+  alert: { bg: 'rgba(248,113,113,0.10)', border: 'rgba(248,113,113,0.30)', icon: '#F87171' },
+  success: { bg: 'rgba(45,212,191,0.10)', border: 'rgba(45,212,191,0.30)', icon: '#2DD4BF' },
+  default: { bg: 'rgba(167,139,250,0.10)', border: 'rgba(167,139,250,0.30)', icon: '#A78BFA' },
+}
+
+export default function NotificationToast({ user }) {
+  const [toasts, setToasts] = useState([])
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!user?.id) return
+
+    const channel = supabase
+      .channel(`notif:${user.id}`)
+      .on('postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'kiko_notifications', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const n = payload.new
+          if (!n) return
+          setToasts(prev => {
+            const next = [...prev, n].slice(-4)  // cap at 4
+            return next
+          })
+          // Auto-dismiss after 8s
+          setTimeout(() => {
+            setToasts(prev => prev.filter(t => t.id !== n.id))
+          }, 8000)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      try { supabase.removeChannel(channel) } catch {}
+    }
+  }, [user?.id])
+
+  const dismiss = (id) => setToasts(prev => prev.filter(t => t.id !== id))
+
+  const onClick = (toast) => {
+    if (toast.link) navigate(toast.link)
+    dismiss(toast.id)
+    // Mark as read
+    supabase.from('kiko_notifications').update({ read: true }).eq('id', toast.id).then(() => {})
+  }
+
+  if (toasts.length === 0) return null
+
+  return (
+    <div style={{
+      position: 'fixed', bottom: 24, right: 24, zIndex: 9998,
+      display: 'flex', flexDirection: 'column', gap: 10,
+      pointerEvents: 'none',
+    }}>
+      {toasts.map((toast) => {
+        const Icon = ICONS[toast.type] || ICONS.default
+        const c = COLORS[toast.type] || COLORS.default
+        return (
+          <div key={toast.id} style={{
+            display: 'flex', alignItems: 'flex-start', gap: 10,
+            width: 320, padding: 14,
+            background: 'rgba(20,20,22,0.96)',
+            backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+            borderRadius: 12,
+            border: `1px solid ${c.border}`,
+            boxShadow: '0 16px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04)',
+            pointerEvents: 'auto',
+            cursor: toast.link ? 'pointer' : 'default',
+            animation: 'slideInRight 0.3s ease-out',
+          }}
+            onClick={() => onClick(toast)}
+          >
+            <div style={{
+              width: 32, height: 32, borderRadius: 8,
+              background: c.bg, border: `1px solid ${c.border}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <Icon size={14} color={c.icon} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', marginBottom: 2 }}>
+                {toast.title}
+              </div>
+              {toast.body && (
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', lineHeight: 1.45 }}>
+                  {toast.body}
+                </div>
+              )}
+            </div>
+            <button onClick={(e) => { e.stopPropagation(); dismiss(toast.id) }} style={{
+              width: 20, height: 20, borderRadius: 5, flexShrink: 0,
+              background: 'transparent', border: 'none', cursor: 'pointer',
+              color: 'rgba(255,255,255,0.30)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <X size={11} />
+            </button>
+          </div>
+        )
+      })}
+      <style>{`
+        @keyframes slideInRight {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+      `}</style>
+    </div>
+  )
+}

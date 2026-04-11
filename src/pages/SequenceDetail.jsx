@@ -262,11 +262,31 @@ export default function SequenceDetail() {
 
   async function duplicateCampaign() {
     if (!seq) return
-    const { data } = await supabase.from('kiko_sequences').insert({
-      name: `${seq.name} (copy)`, description: seq.description, target_persona: seq.target_persona,
-      steps: seq.steps, is_active: false
-    }).select().single()
-    if (data) nav(`/sequences/${data.id}`)
+    // v0.0.39: use /api/clone-campaign which also copies campaign_targets,
+    // not just the bare sequence (steps/name/description). Old client-side
+    // duplicate left clones with zero targets which forced a full rebuild.
+    try {
+      const r = await fetch('/api/clone-campaign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sequence_id: id }),
+      })
+      const data = await r.json()
+      if (!r.ok || !data.ok) throw new Error(data.error || 'clone failed')
+      // Tell the user how many targets came along
+      if (data.target_count > 0) {
+        console.log(`[duplicateCampaign] cloned ${data.target_count} targets`)
+      }
+      nav(`/sequences/${data.new_sequence_id}`)
+    } catch (err) {
+      // Fallback: bare client-side duplicate (steps only, no targets)
+      console.warn('[duplicateCampaign] clone-campaign endpoint failed, falling back:', err.message)
+      const { data } = await supabase.from('kiko_sequences').insert({
+        name: `${seq.name} (copy)`, description: seq.description, target_persona: seq.target_persona,
+        steps: seq.steps, is_active: false
+      }).select().single()
+      if (data) nav(`/sequences/${data.id}`)
+    }
   }
 
   async function deleteCampaign() {

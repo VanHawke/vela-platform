@@ -582,10 +582,14 @@ export default function Campaigns({ user }) {
                   <option value="mercedes">Mercedes</option>
                   <option value="red_bull">Red Bull</option>
                 </select>
-                <div style={{ fontSize: 11, color: C.textTertiary, marginBottom: 16, lineHeight: 1.5 }}>
+                <div style={{ fontSize: 11, color: C.textTertiary, marginBottom: 12, lineHeight: 1.5 }}>
                   Pipeline: pick team (your choice or alphabetical default) → verify slot is open → source 50 companies via web search with 320+ company exclusion list → identify decision-makers for top 8. ~80 seconds. If you pick a team that's already blocked in this category, the builder will refuse and tell you why.
                 </div>
-                <button onClick={runBuildCampaign} style={{ width: '100%', padding: '13px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #7C5CFC, #2DD4BF)', color: 'white', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
+
+                {/* CRM match preview (v0.0.39) */}
+                <CrmMatchPreview category={buildCategory} />
+
+                <button onClick={runBuildCampaign} style={{ width: '100%', padding: '13px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #7C5CFC, #2DD4BF)', color: 'white', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', marginTop: 12 }}>
                   Build {buildCategory} campaign{buildTeam !== 'auto' ? ` for ${buildTeam.replace('_', ' ')}` : ''}
                 </button>
               </div>
@@ -678,6 +682,66 @@ export default function Campaigns({ user }) {
 // for real backend stage progress instead of frontend timer estimation.
 // Falls back to timer mode if no jobId is provided (backward compat).
 // ─────────────────────────────────────────────────────────────────────
+function CrmMatchPreview({ category }) {
+  const [data, setData] = React.useState(null)
+  const [loading, setLoading] = React.useState(false)
+
+  React.useEffect(() => {
+    if (!category) return
+    setLoading(true)
+    setData(null)
+    fetch(`/api/crm-match-preview?category=${category}`)
+      .then(r => r.json())
+      .then(d => { setData(d); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [category])
+
+  if (loading) {
+    return (
+      <div style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.06)', fontSize: 11, color: 'rgba(255,255,255,0.45)', marginBottom: 4 }}>
+        Checking CRM for {category} matches…
+      </div>
+    )
+  }
+
+  if (!data || data.error) return null
+
+  const hasMatches = data.contact_count > 0
+  return (
+    <div style={{
+      padding: '12px 14px', borderRadius: 8,
+      background: hasMatches ? 'rgba(45,212,191,0.06)' : 'rgba(255,255,255,0.03)',
+      border: `0.5px solid ${hasMatches ? 'rgba(45,212,191,0.20)' : 'rgba(255,255,255,0.08)'}`,
+      marginBottom: 4,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: hasMatches ? 6 : 0 }}>
+        <div style={{
+          width: 18, height: 18, borderRadius: '50%',
+          background: hasMatches ? 'rgba(45,212,191,0.20)' : 'rgba(255,255,255,0.06)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 10, color: hasMatches ? '#2DD4BF' : 'rgba(255,255,255,0.4)',
+        }}>{hasMatches ? '✓' : 'i'}</div>
+        <div style={{ fontSize: 11, fontWeight: 500, color: hasMatches ? '#2DD4BF' : 'rgba(255,255,255,0.55)' }}>
+          {hasMatches
+            ? `${data.contact_count} relevant contacts at ${data.company_count} CRM companies`
+            : `No CRM matches — build will source entirely from web search`}
+        </div>
+      </div>
+      {hasMatches && data.sample_companies?.length > 0 && (
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.50)', lineHeight: 1.6, paddingLeft: 26 }}>
+          {data.sample_companies.slice(0, 4).map((c, i) => (
+            <span key={i}>
+              {c.name} <span style={{ color: 'rgba(255,255,255,0.30)' }}>({c.contact_count})</span>
+              {i < Math.min(3, data.sample_companies.length - 1) ? ' · ' : ''}
+            </span>
+          ))}
+          {data.sample_companies.length > 4 && <span style={{ color: 'rgba(255,255,255,0.30)' }}> + {data.sample_companies.length - 4} more</span>}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function BuildingProgress({ jobId }) {
   const stages = [
     { label: 'Selecting team via partnership matrix', sub: 'Querying active F1 partnerships', durationMs: 3000 },
