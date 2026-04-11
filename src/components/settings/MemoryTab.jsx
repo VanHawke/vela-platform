@@ -50,6 +50,8 @@ export default function MemoryTab({ user }) {
   const [counts, setCounts] = useState({})
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(false)
   const [category, setCategory] = useState('all')
   const [query, setQuery] = useState('')
   const [editingId, setEditingId] = useState(null)
@@ -57,30 +59,40 @@ export default function MemoryTab({ user }) {
   const [adding, setAdding] = useState(false)
   const [newFact, setNewFact] = useState({ category: 'manual', key: '', value: '' })
 
-  const load = async () => {
+  const PAGE_SIZE = 100
+
+  const load = async (reset = true) => {
     if (!user?.id) return
-    setLoading(true)
+    if (reset) setLoading(true); else setLoadingMore(true)
     try {
-      const params = new URLSearchParams({ user_id: user.id, limit: '100' })
+      const offset = reset ? 0 : rows.length
+      const params = new URLSearchParams({ user_id: user.id, limit: String(PAGE_SIZE), offset: String(offset) })
       if (category !== 'all') params.set('category', category)
       if (query.trim()) params.set('q', query.trim())
       const r = await fetch(`/api/memory-tab?${params}`)
       const data = await r.json()
       if (data.error) throw new Error(data.error)
-      setRows(data.rows || [])
+      const newRows = data.rows || []
+      if (reset) {
+        setRows(newRows)
+      } else {
+        setRows(prev => [...prev, ...newRows])
+      }
       setCounts(data.counts || {})
       setTotal(data.total || 0)
+      setHasMore(newRows.length === PAGE_SIZE)
     } catch (err) {
       console.error('[MemoryTab] load failed:', err)
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
   }
 
-  useEffect(() => { load() }, [user?.id, category])
+  useEffect(() => { load(true) }, [user?.id, category])
 
   const onSearch = (e) => {
-    if (e.key === 'Enter') load()
+    if (e.key === 'Enter') load(true)
   }
 
   const onDelete = async (id) => {
@@ -301,6 +313,16 @@ export default function MemoryTab({ user }) {
                   )}
                 </div>
               ))}
+              {hasMore && (
+                <button onClick={() => load(false)} disabled={loadingMore} style={{
+                  padding: '10px 16px', borderRadius: 6, marginTop: 4,
+                  background: 'rgba(167,139,250,0.08)', border: `1px solid rgba(167,139,250,0.20)`,
+                  color: T.accent, fontSize: 11, fontWeight: 500, cursor: loadingMore ? 'wait' : 'pointer',
+                  fontFamily: 'inherit', opacity: loadingMore ? 0.6 : 1,
+                }}>
+                  {loadingMore ? 'Loading…' : `Load more (${rows.length} of ${total})`}
+                </button>
+              )}
             </div>
           )}
         </div>

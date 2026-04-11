@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-11T20:56:17.466Z",
+  "generated_at": "2026-04-11T21:13:31.758Z",
   "commits": [
+    {
+      "hash": "10d1df6",
+      "subject": "v0.0.39 hotfix: crm-match-preview uses jsonb data column (companies/contacts are JSON-based, not flat tables)",
+      "when": "17 minutes ago"
+    },
     {
       "hash": "bcf43e5",
       "subject": "v0.0.39 — P3 polish backlog: 5 items in one deploy",
-      "when": "5 minutes ago"
+      "when": "22 minutes ago"
     },
     {
       "hash": "d57d201",
       "subject": "v0.0.38 — memory regex tightening + build campaign live progress",
-      "when": "27 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "9f747fc",
       "subject": "v0.0.37 — Session 1 batch B: selfcheck WARN level + navigate enums + KikoChat listener + voice→text handoff",
-      "when": "50 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "f6f3ffa",
       "subject": "v0.0.36 — memory extraction noise cleanup + multi-conversation UI",
-      "when": "77 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "7be8805",
       "subject": "docs: KIKO_MASTER_LOG.md Section A0e v0.0.27 → v0.0.35 (no code changes, doc only)",
-      "when": "85 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "2efb5dd",
@@ -34,7 +39,7 @@
     {
       "hash": "77d805c",
       "subject": "v0.0.34 — REAL Gmail signature fix: stop stripping images on cold outreach",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "970cf27",
@@ -49,7 +54,7 @@
     {
       "hash": "eac8735",
       "subject": "v0.0.31 — voice forced ask_kiko (full Sonnet) + goodbye 3 phrases + Gmail sig CID fix + email fixes + build progress",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "34c18b5",
@@ -69,7 +74,7 @@
     {
       "hash": "b14ba8e",
       "subject": "v0.0.27 — CRITICAL cost cuts + build campaign cache fix + morning email iterable guards",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "1e74c59",
@@ -94,12 +99,7 @@
     {
       "hash": "3241c0e",
       "subject": "master log: A0c session — v0.0.19 → v0.0.23 (Phase 1-5 + CRM-first sourcing + verification gate + timezone sender)",
-      "when": "29 hours ago"
-    },
-    {
-      "hash": "71731b5",
-      "subject": "v0.0.23 — Phase 3 Command Centre alignment + Phase 5 timezone-aware sender (true 24h)",
-      "when": "29 hours ago"
+      "when": "30 hours ago"
     }
   ]
 }

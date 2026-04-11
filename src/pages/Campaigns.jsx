@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
 import T from '@/lib/theme'
+import BulkEditStepsModal from '@/components/campaigns/BulkEditStepsModal'
 import {
   Mail, Linkedin, Eye, MousePointer, Reply, AlertTriangle, Clock,
   Pause, Play, Plus, Search, RefreshCw, X, ChevronRight, Trash2,
@@ -84,6 +85,7 @@ export default function Campaigns({ user }) {
   const [statusFilter, setStatusFilter] = useState('all')
   // Build-campaign modal state
   const [buildOpen, setBuildOpen] = useState(false)
+  const [bulkEditOpen, setBulkEditOpen] = useState(false)
   const [buildCategory, setBuildCategory] = useState('banking')
   const [buildTeam, setBuildTeam] = useState('auto') // 'auto' or a team id
   const [buildPhase, setBuildPhase] = useState('idle') // idle, building, review, enrolling, done, error
@@ -316,6 +318,11 @@ export default function Campaigns({ user }) {
               title="Auto-build campaign (deterministic — picks team, sources 50 targets, identifies decision-makers)"
               style={{ padding: '0 10px', height: 28, borderRadius: 6, border: `1px solid rgba(167,139,250,0.35)`, background: 'rgba(167,139,250,0.08)', color: '#A78BFA', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: 'inherit', fontWeight: 500 }}
             >⚡ Build</button>
+            <button
+              onClick={() => setBulkEditOpen(true)}
+              title="Bulk find/replace step content across sequences in a category"
+              style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textTertiary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13 }}
+            >✎</button>
             <button
               onClick={() => nav('/campaigns/new')}
               title="New blank campaign"
@@ -671,13 +678,14 @@ export default function Campaigns({ user }) {
           </div>
         </div>
       )}
+
+      {/* Bulk edit steps modal (v0.0.40) */}
+      {bulkEditOpen && (
+        <BulkEditStepsModal onClose={() => setBulkEditOpen(false)} initialCategory="cybersecurity" />
+      )}
     </div>
   )
 }
-
-
-// ─────────────────────────────────────────────────────────────────────
-// BuildingProgress — multi-stage progress for the campaign builder.
 // v0.0.38 (Sunny spec 2026-04-12): polls /api/job-status?id={jobId} every 1.5s
 // for real backend stage progress instead of frontend timer estimation.
 // Falls back to timer mode if no jobId is provided (backward compat).

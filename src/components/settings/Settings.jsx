@@ -415,6 +415,31 @@ export default function Settings({ user }) {
               })}
             </div>
 
+            {/* In-app toast preferences (v0.0.40) */}
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>In-app toasts</h3>
+              <div style={{ fontSize: 11, color: T.textTertiary, marginBottom: 12 }}>Control which event types pop a toast in the bottom-right corner. Mute anything you find too noisy.</div>
+              {[
+                { key: 'sequence_send', label: 'Sequence sends', desc: 'Toast when Kiko sends a batch of emails for an active campaign' },
+                { key: 'alert', label: 'Alerts', desc: 'Errors, system warnings, failed actions' },
+                { key: 'default', label: 'Other notifications', desc: 'Anything else (deal updates, reminders)' },
+              ].map(({ key, label, desc }) => {
+                const on = settings.notification_prefs?.[key] ?? true
+                return (
+                  <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, color: T.textSecondary, fontFamily: T.font }}>{label}</div>
+                      <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 2 }}>{desc}</div>
+                    </div>
+                    <div onClick={() => setSettings(p => ({ ...p, notification_prefs: { ...(p.notification_prefs || {}), [key]: !on } }))}
+                      style={{ width: 44, height: 24, borderRadius: 50, background: on ? T.accent : T.border, position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0, marginLeft: 16 }}>
+                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(238,238,238,0.07)', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px rgba(238,238,238,0.12)' }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
             <button onClick={() => saveSettings({
               display_name: settings.display_name, first_name: settings.first_name, last_name: settings.last_name,
               role_title: settings.role_title, phone: settings.phone, timezone: settings.timezone,

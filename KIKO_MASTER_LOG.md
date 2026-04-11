@@ -740,3 +740,36 @@ Plan preserved in `KIKO_VOICE_PIPECAT_MIGRATION.md`. Backup option if forced ask
 - New cron-job-cleanup adds 1 invocation/week (negligible)
 - Realtime subscriptions on conversations + kiko_notifications: ~free at low usage
 - ThreadIndicator polling reduction: 120/hour → ~0/hour (event-driven)
+
+
+---
+
+## Section A0h — v0.0.40 (April 12, 2026)
+
+**Theme:** Three more P3 polish items + live browser stress test
+
+### Item 1 — Bulk-edit step content across sequences (deferred from 4c)
+- NEW `api/bulk-edit-steps.js` (167 lines)
+- GET `?category=<id>` lists sequences in category with step counts + previews
+- POST `{sequence_ids[], find, replace, fields}` walks steps + yes_steps/no_steps in conditional steps, returns changes per sequence
+- Validates uuids, caps at 50 sequences per call, refuses no-op (find === replace)
+- NEW `src/components/campaigns/BulkEditStepsModal.jsx` (232 lines)
+- Category picker, sequence checklist, find/replace text areas, field toggles (template/subject), warning banner, results panel
+- `Campaigns.jsx`: ✎ button next to Build/+ in header opens the modal
+
+### Item 2 — Notification preferences (mute toggle)
+- Migration applied: `user_settings.notification_prefs jsonb DEFAULT '{"sequence_send": true, "alert": true, "default": true}'`
+- `NotificationToast.jsx`: loads prefs on mount, realtime handler checks `prefs[type]` before pushing toast
+- `Settings.jsx`: new "In-app toasts" card in Profile tab with three type-specific toggles + descriptions
+- Existing email/desktop/sound notification card preserved untouched
+
+### Item 3 — Memory tab pagination
+- `MemoryTab.jsx`: `load()` accepts reset flag, supports offset-based pagination
+- New state: `loadingMore`, `hasMore`
+- PAGE_SIZE constant = 100
+- "Load more (N of TOTAL)" button renders when more rows available
+- Click → fetches next 100 rows with offset, appends to existing list
+
+### Cost status at end of A0h
+- 25 deploys today, ~57 build minutes consumed
+- All migrations harmless additive

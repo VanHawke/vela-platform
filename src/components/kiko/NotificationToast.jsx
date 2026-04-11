@@ -31,7 +31,19 @@ const COLORS = {
 
 export default function NotificationToast({ user }) {
   const [toasts, setToasts] = useState([])
+  const [prefs, setPrefs] = useState({ sequence_send: true, alert: true, default: true })
   const navigate = useNavigate()
+
+  // Load notification preferences from user_settings
+  useEffect(() => {
+    if (!user?.id) return
+    supabase.from('user_settings').select('notification_prefs').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => {
+        if (data?.notification_prefs && typeof data.notification_prefs === 'object') {
+          setPrefs({ sequence_send: true, alert: true, default: true, ...data.notification_prefs })
+        }
+      })
+  }, [user?.id])
 
   useEffect(() => {
     if (!user?.id) return
@@ -43,11 +55,13 @@ export default function NotificationToast({ user }) {
         (payload) => {
           const n = payload.new
           if (!n) return
+          // Check mute preference for this notification type
+          const typeKey = n.type in prefs ? n.type : 'default'
+          if (prefs[typeKey] === false) return  // muted, skip toast
           setToasts(prev => {
-            const next = [...prev, n].slice(-4)  // cap at 4
+            const next = [...prev, n].slice(-4)
             return next
           })
-          // Auto-dismiss after 8s
           setTimeout(() => {
             setToasts(prev => prev.filter(t => t.id !== n.id))
           }, 8000)
@@ -58,7 +72,7 @@ export default function NotificationToast({ user }) {
     return () => {
       try { supabase.removeChannel(channel) } catch {}
     }
-  }, [user?.id])
+  }, [user?.id, prefs])
 
   const dismiss = (id) => setToasts(prev => prev.filter(t => t.id !== id))
 
