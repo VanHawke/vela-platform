@@ -194,8 +194,15 @@ export function useRealtimeVoice({ active, onClose, onMessage }) {
           type: 'session.update',
           session: {
             type: 'realtime',
-            audio: { input: { turn_detection: { type: 'server_vad', threshold: 0.6, prefix_padding_ms: 300, silence_duration_ms: 500 } } },
-            input_audio_transcription: { model: 'whisper-1' },
+            audio: {
+              input: {
+                turn_detection: { type: 'server_vad', threshold: 0.6, prefix_padding_ms: 300, silence_duration_ms: 500 },
+                // Whisper transcription MUST be inside audio.input — at session root
+                // it is silently ignored. Without this, conversation.item.input_audio_transcription.completed
+                // never fires, breaking goodbye safety net AND voice→chat-history saves.
+                transcription: { model: 'whisper-1' },
+              }
+            },
             instructions: SESSION_INSTRUCTIONS,
             tools: TOOLS,
             tool_choice: 'auto',

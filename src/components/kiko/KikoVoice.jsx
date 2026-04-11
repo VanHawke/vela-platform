@@ -215,6 +215,10 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
                 prefix_padding_ms: 300,
                 silence_duration_ms: 500,
               },
+              // Whisper transcription on user audio. WITHOUT this, the
+              // conversation.item.input_audio_transcription.completed event never fires —
+              // breaks the goodbye safety net AND voice→chat-history saves.
+              input_audio_transcription: { model: 'whisper-1' },
               instructions: `You are Kiko, the AI voice assistant for Van Hawke Group. You work with Sunny Sidhu, the CEO, based in Weybridge, UK.
 
 PERSONALITY: Warm, direct, intelligent. Like a trusted friend who also happens to be a brilliant strategic advisor. Keep responses to 1-4 sentences. Be concise, natural, and conversational.

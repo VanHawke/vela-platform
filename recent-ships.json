@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-11T14:11:35.835Z",
+  "generated_at": "2026-04-11T14:21:17.790Z",
   "commits": [
+    {
+      "hash": "cf232ac",
+      "subject": "v0.0.29 — REAL ROOT CAUSE FIX for build campaign",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "57c2a6d",
       "subject": "v0.0.28 — voice goodbye instant + voice fast endpoint + morning email guards",
-      "when": "80 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "b14ba8e",
       "subject": "v0.0.27 — CRITICAL cost cuts + build campaign cache fix + morning email iterable guards",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "1e74c59",
@@ -64,7 +69,7 @@
     {
       "hash": "9256e1c",
       "subject": "v0.0.19 — Phase 1 critical bugs (voice goodbye, XML leak, nav, Decagon, Racing Bulls, matrix)",
-      "when": "24 hours ago"
+      "when": "25 hours ago"
     },
     {
       "hash": "3132d0f",
@@ -94,11 +99,6 @@
     {
       "hash": "70d2304",
       "subject": "v0.0.14 — Admin system control room (/admin/system)",
-      "when": "30 hours ago"
-    },
-    {
-      "hash": "b5ec52f",
-      "subject": "URGENT COST FIX: ignoreCommand skips builds for doc-only commits",
       "when": "31 hours ago"
     }
   ]

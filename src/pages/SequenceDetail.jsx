@@ -441,14 +441,86 @@ RULES:
   }
 
   async function autoSuggestLeads() {
-    if (!seq?.name) return; setLoadingSuggestions(true)
-    const category = seq.name.split(' - ')[1] || seq.name
-    const categoryWords = category.toLowerCase().split(/[\s\/&]+/).filter(w => w.length > 3)
-    const queries = categoryWords.map(w => `data->>company.ilike.%${w}%`).join(',')
-    const { data: contacts } = await supabase.from('contacts').select('id,data').or(queries || `data->>company.ilike.%${category}%`).limit(50)
-    const enrolledEmails = new Set(enrollments.map(e => e.contact_email?.toLowerCase()))
-    const results = (contacts || []).map(c => ({ id: c.id, name: [c.data?.firstName, c.data?.lastName].filter(Boolean).join(' ') || 'Unknown', email: c.data?.email, company: c.data?.company, title: c.data?.title, linkedin: c.data?.linkedin })).filter(r => r.email && !enrolledEmails.has(r.email.toLowerCase()))
-    setSuggestions(results); setLoadingSuggestions(false)
+    if (!seq?.name) return
+    setLoadingSuggestions(true)
+    try {
+      // Parse category from sequence name "Team F1 - Category Name"
+      const category = seq.name.split(' - ')[1] || seq.name
+      // Map display name back to category id (lowercased + first word)
+      const catId = category.toLowerCase().split(/[\s/&]+/)[0]
+      const categoryMap = {
+        cybersecurity: 'cybersecurity', cyber: 'cybersecurity',
+        banking: 'banking', financial: 'banking', fintech: 'fintech',
+        cloud: 'cloud', ai: 'ai_data', semiconductors: 'semiconductors',
+        telecom: 'telecom', telecommunications: 'telecom',
+        gaming: 'gaming', crypto: 'crypto',
+        legal: 'legal', professional: 'legal',
+        software: 'software', robotics: 'robotics',
+      }
+      const categoryId = categoryMap[catId] || catId
+
+      // First try the CRM via direct query — fast path, no API call
+      const enrolledEmails = new Set(enrollments.map(e => e.contact_email?.toLowerCase()))
+
+      // Get all CRM contacts whose company is in the relevant industry
+      // by joining via the companies table where data->>industry matches
+      const industryWords = category.toLowerCase().split(/[\s/&]+/).filter(w => w.length > 3)
+      const orQuery = industryWords.map(w => `data->>industry.ilike.%${w}%`).join(',')
+      const { data: companies } = await supabase
+        .from('companies')
+        .select('data')
+        .or(orQuery || `data->>industry.ilike.%${category}%`)
+        .limit(100)
+      const companyNames = new Set((companies || []).map(c => (c.data?.name || '').toLowerCase()).filter(Boolean))
+
+      // Now fetch contacts at those companies
+      let results = []
+      if (companyNames.size > 0) {
+        const namesList = [...companyNames].slice(0, 50)
+        const orContacts = namesList.map(n => `data->>company.ilike.${n.replace(/'/g, '')}`).join(',')
+        const { data: contacts } = await supabase.from('contacts').select('id,data').or(orContacts).limit(150)
+        results = (contacts || []).map(c => ({
+          id: c.id,
+          name: [c.data?.firstName, c.data?.lastName].filter(Boolean).join(' ') || 'Unknown',
+          email: c.data?.email,
+          company: c.data?.company,
+          title: c.data?.title,
+          linkedin: c.data?.linkedin
+        })).filter(r => r.email && !enrolledEmails.has(r.email.toLowerCase()))
+      }
+
+      // If CRM came up empty, fall back to the build-campaign endpoint
+      if (results.length === 0) {
+        const r = await fetch('/api/build-campaign', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category: categoryId, preferredTeam: (seq.name.split(' F1')[0] || '').toLowerCase() })
+        })
+        const data = await r.json()
+        if (data.success && data.top_50) {
+          results = data.top_50
+            .filter(t => t.decision_maker_email && !enrolledEmails.has(t.decision_maker_email.toLowerCase()))
+            .map(t => ({
+              id: t.contact_id || `web-${t.rank}`,
+              name: t.decision_maker_name || 'Unknown',
+              email: t.decision_maker_email,
+              company: t.company_name,
+              title: t.decision_maker_title,
+              linkedin: null,
+            }))
+        }
+      }
+
+      setSuggestions(results)
+      if (results.length === 0) {
+        alert(`No leads found for ${category}. Try clicking "Add from CRM" or "Manual add".`)
+      }
+    } catch (err) {
+      console.error('[autoSuggestLeads]', err)
+      alert(`Find leads failed: ${err.message}`)
+    } finally {
+      setLoadingSuggestions(false)
+    }
   }
 
   async function enrollSelected() {
