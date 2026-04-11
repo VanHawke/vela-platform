@@ -15,6 +15,7 @@ export default function AdminSystem() {
   const [stats, setStats] = useState(null)
   const [heartbeats, setHeartbeats] = useState([])
   const [errors, setErrors] = useState([])
+  const [healthAlerts, setHealthAlerts] = useState([])
   const [bundleHash, setBundleHash] = useState('')
   const [lastRefresh, setLastRefresh] = useState(null)
   const [refreshing, setRefreshing] = useState(false)
@@ -80,6 +81,19 @@ export default function AdminSystem() {
         .order('created_at', { ascending: false })
         .limit(10)
       setErrors(errData || [])
+
+      // 4b. System health alerts — these used to email Sunny but are now in-app only
+      // Pulls system_health rows from kiko_alerts in the last 24h, not yet expired
+      const { data: healthData } = await supabase
+        .from('kiko_alerts')
+        .select('id, severity, title, detail, metadata, created_at, expires_at')
+        .eq('type', 'system_health')
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: false })
+        .limit(20)
+      // Filter out expired alerts client-side
+      const now = new Date()
+      setHealthAlerts((healthData || []).filter(a => !a.expires_at || new Date(a.expires_at) > now))
 
       // 5. Bundle hash (extracts from the root HTML)
       try {
@@ -241,6 +255,37 @@ export default function AdminSystem() {
                   {hb.duration_ms != null && <span style={{ color: T.textTertiary, fontSize: 10 }}>{(hb.duration_ms / 1000).toFixed(1)}s</span>}
                   {hb.records_processed != null && hb.records_processed > 0 && <span style={{ color: T.textSecondary, fontSize: 10 }}>{hb.records_processed} rec</span>}
                   <span style={{ color: T.textTertiary, fontSize: 10, minWidth: 60, textAlign: 'right' }}>{agoText}</span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ═══ HEALTH ALERTS ═══ Surfaces system_health rows from kiko_alerts.
+          These used to be emailed (cron-health-check WARNING emails) but are
+          now in-app only per Sunny's request. ═══ */}
+      <div style={card}>
+        <div style={cardHeader}><Activity size={12} /><span>Health Center · {healthAlerts.length} active alert{healthAlerts.length === 1 ? '' : 's'}</span></div>
+        {healthAlerts.length === 0 ? (
+          <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(45,212,191,0.04)', border: '0.5px solid rgba(45,212,191,0.20)', fontSize: 11, color: '#2DD4BF', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <CheckCircle2 size={14} />All systems healthy. No active alerts.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {healthAlerts.map((a) => {
+              const isCritical = a.severity === 'critical' || a.severity === 'high'
+              const accent = isCritical ? '#EF4444' : '#FBBF24'
+              const bg = isCritical ? 'rgba(239,68,68,0.04)' : 'rgba(251,191,36,0.04)'
+              const border = isCritical ? 'rgba(239,68,68,0.22)' : 'rgba(251,191,36,0.22)'
+              return (
+                <div key={a.id} style={{ padding: '12px 14px', borderRadius: 8, background: bg, border: `0.5px solid ${border}`, borderLeft: `3px solid ${accent}` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                    <span style={{ color: accent, fontSize: 11, fontWeight: 600 }}>{(a.severity || 'warning').toUpperCase()}</span>
+                    <span style={{ color: T.textTertiary, fontSize: 9 }}>{new Date(a.created_at).toLocaleString('en-GB')}</span>
+                  </div>
+                  <div style={{ color: T.text, fontSize: 12, fontWeight: 500, marginBottom: 4 }}>{a.title}</div>
+                  <div style={{ color: T.textSecondary, fontSize: 11, lineHeight: 1.4 }}>{(a.detail || '').slice(0, 400)}</div>
                 </div>
               )
             })}

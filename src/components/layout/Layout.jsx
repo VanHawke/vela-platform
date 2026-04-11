@@ -23,7 +23,7 @@ const C = {
   font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   r: 8,
 }
-import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X, Zap, Mail, Filter, Layers, Database, Compass, Linkedin } from 'lucide-react'
+import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X, Zap, Mail, Filter, Layers, Database, Compass, Linkedin, Activity } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
 import KikoVoice from '../kiko/KikoVoice'
 import KikoToast from '../kiko/KikoToast'
@@ -42,6 +42,11 @@ const ALL_NAV = [
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
   { id: 'sequences', label: 'Campaigns', path: '/campaigns', Icon: Zap },
   { id: 'linkedin', label: 'LinkedIn Queue', path: '/linkedin', Icon: Linkedin },
+]
+// Super-admin-only nav items appended to ALL_NAV at runtime if user role is super_admin.
+// Health Center surfaces system_health alerts (replaces the old health-warning emails).
+const ADMIN_NAV = [
+  { id: 'health', label: 'Health Center', path: '/admin/system', Icon: Activity },
 ]
 const VALID_NAV_IDS = new Set(ALL_NAV.map(n => n.id))
 const DEFAULT_TOP_IDS = ['home', 'command-centre', 'pipeline', 'partnership-matrix', 'sequences']
@@ -94,9 +99,13 @@ export default function Layout({ user }) {
     return () => { window.removeEventListener('kiko_top_nav_updated', handler); window.removeEventListener('kiko_more_order_updated', moreHandler) }
   }, [])
 
-  const TABS = topNavIds.map(id => ALL_NAV.find(n => n.id === id)).filter(Boolean)
+  const isSuperAdmin = user?.app_metadata?.role === 'super_admin'
+  // Effective nav = base nav + admin nav (only if super_admin)
+  const EFFECTIVE_NAV = isSuperAdmin ? [...ALL_NAV, ...ADMIN_NAV] : ALL_NAV
+
+  const TABS = topNavIds.map(id => EFFECTIVE_NAV.find(n => n.id === id)).filter(Boolean)
   // More items respect custom order from Settings
-  const moreItemsRaw = ALL_NAV.filter(n => !topNavIds.includes(n.id))
+  const moreItemsRaw = EFFECTIVE_NAV.filter(n => !topNavIds.includes(n.id))
   const [moreOrder, setMoreOrder] = useState(() => { try { const s = localStorage.getItem('kiko_more_order'); return s ? JSON.parse(s) : null } catch { return null } })
   const MORE_ITEMS = moreOrder
     ? [...moreItemsRaw].sort((a, b) => { const ai = moreOrder.indexOf(a.id); const bi = moreOrder.indexOf(b.id); return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi) })
@@ -177,6 +186,86 @@ export default function Layout({ user }) {
   const [voiceFullscreen, setVoiceFullscreen] = useState(false)
   const [globalVoiceMode, setGlobalVoiceMode] = useState(false)
   const [floatVoiceRequested, setFloatVoiceRequested] = useState(false)
+
+  // Voice transcript accumulator + autosave to conversations table.
+  // Builds up a messages[] from KikoVoice's onMessage callbacks, debounces
+  // saves to Supabase every ~1.5s. The result: voice conversations show
+  // up in chat history, can be reopened, and Kiko remembers them next session
+  // because they live in the same conversations table that KikoChat reads from.
+  const voiceMsgsRef = useRef([])
+  const voiceConvIdRef = useRef(null)
+  const voiceSaveTimerRef = useRef(null)
+  const handleVoiceMessage = useCallback(async (msg) => {
+    if (!msg?.content || !user?.id) return
+    // Push into the running buffer (mapped to schema {role, content})
+    const role = msg.role === 'kiko' ? 'assistant' : 'user'
+    voiceMsgsRef.current = [...voiceMsgsRef.current, { role, content: msg.content, timestamp: msg.at || Date.now() }]
+    // Debounce save — clear pending, save 1.5s after the last message
+    if (voiceSaveTimerRef.current) clearTimeout(voiceSaveTimerRef.current)
+    voiceSaveTimerRef.current = setTimeout(async () => {
+      try {
+        const allMsgs = voiceMsgsRef.current
+        if (allMsgs.length === 0) return
+        if (voiceConvIdRef.current) {
+          await supabase.from('conversations').update({ messages: allMsgs, updated_at: new Date().toISOString() }).eq('id', voiceConvIdRef.current)
+        } else {
+          // Create new conversation row. Title from first user message + 🎙 prefix
+          // so it's visually distinguishable in chat history.
+          const firstUserMsg = allMsgs.find(m => m.role === 'user')?.content || 'Voice conversation'
+          const title = '🎙 ' + firstUserMsg.slice(0, 58)
+          const { data } = await supabase.from('conversations').insert({
+            user_id: user.id,
+            org_id: user.app_metadata?.org_id,
+            title,
+            messages: allMsgs,
+            metadata: { source: 'voice', started_at: new Date().toISOString() }
+          }).select('id').single()
+          if (data?.id) {
+            voiceConvIdRef.current = data.id
+            setKikoConvId(data.id)  // surface to outlet so reopening from chat history works
+          }
+        }
+      } catch (e) {
+        console.error('[Layout] Voice conversation save failed:', e)
+      }
+    }, 1500)
+  }, [user])
+
+  // Reset voice buffer when voice mode closes — next voice session starts a new conversation
+  useEffect(() => {
+    if (!globalVoiceMode && !voiceFullscreen) {
+      // Flush any pending save immediately, then reset
+      if (voiceSaveTimerRef.current) {
+        clearTimeout(voiceSaveTimerRef.current)
+        voiceSaveTimerRef.current = null
+      }
+      // Final save synchronously if buffer has unsaved messages
+      if (voiceMsgsRef.current.length > 0 && voiceConvIdRef.current) {
+        const finalMsgs = voiceMsgsRef.current
+        const finalConvId = voiceConvIdRef.current
+        supabase.from('conversations').update({
+          messages: finalMsgs,
+          updated_at: new Date().toISOString()
+        }).eq('id', finalConvId).then(() => {
+          console.log('[Layout] Voice conversation flushed on close:', finalConvId)
+        })
+      }
+      // Reset for next session
+      voiceMsgsRef.current = []
+      voiceConvIdRef.current = null
+    }
+  }, [globalVoiceMode, voiceFullscreen])
+
+  // Listen for voice messages dispatched from KikoFloat's useRealtimeVoice
+  // (the home-page voice path goes through the hook, not the component, so it
+  // needs an event-bus bridge to reach Layout's handleVoiceMessage)
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.detail) handleVoiceMessage(e.detail)
+    }
+    window.addEventListener('kiko_voice_message', handler)
+    return () => window.removeEventListener('kiko_voice_message', handler)
+  }, [handleVoiceMessage])
 
   // Listen for voice fullscreen toggle from KikoChat
   useEffect(() => {
@@ -475,6 +564,7 @@ export default function Layout({ user }) {
         <KikoVoice
           onClose={() => setGlobalVoiceMode(false)}
           user={user}
+          onMessage={handleVoiceMessage}
           onVoiceState={(state) => {
             setVoiceActive(state.speaking || state.thinking || state.status === 'Listening')
             setVoiceStatus(state.speaking ? 'Kiko is speaking' : state.thinking ? 'Thinking...' : 'Listening')

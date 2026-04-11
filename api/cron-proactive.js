@@ -208,9 +208,12 @@ export default async function handler(req, res) {
       }
     } catch (catErr) { console.error('[Proactive] Category recommender error:', catErr.message); }
 
-    // Send email notification for high-severity alerts to all active users
-    const users = await getActiveUsers();
-    for (const u of users) { try { await sendAlertEmail(alerts, u.email); } catch {} }
+    // Email notification DISABLED 2026-04-11 per Sunny's request — these "Kiko Alert"
+    // emails (Decagon/NanoXplore convergence emails) were noisy and not actionable.
+    // Alerts continue to be written to kiko_alerts table and surface in the in-app
+    // Command Centre. Email path kept as a function for possible future re-enable.
+    // const users = await getActiveUsers();
+    // for (const u of users) { try { await sendAlertEmail(alerts, u.email); } catch {} }
 
     await cronHeartbeat('cron-proactive', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: written });
     return res.status(200).json({ ok: true, alerts: written, drafts, total_signals: hasData });

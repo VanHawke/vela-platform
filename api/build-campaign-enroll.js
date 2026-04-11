@@ -1,8 +1,10 @@
 // api/build-campaign-enroll.js
-// Companion to build-campaign. Takes a sequence_id and enrolls the top 8 sourced targets.
+// Companion to build-campaign. Takes a sequence_id and enrolls all sourced targets.
 // Separate endpoint so the user reviews before activation.
 
 import { createClient } from '@supabase/supabase-js';
+
+export const config = { maxDuration: 120 };
 
 const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 

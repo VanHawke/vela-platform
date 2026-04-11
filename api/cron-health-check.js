@@ -133,12 +133,15 @@ export default async function handler(req, res) {
       })});
 
       if (shouldEmail) {
-        const severity = failed.some(f => ['supabase', 'anthropic', 'kiko_endpoint'].includes(f.name)) ? 'critical' : 'warning';
-        await sendAlert(
-          `${failed.length} system check(s) failing, ${cronProblems.length} cron issue(s)`,
-          alertParts.join('\n'),
-        severity
-      ).catch(() => {});
+        // Email notification DISABLED 2026-04-11 per Sunny's request — health alerts
+        // should ONLY surface in the in-app /admin/system health section, never via
+        // email. The kiko_alerts row above is the in-app surface.
+        // const severity = failed.some(f => ['supabase', 'anthropic', 'kiko_endpoint'].includes(f.name)) ? 'critical' : 'warning';
+        // await sendAlert(
+        //   `${failed.length} system check(s) failing, ${cronProblems.length} cron issue(s)`,
+        //   alertParts.join('\n'),
+        // severity
+        // ).catch(() => {});
       } // end shouldEmail
 
       for (const f of failed) {

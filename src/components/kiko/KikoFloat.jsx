@@ -166,6 +166,11 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   const { status: voiceStatus, speaking: voiceSpeaking } = useRealtimeVoice({
     active: voiceOpen,
     onClose: () => { setVoiceOpen(false); window.dispatchEvent(new CustomEvent('kiko_voice_state', { detail: { active: false } })) },
+    onMessage: (msg) => {
+      // Forward voice transcripts up to Layout via custom event so Layout's
+      // handleVoiceMessage saves them to the conversations table
+      window.dispatchEvent(new CustomEvent('kiko_voice_message', { detail: msg }))
+    },
   })
   const [floatVoiceState, setFloatVoiceState] = useState({ speaking: false, status: 'connecting', energy: 0, pitch: 0 })
   const [fileUploading, setFileUploading] = useState(false)

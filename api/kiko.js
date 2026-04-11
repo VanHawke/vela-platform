@@ -68,6 +68,10 @@ function stripToolXml(raw) {
   });
 
   // Strip any leaked <tool_use>/<invoke>/<parameter>/<*> blocks
+  // CRITICAL: when LLM writes "<tool_use>\n\npartnership_matrix\n\n..." in prose,
+  // the orphan tool name on the next line ALSO needs to be stripped, not just the tag.
+  // Match <tool_use> + whitespace + a snake_case word on its own line + optional newlines.
+  out = out.replace(/<tool_use>[\s\n]*[a-z][a-z0-9_]*[\s\n]*/gi, '');
   out = out.replace(/<\/?invoke[^>]*>/gi, '');
   out = out.replace(/<\/?parameter[^>]*>/gi, '');
   out = out.replace(/<\/?antml:\w+[^>]*>/gi, '');
@@ -76,7 +80,9 @@ function stripToolXml(raw) {
   // Generic tool-ish pattern: <snake_case_name>...</snake_case_name> on a single line
   out = out.replace(/<([a-z][a-z0-9_]*)>[^<\n]{0,120}<\/\1>/gi, '');
   // Stray open/close tags of known tool-ish names
-  out = out.replace(/<\/?(navigate_page|ask_kiko|ask_data_agent|ask_ea_agent|ask_strategy_agent|close_voice|fetch_tool|call_tool)[^>]*>/gi, '');
+  out = out.replace(/<\/?(navigate_page|ask_kiko|ask_data_agent|ask_ea_agent|ask_strategy_agent|close_voice|fetch_tool|call_tool|partnership_matrix|ask_navigator|ask_deal_agent|ask_strategy_agent|ask_negotiation_agent)[^>]*>/gi, '');
+  // Collapse multiple blank lines created by the strips
+  out = out.replace(/\n{3,}/g, '\n\n');
 
   return { cleaned: out, navigateTo };
 }
@@ -398,7 +404,7 @@ SELF-CORRECTION: If you call a tool and the result doesn't fully answer the ques
 
 TOOL INVOCATION ABSOLUTE RULE: NEVER type tool-use XML as text in your response. When you want to use a tool, the tool mechanism handles it — tool calls are invisible to you as text. If you find yourself writing angle-bracket tool tags in your reply, that is a bug. Use the actual tool mechanism or describe what you are doing in plain English.
 
-NAVIGATION RULE — CRITICAL: When the user says "take me there", "open X", "navigate to X", "go to X" — you MUST call the ask_navigator tool with the page name. DO NOT write "<navigate_page>/x</navigate_page>" or any XML tag as text. If you type it, it will NOT navigate — you will just be writing words. Either call the real tool via the tool_use mechanism, or respond in plain English explaining how to navigate manually. NEVER EVER write angle-bracket tags as prose.
+NAVIGATION RULE — CRITICAL: When the user says "take me there", "open X", "navigate to X", "go to X" — you MUST call the ask_navigator tool with the page name. DO NOT write "<navigate_page>/x</navigate_page>" or any XML tag as text. NEVER write "<tool_use>", "<invoke>", "<function_call>", or any pseudo-XML in your response — these are NOT how tools are called. Either invoke the actual tool via the proper tool_use mechanism (which the system handles for you), or respond in plain English. If you type angle-bracket tags as text, you are writing prose — they will NOT execute. ABSOLUTELY FORBIDDEN: writing the literal characters "<tool_use>" anywhere in your response.
 
 ERROR HANDLING: If an agent returns an error, explain the agent failed and what went wrong. Do NOT attempt to handle the task yourself — you are a coordinator, not an executor. Say "The [Agent Name] hit an error: [details]. Let me know if you want me to try again."
 

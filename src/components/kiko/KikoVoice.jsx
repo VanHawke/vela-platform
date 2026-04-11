@@ -124,16 +124,24 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
       if (msg.type === 'conversation.item.input_audio_transcription.completed') {
         const userText = (msg.transcript || '').trim()
         if (userText && onMessage) onMessage({ role: 'user', content: userText, at: Date.now() })
-        // SAFETY NET: if user clearly said goodbye and GPT-4o doesn't call close_voice
-        // within 5 seconds, fire it ourselves. Prevents the "voice won't close" bug.
-        if (/\b(goodbye|bye)\b.*\b(kiko|now|sunny)?\b|^(bye|goodbye)\.?$|\b(close voice|stop listening|stop voice|i'?m done)\b/i.test(userText)) {
-          console.log('[KikoVoice] Goodbye detected in user transcript — arming 5s fallback close')
+        // SAFETY NET: any goodbye/farewell phrase fires the close fallback within 3s.
+        // Liberal regex — matches "bye", "goodbye", "goodbye kiko", "see you later",
+        // "talk later", "stop listening", "close voice", "i'm done", "thanks bye", etc.
+        const lower = userText.toLowerCase()
+        const isGoodbye = (
+          /\b(bye|goodbye|good\s*bye)\b/.test(lower) ||
+          /\b(see\s+you|talk\s+(to\s+you\s+)?(later|soon)|catch\s+you\s+later|speak\s+(to\s+you\s+)?(later|soon))\b/.test(lower) ||
+          /\b(close\s+voice|stop\s+listening|stop\s+voice|end\s+(voice|call)|exit\s+voice|hang\s+up)\b/.test(lower) ||
+          /\b(i'?m\s+done|that'?s\s+all|that\s+is\s+all|we'?re\s+done|all\s+done)\b/.test(lower)
+        )
+        if (isGoodbye) {
+          console.log('[KikoVoice] Goodbye detected in user transcript — arming 3s fallback close:', userText)
           setTimeout(() => {
             if (window.__kikoVoiceClose) {
-              console.log('[KikoVoice] Fallback close firing (GPT-4o did not call close_voice)')
+              console.log('[KikoVoice] Fallback close firing (GPT-4o did not call close_voice in time)')
               window.__kikoVoiceClose()
             }
-          }, 5000)
+          }, 3000)
         }
       }
       // Kiko speech transcript (GPT-4o assistant response)

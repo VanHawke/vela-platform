@@ -111,6 +111,10 @@
       "schedule": "30 7 * * 1-5"
     },
     {
+      "path": "/api/cron-morning-email",
+      "schedule": "45 7 * * 1-5"
+    },
+    {
       "path": "/api/cron-competitive-intel",
       "schedule": "0 2 * * 1"
     },
@@ -281,6 +285,9 @@
     },
     "api/cron-morning-intelligence.js": {
       "maxDuration": 90
+    },
+    "api/cron-morning-email.js": {
+      "maxDuration": 60
     },
     "api/cron-competitive-intel.js": {
       "maxDuration": 120

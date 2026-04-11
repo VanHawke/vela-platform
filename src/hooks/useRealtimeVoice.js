@@ -64,7 +64,7 @@ const TOOLS = [
   { type: 'function', name: 'close_voice', description: 'Close voice mode on goodbye/bye/stop.', parameters: { type: 'object', properties: {} } },
 ]
 
-export function useRealtimeVoice({ active, onClose }) {
+export function useRealtimeVoice({ active, onClose, onMessage }) {
   const [status, setStatus] = useState('idle') // idle|connecting|listening|speaking|thinking|error
   const [speaking, setSpeaking] = useState(false)
   const pcRef = useRef(null)
@@ -77,6 +77,8 @@ export function useRealtimeVoice({ active, onClose }) {
   // Expose close handler for close_voice tool
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
+  const onMessageRef = useRef(onMessage)
+  onMessageRef.current = onMessage
   useEffect(() => {
     window.__kikoVoiceClose = () => onCloseRef.current?.()
     return () => { window.__kikoVoiceClose = null }
@@ -101,6 +103,40 @@ export function useRealtimeVoice({ active, onClose }) {
       if (msg.type === 'output_audio_buffer.stopped' || msg.type === 'output_audio_buffer.cleared') setSpeaking(false)
       if (msg.type === 'input_audio_buffer.speech_started') setStatus('listening')
       if (msg.type === 'response.done') setStatus('listening')
+
+      // ── Transcript capture for chat-history save ──
+      // User speech (Whisper transcription on input audio)
+      if (msg.type === 'conversation.item.input_audio_transcription.completed') {
+        const userText = (msg.transcript || '').trim()
+        if (userText && onMessageRef.current) {
+          onMessageRef.current({ role: 'user', content: userText, at: Date.now() })
+        }
+        // Goodbye safety net — fire close fallback within 3s if GPT-4o doesn't call close_voice
+        const lower = userText.toLowerCase()
+        const isGoodbye = (
+          /\b(bye|goodbye|good\s*bye)\b/.test(lower) ||
+          /\b(see\s+you|talk\s+(to\s+you\s+)?(later|soon)|catch\s+you\s+later|speak\s+(to\s+you\s+)?(later|soon))\b/.test(lower) ||
+          /\b(close\s+voice|stop\s+listening|stop\s+voice|end\s+(voice|call)|exit\s+voice|hang\s+up)\b/.test(lower) ||
+          /\b(i'?m\s+done|that'?s\s+all|that\s+is\s+all|we'?re\s+done|all\s+done)\b/.test(lower)
+        )
+        if (isGoodbye) {
+          console.log('[RealtimeVoice] Goodbye detected — arming 3s fallback close:', userText)
+          setTimeout(() => {
+            if (window.__kikoVoiceClose) {
+              console.log('[RealtimeVoice] Fallback close firing')
+              window.__kikoVoiceClose()
+            }
+          }, 3000)
+        }
+      }
+      // Kiko speech (GPT-4o assistant response)
+      if (msg.type === 'response.audio_transcript.done') {
+        const kikoText = (msg.transcript || '').trim()
+        if (kikoText && onMessageRef.current) {
+          onMessageRef.current({ role: 'kiko', content: kikoText, at: Date.now() })
+        }
+      }
+
       if (msg.type === 'error') { console.error('[RealtimeVoice] Error:', msg.error); setStatus('error') }
     } catch (e) { console.error('[RealtimeVoice] DC error:', e) }
   }, [])
