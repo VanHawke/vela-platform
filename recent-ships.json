@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-11T21:13:31.758Z",
+  "generated_at": "2026-04-11T21:33:31.164Z",
   "commits": [
+    {
+      "hash": "3bdcb9c",
+      "subject": "v0.0.40 — three more P3 items: bulk-edit + notification prefs + memory pagination",
+      "when": "19 minutes ago"
+    },
     {
       "hash": "10d1df6",
       "subject": "v0.0.39 hotfix: crm-match-preview uses jsonb data column (companies/contacts are JSON-based, not flat tables)",
-      "when": "17 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "bcf43e5",
       "subject": "v0.0.39 — P3 polish backlog: 5 items in one deploy",
-      "when": "22 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "d57d201",
       "subject": "v0.0.38 — memory regex tightening + build campaign live progress",
-      "when": "44 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "9f747fc",
       "subject": "v0.0.37 — Session 1 batch B: selfcheck WARN level + navigate enums + KikoChat listener + voice→text handoff",
-      "when": "67 minutes ago"
+      "when": "87 minutes ago"
     },
     {
       "hash": "f6f3ffa",
@@ -34,7 +39,7 @@
     {
       "hash": "2efb5dd",
       "subject": "v0.0.35 — voice transcript race fix + avatar volume hardcode + chat history timestamps + multi-conversation foundation",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "77d805c",
@@ -49,7 +54,7 @@
     {
       "hash": "592ccbf",
       "subject": "v0.0.32 — avatar still + Kiko transcript event name + memory threshold",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "eac8735",
@@ -69,7 +74,7 @@
     {
       "hash": "57c2a6d",
       "subject": "v0.0.28 — voice goodbye instant + voice fast endpoint + morning email guards",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "b14ba8e",
@@ -79,7 +84,7 @@
     {
       "hash": "1e74c59",
       "subject": "v0.0.26 — voice goodbye + voice→history + xml leak + kill emails + Health Center + morning email cron",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "ed85d26",
@@ -95,11 +100,6 @@
       "hash": "8edd203",
       "subject": "v0.0.24 — Build campaign timeout fix + global palette fix + remove top-8 segmentation + email rendering 3-layer",
       "when": "29 hours ago"
-    },
-    {
-      "hash": "3241c0e",
-      "subject": "master log: A0c session — v0.0.19 → v0.0.23 (Phase 1-5 + CRM-first sourcing + verification gate + timezone sender)",
-      "when": "30 hours ago"
     }
   ]
 }

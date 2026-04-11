@@ -773,3 +773,66 @@ Plan preserved in `KIKO_VOICE_PIPECAT_MIGRATION.md`. Backup option if forced ask
 ### Cost status at end of A0h
 - 25 deploys today, ~57 build minutes consumed
 - All migrations harmless additive
+
+
+---
+
+## Section A0i — v0.0.41 (April 12, 2026)
+
+**Theme:** Deep memory extraction quality fix — speculation patterns + hallucination guard
+
+**Trigger:** Live browser test of v0.0.40 Memory tab revealed remaining noise the v0.0.38/v0.0.39 regex didn't catch:
+- "User has decision-making authority over major vendor partnerships" (borderline speculation)
+- "User plans outdoor activities and checks weather accordingly" (single-message inference)
+- "Has a son (name unknown)" — **HALLUCINATED, Sunny does not have a son**
+- "Two daughters: Nyla (February 2026) and Maya (March 2026)" — wrong years
+- Hundreds of behavioural descriptions like "Working on sales pipeline management"
+
+### Live database cleanup — 642 rows removed across 7 passes
+
+| Pass | Pattern | Deleted |
+|---|---|---|
+| 1 | Behavioural sentence starters (Working/Pursuing/Managing/Cycling/etc.) | 86 |
+| 2 | Transient state (overdue/unread/waiting N days/deadline pressure) | 22 |
+| 3 | Hallucinations (invented son, wrong-year birthdays, "(name unknown)") | 17 |
+| 4 | No concreteness (no digit, no @, no $, no proper noun) | 374 |
+| 5 | Behavioural verb sentence starters (Demonstrates/Sets/Handles/etc.) | 49 |
+| 6 | Adverb starters (Currently/Actively) + outstanding tasks + role: prefixes | 77 |
+| 7 | Confidence metrics + meta-narrative + decision-making style | 17 |
+| **Total** | | **642** |
+
+**Final state:** 468 rows for Sunny (down from 1,000 — 53% reduction).
+
+### Live extractor strengthened — `api/kiko.js` SPECULATION filter rewritten
+8 filter passes (up from 3):
+1. **SPECULATION_REGEX** — psychological inferences ("User exhibits/appears/etc.")
+2. **SPECULATION_KEYWORDS** — behavioural descriptors anywhere in value
+3. **BEHAVIOURAL_PATTERN** — sentence patterns ("Working on X", "Pursuing X", "Focuses on")
+4. **TRANSIENT_STATE** — counts/durations that change daily (unread/overdue/waiting N days)
+5. **NEW BEHAVIOURAL_VERB_START** — capitalized verb sentence starts (Demonstrates, Sets, Manages, etc., 80+ verbs)
+6. **NEW STRAGGLER_PATTERNS** — adverb starts (Currently/Actively/Recently), "Involved in X", "Role:" prefixes
+7. **NEW META_NARRATIVE** — confidence metrics, "(message cut off)", "decision-making style:", "tracking N memory entries"
+8. **REWRITTEN CONCRETENESS_CHECK** — must contain digit/$/@/proper-noun, with proper-noun check now SKIPPING the first word so sentence-starting verbs no longer false-positive
+
+PostgreSQL gotcha discovered during cleanup: PostgreSQL regex uses `\y` for word boundary, NOT `\b`. Pass 5 initially returned 0 deletions because of this; fixed by switching to `\s` after the verb pattern.
+
+### Haiku extractor prompt rewritten
+- Added explicit "ABSOLUTE RULES" section with 5 hard constraints
+- Added HALLUCINATION GUARD: "If user says 'Hi' you do NOT extract 'User is referred to as Sunny'"
+- "A valid fact must contain at least one of: proper noun, specific date/number, direct quote"
+- Added 17+ NEVER EXTRACT examples with the actual patterns from the audit
+- Hard rule: "EMPTY ARRAYS ARE THE CORRECT ANSWER if the conversation has no concrete facts"
+- "RETURN EMPTY ARRAYS rather than padding with weak inferences"
+
+### What survives in the Memory tab now (acceptable)
+Real concrete contacts: "Natasha Fulbright — VP of Growth, natasha.fulbright@torq.io"
+Real deals: "User is working on a $750,000 deal with Torq"
+Real preferences with concrete numbers: "Has 88% preference for semiconductor deals"
+Real entities: "Van Hawke Group is in fundraising mode"
+Real dates: "Tax deadline April 15"
+Real family with explicit names: "Daughters named Nyla and Maya"
+
+### Cost status at end of A0i
+- 26 deploys today, ~58 build minutes consumed
+- 7 SQL DELETE statements (free)
+- v0.0.27 cron diet still locked

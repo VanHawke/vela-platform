@@ -1512,54 +1512,119 @@ DEAL STAGE MAPPING:
       try {
         const extract = await anthropic.messages.create({
           model: 'claude-haiku-4-5-20251001', max_tokens: 400,
-          system: `You extract CONCRETE FACTS from user-Kiko conversations for long-term memory. Return ONLY JSON.
+          system: `You extract VERIFIABLE FACTS that the user EXPLICITLY STATED in this exchange. Return ONLY JSON.
 
-═══ CRITICAL RULES ═══
-ONLY extract verifiable, concrete facts the user explicitly stated or that are objectively true.
-NEVER extract psychological inferences, behavioural patterns, or speculation.
+═══ ABSOLUTE RULES ═══
+1. ONLY extract facts the user DIRECTLY SAID. If you have to infer, guess, or reason about it — DO NOT extract.
+2. NEVER hallucinate or invent facts. If the user didn't say "I have a son", you cannot extract "has a son".
+3. NEVER extract behavioural descriptions, work styles, business pressures, or psychological observations.
+4. NEVER extract transient state (unread email counts, overdue tasks, "waiting N days").
+5. EMPTY ARRAYS ARE THE CORRECT ANSWER if the conversation has no concrete facts.
 
-═══ EXTRACT (good examples) ═══
-✓ "User has two daughters: Maya (born 12 March 2020) and Nyla (born 12 February 2017)"
-✓ "User lives in Weybridge, UK"
-✓ "User's company is Van Hawke Group"
-✓ "User prefers all financials in USD"
-✓ "User works with Haas F1 Team on cybersecurity sponsorship"
-✓ "Decagon meeting scheduled for 18 April"
+═══ EXTRACT — only these kinds of facts ═══
+✓ Specific named people: "User's daughter is Maya, born 12 March 2020"
+✓ Specific named places: "User lives in Weybridge, UK"
+✓ Specific named companies/deals: "User is working on Haas F1 cybersecurity sponsorship with Decagon"
+✓ Explicit preferences user STATED: "User prefers all financials in USD" (only if user said so)
+✓ Specific calendar events: "Decagon call scheduled 18 April 2026"
 
-═══ NEVER EXTRACT (bad examples — these are speculation, not facts) ═══
-✗ "User exhibits decision addiction loop behaviour"
-✗ "User shows pattern of relitigating decisions"
-✗ "User appears to procrastinate on execution"
-✗ "User may be experiencing analysis paralysis"
-✗ "User has execution gap between decisions and actions"
-✗ "User needs accountability"
-✗ Anything starting with "User exhibits", "User shows", "User appears", "User may", "User has pattern", "User tends to"
+A valid fact must contain AT LEAST ONE of:
+- A proper noun (a real-world name like Maya, Weybridge, Cloudflare, Haas)
+- A specific date or number
+- A direct quote from the user
 
-If you only see speculation/patterns and no concrete facts, return empty arrays. Empty is better than noisy.
+═══ NEVER EXTRACT — these are not facts ═══
+✗ "User values execution discipline" (psychological)
+✗ "User exhibits decision addiction" (psychological)
+✗ "Working on sales pipeline management" (vague action)
+✗ "Pursuing sports tech and semiconductor strategy" (vague behaviour)
+✗ "Under significant business pressure" (subjective)
+✗ "Uses AI assistance for tasks" (obvious/meaningless)
+✗ "Works in fast-paced environment" (filler)
+✗ "Has 19 overdue tasks" (transient state, will change tomorrow)
+✗ "Has been waiting 254 days for a deal" (transient state)
+✗ "Has unread emails requiring attention" (transient state)
+✗ "Planning activities for next week" (single-conversation context)
+✗ "User has a son" (HALLUCINATION if user didn't explicitly say so — never invent family)
+✗ Anything starting with: "User values", "User works on", "User manages", "User focuses", "User pursues", "User cycles", "User deals with", "Working on", "Pursuing", "Managing", "Cycling", "Dealing with", "Focuses on", "Style:", "Approach:", "Manner:"
+
+═══ HALLUCINATION GUARD ═══
+You are NOT a creative writer. You are an extractor. If the user says "Hi" you do NOT extract "User is referred to as Sunny" — there's nothing to extract.
+If you find yourself generating a fact the user didn't explicitly state, STOP and remove it.
+RETURN EMPTY ARRAYS rather than padding with weak inferences.
 
 ═══ JSON FORMAT ═══
 {
-  "facts": ["concrete facts about the user's business — entities, deals, decisions made, dates"],
-  "entity": "main company/person name or null",
-  "personal": ["concrete personal details — names, dates, locations, relationships, preferences user explicitly stated"],
-  "unknown_topics": ["topics where Kiko gave generic answers and would benefit from research"],
+  "facts": [],
+  "entity": null,
+  "personal": [],
+  "unknown_topics": [],
   "category": "business|personal|mixed"
 }`,
           messages: [{ role: 'user', content: `Q: ${message.slice(0, 300)}\nA: ${responseText.slice(0, 1000)}` }],
         });
         const parsed = JSON.parse((extract.content[0]?.text || '{}').replace(/```json|```/g, '').trim());
 
-        // Low-value filter — drop any extracted item matching speculation patterns.
+        // ─── MULTI-CRITERIA LOW-VALUE FILTER (v0.0.41) ───
         // Defence in depth: even if Haiku ignores the prompt, these patterns get blocked.
-        // Expanded 2026-04-12 v0.0.38 after live audit revealed 445 speculation rows
-        // the original narrow regex missed. Now matches the broader patterns directly.
+        //
+        // Filter passes:
+        //   1. SPECULATION_REGEX  — psychological inferences ("User exhibits/appears/etc")
+        //   2. SPECULATION_KEYWORDS — behavioural descriptors anywhere in the value
+        //   3. BEHAVIOURAL_PATTERN — sentence patterns ("Working on X", "Pursuing X", "Focuses on")
+        //   4. TRANSIENT_STATE — counts/numbers that change daily (unread/overdue/waiting N days)
+        //   5. BEHAVIOURAL_VERB_START — capitalized verb starts (Demonstrates, Sets, Manages, etc.)
+        //   6. STRAGGLER_PATTERNS — adverb starts, "Currently/Actively", outstanding tasks, deadline pressure
+        //   7. META_NARRATIVE — confidence metrics, "(message cut off)", psychological framings
+        //   8. CONCRETENESS_CHECK — must contain a digit, $, @, OR a non-blacklist proper noun mid-sentence
+        //
+        // Together these block all patterns found in the v0.0.41 audit (1000+ row sample, 642 rows removed).
+
         const SPECULATION_REGEX = /^(user|the user|sunny)\s+(exhibits|shows|appears|may|might|tends|seems|has\s+pattern|has\s+execution\s+gap|needs\s+accountability|is\s+experiencing|is\s+procrastinating|is\s+relitigating)/i;
+
         const SPECULATION_KEYWORDS = /(struggles?|avoids?|exhibits?|experienc(es|ing)|paralys|procrastinat|tendency|tends?\s+to|tends?\s+toward|fatigue|addiction|pattern\s+of|pattern\s+around|behaviou?r|hesitat|indecis|may\s+be|might\s+be|appears?\s+to|seems?\s+to|would\s+benefit|could\s+benefit|lacks?\s+|suffers?\s+from|neglect|overthinking|re-?evaluat|reframes?|reframing|inclination|compulsiv)/i;
+
+        const BEHAVIOURAL_PATTERN = /^(user\s+)?(values?\s|works\s+on|works\s+in|manages\s+(multiple|sales|pipeline|high-priority|f1)|pursues?\s|pursuing\s|focuses?\s+on|focuses?\b|uses?\s+(ai|kiko|tools?)|deals?\s+with|cycling|cycles?|dealing\s+with|under\s+(significant|severe)|focused\s+on|focus\s+is|style\s*:|approach\s*:|manner\s*:|planning\s+activities)/i;
+
+        const TRANSIENT_STATE = /\b(\d+\+?\s*(unread|overdue|stale|pending|missed|late|outstanding)|wait(ed|ing)?\s+\d+\s+days?|been\s+waiting\s+\d+|has\s+\d+\s+(unread|overdue|tasks?|deals?|emails?)\s+requir|requir(ing|es)\s+(urgent|immediate)\s+attention|has\s+pending\s+draft\s+email|deadline\s+pressure|tax\s+pressure)/i;
+
+        const BEHAVIOURAL_VERB_START = /^(demonstrates?|sets?|handles?|generates?|generated|operates?|maintains?|engages?|interacts?|performs?|executes?|organi[sz]es?|tracks?|monitors?|reviews?|coordinates?|conducts?|implements?|develops?|drives?|leads?|owns?|holds?|builds?|creates?|initiates?|provides?|offers?|receives?|sends?|reports?|evaluates?|considers?|plans?|decides?|shows?|represents?|indicates?|reflects?|chooses?|picks?|selects?|takes?|gives?|makes?|gets?|finds?|seeks?|wants?|needs?|requires?|demands?|expects?|believes?|thinks?|feels?|knows?|understands?|recogni[sz]es?|notices?|observes?|describes?|explains?|tells?|asks?|answers?|responds?|comments?|notes?|mentions?|states?|declares?|announces?|discusses?|debates?|argues?|claims?|asserts?|insists?|denies?|admits?|accepts?|rejects?|approves?|agrees?|disagrees?|opposes?|supports?|endorses?|recommends?|suggests?|proposes?|advocates?|advises?|warns?|encourages?|invites?|welcomes?|greets?|thanks?|apologi[sz]es?|congratulates?|celebrates?|praises?|criticizes?|complains?|protests?|objects?|questions?)\s/i;
+
+        const STRAGGLER_PATTERNS = /^((currently|actively|recently|previously|generally|typically|usually|often|sometimes|always|never|rarely|frequently|occasionally|consistently|increasingly|gradually|primarily|mainly|mostly|largely|partially|completely|fully|partly|approximately)\s|(involved|engaged|invested|focused|dedicated|committed|interested|familiar|experienced|skilled|capable|qualified|trained)\s+(in|with|at|on)\s|(current|recent|previous|past|future|upcoming|next|prior)\s+(challenge|priority|focus|goal|task|issue|problem|concern|item)\s*:|(role|responsibility|position|title)\s*:|(work\s+style|working\s+style)\s*[:|\b])/i;
+
+        const META_NARRATIVE = /(confidence\s+metric|0\.\d{2}\s+confidence|\(message\s+cut\s+off|potential\s+\w+\s+anxiety|potential\s+\w+\s+inefficiency|^decision-making\s+(style|follows|pattern)|suggests\s+interest\s+in|uses\s+it\s+as\s+timing\s+reference|tracking\s+\d+k?\s+(memory|context|conversation))/i;
+
+        // Concreteness: must contain a digit, $, @, OR a non-blacklist proper noun
+        // (capitalized 4+ letter word that's not the first word and not a generic verb)
+        const CONCRETE_BLACKLIST = new Set([
+          'User', 'Sunny', 'Has', 'The', 'This', 'That', 'These', 'Those',
+          'Working', 'Pursuing', 'Managing', 'Dealing', 'Cycling', 'Pipeline',
+          'Focuses', 'Focused', 'Under', 'Uses', 'Two', 'One', 'Currently',
+          'Actively', 'Recently', 'Involved', 'Engaged', 'Decision',
+          'Tracking', 'Tracks', 'Targets', 'Maintains', 'Generates',
+          'Demonstrates', 'Shows', 'Indicates', 'Reflects', 'Suggests',
+        ]);
+        const hasConcreteness = (str) => {
+          if (/[\d@$]/.test(str)) return true;
+          // Find capitalized words ≥4 chars NOT at the very start of the string
+          // (sentence-starting words don't count as proper nouns)
+          const tail = str.replace(/^\S+\s*/, '');  // strip first word
+          const matches = tail.match(/\b[A-Z][a-zA-Z]{3,}\b/g) || [];
+          return matches.some(w => !CONCRETE_BLACKLIST.has(w));
+        };
+
         const isLowValue = (str) => {
           if (!str || typeof str !== 'string') return true;
-          if (str.length < 15) return true;  // too short to be useful
-          if (SPECULATION_REGEX.test(str.trim())) return true;
+          if (str.length < 15) return true;
+          const trimmed = str.trim();
+          if (SPECULATION_REGEX.test(trimmed)) return true;
           if (SPECULATION_KEYWORDS.test(str)) return true;
+          if (BEHAVIOURAL_PATTERN.test(trimmed)) return true;
+          if (TRANSIENT_STATE.test(str)) return true;
+          if (BEHAVIOURAL_VERB_START.test(trimmed)) return true;
+          if (STRAGGLER_PATTERNS.test(trimmed)) return true;
+          if (META_NARRATIVE.test(str)) return true;
+          if (!hasConcreteness(str)) return true;
           return false;
         };
 
