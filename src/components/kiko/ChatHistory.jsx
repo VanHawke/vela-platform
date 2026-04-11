@@ -13,6 +13,21 @@ function timeAgo(d) {
   return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
 
+// Format date+time for chat history sidebar (Sunny spec 2026-04-12)
+// Today: "14:32 today"  Yesterday: "09:15 yesterday"  Older: "10 Apr 14:32"
+function formatRelativeTime(d) {
+  if (!d) return ''
+  const date = new Date(d)
+  const now = new Date()
+  const isToday = date.toDateString() === now.toDateString()
+  const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1)
+  const isYesterday = date.toDateString() === yesterday.toDateString()
+  const time = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+  if (isToday) return `${time} today`
+  if (isYesterday) return `${time} yesterday`
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ' + time
+}
+
 export default function ChatHistory({ user, open, onToggle, onSelectConversation, onNewChat, activeConvId, onShowAllChats }) {
   const [allConvos, setAllConvos] = useState([])
   const [loading, setLoading] = useState(true)
@@ -104,9 +119,16 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
               onBlur={() => renameConversation(conv)} autoFocus onClick={e => e.stopPropagation()}
               style={{ width: '100%', fontSize: 13, fontWeight: 500, color: '#fff', fontFamily: T.font, border: `1px solid ${T.border}`, borderRadius: 6, padding: '2px 6px', outline: 'none', background: T.bg }} />
           ) : (
-            <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(238,238,238,0.8)', fontFamily: T.font, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block', maxWidth: 280 }}>
-              {(conv.title || 'Untitled').replace('🎤 ', '')}
-            </span>
+            <div>
+              <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(238,238,238,0.8)', fontFamily: T.font, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block', maxWidth: 280 }}>
+                {(conv.title || 'Untitled').replace('🎤 ', '')}
+              </span>
+              {conv.date && (
+                <span style={{ fontSize: 10, fontWeight: 400, color: 'rgba(238,238,238,0.40)', fontFamily: T.font, marginTop: 2, display: 'block' }}>
+                  {formatRelativeTime(conv.date)}
+                </span>
+              )}
+            </div>
           )}
         </div>
         <div style={{ position: 'relative', flexShrink: 0 }} ref={menuOpenId === conv.id ? menuRef : null}>

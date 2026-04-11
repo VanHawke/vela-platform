@@ -647,7 +647,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'rgba(167,139,250,0.18)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4)' : '0 0 0 3px rgba(167,139,250,0.05), 0 0 20px rgba(167,139,250,0.08), 0 8px 28px rgba(0,0,0,0.4)' }}}
         >
           {voiceOpen
-            ? <div style={{ transform: open ? 'rotate(-45deg)' : 'none', transition: 'transform 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><KikoWaveform width={40} height={40} mini volume={floatVoiceState.energy || 0.12} speaking={voiceSpeaking} /></div>
+            ? <div style={{ transform: open ? 'rotate(-45deg)' : 'none', transition: 'transform 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><KikoWaveform width={40} height={40} mini volume={0} speaking={voiceSpeaking} /></div>
             : open
               ? <X size={18} />
               : <KikoWaveform width={40} height={40} mini volume={0} speaking={false} />

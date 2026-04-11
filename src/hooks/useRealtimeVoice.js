@@ -151,8 +151,14 @@ export function useRealtimeVoice({ active, onClose, onMessage }) {
         dcRef.current?.send(JSON.stringify({ type: 'response.create' }))
         setStatus('speaking')
       }
-      if (msg.type === 'output_audio_buffer.started') { setSpeaking(true); resetIdleTimer() }
-      if (msg.type === 'output_audio_buffer.stopped' || msg.type === 'output_audio_buffer.cleared') setSpeaking(false)
+      // Speaking detection — handle BOTH old and new gpt-realtime schemas
+      if (msg.type === 'output_audio_buffer.started' || msg.type === 'response.output_audio.delta') {
+        setSpeaking(true); resetIdleTimer()
+      }
+      if (msg.type === 'output_audio_buffer.stopped' || msg.type === 'output_audio_buffer.cleared' ||
+          msg.type === 'response.output_audio.done' || msg.type === 'response.done') {
+        setSpeaking(false)
+      }
       if (msg.type === 'input_audio_buffer.speech_started') { setStatus('listening'); resetIdleTimer() }
       if (msg.type === 'response.done') setStatus('listening')
       // Status transitions to 'listening' (green) ONLY after the session is fully created.

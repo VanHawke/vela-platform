@@ -558,6 +558,33 @@ export default async function handler(req, res) {
   const userId = userConfig.user_id || crypto.randomUUID(); // Ephemeral UUID for unregistered — never accumulates data
   const isSuperAdmin = userConfig.role === 'super_admin';
 
+  // ── Multi-conversation awareness (Sunny spec 2026-04-12) ──
+  // Query the user's other active conversations (last 60 min) so Kiko knows what
+  // other threads are happening in parallel. Injected into system prompt as
+  // [OTHER ACTIVE THREADS]. Lets Kiko cross-reference ("you asked about Haas in
+  // your other chat 10 min ago") and prevents context fragmentation.
+  let activeThreadsHint = '';
+  if (isRegistered) {
+    try {
+      const cutoff = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const otherThreads = await sbFetch(
+        `conversations?user_id=eq.${userId}&updated_at=gte.${cutoff}&select=id,title,updated_at,metadata&order=updated_at.desc&limit=5`
+      ).catch(() => []);
+      if (Array.isArray(otherThreads) && otherThreads.length > 1) {
+        // Skip the current thread (most recent) and show the rest
+        const others = otherThreads.slice(1, 5);
+        if (others.length > 0) {
+          activeThreadsHint = '\n\n[OTHER ACTIVE THREADS — last 60 min, cross-reference if relevant]:';
+          for (const t of others) {
+            const mins = Math.floor((Date.now() - new Date(t.updated_at)) / 60000);
+            const source = t.metadata?.source === 'voice' ? '🎙' : '💬';
+            activeThreadsHint += `\n• ${source} "${(t.title || 'Untitled').slice(0, 60)}" (${mins}m ago)`;
+          }
+        }
+      }
+    } catch {}
+  }
+
   // ── Geo-location: read from Vercel IP headers (no permission popup) ──
   // Falls back to userConfig.location if headers missing (local dev / test).
   // Sunny spec 2026-04-12: Kiko should know location from browser/request context.
@@ -1246,7 +1273,7 @@ DEAL STAGE MAPPING:
       } catch {}
     }
 
-    const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + inboxHint + morningBrief + modeHint + identityHint + attributionHint + emailStyleHint;
+    const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + activeThreadsHint + inboxHint + morningBrief + modeHint + identityHint + attributionHint + emailStyleHint;
 
     // ── Prompt Caching ──
     // Split system content into stable (cached) and dynamic (not cached) blocks
@@ -1254,7 +1281,7 @@ DEAL STAGE MAPPING:
     // Context hints change per request and should NOT be cached
     const systemCached = [
       { type: 'text', text: system, cache_control: { type: 'ephemeral' } },
-      { type: 'text', text: identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + inboxHint + morningBrief + modeHint },
+      { type: 'text', text: identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + activeThreadsHint + inboxHint + morningBrief + modeHint },
     ];
 
     // Deep think detection

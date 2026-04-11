@@ -239,22 +239,41 @@ export default function Layout({ user }) {
         clearTimeout(voiceSaveTimerRef.current)
         voiceSaveTimerRef.current = null
       }
-      // Final save synchronously if buffer has unsaved messages
-      if (voiceMsgsRef.current.length > 0 && voiceConvIdRef.current) {
+      // CRITICAL FIX 2026-04-12: handle BOTH cases on close —
+      // (a) UPDATE existing conv if id exists
+      // (b) INSERT fresh conv if no id (debounced save never fired before close,
+      //     which happens on instant goodbye-triggered closes)
+      // Without (b), every short voice session lost its transcript.
+      if (voiceMsgsRef.current.length > 0 && user?.id) {
         const finalMsgs = voiceMsgsRef.current
-        const finalConvId = voiceConvIdRef.current
-        supabase.from('conversations').update({
-          messages: finalMsgs,
-          updated_at: new Date().toISOString()
-        }).eq('id', finalConvId).then(() => {
-          console.log('[Layout] Voice conversation flushed on close:', finalConvId)
-        })
+        if (voiceConvIdRef.current) {
+          const finalConvId = voiceConvIdRef.current
+          supabase.from('conversations').update({
+            messages: finalMsgs,
+            updated_at: new Date().toISOString()
+          }).eq('id', finalConvId).then(() => {
+            console.log('[Layout] Voice conv UPDATED on close:', finalConvId, finalMsgs.length, 'msgs')
+          })
+        } else {
+          // First save never fired — INSERT fresh row now
+          const firstUserMsg = finalMsgs.find(m => m.role === 'user')?.content || 'Voice conversation'
+          const title = '🎙 ' + firstUserMsg.slice(0, 58)
+          supabase.from('conversations').insert({
+            user_id: user.id,
+            org_id: user.app_metadata?.org_id,
+            title,
+            messages: finalMsgs,
+            metadata: { source: 'voice', started_at: new Date().toISOString() }
+          }).then(() => {
+            console.log('[Layout] Voice conv INSERTED on close:', finalMsgs.length, 'msgs')
+          })
+        }
       }
       // Reset for next session
       voiceMsgsRef.current = []
       voiceConvIdRef.current = null
     }
-  }, [globalVoiceMode, voiceFullscreen])
+  }, [globalVoiceMode, voiceFullscreen, user])
 
   // Listen for voice messages dispatched from KikoFloat's useRealtimeVoice
   // (the home-page voice path goes through the hook, not the component, so it
