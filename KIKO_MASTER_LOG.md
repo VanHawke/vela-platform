@@ -414,3 +414,120 @@ Before I say "done" at the end of any session, I must:
 3. [ ] Run `/api/selfcheck` and paste the result in SECTION A6
 4. [ ] Commit `KIKO_MASTER_LOG.md` to git so next session reads current truth
 5. [ ] Do NOT claim anything verified without concrete evidence in SECTION B
+
+
+---
+
+## Section A0e — v0.0.27 → v0.0.35 (April 11-12, 2026)
+
+**Theme:** Voice mode hardening + cost cuts + build campaign root cause + Gmail signature + memory persistence + multi-conversation foundation
+
+**Total deploys this period:** 19 (across 2 days)
+**Final bundle hash:** `BeeqaxUs` (v0.0.35)
+**Selfcheck:** 17/18 pass (1 cosmetic fail unchanged)
+
+### v0.0.27 — Cost cuts (P0 emergency)
+**Reason:** 78% Vercel credit burn in 48 hours.
+**Root cause:** `cron-jobs-worker` running every 5 min 24/7 = 8,640 invocations/month + several other crons running 24/7 unnecessarily.
+**Fix:**
+- `cron-jobs-worker`: `*/5 * * * *` → `*/15 8-19 * * 1-5` (8,640/mo → 240/mo, 97% cut)
+- `cron-selfcheck-watcher`: `0 * * * *` → `0 8-19 * * 1-5` (720/mo → 60/mo, 92% cut)
+- `cron-sequence-sender`: hourly Mon-Fri 24h → `0 6-22 * * 1-5` (29% cut)
+- `news-agent` + `cron-news-classify`: maxDuration 300s → 120s
+- Killed Decagon "Kiko Alert convergences" 7am email
+- Killed system health WARNING email
+**Total reduction:** ~9,000 invocations/month removed.
+
+### v0.0.28 — Voice goodbye instant + lite Haiku endpoint (later reverted)
+- Voice goodbye now closes immediately on detection (was 3s timeout)
+- Sends `response.cancel` to abort in-flight GPT-4o response
+- Created `api/kiko-voice.js` (~100 lines, light Haiku endpoint) — **later removed in v0.0.34** because lite endpoint was leaving voice Kiko hallucinating
+- Morning email iterable guards round 2
+
+### v0.0.29 — Build campaign ROOT CAUSE FIX
+**The bug since v0.0.21:** `campaign_targets` had unique constraint on `(campaign_id, company_name)`. Build endpoint inserts multiple rows per company (one per decision-maker, up to 5). First DM at each company inserted fine. Subsequent DMs hit the constraint. Postgres rolled back the **entire INSERT batch**. Build endpoint had no error checking on the insert — returned `success: true` with `top_50: <in-memory rows>` while the database had **zero targets**. Enroll endpoint then correctly said "No sourced targets found".
+
+**Fix:**
+1. Migration applied: dropped `campaign_targets_campaign_id_company_name_key`, replaced with correct `campaign_targets_campaign_dm_email_key` on `(campaign_id, decision_maker_email) WHERE NOT NULL`
+2. `build-campaign.js` insert is now CHUNKED in 50s
+3. Each chunk error-checked
+4. On chunk failure, falls back to one-by-one insert
+5. Returns `inserted_count` in response
+
+**Verified live:** Haas Cybersecurity returned 109 in-memory, 59 inserted, 59 enrolled successfully.
+
+### v0.0.30 — Voice transcription nesting + Kiko find leads
+- `useRealtimeVoice.js`: `audio.input.transcription` correctly nested (was at session root, silently ignored)
+- `KikoVoice.jsx`: `input_audio_transcription` added (was missing)
+- `SequenceDetail.jsx autoSuggestLeads()`: rewritten — queries companies by industry, then contacts at those companies, falls back to build-campaign
+
+### v0.0.31 — Voice forced ask_kiko + Sonnet brain + Gmail CID + Pipecat plan
+- Voice `ask_kiko` now hits `/api/kiko` (full Sonnet + KIKO_BIBLE.md + memory + 39 tools), NOT lite Haiku
+- Hardened SESSION_INSTRUCTIONS: "You DO NOT have any business knowledge of your own. Call ask_kiko on every real question."
+- Goodbye narrowed to EXACT 3 phrases: `goodbye` / `goodbye kiko` / `bye kiko`
+- KikoVoice.jsx migrated to `gpt-realtime` schema with `audio.input.transcription`
+- `close_voice` tool removed — goodbye is 100% client-side
+- Email draft preamble strip in `SequenceDetail askKiko()`
+- `wrapEmailBody` rewritten: keeps sign-off word ("Kind regards,"), only strips name/title block
+- `draftSequenceSteps` prompt hardened: mandatory greeting + sign-off + `{signature}` placeholder
+- `BuildingProgress` component (6-stage animated progress for build modal)
+- A/B Variants UI removed from `SequenceDetail.jsx`
+- Gmail CID image fix attempt with multipart/related (later replaced in v0.0.34)
+- `KIKO_VOICE_PIPECAT_MIGRATION.md` written (203 lines, full plan, deferred)
+
+### v0.0.32 — Avatar still + Kiko transcript event name + memory threshold
+- `KikoWaveform.jsx`: `listenLevel = 0` (was animating sine wave during not-speaking states)
+- Kiko transcript event handler: now listens for BOTH `response.audio_transcript.done` AND new `response.output_audio_transcript.done`
+- **Memory extraction threshold:** lowered from `responseText.length > 200` to `> 60`. Added explicit memory-cue regex (`remember | save | my daughter | my son | my wife | i live | i work | etc.`). Voice replies are intentionally short — old threshold was skipping every voice query.
+
+### v0.0.33 — Full P0 voice batch (Sunny questions Q1-Q7)
+- **Avatar (Q1):** mini variant `active = state === 'speaking'` (was `speaking || listening`), bars FLAT when not speaking, both variants
+- **Geo-location (Q2):** `/api/kiko` reads `x-vercel-ip-city/-country/-latitude/-longitude/-timezone` from request headers
+- **Navigation (Q3):** `navigate_page` enum extended to `campaigns, sequences, companies, intelligence, outreach, admin`
+- **No auto-brief on hello (Q4):** SESSION_INSTRUCTIONS hardened
+- **2-min idle auto-stop (Q5):** new `idleTimerRef`, resets on speech in/out
+- **False-green status fix (Q6):** `dc.onopen` no longer flips to listening; status flips on `session.created`/`session.updated`
+- **PC connection state monitoring (Q6):** `pc.onconnectionstatechange` watcher closes session if PC drops
+- **Disconnect cleanup (Q6):** nullifies all refs + clears idle timer
+- New `api/sig-diag.js` diagnostic endpoint (later removed in v0.0.34)
+
+### v0.0.34 — REAL Gmail signature fix
+**The actual root cause:** `stripLogoFromSignature()` was deleting every `<img>` tag from the signature when `contactStatus === 'cold'`. Sunny's signature uses public `https://s1.sendassets.io/` URLs (NOT cid: refs, NOT Google proxy). The strip-on-cold function was removing them at source before MIME composition.
+**Fix:** `stripLogoFromSignature()` is now a no-op. Cold emails use the FULL signature with images.
+**Cleanup:** Removed `api/sig-diag.js` and `api/kiko-voice.js` (lite Haiku stopgap).
+**Verified live:** Sunny confirmed signature renders correctly.
+
+### v0.0.35 — Voice transcript race + avatar volume + chat history timestamps + multi-conv foundation
+- **Voice transcript save race condition:** flush-on-close in `Layout.jsx` was UPDATE-only. On instant goodbye-triggered close, `voiceConvIdRef.current` was always null because the 1.5s debounce never fired. **Every short voice session lost its transcript.** Fixed: flush-on-close now does INSERT if no conv id, UPDATE if it exists.
+- **Avatar real fix:** `KikoFloat.jsx` was passing `volume={floatVoiceState.energy || 0.12}` which always evaluated to `0.12` (because `0 || 0.12 = 0.12` in JS). KikoWaveform read that as above the listening threshold. Fixed: `volume={0}` hardcoded.
+- **gpt-realtime audio events:** added BOTH old (`output_audio_buffer.started/stopped`) AND new (`response.output_audio.delta/done`) to setSpeaking handler
+- **Chat history timestamps:** each conversation row in sidebar now shows `HH:MM today` / `HH:MM yesterday` / `DD MMM HH:MM` under the title
+- **Multi-conversation foundation:** `/api/kiko` queries user's conversations updated in last 60min (excluding current) and injects `[OTHER ACTIVE THREADS]` section into system prompt with title + minutes-ago + voice/text indicator
+
+### Voice memory — VERIFIED working end-to-end
+Live query of `kiko_personal_context` confirms 6 rows persisted from voice conversations on 2026-04-11:
+- "Has daughters named Nyla and Maya" (17:54 + 18:52)
+- "Maya's birthday: 12th March" (17:54 + 18:52)
+- "Nyla's birthday: 12th February" (17:54 + 18:52)
+- "User is in Weybridge, Surrey area" (geo-location auto-extracted)
+
+The v0.0.32 memory threshold fix is functional. Sunny confirmed in-session that voice Kiko successfully recalled the daughter facts in a subsequent session without being told them again.
+
+### Pipecat migration — DEFERRED (Sunny no-go)
+Plan preserved in `KIKO_VOICE_PIPECAT_MIGRATION.md`. Backup option if forced ask_kiko + full Sonnet ever proves insufficient. Removed from active outstanding list.
+
+### Backlog identified during this period
+1. **Multi-conversation UI layer** — thread switcher, notifications panel, voice→text handoff (1 day work, builds on v0.0.35 foundation)
+2. **Memory extraction noise** — Haiku extractor producing duplicate rows + low-value psychological "inferred" rows. Needs:
+   - Tighter extractor prompt (concrete facts only)
+   - Dedup pass in cron-self-awareness
+   - Low-value filter dropping "User exhibits...", "User shows pattern..." patterns
+3. **Build campaign live progress** — real backend stage events vs current timer estimation
+4. **KIKO_MASTER_LOG.md ongoing maintenance** — keep updated per deploy
+
+### Cost status at end of Section A0e
+- 19 deploys across April 11-12 (~42 build minutes consumed)
+- v0.0.27 cron diet locked in: 9,000+ invocations/month removed
+- No rogue crons running
+- OpenAI Realtime usage: ~$16/month at current pace (NOT hundreds, earlier overstatement corrected)
+- Target monthly Vercel cost: $35-40 (cron diet keeps this achievable)
