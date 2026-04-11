@@ -66,8 +66,11 @@ function normalizeSig(sig) {
 }
 
 function stripLogoFromSignature(sig) {
-  if (!sig) return '';
-  return sig.replace(/<img[^>]*>/gi, '').replace(/\s{2,}/g, ' ').trim();
+  // DEPRECATED — kept for backwards compat but no longer strips images.
+  // Sunny spec 2026-04-12: signatures are public sendassets.io URLs that
+  // render in all email clients, no reason to strip them on cold outreach.
+  // Returns the signature unchanged.
+  return sig || '';
 }
 
 function stripHtml(html) {

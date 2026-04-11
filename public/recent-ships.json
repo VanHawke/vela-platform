@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-11T18:15:45.210Z",
+  "generated_at": "2026-04-11T18:31:03.654Z",
   "commits": [
+    {
+      "hash": "970cf27",
+      "subject": "v0.0.33 — voice fixes batch + Gmail signature inline base64 + geo-location + sig-diag",
+      "when": "15 minutes ago"
+    },
     {
       "hash": "592ccbf",
       "subject": "v0.0.32 — avatar still + Kiko transcript event name + memory threshold",
-      "when": "28 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "eac8735",
@@ -24,7 +29,7 @@
     {
       "hash": "57c2a6d",
       "subject": "v0.0.28 — voice goodbye instant + voice fast endpoint + morning email guards",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "b14ba8e",
@@ -34,7 +39,7 @@
     {
       "hash": "1e74c59",
       "subject": "v0.0.26 — voice goodbye + voice→history + xml leak + kill emails + Health Center + morning email cron",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "ed85d26",
@@ -69,7 +74,7 @@
     {
       "hash": "47c5b48",
       "subject": "v0.0.21 — CRM-first sourcing + freshness verification + sign-off fix + no caps",
-      "when": "27 hours ago"
+      "when": "28 hours ago"
     },
     {
       "hash": "4da830c",
@@ -95,11 +100,6 @@
       "hash": "8b15dcb",
       "subject": "v0.0.18 — brief deterministic short-circuit (morning brief banner now actually appears)",
       "when": "31 hours ago"
-    },
-    {
-      "hash": "eb40426",
-      "subject": "v0.0.17 — company lookup endpoint + morning brief system health surfacing + dashboard cron dedup",
-      "when": "32 hours ago"
     }
   ]
 }
