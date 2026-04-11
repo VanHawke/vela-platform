@@ -28,19 +28,17 @@ async function executeTool(name, args) {
       return JSON.stringify({ navigated: true, page })
     }
     if (name === 'ask_kiko') {
-      const r = await fetch('/api/kiko', {
+      // VOICE FAST PATH: hits /api/kiko-voice (Haiku, ~2-4s) instead of /api/kiko
+      // (Sonnet + classifier + sub-agents, 5-15s). Voice needs sub-3s replies.
+      const r = await fetch('/api/kiko-voice', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: args.query,
+          query: args.query,
           userEmail: (await supabase.auth.getSession()).data?.session?.user?.email || '',
-          currentPage: window.location.pathname.replace('/', '') || 'home',
-          conversationHistory: [],
-          voiceMode: true,
         })
       })
-      const text = await r.text()
-      const deltas = text.split('\n').filter(l => l.startsWith('data: ')).map(l => { try { return JSON.parse(l.slice(6)) } catch { return null } }).filter(Boolean)
-      return deltas.map(d => d.delta || '').join('')
+      const j = await r.json()
+      return j.text || j.error || 'No response'
     }
     return JSON.stringify({ error: `Unknown tool: ${name}` })
   } catch (err) { console.error('[KikoVoice] Tool error:', err); return JSON.stringify({ error: err.message }) }
@@ -135,13 +133,11 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
           /\b(i'?m\s+done|that'?s\s+all|that\s+is\s+all|we'?re\s+done|all\s+done)\b/.test(lower)
         )
         if (isGoodbye) {
-          console.log('[KikoVoice] Goodbye detected in user transcript — arming 3s fallback close:', userText)
-          setTimeout(() => {
-            if (window.__kikoVoiceClose) {
-              console.log('[KikoVoice] Fallback close firing (GPT-4o did not call close_voice in time)')
-              window.__kikoVoiceClose()
-            }
-          }, 3000)
+          console.log('[KikoVoice] Goodbye detected — closing IMMEDIATELY:', userText)
+          // Cancel any in-flight GPT-4o response so it doesn't keep talking
+          try { dcRef.current?.send(JSON.stringify({ type: 'response.cancel' })) } catch {}
+          // Fire close right away — don't wait for GPT-4o farewell
+          if (window.__kikoVoiceClose) window.__kikoVoiceClose()
         }
       }
       // Kiko speech transcript (GPT-4o assistant response)

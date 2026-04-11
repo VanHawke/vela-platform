@@ -82,7 +82,11 @@ export default async function handler(req, res) {
     const worstCampaign = campaignStats.length > 1 ? [...campaignStats].sort((a, b) => a.rate - b.rate)[0] : null;
 
     // ── Priority tasks (overdue + due today, top 5) ──
-    const outstanding = (tasks || []).filter(t => !t.data?.completed);
+    const tasksList = Array.isArray(tasks) ? tasks : [];
+    const dealsList = Array.isArray(deals) ? deals : [];
+    const signalsList = Array.isArray(signals) ? signals : [];
+    const racesList = Array.isArray(races) ? races : [];
+    const outstanding = tasksList.filter(t => !t.data?.completed);
     const overdue = outstanding.filter(t => t.data?.dueDate && new Date(t.data.dueDate) < now);
     const dueToday = outstanding.filter(t => t.data?.dueDate && new Date(t.data.dueDate).toDateString() === now.toDateString());
     const priorityTasks = [...overdue, ...dueToday].slice(0, 5).map(t => ({
@@ -93,7 +97,7 @@ export default async function handler(req, res) {
     }));
 
     // ── Stale high-value deals ──
-    const staleDeals = (deals || []).map(d => {
+    const staleDeals = dealsList.map(d => {
       const data = d.data || {};
       const last = data.lastActivity ? new Date(data.lastActivity) : null;
       const daysSince = last ? Math.floor((now - last) / 86400000) : null;
@@ -104,7 +108,7 @@ export default async function handler(req, res) {
     // ── Partner announcements (de-duped by title) ──
     const seenTitles = new Set();
     const announcements = [];
-    for (const s of (signals || [])) {
+    for (const s of signalsList) {
       const key = (s.title || '').toLowerCase().slice(0, 60);
       if (seenTitles.has(key)) continue;
       seenTitles.add(key);
@@ -113,11 +117,11 @@ export default async function handler(req, res) {
     }
 
     // ── Race week ──
-    const raceThisWeek = (races || []).filter(r => {
+    const raceThisWeek = racesList.filter(r => {
       const d = new Date(r.date);
       return d > now && d < new Date(now.getTime() + 7 * 86400000);
     })[0];
-    const nextRace = (races || []).filter(r => new Date(r.date) > now)[0];
+    const nextRace = racesList.filter(r => new Date(r.date) > now)[0];
 
     // Build the HTML email
     const html = buildHtml({

@@ -18,18 +18,16 @@ async function executeTool(name, args) {
       return JSON.stringify({ navigated: true, page })
     }
     if (name === 'ask_kiko') {
-      const r = await fetch('/api/kiko', {
+      // VOICE FAST PATH: hits /api/kiko-voice (Haiku, ~2-4s) instead of /api/kiko
+      const r = await fetch('/api/kiko-voice', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: args.query,
+          query: args.query,
           userEmail: (await supabase.auth.getSession()).data?.session?.user?.email || '',
-          currentPage: window.location.pathname.replace('/', '') || 'home',
-          conversationHistory: [], voiceMode: true,
         })
       })
-      const text = await r.text()
-      const deltas = text.split('\n').filter(l => l.startsWith('data: ')).map(l => { try { return JSON.parse(l.slice(6)) } catch { return null } }).filter(Boolean)
-      return deltas.map(d => d.delta || '').join('')
+      const j = await r.json()
+      return j.text || j.error || 'No response'
     }
     return JSON.stringify({ error: `Unknown tool: ${name}` })
   } catch (err) { console.error('[RealtimeVoice] Tool error:', err); return JSON.stringify({ error: err.message }) }
@@ -120,13 +118,10 @@ export function useRealtimeVoice({ active, onClose, onMessage }) {
           /\b(i'?m\s+done|that'?s\s+all|that\s+is\s+all|we'?re\s+done|all\s+done)\b/.test(lower)
         )
         if (isGoodbye) {
-          console.log('[RealtimeVoice] Goodbye detected — arming 3s fallback close:', userText)
-          setTimeout(() => {
-            if (window.__kikoVoiceClose) {
-              console.log('[RealtimeVoice] Fallback close firing')
-              window.__kikoVoiceClose()
-            }
-          }, 3000)
+          console.log('[RealtimeVoice] Goodbye detected — closing IMMEDIATELY:', userText)
+          // Cancel any in-flight GPT-4o response so it doesn't keep talking
+          try { dcRef.current?.send(JSON.stringify({ type: 'response.cancel' })) } catch {}
+          if (window.__kikoVoiceClose) window.__kikoVoiceClose()
         }
       }
       // Kiko speech (GPT-4o assistant response)
