@@ -25,6 +25,7 @@ const C = {
 }
 import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X, Zap, Mail, Filter, Layers, Database, Compass, Linkedin, Activity } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
+import ThreadIndicator from '../kiko/ThreadIndicator'
 import KikoVoice from '../kiko/KikoVoice'
 import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
@@ -437,6 +438,18 @@ export default function Layout({ user }) {
 
         {/* Right: Voice status + ⌘K pill + mobile menu + avatar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {/* Multi-conversation indicator — shows other parallel active threads */}
+          <ThreadIndicator
+            user={user}
+            currentConvId={kikoConvId}
+            onSwitchThread={(thread) => {
+              // Surface to KikoChat outlet so the thread becomes the active conversation
+              setKikoConvId(thread.id)
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('kiko_load_conversation', { detail: thread }))
+              }
+            }}
+          />
           {/* Listening pill — only when voice is active */}
           {voiceActive && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 50, background: 'rgba(6,214,160,0.04)', border: '1.5px solid rgba(6,214,160,0.1)', animation: 'fadeIn 0.3s ease-out' }}>

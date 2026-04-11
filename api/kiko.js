@@ -1512,21 +1512,56 @@ DEAL STAGE MAPPING:
       try {
         const extract = await anthropic.messages.create({
           model: 'claude-haiku-4-5-20251001', max_tokens: 400,
-          system: `Analyse this exchange between the user and Kiko (AI OS). Extract ALL of the following. Return ONLY JSON:
+          system: `You extract CONCRETE FACTS from user-Kiko conversations for long-term memory. Return ONLY JSON.
+
+═══ CRITICAL RULES ═══
+ONLY extract verifiable, concrete facts the user explicitly stated or that are objectively true.
+NEVER extract psychological inferences, behavioural patterns, or speculation.
+
+═══ EXTRACT (good examples) ═══
+✓ "User has two daughters: Maya (born 12 March 2020) and Nyla (born 12 February 2017)"
+✓ "User lives in Weybridge, UK"
+✓ "User's company is Van Hawke Group"
+✓ "User prefers all financials in USD"
+✓ "User works with Haas F1 Team on cybersecurity sponsorship"
+✓ "Decagon meeting scheduled for 18 April"
+
+═══ NEVER EXTRACT (bad examples — these are speculation, not facts) ═══
+✗ "User exhibits decision addiction loop behaviour"
+✗ "User shows pattern of relitigating decisions"
+✗ "User appears to procrastinate on execution"
+✗ "User may be experiencing analysis paralysis"
+✗ "User has execution gap between decisions and actions"
+✗ "User needs accountability"
+✗ Anything starting with "User exhibits", "User shows", "User appears", "User may", "User has pattern", "User tends to"
+
+If you only see speculation/patterns and no concrete facts, return empty arrays. Empty is better than noisy.
+
+═══ JSON FORMAT ═══
 {
-  "facts": ["1-3 key facts worth remembering permanently"],
+  "facts": ["concrete facts about the user's business — entities, deals, decisions made, dates"],
   "entity": "main company/person name or null",
-  "personal": ["any personal details revealed — family, preferences, habits, health, hobbies, goals, feelings"],
-  "unknown_topics": ["topics discussed where Kiko seemed to lack depth or gave generic answers"],
+  "personal": ["concrete personal details — names, dates, locations, relationships, preferences user explicitly stated"],
+  "unknown_topics": ["topics where Kiko gave generic answers and would benefit from research"],
   "category": "business|personal|mixed"
-}
-If nothing worth saving, return empty arrays.`,
+}`,
           messages: [{ role: 'user', content: `Q: ${message.slice(0, 300)}\nA: ${responseText.slice(0, 1000)}` }],
         });
         const parsed = JSON.parse((extract.content[0]?.text || '{}').replace(/```json|```/g, '').trim());
 
-        // Save facts to learning log
+        // Low-value filter — drop any extracted item matching speculation patterns.
+        // Defence in depth: even if Haiku ignores the prompt, these patterns get blocked.
+        const SPECULATION_REGEX = /^(user|the user|sunny)\s+(exhibits|shows|appears|may|might|tends|seems|has\s+pattern|has\s+execution\s+gap|needs\s+accountability|is\s+experiencing|is\s+procrastinating|is\s+relitigating)/i;
+        const isLowValue = (str) => {
+          if (!str || typeof str !== 'string') return true;
+          if (str.length < 8) return true;  // too short to be useful
+          if (SPECULATION_REGEX.test(str.trim())) return true;
+          return false;
+        };
+
+        // Save facts to learning log (filtered)
         for (const fact of (parsed.facts || []).slice(0, 3)) {
+          if (isLowValue(fact)) continue;
           await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({
             user_id: userId,
             category: 'auto_learning', content: fact,
@@ -1534,15 +1569,23 @@ If nothing worth saving, return empty arrays.`,
           })});
         }
 
-        // Save personal context
+        // Save personal context (filtered + dedup against last 30 days)
         for (const personal of (parsed.personal || []).slice(0, 3)) {
+          if (isLowValue(personal)) continue;
+          // Dedup: check if this fact (or a near-identical one) was already saved recently
+          const normKey = personal.slice(0, 50);
+          const existing = await sbFetch(
+            `kiko_personal_context?user_id=eq.${userId}&key=eq.${encodeURIComponent(normKey)}&created_at=gte.${new Date(Date.now() - 30 * 86400000).toISOString()}&select=id&limit=1`
+          ).catch(() => []);
+          if (Array.isArray(existing) && existing.length > 0) continue;  // already have it
           await sbFetch('kiko_personal_context', { method: 'POST', body: JSON.stringify({
-            user_id: userId, category: 'inferred', key: personal.slice(0, 50), value: personal, source: 'conversation',
+            user_id: userId, category: 'inferred', key: normKey, value: personal, source: 'conversation',
           })});
         }
 
-        // Queue unknown topics for curiosity learning
+        // Queue unknown topics for curiosity learning (also filtered)
         for (const topic of (parsed.unknown_topics || []).slice(0, 2)) {
+          if (isLowValue(topic)) continue;
           await sbFetch('kiko_curiosity_queue', { method: 'POST', body: JSON.stringify({
             user_id: userId, topic, category: parsed.category || 'general',
             reason: 'Kiko lacked depth on this topic during conversation',

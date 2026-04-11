@@ -1,25 +1,35 @@
 {
-  "generated_at": "2026-04-11T19:00:15.927Z",
+  "generated_at": "2026-04-11T19:38:52.957Z",
   "commits": [
+    {
+      "hash": "7be8805",
+      "subject": "docs: KIKO_MASTER_LOG.md Section A0e v0.0.27 → v0.0.35 (no code changes, doc only)",
+      "when": "8 minutes ago"
+    },
+    {
+      "hash": "2efb5dd",
+      "subject": "v0.0.35 — voice transcript race fix + avatar volume hardcode + chat history timestamps + multi-conversation foundation",
+      "when": "38 minutes ago"
+    },
     {
       "hash": "77d805c",
       "subject": "v0.0.34 — REAL Gmail signature fix: stop stripping images on cold outreach",
-      "when": "29 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "970cf27",
       "subject": "v0.0.33 — voice fixes batch + Gmail signature inline base64 + geo-location + sig-diag",
-      "when": "44 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "592ccbf",
       "subject": "v0.0.32 — avatar still + Kiko transcript event name + memory threshold",
-      "when": "72 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "eac8735",
       "subject": "v0.0.31 — voice forced ask_kiko (full Sonnet) + goodbye 3 phrases + Gmail sig CID fix + email fixes + build progress",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "34c18b5",
@@ -34,17 +44,17 @@
     {
       "hash": "57c2a6d",
       "subject": "v0.0.28 — voice goodbye instant + voice fast endpoint + morning email guards",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "b14ba8e",
       "subject": "v0.0.27 — CRITICAL cost cuts + build campaign cache fix + morning email iterable guards",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "1e74c59",
       "subject": "v0.0.26 — voice goodbye + voice→history + xml leak + kill emails + Health Center + morning email cron",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "ed85d26",
@@ -59,17 +69,17 @@
     {
       "hash": "8edd203",
       "subject": "v0.0.24 — Build campaign timeout fix + global palette fix + remove top-8 segmentation + email rendering 3-layer",
-      "when": "27 hours ago"
+      "when": "28 hours ago"
     },
     {
       "hash": "3241c0e",
       "subject": "master log: A0c session — v0.0.19 → v0.0.23 (Phase 1-5 + CRM-first sourcing + verification gate + timezone sender)",
-      "when": "27 hours ago"
+      "when": "28 hours ago"
     },
     {
       "hash": "71731b5",
       "subject": "v0.0.23 — Phase 3 Command Centre alignment + Phase 5 timezone-aware sender (true 24h)",
-      "when": "27 hours ago"
+      "when": "28 hours ago"
     },
     {
       "hash": "7b1a853",
@@ -79,7 +89,7 @@
     {
       "hash": "47c5b48",
       "subject": "v0.0.21 — CRM-first sourcing + freshness verification + sign-off fix + no caps",
-      "when": "28 hours ago"
+      "when": "29 hours ago"
     },
     {
       "hash": "4da830c",
@@ -90,16 +100,6 @@
       "hash": "c4cf6b6",
       "subject": "v0.0.20 — Phase 2 campaign builder safety + auto-draft + UX",
       "when": "29 hours ago"
-    },
-    {
-      "hash": "9256e1c",
-      "subject": "v0.0.19 — Phase 1 critical bugs (voice goodbye, XML leak, nav, Decagon, Racing Bulls, matrix)",
-      "when": "29 hours ago"
-    },
-    {
-      "hash": "3132d0f",
-      "subject": "master log: session A0b — admin/system, watcher cron, company-lookup, brief banner (v0.0.14-v0.0.18)",
-      "when": "31 hours ago"
     }
   ]
 }
