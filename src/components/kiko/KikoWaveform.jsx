@@ -111,7 +111,9 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
   const realLevels = useRealAudioLevels(BAR_COUNT, hasRealAudio && state === 'speaking')
   const simLevels = useBarLevels(BAR_COUNT, !hasRealAudio && state === 'speaking')
   const barLevels = hasRealAudio ? realLevels : simLevels
-  const listenLevel = useAudioLevel(state !== 'speaking')
+  // Avatar should ONLY animate when Kiko is speaking. When idle/listening, bars are still.
+  // Sunny spec 2026-04-12: "kiko avatar should only be moving/animating when she is speaking"
+  const listenLevel = 0
 
   // Filament proportions — thinner bars, tighter gap
   const scale = height / 0.46 / 72

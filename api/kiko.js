@@ -1458,7 +1458,14 @@ DEAL STAGE MAPPING:
     }
 
     // ── UNIVERSAL LEARNING ENGINE — registered users only ──
-    if (isRegistered && !['navigate', 'screen'].includes(intent) && responseText.length > 200) {
+    // Lowered threshold from 200 → 60 chars so voice replies (which are intentionally
+    // short, 1-3 sentences) actually trigger fact extraction. Without this, voice
+    // conversations never wrote to kiko_personal_context — Sunny told Kiko about his
+    // daughters via voice and Kiko could not recall them in the next session.
+    // Also force extraction when user message contains explicit memory cues.
+    const memoryCueRegex = /\b(remember|save|note|don'?t forget|commit to memory|my (daughter|son|wife|husband|partner|kid|child|mum|mom|dad|brother|sister)|i (live|work|like|love|hate|prefer|need|want))\b/i;
+    const hasMemoryCue = memoryCueRegex.test(message || '');
+    if (isRegistered && !['navigate', 'screen'].includes(intent) && (responseText.length > 60 || hasMemoryCue || (message || '').length > 40)) {
       try {
         const extract = await anthropic.messages.create({
           model: 'claude-haiku-4-5-20251001', max_tokens: 400,

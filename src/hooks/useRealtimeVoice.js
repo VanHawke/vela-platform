@@ -167,7 +167,9 @@ export function useRealtimeVoice({ active, onClose, onMessage }) {
         }
       }
       // Kiko speech (GPT-4o assistant response)
-      if (msg.type === 'response.audio_transcript.done') {
+      // New gpt-realtime schema: `response.output_audio_transcript.done`
+      // Old schema: `response.audio_transcript.done`. Handle both.
+      if (msg.type === 'response.output_audio_transcript.done' || msg.type === 'response.audio_transcript.done') {
         const kikoText = (msg.transcript || '').trim()
         if (kikoText && onMessageRef.current) {
           onMessageRef.current({ role: 'kiko', content: kikoText, at: Date.now() })

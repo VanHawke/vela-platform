@@ -168,8 +168,10 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
           if (window.__kikoVoiceClose) window.__kikoVoiceClose()
         }
       }
-      // Kiko speech transcript (GPT-4o assistant response)
-      if (msg.type === 'response.audio_transcript.done') {
+      // Kiko speech transcript (GPT-4o assistant response).
+      // The new gpt-realtime schema fires `response.output_audio_transcript.done`.
+      // Older schema fired `response.audio_transcript.done`. Handle both.
+      if (msg.type === 'response.output_audio_transcript.done' || msg.type === 'response.audio_transcript.done') {
         const kikoText = (msg.transcript || '').trim()
         if (kikoText && onMessage) onMessage({ role: 'kiko', content: kikoText, at: Date.now() })
       }
