@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-11T20:50:01.080Z",
+  "generated_at": "2026-04-11T20:56:17.466Z",
   "commits": [
+    {
+      "hash": "bcf43e5",
+      "subject": "v0.0.39 — P3 polish backlog: 5 items in one deploy",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "d57d201",
       "subject": "v0.0.38 — memory regex tightening + build campaign live progress",
-      "when": "21 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "9f747fc",
       "subject": "v0.0.37 — Session 1 batch B: selfcheck WARN level + navigate enums + KikoChat listener + voice→text handoff",
-      "when": "44 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "f6f3ffa",
       "subject": "v0.0.36 — memory extraction noise cleanup + multi-conversation UI",
-      "when": "71 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "7be8805",
       "subject": "docs: KIKO_MASTER_LOG.md Section A0e v0.0.27 → v0.0.35 (no code changes, doc only)",
-      "when": "79 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "2efb5dd",
@@ -49,7 +54,7 @@
     {
       "hash": "34c18b5",
       "subject": "v0.0.30 — voice goodbye + transcription ROOT CAUSE FIX + Kiko find leads + auto verified end-to-end",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "cf232ac",
@@ -74,7 +79,7 @@
     {
       "hash": "ed85d26",
       "subject": "master log: A0d session — v0.0.24 → v0.0.25 (build timeout fix, top-8 removal, palette fix, CRM badge, Lemlist research)",
-      "when": "28 hours ago"
+      "when": "29 hours ago"
     },
     {
       "hash": "be13dc9",
@@ -95,11 +100,6 @@
       "hash": "71731b5",
       "subject": "v0.0.23 — Phase 3 Command Centre alignment + Phase 5 timezone-aware sender (true 24h)",
       "when": "29 hours ago"
-    },
-    {
-      "hash": "7b1a853",
-      "subject": "v0.0.22 — Verify+Activate UI buttons + Claude.ai warm dark palette + clean test data",
-      "when": "30 hours ago"
     }
   ]
 }

@@ -2,6 +2,10 @@
 // Sunny spec 2026-04-12 v0.0.39: gives the user visibility into how many CRM
 // companies/contacts will be sourced for a category BEFORE committing to a build.
 //
+// IMPORTANT: companies and contacts use a `data` jsonb column, not flat columns.
+// All filters use data->>field syntax. This mirrors the working sourceFromCRM
+// function in api/build-campaign.js.
+//
 // GET ?category=<id>
 // Returns: {
 //   category, industries, company_count, contact_count,
@@ -9,9 +13,14 @@
 //   sample_contacts: [{name, title, company}, ...]              // top 8
 // }
 
-import { sbFetch } from './kiko-tools.js';
+import { createClient } from '@supabase/supabase-js';
 
 export const config = { maxDuration: 15 };
+
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY
+);
 
 const CATEGORY_INDUSTRY_MAP = {
   banking:        ['Banking', 'FinTech'],
@@ -45,15 +54,19 @@ export default async function handler(req, res) {
     const industries = CATEGORY_INDUSTRY_MAP[category];
     if (!industries) return res.status(400).json({ error: `unknown category: ${category}` });
 
-    // Build the OR clause for PostgREST: industry=in.(Banking,FinTech,...)
-    const industryFilter = industries.map(i => `"${i}"`).join(',');
+    // 1. Fetch companies matching industry from jsonb data column
+    const { data: companies, error: cErr } = await supabase
+      .from('companies')
+      .select('id, data')
+      .in('data->>industry', industries)
+      .limit(200);
 
-    // Fetch matching companies
-    const companies = await sbFetch(
-      `companies?industry=in.(${encodeURIComponent(industryFilter)})&select=id,name,industry&limit=200`
-    );
+    if (cErr) {
+      console.error('[crm-match-preview] companies query error:', cErr.message);
+      return res.status(500).json({ error: cErr.message });
+    }
 
-    if (!Array.isArray(companies) || companies.length === 0) {
+    if (!companies || companies.length === 0) {
       return res.status(200).json({
         category, industries,
         company_count: 0, contact_count: 0,
@@ -62,52 +75,63 @@ export default async function handler(req, res) {
       });
     }
 
-    // Fetch contacts at those companies
-    const companyIds = companies.map(c => c.id);
-    // Chunk if too many
-    const allContacts = [];
-    for (let i = 0; i < companyIds.length; i += 50) {
-      const chunk = companyIds.slice(i, i + 50);
-      const idFilter = chunk.join(',');
-      const contacts = await sbFetch(
-        `contacts?company_id=in.(${idFilter})&select=id,first_name,last_name,title,company_id&limit=500`
-      );
-      if (Array.isArray(contacts)) allContacts.push(...contacts);
-    }
+    // 2. For each company, find contacts via text-match on data->>company
+    // Mirror sourceFromCRM: parallel batches via Promise.all
+    const companyResults = await Promise.all(
+      companies.map(async (co) => {
+        const companyName = co.data?.name || '';
+        if (!companyName) return null;
+        const { data: contacts } = await supabase
+          .from('contacts')
+          .select('id, data')
+          .filter('data->>company', 'ilike', companyName)
+          .limit(15);
+        // Filter to relevant titles only
+        const relevant = (contacts || []).filter(ct => {
+          const d = ct.data || {};
+          if (!d.title) return false;
+          return RELEVANT_TITLE_REGEX.test(d.title);
+        });
+        return {
+          name: companyName,
+          industry: co.data?.industry || '',
+          contact_count: relevant.length,
+          contacts: relevant,
+        };
+      })
+    );
 
-    // Filter to relevant titles only
-    const relevantContacts = allContacts.filter(c => c.title && RELEVANT_TITLE_REGEX.test(c.title));
+    const validResults = companyResults.filter(r => r && r.contact_count > 0);
+    const totalContacts = validResults.reduce((s, r) => s + r.contact_count, 0);
 
-    // Build company → contact count map
-    const companyMap = new Map(companies.map(c => [c.id, { ...c, contact_count: 0 }]));
-    for (const contact of relevantContacts) {
-      const co = companyMap.get(contact.company_id);
-      if (co) co.contact_count++;
-    }
-
-    // Sample top 5 companies (by relevant contact count)
-    const sample_companies = [...companyMap.values()]
-      .filter(c => c.contact_count > 0)
+    // Top 5 companies by contact count
+    const sample_companies = validResults
       .sort((a, b) => b.contact_count - a.contact_count)
       .slice(0, 5)
-      .map(c => ({ name: c.name, industry: c.industry, contact_count: c.contact_count }));
+      .map(r => ({ name: r.name, industry: r.industry, contact_count: r.contact_count }));
 
-    // Sample top 8 contacts
-    const sample_contacts = relevantContacts.slice(0, 8).map(c => ({
-      name: `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Unknown',
-      title: c.title,
-      company: companyMap.get(c.company_id)?.name || 'Unknown',
-    }));
+    // Top 8 contacts across all companies
+    const allContactsFlat = [];
+    for (const r of validResults) {
+      for (const ct of r.contacts) {
+        const d = ct.data || {};
+        allContactsFlat.push({
+          name: `${d.firstName || ''} ${d.lastName || ''}`.trim() || 'Unknown',
+          title: d.title || '',
+          company: r.name,
+        });
+        if (allContactsFlat.length >= 8) break;
+      }
+      if (allContactsFlat.length >= 8) break;
+    }
 
     return res.status(200).json({
       category, industries,
-      company_count: sample_companies.length > 0
-        ? [...companyMap.values()].filter(c => c.contact_count > 0).length
-        : 0,
+      company_count: validResults.length,
       total_companies_in_category: companies.length,
-      contact_count: relevantContacts.length,
+      contact_count: totalContacts,
       sample_companies,
-      sample_contacts,
+      sample_contacts: allContactsFlat,
     });
   } catch (err) {
     console.error('[crm-match-preview] error:', err);
