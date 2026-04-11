@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-11T17:47:27.235Z",
+  "generated_at": "2026-04-11T18:15:45.210Z",
   "commits": [
+    {
+      "hash": "592ccbf",
+      "subject": "v0.0.32 — avatar still + Kiko transcript event name + memory threshold",
+      "when": "28 minutes ago"
+    },
     {
       "hash": "eac8735",
       "subject": "v0.0.31 — voice forced ask_kiko (full Sonnet) + goodbye 3 phrases + Gmail sig CID fix + email fixes + build progress",
-      "when": "75 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "34c18b5",
       "subject": "v0.0.30 — voice goodbye + transcription ROOT CAUSE FIX + Kiko find leads + auto verified end-to-end",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "cf232ac",
@@ -24,7 +29,7 @@
     {
       "hash": "b14ba8e",
       "subject": "v0.0.27 — CRITICAL cost cuts + build campaign cache fix + morning email iterable guards",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "1e74c59",
@@ -34,12 +39,12 @@
     {
       "hash": "ed85d26",
       "subject": "master log: A0d session — v0.0.24 → v0.0.25 (build timeout fix, top-8 removal, palette fix, CRM badge, Lemlist research)",
-      "when": "25 hours ago"
+      "when": "26 hours ago"
     },
     {
       "hash": "be13dc9",
       "subject": "v0.0.25 — top nav viewport-centred + Previously in CRM badge + category gap formatting tightened + Lemlist research doc",
-      "when": "25 hours ago"
+      "when": "26 hours ago"
     },
     {
       "hash": "8edd203",
@@ -49,12 +54,12 @@
     {
       "hash": "3241c0e",
       "subject": "master log: A0c session — v0.0.19 → v0.0.23 (Phase 1-5 + CRM-first sourcing + verification gate + timezone sender)",
-      "when": "26 hours ago"
+      "when": "27 hours ago"
     },
     {
       "hash": "71731b5",
       "subject": "v0.0.23 — Phase 3 Command Centre alignment + Phase 5 timezone-aware sender (true 24h)",
-      "when": "26 hours ago"
+      "when": "27 hours ago"
     },
     {
       "hash": "7b1a853",
@@ -69,7 +74,7 @@
     {
       "hash": "4da830c",
       "subject": "v0.0.20 — Phase 2a/2b/2e — campaigns paused by default + auto-draft + title in prospects",
-      "when": "27 hours ago"
+      "when": "28 hours ago"
     },
     {
       "hash": "c4cf6b6",
@@ -79,26 +84,21 @@
     {
       "hash": "9256e1c",
       "subject": "v0.0.19 — Phase 1 critical bugs (voice goodbye, XML leak, nav, Decagon, Racing Bulls, matrix)",
-      "when": "28 hours ago"
+      "when": "29 hours ago"
     },
     {
       "hash": "3132d0f",
       "subject": "master log: session A0b — admin/system, watcher cron, company-lookup, brief banner (v0.0.14-v0.0.18)",
-      "when": "30 hours ago"
+      "when": "31 hours ago"
     },
     {
       "hash": "8b15dcb",
       "subject": "v0.0.18 — brief deterministic short-circuit (morning brief banner now actually appears)",
-      "when": "30 hours ago"
+      "when": "31 hours ago"
     },
     {
       "hash": "eb40426",
       "subject": "v0.0.17 — company lookup endpoint + morning brief system health surfacing + dashboard cron dedup",
-      "when": "32 hours ago"
-    },
-    {
-      "hash": "a9010f1",
-      "subject": "v0.0.16 — fix cron-selfcheck-watcher env var (VITE_SUPABASE_URL)",
       "when": "32 hours ago"
     }
   ]

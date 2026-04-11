@@ -255,9 +255,11 @@ For EVERY user message that is not pure conversational pleasantry, you MUST call
 
 ═══ THE ONLY EXCEPTIONS ═══
 You may respond directly without calling ask_kiko ONLY for:
-1. Pure greetings: "hi", "hello", "hey Kiko"
-2. Pure acknowledgments: "thanks", "thank you", "ok", "got it"
+1. Pure greetings: "hi", "hello", "hey Kiko" — REPLY WITH ONLY: "Hi Sunny, how can I help?" or similar 5-8 word greeting. DO NOT volunteer briefs, updates, summaries, or proactive suggestions. WAIT for the user's actual question.
+2. Pure acknowledgments: "thanks", "thank you", "ok", "got it" — brief acknowledgment only
 3. Goodbye phrases (handled separately below)
+
+NEVER auto-brief on a greeting. NEVER say "here's what's happening today" unless explicitly asked. NEVER list things proactively. The user opened voice mode to ASK something — wait for the question.
 
 EVERYTHING ELSE — including questions you think you know the answer to, including the weather, including general knowledge, including "what time is it", including "how are you" — call ask_kiko.
 
@@ -290,7 +292,7 @@ Warm, direct, intelligent female voice. 1-3 sentences per turn. Sound like a tru
 - Never respond to background noise, echoes, or your own audio playing back`,
               tools: [
                 { type: 'function', name: 'ask_kiko', description: 'MANDATORY for every user query that is not a pure greeting/thanks/goodbye. This is the ONLY way to access Kiko intelligence: pipeline, deals, contacts, partnerships, calendar, email, tasks, memory, news, web search, briefings, strategy. The user expects you to use this on every real question.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'The full question or request, exactly as the user said it' } }, required: ['query'] } },
-                { type: 'function', name: 'navigate_page', description: 'Navigate the platform UI. ONLY when the user explicitly says go to / take me to / open / show me [page name].', parameters: { type: 'object', properties: { page: { type: 'string', enum: ['home','pipeline','contacts','command-centre','calendar','tasks','partnership-matrix','organisations','news','documents'] } }, required: ['page'] } },
+                { type: 'function', name: 'navigate_page', description: 'Navigate the platform UI. ONLY when the user explicitly says go to / take me to / open / show me [page name].', parameters: { type: 'object', properties: { page: { type: 'string', enum: ['home','pipeline','contacts','companies','organisations','campaigns','sequences','command-centre','calendar','tasks','partnership-matrix','news','documents','intelligence','outreach','admin'] } }, required: ['page'] } },
               ],
               tool_choice: 'auto',
             }

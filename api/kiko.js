@@ -558,6 +558,22 @@ export default async function handler(req, res) {
   const userId = userConfig.user_id || crypto.randomUUID(); // Ephemeral UUID for unregistered — never accumulates data
   const isSuperAdmin = userConfig.role === 'super_admin';
 
+  // ── Geo-location: read from Vercel IP headers (no permission popup) ──
+  // Falls back to userConfig.location if headers missing (local dev / test).
+  // Sunny spec 2026-04-12: Kiko should know location from browser/request context.
+  const geoCity = req.headers?.['x-vercel-ip-city'] ? decodeURIComponent(req.headers['x-vercel-ip-city']) : null;
+  const geoCountry = req.headers?.['x-vercel-ip-country'] || null;
+  const geoLat = req.headers?.['x-vercel-ip-latitude'] || null;
+  const geoLon = req.headers?.['x-vercel-ip-longitude'] || null;
+  const geoTimezone = req.headers?.['x-vercel-ip-timezone'] || null;
+  if (geoCity || geoLat) {
+    // Override config location with live IP geo (city + country)
+    const live = [geoCity, geoCountry].filter(Boolean).join(', ');
+    if (live) userConfig.location = live;
+    if (geoLat && geoLon) userConfig.coords = { lat: parseFloat(geoLat), lon: parseFloat(geoLon) };
+    if (geoTimezone) userConfig.timezone = geoTimezone;
+  }
+
   // ── Early greeting detection — skip heavy fetches for simple greetings ──
   const earlyGreeting = /^(hi|hey|hello|good\s+(morning|afternoon|evening)|howdy|what'?s?\s+up|yo)\b/i.test((message || '').trim());
 

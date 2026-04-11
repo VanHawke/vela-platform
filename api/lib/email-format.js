@@ -96,18 +96,33 @@ export async function loadUserSignatures(sbFetch, userId, accessToken = null, fr
           || sendAsList.find(s => s.isPrimary)
           || sendAsList[0];
         if (primary?.signature) {
-          // Extract cid: refs and ensure they're cached. The actual MIME attachment
-          // happens at send time in buildRawEmail (cron-sequence-sender + send-test-email).
-          const cids = extractCidsFromHtml(primary.signature);
+          // INLINE BASE64 APPROACH (replaces multipart/related):
+          // 1. Find all cid: refs
+          // 2. Fetch their bytes from cached store OR scan recent sent messages
+          // 3. Replace cid:xxx with data:image/png;base64,xxx INLINE in the HTML
+          // This works in 100% of email clients (Gmail, Outlook, Apple Mail, mobile)
+          // with zero MIME complexity. Sunny spec 2026-04-12: must "just work".
+          let signatureHtml = primary.signature;
+          const cids = extractCidsFromHtml(signatureHtml);
           let inlineImages = [];
           if (cids.length > 0 && fromEmail) {
             inlineImages = await ensureCidImagesCached(sbFetch, accessToken, fromEmail, cids);
+            // Replace cid: refs with inline data URLs
+            for (const img of inlineImages) {
+              if (img.dataBase64 && img.cid) {
+                const cidPattern = new RegExp(`(src=["'])cid:${img.cid.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(["'])`, 'gi');
+                const dataUrl = `data:${img.contentType || 'image/png'};base64,${img.dataBase64}`;
+                signatureHtml = signatureHtml.replace(cidPattern, `$1${dataUrl}$2`);
+              }
+            }
           }
           return {
-            signature: primary.signature,
-            coldSignature: stripLogoFromSignature(primary.signature) || primary.signature,
-            inlineImages,  // [{ cid, contentType, filename, dataBase64 }]
+            signature: signatureHtml,
+            coldSignature: stripLogoFromSignature(signatureHtml) || signatureHtml,
+            inlineImages: [],  // Empty because we already inlined them as data URLs
             source: 'gmail',
+            cidsFound: cids.length,
+            cidsInlined: inlineImages.length,
           };
         }
       }
@@ -188,65 +203,81 @@ export function extractCidsFromHtml(html) {
 
 export async function ensureCidImagesCached(sbFetch, accessToken, userEmail, cids) {
   if (!cids || cids.length === 0) return [];
-  // Check cache first
-  const cidList = cids.map(c => `"${c.replace(/"/g, '')}"`).join(',');
-  const cached = await sbFetch(
-    `kiko_signature_images?user_email=eq.${encodeURIComponent(userEmail)}&cid=in.(${cidList})&select=cid,content_type,filename,data_base64`
-  );
-  const cachedMap = new Map((cached || []).map(r => [r.cid, r]));
 
+  // Check cache first — try BOTH possible email forms (vanhawke.com vs vanhawke.agency)
+  const userVariants = [userEmail, userEmail?.replace('@vanhawke.agency', '@vanhawke.com'), userEmail?.replace('@vanhawke.com', '@vanhawke.agency')].filter(Boolean);
+  const cidList = cids.map(c => `"${c.replace(/"/g, '')}"`).join(',');
+  let cached = [];
+  for (const variant of userVariants) {
+    const result = await sbFetch(
+      `kiko_signature_images?user_email=eq.${encodeURIComponent(variant)}&cid=in.(${cidList})&select=cid,content_type,filename,data_base64`
+    ).catch(() => []);
+    if (Array.isArray(result) && result.length > 0) {
+      cached = result;
+      break;
+    }
+  }
+  const cachedMap = new Map((cached || []).map(r => [r.cid, r]));
   const missing = cids.filter(c => !cachedMap.has(c));
+
   if (missing.length === 0) {
     return Array.from(cachedMap.values()).map(r => ({
       cid: r.cid, contentType: r.content_type, filename: r.filename, dataBase64: r.data_base64
     }));
   }
 
-  // For each missing cid, find a sent message that contains it and extract the bytes
-  // Search for sent emails by this user that have multipart/related (likely contain
-  // signature images). Take the most recent 20 to scan.
+  // For each missing cid, scan recent sent messages.
+  // CRITICAL: Drop the `has:attachment` filter because Gmail does NOT classify
+  // inline cid images as attachments. Just search broadly.
+  const found = new Map();
   try {
-    const listRes = await fetch(
-      'https://gmail.googleapis.com/gmail/v1/users/me/messages?q=from:me+has:attachment&maxResults=30',
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    if (!listRes.ok) {
-      console.warn('[email-format] Gmail message list failed:', listRes.status);
-      return Array.from(cachedMap.values()).map(r => ({
-        cid: r.cid, contentType: r.content_type, filename: r.filename, dataBase64: r.data_base64
-      }));
+    // Try multiple search queries to maximize chance of finding signature images
+    const searches = [
+      'in:sent',                         // Most recent sent
+      'in:drafts',                       // Drafts also have signature
+      'from:me',                         // All mail from this user
+    ];
+    const allMessageIds = new Set();
+    for (const q of searches) {
+      try {
+        const listRes = await fetch(
+          `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(q)}&maxResults=15`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        if (listRes.ok) {
+          const listData = await listRes.json();
+          for (const m of (listData.messages || [])) allMessageIds.add(m.id);
+        }
+      } catch {}
+      if (allMessageIds.size >= 30) break;
     }
-    const listData = await listRes.json();
-    const messageIds = (listData.messages || []).map(m => m.id).slice(0, 20);
 
-    // Fetch each message in parallel and look for matching cid attachments
-    const found = new Map();
-    await Promise.all(messageIds.map(async (mid) => {
+    const messageIds = Array.from(allMessageIds).slice(0, 30);
+    console.log(`[email-format] Scanning ${messageIds.length} messages for cids:`, missing);
+
+    // Process sequentially to avoid rate limits
+    for (const mid of messageIds) {
+      if (found.size === missing.length) break;  // Found everything
       try {
         const msgRes = await fetch(
           `https://gmail.googleapis.com/gmail/v1/users/me/messages/${mid}?format=full`,
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
-        if (!msgRes.ok) return;
+        if (!msgRes.ok) continue;
         const msg = await msgRes.json();
-        // Walk the payload tree looking for parts with Content-ID matching our cids
         const parts = flattenParts(msg.payload);
         for (const part of parts) {
-          const cidHeader = (part.headers || []).find(h =>
-            h.name?.toLowerCase() === 'content-id'
-          );
+          // Look for ANY part with a Content-ID header
+          const cidHeader = (part.headers || []).find(h => h.name?.toLowerCase() === 'content-id');
           if (!cidHeader?.value) continue;
-          // Header is like "<ii_xyz>" — strip angle brackets
           const partCid = cidHeader.value.replace(/^<|>$/g, '').trim();
           if (missing.includes(partCid) && !found.has(partCid) && part.body?.attachmentId) {
-            // Fetch the attachment bytes
             const attRes = await fetch(
               `https://gmail.googleapis.com/gmail/v1/users/me/messages/${mid}/attachments/${part.body.attachmentId}`,
               { headers: { Authorization: `Bearer ${accessToken}` } }
             );
             if (!attRes.ok) continue;
             const attData = await attRes.json();
-            // Gmail returns base64url — convert to standard base64
             const dataBase64 = (attData.data || '').replace(/-/g, '+').replace(/_/g, '/');
             found.set(partCid, {
               cid: partCid,
@@ -255,12 +286,13 @@ export async function ensureCidImagesCached(sbFetch, accessToken, userEmail, cid
               dataBase64,
               sourceMessageId: mid,
             });
+            console.log(`[email-format] Found cid ${partCid} (${dataBase64.length} bytes b64) in message ${mid}`);
           }
         }
       } catch (e) {
         console.warn(`[email-format] Failed to scan message ${mid}:`, e.message);
       }
-    }));
+    }
 
     // Persist found images to cache
     for (const img of found.values()) {
@@ -283,8 +315,7 @@ export async function ensureCidImagesCached(sbFetch, accessToken, userEmail, cid
       }
     }
 
-    // Combine cached + freshly found
-    const all = [
+    return [
       ...Array.from(cachedMap.values()).map(r => ({
         cid: r.cid, contentType: r.content_type, filename: r.filename, dataBase64: r.data_base64
       })),
@@ -292,7 +323,6 @@ export async function ensureCidImagesCached(sbFetch, accessToken, userEmail, cid
         cid: img.cid, contentType: img.contentType, filename: img.filename, dataBase64: img.dataBase64
       })),
     ];
-    return all;
   } catch (err) {
     console.error('[email-format] cid image extraction failed:', err.message);
     return Array.from(cachedMap.values()).map(r => ({

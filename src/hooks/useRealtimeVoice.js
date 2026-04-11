@@ -68,9 +68,11 @@ For EVERY user message that is not pure conversational pleasantry, you MUST call
 
 ═══ THE ONLY EXCEPTIONS ═══
 You may respond directly without calling ask_kiko ONLY for:
-1. Pure greetings: "hi", "hello", "hey Kiko"
-2. Pure acknowledgments: "thanks", "thank you", "ok", "got it"
+1. Pure greetings: "hi", "hello", "hey Kiko" — REPLY WITH ONLY: "Hi Sunny, how can I help?" or similar 5-8 word greeting. DO NOT volunteer briefs, updates, summaries, or proactive suggestions. WAIT for the user's actual question.
+2. Pure acknowledgments: "thanks", "thank you", "ok", "got it" — brief acknowledgment only
 3. Goodbye phrases (handled by the system, just say a brief farewell)
+
+NEVER auto-brief on a greeting. NEVER say "here's what's happening today" unless explicitly asked. NEVER list things proactively. The user opened voice mode to ASK something — wait for the question.
 
 EVERYTHING ELSE — including questions you think you know the answer to, including the weather, including general knowledge, including "what time is it", including "how are you" — call ask_kiko.
 
@@ -101,7 +103,7 @@ Never invent deal names, dollar values, dates, or specific data. Never say "I do
 
 const TOOLS = [
   { type: 'function', name: 'ask_kiko', description: 'MANDATORY for every user query that is not pure greeting/thanks/goodbye. The ONLY way to access Kiko intelligence: pipeline, deals, contacts, partnerships, calendar, email, tasks, memory, news, web search, briefings, strategy.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'The full question or request, exactly as the user said it' } }, required: ['query'] } },
-  { type: 'function', name: 'navigate_page', description: 'Navigate platform UI. ONLY when user explicitly says go to / take me to / open / show me [page].', parameters: { type: 'object', properties: { page: { type: 'string', enum: ['home','pipeline','contacts','command-centre','calendar','tasks','partnership-matrix','organisations','news','documents'] } }, required: ['page'] } },
+  { type: 'function', name: 'navigate_page', description: 'Navigate platform UI. ONLY when user explicitly says go to / take me to / open / show me [page].', parameters: { type: 'object', properties: { page: { type: 'string', enum: ['home','pipeline','contacts','companies','organisations','campaigns','sequences','command-centre','calendar','tasks','partnership-matrix','news','documents','intelligence','outreach','admin'] } }, required: ['page'] } },
 ]
 
 export function useRealtimeVoice({ active, onClose, onMessage }) {
@@ -113,6 +115,16 @@ export function useRealtimeVoice({ active, onClose, onMessage }) {
   const streamRef = useRef(null)
   const deadRef = useRef(false)
   const connectingRef = useRef(false) // Guard against double-mount in React strict mode
+  const idleTimerRef = useRef(null)   // 2-minute inactivity timer
+  const IDLE_TIMEOUT_MS = 2 * 60 * 1000
+
+  function resetIdleTimer() {
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current)
+    idleTimerRef.current = setTimeout(() => {
+      console.log('[RealtimeVoice] 2-min idle — auto-closing session')
+      onCloseRef.current?.()
+    }, IDLE_TIMEOUT_MS)
+  }
 
   // Expose close handler for close_voice tool
   const onCloseRef = useRef(onClose)
@@ -139,10 +151,17 @@ export function useRealtimeVoice({ active, onClose, onMessage }) {
         dcRef.current?.send(JSON.stringify({ type: 'response.create' }))
         setStatus('speaking')
       }
-      if (msg.type === 'output_audio_buffer.started') setSpeaking(true)
+      if (msg.type === 'output_audio_buffer.started') { setSpeaking(true); resetIdleTimer() }
       if (msg.type === 'output_audio_buffer.stopped' || msg.type === 'output_audio_buffer.cleared') setSpeaking(false)
-      if (msg.type === 'input_audio_buffer.speech_started') setStatus('listening')
+      if (msg.type === 'input_audio_buffer.speech_started') { setStatus('listening'); resetIdleTimer() }
       if (msg.type === 'response.done') setStatus('listening')
+      // Status transitions to 'listening' (green) ONLY after the session is fully created.
+      // Without this gate, dc.onopen flips to listening immediately even if session.update
+      // hasn't been acknowledged or the underlying PC isn't actually connected.
+      if (msg.type === 'session.created' || msg.type === 'session.updated') {
+        console.log('[RealtimeVoice] Session ready — flipping to listening')
+        setStatus('listening')
+      }
 
       // ── Transcript capture for chat-history save ──
       // User speech (Whisper transcription on input audio)
@@ -198,6 +217,18 @@ export function useRealtimeVoice({ active, onClose, onMessage }) {
 
       const pc = new RTCPeerConnection()
       pcRef.current = pc
+      // Monitor underlying PC state — flip to error if it disconnects mid-session
+      pc.onconnectionstatechange = () => {
+        const s = pc.connectionState
+        console.log('[RealtimeVoice] PC connection state:', s)
+        if (s === 'failed' || s === 'disconnected' || s === 'closed') {
+          if (!deadRef.current) {
+            console.warn('[RealtimeVoice] PC dropped — auto-closing session')
+            setStatus('error')
+            setTimeout(() => onCloseRef.current?.(), 500)
+          }
+        }
+      }
       const audioEl = document.createElement('audio')
       audioEl.autoplay = true
       audioEl.style.display = 'none'
@@ -233,7 +264,9 @@ export function useRealtimeVoice({ active, onClose, onMessage }) {
       dcRef.current = dc
       dc.onmessage = handleDCMessage
       dc.onopen = () => {
-        setStatus('listening')
+        // STAY in 'connecting' (amber) until session.created event arrives
+        // Do NOT flip to 'listening' here — that's the false-green bug.
+        console.log('[RealtimeVoice] Data channel open — sending session config')
         dc.send(JSON.stringify({
           type: 'session.update',
           session: {
@@ -270,10 +303,14 @@ export function useRealtimeVoice({ active, onClose, onMessage }) {
   const disconnect = useCallback(() => {
     deadRef.current = true
     connectingRef.current = false
+    if (idleTimerRef.current) { clearTimeout(idleTimerRef.current); idleTimerRef.current = null }
     if (dcRef.current) try { dcRef.current.close() } catch {}
     if (pcRef.current) try { pcRef.current.close() } catch {}
+    pcRef.current = null
+    dcRef.current = null
     streamRef.current?.getTracks().forEach(t => t.stop())
-    if (audioRef.current) { audioRef.current.srcObject = null; audioRef.current.remove() }
+    streamRef.current = null
+    if (audioRef.current) { audioRef.current.srcObject = null; audioRef.current.remove(); audioRef.current = null }
     setSpeaking(false)
     setStatus('idle')
     window.__kikoAudioEnergy = 0

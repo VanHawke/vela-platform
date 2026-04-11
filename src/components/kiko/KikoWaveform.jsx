@@ -127,8 +127,10 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
     const shellBw = Math.max(1, size * 0.015)
     const shellGap = size * 0.038
     const shellMaxH = size * 0.46
+    // Avatar should ONLY animate when Kiko is actually speaking.
+    // Sunny spec 2026-04-12: still bars during idle/listening.
     const level = useAudioLevel(state === 'speaking')
-    const active = state === 'speaking' || state === 'listening'
+    const active = state === 'speaking'  // was: speaking || listening — now ONLY speaking
     const glowI = state === 'speaking' ? 0.08 + level * 0.18 : state === 'listening' ? 0.06 : 0
 
     return (
@@ -165,7 +167,7 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
           {BAR_ENVELOPE.map((env, i) => {
             let h
             if (state === 'speaking') h = 0.06 + barLevels[i] * 0.94
-            else h = env * (0.55 + listenLevel * 0.35)
+            else h = 0.06  // FLAT when not speaking — just the minimum stub
             const tipGlow = state === 'speaking' && barLevels[i] > 0.4
             return (
               <div key={i} style={{ position: 'relative', height: `${h * 100}%`, minHeight: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -204,7 +206,7 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
       {BAR_ENVELOPE.map((env, i) => {
         let h
         if (state === 'speaking') h = 0.06 + barLevels[i] * 0.94
-        else h = env * (0.55 + listenLevel * 0.35)
+        else h = 0.06  // FLAT when not speaking — Sunny spec 2026-04-12
         const tipGlow = state === 'speaking' && barLevels[i] > 0.4
         return (
           <div key={i} style={{ position: 'relative', height: `${h * 100}%`, minHeight: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
