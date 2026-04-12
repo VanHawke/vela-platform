@@ -27,6 +27,7 @@ import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, H
 import KikoFloat from '../kiko/KikoFloat'
 import ThreadIndicator from '../kiko/ThreadIndicator'
 import NotificationToast from '../kiko/NotificationToast'
+import BackgroundTasksPanel from '../kiko/BackgroundTasksPanel'
 import KikoVoice from '../kiko/KikoVoice'
 import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
@@ -606,6 +607,7 @@ export default function Layout({ user }) {
 
       {/* Realtime notifications toast (v0.0.39) */}
       <NotificationToast user={user} />
+      <BackgroundTasksPanel user={user} />
 
       {/* Kiko floating — present on every page except home */}
       {!isHome && (
