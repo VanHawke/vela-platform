@@ -227,6 +227,14 @@ function TaskRow({ task, onOpenChat, onRetry }) {
   const queryPreview = (task.query || '').slice(0, 60) + (task.query?.length > 60 ? '…' : '')
   const resultPreview = (task.result_text || '').slice(0, 100) + (task.result_text?.length > 100 ? '…' : '')
 
+  // Safety guardrail: auto-cancel running tasks older than 30 minutes (client-side backstop)
+  const runawayRef = useRef(false)
+  const isRunaway = task.status === 'running' && task.started_at && (Date.now() - new Date(task.started_at).getTime()) > 30 * 60 * 1000
+  if (isRunaway && !runawayRef.current) {
+    runawayRef.current = true
+    supabase.from('kiko_background_tasks').update({ status: 'cancelled', error_message: 'Task exceeded 30 min runtime — auto-cancelled', completed_at: new Date().toISOString() }).eq('id', task.id).then(() => {})
+  }
+
   const statusConfig = {
     queued: { icon: Loader2, color: T.textTertiary, label: 'Queued', spin: false },
     running: { icon: Loader2, color: T.accent, label: 'Running', spin: true },
@@ -234,7 +242,8 @@ function TaskRow({ task, onOpenChat, onRetry }) {
     error: { icon: AlertCircle, color: '#f87171', label: 'Error', spin: false },
     cancelled: { icon: X, color: T.textTertiary, label: 'Cancelled', spin: false },
   }
-  const cfg = statusConfig[task.status] || statusConfig.queued
+  const effectiveStatus = isRunaway ? 'error' : task.status
+  const cfg = statusConfig[effectiveStatus] || statusConfig.queued
   const Icon = cfg.icon
 
   return (
@@ -268,20 +277,20 @@ function TaskRow({ task, onOpenChat, onRetry }) {
             {queryPreview}
           </div>
           <div style={{ fontSize: 10, color: T.textTertiary, marginTop: 2, fontFamily: 'var(--font)' }}>
-            {task.status === 'running' && task.started_at && (
+            {effectiveStatus === 'running' && task.started_at && (
               <span>{elapsed(task.started_at)} elapsed</span>
             )}
-            {task.status === 'done' && (
+            {effectiveStatus === 'done' && (
               <span>{timeAgo(task.completed_at)} · {task.elapsed_seconds}s</span>
             )}
-            {task.status === 'error' && (
-              <span style={{ color: '#f87171' }}>{(task.error_message || 'Unknown error').slice(0, 80)}</span>
+            {effectiveStatus === 'error' && (
+              <span style={{ color: '#f87171' }}>{isRunaway ? 'Task exceeded 30 min runtime — auto-cancelled' : (task.error_message || 'Unknown error').slice(0, 80)}</span>
             )}
-            {task.status === 'queued' && <span>Waiting…</span>}
+            {effectiveStatus === 'queued' && <span>Waiting…</span>}
           </div>
 
           {/* Result preview for done tasks */}
-          {task.status === 'done' && resultPreview && (
+          {effectiveStatus === 'done' && resultPreview && (
             <div style={{
               fontSize: 11, color: T.textSecondary, marginTop: 4,
               lineHeight: 1.4, fontFamily: 'var(--font)',
@@ -292,7 +301,7 @@ function TaskRow({ task, onOpenChat, onRetry }) {
 
           {/* Action buttons */}
           <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-            {task.status === 'done' && (
+            {effectiveStatus === 'done' && (
               <button
                 onClick={() => onOpenChat(task)}
                 style={{
@@ -306,7 +315,7 @@ function TaskRow({ task, onOpenChat, onRetry }) {
                 Open in chat <ChevronRight size={10} />
               </button>
             )}
-            {task.status === 'error' && (
+            {effectiveStatus === 'error' && (
               <button
                 onClick={() => onRetry(task)}
                 style={{
