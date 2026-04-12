@@ -129,6 +129,24 @@ export default function BackgroundTasksPanel({ user }) {
     } catch {}
   }
 
+  // Dismiss single task
+  const dismissTask = async (task) => {
+    if (task.status === 'running' && !window.confirm('Cancel this running task?')) return
+    try { await fetch(`/api/kiko-task-dismiss?id=${task.id}`, { method: 'DELETE' }) } catch {}
+    setTasks(prev => prev.filter(t => t.id !== task.id))
+  }
+
+  // Clear all done/error/cancelled tasks
+  const clearableCount = tasks.filter(t => ['done', 'error', 'cancelled'].includes(t.status)).length
+  const clearDone = async () => {
+    const toClear = tasks.filter(t => ['done', 'error', 'cancelled'].includes(t.status))
+    if (toClear.length === 0) return
+    if (!window.confirm(`Clear ${toClear.length} completed task${toClear.length > 1 ? 's' : ''}?`)) return
+    const ids = toClear.map(t => t.id).join(',')
+    try { await fetch(`/api/kiko-task-dismiss?ids=${ids}`, { method: 'DELETE' }) } catch {}
+    setTasks(prev => prev.filter(t => !['done', 'error', 'cancelled'].includes(t.status)))
+  }
+
   if (tasks.length === 0) return null
 
   return (
@@ -198,23 +216,32 @@ export default function BackgroundTasksPanel({ user }) {
                 </span>
               )}
             </div>
-            <button
-              onClick={() => setExpanded(false)}
-              style={{
-                width: 24, height: 24, borderRadius: 6,
-                background: 'transparent', border: 'none',
-                color: T.textTertiary, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}
-            >
-              <X size={14} />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              {clearableCount > 0 && (
+                <button onClick={clearDone} style={{
+                  padding: '3px 8px', borderRadius: 6, fontSize: 10, fontWeight: 500,
+                  background: 'transparent', border: `1px solid ${T.border}`,
+                  color: T.textTertiary, cursor: 'pointer', fontFamily: 'var(--font)',
+                }}>Clear done</button>
+              )}
+              <button
+                onClick={() => setExpanded(false)}
+                style={{
+                  width: 24, height: 24, borderRadius: 6,
+                  background: 'transparent', border: 'none',
+                  color: T.textTertiary, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                <X size={14} />
+              </button>
+            </div>
           </div>
 
           {/* Task list */}
           <div style={{ flex: 1, overflowY: 'auto', padding: 8 }}>
             {tasks.map(task => (
-              <TaskRow key={task.id} task={task} onOpenChat={openInChat} onRetry={retryTask} />
+              <TaskRow key={task.id} task={task} onOpenChat={openInChat} onRetry={retryTask} onDismiss={dismissTask} />
             ))}
           </div>
         </div>
@@ -223,7 +250,7 @@ export default function BackgroundTasksPanel({ user }) {
   )
 }
 
-function TaskRow({ task, onOpenChat, onRetry }) {
+function TaskRow({ task, onOpenChat, onRetry, onDismiss }) {
   const queryPreview = (task.query || '').slice(0, 60) + (task.query?.length > 60 ? '…' : '')
   const resultPreview = (task.result_text || '').slice(0, 100) + (task.result_text?.length > 100 ? '…' : '')
 
@@ -256,7 +283,7 @@ function TaskRow({ task, onOpenChat, onRetry }) {
       onMouseOver={e => e.currentTarget.style.background = T.surfaceHover}
       onMouseOut={e => e.currentTarget.style.background = 'transparent'}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, position: 'relative' }}>
         <div style={{
           width: 28, height: 28, borderRadius: 8,
           background: T.bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -268,6 +295,17 @@ function TaskRow({ task, onOpenChat, onRetry }) {
             style={cfg.spin ? { animation: 'spin 1.5s linear infinite' } : {}}
           />
         </div>
+        {/* Dismiss × */}
+        <button onClick={(e) => { e.stopPropagation(); onDismiss(task) }} style={{
+          position: 'absolute', top: -2, right: -4, width: 18, height: 18, borderRadius: 50,
+          background: 'transparent', border: 'none', color: T.textMuted, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, padding: 0,
+          opacity: 0.5, transition: 'opacity 0.15s',
+        }}
+          onMouseOver={e => e.currentTarget.style.opacity = '1'}
+          onMouseOut={e => e.currentTarget.style.opacity = '0.5'}
+          title="Dismiss task"
+        ><X size={10} /></button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
             fontSize: 12, fontWeight: 500, color: T.text,

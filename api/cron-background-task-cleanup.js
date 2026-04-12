@@ -1,7 +1,7 @@
-// api/cron-background-task-cleanup.js — Weekly cleanup of background tasks
-// Schedule: 0 5 * * 0 (Sundays 5am UTC)
-// - Delete done tasks > 14 days old
-// - Mark running tasks > 10 min as error (timeout)
+// api/cron-background-task-cleanup.js — Frequent cleanup of background tasks
+// Schedule: */10 * * * * (every 10 minutes)
+// - Delete done tasks > 24 hours old
+// - Mark running tasks > 5 min as error (timeout)
 // - Delete error tasks > 30 days old
 import { sbFetch } from './kiko-tools.js';
 
@@ -11,8 +11,8 @@ export default async function handler(req, res) {
   const results = { deleted_done: 0, timed_out: 0, deleted_error: 0 };
 
   try {
-    // 1. Delete done tasks > 14 days
-    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+    // 1. Delete done tasks > 24 hours
+    const fourteenDaysAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     try {
       const deleted = await sbFetch(`kiko_background_tasks?status=eq.done&completed_at=lt.${fourteenDaysAgo}`, {
         method: 'DELETE',
@@ -21,15 +21,15 @@ export default async function handler(req, res) {
       results.deleted_done = Array.isArray(deleted) ? deleted.length : 0;
     } catch {}
 
-    // 2. Mark running tasks > 10 min as error
-    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    // 2. Mark running tasks > 5 min as error
+    const tenMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     try {
       const timedOut = await sbFetch(`kiko_background_tasks?status=eq.running&started_at=lt.${tenMinAgo}`, {
         method: 'PATCH',
         headers: { Prefer: 'return=representation' },
         body: JSON.stringify({
           status: 'error',
-          error_message: 'Task exceeded 10 minute timeout',
+          error_message: 'Task exceeded 5 minute timeout',
           completed_at: new Date().toISOString(),
         }),
       });

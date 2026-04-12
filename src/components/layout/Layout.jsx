@@ -1,3 +1,7 @@
+// FUTURE: optional auto-logout after N minutes of inactivity.
+// Configurable in Settings → Profile (default OFF).
+// Implementation: useEffect with mousedown/keydown listeners + setTimeout that calls supabase.auth.signOut().
+// Deferred until requested — Sunny flagged 11 April 2026.
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'

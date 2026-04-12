@@ -1067,3 +1067,42 @@ Surface boundary: code touches repo → Claude Code only. Strategy/writing/discu
 
 ### Files NOT modified (verified via git diff)
 - api/kiko.js, BackgroundTasksPanel.jsx, Layout.jsx, theme.js — all untouched
+
+## Section A0o — v0.0.49 QoL fixes: task dismiss + cron tighten + voice idle (April 12, 2026)
+
+### Fix 1A — Cron schedule (already done in previous commit)
+- `vercel.json` cron for background-task-cleanup already changed to `*/10 * * * *`
+
+### Fix 1B — Cleanup cron thresholds
+- Done tasks: 14 days → **24 hours** (Sunny doesn't want done tasks accumulating)
+- Running timeout: 10 min → **5 min** (tighter stuck-task detection)
+- Error deletion: 30 days (unchanged)
+
+### Fix 1C — `/api/kiko-task-dismiss.js` (NEW)
+- DELETE `?id=<uuid>` — single task delete
+- DELETE `?ids=uuid1,uuid2,...` — bulk delete up to 200 (mirrors memory-tab.js pattern)
+- RLS handles user_id auth
+
+### Fix 1D — BackgroundTasksPanel.jsx
+- **× dismiss button** on every task row (top-right, small, confirm for running tasks)
+- **"Clear done" button** in header (visible when done/error/cancelled tasks exist, confirms before bulk delete)
+- Runaway guard already in place from previous commit (30-min client-side auto-cancel)
+
+### Fix 2 — KikoVoice 60s idle timeout
+- Added `useEffect` that starts a 60-second timer on mount, resets on every `status` change (speaking/listening/thinking = activity)
+- If 60 seconds pass with no status change, auto-closes voice session via `window.__kikoVoiceClose()`
+- Previously there was NO idle timeout — voice stayed open indefinitely until user said goodbye or clicked close
+
+### Fix 3 — Layout.jsx auto-logout placeholder
+- 4-line comment block added at top of file documenting future auto-logout feature
+- No implementation — deferred until Sunny explicitly requests it
+
+### Files added
+- `api/kiko-task-dismiss.js`
+
+### Files modified
+- `api/cron-background-task-cleanup.js` (thresholds: 24h done, 5m stuck)
+- `src/components/kiko/BackgroundTasksPanel.jsx` (× dismiss, Clear done, onDismiss prop)
+- `src/components/kiko/KikoVoice.jsx` (60s idle timer)
+- `src/components/layout/Layout.jsx` (4-line comment only)
+- `package.json` (0.0.48 → 0.0.49)

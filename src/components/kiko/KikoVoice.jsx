@@ -348,6 +348,15 @@ Warm, direct, intelligent female voice. 1-3 sentences per turn. Sound like a tru
     }
   }, [])
 
+  // 60-second idle timeout — auto-close if no speech activity
+  useEffect(() => {
+    let idleTimer = setTimeout(() => { if (window.__kikoVoiceClose) window.__kikoVoiceClose() }, 60000)
+    const resetIdle = () => { clearTimeout(idleTimer); idleTimer = setTimeout(() => { if (window.__kikoVoiceClose) window.__kikoVoiceClose() }, 60000) }
+    // Reset on any status change (speaking/listening/thinking = activity)
+    resetIdle()
+    return () => clearTimeout(idleTimer)
+  }, [status])
+
   const handleClose = useCallback(() => {
     cancelAnimationFrame(energyRAF.current)
     if (analyserRef.current?.ctx) analyserRef.current.ctx.close().catch(() => {})
