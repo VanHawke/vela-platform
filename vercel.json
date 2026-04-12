@@ -329,12 +329,6 @@
     },
     "api/kiko-async.js": {
       "maxDuration": 300
-    },
-    "api/kiko-task-create.js": {
-      "maxDuration": 300
-    },
-    "api/cron-background-task-cleanup.js": {
-      "maxDuration": 30
     }
   },
   "rewrites": [
