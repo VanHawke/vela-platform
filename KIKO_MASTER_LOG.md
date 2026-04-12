@@ -876,3 +876,69 @@ Real family with explicit names: "Daughters named Nyla and Maya"
 - 27 deploys today, ~60 build minutes consumed
 - No schema changes
 - v0.0.27 cron diet still locked
+
+## Section A0k — v0.0.43 → v0.0.44 Warm Charcoal Cascade (April 12, 2026)
+
+### What happened
+v0.0.43 updated `src/lib/theme.js` tokens to the Warm Charcoal palette but the live site looked identical because ~40 component files had **hardcoded hex/rgba values** in inline `style={{}}` props that bypassed theme.js entirely. Multiple attempts in claude.ai failed because filesystem tools don't exist there.
+
+This session used Claude Code to grep all 40 offending files (772 occurrences), apply the replacement map systematically via sed, and verify zero remaining old values.
+
+### Replacement map applied
+- `#1F1F1D` / `#262624` / `#2C2C2A` → `#1c1c24` (surface)
+- `#0A0A0C` / `#262626` → `#14141a` (bg)
+- `#EEEEEE` / `#F5F5F8` → `#f4f4f6` (text)
+- `rgba(238,238,238,0.8-1.0)` → `#f4f4f6` (text)
+- `rgba(238,238,238,0.5-0.7)` → `#9b9ba3` (secondary)
+- `rgba(238,238,238,0.3-0.4)` → `#7e7e88` (tertiary)
+- `rgba(238,238,238,0.01-0.07)` → `rgba(124,92,252,...)` (surface tints)
+- `#A78BFA` → `#7c5cfc` (accent purple)
+- `#2DD4BF` → `#7c5cfc` (teal removed, mapped to purple)
+- `rgba(167,139,250,X)` → `rgba(124,92,252,X)` (old purple rgba)
+- `rgba(45,212,191,X)` → `rgba(124,92,252,X)` (teal rgba)
+
+### Files changed (41 files)
+- `package.json` (version bump 0.0.43 → 0.0.44)
+- `src/index.css`
+- `src/App.jsx`
+- `src/components/auth/LoginPage.jsx`
+- `src/components/campaigns/BulkEditStepsModal.jsx`
+- `src/components/CompanyLogo.jsx`
+- `src/components/documents/DocumentCard.jsx`
+- `src/components/documents/DocumentSection.jsx`
+- `src/components/kiko/AllChatsView.jsx`
+- `src/components/kiko/ChatHistory.jsx`
+- `src/components/kiko/DraftPreview.jsx`
+- `src/components/kiko/EmailDraft.jsx`
+- `src/components/kiko/KikoChat.jsx`
+- `src/components/kiko/KikoFloat.jsx`
+- `src/components/kiko/KikoInsights.jsx`
+- `src/components/kiko/KikoToast.jsx`
+- `src/components/kiko/KikoVoice.jsx`
+- `src/components/kiko/KikoWaveform.jsx`
+- `src/components/kiko/NotificationToast.jsx`
+- `src/components/kiko/ThreadIndicator.jsx`
+- `src/components/KikoThinking.jsx`
+- `src/components/layout/CommandPalette.jsx`
+- `src/components/layout/Layout.jsx`
+- `src/components/PipelineNotifications.jsx`
+- `src/components/settings/ImageUpload.jsx`
+- `src/components/settings/MemoryTab.jsx`
+- `src/components/settings/Settings.jsx`
+- `src/components/settings/SkillsManager.jsx`
+- `src/pages/AdminSystem.jsx`
+- `src/pages/AuthCallback.jsx`
+- `src/pages/Campaigns.jsx`
+- `src/pages/CommercialCalendar.jsx`
+- `src/pages/ContactDetail.jsx`
+- `src/pages/Contacts.jsx`
+- `src/pages/LinkedInQueue.jsx`
+- `src/pages/MemoryConsole.jsx`
+- `src/pages/Organisations.jsx`
+- `src/pages/OutreachIntelligence.jsx`
+- `src/pages/PartnershipMatrix.jsx`
+- `src/pages/Pipeline.jsx`
+- `src/pages/SequenceDetail.jsx`
+
+### Rule added to KIKO_BIBLE
+Surface boundary: code touches repo → Claude Code only. Strategy/writing/discussion → claude.ai. Never run filesystem refactors from claude.ai.

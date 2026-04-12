@@ -35,7 +35,7 @@ export default function DocumentCard({ doc, compact = false, onView }) {
   }
 
   return (
-    <div style={{ background: 'rgba(238,238,238,0.07)', borderRadius: 50, padding: 14, border: '1.5px solid rgba(238,238,238,0.1)', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
+    <div style={{ background: 'rgba(124,92,252,0.07)', borderRadius: 50, padding: 14, border: '1.5px solid #26262f', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
         <div style={{ width: 36, height: 36, borderRadius: 9, background: `${catColor}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <Icon style={{ width: 17, height: 17, color: catColor }} />
@@ -53,7 +53,7 @@ export default function DocumentCard({ doc, compact = false, onView }) {
       {(intel.key_stats?.length > 0) && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 }}>
           {intel.key_stats.slice(0, 3).map((s, i) => (
-            <span key={i} style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(238,238,238,0.04)', color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{s}</span>
+            <span key={i} style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(124,92,252,0.04)', color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>{s}</span>
           ))}
         </div>
       )}

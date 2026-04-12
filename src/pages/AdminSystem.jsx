@@ -137,8 +137,8 @@ export default function AdminSystem() {
   const tileGrid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }
   const tile = (ok) => ({
     padding: '12px 14px', borderRadius: 8,
-    background: ok ? 'rgba(45,212,191,0.04)' : 'rgba(248,113,113,0.06)',
-    border: `0.5px solid ${ok ? 'rgba(45,212,191,0.20)' : 'rgba(248,113,113,0.25)'}`,
+    background: ok ? 'rgba(124,92,252,0.04)' : 'rgba(248,113,113,0.06)',
+    border: `0.5px solid ${ok ? 'rgba(124,92,252,0.20)' : 'rgba(248,113,113,0.25)'}`,
     display: 'flex', alignItems: 'center', gap: 10,
   })
   const statCard = { padding: '14px 16px', borderRadius: 8, background: T.surface, border: `0.5px solid ${T.border}`, minWidth: 140 }
@@ -176,12 +176,12 @@ export default function AdminSystem() {
       </div>
 
       {/* ═══ HEADLINE STATUS ═══ */}
-      <div style={{ ...card, background: overallOk ? 'rgba(45,212,191,0.03)' : 'rgba(248,113,113,0.04)', border: `0.5px solid ${overallOk ? 'rgba(45,212,191,0.20)' : 'rgba(248,113,113,0.25)'}`, display: 'flex', alignItems: 'center', gap: 20 }}>
+      <div style={{ ...card, background: overallOk ? 'rgba(124,92,252,0.03)' : 'rgba(248,113,113,0.04)', border: `0.5px solid ${overallOk ? 'rgba(124,92,252,0.20)' : 'rgba(248,113,113,0.25)'}`, display: 'flex', alignItems: 'center', gap: 20 }}>
         {overallOk
-          ? <CheckCircle2 size={40} color="#2DD4BF" />
+          ? <CheckCircle2 size={40} color="#7c5cfc" />
           : <AlertTriangle size={40} color="#F87171" />}
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 28, fontWeight: 600, color: overallOk ? '#2DD4BF' : '#F87171', lineHeight: 1 }}>
+          <div style={{ fontSize: 28, fontWeight: 600, color: overallOk ? '#7c5cfc' : '#F87171', lineHeight: 1 }}>
             {passCount} / {totalCount} {overallOk ? 'ALL SYSTEMS OPERATIONAL' : 'ATTENTION REQUIRED'}
           </div>
           <div style={{ fontSize: 11, color: T.textSecondary, marginTop: 6 }}>
@@ -218,7 +218,7 @@ export default function AdminSystem() {
             return (
               <div key={c.name} style={tile(ok)}>
                 {ok
-                  ? <CheckCircle2 size={14} color="#2DD4BF" style={{ flexShrink: 0 }} />
+                  ? <CheckCircle2 size={14} color="#7c5cfc" style={{ flexShrink: 0 }} />
                   : <XCircle size={14} color="#F87171" style={{ flexShrink: 0 }} />}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 11, fontWeight: 500, color: ok ? T.text : '#F87171', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
@@ -238,8 +238,8 @@ export default function AdminSystem() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {heartbeats.map((hb, i) => {
-              const bg = hb.status === 'error' ? 'rgba(248,113,113,0.06)' : hb.status === 'finished' ? 'rgba(45,212,191,0.03)' : 'rgba(167,139,250,0.03)'
-              const bd = hb.status === 'error' ? 'rgba(248,113,113,0.25)' : hb.status === 'finished' ? 'rgba(45,212,191,0.15)' : 'rgba(167,139,250,0.15)'
+              const bg = hb.status === 'error' ? 'rgba(248,113,113,0.06)' : hb.status === 'finished' ? 'rgba(124,92,252,0.03)' : 'rgba(124,92,252,0.03)'
+              const bd = hb.status === 'error' ? 'rgba(248,113,113,0.25)' : hb.status === 'finished' ? 'rgba(124,92,252,0.15)' : 'rgba(124,92,252,0.15)'
               const when = new Date(hb.started_at)
               const mins = Math.round((Date.now() - when.getTime()) / 60000)
               const agoText = mins < 1 ? 'just now' : mins < 60 ? `${mins}m ago` : `${Math.round(mins/60)}h ago`
@@ -247,8 +247,8 @@ export default function AdminSystem() {
                 <div key={i} style={{ padding: '8px 12px', borderRadius: 6, background: bg, border: `0.5px solid ${bd}`, display: 'flex', alignItems: 'center', gap: 10, fontSize: 11 }}>
                   <span style={{
                     fontSize: 9, fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.5, padding: '2px 6px', borderRadius: 3,
-                    background: hb.status === 'error' ? 'rgba(248,113,113,0.15)' : hb.status === 'finished' ? 'rgba(45,212,191,0.12)' : 'rgba(167,139,250,0.12)',
-                    color: hb.status === 'error' ? '#F87171' : hb.status === 'finished' ? '#2DD4BF' : '#A78BFA',
+                    background: hb.status === 'error' ? 'rgba(248,113,113,0.15)' : hb.status === 'finished' ? 'rgba(124,92,252,0.12)' : 'rgba(124,92,252,0.12)',
+                    color: hb.status === 'error' ? '#F87171' : hb.status === 'finished' ? '#7c5cfc' : '#7c5cfc',
                     minWidth: 60, textAlign: 'center',
                   }}>{hb.status}</span>
                   <span style={{ color: T.text, fontWeight: 500, flex: 1 }}>{hb.cron_name}</span>
@@ -268,7 +268,7 @@ export default function AdminSystem() {
       <div style={card}>
         <div style={cardHeader}><Activity size={12} /><span>Health Center · {healthAlerts.length} active alert{healthAlerts.length === 1 ? '' : 's'}</span></div>
         {healthAlerts.length === 0 ? (
-          <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(45,212,191,0.04)', border: '0.5px solid rgba(45,212,191,0.20)', fontSize: 11, color: '#2DD4BF', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(124,92,252,0.04)', border: '0.5px solid rgba(124,92,252,0.20)', fontSize: 11, color: '#7c5cfc', display: 'flex', alignItems: 'center', gap: 8 }}>
             <CheckCircle2 size={14} />All systems healthy. No active alerts.
           </div>
         ) : (
@@ -297,7 +297,7 @@ export default function AdminSystem() {
       <div style={card}>
         <div style={cardHeader}><AlertTriangle size={12} /><span>Error Log (last 24h · {errorCount} {errorCount === 1 ? 'error' : 'errors'})</span></div>
         {errorCount === 0 ? (
-          <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(45,212,191,0.04)', border: '0.5px solid rgba(45,212,191,0.20)', fontSize: 11, color: '#2DD4BF', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(124,92,252,0.04)', border: '0.5px solid rgba(124,92,252,0.20)', fontSize: 11, color: '#7c5cfc', display: 'flex', alignItems: 'center', gap: 8 }}>
             <CheckCircle2 size={14} />Zero errors in the last 24 hours.
           </div>
         ) : (

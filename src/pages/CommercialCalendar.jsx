@@ -4,9 +4,9 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 // ── Platform tokens ───────────────────────────────────────
 const T = {
-  bg: '#000000', surface: 'rgba(25,25,25,0.40)', surfaceHover: 'rgba(167,139,250,0.06)',
-  border: 'rgba(167,139,250,0.08)', borderHover: 'rgba(167,139,250,0.12)',
-  text: 'rgba(238,232,220,0.95)', textSecondary: 'rgba(167,139,250,0.55)', textTertiary: 'rgba(238,238,238,0.32)',
+  bg: '#000000', surface: 'rgba(25,25,25,0.40)', surfaceHover: 'rgba(124,92,252,0.06)',
+  border: 'rgba(124,92,252,0.08)', borderHover: 'rgba(124,92,252,0.12)',
+  text: 'rgba(238,232,220,0.95)', textSecondary: 'rgba(124,92,252,0.55)', textTertiary: '#7e7e88',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   f1: '#E10600', f1Light: 'rgba(225,6,0,0.08)', f1Border: 'rgba(225,6,0,0.2)', f1Dark: '#FF4444',
   fe: '#0055CC', feLight: 'rgba(0,85,204,0.08)', feBorder: 'rgba(0,85,204,0.2)', feDark: '#6CB4FF',
@@ -21,7 +21,7 @@ const SeriesIcon = ({ series, size = 22 }) => {
   const alts = { f1: 'F1', fe: 'Formula E', mgp: 'MotoGP', wec: 'WEC' }
   const src = icons[series]
   if (!src) return <span style={{ fontSize: size * 0.5, color: T.textSecondary }}>{alts[series] || series}</span>
-  return <img src={src} alt={alts[series] || series} style={{ width: size, height: size, objectFit: 'contain', display: 'block', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; e.target.insertAdjacentHTML('afterend', `<span style="font-size:${size * 0.5}px;color:rgba(167,139,250,0.55)">${alts[series] || series}</span>`) }} />
+  return <img src={src} alt={alts[series] || series} style={{ width: size, height: size, objectFit: 'contain', display: 'block', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; e.target.insertAdjacentHTML('afterend', `<span style="font-size:${size * 0.5}px;color:rgba(124,92,252,0.55)">${alts[series] || series}</span>`) }} />
 }
 
 // ── Race data (verified from formula1.com + fiaformulae.com) ─
@@ -219,7 +219,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, showMGP, sh
           {s.hasF1 && s.f1.slice(0, 1).map((e, i) => (
             <div key={i}>
               {pill(
-                s.isSel || s.isRaceDay ? 'rgba(238,238,238,0.32)' : T.f1,
+                s.isSel || s.isRaceDay ? '#7e7e88' : T.f1,
                 <>
                   <img src="/f1-logo.png" alt="F1" style={{ width: 8, height: 8, objectFit: 'contain', display: 'block' }} />
                   <span style={{ fontSize: 9, color: 'rgba(238,232,220,0.90)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
@@ -232,7 +232,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, showMGP, sh
           {s.hasFE && s.fe.slice(0, 1).map((e, i) => (
             <div key={i}>
               {pill(
-                s.isSel ? 'rgba(238,238,238,0.32)' : T.fe,
+                s.isSel ? '#7e7e88' : T.fe,
                 <>
                   <img src="/fe-logo.png" alt="FE" style={{ width: 8, height: 8, objectFit: 'contain', display: 'block' }} />
                   <span style={{ fontSize: 9, color: 'rgba(238,232,220,0.90)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
@@ -245,7 +245,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, showMGP, sh
           {s.hasMGP && s.mgp.slice(0, 1).map((e, i) => (
             <div key={`mgp${i}`}>
               {pill(
-                s.isSel || s.isRaceDay ? 'rgba(238,238,238,0.32)' : T.mgp,
+                s.isSel || s.isRaceDay ? '#7e7e88' : T.mgp,
                 <span style={{ fontSize: 9, color: 'rgba(238,232,220,0.90)', fontFamily: T.font }}>🏍️ {e.city.slice(0, 3).toUpperCase()}</span>
               )}
             </div>
@@ -253,7 +253,7 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, showMGP, sh
           {s.hasWEC && s.wec.slice(0, 1).map((e, i) => (
             <div key={`wec${i}`}>
               {pill(
-                s.isSel ? 'rgba(238,238,238,0.32)' : T.wec,
+                s.isSel ? '#7e7e88' : T.wec,
                 <span style={{ fontSize: 9, color: 'rgba(238,232,220,0.90)', fontFamily: T.font }}>🏁 {e.city.slice(0, 3).toUpperCase()}</span>
               )}
             </div>

@@ -21,9 +21,9 @@ export default function AuthCallback() {
   }, [])
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'rgba(238,238,238,0.04)' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'rgba(124,92,252,0.04)' }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-        <div style={{ width: 32, height: 32, border: '2px solid rgba(238,238,238,0.06)', borderTopColor: 'rgba(238,238,238,0.12)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ width: 32, height: 32, border: '2px solid #26262f', borderTopColor: '#3a3a42', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
         <p style={{ fontSize: 14, color: '#ABABAB', fontFamily: "'DM Sans', sans-serif" }}>Signing you in…</p>
       </div>
     </div>

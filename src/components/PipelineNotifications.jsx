@@ -2,10 +2,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { Bell, BellRing, X, Mail, MessageSquare, Zap, UserCheck, ChevronRight, Check, Trophy } from 'lucide-react'
 
 const T = {
-  bg: '#000000', surface: 'rgba(238,238,238,0.04)',
-  border: 'rgba(238,238,238,0.08)', borderHover: 'rgba(238,238,238,0.1)',
-  text: 'rgba(238,238,238,0.95)', textSecondary: 'rgba(238,238,238,0.55)', textTertiary: 'rgba(238,238,238,0.32)',
-  accent: 'rgba(238,238,238,0.12)', accentSoft: 'rgba(238,238,238,0.04)',
+  bg: '#000000', surface: 'rgba(124,92,252,0.04)',
+  border: '#26262f', borderHover: '#26262f',
+  text: '#f4f4f6', textSecondary: '#9b9ba3', textTertiary: '#7e7e88',
+  accent: '#3a3a42', accentSoft: 'rgba(124,92,252,0.04)',
   blue: '#007AFF', red: '#FF3B30', yellow: '#FF9500', green: '#34C759',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 }
@@ -14,7 +14,7 @@ const TYPE_CONFIG = {
   reply: { icon: MessageSquare, color: T.red, bg: 'rgba(255,59,48,0.08)', label: 'Reply' },
   interested: { icon: UserCheck, color: T.green, bg: 'rgba(52,199,89,0.08)', label: 'Interested' },
   new_lead: { icon: Zap, color: T.blue, bg: 'rgba(0,122,255,0.08)', label: 'New Lead' },
-  new_partnership: { icon: Trophy, color: '#A78BFA', bg: 'rgba(167,139,250,0.08)', label: 'F1 Partnership' },
+  new_partnership: { icon: Trophy, color: '#7c5cfc', bg: 'rgba(124,92,252,0.08)', label: 'F1 Partnership' },
   engagement: { icon: Mail, color: T.yellow, bg: 'rgba(255,149,0,0.08)', label: 'Engaged' },
   stage_change: { icon: ChevronRight, color: T.blue, bg: 'rgba(0,122,255,0.08)', label: 'Stage Change' },
   deal_won: { icon: Check, color: T.green, bg: 'rgba(52,199,89,0.08)', label: 'Won' },
@@ -86,7 +86,7 @@ export default function PipelineNotifications() {
           {unread > 0 ? <BellRing size={15} style={{ color: T.red }} /> : <Bell size={15} style={{ color: T.textTertiary }} />}
           <span style={{ fontSize: 14, fontWeight: 400, color: T.text }}>Pipeline Activity</span>
           {unread > 0 && (
-            <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(238,238,238,0.9)', background: T.red, borderRadius: 50, padding: '1px 6px', minWidth: 18, textAlign: 'center' }}>{unread}</span>
+            <span style={{ fontSize: 11, fontWeight: 500, color: '#f4f4f6', background: T.red, borderRadius: 50, padding: '1px 6px', minWidth: 18, textAlign: 'center' }}>{unread}</span>
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

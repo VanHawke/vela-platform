@@ -3,10 +3,10 @@ import { supabase } from '@/lib/supabase'
 import { Brain, Trash2, Save, Plus, ChevronDown, ChevronRight, Clock, FileText } from 'lucide-react'
 
 const T = {
-  bg: '#000000', surface: 'rgba(238,238,238,0.04)', surfaceHover: 'rgba(238,238,238,0.06)',
-  border: 'rgba(238,238,238,0.08)', borderHover: 'rgba(238,238,238,0.1)',
-  text: 'rgba(238,238,238,0.95)', textSecondary: 'rgba(238,238,238,0.55)', textTertiary: 'rgba(238,238,238,0.32)',
-  accent: 'rgba(238,238,238,0.12)', accentSoft: 'rgba(238,238,238,0.04)',
+  bg: '#000000', surface: 'rgba(124,92,252,0.04)', surfaceHover: '#26262f',
+  border: '#26262f', borderHover: '#26262f',
+  text: '#f4f4f6', textSecondary: '#9b9ba3', textTertiary: '#7e7e88',
+  accent: '#3a3a42', accentSoft: 'rgba(124,92,252,0.04)',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 }
 
@@ -95,7 +95,7 @@ export default function MemoryConsole({ user }) {
         </div>
         <button onClick={() => setCreating(true)} style={{
           height: 40, padding: '0 20px', borderRadius: 50, background: T.accent,
-          color: 'rgba(238,238,238,0.9)', border: 'none', fontSize: 14, fontWeight: 500,
+          color: '#f4f4f6', border: 'none', fontSize: 14, fontWeight: 500,
           cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6
         }}>
           <Plus size={16} /> New Memory
@@ -113,7 +113,7 @@ export default function MemoryConsole({ user }) {
             style={{ width: '100%', height: 120, borderRadius: 50, border: `1px solid ${T.border}`, padding: 14, fontSize: 14, color: T.text, fontFamily: T.font, outline: 'none', background: T.bg, resize: 'vertical', lineHeight: 1.5 }} />
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             <button onClick={handleCreate} disabled={saving} style={{
-              height: 36, padding: '0 16px', borderRadius: 50, background: T.accent, color: 'rgba(238,238,238,0.9)',
+              height: 36, padding: '0 16px', borderRadius: 50, background: T.accent, color: '#f4f4f6',
               border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font
             }}>{saving ? 'Saving...' : 'Create'}</button>
             <button onClick={() => { setCreating(false); setNewPath(''); setNewContent('') }} style={{
@@ -164,7 +164,7 @@ export default function MemoryConsole({ user }) {
                             style={{ width: '100%', minHeight: 200, borderRadius: 50, border: `1px solid ${T.border}`, padding: 14, fontSize: 14, color: T.text, fontFamily: 'monospace', outline: 'none', background: T.bg, resize: 'vertical', lineHeight: 1.6 }} />
                           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                             <button onClick={() => handleSave(mem.id)} disabled={saving} style={{
-                              height: 32, padding: '0 14px', borderRadius: 50, background: T.accent, color: 'rgba(238,238,238,0.9)',
+                              height: 32, padding: '0 14px', borderRadius: 50, background: T.accent, color: '#f4f4f6',
                               border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4
                             }}><Save size={12} /> {saving ? 'Saving...' : 'Save'}</button>
                             <button onClick={() => setEditing(null)} style={{

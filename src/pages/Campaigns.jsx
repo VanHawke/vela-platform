@@ -35,10 +35,10 @@ function parseContactName(name, email) {
 // Status pill colors per prospect status
 function statusBadge(status) {
   const map = {
-    active:    { label: 'Active',   bg: 'rgba(45,212,191,0.10)', fg: '#2dd4bf', br: 'rgba(45,212,191,0.25)' },
-    replied:   { label: 'Replied',  bg: 'rgba(167,139,250,0.10)', fg: '#a78bfa', br: 'rgba(167,139,250,0.25)' },
+    active:    { label: 'Active',   bg: 'rgba(124,92,252,0.10)', fg: '#7c5cfc', br: 'rgba(124,92,252,0.25)' },
+    replied:   { label: 'Replied',  bg: 'rgba(124,92,252,0.10)', fg: '#7c5cfc', br: 'rgba(124,92,252,0.25)' },
     bounced:   { label: 'Bounced',  bg: 'rgba(248,113,113,0.10)', fg: '#f87171', br: 'rgba(248,113,113,0.25)' },
-    completed: { label: 'Done',     bg: 'rgba(167,139,250,0.06)', fg: 'rgba(167,139,250,0.5)', br: 'rgba(167,139,250,0.15)' },
+    completed: { label: 'Done',     bg: 'rgba(124,92,252,0.06)', fg: 'rgba(124,92,252,0.5)', br: 'rgba(124,92,252,0.15)' },
     paused:    { label: 'Paused',   bg: 'rgba(251,191,36,0.10)', fg: '#fbbf24', br: 'rgba(251,191,36,0.25)' },
     stale:     { label: 'Stale',    bg: 'rgba(148,163,184,0.10)', fg: '#94a3b8', br: 'rgba(148,163,184,0.25)' },
   }
@@ -299,7 +299,7 @@ export default function Campaigns({ user }) {
   // ── styles ──
   const C = T // color tokens shorthand
   const cell = { padding: '12px 14px', fontSize: 12, color: C.text, borderBottom: `0.5px solid ${C.border || 'rgba(255,255,255,0.06)'}`, verticalAlign: 'middle' }
-  const headerCell = { ...cell, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: C.textTertiary || 'rgba(238,238,238,0.45)', fontWeight: 500, background: 'rgba(0,0,0,0.15)', position: 'sticky', top: 0, zIndex: 1 }
+  const headerCell = { ...cell, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: C.textTertiary || '#9b9ba3', fontWeight: 500, background: 'rgba(0,0,0,0.15)', position: 'sticky', top: 0, zIndex: 1 }
 
   // ── render ──
   return (
@@ -316,7 +316,7 @@ export default function Campaigns({ user }) {
             <button
               onClick={() => { setBuildOpen(true); setBuildPhase('idle') }}
               title="Auto-build campaign (deterministic — picks team, sources 50 targets, identifies decision-makers)"
-              style={{ padding: '0 10px', height: 28, borderRadius: 6, border: `1px solid rgba(167,139,250,0.35)`, background: 'rgba(167,139,250,0.08)', color: '#A78BFA', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: 'inherit', fontWeight: 500 }}
+              style={{ padding: '0 10px', height: 28, borderRadius: 6, border: `1px solid rgba(124,92,252,0.35)`, background: 'rgba(124,92,252,0.08)', color: '#7c5cfc', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: 'inherit', fontWeight: 500 }}
             >⚡ Build</button>
             <button
               onClick={() => setBulkEditOpen(true)}
@@ -344,18 +344,18 @@ export default function Campaigns({ user }) {
                 style={{
                   display: 'block', width: '100%', textAlign: 'left',
                   padding: '12px 12px', marginBottom: 4, borderRadius: 6, border: 'none',
-                  background: isSelected ? 'rgba(167,139,250,0.10)' : 'transparent',
+                  background: isSelected ? 'rgba(124,92,252,0.10)' : 'transparent',
                   cursor: 'pointer', fontFamily: C.font,
-                  borderLeft: isSelected ? '2px solid #a78bfa' : '2px solid transparent',
+                  borderLeft: isSelected ? '2px solid #7c5cfc' : '2px solid transparent',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: c.is_active ? '#2dd4bf' : 'rgba(148,163,184,0.4)' }} />
-                  <span style={{ fontSize: 13, fontWeight: 500, color: isSelected ? '#fff' : 'rgba(238,238,238,0.85)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: c.is_active ? '#7c5cfc' : 'rgba(148,163,184,0.4)' }} />
+                  <span style={{ fontSize: 13, fontWeight: 500, color: isSelected ? '#fff' : '#f4f4f6', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
                 </div>
                 <div style={{ fontSize: 10, color: C.textTertiary, display: 'flex', gap: 8, paddingLeft: 12 }}>
                   <span>{c.counts.total} prospects</span>
-                  {c.counts.replied > 0 && <span style={{ color: '#a78bfa' }}>{c.counts.replied} replied</span>}
+                  {c.counts.replied > 0 && <span style={{ color: '#7c5cfc' }}>{c.counts.replied} replied</span>}
                   {c.counts.bounced > 0 && <span style={{ color: '#f87171' }}>{c.counts.bounced} bounced</span>}
                 </div>
               </button>
@@ -380,7 +380,7 @@ export default function Campaigns({ user }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                     <h1 style={{ fontSize: 20, fontWeight: 500, color: C.text, margin: 0 }}>{selectedCampaign.name}</h1>
                     {selectedCampaign.is_active ? (
-                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(45,212,191,0.10)', color: '#2dd4bf', border: '1px solid rgba(45,212,191,0.25)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Live</span>
+                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(124,92,252,0.10)', color: '#7c5cfc', border: '1px solid rgba(124,92,252,0.25)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Live</span>
                     ) : (
                       <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(251,191,36,0.10)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.25)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Draft</span>
                     )}
@@ -392,7 +392,7 @@ export default function Campaigns({ user }) {
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <button
                     onClick={() => toggleCampaign(selectedCampaign)}
-                    style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid ${selectedCampaign.is_active ? 'rgba(251,191,36,0.30)' : 'rgba(45,212,191,0.30)'}`, background: selectedCampaign.is_active ? 'rgba(251,191,36,0.08)' : 'rgba(45,212,191,0.08)', color: selectedCampaign.is_active ? '#fbbf24' : '#2dd4bf', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
+                    style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid ${selectedCampaign.is_active ? 'rgba(251,191,36,0.30)' : 'rgba(124,92,252,0.30)'}`, background: selectedCampaign.is_active ? 'rgba(251,191,36,0.08)' : 'rgba(124,92,252,0.08)', color: selectedCampaign.is_active ? '#fbbf24' : '#7c5cfc', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
                   >
                     {selectedCampaign.is_active ? <><Pause size={12} /> Pause</> : <><Play size={12} /> Activate</>}
                   </button>
@@ -421,9 +421,9 @@ export default function Campaigns({ user }) {
                     key={f}
                     onClick={() => setStatusFilter(f)}
                     style={{
-                      padding: '6px 12px', borderRadius: 6, border: `1px solid ${statusFilter === f ? 'rgba(167,139,250,0.30)' : 'transparent'}`,
-                      background: statusFilter === f ? 'rgba(167,139,250,0.10)' : 'transparent',
-                      color: statusFilter === f ? '#a78bfa' : C.textSecondary,
+                      padding: '6px 12px', borderRadius: 6, border: `1px solid ${statusFilter === f ? 'rgba(124,92,252,0.30)' : 'transparent'}`,
+                      background: statusFilter === f ? 'rgba(124,92,252,0.10)' : 'transparent',
+                      color: statusFilter === f ? '#7c5cfc' : C.textSecondary,
                       fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, textTransform: 'capitalize',
                     }}
                   >{f}</button>
@@ -450,7 +450,7 @@ export default function Campaigns({ user }) {
                   <div style={{ fontSize: 11, color: C.textTertiary, marginBottom: 16 }}>Add contacts to start sending</div>
                   <button
                     onClick={() => nav(`/campaigns/${selectedId}`)}
-                    style={{ padding: '8px 18px', borderRadius: 6, border: '1px solid rgba(167,139,250,0.30)', background: 'rgba(167,139,250,0.10)', color: '#a78bfa', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}
+                    style={{ padding: '8px 18px', borderRadius: 6, border: '1px solid rgba(124,92,252,0.30)', background: 'rgba(124,92,252,0.10)', color: '#7c5cfc', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}
                   >Add prospects</button>
                 </div>
               ) : (
@@ -474,7 +474,7 @@ export default function Campaigns({ user }) {
                           <div
                             onClick={() => nav(`/contacts?email=${encodeURIComponent(p.contact_email || '')}`)}
                             style={{ fontSize: 13, color: C.text, fontWeight: 500, cursor: 'pointer', textDecoration: 'none' }}
-                            onMouseEnter={e => e.currentTarget.style.color = '#a78bfa'}
+                            onMouseEnter={e => e.currentTarget.style.color = '#7c5cfc'}
                             onMouseLeave={e => e.currentTarget.style.color = C.text}
                             title="Open contact record"
                           >{p.contact_name}</div>
@@ -490,9 +490,9 @@ export default function Campaigns({ user }) {
                         <td style={{ ...cell, textAlign: 'center' }}>
                           <div style={{ display: 'inline-flex', gap: 10, alignItems: 'center' }}>
                             <span title="Sent" style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: p.sent_count > 0 ? C.text : C.textTertiary }}><Mail size={11} />{p.sent_count}</span>
-                            <span title="Opens" style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: p.opens_count > 0 ? '#a78bfa' : C.textTertiary }}><Eye size={11} />{p.opens_count}</span>
-                            <span title="Clicks" style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: p.clicks_count > 0 ? '#2dd4bf' : C.textTertiary }}><MousePointer size={11} />{p.clicks_count}</span>
-                            {p.replied && <span title="Replied" style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: '#a78bfa' }}><Reply size={11} /></span>}
+                            <span title="Opens" style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: p.opens_count > 0 ? '#7c5cfc' : C.textTertiary }}><Eye size={11} />{p.opens_count}</span>
+                            <span title="Clicks" style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: p.clicks_count > 0 ? '#7c5cfc' : C.textTertiary }}><MousePointer size={11} />{p.clicks_count}</span>
+                            {p.replied && <span title="Replied" style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: '#7c5cfc' }}><Reply size={11} /></span>}
                             {p.bounced && <span title="Bounced" style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: '#f87171' }}><AlertTriangle size={11} /></span>}
                           </div>
                         </td>
@@ -539,7 +539,7 @@ export default function Campaigns({ user }) {
       {/* ── Build Campaign modal ── */}
       {buildOpen && (
         <div onClick={closeBuildModal} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 720, maxWidth: 'calc(100vw - 48px)', maxHeight: '85vh', overflowY: 'auto', background: '#262624', border: '1px solid rgba(167,139,250,0.18)', borderRadius: 14, padding: 28, boxShadow: '0 24px 80px rgba(0,0,0,0.6)', margin: '0 auto' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 720, maxWidth: 'calc(100vw - 48px)', maxHeight: '85vh', overflowY: 'auto', background: '#1c1c24', border: '1px solid rgba(124,92,252,0.18)', borderRadius: 14, padding: 28, boxShadow: '0 24px 80px rgba(0,0,0,0.6)', margin: '0 auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
               <div>
                 <div style={{ fontSize: 16, fontWeight: 500, color: C.text }}>⚡ Build Campaign</div>
@@ -551,7 +551,7 @@ export default function Campaigns({ user }) {
             {buildPhase === 'idle' && (
               <div>
                 <div style={{ fontSize: 11, color: C.textSecondary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Category</div>
-                <select value={buildCategory} onChange={e => setBuildCategory(e.target.value)} style={{ width: '100%', padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: '#1F1F1D', color: C.text, fontSize: 14, fontFamily: 'inherit', marginBottom: 16 }}>
+                <select value={buildCategory} onChange={e => setBuildCategory(e.target.value)} style={{ width: '100%', padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: '#1c1c24', color: C.text, fontSize: 14, fontFamily: 'inherit', marginBottom: 16 }}>
                   <option value="banking">Banking / Financial Services</option>
                   <option value="fintech">FinTech / Payments</option>
                   <option value="cybersecurity">Cybersecurity</option>
@@ -575,7 +575,7 @@ export default function Campaigns({ user }) {
                 </select>
 
                 <div style={{ fontSize: 11, color: C.textSecondary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>F1 Team</div>
-                <select value={buildTeam} onChange={e => setBuildTeam(e.target.value)} style={{ width: '100%', padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: '#1F1F1D', color: C.text, fontSize: 14, fontFamily: 'inherit', marginBottom: 16 }}>
+                <select value={buildTeam} onChange={e => setBuildTeam(e.target.value)} style={{ width: '100%', padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: '#1c1c24', color: C.text, fontSize: 14, fontFamily: 'inherit', marginBottom: 16 }}>
                   <option value="auto">Auto — pick first open team alphabetically</option>
                   <option value="haas">Haas F1</option>
                   <option value="cadillac">Cadillac F1</option>
@@ -596,7 +596,7 @@ export default function Campaigns({ user }) {
                 {/* CRM match preview (v0.0.39) */}
                 <CrmMatchPreview category={buildCategory} />
 
-                <button onClick={runBuildCampaign} style={{ width: '100%', padding: '13px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #7C5CFC, #2DD4BF)', color: 'white', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', marginTop: 12 }}>
+                <button onClick={runBuildCampaign} style={{ width: '100%', padding: '13px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #7C5CFC, #7c5cfc)', color: 'white', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', marginTop: 12 }}>
                   Build {buildCategory} campaign{buildTeam !== 'auto' ? ` for ${buildTeam.replace('_', ' ')}` : ''}
                 </button>
               </div>
@@ -608,20 +608,20 @@ export default function Campaigns({ user }) {
 
             {buildPhase === 'review' && buildResult && (
               <div>
-                <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(45,212,191,0.08)', border: '1px solid rgba(45,212,191,0.2)', marginBottom: 16 }}>
+                <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(124,92,252,0.08)', border: '1px solid rgba(124,92,252,0.2)', marginBottom: 16 }}>
                   <div style={{ fontSize: 13, color: C.text, fontWeight: 500 }}>{buildResult.team.name} F1 — {buildResult.category.name}</div>
                   <div style={{ fontSize: 11, color: C.textSecondary, marginTop: 4, lineHeight: 1.5 }}>{buildResult.why}</div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 16 }}>
-                  <div style={{ padding: '10px', borderRadius: 6, background: '#1F1F1D', textAlign: 'center' }}>
+                  <div style={{ padding: '10px', borderRadius: 6, background: '#1c1c24', textAlign: 'center' }}>
                     <div style={{ fontSize: 18, fontWeight: 500, color: C.text }}>{buildResult.top_50.length}</div>
                     <div style={{ fontSize: 10, color: C.textTertiary, marginTop: 2 }}>TARGETS SOURCED</div>
                   </div>
-                  <div style={{ padding: '10px', borderRadius: 6, background: '#1F1F1D', textAlign: 'center' }}>
+                  <div style={{ padding: '10px', borderRadius: 6, background: '#1c1c24', textAlign: 'center' }}>
                     <div style={{ fontSize: 18, fontWeight: 500, color: C.text }}>{buildResult.violations_caught}</div>
                     <div style={{ fontSize: 10, color: C.textTertiary, marginTop: 2 }}>EXCLUSIONS CAUGHT</div>
                   </div>
-                  <div style={{ padding: '10px', borderRadius: 6, background: '#1F1F1D', textAlign: 'center' }}>
+                  <div style={{ padding: '10px', borderRadius: 6, background: '#1c1c24', textAlign: 'center' }}>
                     <div style={{ fontSize: 18, fontWeight: 500, color: C.text }}>{buildResult.blocked_teams.length}/11</div>
                     <div style={{ fontSize: 10, color: C.textTertiary, marginTop: 2 }}>TEAMS BLOCKED</div>
                   </div>
@@ -630,7 +630,7 @@ export default function Campaigns({ user }) {
                 <div style={{ marginBottom: 18, maxHeight: 360, overflowY: 'auto', border: `1px solid ${C.border}`, borderRadius: 8 }}>
                   {buildResult.top_50.map((t, i) => (
                     <div key={i} style={{ padding: '10px 14px', borderBottom: i < buildResult.top_50.length - 1 ? `1px solid ${C.border}` : 'none', display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(167,139,250,0.12)', color: '#A78BFA', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, flexShrink: 0 }}>{i + 1}</div>
+                      <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(124,92,252,0.12)', color: '#7c5cfc', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, flexShrink: 0 }}>{i + 1}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13, color: C.text, fontWeight: 500 }}>{t.company}</div>
                         <div style={{ fontSize: 11, color: C.textTertiary, marginTop: 2 }}>
@@ -646,7 +646,7 @@ export default function Campaigns({ user }) {
                 </div>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button onClick={closeBuildModal} style={{ flex: 1, padding: '12px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSecondary, cursor: 'pointer', fontSize: 13, fontFamily: 'inherit' }}>Cancel</button>
-                  <button onClick={runEnroll} style={{ flex: 2, padding: '12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #7C5CFC, #2DD4BF)', color: 'white', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <button onClick={runEnroll} style={{ flex: 2, padding: '12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #7C5CFC, #7c5cfc)', color: 'white', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
                     Enrol all {buildResult.top_50.length} targets (paused for review)
                   </button>
                 </div>
@@ -671,7 +671,7 @@ export default function Campaigns({ user }) {
             {buildPhase === 'error' && (
               <div style={{ padding: '24px 20px' }}>
                 <div style={{ fontSize: 13, color: '#F87171', marginBottom: 8 }}>Build failed</div>
-                <div style={{ fontSize: 11, color: C.textSecondary, marginBottom: 16, fontFamily: 'monospace', padding: 10, background: '#1F1F1D', borderRadius: 6 }}>{buildError}</div>
+                <div style={{ fontSize: 11, color: C.textSecondary, marginBottom: 16, fontFamily: 'monospace', padding: 10, background: '#1c1c24', borderRadius: 6 }}>{buildError}</div>
                 <button onClick={() => setBuildPhase('idle')} style={{ padding: '10px 24px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, cursor: 'pointer', fontSize: 13, fontFamily: 'inherit' }}>Try again</button>
               </div>
             )}
@@ -718,18 +718,18 @@ function CrmMatchPreview({ category }) {
   return (
     <div style={{
       padding: '12px 14px', borderRadius: 8,
-      background: hasMatches ? 'rgba(45,212,191,0.06)' : 'rgba(255,255,255,0.03)',
-      border: `0.5px solid ${hasMatches ? 'rgba(45,212,191,0.20)' : 'rgba(255,255,255,0.08)'}`,
+      background: hasMatches ? 'rgba(124,92,252,0.06)' : 'rgba(255,255,255,0.03)',
+      border: `0.5px solid ${hasMatches ? 'rgba(124,92,252,0.20)' : 'rgba(255,255,255,0.08)'}`,
       marginBottom: 4,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: hasMatches ? 6 : 0 }}>
         <div style={{
           width: 18, height: 18, borderRadius: '50%',
-          background: hasMatches ? 'rgba(45,212,191,0.20)' : 'rgba(255,255,255,0.06)',
+          background: hasMatches ? 'rgba(124,92,252,0.20)' : 'rgba(255,255,255,0.06)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 10, color: hasMatches ? '#2DD4BF' : 'rgba(255,255,255,0.4)',
+          fontSize: 10, color: hasMatches ? '#7c5cfc' : 'rgba(255,255,255,0.4)',
         }}>{hasMatches ? '✓' : 'i'}</div>
-        <div style={{ fontSize: 11, fontWeight: 500, color: hasMatches ? '#2DD4BF' : 'rgba(255,255,255,0.55)' }}>
+        <div style={{ fontSize: 11, fontWeight: 500, color: hasMatches ? '#7c5cfc' : 'rgba(255,255,255,0.55)' }}>
           {hasMatches
             ? `${data.contact_count} relevant contacts at ${data.company_count} CRM companies`
             : `No CRM matches — build will source entirely from web search`}
@@ -824,7 +824,7 @@ function BuildingProgress({ jobId }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div style={{ fontSize: 14, color: '#fff', fontWeight: 500 }}>⚡ Building campaign...</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {pollMode && <span style={{ fontSize: 9, color: 'rgba(45,212,191,0.7)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>● live</span>}
+          {pollMode && <span style={{ fontSize: 9, color: 'rgba(124,92,252,0.7)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>● live</span>}
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontFamily: 'ui-monospace,monospace' }}>{elapsed}s elapsed</div>
         </div>
       </div>
@@ -841,17 +841,17 @@ function BuildingProgress({ jobId }) {
               gap: 12,
               padding: '12px 14px',
               borderRadius: 8,
-              background: isActive ? 'rgba(167,139,250,0.10)' : isDone ? 'rgba(45,212,191,0.05)' : 'transparent',
-              border: `0.5px solid ${isActive ? 'rgba(167,139,250,0.30)' : isDone ? 'rgba(45,212,191,0.20)' : 'rgba(255,255,255,0.06)'}`,
+              background: isActive ? 'rgba(124,92,252,0.10)' : isDone ? 'rgba(124,92,252,0.05)' : 'transparent',
+              border: `0.5px solid ${isActive ? 'rgba(124,92,252,0.30)' : isDone ? 'rgba(124,92,252,0.20)' : 'rgba(255,255,255,0.06)'}`,
               transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)',
               opacity: isPending ? 0.4 : 1,
             }}>
-              <div style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0, marginTop: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isDone ? '#2DD4BF' : isActive ? 'transparent' : 'rgba(255,255,255,0.06)', border: isActive ? '1.5px solid #A78BFA' : 'none' }}>
-                {isDone && <span style={{ color: '#1F1F1D', fontSize: 11, fontWeight: 700 }}>✓</span>}
-                {isActive && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#A78BFA', animation: 'pulse 1.2s ease-in-out infinite' }} />}
+              <div style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0, marginTop: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isDone ? '#7c5cfc' : isActive ? 'transparent' : 'rgba(255,255,255,0.06)', border: isActive ? '1.5px solid #7c5cfc' : 'none' }}>
+                {isDone && <span style={{ color: '#1c1c24', fontSize: 11, fontWeight: 700 }}>✓</span>}
+                {isActive && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#7c5cfc', animation: 'pulse 1.2s ease-in-out infinite' }} />}
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, color: isActive ? '#fff' : isDone ? 'rgba(45,212,191,0.85)' : 'rgba(255,255,255,0.55)', fontWeight: 500, marginBottom: 2 }}>
+                <div style={{ fontSize: 12, color: isActive ? '#fff' : isDone ? 'rgba(124,92,252,0.85)' : 'rgba(255,255,255,0.55)', fontWeight: 500, marginBottom: 2 }}>
                   {stage.label}
                 </div>
                 <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.40)' }}>

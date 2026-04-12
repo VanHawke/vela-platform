@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabase'
 
 const BAR_COLORS = {
   connecting: '#f59e0b', listening: '#22c55e', thinking: '#8b5cf6',
-  speaking: '#22c55e', error: '#f87171', idle: 'rgba(167,139,250,0.18)',
+  speaking: '#22c55e', error: '#f87171', idle: 'rgba(124,92,252,0.18)',
 }
 
 // ── Tool Execution: ONE tool routes to Claude brain, one handles nav ──
@@ -363,7 +363,7 @@ Warm, direct, intelligent female voice. 1-3 sentences per turn. Sound like a tru
 
   // ── Render — always fullscreen now ──
   const voiceUI = (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#262624' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#1c1c24' }}>
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}><AuroraCanvas /></div>
 
       {/* X close */}
@@ -377,24 +377,24 @@ Warm, direct, intelligent female voice. 1-3 sentences per turn. Sound like a tru
         position: 'absolute', top: 20, right: 60, zIndex: 2,
         display: 'flex', alignItems: 'center', gap: 6,
         padding: '0 12px', height: 32, borderRadius: 10,
-        background: 'rgba(45,212,191,0.06)', border: '1.5px solid rgba(45,212,191,0.30)',
-        cursor: 'pointer', color: 'rgba(45,212,191,0.85)',
+        background: 'rgba(124,92,252,0.06)', border: '1.5px solid rgba(124,92,252,0.30)',
+        cursor: 'pointer', color: 'rgba(124,92,252,0.85)',
         fontSize: 11, fontWeight: 500, fontFamily: 'inherit',
         transition: 'all 0.2s',
       }}
-        onMouseOver={e => { e.currentTarget.style.background = 'rgba(45,212,191,0.10)'; e.currentTarget.style.borderColor = 'rgba(45,212,191,0.50)' }}
-        onMouseOut={e => { e.currentTarget.style.background = 'rgba(45,212,191,0.06)'; e.currentTarget.style.borderColor = 'rgba(45,212,191,0.30)' }}
+        onMouseOver={e => { e.currentTarget.style.background = 'rgba(124,92,252,0.10)'; e.currentTarget.style.borderColor = 'rgba(124,92,252,0.50)' }}
+        onMouseOut={e => { e.currentTarget.style.background = 'rgba(124,92,252,0.06)'; e.currentTarget.style.borderColor = 'rgba(124,92,252,0.30)' }}
         title="Close voice and continue in text chat with full transcript"
       ><MessageSquare size={12} />Continue in chat</button>
 
       <button onClick={handleClose} style={{
         position: 'absolute', top: 20, right: 20, zIndex: 2, width: 32, height: 32, borderRadius: 10,
-        background: 'rgba(167,139,250,0.04)', border: '1.5px solid rgba(167,139,250,0.40)',
+        background: 'rgba(124,92,252,0.04)', border: '1.5px solid rgba(124,92,252,0.40)',
         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: 'rgba(238,238,238,0.3)', transition: 'all 0.2s',
+        color: '#7e7e88', transition: 'all 0.2s',
       }}
-        onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.2)'; e.currentTarget.style.color = 'rgba(238,238,238,0.6)' }}
-        onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.40)'; e.currentTarget.style.color = 'rgba(238,238,238,0.3)' }}
+        onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(124,92,252,0.2)'; e.currentTarget.style.color = '#9b9ba3' }}
+        onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(124,92,252,0.40)'; e.currentTarget.style.color = '#7e7e88' }}
       ><X size={14} /></button>
 
       {/* KikoWaveform — fullscreen size */}
@@ -421,12 +421,12 @@ Warm, direct, intelligent female voice. 1-3 sentences per turn. Sound like a tru
       {/* Goodbye Kiko */}
       <button onClick={handleClose} style={{
         position: 'relative', zIndex: 1, padding: '10px 28px', borderRadius: 50,
-        background: 'rgba(167,139,250,0.04)', border: '1.5px solid rgba(167,139,250,0.40)',
-        color: 'rgba(238,238,238,0.25)', fontSize: 13, fontWeight: 300,
+        background: 'rgba(124,92,252,0.04)', border: '1.5px solid rgba(124,92,252,0.40)',
+        color: '#56565e', fontSize: 13, fontWeight: 300,
         cursor: 'pointer', fontFamily: T.font, transition: 'all 0.25s',
       }}
         onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,80,80,0.2)'; e.currentTarget.style.color = 'rgba(255,80,80,0.5)'; e.currentTarget.style.background = 'rgba(255,80,80,0.06)' }}
-        onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.40)'; e.currentTarget.style.color = 'rgba(238,238,238,0.25)'; e.currentTarget.style.background = 'rgba(167,139,250,0.04)' }}
+        onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(124,92,252,0.40)'; e.currentTarget.style.color = '#56565e'; e.currentTarget.style.background = 'rgba(124,92,252,0.04)' }}
       >Goodbye Kiko</button>
 
       <style>{`@keyframes kikoBarPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>

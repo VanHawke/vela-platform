@@ -18,15 +18,15 @@ import { useState, useEffect } from 'react'
 import { Search, Plus, Trash2, Edit3, X, Check, Download, CheckSquare, Square } from 'lucide-react'
 
 const T = {
-  text: '#EEEEEE',
-  textTertiary: 'rgba(238,238,238,0.45)',
-  accent: '#A78BFA',
-  accentTeal: '#2DD4BF',
-  border: 'rgba(238,238,238,0.10)',
-  surface: 'rgba(238,238,238,0.04)',
-  surfaceHover: 'rgba(238,238,238,0.07)',
+  text: '#f4f4f6',
+  textTertiary: '#9b9ba3',
+  accent: '#7c5cfc',
+  accentTeal: '#7c5cfc',
+  border: '#26262f',
+  surface: 'rgba(124,92,252,0.04)',
+  surfaceHover: 'rgba(124,92,252,0.07)',
   glass: 'rgba(20,20,22,0.6)',
-  glassBorder: 'rgba(238,238,238,0.08)',
+  glassBorder: '#26262f',
   font: 'inherit',
   radius: 12,
 }
@@ -219,7 +219,7 @@ export default function MemoryTab({ user }) {
         background: T.glass, backdropFilter: 'blur(24px) saturate(1.2)',
         WebkitBackdropFilter: 'blur(24px) saturate(1.2)',
         borderRadius: T.radius, border: `0.5px solid ${T.glassBorder}`,
-        borderTop: `0.5px solid rgba(238,238,238,0.15)`, padding: 20,
+        borderTop: `0.5px solid rgba(124,92,252,0.15)`, padding: 20,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <div>
@@ -235,7 +235,7 @@ export default function MemoryTab({ user }) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '8px 12px', borderRadius: 8,
-                background: 'rgba(45,212,191,0.10)', border: `1px solid rgba(45,212,191,0.30)`,
+                background: 'rgba(124,92,252,0.10)', border: `1px solid rgba(124,92,252,0.30)`,
                 color: T.accentTeal, fontSize: 11, fontWeight: 500,
                 cursor: rows.length === 0 ? 'not-allowed' : 'pointer',
                 fontFamily: T.font, opacity: rows.length === 0 ? 0.5 : 1,
@@ -247,8 +247,8 @@ export default function MemoryTab({ user }) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '8px 12px', borderRadius: 8,
-                background: bulkMode ? 'rgba(167,139,250,0.18)' : 'rgba(167,139,250,0.06)',
-                border: `1px solid ${bulkMode ? T.accent : 'rgba(167,139,250,0.20)'}`,
+                background: bulkMode ? 'rgba(124,92,252,0.18)' : 'rgba(124,92,252,0.06)',
+                border: `1px solid ${bulkMode ? T.accent : 'rgba(124,92,252,0.20)'}`,
                 color: T.accent, fontSize: 11, fontWeight: 500,
                 cursor: 'pointer', fontFamily: T.font,
               }}>
@@ -258,7 +258,7 @@ export default function MemoryTab({ user }) {
             <button onClick={() => setAdding(true)} style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '8px 14px', borderRadius: 8,
-              background: 'rgba(167,139,250,0.12)', border: `1px solid ${T.accent}`,
+              background: 'rgba(124,92,252,0.12)', border: `1px solid ${T.accent}`,
               color: T.accent, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
             }}>
               <Plus size={13} /> Add fact
@@ -315,7 +315,7 @@ export default function MemoryTab({ user }) {
                 Cancel
               </button>
               <button onClick={onAddFact}
-                style={{ padding: '7px 14px', borderRadius: 6, background: T.accent, border: 'none', color: '#0A0A0C', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: T.font }}>
+                style={{ padding: '7px 14px', borderRadius: 6, background: T.accent, border: 'none', color: '#14141a', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: T.font }}>
                 Save fact
               </button>
             </div>
@@ -336,7 +336,7 @@ export default function MemoryTab({ user }) {
             <button key={c.id} onClick={() => setCategory(c.id)} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               width: '100%', padding: '8px 10px', marginBottom: 2, borderRadius: 6,
-              background: category === c.id ? 'rgba(167,139,250,0.12)' : 'transparent',
+              background: category === c.id ? 'rgba(124,92,252,0.12)' : 'transparent',
               border: 'none', cursor: 'pointer', fontFamily: T.font,
               color: category === c.id ? T.accent : T.text, fontSize: 11, fontWeight: 500,
               textAlign: 'left', textTransform: 'capitalize',
@@ -354,7 +354,7 @@ export default function MemoryTab({ user }) {
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '8px 12px', marginBottom: 8, borderRadius: 8,
-              background: 'rgba(167,139,250,0.08)', border: `1px solid rgba(167,139,250,0.20)`,
+              background: 'rgba(124,92,252,0.08)', border: `1px solid rgba(124,92,252,0.20)`,
             }}>
               <div style={{ fontSize: 11, color: T.text, fontWeight: 500 }}>
                 {selectedIds.size} selected
@@ -393,7 +393,7 @@ export default function MemoryTab({ user }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 480, overflowY: 'auto' }}>
               {rows.map(row => (
                 <div key={row.id} style={{
-                  background: selectedIds.has(row.id) ? 'rgba(167,139,250,0.10)' : T.surface,
+                  background: selectedIds.has(row.id) ? 'rgba(124,92,252,0.10)' : T.surface,
                   borderRadius: 8,
                   border: `0.5px solid ${selectedIds.has(row.id) ? T.accent : T.border}`,
                   padding: 12,
@@ -416,7 +416,7 @@ export default function MemoryTab({ user }) {
                         <button onClick={() => { setEditingId(null); setEditValue('') }}
                           style={{ padding: '5px 10px', borderRadius: 5, background: 'transparent', border: `1px solid ${T.border}`, color: T.textTertiary, fontSize: 10, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
                         <button onClick={() => onSaveEdit(row.id)}
-                          style={{ padding: '5px 10px', borderRadius: 5, background: T.accentTeal, border: 'none', color: '#0A0A0C', fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}>
+                          style={{ padding: '5px 10px', borderRadius: 5, background: T.accentTeal, border: 'none', color: '#14141a', fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}>
                           <Check size={10} /> Save
                         </button>
                       </div>
@@ -449,7 +449,7 @@ export default function MemoryTab({ user }) {
               {hasMore && (
                 <button onClick={() => load(false)} disabled={loadingMore} style={{
                   padding: '10px 16px', borderRadius: 6, marginTop: 4,
-                  background: 'rgba(167,139,250,0.08)', border: `1px solid rgba(167,139,250,0.20)`,
+                  background: 'rgba(124,92,252,0.08)', border: `1px solid rgba(124,92,252,0.20)`,
                   color: T.accent, fontSize: 11, fontWeight: 500, cursor: loadingMore ? 'wait' : 'pointer',
                   fontFamily: 'inherit', opacity: loadingMore ? 0.6 : 1,
                 }}>
