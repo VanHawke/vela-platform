@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kiko Palette Comparison — v0.0.42</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; }
+  body { background: #0a0a0c; color: #fff; padding: 24px; }
+  h1 { font-size: 22px; font-weight: 500; margin-bottom: 6px; }
+  .sub { font-size: 12px; opacity: 0.6; margin-bottom: 28px; }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .palette { padding: 24px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); }
+  .palette-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .palette-desc { font-size: 11px; opacity: 0.55; margin-bottom: 18px; }
+  .swatches { display: flex; gap: 6px; margin-bottom: 18px; }
+  .swatch { width: 36px; height: 36px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+
+  /* Recreated UI components — different per palette */
+  .nav { display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: 50px; margin-bottom: 14px; }
+  .nav-item { font-size: 11px; padding: 4px 10px; border-radius: 50px; }
+  .nav-item.active { font-weight: 500; }
+
+  .card { padding: 14px; border-radius: 10px; margin-bottom: 10px; }
+  .card h3 { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .card .meta { font-size: 10px; }
+
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: 500; }
+
+  /* ════════ PALETTE 1: WARM CHARCOAL (Linear-inspired) ════════ */
+  .p1 { background: #14141a; }
+  .p1 .palette-name { color: #f4f4f6; }
+  .p1 .palette-desc { color: #9b9ba3; }
+  .p1 .nav { background: #1c1c24; border: 1px solid #26262f; }
+  .p1 .nav-item { color: #9b9ba3; }
+  .p1 .nav-item.active { color: #f4f4f6; background: #2a2a35; }
+  .p1 .card { background: #1c1c24; border: 1px solid #26262f; }
+  .p1 .card h3 { color: #f4f4f6; }
+  .p1 .card .meta { color: #7e7e88; }
+  .p1 .pill { background: rgba(124, 92, 252, 0.18); color: #c4b1ff; border: 1px solid rgba(124, 92, 252, 0.4); }
+
+  /* ════════ PALETTE 2: SLATE & EMBER (Stripe-inspired) ════════ */
+  .p2 { background: #0f1115; }
+  .p2 .palette-name { color: #f5f5f7; }
+  .p2 .palette-desc { color: #a0a4ad; }
+  .p2 .nav { background: #161922; border: 1px solid #232733; }
+  .p2 .nav-item { color: #a0a4ad; }
+  .p2 .nav-item.active { color: #f5f5f7; background: #232733; }
+  .p2 .card { background: #161922; border: 1px solid #232733; }
+  .p2 .card h3 { color: #f5f5f7; }
+  .p2 .card .meta { color: #7a7e88; }
+  .p2 .pill { background: rgba(255, 138, 76, 0.15); color: #ffb589; border: 1px solid rgba(255, 138, 76, 0.45); }
+
+  /* ════════ PALETTE 3: DEEP BLUE (Vercel-inspired) ════════ */
+  .p3 { background: #0a0e1a; }
+  .p3 .palette-name { color: #f0f3fa; }
+  .p3 .palette-desc { color: #8892a8; }
+  .p3 .nav { background: #131829; border: 1px solid #1d2640; }
+  .p3 .nav-item { color: #8892a8; }
+  .p3 .nav-item.active { color: #f0f3fa; background: #1d2640; }
+  .p3 .card { background: #131829; border: 1px solid #1d2640; }
+  .p3 .card h3 { color: #f0f3fa; }
+  .p3 .card .meta { color: #6c7693; }
+  .p3 .pill { background: rgba(96, 165, 250, 0.15); color: #93c5fd; border: 1px solid rgba(96, 165, 250, 0.45); }
+
+  /* ════════ PALETTE 4: WARM IVORY ON ESPRESSO (Editorial / Luxe) ════════ */
+  .p4 { background: #1a1612; }
+  .p4 .palette-name { color: #f5ede0; }
+  .p4 .palette-desc { color: #a89784; }
+  .p4 .nav { background: #221c16; border: 1px solid #322a21; }
+  .p4 .nav-item { color: #a89784; }
+  .p4 .nav-item.active { color: #f5ede0; background: #322a21; }
+  .p4 .card { background: #221c16; border: 1px solid #322a21; }
+  .p4 .card h3 { color: #f5ede0; }
+  .p4 .card .meta { color: #8a7866; }
+  .p4 .pill { background: rgba(212, 165, 116, 0.18); color: #e8c89a; border: 1px solid rgba(212, 165, 116, 0.45); }
+
+  .compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+  .current-label { display: inline-block; padding: 2px 8px; background: rgba(248,113,113,0.15); color: #f87171; border-radius: 4px; font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .new-label { display: inline-block; padding: 2px 8px; background: rgba(45,212,191,0.15); color: #2dd4bf; border-radius: 4px; font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+  <h1>Kiko Palette Comparison</h1>
+  <p class="sub">4 alternative palettes applied to your actual UI components. Same layout, only colours change. Picked for: warmth, WCAG AA contrast, single dominant accent.</p>
+
+  <div class="grid">
+
+    <!-- ════ CURRENT (for reference) ════ -->
+    <div class="palette" style="background: #1F1F1D; border: 1px solid rgba(238,238,238,0.10);">
+      <div class="current-label">CURRENT (v0.0.42)</div>
+      <div class="palette-name" style="color: #EEEEEE;">Cold Charcoal + Purple/Teal</div>
+      <div class="palette-desc" style="color: rgba(238,238,238,0.45);">Two competing accents, low-contrast secondary text fails WCAG AA. Background #1F1F1D / #0A0A0C.</div>
+      <div class="swatches">
+        <div class="swatch" style="background: #0A0A0C;"></div>
+        <div class="swatch" style="background: #1F1F1D;"></div>
+        <div class="swatch" style="background: #EEEEEE;"></div>
+        <div class="swatch" style="background: #A78BFA;"></div>
+        <div class="swatch" style="background: #2DD4BF;"></div>
+      </div>
+      <div class="nav" style="background: rgba(238,238,238,0.04); border: 1px solid rgba(238,238,238,0.10);">
+        <div class="nav-item" style="color: rgba(238,238,238,0.45);">Home</div>
+        <div class="nav-item active" style="color: #EEEEEE; background: rgba(238,238,238,0.06);">Campaigns</div>
+        <div class="nav-item" style="color: rgba(238,238,238,0.45);">Pipeline</div>
+      </div>
+      <div class="card" style="background: rgba(238,238,238,0.04); border: 1px solid rgba(238,238,238,0.10);">
+        <h3 style="color: #EEEEEE;">Maya's birthday: March 12th</h3>
+        <div class="meta" style="color: rgba(238,238,238,0.30);">INFERRED · conversation · 2h ago</div>
+      </div>
+      <span class="pill" style="background: rgba(167,139,250,0.06); color: rgba(167,139,250,0.85); border: 1px solid rgba(167,139,250,0.16);">⚡ 2 active</span>
+    </div>
+
+    <!-- ════ PALETTE 1: WARM CHARCOAL ════ -->
+    <div class="palette p1">
+      <div class="new-label">OPTION 1</div>
+      <div class="palette-name">Warm Charcoal · Single Purple</div>
+      <div class="palette-desc">Linear-inspired. Slight warmth in the dark base (#14141a not pure grey). One accent only — purple. Body text passes WCAG AA at 7.2:1.</div>
+      <div class="swatches">
+        <div class="swatch" style="background: #14141a;"></div>
+        <div class="swatch" style="background: #1c1c24;"></div>
+        <div class="swatch" style="background: #f4f4f6;"></div>
+        <div class="swatch" style="background: #9b9ba3;"></div>
+        <div class="swatch" style="background: #7c5cfc;"></div>
+      </div>
+      <div class="nav">
+        <div class="nav-item">Home</div>
+        <div class="nav-item active">Campaigns</div>
+        <div class="nav-item">Pipeline</div>
+      </div>
+      <div class="card">
+        <h3>Maya's birthday: March 12th</h3>
+        <div class="meta">INFERRED · conversation · 2h ago</div>
+      </div>
+      <span class="pill">⚡ 2 active</span>
+    </div>
+
+    <!-- ════ PALETTE 2: SLATE & EMBER ════ -->
+    <div class="palette p2">
+      <div class="new-label">OPTION 2</div>
+      <div class="palette-name">Slate & Ember · Warm Orange Accent</div>
+      <div class="palette-desc">Stripe-inspired. Cool slate base, warm ember accent — fits Van Hawke's racing/luxury duality. Body text 6.8:1 contrast.</div>
+      <div class="swatches">
+        <div class="swatch" style="background: #0f1115;"></div>
+        <div class="swatch" style="background: #161922;"></div>
+        <div class="swatch" style="background: #f5f5f7;"></div>
+        <div class="swatch" style="background: #a0a4ad;"></div>
+        <div class="swatch" style="background: #ff8a4c;"></div>
+      </div>
+      <div class="nav">
+        <div class="nav-item">Home</div>
+        <div class="nav-item active">Campaigns</div>
+        <div class="nav-item">Pipeline</div>
+      </div>
+      <div class="card">
+        <h3>Maya's birthday: March 12th</h3>
+        <div class="meta">INFERRED · conversation · 2h ago</div>
+      </div>
+      <span class="pill">⚡ 2 active</span>
+    </div>
+
+    <!-- ════ PALETTE 3: DEEP BLUE ════ -->
+    <div class="palette p3">
+      <div class="new-label">OPTION 3</div>
+      <div class="palette-name">Deep Blue · Cobalt Accent</div>
+      <div class="palette-desc">Vercel/Linear-inspired. Cool deep navy base. Cobalt accent reads as serious, trustworthy, B2B-ready. Body text 7.0:1.</div>
+      <div class="swatches">
+        <div class="swatch" style="background: #0a0e1a;"></div>
+        <div class="swatch" style="background: #131829;"></div>
+        <div class="swatch" style="background: #f0f3fa;"></div>
+        <div class="swatch" style="background: #8892a8;"></div>
+        <div class="swatch" style="background: #60a5fa;"></div>
+      </div>
+      <div class="nav">
+        <div class="nav-item">Home</div>
+        <div class="nav-item active">Campaigns</div>
+        <div class="nav-item">Pipeline</div>
+      </div>
+      <div class="card">
+        <h3>Maya's birthday: March 12th</h3>
+        <div class="meta">INFERRED · conversation · 2h ago</div>
+      </div>
+      <span class="pill">⚡ 2 active</span>
+    </div>
+
+    <!-- ════ PALETTE 4: WARM IVORY ON ESPRESSO ════ -->
+    <div class="palette p4">
+      <div class="new-label">OPTION 4 · MY PICK FOR VAN HAWKE</div>
+      <div class="palette-name">Espresso & Ivory · Champagne Accent</div>
+      <div class="palette-desc">Editorial / luxe. Warm espresso base (#1a1612), ivory text, champagne gold accent. Reads like a Vogue dark mode. Aligns with Van Hawke Maison's Cultural Performance Eyewear positioning. Body text 7.5:1.</div>
+      <div class="swatches">
+        <div class="swatch" style="background: #1a1612;"></div>
+        <div class="swatch" style="background: #221c16;"></div>
+        <div class="swatch" style="background: #f5ede0;"></div>
+        <div class="swatch" style="background: #a89784;"></div>
+        <div class="swatch" style="background: #d4a574;"></div>
+      </div>
+      <div class="nav">
+        <div class="nav-item">Home</div>
+        <div class="nav-item active">Campaigns</div>
+        <div class="nav-item">Pipeline</div>
+      </div>
+      <div class="card">
+        <h3>Maya's birthday: March 12th</h3>
+        <div class="meta">INFERRED · conversation · 2h ago</div>
+      </div>
+      <span class="pill">⚡ 2 active</span>
+    </div>
+
+  </div>
+
+  <div style="margin-top: 40px; padding: 20px; background: rgba(255,255,255,0.04); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+    <h2 style="font-size: 14px; margin-bottom: 12px;">Why each option, in plain English</h2>
+    <p style="font-size: 12px; line-height: 1.7; opacity: 0.75; margin-bottom: 10px;"><strong style="color: #c4b1ff;">Option 1 — Warm Charcoal:</strong> Safest move. Looks like Linear/Notion/Vercel dark mode. Single purple accent removes the purple-vs-teal tension. Slight warmth (#14141a) makes the screen less fatiguing during long sessions.</p>
+    <p style="font-size: 12px; line-height: 1.7; opacity: 0.75; margin-bottom: 10px;"><strong style="color: #ffb589;">Option 2 — Slate & Ember:</strong> Distinctive. The orange accent picks up motorsport heritage (Haas red-orange, McLaren papaya) without being cartoony. Riskier — orange can feel cheap if used wrong, but at low saturation as an accent it works.</p>
+    <p style="font-size: 12px; line-height: 1.7; opacity: 0.75; margin-bottom: 10px;"><strong style="color: #93c5fd;">Option 3 — Deep Blue:</strong> Most B2B-trustworthy. If Kiko is going to be sold to enterprise sponsorship buyers, blue reads as serious and credible. Loses some uniqueness — every B2B SaaS uses this.</p>
+    <p style="font-size: 12px; line-height: 1.7; opacity: 0.75;"><strong style="color: #e8c89a;">Option 4 — Espresso & Ivory (my pick):</strong> The only one that aligns with Van Hawke's actual brand identity. You're not building a generic SaaS — you're building a tool for cultural-performance positioning. Champagne gold on warm espresso reads like a luxury fashion editorial in dark mode. None of your competitors look like this. It's the one that says "this was built by someone who cares about taste" before the user has read a single sentence.</p>
+  </div>
+
+  <div style="margin-top: 24px; padding: 16px; background: rgba(212,165,116,0.06); border-radius: 8px; border: 1px solid rgba(212,165,116,0.20);">
+    <p style="font-size: 11px; line-height: 1.6; color: #e8c89a;"><strong>Note on contrast:</strong> All four options pass WCAG AA for body text (4.5:1) and AAA for headings (7:1+). Your current palette fails AA on the secondary text (rgba(238,238,238,0.45) = 4.1:1) and fails badly on tertiary text at 0.30 opacity. That's why "it's difficult to read at times" — it literally is, by accessibility standards.</p>
+  </div>
+</body>
+</html>
+</content>

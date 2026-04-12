@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-11T21:44:05.278Z",
+  "generated_at": "2026-04-12T08:57:08.208Z",
   "commits": [
+    {
+      "hash": "3bda8d0",
+      "subject": "v0.0.42 — Memory tab UX: search-within-category + bulk delete + CSV export",
+      "when": "11 hours ago"
+    },
     {
       "hash": "071a120",
       "subject": "v0.0.41 — deep memory extraction quality fix",
-      "when": "10 minutes ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "3bdcb9c",
       "subject": "v0.0.40 — three more P3 items: bulk-edit + notification prefs + memory pagination",
-      "when": "30 minutes ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "10d1df6",
       "subject": "v0.0.39 hotfix: crm-match-preview uses jsonb data column (companies/contacts are JSON-based, not flat tables)",
-      "when": "48 minutes ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "bcf43e5",
       "subject": "v0.0.39 — P3 polish backlog: 5 items in one deploy",
-      "when": "53 minutes ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "d57d201",
       "subject": "v0.0.38 — memory regex tightening + build campaign live progress",
-      "when": "75 minutes ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "9f747fc",
       "subject": "v0.0.37 — Session 1 batch B: selfcheck WARN level + navigate enums + KikoChat listener + voice→text handoff",
-      "when": "2 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "f6f3ffa",
       "subject": "v0.0.36 — memory extraction noise cleanup + multi-conversation UI",
-      "when": "2 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "7be8805",
       "subject": "docs: KIKO_MASTER_LOG.md Section A0e v0.0.27 → v0.0.35 (no code changes, doc only)",
-      "when": "2 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "2efb5dd",
       "subject": "v0.0.35 — voice transcript race fix + avatar volume hardcode + chat history timestamps + multi-conversation foundation",
-      "when": "3 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "77d805c",
       "subject": "v0.0.34 — REAL Gmail signature fix: stop stripping images on cold outreach",
-      "when": "3 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "970cf27",
       "subject": "v0.0.33 — voice fixes batch + Gmail signature inline base64 + geo-location + sig-diag",
-      "when": "3 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "592ccbf",
       "subject": "v0.0.32 — avatar still + Kiko transcript event name + memory threshold",
-      "when": "4 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "eac8735",
       "subject": "v0.0.31 — voice forced ask_kiko (full Sonnet) + goodbye 3 phrases + Gmail sig CID fix + email fixes + build progress",
-      "when": "5 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "34c18b5",
       "subject": "v0.0.30 — voice goodbye + transcription ROOT CAUSE FIX + Kiko find leads + auto verified end-to-end",
-      "when": "7 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "cf232ac",
       "subject": "v0.0.29 — REAL ROOT CAUSE FIX for build campaign",
-      "when": "8 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "57c2a6d",
       "subject": "v0.0.28 — voice goodbye instant + voice fast endpoint + morning email guards",
-      "when": "9 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "b14ba8e",
       "subject": "v0.0.27 — CRITICAL cost cuts + build campaign cache fix + morning email iterable guards",
-      "when": "9 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "1e74c59",
       "subject": "v0.0.26 — voice goodbye + voice→history + xml leak + kill emails + Health Center + morning email cron",
-      "when": "10 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "ed85d26",
       "subject": "master log: A0d session — v0.0.24 → v0.0.25 (build timeout fix, top-8 removal, palette fix, CRM badge, Lemlist research)",
-      "when": "29 hours ago"
-    },
-    {
-      "hash": "be13dc9",
-      "subject": "v0.0.25 — top nav viewport-centred + Previously in CRM badge + category gap formatting tightened + Lemlist research doc",
-      "when": "29 hours ago"
+      "when": "2 days ago"
     }
   ]
 }

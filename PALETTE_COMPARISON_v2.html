@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Kiko Palette Comparison v2</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif}
+body{padding:24px;background:#000}
+h1{color:#fff;font-size:18px;margin-bottom:6px}
+.sub{color:#888;font-size:11px;margin-bottom:24px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px}
+.label{display:inline-block;padding:3px 10px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px}
+.label.cur{background:rgba(248,113,113,0.18);color:#f87171}
+.label.new{background:rgba(45,212,191,0.18);color:#2dd4bf}
+
+/* Page mockup — recreates Settings/Memory tab structure with real text from screenshots */
+.page{border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);height:580px;display:flex;flex-direction:column}
+.topnav{display:flex;align-items:center;padding:14px 24px;gap:24px;border-bottom:1px solid}
+.brand{font-size:13px;font-weight:600;letter-spacing:0.06em}
+.navtab{font-size:11px;padding:5px 12px;border-radius:50px}
+.navtab.active{font-weight:500}
+.body{padding:20px 24px;flex:1;overflow:hidden}
+.title{font-size:20px;font-weight:400;margin-bottom:14px}
+.tabstrip{display:flex;gap:14px;border-bottom:1px solid;padding-bottom:8px;margin-bottom:16px}
+.subtab{font-size:11px;padding-bottom:8px;border-bottom:2px solid transparent;margin-bottom:-9px}
+.subtab.active{font-weight:500;border-bottom-color:currentColor}
+.card{padding:14px;border-radius:10px;margin-bottom:12px;border:1px solid}
+.cardtitle{font-size:13px;font-weight:500;margin-bottom:3px}
+.cardsub{font-size:10px}
+.factrow{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:8px;border:1px solid;margin-bottom:6px}
+.factbody{flex:1}
+.facttext{font-size:11px;line-height:1.4;margin-bottom:4px}
+.factmeta{font-size:9px}
+.btnrow{display:flex;gap:6px}
+.iconbtn{width:22px;height:22px;border-radius:5px;border:1px solid;display:flex;align-items:center;justify-content:center;font-size:10px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:50px;font-size:10px;font-weight:500;border:1px solid}
+
+/* CURRENT */
+.cur-page{background:#1F1F1D}
+.cur-page .topnav{background:rgba(238,238,238,0.04);border-color:rgba(238,238,238,0.10)}
+.cur-page .brand{color:#EEEEEE}
+.cur-page .navtab{color:rgba(238,238,238,0.45)}
+.cur-page .navtab.active{color:#EEEEEE;background:rgba(238,238,238,0.06)}
+.cur-page .title{color:#EEEEEE}
+.cur-page .tabstrip{border-color:rgba(238,238,238,0.10)}
+.cur-page .subtab{color:rgba(238,238,238,0.45)}
+.cur-page .subtab.active{color:#EEEEEE;border-color:#A78BFA}
+.cur-page .card{background:rgba(238,238,238,0.04);border-color:rgba(238,238,238,0.10)}
+.cur-page .cardtitle{color:#EEEEEE}
+.cur-page .cardsub{color:rgba(238,238,238,0.30)}
+.cur-page .factrow{background:rgba(238,238,238,0.04);border-color:rgba(238,238,238,0.10)}
+.cur-page .facttext{color:#EEEEEE}
+.cur-page .factmeta{color:rgba(238,238,238,0.30)}
+.cur-page .iconbtn{background:transparent;border-color:rgba(238,238,238,0.10);color:rgba(238,238,238,0.45)}
+.cur-page .pill{background:rgba(167,139,250,0.06);color:rgba(167,139,250,0.85);border-color:rgba(167,139,250,0.16)}
+
+/* P1 WARM CHARCOAL */
+.p1-page{background:#14141a}
+.p1-page .topnav{background:#1c1c24;border-color:#26262f}
+.p1-page .brand{color:#f4f4f6}
+.p1-page .navtab{color:#9b9ba3}
+.p1-page .navtab.active{color:#f4f4f6;background:#2a2a35}
+.p1-page .title{color:#f4f4f6}
+.p1-page .tabstrip{border-color:#26262f}
+.p1-page .subtab{color:#9b9ba3}
+.p1-page .subtab.active{color:#f4f4f6;border-color:#7c5cfc}
+.p1-page .card{background:#1c1c24;border-color:#26262f}
+.p1-page .cardtitle{color:#f4f4f6}
+.p1-page .cardsub{color:#7e7e88}
+.p1-page .factrow{background:#1c1c24;border-color:#26262f}
+.p1-page .facttext{color:#f4f4f6}
+.p1-page .factmeta{color:#7e7e88}
+.p1-page .iconbtn{background:transparent;border-color:#2a2a35;color:#9b9ba3}
+.p1-page .pill{background:rgba(124,92,252,0.18);color:#c4b1ff;border-color:rgba(124,92,252,0.4)}
+
+/* P2 SLATE EMBER */
+.p2-page{background:#0f1115}
+.p2-page .topnav{background:#161922;border-color:#232733}
+.p2-page .brand{color:#f5f5f7}
+.p2-page .navtab{color:#a0a4ad}
+.p2-page .navtab.active{color:#f5f5f7;background:#232733}
+.p2-page .title{color:#f5f5f7}
+.p2-page .tabstrip{border-color:#232733}
+.p2-page .subtab{color:#a0a4ad}
+.p2-page .subtab.active{color:#f5f5f7;border-color:#ff8a4c}
+.p2-page .card{background:#161922;border-color:#232733}
+.p2-page .cardtitle{color:#f5f5f7}
+.p2-page .cardsub{color:#7a7e88}
+.p2-page .factrow{background:#161922;border-color:#232733}
+.p2-page .facttext{color:#f5f5f7}
+.p2-page .factmeta{color:#7a7e88}
+.p2-page .iconbtn{background:transparent;border-color:#232733;color:#a0a4ad}
+.p2-page .pill{background:rgba(255,138,76,0.15);color:#ffb589;border-color:rgba(255,138,76,0.45)}
+
+/* P3 DEEP BLUE */
+.p3-page{background:#0a0e1a}
+.p3-page .topnav{background:#131829;border-color:#1d2640}
+.p3-page .brand{color:#f0f3fa}
+.p3-page .navtab{color:#8892a8}
+.p3-page .navtab.active{color:#f0f3fa;background:#1d2640}
+.p3-page .title{color:#f0f3fa}
+.p3-page .tabstrip{border-color:#1d2640}
+.p3-page .subtab{color:#8892a8}
+.p3-page .subtab.active{color:#f0f3fa;border-color:#60a5fa}
+.p3-page .card{background:#131829;border-color:#1d2640}
+.p3-page .cardtitle{color:#f0f3fa}
+.p3-page .cardsub{color:#6c7693}
+.p3-page .factrow{background:#131829;border-color:#1d2640}
+.p3-page .facttext{color:#f0f3fa}
+.p3-page .factmeta{color:#6c7693}
+.p3-page .iconbtn{background:transparent;border-color:#1d2640;color:#8892a8}
+.p3-page .pill{background:rgba(96,165,250,0.15);color:#93c5fd;border-color:rgba(96,165,250,0.45)}
+
+/* P4 ESPRESSO IVORY */
+.p4-page{background:#1a1612}
+.p4-page .topnav{background:#221c16;border-color:#322a21}
+.p4-page .brand{color:#f5ede0}
+.p4-page .navtab{color:#a89784}
+.p4-page .navtab.active{color:#f5ede0;background:#322a21}
+.p4-page .title{color:#f5ede0}
+.p4-page .tabstrip{border-color:#322a21}
+.p4-page .subtab{color:#a89784}
+.p4-page .subtab.active{color:#f5ede0;border-color:#d4a574}
+.p4-page .card{background:#221c16;border-color:#322a21}
+.p4-page .cardtitle{color:#f5ede0}
+.p4-page .cardsub{color:#8a7866}
+.p4-page .factrow{background:#221c16;border-color:#322a21}
+.p4-page .facttext{color:#f5ede0}
+.p4-page .factmeta{color:#8a7866}
+.p4-page .iconbtn{background:transparent;border-color:#322a21;color:#a89784}
+.p4-page .pill{background:rgba(212,165,116,0.18);color:#e8c89a;border-color:rgba(212,165,116,0.45)}
+</style></head>
+<body>
+<h1>Kiko Settings → Memory tab — palette comparison</h1>
+<p class="sub">Same exact layout, real data from your screenshots. Only colours change. Scroll through to compare.</p>
+
+<div class="row">
+
+<!-- CURRENT -->
+<div>
+<div class="label cur">CURRENT (v0.0.42)</div>
+<div class="page cur-page">
+<div class="topnav"><div class="brand">VAN HAWKE™</div><div class="navtab">Home</div><div class="navtab">Command Centre</div><div class="navtab">Pipeline</div><div class="navtab">Partnership Matrix</div><div class="navtab">Campaigns</div></div>
+<div class="body">
+<div class="title">Settings</div>
+<div class="tabstrip"><div class="subtab">Profile</div><div class="subtab">Kiko</div><div class="subtab active">Memory</div><div class="subtab">Skills</div><div class="subtab">Navigation</div><div class="subtab">Team</div></div>
+<div class="card"><div class="cardtitle">What Kiko remembers about you</div><div class="cardsub">468 total facts. Edit or delete anything Kiko has learned.</div></div>
+<div class="factrow"><div class="factbody"><div class="facttext">Maya's birthday: March 12th</div><div class="factmeta">INFERRED · conversation · 2h ago</div></div><div class="btnrow"><div class="iconbtn">✎</div><div class="iconbtn">🗑</div></div></div>
+<div class="factrow"><div class="factbody"><div class="facttext">Nyla's birthday: February 12th</div><div class="factmeta">INFERRED · conversation · 2h ago</div></div><div class="btnrow"><div class="iconbtn">✎</div><div class="iconbtn">🗑</div></div></div>
+<div class="factrow"><div class="factbody"><div class="facttext">Location: Weybridge, Surrey, UK</div><div class="factmeta">INFERRED · conversation · 3h ago</div></div><div class="btnrow"><div class="iconbtn">✎</div><div class="iconbtn">🗑</div></div></div>
+<div style="margin-top:14px"><span class="pill">⚡ 2 active</span></div>
+</div></div></div>
+
+<!-- P1 WARM CHARCOAL -->
+<div>
+<div class="label new">OPTION 1 · WARM CHARCOAL + PURPLE</div>
+<div class="page p1-page">
+<div class="topnav"><div class="brand">VAN HAWKE™</div><div class="navtab">Home</div><div class="navtab">Command Centre</div><div class="navtab">Pipeline</div><div class="navtab">Partnership Matrix</div><div class="navtab">Campaigns</div></div>
+<div class="body">
+<div class="title">Settings</div>
+<div class="tabstrip"><div class="subtab">Profile</div><div class="subtab">Kiko</div><div class="subtab active">Memory</div><div class="subtab">Skills</div><div class="subtab">Navigation</div><div class="subtab">Team</div></div>
+<div class="card"><div class="cardtitle">What Kiko remembers about you</div><div class="cardsub">468 total facts. Edit or delete anything Kiko has learned.</div></div>
+<div class="factrow"><div class="factbody"><div class="facttext">Maya's birthday: March 12th</div><div class="factmeta">INFERRED · conversation · 2h ago</div></div><div class="btnrow"><div class="iconbtn">✎</div><div class="iconbtn">🗑</div></div></div>
+<div class="factrow"><div class="factbody"><div class="facttext">Nyla's birthday: February 12th</div><div class="factmeta">INFERRED · conversation · 2h ago</div></div><div class="btnrow"><div class="iconbtn">✎</div><div class="iconbtn">🗑</div></div></div>
+<div class="factrow"><div class="factbody"><div class="facttext">Location: Weybridge, Surrey, UK</div><div class="factmeta">INFERRED · conversation · 3h ago</div></div><div class="btnrow"><div class="iconbtn">✎</div><div class="iconbtn">🗑</div></div></div>
+<div style="margin-top:14px"><span class="pill">⚡ 2 active</span></div>
+</div></div></div>
+
+<!-- P2 SLATE EMBER -->
+<div>
+<div class="label new">OPTION 2 · SLATE & EMBER</div>
+<div class="page p2-page">
+<div class="topnav"><div class="brand">VAN HAWKE™</div><div class="navtab">Home</div><div class="navtab">Command Centre</div><div class="navtab">Pipeline</div><div class="navtab">Partnership Matrix</div><div class="navtab">Campaigns</div></div>
+<div class="body">
+<div class="title">Settings</div>
+<div class="tabstrip"><div class="subtab">Profile</div><div class="subtab">Kiko</div><div class="subtab active">Memory</div><div class="subtab">Skills</div><div class="subtab">Navigation</div><div class="subtab">Team</div></div>
+<div class="card"><div class="cardtitle">What Kiko remembers about you</div><div class="cardsub">468 total facts. Edit or delete anything Kiko has learned.</div></div>
+<div class="factrow"><div class="factbody"><div class="facttext">Maya's birthday: March 12th</div><div class="factmeta">INFERRED · conversation · 2h ago</div></div><div class="btnrow"><div class="iconbtn">✎</div><div class="iconbtn">🗑</div></div></div>
+<div class="factrow"><div class="factbody"><div class="facttext">Nyla's birthday: February 12th</div><div class="factmeta">INFERRED · conversation · 2h ago</div></div><div class="btnrow"><div class="iconbtn">✎</div><div class="iconbtn">🗑</div></div></div>
+<div class="factrow"><div class="factbody"><div class="facttext">Location: Weybridge, Surrey, UK</div><div class="factmeta">INFERRED · conversation · 3h ago</div></div><div class="btnrow"><div class="iconbtn">✎</div><div class="iconbtn">🗑</div></div></div>
+<div style="margin-top:14px"><span class="pill">⚡ 2 active</span></div>
+</div></div></div>
+
+<!-- P3 DEEP BLUE -->
+<div>
+<div class="label new">OPTION 3 · DEEP BLUE</div>
+<div class="page p3-page">
+<div class="topnav"><div class="brand">VAN HAWKE™</div><div class="navtab">Home</div><div class="navtab">Command Centre</div><div class="navtab">Pipeline</div><div class="navtab">Partnership Matrix</div><div class="navtab">Campaigns</div></div>
+<div class="body">
+<div class="title">Settings</div>
+<div class="tabstrip"><div class="subtab">Profile</div><div class="subtab">Kiko</div><div class="subtab active">Memory</div><div class="subtab">Skills</div><div class="subtab">Navigation</div><div class="subtab">Team</div></div>
+<div class="card"><div class="cardtitle">What Kiko remembers about you</div><div class="cardsub">468 total facts. Edit or delete anything Kiko has learned.</div></div>
+<div class="factrow"><div class="factbody"><div class="facttext">Maya's birthday: March 12th</div><div class="factmeta">INFERRED · conversation · 2h ago</div></div><div class="btnrow"><div class="iconbtn">✎</div><div class="iconbtn">🗑</div></div></div>
+<div class="factrow"><div class="factbody"><div class="facttext">Nyla's birthday: February 12th</div><div class="factmeta">INFERRED · conversation · 2h ago</div></div><div class="btnrow"><div class="iconbtn">✎</div><div class="iconbtn">🗑</div></div></div>
+<div class="factrow"><div class="factbody"><div class="facttext">Location: Weybridge, Surrey, UK</div><div class="factmeta">INFERRED · conversation · 3h ago</div></div><div class="btnrow"><div class="iconbtn">✎</div><div class="iconbtn">🗑</div></div></div>
+<div style="margin-top:14px"><span class="pill">⚡ 2 active</span></div>
+</div></div></div>
+
+<!-- P4 ESPRESSO IVORY -->
+<div>
+<div class="label new">OPTION 4 · ESPRESSO + CHAMPAGNE ★ MY PICK</div>
+<div class="page p4-page">
+<div class="topnav"><div class="brand">VAN HAWKE™</div><div class="navtab">Home</div><div class="navtab">Command Centre</div><div class="navtab">Pipeline</div><div class="navtab">Partnership Matrix</div><div class="navtab">Campaigns</div></div>
+<div class="body">
+<div class="title">Settings</div>
+<div class="tabstrip"><div class="subtab">Profile</div><div class="subtab">Kiko</div><div class="subtab active">Memory</div><div class="subtab">Skills</div><div class="subtab">Navigation</div><div class="subtab">Team</div></div>
+<div class="card"><div class="cardtitle">What Kiko remembers about you</div><div class="cardsub">468 total facts. Edit or delete anything Kiko has learned.</div></div>
+<div class="factrow"><div class="factbody"><div class="facttext">Maya's birthday: March 12th</div><div class="factmeta">INFERRED · conversation · 2h ago</div></div><div class="btnrow"><div class="iconbtn">✎</div><div class="iconbtn">🗑</div></div></div>
+<div class="factrow"><div class="factbody"><div class="facttext">Nyla's birthday: February 12th</div><div class="factmeta">INFERRED · conversation · 2h ago</div></div><div class="btnrow"><div class="iconbtn">✎</div><div class="iconbtn">🗑</div></div></div>
+<div class="factrow"><div class="factbody"><div class="facttext">Location: Weybridge, Surrey, UK</div><div class="factmeta">INFERRED · conversation · 3h ago</div></div><div class="btnrow"><div class="iconbtn">✎</div><div class="iconbtn">🗑</div></div></div>
+<div style="margin-top:14px"><span class="pill">⚡ 2 active</span></div>
+</div></div></div>
+
+</div>
+</body></html>

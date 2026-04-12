@@ -1,0 +1,183 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Kiko Home + Command Centre Palettes</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif}
+body{padding:20px;background:#000;color:#fff}
+h1{font-size:18px;margin-bottom:6px}
+.sub{color:#888;font-size:11px;margin-bottom:20px}
+h2{font-size:13px;margin:24px 0 10px;color:#aaa;text-transform:uppercase;letter-spacing:0.08em}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.label{display:inline-block;padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;margin-bottom:6px}
+.cur-l{background:rgba(248,113,113,0.18);color:#f87171}
+.new-l{background:rgba(45,212,191,0.18);color:#2dd4bf}
+.page{border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);height:340px}
+.nav{display:flex;align-items:center;padding:10px 18px;gap:14px;border-bottom:1px solid}
+.brand{font-size:11px;font-weight:700;letter-spacing:0.08em;flex:1}
+.ntab{font-size:10px;padding:3px 8px;border-radius:50px}
+.ntab.a{font-weight:500}
+
+/* HOME LAYOUT */
+.home{padding:30px;text-align:center;height:calc(100% - 38px);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.greet{font-size:24px;font-weight:300;margin-bottom:6px}
+.greet-sub{font-size:11px;margin-bottom:20px}
+.askbox{width:80%;height:38px;border-radius:50px;display:flex;align-items:center;padding:0 16px;border:1px solid;font-size:10px;margin-bottom:14px}
+.qrow{display:flex;gap:6px;justify-content:center}
+.qpill{padding:5px 11px;border-radius:50px;font-size:9px;border:1px solid}
+.qalert{font-weight:500}
+
+/* COMMAND CENTRE LAYOUT */
+.cc{padding:18px;height:calc(100% - 38px);display:flex;flex-direction:column;gap:10px}
+.cc-title{font-size:16px;font-weight:400}
+.cc-sub{font-size:10px;margin-bottom:4px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.stat{padding:8px;border-radius:6px;border:1px solid}
+.stat-num{font-size:13px;font-weight:500}
+.stat-lbl{font-size:8px;text-transform:uppercase}
+.section-h{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-top:4px}
+.deal{padding:8px 10px;border-radius:6px;border-left:2px solid;border-top:1px solid;border-right:1px solid;border-bottom:1px solid}
+.dpill{font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;display:inline-block;margin-bottom:2px}
+.dname{font-size:11px;font-weight:500}
+.dmeta{font-size:8px}
+
+/* CURRENT */
+.cur{background:#1F1F1D}
+.cur .nav{background:rgba(238,238,238,0.04);border-color:rgba(238,238,238,0.10)}
+.cur .brand{color:#EEEEEE}
+.cur .ntab{color:rgba(238,238,238,0.45)}
+.cur .ntab.a{color:#EEEEEE;background:rgba(238,238,238,0.06)}
+.cur .greet{color:#EEEEEE}
+.cur .greet-sub{color:rgba(238,238,238,0.30)}
+.cur .askbox{border-color:rgba(238,238,238,0.10);color:rgba(238,238,238,0.30)}
+.cur .qpill{border-color:rgba(238,238,238,0.10);color:rgba(238,238,238,0.45)}
+.cur .qalert{color:#fbbf24;border-color:rgba(251,191,36,0.30)}
+.cur .cc-title{color:#EEEEEE}
+.cur .cc-sub{color:rgba(238,238,238,0.30)}
+.cur .stat{background:rgba(238,238,238,0.04);border-color:rgba(238,238,238,0.10)}
+.cur .stat-num{color:#A78BFA}
+.cur .stat-lbl{color:rgba(238,238,238,0.30)}
+.cur .section-h{color:rgba(238,238,238,0.30)}
+.cur .deal{background:rgba(238,238,238,0.04);border-color:rgba(238,238,238,0.10);border-left-color:#f87171}
+.cur .dpill{background:rgba(248,113,113,0.18);color:#f87171}
+.cur .dname{color:#EEEEEE}
+.cur .dmeta{color:rgba(238,238,238,0.30)}
+
+/* P1 WARM CHARCOAL */
+.p1{background:#14141a}
+.p1 .nav{background:#1c1c24;border-color:#26262f}
+.p1 .brand{color:#f4f4f6}
+.p1 .ntab{color:#9b9ba3}
+.p1 .ntab.a{color:#f4f4f6;background:#2a2a35}
+.p1 .greet{color:#f4f4f6}
+.p1 .greet-sub{color:#9b9ba3}
+.p1 .askbox{border-color:#2a2a35;color:#9b9ba3;background:#1c1c24}
+.p1 .qpill{border-color:#2a2a35;color:#9b9ba3;background:#1c1c24}
+.p1 .qalert{color:#fbbf24;border-color:rgba(251,191,36,0.4);background:rgba(251,191,36,0.08)}
+.p1 .cc-title{color:#f4f4f6}
+.p1 .cc-sub{color:#9b9ba3}
+.p1 .stat{background:#1c1c24;border-color:#26262f}
+.p1 .stat-num{color:#c4b1ff}
+.p1 .stat-lbl{color:#9b9ba3}
+.p1 .section-h{color:#9b9ba3}
+.p1 .deal{background:#1c1c24;border-color:#26262f;border-left-color:#f87171}
+.p1 .dpill{background:rgba(248,113,113,0.18);color:#f87171}
+.p1 .dname{color:#f4f4f6}
+.p1 .dmeta{color:#9b9ba3}
+
+/* P2 SLATE EMBER */
+.p2{background:#0f1115}
+.p2 .nav{background:#161922;border-color:#232733}
+.p2 .brand{color:#f5f5f7}
+.p2 .ntab{color:#a0a4ad}
+.p2 .ntab.a{color:#f5f5f7;background:#232733}
+.p2 .greet{color:#f5f5f7}
+.p2 .greet-sub{color:#a0a4ad}
+.p2 .askbox{border-color:#232733;color:#a0a4ad;background:#161922}
+.p2 .qpill{border-color:#232733;color:#a0a4ad;background:#161922}
+.p2 .qalert{color:#ffb589;border-color:rgba(255,138,76,0.45);background:rgba(255,138,76,0.10)}
+.p2 .cc-title{color:#f5f5f7}
+.p2 .cc-sub{color:#a0a4ad}
+.p2 .stat{background:#161922;border-color:#232733}
+.p2 .stat-num{color:#ffb589}
+.p2 .stat-lbl{color:#a0a4ad}
+.p2 .section-h{color:#a0a4ad}
+.p2 .deal{background:#161922;border-color:#232733;border-left-color:#ff8a4c}
+.p2 .dpill{background:rgba(255,138,76,0.20);color:#ffb589}
+.p2 .dname{color:#f5f5f7}
+.p2 .dmeta{color:#a0a4ad}
+
+/* P3 DEEP BLUE */
+.p3{background:#0a0e1a}
+.p3 .nav{background:#131829;border-color:#1d2640}
+.p3 .brand{color:#f0f3fa}
+.p3 .ntab{color:#8892a8}
+.p3 .ntab.a{color:#f0f3fa;background:#1d2640}
+.p3 .greet{color:#f0f3fa}
+.p3 .greet-sub{color:#8892a8}
+.p3 .askbox{border-color:#1d2640;color:#8892a8;background:#131829}
+.p3 .qpill{border-color:#1d2640;color:#8892a8;background:#131829}
+.p3 .qalert{color:#fbbf24;border-color:rgba(251,191,36,0.40);background:rgba(251,191,36,0.08)}
+.p3 .cc-title{color:#f0f3fa}
+.p3 .cc-sub{color:#8892a8}
+.p3 .stat{background:#131829;border-color:#1d2640}
+.p3 .stat-num{color:#93c5fd}
+.p3 .stat-lbl{color:#8892a8}
+.p3 .section-h{color:#8892a8}
+.p3 .deal{background:#131829;border-color:#1d2640;border-left-color:#f87171}
+.p3 .dpill{background:rgba(248,113,113,0.18);color:#f87171}
+.p3 .dname{color:#f0f3fa}
+.p3 .dmeta{color:#8892a8}
+
+/* P4 ESPRESSO IVORY */
+.p4{background:#1a1612}
+.p4 .nav{background:#221c16;border-color:#322a21}
+.p4 .brand{color:#f5ede0}
+.p4 .ntab{color:#a89784}
+.p4 .ntab.a{color:#f5ede0;background:#322a21}
+.p4 .greet{color:#f5ede0}
+.p4 .greet-sub{color:#a89784}
+.p4 .askbox{border-color:#322a21;color:#a89784;background:#221c16}
+.p4 .qpill{border-color:#322a21;color:#a89784;background:#221c16}
+.p4 .qalert{color:#e8c89a;border-color:rgba(212,165,116,0.45);background:rgba(212,165,116,0.12)}
+.p4 .cc-title{color:#f5ede0}
+.p4 .cc-sub{color:#a89784}
+.p4 .stat{background:#221c16;border-color:#322a21}
+.p4 .stat-num{color:#e8c89a}
+.p4 .stat-lbl{color:#a89784}
+.p4 .section-h{color:#a89784}
+.p4 .deal{background:#221c16;border-color:#322a21;border-left-color:#d4a574}
+.p4 .dpill{background:rgba(212,165,116,0.20);color:#e8c89a}
+.p4 .dname{color:#f5ede0}
+.p4 .dmeta{color:#a89784}
+</style></head><body>
+
+<h1>Kiko — Home + Command Centre in 4 palettes</h1>
+<p class="sub">Identical layouts. Same real text from your screenshots. Only colours change. Compare CURRENT (top-left, red label) vs each option.</p>
+
+<h2>Home page (chat landing)</h2>
+<div class="row">
+  <div><div class="label cur-l">CURRENT</div><div class="page cur"><div class="nav"><div class="brand">VAN HAWKE™</div><div class="ntab a">Home</div><div class="ntab">Command Centre</div><div class="ntab">Pipeline</div><div class="ntab">Campaigns</div></div><div class="home"><div class="greet">Good morning, Sunny</div><div class="greet-sub">What would you like to work on?</div><div class="askbox">Ask me…</div><div class="qrow"><div class="qpill qalert">⚠ 242 alerts</div><div class="qpill">19 overdue tasks</div><div class="qpill">2 stale deals</div><div class="qpill">Brief me</div></div></div></div></div>
+  <div><div class="label new-l">OPTION 1 · WARM CHARCOAL</div><div class="page p1"><div class="nav"><div class="brand">VAN HAWKE™</div><div class="ntab a">Home</div><div class="ntab">Command Centre</div><div class="ntab">Pipeline</div><div class="ntab">Campaigns</div></div><div class="home"><div class="greet">Good morning, Sunny</div><div class="greet-sub">What would you like to work on?</div><div class="askbox">Ask me…</div><div class="qrow"><div class="qpill qalert">⚠ 242 alerts</div><div class="qpill">19 overdue tasks</div><div class="qpill">2 stale deals</div><div class="qpill">Brief me</div></div></div></div></div>
+</div>
+<div class="row">
+  <div><div class="label new-l">OPTION 2 · SLATE & EMBER</div><div class="page p2"><div class="nav"><div class="brand">VAN HAWKE™</div><div class="ntab a">Home</div><div class="ntab">Command Centre</div><div class="ntab">Pipeline</div><div class="ntab">Campaigns</div></div><div class="home"><div class="greet">Good morning, Sunny</div><div class="greet-sub">What would you like to work on?</div><div class="askbox">Ask me…</div><div class="qrow"><div class="qpill qalert">⚠ 242 alerts</div><div class="qpill">19 overdue tasks</div><div class="qpill">2 stale deals</div><div class="qpill">Brief me</div></div></div></div></div>
+  <div><div class="label new-l">OPTION 3 · DEEP BLUE</div><div class="page p3"><div class="nav"><div class="brand">VAN HAWKE™</div><div class="ntab a">Home</div><div class="ntab">Command Centre</div><div class="ntab">Pipeline</div><div class="ntab">Campaigns</div></div><div class="home"><div class="greet">Good morning, Sunny</div><div class="greet-sub">What would you like to work on?</div><div class="askbox">Ask me…</div><div class="qrow"><div class="qpill qalert">⚠ 242 alerts</div><div class="qpill">19 overdue tasks</div><div class="qpill">2 stale deals</div><div class="qpill">Brief me</div></div></div></div></div>
+</div>
+<div class="row">
+  <div><div class="label new-l">OPTION 4 · ESPRESSO + CHAMPAGNE ★</div><div class="page p4"><div class="nav"><div class="brand">VAN HAWKE™</div><div class="ntab a">Home</div><div class="ntab">Command Centre</div><div class="ntab">Pipeline</div><div class="ntab">Campaigns</div></div><div class="home"><div class="greet">Good morning, Sunny</div><div class="greet-sub">What would you like to work on?</div><div class="askbox">Ask me…</div><div class="qrow"><div class="qpill qalert">⚠ 242 alerts</div><div class="qpill">19 overdue tasks</div><div class="qpill">2 stale deals</div><div class="qpill">Brief me</div></div></div></div></div>
+  <div></div>
+</div>
+
+<h2>Command Centre</h2>
+<div class="row">
+  <div><div class="label cur-l">CURRENT</div><div class="page cur"><div class="nav"><div class="brand">VAN HAWKE™</div><div class="ntab">Home</div><div class="ntab a">Command Centre</div><div class="ntab">Pipeline</div><div class="ntab">Campaigns</div></div><div class="cc"><div class="cc-title">Command Centre</div><div class="cc-sub">Priority actions ranked by deal value × urgency</div><div class="stats"><div class="stat"><div class="stat-num">36</div><div class="stat-lbl">Active deals</div></div><div class="stat"><div class="stat-num">$5.1M</div><div class="stat-lbl">Weighted pipeline</div></div><div class="stat"><div class="stat-num">35</div><div class="stat-lbl">Stale (30d+)</div></div><div class="stat"><div class="stat-num">21d</div><div class="stat-lbl">Miami GP</div></div></div><div class="section-h">Priority (5) — act on these first</div><div class="deal"><span class="dpill">OVERDUE</span><div class="dname">Webull Financial</div><div class="dmeta">Re-engage · due 2026-04-05 · Alex Barnett</div></div><div class="deal"><span class="dpill">OVERDUE</span><div class="dname">SQream</div><div class="dmeta">Re-engage · due 2026-04-05 · Oren Askarov</div></div></div></div></div>
+  <div><div class="label new-l">OPTION 1 · WARM CHARCOAL</div><div class="page p1"><div class="nav"><div class="brand">VAN HAWKE™</div><div class="ntab">Home</div><div class="ntab a">Command Centre</div><div class="ntab">Pipeline</div><div class="ntab">Campaigns</div></div><div class="cc"><div class="cc-title">Command Centre</div><div class="cc-sub">Priority actions ranked by deal value × urgency</div><div class="stats"><div class="stat"><div class="stat-num">36</div><div class="stat-lbl">Active deals</div></div><div class="stat"><div class="stat-num">$5.1M</div><div class="stat-lbl">Weighted pipeline</div></div><div class="stat"><div class="stat-num">35</div><div class="stat-lbl">Stale (30d+)</div></div><div class="stat"><div class="stat-num">21d</div><div class="stat-lbl">Miami GP</div></div></div><div class="section-h">Priority (5) — act on these first</div><div class="deal"><span class="dpill">OVERDUE</span><div class="dname">Webull Financial</div><div class="dmeta">Re-engage · due 2026-04-05 · Alex Barnett</div></div><div class="deal"><span class="dpill">OVERDUE</span><div class="dname">SQream</div><div class="dmeta">Re-engage · due 2026-04-05 · Oren Askarov</div></div></div></div></div>
+</div>
+<div class="row">
+  <div><div class="label new-l">OPTION 2 · SLATE & EMBER</div><div class="page p2"><div class="nav"><div class="brand">VAN HAWKE™</div><div class="ntab">Home</div><div class="ntab a">Command Centre</div><div class="ntab">Pipeline</div><div class="ntab">Campaigns</div></div><div class="cc"><div class="cc-title">Command Centre</div><div class="cc-sub">Priority actions ranked by deal value × urgency</div><div class="stats"><div class="stat"><div class="stat-num">36</div><div class="stat-lbl">Active deals</div></div><div class="stat"><div class="stat-num">$5.1M</div><div class="stat-lbl">Weighted pipeline</div></div><div class="stat"><div class="stat-num">35</div><div class="stat-lbl">Stale (30d+)</div></div><div class="stat"><div class="stat-num">21d</div><div class="stat-lbl">Miami GP</div></div></div><div class="section-h">Priority (5) — act on these first</div><div class="deal"><span class="dpill">OVERDUE</span><div class="dname">Webull Financial</div><div class="dmeta">Re-engage · due 2026-04-05 · Alex Barnett</div></div><div class="deal"><span class="dpill">OVERDUE</span><div class="dname">SQream</div><div class="dmeta">Re-engage · due 2026-04-05 · Oren Askarov</div></div></div></div></div>
+  <div><div class="label new-l">OPTION 3 · DEEP BLUE</div><div class="page p3"><div class="nav"><div class="brand">VAN HAWKE™</div><div class="ntab">Home</div><div class="ntab a">Command Centre</div><div class="ntab">Pipeline</div><div class="ntab">Campaigns</div></div><div class="cc"><div class="cc-title">Command Centre</div><div class="cc-sub">Priority actions ranked by deal value × urgency</div><div class="stats"><div class="stat"><div class="stat-num">36</div><div class="stat-lbl">Active deals</div></div><div class="stat"><div class="stat-num">$5.1M</div><div class="stat-lbl">Weighted pipeline</div></div><div class="stat"><div class="stat-num">35</div><div class="stat-lbl">Stale (30d+)</div></div><div class="stat"><div class="stat-num">21d</div><div class="stat-lbl">Miami GP</div></div></div><div class="section-h">Priority (5) — act on these first</div><div class="deal"><span class="dpill">OVERDUE</span><div class="dname">Webull Financial</div><div class="dmeta">Re-engage · due 2026-04-05 · Alex Barnett</div></div><div class="deal"><span class="dpill">OVERDUE</span><div class="dname">SQream</div><div class="dmeta">Re-engage · due 2026-04-05 · Oren Askarov</div></div></div></div></div>
+</div>
+<div class="row">
+  <div><div class="label new-l">OPTION 4 · ESPRESSO + CHAMPAGNE ★</div><div class="page p4"><div class="nav"><div class="brand">VAN HAWKE™</div><div class="ntab">Home</div><div class="ntab a">Command Centre</div><div class="ntab">Pipeline</div><div class="ntab">Campaigns</div></div><div class="cc"><div class="cc-title">Command Centre</div><div class="cc-sub">Priority actions ranked by deal value × urgency</div><div class="stats"><div class="stat"><div class="stat-num">36</div><div class="stat-lbl">Active deals</div></div><div class="stat"><div class="stat-num">$5.1M</div><div class="stat-lbl">Weighted pipeline</div></div><div class="stat"><div class="stat-num">35</div><div class="stat-lbl">Stale (30d+)</div></div><div class="stat"><div class="stat-num">21d</div><div class="stat-lbl">Miami GP</div></div></div><div class="section-h">Priority (5) — act on these first</div><div class="deal"><span class="dpill">OVERDUE</span><div class="dname">Webull Financial</div><div class="dmeta">Re-engage · due 2026-04-05 · Alex Barnett</div></div><div class="deal"><span class="dpill">OVERDUE</span><div class="dname">SQream</div><div class="dmeta">Re-engage · due 2026-04-05 · Oren Askarov</div></div></div></div></div>
+  <div></div>
+</div>
+
+</body></html>
