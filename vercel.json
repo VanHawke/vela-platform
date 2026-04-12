@@ -173,6 +173,10 @@
     {
       "path": "/api/cron-job-cleanup",
       "schedule": "0 4 * * 0"
+    },
+    {
+      "path": "/api/cron-background-task-cleanup",
+      "schedule": "0 5 * * 0"
     }
   ],
   "functions": {
@@ -325,6 +329,12 @@
     },
     "api/kiko-async.js": {
       "maxDuration": 300
+    },
+    "api/kiko-task-create.js": {
+      "maxDuration": 300
+    },
+    "api/cron-background-task-cleanup.js": {
+      "maxDuration": 30
     }
   },
   "rewrites": [
