@@ -942,3 +942,49 @@ This session used Claude Code to grep all 40 offending files (772 occurrences), 
 
 ### Rule added to KIKO_BIBLE
 Surface boundary: code touches repo → Claude Code only. Strategy/writing/discussion → claude.ai. Never run filesystem refactors from claude.ai.
+
+## Section A0l — v0.0.45 + v0.0.46 Background Task System Phase 1+2 (April 12, 2026)
+
+**Theme:** Backend table + 3 endpoints + cleanup cron + frontend status panel for "fire query in chat A, switch to chat B, A keeps working" multitasking.
+
+### Phase 1 — Backend (v0.0.45)
+- **Migration:** `kiko_background_tasks` table with RLS (`users see own tasks`), realtime publication, indexes on `(user_id, status, created_at)` and `(conversation_id)`
+- **`api/kiko-task-create.js`:** POST endpoint — validates input, inserts row, returns `{task_id, status:'queued'}` in <2s, fires `waitUntil()` background execution using `callKikoInProcess()` pattern from `kiko-async.js` (same tools, same memory, same KIKO_BIBLE prompt)
+- **`api/kiko-task-status.js`:** GET `?id=<uuid>` — lightweight status poll with live elapsed computation for running tasks
+- **`api/kiko-task-result.js`:** GET `?id=<uuid>` — full row including `result_text` + `tools_used`, only for `done`/`error` status
+- **`api/cron-background-task-cleanup.js`:** Sundays 5am UTC — delete done >14d, timeout running >10m, delete error >30d
+- **`vercel.json`:** cron entry added. Hit 50-function config limit — resolved by using inline `export const config` instead of vercel.json entries
+- **Verification:** 10/10 curl tests passed. Test task `78b3671b` completed in 23s with real Sonnet response (Kiko's meta-learning about Cloudflare fired correctly)
+
+### Phase 2 — Frontend (v0.0.46)
+- **`src/components/kiko/BackgroundTasksPanel.jsx`:** Fixed right-edge panel
+  - Collapsed: vertical tab with "Tasks" label + purple pill showing active count
+  - Expanded: 360px panel with header, scrollable task list, click-outside-to-close
+  - Task rows: running (spinning Loader2 + elapsed), done (CheckCircle2 + result preview + "Open in chat"), error (AlertCircle + error message + "Retry")
+  - Realtime subscription on `kiko_background_tasks` filtered by `user_id` + 60s safety poll (mirrors ThreadIndicator pattern exactly)
+  - Auto-hides done tasks from local state after 5 min (DB row stays)
+  - "Open in chat" dispatches `CustomEvent('kiko_open_task_result')` — Phase 3 will wire KikoChat to listen
+  - Uses theme tokens only — zero hardcoded hex except status colours (#4ade80, #f87171)
+- **`src/components/layout/Layout.jsx`:** 1 import + 1 mount after NotificationToast
+- **3 seed rows:** inserted via Supabase for visual verification (running + done + error)
+
+### Files added
+- `api/kiko-task-create.js`
+- `api/kiko-task-status.js`
+- `api/kiko-task-result.js`
+- `api/cron-background-task-cleanup.js`
+- `src/components/kiko/BackgroundTasksPanel.jsx`
+
+### Files modified
+- `vercel.json` (cron entry only)
+- `src/components/layout/Layout.jsx` (1 import + 1 mount)
+- `package.json` (version 0.0.44 → 0.0.46, added `@vercel/functions`)
+- `KIKO_MASTER_LOG.md` (this entry)
+
+### Out of scope (next sessions)
+- Phase 3: chat-switch UX in KikoChat.jsx (wire `kiko_open_task_result` event listener)
+- Phase 4: SSE streaming for background tasks
+
+### Bundle hashes
+- Phase 1: `DMM1uHkO` (frontend unchanged)
+- Phase 2: `CL0XoCer`
