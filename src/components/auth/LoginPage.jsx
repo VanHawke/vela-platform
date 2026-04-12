@@ -68,7 +68,7 @@ export default function LoginPage() {
           ) : (
             <>
               <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(124,92,252,0.5)', letterSpacing: '0.15em', fontFamily: T.font }}>VAN HAWKE</span>
-              <span style={{ fontSize: 9, verticalAlign: 'super', color: 'rgba(124,92,252,0.3)', marginLeft: 2 }}>™</span>
+              <span style={{ fontSize: 9, verticalAlign: 'super', color: '#9b9ba3', marginLeft: 2 }}>™</span>
             </>
           )}
         </div>
@@ -82,7 +82,7 @@ export default function LoginPage() {
 
         {/* Kiko name + tagline */}
         <h1 style={{ fontSize: 33, fontWeight: 200, color: '#f4f4f6', letterSpacing: '-0.04em', margin: '0 0 6px', ...fade(0.4) }}>Kiko</h1>
-        <p style={{ fontSize: 13, color: 'rgba(124,92,252,0.25)', fontWeight: 300, margin: '0 0 48px', letterSpacing: '0.02em', ...fade(0.5) }}>Intelligence, Applied</p>
+        <p style={{ fontSize: 13, color: '#9b9ba3', fontWeight: 300, margin: '0 0 48px', letterSpacing: '0.02em', ...fade(0.5) }}>Intelligence, Applied</p>
 
         {/* Primary CTA — Google OAuth */}
         <div style={fade(0.6)}>
@@ -107,7 +107,7 @@ export default function LoginPage() {
         {/* Email toggle */}
         <div style={{ marginTop: 16, ...fade(0.7) }}>
           <button onClick={() => setShowEmail(!showEmail)} style={{
-            background: 'none', border: 'none', color: 'rgba(124,92,252,0.20)', fontSize: 12, cursor: 'pointer',
+            background: 'none', border: 'none', color: '#7e7e88', fontSize: 12, cursor: 'pointer',
             fontFamily: T.font, fontWeight: 300, display: 'flex', alignItems: 'center', gap: 4, margin: '0 auto',
             transition: 'color 0.2s', padding: '8px 0',
           }}
@@ -132,7 +132,7 @@ export default function LoginPage() {
                 onBlur={e => e.target.style.borderColor = 'rgba(124,92,252,0.10)'} />
               <button type="button" onClick={() => setShowPw(!showPw)} style={{
                 position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
-                background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(124,92,252,0.20)', padding: 0,
+                background: 'none', border: 'none', cursor: 'pointer', color: '#7e7e88', padding: 0,
               }}>{showPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
             </div>
 
@@ -153,7 +153,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p style={{ fontSize: 11, color: 'rgba(124,92,252,0.15)', marginTop: 48, fontWeight: 300, ...fade(0.8) }}>By Van Hawke</p>
+        <p style={{ fontSize: 11, color: '#7e7e88', marginTop: 48, fontWeight: 300, ...fade(0.8) }}>By Van Hawke</p>
       </div>
     </div>
   )

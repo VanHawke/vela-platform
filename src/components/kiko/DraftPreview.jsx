@@ -114,11 +114,11 @@ export default function DraftPreview({ draft, onToneAdjust, onCopy, onSendToGmai
       {(draft.to || draft.subject) && (
         <div style={{ padding: '10px 14px', borderBottom: '1px solid rgba(124,92,252,0.03)', display: 'flex', flexDirection: 'column', gap: 5 }}>
           {draft.to && <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 11, color: 'rgba(124,92,252,0.15)', width: 42, textAlign: 'right', fontFamily: T.font }}>To:</span>
+            <span style={{ fontSize: 11, color: '#7e7e88', width: 42, textAlign: 'right', fontFamily: T.font }}>To:</span>
             <span style={{ fontSize: 13, color: '#9b9ba3', fontFamily: T.font, fontWeight: 300 }}>{draft.to}</span>
           </div>}
           {draft.subject && <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 11, color: 'rgba(124,92,252,0.15)', width: 42, textAlign: 'right', fontFamily: T.font }}>Subject:</span>
+            <span style={{ fontSize: 11, color: '#7e7e88', width: 42, textAlign: 'right', fontFamily: T.font }}>Subject:</span>
             <span style={{ fontSize: 13, color: '#9b9ba3', fontFamily: T.font, fontWeight: 300 }}>{draft.subject}</span>
           </div>}
         </div>

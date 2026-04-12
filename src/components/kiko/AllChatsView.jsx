@@ -105,7 +105,7 @@ export default function AllChatsView({ convos, onSelect, onDelete, onClose, user
                 </div>
               </div>
               <button onClick={(e) => { e.stopPropagation(); onDelete(conv) }}
-                style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(124,92,252,0.15)', transition: 'color 0.15s', flexShrink: 0 }}
+                style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7e7e88', transition: 'color 0.15s', flexShrink: 0 }}
                 onMouseOver={e => e.currentTarget.style.color = 'rgba(198,40,40,0.8)'}
                 onMouseOut={e => e.currentTarget.style.color = 'rgba(124,92,252,0.15)'}>
                 <Trash2 size={14} />

@@ -131,7 +131,7 @@ export default function KikoInsights({ onAction, open, onClose }) {
                     style={{ ...btnBase, background: 'rgba(124,92,252,0.06)', color: 'rgba(124,92,252,0.6)', fontSize: 10, width: 'auto', borderRadius: 6, padding: '0 8px', fontFamily: T.font }}>Discuss</button>
                   <button onClick={() => { nav('/partnership-matrix'); onClose?.() }}
                     style={{ ...btnBase, background: 'rgba(0,212,170,0.04)', color: 'rgba(0,212,170,0.5)', fontSize: 10, width: 'auto', borderRadius: 6, padding: '0 8px', fontFamily: T.font }}>Matrix</button>
-                  <button onClick={() => dismissPartnership(alert)} style={{ ...btnBase, background: 'transparent', color: 'rgba(124,92,252,0.15)' }}><X size={10} /></button>
+                  <button onClick={() => dismissPartnership(alert)} style={{ ...btnBase, background: 'transparent', color: '#7e7e88' }}><X size={10} /></button>
                 </div>
               ))}
             </div>
@@ -149,7 +149,7 @@ export default function KikoInsights({ onAction, open, onClose }) {
                     <span style={{ fontSize: 13, color: '#7e7e88', fontWeight: 400, fontFamily: T.font }}>{(draft.payload?.suggested_action || 'Follow up').slice(0, 80)}</span>
                   </div>
                   <button onClick={() => approveDraft(draft)} style={{ ...btnBase, background: 'rgba(0,212,170,0.06)', color: 'rgba(0,212,170,0.6)' }}><Check size={12} /></button>
-                  <button onClick={() => dismissDraft(draft)} style={{ ...btnBase, background: 'transparent', color: 'rgba(124,92,252,0.15)' }}><Trash2 size={10} /></button>
+                  <button onClick={() => dismissDraft(draft)} style={{ ...btnBase, background: 'transparent', color: '#7e7e88' }}><Trash2 size={10} /></button>
                 </div>
               ))}
             </div>

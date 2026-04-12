@@ -333,7 +333,7 @@ export default function Organisations({ user }) {
           <h1 style={{ fontSize: 19, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Organisations</h1>
           <p style={{ fontSize: 12, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{filtered.length.toLocaleString()} organisation{filtered.length !== 1 ? 's' : ''}</p>
         </div>
-        <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 500, background: 'var(--accent)', color: 'rgba(238,232,220,0.90)', padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+        <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 500, background: 'var(--accent)', color: '#f4f4f6', padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
           <Plus style={{ width: 14, height: 14 }} /> Add Organisation
         </button>
       </div>
@@ -382,7 +382,7 @@ export default function Organisations({ user }) {
                 padding: '5px 10px', borderRadius: 50,
                 border: isActive ? '1.5px solid rgba(124,92,252,0.25)' : '0.5px solid rgba(124,92,252,0.08)',
                 background: isActive ? 'rgba(124,92,252,0.12)' : isOpen ? 'rgba(25,25,25,0.40)' : 'rgba(25,25,25,0.40)',
-                color: isActive ? 'rgba(238,232,220,0.90)' : 'var(--text-secondary)',
+                color: isActive ? '#f4f4f6' : 'var(--text-secondary)',
                 fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: isActive ? 500 : 400,
                 transition: 'all 0.12s',
               }}>
@@ -414,7 +414,7 @@ export default function Organisations({ user }) {
                       return (
                         <button key={ind} onClick={() => setFilters(p => ({ ...p, industries: sel ? p.industries.filter(i => i !== ind) : [...p.industries, ind] }))} style={{
                           padding: '4px 10px', borderRadius: 50, border: '0.5px solid rgba(124,92,252,0.50)',
-                          background: sel ? 'rgba(124,92,252,0.12)' : 'rgba(25,25,25,0.40)', color: sel ? 'rgba(238,232,220,0.90)' : 'var(--text-secondary)',
+                          background: sel ? 'rgba(124,92,252,0.12)' : 'rgba(25,25,25,0.40)', color: sel ? '#f4f4f6' : 'var(--text-secondary)',
                           fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
                         }}>{ind}</button>
                       )
@@ -433,7 +433,7 @@ export default function Organisations({ user }) {
                       return (
                         <button key={cty} onClick={() => setFilters(p => ({ ...p, countries: sel ? p.countries.filter(c => c !== cty) : [...p.countries, cty] }))} style={{
                           padding: '4px 10px', borderRadius: 50, border: '0.5px solid rgba(124,92,252,0.50)',
-                          background: sel ? 'rgba(124,92,252,0.12)' : 'rgba(25,25,25,0.40)', color: sel ? 'rgba(238,232,220,0.90)' : 'var(--text-secondary)',
+                          background: sel ? 'rgba(124,92,252,0.12)' : 'rgba(25,25,25,0.40)', color: sel ? '#f4f4f6' : 'var(--text-secondary)',
                           fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
                         }}>{cty}</button>
                       )
@@ -464,7 +464,7 @@ export default function Organisations({ user }) {
                       return (
                         <button key={r} onClick={() => setFilters(p => ({ ...p, lastRound: sel ? '' : r }))} style={{
                           padding: '4px 10px', borderRadius: 50, border: '0.5px solid rgba(124,92,252,0.50)',
-                          background: sel ? 'rgba(124,92,252,0.12)' : 'rgba(25,25,25,0.40)', color: sel ? 'rgba(238,232,220,0.90)' : 'var(--text-secondary)',
+                          background: sel ? 'rgba(124,92,252,0.12)' : 'rgba(25,25,25,0.40)', color: sel ? '#f4f4f6' : 'var(--text-secondary)',
                           fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: sel ? 500 : 400,
                         }}>{r}</button>
                       )
@@ -494,7 +494,7 @@ export default function Organisations({ user }) {
                   if (openPopover === 'round') setFilters(p => ({ ...p, lastRound: '' }))
                   if (openPopover === 'revenue') setFilters(p => ({ ...p, revenueMin: '', revenueMax: '' }))
                 }} style={{ fontSize: 12, color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Reset</button>
-                <button onClick={() => setOpenPopover(null)} style={{ fontSize: 13, fontWeight: 500, padding: '6px 16px', borderRadius: 50, background: 'rgba(124,92,252,0.12)', color: 'rgba(238,232,220,0.90)', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                <button onClick={() => setOpenPopover(null)} style={{ fontSize: 13, fontWeight: 500, padding: '6px 16px', borderRadius: 50, background: 'rgba(124,92,252,0.12)', color: '#f4f4f6', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
                   Show {filtered.length.toLocaleString()}
                 </button>
               </div>
@@ -553,7 +553,7 @@ export default function Organisations({ user }) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {/* Column headers */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 18px 8px', fontSize: 11, color: 'rgba(124,92,252,0.30)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, fontFamily: 'var(--font)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 18px 8px', fontSize: 11, color: '#9b9ba3', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, fontFamily: 'var(--font)' }}>
                 <div style={{ width: 28 }}></div>
                 <div style={{ width: 200 }}>Company</div>
                 <div style={{ width: 130 }}>Industry</div>
@@ -568,14 +568,14 @@ export default function Organisations({ user }) {
                   onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,92,252,0.06)'; e.currentTarget.style.borderColor = 'rgba(124,92,252,0.10)' }}
                   onMouseLeave={e => { e.currentTarget.style.background = selectedOrg?.id === company.id ? 'rgba(124,92,252,0.06)' : 'rgba(25,25,25,0.55)'; e.currentTarget.style.borderColor = selectedOrg?.id === company.id ? 'rgba(124,92,252,0.12)' : 'rgba(124,92,252,0.50)' }}>
                   <OrgLogo domain={listDomainCache[company.id]} name={company.name} size={28} />
-                  <div style={{ width: 200, fontSize: 14, fontWeight: 400, color: 'rgba(238,232,220,0.82)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.name}</div>
-                  <div style={{ width: 130, fontSize: 12, color: 'rgba(124,92,252,0.30)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.industry || '—'}</div>
-                  <div style={{ width: 120, fontSize: 12, color: 'rgba(124,92,252,0.35)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.country || '—'}</div>
+                  <div style={{ width: 200, fontSize: 14, fontWeight: 400, color: '#f4f4f6', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.name}</div>
+                  <div style={{ width: 130, fontSize: 12, color: '#9b9ba3', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.industry || '—'}</div>
+                  <div style={{ width: 120, fontSize: 12, color: '#9b9ba3', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.country || '—'}</div>
                   <div style={{ width: 100, fontSize: 12, color: company.totalFunding ? 'rgba(6,214,160,0.5)' : 'rgba(124,92,252,0.08)', fontFamily: 'var(--font)', textAlign: 'right' }}>{company.totalFunding || '—'}</div>
-                  <div style={{ flex: 1, fontSize: 12, color: 'rgba(124,92,252,0.30)', fontFamily: 'var(--font)', textAlign: 'right' }}>{company.contactCount || 0}</div>
+                  <div style={{ flex: 1, fontSize: 12, color: '#9b9ba3', fontFamily: 'var(--font)', textAlign: 'right' }}>{company.contactCount || 0}</div>
                   <div style={{ width: 60, display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
-                    <button onClick={(e) => { e.stopPropagation(); edit(company) }} style={{ fontSize: 11, color: 'rgba(124,92,252,0.30)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = 'rgba(124,92,252,0.55)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(124,92,252,0.15)'}>Edit</button>
-                    <button onClick={(e) => { e.stopPropagation(); remove(company.id) }} style={{ color: 'rgba(124,92,252,0.10)', background: 'none', border: 'none', cursor: 'pointer', padding: 2, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = '#ef4444'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(124,92,252,0.10)'}><X style={{ width: 12, height: 12 }} /></button>
+                    <button onClick={(e) => { e.stopPropagation(); edit(company) }} style={{ fontSize: 11, color: '#9b9ba3', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = 'rgba(124,92,252,0.55)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(124,92,252,0.15)'}>Edit</button>
+                    <button onClick={(e) => { e.stopPropagation(); remove(company.id) }} style={{ color: '#7e7e88', background: 'none', border: 'none', cursor: 'pointer', padding: 2, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = '#ef4444'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(124,92,252,0.10)'}><X style={{ width: 12, height: 12 }} /></button>
                   </div>
                 </div>
               ))}
@@ -893,7 +893,7 @@ export default function Organisations({ user }) {
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
               <button onClick={reset} style={{ flex: 1, padding: '10px 0', fontSize: 14, color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 50, background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font)' }}>Cancel</button>
-              <button onClick={save} style={{ flex: 1, padding: '10px 0', fontSize: 14, color: 'rgba(238,232,220,0.90)', background: 'var(--accent)', border: 'none', borderRadius: 50, cursor: 'pointer', fontWeight: 500, fontFamily: 'var(--font)' }}>Save</button>
+              <button onClick={save} style={{ flex: 1, padding: '10px 0', fontSize: 14, color: '#f4f4f6', background: 'var(--accent)', border: 'none', borderRadius: 50, cursor: 'pointer', fontWeight: 500, fontFamily: 'var(--font)' }}>Save</button>
             </div>
           </div>
         </div>

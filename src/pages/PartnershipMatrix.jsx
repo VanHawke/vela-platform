@@ -5,7 +5,7 @@ import { RefreshCw, Loader2, AlertTriangle, Plus, X, ExternalLink, FileDown, Che
 const T = {
   bg: '#000000', surface: 'rgba(25,25,25,0.40)', surfaceHover: 'rgba(124,92,252,0.06)',
   border: 'rgba(124,92,252,0.08)', borderHover: 'rgba(124,92,252,0.10)',
-  text: 'rgba(238,232,220,0.95)', textSecondary: 'rgba(124,92,252,0.55)', textTertiary: '#7e7e88',
+  text: '#f4f4f6', textSecondary: 'rgba(124,92,252,0.55)', textTertiary: '#7e7e88',
   accent: '#7c5cfc', accentSoft: 'rgba(124,92,252,0.08)',
   blue: '#007AFF', red: '#FF3B30', yellow: '#FF9500', green: '#34C759',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
@@ -31,12 +31,12 @@ function TeamLogo({ team, size = 20 }) {
   const [imgError, setImgError] = useState(false)
   const showImg = team.logo_url && !imgError
   return (
-    <div style={{ width: size, height: size, borderRadius: size * 0.3, background: team.color || 'rgba(238,232,220,0.70)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+    <div style={{ width: size, height: size, borderRadius: size * 0.3, background: team.color || '#9b9ba3', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
       {showImg ? (
         <img src={team.logo_url} alt={team.name} style={{ width: size * 0.7, height: size * 0.7, objectFit: 'contain', filter: 'brightness(10)' }}
           onError={() => setImgError(true)} />
       ) : (
-        <span style={{ fontSize: Math.max(size * 0.35, 8), fontWeight: 500, color: 'rgba(238,232,220,0.90)', letterSpacing: '-0.02em' }}>
+        <span style={{ fontSize: Math.max(size * 0.35, 8), fontWeight: 500, color: '#f4f4f6', letterSpacing: '-0.02em' }}>
           {team.name?.slice(0,2).toUpperCase()}
         </span>
       )}
@@ -134,7 +134,7 @@ export default function PartnershipMatrix({ user }) {
           {TABS.map(t => { const I = t.icon; return (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
               display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: T.font, fontSize: 13, fontWeight: tab === t.id ? 600 : 400, transition: 'all 0.15s',
-              background: tab === t.id ? T.accent : 'transparent', color: tab === t.id ? 'rgba(238,232,220,0.90)' : T.textSecondary,
+              background: tab === t.id ? T.accent : 'transparent', color: tab === t.id ? '#f4f4f6' : T.textSecondary,
             }}><I size={13} />{t.label}</button>
           )})}
         </div>
@@ -158,7 +158,7 @@ export default function PartnershipMatrix({ user }) {
               </select>
               <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                 <button onClick={() => setShowAdd(false)} style={{ flex: 1, fontSize: 13, padding: '6px 0', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
-                <button onClick={addPartnership} style={{ flex: 1, fontSize: 13, padding: '6px 0', borderRadius: 6, border: 'none', background: T.accent, color: 'rgba(238,232,220,0.90)', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>Add</button>
+                <button onClick={addPartnership} style={{ flex: 1, fontSize: 13, padding: '6px 0', borderRadius: 6, border: 'none', background: T.accent, color: '#f4f4f6', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>Add</button>
               </div>
             </div>
           </div>
@@ -297,7 +297,7 @@ export default function PartnershipMatrix({ user }) {
                       </p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                         {gaps.map(c => (
-                          <span key={c.id} style={{ fontSize: 12, padding: '3px 10px', borderRadius: 6, background: 'rgba(238,232,220,0.70)', color: '#991B1B', border: '1px solid rgba(226,75,74,0.2)', fontWeight: 500 }}>{c.name}</span>
+                          <span key={c.id} style={{ fontSize: 12, padding: '3px 10px', borderRadius: 6, background: '#9b9ba3', color: '#991B1B', border: '1px solid rgba(226,75,74,0.2)', fontWeight: 500 }}>{c.name}</span>
                         ))}
                       </div>
                     </div>

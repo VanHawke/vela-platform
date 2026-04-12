@@ -133,7 +133,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
         </div>
         <div style={{ position: 'relative', flexShrink: 0 }} ref={menuOpenId === conv.id ? menuRef : null}>
           <button onClick={(e) => { e.stopPropagation(); setMenuOpenId(menuOpenId === conv.id ? null : conv.id) }}
-            style={{ width: 24, height: 24, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(124,92,252,0.15)', transition: 'color 0.15s' }}
+            style={{ width: 24, height: 24, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7e7e88', transition: 'color 0.15s' }}
             onMouseOver={e => e.currentTarget.style.color = '#9b9ba3'}
             onMouseOut={e => { if (menuOpenId !== conv.id) e.currentTarget.style.color = 'rgba(124,92,252,0.15)' }}>
             <MoreHorizontal size={14} />

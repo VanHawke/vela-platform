@@ -90,7 +90,7 @@ export default function Contacts({ user }) {
   const glass = { padding: '12px 20px', borderRadius: 20, background: 'rgba(25,25,25,0.40)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', border: '0.5px solid rgba(124,92,252,0.50)', boxShadow: 'inset 0 1px 0 rgba(124,92,252,0.10), 0 8px 32px rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
   const inputStyle = { width: '100%', background: 'rgba(25,25,25,0.40)', border: '0.5px solid rgba(124,92,252,0.50)', borderRadius: 50, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
   const pillBtn = (bg, bc, col) => ({ padding: '8px 18px', borderRadius: 50, background: bg, border: `1.5px solid ${bc}`, fontSize: 12, color: col, fontWeight: 400, cursor: 'pointer', boxShadow: 'inset 0 1px 0 rgba(25,25,25,0.40)', fontFamily: 'var(--font)' })
-  const actionBtn = { width: 30, height: 30, borderRadius: 50, background: 'rgba(25,25,25,0.40)', border: '0.5px solid rgba(124,92,252,0.50)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(124,92,252,0.15)', cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'inset 0 1px 0 rgba(25,25,25,0.35)', flexShrink: 0 }
+  const actionBtn = { width: 30, height: 30, borderRadius: 50, background: 'rgba(25,25,25,0.40)', border: '0.5px solid rgba(124,92,252,0.50)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7e7e88', cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'inset 0 1px 0 rgba(25,25,25,0.35)', flexShrink: 0 }
   const stageColors = { 'To revisit': ['rgba(25,25,25,0.40)','rgba(124,92,252,0.08)','rgba(124,92,252,0.25)'], 'Contact made': ['rgba(124,92,252,0.08)','rgba(124,92,252,0.15)','rgba(124,92,252,0.55)'], 'In Dialogue': ['rgba(245,158,11,0.08)','rgba(245,158,11,0.15)','rgba(245,158,11,0.6)'], 'Qualified': ['rgba(6,214,160,0.08)','rgba(6,214,160,0.15)','rgba(6,214,160,0.55)'], 'Meeting arranged (brand x RH)': ['rgba(59,130,246,0.08)','rgba(59,130,246,0.15)','rgba(59,130,246,0.55)'] }
   const avatarColors = ['rgba(124,92,252,0.15)', 'rgba(6,214,160,0.15)', 'rgba(236,72,153,0.15)', 'rgba(59,130,246,0.15)', 'rgba(245,158,11,0.15)']
   const avatarTextColors = ['rgba(124,92,252,0.7)', 'rgba(6,214,160,0.7)', 'rgba(236,72,153,0.7)', 'rgba(59,130,246,0.7)', 'rgba(245,158,11,0.7)']
@@ -103,12 +103,12 @@ export default function Contacts({ user }) {
       <div style={{ padding: '20px 24px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <div style={{ fontSize: 23, fontWeight: 200, color: '#f4f4f6', letterSpacing: '-0.03em', fontFamily: 'var(--font)' }}>Contacts</div>
-          <div style={{ fontSize: 14, color: 'rgba(124,92,252,0.25)', fontWeight: 300, marginTop: 2, fontFamily: 'var(--font)' }}>{filtered.length.toLocaleString()} contacts</div>
+          <div style={{ fontSize: 14, color: '#9b9ba3', fontWeight: 300, marginTop: 2, fontFamily: 'var(--font)' }}>{filtered.length.toLocaleString()} contacts</div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', width: 260, background: 'rgba(25,25,25,0.40)', backdropFilter: 'blur(40px) saturate(1.6)', border: '0.5px solid rgba(124,92,252,0.50)', borderRadius: 50, padding: '0 16px', boxShadow: 'inset 0 2px 0 rgba(124,92,252,0.10), inset 0 -1px 0 rgba(124,92,252,0.08)' }}>
-            <Search style={{ width: 14, height: 14, color: 'rgba(124,92,252,0.25)', flexShrink: 0, marginRight: 8 }} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search contacts..." style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 14, color: 'rgba(238,232,220,0.70)', fontFamily: 'var(--font)', height: 38, fontWeight: 300 }} />
+            <Search style={{ width: 14, height: 14, color: '#9b9ba3', flexShrink: 0, marginRight: 8 }} />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search contacts..." style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 14, color: '#9b9ba3', fontFamily: 'var(--font)', height: 38, fontWeight: 300 }} />
           </div>
           <select value={sortDir} onChange={e => setSortDir(e.target.value)} style={pillBtn('rgba(124,92,252,0.08)','rgba(124,92,252,0.18)','rgba(124,92,252,0.65)')}>
             <option value="asc">A → Z</option><option value="desc">Z → A</option>
@@ -121,7 +121,7 @@ export default function Contacts({ user }) {
       <div style={{ flex: 1, padding: '16px 24px', overflow: 'hidden' }}>
         <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3, height: '100%' }}>
           {/* Column headers */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 18px 8px', fontSize: 11, color: 'rgba(124,92,252,0.30)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, fontFamily: 'var(--font)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 18px 8px', fontSize: 11, color: '#9b9ba3', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, fontFamily: 'var(--font)' }}>
             <div style={{ width: 32 }}></div>
             <div style={{ width: 180 }}>Name</div>
             <div style={{ width: 150 }}>Company</div>
@@ -131,7 +131,7 @@ export default function Contacts({ user }) {
           {loading ? (
             [...Array(8)].map((_, i) => <div key={i} style={{ height: 48, background: 'rgba(25,25,25,0.35)', borderRadius: 12, animation: 'shimmer 1.5s infinite' }} />)
           ) : paged.length === 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'rgba(124,92,252,0.15)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, color: '#7e7e88' }}>
               <User style={{ width: 32, height: 32, marginBottom: 12, opacity: 0.3 }} />
               <p style={{ fontSize: 14, fontFamily: 'var(--font)', fontWeight: 300 }}>{search ? 'No contacts match' : 'No contacts yet'}</p>
             </div>
@@ -154,10 +154,10 @@ export default function Contacts({ user }) {
                         <span style={{ fontSize: 11, fontWeight: 500, color: atc, fontFamily: 'var(--font)' }}>{(contact.firstName || '?')[0]?.toUpperCase()}{(contact.lastName || '')[0]?.toUpperCase() || ''}</span>
                       )}
                     </div>
-                    <div style={{ width: 180, fontSize: 14, fontWeight: 400, color: 'rgba(238,232,220,0.82)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName(contact)}</div>
-                    <div style={{ width: 150, fontSize: 12, color: 'rgba(124,92,252,0.30)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.company || '—'}</div>
-                    <div style={{ width: 180, fontSize: 12, color: 'rgba(124,92,252,0.35)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.title || '—'}</div>
-                    <div style={{ flex: 1, fontSize: 12, color: 'rgba(124,92,252,0.30)', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.email || ''}</div>
+                    <div style={{ width: 180, fontSize: 14, fontWeight: 400, color: '#f4f4f6', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName(contact)}</div>
+                    <div style={{ width: 150, fontSize: 12, color: '#9b9ba3', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.company || '—'}</div>
+                    <div style={{ width: 180, fontSize: 12, color: '#9b9ba3', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.title || '—'}</div>
+                    <div style={{ flex: 1, fontSize: 12, color: '#9b9ba3', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.email || ''}</div>
                     {/* Quick actions */}
                     <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                       {contact.email && <a href={`mailto:${contact.email}`} onClick={e => e.stopPropagation()} style={actionBtn}><Mail style={{ width: 13, height: 13 }} /></a>}
@@ -167,10 +167,10 @@ export default function Contacts({ user }) {
                 )
               })}
               {totalPages > 1 && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 0', fontSize: 13, color: 'rgba(124,92,252,0.25)', fontFamily: 'var(--font)' }}>
-                  <button disabled={page === 0} onClick={() => setPage(p => p - 1)} style={{ background: 'none', border: 'none', cursor: page === 0 ? 'default' : 'pointer', opacity: page === 0 ? 0.3 : 1, color: 'rgba(124,92,252,0.35)', padding: 4 }}><ChevronLeft style={{ width: 16, height: 16 }} /></button>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 0', fontSize: 13, color: '#9b9ba3', fontFamily: 'var(--font)' }}>
+                  <button disabled={page === 0} onClick={() => setPage(p => p - 1)} style={{ background: 'none', border: 'none', cursor: page === 0 ? 'default' : 'pointer', opacity: page === 0 ? 0.3 : 1, color: '#9b9ba3', padding: 4 }}><ChevronLeft style={{ width: 16, height: 16 }} /></button>
                   <span>{page + 1} / {totalPages}</span>
-                  <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} style={{ background: 'none', border: 'none', cursor: page >= totalPages - 1 ? 'default' : 'pointer', opacity: page >= totalPages - 1 ? 0.3 : 1, color: 'rgba(124,92,252,0.35)', padding: 4 }}><ChevronRight style={{ width: 16, height: 16 }} /></button>
+                  <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} style={{ background: 'none', border: 'none', cursor: page >= totalPages - 1 ? 'default' : 'pointer', opacity: page >= totalPages - 1 ? 0.3 : 1, color: '#9b9ba3', padding: 4 }}><ChevronRight style={{ width: 16, height: 16 }} /></button>
                 </div>
               )}
             </>
@@ -182,7 +182,7 @@ export default function Contacts({ user }) {
         <div onClick={e => e.target === e.currentTarget && reset()} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div style={{ background: 'rgba(25,25,25,0.50)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 24, border: '0.5px solid rgba(124,92,252,0.50)', boxShadow: 'inset 0 1px 0 rgba(124,92,252,0.08), 0 24px 80px rgba(0,0,0,0.5)', width: '100%', maxWidth: 420, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-              <h2 style={{ fontSize: 17, fontWeight: 200, color: 'rgba(238,232,220,0.90)', margin: 0, fontFamily: 'var(--font)' }}>{editing ? 'Edit Contact' : 'Add Contact'}</h2>
+              <h2 style={{ fontSize: 17, fontWeight: 200, color: '#f4f4f6', margin: 0, fontFamily: 'var(--font)' }}>{editing ? 'Edit Contact' : 'Add Contact'}</h2>
               <button onClick={reset} style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer' }}><X style={{ width: 16, height: 16 }} /></button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -197,7 +197,7 @@ export default function Contacts({ user }) {
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
               <button onClick={reset} style={{ flex: 1, padding: '10px 0', fontSize: 14, color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 50, background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font)' }}>Cancel</button>
-              <button onClick={save} style={{ flex: 1, padding: '10px 0', fontSize: 14, color: 'rgba(238,232,220,0.90)', background: 'var(--accent)', border: 'none', borderRadius: 50, cursor: 'pointer', fontWeight: 500, fontFamily: 'var(--font)' }}>Save</button>
+              <button onClick={save} style={{ flex: 1, padding: '10px 0', fontSize: 14, color: '#f4f4f6', background: 'var(--accent)', border: 'none', borderRadius: 50, cursor: 'pointer', fontWeight: 500, fontFamily: 'var(--font)' }}>Save</button>
             </div>
           </div>
         </div>

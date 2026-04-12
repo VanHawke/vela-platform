@@ -28,7 +28,7 @@ export default function KikoThinking({ steps = [], isActive = false }) {
                 ? <Check style={{ width: 13, height: 13, color: 'rgba(124,92,252,0.6)' }} />
                 : <Loader2 style={{ width: 13, height: 13, color: 'rgba(124,92,252,0.5)', animation: 'spin 1s linear infinite' }} />
               }
-              <Wrench style={{ width: 12, height: 12, color: 'rgba(124,92,252,0.2)' }} />
+              <Wrench style={{ width: 12, height: 12, color: '#7e7e88' }} />
               <span style={{ fontWeight: 500 }}>{step.label}</span>
             </div>
           )

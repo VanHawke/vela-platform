@@ -13,7 +13,7 @@ import CompanyLogo from '@/components/CompanyLogo'
 function md(text) {
   if (!text) return ''
   let h = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/\*\*(.+?)\*\*/g, '<strong style="color:rgba(238,232,220,0.85);font-weight:500">$1</strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#f4f4f6;font-weight:500">$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/\n/g, '<br/>')
   return DOMPurify.sanitize(h)
@@ -334,7 +334,7 @@ Be direct. Use web search for current company intelligence if needed.`
                     setSelectedAction({ id: task.id, data: { company: d.company || '', contact: d.contact || '' }, isTask: true, taskData: d })
                     getKikoRec({ id: task.id, data: { company: d.company || '', contact: d.contact || '' }, isTask: true, taskData: d })
                   }}>
-                  <button onClick={(e) => { e.stopPropagation(); toggleTask(task) }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 2, color: 'rgba(124,92,252,0.25)' }}>
+                  <button onClick={(e) => { e.stopPropagation(); toggleTask(task) }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 2, color: '#9b9ba3' }}>
                     <Square size={14} />
                   </button>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -350,7 +350,7 @@ Be direct. Use web search for current company intelligence if needed.`
                       {d.notes && d.company && <span style={{ fontSize: 11, color: T.textTertiary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.notes.slice(0, 50)}</span>}
                     </div>
                   </div>
-                  <ChevronRight size={12} style={{ color: 'rgba(124,92,252,0.08)', flexShrink: 0, marginTop: 8 }} />
+                  <ChevronRight size={12} style={{ color: '#7e7e88', flexShrink: 0, marginTop: 8 }} />
                 </div>
               )
             })}
@@ -392,10 +392,10 @@ Be direct. Use web search for current company intelligence if needed.`
                     <span style={{ fontSize: 11, color: T.textTertiary, fontWeight: 300 }}>{action.stage}</span>
                     {action.value > 0 && <span style={{ fontSize: 11, color: 'rgba(0,212,170,0.4)', fontWeight: 300 }}>${(action.value / 1000000).toFixed(1)}M</span>}
                     <span style={{ fontSize: 11, color: action.daysSinceUpdate > 30 ? 'rgba(255,59,48,0.5)' : T.textTertiary, fontWeight: 300 }}>{action.daysSinceUpdate}d ago</span>
-                    <span style={{ fontSize: 11, color: 'rgba(124,92,252,0.3)', fontWeight: 300 }}>{action.prob}%</span>
+                    <span style={{ fontSize: 11, color: '#9b9ba3', fontWeight: 300 }}>{action.prob}%</span>
                   </div>
                 </div>
-                <ChevronRight size={12} style={{ color: 'rgba(124,92,252,0.08)', flexShrink: 0, marginTop: 8 }} />
+                <ChevronRight size={12} style={{ color: '#7e7e88', flexShrink: 0, marginTop: 8 }} />
               </div>
             )
           })}
@@ -412,7 +412,7 @@ Be direct. Use web search for current company intelligence if needed.`
         <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
           {!selectedAction && !kikoLoading && (
             <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-              <Target size={20} style={{ color: 'rgba(124,92,252,0.08)', margin: '0 auto 10px', display: 'block' }} />
+              <Target size={20} style={{ color: '#7e7e88', margin: '0 auto 10px', display: 'block' }} />
               <p style={{ fontSize: 13, color: T.textTertiary, fontWeight: 300, lineHeight: 1.5 }}>Select a deal to get Kiko's recommendation — analysis, timing, and draft message.</p>
             </div>
           )}
@@ -431,7 +431,7 @@ Be direct. Use web search for current company intelligence if needed.`
                 <div style={{ fontSize: 11, fontWeight: 500, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 }}>
                   {selectedAction.isTask ? (selectedAction.taskData?.type || 'Task') : selectedAction.actionType}
                 </div>
-                <div style={{ fontSize: 14, color: 'rgba(238,232,220,0.70)', fontWeight: 400 }}>
+                <div style={{ fontSize: 14, color: '#9b9ba3', fontWeight: 400 }}>
                   {selectedAction.data?.company || selectedAction.taskData?.company}{selectedAction.data?.contact ? ` · ${selectedAction.data.contact}` : ''}
                 </div>
                 <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>

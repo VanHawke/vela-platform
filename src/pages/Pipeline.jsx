@@ -273,7 +273,7 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
                 padding: '8px 14px', borderRadius: 50,
                 background: newName.trim() ? 'var(--text)' : 'var(--surface-hover)',
                 border: 'none', cursor: newName.trim() ? 'pointer' : 'default',
-                fontSize: 14, fontWeight: 500, color: newName.trim() ? 'rgba(238,232,220,0.90)' : 'var(--text-tertiary)',
+                fontSize: 14, fontWeight: 500, color: newName.trim() ? '#f4f4f6' : 'var(--text-tertiary)',
                 fontFamily: 'var(--font)', transition: 'all 0.15s',
               }}>
               {saving
@@ -474,8 +474,8 @@ export default function Pipeline({ user }) {
     'Closed Won': 'rgba(6,214,160,0.7)',
     'Closed Lost': 'rgba(226,75,74,0.6)',
   }
-  const sectionTitle = { fontSize: 12, fontWeight: 300, color: 'rgba(124,92,252,0.35)', fontFamily: 'var(--font)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }
-  const emptyText = { fontSize: 13, color: 'rgba(124,92,252,0.30)', fontFamily: 'var(--font)', fontStyle: 'italic', fontWeight: 300 }
+  const sectionTitle = { fontSize: 12, fontWeight: 300, color: '#9b9ba3', fontFamily: 'var(--font)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }
+  const emptyText = { fontSize: 13, color: '#9b9ba3', fontFamily: 'var(--font)', fontStyle: 'italic', fontWeight: 300 }
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: 8 }}>
@@ -536,7 +536,7 @@ export default function Pipeline({ user }) {
                     {loading ? (
                       [...Array(2)].map((_, i) => <div key={i} style={{ height: 70, background: 'rgba(25,25,25,0.30)', borderRadius: 12 }} />)
                     ) : stageDeals.length === 0 ? (
-                      <p style={{ fontSize: 12, color: 'rgba(124,92,252,0.12)', textAlign: 'center', padding: '20px 0', fontFamily: 'var(--font)', fontWeight: 300 }}>No deals</p>
+                      <p style={{ fontSize: 12, color: '#7e7e88', textAlign: 'center', padding: '20px 0', fontFamily: 'var(--font)', fontWeight: 300 }}>No deals</p>
                     ) : stageDeals.map(deal => (
                       <div key={deal._id}
                         draggable
@@ -552,17 +552,17 @@ export default function Pipeline({ user }) {
                           ) : (
                             <CompanyLogo name={deal.company} size={18} />
                           )}
-                          <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(238,232,220,0.82)', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <p style={{ fontSize: 13, fontWeight: 400, color: '#f4f4f6', margin: 0, fontFamily: 'var(--font)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {deal.company || deal.title}
                           </p>
                         </div>
                         {deal.contactName && (
-                          <p style={{ fontSize: 11, color: 'rgba(124,92,252,0.30)', margin: '4px 0 0', fontFamily: 'var(--font)' }}>
+                          <p style={{ fontSize: 11, color: '#9b9ba3', margin: '4px 0 0', fontFamily: 'var(--font)' }}>
                             {deal.contactName}{deal.industry ? ` · ${deal.industry}` : ''}
                           </p>
                         )}
                         {!deal.contactName && deal.industry && (
-                          <p style={{ fontSize: 11, color: 'rgba(124,92,252,0.25)', margin: '4px 0 0', fontFamily: 'var(--font)' }}>{deal.industry}</p>
+                          <p style={{ fontSize: 11, color: '#9b9ba3', margin: '4px 0 0', fontFamily: 'var(--font)' }}>{deal.industry}</p>
                         )}
                         {/* Pipeline badge — visible in All view */}
                         {pipelineFilter === 'All' && deal.pipeline && (
@@ -599,11 +599,11 @@ export default function Pipeline({ user }) {
                       <CompanyLogo name={selectedDeal.company} domain={companyDomains[selectedDeal.company]} size={40} />
                     )}
                     <div>
-                      <h2 style={{ fontSize: 17, fontWeight: 400, color: 'rgba(238,232,220,0.90)', margin: 0, fontFamily: 'var(--font)' }}>{selectedDeal.company || selectedDeal.title}</h2>
+                      <h2 style={{ fontSize: 17, fontWeight: 400, color: '#f4f4f6', margin: 0, fontFamily: 'var(--font)' }}>{selectedDeal.company || selectedDeal.title}</h2>
                       {dealCompany?.industry && <p style={{ fontSize: 13, color: 'rgba(124,92,252,0.45)', margin: '3px 0 0', fontFamily: 'var(--font)', fontWeight: 300 }}>{dealCompany.industry}{dealCompany.country ? ` · ${dealCompany.country}` : ''}</p>}
                     </div>
                   </div>
-                  <button onClick={closePanel} style={{ background: 'rgba(25,25,25,0.40)', border: '0.5px solid rgba(124,92,252,0.50)', borderRadius: 50, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(124,92,252,0.35)', flexShrink: 0 }}><X style={{ width: 14, height: 14 }} /></button>
+                  <button onClick={closePanel} style={{ background: 'rgba(25,25,25,0.40)', border: '0.5px solid rgba(124,92,252,0.50)', borderRadius: 50, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#9b9ba3', flexShrink: 0 }}><X style={{ width: 14, height: 14 }} /></button>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font)' }}>
@@ -636,7 +636,7 @@ export default function Pipeline({ user }) {
                           </div>
                         )}
                         <div style={{ minWidth: 0, flex: 1 }}>
-                          <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(238,232,220,0.80)', margin: 0, fontFamily: 'var(--font)' }}>{[ct.firstName, ct.lastName].filter(Boolean).join(' ')}{i === 0 ? ' (Primary)' : ''}</p>
+                          <p style={{ fontSize: 13, fontWeight: 400, color: '#f4f4f6', margin: 0, fontFamily: 'var(--font)' }}>{[ct.firstName, ct.lastName].filter(Boolean).join(' ')}{i === 0 ? ' (Primary)' : ''}</p>
                           <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '1px 0 0', fontFamily: 'var(--font)' }}>{ct.title || '—'}</p>
                         </div>
                       </div>
@@ -650,8 +650,8 @@ export default function Pipeline({ user }) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {dealCampaigns.map(camp => (
                       <div key={camp.name} style={{ padding: '8px 10px', background: 'rgba(59,130,246,0.06)', borderRadius: 50, border: '1.5px solid rgba(59,130,246,0.12)' }}>
-                        <p style={{ fontSize: 14, fontWeight: 400, color: 'rgba(238,232,220,0.80)', margin: 0, fontFamily: 'var(--font)' }}>{camp.name}</p>
-                        <p style={{ fontSize: 11, color: 'rgba(124,92,252,0.25)', margin: '2px 0 0', fontFamily: 'var(--font)', fontWeight: 300 }}>{camp.contacts} contact{camp.contacts !== 1 ? 's' : ''}</p>
+                        <p style={{ fontSize: 14, fontWeight: 400, color: '#f4f4f6', margin: 0, fontFamily: 'var(--font)' }}>{camp.name}</p>
+                        <p style={{ fontSize: 11, color: '#9b9ba3', margin: '2px 0 0', fontFamily: 'var(--font)', fontWeight: 300 }}>{camp.contacts} contact{camp.contacts !== 1 ? 's' : ''}</p>
                       </div>
                     ))}
                   </div>
@@ -674,7 +674,7 @@ export default function Pipeline({ user }) {
                             {isOverdue && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 6, background: 'rgba(255,59,48,0.08)', color: 'rgba(255,59,48,0.6)', fontWeight: 500 }}>OVERDUE</span>}
                             {d.dueDate && <span style={{ fontSize: 10, color: 'var(--text-tertiary)', marginLeft: 'auto' }}>{d.dueDate}</span>}
                           </div>
-                          <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(238,232,220,0.70)', margin: '3px 0 0', fontFamily: 'var(--font)' }}>{d.notes || d.contact || 'View in Command Centre →'}</p>
+                          <p style={{ fontSize: 13, fontWeight: 400, color: '#9b9ba3', margin: '3px 0 0', fontFamily: 'var(--font)' }}>{d.notes || d.contact || 'View in Command Centre →'}</p>
                         </div>
                       )
                     })}
@@ -694,7 +694,7 @@ export default function Pipeline({ user }) {
                   <div style={{ display: 'flex', gap: 6 }}>
                     <input value={activityNote} onChange={e => setActivityNote(e.target.value)} placeholder={`Notes for ${activityType}...`}
                       onKeyDown={e => e.key === 'Enter' && logActivity(activityType.toLowerCase().replace(' ', '_'))}
-                      style={{ flex: 1, background: 'rgba(25,25,25,0.30)', border: '0.5px solid rgba(124,92,252,0.50)', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: 'rgba(238,232,220,0.70)', fontFamily: 'var(--font)', outline: 'none' }} />
+                      style={{ flex: 1, background: 'rgba(25,25,25,0.30)', border: '0.5px solid rgba(124,92,252,0.50)', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: '#9b9ba3', fontFamily: 'var(--font)', outline: 'none' }} />
                     <button onClick={() => logActivity(activityType.toLowerCase().replace(' ', '_'))} disabled={savingActivity}
                       style={{ padding: '6px 14px', borderRadius: 8, fontSize: 11, fontFamily: 'var(--font)', cursor: 'pointer', border: '1px solid rgba(6,214,160,0.2)', background: 'rgba(6,214,160,0.06)', color: 'rgba(6,214,160,0.7)' }}>{savingActivity ? '...' : 'Log'}</button>
                   </div>

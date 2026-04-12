@@ -988,3 +988,49 @@ Surface boundary: code touches repo → Claude Code only. Strategy/writing/discu
 ### Bundle hashes
 - Phase 1: `DMM1uHkO` (frontend unchanged)
 - Phase 2: `CL0XoCer`
+
+## Section A0m — v0.0.47 Warm Charcoal Cascade v2 (April 12, 2026)
+
+**Theme:** Complete the cascade that v0.0.44 missed — two entire pattern families were invisible to the first sed pass.
+
+### What v0.0.44 missed
+1. **`rgba(245,245,248,...)`** — 4 files had local `C` colour constants with this warm-white variant. Not caught because the v0.0.44 sed only targeted `rgba(238,238,238,...)`.
+2. **`rgba(238,232,220,...)`** — 6 page files used this brownish-white for text. Completely different RGB base, invisible to v0.0.44 grep.
+3. **Purple-as-text at 8-35% alpha** — `color: 'rgba(124,92,252,0.15)'` etc. used as text colour on dark backgrounds. Technically "correct" purple accent colour but at alpha levels that make text unreadable. This was the Contacts page readability bug Sunny flagged.
+
+### Replacement map applied
+- `rgba(245,245,248,0.92)` → `#f4f4f6` (text)
+- `rgba(245,245,248,0.55)` → `#9b9ba3` (secondary)
+- `rgba(245,245,248,0.32)` → `#7e7e88` (tertiary)
+- `rgba(245,245,248,0.16)` → `#56565e` (muted)
+- `rgba(238,232,220,0.80-0.95)` → `#f4f4f6` (text)
+- `rgba(238,232,220,0.50-0.75)` → `#9b9ba3` (secondary)
+- `rgba(238,232,220,0.30-0.45)` → `#7e7e88` (tertiary)
+- `color: rgba(124,92,252,0.08-0.15)` → `#7e7e88` (tertiary text)
+- `color: rgba(124,92,252,0.20-0.35)` → `#9b9ba3` (secondary text)
+- Purple-at-low-alpha in borders/backgrounds left untouched (intentional accent tints)
+
+### Files changed (21 files)
+- `src/components/layout/Layout.jsx` (local C constants)
+- `src/components/kiko/KikoFloat.jsx` (local C constants)
+- `src/components/kiko/KikoChat.jsx` (local C constants + purple text)
+- `src/components/kiko/AllChatsView.jsx` (purple text)
+- `src/components/kiko/ChatHistory.jsx` (purple text)
+- `src/components/kiko/DraftPreview.jsx` (purple text)
+- `src/components/kiko/KikoInsights.jsx` (purple text)
+- `src/components/kiko/KikoToast.jsx` (purple text)
+- `src/components/KikoThinking.jsx` (purple text)
+- `src/components/auth/LoginPage.jsx` (purple text)
+- `src/pages/SequenceDetail.jsx` (local C constants)
+- `src/pages/Contacts.jsx` (warm white + purple text — the unreadable page)
+- `src/pages/Organisations.jsx` (warm white + purple text)
+- `src/pages/Pipeline.jsx` (warm white + purple text)
+- `src/pages/PartnershipMatrix.jsx` (warm white)
+- `src/pages/OutreachIntelligence.jsx` (warm white + purple text)
+- `src/pages/CommercialCalendar.jsx` (warm white)
+- `package.json` (0.0.46 → 0.0.47)
+
+### Verification
+- Full grep audit: 0 matches across all 4 pattern groups
+- npm run build: clean
+- Self-audit loop: GREEN

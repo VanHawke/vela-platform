@@ -47,7 +47,7 @@ export default function KikoToast() {
             fontSize: 11, cursor: 'pointer', fontFamily: T.font, fontWeight: 300, flexShrink: 0,
           }}>View</button>
           <button onClick={() => dismiss(toast.id)} style={{
-            background: 'none', border: 'none', color: 'rgba(124,92,252,0.15)',
+            background: 'none', border: 'none', color: '#7e7e88',
             cursor: 'pointer', fontSize: 15, padding: 0, lineHeight: 1,
           }}>×</button>
         </div>

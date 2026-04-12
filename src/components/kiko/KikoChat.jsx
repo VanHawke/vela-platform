@@ -9,10 +9,10 @@ const C = {
   cardHover: '#1c1c24',
   border: 'rgba(255,255,255,0.06)',
   borderHover: 'rgba(255,255,255,0.10)',
-  text: 'rgba(245,245,248,0.92)',
-  textSec: 'rgba(245,245,248,0.55)',
-  textTer: 'rgba(245,245,248,0.32)',
-  textMut: 'rgba(245,245,248,0.16)',
+  text: '#f4f4f6',
+  textSec: '#9b9ba3',
+  textTer: '#7e7e88',
+  textMut: '#56565e',
   purple: '#7c5cfc',
   teal: '#7c5cfc',
   green: '#34D399',
@@ -1351,7 +1351,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                         <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(124,92,252,0.6)" strokeWidth="2.5"><path d={showSteps ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"}/></svg>
                       </span>
                       <span>Kiko's reasoning</span>
-                      <span style={{ marginLeft: 'auto', fontSize: 11, color: 'rgba(124,92,252,0.35)' }}>{thinkingSteps.length} steps</span>
+                      <span style={{ marginLeft: 'auto', fontSize: 11, color: '#9b9ba3' }}>{thinkingSteps.length} steps</span>
                     </button>
                     <div style={{ maxHeight: showSteps ? 400 : 0, overflow: 'hidden', transition: 'max-height 0.4s cubic-bezier(0.4,0,0.2,1)' }}>
                       <div style={{ padding: '8px 0 0' }}>
@@ -1420,7 +1420,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {dictateError && (
             <p style={{ textAlign: 'center', fontSize: 12, color: '#C62828', fontFamily: C.font, margin: '6px 0 0' }}>{dictateError}</p>
           )}
-          <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(124,92,252,0.12)', fontFamily: C.font, margin: '8px 0 0', fontWeight: 300 }}>Kiko is AI and can make mistakes. Please double-check responses.</p>
+          <p style={{ textAlign: 'center', fontSize: 11, color: '#7e7e88', fontFamily: C.font, margin: '8px 0 0', fontWeight: 300 }}>Kiko is AI and can make mistakes. Please double-check responses.</p>
         </div>
       </div>
       {/* Voice overlay — always fullscreen, captures transcript via onMessage */}
