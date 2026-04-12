@@ -222,6 +222,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const lastQueryRef = useRef('')
   const streamingRef = useRef(false)
 
+  // Background task state (Phase 3)
+  const [bgTaskLoading, setBgTaskLoading] = useState(false)
+  const [bgTaskMsg, setBgTaskMsg] = useState('')
+
   // Voice mode state — inline, no overlay
   const [voiceActive, setVoiceActive] = useState(false)
   const [voiceMicStream, setVoiceMicStream] = useState(null)
@@ -426,6 +430,67 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     window.addEventListener('kiko_load_conversation', handler)
     return () => window.removeEventListener('kiko_load_conversation', handler)
   }, [])
+
+  // Phase 3: Listen for background task results from BackgroundTasksPanel
+  useEffect(() => {
+    const handler = (e) => {
+      const { task_id, conversation_id, result_text } = e.detail || {}
+      if (!result_text) return
+      const bgMsg = { role: 'assistant', content: result_text, meta: { fromBackgroundTask: true, taskId: task_id } }
+      if (conversation_id && conversation_id === activeConvId) {
+        // Same conversation — insert directly
+        setMessages(prev => [...prev, bgMsg])
+      } else if (conversation_id) {
+        // Different conversation — load it then insert
+        supabase.from('conversations').select('messages, title').eq('id', conversation_id).single().then(({ data }) => {
+          const prior = Array.isArray(data?.messages) ? data.messages : []
+          const merged = [...prior, bgMsg]
+          setMessages(merged.map(m => ({ role: m.role, content: m.content, meta: m.meta })))
+          setActiveConvId(conversation_id)
+          setConvTitle(data?.title || 'Background task')
+          setStreamText(''); setStreaming(false)
+          // Persist the inserted message
+          supabase.from('conversations').update({ messages: merged, updated_at: new Date().toISOString() }).eq('id', conversation_id).then(() => {})
+        })
+      } else {
+        // No conversation — insert into current chat
+        setMessages(prev => [...prev, bgMsg])
+      }
+      setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
+    }
+    window.addEventListener('kiko_open_task_result', handler)
+    return () => window.removeEventListener('kiko_open_task_result', handler)
+  }, [activeConvId])
+
+  // Phase 3: Run query in background
+  const runInBackground = async () => {
+    const query = input.trim()
+    if (!query || query.length > 8000 || !user?.id) return
+    setBgTaskLoading(true)
+    setBgTaskMsg('')
+    try {
+      const res = await fetch('/api/kiko-task-create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conversation_id: activeConvId || null, query, user_id: user.id }),
+      })
+      const data = await res.json()
+      if (res.ok && data.task_id) {
+        setInput('')
+        setBgTaskMsg('Task started — see panel →')
+        setTimeout(() => setBgTaskMsg(''), 4000)
+      } else {
+        setBgTaskMsg(`Error: ${data.error || 'Unknown'}`)
+        setTimeout(() => setBgTaskMsg(''), 5000)
+      }
+    } catch (err) {
+      setBgTaskMsg(`Error: ${err.message}`)
+      setTimeout(() => setBgTaskMsg(''), 5000)
+    } finally {
+      setBgTaskLoading(false)
+    }
+  }
+
   const startNewChat = () => {
     setMessages([]); setActiveConvId(null); setStreamText(''); setStreaming(false); setInput('')
     setVoiceActive(false); setVoiceMessages([])
@@ -913,6 +978,17 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               <svg width={14} height={14} viewBox="0 0 24 24" fill="none"><rect x="4" y="8" width="2" height="8" rx="1" fill="rgba(124,92,252,0.6)" /><rect x="8" y="5" width="2" height="14" rx="1" fill="rgba(124,92,252,0.8)" /><rect x="12" y="7" width="2" height="10" rx="1" fill="rgba(124,92,252,1)" /><rect x="16" y="4" width="2" height="16" rx="1" fill="rgba(124,92,252,0.8)" /><rect x="20" y="9" width="2" height="6" rx="1" fill="rgba(124,92,252,0.6)" /></svg>
             </button>
           </>)}
+          {/* Phase 3: Run in background button */}
+          {!streaming && !voiceActive && (
+            <button onClick={runInBackground} disabled={!input.trim() || bgTaskLoading} title="Run this query in the background"
+              style={{ width: 30, height: 30, borderRadius: 9999, background: input.trim() ? 'rgba(124,92,252,0.08)' : 'transparent', border: `1px solid ${input.trim() ? 'rgba(124,92,252,0.20)' : C.border}`, color: input.trim() ? C.purple : C.textMut, cursor: input.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: input.trim() ? 1 : 0.3, transition: 'all 200ms ease', boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}
+              onMouseEnter={e => { if (input.trim()) { e.currentTarget.style.background = 'rgba(124,92,252,0.14)'; e.currentTarget.style.borderColor = 'rgba(124,92,252,0.30)' }}}
+              onMouseLeave={e => { e.currentTarget.style.background = input.trim() ? 'rgba(124,92,252,0.08)' : 'transparent'; e.currentTarget.style.borderColor = input.trim() ? 'rgba(124,92,252,0.20)' : C.border }}>
+              {bgTaskLoading
+                ? <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 1.5s linear infinite' }}><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                : <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>}
+            </button>
+          )}
           {streaming ? (
             <button onClick={stopKiko} style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}><div style={{ width: 8, height: 8, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
           ) : (
@@ -922,6 +998,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           )}
         </div>
         )}
+        {bgTaskMsg && <div style={{ fontSize: 11, color: bgTaskMsg.startsWith('Error') ? C.red : C.purple, padding: '4px 0 0 12px', fontFamily: C.font, fontWeight: 400 }}>{bgTaskMsg}</div>}
       </div>
     )
   }
@@ -949,6 +1026,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <KikoWaveform width={22} height={16} mini />
           </div>
           <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(124,92,252,0.55)', fontFamily: C.font }}>Kiko</span>
+          {msg.meta?.fromBackgroundTask && <span style={{ fontSize: 9, fontWeight: 500, color: C.textTer, background: 'rgba(124,92,252,0.06)', border: '1px solid rgba(124,92,252,0.12)', borderRadius: 50, padding: '1px 8px', marginLeft: 4 }}>background task</span>}
         </div>}
         {/* Collapsible reasoning steps on completed messages */}
         {isKiko && msg.steps?.length > 0 && (() => {

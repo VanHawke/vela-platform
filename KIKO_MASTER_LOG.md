@@ -1034,3 +1034,36 @@ Surface boundary: code touches repo → Claude Code only. Strategy/writing/discu
 - Full grep audit: 0 matches across all 4 pattern groups
 - npm run build: clean
 - Self-audit loop: GREEN
+
+## Section A0n — v0.0.48 Multitasking Phase 3: KikoChat wiring (April 12, 2026)
+
+**Theme:** Wire the chat UI to the background task system — "Run in background" button + result insertion from panel.
+
+### Change A — "Run in background" button
+- Added to conversation input bar (right of EQ button, left of send button)
+- 30px round button with monitor/screen icon, purple accent when input has text
+- Disabled when input empty or during loading
+- onClick: POST to `/api/kiko-task-create` with `{conversation_id, query, user_id}`
+- On success: clears input, shows "Task started — see panel →" for 4s
+- On error: shows error message inline, does NOT clear input
+- Loading state: spinning loader icon during POST
+- Only visible when not streaming and not in voice mode
+
+### Change B — `kiko_open_task_result` event listener
+- useEffect on mount listens for `CustomEvent('kiko_open_task_result')`
+- Event shape (from BackgroundTasksPanel): `{task_id, conversation_id, result_text}`
+- Same-conversation: inserts result as assistant message directly
+- Different conversation: loads that conversation via Supabase, appends result, switches to it
+- No conversation: inserts into current chat
+- Scrolls to bottom after insertion
+- Cleanup: removeEventListener on unmount
+
+### Change C — "background task" badge
+- Assistant messages with `meta.fromBackgroundTask = true` show a small "background task" pill badge next to "Kiko" label
+
+### Files modified (2 only)
+- `src/components/kiko/KikoChat.jsx` — all 3 changes
+- `package.json` — version 0.0.47 → 0.0.48
+
+### Files NOT modified (verified via git diff)
+- api/kiko.js, BackgroundTasksPanel.jsx, Layout.jsx, theme.js — all untouched
