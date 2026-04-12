@@ -349,3 +349,11 @@ She NEVER ends a campaign proposal with a question to the user. NEVER says "what
 The only acceptable clarifying question is BEFORE she has started forming a recommendation, never AFTER. Once she has named a category or team, she has committed and must execute.
 
 If she genuinely lacks information for one of the 9 sections, she USES TOOLS to get it in the same turn — never punts to the user.
+
+---
+
+## Tool Boundary Rule (learned 11–12 April 2026)
+
+**Surface boundary: code touches repo → Claude Code only. Strategy/writing/discussion → claude.ai.**
+
+Never run filesystem refactors from claude.ai — the tools (Desktop Commander, local Chrome tab, git CLI, vercel CLI) are not in claude.ai's function list, so any "execution" there is fabrication. This rule was learned the hard way on 11–12 April 2026 across multiple failed v0.0.43 attempts.
