@@ -120,12 +120,15 @@ export default function Settings({ user }) {
   const loadBibles = async () => {
     if (!user?.id) return
     try {
-      // Find user's org
-      const { data: membership } = await supabase.from('organization_members').select('organization_id').eq('user_id', user.id).limit(1).maybeSingle()
-      if (membership?.organization_id) {
-        setUserOrgId(membership.organization_id)
-        const orgRes = await fetch(`/api/org-bible?org_id=${membership.organization_id}`)
-        if (orgRes.ok) { const d = await orgRes.json(); setOrgBibleContent(d.content || ''); setOrgBibleUpdatedAt(d.updated_at) }
+      // Use team-list endpoint (service_role) to reliably get org_id — avoids RLS timing issues on anon client
+      const teamRes = await fetch(`/api/team-list?user_id=${user.id}`)
+      if (teamRes.ok) {
+        const teamData = await teamRes.json()
+        if (teamData.org?.id) {
+          setUserOrgId(teamData.org.id)
+          const orgRes = await fetch(`/api/org-bible?org_id=${teamData.org.id}`)
+          if (orgRes.ok) { const d = await orgRes.json(); setOrgBibleContent(d.content || ''); setOrgBibleUpdatedAt(d.updated_at) }
+        }
       }
       const userRes = await fetch(`/api/user-bible?user_id=${user.id}`)
       if (userRes.ok) { const d = await userRes.json(); setUserBibleContent(d.content || ''); setUserBibleUpdatedAt(d.updated_at) }
@@ -486,6 +489,30 @@ export default function Settings({ user }) {
               })}
             </div>
 
+            {/* Personal Bible (Layer 3) — moved from Kiko tab per Sunny's direction */}
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Your Personal Context (Layer 3)</h3>
+              <p style={{ fontSize: 12, color: T.textTertiary, margin: '0 0 12px', fontFamily: T.font }}>
+                Private to you. Kiko sees this in every conversation. Add your preferences, personal details, communication style, or anything you want Kiko to always know about you.
+              </p>
+              <textarea
+                value={userBibleContent}
+                onChange={e => setUserBibleContent(e.target.value)}
+                rows={10}
+                style={{ width: '100%', border: `1px solid ${T.border}`, borderRadius: T.radiusSm, padding: 14, fontSize: 13, color: T.text, background: T.surface, fontFamily: T.mono, lineHeight: 1.6, resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
+              />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
+                <span style={{ fontSize: 11, color: T.textTertiary, fontFamily: T.font }}>
+                  {userBibleContent.length.toLocaleString()} chars{userBibleUpdatedAt ? ` · Last saved ${new Date(userBibleUpdatedAt).toLocaleString('en-GB')}` : ''}
+                </span>
+                <button onClick={saveUserBible} disabled={userBibleSaving} style={{
+                  padding: '8px 20px', borderRadius: 50, background: T.accent, color: '#fff',
+                  border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
+                  opacity: userBibleSaving ? 0.5 : 1,
+                }}>{userBibleSaving ? 'Saving...' : 'Save Personal Context'}</button>
+              </div>
+            </div>
+
             <button onClick={() => saveSettings({
               display_name: settings.display_name, first_name: settings.first_name, last_name: settings.last_name,
               role_title: settings.role_title, phone: settings.phone, timezone: settings.timezone,
@@ -580,29 +607,6 @@ export default function Settings({ user }) {
                     </button>
                   )
                 })}
-              </div>
-            </div>
-            {/* Personal Bible (Layer 3) */}
-            <div style={cardStyle}>
-              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Your Personal Context (Layer 3)</h3>
-              <p style={{ fontSize: 12, color: T.textTertiary, margin: '0 0 12px', fontFamily: T.font }}>
-                Private to you. Kiko sees this in every conversation. Add your preferences, personal details, communication style, or anything you want Kiko to always know about you.
-              </p>
-              <textarea
-                value={userBibleContent}
-                onChange={e => setUserBibleContent(e.target.value)}
-                rows={10}
-                style={{ width: '100%', border: `1px solid ${T.border}`, borderRadius: T.radiusSm, padding: 14, fontSize: 13, color: T.text, background: T.surface, fontFamily: T.mono, lineHeight: 1.6, resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
-              />
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
-                <span style={{ fontSize: 11, color: T.textTertiary, fontFamily: T.font }}>
-                  {userBibleContent.length.toLocaleString()} chars{userBibleUpdatedAt ? ` · Last saved ${new Date(userBibleUpdatedAt).toLocaleString('en-GB')}` : ''}
-                </span>
-                <button onClick={saveUserBible} disabled={userBibleSaving} style={{
-                  padding: '8px 20px', borderRadius: 50, background: T.accent, color: '#fff',
-                  border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
-                  opacity: userBibleSaving ? 0.5 : 1,
-                }}>{userBibleSaving ? 'Saving...' : 'Save Personal Context'}</button>
               </div>
             </div>
           </div>
