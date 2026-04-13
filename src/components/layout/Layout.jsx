@@ -33,6 +33,7 @@ import ThreadIndicator from '../kiko/ThreadIndicator'
 import NotificationToast from '../kiko/NotificationToast'
 import BackgroundTasksPanel from '../kiko/BackgroundTasksPanel'
 import OnboardingModal from '../onboarding/OnboardingModal'
+import { usePagePermissions } from '@/lib/usePagePermissions'
 import KikoVoice from '../kiko/KikoVoice'
 import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
@@ -115,13 +116,18 @@ export default function Layout({ user }) {
       .then(({ data }) => { if (!data?.onboarded) setShowOnboarding(true) })
   }, [user?.id])
 
+  // Page permissions — filter nav items based on user's role + per-user overrides
+  const userOrgIdNew = '2c6b30da-2d1a-45e5-bbeb-dee1671deba3' // TODO: resolve dynamically when multi-org
+  const { canSee: canSeePage } = usePagePermissions(user, userOrgIdNew)
+  const NAV_ID_TO_PAGE_KEY = { 'home': 'home', 'pipeline': 'pipeline', 'calendar': 'race_calendar', 'contacts': 'contacts', 'organisations': 'organisations', 'command-centre': 'command_centre', 'partnership-matrix': 'partnership_matrix', 'sequences': 'campaigns', 'linkedin': 'campaigns' }
+
   const isSuperAdmin = user?.app_metadata?.role === 'super_admin'
   // Effective nav = base nav + admin nav (only if super_admin)
   const EFFECTIVE_NAV = isSuperAdmin ? [...ALL_NAV, ...ADMIN_NAV] : ALL_NAV
 
-  const TABS = topNavIds.map(id => EFFECTIVE_NAV.find(n => n.id === id)).filter(Boolean)
+  const TABS = topNavIds.map(id => EFFECTIVE_NAV.find(n => n.id === id)).filter(Boolean).filter(t => canSeePage(NAV_ID_TO_PAGE_KEY[t.id] || t.id))
   // More items respect custom order from Settings
-  const moreItemsRaw = EFFECTIVE_NAV.filter(n => !topNavIds.includes(n.id))
+  const moreItemsRaw = EFFECTIVE_NAV.filter(n => !topNavIds.includes(n.id)).filter(t => canSeePage(NAV_ID_TO_PAGE_KEY[t.id] || t.id))
   const [moreOrder, setMoreOrder] = useState(() => { try { const s = localStorage.getItem('kiko_more_order'); return s ? JSON.parse(s) : null } catch { return null } })
   const MORE_ITEMS = moreOrder
     ? [...moreItemsRaw].sort((a, b) => { const ai = moreOrder.indexOf(a.id); const bi = moreOrder.indexOf(b.id); return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi) })

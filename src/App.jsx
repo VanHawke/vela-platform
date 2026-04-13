@@ -7,6 +7,7 @@ import AuthCallback from '@/pages/AuthCallback'
 import Layout from '@/components/layout/Layout'
 import KikoChat from '@/components/kiko/KikoChat'
 import Settings from '@/components/settings/Settings'
+import PermissionGate from '@/components/PermissionGate'
 // Lazy-loaded pages (code-split for bundle size reduction)
 const Pipeline = lazy(() => import('@/pages/Pipeline'))
 const Contacts = lazy(() => import('@/pages/Contacts'))
@@ -125,21 +126,21 @@ export default function App() {
           <Route index element={<KikoChat user={user} />} />
           <Route path="home" element={<KikoChat user={user} />} />
           <Route path="dashboard" element={<KikoChat user={user} />} />
-          <Route path="pipeline" element={<Pipeline user={user} />} />
-          <Route path="contacts" element={<Contacts user={user} />} />
-          <Route path="contacts/:id" element={<ContactDetail user={user} />} />
-          <Route path="organisations" element={<Organisations user={user} />} />
+          <Route path="pipeline" element={<PermissionGate pageKey="pipeline" user={user}><Pipeline user={user} /></PermissionGate>} />
+          <Route path="contacts" element={<PermissionGate pageKey="contacts" user={user}><Contacts user={user} /></PermissionGate>} />
+          <Route path="contacts/:id" element={<PermissionGate pageKey="contacts" user={user}><ContactDetail user={user} /></PermissionGate>} />
+          <Route path="organisations" element={<PermissionGate pageKey="organisations" user={user}><Organisations user={user} /></PermissionGate>} />
           <Route path="companies" element={<Navigate to="/organisations" replace />} />
           <Route path="deals" element={<Navigate to="/pipeline" replace />} />
           <Route path="tasks" element={<Navigate to="/command-centre" replace />} />
           <Route path="email" element={<Navigate to="/command-centre" replace />} />
-          <Route path="command-centre" element={<OutreachIntelligence user={user} />} />
+          <Route path="command-centre" element={<PermissionGate pageKey="command_centre" user={user}><OutreachIntelligence user={user} /></PermissionGate>} />
           {/* News Signals removed — replaced by Partnership Detection alerts */}
-          <Route path="partnership-matrix" element={<PartnershipMatrix user={user} />} />
-          <Route path="calendar" element={<CommercialCalendar user={user} />} />
+          <Route path="partnership-matrix" element={<PermissionGate pageKey="partnership_matrix" user={user}><PartnershipMatrix user={user} /></PermissionGate>} />
+          <Route path="calendar" element={<PermissionGate pageKey="race_calendar" user={user}><CommercialCalendar user={user} /></PermissionGate>} />
           {/* Knowledge Library removed — documents accessible via Kiko chat upload */}
 
-          <Route path="campaigns" element={<Campaigns user={user} />} />
+          <Route path="campaigns" element={<PermissionGate pageKey="campaigns" user={user}><Campaigns user={user} /></PermissionGate>} />
           <Route path="sequences" element={<Navigate to="/campaigns" replace />} />
           <Route path="campaigns/:id" element={<SequenceDetail user={user} />} />
           <Route path="sequences/:id" element={<SequenceDetail user={user} />} />

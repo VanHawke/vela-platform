@@ -5,7 +5,8 @@ import T from '@/lib/theme'
 import ImageUpload from './ImageUpload'
 import SkillsManager from './SkillsManager'
 import MemoryTab from './MemoryTab'
-import { Check, ExternalLink, Unplug, UserPlus, Trash2, LogOut, X } from 'lucide-react'
+import { Check, ExternalLink, Unplug, UserPlus, Trash2, LogOut, X, Shield } from 'lucide-react'
+import { ALL_PAGES, ROLE_DEFAULTS } from '@/lib/pagePermissions'
 
 const VOICES = [
   { id: 'shimmer', label: 'Shimmer', desc: 'Warm, articulate female' },
@@ -39,6 +40,10 @@ export default function Settings({ user }) {
   const [teamMembers, setTeamMembers] = useState([])
   const [invitations, setInvitations] = useState([])
   const [inviteEmail, setInviteEmail] = useState('')
+  const [permModalMember, setPermModalMember] = useState(null) // member object for permissions modal
+  const [permEffective, setPermEffective] = useState({})
+  const [permOverrides, setPermOverrides] = useState({})
+  const [permSaving, setPermSaving] = useState(false)
   const [inviteRole, setInviteRole] = useState('user')
   const [currentUserRole, setCurrentUserRole] = useState('user')
   const [previewingVoice, setPreviewingVoice] = useState(null)
@@ -790,6 +795,18 @@ export default function Settings({ user }) {
                         fontFamily: T.font,
                       }}>{m.role === 'super_admin' ? 'Super Admin' : m.role === 'admin' ? 'Admin' : 'User'}</span>
                     )}
+                    {/* Permissions button — super_admin only */}
+                    {currentUserRole === 'super_admin' && (
+                      <button onClick={async () => {
+                        setPermModalMember(m)
+                        try {
+                          const res = await fetch(`/api/user-permissions?user_id=${m.user_id}&organization_id=${userOrgId}`)
+                          if (res.ok) { const d = await res.json(); setPermEffective(d.effective || {}); setPermOverrides(d.overrides || {}) }
+                        } catch {}
+                      }} title="Page permissions" style={{ background: 'none', border: `1px solid ${T.border}`, borderRadius: 6, cursor: 'pointer', color: T.textTertiary, padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontFamily: T.font }}>
+                        <Shield size={11} /> Permissions
+                      </button>
+                    )}
                     {/* Deactivate toggle — super_admin only, can't deactivate self */}
                     {currentUserRole === 'super_admin' && m.email !== email && (
                       <button onClick={() => toggleActive(m.id, m.active)} title={m.active ? 'Deactivate' : 'Reactivate'}
@@ -810,6 +827,50 @@ export default function Settings({ user }) {
                 personal context, email, calendar, and conversation memory are completely isolated. Shared data (CRM, pipeline, contacts) 
                 is visible to everyone.
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* Permissions Modal */}
+        {permModalMember && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setPermModalMember(null)}>
+            <div onClick={e => e.stopPropagation()} style={{ width: 420, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, padding: 24, boxShadow: '0 16px 48px rgba(0,0,0,0.4)', maxHeight: '80vh', overflowY: 'auto' }}>
+              <h3 style={{ fontSize: 15, fontWeight: 500, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Page permissions</h3>
+              <p style={{ fontSize: 12, color: T.textTertiary, margin: '0 0 16px', fontFamily: T.font }}>{permModalMember.display_name || permModalMember.email} — {permModalMember.role}</p>
+              {permModalMember.role === 'super_admin' && (
+                <p style={{ fontSize: 12, color: T.accent, margin: '0 0 12px', fontFamily: T.font }}>Super admins always see all pages. Permissions cannot be restricted.</p>
+              )}
+              {ALL_PAGES.map(page => {
+                const roleDefault = ROLE_DEFAULTS[permModalMember.role]?.includes(page.key) ?? false
+                const isOverridden = page.key in permOverrides
+                const effective = permEffective[page.key] !== false
+                const isSA = permModalMember.role === 'super_admin'
+                return (
+                  <label key={page.key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', cursor: isSA ? 'default' : 'pointer', borderBottom: `1px solid ${T.border}` }}>
+                    <input type="checkbox" checked={effective} disabled={isSA || permSaving || page.alwaysVisible}
+                      onChange={async () => {
+                        const newVal = !effective
+                        setPermSaving(true)
+                        try {
+                          if ((newVal === roleDefault) && isOverridden) {
+                            await fetch('/api/user-permissions', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: permModalMember.user_id, organization_id: userOrgId, page_key: page.key, caller_id: user?.id }) })
+                            setPermOverrides(prev => { const n = { ...prev }; delete n[page.key]; return n })
+                          } else {
+                            const res = await fetch('/api/user-permissions', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: permModalMember.user_id, organization_id: userOrgId, page_key: page.key, can_view: newVal, caller_id: user?.id }) })
+                            if (res.ok) { const d = await res.json(); setPermEffective(d.effective || {}); setPermOverrides(prev => ({ ...prev, [page.key]: newVal })) }
+                          }
+                        } catch {}
+                        setPermSaving(false)
+                      }}
+                      style={{ accentColor: T.accent, width: 16, height: 16 }} />
+                    <span style={{ fontSize: 13, color: T.text, fontFamily: T.font, flex: 1 }}>{page.label}</span>
+                    <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font }}>{isOverridden ? 'override' : `role default: ${roleDefault ? '✓' : '✗'}`}</span>
+                  </label>
+                )
+              })}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+                <button onClick={() => setPermModalMember(null)} style={{ padding: '8px 20px', borderRadius: 50, background: T.accent, color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font }}>Close</button>
+              </div>
             </div>
           </div>
         )}

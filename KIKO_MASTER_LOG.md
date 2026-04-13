@@ -1298,3 +1298,51 @@ Every deploy from B through F: PASS with bible_layers_loaded=['core','org','pers
 
 ### End state:
 Matt is invitable via Settings → Team. See HOW_TO_INVITE_MATT.md for the full guide.
+
+## Section A0u — v0.0.56 Multi-User Sub-Phase G: Per-User Page Permissions (April 12, 2026)
+
+**Theme:** Role-based + per-user page visibility — nav filtering, route guards, permissions modal in Settings.
+
+### Schema
+- New table: `user_page_permissions` (user_id, organization_id, page_key, can_view, updated_by) with RLS
+- If no row exists for a page_key, user gets role default. Override rows take precedence.
+- super_admin always sees everything — no override can restrict them.
+
+### Page defaults library
+- `src/lib/pagePermissions.js` — ALL_PAGES, ROLE_DEFAULTS, canUserSeePage, PATH_TO_PAGE_KEY
+- `api/_lib/page-permissions.js` — server-side equivalent with computeEffective
+
+### Backend endpoint
+- `api/user-permissions.js` — GET (read effective permissions), PATCH (upsert override), DELETE (remove override, fall back to default)
+- Role checks: only super_admin can PATCH/DELETE other users' permissions
+
+### Frontend hook
+- `src/lib/usePagePermissions.js` — usePagePermissions(user, orgId) → { effective, loading, canSee(pageKey) }
+
+### Nav filtering (Layout.jsx)
+- TABS and MORE_ITEMS filtered by canSeePage — pages user can't see are hidden from nav
+
+### Route guards (App.jsx)
+- `src/components/PermissionGate.jsx` wraps each protected route
+- If user can't see page: shows "Page not available" message with Go Home button
+- During loading: renders nothing (prevents flash)
+- Routes guarded: pipeline, contacts, organisations, command-centre, partnership-matrix, calendar, campaigns
+
+### Permissions modal (Settings → Team)
+- "Permissions" button on each member row (super_admin only)
+- Modal shows all pages as checkboxes with role default hints
+- Toggle saves/removes override via PATCH/DELETE to /api/user-permissions
+- super_admin targets: all checkboxes locked with explanation
+
+### Files added
+- `api/user-permissions.js`
+- `api/_lib/page-permissions.js`
+- `src/lib/pagePermissions.js`
+- `src/lib/usePagePermissions.js`
+- `src/components/PermissionGate.jsx`
+
+### Files modified
+- `src/components/layout/Layout.jsx` (1 import + 1 hook + nav filtering)
+- `src/components/settings/Settings.jsx` (permissions modal + button in Team tab)
+- `src/App.jsx` (1 import + PermissionGate wrapping routes)
+- `package.json` (0.0.55 → 0.0.56)
