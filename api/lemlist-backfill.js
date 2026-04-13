@@ -11,6 +11,7 @@ export const config = { maxDuration: 60 };
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
 
 const HIGH_VALUE_EVENTS = ["emailsReplied", "emailsInterested", "emailsClicked"];
 
@@ -53,6 +54,7 @@ export default async function handler(req, res) {
         contactId = "c" + Date.now() + Math.floor(Math.random() * 1000);
         await supabase.from("contacts").upsert([{
           id: contactId,
+          org_id: ORG_ID,
           data: {
             id: contactId, firstName, lastName, middleName: "", title: "", email: row.email, phone: "", linkedin: "",
             companyId: "", authority: "Decision Maker", preferredContact: "Email", status: "Active", dnc: false,

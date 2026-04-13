@@ -18,6 +18,9 @@ const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
+// Legacy org_id required on contacts + companies tables (NOT NULL constraint)
+const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5';
+
 const HIGH_VALUE_EVENTS = new Set(["emailsReplied", "emailsInterested", "emailsClicked"]);
 
 const EVENT_LABELS = {
@@ -93,7 +96,7 @@ async function findOrCreateCompany({ domain, companyName }) {
 
   const today = new Date().toISOString().split("T")[0];
   const newOrgId = "org" + Date.now() + Math.floor(Math.random() * 1000);
-  await supabase.from("companies").upsert([{ id: newOrgId, data: { id: newOrgId, name: companyName || domain || "Unknown", website: domain || "", industry: "", hqCountry: "", revenue: "", accountTier: "", notes: "", createdAt: today, researchNotes: [] }, updated_at: new Date().toISOString() }]);
+  await supabase.from("companies").upsert([{ id: newOrgId, org_id: ORG_ID, data: { id: newOrgId, name: companyName || domain || "Unknown", website: domain || "", industry: "", hqCountry: "", revenue: "", accountTier: "", notes: "", createdAt: today, researchNotes: [] }, updated_at: new Date().toISOString() }]);
   return newOrgId;
 }
 
@@ -115,7 +118,7 @@ async function createContact({ email, firstName, lastName, payload, campaignName
     createdAt: today, lastActivity: today,
     activities: [{ id: Date.now(), type: "Email", date: today, user: "Lemlist Webhook", note: `[Lemlist] ${label} — ${campaignName}` }],
   };
-  await supabase.from("contacts").upsert([{ id: newContactId, data: newContact, updated_at: new Date().toISOString() }]);
+  await supabase.from("contacts").upsert([{ id: newContactId, org_id: ORG_ID, data: newContact, updated_at: new Date().toISOString() }]);
   return { contactId: newContactId, contactName: `${firstName} ${lastName}`.trim(), companyId };
 }
 
