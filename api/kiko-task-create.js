@@ -40,7 +40,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const { conversation_id, query, user_id } = req.body || {};
+  const { conversation_id, query, user_id, streaming = false } = req.body || {};
 
   // Validate
   if (!user_id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user_id)) {
@@ -63,16 +63,21 @@ export default async function handler(req, res) {
         conversation_id: conversation_id || null,
         query,
         status: 'queued',
+        streaming_mode: !!streaming,
       }),
     });
     const task = rows?.[0];
     if (!task?.id) throw new Error('Failed to insert task');
 
     // Return immediately — <100ms
-    res.status(200).json({ task_id: task.id, status: 'queued' });
+    res.status(200).json({ task_id: task.id, status: 'queued', streaming: !!streaming });
 
     // Fire background work via waitUntil — runs after response is sent
-    waitUntil(executeTask(task.id, query, user_id, conversation_id));
+    if (streaming) {
+      waitUntil(executeTaskStreaming(task.id, query, user_id, conversation_id));
+    } else {
+      waitUntil(executeTask(task.id, query, user_id, conversation_id));
+    }
   } catch (err) {
     console.error('[kiko-task-create] error:', err);
     return res.status(500).json({ error: err.message });
@@ -133,6 +138,87 @@ async function executeTask(taskId, query, userId, conversationId) {
         body: JSON.stringify({
           status: 'error',
           error_message: (err.message || 'Unknown error').slice(0, 2000),
+          elapsed_seconds: elapsed,
+          completed_at: new Date().toISOString(),
+        }),
+      });
+    } catch {}
+  }
+}
+
+// Streaming variant: flushes token deltas to streaming_progress column
+async function executeTaskStreaming(taskId, query, userId, conversationId) {
+  const startTime = Date.now();
+  try {
+    await sbFetch(`kiko_background_tasks?id=eq.${taskId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'running', started_at: new Date().toISOString() }),
+    });
+
+    let userEmail = 'sunny@vanhawke.com';
+    try {
+      const configs = await sbFetch(`kiko_user_config?user_id=eq.${userId}&select=email&limit=1`);
+      if (configs?.[0]?.email) userEmail = configs[0].email;
+    } catch {}
+
+    let conversationHistory = [];
+    if (conversationId) {
+      try {
+        const msgs = await sbFetch(`kiko_messages?conversation_id=eq.${conversationId}&order=created_at&limit=20&select=role,content`);
+        conversationHistory = (msgs || []).map(m => ({ role: m.role, content: m.content }));
+      } catch {}
+    }
+
+    // Accumulate full text, flush snapshot every 500ms or 100 new chars
+    let accumulated = '';
+    let unflushed = 0;
+    let lastFlush = Date.now();
+    const flush = async () => {
+      if (!unflushed) return;
+      unflushed = 0;
+      lastFlush = Date.now();
+      try {
+        await sbFetch(`kiko_background_tasks?id=eq.${taskId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ streaming_progress: accumulated }),
+        });
+      } catch {}
+    };
+
+    const { callKikoStreaming } = await import('./kiko-async.js');
+    const fullText = await callKikoStreaming({
+      message: query,
+      userEmail,
+      currentPage: 'home',
+      conversationHistory,
+    }, async (delta) => {
+      accumulated += delta;
+      unflushed += delta.length;
+      if (unflushed >= 100 || Date.now() - lastFlush >= 500) await flush();
+    });
+
+    await flush();
+
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    await sbFetch(`kiko_background_tasks?id=eq.${taskId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        status: 'done',
+        result_text: (fullText || '').slice(0, 50000),
+        streaming_progress: fullText || '',
+        elapsed_seconds: elapsed,
+        completed_at: new Date().toISOString(),
+      }),
+    });
+  } catch (err) {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    console.error('[kiko-task-create] streaming error:', err);
+    try {
+      await sbFetch(`kiko_background_tasks?id=eq.${taskId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          status: 'error',
+          error_message: `streaming failed: ${(err.message || 'Unknown').slice(0, 2000)}`,
           elapsed_seconds: elapsed,
           completed_at: new Date().toISOString(),
         }),

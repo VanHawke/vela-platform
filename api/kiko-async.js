@@ -101,6 +101,47 @@ async function callKikoInProcess({ message, userEmail, currentPage, conversation
   return captured?.response || '';
 }
 
+// Streaming variant: captures SSE deltas via fake res.write(), calls onDelta for each text chunk
+export async function callKikoStreaming({ message, userEmail, currentPage, conversationHistory }, onDelta) {
+  const kikoModule = await import('./kiko.js');
+  const handler = kikoModule.default;
+  let fullText = '';
+  const fakeReq = {
+    method: 'POST',
+    query: {},  // NOT nostream — let kiko.js write SSE events
+    headers: {},
+    body: { message, userEmail, currentPage, conversationHistory },
+  };
+  const fakeRes = {
+    statusCode: 200,
+    headers: {},
+    setHeader(k, v) { this.headers[k] = v; },
+    flushHeaders() {},
+    write(chunk) {
+      // kiko.js writes SSE format: "data: {json}\n\n"
+      if (typeof chunk !== 'string') return;
+      const lines = chunk.split('\n');
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        if (line === 'data: [DONE]') continue;
+        try {
+          const payload = JSON.parse(line.slice(6));
+          if (typeof payload.delta === 'string' && payload.delta.length > 0) {
+            fullText += payload.delta;
+            if (onDelta) onDelta(payload.delta);
+          }
+        } catch {}
+      }
+    },
+    end() {},
+    status(code) { this.statusCode = code; return this; },
+    json(obj) { /* should not be called in stream mode */ return this; },
+    on() {},
+  };
+  await handler(fakeReq, fakeRes);
+  return fullText;
+}
+
 async function processInBackground(convId, message, userEmail, currentPage, user_id) {
   // Pull conversation history for shared-memory continuity
   const history = await sbFetch(`kiko_messages?conversation_id=eq.${convId}&order=created_at&limit=40&select=role,content`);

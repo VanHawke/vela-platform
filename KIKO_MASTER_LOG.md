@@ -1346,3 +1346,35 @@ Matt is invitable via Settings → Team. See HOW_TO_INVITE_MATT.md for the full 
 - `src/components/settings/Settings.jsx` (permissions modal + button in Team tab)
 - `src/App.jsx` (1 import + PermissionGate wrapping routes)
 - `package.json` (0.0.55 → 0.0.56)
+
+## Section A0v — v0.0.57 Background Tasks Phase 4: SSE Token Streaming (April 12, 2026)
+
+**Theme:** Live streaming of Sonnet output for background tasks — tokens accumulate in real time in the BackgroundTasksPanel.
+
+### Architecture
+- `callKikoStreaming()` in kiko-async.js: streaming variant of callKikoInProcess that intercepts SSE deltas from kiko.js's fake res.write() and calls onDelta callback
+- `api/kiko-task-create.js`: accepts optional `streaming: true` param, routes to streaming executeTask variant that flushes accumulated text to `streaming_progress` column every 500ms/100 chars
+- `api/kiko-task-stream.js` (NEW): SSE endpoint, polls `streaming_progress` column every 300ms, sends deltas as `data:` events, closes on task completion/error/5min timeout
+- `BackgroundTasksPanel.jsx`: opens EventSource for streaming_mode=true running tasks, displays live text in preview area, cleans up on completion/unmount
+
+### Schema changes
+- `kiko_background_tasks.streaming_progress text DEFAULT ''` — accumulated Sonnet output
+- `kiko_background_tasks.streaming_mode boolean DEFAULT false` — opt-in flag
+
+### Backwards compatibility
+- Non-streaming path (streaming=false, the default) is 100% unchanged
+- Phase 3 button in KikoChat.jsx doesn't opt into streaming — works as before
+- Existing status/result/cleanup endpoints NOT modified
+
+### Files added
+- `api/kiko-task-stream.js`
+
+### Files modified
+- `api/kiko-async.js` (added callKikoStreaming — did not replace callKikoInProcess)
+- `api/kiko-task-create.js` (accept streaming param, executeTaskStreaming function)
+- `src/components/kiko/BackgroundTasksPanel.jsx` (EventSource state, streaming text preview)
+- `package.json` (0.0.56 → 0.0.57)
+
+### Files NOT modified (verified)
+- api/kiko.js, api/kiko-task-status.js, api/kiko-task-result.js, api/cron-background-task-cleanup.js
+- src/components/kiko/KikoChat.jsx (Phase 3 from v0.0.48 untouched)

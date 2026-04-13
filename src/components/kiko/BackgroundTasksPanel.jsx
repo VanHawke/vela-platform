@@ -78,6 +78,53 @@ export default function BackgroundTasksPanel({ user }) {
     return () => clearInterval(interval)
   }, [tasks])
 
+  // Streaming: EventSource for tasks with streaming_mode=true
+  const [streamingText, setStreamingText] = useState({}) // task_id → accumulated text
+  const streamSourcesRef = useRef({}) // task_id → EventSource
+  useEffect(() => {
+    const streamingTasks = tasks.filter(t => t.streaming_mode && t.status === 'running')
+    const activeIds = new Set(streamingTasks.map(t => t.id))
+
+    // Close stale connections
+    for (const [id, es] of Object.entries(streamSourcesRef.current)) {
+      if (!activeIds.has(id)) { es.close(); delete streamSourcesRef.current[id] }
+    }
+
+    // Open new connections
+    for (const task of streamingTasks) {
+      if (streamSourcesRef.current[task.id]) continue
+      const es = new EventSource(`/api/kiko-task-stream?id=${task.id}`)
+      streamSourcesRef.current[task.id] = es
+      es.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          if (data.type === 'delta') {
+            setStreamingText(prev => ({ ...prev, [task.id]: (prev[task.id] || '') + data.text }))
+          } else if (data.type === 'complete' || data.type === 'error' || data.type === 'timeout') {
+            es.close(); delete streamSourcesRef.current[task.id]
+          }
+        } catch {}
+      }
+      es.onerror = () => {
+        // Retry once after 2s, then stop
+        es.close(); delete streamSourcesRef.current[task.id]
+        setTimeout(() => {
+          if (!streamSourcesRef.current[task.id]) {
+            const retry = new EventSource(`/api/kiko-task-stream?id=${task.id}`)
+            streamSourcesRef.current[task.id] = retry
+            retry.onmessage = es.onmessage
+            retry.onerror = () => { retry.close(); delete streamSourcesRef.current[task.id] }
+          }
+        }, 2000)
+      }
+    }
+
+    return () => {
+      for (const es of Object.values(streamSourcesRef.current)) es.close()
+      streamSourcesRef.current = {}
+    }
+  }, [tasks.map(t => `${t.id}:${t.status}:${t.streaming_mode}`).join(',')])
+
   // Auto-hide done tasks from local state after 5 min
   useEffect(() => {
     const doneTasks = tasks.filter(t => t.status === 'done' && t.completed_at)
@@ -241,7 +288,7 @@ export default function BackgroundTasksPanel({ user }) {
           {/* Task list */}
           <div style={{ flex: 1, overflowY: 'auto', padding: 8 }}>
             {tasks.map(task => (
-              <TaskRow key={task.id} task={task} onOpenChat={openInChat} onRetry={retryTask} onDismiss={dismissTask} />
+              <TaskRow key={task.id} task={task} onOpenChat={openInChat} onRetry={retryTask} onDismiss={dismissTask} streamText={streamingText[task.id] || ''} />
             ))}
           </div>
         </div>
@@ -250,7 +297,7 @@ export default function BackgroundTasksPanel({ user }) {
   )
 }
 
-function TaskRow({ task, onOpenChat, onRetry, onDismiss }) {
+function TaskRow({ task, onOpenChat, onRetry, onDismiss, streamText = '' }) {
   const queryPreview = (task.query || '').slice(0, 60) + (task.query?.length > 60 ? '…' : '')
   const resultPreview = (task.result_text || '').slice(0, 100) + (task.result_text?.length > 100 ? '…' : '')
 
@@ -316,7 +363,13 @@ function TaskRow({ task, onOpenChat, onRetry, onDismiss }) {
           </div>
           <div style={{ fontSize: 10, color: T.textTertiary, marginTop: 2, fontFamily: 'var(--font)' }}>
             {effectiveStatus === 'running' && task.started_at && (
-              <span>{elapsed(task.started_at)} elapsed</span>
+              <span>{elapsed(task.started_at)} elapsed{streamText ? ' · streaming' : ''}</span>
+            )}
+            {/* Live streaming preview for streaming tasks */}
+            {effectiveStatus === 'running' && streamText && (
+              <div style={{ fontSize: 11, color: T.textSecondary, marginTop: 4, lineHeight: 1.4, fontFamily: 'var(--font)', maxHeight: 60, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {streamText.slice(-200)}
+              </div>
             )}
             {effectiveStatus === 'done' && (
               <span>{timeAgo(task.completed_at)} · {task.elapsed_seconds}s</span>
