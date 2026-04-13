@@ -15,19 +15,44 @@ const T = {
 }
 
 // Crop helper: produces a canvas blob from crop data
-function getCroppedBlob(image, crop, zoom = 1) {
-  return new Promise((resolve) => {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
+// Safari-safe: validates image decode state, crop dimensions, and handles null toBlob callbacks
+function getCroppedBlob(image, crop) {
+  return new Promise((resolve, reject) => {
+    // Safari bail 1: image not fully decoded yet (naturalWidth can be 0 during load)
+    if (!image?.naturalWidth || !image?.naturalHeight) {
+      return reject(new Error('Image still loading, please try again'))
+    }
     const scaleX = image.naturalWidth / image.width
     const scaleY = image.naturalHeight / image.height
-    canvas.width = crop.width * scaleX
-    canvas.height = crop.height * scaleY
-    ctx.drawImage(image,
-      crop.x * scaleX, crop.y * scaleY,
-      crop.width * scaleX, crop.height * scaleY,
-      0, 0, canvas.width, canvas.height)
-    canvas.toBlob(resolve, 'image/jpeg', 0.92)
+    const cw = Math.round((crop.width || 0) * scaleX)
+    const ch = Math.round((crop.height || 0) * scaleY)
+    // Safari bail 2: zero-dimension canvas — Safari returns null from toBlob on these, Chrome returns empty blob
+    if (cw <= 0 || ch <= 0) {
+      return reject(new Error('Crop area is empty — drag to select a region first'))
+    }
+    try {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      canvas.width = cw
+      canvas.height = ch
+      ctx.drawImage(
+        image,
+        crop.x * scaleX, crop.y * scaleY,
+        crop.width * scaleX, crop.height * scaleY,
+        0, 0, cw, ch
+      )
+      // Safari bail 3: toBlob callback can be invoked with null even when canvas is valid
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) reject(new Error('Safari could not encode the image — try a smaller or different image'))
+          else resolve(blob)
+        },
+        'image/jpeg',
+        0.92
+      )
+    } catch (err) {
+      reject(err)
+    }
   })
 }
 
@@ -61,12 +86,16 @@ export default function ImageUpload({ label, storageKey, folder = 'uploads', asp
     setShowCrop(true)
   }
 
-  const uploadImage = async (blob) => {
+  const uploadImage = async (blob, mimeTypeOverride) => {
     setUploading(true)
+    setError('')
     try {
-      const ext = 'jpg'
+      // Respect the actual MIME type instead of hardcoding jpeg — Safari is stricter about mismatches
+      const mime = mimeTypeOverride || blob?.type || 'image/jpeg'
+      const extMap = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' }
+      const ext = extMap[mime] || 'jpg'
       const path = `${folder}/${storageKey}_${Date.now()}.${ext}`
-      const { error: err } = await supabase.storage.from('vela-assets').upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
+      const { error: err } = await supabase.storage.from('vela-assets').upload(path, blob, { upsert: true, contentType: mime })
       if (err) throw err
       const { data: { publicUrl } } = supabase.storage.from('vela-assets').getPublicUrl(path)
       setPreview(publicUrl)
@@ -79,12 +108,22 @@ export default function ImageUpload({ label, storageKey, folder = 'uploads', asp
 
   const saveCrop = async () => {
     if (!imgRef.current || !completedCrop?.width) {
-      // No crop — upload original
-      if (rawFile) uploadImage(rawFile)
+      // No crop drawn — upload original file with its real MIME type
+      if (rawFile) uploadImage(rawFile, rawFile.type)
       return
     }
-    const blob = await getCroppedBlob(imgRef.current, completedCrop)
-    if (blob) uploadImage(blob)
+    try {
+      const blob = await getCroppedBlob(imgRef.current, completedCrop)
+      await uploadImage(blob, 'image/jpeg')
+    } catch (err) {
+      // Safari fallback: if canvas cropping fails, upload the uncropped original so user isn't stuck
+      if (rawFile) {
+        setError((err.message || 'Crop failed') + ' — uploading original instead')
+        try { await uploadImage(rawFile, rawFile.type) } catch (e2) { setError(e2.message || 'Upload failed') }
+      } else {
+        setError(err.message || 'Could not process image')
+      }
+    }
   }
 
   const cancelCrop = () => { setShowCrop(false); setRawUrl(null); setRawFile(null) }
