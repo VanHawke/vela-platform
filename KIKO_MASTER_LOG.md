@@ -1378,3 +1378,42 @@ Matt is invitable via Settings → Team. See HOW_TO_INVITE_MATT.md for the full 
 ### Files NOT modified (verified)
 - api/kiko.js, api/kiko-task-status.js, api/kiko-task-result.js, api/cron-background-task-cleanup.js
 - src/components/kiko/KikoChat.jsx (Phase 3 from v0.0.48 untouched)
+
+## v0.0.63 — Lemlist Webhook Safety Net — 13 April 2026 22:30 BST
+
+**Goal:** Stop silently dropping reply/interest events from prospects not in CRM.
+
+**Pre-deploy:** kiko-health PASS, 1843ms, [core, org, personal]
+**Post-deploy:** kiko-health PASS, 1934ms, [core, org, personal]
+
+**Files added:**
+- api/lemlist-webhook.js (NEW handler in vela-platform)
+- api/lemlist-backfill.js (NEW one-shot backfill)
+
+**Files modified:**
+- package.json (0.0.62 → 0.0.63)
+
+**Bug found and fixed during deploy:** contacts and companies tables have `org_id NOT NULL` constraint. Initial deploy silently failed contact creation. Fixed by adding `org_id: '35975d96-...'` to all upserts. Second deploy verified contact creation works.
+
+**Lemlist webhook URL change:** pending — Sunny to update via Lemlist Settings UI:
+- OLD: https://vanhawke-crm.vercel.app/api/lemlist-webhook
+- NEW: https://kiko.vanhawke.agency/api/lemlist-webhook
+- Legacy URL still live as fallback
+
+**Backfill results:**
+- Scanned: 2 historical skipped rows
+- Processed: 2
+- Contacts created: 0 (already existed from manual triage)
+- Alerts fired: 2
+- Errors: 0
+
+**New status values on lemlist_webhook_log:**
+- 'processed_no_match' — high-value event, no CRM match, auto-created contact + alert
+- 'skipped_low_value' — low-value event (open/send), no CRM match, intentionally ignored
+- 'backfilled_<contactId>' — historical row processed by backfill endpoint
+
+**Synthetic test:** PASS — contact created with correct org_id, alert fired, email sent
+
+**Final query:** zero status='skipped' rows for high-value event types after 2026-01-01
+
+**Ring fence intact:** No changes to api/kiko.js, api/kiko-health.js, three-layer Bible, OrgContext.jsx, src/contexts/*.
