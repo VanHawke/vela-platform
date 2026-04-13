@@ -717,7 +717,7 @@ export default function Settings({ user }) {
         {/* Skills */}
         {tab === 'Skills' && <SkillsManager />}
 
-        {tab === 'Memory' && <MemoryTab user={user} />}
+        {tab === 'Memory' && <MemoryTab user={user} canExport={currentUserRole === 'super_admin' || currentUserRole === 'admin'} />}
 
         {/* Team */}
         {tab === 'Team' && (

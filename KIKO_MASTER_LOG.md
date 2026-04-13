@@ -1205,3 +1205,27 @@ Surface boundary: code touches repo → Claude Code only. Strategy/writing/discu
 ### Files modified
 - `src/components/settings/Settings.jsx` (Organisation tab, Personal Bible section, Bible state + loading)
 - `package.json` (0.0.51 → 0.0.52)
+
+## Section A0s — v0.0.53+0.0.54 Sub-Phase D fixes + Sub-Phase E: Export Role Gating (April 12, 2026)
+
+### D fixes (v0.0.53)
+- **D.1**: Personal Context (Layer 3) textarea moved from Kiko tab to Profile tab
+- **D.2**: Org Doctrine textarea now populates — root cause: `loadBibles` queried `organization_members` via anon Supabase client, which failed silently due to RLS timing. Fix: uses `/api/team-list` endpoint (service_role) to reliably resolve org_id
+
+### Sub-Phase E — Export Role Gating (v0.0.54)
+
+**Inventory gated:**
+- `api/agents/document.js` — export_pipeline, export_contacts, generate_docx/xlsx/pptx/csv all role-checked via `getUserRole()`. Returns "Export is restricted to admin and super_admin roles" for role='user'.
+- `src/components/settings/MemoryTab.jsx` — Export CSV button hidden when `canExport=false` prop passed from Settings.jsx
+- `api/kiko-tools.js` — passes `userId` to `callDocumentAgent` for role resolution
+
+**New files:**
+- `api/_lib/get-user-role.js` — shared helper: `getUserRole(userId, orgId)` + `canExport(role)`
+- `src/lib/useUserRole.js` — React hook: `useUserRole(user)` returns `{ role, loading, isAdmin, isSuperAdmin, canExport }`
+
+**Files modified:**
+- `api/agents/document.js` (import getUserRole, role check before EXPORT_OPS)
+- `api/kiko-tools.js` (pass userId to callDocumentAgent)
+- `src/components/settings/Settings.jsx` (pass canExport prop to MemoryTab, D.1+D.2 fixes)
+- `src/components/settings/MemoryTab.jsx` (accept canExport prop, conditionally render Export CSV)
+- `package.json` (0.0.52 → 0.0.54)

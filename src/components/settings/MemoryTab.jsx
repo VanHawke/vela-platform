@@ -45,7 +45,7 @@ function timeAgo(d) {
   return `${months}mo ago`
 }
 
-export default function MemoryTab({ user }) {
+export default function MemoryTab({ user, canExport = true }) {
   const [rows, setRows] = useState([])
   const [counts, setCounts] = useState({})
   const [total, setTotal] = useState(0)
@@ -231,7 +231,7 @@ export default function MemoryTab({ user }) {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
-            <button onClick={onExportCSV} disabled={rows.length === 0} title="Export current view to CSV"
+            {canExport && <button onClick={onExportCSV} disabled={rows.length === 0} title="Export current view to CSV"
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '8px 12px', borderRadius: 8,
@@ -241,7 +241,7 @@ export default function MemoryTab({ user }) {
                 fontFamily: T.font, opacity: rows.length === 0 ? 0.5 : 1,
               }}>
               <Download size={11} /> Export CSV
-            </button>
+            </button>}
             <button onClick={() => { setBulkMode(!bulkMode); if (bulkMode) clearSelection() }}
               title={bulkMode ? "Exit bulk select mode" : "Enter bulk select mode"}
               style={{

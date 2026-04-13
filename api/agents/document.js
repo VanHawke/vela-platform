@@ -1,7 +1,10 @@
 // api/agents/document.js — Document Agent
 // File generation: docx, xlsx, pptx, csv, images, QR codes, exports.
 // Pure handler — no Claude calls. Takes structured input, produces files.
+// Export operations (export_pipeline, export_contacts, generate_xlsx/csv/docx/pptx)
+// are role-gated: only admin/super_admin can export.
 import { sbFetch } from '../kiko-tools.js';
+import { getUserRole, canExport } from '../_lib/get-user-role.js';
 
 const BASE_URL = () => `https://${process.env.VERCEL_URL || 'vela-platform-one.vercel.app'}`;
 
@@ -82,9 +85,17 @@ async function exportContacts({ limit = 500, filter }) {
   return data.url ? `✅ Contacts exported: [${data.filename}](${data.url}) — ${filtered.length} contacts.` : `Error: ${data.error}`;
 }
 
+// ── Export operations that require admin/super_admin role ──
+const EXPORT_OPS = ['export_pipeline', 'export_contacts', 'generate_docx', 'generate_xlsx', 'generate_pptx', 'generate_csv'];
+
 // ── Main Dispatch ──
-export async function callDocumentAgent(operation, params = {}) {
+export async function callDocumentAgent(operation, params = {}, userId = null) {
   try {
+    // Role gate: export operations require admin or super_admin
+    if (EXPORT_OPS.includes(operation) && userId) {
+      const role = await getUserRole(userId);
+      if (!canExport(role)) return 'Export is restricted to admin and super_admin roles. Contact your organisation admin for access.';
+    }
     switch (operation) {
       case 'generate_docx': return await generateDocx(params);
       case 'generate_xlsx': return await generateXlsx(params);

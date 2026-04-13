@@ -352,7 +352,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
   if (name === 'ask_document_agent') {
     try {
       const { callDocumentAgent } = await import('./agents/document.js');
-      return await callDocumentAgent(input.operation, input.params || {});
+      return await callDocumentAgent(input.operation, input.params || {}, userId);
     } catch (e) { return agentError('Document Agent', e); }
   }
 
