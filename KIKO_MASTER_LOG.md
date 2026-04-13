@@ -1106,3 +1106,40 @@ Surface boundary: code touches repo → Claude Code only. Strategy/writing/discu
 - `src/components/kiko/KikoVoice.jsx` (60s idle timer)
 - `src/components/layout/Layout.jsx` (4-line comment only)
 - `package.json` (0.0.48 → 0.0.49)
+
+## Section A0p — v0.0.50 Multi-User Sub-Phase A+B (April 12, 2026)
+
+**Theme:** Audit the entire platform for multi-user readiness + deploy org schema + kiko-health probe.
+
+### Sub-Phase A — Audit (no code changes)
+- 91 tables inventoried: 36 shared (org_id), 28 personal (user_id), 12 reference, 15 system
+- 29 tables with RLS disabled, 18 open policies, 7 hardcoded Sunny UUIDs, 3 export endpoints
+- KIKO_BIBLE is hardcoded SYSTEM_PROMPT at api/kiko.js:249 (not file-read)
+- conversations table had org_id + user_id policies (permissive OR = privacy leak)
+- MULTI_USER_AUDIT.md written with full inventory + classification
+- SUB_PHASE_B_ROLLBACK.sql written and verified
+
+### Sub-Phase B — Org schema + kiko-health
+- **`api/kiko-health.js`**: POST probe, calls Sonnet, returns status/latency/response_text/bible_layers_loaded
+- **kiko-health baseline**: PASS, 1017ms, "I am Kiko, the AI executive operating partner for Van Hawke Group."
+- **Migration**: `organizations` + `organization_members` tables with RLS
+- **Van Hawke org**: `2c6b30da-2d1a-45e5-bbeb-dee1671deba3` (new) linked to legacy `35975d96-c2c9-4b6c-b4d4-bb947ae817d5` via `legacy_org_id`
+- **Sunny**: super_admin in Van Hawke Group
+- **Shared tables**: already have `org_id` column with working JWT-based RLS — no new columns needed
+- **conversations privacy fix**: dropped org_id policies, kept user_id-only policies
+- **kiko-health AFTER migration**: PASS, 1387ms
+- **Live regression**: Kiko responds with personalised greeting + real pipeline data
+
+### Files added
+- `api/kiko-health.js`
+- `MULTI_USER_AUDIT.md`
+- `MULTI_USER_PROGRESS.md`
+- `SUB_PHASE_B_ROLLBACK.sql`
+
+### Files modified
+- `package.json` (0.0.49 → 0.0.50)
+
+### Schema changes
+- New table: `organizations` (id, name, slug, legacy_org_id, created_at, settings) + RLS
+- New table: `organization_members` (id, organization_id, user_id, role, joined_at) + RLS
+- Dropped 4 org_id policies on `conversations` table (privacy fix)
