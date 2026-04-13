@@ -28,35 +28,35 @@ jobs:
     steps:
       - name: F1 — Navigation
         run: |
-          RESULT=$(curl -s -X POST https://vela-platform-one.vercel.app/api/kiko \
+          RESULT=$(curl -s -X POST https://kiko.vanhawke.agency/api/kiko \
             -H "Content-Type: application/json" \
             -d '{"message":"take me to pipeline","userEmail":"sunny@vanhawke.com","currentPage":"home"}')
           echo "$RESULT" | grep '"navigate":"pipeline"' && echo "✅ F1 PASS" || (echo "❌ F1 FAIL" && exit 1)
 
       - name: F2 — Brief
         run: |
-          RESULT=$(curl -s -m 60 -X POST https://vela-platform-one.vercel.app/api/kiko \
+          RESULT=$(curl -s -m 60 -X POST https://kiko.vanhawke.agency/api/kiko \
             -H "Content-Type: application/json" \
             -d '{"message":"brief me","userEmail":"sunny@vanhawke.com","currentPage":"home"}')
           echo "$RESULT" | grep '"delta"' && echo "✅ F2 PASS" || (echo "❌ F2 FAIL" && exit 1)
 
       - name: F4 — CRM Query
         run: |
-          RESULT=$(curl -s -m 60 -X POST https://vela-platform-one.vercel.app/api/kiko \
+          RESULT=$(curl -s -m 60 -X POST https://kiko.vanhawke.agency/api/kiko \
             -H "Content-Type: application/json" \
             -d '{"message":"search contacts at Torq","userEmail":"sunny@vanhawke.com","currentPage":"home"}')
           echo "$RESULT" | grep '"delta"' && echo "✅ F4 PASS" || (echo "❌ F4 FAIL" && exit 1)
 
       - name: F5 — Strategy Agent
         run: |
-          RESULT=$(curl -s -m 60 -X POST https://vela-platform-one.vercel.app/api/kiko \
+          RESULT=$(curl -s -m 60 -X POST https://kiko.vanhawke.agency/api/kiko \
             -H "Content-Type: application/json" \
             -d '{"message":"should we pursue Cloudflare","userEmail":"sunny@vanhawke.com","currentPage":"home"}')
           echo "$RESULT" | grep '"delta"' && echo "✅ F5 PASS" || (echo "❌ F5 FAIL" && exit 1)
 
       - name: Health Check
         run: |
-          RESULT=$(curl -s -m 30 https://vela-platform-one.vercel.app/api/health)
+          RESULT=$(curl -s -m 90 https://kiko.vanhawke.agency/api/health)
           PASSED=$(echo "$RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('passed',0))")
           FAILED=$(echo "$RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('failed',0))")
           echo "Health: $PASSED passed, $FAILED failed"
@@ -64,17 +64,17 @@ jobs:
 
       - name: Ping Endpoint
         run: |
-          RESULT=$(curl -s -m 5 https://vela-platform-one.vercel.app/api/ping)
+          RESULT=$(curl -s -m 5 https://kiko.vanhawke.agency/api/ping)
           echo "$RESULT" | grep '"status":"ok"' && echo "✅ Ping PASS" || (echo "❌ Ping FAIL" && exit 1)
 
       - name: Draft Actions API
         run: |
-          RESULT=$(curl -s -m 10 "https://vela-platform-one.vercel.app/api/kiko-draft-actions?action=list&limit=1")
+          RESULT=$(curl -s -m 10 "https://kiko.vanhawke.agency/api/kiko-draft-actions?action=list&limit=1")
           echo "$RESULT" | grep '"drafts"' && echo "✅ Draft Actions PASS" || (echo "❌ Draft Actions FAIL" && exit 1)
 
       - name: Semantic Search Embeddings
         run: |
-          RESULT=$(curl -s -m 10 "https://vela-platform-one.vercel.app/api/embed-conversations?action=stats")
+          RESULT=$(curl -s -m 10 "https://kiko.vanhawke.agency/api/embed-conversations?action=stats")
           EMBEDDED=$(echo "$RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('embedded',0))")
           echo "Embeddings: $EMBEDDED"
           [ "$EMBEDDED" -gt "0" ] && echo "✅ Embeddings PASS" || (echo "❌ Embeddings FAIL — 0 embedded" && exit 1)

@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-13T16:21:19.818Z",
+  "generated_at": "2026-04-13T16:38:54.098Z",
   "commits": [
+    {
+      "hash": "3330519",
+      "subject": "v0.0.58 — Safari upload fix + unified favicon",
+      "when": "14 minutes ago"
+    },
     {
       "hash": "86e930c",
       "subject": "Phase 4 complete: SSE streaming verified end-to-end",
@@ -24,27 +29,27 @@
     {
       "hash": "2591253",
       "subject": "Multi-user feature complete: all 6 sub-phases shipped (v0.0.50–0.0.55)",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "7a2ec21",
       "subject": "v0.0.55 — Sub-Phase F: campaign send-as + onboarding + Matt invite doc (multi-user complete)",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "1baaa66",
       "subject": "Sub-Phase E complete: export role gating deployed, stopping at E/F boundary",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "764161e",
       "subject": "v0.0.54 — Sub-Phase E: export role gating (admin/super_admin only)",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "75bbc90",
       "subject": "v0.0.53 — Sub-Phase D fixes: Personal Context moved to Profile, Org Doctrine textarea now populates",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "9cff18a",
@@ -64,7 +69,7 @@
     {
       "hash": "4444430",
       "subject": "v0.0.51 — Sub-Phase C: three-layer Bible split (core/org/personal from DB)",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "4f491fc",
@@ -94,11 +99,6 @@
     {
       "hash": "30c4837",
       "subject": "Finalise Phase 3 progress file",
-      "when": "30 hours ago"
-    },
-    {
-      "hash": "e700bee",
-      "subject": "v0.0.48 — multitasking Phase 3: KikoChat 'Run in background' + result insertion",
       "when": "30 hours ago"
     }
   ]
