@@ -32,6 +32,7 @@ import KikoFloat from '../kiko/KikoFloat'
 import ThreadIndicator from '../kiko/ThreadIndicator'
 import NotificationToast from '../kiko/NotificationToast'
 import BackgroundTasksPanel from '../kiko/BackgroundTasksPanel'
+import OnboardingModal from '../onboarding/OnboardingModal'
 import KikoVoice from '../kiko/KikoVoice'
 import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
@@ -89,6 +90,7 @@ export default function Layout({ user }) {
   const isHome = loc.pathname === '/' || loc.pathname === '/home'
 
   const [profile, setProfile] = useState({})
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const [avatarOpen, setAvatarOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
   const [paletteOpen, setPaletteOpen] = useState(false)
@@ -105,6 +107,13 @@ export default function Layout({ user }) {
     window.addEventListener('kiko_more_order_updated', moreHandler)
     return () => { window.removeEventListener('kiko_top_nav_updated', handler); window.removeEventListener('kiko_more_order_updated', moreHandler) }
   }, [])
+
+  // Onboarding check — show modal for users who haven't completed onboarding
+  useEffect(() => {
+    if (!user?.id) return
+    supabase.from('user_settings').select('onboarded').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => { if (!data?.onboarded) setShowOnboarding(true) })
+  }, [user?.id])
 
   const isSuperAdmin = user?.app_metadata?.role === 'super_admin'
   // Effective nav = base nav + admin nav (only if super_admin)
@@ -612,6 +621,7 @@ export default function Layout({ user }) {
       {/* Realtime notifications toast (v0.0.39) */}
       <NotificationToast user={user} />
       <BackgroundTasksPanel user={user} />
+      {showOnboarding && <OnboardingModal user={user} onDismiss={() => setShowOnboarding(false)} />}
 
       {/* Kiko floating — present on every page except home */}
       {!isHome && (

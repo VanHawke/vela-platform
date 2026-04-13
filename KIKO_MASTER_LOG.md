@@ -1229,3 +1229,72 @@ Surface boundary: code touches repo → Claude Code only. Strategy/writing/discu
 - `src/components/settings/Settings.jsx` (pass canExport prop to MemoryTab, D.1+D.2 fixes)
 - `src/components/settings/MemoryTab.jsx` (accept canExport prop, conditionally render Export CSV)
 - `package.json` (0.0.52 → 0.0.54)
+
+## Section A0t — v0.0.55 Multi-User Sub-Phase F: Campaign Send-As + Onboarding (April 12, 2026)
+
+**Theme:** Final sub-phase — campaign send-as dropdown, test send modal, per-user Gmail token routing, onboarding flow, Matt invite documentation.
+
+### F.1 — Campaign send-as backend
+- Migration: `send_from_user_id uuid` added to `kiko_sequences`, `onboarded boolean` added to `user_settings`
+- Backfill: all existing sequences → Sunny's user_id, Sunny's onboarded → true
+
+### F.2 — Campaign send-as frontend
+- SequenceDetail.jsx: "Send from" dropdown after target persona input
+- Loads org members via `/api/team-list`, saves `send_from_user_id` to kiko_sequences
+
+### F.3 — Cron-sequence-sender rewiring
+- Per-email sender resolution: looks up `kiko_sequences.send_from_user_id` → `kiko_user_config.email` → `getGoogleToken(email)`
+- Token + signature cached per sender email within a cron run
+- Falls back to any active user's token if send-from user has none
+- Logs error + marks queue entry as failed if no token found at all
+
+### F.4 — Test send modal
+- Replaces single "Send test to me" button with modal
+- 4 radio options: Just me / Just sender / Both / All org members
+- Calls refactored `sendTest(stepIdx, toEmail)` for each recipient
+
+### F.5 — Onboarding flow
+- `OnboardingModal.jsx`: 3-step modal (Welcome / Private+Shared / Meet Kiko)
+- Mounted in Layout.jsx via single useEffect checking `user_settings.onboarded`
+- On dismiss: sets onboarded=true, hides modal permanently
+
+### F.6 — Matt invite documentation
+- `HOW_TO_INVITE_MATT.md`: step-by-step guide for Sunny to invite Matt tomorrow
+- Includes SQL verification queries, troubleshooting, role recommendations
+
+### Files added
+- `src/components/onboarding/OnboardingModal.jsx`
+- `HOW_TO_INVITE_MATT.md`
+
+### Files modified
+- `api/cron-sequence-sender.js` (per-user Gmail token resolution)
+- `src/pages/SequenceDetail.jsx` (send-from dropdown + test modal + refactored sendTest)
+- `src/components/layout/Layout.jsx` (1 import + 1 state + 1 useEffect + 1 render for onboarding)
+- `package.json` (0.0.54 → 0.0.55)
+
+---
+
+## MULTI-USER FEATURE COMPLETE — Summary
+
+### All 6 sub-phases shipped:
+- **A (audit)**: 91 tables inventoried, RLS leak risks identified, Bible classified, rollback SQL written
+- **B (v0.0.50)**: organizations + organization_members tables, kiko-health probe, conversations privacy fix
+- **C (v0.0.51)**: Three-layer Bible split — Core/Org/Personal loaded from DB, KIKO_BIBLE.md archived
+- **D (v0.0.52+0.0.53)**: Settings tabs (Organisation doctrine editor, Personal Context in Profile), 3 new endpoints
+- **E (v0.0.54)**: Export role gating — backend + frontend, getUserRole helper, useUserRole hook
+- **F (v0.0.55)**: Campaign send-as, test send modal, cron rewiring, onboarding flow, Matt invite doc
+
+### Schema changes (total):
+- New tables: organizations, organization_members, kiko_core_bible, org_bibles, user_bibles
+- New columns: kiko_sequences.send_from_user_id, user_settings.onboarded
+- RLS fixes: conversations org_id policies dropped (privacy leak)
+- Data: Van Hawke org created, Sunny = super_admin, Bible content migrated
+
+### New endpoints (total):
+- api/kiko-health.js, api/org-bible.js, api/user-bible.js, api/team-list.js, api/_lib/get-user-role.js
+
+### kiko-health throughout:
+Every deploy from B through F: PASS with bible_layers_loaded=['core','org','personal']. Kiko's brain never broke.
+
+### End state:
+Matt is invitable via Settings → Team. See HOW_TO_INVITE_MATT.md for the full guide.

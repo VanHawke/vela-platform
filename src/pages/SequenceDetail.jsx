@@ -84,12 +84,28 @@ export default function SequenceDetail() {
   const [refining, setRefining] = useState(false)
   const [testSending, setTestSending] = useState(false)
   const [testSent, setTestSent] = useState(false)
+  const [testModalOpen, setTestModalOpen] = useState(false)
+  const [testModalStep, setTestModalStep] = useState(null)
+  const [testRecipientMode, setTestRecipientMode] = useState('me')
+  const [orgMembers, setOrgMembers] = useState([])
   const [launching, setLaunching] = useState(false)
   const [verifying, setVerifying] = useState(false)
   const [enriching, setEnriching] = useState(false)
   const [showLaunchConfirm, setShowLaunchConfirm] = useState(false)
 
   useEffect(() => { if (!isNew) load() }, [id])
+  useEffect(() => {
+    // Load org members for send-from dropdown
+    const u = supabase.auth.getUser?.() || supabase.auth.getSession?.()
+    Promise.resolve(u).then(async (r) => {
+      const userId = r?.data?.user?.id || r?.data?.session?.user?.id
+      if (!userId) return
+      try {
+        const res = await fetch(`/api/team-list?user_id=${userId}`)
+        if (res.ok) { const d = await res.json(); setOrgMembers(d.members || []) }
+      } catch {}
+    })
+  }, [])
 
   // Activity tab — load when opened
   useEffect(() => {
@@ -161,10 +177,10 @@ export default function SequenceDetail() {
   async function save() {
     setSaving(true)
     if (isNew) {
-      const { data } = await supabase.from('kiko_sequences').insert({ name: seq.name || 'New Campaign', description: seq.description, target_persona: seq.target_persona, steps, is_active: false }).select().single()
+      const { data } = await supabase.from('kiko_sequences').insert({ name: seq.name || 'New Campaign', description: seq.description, target_persona: seq.target_persona, steps, is_active: false, send_from_user_id: seq.send_from_user_id || null }).select().single()
       if (data) nav(`/sequences/${data.id}`, { replace: true })
     } else {
-      await supabase.from('kiko_sequences').update({ name: seq.name, description: seq.description, target_persona: seq.target_persona, steps, updated_at: new Date().toISOString() }).eq('id', id)
+      await supabase.from('kiko_sequences').update({ name: seq.name, description: seq.description, target_persona: seq.target_persona, steps, send_from_user_id: seq.send_from_user_id || null, updated_at: new Date().toISOString() }).eq('id', id)
     }
     setSaving(false); setDirty(false)
   }
@@ -458,20 +474,16 @@ RULES:
     }
   }
 
-  async function sendTest(i) {
+  async function sendTest(i, toEmail = null) {
     const s = steps[i]; if (!s || s.channel !== 'email') return
-    setTestSending(true); setTestSent(false)
-    try {
-      const category = seq?.name?.split(' - ')[1] || 'Category'
-      // Strip any {signature} placeholder — the backend appends the real Gmail signature
-      const body = (s.template || '').replace(/\{firstName\}/g, 'Sunny').replace(/\{lastName\}/g, 'Sidhu').replace(/\{companyName\}/g, 'Test Company').replace(/\{category\}/g, category).replace(/\{revenue\}/g, '$1B').replace(/\{ceo\}/g, 'CEO Name').replace(/\{raceWindow\}/g, 'Miami Grand Prix').replace(/\{recentNews\}/g, 'recent development').replace(/\{prevSubject\}/g, 'Previous subject').replace(/\{signature\}/g, '').replace(/\n\n+$/, '')
-      const subject = '[TEST] ' + (s.subject || 'Test').replace(/\{category\}/g, category)
-      const r = await fetch('/api/gmail-draft', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: 'sunny@vanhawke.com', subject, body, send: true, contactStatus: 'cold' }) })
-      const data = await r.json().catch(() => ({}))
-      if (r.ok) { setTestSent(true); setTimeout(() => setTestSent(false), 5000) }
-      else { alert('Test send failed: ' + (data.error || r.statusText)) }
-    } catch (err) { alert('Error: ' + err.message) }
-    setTestSending(false)
+    const category = seq?.name?.split(' - ')[1] || 'Category'
+    const body = (s.template || '').replace(/\{firstName\}/g, 'Test').replace(/\{lastName\}/g, 'User').replace(/\{companyName\}/g, 'Test Company').replace(/\{category\}/g, category).replace(/\{revenue\}/g, '$1B').replace(/\{ceo\}/g, 'CEO Name').replace(/\{raceWindow\}/g, 'Miami Grand Prix').replace(/\{recentNews\}/g, 'recent development').replace(/\{prevSubject\}/g, 'Previous subject').replace(/\{signature\}/g, '').replace(/\n\n+$/, '')
+    const subject = '[TEST] ' + (s.subject || 'Test').replace(/\{category\}/g, category)
+    const recipient = toEmail || 'sunny@vanhawke.com'
+    const r = await fetch('/api/gmail-draft', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: recipient, subject, body, send: true, contactStatus: 'cold' }) })
+    const data = await r.json().catch(() => ({}))
+    if (!r.ok) throw new Error(data.error || r.statusText)
+    return data
   }
 
   async function searchContacts() {
@@ -659,7 +671,19 @@ RULES:
           <button onClick={save} disabled={saving} style={{ padding: '7px 16px', borderRadius: 6, border: 'none', background: 'rgba(124,92,252,0.10)', color: C.purple, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, opacity: saving ? 0.5 : 1, display: 'flex', alignItems: 'center', gap: 5, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}><Save size={12} />{saving ? 'Saving...' : 'Save'}</button>
         </div>
       </div>
-      <input value={seq?.target_persona || ''} onChange={e => { setSeq({ ...seq, target_persona: e.target.value }); setDirty(true) }} placeholder="Target persona" style={{ ...inputStyle, marginBottom: 14 }} />
+      <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+        <input value={seq?.target_persona || ''} onChange={e => { setSeq({ ...seq, target_persona: e.target.value }); setDirty(true) }} placeholder="Target persona" style={{ ...inputStyle, flex: 1 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 11, color: C.textTer, whiteSpace: 'nowrap' }}>Send from:</span>
+          <select value={seq?.send_from_user_id || ''} onChange={e => { setSeq({ ...seq, send_from_user_id: e.target.value || null }); setDirty(true) }}
+            style={{ padding: '8px 10px', borderRadius: 6, border: `0.5px solid ${C.border}`, background: C.cardHover, color: C.text, fontSize: 12, fontFamily: C.font, outline: 'none', minWidth: 160 }}>
+            <option value="">Default sender</option>
+            {orgMembers.map(m => (
+              <option key={m.user_id} value={m.user_id}>{m.display_name || m.email}{m.email ? ` (${m.email})` : ''}</option>
+            ))}
+          </select>
+        </div>
+      </div>
       {/* Draft/Live status banner */}
       {!isNew && isDraft && (
         <div style={{ padding: '10px 16px', borderRadius: 6, background: 'rgba(251,191,36,0.04)', border: '0.5px solid rgba(251,191,36,0.15)', marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -873,7 +897,7 @@ RULES:
                 </div></div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid rgba(124,92,252,0.15)`, background: 'rgba(124,92,252,0.04)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to write this step</button>
-                  {cur.channel === 'email' && <button onClick={() => sendTest(selStep)} disabled={testSending} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid ${testSent ? 'rgba(124,92,252,0.2)' : C.border}`, background: testSent ? 'rgba(124,92,252,0.04)' : 'transparent', color: testSent ? C.teal : C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{testSending ? 'Sending...' : testSent ? '✓ Test sent' : '📧 Send test to me'}</button>}
+                  {cur.channel === 'email' && <button onClick={() => { setTestModalStep(selStep); setTestModalOpen(true) }} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid ${testSent ? 'rgba(124,92,252,0.2)' : C.border}`, background: testSent ? 'rgba(124,92,252,0.04)' : 'transparent', color: testSent ? C.teal : C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{testSent ? '✓ Test sent' : '📧 Send test'}</button>}
                 </div>
 
                 {/* ═══ REFINE WITH FEEDBACK — iterate back and forth with Kiko ═══ */}
@@ -1399,6 +1423,48 @@ RULES:
           </div>
         </div>
       )}
+      {/* Test Send Modal */}
+      {testModalOpen && (() => {
+        const currentUser = orgMembers.find(m => m.user_id === (supabase.auth?.user?.()?.id)) || orgMembers[0]
+        const sender = orgMembers.find(m => m.user_id === seq?.send_from_user_id) || currentUser
+        const handleTestSend = async () => {
+          const recipients = []
+          if (testRecipientMode === 'me' && currentUser?.email) recipients.push(currentUser.email)
+          else if (testRecipientMode === 'sender' && sender?.email) recipients.push(sender.email)
+          else if (testRecipientMode === 'both') { if (currentUser?.email) recipients.push(currentUser.email); if (sender?.email && sender.email !== currentUser?.email) recipients.push(sender.email) }
+          else if (testRecipientMode === 'all') orgMembers.forEach(m => { if (m.email) recipients.push(m.email) })
+          if (!recipients.length) { alert('No recipients found'); return }
+          setTestSending(true)
+          try {
+            for (const to of recipients) { await sendTest(testModalStep, to) }
+            setTestSent(true); setTimeout(() => setTestSent(false), 5000)
+          } catch (err) { alert('Test send failed: ' + err.message) }
+          setTestSending(false); setTestModalOpen(false)
+        }
+        return (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setTestModalOpen(false)}>
+            <div onClick={e => e.stopPropagation()} style={{ width: 380, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 12, padding: 24, boxShadow: '0 16px 48px rgba(0,0,0,0.4)' }}>
+              <h3 style={{ fontSize: 15, fontWeight: 500, color: C.text, margin: '0 0 16px', fontFamily: C.font }}>Send test email</h3>
+              {[
+                { id: 'me', label: `Just me (${currentUser?.email || 'you'})` },
+                { id: 'sender', label: `Just sender (${sender?.email || 'sender'})` },
+                { id: 'both', label: 'Both (me + sender)' },
+                { id: 'all', label: `All org members (${orgMembers.length})` },
+              ].map(opt => (
+                <label key={opt.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', cursor: 'pointer', fontSize: 13, color: C.text, fontFamily: C.font }}>
+                  <input type="radio" name="testRecipient" checked={testRecipientMode === opt.id} onChange={() => setTestRecipientMode(opt.id)} style={{ accentColor: C.purple }} />
+                  {opt.label}
+                </label>
+              ))}
+              <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
+                <button onClick={() => setTestModalOpen(false)} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
+                <button onClick={handleTestSend} disabled={testSending} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: C.purple, color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, opacity: testSending ? 0.5 : 1 }}>{testSending ? 'Sending...' : 'Send test'}</button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
+

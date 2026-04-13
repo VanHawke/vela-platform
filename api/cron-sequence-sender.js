@@ -75,26 +75,53 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, message: 'No emails to send', sent: 0 });
     }
 
-    // Get Google token
-    const users = await getActiveUsers();
-    let token = null;
-    for (const u of users) { token = await getGoogleToken(u.email); if (token) break; }
-    if (!token) {
-      await cronHeartbeat('cron-sequence-sender', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 });
-      return res.status(200).json({ ok: false, error: 'No Google token' });
-    }
-
+    // Multi-user send-as: resolve Gmail token per-sequence via send_from_user_id
+    // Group queued emails by their enrollment's sequence to resolve sender
     let sent = 0;
-    const fromEmail = 'sunny@vanhawke.agency';
-    // Load signature once per cron run (cached cid images included)
-    let inlineImages = [];
-    try {
-      const sigs = await loadUserSignatures(sbFetch, null, token, fromEmail);
-      inlineImages = sigs.inlineImages || [];
-    } catch (e) { console.warn('[SeqSender] signature load failed:', e.message); }
+    const tokenCache = new Map(); // email → token
+    const sigCache = new Map(); // email → { inlineImages }
 
     for (const email of safe) {
       try {
+        // Resolve send-from user for this email's sequence
+        let fromEmail = 'sunny@vanhawke.agency'; // fallback
+        let token = null;
+        let inlineImages = [];
+        if (email.enrollment_id) {
+          try {
+            const enr = await sbFetch(`kiko_sequence_enrollments?id=eq.${email.enrollment_id}&select=sequence_id&limit=1`);
+            if (enr?.[0]?.sequence_id) {
+              const seqRow = await sbFetch(`kiko_sequences?id=eq.${enr[0].sequence_id}&select=send_from_user_id&limit=1`);
+              const sendFromUserId = seqRow?.[0]?.send_from_user_id;
+              if (sendFromUserId) {
+                const cfg = await sbFetch(`kiko_user_config?user_id=eq.${sendFromUserId}&select=email&limit=1`);
+                if (cfg?.[0]?.email) fromEmail = cfg[0].email;
+              }
+            }
+          } catch (e) { console.warn('[SeqSender] send-from lookup error:', e.message); }
+        }
+        // Get Gmail token for the resolved sender (cached per email address)
+        if (!tokenCache.has(fromEmail)) {
+          const t = await getGoogleToken(fromEmail);
+          tokenCache.set(fromEmail, t);
+        }
+        token = tokenCache.get(fromEmail);
+        if (!token) {
+          // Fallback: try any active user's token
+          const users = await getActiveUsers();
+          for (const u of users) { token = await getGoogleToken(u.email); if (token) { fromEmail = u.email; break; } }
+        }
+        if (!token) {
+          await sbFetch(`kiko_outreach_queue?id=eq.${email.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'failed', error: `Send-as user (${fromEmail}) has no Gmail OAuth tokens` }) });
+          continue;
+        }
+        // Load signature for this sender (cached)
+        if (!sigCache.has(fromEmail)) {
+          try { const sigs = await loadUserSignatures(sbFetch, null, token, fromEmail); sigCache.set(fromEmail, sigs.inlineImages || []); }
+          catch { sigCache.set(fromEmail, []); }
+        }
+        inlineImages = sigCache.get(fromEmail);
+
         // Get previous thread ID for Re: threading
         let threadId = null;
         if (email.step_number > 1 && email.enrollment_id) {
