@@ -1417,3 +1417,80 @@ Matt is invitable via Settings → Team. See HOW_TO_INVITE_MATT.md for the full 
 **Final query:** zero status='skipped' rows for high-value event types after 2026-01-01
 
 **Ring fence intact:** No changes to api/kiko.js, api/kiko-health.js, three-layer Bible, OrgContext.jsx, src/contexts/*.
+
+---
+
+## PLANNED — v0.0.64 + v0.0.65 — LinkedIn Layers 1 & 2 — Brief written 14 Apr 2026 ~01:30 BST
+
+**Status:** Briefs written, NOT yet shipped. Awaiting Claude Code execution session.
+
+**Goal:** Make LinkedIn a fully native step type in Kiko sequences. This is the
+2-part build that, when complete, gives Kiko parity with Lemlist's LinkedIn module
+and removes the dependency on Lemlist's Chrome extension for LinkedIn outreach.
+
+### v0.0.64 — Layer 1 (LinkedIn tools)
+- New api/linkedin-client.js — JS-native voyager API wrapper using cookie auth
+- New api/linkedin-test.js — auth verification endpoint
+- Modified api/kiko-tools.js — adds 3 tools: linkedin_search_prospects, linkedin_send_invite, linkedin_send_message
+- New env vars: LINKEDIN_LI_AT, LINKEDIN_JSESSIONID (Sunny extracts from his browser before session)
+- Architecture decision: JS-native (Option C) over Python lib (A) or Render microservice (B)
+- Time: ~2.5-4h
+- Brief: V064_BRIEF_LINKEDIN_LAYER1.md (739 lines, self-contained)
+
+### v0.0.65 — Layer 2 (sequence engine integration)
+- New api/cron-linkedin-sender.js — processes kiko_linkedin_queue pending rows
+- One-line patch to api/cron-sequence-enqueue.js (populate linkedin_url at enqueue)
+- Extension to api/cron-sequence-reply-detect.js (scan LinkedIn inbox for replies)
+- New cron schedule in vercel.json (every 30min Mon-Fri 8-17 UTC)
+- Daily cap: 25 actions/day, 30-90s random delays
+- Time: ~2.5-4h
+- Brief: V065_BRIEF_LINKEDIN_LAYER2.md (719 lines, self-contained)
+
+### Critical reconnaissance findings
+80% of Layer 2 was ALREADY built by a previous session:
+- kiko_linkedin_queue table EXISTS with all needed columns
+- kiko_outreach_queue.channel column EXISTS with default 'email'
+- kiko_sequence_enrollments has linkedin_url, title, phone columns already
+- generate-sequence.js already produces 4 emails + 3 LinkedIn step sequences
+- cron-sequence-enqueue.js already detects channel='linkedin' and writes to kiko_linkedin_queue
+- agents/data.js has a linkedin_queue case for chat-based queue inspection
+
+**The ONLY missing pieces are the API wrapper (Layer 1) and the execution cron (Layer 2).**
+No new tables. No schema migrations beyond the one-line linkedin_url field population.
+
+### Pre-flight baseline (recorded for both briefs)
+- kiko-health: PASS, 1394ms, [core, org, personal]
+- v0.0.63 webhook safety net live and verified
+- Lemlist webhook URL correctly pointing at kiko.vanhawke.agency/api/lemlist-webhook
+
+### Order of operations
+1. Sunny extracts LinkedIn cookies (li_at + JSESSIONID) and adds to Vercel env
+2. Claude Code runs V064_BRIEF_LINKEDIN_LAYER1.md → ships v0.0.64 → kiko-health PASS verified
+3. Verify /api/linkedin-test returns authenticated:true
+4. Claude Code runs V065_BRIEF_LINKEDIN_LAYER2.md → ships v0.0.65 → kiko-health PASS verified
+5. End-to-end test: build a 1-step LinkedIn sequence, enroll a real test contact, watch it execute
+6. After 1 week of clean operation, drop Lemlist's LinkedIn module subscription tier
+
+### Ring fence (applies to both ships)
+Absolute do-not-touch list:
+- api/kiko.js
+- api/kiko-health.js
+- three-layer Bible assembly
+- src/contexts/OrgContext.jsx and anything in src/contexts/
+- api/_lib/get-user-role.js
+- api/lemlist-webhook.js, api/lemlist-backfill.js (just shipped in v0.0.63)
+- v0.0.64 ring fence extends to api/linkedin-client.js and api/kiko-tools.js for v0.0.65
+
+### What this ENABLES once both ship
+- Build sequences in Kiko that mix email + LinkedIn steps (AI-generated path works immediately; manual builder UI deferred to v0.0.66)
+- AI-generated 4 email + 3 LinkedIn sequences execute end-to-end without manual intervention
+- Reply detection on both Gmail AND LinkedIn inbox
+- Path clear to drop Lemlist entirely (target: 1 week after v0.0.65 ships clean)
+
+### What this does NOT enable (deferred to later versions)
+- v0.0.66+: Manual sequence builder UI for LinkedIn step types
+- Layer 3 (separate 2-week build): Kiko Chrome extension with sidebar overlay on linkedin.com
+- Layer 4: Sonnet-powered job-change detector cron
+- Today daily workload view (separate track)
+- Unified inbox UI (separate track)
+
