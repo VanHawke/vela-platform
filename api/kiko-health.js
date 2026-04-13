@@ -4,6 +4,7 @@
 // Returns { status, latency_ms, response_text, bible_layers_loaded, model }
 // Run BEFORE and AFTER every schema/code migration from Sub-Phase B onwards.
 import Anthropic from '@anthropic-ai/sdk';
+import { sbFetch } from './kiko-tools.js';
 
 export const config = { maxDuration: 30 };
 
@@ -15,6 +16,17 @@ export default async function handler(req, res) {
 
   const start = Date.now();
   try {
+    // Check which Bible layers exist in DB
+    const [coreRows, orgRows, userRows] = await Promise.all([
+      sbFetch('kiko_core_bible?select=id&limit=1').catch(() => []),
+      sbFetch('org_bibles?select=id&limit=1').catch(() => []),
+      sbFetch('user_bibles?select=id&limit=1').catch(() => []),
+    ]);
+    const bibleLayers = [];
+    if (coreRows?.length) bibleLayers.push('core');
+    if (orgRows?.length) bibleLayers.push('org');
+    if (userRows?.length) bibleLayers.push('personal');
+
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 100,
@@ -25,9 +37,6 @@ export default async function handler(req, res) {
     const text = response.content?.[0]?.text || '';
     const latency = Date.now() - start;
     const mentionsKiko = /kiko/i.test(text);
-
-    // Bible layers check — will be expanded in Sub-Phase C when DB-loaded
-    const bibleLayers = ['core']; // Currently hardcoded SYSTEM_PROMPT = core only
 
     return res.status(200).json({
       status: mentionsKiko ? 'pass' : 'fail',

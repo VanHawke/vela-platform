@@ -604,15 +604,34 @@ export default async function handler(req, res) {
   // ── Early greeting detection — skip heavy fetches for simple greetings ──
   const earlyGreeting = /^(hi|hey|hello|good\s+(morning|afternoon|evening)|howdy|what'?s?\s+up|yo)\b/i.test((message || '').trim());
 
-  // ── PARALLEL INITIAL LOAD — entityContext, identity, selfKnowledge all at once ──
-  const [entityContext, identityResult, selfKnowledge, voiceMemResult] = await Promise.all([
+  // ── PARALLEL INITIAL LOAD — entityContext, identity, selfKnowledge, Bible layers all at once ──
+  // Bible layers: Core (universal) + Org (per-org) + Personal (per-user) — loaded from DB tables
+  const userOrgId = isRegistered
+    ? await sbFetch(`organization_members?user_id=eq.${userId}&select=organization_id&limit=1`).catch(() => [])
+    : [];
+  const orgId = userOrgId?.[0]?.organization_id || null;
+
+  const [entityContext, identityResult, selfKnowledge, voiceMemResult, coreBibleResult, orgBibleResult, userBibleResult] = await Promise.all([
     earlyGreeting ? Promise.resolve('') : fetchEntityContext(pageEntity),
     sbFetch(`kiko_memories?path=eq./memories/identity.md&user_id=eq.${userId}&select=content&limit=1`).catch(() => []),
     earlyGreeting ? Promise.resolve('') : generateSelfKnowledge(userId).catch(() => 'Self-knowledge unavailable.'),
     (voiceMode || currentPage === 'voice')
       ? sbFetch(`kiko_memories?select=path,content&is_directory=eq.false&user_id=eq.${userId}&path=like./memories/%_profile.md&order=path.asc`).catch(() => [])
       : Promise.resolve([]),
+    sbFetch('kiko_core_bible?select=content&order=version.desc&limit=1').catch(() => []),
+    orgId ? sbFetch(`org_bibles?organization_id=eq.${orgId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
+    isRegistered ? sbFetch(`user_bibles?user_id=eq.${userId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
   ]);
+
+  // Assemble Bible layers — fallback gracefully if any layer missing
+  const coreBible = coreBibleResult?.[0]?.content || '';
+  const orgBible = orgBibleResult?.[0]?.content || '';
+  const userBible = userBibleResult?.[0]?.content || '';
+  const bibleBlock = [
+    coreBible ? `\n\n═══ KIKO CORE BIBLE ═══\n${coreBible}` : '',
+    orgBible ? `\n\n═══ ORGANISATION DOCTRINE ═══\n${orgBible}` : '',
+    userBible ? `\n\n═══ PERSONAL CONTEXT (PRIVATE — THIS USER ONLY) ═══\n${userBible}` : '',
+  ].join('');
 
   let identityContext = '';
   if (identityResult?.[0]?.content) identityContext = '\n\n── KIKO IDENTITY ──\n' + identityResult[0].content.slice(0, 2000);
@@ -649,6 +668,7 @@ export default async function handler(req, res) {
     .replace('{USER_TITLE}', userConfig.job_title || 'team member')
     .replace('{USER_LOCATION}', userConfig.location || '')
     .replace(/\{USER_NAME\}/g, userConfig.display_name || userEmail.split('@')[0])
+    + bibleBlock
     + `\n[${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
     + (pageContext?.summary ? `\n[Context: ${pageContext.summary}${pageContext.stageDistribution ? ` | Stages: ${JSON.stringify(pageContext.stageDistribution)}` : ''}${pageContext.visibleItems ? `\nVisible: ${pageContext.visibleItems}` : ''}]` : '')
     + (PERSONALITIES[personality] || PERSONALITIES.executive)
