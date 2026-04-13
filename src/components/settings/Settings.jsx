@@ -8,6 +8,7 @@ import MemoryTab from './MemoryTab'
 import { Check, ExternalLink, Unplug, UserPlus, Trash2, LogOut, X, Shield } from 'lucide-react'
 import { ALL_PAGES, ROLE_DEFAULTS } from '@/lib/pagePermissions'
 import { applyFavicon, DEFAULT_FAVICON } from '@/lib/favicon'
+import { useOrg } from '@/contexts/OrgContext'
 
 const VOICES = [
   { id: 'shimmer', label: 'Shimmer', desc: 'Warm, articulate female' },
@@ -33,6 +34,31 @@ const SUPER_ADMIN_TABS = ['Kiko', 'Team', 'Organisation'] // Only visible to sup
 
 export default function Settings({ user }) {
   const navigate = useNavigate()
+  const { branding: orgBranding, setBrandingFromServer } = useOrg()
+  // Shared helper: PATCH /api/org-branding with a partial branding update,
+  // then update OrgContext so UI across the app (favicon, title, logo) reflects
+  // the change instantly without a page reload.
+  const saveBranding = async (patch) => {
+    if (!user?.id) { setSaveError('Not signed in'); return null }
+    try {
+      const res = await fetch('/api/org-branding', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id, patch }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        setSaveError(`Branding save failed: ${err.error || res.status}`)
+        return null
+      }
+      const data = await res.json()
+      if (data?.branding) setBrandingFromServer(data.branding)
+      return data?.branding || null
+    } catch (err) {
+      setSaveError(`Branding save failed: ${err.message}`)
+      return null
+    }
+  }
   const [tab, setTab] = useState('Profile')
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState(null)
@@ -56,8 +82,10 @@ export default function Settings({ user }) {
   const [userBibleUpdatedAt, setUserBibleUpdatedAt] = useState(null)
   const [userBibleSaving, setUserBibleSaving] = useState(false)
   const [userOrgId, setUserOrgId] = useState(null)
-  const [navLogo, setNavLogo] = useState(() => { try { return localStorage.getItem('custom_logo_url') } catch { return null } })
-  const [favicon, setFavicon] = useState(() => { try { return localStorage.getItem('custom_favicon_url') } catch { return null } })
+  // Branding assets now live in organisations.branding (DB), exposed via OrgContext.
+  // These local states mirror OrgContext for the currentUrl prop on ImageUpload.
+  const navLogo = orgBranding?.logo_url || null
+  const favicon = orgBranding?.favicon_url || null
 
   const DEFAULT_NAV = [
     { id: 'home', label: 'Home' }, { id: 'pipeline', label: 'Pipeline' },
@@ -914,40 +942,22 @@ export default function Settings({ user }) {
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-                {/* Navigation Logo */}
+                {/* Logo — shown in navigation bar AND on login page */}
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: navLogo ? 6 : 0 }}>
                     <span />
-                    {navLogo && <button onClick={() => { try { localStorage.removeItem('custom_logo_url') } catch {}; setNavLogo(null); window.dispatchEvent(new Event('kiko_logo_updated')) }} title="Reset to default" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: T.textTertiary, padding: 0 }}><X size={12} /> Reset to default</button>}
+                    {navLogo && <button onClick={() => saveBranding({ logo_url: null })} title="Reset to default" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: T.textTertiary, padding: 0 }}><X size={12} /> Reset to default</button>}
                   </div>
-                  <ImageUpload label="Navigation Logo" storageKey="nav_logo" folder="logos" aspectHint="Replaces the Kiko symbol in the top-left navigation bar" currentUrl={navLogo} onUploaded={(url) => { try { localStorage.setItem('custom_logo_url', url) } catch {}; setNavLogo(url); window.dispatchEvent(new Event('kiko_logo_updated')) }} />
-                </div>
-
-                {/* Login Brand Logo */}
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: settings.kiko_avatar_url ? 6 : 0 }}>
-                    <span />
-                    {settings.kiko_avatar_url && <button onClick={() => { saveSettings({ kiko_avatar_url: null }); try { localStorage.removeItem('kiko_brand_logo') } catch {} }} title="Remove" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: T.textTertiary, padding: 0 }}><X size={12} /> Remove</button>}
-                  </div>
-                  <ImageUpload label="Login Brand Logo" storageKey="brand_logo" folder="logos" aspectHint="Shown on the login page above the sign-in form" currentUrl={settings.kiko_avatar_url} onUploaded={(url) => { saveSettings({ kiko_avatar_url: url }); try { localStorage.setItem('kiko_brand_logo', url) } catch {} }} />
-                </div>
-
-                {/* Login Background */}
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: settings.login_bg_url ? 6 : 0 }}>
-                    <span />
-                    {settings.login_bg_url && <button onClick={() => { saveSettings({ login_bg_url: null }); try { localStorage.removeItem('kiko_login_bg') } catch {} }} title="Remove" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: T.textTertiary, padding: 0 }}><X size={12} /> Remove</button>}
-                  </div>
-                  <ImageUpload label="Login Background Image" storageKey="login_bg" folder="backgrounds" aspectHint="16:9 landscape recommended" currentUrl={settings.login_bg_url} onUploaded={(url) => { saveSettings({ login_bg_url: url }); try { localStorage.setItem('kiko_login_bg', url) } catch {} }} />
+                  <ImageUpload label="Logo" storageKey="logo" folder="logos" aspectHint="Shown in the top-left nav bar and above the sign-in form on the login page" currentUrl={navLogo} onUploaded={(url) => saveBranding({ logo_url: url })} />
                 </div>
 
                 {/* Browser Favicon */}
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: favicon ? 6 : 0 }}>
                     <span />
-                    {favicon && <button onClick={() => { try { localStorage.removeItem('custom_favicon_url') } catch {}; setFavicon(null); applyFavicon(DEFAULT_FAVICON); }} title="Reset to default" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: T.textTertiary, padding: 0 }}><X size={12} /> Reset to default</button>}
+                    {favicon && <button onClick={() => saveBranding({ favicon_url: null })} title="Reset to default" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: T.textTertiary, padding: 0 }}><X size={12} /> Reset to default</button>}
                   </div>
-                  <ImageUpload label="Browser Favicon" storageKey="favicon" folder="logos" aspectHint="Square, shown in the browser tab (32×32 recommended)" currentUrl={favicon} onUploaded={(url) => { try { localStorage.setItem('custom_favicon_url', url) } catch {}; setFavicon(url); applyFavicon(url); }} />
+                  <ImageUpload label="Browser Favicon" storageKey="favicon" folder="logos" aspectHint="Square, shown in the browser tab (32×32 recommended)" currentUrl={favicon} onUploaded={(url) => saveBranding({ favicon_url: url })} />
                 </div>
 
               </div>

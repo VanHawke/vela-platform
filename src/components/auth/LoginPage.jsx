@@ -4,6 +4,7 @@ import { Loader2, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react'
 import T from '@/lib/theme'
 import AuroraCanvas from '@/components/AuroraCanvas'
 import KikoWaveform from '@/components/kiko/KikoWaveform'
+import { useOrg } from '@/contexts/OrgContext'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -13,7 +14,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [gLoading, setGLoading] = useState(false)
   const [showEmail, setShowEmail] = useState(false)
-  const [customLogo] = useState(() => { try { return localStorage.getItem('custom_logo_url') } catch { return null } })
+  const { logoUrl: customLogo } = useOrg() || {}
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => { setTimeout(() => setMounted(true), 100) }, [])

@@ -6,7 +6,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
-import { applyFavicon } from '@/lib/favicon'
+// applyFavicon is now handled by OrgContext — import removed
 // Design tokens — hardcoded (matching Sequences.jsx)
 const C = {
   bg: '#1c1c24',
@@ -35,6 +35,7 @@ import NotificationToast from '../kiko/NotificationToast'
 import BackgroundTasksPanel from '../kiko/BackgroundTasksPanel'
 import OnboardingModal from '../onboarding/OnboardingModal'
 import { usePagePermissions } from '@/lib/usePagePermissions'
+import { useOrg } from '@/contexts/OrgContext'
 import KikoVoice from '../kiko/KikoVoice'
 import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
@@ -134,23 +135,8 @@ export default function Layout({ user }) {
     ? [...moreItemsRaw].sort((a, b) => { const ai = moreOrder.indexOf(a.id); const bi = moreOrder.indexOf(b.id); return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi) })
     : moreItemsRaw
   const moreRef = useRef(null)
-  const [customLogo, setCustomLogo] = useState(() => { try { return localStorage.getItem('custom_logo_url') } catch { return null } })
+  const { logoUrl: customLogo } = useOrg() || {}
   const avatarRef = useRef(null)
-
-  // Listen for custom logo changes
-  useEffect(() => {
-    const handler = () => { try { setCustomLogo(localStorage.getItem('custom_logo_url')) } catch {} }
-    window.addEventListener('kiko_logo_updated', handler)
-    return () => window.removeEventListener('kiko_logo_updated', handler)
-  }, [])
-
-  // Apply custom favicon on load (Safari-safe remove-and-recreate via applyFavicon helper)
-  useEffect(() => {
-    try {
-      const faviconUrl = localStorage.getItem('custom_favicon_url')
-      if (faviconUrl) applyFavicon(faviconUrl)
-    } catch {}
-  }, [])
 
   // Listen for voice state changes from KikoChat
   const [chatHistoryOpen, setChatHistoryOpen] = useState(false)
