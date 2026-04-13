@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   // Vercel cron sends GET requests
   if (req.method !== 'GET' && req.method !== 'POST') return res.status(405).json({ error: 'GET or POST' })
 
-  const BASE = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://vela-platform-one.vercel.app'
+  const BASE = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://kiko.vanhawke.agency'
   const results = {}
 
   async function callEndpoint(url, body) {

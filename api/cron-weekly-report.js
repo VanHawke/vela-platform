@@ -197,7 +197,7 @@ ${campaigns.length ? `<tr><td style="padding:0 32px 20px;">
 <!-- Footer -->
 <tr><td style="padding:16px 32px;border-top:1px solid #1A1A1E;text-align:center;">
   <p style="margin:0;font-size:11px;color:#333;">
-    <a href="https://vela-platform-one.vercel.app" style="color:#7C5CFC;text-decoration:none;">Open Kiko</a>
+    <a href="https://kiko.vanhawke.agency" style="color:#7C5CFC;text-decoration:none;">Open Kiko</a>
     &nbsp;&middot;&nbsp; Generated ${now.toLocaleString('en-GB', { timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit' })} UK
   </p>
 </td></tr>

@@ -14,15 +14,15 @@ async function sendAlertEmail(alerts, userEmail) {
     const token = await getGoogleToken(userEmail);
     if (!token) return;
     const subject = `Kiko Alert: ${highAlerts.length} high-priority convergence${highAlerts.length > 1 ? 's' : ''} detected`;
-    const body = highAlerts.map(a => `■ ${a.entity || 'Unknown'}: ${a.title}\n${a.detail}\n→ ${a.action || 'Review in Vela'}`).join('\n\n---\n\n');
+    const body = highAlerts.map(a => `■ ${a.entity || 'Unknown'}: ${a.title}\n${a.detail}\n→ ${a.action || 'Review in Kiko'}`).join('\n\n---\n\n');
     const htmlBody = `<div style="font-family:-apple-system,system-ui,sans-serif;font-size:14px;color:#333">
       <h2 style="color:#7C5CFC;margin-bottom:16px">Kiko Intelligence Alert</h2>
       ${highAlerts.map(a => `<div style="margin-bottom:20px;padding:16px;border-left:4px solid #FF4444;background:#fafafa;border-radius:4px">
         <strong style="font-size:15px">${a.entity || 'Unknown'}: ${a.title}</strong>
         <p style="margin:8px 0;color:#555">${a.detail}</p>
-        <p style="color:#7C5CFC;font-weight:600">→ ${a.action || 'Review in Vela'}</p>
+        <p style="color:#7C5CFC;font-weight:600">→ ${a.action || 'Review in Kiko'}</p>
       </div>`).join('')}
-      <p style="margin-top:24px;color:#999;font-size:12px">Open <a href="https://vela-platform-one.vercel.app">Vela</a> and say "brief me" for full context.</p>
+      <p style="margin-top:24px;color:#999;font-size:12px">Open <a href="https://kiko.vanhawke.agency">Kiko</a> and say "brief me" for full context.</p>
     </div>`;
     const boundary = `b_${Date.now()}`;
     let mime = `To: ${userEmail}\r\nFrom: ${userEmail}\r\nSubject: ${subject}\r\n`;

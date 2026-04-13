@@ -25,7 +25,7 @@ export async function sendAlert(title, body, severity = 'warning') {
         const emoji = severity === 'critical' ? '🔴' : severity === 'warning' ? '🟡' : 'ℹ️';
         const subject = `${emoji} [Kiko OS] ${severity.toUpperCase()}: ${title}`;
         const raw = Buffer.from(
-          `To: ${email}\r\nSubject: ${subject}\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n${body}\n\nTimestamp: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}\nService: Kiko Intelligence OS\nURL: https://vela-platform-one.vercel.app`
+          `To: ${email}\r\nSubject: ${subject}\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n${body}\n\nTimestamp: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}\nService: Kiko Intelligence OS\nURL: https://kiko.vanhawke.agency`
         ).toString('base64url');
         const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
           method: 'POST',

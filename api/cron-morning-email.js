@@ -198,7 +198,7 @@ function arrowPct(delta) {
 // Uses table-based layout for Gmail compatibility (no flex/grid).
 // ─────────────────────────────────────────────────────────────────
 function buildHtml(d) {
-  const baseUrl = 'https://vela-platform-one.vercel.app';
+  const baseUrl = 'https://kiko.vanhawke.agency';
   const dateStr = formatDate(new Date());
   const raceLabel = d.raceThisWeek
     ? `🏁 Race week: ${d.raceThisWeek.name} (${d.raceThisWeek.city})`
@@ -379,7 +379,7 @@ function buildText(d) {
     lines.push(`RACE WEEK: ${d.raceThisWeek.name} (${d.raceThisWeek.city}) on ${formatDate(new Date(d.raceThisWeek.date))}`);
   }
   lines.push('');
-  lines.push('Open Command Centre: https://vela-platform-one.vercel.app/command-centre');
-  lines.push('Open Campaigns: https://vela-platform-one.vercel.app/campaigns');
+  lines.push('Open Command Centre: https://kiko.vanhawke.agency/command-centre');
+  lines.push('Open Campaigns: https://kiko.vanhawke.agency/campaigns');
   return lines.join('\n');
 }

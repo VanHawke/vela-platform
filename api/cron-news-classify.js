@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   try {
     // Forward to news-agent's classify action (which already has all the
     // partnership detection + alert logic). Internal call avoids duplicating ~200 lines.
-    const baseUrl = `https://${req.headers.host || 'vela-platform-one.vercel.app'}`;
+    const baseUrl = `https://${req.headers.host || 'kiko.vanhawke.agency'}`;
     const r = await fetch(`${baseUrl}/api/news-agent`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

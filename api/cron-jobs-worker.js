@@ -39,7 +39,7 @@ async function processJob(job) {
       }
       case 'voice_relearn': {
         await patchProgress(job.id, 30, 'Triggering voice learning cron...');
-        const res = await fetch(`${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'https://vela-platform-one.vercel.app'}/api/cron-email-voice-learning`, { method: 'GET' });
+        const res = await fetch(`${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'https://kiko.vanhawke.agency'}/api/cron-email-voice-learning`, { method: 'GET' });
         result = await res.json();
         break;
       }

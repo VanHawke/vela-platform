@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     for (const doc of docs) {
       try {
         console.log(`[DocScan] Re-scanning: ${doc.name} (v${doc.scan_version})`)
-        const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://vela-platform-one.vercel.app'
+        const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://kiko.vanhawke.agency'
         const scanRes = await fetch(`${baseUrl}/api/documents`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

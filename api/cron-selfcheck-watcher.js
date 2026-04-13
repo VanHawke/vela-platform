@@ -30,8 +30,8 @@ export default async function handler(req, res) {
   try {
     // 1. Call selfcheck — production alias is stable
     const baseUrl = process.env.VERCEL_ENV === 'production'
-      ? 'https://vela-platform-one.vercel.app'
-      : `https://${process.env.VERCEL_URL || 'vela-platform-one.vercel.app'}`;
+      ? 'https://kiko.vanhawke.agency'
+      : `https://${process.env.VERCEL_URL || 'kiko.vanhawke.agency'}`;
 
     const selfRes = await fetch(`${baseUrl}/api/selfcheck`, { cache: 'no-store' });
     if (!selfRes.ok) throw new Error(`selfcheck returned ${selfRes.status}`);

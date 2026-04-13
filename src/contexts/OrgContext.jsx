@@ -28,8 +28,8 @@ function writeCachedBranding(branding) {
 
 function applyBranding(branding) {
   if (!branding) return
-  // Document title: fall back to Kiko if platform_name is missing or the legacy "Vela" value
-  if (branding.platform_name && branding.platform_name !== 'Vela') document.title = branding.platform_name
+  // Document title — fall back to Kiko if platform_name is unset
+  if (branding.platform_name) document.title = branding.platform_name
   else document.title = 'Kiko'
   // Primary brand colour → CSS variable
   if (branding.primary_colour) {
@@ -123,7 +123,7 @@ export function OrgProvider({ children }) {
   }, [loadOrg])
 
   const hasModule = (key) => org?.modules?.[key] === true
-  const platformName = branding?.platform_name && branding.platform_name !== 'Vela' ? branding.platform_name : 'Kiko'
+  const platformName = branding?.platform_name || 'Kiko'
   const logoUrl = branding?.logo_url || null
   const faviconUrl = branding?.favicon_url || null
 

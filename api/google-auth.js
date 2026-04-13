@@ -17,7 +17,7 @@ const SCOPES = [
   'profile',
 ].join(' ');
 
-const REDIRECT_URI = 'https://vela-platform-one.vercel.app/api/google-auth/callback';
+const REDIRECT_URI = 'https://kiko.vanhawke.agency/api/google-auth/callback';
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {

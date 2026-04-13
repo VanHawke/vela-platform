@@ -81,7 +81,7 @@ export default async function handler(req, res) {
       if (add_meet_link) {
         event.conferenceData = {
           createRequest: {
-            requestId: `vela-${Date.now()}`,
+            requestId: `kiko-${Date.now()}`,
             conferenceSolutionKey: { type: 'hangoutsMeet' },
           },
         };

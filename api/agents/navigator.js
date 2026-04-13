@@ -1,11 +1,11 @@
 // api/agents/navigator.js — Navigator Agent
-// Understands the Vela platform UI. Describes screen content. Navigates between pages.
+// Understands the Kiko platform UI. Describes screen content. Navigates between pages.
 // Called by Kiko Prime via ask_navigator tool.
 import Anthropic from '@anthropic-ai/sdk';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
-const PLATFORM_MAP = `VELA PLATFORM — COMPLETE PAGE MAP
+const PLATFORM_MAP = `KIKO PLATFORM — COMPLETE PAGE MAP
 
 Pages you can navigate to (use exact IDs):
 

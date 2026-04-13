@@ -1,4 +1,4 @@
-// Vela — Warm Charcoal palette (v0.0.43, picked from PALETTES_HOME_CC.html Option 1)
+// Kiko — Warm Charcoal palette (v0.0.43, picked from PALETTES_HOME_CC.html Option 1)
 // Single accent: purple #7c5cfc. Teal removed/remapped. WCAG AA passing throughout.
 
 export const T = {

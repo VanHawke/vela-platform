@@ -565,7 +565,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       if (operation === 'learn_topic') {
         const { topic, category } = params;
         if (!topic) return 'Error: topic is required';
-        const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://vela-platform-one.vercel.app';
+        const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://kiko.vanhawke.agency';
         // Trigger the ingestion endpoint with a synthetic source
         await sbFetch('kiko_knowledge_sources', { method: 'POST', body: JSON.stringify({ name: `On-demand: ${topic}`, type: 'topic', category: category || 'general', url: null, content: topic, scrape_frequency: 'once', active: true }) });
         return `Learning topic queued: "${topic}". I'll research this on the next learning cycle, or you can ask me to research it now using web search.`;
@@ -632,7 +632,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
   // ── On-Demand Triage ──
   if (name === 'trigger_triage') {
     try {
-      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://vela-platform-one.vercel.app';
+      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://kiko.vanhawke.agency';
       const triageRes = await fetch(`${baseUrl}/api/cron-inbox-triage`, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
       const result = await triageRes.json();
       if (result.ok) {
@@ -811,7 +811,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       return 'Specify operation: unread, search, read_message, or inbox_summary.';
     } catch (e) {
       if (e.message?.includes('No Google token') || e.message?.includes('refresh failed')) {
-        return `Gmail not connected. Sunny needs to connect Google in Settings: https://vela-platform-one.vercel.app/api/google-auth?email=${userEmail}`;
+        return `Gmail not connected. Sunny needs to connect Google in Settings: https://kiko.vanhawke.agency/api/google-auth?email=${userEmail}`;
       }
       return `Email error: ${e.message}`;
     }
@@ -866,7 +866,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       return out;
     } catch (e) {
       if (e.message?.includes('No Google token') || e.message?.includes('refresh failed')) {
-        return `Calendar not connected. Sunny needs to connect Google in Settings: https://vela-platform-one.vercel.app/api/google-auth?email=${userEmail}`;
+        return `Calendar not connected. Sunny needs to connect Google in Settings: https://kiko.vanhawke.agency/api/google-auth?email=${userEmail}`;
       }
       return `Calendar error: ${e.message}`;
     }
