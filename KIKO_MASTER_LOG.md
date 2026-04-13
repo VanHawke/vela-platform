@@ -1179,3 +1179,29 @@ Surface boundary: code touches repo → Claude Code only. Strategy/writing/discu
 
 ### Files archived
 - `KIKO_BIBLE.md` → `KIKO_BIBLE.md.archive`
+
+## Section A0r — v0.0.52 Multi-User Sub-Phase D: Settings Tabs + Bible Editors (April 12, 2026)
+
+**Theme:** Organisation doctrine editor (Layer 2) + Personal Bible editor (Layer 3) in Settings, plus backend endpoints.
+
+### New tabs
+- **"Organisation" tab** (super_admin only): textarea editing `org_bibles.content`, save button, char count, last-updated timestamp. Controls Kiko's Van Hawke-specific doctrine injected into all org members' prompts.
+- **"Your Personal Context" section** in existing Kiko tab: textarea editing `user_bibles.content`, save button. Private per-user Layer 3 content that Kiko sees in every conversation.
+
+### New endpoints
+- **`api/org-bible.js`**: GET reads org Bible, PATCH writes (super_admin check via organization_members.role)
+- **`api/user-bible.js`**: GET reads user Bible, PATCH upserts (creates if not exists)
+- **`api/team-list.js`**: GET returns org members enriched with kiko_user_config data
+
+### Existing functionality preserved
+- Team tab (already existed): member list, add user, role change, deactivate — unchanged
+- Kiko tab: Voice, Speed, Personality — unchanged, Personal Context added at bottom
+
+### Files added
+- `api/org-bible.js`
+- `api/user-bible.js`
+- `api/team-list.js`
+
+### Files modified
+- `src/components/settings/Settings.jsx` (Organisation tab, Personal Bible section, Bible state + loading)
+- `package.json` (0.0.51 → 0.0.52)

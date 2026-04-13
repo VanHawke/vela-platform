@@ -24,8 +24,8 @@ const SPEEDS = [
   { id: 1.1, label: 'Brisk' },
   { id: 1.2, label: 'Fast' },
 ]
-const TABS = ['Profile', 'Kiko', 'Memory', 'Skills', 'Navigation', 'Team', 'Appearance', 'Accounts']
-const SUPER_ADMIN_TABS = ['Kiko', 'Team'] // Only visible to super_admin
+const TABS = ['Profile', 'Kiko', 'Memory', 'Skills', 'Navigation', 'Team', 'Organisation', 'Appearance', 'Accounts']
+const SUPER_ADMIN_TABS = ['Kiko', 'Team', 'Organisation'] // Only visible to super_admin
 
 // Theme imported from @/lib/theme.js
 
@@ -43,6 +43,13 @@ export default function Settings({ user }) {
   const [currentUserRole, setCurrentUserRole] = useState('user')
   const [previewingVoice, setPreviewingVoice] = useState(null)
   const previewAudioRef = useRef(null)
+  const [orgBibleContent, setOrgBibleContent] = useState('')
+  const [orgBibleUpdatedAt, setOrgBibleUpdatedAt] = useState(null)
+  const [orgBibleSaving, setOrgBibleSaving] = useState(false)
+  const [userBibleContent, setUserBibleContent] = useState('')
+  const [userBibleUpdatedAt, setUserBibleUpdatedAt] = useState(null)
+  const [userBibleSaving, setUserBibleSaving] = useState(false)
+  const [userOrgId, setUserOrgId] = useState(null)
   const [navLogo, setNavLogo] = useState(() => { try { return localStorage.getItem('custom_logo_url') } catch { return null } })
   const [favicon, setFavicon] = useState(() => { try { return localStorage.getItem('custom_favicon_url') } catch { return null } })
 
@@ -106,7 +113,46 @@ export default function Settings({ user }) {
     if (params.get('error')) { setTab('Accounts'); window.history.replaceState({}, '', '/settings') }
   }, [])
 
-  useEffect(() => { if (email) { loadSettings(); checkGoogleStatus(); loadTeam() } }, [email])
+  useEffect(() => {
+    if (email) { loadSettings(); checkGoogleStatus(); loadTeam(); loadBibles() }
+  }, [email])
+
+  const loadBibles = async () => {
+    if (!user?.id) return
+    try {
+      // Find user's org
+      const { data: membership } = await supabase.from('organization_members').select('organization_id').eq('user_id', user.id).limit(1).maybeSingle()
+      if (membership?.organization_id) {
+        setUserOrgId(membership.organization_id)
+        const orgRes = await fetch(`/api/org-bible?org_id=${membership.organization_id}`)
+        if (orgRes.ok) { const d = await orgRes.json(); setOrgBibleContent(d.content || ''); setOrgBibleUpdatedAt(d.updated_at) }
+      }
+      const userRes = await fetch(`/api/user-bible?user_id=${user.id}`)
+      if (userRes.ok) { const d = await userRes.json(); setUserBibleContent(d.content || ''); setUserBibleUpdatedAt(d.updated_at) }
+    } catch {}
+  }
+
+  const saveOrgBible = async () => {
+    if (!userOrgId || !user?.id) return
+    setOrgBibleSaving(true)
+    try {
+      const res = await fetch('/api/org-bible', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ org_id: userOrgId, content: orgBibleContent, user_id: user.id }) })
+      if (res.ok) { setOrgBibleUpdatedAt(new Date().toISOString()); setSaved(true); setTimeout(() => setSaved(false), 2500) }
+      else { const d = await res.json(); setSaveError(d.error || 'Save failed') }
+    } catch (e) { setSaveError(e.message) }
+    finally { setOrgBibleSaving(false) }
+  }
+
+  const saveUserBible = async () => {
+    if (!user?.id) return
+    setUserBibleSaving(true)
+    try {
+      const res = await fetch('/api/user-bible', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: user.id, content: userBibleContent }) })
+      if (res.ok) { setUserBibleUpdatedAt(new Date().toISOString()); setSaved(true); setTimeout(() => setSaved(false), 2500) }
+      else { const d = await res.json(); setSaveError(d.error || 'Save failed') }
+    } catch (e) { setSaveError(e.message) }
+    finally { setUserBibleSaving(false) }
+  }
 
   const loadSettings = async () => {
     try {
@@ -536,6 +582,29 @@ export default function Settings({ user }) {
                 })}
               </div>
             </div>
+            {/* Personal Bible (Layer 3) */}
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Your Personal Context (Layer 3)</h3>
+              <p style={{ fontSize: 12, color: T.textTertiary, margin: '0 0 12px', fontFamily: T.font }}>
+                Private to you. Kiko sees this in every conversation. Add your preferences, personal details, communication style, or anything you want Kiko to always know about you.
+              </p>
+              <textarea
+                value={userBibleContent}
+                onChange={e => setUserBibleContent(e.target.value)}
+                rows={10}
+                style={{ width: '100%', border: `1px solid ${T.border}`, borderRadius: T.radiusSm, padding: 14, fontSize: 13, color: T.text, background: T.surface, fontFamily: T.mono, lineHeight: 1.6, resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
+              />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
+                <span style={{ fontSize: 11, color: T.textTertiary, fontFamily: T.font }}>
+                  {userBibleContent.length.toLocaleString()} chars{userBibleUpdatedAt ? ` · Last saved ${new Date(userBibleUpdatedAt).toLocaleString('en-GB')}` : ''}
+                </span>
+                <button onClick={saveUserBible} disabled={userBibleSaving} style={{
+                  padding: '8px 20px', borderRadius: 50, background: T.accent, color: '#fff',
+                  border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
+                  opacity: userBibleSaving ? 0.5 : 1,
+                }}>{userBibleSaving ? 'Saving...' : 'Save Personal Context'}</button>
+              </div>
+            </div>
           </div>
         )}
         {tab === 'Navigation' && (
@@ -737,6 +806,34 @@ export default function Settings({ user }) {
                 personal context, email, calendar, and conversation memory are completely isolated. Shared data (CRM, pipeline, contacts) 
                 is visible to everyone.
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* Organisation Bible — super_admin only */}
+        {tab === 'Organisation' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Organisation Doctrine (Layer 2)</h3>
+              <p style={{ fontSize: 12, color: T.textTertiary, margin: '0 0 12px', fontFamily: T.font }}>
+                This content is injected into Kiko's system prompt for ALL members of this organisation. It defines vocabulary, tone, industry rules, and company-specific doctrine. Only super_admin can edit.
+              </p>
+              <textarea
+                value={orgBibleContent}
+                onChange={e => setOrgBibleContent(e.target.value)}
+                rows={18}
+                style={{ width: '100%', border: `1px solid ${T.border}`, borderRadius: T.radiusSm, padding: 14, fontSize: 13, color: T.text, background: T.surface, fontFamily: T.mono, lineHeight: 1.6, resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
+              />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
+                <span style={{ fontSize: 11, color: T.textTertiary, fontFamily: T.font }}>
+                  {orgBibleContent.length.toLocaleString()} chars{orgBibleUpdatedAt ? ` · Last saved ${new Date(orgBibleUpdatedAt).toLocaleString('en-GB')}` : ''}
+                </span>
+                <button onClick={saveOrgBible} disabled={orgBibleSaving} style={{
+                  padding: '8px 20px', borderRadius: 50, background: T.accent, color: '#fff',
+                  border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
+                  opacity: orgBibleSaving ? 0.5 : 1,
+                }}>{orgBibleSaving ? 'Saving...' : 'Save Doctrine'}</button>
+              </div>
             </div>
           </div>
         )}
