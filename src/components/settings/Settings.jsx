@@ -7,6 +7,7 @@ import SkillsManager from './SkillsManager'
 import MemoryTab from './MemoryTab'
 import { Check, ExternalLink, Unplug, UserPlus, Trash2, LogOut, X, Shield } from 'lucide-react'
 import { ALL_PAGES, ROLE_DEFAULTS } from '@/lib/pagePermissions'
+import { applyFavicon, DEFAULT_FAVICON } from '@/lib/favicon'
 
 const VOICES = [
   { id: 'shimmer', label: 'Shimmer', desc: 'Warm, articulate female' },
@@ -944,9 +945,9 @@ export default function Settings({ user }) {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: favicon ? 6 : 0 }}>
                     <span />
-                    {favicon && <button onClick={() => { try { localStorage.removeItem('custom_favicon_url') } catch {}; setFavicon(null); const link = document.querySelector('link[rel="icon"]'); if (link) link.href = '/favicon.svg'; }} title="Reset to default" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: T.textTertiary, padding: 0 }}><X size={12} /> Reset to default</button>}
+                    {favicon && <button onClick={() => { try { localStorage.removeItem('custom_favicon_url') } catch {}; setFavicon(null); applyFavicon(DEFAULT_FAVICON); }} title="Reset to default" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: T.textTertiary, padding: 0 }}><X size={12} /> Reset to default</button>}
                   </div>
-                  <ImageUpload label="Browser Favicon" storageKey="favicon" folder="logos" aspectHint="Square, shown in the browser tab (32×32 recommended)" currentUrl={favicon} onUploaded={(url) => { try { localStorage.setItem('custom_favicon_url', url) } catch {}; setFavicon(url); const link = document.querySelector('link[rel="icon"]'); if (link) { link.href = url; link.type = 'image/png'; } }} />
+                  <ImageUpload label="Browser Favicon" storageKey="favicon" folder="logos" aspectHint="Square, shown in the browser tab (32×32 recommended)" currentUrl={favicon} onUploaded={(url) => { try { localStorage.setItem('custom_favicon_url', url) } catch {}; setFavicon(url); applyFavicon(url); }} />
                 </div>
 
               </div>

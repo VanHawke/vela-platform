@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
+import { applyFavicon } from '@/lib/favicon'
 // Design tokens — hardcoded (matching Sequences.jsx)
 const C = {
   bg: '#1c1c24',
@@ -143,11 +144,11 @@ export default function Layout({ user }) {
     return () => window.removeEventListener('kiko_logo_updated', handler)
   }, [])
 
-  // Apply custom favicon on load
+  // Apply custom favicon on load (Safari-safe remove-and-recreate via applyFavicon helper)
   useEffect(() => {
     try {
       const faviconUrl = localStorage.getItem('custom_favicon_url')
-      if (faviconUrl) { const link = document.querySelector('link[rel="icon"]'); if (link) { link.href = faviconUrl; link.type = 'image/png' } }
+      if (faviconUrl) applyFavicon(faviconUrl)
     } catch {}
   }, [])
 

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { applyFavicon } from '../lib/favicon'
 
 const OrgContext = createContext(null)
 
@@ -27,9 +28,8 @@ export function OrgProvider({ children }) {
         document.documentElement.style.setProperty('--brand-primary', data.branding.primary_colour)
       }
       if (data.branding?.favicon_url) {
-        let link = document.querySelector("link[rel~='icon']")
-        if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link) }
-        link.href = data.branding.favicon_url
+        // Safari-safe: applyFavicon removes and recreates link element
+        applyFavicon(data.branding.favicon_url)
       }
     }
     setLoading(false)

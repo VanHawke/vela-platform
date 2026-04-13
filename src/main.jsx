@@ -3,15 +3,9 @@ import './index.css'
 import { OrgProvider } from './contexts/OrgContext'
 import App from './App.jsx'
 
-// Apply custom favicon from localStorage BEFORE React mounts so the login page
-// matches the post-login platform (fixes inconsistency between login tab icon and app tab icon)
-try {
-  const customFavicon = localStorage.getItem('custom_favicon_url')
-  if (customFavicon) {
-    const link = document.querySelector('link[rel="icon"]')
-    if (link) { link.href = customFavicon; link.type = 'image/png' }
-  }
-} catch {}
+// Favicon bootstrap now handled by the Safari-safe inline IIFE in index.html
+// which runs synchronously during HTML parse (before any <link rel="icon">
+// is encountered by the parser). See src/lib/favicon.js for runtime updates.
 
 createRoot(document.getElementById('root')).render(
   <OrgProvider>
