@@ -1143,3 +1143,39 @@ Surface boundary: code touches repo → Claude Code only. Strategy/writing/discu
 - New table: `organizations` (id, name, slug, legacy_org_id, created_at, settings) + RLS
 - New table: `organization_members` (id, organization_id, user_id, role, joined_at) + RLS
 - Dropped 4 org_id policies on `conversations` table (privacy fix)
+
+## Section A0q — v0.0.51 Multi-User Sub-Phase C: Three-Layer Bible Split (April 12, 2026)
+
+**Theme:** Split the monolithic hardcoded SYSTEM_PROMPT into 3 DB-loaded layers: Core + Org + Personal.
+
+### What changed
+- **3 new tables:** `kiko_core_bible` (universal), `org_bibles` (per-org), `user_bibles` (per-user) with RLS
+- **Content migrated from KIKO_BIBLE.md:**
+  - Core (4914 chars): §1-9, §11-13, §16-18, tool boundary rule
+  - Org (2168 chars): §10, §14, §20-21, outreach doctrine — Van Hawke specific
+  - Personal (673 chars): §15 — Sunny's profile, daughters, preferences
+- **api/kiko.js modified:** loads Bible layers from DB in parallel fetch, injects as `bibleBlock` between SYSTEM_PROMPT and date/time line. Operational prompt (routing, tools, orchestration) stays hardcoded.
+- **api/kiko-health.js updated:** checks all 3 Bible tables, reports `bible_layers_loaded` array
+- **KIKO_BIBLE.md archived** as KIKO_BIBLE.md.archive
+
+### Assembly order (preserved)
+1. SYSTEM_PROMPT (hardcoded operational: routing, tools, style, orchestration)
+2. bibleBlock: Core Bible → Org Bible → Personal Bible (from DB)
+3. Date/time/page context
+4. Personality style + page role + entity context + voice rules
+5. Critical Identity block + Memory Isolation block
+
+### Verification
+- kiko-health BEFORE: PASS, 1365ms, layers=['core']
+- kiko-health AFTER: PASS, 1733ms, layers=['core','org','personal']
+- Layer 3 test ("what do you remember about my daughters?"): Kiko knows Nyla and Maya with specific details
+- Layer 2 test ("three entities under Van Hawke Group"): Kiko correctly describes Group/Agency/Maison with F1/FE context
+- No rollback needed — all tests passed
+
+### Files modified
+- `api/kiko.js` (Bible loading + injection — ~20 lines added)
+- `api/kiko-health.js` (3-layer check)
+- `package.json` (0.0.50 → 0.0.51)
+
+### Files archived
+- `KIKO_BIBLE.md` → `KIKO_BIBLE.md.archive`
