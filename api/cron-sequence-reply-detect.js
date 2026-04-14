@@ -132,6 +132,28 @@ export default async function handler(req, res) {
       } catch (err) { console.error(`[ReplyDetect] ❌ ${enrollment.company}:`, err.message); }
     }
 
+    // ── LinkedIn reply scan ──
+    try {
+      const { linkedinGetConversations } = await import('./linkedin-client.js');
+      const conversations = await linkedinGetConversations({ limit: 30 });
+      for (const conv of (conversations || [])) {
+        if (!conv.unreadCount || conv.unreadCount <= 0) continue;
+        for (const pid of (conv.participants || [])) {
+          const url = `https://www.linkedin.com/in/${pid}/`;
+          const matching = await sbFetch(`kiko_sequence_enrollments?status=eq.active&linkedin_url=eq.${encodeURIComponent(url)}&select=id,company,contact_name,contact_email&limit=1`);
+          if (!matching?.length) continue;
+          const enrollment = matching[0];
+          await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'replied', reply_detected_at: new Date().toISOString() }) });
+          await sbFetch(`kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&status=eq.queued`, { method: 'PATCH', body: JSON.stringify({ status: 'cancelled' }) });
+          await sbFetch(`kiko_linkedin_queue?enrollment_id=eq.${enrollment.id}&status=eq.pending`, { method: 'PATCH', body: JSON.stringify({ status: 'skipped', actioned_at: new Date().toISOString() }) });
+          await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({ type: 'reply_from_prospect', severity: 'high', title: `LinkedIn reply: ${enrollment.contact_name}`, detail: `${enrollment.contact_name} at ${enrollment.company} replied via LinkedIn. Sequence auto-stopped.`, entity_type: 'contact', entity_name: enrollment.contact_name, metadata: { source: 'linkedin_reply_detect', conversation_urn: conv.conversationUrn }, created_at: new Date().toISOString() }) });
+          replies++;
+        }
+      }
+    } catch (linkedinErr) {
+      console.error('[ReplyDetect] LinkedIn scan failed:', linkedinErr.message);
+    }
+
     await cronHeartbeat('cron-sequence-reply-detect', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: replies + bounces });
     return res.status(200).json({ ok: true, checked: safe.length, replies, bounces });
   } catch (err) {

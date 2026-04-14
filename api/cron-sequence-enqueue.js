@@ -304,6 +304,7 @@ export default async function handler(req, res) {
         if (actualStep.channel === 'linkedin') {
           await sbFetch('kiko_linkedin_queue', { method: 'POST', body: JSON.stringify({
             enrollment_id: enrollment.id, contact_name: enrollment.contact_name || '', company: enrollment.company || '',
+            linkedin_url: enrollment.linkedin_url || null,
             message_type: actualStep.action || 'connection', message: actualStep.template || '', context: `Sequence: ${sequence.name}, Step ${actualStep.step || enrollment.current_step}`,
             priority: 8, status: 'pending'
           }) });
