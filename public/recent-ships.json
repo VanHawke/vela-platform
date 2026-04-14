@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-14T13:57:27.400Z",
+  "generated_at": "2026-04-14T14:01:45.962Z",
   "commits": [
+    {
+      "hash": "3c74bbb",
+      "subject": "v0.0.68.1: add linkedin-diagnostic endpoint — 4 parallel network probes (DNS, TLS, https native, undici fetch)",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "612107e",
       "subject": "v0.0.68: diagnostic — capture err.cause chain in voyagerFetch",
-      "when": "4 minutes ago"
+      "when": "8 minutes ago"
     },
     {
       "hash": "8e91197",
       "subject": "docs: KIKO_MASTER_LOG v0.0.66 + v0.0.67 session notes + LinkedIn open issue",
-      "when": "8 minutes ago"
+      "when": "13 minutes ago"
     },
     {
       "hash": "7608b3b",
       "subject": "v0.0.67: HOTFIX — linkedin-test FUNCTION_INVOCATION_TIMEOUT",
-      "when": "16 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "8bd6dbb",
       "subject": "v0.0.66: voice personalisation + LinkedIn retry wrapper + whiskey category",
-      "when": "25 minutes ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "f859daa",
@@ -59,7 +64,7 @@
     {
       "hash": "7db5ddc",
       "subject": "fix: add org_id to contact/company upserts in lemlist webhook + backfill",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "7bf5e07",
@@ -74,7 +79,7 @@
     {
       "hash": "682516c",
       "subject": "v0.0.61 — branding refactor: OrgContext as single source of truth",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "d14ee66",
@@ -94,11 +99,6 @@
     {
       "hash": "86e930c",
       "subject": "Phase 4 complete: SSE streaming verified end-to-end",
-      "when": "24 hours ago"
-    },
-    {
-      "hash": "1eccd26",
-      "subject": "v0.0.57 — Background tasks Phase 4: SSE token streaming",
       "when": "24 hours ago"
     }
   ]

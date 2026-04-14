@@ -80,6 +80,7 @@ async function voyagerFetch(path, opts = {}) {
       const res = await fetch(url, {
         ...opts,
         signal: controller.signal,
+        redirect: 'manual', // Critical: do NOT follow 302s — LinkedIn redirects to /login when cookies are invalid
         headers: {
           ...getAuthHeaders(),
           'connection': 'close',
@@ -87,6 +88,17 @@ async function voyagerFetch(path, opts = {}) {
         },
       });
       clearTimeout(abortTimer);
+
+      // 302/301/303/307/308 → LinkedIn redirecting to login means cookies are invalid
+      if (res.status >= 300 && res.status < 400) {
+        const location = res.headers.get('location') || '';
+        const isLoginRedirect = /login|authwall|checkpoint/i.test(location) || location === '';
+        if (isLoginRedirect) {
+          throw new Error(`LinkedIn auth failed (${res.status}→${location || 'no Location'}) — cookies expired or session invalidated. ACTION: rotate li_at + JSESSIONID in Vercel env vars.`);
+        }
+        // Unexpected redirect (not to login) — surface it
+        throw new Error(`LinkedIn unexpected redirect ${res.status} → ${location}`);
+      }
 
       // Non-retryable auth/rate responses — fail fast, retrying makes things worse
       if (res.status === 401 || res.status === 403) {
