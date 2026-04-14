@@ -280,6 +280,30 @@ export const TOOL_DEFINITIONS = [
       params: { type: 'object', description: 'For add_source: { name, url, category, content }. For search_knowledge: { query }. For list_sources: { category }. For learn_topic: { topic, category }. For save_insight: { insight, entity, category }. For create_agent: { name, display_name, description, system_prompt, data_queries, trigger_keywords, category }. For run_agent: { agent_name, question }.' },
     }, required: ['operation'] },
   },
+  {
+    name: 'linkedin_search_prospects',
+    description: 'Search LinkedIn for prospects matching a query (keywords, company, title). Returns a list of profile snippets with name, headline, company, and profile URL. Use this to find new prospects to add to a campaign or to verify a prospect exists on LinkedIn before sending an invite.',
+    input_schema: { type: 'object', properties: {
+      query: { type: 'string', description: 'Search query (e.g. "VP Marketing whiskey brand", "CISO fintech London")' },
+      limit: { type: 'number', description: 'Max results to return (default 10, max 25)' },
+    }, required: ['query'] },
+  },
+  {
+    name: 'linkedin_send_invite',
+    description: 'Send a LinkedIn connection invitation to a prospect. Requires their LinkedIn profile URL and an optional personalised note (max 200 characters). Use when the user explicitly asks to send a LinkedIn invite. Will fail if already connected or already invited.',
+    input_schema: { type: 'object', properties: {
+      profile_url: { type: 'string', description: 'LinkedIn profile URL (e.g. https://www.linkedin.com/in/username/)' },
+      message: { type: 'string', description: 'Personal note (max 200 chars). Leave empty for a no-note invite.' },
+    }, required: ['profile_url'] },
+  },
+  {
+    name: 'linkedin_send_message',
+    description: 'Send a direct LinkedIn message to a 1st-degree connection. Requires either a LinkedIn profile URL or an existing conversation URN. Will fail if the recipient is not a 1st-degree connection — use linkedin_send_invite first.',
+    input_schema: { type: 'object', properties: {
+      profile_url_or_conversation_urn: { type: 'string', description: 'LinkedIn profile URL or existing conversation URN' },
+      message: { type: 'string', description: 'Message text (keep under 1000 chars for readability)' },
+    }, required: ['profile_url_or_conversation_urn', 'message'] },
+  },
 ];
 
 // ── Tool Executor — Routes to agents ──
@@ -870,6 +894,27 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       }
       return `Calendar error: ${e.message}`;
     }
+  }
+
+  // ── LinkedIn Tools ──
+  if (name === 'linkedin_search_prospects') {
+    try {
+      const { linkedinSearch } = await import('./linkedin-client.js');
+      const results = await linkedinSearch(input.query, { limit: input.limit || 10 });
+      return results.length ? results : 'No LinkedIn profiles found for that search query.';
+    } catch (e) { return `LinkedIn search error: ${e.message}`; }
+  }
+  if (name === 'linkedin_send_invite') {
+    try {
+      const { linkedinSendInvite } = await import('./linkedin-client.js');
+      return await linkedinSendInvite(input.profile_url, input.message || '');
+    } catch (e) { return `LinkedIn invite error: ${e.message}`; }
+  }
+  if (name === 'linkedin_send_message') {
+    try {
+      const { linkedinSendMessage } = await import('./linkedin-client.js');
+      return await linkedinSendMessage(input.profile_url_or_conversation_urn, input.message);
+    } catch (e) { return `LinkedIn message error: ${e.message}`; }
   }
 
   return { error: `Unknown tool: ${name}` };
