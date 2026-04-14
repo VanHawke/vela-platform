@@ -1,10 +1,20 @@
 {
-  "generated_at": "2026-04-14T13:41:25.593Z",
+  "generated_at": "2026-04-14T13:53:41.435Z",
   "commits": [
+    {
+      "hash": "8e91197",
+      "subject": "docs: KIKO_MASTER_LOG v0.0.66 + v0.0.67 session notes + LinkedIn open issue",
+      "when": "5 minutes ago"
+    },
+    {
+      "hash": "7608b3b",
+      "subject": "v0.0.67: HOTFIX — linkedin-test FUNCTION_INVOCATION_TIMEOUT",
+      "when": "12 minutes ago"
+    },
     {
       "hash": "8bd6dbb",
       "subject": "v0.0.66: voice personalisation + LinkedIn retry wrapper + whiskey category",
-      "when": "9 minutes ago"
+      "when": "22 minutes ago"
     },
     {
       "hash": "f859daa",
@@ -34,7 +44,7 @@
     {
       "hash": "a7fdfee",
       "subject": "docs: V064 + V065 LinkedIn build briefs + master log update",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "070bf93",
@@ -49,7 +59,7 @@
     {
       "hash": "7bf5e07",
       "subject": "v0.0.63: Lemlist webhook safety net",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "49c1cdb",
@@ -79,27 +89,17 @@
     {
       "hash": "86e930c",
       "subject": "Phase 4 complete: SSE streaming verified end-to-end",
-      "when": "23 hours ago"
+      "when": "24 hours ago"
     },
     {
       "hash": "1eccd26",
       "subject": "v0.0.57 — Background tasks Phase 4: SSE token streaming",
-      "when": "23 hours ago"
+      "when": "24 hours ago"
     },
     {
       "hash": "f54dd4c",
       "subject": "Sub-Phase G complete: per-user page permissions deployed and verified",
       "when": "24 hours ago"
-    },
-    {
-      "hash": "ed7b6fb",
-      "subject": "v0.0.56 — Sub-Phase G: per-user page permissions (role defaults + overrides)",
-      "when": "24 hours ago"
-    },
-    {
-      "hash": "2591253",
-      "subject": "Multi-user feature complete: all 6 sub-phases shipped (v0.0.50–0.0.55)",
-      "when": "25 hours ago"
     }
   ]
 }

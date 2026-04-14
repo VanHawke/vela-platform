@@ -104,7 +104,14 @@ async function voyagerFetch(path, opts = {}) {
     } catch (err) {
       clearTimeout(abortTimer);
       lastError = err;
+      // Capture the full cause chain — 'fetch failed' hides the real error in err.cause
+      const causeCode = err?.cause?.code || err?.code || null;
+      const causeErrno = err?.cause?.errno || null;
+      const causeMessage = err?.cause?.message || null;
       const msg = err?.message || String(err);
+      const fullMsg = causeCode
+        ? `${msg} [cause: ${causeCode}${causeErrno ? ` errno=${causeErrno}` : ''}${causeMessage ? ` — ${causeMessage}` : ''}]`
+        : msg;
 
       // Non-retryable errors — rethrow immediately
       if (msg.includes('LinkedIn auth failed') || msg.includes('rate limit hit') || msg.includes('LinkedIn API error')) {
@@ -113,17 +120,21 @@ async function voyagerFetch(path, opts = {}) {
 
       // Retryable network error (including AbortController timeouts)?
       if (!RETRYABLE_ERRORS.test(msg) && err?.name !== 'AbortError') {
-        throw err; // Unknown error class — surface it
+        const wrapped = new Error(fullMsg);
+        wrapped.cause = err.cause;
+        throw wrapped; // Unknown error class — surface it with cause
       }
 
-      // Last attempt — surface the final error
+      // Last attempt — surface the final error with full cause
       if (attempt === RETRY_DELAYS_MS.length) {
-        console.warn(`[voyagerFetch] giving up after ${attempt + 1} attempts: ${msg}`);
-        throw err;
+        console.warn(`[voyagerFetch] giving up after ${attempt + 1} attempts: ${fullMsg}`);
+        const wrapped = new Error(fullMsg);
+        wrapped.cause = err.cause;
+        throw wrapped;
       }
 
       const delay = RETRY_DELAYS_MS[attempt];
-      console.warn(`[voyagerFetch] retrying in ${delay}ms (attempt ${attempt + 1}/${RETRY_DELAYS_MS.length + 1}) — ${msg}`);
+      console.warn(`[voyagerFetch] retrying in ${delay}ms (attempt ${attempt + 1}/${RETRY_DELAYS_MS.length + 1}) — ${fullMsg}`);
       await new Promise(r => setTimeout(r, delay));
     }
   }
