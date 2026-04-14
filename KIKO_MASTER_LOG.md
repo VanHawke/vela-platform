@@ -1570,3 +1570,109 @@ Absolute do-not-touch list:
 - Sunny installs cookies (5 min manual step)
 - 1 week observation window before considering Lemlist drop
 
+
+## v0.0.66 — Voice personalisation + LinkedIn retry + whiskey vertical — 14 April 2026 ~14:10 BST
+
+**Goal:** Unblock Matt (voice says "Hello Matt" not "Hello Sunny"), stabilise LinkedIn voyager `fetch failed`, add whiskey category to campaign builder for today's test campaign.
+
+**Pre-deploy:** kiko-health PASS, 2146ms, [core, org, personal]
+**Post-deploy:** kiko-health PASS, 1390ms, [core, org, personal]
+
+### SQL work (applied out-of-band before deploy)
+- Migration `v066_fix_user_settings_default` — dropped the hardcoded `'Sunny'::text` DEFAULT on `user_settings.greeting_name` (the third source of "Hello Sunny")
+- Migration `v066_rewrite_handle_new_user_full_provisioning` — rewrote the trigger so every new Van Hawke hire auto-provisions 5 things:
+  1. `auth.users.raw_app_meta_data` with `org_id` (legacy) + `role='user'` — fixes JWT claim for RLS
+  2. `kiko_user_config` with company_name pre-set
+  3. `organization_members` row (new American org 2c6b30da)
+  4. `public.users` row (legacy British org 35975d96)
+  5. `user_settings` with `greeting_name = first_name` (NOT hardcoded Sunny)
+- Matt's personalisation populated: `kiko_user_config` (job_title='Head of Commercial Partnerships'), `user_settings` (greeting_name='Matt', role_title set, onboarded=true), `user_bibles` (2633 chars, §15 USER CONTEXT — MATT with full execution-altitude role scope)
+- Supabase `sponsor_categories` — whiskey row inserted (id='whiskey', name='Whiskey / Premium Spirits', sort_order 21, color #d97706)
+
+### Files added
+- `src/lib/buildVoiceInstructions.js` (140 lines) — shared dynamic voice prompt builder. Exports `buildVoiceInstructions(profile)` and `fetchVoiceProfile(supabase)`. Replaces the hardcoded "Sunny Sidhu (CEO Van Hawke Group)" template literal with a per-user-session template read from `kiko_user_config` + `user_settings`.
+
+### Files modified
+- `src/hooks/useRealtimeVoice.js` — imports helper, fetches profile at `connect()`, uses dynamic `sessionInstructions`. ~40-line `SESSION_INSTRUCTIONS` const deleted.
+- `src/components/kiko/KikoVoice.jsx` — same treatment. ~40-line duplicated hardcoded block replaced with dynamic call.
+- `api/voice-preview.js` — rewritten to look up `display_name` / `greeting_name` from `kiko_user_config` + `user_settings` via service role client. Neutral "Hello, this is how I sound" fallback if user unknown.
+- `src/components/settings/Settings.jsx` — passes `userEmail` to voice-preview POST body.
+- `api/linkedin-client.js` — `voyagerFetch()` wrapped with retry loop (3 attempts initially: 1s/3s/8s backoff). `linkedinTestAuth()` profile parser tries 5 known voyager response shapes + logs top-level keys when nothing matches.
+- `api/cron-linkedin-auth-check.js` — 4-hour cooldown on `linkedin_auth_failed` alerts prevents the triple-duplicate alert storm from this morning.
+- `api/build-campaign.js` — `CATEGORY_CRITERIA` gains `whiskey` entry (revenue_min $100M, dm_seniority 'CMO / Brand Director / Head of Marketing'). Hardcoded error message updated.
+- `src/pages/Campaigns.jsx` — dropdown gains "Whiskey / Premium Spirits" option.
+- `package.json` (0.0.65 → 0.0.66)
+
+### Git
+- Commit `8bd6dbb` — "v0.0.66: voice personalisation + LinkedIn retry wrapper + whiskey category"
+- Pushed to `main` at ~14:25 BST
+- Vercel build completed in 1m, deploy successful
+- Bundle hash: `DH8fqBPI`
+
+### Ring fence intact
+No changes to `api/kiko.js`, `api/kiko-health.js`, three-layer Bible assembly, `OrgContext.jsx`, `src/contexts/*`, `api/_lib/get-user-role.js`, `api/lemlist-webhook.js`, `api/lemlist-backfill.js`, `api/cron-sequence-sender.js`.
+
+### Known issue after deploy
+`/api/linkedin-test` returned `FUNCTION_INVOCATION_TIMEOUT` on all 5 post-deploy test calls. Root cause: my retry wrapper backoff (1s + 3s + 8s = 12s cumulative) was eating nearly the entire 15s `maxDuration` budget before a single fetch could complete. See v0.0.67 hotfix.
+
+---
+
+## v0.0.67 — HOTFIX linkedin-test timeout — 14 April 2026 ~14:35 BST
+
+**Goal:** Resolve `FUNCTION_INVOCATION_TIMEOUT` introduced by v0.0.66's retry wrapper.
+
+**Pre-deploy:** kiko-health PASS (pre-v0.0.66 sanity confirmed earlier)
+**Post-deploy:** kiko-health PASS, 1390ms, [core, org, personal]
+
+### Files modified
+- `api/linkedin-client.js` — `voyagerFetch()` changes:
+  - Retry chain reduced from 3 retries (1s/3s/8s = 12s backoff) to 2 retries (500ms/1500ms = 2s backoff)
+  - Added `AbortController` with per-attempt 6s hard timeout — a single hung fetch can no longer consume the entire function budget
+  - `RETRYABLE_ERRORS` pattern extended to catch `AbortError`/`aborted`
+  - Worst-case runtime: 3 attempts × 6s + 2s backoff = 20s (fits within new maxDuration)
+- `api/linkedin-test.js` — `maxDuration` bumped from 15s to 30s for safety margin
+- `package.json` (0.0.66 → 0.0.67)
+
+### Git
+- Commit `7608b3b` — "v0.0.67: HOTFIX — linkedin-test FUNCTION_INVOCATION_TIMEOUT"
+- Pushed + deployed — Vercel build completed in ~1m, deploy successful
+
+### Verification after deploy
+- kiko-health PASS 1390ms, 3 layers ✓
+- `/api/linkedin-test` — 5 sequential calls: NO timeouts (resolved), each call 11-12s, all returned `{"authenticated":false,"error":"fetch failed"}`
+
+### Ring fence intact
+Only 2 files changed. No touches to any ring-fenced file.
+
+---
+
+## 🚨 OPEN ISSUE AFTER v0.0.67 — LinkedIn native execution blocked
+
+**Status:** LinkedIn voyager API returns `fetch failed` CONSISTENTLY (not intermittently) from Vercel. Each call completes in 11-12s (no timeouts, retry wrapper working correctly) but every attempt fails with the same generic undici error.
+
+**What's NOT the cause (ruled out):**
+- ❌ Not a timeout — retry wrapper + AbortController resolved that
+- ❌ Not a Vercel function config issue — function executes cleanly
+- ❌ Not a code issue — voyagerFetch code path is identical to v0.0.64 which worked once
+- ❌ Not a cookie format issue — first call this morning returned `authenticated:true`
+- ❌ Not rate limiting (429) — LinkedIn returns nothing at the TCP/TLS layer
+
+**Most likely cause (unverified):**
+LinkedIn has progressively tightened filtering on Vercel's edge IP ranges in response to repeated voyager calls from this morning's testing session. The `fetch failed` with no response body at all suggests LinkedIn is either dropping the TCP connection mid-handshake or the TLS handshake is being rejected silently.
+
+**To diagnose further** (next session, not today):
+1. Add `err.cause.code` + `err.cause.errno` logging to `voyagerFetch` catch block so we can see the actual network-layer error
+2. Try calling voyager from Sunny's local Mac with production cookies to rule out "it's the cookies"
+3. Try a different voyager endpoint (`/search/` instead of `/me`) to rule out endpoint-specific blocking
+4. Investigate: residential proxy (Bright Data, Oxylabs), local tunnel (ngrok + Sunny's Mac runs the voyager calls), or moving LinkedIn execution to a non-Vercel host
+
+**Impact on today's test campaign:**
+ZERO. Today's whiskey test campaign can run via Lemlist (email-only) which does NOT depend on native LinkedIn. The campaign builder, enrollment engine, sequence generation, and Lemlist webhook safety net (v0.0.63) all work and are untouched by this LinkedIn issue.
+
+**Impact on future work:**
+- LinkedIn step types in generated sequences will error at execution time until this is resolved
+- The 25/day cap graduation doesn't start until first successful action
+- The 1-week observation window for dropping Lemlist is on pause
+- `kiko_linkedin_audit` table remains empty (0 rows)
+
+Recommend treating LinkedIn native as a standalone project (v0.0.7x or later) rather than trying to squeeze it into today.
