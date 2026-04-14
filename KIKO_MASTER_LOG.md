@@ -1422,7 +1422,7 @@ Matt is invitable via Settings → Team. See HOW_TO_INVITE_MATT.md for the full 
 
 ## PLANNED — v0.0.64 + v0.0.65 — LinkedIn Layers 1 & 2 — Brief written 14 Apr 2026 ~01:30 BST
 
-**Status:** Briefs written, NOT yet shipped. Awaiting Claude Code execution session.
+**Status:** v0.0.64 SHIPPED. v0.0.65 pending.
 
 **Goal:** Make LinkedIn a fully native step type in Kiko sequences. This is the
 2-part build that, when complete, gives Kiko parity with Lemlist's LinkedIn module
@@ -1493,4 +1493,31 @@ Absolute do-not-touch list:
 - Layer 4: Sonnet-powered job-change detector cron
 - Today daily workload view (separate track)
 - Unified inbox UI (separate track)
+
+## v0.0.64 — LinkedIn Layer 1 (Tools) — 14 April 2026 ~02:00 BST
+
+**Goal:** Add native LinkedIn API capability to Kiko via JS-native voyager wrapper.
+
+**Pre-deploy:** kiko-health PASS, 1978ms, [core, org, personal]
+**Post-deploy:** kiko-health PASS, 1458ms, [core, org, personal]
+
+**Files added:**
+- api/linkedin-client.js (voyager API wrapper — search, invite, message, profile, auth test)
+- api/linkedin-test.js (GET auth verification endpoint)
+
+**Files modified:**
+- api/kiko-tools.js (added 3 tool definitions: linkedin_search_prospects, linkedin_send_invite, linkedin_send_message + 3 dispatcher cases)
+- package.json (0.0.63 → 0.0.64)
+
+**Env vars required (Sunny to add before tools work):**
+- LINKEDIN_LI_AT (Sunny's li_at cookie)
+- LINKEDIN_JSESSIONID (Sunny's JSESSIONID cookie, with quotes)
+
+**Architecture:** JS-native fetch() against voyager API, cookie auth via env vars. No Python, no new infrastructure.
+
+**Test status:**
+- /api/linkedin-test: pending Sunny adding env vars (tools will gracefully error until cookies are set)
+- All tools deployed and registered — Kiko can invoke them from chat once auth works
+
+**Ring fence intact:** No changes to api/kiko.js, api/kiko-health.js, three-layer Bible, OrgContext.jsx, src/contexts/*, lemlist-webhook.js, lemlist-backfill.js.
 
