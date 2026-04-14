@@ -572,6 +572,7 @@ export default function Campaigns({ user }) {
                   <option value="logistics">Logistics / Shipping</option>
                   <option value="legal">Legal / Professional Services</option>
                   <option value="robotics">Robotics / Manufacturing</option>
+                  <option value="whiskey">Whiskey / Premium Spirits</option>
                 </select>
 
                 <div style={{ fontSize: 11, color: C.textSecondary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>F1 Team</div>

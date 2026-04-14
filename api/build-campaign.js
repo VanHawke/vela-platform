@@ -40,6 +40,7 @@ const CATEGORY_CRITERIA = {
   logistics:     { revenue_min: '$2B', funding_min: null, geography: 'Global', dm_seniority: 'CMO / VP Brand' },
   legal:         { revenue_min: '$200M', funding_min: null, geography: 'Global', dm_seniority: 'CMO / Head of Marketing' },
   robotics:      { revenue_min: '$200M', funding_min: '$100M', geography: 'Global', dm_seniority: 'CMO / VP Marketing' },
+  whiskey:       { revenue_min: '$100M', funding_min: null, geography: 'Global', dm_seniority: 'CMO / Brand Director / Head of Marketing' },
 };
 
 export default async function handler(req, res) {
@@ -84,7 +85,7 @@ export default async function handler(req, res) {
     // ─── STEP 1: Validate category exists ───
     const { data: catRow } = await supabase
       .from('sponsor_categories').select('*').eq('id', category).maybeSingle();
-    if (!catRow) return res.status(400).json({ error: `Unknown category: ${category}. Valid: banking, fintech, cybersecurity, cloud, ai_data, software, semiconductors, telecom, gaming, crypto, energy, automotive, hospitality, fashion, watches, food_bev, health, logistics, legal, robotics` });
+    if (!catRow) return res.status(400).json({ error: `Unknown category: ${category}. Valid: banking, fintech, cybersecurity, cloud, ai_data, software, semiconductors, telecom, gaming, crypto, energy, automotive, hospitality, fashion, watches, food_bev, health, logistics, legal, robotics, whiskey` });
 
     // ─── STEP 2: Build expanded category set (category + overlapping categories) ───
     const { data: overlaps } = await supabase

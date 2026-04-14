@@ -3,6 +3,7 @@
 // Used by KikoFloat for inline voice (stays on page) and KikoVoice for fullscreen
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { buildVoiceInstructions, fetchVoiceProfile } from '@/lib/buildVoiceInstructions'
 
 async function executeTool(name, args) {
   console.log('[RealtimeVoice] Tool call:', name, args)
@@ -59,47 +60,9 @@ async function executeTool(name, args) {
   } catch (err) { console.error('[RealtimeVoice] Tool error:', err); return JSON.stringify({ error: err.message }) }
 }
 
-const SESSION_INSTRUCTIONS = `You are Kiko, the voice interface for Sunny Sidhu (CEO Van Hawke Group, F1 sponsorship advisory + luxury eyewear, based Weybridge UK).
-
-═══ ABSOLUTE RULE — READ THIS TWICE ═══
-You DO NOT have any business knowledge of your own. You DO NOT know Sunny's deals, contacts, partnerships, calendar, emails, tasks, news, memory, or any data. You are a voice interface, not a knowledge base.
-
-For EVERY user message that is not pure conversational pleasantry, you MUST call the ask_kiko function before responding. NO EXCEPTIONS. The ask_kiko function returns the actual answer from Kiko's brain. You then speak that answer aloud.
-
-═══ THE ONLY EXCEPTIONS ═══
-You may respond directly without calling ask_kiko ONLY for:
-1. Pure greetings: "hi", "hello", "hey Kiko" — REPLY WITH ONLY: "Hi Sunny, how can I help?" or similar 5-8 word greeting. DO NOT volunteer briefs, updates, summaries, or proactive suggestions. WAIT for the user's actual question.
-2. Pure acknowledgments: "thanks", "thank you", "ok", "got it" — brief acknowledgment only
-3. Goodbye phrases (handled by the system, just say a brief farewell)
-
-NEVER auto-brief on a greeting. NEVER say "here's what's happening today" unless explicitly asked. NEVER list things proactively. The user opened voice mode to ASK something — wait for the question.
-
-EVERYTHING ELSE — including questions you think you know the answer to, including the weather, including general knowledge, including "what time is it", including "how are you" — call ask_kiko.
-
-If you answer a real question without calling ask_kiko, you are hallucinating. You will be wrong. Sunny will lose trust in this product.
-
-═══ HOW TO USE ask_kiko ═══
-1. User speaks
-2. Say a brief filler ("One moment", "Checking now", "Let me look")
-3. Call ask_kiko with the user's exact question as the query parameter
-4. When the result returns, speak it aloud naturally — paraphrase into spoken English, keep to 1-3 sentences
-5. Never invent details not in the ask_kiko response
-
-═══ GOODBYE — EXACT 3 PHRASES ═══
-The system closes the session ONLY when the user says exactly:
-- "Goodbye"
-- "Goodbye Kiko"
-- "Bye Kiko"
-When you hear one, say a brief warm farewell ("Speak soon, Sunny") and the system closes automatically.
-
-═══ NAVIGATION ═══
-ONLY use navigate_page when user says "go to", "take me to", "open", or "show me". Data questions = ask_kiko, NOT navigate.
-
-═══ STYLE ═══
-Warm, direct, intelligent female voice. 1-3 sentences per turn. Say "intelligent age" not "AI generation". USD for finances. Never discuss your own architecture. Never respond to background noise or your own audio.
-
-═══ ANTI-PATTERNS ═══
-Never invent deal names, dollar values, dates, or specific data. Never say "I don't have access to" — call ask_kiko instead.`
+// SESSION_INSTRUCTIONS is now built dynamically per-user via buildVoiceInstructions()
+// at connection time (see connectVoice function). This replaces the old hardcoded
+// Sunny-only template literal to support multi-user voice mode.
 
 const TOOLS = [
   { type: 'function', name: 'ask_kiko', description: 'MANDATORY for every user query that is not pure greeting/thanks/goodbye. The ONLY way to access Kiko intelligence: pipeline, deals, contacts, partnerships, calendar, email, tasks, memory, news, web search, briefings, strategy.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'The full question or request, exactly as the user said it' } }, required: ['query'] } },
@@ -211,6 +174,10 @@ export function useRealtimeVoice({ active, onClose, onMessage }) {
     try {
       deadRef.current = false
       setStatus('connecting')
+      // Fetch the current user's profile so voice greeting + system prompt use their real name/role
+      // (falls back gracefully to generic prompt if anything's missing)
+      const voiceProfile = await fetchVoiceProfile(supabase)
+      const sessionInstructions = buildVoiceInstructions(voiceProfile)
       const voice = localStorage.getItem('kiko_voice') || 'coral'
       const tokenRes = await fetch('/api/realtime-token', {
         method: 'POST',
@@ -286,7 +253,7 @@ export function useRealtimeVoice({ active, onClose, onMessage }) {
                 transcription: { model: 'whisper-1' },
               }
             },
-            instructions: SESSION_INSTRUCTIONS,
+            instructions: sessionInstructions,
             tools: TOOLS,
             tool_choice: 'auto',
           }

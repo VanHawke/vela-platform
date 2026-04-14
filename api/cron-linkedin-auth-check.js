@@ -20,6 +20,18 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, authenticated: true, profile: result.profile });
     }
 
+    // ─── Deduplication — do NOT fire a new alert if one of the same type fired in the last 4 hours ───
+    // Prevents the retry-storm alert flood that produced 3 duplicate alerts this morning.
+    const cooldownCutoff = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
+    const recentAlerts = await sbFetch(
+      `kiko_alerts?type=eq.linkedin_auth_failed&created_at=gte.${cooldownCutoff}&select=id&limit=1`
+    ).catch(() => []);
+    if (Array.isArray(recentAlerts) && recentAlerts.length > 0) {
+      console.log('[LinkedInAuthCheck] Suppressing duplicate alert — previous alert within 4h cooldown window');
+      await cronHeartbeat('cron-linkedin-auth-check', 'error', { heartbeatId: __hbId, errorMessage: `${result.error} (alert suppressed — within 4h cooldown)`, durationMs: Date.now() - __hbStart });
+      return res.status(200).json({ ok: false, authenticated: false, error: result.error, alertSent: false, suppressed: true });
+    }
+
     const alertTitle = '🚨 LinkedIn cookies expired — re-extraction needed';
     const alertBody = [
       `LinkedIn auth check failed at ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}.`,

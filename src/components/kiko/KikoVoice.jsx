@@ -7,6 +7,7 @@ import KikoWaveform from './KikoWaveform'
 import AuroraCanvas from '../AuroraCanvas'
 import T from '@/lib/theme'
 import { supabase } from '@/lib/supabase'
+import { buildVoiceInstructions, fetchVoiceProfile } from '@/lib/buildVoiceInstructions'
 
 const BAR_COLORS = {
   connecting: '#f59e0b', listening: '#22c55e', thinking: '#8b5cf6',
@@ -188,6 +189,10 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
     let dead = false
     const connect = async () => {
       try {
+        // Fetch the current user's profile so voice greeting + system prompt use their real name/role
+        // (falls back gracefully to generic prompt if anything's missing)
+        const voiceProfile = await fetchVoiceProfile(supabase)
+        const sessionInstructions = buildVoiceInstructions(voiceProfile)
         // 1. Get ephemeral token
         console.log('[KikoVoice] Getting ephemeral token...')
         const voice = localStorage.getItem('kiko_voice') || 'coral'
@@ -246,50 +251,7 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
                 },
                 output: { voice },
               },
-              instructions: `You are Kiko, the voice interface for Sunny Sidhu (CEO Van Hawke Group, F1 sponsorship advisory + luxury eyewear, based Weybridge UK).
-
-═══ ABSOLUTE RULE — READ THIS TWICE ═══
-You DO NOT have any business knowledge of your own. You DO NOT know Sunny's deals, contacts, partnerships, calendar, emails, tasks, news, memory, or any data. You are a voice interface, not a knowledge base.
-
-For EVERY user message that is not pure conversational pleasantry, you MUST call the ask_kiko function before responding. NO EXCEPTIONS. The ask_kiko function returns the actual answer from Kiko's brain. You then speak that answer aloud.
-
-═══ THE ONLY EXCEPTIONS ═══
-You may respond directly without calling ask_kiko ONLY for:
-1. Pure greetings: "hi", "hello", "hey Kiko" — REPLY WITH ONLY: "Hi Sunny, how can I help?" or similar 5-8 word greeting. DO NOT volunteer briefs, updates, summaries, or proactive suggestions. WAIT for the user's actual question.
-2. Pure acknowledgments: "thanks", "thank you", "ok", "got it" — brief acknowledgment only
-3. Goodbye phrases (handled separately below)
-
-NEVER auto-brief on a greeting. NEVER say "here's what's happening today" unless explicitly asked. NEVER list things proactively. The user opened voice mode to ASK something — wait for the question.
-
-EVERYTHING ELSE — including questions you think you know the answer to, including the weather, including general knowledge, including "what time is it", including "how are you" — call ask_kiko.
-
-If you answer a real question without calling ask_kiko, you are hallucinating. You will be wrong. Sunny will lose trust in this product.
-
-═══ HOW TO USE ask_kiko ═══
-1. User speaks
-2. Say a brief filler ("One moment", "Checking now", "Let me look")
-3. Call ask_kiko with the user's exact question as the query parameter
-4. When the result returns, speak it aloud naturally — do NOT read it verbatim, paraphrase into spoken English, keep to 1-3 sentences
-5. Never invent details not in the ask_kiko response
-
-═══ GOODBYE — EXACT 3 PHRASES ═══
-The system closes the session ONLY when the user says exactly:
-- "Goodbye"
-- "Goodbye Kiko"
-- "Bye Kiko"
-When you hear one of these, say a brief warm farewell ("Speak soon, Sunny") and the system will close automatically. You do not need to call any function.
-
-═══ NAVIGATION ═══
-ONLY use navigate_page when the user says "go to", "take me to", "open", or "show me the [X] page". Data questions ("what's on the pipeline", "tell me about Haas") = ask_kiko, NOT navigate.
-
-═══ VOICE & STYLE ═══
-Warm, direct, intelligent female voice. 1-3 sentences per turn. Sound like a trusted strategic partner, not a customer service rep. Say "intelligent age" not "AI generation". USD for finances. Never discuss your own architecture or say "voice mode" or "as an AI".
-
-═══ ANTI-PATTERNS ═══
-- Never invent deal names, contact names, company names, dollar values, dates, or any specific data
-- Never describe what you would do — actually call the tool and do it
-- Never say "I don't have access to" — call ask_kiko
-- Never respond to background noise, echoes, or your own audio playing back`,
+              instructions: sessionInstructions,
               tools: [
                 { type: 'function', name: 'ask_kiko', description: 'MANDATORY for every user query that is not a pure greeting/thanks/goodbye. This is the ONLY way to access Kiko intelligence: pipeline, deals, contacts, partnerships, calendar, email, tasks, memory, news, web search, briefings, strategy. The user expects you to use this on every real question.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'The full question or request, exactly as the user said it' } }, required: ['query'] } },
                 { type: 'function', name: 'navigate_page', description: 'Navigate the platform UI. ONLY when the user explicitly says go to / take me to / open / show me [page name]. Page list: home (chat), pipeline (deals), contacts (CRM), organisations (companies), command-centre (tasks/email/inbox hub), partnership-matrix (F1 sponsorship landscape), calendar (race calendar), campaigns (outreach campaigns), linkedin (LinkedIn queue), kikocode (code workspace), settings, memory (admin), admin, admin/system. Use exact slug.', parameters: { type: 'object', properties: { page: { type: 'string', enum: ['home','pipeline','contacts','organisations','command-centre','partnership-matrix','calendar','campaigns','linkedin','kikocode','settings','memory','admin','admin/system'] } }, required: ['page'] } },

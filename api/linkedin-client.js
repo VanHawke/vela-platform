@@ -61,14 +61,67 @@ function getAuthHeaders() {
   return { 'cookie': `li_at=${liAt}; JSESSIONID=${jsessionid}`, 'csrf-token': csrfToken, 'x-restli-protocol-version': '2.0.0', 'accept': 'application/vnd.linkedin.normalized+json+2.1', 'user-agent': USER_AGENT, 'content-type': 'application/json; charset=UTF-8' };
 }
 
+// Retryable network error patterns — Vercel undici TLS flakiness against LinkedIn.
+// These are transient and benefit from a fresh TCP connection.
+const RETRYABLE_ERRORS = /fetch failed|ECONNRESET|ETIMEDOUT|EHOSTUNREACH|ENETUNREACH|socket hang up|UND_ERR/i;
+const RETRY_DELAYS_MS = [1000, 3000, 8000]; // 3 attempts after the initial
+
 async function voyagerFetch(path, opts = {}) {
   const url = path.startsWith('http') ? path : `${VOYAGER_BASE}${path}`;
-  const res = await fetch(url, { ...opts, headers: { ...getAuthHeaders(), ...(opts.headers || {}) } });
-  if (res.status === 401 || res.status === 403) throw new Error(`LinkedIn auth failed (${res.status}) — li_at cookie may have expired.`);
-  if (res.status === 429) throw new Error('LinkedIn rate limit hit (429). Back off and retry later.');
-  const text = await res.text();
-  if (!res.ok) throw new Error(`LinkedIn API error ${res.status}: ${text.slice(0, 300)}`);
-  try { return JSON.parse(text); } catch { return text; }
+  let lastError = null;
+
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    try {
+      // Force a fresh TCP connection on every attempt (works around Vercel
+      // undici connection pool reusing a broken socket)
+      const res = await fetch(url, {
+        ...opts,
+        headers: {
+          ...getAuthHeaders(),
+          'connection': 'close',
+          ...(opts.headers || {}),
+        },
+      });
+
+      // Non-retryable auth/rate responses — fail fast, retrying makes things worse
+      if (res.status === 401 || res.status === 403) {
+        throw new Error(`LinkedIn auth failed (${res.status}) — li_at cookie may have expired.`);
+      }
+      if (res.status === 429) {
+        throw new Error('LinkedIn rate limit hit (429). Back off and retry later.');
+      }
+
+      const text = await res.text();
+      if (!res.ok) {
+        throw new Error(`LinkedIn API error ${res.status}: ${text.slice(0, 300)}`);
+      }
+      try { return JSON.parse(text); } catch { return text; }
+    } catch (err) {
+      lastError = err;
+      const msg = err?.message || String(err);
+
+      // Non-retryable errors — rethrow immediately
+      if (msg.includes('LinkedIn auth failed') || msg.includes('rate limit hit') || msg.includes('LinkedIn API error')) {
+        throw err;
+      }
+
+      // Retryable network error?
+      if (!RETRYABLE_ERRORS.test(msg)) {
+        throw err; // Unknown error class — surface it
+      }
+
+      // Last attempt — surface the final error
+      if (attempt === RETRY_DELAYS_MS.length) {
+        console.warn(`[voyagerFetch] giving up after ${attempt + 1} attempts: ${msg}`);
+        throw err;
+      }
+
+      const delay = RETRY_DELAYS_MS[attempt];
+      console.warn(`[voyagerFetch] retrying in ${delay}ms (attempt ${attempt + 1}/${RETRY_DELAYS_MS.length + 1}) — ${msg}`);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+  throw lastError || new Error('voyagerFetch failed after retries');
 }
 
 function publicIdFromUrl(url) { const m = (url || '').match(/\/in\/([^/?#]+)/); return m ? m[1] : null; }
@@ -79,8 +132,23 @@ function generateTrackingId() { return Buffer.from(Array.from({ length: 16 }, ()
 export async function linkedinTestAuth() {
   try {
     const data = await voyagerFetch('/me');
-    const mp = data?.miniProfile || data?.profile?.miniProfile || {};
-    return { authenticated: true, profile: { firstName: mp.firstName || data?.firstName, lastName: mp.lastName || data?.lastName, publicIdentifier: mp.publicIdentifier || data?.publicIdentifier } };
+    // Voyager /me response shapes vary — try every known location before giving up
+    const mp = data?.miniProfile
+      || data?.profile?.miniProfile
+      || data?.data?.miniProfile
+      || data?.included?.find?.(i => i?.$type?.includes('MiniProfile'))
+      || {};
+    const firstName = mp.firstName || data?.firstName || data?.data?.firstName || null;
+    const lastName = mp.lastName || data?.lastName || data?.data?.lastName || null;
+    const publicIdentifier = mp.publicIdentifier || data?.publicIdentifier || data?.data?.publicIdentifier || null;
+
+    // If parsing still fails to extract a name, log the top-level keys so we
+    // can diagnose the actual shape — but still return authenticated=true because
+    // a successful /me call proves the cookies work.
+    if (!firstName && !lastName && !publicIdentifier) {
+      console.log('[linkedinTestAuth] /me parsed no name fields. Top-level keys:', Object.keys(data || {}));
+    }
+    return { authenticated: true, profile: { firstName, lastName, publicIdentifier } };
   } catch (e) { return { authenticated: false, error: e.message }; }
 }
 

@@ -125,9 +125,12 @@ export default function Settings({ user }) {
     if (previewAudioRef.current) { previewAudioRef.current.pause(); previewAudioRef.current = null }
     setPreviewingVoice(voiceId)
     try {
+      // Pass userEmail so voice-preview can personalise the greeting ("Hello Matt..." etc)
+      const { data: { session } } = await supabase.auth.getSession()
+      const userEmail = session?.user?.email || null
       const res = await fetch('/api/voice-preview', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ voice: voiceId })
+        body: JSON.stringify({ voice: voiceId, userEmail })
       })
       if (!res.ok) { setPreviewingVoice(null); return }
       const blob = await res.blob()
