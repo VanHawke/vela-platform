@@ -1676,3 +1676,73 @@ ZERO. Today's whiskey test campaign can run via Lemlist (email-only) which does 
 - `kiko_linkedin_audit` table remains empty (0 rows)
 
 Recommend treating LinkedIn native as a standalone project (v0.0.7x or later) rather than trying to squeeze it into today.
+
+
+---
+
+## v0.0.70 — CLEANUP: park LinkedIn voyager, remove cost vectors — 14 April 2026 ~15:10 BST
+
+**Goal:** Sunny's directive — audit v0.0.66-v0.0.69.1 for redundant code and cost-firing risk, remove anything no longer needed, document the LinkedIn voyager wrong-turn so future sessions don't repeat it. Then research market alternatives properly.
+
+**Pre-deploy:** kiko-health PASS (verified earlier in session)
+
+### 🚨 LinkedIn voyager from Vercel — CONFIRMED IMPOSSIBLE
+
+Definitive diagnostic from v0.0.68.1 + v0.0.69.1 (`api/linkedin-diagnostic.js` 4-probe network test) revealed:
+
+- **DNS:** ✅ resolves cleanly (Cloudflare IPs 172.64.146.215, 104.18.41.41)
+- **TLS handshake:** ✅ TLSv1.3 perfect, valid DigiCert cert, 122ms — no IP-level block
+- **node:https native request:** ✅ reaches LinkedIn — but receives **302 redirect** with `Set-Cookie: li_at=delete me; Expires=1970` + `clear-site-data` header. LinkedIn explicitly killing the session.
+- **undici fetch:** ❌ follows the self-referential 302 in a loop until "redirect count exceeded"
+
+**Interpretation:** Cloudflare's bot management (which protects LinkedIn's edge) flags Vercel's IP ranges as cloud infrastructure and kills any voyager session within seconds of the first call. Cookie rotation works for ONE call, then the new session is immediately killed too. **No code-level fix solves this — the block is at the network layer, by source IP.**
+
+This wasted ~3 hours of session time chasing what looked like undici TLS bugs / cookie issues / TimeoutError fixes when the actual root cause was a confirmed-unsolvable architectural problem. The lesson is captured here so future sessions don't repeat the same investigation. **DO NOT RE-ATTEMPT VOYAGER FROM VERCEL.** The path forward is a different backend (see "LinkedIn Backend Selection" below).
+
+### Cost risk audit findings (v0.0.66 → v0.0.69.1)
+
+| Surface | Risk | Action |
+|---|---|---|
+| `cron-linkedin-sender` (19 runs/weekday) | Low — no-ops on empty queue, but burns invocations | **Removed schedule from vercel.json** |
+| `cron-sequence-reply-detect` LinkedIn block (12 runs/day) | **Higher** — actively calling voyager every 2h, failing every time, extending LinkedIn ban | **Guarded behind `LINKEDIN_BACKEND_ENABLED` env var** |
+| `cron-linkedin-auth-check` (1 run/day) | Low — capped by 4h cooldown | **Removed schedule from vercel.json** |
+| Kiko chat tools (`linkedin_search_prospects`, `linkedin_send_invite`, `linkedin_send_message`) | Medium — accidental user trigger could fire voyager | **Guarded behind `LINKEDIN_BACKEND_ENABLED` env var** with clear error message |
+| `api/linkedin-diagnostic.js` | Zero (manual only) | **DELETED** — done its job |
+| `api/linkedin-client.js` retry wrapper | Zero when no callers | **KEPT DORMANT** with explicit DORMANT header explaining why |
+| `api/linkedin-test.js` | Zero (manual only) | **KEPT** — useful for testing future backend |
+
+**Total wasted cost before cleanup:** ~$0.50/month. Not catastrophic — but the principle (dead code calling broken APIs on a schedule) is exactly what caused the $830 incident.
+
+### Files changed in v0.0.70
+
+- **DELETED** `api/linkedin-diagnostic.js` (206 lines, diagnostic only)
+- **MODIFIED** `vercel.json` — removed `/api/cron-linkedin-sender` schedule (`*/30 8-17 * * 1-5`) and `/api/cron-linkedin-auth-check` schedule (`0 7 * * *`). Both cron files remain on disk but will not be invoked by Vercel.
+- **MODIFIED** `api/cron-sequence-reply-detect.js` — LinkedIn reply scan block (lines 135-156) wrapped in `if (process.env.LINKEDIN_BACKEND_ENABLED !== 'true')` guard. Gmail scan continues to run unaffected.
+- **MODIFIED** `api/kiko-tools.js` — three LinkedIn tool handlers (`linkedin_search_prospects`, `linkedin_send_invite`, `linkedin_send_message`) gated behind `LINKEDIN_BACKEND_ENABLED`. Without the flag, they return a clear error explaining why and pointing to OUTSTANDING_ITEMS.md.
+- **MODIFIED** `api/linkedin-client.js` — added 30-line DORMANT header explaining why the file is parked, what was tried, what's awaiting decision, and what the callers are.
+- **MODIFIED** `package.json` (0.0.69 → 0.0.70)
+
+### Ring fence intact
+
+No changes to: `api/kiko.js`, `api/kiko-health.js`, three-layer Bible assembly, `OrgContext.jsx`, `src/contexts/*`, `api/_lib/get-user-role.js`, `api/lemlist-webhook.js`, `api/lemlist-backfill.js`, `api/cron-sequence-sender.js`. Voice personalisation infrastructure (`buildVoiceInstructions.js`, `useRealtimeVoice.js`, `KikoVoice.jsx`, `voice-preview.js`, `Settings.jsx`) all kept intact and working. Whiskey category in `build-campaign.js` + `Campaigns.jsx` + `sponsor_categories` table all kept (zero cost, useful pattern).
+
+### LinkedIn Backend Selection — NEXT PHASE (research)
+
+After cleanup, immediately move to deep research on cloud/server-side LinkedIn automation alternatives. Sunny's hard requirements:
+1. **Fully server-side** — does NOT require his or Matt's browser to stay open
+2. **Integrated with campaign builder + sequence** — once a prospect is loaded into a campaign, system fires connection requests + messages automatically
+3. **Monitors responses** — connection accepts, replies, etc.
+4. **Reasonable cost** — no $830-incident-style overruns
+5. **Reliable** — must survive LinkedIn's anti-bot at scale
+
+Research targets (in priority order):
+- **Unipile API** — developer-focused unified messaging API, REST endpoints for LinkedIn send/receive
+- **HeyReach** — newer cloud LinkedIn automation, claims API access
+- **Expandi** — established cloud LinkedIn tool, residential proxies
+- **Dripify** — "cloud-based LinkedIn automation"
+- **PhantomBuster** — cloud-based agents with API
+- **LaGrowthMachine** — multi-channel sequencing platform
+- **Salesflow / Zopto / Waalaxy** — secondary candidates
+- **Lemlist's actual cloud product** — verify whether their core product needs the Chrome extension to be open or if there's a server-side path I missed
+
+Output: comparison matrix with API access, cloud/local, cost, reliability, integration effort. Present to Sunny for decision. Build chosen integration in v0.0.71+.

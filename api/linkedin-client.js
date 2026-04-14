@@ -1,7 +1,39 @@
 // api/linkedin-client.js — JS-native LinkedIn voyager API wrapper
-// Cookie auth via LINKEDIN_LI_AT + LINKEDIN_JSESSIONID env vars
+//
+// ⚠️ DORMANT AS OF v0.0.70 (14 Apr 2026) — DO NOT CALL FROM CRONS OR USER-FACING CODE
+// ────────────────────────────────────────────────────────────────────────────────
+// LinkedIn voyager API access from Vercel is CONFIRMED IMPOSSIBLE. Cloudflare's bot
+// management (which protects LinkedIn's edge) flags Vercel's IP ranges as cloud
+// infrastructure and kills sessions within seconds. Every request after the first
+// receives a 302 redirect with `Set-Cookie: li_at=delete me; Expires=1970` and
+// `clear-site-data` headers. No amount of cookie rotation, retry logic, or fetch
+// tuning will fix this — the block is at the network layer, by source IP.
+//
+// FULL DIAGNOSTIC EVIDENCE: KIKO_MASTER_LOG.md "v0.0.66-v0.0.69.1" sections
+// AWAITING DECISION: which LinkedIn backend to integrate. Candidates under research:
+//   - Unipile API (developer-focused unified messaging)
+//   - HeyReach / Expandi / Dripify (cloud-based LinkedIn automation w/ residential proxies)
+//   - PhantomBuster (cloud LinkedIn agents)
+//   - LaGrowthMachine (multi-channel sequencing)
+// See OUTSTANDING_ITEMS.md "LinkedIn Backend Selection" for the live comparison matrix.
+//
+// THIS FILE STAYS HERE because: (1) the retry wrapper / abort logic / parser fallbacks
+// are reusable patterns for whichever backend wins, and (2) some backends still wrap
+// voyager under the hood, just from residential IPs. Once a backend is chosen, the
+// transport layer in voyagerFetch will be swapped to route through that provider.
+//
+// CALLERS: cron-linkedin-sender (DISABLED in vercel.json), cron-sequence-reply-detect
+// LinkedIn block (GUARDED behind LINKEDIN_BACKEND_ENABLED), api/kiko-tools.js LinkedIn
+// tool handlers (GUARDED behind LINKEDIN_BACKEND_ENABLED), api/linkedin-test.js
+// (manual probe only).
+// ────────────────────────────────────────────────────────────────────────────────
+//
+// Original purpose: Cookie auth via LINKEDIN_LI_AT + LINKEDIN_JSESSIONID env vars
 // v0.0.65: Added kill switch, graduated quota, audit log integration
-// All operations look like the authenticated user's browser session
+// v0.0.66: Retry wrapper + 5-path profile parser
+// v0.0.67: AbortController per-attempt timeout, reduced backoff
+// v0.0.68-v0.0.69.1: Diagnostic err.cause capture, redirect: manual
+// v0.0.70: PARKED pending backend selection
 
 import { createClient } from '@supabase/supabase-js';
 

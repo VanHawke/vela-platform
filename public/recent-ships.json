@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-14T14:01:45.962Z",
+  "generated_at": "2026-04-14T15:17:26.421Z",
   "commits": [
+    {
+      "hash": "97f9153",
+      "subject": "v0.0.69.1: diagnostic captures full response headers + set-cookie details",
+      "when": "71 minutes ago"
+    },
+    {
+      "hash": "549b130",
+      "subject": "v0.0.69: voyagerFetch redirect: manual — detect 302 to login = cookies expired",
+      "when": "76 minutes ago"
+    },
     {
       "hash": "3c74bbb",
       "subject": "v0.0.68.1: add linkedin-diagnostic endpoint — 4 parallel network probes (DNS, TLS, https native, undici fetch)",
-      "when": "4 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "612107e",
       "subject": "v0.0.68: diagnostic — capture err.cause chain in voyagerFetch",
-      "when": "8 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "8e91197",
       "subject": "docs: KIKO_MASTER_LOG v0.0.66 + v0.0.67 session notes + LinkedIn open issue",
-      "when": "13 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "7608b3b",
       "subject": "v0.0.67: HOTFIX — linkedin-test FUNCTION_INVOCATION_TIMEOUT",
-      "when": "20 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "8bd6dbb",
       "subject": "v0.0.66: voice personalisation + LinkedIn retry wrapper + whiskey category",
-      "when": "30 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "f859daa",
       "subject": "Update KIKO_MASTER_LOG with v0.0.65 LinkedIn Layer 2 session notes",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "f017c33",
       "subject": "v0.0.65: LinkedIn Layer 2 + safety scaffolding",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "74cae2b",
       "subject": "docs: V065 LinkedIn Layer 2 brief — tightened version with safety scaffolding",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "561e93d",
       "subject": "Update KIKO_MASTER_LOG with v0.0.64 LinkedIn Layer 1 session notes",
-      "when": "7 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "66436aa",
       "subject": "v0.0.64: LinkedIn Layer 1 — voyager API wrapper + Kiko tools",
-      "when": "7 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "a7fdfee",
       "subject": "docs: V064 + V065 LinkedIn build briefs + master log update",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "070bf93",
       "subject": "Update KIKO_MASTER_LOG with v0.0.63 Lemlist webhook safety net session notes",
-      "when": "17 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "7db5ddc",
       "subject": "fix: add org_id to contact/company upserts in lemlist webhook + backfill",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "7bf5e07",
       "subject": "v0.0.63: Lemlist webhook safety net",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "49c1cdb",
       "subject": "v0.0.62 — Vela → Kiko across all user-facing surfaces",
-      "when": "20 hours ago"
+      "when": "21 hours ago"
     },
     {
       "hash": "682516c",
       "subject": "v0.0.61 — branding refactor: OrgContext as single source of truth",
-      "when": "21 hours ago"
+      "when": "22 hours ago"
     },
     {
       "hash": "d14ee66",
       "subject": "v0.0.60 — Safari favicon fix done properly (remove-and-recreate pattern)",
-      "when": "21 hours ago"
+      "when": "22 hours ago"
     },
     {
       "hash": "d7c4c34",
       "subject": "v0.0.59 — CI domain fix + health timeout + Safari favicon cachebust",
-      "when": "21 hours ago"
-    },
-    {
-      "hash": "3330519",
-      "subject": "v0.0.58 — Safari upload fix + unified favicon",
-      "when": "22 hours ago"
-    },
-    {
-      "hash": "86e930c",
-      "subject": "Phase 4 complete: SSE streaming verified end-to-end",
-      "when": "24 hours ago"
+      "when": "23 hours ago"
     }
   ]
 }

@@ -133,7 +133,14 @@ export default async function handler(req, res) {
     }
 
     // ── LinkedIn reply scan ──
-    try {
+    // GUARDED v0.0.70: LinkedIn voyager from Vercel is CONFIRMED IMPOSSIBLE — Cloudflare/LinkedIn
+    // bot detection kills sessions within seconds (see KIKO_MASTER_LOG 14 Apr 2026).
+    // Block is parked behind LINKEDIN_BACKEND_ENABLED env var. When a working LinkedIn backend
+    // is selected (Unipile / HeyReach / proxy / etc), set LINKEDIN_BACKEND_ENABLED=true in Vercel
+    // env vars to re-enable. Until then this entire block is skipped — Gmail scan above still runs.
+    if (process.env.LINKEDIN_BACKEND_ENABLED !== 'true') {
+      // explicit no-op — do not call linkedinGetConversations from Vercel
+    } else try {
       const { linkedinGetConversations } = await import('./linkedin-client.js');
       const conversations = await linkedinGetConversations({ limit: 30 });
       for (const conv of (conversations || [])) {

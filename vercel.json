@@ -177,14 +177,6 @@
     {
       "path": "/api/cron-background-task-cleanup",
       "schedule": "*/10 * * * *"
-    },
-    {
-      "path": "/api/cron-linkedin-sender",
-      "schedule": "*/30 8-17 * * 1-5"
-    },
-    {
-      "path": "/api/cron-linkedin-auth-check",
-      "schedule": "0 7 * * *"
     }
   ],
   "functions": {

@@ -897,6 +897,15 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
   }
 
   // ── LinkedIn Tools ──
+  // GUARDED v0.0.70: LinkedIn voyager from Vercel is CONFIRMED IMPOSSIBLE — Cloudflare/LinkedIn
+  // bot detection kills sessions within seconds. These tools are parked behind LINKEDIN_BACKEND_ENABLED
+  // until a working LinkedIn backend is selected (see KIKO_MASTER_LOG 14 Apr 2026 + OUTSTANDING_ITEMS.md).
+  // When called without the flag set, they return an explanation rather than firing voyager calls.
+  if (name === 'linkedin_search_prospects' || name === 'linkedin_send_invite' || name === 'linkedin_send_message') {
+    if (process.env.LINKEDIN_BACKEND_ENABLED !== 'true') {
+      return { error: 'LinkedIn backend not configured. Voyager API from Vercel is confirmed blocked by LinkedIn/Cloudflare bot detection. A new backend (Unipile / HeyReach / proxy / etc) needs to be selected and integrated. See OUTSTANDING_ITEMS.md and KIKO_MASTER_LOG 14 Apr 2026 for the full diagnostic.' };
+    }
+  }
   if (name === 'linkedin_search_prospects') {
     try {
       const { linkedinSearch } = await import('./linkedin-client.js');
