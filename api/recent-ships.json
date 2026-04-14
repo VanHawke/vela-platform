@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-14T13:53:41.435Z",
+  "generated_at": "2026-04-14T13:57:27.400Z",
   "commits": [
+    {
+      "hash": "612107e",
+      "subject": "v0.0.68: diagnostic — capture err.cause chain in voyagerFetch",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "8e91197",
       "subject": "docs: KIKO_MASTER_LOG v0.0.66 + v0.0.67 session notes + LinkedIn open issue",
-      "when": "5 minutes ago"
+      "when": "8 minutes ago"
     },
     {
       "hash": "7608b3b",
       "subject": "v0.0.67: HOTFIX — linkedin-test FUNCTION_INVOCATION_TIMEOUT",
-      "when": "12 minutes ago"
+      "when": "16 minutes ago"
     },
     {
       "hash": "8bd6dbb",
       "subject": "v0.0.66: voice personalisation + LinkedIn retry wrapper + whiskey category",
-      "when": "22 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "f859daa",
@@ -84,7 +89,7 @@
     {
       "hash": "3330519",
       "subject": "v0.0.58 — Safari upload fix + unified favicon",
-      "when": "21 hours ago"
+      "when": "22 hours ago"
     },
     {
       "hash": "86e930c",
@@ -94,11 +99,6 @@
     {
       "hash": "1eccd26",
       "subject": "v0.0.57 — Background tasks Phase 4: SSE token streaming",
-      "when": "24 hours ago"
-    },
-    {
-      "hash": "f54dd4c",
-      "subject": "Sub-Phase G complete: per-user page permissions deployed and verified",
       "when": "24 hours ago"
     }
   ]
