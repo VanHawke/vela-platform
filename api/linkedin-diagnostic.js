@@ -96,15 +96,23 @@ async function probeHttpsNative() {
       res.on('end', () => {
         clearTimeout(timer);
         const body = Buffer.concat(chunks).toString('utf8');
+        // Capture ALL response headers so we can see exactly what LinkedIn is returning
+        const allHeaders = { ...res.headers };
+        // Special handling for set-cookie which is an array
+        const setCookie = res.headers['set-cookie'] || [];
         finish({
           ok: true,
           status: res.statusCode,
-          headers: {
-            'content-type': res.headers['content-type'],
-            'x-li-proto-ver': res.headers['x-li-proto-ver'],
-            'x-li-fabric': res.headers['x-li-fabric'],
-          },
-          body_preview: body.slice(0, 200),
+          location: res.headers['location'] || null,
+          set_cookie_count: setCookie.length,
+          set_cookie_names: setCookie.map(c => c.split('=')[0]),
+          set_cookie_raw: setCookie.map(c => c.slice(0, 200)),
+          x_li_fabric: res.headers['x-li-fabric'] || null,
+          x_li_proto_ver: res.headers['x-li-proto-ver'] || null,
+          x_li_uuid: res.headers['x-li-uuid'] || null,
+          all_header_keys: Object.keys(allHeaders),
+          content_type: res.headers['content-type'],
+          body_preview: body.slice(0, 500),
         });
       });
       res.on('error', (err) => {
