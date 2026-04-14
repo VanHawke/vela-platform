@@ -1521,3 +1521,52 @@ Absolute do-not-touch list:
 
 **Ring fence intact:** No changes to api/kiko.js, api/kiko-health.js, three-layer Bible, OrgContext.jsx, src/contexts/*, lemlist-webhook.js, lemlist-backfill.js.
 
+## v0.0.65 — LinkedIn Layer 2 + Safety Scaffolding — 14 April 2026 ~08:30 BST
+
+**Goal:** Make LinkedIn fully executable in Kiko sequences with safety scaffolding (rate limits, kill switch, audit log, cookie expiry monitor).
+
+**Pre-deploy:** kiko-health PASS, 1964ms, [core, org, personal]
+**Post-deploy:** kiko-health PASS, 1262ms, [core, org, personal]
+
+**Migration applied:**
+- kiko_linkedin_audit table (11 columns + 3 indexes + RLS)
+
+**Files added:**
+- api/cron-linkedin-sender.js (NEW — batch 3, random 30-90s delays, business hours only)
+- api/cron-linkedin-auth-check.js (NEW — daily 7am UTC cookie health monitor)
+
+**Files modified:**
+- api/linkedin-client.js (added kill switch, quota, audit wrappers — additive only, signatures preserved)
+- api/cron-sequence-enqueue.js (1-line: populate linkedin_url at enqueue)
+- api/cron-sequence-reply-detect.js (extended for LinkedIn inbox scan)
+- vercel.json (2 new cron schedules)
+- package.json (0.0.64 → 0.0.65)
+
+**New env vars supported (set by Sunny post-deploy):**
+- LINKEDIN_FIRST_USE_DATE (YYYY-MM-DD, controls cap graduation)
+- LINKEDIN_KILL_SWITCH (set to "1" to halt all writes instantly)
+
+**Daily caps:** 25 actions for week 1, automatic graduation to 40 on day 8.
+**Pacing:** 30-90s random delay between actions in same batch.
+**Schedule:**
+- cron-linkedin-sender: every 30 min Mon-Fri 8-17 UTC
+- cron-linkedin-auth-check: daily 7am UTC
+
+**Verification:**
+- empty-queue cron: {ok:true, sent:0} ✓
+- auth-check cron: correctly fired alert (cookies not installed) ✓
+- audit table: 11 columns confirmed ✓
+- kiko-health: PASS before and after ✓
+
+**Ring fence intact:** No changes to api/kiko.js, api/kiko-health.js, three-layer Bible, OrgContext.jsx, src/contexts/*, lemlist files, cron-sequence-sender.js.
+
+**What this enables (after Sunny installs cookies):**
+- AI-generated 4 email + 3 LinkedIn sequences execute end-to-end
+- Reply detection across both Gmail AND LinkedIn inbox
+- Kill switch via single env var
+- Daily cookie health check with Gmail alert
+
+**Outstanding:**
+- Sunny installs cookies (5 min manual step)
+- 1 week observation window before considering Lemlist drop
+
