@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-14T13:31:27.197Z",
+  "generated_at": "2026-04-14T13:41:25.593Z",
   "commits": [
+    {
+      "hash": "8bd6dbb",
+      "subject": "v0.0.66: voice personalisation + LinkedIn retry wrapper + whiskey category",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "f859daa",
       "subject": "Update KIKO_MASTER_LOG with v0.0.65 LinkedIn Layer 2 session notes",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "f017c33",
@@ -94,11 +99,6 @@
     {
       "hash": "2591253",
       "subject": "Multi-user feature complete: all 6 sub-phases shipped (v0.0.50–0.0.55)",
-      "when": "24 hours ago"
-    },
-    {
-      "hash": "7a2ec21",
-      "subject": "v0.0.55 — Sub-Phase F: campaign send-as + onboarding + Matt invite doc (multi-user complete)",
       "when": "25 hours ago"
     }
   ]

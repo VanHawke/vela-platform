@@ -63,25 +63,30 @@ function getAuthHeaders() {
 
 // Retryable network error patterns — Vercel undici TLS flakiness against LinkedIn.
 // These are transient and benefit from a fresh TCP connection.
-const RETRYABLE_ERRORS = /fetch failed|ECONNRESET|ETIMEDOUT|EHOSTUNREACH|ENETUNREACH|socket hang up|UND_ERR/i;
-const RETRY_DELAYS_MS = [1000, 3000, 8000]; // 3 attempts after the initial
+const RETRYABLE_ERRORS = /fetch failed|ECONNRESET|ETIMEDOUT|EHOSTUNREACH|ENETUNREACH|socket hang up|UND_ERR|aborted/i;
+const RETRY_DELAYS_MS = [500, 1500]; // 2 retries after the initial → 3 attempts total
+const FETCH_TIMEOUT_MS = 6000; // Per-attempt hard cap so a hung fetch can't blow the function budget
 
 async function voyagerFetch(path, opts = {}) {
   const url = path.startsWith('http') ? path : `${VOYAGER_BASE}${path}`;
   let lastError = null;
 
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    const controller = new AbortController();
+    const abortTimer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     try {
       // Force a fresh TCP connection on every attempt (works around Vercel
       // undici connection pool reusing a broken socket)
       const res = await fetch(url, {
         ...opts,
+        signal: controller.signal,
         headers: {
           ...getAuthHeaders(),
           'connection': 'close',
           ...(opts.headers || {}),
         },
       });
+      clearTimeout(abortTimer);
 
       // Non-retryable auth/rate responses — fail fast, retrying makes things worse
       if (res.status === 401 || res.status === 403) {
@@ -97,6 +102,7 @@ async function voyagerFetch(path, opts = {}) {
       }
       try { return JSON.parse(text); } catch { return text; }
     } catch (err) {
+      clearTimeout(abortTimer);
       lastError = err;
       const msg = err?.message || String(err);
 
@@ -105,8 +111,8 @@ async function voyagerFetch(path, opts = {}) {
         throw err;
       }
 
-      // Retryable network error?
-      if (!RETRYABLE_ERRORS.test(msg)) {
+      // Retryable network error (including AbortController timeouts)?
+      if (!RETRYABLE_ERRORS.test(msg) && err?.name !== 'AbortError') {
         throw err; // Unknown error class — surface it
       }
 
