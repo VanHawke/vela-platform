@@ -1,0 +1,413 @@
+/* ═══════════════════════════════════════════════════════════════
+   KIKO POLISH — 21st.dev-style patterns in vanilla CSS/JS
+   Shared by all kiko-*.html mockups. Layered on top of base styles.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── EASING TOKENS ────────────────────────────────────────────── */
+:root {
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-snappy: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* ── AURORA BACKGROUND (replaces static orbs) ─────────────────── */
+.aurora-bg {
+  position: absolute; inset: 0;
+  pointer-events: none; overflow: hidden; z-index: 0;
+}
+.aurora-bg svg { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.55; }
+.aurora-path { fill: none; stroke-width: 80; stroke-linecap: round; opacity: 0.45;
+  filter: blur(40px);
+  animation: auroraDrift 28s ease-in-out infinite;
+}
+.aurora-path.p1 { stroke: #E8DCC4; animation-duration: 24s; }
+.aurora-path.p2 { stroke: #D89472; animation-duration: 32s; animation-delay: -8s; opacity: 0.30; }
+.aurora-path.p3 { stroke: #B5BFA0; animation-duration: 36s; animation-delay: -16s; opacity: 0.35; }
+@keyframes auroraDrift {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  25%      { transform: translate(40px,-30px) scale(1.05); }
+  50%      { transform: translate(-30px,20px) scale(0.95); }
+  75%      { transform: translate(20px,40px) scale(1.02); }
+}
+
+/* ── SPOTLIGHT CARD (radial light follows cursor) ─────────────── */
+.spotlight {
+  position: relative;
+  overflow: hidden;
+}
+.spotlight::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(
+    320px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(0,0,0,0.04),
+    transparent 50%
+  );
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-smooth);
+  pointer-events: none;
+  z-index: 1;
+}
+.spotlight:hover::before { opacity: 1; }
+.spotlight > * { position: relative; z-index: 2; }
+
+
+/* ── SPARKLE CTA (pulsing rings + sparkle particles) ──────────── */
+.sparkle-cta {
+  position: relative;
+  isolation: isolate;
+}
+.sparkle-cta::before,
+.sparkle-cta::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 1px solid rgba(10,10,10,0.20);
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+.sparkle-cta::before { animation: sparkleRing 2.4s ease-out infinite; }
+.sparkle-cta::after  { animation: sparkleRing 2.4s ease-out infinite 1.2s; }
+@keyframes sparkleRing {
+  0%   { opacity: 0.6; transform: scale(0.95); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+.sparkle-cta .sparkle-particle {
+  position: absolute;
+  width: 4px; height: 4px;
+  background: #E8DCC4;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+}
+.sparkle-cta:hover .sparkle-particle { animation: sparklePop 0.9s var(--ease-out-expo) forwards; }
+@keyframes sparklePop {
+  0%   { opacity: 0; transform: translate(0,0) scale(0); }
+  40%  { opacity: 1; transform: translate(var(--dx, 12px), var(--dy, -12px)) scale(1.4); }
+  100% { opacity: 0; transform: translate(calc(var(--dx, 12px) * 1.5), calc(var(--dy, -12px) * 1.5)) scale(0); }
+}
+
+/* ── MAGNETIC BUTTON ──────────────────────────────────────────── */
+.magnetic { transition: transform 0.25s var(--ease-spring); }
+
+/* ── ANIMATED NUMBER COUNTER ──────────────────────────────────── */
+.count-up {
+  font-variant-numeric: tabular-nums;
+  display: inline-block;
+}
+
+/* ── TOAST SYSTEM (slides in bottom-right) ────────────────────── */
+.toast-stack {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  display: flex; flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+  pointer-events: none;
+}
+.toast {
+  background: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 8px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06);
+  padding: 12px 16px 12px 14px;
+  min-width: 280px; max-width: 380px;
+  display: flex; align-items: center; gap: 12px;
+  font-size: 13px; color: #0A0A0A;
+  pointer-events: auto;
+  transform: translateX(120%);
+  opacity: 0;
+  animation: toastSlideIn 0.4s var(--ease-spring) forwards,
+             toastFadeOut 0.3s ease-in 4s forwards;
+}
+.toast.success { border-left: 3px solid #7d8a64; }
+.toast.warning { border-left: 3px solid #B89C5C; }
+.toast.error   { border-left: 3px solid #b8643e; }
+.toast.info    { border-left: 3px solid #5a6470; }
+.toast-icon { width: 18px; height: 18px; flex-shrink: 0; }
+.toast.success .toast-icon { color: #7d8a64; }
+.toast-body { flex: 1; }
+.toast-title { font-weight: 500; line-height: 1.35; }
+.toast-meta { font-size: 11px; color: #6B6B6B; margin-top: 2px; }
+.toast-close { color: #A0A0A0; cursor: pointer; padding: 2px; line-height: 0; }
+.toast-close:hover { color: #0A0A0A; }
+@keyframes toastSlideIn {
+  from { transform: translateX(120%); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes toastFadeOut {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(40px); }
+}
+
+/* ── SMOOTH ACCORDION (replaces snap show/hide) ───────────────── */
+.accordion-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s var(--ease-out-expo);
+}
+.accordion-content > * { overflow: hidden; }
+.accordion-content.open { grid-template-rows: 1fr; }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   ROUND 2 ADDITIONS — Legora platform patterns
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 1. EYEBROW LABEL (small ALL CAPS above titles) ───────────── */
+.eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: #6B6B6B;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.eyebrow .eyebrow-cat { color: #0A0A0A; font-weight: 600; }
+.eyebrow .eyebrow-sep { color: #C0C0C0; }
+
+/* ── 2. LARGER SOURCE PILLS (Legora prompt source pattern) ────── */
+.source-pill-lg {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 32px;
+  padding: 0 14px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 24px;
+  font-size: 12px;
+  font-weight: 450;
+  color: #0A0A0A;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s var(--ease-spring);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  cursor: pointer;
+}
+.source-pill-lg:hover { border-color: rgba(0,0,0,0.20); background: #FAFAF7; transform: translateY(-1px); }
+.source-pill-lg svg { width: 13px; height: 13px; flex-shrink: 0; opacity: 0.75; }
+.source-pill-lg.active { background: #0A0A0A; color: white; border-color: #0A0A0A; }
+.source-pill-lg.active svg { opacity: 1; }
+
+/* ── 3. MODE TAB BAR (Assistant / Actions / Prompts / Playbooks) ── */
+.mode-tabs {
+  display: flex; align-items: stretch;
+  gap: 2px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  padding: 0;
+  background: transparent;
+}
+.mode-tab {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px;
+  padding: 10px 8px;
+  font-size: 11px; font-weight: 500;
+  color: #6B6B6B;
+  position: relative;
+  transition: color 0.15s, background 0.15s;
+  border-radius: 6px;
+}
+.mode-tab svg { width: 15px; height: 15px; opacity: 0.7; transition: opacity 0.15s; }
+.mode-tab:hover { color: #0A0A0A; background: rgba(0,0,0,0.02); }
+.mode-tab:hover svg { opacity: 1; }
+.mode-tab.active { color: #0A0A0A; }
+.mode-tab.active svg { opacity: 1; }
+.mode-tab.active::after {
+  content: ''; position: absolute; left: 22%; right: 22%; bottom: 4px;
+  height: 1.5px; background: #0A0A0A; border-radius: 1px;
+}
+
+
+/* ── 4. EXPAND +/× ROW PATTERN (FAQ / accordion alternative) ──── */
+.expand-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.expand-row:first-of-type { border-top: none; }
+.expand-row:hover { opacity: 0.7; }
+.expand-row-title {
+  font-family: var(--font-display, Georgia, serif);
+  font-weight: 400;
+  font-size: 16px;
+  color: #0A0A0A;
+}
+.expand-icon {
+  width: 20px; height: 20px;
+  position: relative;
+  flex-shrink: 0;
+  color: #0A0A0A;
+}
+.expand-icon::before,
+.expand-icon::after {
+  content: ''; position: absolute;
+  background: currentColor;
+  transition: transform 0.25s var(--ease-spring), opacity 0.2s;
+}
+.expand-icon::before {
+  top: 50%; left: 0; right: 0; height: 1.5px; transform: translateY(-50%);
+}
+.expand-icon::after {
+  left: 50%; top: 0; bottom: 0; width: 1.5px; transform: translateX(-50%);
+}
+.expand-row.open .expand-icon::after { transform: translateX(-50%) rotate(90deg); opacity: 0; }
+.expand-row.open .expand-icon::before { transform: translateY(-50%) rotate(180deg); }
+.expand-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s var(--ease-out-expo), padding 0.3s ease;
+  padding: 0 0 0 0;
+  font-size: 13px;
+  color: #6B6B6B;
+  line-height: 1.6;
+}
+.expand-row.open + .expand-content {
+  max-height: 600px;
+  padding: 0 0 18px 0;
+}
+
+/* ── 5. FEATURE TILE (large tappable feature card) ────────────── */
+.feature-tile {
+  background: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex; flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  transition: border-color 0.18s, transform 0.2s var(--ease-spring), box-shadow 0.2s;
+  text-align: left;
+}
+.feature-tile:hover {
+  border-color: rgba(0,0,0,0.16);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+}
+.feature-tile-icon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+.feature-tile-icon svg { width: 16px; height: 16px; }
+.feature-tile-icon.sage { background: rgba(125,138,100,0.18); color: #5a6644; }
+.feature-tile-icon.terra { background: rgba(184,100,62,0.18); color: #b8643e; }
+.feature-tile-icon.slate { background: rgba(90,100,112,0.16); color: #5a6470; }
+.feature-tile-icon.purple { background: rgba(124,92,180,0.16); color: #6d4ea8; }
+.feature-tile-title { font-size: 14px; font-weight: 500; color: #0A0A0A; }
+.feature-tile-sub { font-size: 12px; color: #6B6B6B; line-height: 1.45; }
+
+/* ── 6. FLOATING COLORED FEATURE ICONS (square w/ shadow) ─────── */
+.fab-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: grid; place-items: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.05);
+  background: #FFFFFF;
+}
+.fab-icon svg { width: 22px; height: 22px; }
+.fab-icon.sage  { background: #C9D2B5; color: #3d4528; }
+.fab-icon.terra { background: #E2A581; color: #5d3220; }
+.fab-icon.cream { background: #E8DCC4; color: #5d4a1d; }
+.fab-icon.slate { background: #B5BBC4; color: #2e3540; }
+.fab-icon.blue  { background: #6DAEE6; color: white; }
+.fab-icon.black { background: #0A0A0A; color: white; }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   LEGORA TOP NAV (LegoraTopNav.jsx)
+   Option A — clean Legora-pure top bar
+   ═══════════════════════════════════════════════════════════════ */
+.legora-topnav {
+  height: 60px;
+  background: #FEFEFC;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 250;
+  flex-shrink: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.ltn-brand {
+  display: flex; align-items: center; gap: 9px;
+  background: none; border: none; cursor: pointer; padding: 0;
+  color: #0A0A0A;
+}
+.ltn-mark { width: 22px; height: 22px; }
+.ltn-name {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+.ltn-logo { height: 32px; max-width: 160px; object-fit: contain; }
+.ltn-links { display: flex; align-items: center; gap: 30px; }
+.ltn-link {
+  background: none; border: none; cursor: pointer;
+  color: #0A0A0A; font-size: 13px; font-weight: 450;
+  padding: 18px 0;
+  position: relative;
+  display: inline-flex; align-items: center; gap: 2px;
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: opacity 0.15s;
+}
+.ltn-link:hover { opacity: 0.6; }
+.ltn-link .ltn-plus { color: #A0A0A0; }
+.ltn-link.active { font-weight: 500; }
+.ltn-link.active::after {
+  content: '';
+  height: 1px; background: #0A0A0A;
+  position: absolute; left: 0; right: 0; bottom: -1px;
+}
+.ltn-right { display: flex; align-items: center; gap: 8px; }
+.ltn-icon {
+  width: 32px; height: 32px;
+  background: none; border: none; cursor: pointer;
+  display: grid; place-items: center;
+  border-radius: 4px;
+  color: #6B6B6B;
+  position: relative;
+  transition: background 0.15s, color 0.15s;
+}
+.ltn-icon:hover { background: rgba(0,0,0,0.03); color: #0A0A0A; }
+.ltn-dot {
+  position: absolute; top: 7px; right: 8px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #b8643e;
+  box-shadow: 0 0 0 2px #FEFEFC;
+}
+.ltn-cta {
+  height: 32px; padding: 0 14px;
+  background: #0A0A0A; color: white;
+  border: none; cursor: pointer;
+  border-radius: 4px;
+  font-size: 12px; font-weight: 500;
+  margin-left: 4px;
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: opacity 0.15s;
+}
+.ltn-cta:hover { opacity: 0.85; }
+.ltn-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #0A0A0A; color: white;
+  display: grid; place-items: center;
+  font-size: 11px; font-weight: 500;
+  margin-left: 6px;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Mobile: hide center links, show menu button (handled by Layout) */
+@media (max-width: 768px) {
+  .ltn-links { display: none; }
+}

@@ -9,17 +9,17 @@ import { signOut } from '@/lib/auth'
 // applyFavicon is now handled by OrgContext — import removed
 // Design tokens — hardcoded (matching Sequences.jsx)
 const C = {
-  bg: '#1c1c24',
-  card: '#1c1c24',
-  cardHover: '#1c1c24',
+  bg: '#FFFFFF',
+  card: '#FFFFFF',
+  cardHover: '#FFFFFF',
   border: 'rgba(255,255,255,0.06)',
   borderHover: 'rgba(255,255,255,0.10)',
-  text: '#f4f4f6',
-  textSec: '#9b9ba3',
-  textTer: '#7e7e88',
-  textMut: '#56565e',
-  purple: '#7c5cfc',
-  teal: '#7c5cfc',
+  text: '#0A0A0A',
+  textSec: '#6B6B6B',
+  textTer: '#A0A0A0',
+  textMut: '#A0A0A0',
+  purple: '#0A0A0A',
+  teal: '#0A0A0A',
   green: '#34D399',
   red: '#F87171',
   amber: '#FBBF24',
@@ -40,7 +40,9 @@ import KikoVoice from '../kiko/KikoVoice'
 import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
 import CommandPalette from './CommandPalette'
+import LegoraTopNav from './LegoraTopNav'
 import AuroraCanvas from '../AuroraCanvas'
+import { useKikoPolish } from '@/lib/useKikoPolish'
 
 // All navigable pages
 const ALL_NAV = [
@@ -88,6 +90,8 @@ const PAGE_LABELS = {
 }
 
 export default function Layout({ user }) {
+  // Activate Legora polish layer (spotlight, sparkle, magnetic, count-up auto-bind)
+  useKikoPolish()
   const loc = useLocation()
   const nav = useNavigate()
   const isHome = loc.pathname === '/' || loc.pathname === '/home'
@@ -370,8 +374,18 @@ export default function Layout({ user }) {
       {/* Aurora gradient orbs */}
       <AuroraCanvas extraOrb={loc.pathname === '/pipeline' ? 'amber' : null} />
 
-      {/* Top bar — frosted glass */}
+      {/* Legora top nav — Option A pattern */}
+      <LegoraTopNav
+        user={user}
+        customLogo={customLogo}
+        hasNotifications={true}
+        onSearchClick={() => setCommandPaletteOpen(true)}
+      />
+
+      {/* OLD HEADER — kept temporarily, hidden via display:none for visual diff comparison.
+          Remove after Sunny confirms LegoraTopNav is correct on preview deploy. */}
       <header style={{
+        display: 'none',
         height: 56, minHeight: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 24px', borderBottom: 'none',
         background: 'transparent',
@@ -390,7 +404,7 @@ export default function Layout({ user }) {
               <img src={customLogo} alt="Logo" style={{ height: 36, borderRadius: 8, maxWidth: 160, objectFit: 'contain' }} />
             ) : (
               <>
-                <span style={{ fontSize: 15, fontWeight: 600, color: '#9b9ba3', fontFamily: C.font, letterSpacing: '0.12em' }}>VAN HAWKE<sup style={{ fontSize: 8, verticalAlign: 'super', opacity: 0.5 }}>™</sup></span>
+                <span style={{ fontSize: 15, fontWeight: 600, color: '#6B6B6B', fontFamily: C.font, letterSpacing: '0.12em' }}>VAN HAWKE<sup style={{ fontSize: 8, verticalAlign: 'super', opacity: 0.5 }}>™</sup></span>
               </>
             )}
           </button>
@@ -437,32 +451,32 @@ export default function Layout({ user }) {
                 <div style={{
                   position: 'absolute', top: 'calc(100% + 8px)', right: 0,
                   width: 240, background: 'rgba(12,12,18,0.82)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
-                  borderRadius: 14, border: `0.5px solid #3a3a42`,
-                  boxShadow: '0 12px 40px rgba(0,0,0,0.5), 0 1px 0 #26262f inset', padding: '6px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
+                  borderRadius: 14, border: `0.5px solid #C0C0C0`,
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.5), 0 1px 0 rgba(0,0,0,0.08) inset', padding: '6px', zIndex: 300, animation: 'fadeIn 0.12s ease-out',
                 }}>
                   {MORE_ITEMS.map(item => {
                     const Icon = item.Icon || Building2
                     return (
                     <button key={item.label} onClick={() => { nav(item.path); setMoreOpen(false) }} style={{
                       width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none',
-                      background: loc.pathname === item.path ? '#26262f' : 'transparent',
-                      color: loc.pathname === item.path ? '#f4f4f6' : '#7e7e88', textAlign: 'left',
+                      background: loc.pathname === item.path ? 'rgba(0,0,0,0.08)' : 'transparent',
+                      color: loc.pathname === item.path ? '#0A0A0A' : '#A0A0A0', textAlign: 'left',
                       fontSize: 13, fontWeight: 300, cursor: 'pointer', fontFamily: C.font,
                       display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
                     }}
-                      onMouseOver={e => { e.currentTarget.style.background = '#26262f'; e.currentTarget.style.color = '#f4f4f6' }}
-                      onMouseOut={e => { e.currentTarget.style.background = loc.pathname === item.path ? '#26262f' : 'transparent'; e.currentTarget.style.color = loc.pathname === item.path ? '#f4f4f6' : '#7e7e88' }}
+                      onMouseOver={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.08)'; e.currentTarget.style.color = '#0A0A0A' }}
+                      onMouseOut={e => { e.currentTarget.style.background = loc.pathname === item.path ? 'rgba(0,0,0,0.08)' : 'transparent'; e.currentTarget.style.color = loc.pathname === item.path ? '#0A0A0A' : '#A0A0A0' }}
                     ><Icon size={14} />{item.label}</button>
                   )})}
-                  {MORE_ITEMS.length > 0 && <div style={{ height: 1, background: 'rgba(124,92,252,0.05)', margin: '4px 8px' }} />}
+                  {MORE_ITEMS.length > 0 && <div style={{ height: 1, background: 'rgba(0,0,0,0.03)', margin: '4px 8px' }} />}
                   <button onClick={() => { nav('/settings'); setMoreOpen(false) }} style={{
                     width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none',
-                    background: 'transparent', color: '#7e7e88', textAlign: 'left',
+                    background: 'transparent', color: '#A0A0A0', textAlign: 'left',
                     fontSize: 13, fontWeight: 300, cursor: 'pointer', fontFamily: C.font,
                     display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
                   }}
-                    onMouseOver={e => { e.currentTarget.style.background = '#26262f'; e.currentTarget.style.color = '#f4f4f6' }}
-                    onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#7e7e88' }}
+                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.08)'; e.currentTarget.style.color = '#0A0A0A' }}
+                    onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#A0A0A0' }}
                   ><Settings size={14} />Settings</button>
                 </div>
               )}
@@ -494,23 +508,23 @@ export default function Layout({ user }) {
           {/* Mobile hamburger — visible only below 768px */}
           <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{
             display: 'none', alignItems: 'center', justifyContent: 'center',
-            width: 36, height: 36, borderRadius: 10, border: '1px solid #26262f',
-            background: mobileMenuOpen ? '#26262f' : 'rgba(124,92,252,0.04)',
+            width: 36, height: 36, borderRadius: 10, border: '1px solid rgba(0,0,0,0.08)',
+            background: mobileMenuOpen ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.03)',
             cursor: 'pointer', transition: 'all 0.15s',
           }}>
-            {mobileMenuOpen ? <X size={16} color="#9b9ba3" /> : <Menu size={16} color="#9b9ba3" />}
+            {mobileMenuOpen ? <X size={16} color="#6B6B6B" /> : <Menu size={16} color="#6B6B6B" />}
           </button>
           {/* Command palette trigger */}
           <button onClick={() => setPaletteOpen(true)} style={{
             display: 'flex', alignItems: 'center', gap: 8,
-            padding: '7px 14px', borderRadius: 50, border: '0.5px solid #26262f',
-            background: 'rgba(124,92,252,0.04)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+            padding: '7px 14px', borderRadius: 50, border: '0.5px solid rgba(0,0,0,0.08)',
+            background: 'rgba(0,0,0,0.03)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
             cursor: 'pointer', fontFamily: 'var(--font)',
-            color: '#56565e', fontSize: 13, transition: 'all 0.15s',
-            boxShadow: 'inset 0 1px 0 #26262f',
+            color: '#A0A0A0', fontSize: 13, transition: 'all 0.15s',
+            boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.08)',
           }}
-            onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(124,92,252,0.15)'; e.currentTarget.style.background = 'rgba(124,92,252,0.07)' }}
-            onMouseOut={e => { e.currentTarget.style.borderColor = '#26262f'; e.currentTarget.style.background = 'rgba(124,92,252,0.04)' }}
+            onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
+            onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.background = 'rgba(0,0,0,0.03)' }}
           >
             <Search size={14} />
             <span style={{ fontSize: 12, fontWeight: 500, opacity: 0.6 }}>&#8984;K</span>
@@ -519,38 +533,38 @@ export default function Layout({ user }) {
           {/* User avatar dropdown */}
           <div ref={avatarRef} style={{ position: 'relative' }}>
             <button onClick={() => setAvatarOpen(!avatarOpen)} style={{
-              width: 28, height: 28, borderRadius: '50%', border: '0.5px solid #26262f', cursor: 'pointer',
+              width: 28, height: 28, borderRadius: '50%', border: '0.5px solid rgba(0,0,0,0.08)', cursor: 'pointer',
               background: profile.profile_photo_url ? 'transparent' : 'transparent',
               display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, overflow: 'hidden',
             }}>
               {profile.profile_photo_url ? (
                 <img src={profile.profile_photo_url} alt="" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
               ) : (
-                <span style={{ fontSize: 11, fontWeight: 500, color: '#f4f4f6', fontFamily: 'var(--font)' }}>{initials}</span>
+                <span style={{ fontSize: 11, fontWeight: 500, color: '#0A0A0A', fontFamily: 'var(--font)' }}>{initials}</span>
               )}
             </button>
             {avatarOpen && (
               <div style={{
                 position: 'absolute', top: '100%', right: 0, marginTop: 6,
                 width: 200, background: 'rgba(124,92,252,0.035)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
-                borderRadius: 18, border: '0.5px solid #26262f',
-                boxShadow: 'inset 0 1px 0 #26262f, 0 8px 40px rgba(0,0,0,0.5)',
+                borderRadius: 18, border: '0.5px solid rgba(0,0,0,0.08)',
+                boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.08), 0 8px 40px rgba(0,0,0,0.5)',
                 padding: '6px', zIndex: 400, animation: 'fadeIn 0.15s ease-out',
               }}>
-                <div style={{ padding: '8px 12px 10px', borderBottom: '0.5px solid #26262f', marginBottom: 4 }}>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: '#f4f4f6', fontFamily: 'var(--font)' }}>
+                <div style={{ padding: '8px 12px 10px', borderBottom: '0.5px solid rgba(0,0,0,0.08)', marginBottom: 4 }}>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: '#0A0A0A', fontFamily: 'var(--font)' }}>
                     {profile.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : user?.email?.split('@')[0] || 'User'}
                   </div>
-                  <div style={{ fontSize: 12, color: '#56565e', fontFamily: 'var(--font)', marginTop: 2 }}>{user?.email}</div>
+                  <div style={{ fontSize: 12, color: '#A0A0A0', fontFamily: 'var(--font)', marginTop: 2 }}>{user?.email}</div>
                 </div>
                 <button onClick={() => { nav('/settings'); setAvatarOpen(false) }} style={{
                   width: '100%', padding: '9px 12px', borderRadius: 10, border: 'none',
-                  background: 'transparent', color: '#7e7e88', textAlign: 'left',
+                  background: 'transparent', color: '#A0A0A0', textAlign: 'left',
                   fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font)',
                   display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.15s',
                 }}
-                  onMouseOver={e => { e.currentTarget.style.background = '#26262f'; e.currentTarget.style.color = '#f4f4f6' }}
-                  onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#7e7e88' }}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.08)'; e.currentTarget.style.color = '#0A0A0A' }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#A0A0A0' }}
                 ><Settings size={14} /> Settings</button>
                 <button onClick={() => { signOut(); setAvatarOpen(false) }} style={{
                   width: '100%', padding: '9px 12px', borderRadius: 10, border: 'none',
@@ -575,7 +589,7 @@ export default function Layout({ user }) {
           zIndex: 240, animation: 'fadeIn 0.15s ease-out',
         }} onClick={() => setMobileMenuOpen(false)}>
           <div style={{
-            background: 'rgba(124,92,252,0.035)', borderBottom: '0.5px solid #26262f',
+            background: 'rgba(124,92,252,0.035)', borderBottom: '0.5px solid rgba(0,0,0,0.08)',
             padding: '8px 12px', maxHeight: '70vh', overflowY: 'auto',
           }} onClick={e => e.stopPropagation()}>
             {ALL_NAV.map(item => {
@@ -587,8 +601,8 @@ export default function Layout({ user }) {
                   nav(item.path); setMobileMenuOpen(false)
                 }} style={{
                   width: '100%', padding: '12px 14px', borderRadius: 12, border: 'none',
-                  background: active ? '#26262f' : 'transparent',
-                  color: active ? '#f4f4f6' : '#9b9ba3',
+                  background: active ? 'rgba(0,0,0,0.08)' : 'transparent',
+                  color: active ? '#0A0A0A' : '#6B6B6B',
                   fontSize: 15, fontWeight: active ? 400 : 300, cursor: 'pointer', fontFamily: C.font,
                   display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', transition: 'all 0.15s',
                 }}>
@@ -596,10 +610,10 @@ export default function Layout({ user }) {
                 </button>
               )
             })}
-            <div style={{ height: 1, background: '#26262f', margin: '6px 8px' }} />
+            <div style={{ height: 1, background: 'rgba(0,0,0,0.08)', margin: '6px 8px' }} />
             <button onClick={() => { nav('/settings'); setMobileMenuOpen(false) }} style={{
               width: '100%', padding: '12px 14px', borderRadius: 12, border: 'none',
-              background: 'transparent', color: '#7e7e88',
+              background: 'transparent', color: '#A0A0A0',
               fontSize: 15, fontWeight: 300, cursor: 'pointer', fontFamily: C.font,
               display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left',
             }}><Settings size={16} />Settings</button>
@@ -651,8 +665,8 @@ export default function Layout({ user }) {
       {/* Mobile bottom tab bar — visible only below 768px */}
       <nav className="mobile-bottom-nav" style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
-        background: 'rgba(124,92,252,0.03)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
-        borderTop: '0.5px solid #26262f',
+        background: 'rgba(0,0,0,0.02)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
+        borderTop: '0.5px solid rgba(0,0,0,0.08)',
         display: 'none', // shown via CSS media query
         justifyContent: 'space-around', alignItems: 'center',
         padding: '6px 0 env(safe-area-inset-bottom, 8px)',
@@ -668,7 +682,7 @@ export default function Layout({ user }) {
             }} style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
               background: 'none', border: 'none', cursor: 'pointer', padding: '6px 16px',
-              color: active ? '#f4f4f6' : '#7e7e88',
+              color: active ? '#0A0A0A' : '#A0A0A0',
               transition: 'color 0.15s', fontFamily: C.font,
             }}>
               <Icon size={20} strokeWidth={active ? 2 : 1.5} />
@@ -679,7 +693,7 @@ export default function Layout({ user }) {
         <button onClick={() => setMoreOpen(!moreOpen)} style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
           background: 'none', border: 'none', cursor: 'pointer', padding: '6px 16px',
-          color: '#7e7e88', fontFamily: C.font,
+          color: '#A0A0A0', fontFamily: C.font,
         }}>
           <MoreHorizontal size={20} strokeWidth={1.5} />
           <span style={{ fontSize: 10, fontWeight: 300 }}>More</span>
