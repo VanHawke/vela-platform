@@ -66,6 +66,22 @@
 .pl-col.drag-over {
   background: rgba(125,138,100,0.06);
   border-color: rgba(125,138,100,0.30);
+  transform: scale(1.005);
+}
+.pl-col {
+  transition: background 0.18s, border-color 0.18s, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pl-card[draggable="true"] {
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s, box-shadow 0.18s;
+}
+.pl-card[draggable="true"]:active {
+  cursor: grabbing;
+  opacity: 0.6;
+  transform: scale(0.98) rotate(-1deg);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+}
+.pl-card[draggable="true"]:hover {
+  cursor: grab;
 }
 
 .pl-col-h {

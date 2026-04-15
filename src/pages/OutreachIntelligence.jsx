@@ -4,6 +4,19 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
+
+function formatWhen(iso) {
+  const d = new Date(iso)
+  const diffMs = Date.now() - d.getTime()
+  const diffMin = Math.floor(diffMs / 60000)
+  if (diffMin < 1) return 'just now'
+  if (diffMin < 60) return `${diffMin}m ago`
+  const diffHr = Math.floor(diffMin / 60)
+  if (diffHr < 24) return `${diffHr}h ago`
+  const diffDay = Math.floor(diffHr / 24)
+  if (diffDay < 7) return `${diffDay}d ago`
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
 import PageHeader from '@/components/layout/PageHeader'
 import './OutreachIntelligence.css'
 
@@ -18,12 +31,13 @@ export default function OutreachIntelligence({ user }) {
   useEffect(() => {
     if (!user?.id) return
     let cancelled = false
-    ;(async () => {
+    let sub = null
+    const fetchReplies = async () => {
       setLoading(true)
-      // Pull recent activities of type 'reply' joined with contact info
+      // Pull recent replies, joined with contact info
       const { data, error } = await supabase
         .from('activities')
-        .select('*')
+        .select('id, subject, body, entity_name, created_at, metadata, contact_id, contacts(name, email, company)')
         .eq('type', 'reply')
         .order('created_at', { ascending: false })
         .limit(50)
@@ -31,8 +45,19 @@ export default function OutreachIntelligence({ user }) {
       if (error) { console.error('[Inbox] fetch error', error); setReplies([]) }
       else { setReplies(data || []) }
       setLoading(false)
-    })()
-    return () => { cancelled = true }
+    }
+    fetchReplies()
+    // Real-time subscription — new replies appear instantly
+    sub = supabase
+      .channel('inbox-replies')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activities', filter: 'type=eq.reply' }, () => {
+        fetchReplies()
+      })
+      .subscribe()
+    return () => {
+      cancelled = true
+      if (sub) supabase.removeChannel(sub)
+    }
   }, [user?.id])
 
   const filtered = useMemo(() => {
@@ -82,6 +107,12 @@ export default function OutreachIntelligence({ user }) {
           <div className="ib-list-body">
             {displayList.map((r, i) => {
               const data = r.metadata || r
+              // Prefer joined contact data, fall back to metadata, then mock fields
+              const senderName = r.contacts?.name || data.from_name || data.from || 'Unknown'
+              const senderCompany = r.contacts?.company || data.company || ''
+              const subject = r.subject || data.subject || r.entity_name || data.entity_name || '(no subject)'
+              const snippet = (r.body || data.snippet || data.preview || '').slice(0, 100)
+              const when = data.when || (r.created_at ? formatWhen(r.created_at) : '—')
               const isSel = (r.id || i) === (displaySelected?.id || 0)
               return (
                 <div
@@ -90,11 +121,11 @@ export default function OutreachIntelligence({ user }) {
                   onClick={() => setSelectedId(r.id || i)}
                 >
                   <div className="ib-thread-row1">
-                    <div className="ib-thread-name">{data.from_name || data.from || 'Unknown'}</div>
-                    <div className="ib-thread-when">{data.when || '—'}</div>
+                    <div className="ib-thread-name">{senderName}{senderCompany && <span style={{ color: '#A0A0A0', fontWeight: 400 }}> · {senderCompany}</span>}</div>
+                    <div className="ib-thread-when">{when}</div>
                   </div>
-                  <div className="ib-thread-subject">{data.subject || data.entity_name || '(no subject)'}</div>
-                  <div className="ib-thread-snippet">{data.snippet || data.preview || ''}</div>
+                  <div className="ib-thread-subject">{subject}</div>
+                  <div className="ib-thread-snippet">{snippet || ''}</div>
                   {data.hot && <span className="ib-thread-tag hot">HOT</span>}
                 </div>
               )
@@ -109,8 +140,8 @@ export default function OutreachIntelligence({ user }) {
             <>
               <div className="ib-pane-h">
                 <div>
-                  <div className="ib-pane-from">{displaySelected.metadata?.from_name || displaySelected.from || 'Unknown'}</div>
-                  <div className="ib-pane-meta">{displaySelected.metadata?.from_email || displaySelected.email || ''} · {displaySelected.metadata?.when || displaySelected.when || ''}</div>
+                  <div className="ib-pane-from">{displaySelected.contacts?.name || displaySelected.metadata?.from_name || displaySelected.from || 'Unknown'}{displaySelected.contacts?.company && <span style={{ color: '#A0A0A0', fontWeight: 400, fontSize: '0.85em' }}> · {displaySelected.contacts.company}</span>}</div>
+                  <div className="ib-pane-meta">{displaySelected.contacts?.email || displaySelected.metadata?.from_email || displaySelected.email || ''} · {displaySelected.metadata?.when || (displaySelected.created_at ? formatWhen(displaySelected.created_at) : displaySelected.when || '')}</div>
                 </div>
                 <div className="ib-pane-actions">
                   <button className="ib-icon-btn" title="Archive">
@@ -125,11 +156,11 @@ export default function OutreachIntelligence({ user }) {
                 </div>
               </div>
 
-              <div className="ib-pane-subject">{displaySelected.metadata?.subject || displaySelected.subject || displaySelected.entity_name || '(no subject)'}</div>
+              <div className="ib-pane-subject">{displaySelected.subject || displaySelected.metadata?.subject || displaySelected.entity_name || '(no subject)'}</div>
 
               <div className="ib-pane-body">
                 <div className="ib-original">
-                  {(displaySelected.metadata?.body || displaySelected.body || displaySelected.snippet || '').split('\n').map((p, i) => (
+                  {(displaySelected.body || displaySelected.metadata?.body || displaySelected.snippet || '').split('\n').map((p, i) => (
                     <p key={i}>{p}</p>
                   ))}
                 </div>
