@@ -80,7 +80,7 @@ export function setTheme(mode) {
 }
 
 export function getTheme() {
-  return localStorage.getItem(STORAGE_KEY) || 'dark';
+  return localStorage.getItem(STORAGE_KEY) || 'light';
 }
 
 export function initTheme() {
