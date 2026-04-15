@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-15T19:15:08.866Z",
+  "generated_at": "2026-04-15T19:21:50.573Z",
   "commits": [
+    {
+      "hash": "ba0f50b",
+      "subject": "redesign: rip out toggle — new design IS the design",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "7703745",
       "subject": "redesign: Calendar — full mockup-faithful React port (race spine + outreach intelligence + per-prospect best-time hints), gated behind redesign flag",
-      "when": "22 minutes ago"
+      "when": "29 minutes ago"
     },
     {
       "hash": "08f30c5",
       "subject": "redesign: feature flag — toggle between OLD and NEW chrome via floating button",
-      "when": "41 minutes ago"
+      "when": "48 minutes ago"
     },
     {
       "hash": "d203a57",
       "subject": "redesign: legora foundation — top nav + polish layer hook",
-      "when": "56 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "5205653",
@@ -54,7 +59,7 @@
     {
       "hash": "8e91197",
       "subject": "docs: KIKO_MASTER_LOG v0.0.66 + v0.0.67 session notes + LinkedIn open issue",
-      "when": "29 hours ago"
+      "when": "30 hours ago"
     },
     {
       "hash": "7608b3b",
@@ -94,11 +99,6 @@
     {
       "hash": "a7fdfee",
       "subject": "docs: V064 + V065 LinkedIn build briefs + master log update",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "070bf93",
-      "subject": "Update KIKO_MASTER_LOG with v0.0.63 Lemlist webhook safety net session notes",
       "when": "2 days ago"
     }
   ]
