@@ -16,7 +16,43 @@ export default function PartnershipMatrix({ user }) {
 
   useEffect(() => {
     if (!user?.id) return
-    // Real metrics fetch would go here — falls back to defaults for now
+    let cancelled = false
+    ;(async () => {
+      // Pipeline value + active deal count
+      const { data: deals } = await supabase.from('deals').select('data')
+      let pipelineValue = 0
+      let activeCount = 0
+      if (deals) {
+        deals.forEach(d => {
+          const stage = d.data?.stage
+          if (stage && stage !== 'Closed Won' && stage !== 'Closed Lost') {
+            activeCount++
+            pipelineValue += parseFloat(d.data?.value || 0)
+          }
+        })
+      }
+
+      // Hot replies this week
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      const { count: hotCount } = await supabase
+        .from('activities')
+        .select('*', { count: 'exact', head: true })
+        .eq('type', 'reply')
+        .gte('created_at', weekAgo)
+
+      // Avg deal size
+      const avgDeal = activeCount > 0 ? pipelineValue / activeCount : 0
+
+      if (!cancelled) {
+        setStats(s => ({
+          ...s,
+          pipelineValue: Math.round(pipelineValue / 1000000 * 10) / 10,
+          hotReplies: hotCount || 0,
+          avgDeal: Math.round(avgDeal / 1000000 * 10) / 10,
+        }))
+      }
+    })()
+    return () => { cancelled = true }
   }, [user?.id, range])
 
   return (

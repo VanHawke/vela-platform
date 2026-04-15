@@ -3,7 +3,8 @@
 // Uses real F1_2026 / FE_2026 / MGP_2026 / WEC_2026 data from CommercialCalendar.jsx
 // outreachTarget() rule (14-21 days before race) drives PEAK badge + sidebar callout
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 import './CommercialCalendar.css'
 
 // ── Race data (mirror of CommercialCalendar.jsx) ──
@@ -52,6 +53,29 @@ export default function CommercialCalendar() {
   })
   const [seriesFilter, setSeriesFilter] = useState({ f1: true, fe: true, motogp: false, wec: false })
   const [privacyFilter, setPrivacyFilter] = useState('mine')
+  const [liveWindows, setLiveWindows] = useState([])
+  const [livePerProspect, setLivePerProspect] = useState([])
+
+  // Load live outreach intelligence from Supabase (computed nightly cron)
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      const { data: windows } = await supabase
+        .from('outreach_window_suggestions')
+        .select('*')
+        .order('rank', { ascending: true })
+        .limit(4)
+      const { data: perProspect } = await supabase
+        .from('optimum_outreach_windows')
+        .select('*, contacts(name, company)')
+        .order('confidence', { ascending: false })
+        .limit(5)
+      if (cancelled) return
+      setLiveWindows(windows || [])
+      setLivePerProspect(perProspect || [])
+    })()
+    return () => { cancelled = true }
+  }, [])
 
   // Build combined chronological round list
   const allRounds = useMemo(() => {

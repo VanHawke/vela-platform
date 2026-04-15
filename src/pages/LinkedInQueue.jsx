@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
 import T from '@/lib/theme'
+import PageHeader from '@/components/layout/PageHeader'
 import { Linkedin, ExternalLink, Check, Copy, RefreshCw, Search } from 'lucide-react'
 
 function timeAgo(d) {
@@ -98,17 +99,16 @@ export default function LinkedInQueue() {
   }
 
   return (
-    <div style={{ padding: '24px 32px', fontFamily: T.font, color: T.text, maxWidth: 1200, margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 500, color: T.text, margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Linkedin size={22} style={{ color: '#0077B5' }} /> LinkedIn Queue
-          </h1>
-          <div style={{ fontSize: 13, color: T.textTertiary }}>
-            Manual LinkedIn actions queued from your campaigns. Send each message yourself in LinkedIn, then mark sent.
-          </div>
-        </div>
-        <button onClick={load} style={{ padding: '8px 14px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.10)', background: 'transparent', color: T.text, fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <PageHeader
+        eyebrowCategory="OUTREACH"
+        eyebrowSuffix="LinkedIn queue"
+        title="LinkedIn"
+        subtitle="Manual LinkedIn actions queued from your campaigns. Send each message yourself in LinkedIn, then mark sent."
+      />
+      <div style={{ padding: '8px 32px 24px', fontFamily: T.font, color: T.text, maxWidth: 1200, margin: '0 auto', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end', marginBottom: 20 }}>
+          <button onClick={load} style={{ padding: '8px 14px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.10)', background: 'transparent', color: T.text, fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
           <RefreshCw size={12} /> Refresh
         </button>
       </div>
@@ -180,6 +180,7 @@ export default function LinkedInQueue() {
           ))}
         </div>
       )}
+      </div>
     </div>
   )
 }

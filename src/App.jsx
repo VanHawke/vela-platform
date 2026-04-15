@@ -48,10 +48,8 @@ const Spinner = () => (
 )
 
 export default function App() {
-  // DEV BYPASS — when running on localhost, fake a session so we can preview the redesign without OAuth roundtripping to production
-  const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost'
-  const [session, setSession] = useState(isLocalhost ? { user: { email: 'sunny@vanhawke.com', id: 'dev-preview' } } : undefined)
-  const [user, setUser]       = useState(isLocalhost ? { email: 'sunny@vanhawke.com', id: 'dev-preview' } : null)
+  const [session, setSession] = useState(undefined)
+  const [user, setUser]       = useState(null)
   const timerRef    = useRef(null)
   const activeRef   = useRef(false)
 
@@ -80,8 +78,6 @@ export default function App() {
 
   // ── Auth listener — single source of truth ──
   useEffect(() => {
-    // DEV BYPASS — skip auth listener on localhost
-    if (isLocalhost) return
     // onAuthStateChange fires INITIAL_SESSION immediately on mount with
     // whatever is in localStorage (or null). For implicit flow, when Google
     // redirects back with #access_token=... in the URL, detectSessionInUrl

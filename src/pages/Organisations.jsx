@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
 import { Plus, Search, X, Building2, Globe, ChevronLeft, ChevronRight, Users, Linkedin, Send, ExternalLink, ChevronDown, RefreshCw } from 'lucide-react'
+import PageHeader from '@/components/layout/PageHeader'
 import DocumentSection from '@/components/documents/DocumentSection'
 
 const PAGE_SIZE = 50
@@ -327,12 +328,15 @@ export default function Organisations({ user }) {
   }, [companies])
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: 8 }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <PageHeader
+        eyebrowCategory="DATABASE"
+        eyebrowSuffix="Companies"
+        title="Organisations"
+        stats={[{ value: filtered.length.toLocaleString(), label: 'Total' }]}
+      />
       <div style={glass}>
-        <div>
-          <h1 style={{ fontSize: 19, fontWeight: 400, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Organisations</h1>
-          <p style={{ fontSize: 12, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>{filtered.length.toLocaleString()} organisation{filtered.length !== 1 ? 's' : ''}</p>
-        </div>
+        <div></div>
         <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 500, background: 'var(--accent)', color: '#0A0A0A', padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
           <Plus style={{ width: 14, height: 14 }} /> Add Organisation
         </button>

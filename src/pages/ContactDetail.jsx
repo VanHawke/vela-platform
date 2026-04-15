@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Mail, Phone, Linkedin, Building2, Clock, Edit3, X, ExternalLink, Send, Inbox, CalendarCheck, ChevronRight } from 'lucide-react'
 import DocumentSection from '@/components/documents/DocumentSection'
+import PageHeader from '@/components/layout/PageHeader'
 
 export default function ContactDetail() {
   const { id } = useParams()
@@ -186,9 +187,15 @@ export default function ContactDetail() {
   if (!contact) return <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}><p style={{ fontSize: 15, color: 'var(--text-tertiary)', fontFamily: 'var(--font)' }}>Contact not found</p><button onClick={() => nav('/contacts')} style={{ fontSize: 14, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Back to Contacts</button></div>
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: 8 }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <PageHeader
+        eyebrowCategory="DATABASE"
+        eyebrowSuffix={contact.company || 'Contact'}
+        title={displayName(contact)}
+        subtitle={contact.title || ''}
+      />
       {/* Glass toolbar */}
-      <div style={{ margin: '0 16px', padding: '10px 20px', borderRadius: 18, ...glass, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ margin: '0 16px 8px', padding: '10px 20px', borderRadius: 18, ...glass, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button onClick={() => nav('/contacts')} style={{ background: 'rgba(0,0,0,0.03)', border: 'none', borderRadius: 50, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)' }}>
             <ArrowLeft style={{ width: 16, height: 16 }} />

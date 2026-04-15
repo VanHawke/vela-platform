@@ -83,10 +83,19 @@ export default function Pipeline({ user }) {
   }, [deals])
 
   const totalValue = useMemo(() => {
-    return deals.reduce((sum, d) => sum + (d.value || d.data?.value || 0), 0)
+    return deals.reduce((sum, d) => {
+      const stage = d.stage || d.data?.stage
+      if (stage === 'Closed Won' || stage === 'Closed Lost') return sum
+      return sum + parseFloat(d.value || d.data?.value || 0)
+    }, 0)
   }, [deals])
 
-  const activeDealCount = deals.length
+  const activeDealCount = useMemo(() => {
+    return deals.filter(d => {
+      const stage = d.stage || d.data?.stage
+      return stage && stage !== 'Closed Won' && stage !== 'Closed Lost'
+    }).length
+  }, [deals])
 
 
   // Drag-drop state + handlers

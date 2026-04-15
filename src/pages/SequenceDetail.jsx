@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
+import PageHeader from '@/components/layout/PageHeader'
 // Design tokens — hardcoded (matching Sequences.jsx)
 const C = {
   bg: '#FFFFFF',
@@ -659,7 +660,13 @@ RULES:
   const inputStyle = { width: '100%', padding: '8px 10px', borderRadius: 6, border: `0.5px solid ${C.border}`, background: C.cardHover, color: C.text, fontSize: 12, fontFamily: C.font, outline: 'none', boxSizing: 'border-box' }
 
   return (
-    <div style={{ padding: '20px 28px', fontFamily: C.font, color: C.text, maxWidth: 1300, margin: '0 auto' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <PageHeader
+        eyebrowCategory="OUTREACH"
+        eyebrowSuffix="Sequence detail"
+        title={seq?.name || 'New sequence'}
+      />
+      <div style={{ padding: '8px 28px 60px', fontFamily: C.font, color: C.text, maxWidth: 1300, margin: '0 auto', overflowY: 'auto', flex: 1 }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
         <button onClick={() => nav('/sequences')} style={{ background: 'none', border: 'none', color: C.textSec, cursor: 'pointer', padding: 4 }}><ArrowLeft size={18} /></button>
@@ -1464,6 +1471,7 @@ RULES:
           </div>
         )
       })()}
+      </div>
     </div>
   )
 }
