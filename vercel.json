@@ -8,6 +8,10 @@
   "ignoreCommand": "bash -c 'git diff HEAD^ HEAD --quiet ./src ./api ./public ./package.json ./package-lock.json ./vite.config.js ./vercel.json'",
   "crons": [
     {
+      "path": "/api/cron-compute-outreach-windows",
+      "schedule": "0 4 * * *"
+    },
+    {
       "path": "/api/cron-enrich",
       "schedule": "0 6 * * 1"
     },

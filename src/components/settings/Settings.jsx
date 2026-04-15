@@ -231,14 +231,59 @@ export default function Settings({ user }) {
           )}
 
           {active !== 'profile' && (
-            <div className="st-content-h">
-              <div className="st-eyebrow"><span className="cat">{SECTIONS.find(s => s.items.find(i => i.id === active))?.group.toUpperCase()}</span><span className="sep">/</span>{SECTIONS.flatMap(s => s.items).find(i => i.id === active)?.label}</div>
-              <h2 className="st-content-title">{SECTIONS.flatMap(s => s.items).find(i => i.id === active)?.label}</h2>
-              <p className="st-content-sub">This panel is being built. Profile is fully functional — other sections coming next.</p>
-            </div>
+            <>
+              <div className="st-content-h">
+                <div className="st-eyebrow"><span className="cat">{SECTIONS.find(s => s.items.find(i => i.id === active))?.group.toUpperCase()}</span><span className="sep">/</span>{SECTIONS.flatMap(s => s.items).find(i => i.id === active)?.label}</div>
+                <h2 className="st-content-title">{SECTIONS.flatMap(s => s.items).find(i => i.id === active)?.label}</h2>
+                <p className="st-content-sub">{SECTION_DESCRIPTIONS[active] || 'Settings panel.'}</p>
+              </div>
+              {SECTION_PANELS[active] || (
+                <div className="st-panel">
+                  <div className="st-panel-h"><div className="pt">Coming soon</div></div>
+                  <div style={{ padding: '20px 22px', fontSize: 12.5, color: '#6B6B6B' }}>This panel is being built.</div>
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>
     </div>
   )
+}
+
+
+const SECTION_DESCRIPTIONS = {
+  email:        'How Kiko sends emails on your behalf — sender identity, reply-to address, signature variants, and per-sequence overrides.',
+  password:     'Change your sign-in password.',
+  security:     'Two-factor authentication, active sessions, sign-in history, and trusted devices.',
+  workspace:    'Workspace name, default settings, and what every team member sees by default.',
+  members:      'Invite teammates, set roles, and control who can access what across the platform.',
+  branding:     'Custom logo, color tokens, and white-label settings shown on the login page and shared exports.',
+  personality:  'Full personality config: tone variants per-recipient, signature mode, brutality slider, voice mode personality.',
+  memory:       'View, edit, and prune what Kiko remembers about you, your business, and your prospects.',
+  autoactions:  'What Kiko is allowed to do without asking — schedule sends, pause sequences, archive emails, etc.',
+  voice:        'Voice mode setup — STT/TTS provider, wake word, voice ID, push-to-talk binding.',
+  apps:         'Connect and manage Gmail, Calendar, LinkedIn, Lemlist, Slack, Notion and other integrations.',
+  plan:         'Your current plan, usage this billing period, and how to upgrade.',
+  invoices:     'Past invoices and payment method.',
+}
+
+const SECTION_PANELS = {
+  email: (
+    <>
+      <div className="st-panel">
+        <div className="st-panel-h"><div className="pt">Sending identity</div><div className="ps">Who emails appear to be from</div></div>
+        <div className="st-field"><div className="field-label">From name</div><div className="field-input"><input className="input" defaultValue="Sunny Sidhu" /></div></div>
+        <div className="st-field"><div className="field-label">From email</div><div className="field-input"><input className="input" defaultValue="sunny@vanhawke.com" /></div></div>
+        <div className="st-field"><div className="field-label">Reply-to<div className="field-help">Where replies should land. Defaults to From email if blank.</div></div><div className="field-input"><input className="input" placeholder="(same as From)" /></div></div>
+        <div className="st-field"><div className="field-label">Daily send cap<div className="field-help">Max outbound emails per day across all sequences. Protects deliverability.</div></div><div className="field-input"><input className="input" defaultValue="120" style={{ width: 100 }} /></div></div>
+      </div>
+      <div className="st-panel">
+        <div className="st-panel-h"><div className="pt">Send windows</div><div className="ps">When Kiko is allowed to send</div></div>
+        <div className="st-field"><div className="field-label">Working hours</div><div className="field-input"><input className="input" defaultValue="08:00" style={{ width: 90 }} /><span style={{ color: '#A0A0A0' }}>→</span><input className="input" defaultValue="19:00" style={{ width: 90 }} /></div></div>
+        <div className="st-field"><div className="field-label">Pause weekends</div><div className="field-input"><div className="toggle on"></div></div></div>
+        <div className="st-field"><div className="field-label">Respect prospect timezone<div className="field-help">Send at the prospect's local 09:00–11:00 window.</div></div><div className="field-input"><div className="toggle on"></div></div></div>
+      </div>
+    </>
+  ),
 }
