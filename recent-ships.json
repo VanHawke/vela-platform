@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-04-15T19:40:13.801Z",
+  "generated_at": "2026-04-15T19:43:09.895Z",
   "commits": [
+    {
+      "hash": "364ce58",
+      "subject": "redesign: Insights (PartnershipMatrix) — Bento Grid port",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "0ab8aa4",
       "subject": "redesign: Contacts — Tabular Review port with hover preview popups",
-      "when": "4 minutes ago"
+      "when": "7 minutes ago"
     },
     {
       "hash": "034a13a",
       "subject": "redesign: Campaigns — sequence list + 5-touch builder port",
-      "when": "6 minutes ago"
+      "when": "9 minutes ago"
     },
     {
       "hash": "bc6d812",
       "subject": "redesign: Inbox (OutreachIntelligence) — full mockup-faithful two-pane composer port",
-      "when": "14 minutes ago"
+      "when": "17 minutes ago"
     },
     {
       "hash": "6493442",
       "subject": "redesign: Pipeline — full mockup-faithful Kanban port (5 stages, deal cards, drag-drop)",
-      "when": "18 minutes ago"
+      "when": "21 minutes ago"
     },
     {
       "hash": "ba0f50b",
       "subject": "redesign: rip out toggle — new design IS the design",
-      "when": "25 minutes ago"
+      "when": "28 minutes ago"
     },
     {
       "hash": "7703745",
       "subject": "redesign: Calendar — full mockup-faithful React port (race spine + outreach intelligence + per-prospect best-time hints), gated behind redesign flag",
-      "when": "47 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "08f30c5",
       "subject": "redesign: feature flag — toggle between OLD and NEW chrome via floating button",
-      "when": "66 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "d203a57",
       "subject": "redesign: legora foundation — top nav + polish layer hook",
-      "when": "82 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "5205653",
@@ -94,11 +99,6 @@
     {
       "hash": "f859daa",
       "subject": "Update KIKO_MASTER_LOG with v0.0.65 LinkedIn Layer 2 session notes",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "f017c33",
-      "subject": "v0.0.65: LinkedIn Layer 2 + safety scaffolding",
       "when": "2 days ago"
     }
   ]
