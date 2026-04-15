@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kiko · Pipeline</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kiko-polish.css">
+<script src="kiko-polish.js" defer></script>
+<style>
+  :root {
+    --bg: #FEFEFC; --bg-card: #FFFFFF; --bg-tinted: #F5F4F1; --bg-sidebar: #FAFAF7;
+    --bg-column: #F7F6F2;
+    --surface: rgba(0,0,0,0.03); --surface-hover: rgba(0,0,0,0.05);
+    --text: #0A0A0A; --text-dim: #6B6B6B; --text-faint: #A0A0A0;
+    --accent: #0A0A0A;
+    --border: rgba(0,0,0,0.08); --border-subtle: rgba(0,0,0,0.05); --border-hover: rgba(0,0,0,0.14);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04); --shadow-md: 0 4px 16px rgba(0,0,0,0.05);
+    --r-cta: 4px; --r-input: 8px; --r-card: 8px; --r-pill: 24px; --r-side: 8px;
+    --font: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-display: 'Source Serif 4', Georgia, serif;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --dot-sage: #7d8a64; --dot-terra: #b8643e; --dot-slate: #5a6470; --dot-amber: #B89C5C;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); font-weight: 450; font-size: 13px; -webkit-font-smoothing: antialiased; overflow: hidden; height: 100vh; }
+  button, a { font: inherit; color: inherit; background: none; border: none; cursor: pointer; text-decoration: none; }
+  input { font: inherit; color: inherit; background: none; border: none; outline: none; }
+
+  .opt-switcher { position: fixed; top: 12px; left: 240px; z-index: 100; display: flex; gap: 4px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: var(--r-cta); padding: 4px; box-shadow: var(--shadow-md); font-size: 11px; }
+  .opt-switcher a { padding: 4px 10px; border-radius: 3px; color: var(--text-dim); }
+  .opt-switcher a:hover { background: var(--surface); color: var(--text); }
+  .opt-switcher a.active { background: var(--accent); color: white; }
+
+  .app { display: grid; grid-template-columns: 224px 1fr; grid-template-rows: 52px 1fr; height: 100vh; transition: grid-template-columns 0.22s var(--ease); }
+  .app.collapsed { grid-template-columns: 56px 1fr; }
+
+  /* Top bar */
+  .topbar { grid-column: 1 / -1; height: 52px; background: var(--bg); border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; padding: 0 18px; z-index: 30; }
+  .topbar-left { display: flex; align-items: center; gap: 14px; }
+  .menu-toggle { width: 28px; height: 28px; display: grid; place-items: center; border-radius: var(--r-cta); color: var(--text-dim); transition: background 0.15s; }
+  .menu-toggle:hover { background: var(--surface); color: var(--text); }
+  .brand { display: flex; align-items: center; gap: 8px; }
+  .brand-mark { width: 22px; height: 22px; color: var(--text); }
+  .brand-name { font-family: var(--font-display); font-size: 17px; font-weight: 400; letter-spacing: 0.04em; }
+  .topbar-right { display: flex; align-items: center; gap: 6px; }
+  .cmd-k { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 12px; border: 1px solid var(--border); border-radius: var(--r-cta); color: var(--text-dim); font-size: 12.5px; min-width: 240px; }
+  .cmd-k-text { flex: 1; text-align: left; }
+  .cmd-k-key { font-family: ui-monospace, monospace; font-size: 10.5px; padding: 1px 6px; background: var(--surface); border-radius: 3px; color: var(--text); }
+  .icon-btn { width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--r-cta); color: var(--text-dim); position: relative; transition: background 0.15s; }
+  .icon-btn:hover { background: var(--surface); color: var(--text); }
+  .icon-btn .dot { position: absolute; top: 7px; right: 8px; width: 6px; height: 6px; border-radius: 50%; background: #b8643e; box-shadow: 0 0 0 2px var(--bg); }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: white; display: grid; place-items: center; font-size: 11px; font-weight: 500; margin-left: 4px; }
+
+  /* Sidebar */
+  .sidebar { background: var(--bg-sidebar); border-right: 1px solid var(--border-subtle); overflow-y: auto; overflow-x: hidden; padding: 16px 12px 18px; display: flex; flex-direction: column; gap: 2px; transition: padding 0.22s var(--ease); }
+  .app.collapsed .sidebar { padding: 16px 8px; }
+  .nav-section-label { font-size: 10.5px; font-weight: 500; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em; padding: 16px 10px 6px; transition: opacity 0.15s; white-space: nowrap; overflow: hidden; }
+  .app.collapsed .nav-section-label { opacity: 0; height: 0; padding: 0; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: var(--r-side); color: var(--text-dim); font-size: 13px; font-weight: 450; transition: background 0.15s, color 0.15s; cursor: pointer; white-space: nowrap; overflow: hidden; }
+  .nav-item:hover { background: var(--surface); color: var(--text); }
+  .nav-item.active { background: var(--accent); color: white; font-weight: 500; }
+  .nav-icon { width: 16px; height: 16px; flex-shrink: 0; }
+  .nav-label { flex: 1; transition: opacity 0.15s; }
+  .app.collapsed .nav-label { opacity: 0; }
+  .nav-badge { font-size: 10.5px; color: var(--text-faint); font-weight: 500; transition: opacity 0.15s; }
+  .nav-item.active .nav-badge { color: rgba(255,255,255,0.65); }
+  .app.collapsed .nav-badge { opacity: 0; }
+  .sidebar-footer { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
+  .org-switcher { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--r-side); cursor: pointer; }
+  .org-switcher:hover { background: var(--surface); }
+  .org-mark { width: 22px; height: 22px; border-radius: 5px; background: var(--accent); color: white; display: grid; place-items: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
+  .org-info { flex: 1; min-width: 0; transition: opacity 0.15s; }
+  .app.collapsed .org-info { opacity: 0; }
+  .org-name { font-size: 12.5px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .org-tier { font-size: 10.5px; color: var(--text-faint); }
+
+  /* === MAIN: PIPELINE PAGE === */
+  .main { overflow: hidden; background: var(--bg); display: flex; flex-direction: column; }
+
+  .page-head {
+    padding: 24px 32px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .page-head-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
+  .page-title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: 38px;
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .page-stats { display: flex; gap: 28px; font-size: 12.5px; color: var(--text-dim); }
+  .page-stat strong { color: var(--text); font-weight: 500; }
+  .page-stat .big { font-family: var(--font-display); font-size: 22px; font-weight: 300; letter-spacing: -0.015em; color: var(--text); margin-right: 6px; }
+
+  .toolbar { display: flex; align-items: center; gap: 8px; }
+  .toolbar-left { display: flex; align-items: center; gap: 8px; flex: 1; }
+  .search-input {
+    display: flex; align-items: center; gap: 8px;
+    height: 32px; padding: 0 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-cta);
+    width: 280px;
+    transition: border-color 0.15s;
+  }
+  .search-input:focus-within { border-color: var(--text); }
+  .search-input svg { color: var(--text-faint); }
+  .search-input input { width: 100%; font-size: 12.5px; }
+  .search-input input::placeholder { color: var(--text-faint); }
+  .filter-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 32px; padding: 0 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-cta);
+    font-size: 12px;
+    color: var(--text);
+    transition: border-color 0.15s;
+  }
+  .filter-chip:hover { border-color: var(--border-hover); }
+  .filter-chip svg { width: 11px; height: 11px; color: var(--text-faint); }
+  .filter-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .filter-chip.active svg { color: rgba(255,255,255,0.7); }
+
+  .view-toggle { display: flex; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-cta); padding: 2px; }
+  .view-btn { height: 28px; padding: 0 10px; font-size: 12px; color: var(--text-dim); border-radius: 3px; transition: background 0.15s, color 0.15s; }
+  .view-btn.active { background: var(--surface); color: var(--text); }
+
+  .cta-primary {
+    height: 32px; padding: 0 14px;
+    background: var(--accent); color: white;
+    border-radius: var(--r-cta);
+    font-size: 12px; font-weight: 500;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: opacity 0.15s;
+  }
+  .cta-primary:hover { opacity: 0.85; }
+
+  /* Kanban */
+  .kanban {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(280px, 1fr));
+    gap: 12px;
+    padding: 18px 32px 24px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .col {
+    background: var(--bg-column);
+    border-radius: var(--r-card);
+    display: flex;
+    flex-direction: column;
+    min-width: 280px;
+    max-height: 100%;
+  }
+  .col-head {
+    padding: 14px 14px 10px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .col-title-row { display: flex; align-items: center; gap: 8px; }
+  .col-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .col-dot.prospected { background: var(--dot-slate); }
+  .col-dot.engaged { background: var(--dot-amber); }
+  .col-dot.replied { background: var(--dot-sage); }
+  .col-dot.meeting { background: var(--dot-terra); }
+  .col-dot.negotiating { background: var(--accent); }
+  .col-title {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .col-count {
+    background: var(--surface);
+    color: var(--text-dim);
+    font-size: 10.5px;
+    font-weight: 500;
+    padding: 1px 7px;
+    border-radius: var(--r-pill);
+  }
+  .col-value {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+  .col-add {
+    width: 22px; height: 22px;
+    display: grid; place-items: center;
+    border-radius: var(--r-cta);
+    color: var(--text-faint);
+    transition: background 0.15s, color 0.15s;
+  }
+  .col-add:hover { background: var(--surface); color: var(--text); }
+
+  .col-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .col-body::-webkit-scrollbar { width: 4px; }
+  .col-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 2px; }
+
+  .deal-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-card);
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.2s, transform 0.15s;
+  }
+  .deal-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+  .dc-head {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  }
+  .dc-avatar {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--bg-tinted);
+    color: var(--text);
+    display: grid; place-items: center;
+    font-size: 9.5px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .dc-name { font-size: 12.5px; font-weight: 500; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dc-company {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .dc-tag {
+    display: inline-block;
+    padding: 2px 7px;
+    background: var(--surface);
+    border-radius: var(--r-pill);
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  /* Sector tags — Legora-style accent colors */
+  .dc-tag.banking   { background: rgba(90,100,112,0.10);  color: #5a6470; }    /* slate */
+  .dc-tag.fintech   { background: rgba(125,138,100,0.14); color: #5a6644; }    /* sage */
+  .dc-tag.f1        { background: rgba(184,100,62,0.10);  color: #b8643e; }    /* terra */
+  .dc-tag.fe        { background: rgba(125,138,100,0.14); color: #5a6644; }    /* sage */
+  .dc-tag.telecoms  { background: rgba(184,156,92,0.12);  color: #8a6f2c; }    /* amber */
+  .dc-tag.gaming    { background: rgba(124,92,180,0.10);  color: #6d4ea8; }    /* purple — Legora workflow accent */
+  .dc-tag.wec       { background: rgba(184,100,62,0.10);  color: #b8643e; }    /* terra */
+  .dc-tag.motogp    { background: rgba(184,100,62,0.10);  color: #b8643e; }    /* terra */
+  .dc-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .dc-value { font-weight: 600; color: var(--text); }
+  .dc-time { color: var(--text-faint); display: flex; align-items: center; gap: 4px; }
+  .dc-time svg { width: 10px; height: 10px; }
+  .dc-next {
+    margin-top: 8px;
+    padding: 6px 9px;
+    background: var(--bg-tinted);
+    border-radius: 5px;
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dc-next svg { width: 11px; height: 11px; flex-shrink: 0; color: var(--text); }
+  .dc-next strong { color: var(--text); font-weight: 500; }
+  /* Themed next-action cards by type */
+  .dc-next.outbound { background: rgba(125,138,100,0.10); }            /* sage tint — outbound touches */
+  .dc-next.outbound svg { color: #5a6644; }
+  .dc-next.outbound strong { color: #3d4528; }
+  .dc-next.reply-hot { background: rgba(184,100,62,0.10); }            /* terra tint — hot reply */
+  .dc-next.reply-hot svg { color: #b8643e; }
+  .dc-next.reply-hot strong { color: #8a4a30; }
+  .dc-next.reply-warm { background: rgba(184,156,92,0.12); }           /* amber tint — warm reply */
+  .dc-next.reply-warm svg { color: #8a6f2c; }
+  .dc-next.reply-warm strong { color: #5d4a1d; }
+  .dc-next.meeting { background: rgba(90,100,112,0.10); }              /* slate tint — meeting scheduled */
+  .dc-next.meeting svg { color: #5a6470; }
+  .dc-next.meeting strong { color: #3a4048; }
+  .dc-next.contract { background: rgba(124,92,180,0.10); }             /* purple tint — contract / negotiation */
+  .dc-next.contract svg { color: #6d4ea8; }
+  .dc-next.contract strong { color: #4a3478; }
+
+  /* Heat label (Hot/Warm/Cold) */
+  .heat {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 1px 6px;
+    border-radius: var(--r-pill);
+    font-size: 9.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-left: 4px;
+  }
+  .heat.hot  { background: #b8643e; color: white; }
+  .heat.warm { background: #B89C5C; color: white; }
+  .heat.cold { background: var(--surface); color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<div class="opt-switcher">
+  <a href="kiko-home-nav-b.html">← Home</a>
+  <a class="active">Pipeline</a>
+</div>
+
+<div class="app" id="app">
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="menu-toggle" onclick="document.getElementById('app').classList.toggle('collapsed')" title="Collapse sidebar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 7.5L21 11l-7.5 1.5L12 20l-1.5-7.5L3 11l7.5-1.5L12 2z"/></svg>
+        <span class="brand-name">Kiko</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="cmd-k">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span class="cmd-k-text">Search or jump to…</span>
+        <kbd class="cmd-k-key">⌘K</kbd>
+      </button>
+      <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg><span class="dot"></span></button>
+      <div class="avatar">S</div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <a class="nav-item" href="kiko-home-nav-b.html">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+      <span class="nav-label">Today</span><span class="nav-badge">12</span>
+    </a>
+    <a class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      <span class="nav-label">Inbox</span><span class="nav-badge">3</span>
+    </a>
+    <a class="nav-item active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+      <span class="nav-label">Pipeline</span><span class="nav-badge">$73m</span>
+    </a>
+    <a class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      <span class="nav-label">Campaigns</span><span class="nav-badge">8</span>
+    </a>
+    <a class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      <span class="nav-label">Contacts</span><span class="nav-badge">247</span>
+    </a>
+    <div class="nav-section-label">Intelligence</div>
+    <a class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="nav-label">Signals</span><span class="nav-badge">311</span></a>
+    <a class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="nav-label">Partnerships</span></a>
+    <a class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="18" rx="2"/></svg><span class="nav-label">Calendar</span></a>
+    <div class="sidebar-footer">
+      <div class="org-switcher">
+        <div class="org-mark">VH</div>
+        <div><div class="org-name">Van Hawke Group</div><div class="org-tier">Workspace</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN — PIPELINE -->
+  <main class="main">
+    <div class="page-head">
+      <div class="page-head-row">
+        <div class="eyebrow"><span class="eyebrow-cat">REVENUE</span><span class="eyebrow-sep">/</span>Pipeline</div>
+      <h1 class="page-title">Pipeline</h1>
+        <div class="page-stats">
+          <div class="page-stat"><span class="big">$73m</span> weighted value</div>
+          <div class="page-stat"><span class="big">42</span> active deals</div>
+          <div class="page-stat"><span class="big">14%</span> reply rate</div>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <div class="search-input">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input placeholder="Search prospects, companies, deals…">
+          </div>
+          <button class="filter-chip active">All sectors <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+          <button class="filter-chip">Series <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+          <button class="filter-chip">Owner: Me <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+          <button class="filter-chip">+ Filter</button>
+        </div>
+        <div class="view-toggle">
+          <button class="view-btn active">Kanban</button>
+          <button class="view-btn">List</button>
+          <button class="view-btn">Forecast</button>
+        </div>
+        <button class="cta-primary sparkle-cta magnetic">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New deal
+        </button>
+      </div>
+    </div>
+
+    <!-- KANBAN -->
+    <div class="kanban">
+
+      <!-- COL 1: PROSPECTED -->
+      <div class="col">
+        <div class="col-head">
+          <div class="col-title-row">
+            <span class="col-dot prospected"></span>
+            <span class="col-title">Prospected</span>
+            <span class="col-count">14</span>
+          </div>
+          <span class="col-value">$22.4m</span>
+        </div>
+        <div class="col-body">
+          <div class="deal-card spotlight">
+            <span class="dc-tag banking">Banking · F1 2027</span>
+            <div class="dc-head"><div class="dc-avatar">MT</div><div class="dc-name">Mark Tucker</div></div>
+            <div class="dc-company">Group Chairman, HSBC</div>
+            <div class="dc-meta"><span class="dc-value">$8.0m</span><span class="dc-time"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>2d</span></div>
+          </div>
+          <div class="deal-card spotlight">
+            <span class="dc-tag banking">Banking · F1 2027</span>
+            <div class="dc-head"><div class="dc-avatar">JF</div><div class="dc-name">Jane Fraser</div></div>
+            <div class="dc-company">CEO, Citigroup</div>
+            <div class="dc-meta"><span class="dc-value">$8.0m</span><span class="dc-time"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>4d</span></div>
+          </div>
+          <div class="deal-card spotlight">
+            <span class="dc-tag fe">FinTech · FE 2026</span>
+            <div class="dc-head"><div class="dc-avatar">SL</div><div class="dc-name">Sarah Lee</div></div>
+            <div class="dc-company">Head of Brand, JPMorgan</div>
+            <div class="dc-meta"><span class="dc-value">$3.2m</span><span class="dc-time"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>1d</span></div>
+          </div>
+          <div class="deal-card spotlight">
+            <span class="dc-tag f1">Telecoms · F1 2027</span>
+            <div class="dc-head"><div class="dc-avatar">RB</div><div class="dc-name">Ralph de la Vega</div></div>
+            <div class="dc-company">EVP, Verizon</div>
+            <div class="dc-meta"><span class="dc-value">$3.2m</span><span class="dc-time"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>6d</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL 2: ENGAGED -->
+      <div class="col">
+        <div class="col-head">
+          <div class="col-title-row">
+            <span class="col-dot engaged"></span>
+            <span class="col-title">Engaged</span>
+            <span class="col-count">11</span>
+          </div>
+          <span class="col-value">$18.8m</span>
+        </div>
+        <div class="col-body">
+          <div class="deal-card spotlight">
+            <span class="dc-tag banking">Banking · F1 2027</span>
+            <div class="dc-head"><div class="dc-avatar">AC</div><div class="dc-name">Anna Cross</div></div>
+            <div class="dc-company">CFO, Barclays</div>
+            <div class="dc-next outbound"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Touch <strong>3/5</strong> · sends in 2h</div>
+            <div class="dc-meta"><span class="dc-value">$8.0m</span><span class="dc-time">12d in stage</span></div>
+          </div>
+          <div class="deal-card spotlight">
+            <span class="dc-tag banking">Banking · F1 2027</span>
+            <div class="dc-head"><div class="dc-avatar">BW</div><div class="dc-name">Bill Winters</div></div>
+            <div class="dc-company">CEO, Standard Chartered</div>
+            <div class="dc-next outbound"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Touch <strong>2/5</strong> · sends tomorrow</div>
+            <div class="dc-meta"><span class="dc-value">$5.5m</span><span class="dc-time">8d in stage</span></div>
+          </div>
+          <div class="deal-card spotlight">
+            <span class="dc-tag motogp">Telecoms · MotoGP</span>
+            <div class="dc-head"><div class="dc-avatar">VA</div><div class="dc-name">Venkat Atluri</div></div>
+            <div class="dc-company">CEO Mobility, McKinsey</div>
+            <div class="dc-next outbound"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>LinkedIn touch <strong>4/5</strong></div>
+            <div class="dc-meta"><span class="dc-value">$2.8m</span><span class="dc-time">5d in stage</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL 3: REPLIED -->
+      <div class="col">
+        <div class="col-head">
+          <div class="col-title-row">
+            <span class="col-dot replied"></span>
+            <span class="col-title">Replied</span>
+            <span class="col-count">8</span>
+          </div>
+          <span class="col-value">$15.2m</span>
+        </div>
+        <div class="col-body">
+          <div class="deal-card spotlight">
+            <span class="dc-tag banking">Banking · F1 2027</span>
+            <div class="dc-head"><div class="dc-avatar">JB</div><div class="dc-name">James Bardrick</div></div>
+            <div class="dc-company">Country Officer UK, Citi</div>
+            <div class="dc-next reply-hot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Wants 30-min call <span class="heat hot">Hot</span></div>
+            <div class="dc-meta"><span class="dc-value">$8.0m</span><span class="dc-time">14m ago</span></div>
+          </div>
+          <div class="deal-card spotlight">
+            <span class="dc-tag gaming">Gaming · FE 2026</span>
+            <div class="dc-head"><div class="dc-avatar">DS</div><div class="dc-name">Daniel Sundheim</div></div>
+            <div class="dc-company">Founder, D1 Capital</div>
+            <div class="dc-next reply-warm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Asked for deck <span class="heat warm">Warm</span></div>
+            <div class="dc-meta"><span class="dc-value">$2.5m</span><span class="dc-time">1d ago</span></div>
+          </div>
+          <div class="deal-card spotlight">
+            <span class="dc-tag wec">Banking · WEC</span>
+            <div class="dc-head"><div class="dc-avatar">LK</div><div class="dc-name">Larry Kim</div></div>
+            <div class="dc-company">Head of Sponsorship, DBS</div>
+            <div class="dc-meta"><span class="dc-value">$1.8m</span><span class="dc-time">2d ago</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL 4: MEETING -->
+      <div class="col">
+        <div class="col-head">
+          <div class="col-title-row">
+            <span class="col-dot meeting"></span>
+            <span class="col-title">Meeting</span>
+            <span class="col-count">6</span>
+          </div>
+          <span class="col-value">$12.0m</span>
+        </div>
+        <div class="col-body">
+          <div class="deal-card spotlight">
+            <span class="dc-tag banking">Banking · F1 2027</span>
+            <div class="dc-head"><div class="dc-avatar">PG</div><div class="dc-name">Paul Gewirtz</div></div>
+            <div class="dc-company">Head of Brand, Goldman Sachs</div>
+            <div class="dc-next meeting"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>Wed 16 Apr · <strong>14:00 UK</strong></div>
+            <div class="dc-meta"><span class="dc-value">$8.0m</span><span class="dc-time">Tomorrow</span></div>
+          </div>
+          <div class="deal-card spotlight">
+            <span class="dc-tag fintech">FinTech · FE 2026</span>
+            <div class="dc-head"><div class="dc-avatar">MN</div><div class="dc-name">Mark Nelson</div></div>
+            <div class="dc-company">VP Marketing, Stripe</div>
+            <div class="dc-next meeting"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>Mon 21 Apr · <strong>10:00 PT</strong></div>
+            <div class="dc-meta"><span class="dc-value">$2.5m</span><span class="dc-time">Next Mon</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL 5: NEGOTIATING -->
+      <div class="col">
+        <div class="col-head">
+          <div class="col-title-row">
+            <span class="col-dot negotiating"></span>
+            <span class="col-title">Negotiating</span>
+            <span class="col-count">3</span>
+          </div>
+          <span class="col-value">$4.6m</span>
+        </div>
+        <div class="col-body">
+          <div class="deal-card spotlight">
+            <span class="dc-tag fintech">FinTech · FE 2026</span>
+            <div class="dc-head"><div class="dc-avatar">RS</div><div class="dc-name">Rajeev Suri</div></div>
+            <div class="dc-company">CEO, Inmarsat</div>
+            <div class="dc-next contract"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="14 2 14 8 20 8"/><path d="M14 2H6a2 2 0 00-2 2v16c0 1.1.9 2 2 2h12a2 2 0 002-2V8z"/></svg>Term sheet · <strong>v3 redlines</strong></div>
+            <div class="dc-meta"><span class="dc-value">$2.5m</span><span class="dc-time">3d ago</span></div>
+          </div>
+          <div class="deal-card spotlight">
+            <span class="dc-tag wec">Banking · WEC</span>
+            <div class="dc-head"><div class="dc-avatar">CH</div><div class="dc-name">Charlie Halford</div></div>
+            <div class="dc-company">Group Sponsorship, ANZ</div>
+            <div class="dc-next contract"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="14 2 14 8 20 8"/><path d="M14 2H6a2 2 0 00-2 2v16c0 1.1.9 2 2 2h12a2 2 0 002-2V8z"/></svg>Awaiting board sign-off</div>
+            <div class="dc-meta"><span class="dc-value">$1.4m</span><span class="dc-time">7d ago</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

@@ -48,7 +48,7 @@ const Spinner = () => (
 )
 
 export default function App() {
-  const [session, setSession] = useState(undefined) // undefined=loading, null=no session
+  const [session, setSession] = useState(undefined)
   const [user, setUser]       = useState(null)
   const timerRef    = useRef(null)
   const activeRef   = useRef(false)

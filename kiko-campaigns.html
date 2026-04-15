@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kiko · Campaigns</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kiko-polish.css">
+<script src="kiko-polish.js" defer></script>
+<style>
+  :root {
+    --bg: #FEFEFC; --bg-card: #FFFFFF; --bg-tinted: #F5F4F1; --bg-list: #FAFAF7;
+    --surface: rgba(0,0,0,0.03); --surface-hover: rgba(0,0,0,0.05);
+    --text: #0A0A0A; --text-dim: #6B6B6B; --text-faint: #A0A0A0; --text-muted: #C0C0C0;
+    --accent: #0A0A0A;
+    --border: rgba(0,0,0,0.08); --border-subtle: rgba(0,0,0,0.05); --border-hover: rgba(0,0,0,0.14);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.05);
+    --shadow-floating: 0 16px 48px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.04);
+    --r-cta: 4px; --r-card: 10px; --r-pill: 24px;
+    --font: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-display: 'Source Serif 4', Georgia, serif;
+    --dot-sage: #7d8a64; --dot-terra: #b8643e; --dot-amber: #B89C5C; --dot-slate: #5a6470; --dot-purple: #6d4ea8;
+    --topnav-h: 60px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); font-weight: 450; font-size: 13px; -webkit-font-smoothing: antialiased; overflow: hidden; height: 100vh; }
+  button, a { font: inherit; color: inherit; background: none; border: none; cursor: pointer; text-decoration: none; }
+  input, textarea { font: inherit; color: inherit; background: none; border: none; outline: none; resize: none; }
+
+  .opt-switcher { position: fixed; top: 16px; left: 16px; z-index: 200; display: flex; gap: 4px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: var(--r-cta); padding: 4px; box-shadow: var(--shadow-md); font-size: 11px; }
+  .opt-switcher a { padding: 4px 10px; border-radius: 3px; color: var(--text-dim); }
+  .opt-switcher a:hover { background: var(--surface); color: var(--text); }
+  .opt-switcher a.active { background: var(--accent); color: white; }
+
+
+  /* TOP NAV */
+  .topnav { height: var(--topnav-h); background: var(--bg); border-bottom: 1px solid var(--border-subtle); padding: 0 32px 0 200px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 50; }
+  .nav-brand { display: flex; align-items: center; gap: 9px; }
+  .nav-mark { width: 22px; height: 22px; color: var(--text); }
+  .nav-name { font-family: var(--font-display); font-size: 18px; font-weight: 400; letter-spacing: 0.04em; }
+  .nav-links { display: flex; align-items: center; gap: 30px; }
+  .nav-link { color: var(--text); font-size: 13px; font-weight: 450; padding: 18px 0; position: relative; display: inline-flex; align-items: center; gap: 2px; transition: opacity 0.15s; }
+  .nav-link:hover { opacity: 0.6; }
+  .nav-link .plus { color: var(--text-faint); }
+  .nav-link.active { font-weight: 500; }
+  .nav-link.active::after { content: ''; height: 1px; background: var(--text); position: absolute; left: 0; right: 0; bottom: -1px; }
+  .nav-right { display: flex; align-items: center; gap: 8px; }
+  .icon-btn { width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--r-cta); color: var(--text-dim); position: relative; transition: background 0.15s, color 0.15s; }
+  .icon-btn:hover { background: var(--surface); color: var(--text); }
+  .icon-btn .dot { position: absolute; top: 7px; right: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--dot-terra); box-shadow: 0 0 0 2px var(--bg); }
+  .nav-cta { height: 32px; padding: 0 14px; background: var(--accent); color: white; border-radius: var(--r-cta); font-size: 12px; font-weight: 500; margin-left: 4px; transition: opacity 0.15s; }
+  .nav-cta:hover { opacity: 0.85; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: white; display: grid; place-items: center; font-size: 11px; font-weight: 500; margin-left: 6px; }
+
+  /* MAIN: TWO-PANE */
+  .main { height: calc(100vh - var(--topnav-h)); display: grid; grid-template-columns: 320px 1fr; background: var(--bg); }
+
+  /* LEFT: SEQUENCE LIST */
+  .seq-list { background: var(--bg-list); border-right: 1px solid var(--border-subtle); overflow-y: auto; display: flex; flex-direction: column; }
+  .seq-head { padding: 22px 22px 14px; border-bottom: 1px solid var(--border-subtle); position: sticky; top: 0; background: var(--bg-list); z-index: 5; }
+  .seq-head-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .seq-title { font-family: var(--font-display); font-weight: 300; font-size: 26px; letter-spacing: -0.018em; line-height: 1.0; }
+  .seq-count { font-size: 11px; color: var(--text-dim); }
+  .seq-count strong { color: var(--text); font-weight: 600; }
+  .seq-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  .seq-tab { padding: 4px 10px; border-radius: var(--r-pill); font-size: 11.5px; color: var(--text-dim); display: inline-flex; align-items: center; gap: 5px; transition: background 0.15s, color 0.15s; }
+  .seq-tab:hover { background: var(--surface); color: var(--text); }
+  .seq-tab.active { background: var(--accent); color: white; }
+  .seq-tab.active .tab-count { color: rgba(255,255,255,0.7); }
+  .tab-count { font-size: 10.5px; color: var(--text-faint); }
+
+
+  /* SEQUENCE ITEMS */
+  .seq-items { flex: 1; padding: 4px 8px 16px; }
+  .seq-item { display: flex; flex-direction: column; gap: 6px; padding: 13px 14px; border-radius: var(--r-card); cursor: pointer; transition: background 0.12s; margin-bottom: 1px; position: relative; }
+  .seq-item:hover { background: var(--surface); }
+  .seq-item.active { background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+  .seq-item-row1 { display: flex; align-items: center; gap: 8px; }
+  .seq-item-status { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .seq-item-status.active { background: var(--dot-sage); }
+  .seq-item-status.paused { background: var(--dot-amber); }
+  .seq-item-status.draft { background: var(--text-faint); }
+  .seq-item-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .seq-item-state { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.06em; }
+  .seq-item-meta { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--text-dim); }
+  .seq-item-meta .sep { color: var(--text-muted); }
+  .seq-item-meta strong { color: var(--text); font-weight: 500; }
+  .seq-tag { padding: 1px 7px; border-radius: var(--r-pill); font-size: 9.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; align-self: flex-start; }
+  .seq-tag.banking { background: rgba(90,100,112,0.10); color: var(--dot-slate); }
+  .seq-tag.fintech { background: rgba(125,138,100,0.14); color: #5a6644; }
+  .seq-tag.telecoms { background: rgba(184,156,92,0.14); color: #8a6f2c; }
+  .seq-tag.gaming { background: rgba(124,92,180,0.10); color: var(--dot-purple); }
+
+  /* RIGHT: SEQUENCE DETAIL */
+  .detail { overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; }
+  .detail-head { padding: 28px 44px 22px; border-bottom: 1px solid var(--border-subtle); }
+  .detail-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 16px; }
+  .detail-title { font-family: var(--font-display); font-weight: 300; font-size: 32px; letter-spacing: -0.018em; line-height: 1.1; }
+  .detail-meta { font-size: 12.5px; color: var(--text-dim); margin-top: 6px; }
+  .detail-meta strong { color: var(--text); font-weight: 500; }
+  .detail-meta .sep { color: var(--text-muted); margin: 0 6px; }
+  .detail-actions { display: flex; gap: 6px; }
+  .ghost-btn { height: 32px; padding: 0 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-cta); font-size: 12px; color: var(--text); display: inline-flex; align-items: center; gap: 5px; transition: border-color 0.15s; }
+  .ghost-btn:hover { border-color: var(--border-hover); background: var(--surface); }
+  .ghost-btn svg { width: 12px; height: 12px; }
+  .pri-btn { height: 32px; padding: 0 14px; background: var(--accent); color: white; border-radius: var(--r-cta); font-size: 12px; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; transition: opacity 0.15s; }
+  .pri-btn:hover { opacity: 0.85; }
+  .pri-btn svg { width: 12px; height: 12px; }
+
+
+  /* STATS ROW */
+  .stats-row { display: flex; gap: 36px; padding: 18px 44px 22px; border-bottom: 1px solid var(--border-subtle); }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-val { font-family: var(--font-display); font-weight: 300; font-size: 24px; letter-spacing: -0.014em; color: var(--text); line-height: 1.0; }
+  .stat-label { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 500; }
+
+  /* TOUCH BUILDER */
+  .builder { padding: 28px 44px 60px; max-width: 880px; }
+  .builder-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .builder-title { font-family: var(--font-display); font-weight: 400; font-size: 16px; color: var(--text); }
+  .builder-meta { font-size: 11.5px; color: var(--text-dim); }
+
+  .touches { position: relative; padding-left: 0; }
+  .touch { position: relative; display: grid; grid-template-columns: 56px 1fr; gap: 0; margin-bottom: 8px; }
+  /* Vertical connecting line behind step circles */
+  .touch:not(:last-child)::after { content: ''; position: absolute; left: 19px; top: 42px; bottom: -8px; width: 1px; background: var(--border); z-index: 0; }
+  .touch-num-wrap { display: flex; flex-direction: column; align-items: center; padding-top: 14px; }
+  .touch-num {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    display: grid; place-items: center;
+    font-size: 12px; font-weight: 500;
+    position: relative; z-index: 2;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .touch.email .touch-num { color: var(--dot-slate); }
+  .touch.linkedin .touch-num { color: #0A66C2; background: rgba(10,102,194,0.06); border-color: rgba(10,102,194,0.18); }
+  .touch.completed .touch-num { background: var(--accent); color: white; border-color: var(--accent); }
+
+  .touch-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-card);
+    padding: 16px 20px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    margin-left: 4px;
+    position: relative; z-index: 1;
+  }
+  .touch-card:hover { border-color: var(--border-hover); box-shadow: var(--shadow-sm); }
+
+  .touch-row1 { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .touch-channel-pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: var(--r-pill); font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+  .touch-channel-pill.email { background: rgba(90,100,112,0.10); color: var(--dot-slate); }
+  .touch-channel-pill.linkedin { background: rgba(10,102,194,0.12); color: #0A66C2; }
+  .touch-channel-pill svg { width: 10px; height: 10px; }
+  .touch-when { font-size: 11px; color: var(--text-dim); }
+  .touch-when strong { color: var(--text); font-weight: 500; }
+  .touch-actions { margin-left: auto; display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; }
+  .touch-card:hover .touch-actions { opacity: 1; }
+  .touch-icon-btn { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 4px; color: var(--text-faint); transition: background 0.12s, color 0.12s; }
+  .touch-icon-btn:hover { background: var(--surface); color: var(--text); }
+  .touch-icon-btn svg { width: 12px; height: 12px; }
+
+  .touch-subject { font-size: 13.5px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .touch-preview { font-size: 12.5px; color: var(--text-dim); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .touch-status { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; background: rgba(125,138,100,0.10); color: #5a6644; border-radius: var(--r-pill); font-size: 10.5px; font-weight: 500; margin-top: 8px; }
+  .touch-status.scheduled { background: rgba(184,156,92,0.12); color: #8a6f2c; }
+  .touch-status.draft { background: var(--surface); color: var(--text-dim); }
+
+  /* Add touch CTA */
+  .add-touch { display: grid; grid-template-columns: 56px 1fr; margin-top: 8px; }
+  .add-touch-circle { display: flex; flex-direction: column; align-items: center; padding-top: 14px; }
+  .add-touch-circle div { width: 40px; height: 40px; border-radius: 50%; border: 1.5px dashed var(--border-hover); display: grid; place-items: center; color: var(--text-dim); }
+  .add-touch-card { background: transparent; border: 1.5px dashed var(--border); border-radius: var(--r-card); padding: 14px 20px; text-align: left; font-size: 12.5px; color: var(--text-dim); cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; margin-left: 4px; }
+  .add-touch-card:hover { border-color: var(--text); color: var(--text); background: var(--surface); }
+</style>
+</head>
+<body>
+
+
+<div class="opt-switcher">
+  <a href="kiko-home-nav-a.html">Home</a>
+  <a href="kiko-pipeline.html">Pipeline</a>
+  <a class="active">Campaigns</a>
+  <a href="kiko-inbox.html">Inbox</a>
+</div>
+
+<!-- ===== TOP NAV (Option A — Legora pure) ===== -->
+<nav class="topnav">
+  <div class="nav-brand">
+    <svg class="nav-mark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 7.5L21 11l-7.5 1.5L12 20l-1.5-7.5L3 11l7.5-1.5L12 2z"/></svg>
+    <span class="nav-name">Kiko</span>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link">Today<span class="plus">+</span></a>
+    <a class="nav-link">Pipeline<span class="plus">+</span></a>
+    <a class="nav-link active">Campaigns</a>
+    <a class="nav-link">Inbox</a>
+    <a class="nav-link">Insights</a>
+  </div>
+  <div class="nav-right">
+    <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg><span class="dot"></span></button>
+    <button class="nav-cta sparkle-cta magnetic">+ New sequence</button>
+    <div class="avatar">S</div>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- ===== LEFT: SEQUENCE LIST ===== -->
+  <aside class="seq-list">
+    <div class="seq-head">
+      <div class="seq-head-row">
+        <h1 class="seq-title">Campaigns</h1>
+        <div class="seq-count"><strong>8</strong> total</div>
+      </div>
+      <div class="seq-tabs">
+        <button class="seq-tab active">All <span class="tab-count">8</span></button>
+        <button class="seq-tab">Active <span class="tab-count">5</span></button>
+        <button class="seq-tab">Paused <span class="tab-count">2</span></button>
+        <button class="seq-tab">Draft <span class="tab-count">1</span></button>
+      </div>
+    </div>
+
+
+    <div class="seq-items">
+
+      <div class="seq-item active">
+        <div class="seq-item-row1">
+          <span class="seq-item-status active"></span>
+          <div class="seq-item-name">F1 2027 Banking</div>
+          <div class="seq-item-state">Active</div>
+        </div>
+        <div class="seq-item-meta"><strong>47</strong> prospects<span class="sep">·</span><strong>14%</strong> reply<span class="sep">·</span>Touch 3/5</div>
+        <span class="seq-tag banking">Banking</span>
+      </div>
+
+      <div class="seq-item">
+        <div class="seq-item-row1">
+          <span class="seq-item-status active"></span>
+          <div class="seq-item-name">FinTech FE 2026</div>
+          <div class="seq-item-state">Active</div>
+        </div>
+        <div class="seq-item-meta"><strong>32</strong> prospects<span class="sep">·</span><strong>11%</strong> reply<span class="sep">·</span>Touch 2/5</div>
+        <span class="seq-tag fintech">FinTech</span>
+      </div>
+
+      <div class="seq-item">
+        <div class="seq-item-row1">
+          <span class="seq-item-status active"></span>
+          <div class="seq-item-name">Telecoms MotoGP Q2</div>
+          <div class="seq-item-state">Active</div>
+        </div>
+        <div class="seq-item-meta"><strong>28</strong> prospects<span class="sep">·</span><strong>9%</strong> reply<span class="sep">·</span>Touch 4/5</div>
+        <span class="seq-tag telecoms">Telecoms</span>
+      </div>
+
+      <div class="seq-item">
+        <div class="seq-item-row1">
+          <span class="seq-item-status active"></span>
+          <div class="seq-item-name">Gaming FE 2026</div>
+          <div class="seq-item-state">Active</div>
+        </div>
+        <div class="seq-item-meta"><strong>19</strong> prospects<span class="sep">·</span><strong>16%</strong> reply<span class="sep">·</span>Touch 2/5</div>
+        <span class="seq-tag gaming">Gaming</span>
+      </div>
+
+      <div class="seq-item">
+        <div class="seq-item-row1">
+          <span class="seq-item-status active"></span>
+          <div class="seq-item-name">Banking WEC 2026</div>
+          <div class="seq-item-state">Active</div>
+        </div>
+        <div class="seq-item-meta"><strong>15</strong> prospects<span class="sep">·</span><strong>7%</strong> reply<span class="sep">·</span>Touch 1/5</div>
+        <span class="seq-tag banking">Banking</span>
+      </div>
+
+      <div class="seq-item">
+        <div class="seq-item-row1">
+          <span class="seq-item-status paused"></span>
+          <div class="seq-item-name">FinTech F1 reactivation</div>
+          <div class="seq-item-state">Paused</div>
+        </div>
+        <div class="seq-item-meta"><strong>22</strong> prospects<span class="sep">·</span>Resumes Apr 22</div>
+        <span class="seq-tag fintech">FinTech</span>
+      </div>
+
+      <div class="seq-item">
+        <div class="seq-item-row1">
+          <span class="seq-item-status paused"></span>
+          <div class="seq-item-name">Telecoms F1 sleeper</div>
+          <div class="seq-item-state">Paused</div>
+        </div>
+        <div class="seq-item-meta"><strong>11</strong> prospects<span class="sep">·</span>Awaiting brief</div>
+        <span class="seq-tag telecoms">Telecoms</span>
+      </div>
+
+      <div class="seq-item">
+        <div class="seq-item-row1">
+          <span class="seq-item-status draft"></span>
+          <div class="seq-item-name">Gaming MotoGP teaser</div>
+          <div class="seq-item-state">Draft</div>
+        </div>
+        <div class="seq-item-meta">Not yet launched</div>
+        <span class="seq-tag gaming">Gaming</span>
+      </div>
+
+    </div>
+  </aside>
+
+
+  <!-- ===== RIGHT: SEQUENCE DETAIL ===== -->
+  <main class="detail">
+
+    <div class="detail-head">
+      <div class="detail-title-row">
+        <div>
+          <div class="eyebrow"><span class="eyebrow-cat">OUTREACH</span><span class="eyebrow-sep">/</span>Active sequence</div>
+          <h1 class="detail-title">F1 2027 Banking</h1>
+          <div class="detail-meta">
+            <strong>Active</strong>
+            <span class="sep">·</span>5-touch authority sequence
+            <span class="sep">·</span>Launched 14 days ago
+            <span class="sep">·</span>Owner: Sunny
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="ghost-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Pause</button>
+          <button class="ghost-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Duplicate</button>
+          <button class="ghost-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+          <button class="pri-btn sparkle-cta magnetic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add prospects</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS ROW -->
+    <div class="stats-row">
+      <div class="stat"><div class="stat-val"><span class="count-up" data-count-to="47">0</span></div><div class="stat-label">Prospects</div></div>
+      <div class="stat"><div class="stat-val"><span class="count-up" data-count-to="14" data-suffix="%">0</span></div><div class="stat-label">Reply rate</div></div>
+      <div class="stat"><div class="stat-val"><span class="count-up" data-count-to="32" data-suffix="%">0</span></div><div class="stat-label">Open rate</div></div>
+      <div class="stat"><div class="stat-val"><span class="count-up" data-count-to="6">0</span></div><div class="stat-label">Hot replies</div></div>
+      <div class="stat"><div class="stat-val">7d</div><div class="stat-label">Remaining</div></div>
+      <div class="stat"><div class="stat-val">$<span class="count-up" data-count-to="22.4" data-decimals="1">0</span>m</div><div class="stat-label">Pipeline value</div></div>
+    </div>
+
+    <!-- TOUCH BUILDER -->
+    <div class="builder">
+      <div class="builder-head">
+        <div class="builder-title">Touch sequence</div>
+        <div class="builder-meta">5 touches · 14 days end-to-end · sends 9am UK weekdays</div>
+      </div>
+
+      <div class="touches">
+
+
+        <!-- Touch 1 — completed -->
+        <div class="touch email completed">
+          <div class="touch-num-wrap"><div class="touch-num">1</div></div>
+          <div class="touch-card spotlight">
+            <div class="touch-row1">
+              <span class="touch-channel-pill email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,6 12,13 2,6"/></svg>Email</span>
+              <span class="touch-when">Day <strong>0</strong> · 09:00 UK</span>
+              <div class="touch-actions">
+                <button class="touch-icon-btn" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                <button class="touch-icon-btn" title="Duplicate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
+                <button class="touch-icon-btn" title="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+              </div>
+            </div>
+            <div class="touch-subject">Strategic conversation — F1 2027 title slot</div>
+            <div class="touch-preview">Your FT piece on emerging-market brand visibility caught my attention. The F1 2027 title slot decision sits with your committee in May — three reasons it matters more than the rugby renewal you're focused on right now…</div>
+            <span class="touch-status">✓ Sent to 47 · 38% opened · 4 replies</span>
+          </div>
+        </div>
+
+        <!-- Touch 2 — completed -->
+        <div class="touch linkedin completed">
+          <div class="touch-num-wrap"><div class="touch-num">2</div></div>
+          <div class="touch-card spotlight">
+            <div class="touch-row1">
+              <span class="touch-channel-pill linkedin"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 0H5a5 5 0 00-5 5v14a5 5 0 005 5h14a5 5 0 005-5V5a5 5 0 00-5-5zM8 19H5V8h3v11zM6.5 6.732c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zM20 19h-3v-5.6c0-3.4-4-3.1-4 0V19h-3V8h3v1.8c1.4-2.6 7-2.8 7 2.5V19z"/></svg>LinkedIn</span>
+              <span class="touch-when">Day <strong>3</strong> · Connection request</span>
+              <div class="touch-actions">
+                <button class="touch-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                <button class="touch-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+              </div>
+            </div>
+            <div class="touch-subject">Connection note (250 char limit)</div>
+            <div class="touch-preview">Following up on my note re: F1 2027. Not asking for anything — just want to be on your radar when the brand committee discussion happens. Sunny.</div>
+            <span class="touch-status">✓ Sent to 47 · 28 accepted · 3 messaged back</span>
+          </div>
+        </div>
+
+        <!-- Touch 3 — current/today -->
+        <div class="touch email">
+          <div class="touch-num-wrap"><div class="touch-num">3</div></div>
+          <div class="touch-card spotlight" style="border-color: var(--text); box-shadow: 0 0 0 3px rgba(10,10,10,0.04), var(--shadow-sm);">
+            <div class="touch-row1">
+              <span class="touch-channel-pill email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,6 12,13 2,6"/></svg>Email</span>
+              <span class="touch-when">Day <strong>7</strong> · sending today, 14:00 UK</span>
+              <div class="touch-actions">
+                <button class="touch-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                <button class="touch-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+              </div>
+            </div>
+            <div class="touch-subject">Mercedes renewal changes the F1 category math</div>
+            <div class="touch-preview">Mercedes just renewed with HSBC through 2027. That clears your nearest competitor and opens a window most brand committees won't recognize until it's already gone. Three implications for Citi positioning, attached as a one-pager…</div>
+            <span class="touch-status scheduled">⏱ Scheduled · sends to 28 remaining prospects in 4h</span>
+          </div>
+        </div>
+
+
+        <!-- Touch 4 — pending -->
+        <div class="touch linkedin">
+          <div class="touch-num-wrap"><div class="touch-num">4</div></div>
+          <div class="touch-card spotlight">
+            <div class="touch-row1">
+              <span class="touch-channel-pill linkedin"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 0H5a5 5 0 00-5 5v14a5 5 0 005 5h14a5 5 0 005-5V5a5 5 0 00-5-5zM8 19H5V8h3v11zM6.5 6.732c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zM20 19h-3v-5.6c0-3.4-4-3.1-4 0V19h-3V8h3v1.8c1.4-2.6 7-2.8 7 2.5V19z"/></svg>LinkedIn</span>
+              <span class="touch-when">Day <strong>10</strong> · DM (only if connected)</span>
+              <div class="touch-actions">
+                <button class="touch-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                <button class="touch-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+              </div>
+            </div>
+            <div class="touch-subject">Quick personal note (sector-tailored)</div>
+            <div class="touch-preview">Conditional: only fires for accepted connections. Kiko personalises per prospect using their last 30 days of LinkedIn activity, role tenure, and any signals captured by SponsorSignal in that window…</div>
+            <span class="touch-status draft">○ Pending · sends to 28 connected prospects on Day 10</span>
+          </div>
+        </div>
+
+        <!-- Touch 5 — final -->
+        <div class="touch email">
+          <div class="touch-num-wrap"><div class="touch-num">5</div></div>
+          <div class="touch-card spotlight">
+            <div class="touch-row1">
+              <span class="touch-channel-pill email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,6 12,13 2,6"/></svg>Email</span>
+              <span class="touch-when">Day <strong>14</strong> · breakup email</span>
+              <div class="touch-actions">
+                <button class="touch-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                <button class="touch-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+              </div>
+            </div>
+            <div class="touch-subject">Final note — closing the loop</div>
+            <div class="touch-preview">Closing this loop unless you'd like to keep talking. F1 2027 conversations move forward with or without each prospect, so prospects who don't reply move to the dormant list and Kiko re-engages on the next signal trigger…</div>
+            <span class="touch-status draft">○ Pending · sends to non-repliers on Day 14</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Add touch CTA -->
+      <div class="add-touch">
+        <div class="add-touch-circle"><div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></div>
+        <button class="add-touch-card">+ Add a sixth touch (e.g. Twitter DM, video message, calendar invite)</button>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>

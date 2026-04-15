@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kiko · Settings</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kiko-polish.css">
+<script src="kiko-polish.js" defer></script>
+<style>
+  :root{--bg:#FEFEFC;--bg-card:#FFFFFF;--bg-tinted:#F5F4F1;--bg-list:#FAFAF7;--surface:rgba(0,0,0,0.03);--text:#0A0A0A;--text-dim:#6B6B6B;--text-faint:#A0A0A0;--text-muted:#C0C0C0;--accent:#0A0A0A;--border:rgba(0,0,0,0.08);--border-subtle:rgba(0,0,0,0.05);--border-hover:rgba(0,0,0,0.14);--shadow-sm:0 1px 2px rgba(0,0,0,0.04);--r-cta:4px;--r-card:10px;--r-pill:24px;--font:'Inter',system-ui,sans-serif;--font-display:'Source Serif 4',Georgia,serif;--topnav-h:60px;--f1:#b8643e;--fe:#5a6644}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);font-weight:450;font-size:13px;-webkit-font-smoothing:antialiased;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+  button,a{font:inherit;color:inherit;background:none;border:none;cursor:pointer;text-decoration:none}
+  input,textarea,select{font:inherit;color:inherit;background:none;border:none;outline:none;resize:none}
+  .opt-switcher{position:fixed;top:16px;left:16px;z-index:200;display:flex;gap:4px;background:rgba(255,255,255,0.92);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:var(--r-cta);padding:4px;box-shadow:0 4px 16px rgba(0,0,0,0.05);font-size:11px}
+  .opt-switcher a{padding:4px 10px;border-radius:3px;color:var(--text-dim)}
+  .opt-switcher a:hover{background:var(--surface);color:var(--text)}
+  .opt-switcher a.active{background:var(--accent);color:white}
+
+
+  /* TOP NAV */
+  .topnav{height:var(--topnav-h);background:var(--bg);border-bottom:1px solid var(--border-subtle);padding:0 32px 0 200px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:50;flex-shrink:0}
+  .nav-brand{display:flex;align-items:center;gap:9px}
+  .nav-mark{width:22px;height:22px}
+  .nav-name{font-family:var(--font-display);font-size:18px;font-weight:400;letter-spacing:0.04em}
+  .nav-links{display:flex;align-items:center;gap:30px}
+  .nav-link{color:var(--text);font-size:13px;font-weight:450;padding:18px 0;position:relative}
+  .nav-link:hover{opacity:0.6}
+  .nav-link.active{font-weight:500}
+  .nav-link.active::after{content:'';height:1px;background:var(--text);position:absolute;left:0;right:0;bottom:-1px}
+  .nav-right{display:flex;align-items:center;gap:8px}
+  .icon-btn{width:32px;height:32px;display:grid;place-items:center;border-radius:var(--r-cta);color:var(--text-dim);position:relative}
+  .icon-btn:hover{background:var(--surface);color:var(--text)}
+  .icon-btn .dot{position:absolute;top:7px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--f1);box-shadow:0 0 0 2px var(--bg)}
+  .nav-cta{height:32px;padding:0 14px;background:var(--accent);color:white;border-radius:var(--r-cta);font-size:12px;font-weight:500;margin-left:4px}
+  .avatar{width:28px;height:28px;border-radius:50%;background:var(--accent);color:white;display:grid;place-items:center;font-size:11px;font-weight:500;margin-left:6px}
+
+  /* MAIN — sidebar nav + content */
+  .main{flex:1;display:grid;grid-template-columns:240px 1fr;overflow:hidden}
+
+  /* LEFT NAV */
+  .side-nav{background:var(--bg-list);border-right:1px solid var(--border-subtle);padding:24px 14px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+  .side-section{font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;padding:14px 12px 6px}
+  .side-section:first-child{padding-top:0}
+  .side-link{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;color:var(--text);font-size:13px;font-weight:450;cursor:pointer;transition:background 0.12s}
+  .side-link:hover{background:var(--surface)}
+  .side-link.active{background:var(--bg-card);border:1px solid var(--border);font-weight:500;box-shadow:var(--shadow-sm)}
+  .side-link svg{width:14px;height:14px;color:var(--text-dim);flex-shrink:0}
+  .side-link.active svg{color:var(--text)}
+
+
+  /* CONTENT PANEL */
+  .content{overflow-y:auto;padding:32px 48px 100px;background:var(--bg);position:relative}
+  .content-head{margin-bottom:24px}
+  .content-title{font-family:var(--font-display);font-weight:300;font-size:32px;letter-spacing:-0.018em;line-height:1.0;margin-top:6px}
+  .content-sub{font-size:13px;color:var(--text-dim);margin-top:8px;line-height:1.5;max-width:560px}
+
+  .panel{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-card);padding:0;margin-bottom:18px;overflow:hidden}
+  .panel-h{padding:16px 22px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between}
+  .panel-h .pt{font-size:13.5px;font-weight:500;color:var(--text)}
+  .panel-h .ps{font-size:11.5px;color:var(--text-dim)}
+
+  .field{display:grid;grid-template-columns:200px 1fr;gap:24px;padding:16px 22px;border-top:1px solid var(--border-subtle);align-items:center}
+  .field:first-of-type{border-top:none}
+  .field-label{font-size:12.5px;color:var(--text);font-weight:500}
+  .field-label .req{color:var(--f1);margin-left:2px}
+  .field-help{font-size:11px;color:var(--text-faint);font-weight:400;margin-top:3px;line-height:1.4}
+  .field-input{display:flex;align-items:center;gap:10px}
+
+  .input,.select,.textarea{width:100%;height:34px;padding:0 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-cta);font-size:13px;transition:border-color 0.15s}
+  .input:focus,.select:focus,.textarea:focus{border-color:var(--text)}
+  .textarea{height:auto;padding:10px 12px;min-height:80px;line-height:1.5;font-family:var(--font)}
+  .select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B6B6B' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+
+  /* TOGGLE */
+  .toggle{position:relative;width:36px;height:20px;background:rgba(0,0,0,0.10);border-radius:24px;cursor:pointer;flex-shrink:0;transition:background 0.18s}
+  .toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;background:white;border-radius:50%;transition:transform 0.18s var(--ease-spring);box-shadow:0 1px 3px rgba(0,0,0,0.15)}
+  .toggle.on{background:var(--accent)}
+  .toggle.on::after{transform:translateX(16px)}
+
+  /* SEGMENTED */
+  .seg{display:inline-flex;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-cta);padding:2px}
+  .seg button{padding:5px 12px;font-size:12px;color:var(--text-dim);border-radius:3px;cursor:pointer}
+  .seg button.active{background:var(--accent);color:white}
+
+  /* AVATAR UPLOAD */
+  .avatar-upload{display:flex;align-items:center;gap:12px}
+  .avatar-big{width:56px;height:56px;border-radius:50%;background:var(--accent);color:white;display:grid;place-items:center;font-size:20px;font-weight:500;font-family:var(--font-display)}
+  .avatar-actions{display:flex;flex-direction:column;gap:4px}
+  .ghost-btn{height:30px;padding:0 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-cta);font-size:12px;display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+  .ghost-btn:hover{border-color:var(--border-hover)}
+  .ghost-btn.danger:hover{color:var(--f1);border-color:var(--f1)}
+
+  /* CONNECTION ROWS (integrations) */
+  .conn-row{display:flex;align-items:center;gap:14px;padding:14px 22px;border-top:1px solid var(--border-subtle)}
+  .conn-row:first-of-type{border-top:none}
+  .conn-icon{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;flex-shrink:0;font-weight:600;font-size:14px}
+  .conn-icon.gmail{background:#EA4335;color:white}
+  .conn-icon.gcal{background:#1A73E8;color:white}
+  .conn-icon.linkedin{background:#0A66C2;color:white}
+  .conn-icon.slack{background:#4A154B;color:white}
+  .conn-icon.lemlist{background:#FFCB00;color:#0A0A0A}
+  .conn-icon.supabase{background:#3ECF8E;color:white}
+  .conn-info{flex:1;min-width:0}
+  .conn-name{font-size:13px;font-weight:500;color:var(--text)}
+  .conn-meta{font-size:11.5px;color:var(--text-dim);margin-top:1px}
+  .conn-meta strong{color:var(--text)}
+  .conn-meta .conn-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--fe);margin-right:5px;vertical-align:middle}
+
+  /* SAVE BAR — sticky bottom */
+  .save-bar{position:sticky;bottom:0;left:0;right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-card);padding:12px 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 -8px 24px rgba(0,0,0,0.04);margin-top:24px}
+  .save-bar .changes{font-size:12px;color:var(--text-dim)}
+  .save-bar .changes strong{color:var(--text)}
+  .save-bar-btns{display:flex;gap:8px}
+  .pri-btn{height:32px;padding:0 14px;background:var(--accent);color:white;border-radius:var(--r-cta);font-size:12px;font-weight:500;cursor:pointer}
+  .pri-btn:hover{opacity:0.85}
+</style>
+</head>
+<body>
+
+
+<div class="opt-switcher">
+  <a href="kiko-home-nav-a.html">Home</a>
+  <a href="kiko-pipeline.html">Pipeline</a>
+  <a href="kiko-campaigns.html">Campaigns</a>
+  <a href="kiko-inbox.html">Inbox</a>
+  <a href="kiko-contacts.html">Contacts</a>
+  <a href="kiko-calendar.html">Calendar</a>
+  <a href="kiko-insights.html">Insights</a>
+  <a class="active">Settings</a>
+</div>
+
+<nav class="topnav">
+  <div class="nav-brand">
+    <svg class="nav-mark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 7.5L21 11l-7.5 1.5L12 20l-1.5-7.5L3 11l7.5-1.5L12 2z"/></svg>
+    <span class="nav-name">Kiko</span>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link">Today</a>
+    <a class="nav-link">Pipeline</a>
+    <a class="nav-link">Campaigns</a>
+    <a class="nav-link">Inbox</a>
+    <a class="nav-link active">Settings</a>
+  </div>
+  <div class="nav-right">
+    <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg><span class="dot"></span></button>
+    <div class="avatar">S</div>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- LEFT: SIDE NAV -->
+  <aside class="side-nav">
+    <div class="side-section">Account</div>
+    <a class="side-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</a>
+    <a class="side-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,6 12,13 2,6"/></svg>Email & sending</a>
+    <a class="side-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Password</a>
+    <a class="side-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L4 6v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V6l-8-4z"/></svg>Sign-in & security</a>
+
+    <div class="side-section">Workspace</div>
+    <a class="side-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Van Hawke Group</a>
+    <a class="side-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Members & roles</a>
+    <a class="side-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Branding</a>
+
+    <div class="side-section">Kiko</div>
+    <a class="side-link"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 7.5L21 11l-7.5 1.5L12 20l-1.5-7.5L3 11l7.5-1.5L12 2z"/></svg>Personality & tone</a>
+    <a class="side-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><polyline points="12 6 12 12 16 14"/></svg>Memory & rules</a>
+    <a class="side-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Auto-actions</a>
+    <a class="side-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>Voice mode</a>
+
+    <div class="side-section">Integrations</div>
+    <a class="side-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>Connected apps</a>
+
+    <div class="side-section">Billing</div>
+    <a class="side-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Plan & usage</a>
+    <a class="side-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Invoices</a>
+  </aside>
+
+
+  <!-- RIGHT: CONTENT PANEL (Profile section active) -->
+  <main class="content">
+
+    <div class="content-head">
+      <div class="eyebrow"><span class="eyebrow-cat">ACCOUNT</span><span class="eyebrow-sep">/</span>Profile</div>
+      <h1 class="content-title">Profile</h1>
+      <p class="content-sub">How you appear inside Kiko and to anyone you're working with. Some of this also controls how Kiko addresses you and signs off your drafts.</p>
+    </div>
+
+    <!-- IDENTITY -->
+    <div class="panel">
+      <div class="panel-h"><div class="pt">Identity</div><div class="ps">Visible to your workspace</div></div>
+
+      <div class="field">
+        <div class="field-label">Profile photo<div class="field-help">Square, ≥256px. Used for meeting avatars and team views.</div></div>
+        <div class="field-input">
+          <div class="avatar-upload">
+            <div class="avatar-big">S</div>
+            <div class="avatar-actions">
+              <button class="ghost-btn">Upload</button>
+              <button class="ghost-btn danger">Remove</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Full name<span class="req">*</span></div>
+        <div class="field-input"><input class="input" value="Sunny Sidhu"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Display name<div class="field-help">How Kiko addresses you in the app.</div></div>
+        <div class="field-input"><input class="input" value="Sunny"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Job title</div>
+        <div class="field-input"><input class="input" value="CEO, Van Hawke Group"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Email<span class="req">*</span></div>
+        <div class="field-input"><input class="input" value="sunny@vanhawke.com" type="email"></div>
+      </div>
+    </div>
+
+    <!-- LOCATION & TIME -->
+    <div class="panel">
+      <div class="panel-h"><div class="pt">Location & time</div><div class="ps">Used by Kiko to schedule sends, briefs, and meeting prep</div></div>
+
+      <div class="field">
+        <div class="field-label">Primary location</div>
+        <div class="field-input"><input class="input" value="Weybridge, United Kingdom"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Timezone</div>
+        <div class="field-input">
+          <select class="select">
+            <option>Europe/London (BST · UTC+1)</option>
+            <option>Asia/Qatar (Doha · UTC+3)</option>
+            <option>America/New_York (EDT · UTC−4)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Working hours<div class="field-help">Kiko avoids scheduling sends and briefs outside this window.</div></div>
+        <div class="field-input">
+          <input class="input" value="08:00" style="width:90px"><span style="color:var(--text-faint)">→</span><input class="input" value="19:00" style="width:90px">
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Weekend mode<div class="field-help">Pause non-urgent sends Sat–Sun.</div></div>
+        <div class="field-input"><div class="toggle on"></div></div>
+      </div>
+    </div>
+
+
+    <!-- SIGNATURE -->
+    <div class="panel">
+      <div class="panel-h"><div class="pt">Email signature</div><div class="ps">Appended to every Kiko-drafted send</div></div>
+      <div class="field">
+        <div class="field-label">Signature block</div>
+        <div class="field-input">
+          <textarea class="textarea">Sunny Sidhu
+CEO · Van Hawke Group
+sunny@vanhawke.com · +44 (0) 20 8004 3300
+vanhawke.com</textarea>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label">Append "Sent via Kiko"<div class="field-help">Adds a small attribution at the bottom.</div></div>
+        <div class="field-input"><div class="toggle"></div></div>
+      </div>
+    </div>
+
+    <!-- KIKO PERSONALITY snippet -->
+    <div class="panel">
+      <div class="panel-h"><div class="pt">How Kiko speaks to you</div><div class="ps">Personality preview · full settings under <strong>Kiko / Personality & tone</strong></div></div>
+      <div class="field">
+        <div class="field-label">Tone with you<div class="field-help">How Kiko addresses you in the app.</div></div>
+        <div class="field-input">
+          <div class="seg">
+            <button>Casual</button>
+            <button class="active">Direct</button>
+            <button>Formal</button>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label">Default mode<div class="field-help">Per your operating doctrine: hard truth → action steps → direct challenge.</div></div>
+        <div class="field-input">
+          <select class="select">
+            <option>Strategic advisor (default)</option>
+            <option>Coach</option>
+            <option>Operator</option>
+            <option>Devil's advocate</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTEGRATIONS preview -->
+    <div class="panel">
+      <div class="panel-h"><div class="pt">Connected accounts</div><div class="ps"><a class="pri-link" style="color:var(--text);font-weight:500;text-decoration:underline;text-underline-offset:2px">Manage all →</a></div></div>
+      <div class="conn-row">
+        <div class="conn-icon gmail">M</div>
+        <div class="conn-info"><div class="conn-name">Gmail · sunny@vanhawke.com</div><div class="conn-meta"><span class="conn-dot"></span>Connected · <strong>read & send</strong> · syncing every 2 min</div></div>
+        <button class="ghost-btn">Manage</button>
+      </div>
+      <div class="conn-row">
+        <div class="conn-icon gcal">G</div>
+        <div class="conn-info"><div class="conn-name">Google Calendar</div><div class="conn-meta"><span class="conn-dot"></span>Connected · <strong>read & write</strong> · 4 meetings auto-prepped this week</div></div>
+        <button class="ghost-btn">Manage</button>
+      </div>
+      <div class="conn-row">
+        <div class="conn-icon linkedin">in</div>
+        <div class="conn-info"><div class="conn-name">LinkedIn</div><div class="conn-meta"><span class="conn-dot"></span>Connected via Hetzner worker · <strong>178.104.73.22</strong> · 28 connections accepted this week</div></div>
+        <button class="ghost-btn">Manage</button>
+      </div>
+      <div class="conn-row">
+        <div class="conn-icon lemlist">L</div>
+        <div class="conn-info"><div class="conn-name">Lemlist</div><div class="conn-meta"><span class="conn-dot"></span>Connected · 5 active sequences · webhook last fired 3m ago</div></div>
+        <button class="ghost-btn">Manage</button>
+      </div>
+      <div class="conn-row">
+        <div class="conn-icon supabase">S</div>
+        <div class="conn-info"><div class="conn-name">Supabase · vanhawke-crm</div><div class="conn-meta"><span class="conn-dot"></span>Connected · <strong>RLS enforced</strong> · 247 contacts · 8 isolation tests passed</div></div>
+        <button class="ghost-btn">Manage</button>
+      </div>
+    </div>
+
+    <!-- SAVE BAR -->
+    <div class="save-bar">
+      <div class="changes"><strong>2 unsaved changes</strong> · timezone, working hours</div>
+      <div class="save-bar-btns">
+        <button class="ghost-btn">Discard</button>
+        <button class="pri-btn sparkle-cta magnetic">Save changes</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>

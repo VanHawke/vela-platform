@@ -27,3 +27,13 @@ dist-ssr
 *.sw?
 .env*.local
 voice-agent/venv/
+
+# Kiko Chrome extension — contains baked-in worker secret, do not commit
+kiko-extension/options.js
+
+# Kiko worker — runtime data, never commit
+kiko-worker/data/
+kiko-worker/logs/
+kiko-worker/.env
+kiko-worker/node_modules/
+kiko-extension/node_modules/

@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Today — Kiko</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FEFEFC;
+    --bg-card: #FFFFFF;
+    --bg-overlay-subtle: rgba(0,0,0,0.03);
+    --bg-overlay-soft: rgba(0,0,0,0.05);
+    --bg-grey: #D6D6D3;
+    --bg-cream: #E8DCC4;
+    --bg-sage: #B5BFA0;
+    --bg-terra: #D89472;
+    --bg-slate: #9BA1AB;
+    --text: #0A0A0A;
+    --text-dim: #6B6B6B;
+    --text-faint: #A0A0A0;
+    --accent: #0A0A0A;
+    --border: rgba(0,0,0,0.08);
+    --border-subtle: rgba(0,0,0,0.05);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-soft: 0 8px 30px rgba(0,0,0,0.06);
+    --shadow-floating: 0 20px 60px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-card: 0 12px 40px rgba(0,0,0,0.12);
+    --r-cta: 4px;
+    --r-input: 16px;
+    --r-card: 14px;
+    --r-pill: 24px;
+    --font-display: 'Source Serif 4', Georgia, serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text);
+    font-weight: 450;
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  button, a { font: inherit; color: inherit; background: none; border: none; cursor: pointer; text-decoration: none; }
+  input, textarea { font: inherit; color: inherit; background: none; border: none; outline: none; }
+  img { display: block; max-width: 100%; }
+
+  /* === NAV === */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(254,254,252,0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border-subtle);
+    height: 64px;
+    padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-brand { display: flex; align-items: center; gap: 10px; }
+  .nav-mark { width: 24px; height: 24px; color: var(--text); }
+  .nav-name { font-family: var(--font-display); font-size: 17px; font-weight: 400; letter-spacing: 0.05em; }
+  .nav-links { display: flex; align-items: center; gap: 28px; }
+  .nav-link { color: var(--text); font-size: 13px; cursor: pointer; transition: opacity 0.15s var(--ease); }
+  .nav-link:hover { opacity: 0.6; }
+  .nav-link.has-plus::after { content: ' +'; color: var(--text-faint); margin-left: 2px; }
+  .cta-primary {
+    background: var(--accent); color: white;
+    padding: 10px 16px; border-radius: var(--r-cta);
+    font-size: 12px; font-weight: 500;
+    transition: opacity 0.15s var(--ease);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .cta-primary:hover { opacity: 0.85; }
+
+  /* === HERO (two-column, Legora product page template) === */
+  .hero-product {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    min-height: calc(100vh - 64px);
+    gap: 0;
+    align-items: stretch;
+  }
+  .hero-left {
+    padding: 80px 60px 60px 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: var(--bg);
+  }
+  .hero-eyebrow {
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 32px;
+    letter-spacing: 0.02em;
+  }
+  .hero-eyebrow strong { font-weight: 500; }
+  .hero-eyebrow .dim { color: var(--text-dim); margin-left: 8px; }
+  .hero-display {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(40px, 4.6vw, 64px);
+    line-height: 1.0;
+    letter-spacing: -0.015em;
+    color: var(--text);
+    margin-bottom: 28px;
+  }
+  .hero-description {
+    font-size: 14.5px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    max-width: 460px;
+    margin-bottom: 40px;
+  }
+  .hero-cta-row { display: flex; gap: 12px; align-items: center; }
+
+  /* === HERO RIGHT (atmospheric photo + floating product UI) === */
+  .hero-right {
+    position: relative;
+    overflow: hidden;
+    background: #1a1a1a;
+    min-height: 600px;
+  }
+  .hero-photo {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transform: scale(1.02);
+    animation: heroPhotoSubtle 20s ease-in-out infinite;
+  }
+  @keyframes heroPhotoSubtle {
+    0%, 100% { transform: scale(1.02) translate(0,0); }
+    50% { transform: scale(1.04) translate(-10px,-5px); }
+  }
+  .hero-photo-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.35) 100%);
+  }
+  .hero-product-ui {
+    position: absolute;
+    top: 50%;
+    right: 60px;
+    transform: translateY(-50%);
+    width: 420px;
+    background: var(--bg-card);
+    border-radius: var(--r-input);
+    box-shadow: var(--shadow-floating);
+    padding: 22px;
+    z-index: 2;
+    opacity: 0;
+    animation: floatIn 1s var(--ease-out) 0.5s forwards;
+  }
+  @keyframes floatIn {
+    from { opacity: 0; transform: translateY(-40%); }
+    to { opacity: 1; transform: translateY(-50%); }
+  }
+  .ui-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+  .ui-header-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .ui-header-meta {
+    font-size: 11px;
+    color: var(--text-faint);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .ui-header-meta::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #7d8a64;
+    box-shadow: 0 0 0 3px rgba(125,138,100,0.2);
+  }
+  .ui-row {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .ui-row:last-child { border-bottom: none; }
+  .ui-row-icon {
+    width: 28px; height: 28px;
+    background: var(--bg-overlay-subtle);
+    border-radius: 8px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .ui-row-icon.signal { background: rgba(184,100,62,0.12); color: #b8643e; }
+  .ui-row-icon.email { background: var(--bg-overlay-subtle); color: var(--text); }
+  .ui-row-icon.linkedin { background: rgba(0,119,181,0.1); color: #0077b5; }
+  .ui-row-body { flex: 1; min-width: 0; }
+  .ui-row-title { font-size: 12.5px; font-weight: 500; color: var(--text); line-height: 1.4; }
+  .ui-row-title strong { font-weight: 600; }
+  .ui-row-meta {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-top: 3px;
+  }
+  .ui-row-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    background: var(--bg-overlay-subtle);
+    border-radius: var(--r-pill);
+    font-size: 9.5px;
+    color: var(--text);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .ui-row-tag.urgent { background: rgba(184,100,62,0.12); color: #b8643e; }
+  .ui-row-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  .ui-action-btn {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    background: transparent;
+    color: var(--text-dim);
+    transition: background 0.15s;
+  }
+  .ui-action-btn.approve { background: var(--accent); color: white; }
+  .ui-action-btn:hover { background: var(--bg-overlay-subtle); }
+  .ui-action-btn.approve:hover { background: #2a2620; }
+  .ui-footer {
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .ui-footer-text { font-size: 11px; color: var(--text-faint); }
+  .ui-footer-cta {
+    background: var(--accent);
+    color: white;
+    padding: 6px 12px;
+    border-radius: var(--r-cta);
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  /* === STATS === */
+  .stats {
+    padding: 80px 60px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr repeat(3, 1fr);
+    gap: 48px;
+    align-items: end;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .stats-eyebrow {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: clamp(56px, 6vw, 88px);
+    font-weight: 300;
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    margin-bottom: 14px;
+  }
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    max-width: 240px;
+  }
+
+  /* === USE CASE SECTIONS (alternating two-column with photos) === */
+  .use-case {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: 80px;
+    padding: 100px 60px;
+    align-items: center;
+    max-width: 1500px;
+    margin: 0 auto;
+  }
+  .use-case.reverse { grid-template-columns: 1.3fr 1fr; }
+  .use-case.reverse .use-case-text { order: 2; }
+  .use-case.reverse .use-case-visual { order: 1; }
+  .use-case-text { padding-right: 20px; }
+  .use-case-eyebrow {
+    font-size: 11px;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+  .use-case-title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 3vw, 40px);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin-bottom: 18px;
+    color: var(--text);
+  }
+  .use-case-desc {
+    font-size: 14.5px;
+    color: var(--text-dim);
+    line-height: 1.65;
+    margin-bottom: 24px;
+    max-width: 480px;
+  }
+  .use-case-bullets {
+    display: flex; flex-direction: column; gap: 12px;
+    margin-top: 28px;
+  }
+  .use-case-bullet {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 13px; color: var(--text);
+  }
+  .use-case-bullet::before {
+    content: '';
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--text);
+    flex-shrink: 0;
+    margin-top: 8px;
+  }
+
+  .use-case-visual {
+    position: relative;
+    border-radius: var(--r-card);
+    overflow: hidden;
+    aspect-ratio: 1.3 / 1;
+    background: #0a0a0a;
+  }
+  .use-case-photo {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+  }
+  .use-case-photo-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.5) 100%);
+  }
+  .use-case-ui {
+    position: absolute;
+    background: var(--bg-card);
+    border-radius: 12px;
+    box-shadow: var(--shadow-card);
+    padding: 18px;
+    z-index: 2;
+  }
+  .ui-floating-1 {
+    bottom: 30px; left: 30px;
+    width: 320px;
+  }
+  .ui-floating-2 {
+    top: 30px; right: 30px;
+    width: 280px;
+  }
+  .ui-floating-center {
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 380px;
+  }
+
+  /* === FEATURE GRID (color blocks below use cases) === */
+  .features-section {
+    padding: 100px 60px;
+    max-width: 1500px;
+    margin: 0 auto;
+  }
+  .features-head { margin-bottom: 48px; max-width: 720px; }
+  .features-eyebrow {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.12em; font-weight: 500;
+    color: var(--text); margin-bottom: 14px;
+  }
+  .features-title {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 3.5vw, 48px);
+    font-weight: 300;
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+  }
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .feature {
+    aspect-ratio: 1 / 1.25;
+    border-radius: var(--r-card);
+    padding: 24px;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: transform 0.3s var(--ease);
+    overflow: hidden;
+    position: relative;
+  }
+  .feature:hover { transform: translateY(-4px); }
+  .feature-grey { background: var(--bg-grey); }
+  .feature-cream { background: var(--bg-cream); }
+  .feature-sage { background: var(--bg-sage); }
+  .feature-terra { background: var(--bg-terra); color: white; }
+  .feature-icon {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 10px;
+    display: grid; place-items: center;
+    color: var(--text);
+  }
+  .feature-terra .feature-icon { background: rgba(255,255,255,0.25); color: white; }
+  .feature-bottom { display: flex; flex-direction: column; gap: 6px; }
+  .feature-name { font-size: 16px; font-weight: 500; }
+  .feature-desc { font-size: 12.5px; line-height: 1.5; opacity: 0.75; }
+  .feature-terra .feature-desc { opacity: 0.85; }
+
+  /* === TESTIMONIAL with editorial photo === */
+  .testimonial {
+    padding: 100px 60px;
+    background: var(--bg-cream);
+  }
+  .testimonial-grid {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 0.6fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .testimonial-photo {
+    aspect-ratio: 0.85 / 1;
+    border-radius: var(--r-card);
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+  .testimonial-quote-mark {
+    font-family: var(--font-display);
+    font-size: 80px;
+    line-height: 0.8;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+  .testimonial-quote {
+    font-family: var(--font-display);
+    font-size: clamp(24px, 2.4vw, 32px);
+    font-weight: 400;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    margin-bottom: 28px;
+    max-width: 720px;
+  }
+  .testimonial-attr {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .testimonial-role {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  /* === FAQ accordion === */
+  .faq-section {
+    padding: 100px 60px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .faq-head { margin-bottom: 48px; text-align: center; }
+  .faq-eyebrow {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.12em; font-weight: 500;
+    margin-bottom: 14px;
+  }
+  .faq-title {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 3.5vw, 44px);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+  }
+  .faq-item {
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .faq-q {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 16px; font-weight: 500; color: var(--text);
+  }
+  .faq-toggle {
+    font-size: 22px; color: var(--text-faint);
+    transition: transform 0.3s var(--ease);
+  }
+  .faq-item.open .faq-toggle { transform: rotate(45deg); color: var(--text); }
+  .faq-a {
+    max-height: 0; overflow: hidden;
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1.6;
+    transition: max-height 0.3s var(--ease), margin-top 0.3s var(--ease);
+  }
+  .faq-item.open .faq-a {
+    max-height: 200px;
+    margin-top: 14px;
+  }
+
+  /* === BOTTOM CTA === */
+  .bottom-cta {
+    padding: 120px 60px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+  .bottom-cta-eyebrow {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.12em; font-weight: 500;
+    color: var(--text); margin-bottom: 18px;
+  }
+  .bottom-cta-title {
+    font-family: var(--font-display);
+    font-size: clamp(40px, 4.5vw, 60px);
+    font-weight: 300;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 32px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* === SCROLL REVEAL === */
+  .scroll-reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out); }
+  .scroll-reveal.in { opacity: 1; transform: translateY(0); }
+
+  /* === FOOTER === */
+  footer {
+    padding: 40px 60px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--text-dim);
+  }
+  footer .footer-links { display: flex; gap: 24px; }
+</style>
+</head>
+<body>
+
+<!-- ========== NAV ========== -->
+<nav>
+  <div class="nav-brand">
+    <svg class="nav-mark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 7.5L21 11l-7.5 1.5L12 20l-1.5-7.5L3 11l7.5-1.5L12 2z"/></svg>
+    <span class="nav-name">Kiko</span>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link has-plus" href="kiko-today.html" style="color:var(--text);font-weight:500;">Today</a>
+    <a class="nav-link has-plus">Campaigns</a>
+    <a class="nav-link">Inbox</a>
+    <a class="nav-link">Insights</a>
+    <a class="cta-primary">Open workspace</a>
+  </div>
+</nav>
+
+<!-- ========== HERO (Legora product page template) ========== -->
+<section class="hero-product">
+  <div class="hero-left">
+    <div>
+      <div class="hero-eyebrow"><strong>PRODUCT</strong><span class="dim">Today</span></div>
+      <h1 class="hero-display">Twelve high-stakes decisions, eight focused minutes.</h1>
+      <p class="hero-description">Every morning Kiko prepares the queue overnight — research, drafts, prioritisation. You walk in and approve, edit or skip in one tap. The work that used to fragment your morning collapses into a single focused pass.</p>
+      <div class="hero-cta-row">
+        <a class="cta-primary">Open workspace</a>
+        <a style="font-size:13px;color:var(--text);font-weight:500;border-bottom:1px solid var(--text);padding-bottom:1px;">See how it works →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="hero-photo" style="background-image: url('https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=1800&q=85&auto=format&fit=crop');"></div>
+    <div class="hero-photo-overlay"></div>
+
+    <div class="hero-product-ui">
+      <div class="ui-header">
+        <div class="ui-header-title">Today · 15 April 2026</div>
+        <div class="ui-header-meta">12 items</div>
+      </div>
+
+      <div class="ui-row">
+        <div class="ui-row-icon signal">⚡</div>
+        <div class="ui-row-body">
+          <div class="ui-row-title"><strong>HSBC just renewed F1 partnership</strong> <span class="ui-row-tag urgent">Signal</span></div>
+          <div class="ui-row-meta">Three new prospects in their Brand team · 2h ago</div>
+        </div>
+        <div class="ui-row-actions">
+          <button class="ui-action-btn approve" title="Add to campaign">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="ui-row">
+        <div class="ui-row-icon email">✉</div>
+        <div class="ui-row-body">
+          <div class="ui-row-title">Send email to <strong>Mark Tucker</strong> <span class="ui-row-tag">Touch 1/5</span></div>
+          <div class="ui-row-meta">Group Chairman, HSBC · F1 Banking Q2</div>
+        </div>
+        <div class="ui-row-actions">
+          <button class="ui-action-btn approve">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="ui-row">
+        <div class="ui-row-icon linkedin">in</div>
+        <div class="ui-row-body">
+          <div class="ui-row-title"><strong>James Bardrick</strong> replied — wants 30-min call</div>
+          <div class="ui-row-meta">Country Officer UK, Citi · Reply drafted · 14m ago</div>
+        </div>
+        <div class="ui-row-actions">
+          <button class="ui-action-btn approve">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="ui-footer">
+        <div class="ui-footer-text">9 more items below</div>
+        <button class="ui-footer-cta">Approve all</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== STATS ========== -->
+<section class="stats">
+  <div class="stats-grid">
+    <div class="stats-eyebrow">Yesterday's run</div>
+    <div>
+      <div class="stat-value">12</div>
+      <div class="stat-label">items decided in 8 minutes — average pass time</div>
+    </div>
+    <div>
+      <div class="stat-value">94%</div>
+      <div class="stat-label">approval rate on Kiko's drafts — minimal edits required</div>
+    </div>
+    <div>
+      <div class="stat-value">3.7x</div>
+      <div class="stat-label">faster than handling reply queues manually</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== USE CASE 1: One-tap decisions ========== -->
+<section class="use-case scroll-reveal">
+  <div class="use-case-text">
+    <div class="use-case-eyebrow">One-tap decisions</div>
+    <h2 class="use-case-title">Approve, edit or skip — without breaking flow.</h2>
+    <p class="use-case-desc">Every item arrives with full context already attached: prospect research, signal source, draft message, predicted reply rate. You make the call in seconds, Kiko executes in the background.</p>
+    <div class="use-case-bullets">
+      <div class="use-case-bullet">Single-key shortcuts: A to approve, E to edit, S to skip</div>
+      <div class="use-case-bullet">Hold ⌘ to approve in batch — clear the queue in one motion</div>
+      <div class="use-case-bullet">Every approval triggers the next sequence step automatically</div>
+    </div>
+  </div>
+
+  <div class="use-case-visual">
+    <div class="use-case-photo" style="background-image: url('https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1600&q=85&auto=format&fit=crop');"></div>
+    <div class="use-case-photo-overlay"></div>
+
+    <div class="use-case-ui ui-floating-1">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:500;color:var(--text);text-transform:uppercase;letter-spacing:0.08em;">Email · Touch 2/5</div>
+        <div style="font-size:11px;color:var(--text-faint);">Reply rate: <strong style="color:#7d8a64;">28%</strong></div>
+      </div>
+      <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px;">Anna Cross · Barclays</div>
+      <div style="font-size:12.5px;color:var(--text-dim);line-height:1.5;margin-bottom:14px;">"Your £8M Premiership rugby renewal positions Barclays for a category move into F1. The title slot decision sits with the brand committee in Q2..."</div>
+      <div style="display:flex;gap:6px;">
+        <button style="flex:1;background:var(--accent);color:white;padding:8px;border-radius:var(--r-cta);font-size:11.5px;font-weight:500;">Approve & send</button>
+        <button style="background:transparent;color:var(--text-dim);border:1px solid var(--border);padding:8px 12px;border-radius:var(--r-cta);font-size:11.5px;">Edit</button>
+        <button style="background:transparent;color:var(--text-faint);padding:8px 8px;border-radius:var(--r-cta);font-size:11.5px;">Skip</button>
+      </div>
+    </div>
+
+    <div class="use-case-ui ui-floating-2" style="width:200px;padding:14px;">
+      <div style="font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;font-weight:500;margin-bottom:8px;">Keyboard</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:11.5px;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-dim);">Approve</span><kbd style="padding:1px 7px;background:var(--bg-overlay-subtle);border-radius:4px;font-family:ui-monospace,monospace;font-size:10px;color:var(--text);">A</kbd></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-dim);">Edit</span><kbd style="padding:1px 7px;background:var(--bg-overlay-subtle);border-radius:4px;font-family:ui-monospace,monospace;font-size:10px;color:var(--text);">E</kbd></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-dim);">Skip</span><kbd style="padding:1px 7px;background:var(--bg-overlay-subtle);border-radius:4px;font-family:ui-monospace,monospace;font-size:10px;color:var(--text);">S</kbd></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-dim);">Approve all</span><kbd style="padding:1px 7px;background:var(--bg-overlay-subtle);border-radius:4px;font-family:ui-monospace,monospace;font-size:10px;color:var(--text);">⌘A</kbd></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== USE CASE 2: Real-time signals (REVERSED) ========== -->
+<section class="use-case reverse scroll-reveal">
+  <div class="use-case-text">
+    <div class="use-case-eyebrow">Live signal capture</div>
+    <h2 class="use-case-title">Every brand move surfaces in your queue overnight.</h2>
+    <p class="use-case-desc">Kiko monitors 75 RSS sources, partnership announcements, executive moves, brand spend filings — and surfaces only the signals that match your active campaigns. New CMO at JPMorgan? You see it before they finish their first coffee.</p>
+    <div class="use-case-bullets">
+      <div class="use-case-bullet">Brand renewal cycles tracked across F1, Formula E, MotoGP, WEC</div>
+      <div class="use-case-bullet">Executive moves filtered by relevance to your sector targets</div>
+      <div class="use-case-bullet">Auto-enrichment with company financials and decision-maker identity</div>
+    </div>
+  </div>
+
+  <div class="use-case-visual">
+    <div class="use-case-photo" style="background-image: url('https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=1600&q=85&auto=format&fit=crop');"></div>
+    <div class="use-case-photo-overlay"></div>
+
+    <div class="use-case-ui ui-floating-center" style="width:380px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+        <div style="width:28px;height:28px;background:rgba(184,100,62,0.12);color:#b8643e;border-radius:8px;display:grid;place-items:center;font-size:13px;">⚡</div>
+        <div>
+          <div style="font-size:12.5px;font-weight:500;color:var(--text);">Signal captured</div>
+          <div style="font-size:10.5px;color:var(--text-faint);">Reuters · 2 hours ago</div>
+        </div>
+      </div>
+      <div style="font-size:14px;font-weight:500;color:var(--text);line-height:1.35;margin-bottom:8px;">JPMorgan named Sarah Lee as Head of Brand</div>
+      <div style="font-size:12.5px;color:var(--text-dim);line-height:1.55;margin-bottom:14px;">Ex-AmEx where she ran the Mercedes F1 partnership 2019–2023. Strong category fit. Match probability: <strong style="color:var(--text);">96%</strong></div>
+      <div style="display:flex;gap:6px;">
+        <button style="flex:1;background:var(--accent);color:white;padding:8px;border-radius:var(--r-cta);font-size:11.5px;font-weight:500;">Add to F1 Banking Q2</button>
+        <button style="background:transparent;color:var(--text-dim);border:1px solid var(--border);padding:8px 12px;border-radius:var(--r-cta);font-size:11.5px;">Research more</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== USE CASE 3: Drafts that sound like you ========== -->
+<section class="use-case scroll-reveal">
+  <div class="use-case-text">
+    <div class="use-case-eyebrow">Drafted in your voice</div>
+    <h2 class="use-case-title">Every message in the queue sounds like you wrote it.</h2>
+    <p class="use-case-desc">Kiko learned your tone from every email you've sent. The "intelligent age" frame, the cost/benefit/risk framing for board-level recipients, the closing CTAs with specific timelines. Drafts arrive ready to ship — not boilerplate to repair.</p>
+    <div class="use-case-bullets">
+      <div class="use-case-bullet">Personalised per recipient using their public statements + company context</div>
+      <div class="use-case-bullet">Every edit you make trains Kiko further — convergence by week three</div>
+      <div class="use-case-bullet">Five-touch sequence with conditional branching built in</div>
+    </div>
+  </div>
+
+  <div class="use-case-visual">
+    <div class="use-case-photo" style="background-image: url('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1600&q=85&auto=format&fit=crop');"></div>
+    <div class="use-case-photo-overlay"></div>
+
+    <div class="use-case-ui ui-floating-1" style="width:400px;left:30px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:500;color:var(--text);text-transform:uppercase;letter-spacing:0.08em;">Email Draft</div>
+        <div style="font-size:10.5px;color:var(--text-faint);">Tone match: <strong style="color:#7d8a64;">98%</strong></div>
+      </div>
+      <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px;">Subject: Haas F1 — Title Partnership Discussion</div>
+      <div style="font-size:11.5px;color:var(--text-faint);margin-bottom:14px;">To: mark.tucker@hsbc.com · From: sunny@vanhawke.com</div>
+      <div style="font-size:12.5px;color:var(--text-dim);line-height:1.55;font-family:var(--font-sans);max-height:140px;overflow:hidden;position:relative;">
+        Mark,<br><br>
+        Your FT piece last week on emerging-market brand visibility caught my attention. The argument that physical presence beats digital impression-buying is exactly the bet Haas's title sponsor will make in 2027.<br><br>
+        I run commercial for Van Hawke Group, advising Haas F1 on category-control sponsorship. We've shortlisted three banks for the title slot — HSBC is the only one with the Asia-Pacific footprint to make the package work...
+        <div style="position:absolute;bottom:0;left:0;right:0;height:30px;background:linear-gradient(transparent,white);"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FEATURE BLOCKS ========== -->
+<section class="features-section">
+  <div class="features-head">
+    <div class="features-eyebrow">What Today gives you</div>
+    <h2 class="features-title">A focused morning, four ways.</h2>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature feature-grey">
+      <div class="feature-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="feature-bottom">
+        <div class="feature-name">Approval queue</div>
+        <div class="feature-desc">Stack-ranked by impact. Highest-value decisions surface first.</div>
+      </div>
+    </div>
+
+    <div class="feature feature-cream">
+      <div class="feature-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div class="feature-bottom">
+        <div class="feature-name">Live signals</div>
+        <div class="feature-desc">75 sources monitored. Only relevant brand moves reach you.</div>
+      </div>
+    </div>
+
+    <div class="feature feature-sage">
+      <div class="feature-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </div>
+      <div class="feature-bottom">
+        <div class="feature-name">Reply triage</div>
+        <div class="feature-desc">Inbound classified by intent. Hot replies floated to top.</div>
+      </div>
+    </div>
+
+    <div class="feature feature-terra">
+      <div class="feature-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </div>
+      <div class="feature-bottom">
+        <div class="feature-name">Auto-execution</div>
+        <div class="feature-desc">Approved items fire instantly. Sequence advances on its own.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== TESTIMONIAL ========== -->
+<section class="testimonial">
+  <div class="testimonial-grid">
+    <div class="testimonial-photo" style="background-image: url('https://images.unsplash.com/photo-1560250097-0b93528c311a?w=900&q=85&auto=format&fit=crop');"></div>
+    <div>
+      <div class="testimonial-quote-mark">"</div>
+      <div class="testimonial-quote">Before Kiko, my mornings were two hours of inbox triage and prospect research before the first real decision. Now I clear twelve commercial calls in under ten minutes — every one of them substantive.</div>
+      <div class="testimonial-attr">Sunny Sidhu</div>
+      <div class="testimonial-role">CEO, Van Hawke Group · Advisor to Haas F1 Team</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FAQ ========== -->
+<section class="faq-section">
+  <div class="faq-head">
+    <div class="faq-eyebrow">Common questions</div>
+    <h2 class="faq-title">Everything you'd want to know.</h2>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q"><span>How does Kiko know which items to prioritise?</span><span class="faq-toggle">+</span></div>
+    <div class="faq-a">Kiko ranks items by predicted impact on pipeline value — combining propensity scores, signal recency, sequence stage, and your historical conversion patterns. Replies from interested prospects always surface above outbound drafts. Urgent signals (renewals, exec moves, brand budget filings) elevate to the top.</div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q"><span>What happens when I skip an item?</span><span class="faq-toggle">+</span></div>
+    <div class="faq-a">Skipped items aren't deleted — they're snoozed for 24 hours and re-evaluated. If the signal degrades or the prospect goes cold, Kiko removes it from the queue. If it stays relevant, it returns the next morning with updated context.</div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q"><span>Can I edit Kiko's drafts before sending?</span><span class="faq-toggle">+</span></div>
+    <div class="faq-a">Always. Hit E (or click Edit) to open the full draft in an editor with the original research and source signal attached. Every edit you make trains Kiko's tone model. By week three the drafts converge on your voice — most users approve 90%+ without any changes.</div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q"><span>What if I'm travelling and miss a morning?</span><span class="faq-toggle">+</span></div>
+    <div class="faq-a">Outbound sequences pause until you're back. Inbound replies still get classified and drafted, ready for your approval whenever you open the queue. Urgent signals (replies marked as interested, meeting requests, urgent renewals) trigger a notification rather than waiting.</div>
+  </div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q"><span>How is Today different from a normal email inbox?</span><span class="faq-toggle">+</span></div>
+    <div class="faq-a">Three things. First, every item arrives pre-researched with full prospect context. Second, drafts and responses are written, not just suggested. Third, the queue is collapsed across email + LinkedIn + signals into one workflow — you don't switch tools, you switch decisions.</div>
+  </div>
+</section>
+
+<!-- ========== BOTTOM CTA ========== -->
+<section class="bottom-cta">
+  <div class="bottom-cta-eyebrow">Ready to reclaim your mornings?</div>
+  <h2 class="bottom-cta-title">Twelve decisions. Eight minutes. The rest of the day for strategy.</h2>
+  <div style="display:flex;gap:12px;justify-content:center;">
+    <a class="cta-primary" style="padding:12px 22px;font-size:13px;">Open workspace</a>
+    <a style="padding:12px 22px;font-size:13px;color:var(--text);font-weight:500;border:1px solid var(--border);border-radius:var(--r-cta);">See the platform tour →</a>
+  </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer>
+  <div>© 2026 Van Hawke Group · Powered by Kiko</div>
+  <div class="footer-links">
+    <a>Settings</a>
+    <a>Help</a>
+    <a>Status</a>
+    <a>v1.0.4</a>
+  </div>
+</footer>
+
+<script>
+function toggleFaq(el) {
+  el.classList.toggle('open');
+}
+
+// Scroll-triggered reveal
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('in');
+      io.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.scroll-reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
+
+<!-- ========== NAV ========== -->
+<nav>
+  <a href="kiko-home.html" class="nav-brand">
+    <svg class="nav-mark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 7.5L21 11l-7.5 1.5L12 20l-1.5-7.5L3 11l7.5-1.5L12 2z"/></svg>
+    <span class="nav-name">Kiko</span>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link has-plus">Today</a>
+    <a class="nav-link has-plus">Campaigns</a>
+    <a class="nav-link">Inbox</a>
+    <a class="nav-link">Insights</a>
+    <a class="cta-primary">Open workspace</a>
+  </div>
+</nav>
+
+<!-- ========== HERO (Legora product page template) ========== -->
+<section class="hero-product">
+  <div class="hero-left">
+    <div>
+      <div class="hero-eyebrow">
+        <strong>PRODUCT</strong><span class="dim">Today</span>
+      </div>
+      <h1 class="hero-display">Twelve items waiting for your call.</h1>
+      <p class="hero-description">Every morning, Kiko prepares your queue overnight — research, drafts, prioritisation. Approve, edit, or skip in one tap. Move through twelve high-stakes decisions before your first coffee.</p>
+    </div>
+    <div class="hero-cta-row">
+      <a class="cta-primary">Open workspace</a>
+      <a style="font-size:13px;color:var(--text-dim);text-decoration:underline;text-underline-offset:3px;">See how it works →</a>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <!-- F1 paddock atmospheric background -->
+    <div class="hero-photo" style="background-image: url('https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=1800&q=85');"></div>
+    <div class="hero-photo-overlay"></div>
+
+    <!-- Floating Today UI on top of photo -->
+    <div class="hero-product-ui">
+      <div class="ui-header">
+        <div class="ui-header-title">Today · 15 April</div>
+        <div class="ui-header-meta">12 waiting</div>
+      </div>
+
+      <div class="ui-row">
+        <div class="ui-row-icon signal">⚡</div>
+        <div class="ui-row-body">
+          <div class="ui-row-title"><strong>HSBC renewed F1 partnership</strong> <span class="ui-row-tag urgent">Signal</span></div>
+          <div class="ui-row-meta">3 new prospects identified · brand spend £42M/yr</div>
+        </div>
+      </div>
+
+      <div class="ui-row">
+        <div class="ui-row-icon email">✉</div>
+        <div class="ui-row-body">
+          <div class="ui-row-title">Email <strong>Mark Tucker</strong> <span class="ui-row-tag">1/5</span></div>
+          <div class="ui-row-meta">Group Chairman, HSBC · F1 Banking Q2</div>
+        </div>
+        <div class="ui-row-actions">
+          <button class="ui-action-btn approve" title="Approve">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="ui-row">
+        <div class="ui-row-icon" style="background:rgba(125,138,100,0.15);color:#7d8a64;">↩</div>
+        <div class="ui-row-body">
+          <div class="ui-row-title"><strong>James Bardrick</strong> wants a 30-min call</div>
+          <div class="ui-row-meta">Country Officer UK, Citi · 14m ago</div>
+        </div>
+      </div>
+
+      <div class="ui-row">
+        <div class="ui-row-icon linkedin">in</div>
+        <div class="ui-row-body">
+          <div class="ui-row-title">LinkedIn <strong>Anna Cross</strong> <span class="ui-row-tag">4/5</span></div>
+          <div class="ui-row-meta">Group Finance Director, Barclays</div>
+        </div>
+        <div class="ui-row-actions">
+          <button class="ui-action-btn approve" title="Approve">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="ui-footer">
+        <div class="ui-footer-text">8 more · all reviewed</div>
+        <button class="ui-footer-cta">Approve all</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== STATS ========== -->
+<section class="stats scroll-reveal">
+  <div class="stats-grid">
+    <div class="stats-eyebrow">Today, in numbers</div>
+    <div>
+      <div class="stat-value">12</div>
+      <div class="stat-label">items in your queue this morning, prepared overnight</div>
+    </div>
+    <div>
+      <div class="stat-value">8m</div>
+      <div class="stat-label">average time to clear the daily queue, end to end</div>
+    </div>
+    <div>
+      <div class="stat-value">94%</div>
+      <div class="stat-label">approval rate — Kiko's drafts ship without edits</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== USE CASE 1: Approve everything in seconds ========== -->
+<section class="use-case scroll-reveal">
+  <div class="use-case-text">
+    <div class="use-case-eyebrow">Use case 01 · Approve</div>
+    <h2 class="use-case-title">One queue. One tap each. Zero context-switching.</h2>
+    <p class="use-case-desc">Every email, LinkedIn message, signal, and reply lands in a single chronological queue, sorted by what matters most. Each item is a card — approve, edit, or skip. Drafts are personalised overnight using the prospect's latest moves, so what you see is what gets sent.</p>
+    <div class="use-case-bullets">
+      <div class="use-case-bullet">Approve in one tap, or edit inline and approve in two</div>
+      <div class="use-case-bullet">Keyboard-driven — A to approve, E to edit, S to skip</div>
+      <div class="use-case-bullet">Snooze any item to a specific time without losing context</div>
+    </div>
+  </div>
+  <div class="use-case-visual">
+    <!-- Banking architecture photo background -->
+    <div class="use-case-photo" style="background-image: url('https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1600&q=85');"></div>
+    <div class="use-case-photo-overlay"></div>
+
+    <!-- Floating UI: a single approval card -->
+    <div class="use-case-ui ui-floating-center">
+      <div class="ui-header">
+        <div class="ui-header-title">Email · Mark Tucker</div>
+        <div style="font-size:10px;color:var(--text-faint);">Touch 1 of 5</div>
+      </div>
+      <div style="padding:12px 0;">
+        <div style="font-size:12px;font-weight:600;margin-bottom:8px;">Haas F1 — Title Partnership Discussion</div>
+        <div style="font-size:11.5px;line-height:1.55;color:var(--text-dim);">Mark, your FT piece last week on emerging-market brand visibility caught my attention. The argument that physical presence beats digital impression-buying is exactly the bet Haas's title sponsor will make in 2027…</div>
+      </div>
+      <div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--border);">
+        <button class="ui-footer-cta" style="flex:1;text-align:center;">Approve & send</button>
+        <button style="padding:6px 12px;border-radius:var(--r-cta);border:1px solid var(--border);font-size:11px;font-weight:500;background:transparent;">Edit</button>
+        <button style="padding:6px 12px;border-radius:var(--r-cta);font-size:11px;font-weight:500;background:transparent;color:var(--text-faint);">Skip</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== USE CASE 2: Real signals, real time ========== -->
+<section class="use-case reverse scroll-reveal">
+  <div class="use-case-text">
+    <div class="use-case-eyebrow">Use case 02 · Signals</div>
+    <h2 class="use-case-title">Catch every move your targets make — overnight.</h2>
+    <p class="use-case-desc">Kiko monitors news, filings, LinkedIn, regulatory disclosures and 75+ industry sources continuously. When a target company makes a move that changes their sponsorship calculus, you wake up to a brief — not a Google Alert.</p>
+    <div class="use-case-bullets">
+      <div class="use-case-bullet">Renewal cycles, leadership moves, and earnings calls flagged in real time</div>
+      <div class="use-case-bullet">Deal-side intelligence: who just signed what, with whom, for how much</div>
+      <div class="use-case-bullet">Each signal comes with three suggested next actions</div>
+    </div>
+  </div>
+  <div class="use-case-visual">
+    <!-- Luxury marble interior -->
+    <div class="use-case-photo" style="background-image: url('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1600&q=85');"></div>
+    <div class="use-case-photo-overlay"></div>
+
+    <!-- Two floating signal cards -->
+    <div class="use-case-ui ui-floating-1">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <div class="ui-row-icon signal">⚡</div>
+        <div style="font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;font-weight:500;">Signal · 2h ago</div>
+      </div>
+      <div style="font-size:13px;font-weight:500;line-height:1.4;margin-bottom:8px;">HSBC just renewed F1 partnership</div>
+      <div style="font-size:11.5px;color:var(--text-dim);line-height:1.55;">Three new prospects identified in their Brand & Sponsorship team. Brand spend confirmed at £42M/yr.</div>
+    </div>
+
+    <div class="use-case-ui ui-floating-2">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <div class="ui-row-icon signal">⚡</div>
+        <div style="font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;font-weight:500;">Signal · just now</div>
+      </div>
+      <div style="font-size:13px;font-weight:500;line-height:1.4;margin-bottom:8px;">Sarah Lee → Head of Brand at JPM</div>
+      <div style="font-size:11.5px;color:var(--text-dim);line-height:1.55;">Ex-AmEx F1 lead. Strong category fit.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== USE CASE 3: Drafts that sound like you ========== -->
+<section class="use-case scroll-reveal">
+  <div class="use-case-text">
+    <div class="use-case-eyebrow">Use case 03 · Drafts</div>
+    <h2 class="use-case-title">Boardroom-ready prose, every send.</h2>
+    <p class="use-case-desc">Kiko studied your last 200 sent messages. It learned your phrasing — "category control," "closed bundle," "scarcity by design." Every draft uses your voice on your terms, never falls back to AI-generic, and never opens with "I hope this finds you well."</p>
+    <div class="use-case-bullets">
+      <div class="use-case-bullet">Trained on your voice, not a generic LLM persona</div>
+      <div class="use-case-bullet">Reply rate prediction shown before you send</div>
+      <div class="use-case-bullet">Cuts 25-40% on demand — type "tighten" and it does</div>
+    </div>
+  </div>
+  <div class="use-case-visual">
+    <!-- Trading floor / dark luxurious -->
+    <div class="use-case-photo" style="background-image: url('https://images.unsplash.com/photo-1554260570-9140fd3b7614?w=1600&q=85');"></div>
+    <div class="use-case-photo-overlay"></div>
+
+    <!-- Floating draft preview UI -->
+    <div class="use-case-ui ui-floating-center" style="width:420px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+        <div style="font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.1em;font-weight:500;">Email · Draft</div>
+        <div style="font-size:10.5px;color:var(--text);"><strong style="color:#7d8a64;">31%</strong> predicted reply rate</div>
+      </div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Re: Title sponsorship — board timing</div>
+      <div style="font-size:11.5px;line-height:1.6;color:var(--text-dim);">James, appreciate the fast turn — committee timing aligns well. Attaching: 1. Haas Commercial Overview (12pp) 2. Title Slot Pricing One-pager (1pp, $11M floor)…</div>
+      <div style="display:flex;gap:6px;margin-top:14px;">
+        <button class="ui-footer-cta" style="flex:1;text-align:center;">Approve & send</button>
+        <button style="padding:6px 10px;border-radius:var(--r-cta);border:1px solid var(--border);font-size:11px;font-weight:500;background:transparent;">Tighten</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FEATURE BLOCKS (4 colored, like Legora) ========== -->
+<section class="features-section scroll-reveal">
+  <div class="features-head">
+    <div class="features-eyebrow">What's inside Today</div>
+    <h2 class="features-title">Four moves. One screen. Zero meetings to plan it.</h2>
+  </div>
+  <div class="features-grid">
+    <div class="feature feature-grey">
+      <div class="feature-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="feature-bottom">
+        <div class="feature-name">Approve</div>
+        <div class="feature-desc">Single-tap on every draft. Editing is optional, not required.</div>
+      </div>
+    </div>
+    <div class="feature feature-cream">
+      <div class="feature-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+      </div>
+      <div class="feature-bottom">
+        <div class="feature-name">Signals</div>
+        <div class="feature-desc">75 sources monitored continuously. Briefs delivered overnight.</div>
+      </div>
+    </div>
+    <div class="feature feature-sage">
+      <div class="feature-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+      </div>
+      <div class="feature-bottom">
+        <div class="feature-name">Replies</div>
+        <div class="feature-desc">Classified by intent. Drafted in your voice. Surfaced for review.</div>
+      </div>
+    </div>
+    <div class="feature feature-terra">
+      <div class="feature-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </div>
+      <div class="feature-bottom">
+        <div class="feature-name">Snooze</div>
+        <div class="feature-desc">Push any item to a specific time. Returns with full context.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== TESTIMONIAL ========== -->
+<section class="testimonial scroll-reveal">
+  <div class="testimonial-grid">
+    <div class="testimonial-photo" style="background-image: url('https://images.unsplash.com/photo-1560250097-0b93528c311a?w=1200&q=85');"></div>
+    <div>
+      <div class="testimonial-quote-mark">"</div>
+      <div class="testimonial-quote">Today is the only screen I open before 9am. Eight minutes through the queue and I've moved forward on twelve deals. Nothing else in my stack does that.</div>
+      <div class="testimonial-attr">Matt Smith</div>
+      <div class="testimonial-role">Head of Commercial Partnerships, Van Hawke Group</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FAQ ========== -->
+<section class="faq-section scroll-reveal">
+  <div class="faq-head">
+    <div class="faq-eyebrow">Common questions</div>
+    <h2 class="faq-title">Things people ask before going live.</h2>
+  </div>
+  <div class="faq-item open" onclick="this.classList.toggle('open')">
+    <div class="faq-q">
+      What does Kiko do overnight, exactly?
+      <span class="faq-toggle">+</span>
+    </div>
+    <div class="faq-a">Pulls fresh signals across 75 sources, scores prospects against your campaigns, drafts every queued touch personalised to the latest data on each prospect, classifies overnight replies by intent, and prioritises tomorrow's queue by what moves your pipeline most.</div>
+  </div>
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q">
+      Can I edit Kiko's drafts before sending?
+      <span class="faq-toggle">+</span>
+    </div>
+    <div class="faq-a">Yes — every draft is editable inline. Common edits get learned and reflected in future drafts. You can also tell Kiko in plain English how to revise: "tighten by 30%", "make it more direct", "reference the FT piece".</div>
+  </div>
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q">
+      Does Kiko send anything without my approval?
+      <span class="faq-toggle">+</span>
+    </div>
+    <div class="faq-a">Never. Every email and LinkedIn message requires a single tap of approval. Auto-pause kicks in if Kiko detects risk — e.g. an out-of-office reply, a do-not-contact request, or a stage gate trigger.</div>
+  </div>
+  <div class="faq-item" onclick="this.classList.toggle('open')">
+    <div class="faq-q">
+      What happens if I'm away for a week?
+      <span class="faq-toggle">+</span>
+    </div>
+    <div class="faq-a">Kiko continues monitoring signals and queueing drafts. Nothing sends without you. When you return, the queue prioritises what's most time-sensitive — meeting requests, hot replies, and signals with decay risk.</div>
+  </div>
+</section>
+
+<!-- ========== BOTTOM CTA ========== -->
+<section class="bottom-cta">
+  <div class="bottom-cta-eyebrow">Ready to clear your queue?</div>
+  <h2 class="bottom-cta-title">Twelve decisions. Eight minutes. Every morning.</h2>
+  <a class="cta-primary" style="padding:14px 22px;font-size:13px;">Open workspace →</a>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer>
+  <div>© 2026 Van Hawke Group · Powered by Kiko</div>
+  <div class="footer-links">
+    <a>Settings</a>
+    <a>Help</a>
+    <a>Status</a>
+    <a>v1.0.4</a>
+  </div>
+</footer>
+
+<script>
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('in');
+      io.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll('.scroll-reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

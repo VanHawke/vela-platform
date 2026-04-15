@@ -111,14 +111,14 @@ export default function ThreadIndicator({ user, currentConvId, onSwitchThread })
         style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '5px 12px', borderRadius: 50,
-          background: 'rgba(124,92,252,0.06)',
+          background: 'rgba(0,0,0,0.04)',
           border: '1px solid rgba(124,92,252,0.16)',
           color: 'rgba(124,92,252,0.85)',
           fontSize: 11, fontFamily: 'var(--font)', fontWeight: 500,
           cursor: 'pointer', transition: 'all 0.15s',
         }}
-        onMouseOver={e => { e.currentTarget.style.background = 'rgba(124,92,252,0.10)'; e.currentTarget.style.borderColor = 'rgba(124,92,252,0.24)' }}
-        onMouseOut={e => { e.currentTarget.style.background = 'rgba(124,92,252,0.06)'; e.currentTarget.style.borderColor = 'rgba(124,92,252,0.16)' }}
+        onMouseOver={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.06)'; e.currentTarget.style.borderColor = 'rgba(124,92,252,0.24)' }}
+        onMouseOut={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = 'rgba(124,92,252,0.16)' }}
         title="Other active conversations"
       >
         <Layers size={11} />
@@ -132,7 +132,7 @@ export default function ThreadIndicator({ user, currentConvId, onSwitchThread })
           background: 'rgba(20,20,22,0.98)',
           backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
           borderRadius: 12,
-          border: '1px solid rgba(124,92,252,0.18)',
+          border: '1px solid rgba(0,0,0,0.08)',
           boxShadow: '0 16px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04)',
           padding: 8,
           zIndex: 9999,
@@ -160,16 +160,16 @@ export default function ThreadIndicator({ user, currentConvId, onSwitchThread })
                   textAlign: 'left', fontFamily: 'var(--font)',
                   transition: 'background 0.12s',
                 }}
-                onMouseOver={e => e.currentTarget.style.background = 'rgba(124,92,252,0.08)'}
+                onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
                 onMouseOut={e => e.currentTarget.style.background = 'transparent'}
               >
                 <div style={{
                   width: 28, height: 28, borderRadius: 8,
-                  background: isVoice ? 'rgba(124,92,252,0.10)' : 'rgba(124,92,252,0.10)',
+                  background: isVoice ? 'rgba(0,0,0,0.06)' : 'rgba(0,0,0,0.06)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0,
                 }}>
-                  <Icon size={13} color={isVoice ? '#7c5cfc' : '#7c5cfc'} />
+                  <Icon size={13} color={isVoice ? '#0A0A0A' : '#0A0A0A'} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{

@@ -4,8 +4,8 @@ import { supabase } from '@/lib/supabase'
 import { Search, BarChart3, Grid3X3, Building2, Mic, Settings, Users, GitBranch, Calendar, Send, Target } from 'lucide-react'
 
 const T = {
-  text: '#f4f4f6', sub: '#9b9ba3', muted: '#7e7e88',
-  border: '#26262f', soft: 'rgba(124,92,252,0.04)',
+  text: '#0A0A0A', sub: '#6B6B6B', muted: '#A0A0A0',
+  border: 'rgba(0,0,0,0.08)', soft: 'rgba(0,0,0,0.03)',
   font: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'DM Sans', 'Segoe UI', sans-serif",
 }
 
@@ -95,12 +95,12 @@ export default function CommandPalette({ open, onClose, onVoice }) {
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 'min(20vh, 160px)' }}>
       <div onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()} style={{
         width: 480, background: 'rgba(14,14,20,0.95)', borderRadius: 20,
-        boxShadow: 'inset 0 1px 0 #26262f, 0 16px 64px rgba(0,0,0,0.5)',
-        border: '1.5px solid #26262f', overflow: 'hidden',
+        boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.08), 0 16px 64px rgba(0,0,0,0.5)',
+        border: '1.5px solid rgba(0,0,0,0.08)', overflow: 'hidden',
         animation: 'scaleIn 0.15s ease-out',
       }}>
         {/* Search input */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '1.5px solid rgba(124,92,252,0.07)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '1.5px solid rgba(0,0,0,0.04)' }}>
           <Search size={16} color={T.muted} />
           <input ref={inputRef} value={query} onChange={e => setQuery(e.target.value)} onKeyDown={handleKeyDown}
             placeholder="Search pages, contacts, deals..." autoFocus
@@ -123,7 +123,7 @@ export default function CommandPalette({ open, onClose, onVoice }) {
                 <button onClick={() => handleSelect(item)} style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 10,
                   padding: '9px 10px', borderRadius: 50, border: 'none', textAlign: 'left',
-                  background: i === selected ? 'rgba(124,92,252,0.07)' : 'transparent',
+                  background: i === selected ? 'rgba(0,0,0,0.04)' : 'transparent',
                   cursor: 'pointer', fontFamily: T.font, transition: 'background 0.1s',
                 }}
                   onMouseEnter={() => setSelected(i)}
@@ -144,10 +144,10 @@ export default function CommandPalette({ open, onClose, onVoice }) {
         </div>
 
         {/* Keyboard hints */}
-        <div style={{ padding: '8px 16px', borderTop: '1.5px solid rgba(124,92,252,0.07)', display: 'flex', gap: 16, justifyContent: 'center' }}>
+        <div style={{ padding: '8px 16px', borderTop: '1.5px solid rgba(0,0,0,0.04)', display: 'flex', gap: 16, justifyContent: 'center' }}>
           {[['↑↓', 'navigate'], ['↵', 'open'], ['esc', 'close']].map(([key, label]) => (
             <span key={key} style={{ fontSize: 11, color: T.muted, fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4 }}>
-              <kbd style={{ padding: '1px 5px', borderRadius: 4, background: 'rgba(124,92,252,0.04)', border: '1.5px solid #26262f', fontSize: 11, fontFamily: 'inherit' }}>{key}</kbd>
+              <kbd style={{ padding: '1px 5px', borderRadius: 4, background: 'rgba(0,0,0,0.03)', border: '1.5px solid rgba(0,0,0,0.08)', fontSize: 11, fontFamily: 'inherit' }}>{key}</kbd>
               {label}
             </span>
           ))}

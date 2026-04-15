@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import './styles/kiko-polish.css'
 import { OrgProvider } from './contexts/OrgContext'
 import App from './App.jsx'
 

@@ -1,0 +1,179 @@
+/* Contacts.css — scoped to .ct */
+.ct {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #FEFEFC;
+  color: #0A0A0A;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 450;
+  font-size: 13px;
+  --slate: #5a6470;
+  --sage: #7d8a64;
+  --terra: #b8643e;
+  --amber: #B89C5C;
+  --purple: #6d4ea8;
+  --border: rgba(0,0,0,0.08);
+  --border-subtle: rgba(0,0,0,0.05);
+  --border-hover: rgba(0,0,0,0.14);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --r-card: 10px;
+  --r-pill: 24px;
+  --font-display: 'Source Serif 4', Georgia, serif;
+}
+.ct button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+.ct input { font: inherit; color: inherit; background: none; border: none; outline: none; }
+
+.ct-search {
+  height: 32px;
+  width: 280px;
+  padding: 0 12px;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 12.5px;
+}
+.ct-search:focus { border-color: #0A0A0A; }
+
+.ct-pri-btn {
+  height: 32px; padding: 0 14px;
+  background: #0A0A0A; color: white;
+  border-radius: 4px;
+  font-size: 12px; font-weight: 500;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.ct-pri-btn:hover { opacity: 0.85; }
+
+
+/* TABLE */
+.ct-table-wrap {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 32px 60px;
+}
+.ct-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: #FEFEFC;
+}
+.ct-table thead th {
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #A0A0A0;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  background: #FEFEFC;
+  z-index: 1;
+}
+.ct-table tbody tr {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.ct-table tbody tr:hover { background: rgba(0,0,0,0.02); }
+.ct-table tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: middle;
+}
+
+.ct-mark {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #F5F4F1;
+  color: #0A0A0A;
+  display: grid; place-items: center;
+  font-size: 10px; font-weight: 600;
+  font-family: var(--font-display);
+}
+
+.ct-name { font-weight: 500; color: #0A0A0A; }
+.ct-when { color: #6B6B6B; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+
+.ct-tag {
+  padding: 1px 8px;
+  border-radius: var(--r-pill);
+  font-size: 9.5px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  background: rgba(0,0,0,0.06); color: #6B6B6B;
+}
+.ct-tag.banking  { background: rgba(90,100,112,0.14); color: var(--slate); }
+.ct-tag.fintech  { background: rgba(125,138,100,0.14); color: var(--sage); }
+.ct-tag.gaming   { background: rgba(109,78,168,0.14); color: var(--purple); }
+.ct-tag.telecoms { background: rgba(184,156,92,0.14); color: var(--amber); }
+.ct-tag.luxury   { background: rgba(0,0,0,0.06); color: #0A0A0A; }
+
+.ct-status {
+  padding: 1px 8px;
+  border-radius: var(--r-pill);
+  font-size: 9.5px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.07em;
+}
+.ct-status.hot     { background: rgba(184,100,62,0.14); color: var(--terra); }
+.ct-status.engaged { background: rgba(125,138,100,0.14); color: var(--sage); }
+.ct-status.cold    { background: rgba(0,0,0,0.06); color: #6B6B6B; }
+.ct-status.new     { background: #0A0A0A; color: white; }
+
+.ct-pager {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  padding: 18px;
+  font-size: 12px; color: #6B6B6B;
+}
+.ct-pager button {
+  padding: 6px 12px;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 12px;
+}
+.ct-pager button:disabled { opacity: 0.4; cursor: not-allowed; }
+.ct-pager button:not(:disabled):hover { border-color: var(--border-hover); }
+
+/* HOVER POPUP */
+.ct-popup {
+  position: fixed;
+  width: 360px;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  padding: 16px 18px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+  z-index: 100;
+  pointer-events: none;
+  font-size: 12px;
+  animation: ctPopFade 0.15s ease-out;
+}
+@keyframes ctPopFade {
+  from { opacity: 0; transform: translateX(6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.ct-popup-h { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle); }
+.ct-popup-mark {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: #0A0A0A;
+  color: white;
+  display: grid; place-items: center;
+  font-size: 12px; font-weight: 600;
+  font-family: var(--font-display);
+  flex-shrink: 0;
+}
+.ct-popup-name { font-family: var(--font-display); font-weight: 400; font-size: 16px; color: #0A0A0A; }
+.ct-popup-title { font-size: 11.5px; color: #6B6B6B; margin-top: 2px; }
+.ct-popup-meta { display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; color: #6B6B6B; line-height: 1.5; }
+.ct-popup-meta strong { color: #0A0A0A; font-weight: 500; }
+.ct-popup-notes {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 12px;
+  color: #2a2a2a;
+  line-height: 1.5;
+  font-style: italic;
+}

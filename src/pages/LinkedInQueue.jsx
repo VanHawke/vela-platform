@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
 import T from '@/lib/theme'
+import PageHeader from '@/components/layout/PageHeader'
 import { Linkedin, ExternalLink, Check, Copy, RefreshCw, Search } from 'lucide-react'
 
 function timeAgo(d) {
@@ -98,17 +99,16 @@ export default function LinkedInQueue() {
   }
 
   return (
-    <div style={{ padding: '24px 32px', fontFamily: T.font, color: T.text, maxWidth: 1200, margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 500, color: T.text, margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Linkedin size={22} style={{ color: '#0077B5' }} /> LinkedIn Queue
-          </h1>
-          <div style={{ fontSize: 13, color: T.textTertiary }}>
-            Manual LinkedIn actions queued from your campaigns. Send each message yourself in LinkedIn, then mark sent.
-          </div>
-        </div>
-        <button onClick={load} style={{ padding: '8px 14px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.10)', background: 'transparent', color: T.text, fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <PageHeader
+        eyebrowCategory="OUTREACH"
+        eyebrowSuffix="LinkedIn queue"
+        title="LinkedIn"
+        subtitle="Manual LinkedIn actions queued from your campaigns. Send each message yourself in LinkedIn, then mark sent."
+      />
+      <div style={{ padding: '8px 32px 24px', fontFamily: T.font, color: T.text, maxWidth: 1200, margin: '0 auto', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end', marginBottom: 20 }}>
+          <button onClick={load} style={{ padding: '8px 14px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.10)', background: 'transparent', color: T.text, fontSize: 12, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
           <RefreshCw size={12} /> Refresh
         </button>
       </div>
@@ -121,9 +121,9 @@ export default function LinkedInQueue() {
         <div style={{ display: 'flex', gap: 4 }}>
           {[['pending', 'Pending', counts.pending], ['sent', 'Sent', counts.sent], ['skipped', 'Skipped', counts.skipped], ['all', 'All', counts.all]].map(([id, label, count]) => (
             <button key={id} onClick={() => setFilter(id)} style={{
-              padding: '7px 14px', borderRadius: 6, border: '1px solid ' + (filter === id ? 'rgba(124,92,252,0.30)' : 'transparent'),
-              background: filter === id ? 'rgba(124,92,252,0.10)' : 'transparent',
-              color: filter === id ? '#7c5cfc' : T.textSecondary, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
+              padding: '7px 14px', borderRadius: 6, border: '1px solid ' + (filter === id ? 'rgba(0,0,0,0.10)' : 'transparent'),
+              background: filter === id ? 'rgba(0,0,0,0.06)' : 'transparent',
+              color: filter === id ? '#0A0A0A' : T.textSecondary, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
             }}>{label} <span style={{ fontSize: 10, opacity: 0.7, marginLeft: 4 }}>{count}</span></button>
           ))}
         </div>
@@ -149,7 +149,7 @@ export default function LinkedInQueue() {
                 <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                   <span style={{ fontSize: 10, color: T.textTertiary }}>{timeAgo(item.created_at)}</span>
                   {item.status === 'pending' && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(251,191,36,0.10)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.25)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Pending</span>}
-                  {item.status === 'sent' && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(124,92,252,0.10)', color: '#7c5cfc', border: '1px solid rgba(124,92,252,0.25)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Sent</span>}
+                  {item.status === 'sent' && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.06)', color: '#0A0A0A', border: '1px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Sent</span>}
                   {item.status === 'skipped' && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(148,163,184,0.10)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.25)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Skipped</span>}
                 </div>
               </div>
@@ -167,7 +167,7 @@ export default function LinkedInQueue() {
                 </button>
                 {item.status === 'pending' && (
                   <>
-                    <button onClick={() => markSent(item)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: '1px solid rgba(124,92,252,0.30)', background: 'rgba(124,92,252,0.08)', color: '#7c5cfc', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: T.font }}>
+                    <button onClick={() => markSent(item)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.10)', background: 'rgba(0,0,0,0.05)', color: '#0A0A0A', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: T.font }}>
                       <Check size={11} /> Mark sent
                     </button>
                     <button onClick={() => skipItem(item)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.10)', background: 'transparent', color: T.textTertiary, fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>
@@ -180,6 +180,7 @@ export default function LinkedInQueue() {
           ))}
         </div>
       )}
+      </div>
     </div>
   )
 }

@@ -3,19 +3,20 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
+import PageHeader from '@/components/layout/PageHeader'
 // Design tokens — hardcoded (matching Sequences.jsx)
 const C = {
-  bg: '#1c1c24',
-  card: '#1c1c24',
-  cardHover: '#1c1c24',
+  bg: '#FFFFFF',
+  card: '#FFFFFF',
+  cardHover: '#FFFFFF',
   border: 'rgba(255,255,255,0.06)',
   borderHover: 'rgba(255,255,255,0.10)',
-  text: '#f4f4f6',
-  textSec: '#9b9ba3',
-  textTer: '#7e7e88',
-  textMut: '#56565e',
-  purple: '#7c5cfc',
-  teal: '#7c5cfc',
+  text: '#0A0A0A',
+  textSec: '#6B6B6B',
+  textTer: '#A0A0A0',
+  textMut: '#A0A0A0',
+  purple: '#0A0A0A',
+  teal: '#0A0A0A',
   green: '#34D399',
   red: '#F87171',
   amber: '#FBBF24',
@@ -659,7 +660,13 @@ RULES:
   const inputStyle = { width: '100%', padding: '8px 10px', borderRadius: 6, border: `0.5px solid ${C.border}`, background: C.cardHover, color: C.text, fontSize: 12, fontFamily: C.font, outline: 'none', boxSizing: 'border-box' }
 
   return (
-    <div style={{ padding: '20px 28px', fontFamily: C.font, color: C.text, maxWidth: 1300, margin: '0 auto' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <PageHeader
+        eyebrowCategory="OUTREACH"
+        eyebrowSuffix="Sequence detail"
+        title={seq?.name || 'New sequence'}
+      />
+      <div style={{ padding: '8px 28px 60px', fontFamily: C.font, color: C.text, maxWidth: 1300, margin: '0 auto', overflowY: 'auto', flex: 1 }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
         <button onClick={() => nav('/sequences')} style={{ background: 'none', border: 'none', color: C.textSec, cursor: 'pointer', padding: 4 }}><ArrowLeft size={18} /></button>
@@ -668,7 +675,7 @@ RULES:
           {dirty && <span style={{ fontSize: 11, color: C.amber }}>Unsaved</span>}
           {!isNew && <button onClick={duplicateCampaign} title="Duplicate campaign" style={{ padding: '7px 8px', borderRadius: 6, border: `0.5px solid ${C.border}`, background: 'transparent', color: C.textTer, cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Copy size={12} /></button>}
           {!isNew && <button onClick={deleteCampaign} title="Delete campaign" style={{ padding: '7px 8px', borderRadius: 6, border: '0.5px solid rgba(248,113,113,0.15)', background: 'transparent', color: C.red, cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Trash2 size={12} /></button>}
-          <button onClick={save} disabled={saving} style={{ padding: '7px 16px', borderRadius: 6, border: 'none', background: 'rgba(124,92,252,0.10)', color: C.purple, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, opacity: saving ? 0.5 : 1, display: 'flex', alignItems: 'center', gap: 5, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}><Save size={12} />{saving ? 'Saving...' : 'Save'}</button>
+          <button onClick={save} disabled={saving} style={{ padding: '7px 16px', borderRadius: 6, border: 'none', background: 'rgba(0,0,0,0.06)', color: C.purple, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, opacity: saving ? 0.5 : 1, display: 'flex', alignItems: 'center', gap: 5, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}><Save size={12} />{saving ? 'Saving...' : 'Save'}</button>
         </div>
       </div>
       <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
@@ -695,7 +702,7 @@ RULES:
             {['Sequence', 'Leads', 'Launch'].map((s, i) => (
               <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <div style={{ width: 20, height: 20, borderRadius: '50%', fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: (i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? 'rgba(124,92,252,0.12)' : 'transparent',
+                  background: (i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? 'rgba(0,0,0,0.08)' : 'transparent',
                   color: (i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? C.purple : C.textTer,
                   border: `1px solid ${(i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? 'rgba(124,92,252,0.2)' : C.border}`
                 }}>{i + 1}</div>
@@ -706,7 +713,7 @@ RULES:
         </div>
       )}
       {!isNew && !isDraft && (
-        <div style={{ padding: '10px 16px', borderRadius: 6, background: 'rgba(124,92,252,0.04)', border: '0.5px solid rgba(124,92,252,0.15)', marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ padding: '10px 16px', borderRadius: 6, background: 'rgba(0,0,0,0.03)', border: '0.5px solid rgba(0,0,0,0.08)', marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: 12, color: C.teal, fontWeight: 500 }}>Live — emails sending Mon-Fri 8am-6pm, timed to prospect timezone</span>
           <button onClick={async () => { await supabase.from('kiko_sequences').update({ is_active: false }).eq('id', id); setSeq(prev => ({ ...prev, is_active: false })) }} style={{ padding: '4px 12px', borderRadius: 4, border: '0.5px solid rgba(248,113,113,0.2)', background: 'transparent', color: C.red, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Pause campaign</button>
         </div>
@@ -733,8 +740,8 @@ RULES:
       })()}
       <div style={{ display: 'flex', gap: 2, marginBottom: 14, background: C.cardHover, borderRadius: C.r, padding: 3, width: 'fit-content' }}>
         {tabs.map(t => (
-          <button key={t.id} onClick={() => { setTab(t.id); setSelectedLead(null) }} style={{ padding: '6px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', fontFamily: C.font, fontSize: 12, background: tab === t.id ? 'rgba(124,92,252,0.08)' : 'transparent', color: tab === t.id ? C.text : C.textSec, display: 'flex', alignItems: 'center', gap: 5 }}>
-            {t.label}{t.ct !== undefined && <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 3, background: 'rgba(124,92,252,0.06)', color: C.purple }}>{t.ct}</span>}
+          <button key={t.id} onClick={() => { setTab(t.id); setSelectedLead(null) }} style={{ padding: '6px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', fontFamily: C.font, fontSize: 12, background: tab === t.id ? 'rgba(0,0,0,0.05)' : 'transparent', color: tab === t.id ? C.text : C.textSec, display: 'flex', alignItems: 'center', gap: 5 }}>
+            {t.label}{t.ct !== undefined && <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 3, background: 'rgba(0,0,0,0.04)', color: C.purple }}>{t.ct}</span>}
           </button>
         ))}
       </div>
@@ -755,13 +762,13 @@ RULES:
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, marginBottom: 3 }}>
                   <Clock size={9} style={{ color: C.textTer }} />
                   <select value={s.delay_days} onChange={e => upd(i, 'delay_days', +e.target.value)} style={{ background: 'transparent', border: 'none', color: C.amber, fontSize: 10, fontFamily: C.font, cursor: 'pointer', outline: 'none' }}>
-                    <option value={0} style={{ background: '#1c1c24' }}>Immediately</option>
-                    {[1, 2, 3, 4, 5, 7, 10, 14].map(d => <option key={d} value={d} style={{ background: '#1c1c24' }}>Wait {d}d</option>)}
+                    <option value={0} style={{ background: '#FFFFFF' }}>Immediately</option>
+                    {[1, 2, 3, 4, 5, 7, 10, 14].map(d => <option key={d} value={d} style={{ background: '#FFFFFF' }}>Wait {d}d</option>)}
                   </select>
                 </div>
-                <div onClick={() => setSelStep(i)} style={{ ...glass, padding: '8px 10px', cursor: 'pointer', borderColor: sel ? C.purple : C.border, background: sel ? 'rgba(124,92,252,0.04)' : glass.background, transition: 'all 0.15s' }}>
+                <div onClick={() => setSelStep(i)} style={{ ...glass, padding: '8px 10px', cursor: 'pointer', borderColor: sel ? C.purple : C.border, background: sel ? 'rgba(0,0,0,0.03)' : glass.background, transition: 'all 0.15s' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 20, height: 20, borderRadius: 5, background: s.type === 'condition' ? 'rgba(251,191,36,0.10)' : isLI ? 'rgba(0,119,181,0.12)' : 'rgba(124,92,252,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: 20, height: 20, borderRadius: 5, background: s.type === 'condition' ? 'rgba(251,191,36,0.10)' : isLI ? 'rgba(0,119,181,0.12)' : 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {s.type === 'condition' ? <GitBranch size={10} style={{ color: C.amber }} /> : isLI ? <Linkedin size={10} style={{ color: '#0077B5' }} /> : <Mail size={10} style={{ color: C.purple }} />}
                     </div>
                     <span style={{ fontSize: 11, fontWeight: 500, flex: 1 }}>{s.type === 'condition' ? 'Condition' : isLI ? 'LinkedIn' : 'Email'} {i + 1}</span>
@@ -812,12 +819,12 @@ RULES:
                     <div style={{ marginBottom: 14 }}>
                       <label style={{ fontSize: 10, color: C.textTer, marginBottom: 4, display: 'block' }}>Condition type</label>
                       <select value={cur.condition_type || 'no_reply'} onChange={e => upd(selStep, 'condition_type', e.target.value)} style={{ ...inputStyle, fontSize: 12 }}>
-                        {CONDITIONS.map(c => <option key={c.value} value={c.value} style={{ background: '#1c1c24' }}>{c.label}</option>)}
+                        {CONDITIONS.map(c => <option key={c.value} value={c.value} style={{ background: '#FFFFFF' }}>{c.label}</option>)}
                       </select>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
                       {/* YES branch */}
-                      <div style={{ padding: 12, borderRadius: 6, background: 'rgba(124,92,252,0.03)', border: '0.5px solid rgba(124,92,252,0.12)' }}>
+                      <div style={{ padding: 12, borderRadius: 6, background: 'rgba(0,0,0,0.02)', border: '0.5px solid rgba(0,0,0,0.08)' }}>
                         <div style={{ fontSize: 11, fontWeight: 500, color: C.teal, marginBottom: 8 }}>✅ YES branch</div>
                         <div style={{ fontSize: 10, color: C.textTer, marginBottom: 8 }}>
                           {cur.condition_type === 'no_reply' ? 'Lead did NOT reply' : cur.condition_type === 'has_linkedin' ? 'Has LinkedIn URL' : cur.condition_type === 'has_email' ? 'Has verified email' : 'Condition met'}
@@ -847,7 +854,7 @@ RULES:
                       Branches auto-configured. Ask Kiko: "Generate a multichannel branching campaign for [category]" for full customisation.
                     </div>
                     <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                      <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid rgba(124,92,252,0.15)`, background: 'rgba(124,92,252,0.04)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to optimise branches</button>
+                      <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid rgba(0,0,0,0.08)`, background: 'rgba(0,0,0,0.03)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to optimise branches</button>
                     </div>
                   </>
                 ) : (
@@ -860,9 +867,9 @@ RULES:
                 </div>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
                   <div style={{ flex: 1 }}><label style={{ fontSize: 10, color: C.textTer, marginBottom: 2, display: 'block' }}>Approach</label>
-                    <select value={cur.approach || ''} onChange={e => updAndRegen(selStep, 'approach', e.target.value)} style={{ ...inputStyle, padding: '5px 6px', fontSize: 11 }}>{APPROACHES.map(a => <option key={a} value={a} style={{ background: '#1c1c24' }}>{a}</option>)}</select></div>
+                    <select value={cur.approach || ''} onChange={e => updAndRegen(selStep, 'approach', e.target.value)} style={{ ...inputStyle, padding: '5px 6px', fontSize: 11 }}>{APPROACHES.map(a => <option key={a} value={a} style={{ background: '#FFFFFF' }}>{a}</option>)}</select></div>
                   <div style={{ flex: 1 }}><label style={{ fontSize: 10, color: C.textTer, marginBottom: 2, display: 'block' }}>Psychology</label>
-                    <select value={cur.psychology || ''} onChange={e => updAndRegen(selStep, 'psychology', e.target.value)} style={{ ...inputStyle, padding: '5px 6px', fontSize: 11 }}>{PSYCHOLOGY.map(p => <option key={p} value={p} style={{ background: '#1c1c24' }}>{p.replace(/_/g, ' ')}</option>)}</select></div>
+                    <select value={cur.psychology || ''} onChange={e => updAndRegen(selStep, 'psychology', e.target.value)} style={{ ...inputStyle, padding: '5px 6px', fontSize: 11 }}>{PSYCHOLOGY.map(p => <option key={p} value={p} style={{ background: '#FFFFFF' }}>{p.replace(/_/g, ' ')}</option>)}</select></div>
                 </div>
                 {cur.channel === 'email' && <div style={{ marginBottom: 12 }}><label style={{ fontSize: 10, color: C.textTer, marginBottom: 2, display: 'block' }}>Subject</label>
                   <input value={cur.subject || ''} onChange={e => upd(selStep, 'subject', e.target.value)} placeholder="Haas F1 Team x {category}" style={inputStyle} /></div>}
@@ -873,7 +880,7 @@ RULES:
                 {regenPrompt && <div style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(251,191,36,0.04)', border: '0.5px solid rgba(251,191,36,0.12)', marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: 11, color: C.amber }}>Approach changed — regenerate content?</span>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <button onClick={() => { askKiko(selStep); setRegenPrompt(false) }} style={{ padding: '4px 10px', borderRadius: 4, border: 'none', background: 'rgba(124,92,252,0.10)', color: C.purple, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Regenerate</button>
+                    <button onClick={() => { askKiko(selStep); setRegenPrompt(false) }} style={{ padding: '4px 10px', borderRadius: 4, border: 'none', background: 'rgba(0,0,0,0.06)', color: C.purple, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Regenerate</button>
                     <button onClick={() => setRegenPrompt(false)} style={{ padding: '4px 10px', borderRadius: 4, border: `0.5px solid ${C.border}`, background: 'transparent', color: C.textTer, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Keep</button>
                   </div>
                 </div>}
@@ -896,13 +903,13 @@ RULES:
                   {VARS.map(v => <button key={v} onClick={() => upd(selStep, 'template', (cur.template || '') + v)} style={{ padding: '2px 6px', borderRadius: 3, border: `0.5px solid ${C.border}`, background: 'transparent', color: C.purple, fontSize: 9, cursor: 'pointer', fontFamily: C.font }}>{v}</button>)}
                 </div></div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid rgba(124,92,252,0.15)`, background: 'rgba(124,92,252,0.04)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to write this step</button>
-                  {cur.channel === 'email' && <button onClick={() => { setTestModalStep(selStep); setTestModalOpen(true) }} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid ${testSent ? 'rgba(124,92,252,0.2)' : C.border}`, background: testSent ? 'rgba(124,92,252,0.04)' : 'transparent', color: testSent ? C.teal : C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{testSent ? '✓ Test sent' : '📧 Send test'}</button>}
+                  <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid rgba(0,0,0,0.08)`, background: 'rgba(0,0,0,0.03)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to write this step</button>
+                  {cur.channel === 'email' && <button onClick={() => { setTestModalStep(selStep); setTestModalOpen(true) }} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid ${testSent ? 'rgba(124,92,252,0.2)' : C.border}`, background: testSent ? 'rgba(0,0,0,0.03)' : 'transparent', color: testSent ? C.teal : C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{testSent ? '✓ Test sent' : '📧 Send test'}</button>}
                 </div>
 
                 {/* ═══ REFINE WITH FEEDBACK — iterate back and forth with Kiko ═══ */}
                 {cur.template && !cur.template.startsWith('⏳') && !cur.template.startsWith('Error') && (
-                  <div style={{ marginTop: 10, padding: 10, borderRadius: 6, background: 'rgba(124,92,252,0.025)', border: `0.5px solid rgba(124,92,252,0.10)` }}>
+                  <div style={{ marginTop: 10, padding: 10, borderRadius: 6, background: 'rgba(124,92,252,0.025)', border: `0.5px solid rgba(0,0,0,0.06)` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                       <Sparkles size={11} color={C.purple} />
                       <span style={{ fontSize: 10, fontWeight: 500, color: C.purple }}>Refine with feedback</span>
@@ -924,7 +931,7 @@ RULES:
                         style={{
                           padding: '0 14px', borderRadius: 6,
                           border: 'none',
-                          background: refining || !refineText.trim() ? 'rgba(124,92,252,0.05)' : 'rgba(124,92,252,0.12)',
+                          background: refining || !refineText.trim() ? 'rgba(0,0,0,0.03)' : 'rgba(0,0,0,0.08)',
                           color: refining || !refineText.trim() ? C.textTer : C.purple,
                           fontSize: 11, fontWeight: 500, cursor: refining || !refineText.trim() ? 'not-allowed' : 'pointer',
                           fontFamily: C.font, whiteSpace: 'nowrap', alignSelf: 'stretch',
@@ -946,7 +953,7 @@ RULES:
                         <span style={{ fontSize: 12, fontWeight: 500, color: C.text }}>Triggers</span>
                         <span style={{ fontSize: 9, color: C.textTer }}>· evaluated before this step sends</span>
                       </div>
-                      <button onClick={() => setShowAddCondition(true)} style={{ padding: '4px 10px', borderRadius: 5, border: `0.5px solid ${C.border}`, background: 'rgba(124,92,252,0.04)', color: C.purple, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>+ Add trigger</button>
+                      <button onClick={() => setShowAddCondition(true)} style={{ padding: '4px 10px', borderRadius: 5, border: `0.5px solid ${C.border}`, background: 'rgba(0,0,0,0.03)', color: C.purple, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>+ Add trigger</button>
                     </div>
 
                     {conditions.filter(c => c.step_number === selStep + 1).length === 0 && !showAddCondition && (
@@ -967,20 +974,20 @@ RULES:
                     ))}
 
                     {showAddCondition && (
-                      <div style={{ padding: 12, marginTop: 6, borderRadius: 6, background: 'rgba(124,92,252,0.04)', border: `0.5px solid ${C.border}` }}>
+                      <div style={{ padding: 12, marginTop: 6, borderRadius: 6, background: 'rgba(0,0,0,0.03)', border: `0.5px solid ${C.border}` }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
                           <div>
                             <div style={{ fontSize: 9, color: C.textTer, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>If</div>
                             <select value={newCondition.condition_type} onChange={e => setNewCondition({ ...newCondition, condition_type: e.target.value })} style={{ ...inputStyle, fontSize: 11, padding: '6px 8px' }}>
-                              <option value="opened" style={{ background: '#1c1c24' }}>opened</option>
-                              <option value="not_opened" style={{ background: '#1c1c24' }}>not opened</option>
-                              <option value="clicked" style={{ background: '#1c1c24' }}>clicked</option>
-                              <option value="not_clicked" style={{ background: '#1c1c24' }}>not clicked</option>
-                              <option value="replied" style={{ background: '#1c1c24' }}>replied</option>
-                              <option value="not_replied" style={{ background: '#1c1c24' }}>not replied</option>
-                              <option value="days_since_last_action" style={{ background: '#1c1c24' }}>days since last action</option>
-                              <option value="company_attribute" style={{ background: '#1c1c24' }}>company attribute</option>
-                              <option value="has_meeting" style={{ background: '#1c1c24' }}>has meeting booked</option>
+                              <option value="opened" style={{ background: '#FFFFFF' }}>opened</option>
+                              <option value="not_opened" style={{ background: '#FFFFFF' }}>not opened</option>
+                              <option value="clicked" style={{ background: '#FFFFFF' }}>clicked</option>
+                              <option value="not_clicked" style={{ background: '#FFFFFF' }}>not clicked</option>
+                              <option value="replied" style={{ background: '#FFFFFF' }}>replied</option>
+                              <option value="not_replied" style={{ background: '#FFFFFF' }}>not replied</option>
+                              <option value="days_since_last_action" style={{ background: '#FFFFFF' }}>days since last action</option>
+                              <option value="company_attribute" style={{ background: '#FFFFFF' }}>company attribute</option>
+                              <option value="has_meeting" style={{ background: '#FFFFFF' }}>has meeting booked</option>
                             </select>
                           </div>
                           <div>
@@ -1010,7 +1017,7 @@ RULES:
                         </div>
                         <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                           <button onClick={() => setShowAddCondition(false)} style={{ padding: '6px 12px', borderRadius: 5, border: `0.5px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
-                          <button onClick={addCondition} style={{ padding: '6px 14px', borderRadius: 5, border: 'none', background: 'rgba(124,92,252,0.10)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>Save trigger</button>
+                          <button onClick={addCondition} style={{ padding: '6px 14px', borderRadius: 5, border: 'none', background: 'rgba(0,0,0,0.06)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>Save trigger</button>
                         </div>
                       </div>
                     )}
@@ -1023,7 +1030,7 @@ RULES:
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, color: C.textTer, fontSize: 12, gap: 10 }}>
                 <span>Add a step to start building</span>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <button onClick={() => addStep('email')} style={{ padding: '6px 12px', borderRadius: 5, border: `0.5px solid rgba(124,92,252,0.15)`, background: 'rgba(124,92,252,0.04)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>+ Email</button>
+                  <button onClick={() => addStep('email')} style={{ padding: '6px 12px', borderRadius: 5, border: `0.5px solid rgba(0,0,0,0.08)`, background: 'rgba(0,0,0,0.03)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>+ Email</button>
                   <button onClick={() => addStep('linkedin')} style={{ padding: '6px 12px', borderRadius: 5, border: '0.5px solid rgba(0,119,181,0.15)', background: 'rgba(0,119,181,0.04)', color: '#0077B5', fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>+ LinkedIn</button>
                   <button onClick={() => addStep('condition')} style={{ padding: '6px 12px', borderRadius: 5, border: '0.5px solid rgba(251,191,36,0.15)', background: 'rgba(251,191,36,0.04)', color: C.amber, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>+ Condition</button>
                 </div>
@@ -1034,7 +1041,7 @@ RULES:
         {/* Continue to Leads button (draft flow) */}
         {isDraft && steps.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
-            <button onClick={() => { if (dirty) save(); setTab('leads') }} style={{ padding: '10px 24px', borderRadius: 6, border: 'none', background: 'rgba(124,92,252,0.10)', color: C.purple, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 1px 2px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button onClick={() => { if (dirty) save(); setTab('leads') }} style={{ padding: '10px 24px', borderRadius: 6, border: 'none', background: 'rgba(0,0,0,0.06)', color: C.purple, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 1px 2px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: 6 }}>
               Continue to Leads <ChevronRight size={14} />
             </button>
           </div>
@@ -1061,24 +1068,24 @@ RULES:
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button onClick={autoSuggestLeads} disabled={loadingSuggestions} style={{ padding: '5px 12px', borderRadius: 5, border: `0.5px solid ${C.border}`, background: C.cardHover, color: C.teal, fontSize: 11, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><Sparkles size={12} />{loadingSuggestions ? 'Finding...' : 'Kiko, find leads'}</button>
-                  <button onClick={queueBackgroundSource} disabled={bgSourcing} style={{ padding: '5px 12px', borderRadius: 5, border: `0.5px solid rgba(124,92,252,0.30)`, background: 'rgba(124,92,252,0.06)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }} title="Queues a background job. Kiko sources contacts via Sonnet+web search while you do other work.">⚡{bgSourcing ? 'Queueing…' : 'Source in background'}</button>
+                  <button onClick={queueBackgroundSource} disabled={bgSourcing} style={{ padding: '5px 12px', borderRadius: 5, border: `0.5px solid rgba(0,0,0,0.10)`, background: 'rgba(0,0,0,0.04)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }} title="Queues a background job. Kiko sources contacts via Sonnet+web search while you do other work.">⚡{bgSourcing ? 'Queueing…' : 'Source in background'}</button>
                   <button onClick={() => setShowManualAdd(true)} style={{ padding: '5px 12px', borderRadius: 5, border: `0.5px solid ${C.border}`, background: C.cardHover, color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><Plus size={12} />Manual add</button>
-                  <button onClick={() => setShowAddLeads(true)} style={{ padding: '5px 12px', borderRadius: 5, border: 'none', background: 'rgba(124,92,252,0.10)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><UserPlus size={12} />Add from CRM</button>
+                  <button onClick={() => setShowAddLeads(true)} style={{ padding: '5px 12px', borderRadius: 5, border: 'none', background: 'rgba(0,0,0,0.06)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><UserPlus size={12} />Add from CRM</button>
                 </div>
               </div>
               {bgJobMsg && (
-                <div style={{ padding: '8px 16px', borderBottom: `0.5px solid ${C.border}`, background: bgJobMsg.startsWith('✅') ? 'rgba(124,92,252,0.04)' : 'rgba(248,113,113,0.04)', fontSize: 11, color: bgJobMsg.startsWith('✅') ? C.purple : C.red }}>
+                <div style={{ padding: '8px 16px', borderBottom: `0.5px solid ${C.border}`, background: bgJobMsg.startsWith('✅') ? 'rgba(0,0,0,0.03)' : 'rgba(248,113,113,0.04)', fontSize: 11, color: bgJobMsg.startsWith('✅') ? C.purple : C.red }}>
                   {bgJobMsg}
                 </div>
               )}
               {suggestions.length > 0 && (
-                <div style={{ padding: '10px 16px', borderBottom: `0.5px solid ${C.border}`, background: 'rgba(124,92,252,0.02)' }}>
+                <div style={{ padding: '10px 16px', borderBottom: `0.5px solid ${C.border}`, background: 'rgba(0,0,0,0.02)' }}>
                   <div style={{ fontSize: 11, color: C.teal, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}><Sparkles size={11} />Kiko found {suggestions.length} potential leads</div>
                   <div style={{ maxHeight: 200, overflowY: 'auto' }}>
                     {suggestions.map(s => {
                       const checked = selectedLeads.some(l => l.id === s.id)
                       return (
-                        <div key={s.id} onClick={() => checked ? setSelectedLeads(selectedLeads.filter(l => l.id !== s.id)) : setSelectedLeads([...selectedLeads, s])} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 8px', cursor: 'pointer', borderRadius: 4, background: checked ? 'rgba(124,92,252,0.03)' : 'transparent' }}>
+                        <div key={s.id} onClick={() => checked ? setSelectedLeads(selectedLeads.filter(l => l.id !== s.id)) : setSelectedLeads([...selectedLeads, s])} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 8px', cursor: 'pointer', borderRadius: 4, background: checked ? 'rgba(0,0,0,0.02)' : 'transparent' }}>
                           <div style={{ width: 14, height: 14, borderRadius: 3, border: `1px solid ${checked ? C.purple : C.border}`, background: checked ? C.purple : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{checked && <span style={{ color: '#111', fontSize: 9 }}>✓</span>}</div>
                           <span style={{ fontSize: 11, color: C.text, minWidth: 100 }}>{s.name}</span>
                           <span style={{ fontSize: 10, color: C.textTer, flex: 1 }}>{s.company} · {s.title || '—'}</span>
@@ -1087,7 +1094,7 @@ RULES:
                       )
                     })}
                   </div>
-                  {selectedLeads.length > 0 && <button onClick={enrollSelected} style={{ marginTop: 8, padding: '6px 14px', borderRadius: 5, border: 'none', background: 'rgba(124,92,252,0.10)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>Enroll {selectedLeads.length} contact{selectedLeads.length > 1 ? 's' : ''}</button>}
+                  {selectedLeads.length > 0 && <button onClick={enrollSelected} style={{ marginTop: 8, padding: '6px 14px', borderRadius: 5, border: 'none', background: 'rgba(0,0,0,0.06)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>Enroll {selectedLeads.length} contact{selectedLeads.length > 1 ? 's' : ''}</button>}
                 </div>
               )}
               {enrollments.length ? (<div>
@@ -1097,8 +1104,8 @@ RULES:
                 {enrollments.map(e => {
                   const isSelected = selectedLead?.id === e.id
                   return (
-                    <div key={e.id} onClick={() => selectLeadForTimeline(e)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderBottom: `0.5px solid ${C.border}`, fontSize: 12, cursor: 'pointer', transition: 'all 0.15s', background: isSelected ? 'rgba(124,92,252,0.04)' : 'transparent' }}
-                      onMouseEnter={ev => { if (!isSelected) ev.currentTarget.style.background = 'rgba(124,92,252,0.02)' }}
+                    <div key={e.id} onClick={() => selectLeadForTimeline(e)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderBottom: `0.5px solid ${C.border}`, fontSize: 12, cursor: 'pointer', transition: 'all 0.15s', background: isSelected ? 'rgba(0,0,0,0.03)' : 'transparent' }}
+                      onMouseEnter={ev => { if (!isSelected) ev.currentTarget.style.background = 'rgba(0,0,0,0.02)' }}
                       onMouseLeave={ev => { if (!isSelected) ev.currentTarget.style.background = 'transparent' }}>
                       <div style={{ width: 8, height: 8, borderRadius: '50%', background: e.status === 'active' ? C.teal : e.status === 'replied' ? C.teal : e.status === 'bounced' ? C.red : C.textTer }} />
                       <div style={{ flex: 1, minWidth: 0 }}><div style={{ color: C.text }}>{e.contact_name || e.contact_email}</div><div style={{ fontSize: 10, color: C.textTer }}>{e.company}</div></div>
@@ -1137,7 +1144,7 @@ RULES:
                       const isSent = a.status === 'sent'; const isFailed = a.status === 'failed'; const isQueued = a.status === 'queued'
                       return (
                         <div key={a.id || i} style={{ display: 'flex', gap: 10, padding: '8px 0', position: 'relative' }}>
-                          <div style={{ position: 'absolute', left: -15, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#1c1c24', border: `2px solid ${isSent ? 'rgba(124,92,252,0.5)' : isFailed ? 'rgba(248,113,113,0.5)' : '#56565e'}`, zIndex: 1 }} />
+                          <div style={{ position: 'absolute', left: -15, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#FFFFFF', border: `2px solid ${isSent ? 'rgba(124,92,252,0.5)' : isFailed ? 'rgba(248,113,113,0.5)' : '#A0A0A0'}`, zIndex: 1 }} />
                           <div style={{ flex: 1, background: C.cardHover, border: `0.5px solid ${C.border}`, borderRadius: 6, padding: '8px 10px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
                               {isSent ? <Send size={11} style={{ color: C.teal }} /> : isFailed ? <AlertTriangle size={11} style={{ color: C.red }} /> : <Clock size={11} style={{ color: C.textTer }} />}
@@ -1152,7 +1159,7 @@ RULES:
                                   </span>
                                 )}
                                 {a.clicks_count > 0 && (
-                                  <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 10, background: 'rgba(124,92,252,0.08)', border: '0.5px solid rgba(124,92,252,0.18)', color: C.purple }}>
+                                  <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 10, background: 'rgba(0,0,0,0.05)', border: '0.5px solid rgba(0,0,0,0.08)', color: C.purple }}>
                                     🔗 Clicked {a.clicks_count > 1 ? `×${a.clicks_count}` : ''}
                                   </span>
                                 )}
@@ -1164,7 +1171,7 @@ RULES:
                       )
                     })}
                     <div style={{ display: 'flex', gap: 10, padding: '8px 0', position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: -15, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#1c1c24', border: `2px solid rgba(124,92,252,0.3)`, zIndex: 1 }} />
+                      <div style={{ position: 'absolute', left: -15, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#FFFFFF', border: `2px solid rgba(124,92,252,0.3)`, zIndex: 1 }} />
                       <div style={{ flex: 1, background: C.cardHover, border: `0.5px solid ${C.border}`, borderRadius: 6, padding: '8px 10px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><UserPlus size={11} style={{ color: C.purple }} /><span style={{ fontSize: 11, fontWeight: 500, color: C.textSec }}>Enrolled</span></div>
                         <div style={{ fontSize: 10, color: C.textMut, marginTop: 2 }}>{selectedLead.created_at ? new Date(selectedLead.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}</div>
@@ -1182,13 +1189,13 @@ RULES:
             <button onClick={() => setTab('sequence')} style={{ padding: '10px 20px', borderRadius: 6, border: `0.5px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 13, cursor: 'pointer', fontFamily: C.font }}>
               ← Back to Sequence
             </button>
-            <button onClick={verifyTargets} disabled={verifying} style={{ padding: '10px 20px', borderRadius: 6, border: `0.5px solid ${C.border}`, background: verifying ? 'rgba(124,92,252,0.05)' : 'rgba(124,92,252,0.10)', color: '#7c5cfc', fontSize: 13, fontWeight: 500, cursor: verifying ? 'wait' : 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6, opacity: verifying ? 0.6 : 1 }}>
+            <button onClick={verifyTargets} disabled={verifying} style={{ padding: '10px 20px', borderRadius: 6, border: `0.5px solid ${C.border}`, background: verifying ? 'rgba(0,0,0,0.03)' : 'rgba(0,0,0,0.06)', color: '#0A0A0A', fontSize: 13, fontWeight: 500, cursor: verifying ? 'wait' : 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6, opacity: verifying ? 0.6 : 1 }}>
               {verifying ? '⏳ Verifying targets...' : '🔍 Verify all targets'}
             </button>
             <button onClick={enrichSponsorship} disabled={enriching} style={{ padding: '10px 20px', borderRadius: 6, border: `0.5px solid ${C.border}`, background: enriching ? 'rgba(251,191,36,0.05)' : 'rgba(251,191,36,0.10)', color: '#fbbf24', fontSize: 13, fontWeight: 500, cursor: enriching ? 'wait' : 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6, opacity: enriching ? 0.6 : 1 }}>
               {enriching ? '⏳ Researching sponsorships...' : '🏎 Enrich sponsorship history'}
             </button>
-            <button onClick={() => setShowLaunchConfirm(true)} disabled={launching} style={{ padding: '10px 28px', borderRadius: 6, border: 'none', background: 'rgba(124,92,252,0.12)', color: C.teal, fontSize: 13, fontWeight: 600, cursor: launching ? 'wait' : 'pointer', fontFamily: C.font, boxShadow: '0 1px 2px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: 6, opacity: launching ? 0.6 : 1 }}>
+            <button onClick={() => setShowLaunchConfirm(true)} disabled={launching} style={{ padding: '10px 28px', borderRadius: 6, border: 'none', background: 'rgba(0,0,0,0.08)', color: C.teal, fontSize: 13, fontWeight: 600, cursor: launching ? 'wait' : 'pointer', fontFamily: C.font, boxShadow: '0 1px 2px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: 6, opacity: launching ? 0.6 : 1 }}>
               {launching ? '⏳ Activating...' : '🚀 Activate Campaign'}
             </button>
           </div>
@@ -1283,9 +1290,9 @@ RULES:
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(topPatterns.length, 3)}, 1fr)`, gap: 10 }}>
                     {topPatterns.map((p, i) => (
-                      <div key={i} style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(124,92,252,0.04)', border: `0.5px solid ${C.border}` }}>
+                      <div key={i} style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(0,0,0,0.03)', border: `0.5px solid ${C.border}` }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                          <span style={{ fontSize: 10, fontWeight: 500, color: C.purple, padding: '2px 7px', borderRadius: 10, background: 'rgba(124,92,252,0.10)', border: '0.5px solid rgba(124,92,252,0.20)' }}>#{i + 1}</span>
+                          <span style={{ fontSize: 10, fontWeight: 500, color: C.purple, padding: '2px 7px', borderRadius: 10, background: 'rgba(0,0,0,0.06)', border: '0.5px solid rgba(0,0,0,0.10)' }}>#{i + 1}</span>
                           <span style={{ fontSize: 11, color: C.textSec, fontWeight: 500, textTransform: 'capitalize' }}>{p.approach}</span>
                           <span style={{ fontSize: 9, color: C.textTer }}>×</span>
                           <span style={{ fontSize: 11, color: C.textSec, fontWeight: 500, textTransform: 'capitalize' }}>{p.psychology}</span>
@@ -1323,7 +1330,7 @@ RULES:
                   const pctSent = enrollments.length > 0 ? Math.round(sentQ / enrollments.length * 100) : 0
                   return (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderBottom: `0.5px solid ${C.border}`, fontSize: 11 }}>
-                      <div style={{ width: 20, height: 20, borderRadius: 5, background: s.type === 'condition' ? 'rgba(251,191,36,0.10)' : s.channel === 'linkedin' ? 'rgba(0,119,181,0.12)' : 'rgba(124,92,252,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: 20, height: 20, borderRadius: 5, background: s.type === 'condition' ? 'rgba(251,191,36,0.10)' : s.channel === 'linkedin' ? 'rgba(0,119,181,0.12)' : 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {s.type === 'condition' ? <GitBranch size={9} style={{ color: C.amber }} /> : s.channel === 'linkedin' ? <Linkedin size={9} style={{ color: '#0077B5' }} /> : <Mail size={9} style={{ color: C.purple }} />}
                       </div>
                       <span style={{ width: 60, color: C.textTer }}>Step {i + 1}</span>
@@ -1368,7 +1375,7 @@ RULES:
             </div>
             <div style={{ marginBottom: 16 }}><label style={{ fontSize: 10, color: C.textTer, display: 'block', marginBottom: 3 }}>LinkedIn URL</label>
               <input value={manualLead.linkedin} onChange={e => setManualLead({ ...manualLead, linkedin: e.target.value })} placeholder="https://linkedin.com/in/..." style={inputStyle} /></div>
-            <button onClick={addManualLead} disabled={manualAdding || !manualLead.email.trim()} style={{ width: '100%', padding: '9px 0', borderRadius: 6, border: 'none', background: manualAdding ? C.cardHover : 'rgba(124,92,252,0.10)', color: manualAdding ? C.textTer : C.purple, fontSize: 12, fontWeight: 500, cursor: manualAdding ? 'default' : 'pointer', fontFamily: C.font }}>
+            <button onClick={addManualLead} disabled={manualAdding || !manualLead.email.trim()} style={{ width: '100%', padding: '9px 0', borderRadius: 6, border: 'none', background: manualAdding ? C.cardHover : 'rgba(0,0,0,0.06)', color: manualAdding ? C.textTer : C.purple, fontSize: 12, fontWeight: 500, cursor: manualAdding ? 'default' : 'pointer', fontFamily: C.font }}>
               {manualAdding ? '⏳ Adding...' : 'Enroll lead'}
             </button>
           </div>
@@ -1385,13 +1392,13 @@ RULES:
             </div>
             <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
               <input value={leadSearch} onChange={e => setLeadSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && searchContacts()} placeholder="Search by company, name, or title..." style={{ ...inputStyle, flex: 1 }} />
-              <button onClick={searchContacts} disabled={searching} style={{ padding: '8px 14px', borderRadius: 6, border: 'none', background: 'rgba(124,92,252,0.10)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}><Search size={12} /></button>
+              <button onClick={searchContacts} disabled={searching} style={{ padding: '8px 14px', borderRadius: 6, border: 'none', background: 'rgba(0,0,0,0.06)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}><Search size={12} /></button>
             </div>
             <div style={{ flex: 1, overflowY: 'auto', marginBottom: 14 }}>
               {searchResults.map(r => {
                 const checked = selectedLeads.some(l => l.id === r.id)
                 return (
-                  <div key={r.id} onClick={() => checked ? setSelectedLeads(selectedLeads.filter(l => l.id !== r.id)) : setSelectedLeads([...selectedLeads, r])} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderBottom: `0.5px solid ${C.border}`, cursor: 'pointer', background: checked ? 'rgba(124,92,252,0.03)' : 'transparent' }}>
+                  <div key={r.id} onClick={() => checked ? setSelectedLeads(selectedLeads.filter(l => l.id !== r.id)) : setSelectedLeads([...selectedLeads, r])} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderBottom: `0.5px solid ${C.border}`, cursor: 'pointer', background: checked ? 'rgba(0,0,0,0.02)' : 'transparent' }}>
                     <div style={{ width: 16, height: 16, borderRadius: 3, border: `1px solid ${checked ? C.purple : C.border}`, background: checked ? C.purple : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{checked && <span style={{ color: '#111', fontSize: 10 }}>✓</span>}</div>
                     <div style={{ flex: 1 }}><div style={{ fontSize: 12, color: C.text }}>{r.name}</div><div style={{ fontSize: 10, color: C.textTer }}>{r.company} · {r.title || 'No title'} · {r.email}</div></div>
                   </div>
@@ -1399,7 +1406,7 @@ RULES:
               })}
               {searchResults.length === 0 && leadSearch && !searching && <div style={{ padding: 20, textAlign: 'center', color: C.textTer, fontSize: 11, fontWeight: 300 }}>No contacts found. Try a different search.</div>}
             </div>
-            {selectedLeads.length > 0 && <button onClick={enrollSelected} style={{ width: '100%', padding: '9px 0', borderRadius: 6, border: 'none', background: 'rgba(124,92,252,0.10)', color: C.purple, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}>Enroll {selectedLeads.length} contact{selectedLeads.length > 1 ? 's' : ''}</button>}
+            {selectedLeads.length > 0 && <button onClick={enrollSelected} style={{ width: '100%', padding: '9px 0', borderRadius: 6, border: 'none', background: 'rgba(0,0,0,0.06)', color: C.purple, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}>Enroll {selectedLeads.length} contact{selectedLeads.length > 1 ? 's' : ''}</button>}
           </div>
         </div>
       )}
@@ -1418,7 +1425,7 @@ RULES:
             </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
               <button onClick={() => setShowLaunchConfirm(false)} style={{ padding: '10px 20px', borderRadius: 6, border: `0.5px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 13, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
-              <button onClick={launchCampaign} disabled={launching} style={{ padding: '10px 28px', borderRadius: 6, border: 'none', background: 'rgba(124,92,252,0.15)', color: C.teal, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}>{launching ? '⏳ Launching...' : '🚀 Go Live'}</button>
+              <button onClick={launchCampaign} disabled={launching} style={{ padding: '10px 28px', borderRadius: 6, border: 'none', background: 'rgba(0,0,0,0.08)', color: C.teal, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}>{launching ? '⏳ Launching...' : '🚀 Go Live'}</button>
             </div>
           </div>
         </div>
@@ -1464,6 +1471,7 @@ RULES:
           </div>
         )
       })()}
+      </div>
     </div>
   )
 }

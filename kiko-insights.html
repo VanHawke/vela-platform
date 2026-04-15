@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kiko · Insights</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kiko-polish.css">
+<script src="kiko-polish.js" defer></script>
+<style>
+  :root{--bg:#FEFEFC;--bg-card:#FFFFFF;--bg-tinted:#F5F4F1;--bg-list:#FAFAF7;--surface:rgba(0,0,0,0.03);--text:#0A0A0A;--text-dim:#6B6B6B;--text-faint:#A0A0A0;--text-muted:#C0C0C0;--accent:#0A0A0A;--border:rgba(0,0,0,0.08);--border-subtle:rgba(0,0,0,0.05);--border-hover:rgba(0,0,0,0.14);--shadow-sm:0 1px 2px rgba(0,0,0,0.04);--r-cta:4px;--r-card:14px;--r-pill:24px;--font:'Inter',system-ui,sans-serif;--font-display:'Source Serif 4',Georgia,serif;--topnav-h:60px;--f1:#b8643e;--fe:#5a6644;--motogp:#8a6f2c;--wec:#6d4ea8;--slate:#5a6470;--up:#5a6644;--down:#b8643e}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);font-weight:450;font-size:13px;-webkit-font-smoothing:antialiased;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+  button,a{font:inherit;color:inherit;background:none;border:none;cursor:pointer;text-decoration:none}
+  .opt-switcher{position:fixed;top:16px;left:16px;z-index:200;display:flex;gap:4px;background:rgba(255,255,255,0.92);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:var(--r-cta);padding:4px;box-shadow:0 4px 16px rgba(0,0,0,0.05);font-size:11px}
+  .opt-switcher a{padding:4px 10px;border-radius:3px;color:var(--text-dim)}
+  .opt-switcher a:hover{background:var(--surface);color:var(--text)}
+  .opt-switcher a.active{background:var(--accent);color:white}
+
+
+  /* TOP NAV */
+  .topnav{height:var(--topnav-h);background:var(--bg);border-bottom:1px solid var(--border-subtle);padding:0 32px 0 200px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:50;flex-shrink:0}
+  .nav-brand{display:flex;align-items:center;gap:9px}
+  .nav-mark{width:22px;height:22px}
+  .nav-name{font-family:var(--font-display);font-size:18px;font-weight:400;letter-spacing:0.04em}
+  .nav-links{display:flex;align-items:center;gap:30px}
+  .nav-link{color:var(--text);font-size:13px;font-weight:450;padding:18px 0;position:relative;display:inline-flex;align-items:center;gap:2px}
+  .nav-link:hover{opacity:0.6}
+  .nav-link .plus{color:var(--text-faint)}
+  .nav-link.active{font-weight:500}
+  .nav-link.active::after{content:'';height:1px;background:var(--text);position:absolute;left:0;right:0;bottom:-1px}
+  .nav-right{display:flex;align-items:center;gap:8px}
+  .icon-btn{width:32px;height:32px;display:grid;place-items:center;border-radius:var(--r-cta);color:var(--text-dim);position:relative}
+  .icon-btn:hover{background:var(--surface);color:var(--text)}
+  .icon-btn .dot{position:absolute;top:7px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--f1);box-shadow:0 0 0 2px var(--bg)}
+  .nav-cta{height:32px;padding:0 14px;background:var(--accent);color:white;border-radius:var(--r-cta);font-size:12px;font-weight:500;margin-left:4px}
+  .avatar{width:28px;height:28px;border-radius:50%;background:var(--accent);color:white;display:grid;place-items:center;font-size:11px;font-weight:500;margin-left:6px}
+
+
+  /* PAGE HEAD */
+  .page-head{padding:24px 44px 18px;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;flex-shrink:0}
+  .page-title{font-family:var(--font-display);font-weight:300;font-size:36px;letter-spacing:-0.018em;line-height:1.0;margin-top:6px}
+  .head-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .seg{display:inline-flex;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-cta);padding:2px}
+  .seg button{padding:5px 12px;font-size:12px;color:var(--text-dim);border-radius:3px}
+  .seg button.active{background:var(--accent);color:white}
+  .ghost-btn{height:32px;padding:0 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-cta);font-size:12px;display:inline-flex;align-items:center;gap:5px}
+  .ghost-btn:hover{border-color:var(--border-hover);background:var(--surface)}
+  .ghost-btn svg{width:12px;height:12px}
+
+  /* BENTO GRID */
+  .bento{flex:1;overflow-y:auto;padding:0 44px 60px;display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:170px;gap:14px}
+  .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-card);padding:18px 22px;display:flex;flex-direction:column;justify-content:space-between;transition:border-color 0.15s,transform 0.2s var(--ease-spring);position:relative;overflow:hidden}
+  .card:hover{border-color:var(--border-hover);transform:translateY(-2px)}
+  .card.span-2{grid-column:span 2}
+  .card.span-3{grid-column:span 3}
+  .card.span-4{grid-column:span 4}
+  .card.row-2{grid-row:span 2}
+  .card-h{display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;font-weight:500}
+  .card-h .h-pill{margin-left:auto;font-size:9.5px;color:var(--up);background:rgba(125,138,100,0.14);padding:1px 7px;border-radius:24px;letter-spacing:0.05em;font-weight:500}
+  .card-h .h-pill.down{color:var(--down);background:rgba(184,100,62,0.14)}
+
+  .big-num{font-family:var(--font-display);font-weight:300;font-size:48px;letter-spacing:-0.022em;line-height:1.0;margin-top:6px}
+  .big-num.huge{font-size:64px}
+  .big-num .currency{font-size:0.6em;color:var(--text-dim);font-weight:400;margin-right:2px;vertical-align:0.18em}
+  .big-num .unit{font-size:0.45em;color:var(--text-dim);font-weight:400;margin-left:3px}
+
+  .delta{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;margin-top:6px}
+  .delta.up{color:var(--up)}
+  .delta.down{color:var(--down)}
+  .delta svg{width:12px;height:12px}
+  .delta .vs{color:var(--text-faint);font-weight:400;margin-left:4px}
+
+  .sub{font-size:11.5px;color:var(--text-dim);margin-top:4px;line-height:1.5}
+  .sub strong{color:var(--text);font-weight:500}
+
+
+  /* SPARKLINE inline */
+  .spark{display:block;width:100%;height:48px;margin-top:8px}
+  .spark path.line{fill:none;stroke:var(--up);stroke-width:1.8}
+  .spark path.area{fill:rgba(125,138,100,0.10);stroke:none}
+  .spark.terra path.line{stroke:var(--f1)}
+  .spark.terra path.area{fill:rgba(184,100,62,0.08)}
+  .spark .dot{fill:var(--text);r:2.5}
+
+  /* BAR LIST (sequence leaderboard) */
+  .bar-list{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .bar-row{display:grid;grid-template-columns:130px 1fr 50px;gap:10px;align-items:center;font-size:12px}
+  .bar-row .bn{color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar-row .bv{text-align:right;font-variant-numeric:tabular-nums;color:var(--text);font-weight:500}
+  .bar-track{height:6px;background:rgba(0,0,0,0.04);border-radius:3px;overflow:hidden;position:relative}
+  .bar-fill{height:100%;border-radius:3px;animation:barFill 1.4s var(--ease-out-expo) forwards;width:0}
+  .bar-fill.f1{background:var(--f1)}
+  .bar-fill.fe{background:var(--fe)}
+  .bar-fill.banking{background:var(--slate)}
+  .bar-fill.fintech{background:var(--fe)}
+  .bar-fill.gaming{background:var(--wec)}
+  .bar-fill.telecoms{background:var(--motogp)}
+  @keyframes barFill{to{width:var(--w,50%)}}
+
+  /* HEATMAP (sector × series) */
+  .heat{display:grid;grid-template-columns:90px repeat(4,1fr);gap:3px;margin-top:6px}
+  .heat-cell{padding:8px 6px;border-radius:6px;font-size:11px;text-align:center;color:var(--text);font-variant-numeric:tabular-nums;display:grid;place-items:center;min-height:42px}
+  .heat-h{background:transparent;font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.06em;font-weight:500;padding:4px 6px}
+  .heat-row-label{background:transparent;font-size:11px;color:var(--text-dim);text-align:left;padding:8px 6px;font-weight:500}
+  .heat-cell.v0{background:rgba(0,0,0,0.02);color:var(--text-faint)}
+  .heat-cell.v1{background:rgba(125,138,100,0.10)}
+  .heat-cell.v2{background:rgba(125,138,100,0.20)}
+  .heat-cell.v3{background:rgba(125,138,100,0.35);color:#3d4528;font-weight:600}
+  .heat-cell.v4{background:rgba(125,138,100,0.55);color:#2a2f1a;font-weight:600}
+
+  /* DONUT */
+  .donut-wrap{display:flex;align-items:center;gap:14px;margin-top:8px;flex:1}
+  .donut{width:90px;height:90px;flex-shrink:0}
+  .donut-legend{display:flex;flex-direction:column;gap:5px;font-size:11.5px}
+  .donut-legend .lr{display:flex;align-items:center;gap:6px}
+  .donut-legend .ld{width:8px;height:8px;border-radius:2px}
+  .donut-legend .ln{flex:1;color:var(--text-dim)}
+  .donut-legend .lv{color:var(--text);font-weight:500;font-variant-numeric:tabular-nums}
+
+  /* RACE CORRELATION (line chart with race markers) */
+  .corr{position:relative;flex:1;margin-top:8px;display:flex;flex-direction:column}
+  .corr-svg{flex:1;width:100%;min-height:90px}
+  .corr-x{display:flex;justify-content:space-between;font-size:9.5px;color:var(--text-faint);margin-top:4px;text-transform:uppercase;letter-spacing:0.06em;font-weight:500}
+  .corr-marker-label{font-size:9px;fill:var(--f1);font-weight:600;letter-spacing:0.05em}
+
+  /* SIGNAL FEED list */
+  .feed{display:flex;flex-direction:column;gap:8px;margin-top:6px;overflow-y:auto;flex:1}
+  .feed-item{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--border-subtle);font-size:11.5px}
+  .feed-item:first-child{border-top:none;padding-top:0}
+  .feed-tag{flex-shrink:0;width:24px;height:24px;border-radius:6px;display:grid;place-items:center;background:rgba(184,100,62,0.12);color:var(--f1)}
+  .feed-tag svg{width:11px;height:11px}
+  .feed-body{flex:1;min-width:0}
+  .feed-title{color:var(--text);font-weight:500;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .feed-meta{font-size:10px;color:var(--text-faint);margin-top:2px}
+
+  /* TOP TOUCH card */
+  .top-touch-tag{display:inline-block;font-size:10px;background:var(--accent);color:white;padding:2px 7px;border-radius:24px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
+  .pri-link{font-size:11px;color:var(--text);font-weight:500;text-decoration:underline;text-underline-offset:2px;margin-top:6px;display:inline-block}
+</style>
+</head>
+<body>
+
+
+<div class="opt-switcher">
+  <a href="kiko-home-nav-a.html">Home</a>
+  <a href="kiko-pipeline.html">Pipeline</a>
+  <a href="kiko-campaigns.html">Campaigns</a>
+  <a href="kiko-inbox.html">Inbox</a>
+  <a href="kiko-contacts.html">Contacts</a>
+  <a href="kiko-calendar.html">Calendar</a>
+  <a class="active">Insights</a>
+</div>
+
+<nav class="topnav">
+  <div class="nav-brand">
+    <svg class="nav-mark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 7.5L21 11l-7.5 1.5L12 20l-1.5-7.5L3 11l7.5-1.5L12 2z"/></svg>
+    <span class="nav-name">Kiko</span>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link">Today<span class="plus">+</span></a>
+    <a class="nav-link">Pipeline<span class="plus">+</span></a>
+    <a class="nav-link">Campaigns</a>
+    <a class="nav-link">Inbox</a>
+    <a class="nav-link active">Insights</a>
+  </div>
+  <div class="nav-right">
+    <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg><span class="dot"></span></button>
+    <button class="nav-cta sparkle-cta magnetic">+ New view</button>
+    <div class="avatar">S</div>
+  </div>
+</nav>
+
+<div class="page-head">
+  <div>
+    <div class="eyebrow"><span class="eyebrow-cat">INTELLIGENCE</span><span class="eyebrow-sep">/</span>Q2 2026 performance</div>
+    <h1 class="page-title">Insights</h1>
+  </div>
+  <div class="head-tools">
+    <div class="seg">
+      <button>7d</button><button>30d</button><button class="active">Q2</button><button>YTD</button>
+    </div>
+    <button class="ghost-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export PDF</button>
+  </div>
+</div>
+
+
+<div class="bento">
+
+  <!-- PIPELINE VALUE — wide hero -->
+  <div class="card span-2 spotlight">
+    <div>
+      <div class="card-h">Pipeline value · weighted<span class="h-pill">+12%</span></div>
+      <div class="big-num huge"><span class="currency">$</span><span class="count-up" data-count-to="73" data-decimals="0">0</span><span class="unit">m</span></div>
+      <div class="delta up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="18 15 12 9 6 15"/></svg>+$8.2m<span class="vs">vs last month</span></div>
+    </div>
+    <svg class="spark" viewBox="0 0 200 48" preserveAspectRatio="none">
+      <path class="area" d="M0,40 L15,38 L30,35 L45,32 L60,28 L75,30 L90,24 L105,22 L120,18 L135,20 L150,15 L165,12 L180,10 L195,6 L200,4 L200,48 L0,48 Z"/>
+      <path class="line" d="M0,40 L15,38 L30,35 L45,32 L60,28 L75,30 L90,24 L105,22 L120,18 L135,20 L150,15 L165,12 L180,10 L195,6 L200,4"/>
+      <circle class="dot" cx="200" cy="4"/>
+    </svg>
+  </div>
+
+  <!-- REPLY RATE -->
+  <div class="card spotlight">
+    <div>
+      <div class="card-h">Reply rate<span class="h-pill">+2pt</span></div>
+      <div class="big-num"><span class="count-up" data-count-to="14" data-suffix="%">0</span></div>
+      <div class="sub">vs <strong>9%</strong> industry benchmark</div>
+    </div>
+    <svg class="spark" viewBox="0 0 200 36" preserveAspectRatio="none">
+      <path class="line" d="M0,28 L25,30 L50,24 L75,22 L100,18 L125,20 L150,14 L175,12 L200,8"/>
+      <circle class="dot" cx="200" cy="8"/>
+    </svg>
+  </div>
+
+  <!-- HOT REPLIES THIS WEEK -->
+  <div class="card spotlight">
+    <div>
+      <div class="card-h">Hot replies · this week<span class="h-pill">+3</span></div>
+      <div class="big-num"><span class="count-up" data-count-to="6">0</span></div>
+    </div>
+    <div class="sub"><strong>Bardrick</strong> · Citi<br><strong>Sundheim</strong> · D1<br><strong>Halford</strong> · ANZ</div>
+  </div>
+
+  <!-- CHANNEL MIX donut -->
+  <div class="card spotlight">
+    <div class="card-h">Channel mix</div>
+    <div class="donut-wrap">
+      <svg class="donut" viewBox="0 0 36 36">
+        <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(0,0,0,0.05)" stroke-width="6"/>
+        <circle cx="18" cy="18" r="14" fill="none" stroke="var(--slate)" stroke-width="6" stroke-dasharray="54.5 87.9" stroke-dashoffset="0" transform="rotate(-90 18 18)"/>
+        <circle cx="18" cy="18" r="14" fill="none" stroke="#0A66C2" stroke-width="6" stroke-dasharray="27.3 87.9" stroke-dashoffset="-54.5" transform="rotate(-90 18 18)"/>
+        <circle cx="18" cy="18" r="14" fill="none" stroke="var(--f1)" stroke-width="6" stroke-dasharray="6.1 87.9" stroke-dashoffset="-81.8" transform="rotate(-90 18 18)"/>
+      </svg>
+      <div class="donut-legend">
+        <div class="lr"><span class="ld" style="background:var(--slate)"></span><span class="ln">Email</span><span class="lv">62%</span></div>
+        <div class="lr"><span class="ld" style="background:#0A66C2"></span><span class="ln">LinkedIn</span><span class="lv">31%</span></div>
+        <div class="lr"><span class="ld" style="background:var(--f1)"></span><span class="ln">Signals</span><span class="lv">7%</span></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- SEQUENCE LEADERBOARD -->
+  <div class="card span-3 spotlight">
+    <div>
+      <div class="card-h">Sequence performance · reply rate</div>
+      <div class="bar-list">
+        <div class="bar-row"><div class="bn">Gaming FE 2026</div><div class="bar-track"><div class="bar-fill gaming" style="--w:80%"></div></div><div class="bv">16%</div></div>
+        <div class="bar-row"><div class="bn">F1 2027 Banking</div><div class="bar-track"><div class="bar-fill banking" style="--w:70%"></div></div><div class="bv">14%</div></div>
+        <div class="bar-row"><div class="bn">FinTech FE 2026</div><div class="bar-track"><div class="bar-fill fintech" style="--w:55%"></div></div><div class="bv">11%</div></div>
+        <div class="bar-row"><div class="bn">Telecoms MotoGP</div><div class="bar-track"><div class="bar-fill telecoms" style="--w:45%"></div></div><div class="bv">9%</div></div>
+        <div class="bar-row"><div class="bn">Banking WEC 2026</div><div class="bar-track"><div class="bar-fill banking" style="--w:35%"></div></div><div class="bv">7%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KIKO IMPACT — wide stat -->
+  <div class="card span-3 spotlight">
+    <div>
+      <div class="card-h">Kiko impact · this week<span class="h-pill">Auto</span></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px">
+        <div>
+          <div class="big-num"><span class="count-up" data-count-to="16">0</span><span class="unit">h</span></div>
+          <div class="sub">saved vs manual prep</div>
+        </div>
+        <div>
+          <div class="big-num"><span class="count-up" data-count-to="4">0</span></div>
+          <div class="sub">meetings auto-prepped</div>
+        </div>
+        <div>
+          <div class="big-num"><span class="currency">$</span><span class="count-up" data-count-to="2.4" data-decimals="1">0</span><span class="unit">m</span></div>
+          <div class="sub">moved overnight</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTOR × SERIES HEATMAP — large -->
+  <div class="card span-3 row-2 spotlight">
+    <div class="card-h">Pipeline value · sector × series<span class="h-pill">$73m total</span></div>
+    <div class="heat" style="margin-top:14px">
+      <div class="heat-h"></div><div class="heat-h">F1</div><div class="heat-h">FE</div><div class="heat-h">MotoGP</div><div class="heat-h">WEC</div>
+      <div class="heat-row-label">Banking</div><div class="heat-cell v4">$22.4m</div><div class="heat-cell v0">—</div><div class="heat-cell v0">—</div><div class="heat-cell v1">$1.4m</div>
+      <div class="heat-row-label">FinTech</div><div class="heat-cell v0">—</div><div class="heat-cell v3">$5.0m</div><div class="heat-cell v0">—</div><div class="heat-cell v0">—</div>
+      <div class="heat-row-label">Gaming</div><div class="heat-cell v0">—</div><div class="heat-cell v2">$2.5m</div><div class="heat-cell v0">—</div><div class="heat-cell v0">—</div>
+      <div class="heat-row-label">Telecoms</div><div class="heat-cell v0">—</div><div class="heat-cell v0">—</div><div class="heat-cell v2">$2.8m</div><div class="heat-cell v0">—</div>
+      <div class="heat-row-label">Luxury</div><div class="heat-cell v1">$0.8m</div><div class="heat-cell v0">—</div><div class="heat-cell v0">—</div><div class="heat-cell v0">—</div>
+    </div>
+    <div class="sub">Banking × F1 is your strongest concentration. <strong>FinTech × FE 2026</strong> growing fastest (+38% this quarter). Gaming/MotoGP/WEC underdeveloped — expansion opportunity.</div>
+  </div>
+
+
+  <!-- TOP TOUCH (smaller card next to heatmap) -->
+  <div class="card spotlight">
+    <span class="top-touch-tag">Top touch</span>
+    <div>
+      <div style="font-family:var(--font-display);font-weight:400;font-size:16px;line-height:1.25">Mercedes renewal angle</div>
+      <div class="sub">Touch 3 · F1 2027 Banking</div>
+      <div class="big-num" style="font-size:32px;margin-top:10px"><span class="count-up" data-count-to="23" data-suffix="%">0</span></div>
+      <div class="sub">reply rate · <strong>2.5×</strong> avg</div>
+    </div>
+    <a class="pri-link">Use as template →</a>
+  </div>
+
+  <!-- KIKO SAVINGS over time -->
+  <div class="card spotlight">
+    <div>
+      <div class="card-h">Kiko hours saved · 90d<span class="h-pill">+38%</span></div>
+      <div class="big-num" style="font-size:34px"><span class="count-up" data-count-to="142">0</span><span class="unit">h</span></div>
+    </div>
+    <svg class="spark" viewBox="0 0 200 48" preserveAspectRatio="none">
+      <path class="area" d="M0,40 L20,38 L40,32 L60,30 L80,26 L100,22 L120,18 L140,14 L160,12 L180,8 L200,4 L200,48 L0,48 Z"/>
+      <path class="line" d="M0,40 L20,38 L40,32 L60,30 L80,26 L100,22 L120,18 L140,14 L160,12 L180,8 L200,4"/>
+      <circle class="dot" cx="200" cy="4"/>
+    </svg>
+  </div>
+
+  <!-- RACE CORRELATION CHART — wide, shows pipeline movement vs race weekends -->
+  <div class="card span-4 spotlight">
+    <div class="card-h">Pipeline movement vs race weekends · last 90d<span class="h-pill">14–21d window confirmed</span></div>
+    <div class="corr">
+      <svg class="corr-svg" viewBox="0 0 600 110" preserveAspectRatio="none">
+        <!-- Grid -->
+        <line x1="0" y1="100" x2="600" y2="100" stroke="rgba(0,0,0,0.06)"/>
+        <!-- Race weekend vertical markers (terra) -->
+        <line x1="60" y1="10" x2="60" y2="100" stroke="var(--f1)" stroke-width="0.6" stroke-dasharray="2 3" opacity="0.5"/>
+        <text x="62" y="14" class="corr-marker-label">AUS</text>
+        <line x1="160" y1="10" x2="160" y2="100" stroke="var(--f1)" stroke-width="0.6" stroke-dasharray="2 3" opacity="0.5"/>
+        <text x="162" y="14" class="corr-marker-label">CHN</text>
+        <line x1="290" y1="10" x2="290" y2="100" stroke="var(--f1)" stroke-width="0.6" stroke-dasharray="2 3" opacity="0.5"/>
+        <text x="292" y="14" class="corr-marker-label">JPN</text>
+        <line x1="500" y1="10" x2="500" y2="100" stroke="var(--f1)" stroke-width="1.4" stroke-dasharray="3 2"/>
+        <text x="502" y="14" class="corr-marker-label" style="font-size:10px">MIA · in 16d</text>
+        <!-- Pipeline value line (actual) -->
+        <path d="M0,80 L20,78 L40,70 L60,55 L80,68 L100,60 L120,52 L140,42 L160,30 L180,48 L200,40 L220,32 L240,28 L260,20 L280,18 L300,12 L320,30 L340,38 L360,32 L380,28 L400,22 L420,18 L440,14 L460,10 L480,6 L500,4" stroke="var(--accent)" stroke-width="2" fill="none"/>
+        <!-- Pipeline value area shadow -->
+        <path d="M0,80 L20,78 L40,70 L60,55 L80,68 L100,60 L120,52 L140,42 L160,30 L180,48 L200,40 L220,32 L240,28 L260,20 L280,18 L300,12 L320,30 L340,38 L360,32 L380,28 L400,22 L420,18 L440,14 L460,10 L480,6 L500,4 L500,100 L0,100 Z" fill="rgba(10,10,10,0.04)"/>
+        <circle cx="500" cy="4" r="3" fill="var(--accent)"/>
+      </svg>
+      <div class="corr-x"><span>Mid-Jan</span><span>Feb</span><span>Mar</span><span>Now</span><span>Miami</span></div>
+    </div>
+    <div class="sub" style="margin-top:8px"><strong>Pipeline movement spikes 14—21 days before each race weekend.</strong> Currently in peak window for Miami (R4). Outreach sent now lands when brand committees finalise activation budgets.</div>
+  </div>
+
+
+  <!-- SIGNAL FEED -->
+  <div class="card span-2 row-2 spotlight">
+    <div class="card-h">SponsorSignal · last 5<span class="h-pill">Live</span></div>
+    <div class="feed">
+      <div class="feed-item">
+        <div class="feed-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div class="feed-body">
+          <div class="feed-title">HSBC × Mercedes F1 partnership renewed through 2027</div>
+          <div class="feed-meta">2h ago · FT · 96% match</div>
+        </div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div class="feed-body">
+          <div class="feed-title">James Bardrick promoted to Country Officer UK at Citi</div>
+          <div class="feed-meta">Yesterday · LinkedIn · 99% match</div>
+        </div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div class="feed-body">
+          <div class="feed-title">Sarah Lee joins JPMorgan Brand from AmEx · ex-Mercedes account lead</div>
+          <div class="feed-meta">2d ago · Press release · 99% match</div>
+        </div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div class="feed-body">
+          <div class="feed-title">Stripe announces FE 2026 sponsorship interest publicly</div>
+          <div class="feed-meta">3d ago · TechCrunch · 88% match</div>
+        </div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div class="feed-body">
+          <div class="feed-title">D1 Capital Q1 LP letter mentions sports IP investment thesis</div>
+          <div class="feed-meta">4d ago · Bloomberg · 78% match</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KIKO CONFIDENCE — small status card -->
+  <div class="card spotlight">
+    <div class="card-h">Kiko learning<span class="h-pill">Improving</span></div>
+    <div class="big-num" style="font-size:32px"><span class="count-up" data-count-to="96" data-suffix="%">0</span></div>
+    <div class="sub">tone match accuracy<br>vs your edits last 30d</div>
+  </div>
+
+  <!-- AVG DEAL SIZE -->
+  <div class="card spotlight">
+    <div class="card-h">Avg deal size<span class="h-pill">+18%</span></div>
+    <div class="big-num" style="font-size:32px"><span class="currency">$</span><span class="count-up" data-count-to="3.2" data-decimals="1">0</span><span class="unit">m</span></div>
+    <div class="sub">across <strong>42</strong> active deals</div>
+  </div>
+
+</div>
+</body>
+</html>

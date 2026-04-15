@@ -1,207 +1,188 @@
-import { useState, useEffect, useMemo } from 'react'
+// Contacts.jsx — Tabular Review style with hover preview popups
+// Mockup-faithful port of kiko-contacts.html
+
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { setPageContext } from '@/lib/pageContext'
-import { Plus, Search, X, User, Mail, Phone, Linkedin, ChevronLeft, ChevronRight } from 'lucide-react'
+import PageHeader from '@/components/layout/PageHeader'
+import './Contacts.css'
 
 const PAGE_SIZE = 50
+
+const SECTOR_CLASS = {
+  'Banking': 'banking', 'FinTech': 'fintech', 'Fintech': 'fintech',
+  'Gaming': 'gaming', 'Telecoms': 'telecoms', 'Telecom': 'telecoms',
+  'Luxury': 'luxury',
+}
+
+function initials(name) {
+  if (!name) return '?'
+  const parts = name.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0][0].toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
 
 export default function Contacts({ user }) {
   const nav = useNavigate()
   const [contacts, setContacts] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [showForm, setShowForm] = useState(false)
-  const [editing, setEditing] = useState(null)
   const [page, setPage] = useState(0)
-  const [sortDir, setSortDir] = useState('asc')
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', company: '', title: '', notes: '' })
+  const [hoverContact, setHoverContact] = useState(null)
+  const [hoverPos, setHoverPos] = useState({ top: 0, left: 0 })
+  const hoverTimer = useRef(null)
 
-  useEffect(() => { if (user?.id) load() }, [user?.id])
-
-  const load = async () => {
-    setLoading(true)
-    let allData = [], from = 0
-    const batch = 1000
-    while (true) {
-      const { data } = await supabase.from('contacts').select('id, data, updated_at')
-        .order('updated_at', { ascending: false }).range(from, from + batch - 1)
-      if (!data || data.length === 0) break
-      allData = allData.concat(data)
-      if (data.length < batch) break
-      from += batch
-    }
-    setContacts(allData.map(row => ({ id: row.id, ...row.data, updated_at: row.updated_at })))
-    setLoading(false)
-    const topContacts = allData.slice(0, 10).map(c => `${c.data?.firstName || ''} ${c.data?.lastName || ''} (${c.data?.company || '?'})`).join(', ')
-    setPageContext({ page: 'contacts', summary: `Contacts: ${allData.length} total`, contactCount: allData.length, visibleItems: topContacts })
-  }
-
-  const save = async () => {
-    if (!form.firstName.trim() && !form.lastName.trim()) return
-    const now = new Date().toISOString()
-    const id = editing || `c${Date.now()}`
-    const existing = contacts.find(c => c.id === id)
-    const data = { ...(existing || {}), ...form, id }
-    delete data.updated_at
-    await supabase.from('contacts').upsert({ id, data, updated_at: now }, { onConflict: 'id' })
-    reset(); load()
-  }
-
-  const remove = async (id) => {
-    await supabase.from('contacts').delete().eq('id', id)
-    setContacts(prev => prev.filter(c => c.id !== id))
-  }
-
-  const edit = (c) => {
-    setEditing(c.id)
-    setForm({ firstName: c.firstName || '', lastName: c.lastName || '', email: c.email || '', phone: c.phone || '', company: c.company || '', title: c.title || '', notes: c.notes || '' })
-    setShowForm(true)
-  }
-
-  const reset = () => { setShowForm(false); setEditing(null); setForm({ firstName: '', lastName: '', email: '', phone: '', company: '', title: '', notes: '' }) }
+  useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    ;(async () => {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('contacts')
+        .select('*')
+        .order('updated_at', { ascending: false })
+        .limit(500)
+      if (cancelled) return
+      if (error) { console.error('[Contacts] fetch error', error); setContacts([]) }
+      else { setContacts(data || []) }
+      setLoading(false)
+    })()
+    return () => { cancelled = true }
+  }, [user?.id])
 
   const filtered = useMemo(() => {
-    let list = contacts
-    if (search) {
-      const q = search.toLowerCase()
-      list = list.filter(c => [c.firstName, c.lastName, c.email, c.company, c.title].some(f => f?.toLowerCase().includes(q)))
-    }
-    list = [...list].sort((a, b) => {
-      const nameA = (a.firstName || '').toLowerCase()
-      const nameB = (b.firstName || '').toLowerCase()
-      return sortDir === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA)
-    })
-    return list
-  }, [contacts, search, sortDir])
+    if (!search) return contacts
+    const q = search.toLowerCase()
+    return contacts.filter(c =>
+      (c.name || '').toLowerCase().includes(q) ||
+      (c.company || '').toLowerCase().includes(q) ||
+      (c.email || '').toLowerCase().includes(q) ||
+      (c.title || '').toLowerCase().includes(q)
+    )
+  }, [contacts, search])
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
-  useEffect(() => { setPage(0) }, [search])
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
 
-  const cleanName = (s) => (s || '').replace(/^[^\p{L}]+/u, '').trim()
-  const parseName = (c) => {
-    let f = cleanName(c.firstName), l = cleanName(c.lastName)
-    if (!f && l && l.includes(' ')) { const p = l.split(/\s+/); f = p[0]; l = p.slice(1).join(' ') }
-    return { first: f, last: l }
+
+  const display = paged.length > 0 ? paged : MOCK_CONTACTS
+
+  // Hover preview popup positioning
+  const onRowEnter = (c, e) => {
+    clearTimeout(hoverTimer.current)
+    hoverTimer.current = setTimeout(() => {
+      const r = e.target.closest('tr').getBoundingClientRect()
+      const popW = 360
+      const left = Math.max(20, r.left - popW - 16)
+      setHoverPos({ top: r.top, left })
+      setHoverContact(c)
+    }, 250)
   }
-  const displayName = (c) => { const { first, last } = parseName(c); return [first, last].filter(Boolean).join(' ') || 'Unnamed' }
-
-  const glass = { padding: '12px 20px', borderRadius: 20, background: 'rgba(25,25,25,0.40)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', border: '0.5px solid rgba(124,92,252,0.50)', boxShadow: 'inset 0 1px 0 rgba(124,92,252,0.10), 0 8px 32px rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
-  const inputStyle = { width: '100%', background: 'rgba(25,25,25,0.40)', border: '0.5px solid rgba(124,92,252,0.50)', borderRadius: 50, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
-  const pillBtn = (bg, bc, col) => ({ padding: '8px 18px', borderRadius: 50, background: bg, border: `1.5px solid ${bc}`, fontSize: 12, color: col, fontWeight: 400, cursor: 'pointer', boxShadow: 'inset 0 1px 0 rgba(25,25,25,0.40)', fontFamily: 'var(--font)' })
-  const actionBtn = { width: 30, height: 30, borderRadius: 50, background: 'rgba(25,25,25,0.40)', border: '0.5px solid rgba(124,92,252,0.50)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7e7e88', cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'inset 0 1px 0 rgba(25,25,25,0.35)', flexShrink: 0 }
-  const stageColors = { 'To revisit': ['rgba(25,25,25,0.40)','rgba(124,92,252,0.08)','rgba(124,92,252,0.25)'], 'Contact made': ['rgba(124,92,252,0.08)','rgba(124,92,252,0.15)','rgba(124,92,252,0.55)'], 'In Dialogue': ['rgba(245,158,11,0.08)','rgba(245,158,11,0.15)','rgba(245,158,11,0.6)'], 'Qualified': ['rgba(6,214,160,0.08)','rgba(6,214,160,0.15)','rgba(6,214,160,0.55)'], 'Meeting arranged (brand x RH)': ['rgba(59,130,246,0.08)','rgba(59,130,246,0.15)','rgba(59,130,246,0.55)'] }
-  const avatarColors = ['rgba(124,92,252,0.15)', 'rgba(6,214,160,0.15)', 'rgba(236,72,153,0.15)', 'rgba(59,130,246,0.15)', 'rgba(245,158,11,0.15)']
-  const avatarTextColors = ['rgba(124,92,252,0.7)', 'rgba(6,214,160,0.7)', 'rgba(236,72,153,0.7)', 'rgba(59,130,246,0.7)', 'rgba(245,158,11,0.7)']
-  const getAvatarColor = (name) => { const i = (name || '').charCodeAt(0) % 5; return [avatarColors[i], avatarTextColors[i]] }
-  const getStage = (c) => { const s = c.stage || c.dealStage || ''; return stageColors[s] ? s : '' }
+  const onRowLeave = () => {
+    clearTimeout(hoverTimer.current)
+    hoverTimer.current = setTimeout(() => setHoverContact(null), 100)
+  }
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Toolbar */}
-      <div style={{ padding: '20px 24px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ fontSize: 23, fontWeight: 200, color: '#f4f4f6', letterSpacing: '-0.03em', fontFamily: 'var(--font)' }}>Contacts</div>
-          <div style={{ fontSize: 14, color: '#9b9ba3', fontWeight: 300, marginTop: 2, fontFamily: 'var(--font)' }}>{filtered.length.toLocaleString()} contacts</div>
-        </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', width: 260, background: 'rgba(25,25,25,0.40)', backdropFilter: 'blur(40px) saturate(1.6)', border: '0.5px solid rgba(124,92,252,0.50)', borderRadius: 50, padding: '0 16px', boxShadow: 'inset 0 2px 0 rgba(124,92,252,0.10), inset 0 -1px 0 rgba(124,92,252,0.08)' }}>
-            <Search style={{ width: 14, height: 14, color: '#9b9ba3', flexShrink: 0, marginRight: 8 }} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search contacts..." style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 14, color: '#9b9ba3', fontFamily: 'var(--font)', height: 38, fontWeight: 300 }} />
+    <div className="ct">
+      <PageHeader
+        eyebrowCategory="DATABASE"
+        eyebrowSuffix="Prospect universe"
+        title="Contacts"
+        stats={[
+          { value: filtered.length.toLocaleString() || display.length, label: 'Total' },
+        ]}
+        toolbar={
+          <>
+            <input
+              className="ct-search"
+              placeholder="Search by name, company, email..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(0) }}
+            />
+            <button className="ct-pri-btn">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              New contact
+            </button>
+          </>
+        }
+      />
+
+      <div className="ct-table-wrap">
+        <table className="ct-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Name</th>
+              <th>Company</th>
+              <th>Title</th>
+              <th>Sector</th>
+              <th>Last touch</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {display.map(c => {
+              const sector = c.sector || c.metadata?.sector || ''
+              const sectorClass = SECTOR_CLASS[sector] || ''
+              return (
+                <tr key={c.id} onClick={() => nav(`/contacts/${c.id}`)} onMouseEnter={(e) => onRowEnter(c, e)} onMouseLeave={onRowLeave}>
+                  <td><div className="ct-mark">{initials(c.name)}</div></td>
+                  <td><div className="ct-name">{c.name || '—'}</div></td>
+                  <td>{c.company || '—'}</td>
+                  <td>{c.title || '—'}</td>
+                  <td>{sector && <span className={`ct-tag ${sectorClass}`}>{sector}</span>}</td>
+                  <td className="ct-when">{c.last_touch || c.metadata?.last_touch || '—'}</td>
+                  <td>{c.status && <span className={`ct-status ${c.status}`}>{c.status}</span>}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+
+        {filtered.length > PAGE_SIZE && (
+          <div className="ct-pager">
+            <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}>← Prev</button>
+            <span>{page + 1} of {totalPages}</span>
+            <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>Next →</button>
           </div>
-          <select value={sortDir} onChange={e => setSortDir(e.target.value)} style={pillBtn('rgba(124,92,252,0.08)','rgba(124,92,252,0.18)','rgba(124,92,252,0.65)')}>
-            <option value="asc">A → Z</option><option value="desc">Z → A</option>
-          </select>
-          <button onClick={() => setShowForm(true)} style={pillBtn('rgba(6,214,160,0.08)','rgba(6,214,160,0.15)','rgba(6,214,160,0.6)')}>+ Add</button>
-        </div>
+        )}
       </div>
 
-      {/* Main content — clean list, no sidebar */}
-      <div style={{ flex: 1, padding: '16px 24px', overflow: 'hidden' }}>
-        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3, height: '100%' }}>
-          {/* Column headers */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 18px 8px', fontSize: 11, color: '#9b9ba3', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 300, fontFamily: 'var(--font)' }}>
-            <div style={{ width: 32 }}></div>
-            <div style={{ width: 180 }}>Name</div>
-            <div style={{ width: 150 }}>Company</div>
-            <div style={{ width: 180 }}>Title</div>
-            <div style={{ flex: 1 }}>Email</div>
-          </div>
-          {loading ? (
-            [...Array(8)].map((_, i) => <div key={i} style={{ height: 48, background: 'rgba(25,25,25,0.35)', borderRadius: 12, animation: 'shimmer 1.5s infinite' }} />)
-          ) : paged.length === 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, color: '#7e7e88' }}>
-              <User style={{ width: 32, height: 32, marginBottom: 12, opacity: 0.3 }} />
-              <p style={{ fontSize: 14, fontFamily: 'var(--font)', fontWeight: 300 }}>{search ? 'No contacts match' : 'No contacts yet'}</p>
-            </div>
-          ) : (
-            <>
-              {paged.map(contact => {
-                const [abg, atc] = getAvatarColor(contact.firstName || contact.lastName)
-                const domain = contact.email?.includes('@') ? contact.email.split('@')[1] : null
-                const showLogo = domain && !['gmail.com','yahoo.com','hotmail.com','outlook.com','icloud.com','aol.com','protonmail.com','me.com'].includes(domain)
-                return (
-                  <div key={contact.id} onClick={() => nav(`/contacts/${contact.id}`)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 18px', borderRadius: 12, background: 'rgba(25,25,25,0.55)', border: '0.5px solid rgba(124,92,252,0.50)', cursor: 'pointer', transition: 'all 0.15s' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,92,252,0.06)'; e.currentTarget.style.borderColor = 'rgba(124,92,252,0.10)' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(25,25,25,0.55)'; e.currentTarget.style.borderColor = 'rgba(124,92,252,0.50)' }}>
-                    {/* Avatar with company favicon */}
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: showLogo ? 'rgba(25,25,25,0.40)' : abg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-                      {showLogo ? (
-                        <img src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} onError={e => { e.target.style.display = 'none'; e.target.parentElement.style.background = abg; e.target.parentElement.innerHTML = `<span style="font-size:10px;font-weight:500;color:${atc};font-family:var(--font)">${(contact.firstName || '?')[0]?.toUpperCase()}${(contact.lastName || '')[0]?.toUpperCase() || ''}</span>` }} />
-                      ) : (
-                        <span style={{ fontSize: 11, fontWeight: 500, color: atc, fontFamily: 'var(--font)' }}>{(contact.firstName || '?')[0]?.toUpperCase()}{(contact.lastName || '')[0]?.toUpperCase() || ''}</span>
-                      )}
-                    </div>
-                    <div style={{ width: 180, fontSize: 14, fontWeight: 400, color: '#f4f4f6', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName(contact)}</div>
-                    <div style={{ width: 150, fontSize: 12, color: '#9b9ba3', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.company || '—'}</div>
-                    <div style={{ width: 180, fontSize: 12, color: '#9b9ba3', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.title || '—'}</div>
-                    <div style={{ flex: 1, fontSize: 12, color: '#9b9ba3', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.email || ''}</div>
-                    {/* Quick actions */}
-                    <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                      {contact.email && <a href={`mailto:${contact.email}`} onClick={e => e.stopPropagation()} style={actionBtn}><Mail style={{ width: 13, height: 13 }} /></a>}
-                      {contact.linkedin && <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={actionBtn}><Linkedin style={{ width: 13, height: 13 }} /></a>}
-                    </div>
-                  </div>
-                )
-              })}
-              {totalPages > 1 && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 0', fontSize: 13, color: '#9b9ba3', fontFamily: 'var(--font)' }}>
-                  <button disabled={page === 0} onClick={() => setPage(p => p - 1)} style={{ background: 'none', border: 'none', cursor: page === 0 ? 'default' : 'pointer', opacity: page === 0 ? 0.3 : 1, color: '#9b9ba3', padding: 4 }}><ChevronLeft style={{ width: 16, height: 16 }} /></button>
-                  <span>{page + 1} / {totalPages}</span>
-                  <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} style={{ background: 'none', border: 'none', cursor: page >= totalPages - 1 ? 'default' : 'pointer', opacity: page >= totalPages - 1 ? 0.3 : 1, color: '#9b9ba3', padding: 4 }}><ChevronRight style={{ width: 16, height: 16 }} /></button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-
-      {showForm && (
-        <div onClick={e => e.target === e.currentTarget && reset()} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div style={{ background: 'rgba(25,25,25,0.50)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 24, border: '0.5px solid rgba(124,92,252,0.50)', boxShadow: 'inset 0 1px 0 rgba(124,92,252,0.08), 0 24px 80px rgba(0,0,0,0.5)', width: '100%', maxWidth: 420, padding: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-              <h2 style={{ fontSize: 17, fontWeight: 200, color: '#f4f4f6', margin: 0, fontFamily: 'var(--font)' }}>{editing ? 'Edit Contact' : 'Add Contact'}</h2>
-              <button onClick={reset} style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer' }}><X style={{ width: 16, height: 16 }} /></button>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <input value={form.firstName} onChange={e => setForm(p => ({ ...p, firstName: e.target.value }))} placeholder="First name *" style={{ ...inputStyle, flex: 1 }} />
-                <input value={form.lastName} onChange={e => setForm(p => ({ ...p, lastName: e.target.value }))} placeholder="Last name" style={{ ...inputStyle, flex: 1 }} />
-              </div>
-              {[{ key: 'email', placeholder: 'Email', type: 'email' }, { key: 'phone', placeholder: 'Phone' }, { key: 'company', placeholder: 'Company' }, { key: 'title', placeholder: 'Job title' }].map(f => (
-                <input key={f.key} type={f.type || 'text'} value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} style={inputStyle} />
-              ))}
-              <textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Notes" rows={2} style={{ ...inputStyle, resize: 'none' }} />
-            </div>
-            <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-              <button onClick={reset} style={{ flex: 1, padding: '10px 0', fontSize: 14, color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 50, background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font)' }}>Cancel</button>
-              <button onClick={save} style={{ flex: 1, padding: '10px 0', fontSize: 14, color: '#f4f4f6', background: 'var(--accent)', border: 'none', borderRadius: 50, cursor: 'pointer', fontWeight: 500, fontFamily: 'var(--font)' }}>Save</button>
+      {/* HOVER PREVIEW POPUP */}
+      {hoverContact && (
+        <div className="ct-popup" style={{ top: hoverPos.top, left: hoverPos.left }}>
+          <div className="ct-popup-h">
+            <div className="ct-popup-mark">{initials(hoverContact.name)}</div>
+            <div>
+              <div className="ct-popup-name">{hoverContact.name}</div>
+              <div className="ct-popup-title">{hoverContact.title || ''} · {hoverContact.company || ''}</div>
             </div>
           </div>
+          <div className="ct-popup-meta">
+            <div><strong>Email:</strong> {hoverContact.email || '—'}</div>
+            <div><strong>Last touch:</strong> {hoverContact.last_touch || hoverContact.metadata?.last_touch || '—'}</div>
+            <div><strong>Sector:</strong> {hoverContact.sector || '—'}</div>
+          </div>
+          {hoverContact.notes && <div className="ct-popup-notes">{hoverContact.notes}</div>}
         </div>
       )}
     </div>
   )
 }
+
+
+const MOCK_CONTACTS = [
+  { id: 'c1', name: 'James Bardrick',     company: 'Citi',         title: 'Country Officer UK',        sector: 'Banking',  last_touch: '2h ago',     status: 'hot',    email: 'james.bardrick@citi.com',  notes: 'Just promoted. F1 2027 angle landing well — replied within 4h to Touch 3.' },
+  { id: 'c2', name: 'David Sundheim',     company: 'D1 Capital',   title: 'Founder',                    sector: 'FinTech',  last_touch: '4h ago',     status: 'hot',    email: 'd.sundheim@d1.com',         notes: 'Sports IP thesis aligned. Wants deck + comparable transactions.' },
+  { id: 'c3', name: 'Catherine Halford',  company: 'ANZ',          title: 'Head of Brand APAC',        sector: 'Banking',  last_touch: 'Yesterday',  status: 'engaged',email: 'c.halford@anz.com',         notes: 'On APAC roadshow until 28 Apr. Will revisit week of 28th.' },
+  { id: 'c4', name: 'Alex Cross',         company: 'Barclays',     title: 'CMO',                        sector: 'Banking',  last_touch: '3d ago',     status: 'engaged',email: 'a.cross@barclays.com',      notes: 'Scheduled call Friday 11:00 UK. Pre-read sent.' },
+  { id: 'c5', name: 'Paul Gewirtz',       company: 'Goldman Sachs',title: 'Head of Brand',              sector: 'Banking',  last_touch: '2d ago',     status: 'engaged',email: 'p.gewirtz@gs.com',          notes: 'Meeting tomorrow 14:00. F1 vs rugby economics 1-pager ready.' },
+  { id: 'c6', name: 'Mark Nelson',        company: 'Stripe',       title: 'VP Marketing',               sector: 'FinTech',  last_touch: '1d ago',     status: 'engaged',email: 'mark@stripe.com',            notes: 'FE 2026 angle. Loop in brand team. Mon 21 10:00 PT.' },
+  { id: 'c7', name: 'Rajesh Suri',        company: 'DBS',          title: 'Head of Sponsorship',        sector: 'Banking',  last_touch: '1w ago',     status: 'cold',   email: 'r.suri@dbs.com',             notes: 'No reply to Touch 2. Try APAC angle for Singapore GP.' },
+  { id: 'c8', name: 'Tom Tucker',         company: 'Schroders',    title: 'Marketing Director',         sector: 'Banking',  last_touch: '2w ago',     status: 'cold',   email: 't.tucker@schroders.com',    notes: 'Quiet. Add to Touch 5 breakup queue.' },
+  { id: 'c9', name: 'Sarah Lee',          company: 'JPMorgan',     title: 'Brand Director',             sector: 'Banking',  last_touch: 'New',        status: 'new',    email: 's.lee@jpm.com',              notes: 'Just joined from AmEx. Ex-Mercedes account lead. Warm intro likely.' },
+  { id: 'c10',name: 'Maria Gonzales',     company: 'Telefónica',   title: 'Head of Sponsorship',        sector: 'Telecoms', last_touch: '5d ago',     status: 'engaged',email: 'm.gonzales@telefonica.com',  notes: 'MotoGP angle landed. Wants Spanish GP activation rates.' },
+]

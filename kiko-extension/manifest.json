@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Kiko LinkedIn Sync",
+  "version": "0.1.0",
+  "description": "Syncs your LinkedIn session to Kiko so campaigns run automatically. Install once, never touch cookies.",
+  "permissions": [
+    "cookies",
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "*://*.linkedin.com/*",
+    "http://178.104.73.22/*",
+    "https://server.vanhawke.agency/*",
+    "https://kiko.vanhawke.agency/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Kiko LinkedIn Sync",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "options_page": "options.html",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}
