@@ -313,21 +313,34 @@
 
 
 /* ── Board layout when panel is open ── */
+.pl-board {
+  flex: 1;
+  display: flex;
+  padding: 0 16px 16px;
+  min-height: 0;
+  overflow: hidden;
+}
 .pl-board.with-panel {
   display: grid;
   grid-template-columns: 1fr 380px;
   gap: 14px;
 }
-.pl-board.with-panel .pl-cols-wrap {
+.pl-cols-wrap {
+  display: flex;
+  gap: 12px;
   overflow-x: auto;
-  display: flex;
-  gap: 12px;
+  overflow-y: hidden;
+  flex: 1;
   min-width: 0;
+  padding-bottom: 8px;
 }
-.pl-board:not(.with-panel) .pl-cols-wrap {
-  display: flex;
-  gap: 12px;
-  width: 100%;
+.pl-cols-wrap::-webkit-scrollbar { height: 8px; }
+.pl-cols-wrap::-webkit-scrollbar-track { background: transparent; }
+.pl-cols-wrap::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
+.pl-cols-wrap::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.20); }
+.pl-col {
+  flex-shrink: 0;
+  width: 240px;
 }
 
 /* Selected deal card */
