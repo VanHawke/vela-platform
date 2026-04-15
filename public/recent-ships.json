@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-15T19:33:54.878Z",
+  "generated_at": "2026-04-15T19:35:46.412Z",
   "commits": [
+    {
+      "hash": "034a13a",
+      "subject": "redesign: Campaigns — sequence list + 5-touch builder port",
+      "when": "2 minutes ago"
+    },
     {
       "hash": "bc6d812",
       "subject": "redesign: Inbox (OutreachIntelligence) — full mockup-faithful two-pane composer port",
-      "when": "8 minutes ago"
+      "when": "10 minutes ago"
     },
     {
       "hash": "6493442",
       "subject": "redesign: Pipeline — full mockup-faithful Kanban port (5 stages, deal cards, drag-drop)",
-      "when": "12 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "ba0f50b",
       "subject": "redesign: rip out toggle — new design IS the design",
-      "when": "19 minutes ago"
+      "when": "21 minutes ago"
     },
     {
       "hash": "7703745",
       "subject": "redesign: Calendar — full mockup-faithful React port (race spine + outreach intelligence + per-prospect best-time hints), gated behind redesign flag",
-      "when": "41 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "08f30c5",
       "subject": "redesign: feature flag — toggle between OLD and NEW chrome via floating button",
-      "when": "60 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "d203a57",
       "subject": "redesign: legora foundation — top nav + polish layer hook",
-      "when": "75 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "5205653",
@@ -49,7 +54,7 @@
     {
       "hash": "97f9153",
       "subject": "v0.0.69.1: diagnostic captures full response headers + set-cookie details",
-      "when": "29 hours ago"
+      "when": "30 hours ago"
     },
     {
       "hash": "549b130",
@@ -94,11 +99,6 @@
     {
       "hash": "74cae2b",
       "subject": "docs: V065 LinkedIn Layer 2 brief — tightened version with safety scaffolding",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "561e93d",
-      "subject": "Update KIKO_MASTER_LOG with v0.0.64 LinkedIn Layer 1 session notes",
       "when": "2 days ago"
     }
   ]
