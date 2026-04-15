@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-15T19:35:46.412Z",
+  "generated_at": "2026-04-15T19:40:13.801Z",
   "commits": [
+    {
+      "hash": "0ab8aa4",
+      "subject": "redesign: Contacts — Tabular Review port with hover preview popups",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "034a13a",
       "subject": "redesign: Campaigns — sequence list + 5-touch builder port",
-      "when": "2 minutes ago"
+      "when": "6 minutes ago"
     },
     {
       "hash": "bc6d812",
       "subject": "redesign: Inbox (OutreachIntelligence) — full mockup-faithful two-pane composer port",
-      "when": "10 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "6493442",
       "subject": "redesign: Pipeline — full mockup-faithful Kanban port (5 stages, deal cards, drag-drop)",
-      "when": "14 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "ba0f50b",
       "subject": "redesign: rip out toggle — new design IS the design",
-      "when": "21 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "7703745",
       "subject": "redesign: Calendar — full mockup-faithful React port (race spine + outreach intelligence + per-prospect best-time hints), gated behind redesign flag",
-      "when": "43 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "08f30c5",
       "subject": "redesign: feature flag — toggle between OLD and NEW chrome via floating button",
-      "when": "62 minutes ago"
+      "when": "66 minutes ago"
     },
     {
       "hash": "d203a57",
       "subject": "redesign: legora foundation — top nav + polish layer hook",
-      "when": "77 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "5205653",
@@ -94,11 +99,6 @@
     {
       "hash": "f017c33",
       "subject": "v0.0.65: LinkedIn Layer 2 + safety scaffolding",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "74cae2b",
-      "subject": "docs: V065 LinkedIn Layer 2 brief — tightened version with safety scaffolding",
       "when": "2 days ago"
     }
   ]
