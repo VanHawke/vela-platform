@@ -1297,6 +1297,43 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 ))}
               </div>
 
+          {/* Feature tiles — Word Add-in pattern, opens core flows */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14,
+            maxWidth: 720, width: '100%', margin: '24px auto 0',
+            opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 400,
+            transform: voiceActive ? 'translateY(40px)' : 'translateY(0)',
+            transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.15s',
+            overflow: voiceActive ? 'hidden' : 'visible', pointerEvents: voiceActive ? 'none' : 'auto',
+          }}>
+            {[
+              { label: 'Draft outreach',     prompt: "Draft a 5-touch sequence for a Citi banking F1 prospect",         color: '#7d8a64', icon: 'M' },
+              { label: 'Brief a meeting',    prompt: "Brief me on tomorrow's first meeting — full context",              color: '#5a6470', icon: '📅' },
+              { label: 'Score a partnership',prompt: "Score the Bardrick × Citi partnership — board-level analysis",    color: '#b8643e', icon: '◆' },
+              { label: 'Read latest signals',prompt: "What new SponsorSignal alerts came in overnight?",                  color: '#6d4ea8', icon: '⚡' },
+            ].map((t, i) => (
+              <button key={i} onClick={() => handleSubmit(t.prompt)} style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'space-between',
+                padding: '20px 18px', background: '#FFFFFF',
+                border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14,
+                cursor: 'pointer', textAlign: 'left',
+                fontFamily: C.font,
+                minHeight: 130,
+                transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+              }}
+                onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.18)'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.06)' }}
+                onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.03)' }}
+              >
+                <div style={{ width: 38, height: 38, borderRadius: '50%', background: `${t.color}22`, color: t.color, display: 'grid', placeItems: 'center', fontSize: 16, fontWeight: 600 }}>{t.icon}</div>
+                <div>
+                  <div style={{ fontSize: 13.5, color: '#0A0A0A', fontWeight: 500, marginBottom: 4 }}>{t.label}</div>
+                  <div style={{ fontSize: 11, color: '#6B6B6B', lineHeight: 1.4 }}>{t.prompt.length > 48 ? t.prompt.slice(0, 48) + '...' : t.prompt}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+
           {/* Bottom spacer — equal to top so content sits at true visual centre */}
           <div style={{ flex: voiceActive ? 1 : 0.5, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
         </div>
