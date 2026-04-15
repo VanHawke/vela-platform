@@ -1,55 +1,60 @@
 {
-  "generated_at": "2026-04-15T19:56:49.582Z",
+  "generated_at": "2026-04-15T19:59:28.916Z",
   "commits": [
+    {
+      "hash": "6720a43",
+      "subject": "redesign: nightly outreach windows cron + Settings/Email panel + section descriptions for placeholder tabs",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "8d5fd37",
       "subject": "redesign: pre-prod fixes — revert dev bypass, build outreach intelligence Supabase tables, retrofit ContactDetail/SequenceDetail/Organisations/LinkedInQueue, wire real metrics into Insights and Pipeli",
-      "when": "5 minutes ago"
+      "when": "8 minutes ago"
     },
     {
       "hash": "e279cee",
       "subject": "redesign: Settings — two-pane port (sections sidebar + Profile panel fully wired)",
-      "when": "14 minutes ago"
+      "when": "16 minutes ago"
     },
     {
       "hash": "364ce58",
       "subject": "redesign: Insights (PartnershipMatrix) — Bento Grid port",
-      "when": "17 minutes ago"
+      "when": "19 minutes ago"
     },
     {
       "hash": "0ab8aa4",
       "subject": "redesign: Contacts — Tabular Review port with hover preview popups",
-      "when": "21 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "034a13a",
       "subject": "redesign: Campaigns — sequence list + 5-touch builder port",
-      "when": "23 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "bc6d812",
       "subject": "redesign: Inbox (OutreachIntelligence) — full mockup-faithful two-pane composer port",
-      "when": "31 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "6493442",
       "subject": "redesign: Pipeline — full mockup-faithful Kanban port (5 stages, deal cards, drag-drop)",
-      "when": "35 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "ba0f50b",
       "subject": "redesign: rip out toggle — new design IS the design",
-      "when": "42 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "7703745",
       "subject": "redesign: Calendar — full mockup-faithful React port (race spine + outreach intelligence + per-prospect best-time hints), gated behind redesign flag",
-      "when": "64 minutes ago"
+      "when": "66 minutes ago"
     },
     {
       "hash": "08f30c5",
       "subject": "redesign: feature flag — toggle between OLD and NEW chrome via floating button",
-      "when": "83 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "d203a57",
@@ -94,11 +99,6 @@
     {
       "hash": "8e91197",
       "subject": "docs: KIKO_MASTER_LOG v0.0.66 + v0.0.67 session notes + LinkedIn open issue",
-      "when": "30 hours ago"
-    },
-    {
-      "hash": "7608b3b",
-      "subject": "v0.0.67: HOTFIX — linkedin-test FUNCTION_INVOCATION_TIMEOUT",
       "when": "30 hours ago"
     }
   ]

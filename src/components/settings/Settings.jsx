@@ -286,4 +286,72 @@ const SECTION_PANELS = {
       </div>
     </>
   ),
+  workspace: (
+    <>
+      <div className="st-panel">
+        <div className="st-panel-h"><div className="pt">Workspace identity</div><div className="ps">Visible to all members</div></div>
+        <div className="st-field"><div className="field-label">Workspace name</div><div className="field-input"><input className="input" defaultValue="Van Hawke Group" /></div></div>
+        <div className="st-field"><div className="field-label">Domain</div><div className="field-input"><input className="input" defaultValue="vanhawke.com" /></div></div>
+        <div className="st-field"><div className="field-label">Industry</div><div className="field-input"><select className="select" defaultValue="Sports & Sponsorship Advisory"><option>Sports & Sponsorship Advisory</option><option>Luxury Goods</option><option>Capital Allocation</option></select></div></div>
+      </div>
+      <div className="st-panel">
+        <div className="st-panel-h"><div className="pt">Defaults for new members</div><div className="ps">Applied when someone joins</div></div>
+        <div className="st-field"><div className="field-label">Default role</div><div className="field-input"><select className="select" defaultValue="Member"><option>Owner</option><option>Admin</option><option>Member</option><option>Viewer</option></select></div></div>
+        <div className="st-field"><div className="field-label">Default timezone</div><div className="field-input"><select className="select" defaultValue="Europe/London"><option>Europe/London</option><option>Asia/Qatar</option><option>America/New_York</option></select></div></div>
+      </div>
+    </>
+  ),
+  personality: (
+    <>
+      <div className="st-panel">
+        <div className="st-panel-h"><div className="pt">Tone variants</div><div className="ps">How Kiko writes for different audiences</div></div>
+        <div className="st-field"><div className="field-label">For prospects (cold)</div><div className="field-input"><div className="seg"><button>Warm</button><button className="active">Direct</button><button>Authority</button></div></div></div>
+        <div className="st-field"><div className="field-label">For replies</div><div className="field-input"><div className="seg"><button>Casual</button><button className="active">Direct</button><button>Formal</button></div></div></div>
+        <div className="st-field"><div className="field-label">For internal team</div><div className="field-input"><div className="seg"><button className="active">Casual</button><button>Direct</button><button>Formal</button></div></div></div>
+      </div>
+      <div className="st-panel">
+        <div className="st-panel-h"><div className="pt">Operating doctrine</div><div className="ps">How Kiko speaks to you in the app</div></div>
+        <div className="st-field"><div className="field-label">Format every reply<div className="field-help">Hard truth → action steps → direct challenge.</div></div><div className="field-input"><div className="toggle on"></div></div></div>
+        <div className="st-field"><div className="field-label">No tolerance for excuses<div className="field-help">Push back on surface-level fixes. Focus on root causes.</div></div><div className="field-input"><div className="toggle on"></div></div></div>
+        <div className="st-field"><div className="field-label">Skip preamble<div className="field-help">Jump straight into output. No "I hope this helps" pleasantries.</div></div><div className="field-input"><div className="toggle on"></div></div></div>
+      </div>
+    </>
+  ),
+  autoactions: (
+    <div className="st-panel">
+      <div className="st-panel-h"><div className="pt">What Kiko can do without asking</div><div className="ps">Toggle on to grant Kiko autonomy</div></div>
+      {[
+        ['Send drafted replies after I approve', true],
+        ['Schedule outbound sends within working hours', true],
+        ['Pause sequences when a prospect replies', true],
+        ['Auto-archive low-priority emails older than 30 days', false],
+        ['Move deals to next stage when criteria met', false],
+        ['Auto-decline meeting invites that conflict with focus time', false],
+        ['Send LinkedIn connection requests to enrolled prospects', true],
+      ].map(([label, on], i) => (
+        <div className="st-field" key={i}>
+          <div className="field-label">{label}</div>
+          <div className="field-input"><div className={`toggle ${on ? 'on' : ''}`}></div></div>
+        </div>
+      ))}
+    </div>
+  ),
+  apps: (
+    <div className="st-panel">
+      <div className="st-panel-h"><div className="pt">All integrations</div><div className="ps">Connect or disconnect</div></div>
+      {[
+        { icon: 'gmail', name: 'Gmail', state: 'Connected · sunny@vanhawke.com', cta: 'Disconnect' },
+        { icon: 'gcal', name: 'Google Calendar', state: 'Connected · 4 events synced today', cta: 'Disconnect' },
+        { icon: 'linkedin', name: 'LinkedIn (via Hetzner worker)', state: 'Connected · 178.104.73.22', cta: 'Disconnect' },
+        { icon: 'lemlist', name: 'Lemlist', state: 'Connected · 5 active sequences', cta: 'Disconnect' },
+        { icon: 'supabase', name: 'Supabase', state: 'Connected · vanhawke-crm · RLS enforced', cta: 'Manage' },
+      ].map(c => (
+        <div className="conn-row" key={c.icon}>
+          <div className={`conn-icon ${c.icon}`}>{c.icon === 'gmail' ? 'M' : c.icon === 'gcal' ? 'G' : c.icon === 'linkedin' ? 'in' : c.icon === 'lemlist' ? 'L' : 'S'}</div>
+          <div className="conn-info"><div className="conn-name">{c.name}</div><div className="conn-meta"><span className="conn-dot"></span>{c.state}</div></div>
+          <button className="ghost-btn">{c.cta}</button>
+        </div>
+      ))}
+    </div>
+  ),
 }
