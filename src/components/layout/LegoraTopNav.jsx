@@ -8,7 +8,7 @@ const TABS = [
   { id: 'home',         label: 'Today',         path: '/',                   showPlus: true  },
   { id: 'pipeline',     label: 'Pipeline',      path: '/pipeline',           showPlus: true  },
   { id: 'campaigns',    label: 'Campaigns',     path: '/campaigns',          showPlus: false },
-  { id: 'inbox',        label: 'Inbox',         path: '/command-centre',     showPlus: false },
+  { id: 'inbox',        label: 'Command Centre', path: '/command-centre',     showPlus: false },
   { id: 'calendar',     label: 'Calendar',      path: '/calendar',           showPlus: false },
   { id: 'contacts',     label: 'Contacts',      path: '/contacts',           showPlus: false },
   { id: 'orgs',         label: 'Organisations', path: '/organisations',      showPlus: false },
