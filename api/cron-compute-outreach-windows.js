@@ -44,7 +44,7 @@ export default async function handler(req, res) {
   const __hbId = await cronHeartbeat('cron-compute-outreach-windows', 'started')
   try {
     // Get all users with at least one reply activity
-    const users = await sbFetch('user_config?select=user_id&order=created_at.desc')
+    const users = await sbFetch('kiko_user_config?select=user_id&order=created_at.desc')
     const userIds = (Array.isArray(users) ? users : []).map(u => u.user_id).filter(Boolean)
 
     if (!userIds.length) {
