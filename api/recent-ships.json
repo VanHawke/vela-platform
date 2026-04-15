@@ -1,70 +1,75 @@
 {
-  "generated_at": "2026-04-15T20:12:20.060Z",
+  "generated_at": "2026-04-15T20:14:31.294Z",
   "commits": [
+    {
+      "hash": "cb58bb8",
+      "subject": "redesign: Inbox real-time wiring (joined contacts + Realtime subscription + relative time formatting), Pipeline drag-drop polish (column scale + card grab/lift)",
+      "when": "2 minutes ago"
+    },
     {
       "hash": "38e456a",
       "subject": "redesign: Homepage feature tiles — 4 large sage/slate/terra/purple feature tiles below chips, Word Add-in pattern, each fires a starter prompt to Kiko",
-      "when": "4 minutes ago"
+      "when": "6 minutes ago"
     },
     {
       "hash": "e791ab4",
       "subject": "redesign: Settings — final 8 panels built (Password/Security/Members/Branding/Memory/Voice/Plan/Invoices). All 12 Settings tabs now functional.",
-      "when": "7 minutes ago"
+      "when": "9 minutes ago"
     },
     {
       "hash": "6a5ac61",
       "subject": "redesign: Settings — Workspace + Personality + Auto-actions + Apps panels fully built",
-      "when": "13 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "6720a43",
       "subject": "redesign: nightly outreach windows cron + Settings/Email panel + section descriptions for placeholder tabs",
-      "when": "15 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "8d5fd37",
       "subject": "redesign: pre-prod fixes — revert dev bypass, build outreach intelligence Supabase tables, retrofit ContactDetail/SequenceDetail/Organisations/LinkedInQueue, wire real metrics into Insights and Pipeli",
-      "when": "21 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "e279cee",
       "subject": "redesign: Settings — two-pane port (sections sidebar + Profile panel fully wired)",
-      "when": "29 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "364ce58",
       "subject": "redesign: Insights (PartnershipMatrix) — Bento Grid port",
-      "when": "32 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "0ab8aa4",
       "subject": "redesign: Contacts — Tabular Review port with hover preview popups",
-      "when": "36 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "034a13a",
       "subject": "redesign: Campaigns — sequence list + 5-touch builder port",
-      "when": "38 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "bc6d812",
       "subject": "redesign: Inbox (OutreachIntelligence) — full mockup-faithful two-pane composer port",
-      "when": "46 minutes ago"
+      "when": "49 minutes ago"
     },
     {
       "hash": "6493442",
       "subject": "redesign: Pipeline — full mockup-faithful Kanban port (5 stages, deal cards, drag-drop)",
-      "when": "50 minutes ago"
+      "when": "53 minutes ago"
     },
     {
       "hash": "ba0f50b",
       "subject": "redesign: rip out toggle — new design IS the design",
-      "when": "57 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "7703745",
       "subject": "redesign: Calendar — full mockup-faithful React port (race spine + outreach intelligence + per-prospect best-time hints), gated behind redesign flag",
-      "when": "79 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "08f30c5",
@@ -94,11 +99,6 @@
     {
       "hash": "97f9153",
       "subject": "v0.0.69.1: diagnostic captures full response headers + set-cookie details",
-      "when": "30 hours ago"
-    },
-    {
-      "hash": "549b130",
-      "subject": "v0.0.69: voyagerFetch redirect: manual — detect 302 to login = cookies expired",
       "when": "30 hours ago"
     }
   ]

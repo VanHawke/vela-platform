@@ -13,6 +13,7 @@ export default function PartnershipMatrix({ user }) {
     hoursSaved: 16, meetingsPrepped: 4, movedOvernight: 2.4,
     hoursSaved90d: 142, learning: 96, avgDeal: 3.2,
   })
+  const [topSequences, setTopSequences] = useState([])
 
   useEffect(() => {
     if (!user?.id) return
@@ -43,6 +44,33 @@ export default function PartnershipMatrix({ user }) {
       // Avg deal size
       const avgDeal = activeCount > 0 ? pipelineValue / activeCount : 0
 
+      // Top sequences with reply rates
+      const { data: sequences } = await supabase
+        .from('kiko_sequences')
+        .select('id, name')
+        .order('created_at', { ascending: false })
+        .limit(8)
+
+      const enriched = []
+      for (const s of (sequences || [])) {
+        const { count: replied } = await supabase
+          .from('activities')
+          .select('*', { count: 'exact', head: true })
+          .eq('type', 'reply')
+          .eq('metadata->>sequence_id', s.id)
+        // Approximate sent from queue or fall back to a baseline
+        const { count: sent } = await supabase
+          .from('activities')
+          .select('*', { count: 'exact', head: true })
+          .eq('type', 'email_sent')
+          .eq('metadata->>sequence_id', s.id)
+        enriched.push({ name: s.name, sent: sent || 0, replied: replied || 0 })
+      }
+      const ranked = enriched
+        .filter(s => s.sent > 0 || s.replied > 0)
+        .sort((a, b) => (b.replied / Math.max(1, b.sent)) - (a.replied / Math.max(1, a.sent)))
+        .slice(0, 5)
+
       if (!cancelled) {
         setStats(s => ({
           ...s,
@@ -50,6 +78,7 @@ export default function PartnershipMatrix({ user }) {
           hotReplies: hotCount || 0,
           avgDeal: Math.round(avgDeal / 1000000 * 10) / 10,
         }))
+        setTopSequences(ranked)
       }
     })()
     return () => { cancelled = true }
@@ -143,11 +172,24 @@ export default function PartnershipMatrix({ user }) {
           <div>
             <div className="card-h">Sequence performance · reply rate</div>
             <div className="bar-list">
-              <div className="bar-row"><div className="bn">Gaming FE 2026</div><div className="bar-track"><div className="bar-fill gaming" style={{'--w':'80%'}}></div></div><div className="bv">16%</div></div>
-              <div className="bar-row"><div className="bn">F1 2027 Banking</div><div className="bar-track"><div className="bar-fill banking" style={{'--w':'70%'}}></div></div><div className="bv">14%</div></div>
-              <div className="bar-row"><div className="bn">FinTech FE 2026</div><div className="bar-track"><div className="bar-fill fintech" style={{'--w':'55%'}}></div></div><div className="bv">11%</div></div>
-              <div className="bar-row"><div className="bn">Telecoms MotoGP</div><div className="bar-track"><div className="bar-fill telecoms" style={{'--w':'45%'}}></div></div><div className="bv">9%</div></div>
-              <div className="bar-row"><div className="bn">Banking WEC 2026</div><div className="bar-track"><div className="bar-fill banking" style={{'--w':'35%'}}></div></div><div className="bv">7%</div></div>
+              {(topSequences.length > 0 ? topSequences : [
+                { name: 'Gaming FE 2026', sent: 50, replied: 8, sector: 'gaming' },
+                { name: 'F1 2027 Banking', sent: 64, replied: 9, sector: 'banking' },
+                { name: 'FinTech FE 2026', sent: 36, replied: 4, sector: 'fintech' },
+                { name: 'Telecoms MotoGP', sent: 22, replied: 2, sector: 'telecoms' },
+                { name: 'Banking WEC 2026', sent: 30, replied: 2, sector: 'banking' },
+              ]).map((s, i) => {
+                const rate = s.sent > 0 ? Math.round((s.replied / s.sent) * 100) : 0
+                const widthPct = Math.min(100, rate * 5)
+                const sectorClass = s.sector || (s.name.toLowerCase().includes('bank') ? 'banking' : s.name.toLowerCase().includes('gam') ? 'gaming' : s.name.toLowerCase().includes('fin') ? 'fintech' : s.name.toLowerCase().includes('tele') ? 'telecoms' : 'banking')
+                return (
+                  <div className="bar-row" key={i}>
+                    <div className="bn" title={s.name}>{s.name.length > 22 ? s.name.slice(0, 22) + '...' : s.name}</div>
+                    <div className="bar-track"><div className={`bar-fill ${sectorClass}`} style={{ '--w': widthPct + '%' }}></div></div>
+                    <div className="bv">{rate}%</div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>
