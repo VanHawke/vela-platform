@@ -5,12 +5,15 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 
 const TABS = [
-  { id: 'home',       label: 'Today',     path: '/',          showPlus: true },
-  { id: 'pipeline',   label: 'Pipeline',  path: '/pipeline',  showPlus: true },
-  { id: 'campaigns',  label: 'Campaigns', path: '/campaigns', showPlus: false },
-  { id: 'inbox',      label: 'Inbox',     path: '/command-centre', showPlus: false },
-  { id: 'calendar',   label: 'Calendar',  path: '/calendar',  showPlus: false },
-  { id: 'insights',   label: 'Insights',  path: '/partnership-matrix', showPlus: false },
+  { id: 'home',         label: 'Today',         path: '/',                   showPlus: true  },
+  { id: 'pipeline',     label: 'Pipeline',      path: '/pipeline',           showPlus: true  },
+  { id: 'campaigns',    label: 'Campaigns',     path: '/campaigns',          showPlus: false },
+  { id: 'inbox',        label: 'Inbox',         path: '/command-centre',     showPlus: false },
+  { id: 'calendar',     label: 'Calendar',      path: '/calendar',           showPlus: false },
+  { id: 'contacts',     label: 'Contacts',      path: '/contacts',           showPlus: false },
+  { id: 'orgs',         label: 'Organisations', path: '/organisations',      showPlus: false },
+  { id: 'linkedin',     label: 'LinkedIn',      path: '/linkedin',           showPlus: false },
+  { id: 'insights',     label: 'Insights',      path: '/partnership-matrix', showPlus: false },
 ]
 
 export default function LegoraTopNav({ user, customLogo, onSearchClick, onNotificationsClick, onNewClick, hasNotifications }) {

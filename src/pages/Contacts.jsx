@@ -51,13 +51,30 @@ export default function Contacts({ user }) {
   }, [user?.id])
 
   const filtered = useMemo(() => {
-    if (!search) return contacts
+    // Normalize JSONB-style rows: contacts table stores { id, data: jsonb, org_id }
+    const normalized = contacts.map(c => {
+      const d = c.data || {}
+      const fullName = d.name || [d.firstName, d.middleName, d.lastName].filter(Boolean).join(' ').trim() || '—'
+      return {
+        id: c.id,
+        name: fullName,
+        email: d.email || '',
+        title: d.title || '',
+        company: d.company || '',
+        sector: d.sector || d.industry || '',
+        status: (d.status || '').toLowerCase().includes('active') ? 'engaged' : (d.status || '').toLowerCase() || '',
+        last_touch: d.lastActivity || (c.updated_at ? new Date(c.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''),
+        notes: d.notes || d.researchNotes?.[0] || '',
+        _raw: c,
+      }
+    })
+    if (!search) return normalized
     const q = search.toLowerCase()
-    return contacts.filter(c =>
-      (c.name || '').toLowerCase().includes(q) ||
-      (c.company || '').toLowerCase().includes(q) ||
-      (c.email || '').toLowerCase().includes(q) ||
-      (c.title || '').toLowerCase().includes(q)
+    return normalized.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.company.toLowerCase().includes(q) ||
+      c.email.toLowerCase().includes(q) ||
+      c.title.toLowerCase().includes(q)
     )
   }, [contacts, search])
 
