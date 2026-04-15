@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-15T19:21:50.573Z",
+  "generated_at": "2026-04-15T19:25:52.827Z",
   "commits": [
+    {
+      "hash": "6493442",
+      "subject": "redesign: Pipeline — full mockup-faithful Kanban port (5 stages, deal cards, drag-drop)",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "ba0f50b",
       "subject": "redesign: rip out toggle — new design IS the design",
-      "when": "7 minutes ago"
+      "when": "11 minutes ago"
     },
     {
       "hash": "7703745",
       "subject": "redesign: Calendar — full mockup-faithful React port (race spine + outreach intelligence + per-prospect best-time hints), gated behind redesign flag",
-      "when": "29 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "08f30c5",
       "subject": "redesign: feature flag — toggle between OLD and NEW chrome via floating button",
-      "when": "48 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "d203a57",
       "subject": "redesign: legora foundation — top nav + polish layer hook",
-      "when": "63 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "5205653",
       "subject": "redesign: enable preview deploys for redesign/legora branch",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "a5173a0",
       "subject": "redesign: legora-style light theme — phase 1 token swap",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "d51ec07",
@@ -54,7 +59,7 @@
     {
       "hash": "612107e",
       "subject": "v0.0.68: diagnostic — capture err.cause chain in voyagerFetch",
-      "when": "29 hours ago"
+      "when": "30 hours ago"
     },
     {
       "hash": "8e91197",
@@ -94,11 +99,6 @@
     {
       "hash": "66436aa",
       "subject": "v0.0.64: LinkedIn Layer 1 — voyager API wrapper + Kiko tools",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "a7fdfee",
-      "subject": "docs: V064 + V065 LinkedIn build briefs + master log update",
       "when": "2 days ago"
     }
   ]
