@@ -1,316 +1,556 @@
-// CommercialCalendarLegora.jsx
-// Mockup-faithful React port of kiko-calendar.html (Option C — race spine + outreach intelligence)
-// Uses real F1_2026 / FE_2026 / MGP_2026 / WEC_2026 data from CommercialCalendar.jsx
-// outreachTarget() rule (14-21 days before race) drives PEAK badge + sidebar callout
+// CommercialCalendar.jsx — V1: 55/45 split, wider grid, full day names, richer detail
+import { useState, useMemo } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
-import { useState, useMemo, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
-import './CommercialCalendar.css'
-
-// ── Race data (mirror of CommercialCalendar.jsx) ──
-const F1_2026 = [
-  { round: 1,  name: 'Australian Grand Prix',    city: 'Melbourne',   date: '2026-03-06', end: '2026-03-08', flag: '🇦🇺' },
-  { round: 2,  name: 'Chinese Grand Prix',       city: 'Shanghai',    date: '2026-03-13', end: '2026-03-15', flag: '🇨🇳', sprint: true },
-  { round: 3,  name: 'Japanese Grand Prix',      city: 'Suzuka',      date: '2026-03-27', end: '2026-03-29', flag: '🇯🇵' },
-  { round: 4,  name: 'Miami Grand Prix',         city: 'Miami',       date: '2026-05-01', end: '2026-05-03', flag: '🇺🇸', sprint: true },
-  { round: 5,  name: 'Canadian Grand Prix',      city: 'Montréal',    date: '2026-05-22', end: '2026-05-24', flag: '🇨🇦', sprint: true },
-  { round: 6,  name: 'Monaco Grand Prix',        city: 'Monte Carlo', date: '2026-06-05', end: '2026-06-07', flag: '🇲🇨' },
-  { round: 7,  name: 'Barcelona-Catalunya GP',   city: 'Barcelona',   date: '2026-06-12', end: '2026-06-14', flag: '🇪🇸' },
-  { round: 8,  name: 'Austrian Grand Prix',      city: 'Spielberg',   date: '2026-06-26', end: '2026-06-28', flag: '🇦🇹' },
-  { round: 9,  name: 'British Grand Prix',       city: 'Silverstone', date: '2026-07-03', end: '2026-07-05', flag: '🇬🇧', sprint: true },
-  { round: 10, name: 'Belgian Grand Prix',       city: 'Spa',         date: '2026-07-17', end: '2026-07-19', flag: '🇧🇪' },
-  { round: 11, name: 'Hungarian Grand Prix',     city: 'Budapest',    date: '2026-07-24', end: '2026-07-26', flag: '🇭🇺' },
-  { round: 12, name: 'Dutch Grand Prix',         city: 'Zandvoort',   date: '2026-08-21', end: '2026-08-23', flag: '🇳🇱', sprint: true },
-]
-
-const FE_2026 = [
-  { round: 9,  name: 'Monaco E-Prix',  city: 'Monaco',   date: '2026-05-16', end: '2026-05-16', flag: '⚡' },
-  { round: 11, name: 'Sanya E-Prix',   city: 'Sanya',    date: '2026-06-20', end: '2026-06-20', flag: '⚡' },
-]
-
-function daysUntil(targetDate, fromDate) {
-  const t = new Date(targetDate)
-  const f = new Date(fromDate)
-  return Math.round((t - f) / 86400000)
+// ── Platform tokens ───────────────────────────────────────
+const T = {
+  bg: '#000000', surface: 'rgba(25,25,25,0.40)', surfaceHover: 'rgba(0,0,0,0.04)',
+  border: 'rgba(0,0,0,0.05)', borderHover: 'rgba(0,0,0,0.08)',
+  text: '#0A0A0A', textSecondary: 'rgba(124,92,252,0.55)', textTertiary: '#A0A0A0',
+  font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  f1: '#E10600', f1Light: 'rgba(225,6,0,0.08)', f1Border: 'rgba(225,6,0,0.2)', f1Dark: '#FF4444',
+  fe: '#0055CC', feLight: 'rgba(0,85,204,0.08)', feBorder: 'rgba(0,85,204,0.2)', feDark: '#6CB4FF',
+  mgp: '#BE1621', mgpLight: 'rgba(190,22,33,0.08)', mgpBorder: 'rgba(190,22,33,0.2)', mgpDark: '#FF5A65',
+  wec: '#00875A', wecLight: 'rgba(0,135,90,0.08)', wecBorder: 'rgba(0,135,90,0.2)', wecDark: '#4ADE80',
+  amber: '#F59E0B', amberLight: 'rgba(245,158,11,0.08)', amberBorder: 'rgba(245,158,11,0.2)',
 }
 
+// ── Official logos — raw, no background box ───────────────
+const SeriesIcon = ({ series, size = 22 }) => {
+  const icons = { f1: '/f1-logo.png', fe: '/fe-logo.png', mgp: '/motogp-logo.png', wec: '/wec-logo.png' }
+  const alts = { f1: 'F1', fe: 'Formula E', mgp: 'MotoGP', wec: 'WEC' }
+  const src = icons[series]
+  if (!src) return <span style={{ fontSize: size * 0.5, color: T.textSecondary }}>{alts[series] || series}</span>
+  return <img src={src} alt={alts[series] || series} style={{ width: size, height: size, objectFit: 'contain', display: 'block', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; e.target.insertAdjacentHTML('afterend', `<span style="font-size:${size * 0.5}px;color:rgba(124,92,252,0.55)">${alts[series] || series}</span>`) }} />
+}
+
+// ── Race data (verified from formula1.com + fiaformulae.com) ─
+const F1_2026 = [
+  { round: 1,  name: 'Australian Grand Prix',    city: 'Melbourne',   date: '2026-03-06', end: '2026-03-08' },
+  { round: 2,  name: 'Chinese Grand Prix',       city: 'Shanghai',    date: '2026-03-13', end: '2026-03-15', sprint: true },
+  { round: 3,  name: 'Japanese Grand Prix',      city: 'Suzuka',      date: '2026-03-27', end: '2026-03-29' },
+  { round: 4,  name: 'Miami Grand Prix',         city: 'Miami',       date: '2026-05-01', end: '2026-05-03', sprint: true },
+  { round: 5,  name: 'Canadian Grand Prix',      city: 'Montréal',    date: '2026-05-22', end: '2026-05-24', sprint: true },
+  { round: 6,  name: 'Monaco Grand Prix',        city: 'Monte Carlo', date: '2026-06-05', end: '2026-06-07' },
+  { round: 7,  name: 'Barcelona-Catalunya GP',   city: 'Barcelona',   date: '2026-06-12', end: '2026-06-14' },
+  { round: 8,  name: 'Austrian Grand Prix',      city: 'Spielberg',   date: '2026-06-26', end: '2026-06-28' },
+  { round: 9,  name: 'British Grand Prix',       city: 'Silverstone', date: '2026-07-03', end: '2026-07-05', sprint: true },
+  { round: 10, name: 'Belgian Grand Prix',       city: 'Spa',         date: '2026-07-17', end: '2026-07-19' },
+  { round: 11, name: 'Hungarian Grand Prix',     city: 'Budapest',    date: '2026-07-24', end: '2026-07-26' },
+  { round: 12, name: 'Dutch Grand Prix',         city: 'Zandvoort',   date: '2026-08-21', end: '2026-08-23', sprint: true },
+  { round: 13, name: 'Italian Grand Prix',       city: 'Monza',       date: '2026-09-04', end: '2026-09-06' },
+  { round: 14, name: 'Madrid Grand Prix',        city: 'Madrid',      date: '2026-09-11', end: '2026-09-13' },
+  { round: 15, name: 'Azerbaijan Grand Prix',    city: 'Baku',        date: '2026-09-25', end: '2026-09-26', saturday: true },
+  { round: 16, name: 'Singapore Grand Prix',     city: 'Singapore',   date: '2026-10-09', end: '2026-10-11', sprint: true },
+  { round: 17, name: 'United States Grand Prix', city: 'Austin',      date: '2026-10-23', end: '2026-10-25' },
+  { round: 18, name: 'Mexico City Grand Prix',   city: 'Mexico City', date: '2026-10-30', end: '2026-11-01' },
+  { round: 19, name: 'São Paulo Grand Prix',     city: 'São Paulo',   date: '2026-11-06', end: '2026-11-08', sprint: true },
+  { round: 20, name: 'Las Vegas Grand Prix',     city: 'Las Vegas',   date: '2026-11-19', end: '2026-11-21', saturday: true },
+  { round: 21, name: 'Qatar Grand Prix',         city: 'Lusail',      date: '2026-11-27', end: '2026-11-29' },
+  { round: 22, name: 'Abu Dhabi Grand Prix',     city: 'Abu Dhabi',   date: '2026-12-04', end: '2026-12-06' },
+]
+const FE_S12 = [
+  { round: 1,  name: 'São Paulo E-Prix',   city: 'São Paulo',   date: '2025-12-06', end: '2025-12-06' },
+  { round: 2,  name: 'Mexico City E-Prix', city: 'Mexico City', date: '2026-01-10', end: '2026-01-10' },
+  { round: 3,  name: 'Miami E-Prix',       city: 'Miami',       date: '2026-01-31', end: '2026-01-31' },
+  { round: 4,  name: 'Jeddah E-Prix 1',   city: 'Jeddah',      date: '2026-02-13', end: '2026-02-13' },
+  { round: 5,  name: 'Jeddah E-Prix 2',   city: 'Jeddah',      date: '2026-02-14', end: '2026-02-14' },
+  { round: 6,  name: 'Madrid E-Prix',     city: 'Madrid',      date: '2026-03-21', end: '2026-03-21' },
+  { round: 7,  name: 'Berlin E-Prix 1',   city: 'Berlin',      date: '2026-05-02', end: '2026-05-02' },
+  { round: 8,  name: 'Berlin E-Prix 2',   city: 'Berlin',      date: '2026-05-03', end: '2026-05-03' },
+  { round: 9,  name: 'Monaco E-Prix 1',   city: 'Monaco',      date: '2026-05-16', end: '2026-05-16' },
+  { round: 10, name: 'Monaco E-Prix 2',   city: 'Monaco',      date: '2026-05-17', end: '2026-05-17' },
+  { round: 11, name: 'Sanya E-Prix',      city: 'Sanya',       date: '2026-06-20', end: '2026-06-20' },
+  { round: 12, name: 'Shanghai E-Prix 1', city: 'Shanghai',    date: '2026-07-04', end: '2026-07-04' },
+  { round: 13, name: 'Shanghai E-Prix 2', city: 'Shanghai',    date: '2026-07-05', end: '2026-07-05' },
+  { round: 14, name: 'Tokyo E-Prix 1',    city: 'Tokyo',       date: '2026-07-25', end: '2026-07-25' },
+  { round: 15, name: 'Tokyo E-Prix 2',    city: 'Tokyo',       date: '2026-07-26', end: '2026-07-26' },
+  { round: 16, name: 'London E-Prix 1',   city: 'London',      date: '2026-08-15', end: '2026-08-15' },
+  { round: 17, name: 'London E-Prix 2',   city: 'London',      date: '2026-08-16', end: '2026-08-16' },
+]
+
+const MOTOGP_2026 = [
+  { round: 1,  name: 'Thai Grand Prix',        city: 'Buriram',     date: '2026-02-27', end: '2026-03-01' },
+  { round: 2,  name: 'Brazilian Grand Prix',    city: 'Goiânia',     date: '2026-03-20', end: '2026-03-22' },
+  { round: 3,  name: 'Americas Grand Prix',     city: 'Austin',      date: '2026-03-27', end: '2026-03-29' },
+  { round: 4,  name: 'Spanish Grand Prix',      city: 'Jerez',       date: '2026-04-24', end: '2026-04-26' },
+  { round: 5,  name: 'French Grand Prix',       city: 'Le Mans',     date: '2026-05-08', end: '2026-05-10' },
+  { round: 6,  name: 'Catalan Grand Prix',      city: 'Barcelona',   date: '2026-05-15', end: '2026-05-17' },
+  { round: 7,  name: 'Italian Grand Prix',      city: 'Mugello',     date: '2026-05-29', end: '2026-05-31' },
+  { round: 8,  name: 'Hungarian Grand Prix',    city: 'Balaton',     date: '2026-06-05', end: '2026-06-07' },
+  { round: 9,  name: 'Czech Grand Prix',        city: 'Brno',        date: '2026-06-19', end: '2026-06-21' },
+  { round: 10, name: 'Dutch TT',                city: 'Assen',       date: '2026-06-26', end: '2026-06-28' },
+  { round: 11, name: 'German Grand Prix',       city: 'Sachsenring', date: '2026-07-10', end: '2026-07-12' },
+  { round: 12, name: 'British Grand Prix',      city: 'Silverstone', date: '2026-08-07', end: '2026-08-09' },
+  { round: 14, name: 'Austrian Grand Prix',     city: 'Spielberg',   date: '2026-09-18', end: '2026-09-20' },
+  { round: 15, name: 'San Marino Grand Prix',   city: 'Misano',      date: '2026-09-11', end: '2026-09-13' },
+  { round: 16, name: 'Indonesian Grand Prix',   city: 'Lombok',      date: '2026-10-09', end: '2026-10-11' },
+  { round: 17, name: 'Malaysian Grand Prix',    city: 'Sepang',      date: '2026-10-30', end: '2026-11-01' },
+  { round: 18, name: 'Qatar Grand Prix',        city: 'Lusail',      date: '2026-11-06', end: '2026-11-08' },
+  { round: 19, name: 'Portuguese Grand Prix',   city: 'Portimão',    date: '2026-11-20', end: '2026-11-22' },
+  { round: 20, name: 'Valencia Grand Prix',     city: 'Valencia',    date: '2026-11-27', end: '2026-11-29' },
+]
+
+const WEC_2026 = [
+  { round: 1, name: '6 Hours of Imola',     city: 'Imola',    date: '2026-04-19', end: '2026-04-19' },
+  { round: 2, name: '6 Hours of Spa',       city: 'Spa',      date: '2026-05-09', end: '2026-05-09' },
+  { round: 3, name: '24 Hours of Le Mans',  city: 'Le Mans',  date: '2026-06-13', end: '2026-06-14' },
+  { round: 4, name: '6 Hours of São Paulo', city: 'São Paulo', date: '2026-07-12', end: '2026-07-12' },
+  { round: 5, name: 'Lone Star Le Mans',    city: 'Austin',   date: '2026-09-06', end: '2026-09-06' },
+  { round: 6, name: '6 Hours of Fuji',      city: 'Fuji',     date: '2026-09-27', end: '2026-09-27' },
+  { round: 7, name: 'Qatar 1812km',         city: 'Lusail',   date: '2026-10-24', end: '2026-10-24' },
+  { round: 8, name: '8 Hours of Bahrain',   city: 'Sakhir',   date: '2026-11-07', end: '2026-11-07' },
+]
+
+// ── Helpers ───────────────────────────────────────────────
+const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+const MONTHS_FULL  = ['January','February','March','April','May','June','July','August','September','October','November','December']
+const DAYS_FULL    = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+
+function pad2(n) { return String(n).padStart(2, '0') }
+function toStr(y, m, d) { return `${y}-${pad2(m + 1)}-${pad2(d)}` }
+
+function getNow() {
+  const n = new Date()
+  return toStr(n.getFullYear(), n.getMonth(), n.getDate())
+}
+function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate() }
+function firstWeekday(y, m) { const d = new Date(y, m, 1).getDay(); return d === 0 ? 6 : d - 1 }
+
+function daysUntil(dateStr, from) {
+  const f = from || getNow()
+  return Math.ceil((new Date(dateStr + 'T12:00:00') - new Date(f + 'T12:00:00')) / 86400000)
+}
+function fmtRange(date, end) {
+  const d = new Date(date + 'T12:00:00'), e = new Date(end + 'T12:00:00')
+  if (date === end) return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`
+  if (d.getMonth() === e.getMonth()) return `${d.getDate()}–${e.getDate()} ${MONTHS_SHORT[d.getMonth()]}`
+  return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]} – ${e.getDate()} ${MONTHS_SHORT[e.getMonth()]}`
+}
+function fmtLong(dateStr) {
+  return new Date(dateStr + 'T12:00:00').toLocaleDateString('en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  })
+}
+
+// Nearest F1 race that this date is 14–21 days before
 function outreachTarget(dateStr) {
   return F1_2026.find(e => {
     const d = daysUntil(e.date, dateStr)
     return d >= 14 && d <= 21
-  })
+  }) || null
 }
 
+// Events overlapping a specific date
+function eventsOn(dateStr, showF1, showFE, showMGP, showWEC) {
+  const f1 = showF1 ? F1_2026.filter(e => dateStr >= e.date && dateStr <= e.end) : []
+  const fe = showFE ? FE_S12.filter(e => dateStr >= e.date && dateStr <= e.end) : []
+  const mgp = showMGP ? MOTOGP_2026.filter(e => dateStr >= e.date && dateStr <= e.end) : []
+  const wec = showWEC ? WEC_2026.filter(e => dateStr >= e.date && dateStr <= e.end) : []
+  return { f1, fe, mgp, wec }
+}
 
-export default function CommercialCalendar() {
-  const today = new Date().toISOString().slice(0, 10)
-  const [selectedRound, setSelectedRound] = useState(() => {
-    // Default to next race in peak window or just next race
-    const peak = outreachTarget(today)
-    if (peak) return `f1-${peak.round}`
-    const next = F1_2026.find(e => e.date >= today)
-    return next ? `f1-${next.round}` : 'f1-4'
-  })
-  const [seriesFilter, setSeriesFilter] = useState({ f1: true, fe: true, motogp: false, wec: false })
-  const [privacyFilter, setPrivacyFilter] = useState('mine')
-  const [liveWindows, setLiveWindows] = useState([])
-  const [livePerProspect, setLivePerProspect] = useState([])
+// Cell styling logic
+function cellStyle(dateStr, selected, today, showF1, showFE, showMGP, showWEC) {
+  const { f1, fe, mgp, wec } = eventsOn(dateStr, showF1, showFE, showMGP, showWEC)
+  const isRaceDay = f1.some(e => e.end === dateStr) || mgp.some(e => e.end === dateStr) || wec.some(e => e.end === dateStr)
+  const hasF1     = f1.length > 0
+  const hasFE     = fe.length > 0
+  const hasMGP    = mgp.length > 0
+  const hasWEC    = wec.length > 0
+  const isWindow  = !hasF1 && !hasFE && !hasMGP && !hasWEC && !!outreachTarget(dateStr)
+  const isToday   = dateStr === today
+  const isSel     = dateStr === selected
 
-  // Load live outreach intelligence from Supabase (computed nightly cron)
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      const { data: windows } = await supabase
-        .from('outreach_window_suggestions')
-        .select('*')
-        .order('rank', { ascending: true })
-        .limit(4)
-      const { data: perProspect } = await supabase
-        .from('optimum_outreach_windows')
-        .select('*, contacts(name, company)')
-        .order('confidence', { ascending: false })
-        .limit(5)
-      if (cancelled) return
-      setLiveWindows(windows || [])
-      setLivePerProspect(perProspect || [])
-    })()
-    return () => { cancelled = true }
-  }, [])
+  let bg = T.surface, border = T.border
+  if (isSel)       { bg = T.text;        border = T.text }
+  else if (isRaceDay) { bg = hasF1 ? T.f1 : hasMGP ? T.mgp : hasWEC ? T.wec : T.f1; border = bg }
+  else if (hasF1)  { bg = T.f1Light;     border = T.f1Border }
+  else if (hasFE)  { bg = T.feLight;     border = T.feBorder }
+  else if (hasMGP) { bg = T.mgpLight;    border = T.mgpBorder }
+  else if (hasWEC) { bg = T.wecLight;    border = T.wecBorder }
+  else if (isWindow) { bg = T.amberLight; border = T.amberBorder }
 
-  // Build combined chronological round list
-  const allRounds = useMemo(() => {
-    const list = []
-    if (seriesFilter.f1) F1_2026.forEach(r => list.push({ ...r, series: 'f1', id: `f1-${r.round}` }))
-    if (seriesFilter.fe) FE_2026.forEach(r => list.push({ ...r, series: 'fe', id: `fe-${r.round}` }))
-    return list.sort((a, b) => a.date.localeCompare(b.date))
-  }, [seriesFilter])
+  return { bg, border: isToday ? T.text : border, isToday, isSel, isRaceDay, hasF1, hasFE, hasMGP, hasWEC, isWindow, f1, fe, mgp, wec }
+}
 
-  const selectedRace = allRounds.find(r => r.id === selectedRound) || F1_2026.find(r => r.round === 4)
-  const peakWindow = outreachTarget(today)
-  const isPeakRace = peakWindow && selectedRace?.series === 'f1' && selectedRace?.round === peakWindow.round
-  const daysToSelected = selectedRace ? daysUntil(selectedRace.date, today) : 0
-  const racedCount = F1_2026.filter(r => r.date < today).length
-  const nextF1 = F1_2026.find(r => r.date >= today)
-  const daysToNextF1 = nextF1 ? daysUntil(nextF1.date, today) : 0
+// ── Calendar cell ─────────────────────────────────────────
+function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, showMGP, showWEC, onClick }) {
+  const day = parseInt(dateStr.slice(8))
+  const s   = cellStyle(dateStr, selected, today, showF1, showFE, showMGP, showWEC)
 
-  // Format date range as "1—3 May" or "16 May"
-  const fmtRange = (start, end) => {
-    const s = new Date(start), e = new Date(end)
-    const month = s.toLocaleString('en-GB', { month: 'short' })
-    if (start === end) return `${s.getDate()} ${month}`
-    return `${s.getDate()}—${e.getDate()} ${month}`
-  }
+  const numColor = s.isSel ? 'rgba(25,25,25,0.40)'
+    : s.isRaceDay ? 'rgba(25,25,25,0.40)'
+    : s.hasF1  ? T.f1Dark
+    : s.hasFE  ? T.feDark
+    : s.isWindow ? T.amber
+    : T.text
+
+  const pill = (bg, children) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '1px 5px', borderRadius: 3, background: bg, width: 'fit-content', maxWidth: '100%', overflow: 'hidden' }}>
+      {children}
+    </div>
+  )
 
   return (
-    <div className="cclg">
+    <div
+      onClick={() => isCurrent && onClick(dateStr)}
+      style={{
+        borderRadius: 7,
+        padding: '7px 8px',
+        background: s.bg,
+        border: s.isToday ? `1.5px solid ${T.text}` : `1.5px solid ${s.border}`,
+        display: 'flex', flexDirection: 'column', gap: 4,
+        cursor: isCurrent ? 'pointer' : 'default',
+        opacity: isCurrent ? 1 : 0.2,
+        transition: 'border-color 0.12s',
+        minHeight: 0,
+      }}
+      onMouseEnter={e => { if (isCurrent && !s.isSel) e.currentTarget.style.borderColor = T.borderHover }}
+      onMouseLeave={e => { if (isCurrent && !s.isSel) e.currentTarget.style.borderColor = s.isToday ? T.text : s.border }}
+    >
+      <span style={{ fontSize: 13, fontWeight: s.isToday ? 600 : 400, color: numColor, lineHeight: 1, fontFamily: T.font }}>
+        {day}
+      </span>
 
-      {/* HEAD */}
-      <div className="cclg-head">
-        <div className="cclg-head-row">
-          <div>
-            <div className="cclg-eyebrow"><span className="cat">SCHEDULE</span><span className="sep">/</span>2026 motorsport season</div>
-            <h1 className="cclg-title">Calendar</h1>
-          </div>
-          <div className="cclg-filters">
-            <div className="cclg-seg">
-              <button className={privacyFilter === 'mine' ? 'active' : ''} onClick={() => setPrivacyFilter('mine')}>Mine</button>
-              <button className={privacyFilter === 'team' ? 'active' : ''} onClick={() => setPrivacyFilter('team')}>Team</button>
-              <button className={privacyFilter === 'all' ? 'active' : ''} onClick={() => setPrivacyFilter('all')}>All</button>
-            </div>
-            <button className={`cclg-chip ${seriesFilter.f1 ? 'active' : ''}`} onClick={() => setSeriesFilter(s => ({ ...s, f1: !s.f1 }))}>F1</button>
-            <button className={`cclg-chip ${seriesFilter.fe ? 'active' : ''}`} onClick={() => setSeriesFilter(s => ({ ...s, fe: !s.fe }))}>FE</button>
-            <button className={`cclg-chip ${seriesFilter.motogp ? 'active' : ''}`} onClick={() => setSeriesFilter(s => ({ ...s, motogp: !s.motogp }))}>MotoGP</button>
-            <button className={`cclg-chip ${seriesFilter.wec ? 'active' : ''}`} onClick={() => setSeriesFilter(s => ({ ...s, wec: !s.wec }))}>WEC</button>
-          </div>
-        </div>
-      </div>
-
-
-      {/* RACE SPINE — horizontal scrolling rounds */}
-      <div className="cclg-spine-wrap">
-        <div className="cclg-spine-h">
-          <div className="lbl"><strong>F1 2026</strong> · 22 rounds · {racedCount} raced{nextF1 ? ` · next round ${nextF1.city} in ${daysToNextF1}d` : ''}</div>
-          <div className="lbl">Scroll →</div>
-        </div>
-        <div className="cclg-spine">
-          {allRounds.map(r => {
-            const isPast = r.date < today
-            const isPeak = peakWindow && r.series === 'f1' && r.round === peakWindow.round
-            const isSelected = r.id === selectedRound
-            const days = daysUntil(r.date, today)
-            return (
-              <div
-                key={r.id}
-                className={`cclg-round ${isPast ? 'past' : ''} ${isPeak ? 'peak' : ''} ${isSelected ? 'selected' : ''} ${r.series === 'fe' ? 'fe-round' : ''}`}
-                onClick={() => setSelectedRound(r.id)}
-              >
-                <div className="rf">{r.flag}</div>
-                <div className="rn">{r.series === 'f1' ? `R${r.round}` : `FE${r.round}`}</div>
-                <div className="rname">{r.city}</div>
-                <div className="rdate">{fmtRange(r.date, r.end)}</div>
-                {!isPast && (
-                  <div className={`rcount ${isPeak ? 'peak' : ''}`}>in {days}d</div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-
-      {/* AGENDA + RIGHT PANEL */}
-      <div className="cclg-body-grid">
-        <main className="cclg-agenda">
-          <div className="cclg-agenda-h">
-            <div className="lbl">This week</div>
-            <div className="meta">
-              <strong>{new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' })}—Sun</strong> · {peakWindow ? `${daysToNextF1}d to ${nextF1.city}` : 'no race weekend'} · 9 events
-            </div>
-          </div>
-
-          <div className="cclg-day-block">
-            <div className="cclg-day-h today"><div className="num">{new Date().getDate()}</div><div className="day-name">{new Date().toLocaleDateString('en-GB', { weekday: 'short' })} · Today</div></div>
-            {peakWindow && (
-              <div className="cclg-ow-inline">
-                <span className="bolt"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
-                <span><strong>Optimum send window now → 16:00 UK</strong> · 12 banking prospects · 78% historical reply rate · pre-{peakWindow.city} GP push</span>
-                <span className="cta">Schedule batch</span>
-              </div>
-            )}
-            <div className="cclg-day-events">
-              <div className="cclg-ev kiko"><div className="t">09:00<span>30 min</span></div><div className="info"><div className="title">Kiko morning brief <span className="tag kiko">Kiko</span></div><div className="sub"><strong>3 hot replies</strong> · pipeline moved $2.4m</div></div><div className="att"><div className="av">S</div></div></div>
-              <div className="cclg-ev private"><div className="t">11:30<span>45 min</span></div><div className="info"><div className="title">Giacomo · Maison product review <span className="priv">🔒</span></div><div className="sub">Archive 01 walkthrough</div></div><div className="att"><div className="av">S</div><div className="av">G</div></div></div>
-              <div className="cclg-ev kiko"><div className="t">14:00<span>15 min</span></div><div className="info"><div className="title">Touch 3 sends — F1 Banking <span className="tag kiko">Auto</span></div><div className="sub">28 prospects · {peakWindow?.city || 'Miami'} GP angle</div></div><div className="att"><div className="av">K</div></div></div>
-              <div className="cclg-ev kiko"><div className="t">16:00<span>30 min</span></div><div className="info"><div className="title">Prep: Gewirtz briefing <span className="tag brief">Prep</span></div><div className="sub">Ready 15:30</div></div><div className="att"><div className="av">K</div></div></div>
-            </div>
-          </div>
-
-          <div className="cclg-day-block">
-            <div className="cclg-day-h"><div className="num">16</div><div className="day-name">Thu · Tomorrow</div></div>
-            <div className="cclg-ow-inline">
-              <span className="bolt"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
-              <span><strong>Optimum send 09:00 — 11:00 UK</strong> · 8 fintech prospects · 64% historical reply rate</span>
-              <span className="cta">Schedule batch</span>
-            </div>
-            <div className="cclg-day-events">
-              <div className="cclg-ev team"><div className="t">14:00<span>30 min</span></div><div className="info"><div className="title">Paul Gewirtz · Goldman Sachs <span className="tag f1">F1 2027</span></div><div className="sub">Head of Brand · briefing pack <strong>ready 15:30 today</strong></div></div><div className="att"><div className="av">S</div><div className="av">PG</div></div></div>
-            </div>
-          </div>
-
-          <div className="cclg-day-block">
-            <div className="cclg-day-h"><div className="num">21</div><div className="day-name">Mon next week</div></div>
-            <div className="cclg-day-events">
-              <div className="cclg-ev team"><div className="t">10:00<span>30 min</span></div><div className="info"><div className="title">Mark Nelson · Stripe <span className="tag f1">FE 2026</span></div><div className="sub">10:00 PT / 18:00 UK</div></div><div className="att"><div className="av">S</div><div className="av">MN</div></div></div>
-              <div className="cclg-ev team"><div className="t">14:00<span>60 min</span></div><div className="info"><div className="title">Van Hawke board check-in</div><div className="sub">Q2 pipeline review · <strong>$73m weighted</strong></div></div><div className="att"><div className="av">S</div><div className="av">+3</div></div></div>
-            </div>
-          </div>
-        </main>
-
-
-        {/* RIGHT SIDEBAR */}
-        <aside className="cclg-side">
-
-          {/* Selected race detail */}
-          <div className="cclg-side-section">
-            <h4>Selected race</h4>
-            <div className="cclg-race-detail">
-              <div className="race-eyebrow">{selectedRace?.series === 'f1' ? `F1 Round ${selectedRace?.round}` : `Formula E Round ${selectedRace?.round}`} · {daysToSelected > 0 ? `in ${daysToSelected} days` : daysToSelected === 0 ? 'today' : 'past'}</div>
-              <div className="race-title">{selectedRace?.flag} {selectedRace?.name}</div>
-              <div className="race-meta">{selectedRace?.city} · {fmtRange(selectedRace?.date, selectedRace?.end)}{selectedRace?.sprint ? ' · Sprint weekend' : ''}</div>
-
-              <div className="session-row"><div className="name">Practice</div><div className="when">Fri</div></div>
-              <div className="session-row"><div className="name">Qualifying</div><div className="when">Sat</div></div>
-              <div className="session-row"><div className="name">Race</div><div className="when">Sun</div></div>
-
-              {isPeakRace && (
-                <div className="ow-callout">
-                  <div className="ow-callout-h">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                    Peak outreach window · open now
-                  </div>
-                  <div className="ow-window">Today → +7 days</div>
-                  <div className="ow-reason"><strong>14—21 days before race is peak window for sponsor decisions.</strong> Brand committees finalise activation budgets in this window. Send Haas pipeline follow-ups now to land before the {selectedRace.city} media cycle.</div>
-                  <button className="ow-cta-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                    Schedule batch · 12 prospects
-                  </button>
-                </div>
+      {/* Event pills — only on current-month cells */}
+      {isCurrent && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 'auto' }}>
+          {s.hasF1 && s.f1.slice(0, 1).map((e, i) => (
+            <div key={i}>
+              {pill(
+                s.isSel || s.isRaceDay ? '#A0A0A0' : T.f1,
+                <>
+                  <img src="/f1-logo.png" alt="F1" style={{ width: 8, height: 8, objectFit: 'contain', display: 'block' }} />
+                  <span style={{ fontSize: 9, color: '#0A0A0A', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
+                    {s.isRaceDay ? 'Race day' : `${e.city.slice(0, 3).toUpperCase()}${e.sprint ? ' ⚡' : ''}`}
+                  </span>
+                </>
               )}
-
-              <div className="prospects-block">
-                <div className="prospects-h">Your prospects watching · best send time</div>
-                <div className="prospect-pill"><div className="pp-init">JB</div><div className="pp-name">Bardrick · Citi</div><div className="pp-best">best <strong>Tue 10:00 UK</strong></div></div>
-                <div className="prospect-pill"><div className="pp-init">DS</div><div className="pp-name">Sundheim · D1</div><div className="pp-best">best <strong>Wed 14:00 UK</strong></div></div>
-                <div className="prospect-pill"><div className="pp-init">CH</div><div className="pp-name">Halford · ANZ</div><div className="pp-best">best <strong>Thu 09:00 SGT</strong></div></div>
-                <div className="prospect-pill"><div className="pp-init">AC</div><div className="pp-name">Cross · Barclays</div><div className="pp-best">best <strong>Fri 11:00 UK</strong></div></div>
-                <div className="prospect-pill"><div className="pp-init">MN</div><div className="pp-name">Nelson · Stripe</div><div className="pp-best">best <strong>Mon 09:00 PT</strong></div></div>
-              </div>
             </div>
-          </div>
-
-
-          {/* Optimum outreach windows */}
-          <div className="cclg-side-section">
-            <h4>Optimum outreach windows<span className="h-pill">Live data</span></h4>
-
-            <div className="ow-card">
-              <div className="ow-card-h">
-                <div className="ow-when">Today · 14:00 — 16:00 UK</div>
-                <div className="ow-stars">★★★★★</div>
-              </div>
-              <div className="ow-context">PRE-{peakWindow?.city.toUpperCase() || 'MIAMI'} GP · {peakWindow ? daysUntil(peakWindow.date, today) : 16}D OUT · PEAK WINDOW</div>
-              <div className="ow-stat"><strong>12 banking prospects</strong> · <span className="pct">78%</span> historical reply rate in this window</div>
-              <div className="ow-action">Schedule batch send →</div>
+          ))}
+          {s.hasFE && s.fe.slice(0, 1).map((e, i) => (
+            <div key={i}>
+              {pill(
+                s.isSel ? '#A0A0A0' : T.fe,
+                <>
+                  <img src="/fe-logo.png" alt="FE" style={{ width: 8, height: 8, objectFit: 'contain', display: 'block' }} />
+                  <span style={{ fontSize: 9, color: '#0A0A0A', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
+                    {e.city.slice(0, 3).toUpperCase()}
+                  </span>
+                </>
+              )}
             </div>
-
-            <div className="ow-card">
-              <div className="ow-card-h">
-                <div className="ow-when">Tomorrow · 09:00 — 11:00 UK</div>
-                <div className="ow-stars">★★★★</div>
-              </div>
-              <div className="ow-context">PRE-{peakWindow?.city.toUpperCase() || 'MIAMI'} GP · UK MORNING SLOT</div>
-              <div className="ow-stat"><strong>8 fintech prospects</strong> · <span className="pct">64%</span> historical reply rate · post-coffee window</div>
-              <div className="ow-action">Schedule batch send →</div>
+          ))}
+          {s.hasMGP && s.mgp.slice(0, 1).map((e, i) => (
+            <div key={`mgp${i}`}>
+              {pill(
+                s.isSel || s.isRaceDay ? '#A0A0A0' : T.mgp,
+                <span style={{ fontSize: 9, color: '#0A0A0A', fontFamily: T.font }}>🏍️ {e.city.slice(0, 3).toUpperCase()}</span>
+              )}
             </div>
-
-            <div className="ow-card">
-              <div className="ow-card-h">
-                <div className="ow-when">Tue · 10:00 PT</div>
-                <div className="ow-stars">★★★★</div>
-              </div>
-              <div className="ow-context">US PROSPECTS · MID-MORNING</div>
-              <div className="ow-stat"><strong>5 US-based prospects</strong> · <span className="pct">61%</span> reply rate · Stripe / D1 / Goldman cluster</div>
-              <div className="ow-action">Schedule batch send →</div>
+          ))}
+          {s.hasWEC && s.wec.slice(0, 1).map((e, i) => (
+            <div key={`wec${i}`}>
+              {pill(
+                s.isSel ? '#A0A0A0' : T.wec,
+                <span style={{ fontSize: 9, color: '#0A0A0A', fontFamily: T.font }}>🏁 {e.city.slice(0, 3).toUpperCase()}</span>
+              )}
             </div>
+          ))}
+          {s.isWindow && (
+            <div style={{ width: 7, height: 7, borderRadius: 2, background: T.amber }} />
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
-            <div className="ow-card">
-              <div className="ow-card-h">
-                <div className="ow-when">Thu · 09:00 SGT</div>
-                <div className="ow-stars">★★★</div>
-              </div>
-              <div className="ow-context">APAC PROSPECTS · LAST PRE-RACE DAY</div>
-              <div className="ow-stat"><strong>4 APAC prospects</strong> · <span className="pct">52%</span> reply rate · DBS / Citi APAC / ANZ</div>
-              <div className="ow-action">Schedule batch send →</div>
-            </div>
-          </div>
+// ── Detail pane ───────────────────────────────────────────
+function DetailPane({ selected, today, showF1, showFE, showMGP, showWEC, viewYear, viewMonth }) {
+  const sColor = s => ({ f1: T.f1, fe: T.fe, mgp: T.mgp, wec: T.wec }[s] || T.f1)
+  const sColorDark = s => ({ f1: T.f1Dark, fe: T.feDark, mgp: T.mgpDark, wec: T.wecDark }[s] || T.f1Dark)
+  const sColorLight = s => ({ f1: T.f1Light, fe: T.feLight, mgp: T.mgpLight, wec: T.wecLight }[s] || T.f1Light)
+  const sColorBorder = s => ({ f1: T.f1Border, fe: T.feBorder, mgp: T.mgpBorder, wec: T.wecBorder }[s] || T.f1Border)
+  const monthKey = `${viewYear}-${pad2(viewMonth + 1)}`
 
-          {/* Briefs ready */}
-          <div className="cclg-side-section">
-            <h4>Briefs ready</h4>
-            <div className="prep">
-              <div className="when">Tomorrow 14:00</div>
-              <div className="who">Paul Gewirtz · GS</div>
-              <div className="what">F1 vs rugby economics 1-pager</div>
-            </div>
-            <div className="prep">
-              <div className="when">Mon 21 · 10:00 PT</div>
-              <div className="who">Mark Nelson · Stripe</div>
-              <div className="what">Auto-prep at Mon 09:00</div>
-            </div>
-          </div>
+  // Events on the selected date
+  const { f1: selF1, fe: selFE, mgp: selMGP, wec: selWEC } = selected
+    ? eventsOn(selected, showF1, showFE, showMGP, showWEC)
+    : { f1: [], fe: [], mgp: [], wec: [] }
+  const selEvents = [
+    ...selF1.map(e => ({ ...e, series: 'f1' })),
+    ...selFE.map(e => ({ ...e, series: 'fe' })),
+    ...selMGP.map(e => ({ ...e, series: 'mgp' })),
+    ...selWEC.map(e => ({ ...e, series: 'wec' })),
+  ].sort((a, b) => a.date.localeCompare(b.date))
+  const outreach = selected ? outreachTarget(selected) : null
 
-        </aside>
+  // All events in the current view month
+  const monthEvents = useMemo(() => {
+    const evts = []
+    if (showF1) F1_2026.forEach(e => { if (e.date.startsWith(monthKey)) evts.push({ ...e, series: 'f1' }) })
+    if (showFE) FE_S12.forEach(e => { if (e.date.startsWith(monthKey)) evts.push({ ...e, series: 'fe' }) })
+    if (showMGP) MOTOGP_2026.forEach(e => { if (e.date.startsWith(monthKey)) evts.push({ ...e, series: 'mgp' }) })
+    if (showWEC) WEC_2026.forEach(e => { if (e.date.startsWith(monthKey)) evts.push({ ...e, series: 'wec' }) })
+    return evts.sort((a, b) => a.date.localeCompare(b.date))
+  }, [monthKey, showF1, showFE, showMGP, showWEC])
+
+  // Upcoming events across both series
+  const upcoming = useMemo(() => {
+    const evts = []
+    if (showF1) F1_2026.forEach(e => { if (e.date >= today) evts.push({ ...e, series: 'f1' }) })
+    if (showFE) FE_S12.forEach(e => { if (e.date >= today) evts.push({ ...e, series: 'fe' }) })
+    if (showMGP) MOTOGP_2026.forEach(e => { if (e.date >= today) evts.push({ ...e, series: 'mgp' }) })
+    if (showWEC) WEC_2026.forEach(e => { if (e.date >= today) evts.push({ ...e, series: 'wec' }) })
+    return evts.sort((a, b) => a.date.localeCompare(b.date)).slice(0, 5)
+  }, [today, showF1, showFE, showMGP, showWEC])
+
+  const isSelectedToday = selected === today
+
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: T.surface }}>
+      {/* Header */}
+      <div style={{ padding: '11px 18px', borderBottom: `1.5px solid ${T.border}`, background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <span style={{ fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font }}>
+          {selected ? fmtLong(selected) : 'Select a date'}
+        </span>
+        {isSelectedToday && (
+          <span style={{ fontSize: 10, fontWeight: 400, color: '#1565C0', background: '#E3F2FD', border: '1.5px solid #B5D4F4', padding: '2px 9px', borderRadius: 4, fontFamily: T.font }}>Today</span>
+        )}
       </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+        {/* Selected date — event cards */}
+        {selected && selEvents.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {selEvents.map((event, i) => (
+              <div key={i} style={{ padding: '12px 14px', borderRadius: 50, background: sColorLight(event.series), border: `1.5px solid ${sColorBorder(event.series)}`, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <SeriesIcon series={event.series} size={36} />
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 15, fontWeight: 500, color: sColorDark(event.series), margin: 0, fontFamily: T.font }}>{event.name}</p>
+                  <p style={{ fontSize: 12, color: sColor(event.series), margin: '3px 0 0', fontFamily: T.font }}>
+                    {event.series === 'f1' ? 'Formula 1' : event.series === 'fe' ? 'Formula E' : event.series === 'mgp' ? 'MotoGP' : 'WEC'} · {event.city}
+                    {event.series === 'f1' ? ` · R${event.round}` : ` · S12 R${event.round}`}
+                    {event.sprint ? ' · Sprint' : ''}{event.saturday ? ' · Saturday' : ''}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* No event on selected date */}
+        {selected && selEvents.length === 0 && (
+          <p style={{ fontSize: 13, color: T.textTertiary, fontFamily: T.font }}>No race events on this date.</p>
+        )}
+
+        {/* Outreach nudge */}
+        {outreach && (
+          <div style={{ padding: '12px 14px', borderRadius: 50, background: T.amberLight, border: `1.5px solid ${T.amberBorder}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
+              <div style={{ width: 6, height: 6, borderRadius: 1, background: T.amber, flexShrink: 0 }} />
+              <p style={{ fontSize: 12, fontWeight: 500, color: T.amber, margin: 0, fontFamily: T.font }}>
+                Outreach window · {outreach.name} in {daysUntil(outreach.date, selected)}d
+              </p>
+            </div>
+            <p style={{ fontSize: 12, color: T.textSecondary, margin: 0, lineHeight: 1.5, fontFamily: T.font }}>
+              14–21 days before race is peak window for sponsor decisions. Send Haas pipeline follow-ups now.
+            </p>
+          </div>
+        )}
+
+        {/* This month */}
+        {monthEvents.length > 0 && (
+          <div>
+            <p style={{ fontSize: 10, fontWeight: 400, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10, fontFamily: T.font }}>
+              {MONTHS_FULL[viewMonth]} {viewYear}
+            </p>
+            {monthEvents.map((e, i) => {
+              const isPast   = e.end < today
+              const isActive = selected && e.date <= selected && e.end >= selected
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: `1.5px solid ${T.border}`, opacity: isPast ? 0.38 : 1 }}>
+                  <SeriesIcon series={e.series} size={22} />
+                  <span style={{ flex: 1, fontSize: 13, fontWeight: isActive ? 500 : 400, color: T.text, fontFamily: T.font, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {e.name}{e.sprint ? ' ⚡' : ''}
+                  </span>
+                  <span style={{ fontSize: 11, color: isActive ? sColor(e.series) : T.textTertiary, flexShrink: 0, fontFamily: T.font }}>
+                    {isActive ? 'Today' : fmtRange(e.date, e.end)}{isPast ? ' ✓' : ''}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Next up */}
+        {upcoming.length > 0 && (
+          <div>
+            <p style={{ fontSize: 10, fontWeight: 400, color: T.textTertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10, fontFamily: T.font }}>Next up</p>
+            {upcoming.map((e, i) => {
+              const days = daysUntil(e.date)
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: `1.5px solid ${T.border}` }}>
+                  <SeriesIcon series={e.series} size={28} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 500, color: T.text, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: T.font }}>{e.name}</p>
+                    <p style={{ fontSize: 11, color: T.textTertiary, margin: '1px 0 0', fontFamily: T.font }}>
+                      {e.city} · {e.series === 'f1' ? `R${e.round}` : `S12 R${e.round}`}{e.sprint ? ' · Sprint' : ''}
+                    </p>
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: T.textSecondary, flexShrink: 0, fontFamily: T.font }}>
+                    {days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : `${days}d`}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Main export ───────────────────────────────────────────
+export default function CommercialCalendar() {
+  const today    = getNow()
+  const todayY   = parseInt(today.slice(0, 4))
+  const todayM   = parseInt(today.slice(5, 7)) - 1
+
+  const [viewYear,  setViewYear]  = useState(todayY)
+  const [viewMonth, setViewMonth] = useState(todayM)
+  const [selected,  setSelected]  = useState(null)
+  const [showF1,    setShowF1]    = useState(true)
+  const [showFE,    setShowFE]    = useState(true)
+  const [showMGP,   setShowMGP]   = useState(true)
+  const [showWEC,   setShowWEC]   = useState(true)
+
+  const prevMonth = () => { if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1) } else setViewMonth(m => m - 1) }
+  const nextMonth = () => { if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1) } else setViewMonth(m => m + 1) }
+  const goToday   = () => { setViewYear(todayY); setViewMonth(todayM) }
+
+  const dim      = daysInMonth(viewYear, viewMonth)
+  const firstDay = firstWeekday(viewYear, viewMonth)
+  const prevDim  = daysInMonth(viewYear, viewMonth === 0 ? 11 : viewMonth - 1)
+
+  // Build 42-cell grid (Mon-start)
+  const cells = []
+  for (let i = firstDay - 1; i >= 0; i--) {
+    const pm = viewMonth === 0 ? 11 : viewMonth - 1
+    const py = viewMonth === 0 ? viewYear - 1 : viewYear
+    cells.push({ date: toStr(py, pm, prevDim - i), current: false })
+  }
+  for (let d = 1; d <= dim; d++) cells.push({ date: toStr(viewYear, viewMonth, d), current: true })
+  while (cells.length < 42) {
+    const nm = viewMonth === 11 ? 0 : viewMonth + 1
+    const ny = viewMonth === 11 ? viewYear + 1 : viewYear
+    cells.push({ date: toStr(ny, nm, cells.length - dim - firstDay + 1), current: false })
+  }
+
+  // Stats for toggles
+  const remF1 = F1_2026.filter(e => e.date >= today).length
+  const remFE = FE_S12.filter(e => e.date >= today).length
+  const remMGP = MOTOGP_2026.filter(e => e.date >= today).length
+  const remWEC = WEC_2026.filter(e => e.date >= today).length
+  const nextEvt = [
+    ...(showF1 ? F1_2026 : []),
+    ...(showFE ? FE_S12 : []),
+    ...(showMGP ? MOTOGP_2026 : []),
+    ...(showWEC ? WEC_2026 : []),
+  ].filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date))[0]
+  const nextD = nextEvt ? daysUntil(nextEvt.date) : null
+
+  const handleClick = (dateStr) => setSelected(s => s === dateStr ? null : dateStr)
+
+  return (
+    <div style={{ display: 'flex', height: '100%', fontFamily: T.font, background: 'transparent', overflow: 'hidden' }}>
+
+      {/* ── Left: grid (55%) ── */}
+      <div style={{ width: '55%', flexShrink: 0, display: 'flex', flexDirection: 'column', borderRight: `1.5px solid ${T.border}`, background: 'transparent' }}>
+
+        {/* Top nav */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 16px', background: T.surface, borderBottom: `1.5px solid ${T.border}`, flexShrink: 0 }}>
+          <button onClick={prevMonth} style={{ width: 28, height: 28, borderRadius: 7, border: `1.5px solid ${T.border}`, background: T.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.textSecondary, cursor: 'pointer' }}>
+            <ChevronLeft size={13} />
+          </button>
+          <span style={{ flex: 1, textAlign: 'center', fontSize: 16, fontWeight: 500, color: T.text, fontFamily: T.font }}>
+            {MONTHS_FULL[viewMonth]} {viewYear}
+          </span>
+          <button onClick={nextMonth} style={{ width: 28, height: 28, borderRadius: 7, border: `1.5px solid ${T.border}`, background: T.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.textSecondary, cursor: 'pointer' }}>
+            <ChevronRight size={13} />
+          </button>
+          <div style={{ width: '0.5px', height: 16, background: T.border, margin: '0 2px' }} />
+          {/* Series toggles */}
+          {[
+            { id: 'f1', label: 'F1',         on: showF1, set: setShowF1, bg: T.f1, rem: remF1 },
+            { id: 'fe', label: 'Formula E',  on: showFE, set: setShowFE, bg: T.fe, rem: remFE },
+            { id: 'mgp', label: 'MotoGP',    on: showMGP, set: setShowMGP, bg: T.mgp, rem: remMGP },
+            { id: 'wec', label: 'WEC',        on: showWEC, set: setShowWEC, bg: T.wec, rem: remWEC },
+          ].map(({ id, label, on, set, bg, rem }) => (
+            <button key={id} onClick={() => set(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 7px', borderRadius: 6, border: `1.5px solid ${on ? T.border : T.border}`, background: on ? 'rgba(25,25,25,0.40)' : 'transparent', cursor: 'pointer', transition: 'all 0.15s' }}>
+              <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 9, fontWeight: 600, color: on ? bg : T.textTertiary, fontFamily: T.font }}>{id === 'f1' ? 'F1' : id === 'fe' ? 'FE' : id === 'mgp' ? 'GP' : 'WE'}</span>
+              <span style={{ fontSize: 12, fontWeight: 500, color: T.textSecondary, fontFamily: T.font }}>{label}</span>
+              {on && <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font }}>{rem}</span>}
+            </button>
+          ))}
+          <div style={{ width: '0.5px', height: 16, background: T.border, margin: '0 2px' }} />
+          <button onClick={goToday} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: `1.5px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font }}>Today</button>
+          {/* Next race stat */}
+          {nextD !== null && (
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+              <span style={{ fontSize: 15, fontWeight: 500, color: T.text, fontFamily: T.font }}>
+                {nextD === 0 ? 'Today' : `${nextD}d`}
+              </span>
+              <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font }}>next race</span>
+            </div>
+          )}
+        </div>
+
+        {/* Day headers — full names */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', padding: '8px 12px 4px', gap: 3, background: T.surface, borderBottom: `1.5px solid ${T.border}`, flexShrink: 0 }}>
+          {DAYS_FULL.map(d => (
+            <div key={d} style={{ textAlign: 'center', fontSize: 10, color: T.textTertiary, letterSpacing: '0.02em', fontFamily: T.font }}>{d}</div>
+          ))}
+        </div>
+
+        {/* Grid — 6 rows, fills remaining height */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gridTemplateRows: 'repeat(6, 1fr)', gap: 3, padding: '8px 12px 12px', flex: 1, minHeight: 0 }}>
+          {cells.map((cell, idx) => (
+            <Cell key={idx} dateStr={cell.date} isCurrent={cell.current} selected={selected} today={today} showF1={showF1} showFE={showFE} showMGP={showMGP} showWEC={showWEC} onClick={handleClick} />
+          ))}
+        </div>
+
+        {/* Legend */}
+        <div style={{ display: 'flex', gap: 14, padding: '8px 16px', borderTop: `1.5px solid ${T.border}`, background: T.surface, flexShrink: 0 }}>
+          {[
+            { bg: T.f1,    label: 'F1 weekend' },
+            { bg: T.fe,    label: 'Formula E' },
+            { bg: T.mgp,   label: 'MotoGP' },
+            { bg: T.wec,   label: 'WEC' },
+            { bg: T.amber, label: 'Outreach window' },
+          ].map(({ bg, label }) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div style={{ width: 8, height: 8, borderRadius: 2, background: bg }} />
+              <span style={{ fontSize: 10, color: T.textTertiary, fontFamily: T.font }}>{label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Right: detail (45%) ── */}
+      <DetailPane
+        selected={selected}
+        today={today}
+        showF1={showF1}
+        showFE={showFE}
+        showMGP={showMGP}
+        showWEC={showWEC}
+        viewYear={viewYear}
+        viewMonth={viewMonth}
+      />
     </div>
   )
 }

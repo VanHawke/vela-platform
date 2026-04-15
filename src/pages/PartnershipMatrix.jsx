@@ -1,313 +1,375 @@
-// PartnershipMatrix.jsx — Insights / Bento Grid
-// Mockup-faithful port of kiko-insights.html
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { setPageContext } from '@/lib/pageContext'
+import { RefreshCw, Loader2, AlertTriangle, Plus, X, ExternalLink, FileDown, Check, Grid3X3, Target, Users } from 'lucide-react'
 
-import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
-import PageHeader from '@/components/layout/PageHeader'
-import './PartnershipMatrix.css'
+const T = {
+  bg: '#000000', surface: 'rgba(25,25,25,0.40)', surfaceHover: 'rgba(0,0,0,0.04)',
+  border: 'rgba(0,0,0,0.05)', borderHover: 'rgba(0,0,0,0.06)',
+  text: '#0A0A0A', textSecondary: 'rgba(124,92,252,0.55)', textTertiary: '#A0A0A0',
+  accent: '#0A0A0A', accentSoft: 'rgba(0,0,0,0.05)',
+  blue: '#007AFF', red: '#FF3B30', yellow: '#FF9500', green: '#34C759',
+  font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  gap: 'rgba(255,59,48,0.06)', gapBorder: 'rgba(255,59,48,0.15)', filled: 'rgba(52,199,89,0.06)', filledBorder: 'rgba(52,199,89,0.15)',
+}
+
+const TIER_BADGE = {
+  title: { bg: '#FEF3C7', color: '#92400E', label: 'Title' },
+  principal: { bg: '#DBEAFE', color: '#1E40AF', label: 'Principal' },
+  official: { bg: '#D1FAE5', color: '#065F46', label: 'Official' },
+  technical: { bg: '#E0E7FF', color: '#3730A3', label: 'Technical' },
+  partner: { bg: '#F3F4F6', color: '#374151', label: 'Partner' },
+  supplier: { bg: '#F3F4F6', color: '#6B7280', label: 'Supplier' },
+}
+
+const TABS = [
+  { id: 'heatmap', label: 'Heatmap', icon: Grid3X3, desc: 'Team × category overview' },
+  { id: 'teams', label: 'Team Cards', icon: Users, desc: 'Deep dive per team' },
+  { id: 'gaps', label: 'Gap Targeting', icon: Target, desc: 'Categories ranked by opportunity' },
+]
+
+function TeamLogo({ team, size = 20 }) {
+  const [imgError, setImgError] = useState(false)
+  const showImg = team.logo_url && !imgError
+  return (
+    <div style={{ width: size, height: size, borderRadius: size * 0.3, background: team.color || '#6B6B6B', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      {showImg ? (
+        <img src={team.logo_url} alt={team.name} style={{ width: size * 0.7, height: size * 0.7, objectFit: 'contain', filter: 'brightness(10)' }}
+          onError={() => setImgError(true)} />
+      ) : (
+        <span style={{ fontSize: Math.max(size * 0.35, 8), fontWeight: 500, color: '#0A0A0A', letterSpacing: '-0.02em' }}>
+          {team.name?.slice(0,2).toUpperCase()}
+        </span>
+      )}
+    </div>
+  )
+}
 
 export default function PartnershipMatrix({ user }) {
-  const [range, setRange] = useState('Q2')
-  const [stats, setStats] = useState({
-    pipelineValue: 73, replyRate: 14, hotReplies: 6,
-    hoursSaved: 16, meetingsPrepped: 4, movedOvernight: 2.4,
-    hoursSaved90d: 142, learning: 96, avgDeal: 3.2,
-  })
-  const [topSequences, setTopSequences] = useState([])
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [tab, setTab] = useState('heatmap')
+  const [filterTeam, setFilterTeam] = useState('all')
+  const [filterCategory, setFilterCategory] = useState('all')
+  const [selectedTeam, setSelectedTeam] = useState(null)
+  const [showAdd, setShowAdd] = useState(false)
+  const [addForm, setAddForm] = useState({ team_id: '', partner_name: '', category_id: '', tier: 'partner' })
 
-  useEffect(() => {
-    if (!user?.id) return
-    let cancelled = false
-    ;(async () => {
-      // Pipeline value + active deal count
-      const { data: deals } = await supabase.from('deals').select('data')
-      let pipelineValue = 0
-      let activeCount = 0
-      if (deals) {
-        deals.forEach(d => {
-          const stage = d.data?.stage
-          if (stage && stage !== 'Closed Won' && stage !== 'Closed Lost') {
-            activeCount++
-            pipelineValue += parseFloat(d.data?.value || 0)
-          }
-        })
-      }
+  useEffect(() => { if (user?.id) fetchMatrix() }, [user?.id])
 
-      // Hot replies this week
-      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-      const { count: hotCount } = await supabase
-        .from('activities')
-        .select('*', { count: 'exact', head: true })
-        .eq('type', 'reply')
-        .gte('created_at', weekAgo)
+  const fetchMatrix = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/partnership-matrix?action=matrix')
+      const d = await res.json()
+      setData(d)
+      if (!selectedTeam && d.teams?.length) setSelectedTeam(d.teams[0].id)
+    } catch (e) { console.error('[Matrix]', e) }
+    finally { setLoading(false) }
+    setPageContext({ page: 'partnership-matrix', summary: `Partnership Matrix: ${data?.partnerships?.length || 0} partnerships, ${data?.gaps?.length || 0} gaps` })
+  }
 
-      // Avg deal size
-      const avgDeal = activeCount > 0 ? pipelineValue / activeCount : 0
+  const addPartnership = async () => {
+    if (!addForm.team_id || !addForm.partner_name) return
+    await fetch('/api/partnership-matrix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'add', ...addForm }) })
+    setShowAdd(false); setAddForm({ team_id: '', partner_name: '', category_id: '', tier: 'partner' }); fetchMatrix()
+  }
 
-      // Top sequences with reply rates
-      const { data: sequences } = await supabase
-        .from('kiko_sequences')
-        .select('id, name')
-        .order('created_at', { ascending: false })
-        .limit(8)
+  const removePartnership = async (id) => {
+    if (!confirm('Remove this partnership?')) return
+    await fetch('/api/partnership-matrix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'remove', id }) })
+    fetchMatrix()
+  }
 
-      const enriched = []
-      for (const s of (sequences || [])) {
-        const { count: replied } = await supabase
-          .from('activities')
-          .select('*', { count: 'exact', head: true })
-          .eq('type', 'reply')
-          .eq('metadata->>sequence_id', s.id)
-        // Approximate sent from queue or fall back to a baseline
-        const { count: sent } = await supabase
-          .from('activities')
-          .select('*', { count: 'exact', head: true })
-          .eq('type', 'email_sent')
-          .eq('metadata->>sequence_id', s.id)
-        enriched.push({ name: s.name, sent: sent || 0, replied: replied || 0 })
-      }
-      const ranked = enriched
-        .filter(s => s.sent > 0 || s.replied > 0)
-        .sort((a, b) => (b.replied / Math.max(1, b.sent)) - (a.replied / Math.max(1, a.sent)))
-        .slice(0, 5)
+  const teams = data?.teams || []
+  const categories = data?.categories || []
+  const partnerships = data?.partnerships || []
+  const matrix = data?.matrix || {}
 
-      if (!cancelled) {
-        setStats(s => ({
-          ...s,
-          pipelineValue: Math.round(pipelineValue / 1000000 * 10) / 10,
-          hotReplies: hotCount || 0,
-          avgDeal: Math.round(avgDeal / 1000000 * 10) / 10,
-        }))
-        setTopSequences(ranked)
-      }
-    })()
-    return () => { cancelled = true }
-  }, [user?.id, range])
+  const filteredTeams = useMemo(() => filterTeam === 'all' ? teams : teams.filter(t => t.id === filterTeam), [teams, filterTeam])
+  const filteredCats = useMemo(() => filterCategory === 'all' ? categories : categories.filter(c => c.id === filterCategory), [categories, filterCategory])
+
+  const getTeamPartners = useCallback((teamId) => partnerships.filter(p => p.team_id === teamId), [partnerships])
+  const getTeamGaps = useCallback((teamId) => {
+    // Honor related_categories so overlap-tagged partners count toward the filled set
+    const tp = getTeamPartners(teamId)
+    const filled = new Set()
+    for (const p of tp) {
+      if (p.category_id) filled.add(p.category_id)
+      if (Array.isArray(p.related_categories)) p.related_categories.forEach(rc => filled.add(rc))
+    }
+    return categories.filter(c => !filled.has(c.id))
+  }, [categories, getTeamPartners])
+
+  const totalGaps = useMemo(() => filteredTeams.reduce((a, t) => a + getTeamGaps(t.id).length, 0), [filteredTeams, getTeamGaps])
+
+  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontFamily: T.font }}><Loader2 size={20} style={{ animation: 'spin 1s linear infinite', color: T.textTertiary }} /></div>
 
   return (
-    <div className="ins">
-      <PageHeader
-        eyebrowCategory="INTELLIGENCE"
-        eyebrowSuffix="Q2 2026 performance"
-        title="Insights"
-        toolbar={
-          <>
-            <div className="ins-seg">
-              {['7d', '30d', 'Q2', 'YTD'].map(r => (
-                <button key={r} className={range === r ? 'active' : ''} onClick={() => setRange(r)}>{r}</button>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', fontFamily: T.font, background: 'transparent', color: T.text, overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{ padding: '12px 20px', borderBottom: `1px solid ${T.border}`, background: T.surface, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div>
+            <h1 style={{ fontSize: 19, fontWeight: 400, margin: 0, letterSpacing: '-0.02em' }}>Partnership Matrix</h1>
+            <p style={{ fontSize: 12, color: T.textTertiary, margin: '2px 0 0' }}>{partnerships.length} partnerships · {teams.length} teams · {totalGaps} gaps · Auto-scanned daily 7am</p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <select value={filterTeam} onChange={e => setFilterTeam(e.target.value)} style={{ fontSize: 12, padding: '5px 8px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, fontFamily: T.font, color: T.textSecondary }}>
+              <option value="all">All Teams</option>
+              {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
+            <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} style={{ fontSize: 12, padding: '5px 8px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, fontFamily: T.font, color: T.textSecondary }}>
+              <option value="all">All Categories</option>
+              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            <button onClick={fetchMatrix} style={{ fontSize: 12, padding: '5px 8px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer' }}><RefreshCw size={12} /></button>
+            <a href={`/api/partnership-report?format=html${filterTeam !== 'all' ? `&team=${filterTeam}` : ''}`} target="_blank" rel="noopener"
+              style={{ fontSize: 12, padding: '5px 10px', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, cursor: 'pointer', fontFamily: T.font, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 3 }}><FileDown size={11} />Export</a>
+            <button onClick={() => setShowAdd(true)} style={{ fontSize: 12, padding: '5px 10px', borderRadius: 6, border: `1px solid ${T.blue}`, background: 'rgba(0,122,255,0.06)', color: T.blue, cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}><Plus size={11} style={{ marginRight: 3, verticalAlign: -1 }} />Add</button>
+          </div>
+        </div>
+
+        {/* Tab bar */}
+        <div style={{ display: 'flex', gap: 4 }}>
+          {TABS.map(t => { const I = t.icon; return (
+            <button key={t.id} onClick={() => setTab(t.id)} style={{
+              display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: T.font, fontSize: 13, fontWeight: tab === t.id ? 600 : 400, transition: 'all 0.15s',
+              background: tab === t.id ? T.accent : 'transparent', color: tab === t.id ? '#0A0A0A' : T.textSecondary,
+            }}><I size={13} />{t.label}</button>
+          )})}
+        </div>
+      </div>
+
+      {/* Add Modal */}
+      {showAdd && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowAdd(false)}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'rgba(25,25,25,0.50)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 20, padding: 20, width: 360, border: '0.5px solid rgba(0,0,0,0.08)', boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.05), 0 16px 64px rgba(0,0,0,0.5)' }}>
+            <h3 style={{ fontSize: 15, fontWeight: 400, margin: '0 0 12px' }}>Add Partnership</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <select value={addForm.team_id} onChange={e => setAddForm(p => ({ ...p, team_id: e.target.value }))} style={{ fontSize: 13, padding: '6px 8px', borderRadius: 6, border: `1px solid ${T.border}`, fontFamily: T.font }}>
+                <option value="">Select Team</option>{teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+              <input placeholder="Partner Name" value={addForm.partner_name} onChange={e => setAddForm(p => ({ ...p, partner_name: e.target.value }))} style={{ fontSize: 13, padding: '6px 8px', borderRadius: 6, border: `1px solid ${T.border}`, fontFamily: T.font }} />
+              <select value={addForm.category_id} onChange={e => setAddForm(p => ({ ...p, category_id: e.target.value }))} style={{ fontSize: 13, padding: '6px 8px', borderRadius: 6, border: `1px solid ${T.border}`, fontFamily: T.font }}>
+                <option value="">Select Category</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+              <select value={addForm.tier} onChange={e => setAddForm(p => ({ ...p, tier: e.target.value }))} style={{ fontSize: 13, padding: '6px 8px', borderRadius: 6, border: `1px solid ${T.border}`, fontFamily: T.font }}>
+                {Object.keys(TIER_BADGE).map(t => <option key={t} value={t}>{TIER_BADGE[t].label}</option>)}
+              </select>
+              <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                <button onClick={() => setShowAdd(false)} style={{ flex: 1, fontSize: 13, padding: '6px 0', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
+                <button onClick={addPartnership} style={{ flex: 1, fontSize: 13, padding: '6px 0', borderRadius: 6, border: 'none', background: T.accent, color: '#0A0A0A', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ TAB: HEATMAP ═══ */}
+      {tab === 'heatmap' && (
+        <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+          <div style={{ background: T.surface, borderRadius: 18, border: `1px solid ${T.border}`, overflow: 'auto' }}>
+            <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 11, fontFamily: T.font, minWidth: 800 }}>
+              <thead>
+                <tr>
+                  <th style={{ position: 'sticky', left: 0, background: T.surface, padding: '8px 12px', textAlign: 'left', fontWeight: 400, borderBottom: `1px solid ${T.border}`, zIndex: 2, minWidth: 120, fontSize: 12 }}>Team</th>
+                  {filteredCats.map(c => (
+                    <th key={c.id} style={{ padding: '6px 3px', fontWeight: 400, borderBottom: `1px solid ${T.border}`, color: c.color || T.textTertiary, writingMode: 'vertical-rl', textOrientation: 'mixed', height: 120, fontSize: 10, overflow: 'hidden' }}>
+                      {c.name.replace(/ \/ .*/,'')}
+                    </th>
+                  ))}
+                  <th style={{ padding: '6px 8px', fontWeight: 400, borderBottom: `1px solid ${T.border}`, fontSize: 11 }}>Total</th>
+                  <th style={{ padding: '6px 8px', fontWeight: 400, borderBottom: `1px solid ${T.border}`, color: T.red, fontSize: 11 }}>Gaps</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTeams.map(team => {
+                  const tp = getTeamPartners(team.id)
+                  // Honor related_categories — e.g. RebelDot is category_id=software but also cybersecurity
+                  const filledCats = new Set()
+                  for (const p of tp) {
+                    if (p.category_id) filledCats.add(p.category_id)
+                    if (Array.isArray(p.related_categories)) p.related_categories.forEach(rc => filledCats.add(rc))
+                  }
+                  const gapCount = filteredCats.filter(c => !filledCats.has(c.id)).length
+                  return (
+                    <tr key={team.id} style={{ borderBottom: `1px solid ${T.border}` }}>
+                      <td style={{ position: 'sticky', left: 0, background: T.surface, padding: '6px 12px', fontWeight: 400, zIndex: 1, fontSize: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <TeamLogo team={team} size={22} />
+                          {team.name}
+                        </div>
+                      </td>
+                      {filteredCats.map(c => {
+                        const cp = (matrix[team.id]?.categories[c.id]) || []
+                        const filled = cp.length > 0
+                        return (
+                          <td key={c.id} style={{ padding: 3, textAlign: 'center' }} title={filled ? cp.map(p => p.partner_name).join(', ') : `${team.name}: GAP — ${c.name}`}>
+                            <span style={{ display: 'inline-block', width: 16, height: 16, borderRadius: 3, fontSize: 9, lineHeight: '16px', fontWeight: 400,
+                              background: filled ? `${T.green}18` : `${T.red}12`, border: `1px solid ${filled ? T.green + '30' : T.red + '30'}`, color: filled ? T.green : T.red,
+                            }}>{filled ? cp.length : '—'}</span>
+                          </td>
+                        )
+                      })}
+                      <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 400 }}>{tp.length}</td>
+                      <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 400, color: gapCount > 10 ? T.red : gapCount > 5 ? T.yellow : T.green }}>{gapCount}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ TAB: TEAM CARDS ═══ */}
+      {tab === 'teams' && (
+        <div style={{ flex: 1, overflow: 'auto', display: 'flex' }}>
+          {/* Team selector sidebar */}
+          <div style={{ width: 180, flexShrink: 0, borderRight: `1px solid ${T.border}`, background: T.surface, overflow: 'auto', padding: '8px 0' }}>
+            {filteredTeams.map(t => {
+              const gaps = getTeamGaps(t.id).length
+              return (
+                <button key={t.id} onClick={() => setSelectedTeam(t.id)} style={{
+                  width: '100%', padding: '8px 14px', border: 'none', cursor: 'pointer', fontFamily: T.font, fontSize: 13, textAlign: 'left',
+                  background: selectedTeam === t.id ? T.accentSoft : 'transparent', fontWeight: selectedTeam === t.id ? 600 : 400,
+                  color: selectedTeam === t.id ? T.text : T.textSecondary, display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.1s',
+                }}>
+                  <TeamLogo team={t} size={20} />
+                  <span style={{ flex: 1 }}>{t.name}</span>
+                  {gaps > 0 && <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 50, background: `${T.red}12`, color: T.red, fontWeight: 400 }}>{gaps}</span>}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Team detail panel */}
+          <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+            {(() => {
+              const team = teams.find(t => t.id === selectedTeam)
+              if (!team) return null
+              const tp = getTeamPartners(team.id)
+              const gaps = getTeamGaps(team.id)
+              const byCat = {}
+              for (const c of categories) byCat[c.id] = { cat: c, partners: [] }
+              for (const p of tp) { if (byCat[p.category_id]) byCat[p.category_id].partners.push(p) }
+              const filled = Object.values(byCat).filter(v => v.partners.length > 0)
+              return (
+                <div style={{ maxWidth: 800 }}>
+                  {/* Team header */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                    <TeamLogo team={team} size={36} />
+                    <div style={{ flex: 1 }}>
+                      <h2 style={{ fontSize: 19, fontWeight: 400, margin: 0 }}>{team.name}</h2>
+                      <p style={{ fontSize: 12, color: T.textTertiary, margin: '2px 0 0' }}>
+                        {team.full_name} · {team.engine}
+                        {team.website && <> · <a href={team.website} target="_blank" rel="noopener" style={{ color: T.blue, textDecoration: 'none' }}>Partners page <ExternalLink size={8} style={{ verticalAlign: -1 }} /></a></>}
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 50, background: T.filled, color: '#166534', fontWeight: 500 }}>{tp.length} partners</span>
+                      <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 50, background: T.accentSoft, color: T.textSecondary, fontWeight: 500 }}>{filled.length}/{categories.length} categories</span>
+                      {gaps.length > 0 && <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 50, background: T.gap, color: '#991B1B', fontWeight: 500 }}>{gaps.length} gaps</span>}
+                    </div>
+                  </div>
+
+                  {/* Filled categories */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8, marginBottom: 16 }}>
+                    {filled.map(({ cat, partners }) => (
+                      <div key={cat.id} style={{ padding: '10px 12px', borderRadius: 14, background: T.surface, border: `1px solid ${T.border}`, borderLeft: `3px solid ${cat.color || T.blue}` }}>
+                        <p style={{ fontSize: 10, fontWeight: 400, color: cat.color || T.textTertiary, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{cat.name}</p>
+                        {partners.map(p => { const badge = TIER_BADGE[p.tier] || TIER_BADGE.partner; return (
+                          <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
+                            <span style={{ fontSize: 13, fontWeight: 500, flex: 1 }}>{p.partner_name}</span>
+                            <span style={{ fontSize: 9, padding: '0 4px', borderRadius: 3, background: badge.bg, color: badge.color, fontWeight: 400 }}>{badge.label}</span>
+                            <button onClick={() => removePartnership(p.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, opacity: 0.25, lineHeight: 1 }} title="Remove"><X size={10} color={T.red} /></button>
+                          </div>
+                        )})}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Gaps section */}
+                  {gaps.length > 0 && (
+                    <div style={{ background: T.gap, borderRadius: 14, padding: 14, border: `1px solid ${T.gapBorder}` }}>
+                      <p style={{ fontSize: 11, fontWeight: 400, color: '#991B1B', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 8px' }}>
+                        {gaps.length} open categories — Van Hawke targeting opportunity
+                      </p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {gaps.map(c => (
+                          <span key={c.id} style={{ fontSize: 12, padding: '3px 10px', borderRadius: 6, background: '#6B6B6B', color: '#991B1B', border: '1px solid rgba(226,75,74,0.2)', fontWeight: 500 }}>{c.name}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ TAB: GAP TARGETING ═══ */}
+      {tab === 'gaps' && (
+        <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+          <div style={{ maxWidth: 900 }}>
+            {/* Team legend with logos */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', marginBottom: 8, background: T.surface, borderRadius: 14, border: `1px solid ${T.border}`, flexWrap: 'wrap' }}>
+              {filteredTeams.map(t => (
+                <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: T.textSecondary }}>
+                  <TeamLogo team={t} size={16} />
+                  <span>{t.name.replace('Racing Bulls','RB').replace('Aston Martin','AMR').replace('Red Bull Racing','RBR')}</span>
+                </div>
               ))}
             </div>
-            <button className="ins-ghost-btn">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-              Export PDF
-            </button>
-          </>
-        }
-      />
+            {(() => {
+              const catGaps = filteredCats.map(c => {
+                const teamsWithout = filteredTeams.filter(t => {
+                  const filled = new Set(getTeamPartners(t.id).map(p => p.category_id))
+                  return !filled.has(c.id)
+                })
+                const teamsWith = filteredTeams.filter(t => {
+                  const filled = new Set(getTeamPartners(t.id).map(p => p.category_id))
+                  return filled.has(c.id)
+                })
+                return { cat: c, teamsWithout, teamsWith, gapCount: teamsWithout.length }
+              }).sort((a, b) => b.gapCount - a.gapCount)
 
-      <div className="bento">
-
-        {/* PIPELINE VALUE — wide hero */}
-        <div className="card span-2">
-          <div>
-            <div className="card-h">Pipeline value · weighted<span className="h-pill">+12%</span></div>
-            <div className="big-num huge"><span className="currency">$</span>{stats.pipelineValue}<span className="unit">m</span></div>
-            <div className="delta up">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><polyline points="18 15 12 9 6 15"/></svg>
-              +$8.2m<span className="vs">vs last month</span>
-            </div>
-          </div>
-          <svg className="spark" viewBox="0 0 200 48" preserveAspectRatio="none">
-            <path className="area" d="M0,40 L15,38 L30,35 L45,32 L60,28 L75,30 L90,24 L105,22 L120,18 L135,20 L150,15 L165,12 L180,10 L195,6 L200,4 L200,48 L0,48 Z"/>
-            <path className="line" d="M0,40 L15,38 L30,35 L45,32 L60,28 L75,30 L90,24 L105,22 L120,18 L135,20 L150,15 L165,12 L180,10 L195,6 L200,4"/>
-            <circle className="dot" cx="200" cy="4"/>
-          </svg>
-        </div>
-
-        {/* REPLY RATE */}
-        <div className="card">
-          <div>
-            <div className="card-h">Reply rate<span className="h-pill">+2pt</span></div>
-            <div className="big-num">{stats.replyRate}%</div>
-            <div className="sub">vs <strong>9%</strong> industry benchmark</div>
-          </div>
-          <svg className="spark" viewBox="0 0 200 36" preserveAspectRatio="none">
-            <path className="line" d="M0,28 L25,30 L50,24 L75,22 L100,18 L125,20 L150,14 L175,12 L200,8"/>
-            <circle className="dot" cx="200" cy="8"/>
-          </svg>
-        </div>
-
-        {/* HOT REPLIES */}
-        <div className="card">
-          <div>
-            <div className="card-h">Hot replies · this week<span className="h-pill">+3</span></div>
-            <div className="big-num">{stats.hotReplies}</div>
-          </div>
-          <div className="sub"><strong>Bardrick</strong> · Citi<br/><strong>Sundheim</strong> · D1<br/><strong>Halford</strong> · ANZ</div>
-        </div>
-
-        {/* CHANNEL MIX donut */}
-        <div className="card">
-          <div className="card-h">Channel mix</div>
-          <div className="donut-wrap">
-            <svg className="donut" viewBox="0 0 36 36">
-              <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(0,0,0,0.05)" strokeWidth="6"/>
-              <circle cx="18" cy="18" r="14" fill="none" stroke="#5a6470" strokeWidth="6" strokeDasharray="54.5 87.9" strokeDashoffset="0" transform="rotate(-90 18 18)"/>
-              <circle cx="18" cy="18" r="14" fill="none" stroke="#0A66C2" strokeWidth="6" strokeDasharray="27.3 87.9" strokeDashoffset="-54.5" transform="rotate(-90 18 18)"/>
-              <circle cx="18" cy="18" r="14" fill="none" stroke="#b8643e" strokeWidth="6" strokeDasharray="6.1 87.9" strokeDashoffset="-81.8" transform="rotate(-90 18 18)"/>
-            </svg>
-            <div className="donut-legend">
-              <div className="lr"><span className="ld" style={{background:'#5a6470'}}></span><span className="ln">Email</span><span className="lv">62%</span></div>
-              <div className="lr"><span className="ld" style={{background:'#0A66C2'}}></span><span className="ln">LinkedIn</span><span className="lv">31%</span></div>
-              <div className="lr"><span className="ld" style={{background:'#b8643e'}}></span><span className="ln">Signals</span><span className="lv">7%</span></div>
-            </div>
-          </div>
-        </div>
-
-
-        {/* SEQUENCE LEADERBOARD */}
-        <div className="card span-3">
-          <div>
-            <div className="card-h">Sequence performance · reply rate</div>
-            <div className="bar-list">
-              {(topSequences.length > 0 ? topSequences : [
-                { name: 'Gaming FE 2026', sent: 50, replied: 8, sector: 'gaming' },
-                { name: 'F1 2027 Banking', sent: 64, replied: 9, sector: 'banking' },
-                { name: 'FinTech FE 2026', sent: 36, replied: 4, sector: 'fintech' },
-                { name: 'Telecoms MotoGP', sent: 22, replied: 2, sector: 'telecoms' },
-                { name: 'Banking WEC 2026', sent: 30, replied: 2, sector: 'banking' },
-              ]).map((s, i) => {
-                const rate = s.sent > 0 ? Math.round((s.replied / s.sent) * 100) : 0
-                const widthPct = Math.min(100, rate * 5)
-                const sectorClass = s.sector || (s.name.toLowerCase().includes('bank') ? 'banking' : s.name.toLowerCase().includes('gam') ? 'gaming' : s.name.toLowerCase().includes('fin') ? 'fintech' : s.name.toLowerCase().includes('tele') ? 'telecoms' : 'banking')
-                return (
-                  <div className="bar-row" key={i}>
-                    <div className="bn" title={s.name}>{s.name.length > 22 ? s.name.slice(0, 22) + '...' : s.name}</div>
-                    <div className="bar-track"><div className={`bar-fill ${sectorClass}`} style={{ '--w': widthPct + '%' }}></div></div>
-                    <div className="bv">{rate}%</div>
+              return catGaps.map(({ cat, teamsWithout, teamsWith, gapCount }) => (
+                <div key={cat.id} style={{ display: 'flex', alignItems: 'stretch', borderBottom: `1px solid ${T.border}`, minHeight: 48 }}>
+                  {/* Category label */}
+                  <div style={{ width: 180, flexShrink: 0, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8, borderRight: `1px solid ${T.border}` }}>
+                    <div style={{ width: 3, height: 24, borderRadius: 2, background: cat.color || T.textTertiary, flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, fontWeight: 500, flex: 1 }}>{cat.name}</span>
+                    <span style={{ fontSize: 11, fontWeight: 400, padding: '1px 6px', borderRadius: 50,
+                      background: gapCount >= 6 ? `${T.red}15` : gapCount >= 3 ? `${T.yellow}15` : `${T.green}15`,
+                      color: gapCount >= 6 ? T.red : gapCount >= 3 ? T.yellow : T.green,
+                    }}>{gapCount}</span>
                   </div>
-                )
-              })}
-            </div>
-          </div>
-        </div>
 
-        {/* KIKO IMPACT — wide */}
-        <div className="card span-3">
-          <div>
-            <div className="card-h">Kiko impact · this week<span className="h-pill">Auto</span></div>
-            <div className="ki-grid">
-              <div><div className="big-num">{stats.hoursSaved}<span className="unit">h</span></div><div className="sub">saved vs manual prep</div></div>
-              <div><div className="big-num">{stats.meetingsPrepped}</div><div className="sub">meetings auto-prepped</div></div>
-              <div><div className="big-num"><span className="currency">$</span>{stats.movedOvernight}<span className="unit">m</span></div><div className="sub">moved overnight</div></div>
-            </div>
-          </div>
-        </div>
-
-        {/* SECTOR × SERIES HEATMAP */}
-        <div className="card span-3 row-2">
-          <div className="card-h">Pipeline value · sector × series<span className="h-pill">$73m total</span></div>
-          <div className="heat">
-            <div className="heat-h"></div><div className="heat-h">F1</div><div className="heat-h">FE</div><div className="heat-h">MotoGP</div><div className="heat-h">WEC</div>
-            <div className="heat-row-label">Banking</div><div className="heat-cell v4">$22.4m</div><div className="heat-cell v0">—</div><div className="heat-cell v0">—</div><div className="heat-cell v1">$1.4m</div>
-            <div className="heat-row-label">FinTech</div><div className="heat-cell v0">—</div><div className="heat-cell v3">$5.0m</div><div className="heat-cell v0">—</div><div className="heat-cell v0">—</div>
-            <div className="heat-row-label">Gaming</div><div className="heat-cell v0">—</div><div className="heat-cell v2">$2.5m</div><div className="heat-cell v0">—</div><div className="heat-cell v0">—</div>
-            <div className="heat-row-label">Telecoms</div><div className="heat-cell v0">—</div><div className="heat-cell v0">—</div><div className="heat-cell v2">$2.8m</div><div className="heat-cell v0">—</div>
-            <div className="heat-row-label">Luxury</div><div className="heat-cell v1">$0.8m</div><div className="heat-cell v0">—</div><div className="heat-cell v0">—</div><div className="heat-cell v0">—</div>
-          </div>
-          <div className="sub" style={{marginTop:8}}>Banking × F1 is your strongest concentration. <strong>FinTech × FE 2026</strong> growing fastest (+38% this quarter). Gaming/MotoGP/WEC underdeveloped — expansion opportunity.</div>
-        </div>
-
-        {/* TOP TOUCH */}
-        <div className="card">
-          <span className="top-touch-tag">Top touch</span>
-          <div>
-            <div style={{fontFamily:'Source Serif 4, Georgia, serif',fontWeight:400,fontSize:16,lineHeight:1.25}}>Mercedes renewal angle</div>
-            <div className="sub">Touch 3 · F1 2027 Banking</div>
-            <div className="big-num" style={{fontSize:32,marginTop:10}}>23%</div>
-            <div className="sub">reply rate · <strong>2.5×</strong> avg</div>
-          </div>
-          <a className="pri-link">Use as template →</a>
-        </div>
-
-        {/* KIKO HOURS SAVED */}
-        <div className="card">
-          <div>
-            <div className="card-h">Kiko hours saved · 90d<span className="h-pill">+38%</span></div>
-            <div className="big-num" style={{fontSize:34}}>{stats.hoursSaved90d}<span className="unit">h</span></div>
-          </div>
-          <svg className="spark" viewBox="0 0 200 48" preserveAspectRatio="none">
-            <path className="area" d="M0,40 L20,38 L40,32 L60,30 L80,26 L100,22 L120,18 L140,14 L160,12 L180,8 L200,4 L200,48 L0,48 Z"/>
-            <path className="line" d="M0,40 L20,38 L40,32 L60,30 L80,26 L100,22 L120,18 L140,14 L160,12 L180,8 L200,4"/>
-            <circle className="dot" cx="200" cy="4"/>
-          </svg>
-        </div>
-
-
-        {/* RACE CORRELATION CHART */}
-        <div className="card span-4">
-          <div className="card-h">Pipeline movement vs race weekends · last 90d<span className="h-pill">14–21d window confirmed</span></div>
-          <div className="corr">
-            <svg className="corr-svg" viewBox="0 0 600 110" preserveAspectRatio="none">
-              <line x1="0" y1="100" x2="600" y2="100" stroke="rgba(0,0,0,0.06)"/>
-              <line x1="60" y1="10" x2="60" y2="100" stroke="#b8643e" strokeWidth="0.6" strokeDasharray="2 3" opacity="0.5"/>
-              <text x="62" y="14" className="corr-marker-label">AUS</text>
-              <line x1="160" y1="10" x2="160" y2="100" stroke="#b8643e" strokeWidth="0.6" strokeDasharray="2 3" opacity="0.5"/>
-              <text x="162" y="14" className="corr-marker-label">CHN</text>
-              <line x1="290" y1="10" x2="290" y2="100" stroke="#b8643e" strokeWidth="0.6" strokeDasharray="2 3" opacity="0.5"/>
-              <text x="292" y="14" className="corr-marker-label">JPN</text>
-              <line x1="500" y1="10" x2="500" y2="100" stroke="#b8643e" strokeWidth="1.4" strokeDasharray="3 2"/>
-              <text x="502" y="14" className="corr-marker-label" style={{fontSize:10}}>MIA · in 16d</text>
-              <path d="M0,80 L20,78 L40,70 L60,55 L80,68 L100,60 L120,52 L140,42 L160,30 L180,48 L200,40 L220,32 L240,28 L260,20 L280,18 L300,12 L320,30 L340,38 L360,32 L380,28 L400,22 L420,18 L440,14 L460,10 L480,6 L500,4" stroke="#0A0A0A" strokeWidth="2" fill="none"/>
-              <path d="M0,80 L20,78 L40,70 L60,55 L80,68 L100,60 L120,52 L140,42 L160,30 L180,48 L200,40 L220,32 L240,28 L260,20 L280,18 L300,12 L320,30 L340,38 L360,32 L380,28 L400,22 L420,18 L440,14 L460,10 L480,6 L500,4 L500,100 L0,100 Z" fill="rgba(10,10,10,0.04)"/>
-              <circle cx="500" cy="4" r="3" fill="#0A0A0A"/>
-            </svg>
-            <div className="corr-x"><span>Mid-Jan</span><span>Feb</span><span>Mar</span><span>Now</span><span>Miami</span></div>
-          </div>
-          <div className="sub" style={{marginTop:8}}><strong>Pipeline movement spikes 14—21 days before each race weekend.</strong> Currently in peak window for Miami (R4). Outreach sent now lands when brand committees finalise activation budgets.</div>
-        </div>
-
-        {/* SIGNAL FEED */}
-        <div className="card span-2 row-2">
-          <div className="card-h">SponsorSignal · last 5<span className="h-pill">Live</span></div>
-          <div className="feed">
-            {[
-              ['HSBC × Mercedes F1 partnership renewed through 2027', '2h ago · FT · 96% match'],
-              ['James Bardrick promoted to Country Officer UK at Citi', 'Yesterday · LinkedIn · 99% match'],
-              ['Sarah Lee joins JPMorgan Brand from AmEx · ex-Mercedes account lead', '2d ago · Press release · 99% match'],
-              ['Stripe announces FE 2026 sponsorship interest publicly', '3d ago · TechCrunch · 88% match'],
-              ['D1 Capital Q1 LP letter mentions sports IP investment thesis', '4d ago · Bloomberg · 78% match'],
-            ].map(([title, meta], i) => (
-              <div key={i} className="feed-item">
-                <div className="feed-tag">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  {/* Team cells */}
+                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', flexWrap: 'wrap' }}>
+                    {filteredTeams.map(t => {
+                      const isGap = teamsWithout.some(tw => tw.id === t.id)
+                      return (
+                        <span key={t.id} title={`${t.name}: ${isGap ? 'GAP — open opportunity' : 'Partner in place'}`}
+                          style={{ fontSize: 10, fontWeight: 500, padding: '3px 8px', borderRadius: 4, cursor: 'default', transition: 'transform 0.1s',
+                            background: isGap ? `${T.red}10` : T.accentSoft,
+                            color: isGap ? T.red : T.textSecondary,
+                            border: `1px solid ${isGap ? T.red + '25' : T.border}`,
+                          }}
+                          onMouseOver={e => e.target.style.transform = 'scale(1.06)'}
+                          onMouseOut={e => e.target.style.transform = 'scale(1)'}
+                        >{t.name.replace('Racing Bulls','RB').replace('Aston Martin','AMR').replace('Red Bull Racing','RBR')}</span>
+                      )
+                    })}
+                  </div>
                 </div>
-                <div className="feed-body">
-                  <div className="feed-title">{title}</div>
-                  <div className="feed-meta">{meta}</div>
-                </div>
-              </div>
-            ))}
+              ))
+            })()}
           </div>
         </div>
-
-        {/* KIKO LEARNING */}
-        <div className="card">
-          <div className="card-h">Kiko learning<span className="h-pill">Improving</span></div>
-          <div className="big-num" style={{fontSize:32}}>{stats.learning}%</div>
-          <div className="sub">tone match accuracy<br/>vs your edits last 30d</div>
-        </div>
-
-        {/* AVG DEAL SIZE */}
-        <div className="card">
-          <div className="card-h">Avg deal size<span className="h-pill">+18%</span></div>
-          <div className="big-num" style={{fontSize:32}}><span className="currency">$</span>{stats.avgDeal}<span className="unit">m</span></div>
-          <div className="sub">across <strong>42</strong> active deals</div>
-        </div>
-
-      </div>
+      )}
     </div>
   )
 }
