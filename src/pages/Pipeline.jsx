@@ -10,7 +10,6 @@ import {
 import DocumentSection from '@/components/documents/DocumentSection'
 import CompanyLogo from '@/components/CompanyLogo'
 import PageHeader from '@/components/layout/PageHeader'
-import { isRedesignOn } from '@/lib/redesignFlag'
 
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5'
 
@@ -481,16 +480,14 @@ export default function Pipeline({ user }) {
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {isRedesignOn() && (
-        <PageHeader
-          eyebrowCategory="REVENUE"
-          eyebrowSuffix="Pipeline"
-          title="Pipeline"
-          stats={[
-            { value: activeDealCount, label: 'Active deals' },
-          ]}
-        />
-      )}
+      <PageHeader
+        eyebrowCategory="REVENUE"
+        eyebrowSuffix="Pipeline"
+        title="Pipeline"
+        stats={[
+          { value: activeDealCount, label: 'Active deals' },
+        ]}
+      />
       {/* Toolbar */}
       <div style={{
         margin: '0 16px', padding: '12px 20px', borderRadius: 14,
@@ -498,16 +495,8 @@ export default function Pipeline({ user }) {
         border: '0.5px solid rgba(0,0,0,0.08)', borderTop: '0.5px solid rgba(0,0,0,0.06)',
         boxShadow: '0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(0,0,0,0.04)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        marginTop: isRedesignOn() ? 0 : 8,
       }}>
-        {!isRedesignOn() ? (
-          <div>
-            <h1 style={{ fontSize: 19, fontWeight: 300, color: 'var(--text)', margin: 0, fontFamily: 'var(--font)' }}>Deal Pipeline</h1>
-            <p style={{ fontSize: 12, color: 'var(--text-tertiary)', margin: '2px 0 0', fontFamily: 'var(--font)' }}>
-              {activeDealCount} active deal{activeDealCount !== 1 ? 's' : ''}
-            </p>
-          </div>
-        ) : <div></div>}
+        <div></div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
             <input type="checkbox" checked={showClosed} onChange={e => setShowClosed(e.target.checked)} style={{ width: 14, height: 14, accentColor: 'rgba(0,0,0,0.08)' }} />

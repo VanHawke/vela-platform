@@ -1250,24 +1250,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             transition: 'all 0.5s cubic-bezier(0.4,0,0,1)',
             overflow: 'hidden',
           }}>
-            {(typeof window !== 'undefined' && localStorage.getItem('kiko_redesign') === '1') ? (
-              <>
-                <div style={{ textAlign: 'center', marginBottom: 12, fontSize: 11, fontWeight: 500, letterSpacing: '0.10em', textTransform: 'uppercase', color: '#6B6B6B' }}>
-                  <span style={{ color: '#0A0A0A', fontWeight: 600 }}>TODAY</span><span style={{ color: '#C0C0C0', margin: '0 8px' }}>·</span>{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
-                </div>
-                <h1 style={{ fontSize: 42, fontWeight: 300, color: '#0A0A0A', margin: '0 0 6px', fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', textAlign: 'center' }}>
-                  {getGreeting()}, {firstName}
-                </h1>
-                <p style={{ fontSize: 16, color: '#6B6B6B', margin: '0 0 0', fontFamily: C.font, fontWeight: 400, textAlign: 'center' }}>What would you like to work on?</p>
-              </>
-            ) : (
-              <>
-                <h1 style={{ fontSize: 42, fontWeight: 200, color: '#0A0A0A', margin: '0 0 6px', fontFamily: C.font, letterSpacing: '-0.03em', textAlign: 'center' }}>
-                  {getGreeting()}, {firstName}
-                </h1>
-                <p style={{ fontSize: 18, color: '#A0A0A0', margin: '0 0 0', fontFamily: C.font, fontWeight: 300, textAlign: 'center' }}>What would you like to work on?</p>
-              </>
-            )}
+            <div style={{ textAlign: 'center', marginBottom: 12, fontSize: 11, fontWeight: 500, letterSpacing: '0.10em', textTransform: 'uppercase', color: '#6B6B6B' }}>
+              <span style={{ color: '#0A0A0A', fontWeight: 600 }}>TODAY</span><span style={{ color: '#C0C0C0', margin: '0 8px' }}>·</span>{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </div>
+            <h1 style={{ fontSize: 42, fontWeight: 300, color: '#0A0A0A', margin: '0 0 6px', fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', textAlign: 'center' }}>
+              {getGreeting()}, {firstName}
+            </h1>
+            <p style={{ fontSize: 16, color: '#6B6B6B', margin: '0 0 0', fontFamily: C.font, fontWeight: 400, textAlign: 'center' }}>What would you like to work on?</p>
           </div>
 
           {/* Prompt bar — slides down in voice mode */}

@@ -4,7 +4,6 @@ import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
 import { Plus, Search, X, User, Mail, Phone, Linkedin, ChevronLeft, ChevronRight } from 'lucide-react'
 import PageHeader from '@/components/layout/PageHeader'
-import { isRedesignOn } from '@/lib/redesignFlag'
 
 const PAGE_SIZE = 50
 
@@ -101,22 +100,15 @@ export default function Contacts({ user }) {
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {isRedesignOn() && (
-        <PageHeader
-          eyebrowCategory="DATABASE"
-          eyebrowSuffix="Prospect universe"
-          title="Contacts"
-          stats={[{ value: filtered.length.toLocaleString(), label: 'Total' }]}
-        />
-      )}
+      <PageHeader
+        eyebrowCategory="DATABASE"
+        eyebrowSuffix="Prospect universe"
+        title="Contacts"
+        stats={[{ value: filtered.length.toLocaleString(), label: 'Total' }]}
+      />
       {/* Toolbar */}
-      <div style={{ padding: isRedesignOn() ? '8px 24px 0' : '20px 24px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        {!isRedesignOn() ? (
-          <div>
-            <div style={{ fontSize: 23, fontWeight: 200, color: '#0A0A0A', letterSpacing: '-0.03em', fontFamily: 'var(--font)' }}>Contacts</div>
-            <div style={{ fontSize: 14, color: '#6B6B6B', fontWeight: 300, marginTop: 2, fontFamily: 'var(--font)' }}>{filtered.length.toLocaleString()} contacts</div>
-          </div>
-        ) : <div></div>}
+      <div style={{ padding: '8px 24px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div></div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', width: 260, background: 'rgba(25,25,25,0.40)', backdropFilter: 'blur(40px) saturate(1.6)', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 50, padding: '0 16px', boxShadow: 'inset 0 2px 0 rgba(0,0,0,0.06), inset 0 -1px 0 rgba(0,0,0,0.05)' }}>
             <Search style={{ width: 14, height: 14, color: '#6B6B6B', flexShrink: 0, marginRight: 8 }} />

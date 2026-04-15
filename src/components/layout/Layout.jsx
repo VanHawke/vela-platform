@@ -41,10 +41,8 @@ import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
 import CommandPalette from './CommandPalette'
 import LegoraTopNav from './LegoraTopNav'
-import RedesignToggle from './RedesignToggle'
 import AuroraCanvas from '../AuroraCanvas'
 import { useKikoPolish } from '@/lib/useKikoPolish'
-import { useRedesignFlag } from '@/lib/redesignFlag'
 
 // All navigable pages
 const ALL_NAV = [
@@ -94,7 +92,6 @@ const PAGE_LABELS = {
 export default function Layout({ user }) {
   // Activate Legora polish layer (spotlight, sparkle, magnetic, count-up auto-bind)
   useKikoPolish()
-  const redesignOn = useRedesignFlag()
   const loc = useLocation()
   const nav = useNavigate()
   const isHome = loc.pathname === '/' || loc.pathname === '/home'
@@ -377,19 +374,17 @@ export default function Layout({ user }) {
       {/* Aurora gradient orbs */}
       <AuroraCanvas extraOrb={loc.pathname === '/pipeline' ? 'amber' : null} />
 
-      {/* Legora top nav — Option A pattern (only when redesign flag is ON) */}
-      {redesignOn && (
-        <LegoraTopNav
-          user={user}
-          customLogo={customLogo}
-          hasNotifications={true}
-          onSearchClick={() => setCommandPaletteOpen(true)}
-        />
-      )}
+      {/* Legora top nav */}
+      <LegoraTopNav
+        user={user}
+        customLogo={customLogo}
+        hasNotifications={true}
+        onSearchClick={() => setCommandPaletteOpen(true)}
+      />
 
-      {/* OLD HEADER — shown when redesign flag is OFF */}
+      {/* OLD HEADER — disabled, kept for reference */}
       <header style={{
-        display: redesignOn ? 'none' : 'flex',
+        display: 'none',
         height: 56, minHeight: 56, alignItems: 'center', justifyContent: 'space-between',
         padding: '0 24px', borderBottom: 'none',
         background: 'transparent',
@@ -712,7 +707,6 @@ export default function Layout({ user }) {
           main { padding-bottom: 72px !important; }
         }
       `}</style>
-      <RedesignToggle />
     </div>
   )
 }

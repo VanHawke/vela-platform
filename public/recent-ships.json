@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-15T18:52:43.840Z",
+  "generated_at": "2026-04-15T19:15:08.866Z",
   "commits": [
+    {
+      "hash": "7703745",
+      "subject": "redesign: Calendar — full mockup-faithful React port (race spine + outreach intelligence + per-prospect best-time hints), gated behind redesign flag",
+      "when": "22 minutes ago"
+    },
     {
       "hash": "08f30c5",
       "subject": "redesign: feature flag — toggle between OLD and NEW chrome via floating button",
-      "when": "19 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "d203a57",
       "subject": "redesign: legora foundation — top nav + polish layer hook",
-      "when": "34 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "5205653",
@@ -54,12 +59,12 @@
     {
       "hash": "7608b3b",
       "subject": "v0.0.67: HOTFIX — linkedin-test FUNCTION_INVOCATION_TIMEOUT",
-      "when": "29 hours ago"
+      "when": "30 hours ago"
     },
     {
       "hash": "8bd6dbb",
       "subject": "v0.0.66: voice personalisation + LinkedIn retry wrapper + whiskey category",
-      "when": "29 hours ago"
+      "when": "30 hours ago"
     },
     {
       "hash": "f859daa",
@@ -94,11 +99,6 @@
     {
       "hash": "070bf93",
       "subject": "Update KIKO_MASTER_LOG with v0.0.63 Lemlist webhook safety net session notes",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "7db5ddc",
-      "subject": "fix: add org_id to contact/company upserts in lemlist webhook + backfill",
       "when": "2 days ago"
     }
   ]
