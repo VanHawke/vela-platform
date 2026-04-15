@@ -354,4 +354,151 @@ const SECTION_PANELS = {
       ))}
     </div>
   ),
+  password: (
+    <div className="st-panel">
+      <div className="st-panel-h"><div className="pt">Change password</div><div className="ps">Sign-in password for sunny@vanhawke.com</div></div>
+      <div className="st-field"><div className="field-label">Current password</div><div className="field-input"><input className="input" type="password" placeholder="••••••••" /></div></div>
+      <div className="st-field"><div className="field-label">New password</div><div className="field-input"><input className="input" type="password" placeholder="At least 12 characters" /></div></div>
+      <div className="st-field"><div className="field-label">Confirm new password</div><div className="field-input"><input className="input" type="password" /></div></div>
+      <div className="st-field"><div className="field-label"></div><div className="field-input"><button className="ghost-btn" style={{ background: '#0A0A0A', color: 'white', border: 'none' }}>Update password</button></div></div>
+    </div>
+  ),
+  security: (
+    <>
+      <div className="st-panel">
+        <div className="st-panel-h"><div className="pt">Two-factor authentication</div><div className="ps">Strongly recommended</div></div>
+        <div className="st-field"><div className="field-label">Enable 2FA<div className="field-help">Use an authenticator app like 1Password or Authy.</div></div><div className="field-input"><div className="toggle"></div></div></div>
+        <div className="st-field"><div className="field-label">Backup codes<div className="field-help">Generate 10 single-use codes you can use if you lose your device.</div></div><div className="field-input"><button className="ghost-btn">Generate codes</button></div></div>
+      </div>
+      <div className="st-panel">
+        <div className="st-panel-h"><div className="pt">Active sessions</div><div className="ps">Sign out anywhere you don't recognise</div></div>
+        <div className="conn-row">
+          <div className="conn-icon" style={{ background: '#0A0A0A', color: 'white' }}>💻</div>
+          <div className="conn-info"><div className="conn-name">MacBook Air · Chrome · Weybridge UK</div><div className="conn-meta"><span className="conn-dot"></span>This device · last active just now</div></div>
+          <button className="ghost-btn" disabled>Current</button>
+        </div>
+        <div className="conn-row">
+          <div className="conn-icon" style={{ background: '#6B6B6B', color: 'white' }}>📱</div>
+          <div className="conn-info"><div className="conn-name">iPhone · Safari · London UK</div><div className="conn-meta"><span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#6B6B6B', marginRight: 5, verticalAlign: 'middle' }}></span>Last active 3h ago</div></div>
+          <button className="ghost-btn danger">Sign out</button>
+        </div>
+      </div>
+    </>
+  ),
+  members: (
+    <div className="st-panel">
+      <div className="st-panel-h"><div className="pt">Team members</div><div className="ps">2 members · 1 pending invite</div></div>
+      <div className="conn-row">
+        <div className="conn-icon" style={{ background: '#0A0A0A', color: 'white' }}>S</div>
+        <div className="conn-info"><div className="conn-name">Sunny Sidhu (you)</div><div className="conn-meta">CEO · Owner · sunny@vanhawke.com</div></div>
+        <button className="ghost-btn" disabled>Owner</button>
+      </div>
+      <div className="conn-row">
+        <div className="conn-icon" style={{ background: '#7d8a64', color: 'white' }}>L</div>
+        <div className="conn-info"><div className="conn-name">Lotty Marston</div><div className="conn-meta">Member · lotty@vanhawke.com</div></div>
+        <button className="ghost-btn">Edit role</button>
+      </div>
+      <div className="conn-row">
+        <div className="conn-icon" style={{ background: 'rgba(184,156,92,0.20)', color: '#8a6f2c' }}>?</div>
+        <div className="conn-info"><div className="conn-name">giacomo@vanhawkemaison.com</div><div className="conn-meta"><span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#B89C5C', marginRight: 5, verticalAlign: 'middle' }}></span>Invite pending · sent 2 days ago</div></div>
+        <button className="ghost-btn">Resend</button>
+      </div>
+      <div style={{ padding: '14px 22px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+        <button className="ghost-btn" style={{ background: '#0A0A0A', color: 'white', border: 'none' }}>+ Invite member</button>
+      </div>
+    </div>
+  ),
+  branding: (
+    <>
+      <div className="st-panel">
+        <div className="st-panel-h"><div className="pt">Custom branding</div><div className="ps">Shown on your login page and shared exports</div></div>
+        <div className="st-field"><div className="field-label">Custom logo<div className="field-help">PNG or SVG, ≤200KB. Replaces the Kiko mark for your workspace.</div></div><div className="field-input"><button className="ghost-btn">Upload logo</button></div></div>
+        <div className="st-field"><div className="field-label">Accent color<div className="field-help">Used for primary CTAs and active states.</div></div><div className="field-input"><input className="input" defaultValue="#0A0A0A" style={{ width: 120 }} /></div></div>
+        <div className="st-field"><div className="field-label">Login page background</div><div className="field-input"><button className="ghost-btn">Upload image</button></div></div>
+      </div>
+      <div className="st-panel">
+        <div className="st-panel-h"><div className="pt">Email branding</div><div className="ps">Applied to Kiko-drafted sends</div></div>
+        <div className="st-field"><div className="field-label">Email signature image<div className="field-help">Shown above your text signature.</div></div><div className="field-input"><button className="ghost-btn">Upload</button></div></div>
+        <div className="st-field"><div className="field-label">Footer disclaimer</div><div className="field-input"><textarea className="textarea" placeholder="Confidentiality notice, etc." /></div></div>
+      </div>
+    </>
+  ),
+  memory: (
+    <div className="st-panel">
+      <div className="st-panel-h"><div className="pt">What Kiko remembers</div><div className="ps">Persistent context · stored in kiko_memories table</div></div>
+      {[
+        { type: 'identity',     label: 'CEO of Van Hawke Group · based Weybridge UK · moving Doha' },
+        { type: 'doctrine',     label: 'Communication: hard truth → action steps → direct challenge' },
+        { type: 'doctrine',     label: 'Avoid generic openings ("hope this finds you well") · use "intelligent age" not "AI generation"' },
+        { type: 'commercial',   label: 'Haas F1 primary sponsorship client · 5-email authority sequence locked' },
+        { type: 'product',      label: 'Van Hawke Maison Archive 01 · "Cultural Performance Eyewear" category' },
+        { type: 'preferences',  label: 'All financials in USD · "board-level" framing for cost/benefit/risk/time-to-value' },
+        { type: 'identity',     label: 'Child in Year 1 at Oatlands School Weybridge' },
+      ].map((m, i) => (
+        <div className="conn-row" key={i}>
+          <div className="conn-icon" style={{ background: 'rgba(0,0,0,0.06)', color: '#0A0A0A', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600 }}>{m.type.slice(0, 3)}</div>
+          <div className="conn-info"><div className="conn-name" style={{ fontSize: 12.5, fontWeight: 400 }}>{m.label}</div><div className="conn-meta">{m.type}</div></div>
+          <button className="ghost-btn danger">Forget</button>
+        </div>
+      ))}
+      <div style={{ padding: '14px 22px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+        <button className="ghost-btn">+ Add memory</button>
+      </div>
+    </div>
+  ),
+  voice: (
+    <>
+      <div className="st-panel">
+        <div className="st-panel-h"><div className="pt">Voice mode</div><div className="ps">Push-to-talk and continuous voice interaction</div></div>
+        <div className="st-field"><div className="field-label">Enable voice mode<div className="field-help">Requires microphone permission.</div></div><div className="field-input"><div className="toggle on"></div></div></div>
+        <div className="st-field"><div className="field-label">STT provider</div><div className="field-input"><select className="select" defaultValue="Deepgram"><option>Deepgram</option><option>OpenAI Whisper</option></select></div></div>
+        <div className="st-field"><div className="field-label">TTS provider</div><div className="field-input"><select className="select" defaultValue="Cartesia"><option>Cartesia (Serafina)</option><option>ElevenLabs</option></select></div></div>
+        <div className="st-field"><div className="field-label">Voice ID<div className="field-help">Cartesia voice identifier for Kiko's spoken voice.</div></div><div className="field-input"><input className="input" defaultValue="4tRn1lSkEn13EVTuqb0g" /></div></div>
+        <div className="st-field"><div className="field-label">Push-to-talk binding<div className="field-help">Hold this key to speak.</div></div><div className="field-input"><input className="input" defaultValue="Space (long press)" style={{ width: 220 }} /></div></div>
+      </div>
+    </>
+  ),
+  plan: (
+    <>
+      <div className="st-panel">
+        <div className="st-panel-h"><div className="pt">Current plan</div><div className="ps">Renews 13 May 2026</div></div>
+        <div style={{ padding: '20px 22px', display: 'flex', alignItems: 'flex-end', gap: 18 }}>
+          <div>
+            <div style={{ fontSize: 10.5, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500 }}>Plan</div>
+            <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: 32, fontWeight: 300, letterSpacing: '-0.018em', lineHeight: 1, marginTop: 4 }}>Team</div>
+          </div>
+          <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+            <div style={{ fontSize: 10.5, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500 }}>Monthly</div>
+            <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: 26, fontWeight: 300, letterSpacing: '-0.018em', lineHeight: 1, marginTop: 4 }}><span style={{ fontSize: '0.6em', color: '#6B6B6B', verticalAlign: '0.18em' }}>$</span>180</div>
+          </div>
+        </div>
+      </div>
+      <div className="st-panel">
+        <div className="st-panel-h"><div className="pt">Usage this month</div><div className="ps">As of today</div></div>
+        <div className="st-field"><div className="field-label">Emails sent</div><div className="field-input" style={{ fontSize: 13, fontVariantNumeric: 'tabular-nums' }}><strong>1,847</strong> <span style={{ color: '#A0A0A0' }}>/ unlimited</span></div></div>
+        <div className="st-field"><div className="field-label">Kiko AI requests</div><div className="field-input" style={{ fontSize: 13, fontVariantNumeric: 'tabular-nums' }}><strong>4,213</strong> <span style={{ color: '#A0A0A0' }}>/ 10,000</span></div></div>
+        <div className="st-field"><div className="field-label">Storage</div><div className="field-input" style={{ fontSize: 13, fontVariantNumeric: 'tabular-nums' }}><strong>2.4 GB</strong> <span style={{ color: '#A0A0A0' }}>/ 50 GB</span></div></div>
+        <div className="st-field"><div className="field-label">Team seats</div><div className="field-input" style={{ fontSize: 13, fontVariantNumeric: 'tabular-nums' }}><strong>2</strong> <span style={{ color: '#A0A0A0' }}>of 5 included</span></div></div>
+      </div>
+    </>
+  ),
+  invoices: (
+    <div className="st-panel">
+      <div className="st-panel-h"><div className="pt">Invoices</div><div className="ps">Last 6 months · paid by Visa ending 6411</div></div>
+      {[
+        { month: 'April 2026',    amount: '$180.00', status: 'Pending' },
+        { month: 'March 2026',    amount: '$180.00', status: 'Paid' },
+        { month: 'February 2026', amount: '$180.00', status: 'Paid' },
+        { month: 'January 2026',  amount: '$180.00', status: 'Paid' },
+        { month: 'December 2025', amount: '$180.00', status: 'Paid' },
+        { month: 'November 2025', amount: '$180.00', status: 'Paid' },
+      ].map((inv, i) => (
+        <div className="conn-row" key={i}>
+          <div className="conn-icon" style={{ background: 'rgba(0,0,0,0.04)', color: '#0A0A0A' }}>$</div>
+          <div className="conn-info"><div className="conn-name">{inv.month}</div><div className="conn-meta">{inv.amount} · {inv.status}</div></div>
+          <button className="ghost-btn">Download PDF</button>
+        </div>
+      ))}
+    </div>
+  ),
 }
