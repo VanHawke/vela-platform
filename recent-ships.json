@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-15T19:25:52.827Z",
+  "generated_at": "2026-04-15T19:33:54.878Z",
   "commits": [
+    {
+      "hash": "bc6d812",
+      "subject": "redesign: Inbox (OutreachIntelligence) — full mockup-faithful two-pane composer port",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "6493442",
       "subject": "redesign: Pipeline — full mockup-faithful Kanban port (5 stages, deal cards, drag-drop)",
-      "when": "4 minutes ago"
+      "when": "12 minutes ago"
     },
     {
       "hash": "ba0f50b",
       "subject": "redesign: rip out toggle — new design IS the design",
-      "when": "11 minutes ago"
+      "when": "19 minutes ago"
     },
     {
       "hash": "7703745",
       "subject": "redesign: Calendar — full mockup-faithful React port (race spine + outreach intelligence + per-prospect best-time hints), gated behind redesign flag",
-      "when": "33 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "08f30c5",
       "subject": "redesign: feature flag — toggle between OLD and NEW chrome via floating button",
-      "when": "52 minutes ago"
+      "when": "60 minutes ago"
     },
     {
       "hash": "d203a57",
       "subject": "redesign: legora foundation — top nav + polish layer hook",
-      "when": "67 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "5205653",
@@ -49,12 +54,12 @@
     {
       "hash": "549b130",
       "subject": "v0.0.69: voyagerFetch redirect: manual — detect 302 to login = cookies expired",
-      "when": "29 hours ago"
+      "when": "30 hours ago"
     },
     {
       "hash": "3c74bbb",
       "subject": "v0.0.68.1: add linkedin-diagnostic endpoint — 4 parallel network probes (DNS, TLS, https native, undici fetch)",
-      "when": "29 hours ago"
+      "when": "30 hours ago"
     },
     {
       "hash": "612107e",
@@ -94,11 +99,6 @@
     {
       "hash": "561e93d",
       "subject": "Update KIKO_MASTER_LOG with v0.0.64 LinkedIn Layer 1 session notes",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "66436aa",
-      "subject": "v0.0.64: LinkedIn Layer 1 — voyager API wrapper + Kiko tools",
       "when": "2 days ago"
     }
   ]
