@@ -29,6 +29,7 @@ import ChatHistory from './ChatHistory'
 import AllChatsView from './AllChatsView'
 import KikoSymbol from './KikoSymbol'
 import KikoWaveform from './KikoWaveform'
+import HomeDashboard from './HomeDashboard'
 // DraftPreview disabled — EmailDraft handles all email drafts
 import KikoInsights, { InsightsBadge } from './KikoInsights'
 import EmailDraft, { isEmailDraft, extractEmailSection } from './EmailDraft'
@@ -1333,6 +1334,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               </button>
             ))}
           </div>
+
+          {/* Home dashboard — real Bento data cards (pipeline, stale, hot replies, next race) */}
+          {!voiceActive && <HomeDashboard user={user} onPromptClick={handleSubmit} />}
 
           {/* Bottom spacer — equal to top so content sits at true visual centre */}
           <div style={{ flex: voiceActive ? 1 : 0.5, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
