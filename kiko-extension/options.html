@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Kiko Settings</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+    background: #0d0d0f;
+    color: #e5e5e5;
+    padding: 60px 40px;
+    max-width: 560px;
+    margin: 0 auto;
+    font-weight: 300;
+    line-height: 1.5;
+  }
+  .brand {
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    color: #a78bfa;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 200;
+    color: #e5e5e5;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  p.sub { color: #9ca3af; font-size: 13px; margin-bottom: 36px; }
+  label {
+    display: block;
+    font-size: 10px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+    margin-top: 24px;
+    font-weight: 400;
+  }
+</style>
+</head>
+<body>
+<div class="brand">KIKO INTELLIGENCE OS</div>
+<h1>LinkedIn Sync — Settings</h1>
+<p class="sub">Connects your Chrome LinkedIn session to the Kiko server. One-time setup, never touch cookies again.</p>
+
+<style>
+  input {
+    width: 100%;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 0.5px solid rgba(255, 255, 255, 0.08);
+    color: #e5e5e5;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: ui-monospace, Menlo, monospace;
+    font-weight: 300;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease;
+  }
+  input:focus { outline: none; border-color: rgba(167, 139, 250, 0.5); }
+  .hint { font-size: 11px; color: #6b7280; margin-top: 6px; }
+  button {
+    margin-top: 36px;
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #7c5cfc 0%, #a78bfa 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+  }
+  button:hover { filter: brightness(1.1); }
+  .result {
+    margin-top: 24px;
+    padding: 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    display: none;
+  }
+  .result.ok { background: rgba(45, 212, 191, 0.08); border: 0.5px solid rgba(45, 212, 191, 0.3); color: #2dd4bf; }
+  .result.err { background: rgba(248, 113, 113, 0.08); border: 0.5px solid rgba(248, 113, 113, 0.3); color: #f87171; }
+</style>
+
+<label>Server URL</label>
+<input type="text" id="serverUrl" placeholder="http://178.104.73.22">
+<div class="hint">The kiko-worker server. For Van Hawke this is 178.104.73.22 (later server.vanhawke.agency).</div>
+
+<label>Auth Token</label>
+<input type="password" id="authToken" placeholder="Bearer token from kiko-worker .env">
+<div class="hint">Shared secret — same value as KIKO_WORKER_SECRET on the server.</div>
+
+<label>Identity Label</label>
+<input type="text" id="identity" placeholder="sunny">
+<div class="hint">How Kiko identifies this LinkedIn account in campaigns (e.g. "sunny", "matt").</div>
+
+<button id="saveBtn">Save & Sync Now</button>
+
+<div id="result" class="result"></div>
+
+<script src="options.js"></script>
+</body>
+</html>

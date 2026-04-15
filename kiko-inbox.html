@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kiko · Inbox</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kiko-polish.css">
+<script src="kiko-polish.js" defer></script>
+<style>
+  :root {
+    --bg: #FEFEFC; --bg-card: #FFFFFF; --bg-tinted: #F5F4F1; --bg-list: #FAFAF7;
+    --surface: rgba(0,0,0,0.03); --surface-hover: rgba(0,0,0,0.05);
+    --text: #0A0A0A; --text-dim: #6B6B6B; --text-faint: #A0A0A0; --text-muted: #C0C0C0;
+    --accent: #0A0A0A;
+    --highlight: #FFE9D6;
+    --border: rgba(0,0,0,0.08); --border-subtle: rgba(0,0,0,0.05); --border-hover: rgba(0,0,0,0.14);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.05);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.06);
+    --shadow-floating: 0 16px 48px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.04);
+    --r-cta: 4px; --r-input: 12px; --r-card: 8px; --r-pill: 24px;
+    --font: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-display: 'Source Serif 4', Georgia, serif;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --dot-sage: #7d8a64; --dot-terra: #b8643e; --dot-amber: #B89C5C;
+    --topnav-h: 60px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); font-weight: 450; font-size: 13px; -webkit-font-smoothing: antialiased; overflow: hidden; height: 100vh; }
+  button, a { font: inherit; color: inherit; background: none; border: none; cursor: pointer; text-decoration: none; }
+  input, textarea { font: inherit; color: inherit; background: none; border: none; outline: none; resize: none; }
+
+  .opt-switcher { position: fixed; top: 16px; left: 16px; z-index: 200; display: flex; gap: 4px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: var(--r-cta); padding: 4px; box-shadow: var(--shadow-md); font-size: 11px; }
+  .opt-switcher a { padding: 4px 10px; border-radius: 3px; color: var(--text-dim); transition: background 0.15s, color 0.15s; }
+  .opt-switcher a:hover { background: var(--surface); color: var(--text); }
+  .opt-switcher a.active { background: var(--accent); color: white; }
+
+
+  /* === TOP NAV (Option A — Legora pure) === */
+  .topnav { height: var(--topnav-h); background: var(--bg); border-bottom: 1px solid var(--border-subtle); padding: 0 32px 0 200px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 50; }
+  .nav-brand { display: flex; align-items: center; gap: 9px; }
+  .nav-mark { width: 22px; height: 22px; color: var(--text); }
+  .nav-name { font-family: var(--font-display); font-size: 18px; font-weight: 400; letter-spacing: 0.04em; }
+  .nav-links { display: flex; align-items: center; gap: 30px; }
+  .nav-link { color: var(--text); font-size: 13px; font-weight: 450; transition: opacity 0.15s; display: inline-flex; align-items: center; gap: 2px; padding: 18px 0; position: relative; }
+  .nav-link:hover { opacity: 0.6; }
+  .nav-link .plus { color: var(--text-faint); font-weight: 400; }
+  .nav-link.active { font-weight: 500; }
+  .nav-link.active::after { content: ''; display: block; height: 1px; background: var(--text); position: absolute; left: 0; right: 0; bottom: -1px; }
+  .nav-right { display: flex; align-items: center; gap: 8px; }
+  .icon-btn { width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--r-cta); color: var(--text-dim); position: relative; transition: background 0.15s, color 0.15s; }
+  .icon-btn:hover { background: var(--surface); color: var(--text); }
+  .icon-btn .dot { position: absolute; top: 7px; right: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--dot-terra); box-shadow: 0 0 0 2px var(--bg); }
+  .nav-cta { height: 32px; padding: 0 14px; background: var(--accent); color: white; border-radius: var(--r-cta); font-size: 12px; font-weight: 500; margin-left: 4px; transition: opacity 0.15s; }
+  .nav-cta:hover { opacity: 0.85; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: white; display: grid; place-items: center; font-size: 11px; font-weight: 500; margin-left: 6px; }
+
+  /* === MAIN: TWO-PANE === */
+  .main { height: calc(100vh - var(--topnav-h)); display: grid; grid-template-columns: 360px 1fr; background: var(--bg); }
+
+  /* === LEFT: INBOX LIST === */
+  .inbox-list { background: var(--bg-list); border-right: 1px solid var(--border-subtle); overflow-y: auto; display: flex; flex-direction: column; }
+  .inbox-head { padding: 22px 22px 14px; border-bottom: 1px solid var(--border-subtle); background: var(--bg-list); position: sticky; top: 0; z-index: 5; }
+  .inbox-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .inbox-title { font-family: var(--font-display); font-weight: 300; font-size: 26px; letter-spacing: -0.018em; line-height: 1.0; color: var(--text); }
+  .inbox-count { font-size: 11px; color: var(--text-dim); }
+  .inbox-count strong { color: var(--text); font-weight: 600; }
+
+  .inbox-search { display: flex; align-items: center; gap: 8px; padding: 7px 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-cta); margin-bottom: 12px; }
+  .inbox-search svg { color: var(--text-faint); flex-shrink: 0; }
+  .inbox-search input { width: 100%; font-size: 12.5px; }
+  .inbox-search input::placeholder { color: var(--text-faint); }
+
+  .filter-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .filter-tab { padding: 4px 10px; border-radius: var(--r-pill); font-size: 11.5px; color: var(--text-dim); transition: background 0.15s, color 0.15s; display: inline-flex; align-items: center; gap: 5px; }
+  .filter-tab:hover { background: var(--surface); color: var(--text); }
+  .filter-tab.active { background: var(--accent); color: white; }
+  .filter-tab.active .tab-count { color: rgba(255,255,255,0.7); }
+  .tab-count { font-weight: 400; color: var(--text-faint); font-size: 10.5px; }
+
+
+  /* === INBOX ITEMS WITH HOVER ACTIONS === */
+  .inbox-items { flex: 1; padding: 4px 8px 16px; }
+  .inbox-item { display: flex; gap: 11px; padding: 12px 14px; border-radius: var(--r-card); cursor: pointer; transition: background 0.12s; position: relative; margin-bottom: 1px; }
+  .inbox-item:hover { background: var(--surface); }
+  .inbox-item.active { background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+  .inbox-item.unread .item-name { font-weight: 600; }
+  .inbox-item.unread::before { content: ''; position: absolute; left: 4px; top: 22px; width: 6px; height: 6px; border-radius: 50%; background: var(--dot-terra); }
+
+  .item-channel-icon { width: 28px; height: 28px; border-radius: 6px; display: grid; place-items: center; flex-shrink: 0; margin-top: 1px; }
+  .item-channel-icon.email { background: var(--surface); color: var(--text); }
+  .item-channel-icon.linkedin { background: rgba(10,102,194,0.12); color: #0A66C2; }
+  .item-channel-icon.signal { background: rgba(184,100,62,0.12); color: var(--dot-terra); }
+
+  .item-body { flex: 1; min-width: 0; }
+  .item-row1 { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+  .item-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-time { font-size: 10.5px; color: var(--text-faint); flex-shrink: 0; }
+  .item-company { font-size: 11.5px; color: var(--text-dim); margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-preview { font-size: 12px; color: var(--text-dim); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .item-tags { display: flex; gap: 4px; margin-top: 7px; flex-wrap: wrap; }
+  .item-tag { padding: 1px 7px; border-radius: var(--r-pill); font-size: 9.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+  .item-tag.hot { background: rgba(184,100,62,0.14); color: var(--dot-terra); }
+  .item-tag.warm { background: rgba(184,156,92,0.14); color: #8a6f2c; }
+  .item-tag.signal { background: rgba(125,138,100,0.14); color: #5a6644; }
+  .item-tag.replied { background: var(--surface); color: var(--text-dim); }
+
+  /* Hover quick-action overlay (top-right of item) */
+  .item-quick-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-cta); padding: 2px; box-shadow: var(--shadow-sm); }
+  .inbox-item:hover .item-quick-actions { opacity: 1; }
+  .quick-btn { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 3px; color: var(--text-dim); transition: background 0.12s, color 0.12s; }
+  .quick-btn:hover { background: var(--surface); color: var(--text); }
+  .quick-btn.fire:hover { background: rgba(184,100,62,0.14); color: var(--dot-terra); }
+  .quick-btn svg { width: 12px; height: 12px; }
+
+
+  /* === RIGHT: DETAIL VIEW === */
+  .detail { overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; position: relative; }
+  .detail-head { padding: 24px 36px 18px; border-bottom: 1px solid var(--border-subtle); background: var(--bg); position: sticky; top: 0; z-index: 5; }
+  .detail-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+  .detail-title-block { flex: 1; min-width: 0; }
+  .detail-title { font-family: var(--font-display); font-weight: 300; font-size: 28px; letter-spacing: -0.018em; line-height: 1.1; color: var(--text); margin-bottom: 6px; }
+  .detail-meta { font-size: 12.5px; color: var(--text-dim); }
+  .detail-meta strong { color: var(--text); font-weight: 500; }
+  .detail-meta .sep { color: var(--text-muted); margin: 0 6px; }
+
+  .detail-actions { display: flex; align-items: center; gap: 6px; }
+  .ghost-btn { height: 30px; padding: 0 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-cta); font-size: 12px; color: var(--text); display: inline-flex; align-items: center; gap: 5px; transition: border-color 0.15s, background 0.15s; }
+  .ghost-btn:hover { border-color: var(--border-hover); background: var(--bg-tinted); }
+  .ghost-btn svg { width: 12px; height: 12px; }
+
+  /* Thread area — scrollable above the unified composer */
+  .thread { padding: 20px 36px 16px; flex: 1; overflow-y: auto; }
+
+  /* Prior touches accordion */
+  .prior-touches { margin-bottom: 18px; }
+  .prior-touches-toggle { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--bg-tinted); border-radius: var(--r-cta); font-size: 12px; color: var(--text-dim); cursor: pointer; transition: background 0.15s, color 0.15s; }
+  .prior-touches-toggle:hover { background: var(--surface-hover); color: var(--text); }
+  .prior-touches-toggle .chev { transition: transform 0.2s; width: 11px; height: 11px; }
+  .prior-touches.open .prior-touches-toggle .chev { transform: rotate(90deg); }
+  .prior-touches-list { display: none; margin-top: 8px; padding-left: 8px; border-left: 2px solid var(--border-subtle); margin-left: 12px; }
+  .prior-touches.open .prior-touches-list { display: block; }
+  .prior-touch { padding: 10px 14px; font-size: 12px; color: var(--text-dim); display: flex; gap: 10px; align-items: center; }
+  .prior-touch strong { color: var(--text); font-weight: 500; min-width: 60px; }
+  .prior-touch .preview { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .prior-touch .when { color: var(--text-faint); font-size: 11px; }
+
+  /* Inbound message */
+  .msg-inbound { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 22px 26px; margin-bottom: 16px; box-shadow: var(--shadow-sm); }
+  .msg-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--border-subtle); }
+  .msg-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-tinted); color: var(--text); display: grid; place-items: center; font-size: 11.5px; font-weight: 600; flex-shrink: 0; }
+  .msg-from { flex: 1; }
+  .msg-from-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .msg-from-meta { font-size: 11.5px; color: var(--text-dim); margin-top: 1px; }
+  .msg-time { font-size: 11.5px; color: var(--text-faint); }
+  .msg-subject { font-size: 14.5px; font-weight: 500; color: var(--text); margin-bottom: 12px; }
+  .msg-body { font-size: 13.5px; color: var(--text); line-height: 1.65; }
+  .msg-body p { margin-bottom: 12px; }
+  .highlight { background: var(--highlight); padding: 1px 4px; border-radius: 2px; color: var(--text); }
+
+
+  /* === UNIFIED COMPOSER (sticky bottom — replaces both old draft panel + prompt dock) === */
+  .composer-wrap { padding: 10px 36px 22px; background: linear-gradient(to bottom, transparent, var(--bg) 30%); position: sticky; bottom: 0; }
+  .composer { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-floating); overflow: hidden; }
+
+  /* Composer header */
+  .composer-head { display: flex; align-items: center; gap: 10px; padding: 11px 18px; background: var(--bg-tinted); border-bottom: 1px solid var(--border-subtle); }
+  .composer-mark { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: white; display: grid; place-items: center; flex-shrink: 0; }
+  .composer-mark svg { width: 11px; height: 11px; }
+  .composer-label { font-size: 12.5px; font-weight: 500; color: var(--text); flex: 1; }
+  .composer-meta { font-size: 11px; color: var(--text-dim); }
+  .composer-meta strong { color: var(--text); font-weight: 500; }
+
+  /* "Why this draft" reasoning toggle (collapsed by default) */
+  .reasoning-toggle { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; background: rgba(125,138,100,0.12); color: #5a6644; border-radius: var(--r-pill); font-size: 11px; font-weight: 500; transition: background 0.15s; cursor: pointer; }
+  .reasoning-toggle:hover { background: rgba(125,138,100,0.20); }
+  .reasoning-toggle .chev { transition: transform 0.2s; width: 9px; height: 9px; }
+  .reasoning.open .reasoning-toggle .chev { transform: rotate(90deg); }
+  .reasoning-body { display: none; padding: 12px 18px; background: rgba(125,138,100,0.06); border-bottom: 1px solid var(--border-subtle); font-size: 12.5px; color: var(--text); line-height: 1.55; }
+  .reasoning.open .reasoning-body { display: block; }
+  .reasoning-body strong { font-weight: 600; }
+
+  /* Subject line */
+  .composer-subject-row { display: flex; align-items: baseline; gap: 12px; padding: 14px 22px 10px; border-bottom: 1px dashed var(--border-subtle); }
+  .composer-subject-label { font-size: 10.5px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
+  .composer-subject-input { flex: 1; font-size: 14px; font-weight: 500; color: var(--text); }
+
+  /* Editable draft body */
+  .composer-body { padding: 18px 22px 14px; max-height: 280px; overflow-y: auto; }
+  .composer-body textarea { width: 100%; min-height: 120px; font-size: 13.5px; color: var(--text); line-height: 1.65; font-family: var(--font); }
+
+  /* Bottom toolbar — source pills + actions in ONE row */
+  .composer-toolbar { display: flex; align-items: center; gap: 6px; padding: 10px 18px 12px; border-top: 1px solid var(--border-subtle); background: var(--bg-tinted); flex-wrap: wrap; }
+  .source-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-pill); font-size: 11px; font-weight: 450; color: var(--text); transition: border-color 0.15s; }
+  .source-pill:hover { border-color: var(--border-hover); }
+  .source-pill svg { width: 11px; height: 11px; }
+  .source-pill .plus { color: var(--text-faint); margin-left: 1px; }
+
+  .composer-actions { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+  .conf-mini { font-size: 11px; color: var(--text-dim); margin-right: 8px; display: inline-flex; align-items: center; gap: 5px; }
+  .conf-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--dot-sage); }
+  .conf-mini strong { color: var(--text); font-weight: 500; }
+
+  .ca-btn { height: 30px; padding: 0 12px; border-radius: var(--r-cta); font-size: 12px; font-weight: 500; transition: opacity 0.15s, background 0.15s, border-color 0.15s; display: inline-flex; align-items: center; gap: 5px; }
+  .ca-btn.ghost { color: var(--text-dim); }
+  .ca-btn.ghost:hover { color: var(--text); background: var(--surface); }
+  .ca-btn.secondary { background: var(--bg-card); color: var(--text); border: 1px solid var(--border); }
+  .ca-btn.secondary:hover { border-color: var(--border-hover); background: var(--surface); }
+  .ca-btn.primary { background: var(--accent); color: white; }
+  .ca-btn.primary:hover { opacity: 0.85; }
+  .ca-btn svg { width: 12px; height: 12px; }
+
+  /* Revise input — small inline prompt below composer body */
+  .revise-row { display: flex; align-items: center; gap: 8px; padding: 8px 22px; border-top: 1px dashed var(--border-subtle); background: var(--bg-card); }
+  .revise-icon { color: var(--text-faint); display: grid; place-items: center; width: 20px; height: 20px; flex-shrink: 0; }
+  .revise-input { flex: 1; font-size: 12.5px; color: var(--text); padding: 4px 0; }
+  .revise-input::placeholder { color: var(--text-faint); }
+</style>
+</head>
+<body>
+
+
+<div class="opt-switcher">
+  <a href="kiko-home-nav-a.html">Home</a>
+  <a class="active">Inbox</a>
+  <a href="kiko-pipeline.html">Pipeline</a>
+</div>
+
+<!-- ===== TOP NAV (Option A — Legora pure) ===== -->
+<nav class="topnav">
+  <div class="nav-brand">
+    <svg class="nav-mark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 7.5L21 11l-7.5 1.5L12 20l-1.5-7.5L3 11l7.5-1.5L12 2z"/></svg>
+    <span class="nav-name">Kiko</span>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link">Today<span class="plus">+</span></a>
+    <a class="nav-link">Pipeline<span class="plus">+</span></a>
+    <a class="nav-link">Campaigns</a>
+    <a class="nav-link active">Inbox</a>
+    <a class="nav-link">Insights</a>
+  </div>
+  <div class="nav-right">
+    <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg><span class="dot"></span></button>
+    <button class="nav-cta">+ New thread</button>
+    <div class="avatar">S</div>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- ===== LEFT: INBOX LIST ===== -->
+  <aside class="inbox-list">
+    <div class="inbox-head">
+      <div class="inbox-title-row">
+        <h1 class="inbox-title">Inbox</h1>
+        <div class="inbox-count"><strong>23</strong> total · <strong>3</strong> need you</div>
+      </div>
+      <div class="inbox-search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input placeholder="Search replies, prospects, companies…">
+      </div>
+      <div class="filter-row">
+        <button class="filter-tab active">All <span class="tab-count">23</span></button>
+        <button class="filter-tab">Hot <span class="tab-count">5</span></button>
+        <button class="filter-tab">Warm <span class="tab-count">8</span></button>
+        <button class="filter-tab">Signals <span class="tab-count">10</span></button>
+      </div>
+    </div>
+
+
+    <div class="inbox-items">
+
+      <div class="inbox-item active unread">
+        <div class="item-channel-icon email"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <div class="item-body">
+          <div class="item-row1"><div class="item-name">James Bardrick</div><div class="item-time">14m</div></div>
+          <div class="item-company">Country Officer UK · Citi</div>
+          <div class="item-preview">Your timing is good. Brand committee meets in May to review the F1 slot. Happy to discuss next week — Tuesday 2pm or Wednesday 11am UK?</div>
+          <div class="item-tags"><span class="item-tag hot">Hot</span></div>
+        </div>
+        <div class="item-quick-actions">
+          <button class="quick-btn fire" title="Mark hot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg></button>
+          <button class="quick-btn" title="Snooze"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
+          <button class="quick-btn" title="Archive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
+        </div>
+      </div>
+
+      <div class="inbox-item unread">
+        <div class="item-channel-icon linkedin"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zM8 19H5V8h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zM20 19h-3v-5.604c0-3.368-4-3.113-4 0V19h-3V8h3v1.765c1.396-2.586 7-2.777 7 2.476V19z"/></svg></div>
+        <div class="item-body">
+          <div class="item-row1"><div class="item-name">Daniel Sundheim</div><div class="item-time">1h</div></div>
+          <div class="item-company">Founder · D1 Capital</div>
+          <div class="item-preview">Interesting. Sponsorship is something I've been thinking about more broadly. Could you send the deck so I can review with the team?</div>
+          <div class="item-tags"><span class="item-tag warm">Warm</span></div>
+        </div>
+        <div class="item-quick-actions">
+          <button class="quick-btn fire" title="Mark hot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg></button>
+          <button class="quick-btn" title="Snooze"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
+          <button class="quick-btn" title="Archive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
+        </div>
+      </div>
+
+      <div class="inbox-item unread">
+        <div class="item-channel-icon signal"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div class="item-body">
+          <div class="item-row1"><div class="item-name">Signal · HSBC × Mercedes</div><div class="item-time">2h</div></div>
+          <div class="item-company">Captured from FT.com · 96% match</div>
+          <div class="item-preview">HSBC just renewed F1 partnership with Mercedes through 2027. Three new prospects identified in their Brand team — Sarah Lee just hired from AmEx where she ran the Mercedes account.</div>
+          <div class="item-tags"><span class="item-tag signal">Signal</span></div>
+        </div>
+        <div class="item-quick-actions">
+          <button class="quick-btn" title="Snooze"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
+          <button class="quick-btn" title="Archive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
+        </div>
+      </div>
+
+
+      <div class="inbox-item">
+        <div class="item-channel-icon email"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <div class="item-body">
+          <div class="item-row1"><div class="item-name">Anna Cross</div><div class="item-time">3h</div></div>
+          <div class="item-company">CFO · Barclays</div>
+          <div class="item-preview">Sunny, thanks for reaching out. We're focused on the rugby renewal at the moment but I'd be open to a brief chat in Q3 once that's settled.</div>
+          <div class="item-tags"><span class="item-tag warm">Warm</span></div>
+        </div>
+        <div class="item-quick-actions">
+          <button class="quick-btn fire" title="Mark hot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg></button>
+          <button class="quick-btn" title="Snooze"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
+          <button class="quick-btn" title="Archive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
+        </div>
+      </div>
+
+      <div class="inbox-item">
+        <div class="item-channel-icon linkedin"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zM8 19H5V8h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zM20 19h-3v-5.604c0-3.368-4-3.113-4 0V19h-3V8h3v1.765c1.396-2.586 7-2.777 7 2.476V19z"/></svg></div>
+        <div class="item-body">
+          <div class="item-row1"><div class="item-name">Bill Winters</div><div class="item-time">5h</div></div>
+          <div class="item-company">CEO · Standard Chartered</div>
+          <div class="item-preview">Accepted your connection. Always happy to discuss commercial sponsorship strategy — DM me anytime.</div>
+          <div class="item-tags"><span class="item-tag replied">Connected</span></div>
+        </div>
+        <div class="item-quick-actions">
+          <button class="quick-btn fire" title="Mark hot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg></button>
+          <button class="quick-btn" title="Archive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
+        </div>
+      </div>
+
+      <div class="inbox-item">
+        <div class="item-channel-icon email"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <div class="item-body">
+          <div class="item-row1"><div class="item-name">Mark Tucker</div><div class="item-time">Yesterday</div></div>
+          <div class="item-company">Group Chairman · HSBC</div>
+          <div class="item-preview">Auto-reply: I'm currently traveling in Asia and will respond on return Apr 17.</div>
+          <div class="item-tags"><span class="item-tag replied">Auto</span></div>
+        </div>
+        <div class="item-quick-actions">
+          <button class="quick-btn" title="Snooze"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
+          <button class="quick-btn" title="Archive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+
+  <!-- ===== RIGHT: DETAIL ===== -->
+  <main class="detail">
+    <div class="detail-head">
+      <div class="detail-title-row">
+        <div class="detail-title-block">
+          <div class="eyebrow"><span class="eyebrow-cat">INBOX</span><span class="eyebrow-sep">/</span>Hot reply</div>
+          <h1 class="detail-title">James Bardrick · Citi</h1>
+          <div class="detail-meta">
+            <strong>F1 2027 Banking</strong>
+            <span class="sep">·</span>Touch 3/5
+            <span class="sep">·</span>Replied 14m ago
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="ghost-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>View profile</button>
+          <button class="ghost-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Snooze</button>
+          <button class="ghost-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="thread">
+
+      <!-- Prior touches accordion (collapsed by default) -->
+      <div class="prior-touches" id="priorTouches">
+        <div class="prior-touches-toggle" onclick="document.getElementById('priorTouches').classList.toggle('open')">
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          Show 3 earlier touches <span style="color:var(--text-faint)">· last sent 2d ago</span>
+        </div>
+        <div class="prior-touches-list">
+          <div class="prior-touch"><strong>Touch 1</strong><div class="preview">Your FT piece on emerging-market brand visibility caught my attention…</div><span class="when">14d ago · Email</span></div>
+          <div class="prior-touch"><strong>Touch 2</strong><div class="preview">Following up — the F1 2027 title slot decision sits with your brand committee in May…</div><span class="when">7d ago · Email</span></div>
+          <div class="prior-touch"><strong>Touch 3</strong><div class="preview">Final note — Mercedes just renewed their HSBC partnership which changes the category math…</div><span class="when">2d ago · Email</span></div>
+        </div>
+      </div>
+
+      <!-- Inbound message -->
+      <div class="msg-inbound">
+        <div class="msg-head">
+          <div class="msg-avatar">JB</div>
+          <div class="msg-from">
+            <div class="msg-from-name">James Bardrick</div>
+            <div class="msg-from-meta">james.bardrick@citi.com · Country Officer UK</div>
+          </div>
+          <div class="msg-time">Today · 14:21 UK</div>
+        </div>
+        <div class="msg-subject">Re: F1 2027 Banking — strategic conversation</div>
+        <div class="msg-body">
+<p>Sunny,</p>
+<p>Your timing is good. The <span class="highlight">Brand committee meets in May to review the F1 slot</span> and we've been quietly evaluating the category for nine months. The Mercedes renewal made a few of us reconsider where Citi sits.</p>
+<p>Happy to discuss next week — <span class="highlight">Tuesday 2pm or Wednesday 11am UK</span>. I'd like to keep this informal at first, just you and me, before bringing in our brand and procurement teams.</p>
+<p>Send a calendar invite directly to my assistant Helen (helen.morrison@citi.com).</p>
+<p>James</p>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- ===== UNIFIED COMPOSER (sticky bottom, replaces draft panel + prompt dock) ===== -->
+    <div class="composer-wrap">
+      <div class="composer">
+
+        <!-- Header: Kiko mark + label + collapsible "Why this draft" + tone meta -->
+        <div class="composer-head">
+          <div class="composer-mark"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 7.5L21 11l-7.5 1.5L12 20l-1.5-7.5L3 11l7.5-1.5L12 2z"/></svg></div>
+          <div class="composer-label">Kiko drafted a reply</div>
+          <div class="reasoning" id="reasoning">
+            <button class="reasoning-toggle" onclick="document.getElementById('reasoning').classList.toggle('open')">
+              <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              Why this draft
+            </button>
+          </div>
+          <div class="composer-meta">Tone <strong>96%</strong> · Reply <strong>74%</strong></div>
+        </div>
+
+        <!-- Reasoning body (folds away once you trust the classification) -->
+        <div class="reasoning-body" id="reasoningBody" style="display:none;">
+          <strong>Hot reply.</strong> Bardrick confirmed the Brand committee timeline (May), referenced the Mercedes renewal as a trigger, and offered specific times. Recommended action: send calendar invite to Helen for Wed 11am UK and prepare a 1-pager on F1 vs rugby category economics for the meeting.
+        </div>
+
+        <!-- Subject -->
+        <div class="composer-subject-row">
+          <span class="composer-subject-label">Subject</span>
+          <input class="composer-subject-input" value="Re: F1 2027 Banking — strategic conversation">
+        </div>
+
+        <!-- Editable draft body -->
+        <div class="composer-body">
+          <textarea>James,
+
+Wednesday 11am UK works. I'll send the invite to Helen now and keep it tight — 30 minutes, just the two of us.
+
+Ahead of the call I'll send across a one-page comparison of F1 vs Premiership rugby on three dimensions your committee will care about: cost-per-engaged-impression, brand-safety risk profile, and emerging-market reach. Mercedes' decision is informative but not the only frame — there are reasons HSBC went one way and JPMorgan went another, and the Citi positioning sits closer to the latter.
+
+Also — useful context. The F1 title slot has only opened twice in the last decade. The window between now and your committee meeting is short. Worth treating it as a capital allocation decision rather than a marketing one.
+
+See you Wednesday.
+
+Sunny</textarea>
+        </div>
+
+        <!-- Inline revise instruction row (small, below the body) -->
+        <div class="revise-row">
+          <span class="revise-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg></span>
+          <input class="revise-input" placeholder="Tell Kiko to revise — e.g. 'shorter, drop the rugby comparison'">
+        </div>
+
+        <!-- Bottom toolbar: source pills + actions -->
+        <div class="composer-toolbar">
+          <button class="source-pill-lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>Web</button>
+          <button class="source-pill-lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>LinkedIn</button>
+          <button class="source-pill-lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>CRM</button>
+          <button class="source-pill-lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="14 2 14 8 20 8"/><path d="M14 2H6a2 2 0 00-2 2v16c0 1.1.9 2 2 2h12a2 2 0 002-2V8z"/></svg>Playbook</button>
+          <button class="source-pill-lg">Add <span class="plus">+</span></button>
+
+          <div class="composer-actions">
+            <span class="conf-mini"><span class="conf-dot"></span>Confidence <strong>high</strong></span>
+            <button class="ca-btn ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>Regenerate</button>
+            <button class="ca-btn primary sparkle-cta magnetic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Send reply</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// Reasoning toggle: also show/hide the reasoning body
+document.querySelector('.reasoning-toggle').addEventListener('click', () => {
+  const body = document.getElementById('reasoningBody');
+  body.style.display = (body.style.display === 'none') ? 'block' : 'none';
+});
+</script>
+</body>
+</html>

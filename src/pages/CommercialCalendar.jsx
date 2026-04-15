@@ -4,9 +4,9 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 // ── Platform tokens ───────────────────────────────────────
 const T = {
-  bg: '#000000', surface: 'rgba(25,25,25,0.40)', surfaceHover: 'rgba(124,92,252,0.06)',
-  border: 'rgba(124,92,252,0.08)', borderHover: 'rgba(124,92,252,0.12)',
-  text: '#f4f4f6', textSecondary: 'rgba(124,92,252,0.55)', textTertiary: '#7e7e88',
+  bg: '#000000', surface: 'rgba(25,25,25,0.40)', surfaceHover: 'rgba(0,0,0,0.04)',
+  border: 'rgba(0,0,0,0.05)', borderHover: 'rgba(0,0,0,0.08)',
+  text: '#0A0A0A', textSecondary: 'rgba(124,92,252,0.55)', textTertiary: '#A0A0A0',
   font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   f1: '#E10600', f1Light: 'rgba(225,6,0,0.08)', f1Border: 'rgba(225,6,0,0.2)', f1Dark: '#FF4444',
   fe: '#0055CC', feLight: 'rgba(0,85,204,0.08)', feBorder: 'rgba(0,85,204,0.2)', feDark: '#6CB4FF',
@@ -219,10 +219,10 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, showMGP, sh
           {s.hasF1 && s.f1.slice(0, 1).map((e, i) => (
             <div key={i}>
               {pill(
-                s.isSel || s.isRaceDay ? '#7e7e88' : T.f1,
+                s.isSel || s.isRaceDay ? '#A0A0A0' : T.f1,
                 <>
                   <img src="/f1-logo.png" alt="F1" style={{ width: 8, height: 8, objectFit: 'contain', display: 'block' }} />
-                  <span style={{ fontSize: 9, color: '#f4f4f6', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
+                  <span style={{ fontSize: 9, color: '#0A0A0A', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
                     {s.isRaceDay ? 'Race day' : `${e.city.slice(0, 3).toUpperCase()}${e.sprint ? ' ⚡' : ''}`}
                   </span>
                 </>
@@ -232,10 +232,10 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, showMGP, sh
           {s.hasFE && s.fe.slice(0, 1).map((e, i) => (
             <div key={i}>
               {pill(
-                s.isSel ? '#7e7e88' : T.fe,
+                s.isSel ? '#A0A0A0' : T.fe,
                 <>
                   <img src="/fe-logo.png" alt="FE" style={{ width: 8, height: 8, objectFit: 'contain', display: 'block' }} />
-                  <span style={{ fontSize: 9, color: '#f4f4f6', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
+                  <span style={{ fontSize: 9, color: '#0A0A0A', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: T.font }}>
                     {e.city.slice(0, 3).toUpperCase()}
                   </span>
                 </>
@@ -245,16 +245,16 @@ function Cell({ dateStr, isCurrent, selected, today, showF1, showFE, showMGP, sh
           {s.hasMGP && s.mgp.slice(0, 1).map((e, i) => (
             <div key={`mgp${i}`}>
               {pill(
-                s.isSel || s.isRaceDay ? '#7e7e88' : T.mgp,
-                <span style={{ fontSize: 9, color: '#f4f4f6', fontFamily: T.font }}>🏍️ {e.city.slice(0, 3).toUpperCase()}</span>
+                s.isSel || s.isRaceDay ? '#A0A0A0' : T.mgp,
+                <span style={{ fontSize: 9, color: '#0A0A0A', fontFamily: T.font }}>🏍️ {e.city.slice(0, 3).toUpperCase()}</span>
               )}
             </div>
           ))}
           {s.hasWEC && s.wec.slice(0, 1).map((e, i) => (
             <div key={`wec${i}`}>
               {pill(
-                s.isSel ? '#7e7e88' : T.wec,
-                <span style={{ fontSize: 9, color: '#f4f4f6', fontFamily: T.font }}>🏁 {e.city.slice(0, 3).toUpperCase()}</span>
+                s.isSel ? '#A0A0A0' : T.wec,
+                <span style={{ fontSize: 9, color: '#0A0A0A', fontFamily: T.font }}>🏁 {e.city.slice(0, 3).toUpperCase()}</span>
               )}
             </div>
           ))}

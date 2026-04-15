@@ -140,7 +140,7 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
         background: T.glass, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         border: `1px solid ${active ? `rgba(124,92,252,${0.18 + (state === 'speaking' ? level * 0.25 : 0.1)})` : T.glassBorder}`,
         boxShadow: active
-          ? `0 0 16px rgba(124,92,252,0.12), 0 2px 10px rgba(0,0,0,0.15), inset 3px 3px 0.5px -3.5px rgba(124,92,252,0.30), inset -3px -3px 0.5px -3.5px rgba(124,92,252,0.22), inset 1px 1px 1px -0.5px rgba(124,92,252,0.18), inset -1px -1px 1px -0.5px rgba(124,92,252,0.18)`
+          ? `0 0 16px rgba(0,0,0,0.08), 0 2px 10px rgba(0,0,0,0.15), inset 3px 3px 0.5px -3.5px rgba(0,0,0,0.10), inset -3px -3px 0.5px -3.5px rgba(124,92,252,0.22), inset 1px 1px 1px -0.5px rgba(0,0,0,0.08), inset -1px -1px 1px -0.5px rgba(0,0,0,0.08)`
           : T.glassShadow,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden', cursor: onClick ? 'pointer' : 'default',
@@ -184,7 +184,7 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
                 )}
                 <div style={{
                   width: shellBw, height: '100%', borderRadius: shellBw,
-                  background: `linear-gradient(180deg, ${T.accent} 0%, rgba(124,92,252,0.10) 100%)`,
+                  background: `linear-gradient(180deg, ${T.accent} 0%, rgba(0,0,0,0.06) 100%)`,
                   opacity: state === 'speaking' ? 0.45 + barLevels[i] * 0.55 : 0.3 + env * 0.55,
                   transition: state === 'speaking' ? 'height 50ms linear, opacity 50ms linear' : 'all 500ms cubic-bezier(0.22,1,0.36,1)',
                 }} />
@@ -223,7 +223,7 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
             )}
             <div style={{
               width: bw, height: '100%', borderRadius: bw,
-              background: `linear-gradient(180deg, ${T.accent} 0%, rgba(124,92,252,0.10) 100%)`,
+              background: `linear-gradient(180deg, ${T.accent} 0%, rgba(0,0,0,0.06) 100%)`,
               opacity: state === 'speaking' ? 0.45 + barLevels[i] * 0.55 : 0.3 + env * 0.55,
               transition: state === 'speaking' ? 'height 50ms linear, opacity 50ms linear' : 'all 500ms cubic-bezier(0.22,1,0.36,1)',
             }} />

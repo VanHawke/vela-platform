@@ -38,8 +38,8 @@ export default function KikoToast() {
         }}>
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(6,214,160,0.7)', flexShrink: 0, boxShadow: '0 0 8px rgba(6,214,160,0.4)' }} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 12, fontWeight: 400, color: '#9b9ba3', fontFamily: T.font }}>Kiko completed a task</div>
-            <div style={{ fontSize: 11, color: '#56565e', fontFamily: T.font, fontWeight: 300, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{toast.query}</div>
+            <div style={{ fontSize: 12, fontWeight: 400, color: '#6B6B6B', fontFamily: T.font }}>Kiko completed a task</div>
+            <div style={{ fontSize: 11, color: '#A0A0A0', fontFamily: T.font, fontWeight: 300, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{toast.query}</div>
           </div>
           <button onClick={() => goToChat(toast)} style={{
             padding: '4px 10px', borderRadius: 8, border: '1px solid rgba(6,214,160,0.12)',
@@ -47,7 +47,7 @@ export default function KikoToast() {
             fontSize: 11, cursor: 'pointer', fontFamily: T.font, fontWeight: 300, flexShrink: 0,
           }}>View</button>
           <button onClick={() => dismiss(toast.id)} style={{
-            background: 'none', border: 'none', color: '#7e7e88',
+            background: 'none', border: 'none', color: '#A0A0A0',
             cursor: 'pointer', fontSize: 15, padding: 0, lineHeight: 1,
           }}>×</button>
         </div>

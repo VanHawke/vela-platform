@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kiko · Nav Option A — Top bar only (Legora pure)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kiko-polish.css">
+<script src="kiko-polish.js" defer></script>
+<style>
+  :root {
+    --bg: #FEFEFC;
+    --bg-card: #FFFFFF;
+    --bg-tinted: #F5F4F1;
+    --surface: rgba(0,0,0,0.03);
+    --surface-hover: rgba(0,0,0,0.05);
+    --text: #0A0A0A;
+    --text-dim: #6B6B6B;
+    --text-faint: #A0A0A0;
+    --accent: #0A0A0A;
+    --border: rgba(0,0,0,0.08);
+    --border-subtle: rgba(0,0,0,0.05);
+    --border-hover: rgba(0,0,0,0.14);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.05);
+    --r-cta: 4px;
+    --r-input: 16px;
+    --r-pill: 24px;
+    --font: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-display: 'Source Serif 4', Georgia, serif;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    font-weight: 450;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  button, a { font: inherit; color: inherit; background: none; border: none; cursor: pointer; text-decoration: none; }
+  input, textarea { font: inherit; color: inherit; background: none; border: none; outline: none; }
+
+  /* === OPTION SWITCHER (tiny floating banner top-left so Sunny knows which version he's on) === */
+  .opt-switcher {
+    position: fixed; top: 12px; left: 12px; z-index: 100;
+    display: flex; gap: 4px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    border-radius: var(--r-cta);
+    padding: 4px;
+    box-shadow: var(--shadow-md);
+    font-size: 11px;
+  }
+  .opt-switcher a {
+    padding: 4px 10px;
+    border-radius: 3px;
+    color: var(--text-dim);
+    transition: background 0.15s, color 0.15s;
+  }
+  .opt-switcher a:hover { background: var(--surface); color: var(--text); }
+  .opt-switcher a.active { background: var(--accent); color: white; }
+
+  /* === TOP BAR (Option A — Legora minimal) === */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(254,254,252,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border-subtle);
+    height: 60px;
+    padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-brand { display: flex; align-items: center; gap: 8px; }
+  .nav-mark { width: 22px; height: 22px; color: var(--text); }
+  .nav-name { font-family: var(--font-display); font-size: 17px; font-weight: 400; letter-spacing: 0.04em; }
+
+  .nav-links { display: flex; align-items: center; gap: 32px; }
+  .nav-link {
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 450;
+    transition: opacity 0.15s;
+  }
+  .nav-link:hover { opacity: 0.6; }
+  .nav-link.has-plus::after { content: ' +'; color: var(--text-faint); }
+
+  .nav-right { display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    width: 32px; height: 32px;
+    display: grid; place-items: center;
+    border-radius: var(--r-cta);
+    color: var(--text-dim);
+    position: relative;
+    transition: background 0.15s, color 0.15s;
+  }
+  .icon-btn:hover { background: var(--surface); color: var(--text); }
+  .icon-btn .dot {
+    position: absolute; top: 7px; right: 8px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #b8643e;
+    box-shadow: 0 0 0 2px var(--bg);
+  }
+  .avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: grid; place-items: center;
+    font-size: 11px;
+    font-weight: 500;
+    margin-left: 4px;
+  }
+
+  /* === HERO === */
+  .hero-wrap {
+    min-height: calc(100vh - 60px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Subtle background orbs */
+  .bg-orbs { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+  .orb { position: absolute; border-radius: 50%; filter: blur(80px); animation: drift 28s ease-in-out infinite; }
+  .orb-1 { width: 480px; height: 480px; background: radial-gradient(circle, #E8DCC4 0%, transparent 70%); top: 0%; left: -8%; opacity: 0.5; }
+  .orb-2 { width: 380px; height: 380px; background: radial-gradient(circle, #D89472 0%, transparent 70%); top: 20%; right: -8%; opacity: 0.18; animation-delay: -10s; }
+  .orb-3 { width: 320px; height: 320px; background: radial-gradient(circle, #B5BFA0 0%, transparent 70%); bottom: 5%; left: 30%; opacity: 0.22; animation-delay: -18s; }
+  @keyframes drift {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(40px,-25px) scale(1.05); }
+    66% { transform: translate(-25px,35px) scale(0.95); }
+  }
+
+  .hero {
+    max-width: 760px; width: 100%;
+    text-align: center;
+    position: relative; z-index: 1;
+    padding: 0 24px;
+  }
+  .eyebrow {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 18px;
+    display: inline-block;
+  }
+  .eyebrow strong { color: var(--text); font-weight: 500; }
+  .title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(40px, 4.6vw, 60px);
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+  .subtitle {
+    font-size: 15px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin-bottom: 36px;
+  }
+
+  /* Prompt */
+  .prompt-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-input);
+    box-shadow: var(--shadow-sm);
+    padding: 16px 18px 12px;
+    transition: border-color 0.15s, box-shadow 0.2s;
+    text-align: left;
+  }
+  .prompt-card:focus-within {
+    border-color: var(--text);
+    box-shadow: 0 0 0 3px rgba(10,10,10,0.04);
+  }
+  .prompt-input {
+    width: 100%;
+    min-height: 28px;
+    font-size: 14.5px;
+    color: var(--text);
+    background: transparent;
+    resize: none;
+    line-height: 1.5;
+    padding: 4px 0;
+  }
+  .prompt-input::placeholder { color: var(--text-faint); }
+  .prompt-toolbar {
+    display: flex; align-items: center; gap: 6px;
+    padding-top: 12px; margin-top: 6px;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .source-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px;
+    background: var(--surface);
+    border-radius: var(--r-pill);
+    font-size: 11.5px; font-weight: 450; color: var(--text);
+    transition: background 0.15s;
+  }
+  .source-pill:hover { background: var(--surface-hover); }
+  .source-pill svg { width: 11px; height: 11px; }
+  .source-pill .plus { color: var(--text-faint); margin-left: 1px; }
+  .prompt-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+  .prompt-icon-btn {
+    width: 28px; height: 28px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    color: var(--text-dim);
+    transition: background 0.15s, color 0.15s;
+  }
+  .prompt-icon-btn:hover { background: var(--surface); color: var(--text); }
+  .prompt-send {
+    width: 30px; height: 30px;
+    background: var(--accent); color: white;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    box-shadow: 0 0 0 0 rgba(10,10,10,0.15);
+    animation: sendPulse 3s ease-in-out infinite;
+  }
+  .prompt-send:hover { animation: none; opacity: 0.85; }
+  @keyframes sendPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(10,10,10,0.18); }
+    50% { box-shadow: 0 0 0 6px rgba(10,10,10,0); }
+  }
+
+  .chips {
+    margin-top: 16px;
+    display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 13px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-pill);
+    background: var(--bg-card);
+    font-size: 12.5px;
+    color: var(--text);
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  }
+  .chip:hover {
+    background: var(--accent); color: white;
+    border-color: var(--accent); transform: translateY(-1px);
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== Switcher (top-left floating banner) ===== -->
+<div class="opt-switcher">
+  <a class="active">A · Top bar only (Legora pure)</a>
+  <a href="kiko-home-nav-b.html">B · Top + sidebar</a>
+  <a href="kiko-home-nav-c.html">C · Sidebar only</a>
+</div>
+
+<!-- ===== NAV (Option A — Legora-style top bar) ===== -->
+<nav>
+  <div class="nav-brand">
+    <svg class="nav-mark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 7.5L21 11l-7.5 1.5L12 20l-1.5-7.5L3 11l7.5-1.5L12 2z"/></svg>
+    <span class="nav-name">Kiko</span>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link has-plus">Today</a>
+    <a class="nav-link has-plus">Pipeline</a>
+    <a class="nav-link">Campaigns</a>
+    <a class="nav-link">Inbox</a>
+    <a class="nav-link">Insights</a>
+  </div>
+  <div class="nav-right">
+    <button class="icon-btn" title="Search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+    <button class="icon-btn" title="Notifications"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg><span class="dot"></span></button>
+    <div class="avatar">S</div>
+  </div>
+</nav>
+
+<!-- ===== HOMEPAGE (identical across A/B/C) ===== -->
+<div class="hero-wrap">
+  <div class="aurora-bg"></div>
+
+  <div class="hero">
+    <div class="eyebrow"><strong>Wednesday · 15 April</strong></div>
+    <h1 class="title">Good morning, Sunny.</h1>
+    <p class="subtitle">What should we work on today?</p>
+
+    <div class="prompt-card">
+      <textarea class="prompt-input" id="promptInput" rows="1" placeholder="Ask Kiko anything…"></textarea>
+      <div class="prompt-toolbar">
+        <button class="source-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>Web</button>
+        <button class="source-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>LinkedIn</button>
+        <button class="source-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>Pipeline</button>
+        <button class="source-pill">Add <span class="plus">+</span></button>
+        <div class="prompt-actions">
+          <button class="prompt-icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></button>
+          <button class="prompt-send sparkle-cta magnetic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="chips">
+      <button class="chip spotlight" onclick="fillPrompt(this)">Brief me on Mark Tucker</button>
+      <button class="chip spotlight" onclick="fillPrompt(this)">Show pipeline this week</button>
+      <button class="chip spotlight" onclick="fillPrompt(this)">Draft Gaming sequence</button>
+      <button class="chip spotlight" onclick="kikoToast({title: 'Draft sent to James Bardrick', meta: 'Citi · F1 2027 Banking', type: 'success'})">Demo: send draft (triggers toast)</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const placeholders = ["Ask Kiko anything…", "Brief me on James Bardrick…", "Find banks renewing F1 contracts in 2026…", "Show pipeline movement…", "Draft a sequence for Gaming…"];
+const input = document.getElementById('promptInput');
+let phI = 0, charI = 0, typing = true;
+function typeLoop() {
+  if (document.activeElement === input || input.value.length > 0) { setTimeout(typeLoop, 1500); return; }
+  const target = placeholders[phI];
+  if (typing) {
+    if (charI <= target.length) { input.placeholder = target.substring(0, charI) + (charI < target.length ? '▌' : ''); charI++; setTimeout(typeLoop, 35); }
+    else { typing = false; setTimeout(typeLoop, 2500); }
+  } else {
+    if (charI > 0) { charI--; input.placeholder = target.substring(0, charI) + '▌'; setTimeout(typeLoop, 18); }
+    else { typing = true; phI = (phI + 1) % placeholders.length; setTimeout(typeLoop, 200); }
+  }
+}
+setTimeout(typeLoop, 800);
+function fillPrompt(btn) { input.value = btn.textContent.trim(); input.focus(); }
+</script>
+</body>
+</html>

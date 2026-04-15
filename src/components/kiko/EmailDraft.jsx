@@ -181,47 +181,47 @@ export default function EmailDraft({ text }) {
   ]
 
   return (
-    <div style={{ margin: '12px 0', borderRadius: 14, overflow: 'hidden', border: '0.5px solid #26262f', background: 'rgba(124,92,252,0.02)' }}>
+    <div style={{ margin: '12px 0', borderRadius: 14, overflow: 'hidden', border: '0.5px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)' }}>
       {/* Header */}
-      <div style={{ padding: '14px 18px 12px', borderBottom: '0.5px solid #26262f' }}>
-        <div style={{ fontSize: 10, color: '#56565e', fontFamily: T.font, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500 }}>Email Draft</div>
-        {to && <div style={{ fontSize: 13, color: '#9b9ba3', fontFamily: T.font, marginBottom: 4 }}><span style={{ color: '#56565e' }}>To:</span> {to}</div>}
-        <div style={{ fontSize: 15, color: '#f4f4f6', fontFamily: T.font, fontWeight: 500 }}>{subject}</div>
+      <div style={{ padding: '14px 18px 12px', borderBottom: '0.5px solid rgba(0,0,0,0.08)' }}>
+        <div style={{ fontSize: 10, color: '#A0A0A0', fontFamily: T.font, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500 }}>Email Draft</div>
+        {to && <div style={{ fontSize: 13, color: '#6B6B6B', fontFamily: T.font, marginBottom: 4 }}><span style={{ color: '#A0A0A0' }}>To:</span> {to}</div>}
+        <div style={{ fontSize: 15, color: '#0A0A0A', fontFamily: T.font, fontWeight: 500 }}>{subject}</div>
       </div>
       {/* Body */}
-      <div style={{ padding: '16px 18px', fontSize: 14, color: '#9b9ba3', fontFamily: T.font, lineHeight: '1.7', opacity: rewriting ? 0.3 : 1, transition: 'opacity 0.3s' }}
+      <div style={{ padding: '16px 18px', fontSize: 14, color: '#6B6B6B', fontFamily: T.font, lineHeight: '1.7', opacity: rewriting ? 0.3 : 1, transition: 'opacity 0.3s' }}
         dangerouslySetInnerHTML={{ __html: renderBody(currentBody) }} />
       {rewriting && <div style={{ padding: '4px 18px 10px', fontSize: 11, color: 'rgba(124,92,252,0.5)', fontFamily: T.font }}>Rewriting...</div>}
       {/* Actions */}
-      <div style={{ padding: '10px 18px 12px', display: 'flex', alignItems: 'center', gap: 6, borderTop: '0.5px solid #26262f', flexWrap: 'wrap' }}>
+      <div style={{ padding: '10px 18px 12px', display: 'flex', alignItems: 'center', gap: 6, borderTop: '0.5px solid rgba(0,0,0,0.08)', flexWrap: 'wrap' }}>
         {tones.map(t => (
           <button key={t.label} onClick={() => handleRewrite(t.prompt)} disabled={rewriting} style={{
-            padding: '5px 12px', borderRadius: 50, background: 'rgba(124,92,252,0.03)',
-            border: '0.5px solid #26262f', color: rewriting ? '#56565e' : '#7e7e88',
+            padding: '5px 12px', borderRadius: 50, background: 'rgba(0,0,0,0.02)',
+            border: '0.5px solid rgba(0,0,0,0.08)', color: rewriting ? '#A0A0A0' : '#A0A0A0',
             fontSize: 11, cursor: rewriting ? 'wait' : 'pointer', fontFamily: T.font,
             display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.15s',
           }}
-            onMouseOver={e => { if (!rewriting) { e.currentTarget.style.background = '#26262f'; e.currentTarget.style.color = '#9b9ba3' }}}
-            onMouseOut={e => { e.currentTarget.style.background = 'rgba(124,92,252,0.03)'; e.currentTarget.style.color = '#7e7e88' }}
+            onMouseOver={e => { if (!rewriting) { e.currentTarget.style.background = 'rgba(0,0,0,0.08)'; e.currentTarget.style.color = '#6B6B6B' }}}
+            onMouseOut={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.02)'; e.currentTarget.style.color = '#A0A0A0' }}
           ><Pen size={9} /> {t.label}</button>
         ))}
         <div style={{ flex: 1 }} />
         {hasRewritten && (
-          <button onClick={handleRevert} style={{ padding: '5px 12px', borderRadius: 50, background: 'rgba(124,92,252,0.03)', border: '0.5px solid #26262f', color: '#7e7e88', fontSize: 11, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.15s', marginRight: 4 }}
-            onMouseOver={e => { e.currentTarget.style.color = '#9b9ba3' }}
-            onMouseOut={e => { e.currentTarget.style.color = '#7e7e88' }}
+          <button onClick={handleRevert} style={{ padding: '5px 12px', borderRadius: 50, background: 'rgba(0,0,0,0.02)', border: '0.5px solid rgba(0,0,0,0.08)', color: '#A0A0A0', fontSize: 11, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.15s', marginRight: 4 }}
+            onMouseOver={e => { e.currentTarget.style.color = '#6B6B6B' }}
+            onMouseOut={e => { e.currentTarget.style.color = '#A0A0A0' }}
           ><RotateCcw size={9} /> Revert</button>
         )}
         <button onClick={handleSendGmail} disabled={sent === 'sending' || sent === 'done'} style={{
           padding: '6px 14px', borderRadius: 50,
-          background: sent === 'done' ? 'rgba(34,197,94,0.08)' : sent === 'error' ? 'rgba(255,80,80,0.08)' : 'rgba(124,92,252,0.06)',
-          border: sent === 'done' ? '1px solid rgba(34,197,94,0.15)' : sent === 'error' ? '1px solid rgba(255,80,80,0.15)' : '1px solid rgba(124,92,252,0.12)',
+          background: sent === 'done' ? 'rgba(34,197,94,0.08)' : sent === 'error' ? 'rgba(255,80,80,0.08)' : 'rgba(0,0,0,0.04)',
+          border: sent === 'done' ? '1px solid rgba(34,197,94,0.15)' : sent === 'error' ? '1px solid rgba(255,80,80,0.15)' : '1px solid rgba(0,0,0,0.08)',
           color: sent === 'done' ? 'rgba(34,197,94,0.8)' : sent === 'error' ? 'rgba(255,80,80,0.8)' : 'rgba(124,92,252,0.75)',
           fontSize: 12, cursor: (sent === 'sending' || sent === 'done') ? 'default' : 'pointer', fontFamily: T.font,
           display: 'flex', alignItems: 'center', gap: 5, fontWeight: 500, transition: 'all 0.15s',
         }}
-          onMouseOver={e => { if (!sent) e.currentTarget.style.background = 'rgba(124,92,252,0.12)' }}
-          onMouseOut={e => { if (!sent) e.currentTarget.style.background = 'rgba(124,92,252,0.06)' }}
+          onMouseOver={e => { if (!sent) e.currentTarget.style.background = 'rgba(0,0,0,0.08)' }}
+          onMouseOut={e => { if (!sent) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
         ><Send size={11} /> {sent === 'sending' ? 'Creating draft...' : sent === 'done' ? 'Draft saved' : sent === 'error' ? 'Failed — retry' : 'Send to Gmail'}</button>
       </div>
     </div>

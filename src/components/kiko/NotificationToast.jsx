@@ -23,10 +23,10 @@ const ICONS = {
 }
 
 const COLORS = {
-  sequence_send: { bg: 'rgba(124,92,252,0.10)', border: 'rgba(124,92,252,0.30)', icon: '#7c5cfc' },
+  sequence_send: { bg: 'rgba(0,0,0,0.06)', border: 'rgba(0,0,0,0.10)', icon: '#0A0A0A' },
   alert: { bg: 'rgba(248,113,113,0.10)', border: 'rgba(248,113,113,0.30)', icon: '#F87171' },
-  success: { bg: 'rgba(124,92,252,0.10)', border: 'rgba(124,92,252,0.30)', icon: '#7c5cfc' },
-  default: { bg: 'rgba(124,92,252,0.10)', border: 'rgba(124,92,252,0.30)', icon: '#7c5cfc' },
+  success: { bg: 'rgba(0,0,0,0.06)', border: 'rgba(0,0,0,0.10)', icon: '#0A0A0A' },
+  default: { bg: 'rgba(0,0,0,0.06)', border: 'rgba(0,0,0,0.10)', icon: '#0A0A0A' },
 }
 
 export default function NotificationToast({ user }) {

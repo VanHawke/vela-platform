@@ -121,9 +121,9 @@ export default function LinkedInQueue() {
         <div style={{ display: 'flex', gap: 4 }}>
           {[['pending', 'Pending', counts.pending], ['sent', 'Sent', counts.sent], ['skipped', 'Skipped', counts.skipped], ['all', 'All', counts.all]].map(([id, label, count]) => (
             <button key={id} onClick={() => setFilter(id)} style={{
-              padding: '7px 14px', borderRadius: 6, border: '1px solid ' + (filter === id ? 'rgba(124,92,252,0.30)' : 'transparent'),
-              background: filter === id ? 'rgba(124,92,252,0.10)' : 'transparent',
-              color: filter === id ? '#7c5cfc' : T.textSecondary, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
+              padding: '7px 14px', borderRadius: 6, border: '1px solid ' + (filter === id ? 'rgba(0,0,0,0.10)' : 'transparent'),
+              background: filter === id ? 'rgba(0,0,0,0.06)' : 'transparent',
+              color: filter === id ? '#0A0A0A' : T.textSecondary, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
             }}>{label} <span style={{ fontSize: 10, opacity: 0.7, marginLeft: 4 }}>{count}</span></button>
           ))}
         </div>
@@ -149,7 +149,7 @@ export default function LinkedInQueue() {
                 <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                   <span style={{ fontSize: 10, color: T.textTertiary }}>{timeAgo(item.created_at)}</span>
                   {item.status === 'pending' && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(251,191,36,0.10)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.25)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Pending</span>}
-                  {item.status === 'sent' && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(124,92,252,0.10)', color: '#7c5cfc', border: '1px solid rgba(124,92,252,0.25)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Sent</span>}
+                  {item.status === 'sent' && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.06)', color: '#0A0A0A', border: '1px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Sent</span>}
                   {item.status === 'skipped' && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(148,163,184,0.10)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.25)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Skipped</span>}
                 </div>
               </div>
@@ -167,7 +167,7 @@ export default function LinkedInQueue() {
                 </button>
                 {item.status === 'pending' && (
                   <>
-                    <button onClick={() => markSent(item)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: '1px solid rgba(124,92,252,0.30)', background: 'rgba(124,92,252,0.08)', color: '#7c5cfc', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: T.font }}>
+                    <button onClick={() => markSent(item)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.10)', background: 'rgba(0,0,0,0.05)', color: '#0A0A0A', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: T.font }}>
                       <Check size={11} /> Mark sent
                     </button>
                     <button onClick={() => skipItem(item)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.10)', background: 'transparent', color: T.textTertiary, fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>

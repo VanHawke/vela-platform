@@ -6,12 +6,12 @@ import { useState, useEffect } from 'react'
 import { X, Edit3, Check, AlertTriangle } from 'lucide-react'
 
 const T = {
-  text: '#f4f4f6',
-  textTertiary: '#9b9ba3',
-  accent: '#7c5cfc',
-  accentTeal: '#7c5cfc',
-  border: '#26262f',
-  surface: 'rgba(124,92,252,0.04)',
+  text: '#0A0A0A',
+  textTertiary: '#6B6B6B',
+  accent: '#0A0A0A',
+  accentTeal: '#0A0A0A',
+  border: 'rgba(0,0,0,0.08)',
+  surface: 'rgba(0,0,0,0.03)',
   glass: 'rgba(20,20,22,0.92)',
 }
 
@@ -190,15 +190,15 @@ export default function BulkEditStepsModal({ onClose, initialCategory }) {
           display: 'flex', gap: 10,
         }}>
           <AlertTriangle size={14} color="#fbbf24" style={{ flexShrink: 0, marginTop: 2 }} />
-          <div style={{ fontSize: 10, color: '#9b9ba3', lineHeight: 1.5 }}>
+          <div style={{ fontSize: 10, color: '#6B6B6B', lineHeight: 1.5 }}>
             <strong style={{ color: '#fbbf24' }}>This is permanent.</strong> No undo. Test with one sequence first.
           </div>
         </div>
 
         <button onClick={onApply} disabled={running || loading} style={{
           padding: '12px', borderRadius: 8,
-          background: running ? 'rgba(124,92,252,0.10)' : T.accent,
-          border: 'none', color: running ? T.accent : '#14141a',
+          background: running ? 'rgba(0,0,0,0.06)' : T.accent,
+          border: 'none', color: running ? T.accent : '#FEFEFC',
           fontSize: 13, fontWeight: 500, cursor: running ? 'wait' : 'pointer', fontFamily: 'inherit',
           opacity: (running || loading) ? 0.6 : 1,
         }}>
@@ -208,7 +208,7 @@ export default function BulkEditStepsModal({ onClose, initialCategory }) {
         {results && (
           <div style={{
             padding: 12, borderRadius: 8,
-            background: 'rgba(124,92,252,0.06)', border: '1px solid rgba(124,92,252,0.30)',
+            background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.10)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <Check size={14} color={T.accentTeal} />

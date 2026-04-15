@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kiko · Contacts</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kiko-polish.css">
+<script src="kiko-polish.js" defer></script>
+<style>
+  :root {
+    --bg: #FEFEFC; --bg-card: #FFFFFF; --bg-tinted: #F5F4F1; --bg-list: #FAFAF7;
+    --surface: rgba(0,0,0,0.03); --surface-hover: rgba(0,0,0,0.05);
+    --text: #0A0A0A; --text-dim: #6B6B6B; --text-faint: #A0A0A0; --text-muted: #C0C0C0;
+    --accent: #0A0A0A;
+    --highlight: #FFE9D6;
+    --border: rgba(0,0,0,0.08); --border-subtle: rgba(0,0,0,0.05); --border-hover: rgba(0,0,0,0.14);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.05);
+    --shadow-floating: 0 16px 48px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.04);
+    --r-cta: 4px; --r-card: 10px; --r-pill: 24px;
+    --font: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-display: 'Source Serif 4', Georgia, serif;
+    --dot-sage: #7d8a64; --dot-terra: #b8643e; --dot-amber: #B89C5C; --dot-slate: #5a6470; --dot-purple: #6d4ea8;
+    --topnav-h: 60px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); font-weight: 450; font-size: 13px; -webkit-font-smoothing: antialiased; height: 100vh; overflow: hidden; }
+  button, a { font: inherit; color: inherit; background: none; border: none; cursor: pointer; text-decoration: none; }
+  input { font: inherit; color: inherit; background: none; border: none; outline: none; }
+
+  .opt-switcher { position: fixed; top: 16px; left: 16px; z-index: 200; display: flex; gap: 4px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: var(--r-cta); padding: 4px; box-shadow: var(--shadow-md); font-size: 11px; }
+  .opt-switcher a { padding: 4px 10px; border-radius: 3px; color: var(--text-dim); }
+  .opt-switcher a:hover { background: var(--surface); color: var(--text); }
+  .opt-switcher a.active { background: var(--accent); color: white; }
+
+
+  /* TOP NAV (Option A) */
+  .topnav { height: var(--topnav-h); background: var(--bg); border-bottom: 1px solid var(--border-subtle); padding: 0 32px 0 200px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 50; }
+  .nav-brand { display: flex; align-items: center; gap: 9px; }
+  .nav-mark { width: 22px; height: 22px; }
+  .nav-name { font-family: var(--font-display); font-size: 18px; font-weight: 400; letter-spacing: 0.04em; }
+  .nav-links { display: flex; align-items: center; gap: 30px; }
+  .nav-link { color: var(--text); font-size: 13px; font-weight: 450; padding: 18px 0; position: relative; display: inline-flex; align-items: center; gap: 2px; transition: opacity 0.15s; }
+  .nav-link:hover { opacity: 0.6; }
+  .nav-link .plus { color: var(--text-faint); }
+  .nav-link.active { font-weight: 500; }
+  .nav-link.active::after { content: ''; height: 1px; background: var(--text); position: absolute; left: 0; right: 0; bottom: -1px; }
+  .nav-right { display: flex; align-items: center; gap: 8px; }
+  .icon-btn { width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--r-cta); color: var(--text-dim); position: relative; transition: background 0.15s, color 0.15s; }
+  .icon-btn:hover { background: var(--surface); color: var(--text); }
+  .icon-btn .dot { position: absolute; top: 7px; right: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--dot-terra); box-shadow: 0 0 0 2px var(--bg); }
+  .nav-cta { height: 32px; padding: 0 14px; background: var(--accent); color: white; border-radius: var(--r-cta); font-size: 12px; font-weight: 500; margin-left: 4px; }
+  .nav-cta:hover { opacity: 0.85; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: white; display: grid; place-items: center; font-size: 11px; font-weight: 500; margin-left: 6px; }
+
+  /* MAIN */
+  .main { height: calc(100vh - var(--topnav-h)); overflow: hidden; display: flex; flex-direction: column; }
+  .page-head { padding: 28px 44px 18px; border-bottom: 1px solid var(--border-subtle); }
+  .page-title-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 16px; }
+  .page-title { font-family: var(--font-display); font-weight: 300; font-size: 36px; letter-spacing: -0.018em; line-height: 1.0; }
+  .page-stats { display: flex; gap: 28px; align-items: baseline; }
+  .stat-pair { display: flex; align-items: baseline; gap: 6px; }
+  .stat-pair-val { font-family: var(--font-display); font-weight: 300; font-size: 22px; letter-spacing: -0.014em; color: var(--text); }
+  .stat-pair-label { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 500; }
+
+  .toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .search { display: flex; align-items: center; gap: 8px; padding: 7px 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-cta); width: 280px; }
+  .search svg { color: var(--text-faint); }
+  .search input { flex: 1; font-size: 12.5px; }
+  .search input::placeholder { color: var(--text-faint); }
+  .filter-chip { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-cta); font-size: 12px; color: var(--text); cursor: pointer; transition: border-color 0.15s; }
+  .filter-chip:hover { border-color: var(--border-hover); }
+  .filter-chip svg { width: 11px; height: 11px; opacity: 0.6; }
+  .view-toggle { display: inline-flex; align-items: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-cta); padding: 2px; }
+  .view-tab { padding: 5px 12px; font-size: 11.5px; color: var(--text-dim); border-radius: 3px; transition: all 0.15s; }
+  .view-tab.active { background: var(--accent); color: white; }
+  .toolbar-spacer { flex: 1; }
+  .pri-btn { height: 32px; padding: 0 14px; background: var(--accent); color: white; border-radius: var(--r-cta); font-size: 12px; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; }
+  .pri-btn:hover { opacity: 0.85; }
+  .pri-btn svg { width: 12px; height: 12px; }
+
+
+  /* TABLE */
+  .table-wrap { flex: 1; overflow: auto; padding: 0 44px 32px; }
+  .ct-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .ct-table thead th { font-size: 10.5px; font-weight: 500; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em; text-align: left; padding: 14px 10px 10px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 5; }
+  .ct-table tbody tr { transition: background 0.12s; cursor: pointer; }
+  .ct-table tbody tr:hover { background: var(--bg-tinted); }
+  .ct-table tbody td { padding: 12px 10px; border-bottom: 1px solid var(--border-subtle); vertical-align: middle; }
+
+  /* Cell variations */
+  .cell-name { display: flex; align-items: center; gap: 10px; min-width: 200px; }
+  .ct-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-tinted); color: var(--text); display: grid; place-items: center; font-size: 10.5px; font-weight: 600; flex-shrink: 0; }
+  .name-block { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .name-primary { font-size: 13px; font-weight: 500; color: var(--text); }
+  .name-secondary { font-size: 11px; color: var(--text-dim); }
+
+  .cell-company { font-size: 12.5px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .ct-company-mark { width: 22px; height: 22px; border-radius: 5px; background: var(--bg-tinted); color: var(--text); display: grid; place-items: center; font-size: 9.5px; font-weight: 600; flex-shrink: 0; }
+
+  .cell-tag { padding: 2px 8px; border-radius: var(--r-pill); font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; display: inline-block; }
+  .cell-tag.banking  { background: rgba(90,100,112,0.10); color: var(--dot-slate); }
+  .cell-tag.fintech  { background: rgba(125,138,100,0.14); color: #5a6644; }
+  .cell-tag.gaming   { background: rgba(124,92,180,0.10); color: var(--dot-purple); }
+  .cell-tag.telecoms { background: rgba(184,156,92,0.14); color: #8a6f2c; }
+  .cell-tag.f1       { background: rgba(184,100,62,0.10); color: var(--dot-terra); }
+  .cell-tag.fe       { background: rgba(125,138,100,0.14); color: #5a6644; }
+  .cell-tag.wec      { background: rgba(184,100,62,0.10); color: var(--dot-terra); }
+  .cell-tag.motogp   { background: rgba(184,100,62,0.10); color: var(--dot-terra); }
+
+  .cell-stage { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text); }
+  .stage-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .stage-dot.prospected  { background: var(--dot-slate); }
+  .stage-dot.engaged     { background: var(--dot-amber); }
+  .stage-dot.replied     { background: var(--dot-sage); }
+  .stage-dot.meeting     { background: var(--dot-terra); }
+  .stage-dot.negotiating { background: var(--accent); }
+
+  .cell-num { font-variant-numeric: tabular-nums; color: var(--text); font-size: 12.5px; text-align: right; }
+  .cell-num.dim { color: var(--text-dim); }
+  .cell-when { font-size: 11.5px; color: var(--text-dim); white-space: nowrap; }
+  .signal-pip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; background: rgba(184,100,62,0.12); color: var(--dot-terra); border-radius: var(--r-pill); font-size: 10px; font-weight: 500; }
+  .signal-pip svg { width: 9px; height: 9px; }
+
+  /* HOVER PREVIEW POPUP (Legora Tabular Review pattern) */
+  .ct-row { position: relative; }
+  .ct-preview {
+    position: fixed;
+    top: 0; left: 0;
+    width: 380px;
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow-floating);
+    padding: 16px 18px;
+    opacity: 0; visibility: hidden;
+    transform: translateY(4px);
+    transition: opacity 0.18s, transform 0.18s, visibility 0.18s;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .ct-preview.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .preview-eyebrow { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; font-weight: 500; }
+  .preview-title { font-family: var(--font-display); font-weight: 400; font-size: 15px; color: var(--text); margin-bottom: 8px; }
+  .preview-body { font-size: 12.5px; color: var(--text); line-height: 1.55; margin-bottom: 12px; }
+  .preview-body .highlight { background: var(--highlight); padding: 1px 4px; border-radius: 2px; }
+  .preview-foot { font-size: 11px; color: var(--text-dim); display: flex; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--border-subtle); }
+  .preview-link { color: var(--text); font-weight: 500; cursor: pointer; }
+  .preview-link:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+
+<div class="opt-switcher">
+  <a href="kiko-home-nav-a.html">Home</a>
+  <a href="kiko-pipeline.html">Pipeline</a>
+  <a href="kiko-campaigns.html">Campaigns</a>
+  <a href="kiko-inbox.html">Inbox</a>
+  <a class="active">Contacts</a>
+</div>
+
+<nav class="topnav">
+  <div class="nav-brand">
+    <svg class="nav-mark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 7.5L21 11l-7.5 1.5L12 20l-1.5-7.5L3 11l7.5-1.5L12 2z"/></svg>
+    <span class="nav-name">Kiko</span>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link">Today<span class="plus">+</span></a>
+    <a class="nav-link">Pipeline<span class="plus">+</span></a>
+    <a class="nav-link">Campaigns</a>
+    <a class="nav-link">Inbox</a>
+    <a class="nav-link active">Contacts</a>
+  </div>
+  <div class="nav-right">
+    <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    <button class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg><span class="dot"></span></button>
+    <button class="nav-cta sparkle-cta magnetic">+ Add prospect</button>
+    <div class="avatar">S</div>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="page-head">
+    <div class="eyebrow"><span class="eyebrow-cat">DATABASE</span><span class="eyebrow-sep">/</span>Prospect universe</div>
+    <div class="page-title-row">
+      <h1 class="page-title">Contacts</h1>
+      <div class="page-stats">
+        <div class="stat-pair"><div class="stat-pair-val"><span class="count-up" data-count-to="247">0</span></div><div class="stat-pair-label">Total</div></div>
+        <div class="stat-pair"><div class="stat-pair-val"><span class="count-up" data-count-to="42">0</span></div><div class="stat-pair-label">In sequence</div></div>
+        <div class="stat-pair"><div class="stat-pair-val"><span class="count-up" data-count-to="14" data-suffix="%">0</span></div><div class="stat-pair-label">Reply rate</div></div>
+        <div class="stat-pair"><div class="stat-pair-val">$<span class="count-up" data-count-to="73" data-decimals="0">0</span>m</div><div class="stat-pair-label">Pipeline</div></div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <div class="search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input placeholder="Search 247 prospects by name, company, role, sector…">
+      </div>
+      <button class="filter-chip">All sectors<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <button class="filter-chip">All series<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <button class="filter-chip">All stages<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <button class="filter-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add filter</button>
+      <div class="toolbar-spacer"></div>
+      <div class="view-toggle">
+        <button class="view-tab active">Table</button>
+        <button class="view-tab">Cards</button>
+        <button class="view-tab">Map</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="table-wrap">
+    <table class="ct-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Company</th>
+          <th>Sector</th>
+          <th>Series</th>
+          <th>Stage</th>
+          <th>Last touch</th>
+          <th>Signals</th>
+          <th style="text-align:right;">Value</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr class="ct-row" data-preview="p1">
+          <td><div class="cell-name"><div class="ct-avatar">JB</div><div class="name-block"><div class="name-primary">James Bardrick</div><div class="name-secondary">Country Officer UK</div></div></div></td>
+          <td><div class="cell-company"><div class="ct-company-mark">C</div>Citi</div></td>
+          <td><span class="cell-tag banking">Banking</span></td>
+          <td><span class="cell-tag f1">F1 2027</span></td>
+          <td><span class="cell-stage"><span class="stage-dot replied"></span>Replied</span></td>
+          <td><span class="cell-when">14m ago · email</span></td>
+          <td><span class="signal-pip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>3 hot</span></td>
+          <td class="cell-num">$8.0m</td>
+        </tr>
+
+        <tr class="ct-row" data-preview="p2">
+          <td><div class="cell-name"><div class="ct-avatar">AC</div><div class="name-block"><div class="name-primary">Anna Cross</div><div class="name-secondary">CFO</div></div></div></td>
+          <td><div class="cell-company"><div class="ct-company-mark">B</div>Barclays</div></td>
+          <td><span class="cell-tag banking">Banking</span></td>
+          <td><span class="cell-tag f1">F1 2027</span></td>
+          <td><span class="cell-stage"><span class="stage-dot engaged"></span>Engaged</span></td>
+          <td><span class="cell-when">3h ago · email</span></td>
+          <td><span class="signal-pip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>1 warm</span></td>
+          <td class="cell-num">$8.0m</td>
+        </tr>
+
+        <tr class="ct-row" data-preview="p3">
+          <td><div class="cell-name"><div class="ct-avatar">DS</div><div class="name-block"><div class="name-primary">Daniel Sundheim</div><div class="name-secondary">Founder</div></div></div></td>
+          <td><div class="cell-company"><div class="ct-company-mark">D</div>D1 Capital</div></td>
+          <td><span class="cell-tag gaming">Gaming</span></td>
+          <td><span class="cell-tag fe">FE 2026</span></td>
+          <td><span class="cell-stage"><span class="stage-dot replied"></span>Replied</span></td>
+          <td><span class="cell-when">1h ago · LinkedIn</span></td>
+          <td><span class="signal-pip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>2 hot</span></td>
+          <td class="cell-num">$2.5m</td>
+        </tr>
+
+        <tr class="ct-row" data-preview="p4">
+          <td><div class="cell-name"><div class="ct-avatar">PG</div><div class="name-block"><div class="name-primary">Paul Gewirtz</div><div class="name-secondary">Head of Brand</div></div></div></td>
+          <td><div class="cell-company"><div class="ct-company-mark">G</div>Goldman Sachs</div></td>
+          <td><span class="cell-tag banking">Banking</span></td>
+          <td><span class="cell-tag f1">F1 2027</span></td>
+          <td><span class="cell-stage"><span class="stage-dot meeting"></span>Meeting</span></td>
+          <td><span class="cell-when">Tomorrow · 14:00 UK</span></td>
+          <td><span class="cell-when dim">—</span></td>
+          <td class="cell-num">$8.0m</td>
+        </tr>
+
+        <tr class="ct-row" data-preview="p5">
+          <td><div class="cell-name"><div class="ct-avatar">RS</div><div class="name-block"><div class="name-primary">Rajeev Suri</div><div class="name-secondary">CEO</div></div></div></td>
+          <td><div class="cell-company"><div class="ct-company-mark">I</div>Inmarsat</div></td>
+          <td><span class="cell-tag fintech">FinTech</span></td>
+          <td><span class="cell-tag fe">FE 2026</span></td>
+          <td><span class="cell-stage"><span class="stage-dot negotiating"></span>Negotiating</span></td>
+          <td><span class="cell-when">3d ago · contract</span></td>
+          <td><span class="signal-pip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>v3 redlines</span></td>
+          <td class="cell-num">$2.5m</td>
+        </tr>
+
+
+        <tr class="ct-row" data-preview="p6">
+          <td><div class="cell-name"><div class="ct-avatar">VA</div><div class="name-block"><div class="name-primary">Venkat Atluri</div><div class="name-secondary">CEO Mobility</div></div></div></td>
+          <td><div class="cell-company"><div class="ct-company-mark">M</div>McKinsey</div></td>
+          <td><span class="cell-tag telecoms">Telecoms</span></td>
+          <td><span class="cell-tag motogp">MotoGP</span></td>
+          <td><span class="cell-stage"><span class="stage-dot engaged"></span>Engaged</span></td>
+          <td><span class="cell-when">5d ago · LinkedIn</span></td>
+          <td><span class="cell-when dim">—</span></td>
+          <td class="cell-num">$2.8m</td>
+        </tr>
+
+        <tr class="ct-row" data-preview="p7">
+          <td><div class="cell-name"><div class="ct-avatar">MT</div><div class="name-block"><div class="name-primary">Mark Tucker</div><div class="name-secondary">Group Chairman</div></div></div></td>
+          <td><div class="cell-company"><div class="ct-company-mark">H</div>HSBC</div></td>
+          <td><span class="cell-tag banking">Banking</span></td>
+          <td><span class="cell-tag f1">F1 2027</span></td>
+          <td><span class="cell-stage"><span class="stage-dot prospected"></span>Prospected</span></td>
+          <td><span class="cell-when">Yesterday · auto-reply</span></td>
+          <td><span class="cell-when dim">—</span></td>
+          <td class="cell-num">$8.0m</td>
+        </tr>
+
+        <tr class="ct-row" data-preview="p8">
+          <td><div class="cell-name"><div class="ct-avatar">BW</div><div class="name-block"><div class="name-primary">Bill Winters</div><div class="name-secondary">CEO</div></div></div></td>
+          <td><div class="cell-company"><div class="ct-company-mark">S</div>Standard Chartered</div></td>
+          <td><span class="cell-tag banking">Banking</span></td>
+          <td><span class="cell-tag f1">F1 2027</span></td>
+          <td><span class="cell-stage"><span class="stage-dot engaged"></span>Engaged</span></td>
+          <td><span class="cell-when">5h ago · LinkedIn</span></td>
+          <td><span class="signal-pip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>connected</span></td>
+          <td class="cell-num">$5.5m</td>
+        </tr>
+
+        <tr class="ct-row" data-preview="p9">
+          <td><div class="cell-name"><div class="ct-avatar">SL</div><div class="name-block"><div class="name-primary">Sarah Lee</div><div class="name-secondary">Head of Brand</div></div></div></td>
+          <td><div class="cell-company"><div class="ct-company-mark">J</div>JPMorgan</div></td>
+          <td><span class="cell-tag banking">Banking</span></td>
+          <td><span class="cell-tag f1">F1 2027</span></td>
+          <td><span class="cell-stage"><span class="stage-dot prospected"></span>Prospected</span></td>
+          <td><span class="cell-when">1d ago · captured</span></td>
+          <td><span class="signal-pip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>just hired</span></td>
+          <td class="cell-num">$3.2m</td>
+        </tr>
+
+        <tr class="ct-row" data-preview="p10">
+          <td><div class="cell-name"><div class="ct-avatar">CH</div><div class="name-block"><div class="name-primary">Charlie Halford</div><div class="name-secondary">Group Sponsorship</div></div></div></td>
+          <td><div class="cell-company"><div class="ct-company-mark">A</div>ANZ</div></td>
+          <td><span class="cell-tag banking">Banking</span></td>
+          <td><span class="cell-tag wec">WEC 2026</span></td>
+          <td><span class="cell-stage"><span class="stage-dot negotiating"></span>Negotiating</span></td>
+          <td><span class="cell-when">7d ago · contract</span></td>
+          <td><span class="signal-pip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>board sign-off</span></td>
+          <td class="cell-num">$1.4m</td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- HOVER PREVIEW POPUP (Legora Tabular Review pattern) -->
+<div class="ct-preview" id="ctPreview">
+  <div class="preview-eyebrow" id="prevEyebrow">PROSPECT · F1 2027 BANKING</div>
+  <div class="preview-title" id="prevTitle">James Bardrick · Citi</div>
+  <div class="preview-body" id="prevBody">
+    Country Officer UK, Citi. Last reply 14 minutes ago: <span class="highlight">"Brand committee meets in May to review the F1 slot"</span>. Recommended action: send calendar invite for <span class="highlight">Wed 11am UK</span> and prepare a 1-pager on F1 vs rugby economics.
+  </div>
+  <div class="preview-foot">
+    <span>Touch 3/5 · 14d in sequence</span>
+    <span class="preview-link">View profile →</span>
+  </div>
+</div>
+
+<script>
+(() => {
+  const PREVIEWS = {
+    p1: { eyebrow: 'PROSPECT · F1 2027 BANKING · HOT', title: 'James Bardrick · Citi', body: 'Country Officer UK. Last reply 14 minutes ago: <span class="highlight">"Brand committee meets in May to review the F1 slot"</span>. Recommended: send calendar invite for <span class="highlight">Wed 11am UK</span> and prepare a 1-pager on F1 vs rugby category economics.', foot: 'Touch 3/5 · 14d in sequence' },
+    p2: { eyebrow: 'PROSPECT · F1 2027 BANKING · WARM', title: 'Anna Cross · Barclays', body: 'CFO. Last reply 3h ago: <span class="highlight">"Focused on the rugby renewal"</span>. Open to <span class="highlight">brief chat in Q3</span>. Recommended: Kiko schedules outreach reminder for <span class="highlight">July 1</span>.', foot: 'Touch 3/5 · 12d in sequence' },
+    p3: { eyebrow: 'PROSPECT · GAMING FE 2026 · WARM', title: 'Daniel Sundheim · D1 Capital', body: 'Founder. LinkedIn DM 1h ago: <span class="highlight">"Sponsorship is something I\'ve been thinking about more broadly"</span>. Asked for <span class="highlight">deck to review with team</span>.', foot: 'Touch 2/5 · 7d in sequence' },
+    p4: { eyebrow: 'PROSPECT · F1 2027 BANKING · MEETING', title: 'Paul Gewirtz · Goldman Sachs', body: 'Head of Brand. Calendar locked — <span class="highlight">Wed 16 Apr at 14:00 UK</span>. Brief auto-prepared by Kiko: GS\'s recent partnerships analysis + 3 questions tailored to their post-Mercedes positioning.', foot: 'Touch 4/5 · meeting tomorrow' },
+    p5: { eyebrow: 'PROSPECT · FINTECH FE 2026 · NEGOTIATING', title: 'Rajeev Suri · Inmarsat', body: 'CEO. <span class="highlight">Term sheet v3 sent 3 days ago</span>. Awaiting redlines from their Legal team. Procurement contact: Helena Kim. Risk: <span class="highlight">2 of 4 board seats</span> have raised pricing concerns.', foot: 'Touch 5/5 · in close' },
+    p6: { eyebrow: 'PROSPECT · TELECOMS MOTOGP', title: 'Venkat Atluri · McKinsey', body: 'CEO Mobility Practice. LinkedIn outbound touch 4/5 sent 5d ago. No reply yet. Kiko notes: <span class="highlight">recently authored piece on emerging-market mobility</span> — angle for next touch.', foot: 'Touch 4/5 · 14d in sequence' },
+    p7: { eyebrow: 'PROSPECT · F1 2027 BANKING · OOO', title: 'Mark Tucker · HSBC', body: 'Group Chairman. Auto-reply: <span class="highlight">"Traveling in Asia, returning Apr 17"</span>. Kiko has paused the sequence and will resume <span class="highlight">Apr 18 at 09:00 UK</span>.', foot: 'Touch 1/5 · paused' },
+    p8: { eyebrow: 'PROSPECT · F1 2027 BANKING · CONNECTED', title: 'Bill Winters · Standard Chartered', body: 'CEO. <span class="highlight">Connection accepted 5h ago</span>: "Always happy to discuss commercial sponsorship strategy — DM me anytime." Kiko drafted Touch 4 LinkedIn DM ready for review.', foot: 'Touch 3/5 · 8d in sequence' },
+    p9: { eyebrow: 'SIGNAL · NEW PROSPECT', title: 'Sarah Lee · JPMorgan', body: 'Head of Brand. Captured by SponsorSignal yesterday — <span class="highlight">just hired from AmEx</span> where she ran the Mercedes account. <span class="highlight">99% match</span> for F1 2027 Banking sequence. Recommended: launch Touch 1 today.', foot: 'Not yet in sequence' },
+    p10: { eyebrow: 'PROSPECT · BANKING WEC 2026 · CLOSE', title: 'Charlie Halford · ANZ', body: 'Group Sponsorship. <span class="highlight">Awaiting board sign-off</span> on $1.4m WEC partnership. Last signal: their CMO confirmed verbal yes on Apr 10. Expected close: <span class="highlight">Apr 22</span>.', foot: 'Touch 5/5 · in close' }
+  };
+
+  const popup = document.getElementById('ctPreview');
+  const elTitle = document.getElementById('prevTitle');
+  const elEyebrow = document.getElementById('prevEyebrow');
+  const elBody = document.getElementById('prevBody');
+
+  document.querySelectorAll('.ct-row').forEach(row => {
+    row.addEventListener('mouseenter', (e) => {
+      const key = row.dataset.preview;
+      const data = PREVIEWS[key];
+      if (!data) return;
+      elEyebrow.textContent = data.eyebrow;
+      elTitle.textContent = data.title;
+      elBody.innerHTML = data.body;
+      popup.querySelector('.preview-foot span:first-child').textContent = data.foot;
+
+      const r = row.getBoundingClientRect();
+      const popW = 380;
+      let x = r.right + 16;
+      let y = r.top;
+      if (x + popW > window.innerWidth - 20) x = r.left - popW - 16;
+      if (y + 200 > window.innerHeight) y = window.innerHeight - 220;
+      popup.style.left = `${x}px`;
+      popup.style.top = `${y}px`;
+      popup.classList.add('show');
+    });
+    row.addEventListener('mouseleave', () => popup.classList.remove('show'));
+  });
+})();
+</script>
+
+</body>
+</html>

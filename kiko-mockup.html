@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kiko — Campaign Intelligence OS (Mockup)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  /* === Design Tokens === */
+  :root {
+    --bg: #0a0a0c;
+    --bg-elev: #141416;
+    --bg-hover: #1a1a1d;
+    --border: rgba(255,255,255,0.06);
+    --border-strong: rgba(255,255,255,0.12);
+    --text: #e8e8ea;
+    --text-dim: #9ca3af;
+    --text-faint: #6b7280;
+    --purple: #a78bfa;
+    --purple-deep: #7c5cfc;
+    --teal: #2dd4bf;
+    --amber: #fbbf24;
+    --rose: #f87171;
+    --green: #34d399;
+    --gradient: linear-gradient(135deg, #7c5cfc 0%, #a78bfa 100%);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 1.5;
+    letter-spacing: -0.005em;
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.1); }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+  input, textarea { font: inherit; color: inherit; background: none; border: none; outline: none; }
+
+  /* === Layout === */
+  .app {
+    display: grid;
+    grid-template-columns: 240px 1fr 420px;
+    height: 100vh;
+  }
+  .app.chat-collapsed { grid-template-columns: 240px 1fr 0; }
+
+  /* === Sidebar === */
+  .sidebar {
+    background: var(--bg);
+    border-right: 0.5px solid var(--border);
+    padding: 20px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .brand {
+    padding: 8px 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-mark {
+    width: 28px; height: 28px;
+    background: var(--gradient);
+    border-radius: 7px;
+    display: grid; place-items: center;
+    color: white; font-weight: 600; font-size: 14px;
+  }
+  .brand-text {
+    font-size: 11px; font-weight: 400;
+    color: var(--text-dim);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .nav-section { padding: 16px 12px 6px; font-size: 9px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.15em; }
+  .nav-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-dim);
+    transition: all 0.15s ease;
+    font-size: 13px;
+  }
+  .nav-item:hover { background: var(--bg-hover); color: var(--text); }
+  .nav-item.active { background: rgba(167,139,250,0.08); color: var(--text); }
+  .nav-item.active .nav-icon { color: var(--purple); }
+  .nav-left { display: flex; align-items: center; gap: 10px; }
+  .nav-icon { width: 16px; height: 16px; color: var(--text-faint); }
+  .nav-badge {
+    background: var(--purple); color: white;
+    padding: 1px 6px; border-radius: 8px;
+    font-size: 10px; font-weight: 500;
+    min-width: 18px; text-align: center;
+  }
+  .nav-badge.muted { background: rgba(255,255,255,0.06); color: var(--text-dim); }
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 8px 12px;
+    border-top: 0.5px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .avatar {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, #fbbf24 0%, #f87171 100%);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: white; font-weight: 500; font-size: 12px;
+  }
+  .user-name { font-size: 12px; }
+  .user-org { font-size: 10px; color: var(--text-faint); }
+
+  /* === Main content === */
+  .main {
+    background: var(--bg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .topbar {
+    height: 52px;
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .breadcrumb { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .breadcrumb-item { color: var(--text-dim); }
+  .breadcrumb-item.current { color: var(--text); }
+  .breadcrumb-sep { color: var(--text-faint); }
+  .topbar-actions { display: flex; gap: 8px; align-items: center; }
+  .icon-btn {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: grid; place-items: center;
+    color: var(--text-dim);
+  }
+  .icon-btn:hover { background: var(--bg-hover); color: var(--text); }
+  .pill {
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: rgba(45,212,191,0.1);
+    border: 0.5px solid rgba(45,212,191,0.3);
+    color: var(--teal);
+    font-size: 10px; font-weight: 400;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .pill-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); }
+  .content { flex: 1; overflow-y: auto; padding: 24px 32px 60px; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* === Today view === */
+  .view-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+  .view-title { font-size: 24px; font-weight: 200; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .view-sub { color: var(--text-dim); font-size: 13px; }
+  .filter-row { display: flex; gap: 6px; margin-bottom: 20px; }
+  .filter-chip {
+    padding: 5px 11px;
+    border-radius: 14px;
+    background: var(--bg-elev);
+    border: 0.5px solid var(--border);
+    color: var(--text-dim);
+    font-size: 11px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .filter-chip:hover { color: var(--text); border-color: var(--border-strong); }
+  .filter-chip.active { background: rgba(167,139,250,0.1); border-color: rgba(167,139,250,0.3); color: var(--purple); }
+  .filter-count { font-size: 9px; opacity: 0.7; }
+
+  /* === Approval cards === */
+  .card {
+    background: var(--bg-elev);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: border-color 0.15s ease;
+  }
+  .card:hover { border-color: var(--border-strong); }
+  .card.expanded { border-color: rgba(167,139,250,0.3); }
+  .card-head { padding: 16px 18px; display: flex; gap: 14px; align-items: flex-start; cursor: pointer; }
+  .card-channel {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    font-size: 14px;
+  }
+  .card-channel.email { background: rgba(167,139,250,0.1); color: var(--purple); }
+  .card-channel.linkedin { background: rgba(45,212,191,0.1); color: var(--teal); }
+  .card-channel.signal { background: rgba(251,191,36,0.1); color: var(--amber); }
+  .card-channel.reply { background: rgba(52,211,153,0.1); color: var(--green); }
+  .card-body { flex: 1; min-width: 0; }
+  .card-row1 { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+  .card-action { font-size: 13px; color: var(--text); }
+  .card-meta { font-size: 11px; color: var(--text-faint); }
+  .card-prospect { font-weight: 400; color: var(--text); }
+  .card-context { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+  .card-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.04);
+    color: var(--text-dim);
+  }
+  .card-tag.urgent { background: rgba(248,113,113,0.1); color: var(--rose); }
+  .card-tag.signal { background: rgba(251,191,36,0.08); color: var(--amber); }
+  .card-actions { display: flex; gap: 6px; align-items: center; }
+  .btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-primary { background: var(--gradient); color: white; }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-ghost { background: rgba(255,255,255,0.04); color: var(--text-dim); border: 0.5px solid var(--border); }
+  .btn-ghost:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+  .btn-danger { background: rgba(248,113,113,0.08); color: var(--rose); border: 0.5px solid rgba(248,113,113,0.2); }
+  .btn-danger:hover { background: rgba(248,113,113,0.15); }
+  .btn-sm { padding: 4px 10px; font-size: 11px; }
+
+  .card-expanded {
+    display: none;
+    padding: 0 18px 18px 64px;
+  }
+  .card.expanded .card-expanded { display: block; }
+  .draft-box {
+    background: rgba(0,0,0,0.3);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .draft-meta { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+  .draft-subject { font-size: 13px; color: var(--text); margin-bottom: 10px; font-weight: 400; }
+  .draft-body { font-size: 13px; color: var(--text-dim); line-height: 1.6; white-space: pre-wrap; }
+  .draft-footer {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 0.5px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .draft-stats { font-size: 10px; color: var(--text-faint); }
+
+  /* === Campaigns table (Clay-style) === */
+  .campaign-tabs { display: flex; gap: 2px; margin-bottom: 20px; border-bottom: 0.5px solid var(--border); }
+  .campaign-tab {
+    padding: 10px 16px;
+    color: var(--text-dim);
+    font-size: 13px;
+    border-bottom: 1px solid transparent;
+    cursor: pointer;
+    margin-bottom: -1px;
+  }
+  .campaign-tab:hover { color: var(--text); }
+  .campaign-tab.active { color: var(--text); border-bottom-color: var(--purple); }
+  .table-wrap { background: var(--bg-elev); border: 0.5px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .table-toolbar {
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 12px;
+  }
+  .table-toolbar-stats { color: var(--text-dim); }
+  .table-toolbar-stats strong { color: var(--text); font-weight: 400; }
+  .ai-cell-btn {
+    margin-left: auto;
+    background: rgba(167,139,250,0.08);
+    color: var(--purple);
+    border: 0.5px solid rgba(167,139,250,0.2);
+    padding: 5px 11px; border-radius: 6px;
+    font-size: 11px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .ai-cell-btn:hover { background: rgba(167,139,250,0.15); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th {
+    text-align: left;
+    padding: 9px 12px;
+    color: var(--text-faint);
+    font-weight: 400;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 0.5px solid var(--border);
+    background: rgba(0,0,0,0.2);
+    position: sticky; top: 0;
+  }
+  thead th .ai-marker {
+    display: inline-block;
+    width: 5px; height: 5px;
+    background: var(--purple);
+    border-radius: 50%;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  tbody td { padding: 11px 12px; border-bottom: 0.5px solid var(--border); color: var(--text); vertical-align: middle; }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+  tbody tr:last-child td { border-bottom: none; }
+  .cell-name { font-weight: 400; color: var(--text); }
+  .cell-sub { font-size: 10px; color: var(--text-faint); margin-top: 1px; }
+  .score-bar {
+    width: 56px; height: 4px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 2px;
+    overflow: hidden;
+    display: inline-block; vertical-align: middle; margin-right: 6px;
+  }
+  .score-fill { height: 100%; background: var(--gradient); border-radius: 2px; }
+  .badge-status {
+    font-size: 10px; padding: 2px 7px; border-radius: 10px;
+    background: rgba(255,255,255,0.05); color: var(--text-dim);
+  }
+  .badge-status.queued { background: rgba(251,191,36,0.1); color: var(--amber); }
+  .badge-status.sent { background: rgba(45,212,191,0.1); color: var(--teal); }
+  .badge-status.replied { background: rgba(52,211,153,0.1); color: var(--green); }
+  .ai-pulse { color: var(--purple); animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  /* === Sequence builder === */
+  .seq-summary { display: flex; gap: 24px; margin-bottom: 24px; padding: 16px 20px; background: var(--bg-elev); border: 0.5px solid var(--border); border-radius: 10px; }
+  .seq-stat { display: flex; flex-direction: column; gap: 4px; }
+  .seq-stat-label { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.1em; }
+  .seq-stat-value { font-size: 22px; font-weight: 200; color: var(--text); }
+  .seq-stat-value.purple { color: var(--purple); }
+  .seq-stat-value.teal { color: var(--teal); }
+  .seq-steps { background: var(--bg-elev); border: 0.5px solid var(--border); border-radius: 10px; padding: 8px; }
+  .seq-step {
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 16px; border-radius: 8px;
+    cursor: pointer;
+  }
+  .seq-step:hover { background: rgba(255,255,255,0.02); }
+  .seq-step-icon {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    display: grid; place-items: center;
+    flex-shrink: 0; font-size: 16px;
+  }
+  .seq-step-icon.email { background: rgba(167,139,250,0.1); color: var(--purple); }
+  .seq-step-icon.linkedin-connect { background: rgba(45,212,191,0.1); color: var(--teal); }
+  .seq-step-icon.linkedin-msg { background: rgba(45,212,191,0.1); color: var(--teal); }
+  .seq-step-icon.wait { background: rgba(255,255,255,0.04); color: var(--text-faint); }
+  .seq-step-body { flex: 1; }
+  .seq-step-title { font-size: 13px; color: var(--text); }
+  .seq-step-meta { font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+  .seq-step-condition { font-size: 11px; color: var(--purple); margin-top: 2px; }
+  .seq-divider {
+    margin-left: 34px; height: 16px; width: 0;
+    border-left: 0.5px dashed var(--border-strong);
+  }
+  .seq-add {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; border-radius: 8px;
+    color: var(--text-faint);
+    font-size: 12px;
+    border: 0.5px dashed var(--border-strong);
+    margin: 8px;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .seq-add:hover { color: var(--purple); border-color: rgba(167,139,250,0.3); background: rgba(167,139,250,0.04); }
+
+  /* === Inbox === */
+  .inbox-grid { display: grid; grid-template-columns: 320px 1fr; gap: 16px; }
+  .inbox-list { background: var(--bg-elev); border: 0.5px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .inbox-item {
+    padding: 14px 16px;
+    border-bottom: 0.5px solid var(--border);
+    cursor: pointer;
+  }
+  .inbox-item:last-child { border-bottom: none; }
+  .inbox-item:hover { background: rgba(255,255,255,0.02); }
+  .inbox-item.active { background: rgba(167,139,250,0.06); }
+  .inbox-row1 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .inbox-from { font-size: 13px; color: var(--text); }
+  .inbox-time { font-size: 10px; color: var(--text-faint); }
+  .inbox-preview { font-size: 11px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .inbox-channel { font-size: 9px; color: var(--text-faint); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .inbox-detail { background: var(--bg-elev); border: 0.5px solid var(--border); border-radius: 10px; padding: 24px; }
+  .inbox-detail-from { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .inbox-detail-from-text { font-size: 14px; }
+  .inbox-detail-from-text .role { font-size: 11px; color: var(--text-faint); }
+  .inbox-detail-subject { font-size: 16px; font-weight: 300; margin-bottom: 16px; }
+  .inbox-detail-body { font-size: 13px; color: var(--text-dim); line-height: 1.7; padding: 16px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 16px; }
+  .ai-classify {
+    padding: 10px 14px;
+    background: rgba(167,139,250,0.06);
+    border: 0.5px solid rgba(167,139,250,0.2);
+    border-radius: 8px;
+    font-size: 12px;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .classify-label { font-size: 10px; color: var(--purple); text-transform: uppercase; letter-spacing: 0.1em; }
+
+  /* === Kiko chat panel === */
+  .chat-panel {
+    background: var(--bg);
+    border-left: 0.5px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: opacity 0.2s ease;
+  }
+  .app.chat-collapsed .chat-panel { opacity: 0; pointer-events: none; }
+  .chat-header {
+    height: 52px;
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 18px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .chat-header-title { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .kiko-orb {
+    width: 22px; height: 22px;
+    background: var(--gradient);
+    border-radius: 50%;
+    box-shadow: 0 0 18px rgba(167,139,250,0.4);
+    position: relative;
+  }
+  .kiko-orb::after {
+    content: '';
+    position: absolute; inset: 4px;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4), transparent 60%);
+    border-radius: 50%;
+  }
+  .chat-status { font-size: 10px; color: var(--teal); display: flex; align-items: center; gap: 5px; }
+  .chat-status::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%;
+    background: var(--teal); box-shadow: 0 0 6px var(--teal);
+  }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 20px 18px; display: flex; flex-direction: column; gap: 18px; }
+  .msg { display: flex; flex-direction: column; gap: 6px; max-width: 100%; }
+  .msg.user { align-items: flex-end; }
+  .msg-bubble {
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.55;
+    max-width: 88%;
+  }
+  .msg.user .msg-bubble {
+    background: rgba(167,139,250,0.1);
+    border: 0.5px solid rgba(167,139,250,0.2);
+    color: var(--text);
+    border-bottom-right-radius: 4px;
+  }
+  .msg.kiko .msg-bubble {
+    background: var(--bg-elev);
+    border: 0.5px solid var(--border);
+    color: var(--text);
+    border-bottom-left-radius: 4px;
+  }
+  .msg-meta { font-size: 10px; color: var(--text-faint); padding: 0 4px; }
+  .msg-artifact {
+    margin-top: 4px;
+    background: rgba(0,0,0,0.3);
+    border: 0.5px solid rgba(167,139,250,0.2);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+  .msg-artifact-title {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--purple); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+  .msg-artifact-row {
+    display: flex; justify-content: space-between;
+    padding: 4px 0;
+    color: var(--text-dim);
+    border-bottom: 0.5px solid rgba(255,255,255,0.03);
+  }
+  .msg-artifact-row:last-child { border-bottom: none; }
+  .msg-artifact-row strong { color: var(--text); font-weight: 400; }
+  .msg-artifact-link {
+    margin-top: 10px;
+    color: var(--purple); font-size: 11px;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+  }
+  .suggestion-chips { display: flex; gap: 6px; flex-wrap: wrap; padding: 8px 18px 0; }
+  .suggestion-chip {
+    padding: 5px 10px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 0.5px solid var(--border);
+    color: var(--text-dim);
+    font-size: 11px; cursor: pointer;
+  }
+  .suggestion-chip:hover { background: rgba(167,139,250,0.06); border-color: rgba(167,139,250,0.2); color: var(--purple); }
+  .chat-input-area { padding: 12px 18px 16px; border-top: 0.5px solid var(--border); }
+  .input-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg-elev);
+    border: 0.5px solid var(--border);
+    border-radius: 18px;
+    padding: 6px 6px 6px 14px;
+    transition: border-color 0.15s ease;
+  }
+  .input-pill:focus-within { border-color: rgba(167,139,250,0.4); }
+  .input-pill input { flex: 1; font-size: 13px; padding: 6px 0; }
+  .input-pill input::placeholder { color: var(--text-faint); }
+  .input-send {
+    width: 28px; height: 28px;
+    background: var(--gradient);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: white;
+  }
+  .input-hint { font-size: 10px; color: var(--text-faint); padding: 8px 4px 0; display: flex; gap: 12px; }
+  .kbd {
+    padding: 1px 5px; font-size: 9px;
+    background: rgba(255,255,255,0.05);
+    border: 0.5px solid var(--border);
+    border-radius: 3px; font-family: ui-monospace, Menlo, monospace;
+  }
+
+  /* === Cmd+K palette === */
+  .palette-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: flex-start; justify-content: center;
+    padding-top: 18vh;
+    z-index: 100;
+  }
+  .palette-overlay.open { display: flex; }
+  .palette {
+    width: 580px;
+    background: var(--bg-elev);
+    border: 0.5px solid var(--border-strong);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }
+  .palette-input {
+    width: 100%; padding: 18px 22px;
+    font-size: 15px;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .palette-results { max-height: 360px; overflow-y: auto; padding: 8px; }
+  .palette-item {
+    padding: 10px 14px; border-radius: 6px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer; font-size: 13px;
+  }
+  .palette-item:hover, .palette-item.selected { background: rgba(167,139,250,0.08); }
+  .palette-icon { width: 24px; height: 24px; background: rgba(167,139,250,0.1); color: var(--purple); border-radius: 5px; display: grid; place-items: center; font-size: 12px; }
+  .palette-meta { margin-left: auto; font-size: 10px; color: var(--text-faint); }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ========== SIDEBAR ========== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">K</div>
+      <div class="brand-text">Kiko</div>
+    </div>
+    <div class="nav-item active" onclick="switchView('today')">
+      <div class="nav-left"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Today</div>
+      <div class="nav-badge">12</div>
+    </div>
+    <div class="nav-item" onclick="switchView('campaigns')">
+      <div class="nav-left"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg> Campaigns</div>
+      <div class="nav-badge muted">4</div>
+    </div>
+    <div class="nav-item" onclick="switchView('inbox')">
+      <div class="nav-left"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l9 6 9-6M3 8v10a2 2 0 002 2h14a2 2 0 002-2V8M3 8l2-2h14l2 2"/></svg> Inbox</div>
+      <div class="nav-badge">3</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-left"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18M7 14l4-4 4 4 5-5"/></svg> Insights</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-left"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 01-.5 2.5l2 1.5-2 3.5-2.5-1a7 7 0 01-2 1.5l-.5 2.5h-4l-.5-2.5a7 7 0 01-2-1.5l-2.5 1-2-3.5 2-1.5A7 7 0 015 12a7 7 0 01.5-2.5l-2-1.5 2-3.5 2.5 1a7 7 0 012-1.5L10.5 2h4l.5 2.5a7 7 0 012 1.5l2.5-1 2 3.5-2 1.5A7 7 0 0119 12z"/></svg> Settings</div>
+    </div>
+
+    <div class="nav-section">Recent campaigns</div>
+    <div class="nav-item">
+      <div class="nav-left"><span style="width:6px;height:6px;border-radius:50%;background:var(--teal);"></span> F1 Banking Q2</div>
+      <div class="nav-badge muted">247</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-left"><span style="width:6px;height:6px;border-radius:50%;background:var(--purple);"></span> FinTech Sponsor</div>
+      <div class="nav-badge muted">89</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-left"><span style="width:6px;height:6px;border-radius:50%;background:var(--amber);"></span> Telecoms F1 Q3</div>
+      <div class="nav-badge muted">62</div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="avatar">SS</div>
+      <div>
+        <div class="user-name">Sunny Sidhu</div>
+        <div class="user-org">Van Hawke Group</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========== MAIN CONTENT ========== -->
+  <main class="main">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <span class="breadcrumb-item">Van Hawke Group</span>
+        <span class="breadcrumb-sep">/</span>
+        <span class="breadcrumb-item current" id="breadcrumb-current">Today</span>
+      </div>
+      <div class="topbar-actions">
+        <span class="pill"><span class="pill-dot"></span> Kiko ready</span>
+        <button class="icon-btn" onclick="openPalette()" title="Cmd+K">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        </button>
+        <button class="icon-btn" onclick="toggleChat()" title="Toggle Kiko chat">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- ===== TODAY VIEW ===== -->
+      <div class="view active" id="view-today">
+        <div class="view-header">
+          <div>
+            <div class="view-title">Today</div>
+            <div class="view-sub">12 items waiting for your call. Kiko prepared everything overnight.</div>
+          </div>
+          <button class="btn btn-ghost">Approve all <span class="kbd" style="margin-left:6px;">A</span></button>
+        </div>
+
+        <div class="filter-row">
+          <button class="filter-chip active">All <span class="filter-count">12</span></button>
+          <button class="filter-chip">Approvals <span class="filter-count">7</span></button>
+          <button class="filter-chip">Replies <span class="filter-count">3</span></button>
+          <button class="filter-chip">Signals <span class="filter-count">2</span></button>
+        </div>
+
+        <!-- SIGNAL CARD -->
+        <div class="card" onclick="toggleCard(this)">
+          <div class="card-head">
+            <div class="card-channel signal">⚡</div>
+            <div class="card-body">
+              <div class="card-row1">
+                <span class="card-action"><strong style="color:var(--text);font-weight:400;">HSBC just renewed F1 partnership</strong> — 3 new prospects identified in their Brand & Sponsorship team</span>
+                <span class="card-tag signal">SIGNAL</span>
+                <span class="card-tag urgent">URGENT</span>
+              </div>
+              <div class="card-context">Kiko picked this up from the F1 press release 2h ago. Brand spend confirmed at £42M/yr — well above your $3M minimum threshold. Recommended: add to Banking Q2 campaign.</div>
+            </div>
+            <div class="card-actions" onclick="event.stopPropagation();">
+              <button class="btn btn-primary">Add to campaign</button>
+              <button class="btn btn-ghost">Skip</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- EMAIL APPROVAL: Mark Tucker -->
+        <div class="card expanded" onclick="toggleCard(this)">
+          <div class="card-head">
+            <div class="card-channel email">✉</div>
+            <div class="card-body">
+              <div class="card-row1">
+                <span class="card-action">Send email to <strong class="card-prospect">Mark Tucker</strong></span>
+                <span class="card-meta">· Group Chairman, HSBC · F1 Banking Q2 · Touch 1 of 5</span>
+              </div>
+              <div class="card-context">First contact. Kiko found a recent FT op-ed where Mark discussed brand visibility in emerging markets — opener references it.</div>
+            </div>
+            <div class="card-actions" onclick="event.stopPropagation();">
+              <button class="btn btn-primary">Approve & send</button>
+              <button class="btn btn-ghost">Edit</button>
+              <button class="btn btn-danger btn-sm">Skip</button>
+            </div>
+          </div>
+          <div class="card-expanded">
+            <div class="draft-box">
+              <div class="draft-meta">EMAIL · DRAFT</div>
+              <div class="draft-subject">Subject: Haas F1 — Title Partnership Discussion</div>
+              <div class="draft-body">Mark,
+
+Your FT piece last week on emerging-market brand visibility caught my attention. The argument that physical presence beats digital impression-buying is exactly the bet Haas's title sponsor will make in 2027.
+
+I run commercial for Van Hawke Group, advising Haas F1 on category-control sponsorship. We've shortlisted three banks for the title slot — HSBC is the only one with the Asia-Pacific footprint to make the package work.
+
+Worth a 20-minute call before we finalise the bundle? I'm in London this Thursday and Friday.
+
+Sunny Sidhu
+Van Hawke Group</div>
+              <div class="draft-footer">
+                <div class="draft-stats">218 words · Reply rate prediction: <strong style="color:var(--teal);">31%</strong> · Sender: sunny@vanhawke.com</div>
+                <span class="card-tag">Touch 1 / 5</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LINKEDIN CONNECT APPROVAL -->
+        <div class="card" onclick="toggleCard(this)">
+          <div class="card-head">
+            <div class="card-channel linkedin">in</div>
+            <div class="card-body">
+              <div class="card-row1">
+                <span class="card-action">Send LinkedIn connection to <strong class="card-prospect">Venkat Atluri</strong></span>
+                <span class="card-meta">· Senior Partner, McKinsey Brand & Marketing · F1 Banking Q2 · Touch 2 of 5</span>
+              </div>
+              <div class="card-context">Mark Tucker hasn't opened email 1 (sent 2 days ago). Kiko escalated to a LinkedIn touch via Venkat — a mutual contact who advises HSBC on brand strategy.</div>
+            </div>
+            <div class="card-actions" onclick="event.stopPropagation();">
+              <button class="btn btn-primary">Send connection</button>
+              <button class="btn btn-ghost">Edit note</button>
+              <button class="btn btn-danger btn-sm">Skip</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- REPLY CARD: needs response -->
+        <div class="card" onclick="toggleCard(this)">
+          <div class="card-head">
+            <div class="card-channel reply">↩</div>
+            <div class="card-body">
+              <div class="card-row1">
+                <span class="card-action"><strong class="card-prospect">James Bardrick</strong> replied — Kiko classified: <span style="color:var(--green);">Interested · wants 30-min call</span></span>
+                <span class="card-meta">· Country Officer UK, Citi · 14m ago</span>
+              </div>
+              <div class="card-context">"Sunny — interesting timing. Our brand committee meets in 3 weeks. Can you send the deck and we'll set up a proper call?" Kiko has drafted a response with a Calendly link and the Haas commercial overview attached.</div>
+            </div>
+            <div class="card-actions" onclick="event.stopPropagation();">
+              <button class="btn btn-primary">Approve & send</button>
+              <button class="btn btn-ghost">Edit</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- LINKEDIN MESSAGE -->
+        <div class="card" onclick="toggleCard(this)">
+          <div class="card-head">
+            <div class="card-channel linkedin">in</div>
+            <div class="card-body">
+              <div class="card-row1">
+                <span class="card-action">Send LinkedIn message to <strong class="card-prospect">Anna Cross</strong></span>
+                <span class="card-meta">· Group Finance Director, Barclays · F1 Banking Q2 · Touch 4 of 5</span>
+              </div>
+              <div class="card-context">Connection accepted yesterday. Kiko drafted a soft follow-up referencing Barclays' recent £8M Premiership rugby renewal as a comparison anchor.</div>
+            </div>
+            <div class="card-actions" onclick="event.stopPropagation();">
+              <button class="btn btn-primary">Approve & send</button>
+              <button class="btn btn-ghost">Edit</button>
+              <button class="btn btn-danger btn-sm">Skip</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECOND SIGNAL -->
+        <div class="card" onclick="toggleCard(this)">
+          <div class="card-head">
+            <div class="card-channel signal">⚡</div>
+            <div class="card-body">
+              <div class="card-row1">
+                <span class="card-action"><strong style="color:var(--text);font-weight:400;">JPMorgan named new Head of Brand</strong> — Sarah Lee, ex-AmEx, started Monday</span>
+                <span class="card-tag signal">SIGNAL</span>
+              </div>
+              <div class="card-context">Sarah ran AmEx's F1 partnership 2019-2023. Strong category fit. Kiko recommends adding her as Touch 1 of a new track in F1 Banking Q2.</div>
+            </div>
+            <div class="card-actions" onclick="event.stopPropagation();">
+              <button class="btn btn-primary">Add prospect</button>
+              <button class="btn btn-ghost">Research more</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CAMPAIGNS VIEW ===== -->
+      <div class="view" id="view-campaigns">
+        <div class="view-header">
+          <div>
+            <div class="view-title">Campaigns</div>
+            <div class="view-sub">Active prospecting tracks. Click any campaign to drill in.</div>
+          </div>
+          <button class="btn btn-primary">+ New campaign</button>
+        </div>
+
+        <div class="campaign-tabs">
+          <div class="campaign-tab active">F1 Banking Q2 2026</div>
+          <div class="campaign-tab">FinTech Sponsorship</div>
+          <div class="campaign-tab">Telecoms F1 Q3</div>
+          <div class="campaign-tab">Gaming Sponsor Pilot</div>
+        </div>
+
+        <div class="table-toolbar" style="background:var(--bg-elev);border:0.5px solid var(--border);border-radius:10px 10px 0 0;border-bottom:none;margin-bottom:0;">
+          <span class="table-toolbar-stats"><strong>247</strong> prospects · <strong>89</strong> enriched · <strong>34</strong> sent · <strong>12</strong> replied · <strong>3</strong> meetings booked</span>
+          <button class="ai-cell-btn">＋ Add AI column</button>
+        </div>
+
+        <div class="table-wrap" style="border-radius:0 0 10px 10px;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:30px;"><input type="checkbox" style="accent-color:var(--purple);"></th>
+                <th>Name</th>
+                <th>Company</th>
+                <th>Role</th>
+                <th>Revenue</th>
+                <th>Last signal</th>
+                <th>Email draft <span class="ai-marker"></span></th>
+                <th>LinkedIn draft <span class="ai-marker"></span></th>
+                <th>Score <span class="ai-marker"></span></th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="campaign-rows"></tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:32px;">
+          <div style="font-size:12px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px;">Sequence — F1 Banking Q2 2026</div>
+
+          <div class="seq-summary">
+            <div class="seq-stat"><div class="seq-stat-label">Active</div><div class="seq-stat-value purple">247</div></div>
+            <div class="seq-stat"><div class="seq-stat-label">Open rate</div><div class="seq-stat-value teal">42%</div></div>
+            <div class="seq-stat"><div class="seq-stat-label">Reply rate</div><div class="seq-stat-value teal">14%</div></div>
+            <div class="seq-stat"><div class="seq-stat-label">Meetings</div><div class="seq-stat-value">3</div></div>
+            <div class="seq-stat"><div class="seq-stat-label">Avg cycle</div><div class="seq-stat-value" style="color:var(--text-dim);">11 days</div></div>
+          </div>
+
+          <div class="seq-steps">
+            <div class="seq-step">
+              <div class="seq-step-icon email">✉</div>
+              <div class="seq-step-body">
+                <div class="seq-step-title">Email 1 — Authority opener referencing prospect's recent public statement</div>
+                <div class="seq-step-meta">Sent from sunny@vanhawke.com · Personalised per prospect via Kiko</div>
+              </div>
+            </div>
+            <div class="seq-divider"></div>
+            <div class="seq-step">
+              <div class="seq-step-icon wait">⏱</div>
+              <div class="seq-step-body">
+                <div class="seq-step-title">Wait 2 days</div>
+                <div class="seq-step-condition">→ if email opened, continue · if not, branch to LinkedIn</div>
+              </div>
+            </div>
+            <div class="seq-divider"></div>
+            <div class="seq-step">
+              <div class="seq-step-icon linkedin-connect">in</div>
+              <div class="seq-step-body">
+                <div class="seq-step-title">LinkedIn connection request (no note)</div>
+                <div class="seq-step-meta">From sunny's LinkedIn · Plain connect — accept rate 38%</div>
+              </div>
+            </div>
+            <div class="seq-divider"></div>
+            <div class="seq-step">
+              <div class="seq-step-icon wait">⏱</div>
+              <div class="seq-step-body">
+                <div class="seq-step-title">Wait 3 days</div>
+                <div class="seq-step-condition">→ if connection accepted, fire LinkedIn message · else continue email track</div>
+              </div>
+            </div>
+            <div class="seq-divider"></div>
+            <div class="seq-step">
+              <div class="seq-step-icon email">✉</div>
+              <div class="seq-step-body">
+                <div class="seq-step-title">Email 2 — Specificity escalation, named comparable deal (HSBC × McLaren £42M)</div>
+                <div class="seq-step-meta">Sent from sunny@vanhawke.com</div>
+              </div>
+            </div>
+            <div class="seq-divider"></div>
+            <div class="seq-step">
+              <div class="seq-step-icon linkedin-msg">⌬</div>
+              <div class="seq-step-body">
+                <div class="seq-step-title">LinkedIn message (if connected)</div>
+                <div class="seq-step-meta">Soft anchor referencing email + comparable deal</div>
+              </div>
+            </div>
+            <div class="seq-divider"></div>
+            <div class="seq-step">
+              <div class="seq-step-icon email">✉</div>
+              <div class="seq-step-body">
+                <div class="seq-step-title">Email 3 — Final, scarcity-led ("title slot decision in Q3")</div>
+                <div class="seq-step-meta">Either books call or closes the loop cleanly</div>
+              </div>
+            </div>
+            <div class="seq-add">+ Add step</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== INBOX VIEW ===== -->
+      <div class="view" id="view-inbox">
+        <div class="view-header">
+          <div>
+            <div class="view-title">Inbox</div>
+            <div class="view-sub">Email + LinkedIn DMs from active campaigns. Kiko classifies intent and drafts replies.</div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="filter-chip active">All <span class="filter-count">14</span></button>
+            <button class="filter-chip">Unreplied <span class="filter-count">3</span></button>
+            <button class="filter-chip">Interested <span class="filter-count">5</span></button>
+          </div>
+        </div>
+
+        <div class="inbox-grid">
+          <div class="inbox-list">
+            <div class="inbox-item active">
+              <div class="inbox-row1"><span class="inbox-from">James Bardrick</span><span class="inbox-time">14m</span></div>
+              <div class="inbox-preview">Sunny — interesting timing. Our brand committee meets in 3 weeks…</div>
+              <div class="inbox-channel">EMAIL · CITI · INTERESTED</div>
+            </div>
+            <div class="inbox-item">
+              <div class="inbox-row1"><span class="inbox-from">Anna Cross</span><span class="inbox-time">2h</span></div>
+              <div class="inbox-preview">Thanks for the connection. Send me the deck and I'll route it…</div>
+              <div class="inbox-channel">LINKEDIN · BARCLAYS · INTERESTED</div>
+            </div>
+            <div class="inbox-item">
+              <div class="inbox-row1"><span class="inbox-from">Venkat Atluri</span><span class="inbox-time">5h</span></div>
+              <div class="inbox-preview">Happy to make the intro to Mark — but I should mention…</div>
+              <div class="inbox-channel">LINKEDIN · McKINSEY · QUESTION</div>
+            </div>
+            <div class="inbox-item">
+              <div class="inbox-row1"><span class="inbox-from">Charlie Nunn</span><span class="inbox-time">1d</span></div>
+              <div class="inbox-preview">Auto-reply: I'm out of office until Monday 21st April…</div>
+              <div class="inbox-channel">EMAIL · LLOYDS · OUT OF OFFICE</div>
+            </div>
+            <div class="inbox-item">
+              <div class="inbox-row1"><span class="inbox-from">CS Venkatakrishnan</span><span class="inbox-time">2d</span></div>
+              <div class="inbox-preview">Please remove me from this list. We don't sponsor sport.</div>
+              <div class="inbox-channel">EMAIL · BARCLAYS · NOT INTERESTED</div>
+            </div>
+          </div>
+
+          <div class="inbox-detail">
+            <div class="inbox-detail-from">
+              <div class="avatar" style="background:linear-gradient(135deg,#7c5cfc,#a78bfa);">JB</div>
+              <div class="inbox-detail-from-text">
+                <div>James Bardrick</div>
+                <div class="role">Country Officer UK · Citi · CC: peter.babej@citi.com</div>
+              </div>
+            </div>
+            <div class="inbox-detail-subject">Re: Haas F1 — Title Partnership Discussion</div>
+
+            <div class="ai-classify">
+              <div class="kiko-orb" style="width:18px;height:18px;"></div>
+              <div>
+                <div class="classify-label">KIKO CLASSIFIED</div>
+                <div style="color:var(--text);">Interested · wants 30-min call · timeline ~3 weeks · meeting trigger detected</div>
+              </div>
+            </div>
+
+            <div class="inbox-detail-body">Sunny,
+
+Interesting timing. Our brand committee meets in 3 weeks and we're actively reviewing high-visibility partnerships for FY27. The category-control framing is exactly the angle they've been asking us to think about.
+
+Can you send the Haas commercial deck and a one-pager on the title slot pricing? I'd like to circulate ahead of time. We'll set up a proper call after I've previewed it internally.
+
+Best,
+James Bardrick
+Country Officer UK | Citi</div>
+
+            <div class="draft-box">
+              <div class="draft-meta">KIKO DRAFT REPLY</div>
+              <div class="draft-body">James,
+
+Appreciate the fast turn — committee timing aligns well. Attaching:
+1. Haas Commercial Overview (12pp)
+2. Title Slot Pricing One-pager (1pp, $11M floor)
+
+Both are board-room ready. The pricing is the closed bundle — no à la carte breakdown — so your committee sees the full proposition.
+
+Calendly: https://cal.com/sunny-sidhu/30min
+
+I'm in London Thurs/Fri this week and the following week. After that I'm in Doha for ten days.
+
+Sunny</div>
+              <div class="draft-footer">
+                <div class="draft-stats">142 words · Tone match: <strong style="color:var(--teal);">98%</strong> · Attachments queued: 2</div>
+                <div style="display:flex;gap:6px;">
+                  <button class="btn btn-primary btn-sm">Approve & send</button>
+                  <button class="btn btn-ghost btn-sm">Edit</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ========== KIKO CHAT PANEL ========== -->
+  <aside class="chat-panel">
+    <div class="chat-header">
+      <div class="chat-header-title">
+        <div class="kiko-orb"></div>
+        <div>
+          <div>Kiko</div>
+          <div class="chat-status">Active · 2 agents working</div>
+        </div>
+      </div>
+      <button class="icon-btn" onclick="toggleChat()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+      <div class="msg user">
+        <div class="msg-bubble">target Banking sector for F1 Q2 — find the top 30 companies that spend on sports sponsorship, $3M+ deals only, EMEA/Americas. minimum $100M revenue, must have brand or partnership team.</div>
+        <div class="msg-meta">07:42</div>
+      </div>
+
+      <div class="msg kiko">
+        <div class="msg-bubble">On it. Pulling from sponsorship deal databases (SportBusiness, IEG SR, Two Circles), cross-referencing with company financials and brand-team headcount via LinkedIn enrichment. Excluding banks with active F1 deals (HSBC × McLaren is the only one currently locked).</div>
+        <div class="msg-artifact">
+          <div class="msg-artifact-title">⚡ Research in progress · 2 of 4 agents working</div>
+          <div class="msg-artifact-row"><span>Companies scanned</span><strong>847</strong></div>
+          <div class="msg-artifact-row"><span>Match criteria</span><strong>34</strong></div>
+          <div class="msg-artifact-row"><span>Above $100M rev</span><strong>31</strong></div>
+          <div class="msg-artifact-row"><span>Final shortlist</span><strong style="color:var(--purple);">29 (excluded HSBC)</strong></div>
+        </div>
+        <div class="msg-meta">07:42 · 4m ago</div>
+      </div>
+
+      <div class="msg kiko">
+        <div class="msg-bubble">Top 5 by category fit and propensity score:</div>
+        <div class="msg-artifact">
+          <div class="msg-artifact-row"><span>1. Citi</span><strong style="color:var(--teal);">94 · had F1 2018-21</strong></div>
+          <div class="msg-artifact-row"><span>2. Barclays</span><strong style="color:var(--teal);">89 · rugby renewal cycle</strong></div>
+          <div class="msg-artifact-row"><span>3. JPMorgan</span><strong>87 · new Brand head</strong></div>
+          <div class="msg-artifact-row"><span>4. Goldman Sachs</span><strong>82</strong></div>
+          <div class="msg-artifact-row"><span>5. Standard Chartered</span><strong>78</strong></div>
+          <div class="msg-artifact-link" onclick="switchView('campaigns')">Open in Campaigns →</div>
+        </div>
+        <div class="msg-meta">07:46 · just now</div>
+      </div>
+
+      <div class="msg kiko">
+        <div class="msg-bubble">I've drafted the 5-touch sequence and personalised Touch 1 emails for all 29. Reply rate prediction averages 28% — strongest is Mark Tucker (HSBC) at 31% because of his FT op-ed last week. I've queued everything in <strong style="color:var(--purple);">Today</strong> for your approval. Want me to also research the brand team contacts at each, or are CFOs / Chairmen enough for first touch?</div>
+        <div class="msg-meta">07:47 · just now</div>
+      </div>
+    </div>
+
+    <div class="suggestion-chips">
+      <button class="suggestion-chip">Add brand team contacts</button>
+      <button class="suggestion-chip">Tighten messaging by 25%</button>
+      <button class="suggestion-chip">Show propensity model</button>
+      <button class="suggestion-chip">Schedule for next Mon</button>
+    </div>
+
+    <div class="chat-input-area">
+      <div class="input-pill">
+        <input type="text" placeholder="Ask Kiko anything, or type / for commands…">
+        <button class="input-send">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l14-7-7 14-2-5-5-2z"/></svg>
+        </button>
+      </div>
+      <div class="input-hint">
+        <span><span class="kbd">/</span> commands</span>
+        <span><span class="kbd">⌘K</span> palette</span>
+        <span><span class="kbd">⌘Enter</span> send</span>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- ========== CMD+K PALETTE ========== -->
+<div class="palette-overlay" id="palette" onclick="if(event.target.id==='palette')closePalette()">
+  <div class="palette">
+    <input class="palette-input" placeholder="Ask Kiko or jump to anything…" id="palette-input">
+    <div class="palette-results">
+      <div class="palette-item selected">
+        <div class="palette-icon">⚡</div>
+        <div>Ask Kiko: "find prospects at companies that just announced new CMOs"</div>
+        <div class="palette-meta">⏎</div>
+      </div>
+      <div class="palette-item">
+        <div class="palette-icon">＋</div>
+        <div>New campaign…</div>
+        <div class="palette-meta">⌘N</div>
+      </div>
+      <div class="palette-item">
+        <div class="palette-icon">📋</div>
+        <div>Today — 12 items</div>
+        <div class="palette-meta">G T</div>
+      </div>
+      <div class="palette-item">
+        <div class="palette-icon">📊</div>
+        <div>Campaigns — 4 active</div>
+        <div class="palette-meta">G C</div>
+      </div>
+      <div class="palette-item">
+        <div class="palette-icon">✉</div>
+        <div>Inbox — 3 unread</div>
+        <div class="palette-meta">G I</div>
+      </div>
+      <div class="palette-item">
+        <div class="palette-icon">🎯</div>
+        <div>Open campaign: F1 Banking Q2 2026</div>
+        <div class="palette-meta"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== Campaign table data (real Banking sector targets for F1 sponsorship) ==========
+const PROSPECTS = [
+  { name: 'Mark Tucker',         company: 'HSBC',              role: 'Group Chairman',          rev: '$66B', signal: 'FT op-ed on brand visibility · 4d',     score: 94, status: 'sent',    statusLabel: 'Sent · awaiting reply' },
+  { name: 'Jane Fraser',         company: 'Citi',              role: 'CEO',                     rev: '$78B', signal: 'Citi exited F1 in 2021 — re-eval · 1w',  score: 91, status: 'queued',  statusLabel: 'Queued · sends Mon 09:00' },
+  { name: 'James Bardrick',      company: 'Citi',              role: 'Country Officer UK',      rev: '$78B', signal: 'Reply received · interested · 14m',     score: 95, status: 'replied', statusLabel: '★ Replied · meeting' },
+  { name: 'Anna Cross',          company: 'Barclays',          role: 'Group Finance Director',  rev: '$30B', signal: 'LinkedIn connection accepted · 1d',     score: 87, status: 'sent',    statusLabel: 'LinkedIn · open thread' },
+  { name: 'CS Venkatakrishnan',  company: 'Barclays',          role: 'Group Chief Executive',   rev: '$30B', signal: 'Replied · not interested · 2d',         score: 38, status: 'replied', statusLabel: 'Closed · do not contact' },
+  { name: 'Jamie Dimon',         company: 'JPMorgan Chase',    role: 'Chairman & CEO',          rev: '$170B',signal: 'Annual letter mentioned brand · 6w',    score: 79, status: 'queued',  statusLabel: 'Queued · sends Tue' },
+  { name: 'Sarah Lee',           company: 'JPMorgan Chase',    role: 'Head of Brand',           rev: '$170B',signal: 'Just started Mon · ex-AmEx F1 lead',    score: 96, status: 'queued',  statusLabel: 'New · awaiting approval' },
+  { name: 'David Solomon',       company: 'Goldman Sachs',     role: 'Chairman & CEO',          rev: '$53B', signal: 'No recent signal',                      score: 71, status: 'queued',  statusLabel: 'Queued · sends Wed' },
+  { name: 'Bill Winters',        company: 'Standard Chartered',role: 'Group Chief Executive',   rev: '$18B', signal: 'StanChart renewed Liverpool FC · 3w',   score: 84, status: 'sent',    statusLabel: 'Email 2 · sent 1h ago' },
+  { name: 'Charlie Nunn',        company: 'Lloyds Banking',    role: 'Group Chief Executive',   rev: '$22B', signal: 'OOO until Mon 21st · 1d',               score: 68, status: 'queued',  statusLabel: 'Auto-paused until Mon' },
+];
+
+const tbody = document.getElementById('campaign-rows');
+PROSPECTS.forEach(p => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="checkbox" style="accent-color:var(--purple);"></td>
+    <td><div class="cell-name">${p.name}</div></td>
+    <td>${p.company}<div class="cell-sub">${p.rev} revenue</div></td>
+    <td>${p.role}</td>
+    <td>${p.rev}</td>
+    <td><span style="color:var(--text-dim);font-size:11px;">${p.signal}</span></td>
+    <td>${p.status === 'queued' ? '<span class="ai-pulse" style="font-size:11px;">⚡ generating…</span>' : '<span style="color:var(--text-dim);font-size:11px;">View draft →</span>'}</td>
+    <td>${p.status === 'queued' ? '<span class="ai-pulse" style="font-size:11px;">⚡ generating…</span>' : '<span style="color:var(--text-dim);font-size:11px;">View draft →</span>'}</td>
+    <td><span class="score-bar"><span class="score-fill" style="width:${p.score}%;"></span></span><span style="font-size:11px;">${p.score}</span></td>
+    <td><span class="badge-status ${p.status}">${p.statusLabel}</span></td>
+  `;
+  tbody.appendChild(tr);
+});
+
+// ========== View switching ==========
+function switchView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const target = document.getElementById('view-' + view);
+  if (target) target.classList.add('active');
+  // Update nav active state
+  const navMap = { today: 0, campaigns: 1, inbox: 2 };
+  const navItems = document.querySelectorAll('.sidebar > .nav-item');
+  if (navMap[view] !== undefined && navItems[navMap[view]]) {
+    navItems[navMap[view]].classList.add('active');
+  }
+  document.getElementById('breadcrumb-current').textContent = view.charAt(0).toUpperCase() + view.slice(1);
+  document.querySelector('.content').scrollTop = 0;
+}
+
+// ========== Card expand/collapse ==========
+function toggleCard(card) {
+  card.classList.toggle('expanded');
+}
+
+// ========== Chat panel collapse ==========
+function toggleChat() {
+  document.getElementById('app').classList.toggle('chat-collapsed');
+}
+
+// ========== Cmd+K palette ==========
+function openPalette() {
+  document.getElementById('palette').classList.add('open');
+  setTimeout(() => document.getElementById('palette-input').focus(), 50);
+}
+function closePalette() {
+  document.getElementById('palette').classList.remove('open');
+  document.getElementById('palette-input').value = '';
+}
+
+// ========== Keyboard shortcuts ==========
+document.addEventListener('keydown', (e) => {
+  // Cmd+K / Ctrl+K opens palette
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    openPalette();
+  }
+  // Esc closes palette
+  if (e.key === 'Escape') {
+    closePalette();
+  }
+  // G then T/C/I = go to view (only if not in input)
+  if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+    if (window._lastG && Date.now() - window._lastG < 800) {
+      if (e.key === 't') switchView('today');
+      if (e.key === 'c') switchView('campaigns');
+      if (e.key === 'i') switchView('inbox');
+      window._lastG = 0;
+    }
+    if (e.key === 'g') window._lastG = Date.now();
+  }
+});
+
+// Hover/select effect on suggestion chips: clicking populates the input
+document.querySelectorAll('.suggestion-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const input = document.querySelector('.input-pill input');
+    input.value = chip.textContent.trim();
+    input.focus();
+  });
+});
+
+// Filter chip toggle (visual only in mockup)
+document.querySelectorAll('.filter-chip').forEach(chip => {
+  chip.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const row = chip.parentElement;
+    row.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+  });
+});
+
+// Campaign tab toggle
+document.querySelectorAll('.campaign-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.campaign-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+  });
+});
+
+// Inbox item click (visual selection)
+document.querySelectorAll('.inbox-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.inbox-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

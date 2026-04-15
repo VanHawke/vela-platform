@@ -344,7 +344,7 @@ export default function Settings({ user }) {
     outline: 'none', background: T.surface, boxSizing: 'border-box',
   }
   const labelStyle = { fontSize: 14, fontWeight: 500, color: T.text, display: 'block', marginBottom: 6, fontFamily: T.font }
-  const cardStyle = { background: T.glass, backdropFilter: 'blur(24px) saturate(1.2)', WebkitBackdropFilter: 'blur(24px) saturate(1.2)', borderRadius: T.radius, border: `0.5px solid ${T.glassBorder}`, borderTop: `0.5px solid rgba(124,92,252,0.15)`, padding: 20, boxShadow: T.glassShadow }
+  const cardStyle = { background: T.glass, backdropFilter: 'blur(24px) saturate(1.2)', WebkitBackdropFilter: 'blur(24px) saturate(1.2)', borderRadius: T.radius, border: `0.5px solid ${T.glassBorder}`, borderTop: `0.5px solid rgba(0,0,0,0.08)`, padding: 20, boxShadow: T.glassShadow }
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'transparent' }}>
@@ -457,7 +457,7 @@ export default function Settings({ user }) {
 
               {/* Voice profile status */}
               {settings.email_voice_profile && (
-                <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(124,92,252,0.05)', border: '0.5px solid rgba(124,92,252,0.20)', marginBottom: 14, fontSize: 12, color: T.textSecondary, fontFamily: T.font }}>
+                <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(0,0,0,0.03)', border: '0.5px solid rgba(0,0,0,0.10)', marginBottom: 14, fontSize: 12, color: T.textSecondary, fontFamily: T.font }}>
                   ✓ Kiko learned your voice from <strong style={{ color: T.text }}>{settings.sent_emails_analyzed || 0} emails</strong>
                   {settings.voice_last_learned && <> · last updated {new Date(settings.voice_last_learned).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</>}
                   {settings.email_voice_profile?.tone && <> · tone: <strong style={{ color: T.text }}>{settings.email_voice_profile.tone}</strong></>}
@@ -467,18 +467,18 @@ export default function Settings({ user }) {
               {!settings.email_voice_profile && (
                 <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(251,191,36,0.05)', border: '0.5px solid rgba(251,191,36,0.20)', marginBottom: 14, fontSize: 12, color: T.textSecondary, fontFamily: T.font }}>
                   ⚠ No voice profile yet — runs Sundays at 4am, or trigger manually:&nbsp;
-                  <button onClick={async () => { await fetch('/api/cron-email-voice-learning', { method: 'POST' }); alert('Voice learning queued — refresh in ~30s') }} style={{ padding: '3px 10px', borderRadius: 5, background: 'rgba(124,92,252,0.10)', color: T.accent, border: '0.5px solid rgba(124,92,252,0.30)', fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>Run now</button>
+                  <button onClick={async () => { await fetch('/api/cron-email-voice-learning', { method: 'POST' }); alert('Voice learning queued — refresh in ~30s') }} style={{ padding: '3px 10px', borderRadius: 5, background: 'rgba(0,0,0,0.06)', color: T.accent, border: '0.5px solid rgba(0,0,0,0.10)', fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>Run now</button>
                 </div>
               )}
 
               {/* Signature status — Gmail is the source of truth, no editor needed */}
-              <div style={{ padding: '14px 16px', borderRadius: 8, background: 'rgba(124,92,252,0.05)', border: '0.5px solid rgba(124,92,252,0.20)', marginBottom: 14, fontSize: 12, color: T.textSecondary, fontFamily: T.font, lineHeight: 1.6 }}>
+              <div style={{ padding: '14px 16px', borderRadius: 8, background: 'rgba(0,0,0,0.03)', border: '0.5px solid rgba(0,0,0,0.10)', marginBottom: 14, fontSize: 12, color: T.textSecondary, fontFamily: T.font, lineHeight: 1.6 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <span style={{ color: '#7c5cfc', fontSize: 14 }}>✓</span>
+                  <span style={{ color: '#0A0A0A', fontSize: 14 }}>✓</span>
                   <strong style={{ color: T.text, fontSize: 13 }}>Using your Gmail signature</strong>
                 </div>
                 <div style={{ marginLeft: 22, color: T.textTertiary }}>
-                  When Kiko sends emails on your behalf, it uses the signature you have configured in Gmail (including your logo). To change it, update your signature directly in <a href="https://mail.google.com/mail/u/0/#settings/general" target="_blank" rel="noopener" style={{ color: T.accent || '#7c5cfc', textDecoration: 'none' }}>Gmail Settings → General → Signature</a>.
+                  When Kiko sends emails on your behalf, it uses the signature you have configured in Gmail (including your logo). To change it, update your signature directly in <a href="https://mail.google.com/mail/u/0/#settings/general" target="_blank" rel="noopener" style={{ color: T.accent || '#0A0A0A', textDecoration: 'none' }}>Gmail Settings → General → Signature</a>.
                 </div>
               </div>
             </div>
@@ -494,7 +494,7 @@ export default function Settings({ user }) {
                     <span style={{ fontSize: 15, color: T.textSecondary, fontFamily: T.font }}>{n}</span>
                     <div onClick={() => setSettings(p => ({ ...p, notification_prefs: { ...(p.notification_prefs || {}), [key]: !on } }))}
                       style={{ width: 44, height: 24, borderRadius: 50, background: on ? T.accent : T.border, position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}>
-                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(124,92,252,0.07)', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px #3a3a42' }} />
+                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,0.04)', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px #C0C0C0' }} />
                     </div>
                   </div>
                 )
@@ -519,7 +519,7 @@ export default function Settings({ user }) {
                     </div>
                     <div onClick={() => setSettings(p => ({ ...p, notification_prefs: { ...(p.notification_prefs || {}), [key]: !on } }))}
                       style={{ width: 44, height: 24, borderRadius: 50, background: on ? T.accent : T.border, position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0, marginLeft: 16 }}>
-                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(124,92,252,0.07)', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px #3a3a42' }} />
+                      <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,0.04)', position: 'absolute', top: 2, transition: 'right 0.2s', right: on ? 2 : 22, boxShadow: '0 1px 3px #C0C0C0' }} />
                     </div>
                   </div>
                 )
@@ -557,7 +557,7 @@ export default function Settings({ user }) {
               email_signature: settings.email_signature, email_signature_html: settings.email_signature_html, email_signature_cold_html: settings.email_signature_cold_html,
               notification_prefs: settings.notification_prefs,
             })}
-              style={{ height: 44, borderRadius: 50, background: T.accent, color: '#f4f4f6', border: 'none', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
+              style={{ height: 44, borderRadius: 50, background: T.accent, color: '#0A0A0A', border: 'none', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
               {saved ? 'Saved!' : 'Save changes'}
             </button>
           </div>
@@ -576,7 +576,7 @@ export default function Settings({ user }) {
                     <div key={v.id} style={{
                       padding: '10px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
                       background: isSelected ? T.accent : T.surface,
-                      color: isSelected ? '#f4f4f6' : T.text,
+                      color: isSelected ? '#0A0A0A' : T.text,
                       display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
                       transition: 'all 0.15s',
                     }} onClick={() => { saveSettings({ kiko_voice: v.id }); try { localStorage.setItem('kiko_voice', v.id) } catch {} }}>
@@ -586,8 +586,8 @@ export default function Settings({ user }) {
                       </div>
                       <button onClick={(e) => { e.stopPropagation(); previewVoice(v.id) }} style={{
                         width: 30, height: 30, borderRadius: '50%', border: 'none',
-                        background: isSelected ? '#56565e' : T.accentSoft,
-                        color: isSelected ? '#f4f4f6' : T.textSecondary,
+                        background: isSelected ? '#A0A0A0' : T.accentSoft,
+                        color: isSelected ? '#0A0A0A' : T.textSecondary,
                         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 15, flexShrink: 0,
                       }}>{isPreviewing ? '■' : '▶'}</button>
@@ -603,7 +603,7 @@ export default function Settings({ user }) {
                   <button key={s.id} onClick={() => { saveSettings({ kiko_speed: s.id }); try { localStorage.setItem('kiko_speed', s.id) } catch {} }} style={{
                     padding: '8px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
                     background: parseFloat(settings.kiko_speed || 1.0) === s.id ? T.accent : T.surface,
-                    color: parseFloat(settings.kiko_speed || 1.0) === s.id ? '#f4f4f6' : T.textSecondary,
+                    color: parseFloat(settings.kiko_speed || 1.0) === s.id ? '#0A0A0A' : T.textSecondary,
                     fontSize: 13, cursor: 'pointer', fontFamily: T.font,
                   }}>{s.label}</button>
                 ))}
@@ -636,7 +636,7 @@ export default function Settings({ user }) {
                     <button key={p.id} onClick={() => { saveSettings({ kiko_personality: p.id }); try { localStorage.setItem('kiko_personality', p.id) } catch {} }} style={{
                       padding: '8px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
                       background: sel ? T.accent : T.surface,
-                      color: sel ? '#f4f4f6' : T.textSecondary,
+                      color: sel ? '#0A0A0A' : T.textSecondary,
                       fontSize: 13, cursor: 'pointer', fontFamily: T.font, textAlign: 'left',
                     }}>
                       <div style={{ fontWeight: 400 }}>{p.label}</div>
@@ -680,8 +680,8 @@ export default function Settings({ user }) {
                       {/* Reorder arrows */}
                       {isOn && !isHome ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 0, flexShrink: 0 }}>
-                          <button onClick={() => moveItem(-1)} disabled={!canMoveUp} style={{ background: 'none', border: 'none', cursor: canMoveUp ? 'pointer' : 'default', color: canMoveUp ? T.textSecondary : '#26262f', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▲</button>
-                          <button onClick={() => moveItem(1)} disabled={!canMoveDown} style={{ background: 'none', border: 'none', cursor: canMoveDown ? 'pointer' : 'default', color: canMoveDown ? T.textSecondary : '#26262f', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▼</button>
+                          <button onClick={() => moveItem(-1)} disabled={!canMoveUp} style={{ background: 'none', border: 'none', cursor: canMoveUp ? 'pointer' : 'default', color: canMoveUp ? T.textSecondary : 'rgba(0,0,0,0.08)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▲</button>
+                          <button onClick={() => moveItem(1)} disabled={!canMoveDown} style={{ background: 'none', border: 'none', cursor: canMoveDown ? 'pointer' : 'default', color: canMoveDown ? T.textSecondary : 'rgba(0,0,0,0.08)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▼</button>
                         </div>
                       ) : <div style={{ width: 14 }} />}
                       <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font }}>{item.label}</span>
@@ -695,13 +695,13 @@ export default function Settings({ user }) {
                           window.dispatchEvent(new Event('kiko_top_nav_updated'))
                         }} style={{
                           width: 38, height: 20, borderRadius: 50, border: 'none', cursor: 'pointer',
-                          background: isOn ? T.accent : '#26262f',
+                          background: isOn ? T.accent : 'rgba(0,0,0,0.08)',
                           position: 'relative', transition: 'background 0.2s', padding: 0,
                         }}>
                           <div style={{
-                            width: 16, height: 16, borderRadius: '50%', background: 'rgba(124,92,252,0.07)',
+                            width: 16, height: 16, borderRadius: '50%', background: 'rgba(0,0,0,0.04)',
                             position: 'absolute', top: 2, left: isOn ? 20 : 2,
-                            transition: 'left 0.2s', boxShadow: '0 1px 3px #3a3a42',
+                            transition: 'left 0.2s', boxShadow: '0 1px 3px #C0C0C0',
                           }} />
                         </button>
                       )}
@@ -738,8 +738,8 @@ export default function Settings({ user }) {
                     return (
                       <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 50, background: T.surface, border: `1px solid ${T.border}` }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 0, flexShrink: 0 }}>
-                          <button onClick={() => moveMore(-1)} disabled={!canUp} style={{ background: 'none', border: 'none', cursor: canUp ? 'pointer' : 'default', color: canUp ? T.textSecondary : '#26262f', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▲</button>
-                          <button onClick={() => moveMore(1)} disabled={!canDown} style={{ background: 'none', border: 'none', cursor: canDown ? 'pointer' : 'default', color: canDown ? T.textSecondary : '#26262f', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▼</button>
+                          <button onClick={() => moveMore(-1)} disabled={!canUp} style={{ background: 'none', border: 'none', cursor: canUp ? 'pointer' : 'default', color: canUp ? T.textSecondary : 'rgba(0,0,0,0.08)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▲</button>
+                          <button onClick={() => moveMore(1)} disabled={!canDown} style={{ background: 'none', border: 'none', cursor: canDown ? 'pointer' : 'default', color: canDown ? T.textSecondary : 'rgba(0,0,0,0.08)', fontSize: 10, padding: '0 2px', lineHeight: 1 }}>▼</button>
                         </div>
                         <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: T.text, fontFamily: T.font }}>{item.label}</span>
                       </div>
@@ -774,7 +774,7 @@ export default function Settings({ user }) {
                     {currentUserRole === 'super_admin' && <option value="super_admin">Super Admin</option>}
                   </select>
                   <button onClick={sendInvite} style={{
-                    height: 44, padding: '0 16px', borderRadius: 50, background: T.accent, color: '#f4f4f6',
+                    height: 44, padding: '0 16px', borderRadius: 50, background: T.accent, color: '#0A0A0A',
                     border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
                     display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
                   }}><UserPlus size={14} /> Add</button>
@@ -793,7 +793,7 @@ export default function Settings({ user }) {
                 <div key={m.id} style={{ ...cardStyle, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, opacity: m.active ? 1 : 0.5 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
                     <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-                      background: m.role === 'super_admin' ? 'rgba(124,92,252,0.15)' : m.role === 'admin' ? 'rgba(0,212,170,0.15)' : T.accentSoft,
+                      background: m.role === 'super_admin' ? 'rgba(0,0,0,0.08)' : m.role === 'admin' ? 'rgba(0,212,170,0.15)' : T.accentSoft,
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 500,
                       color: m.role === 'super_admin' ? '#7C5CFC' : m.role === 'admin' ? '#00D4AA' : T.textSecondary,
                       fontFamily: T.font,
@@ -822,7 +822,7 @@ export default function Settings({ user }) {
                       </select>
                     ) : (
                       <span style={{ fontSize: 12, padding: '5px 12px', borderRadius: 50, fontWeight: 500,
-                        background: m.role === 'super_admin' ? 'rgba(124,92,252,0.12)' : m.role === 'admin' ? 'rgba(0,212,170,0.12)' : `${T.accentSoft}`,
+                        background: m.role === 'super_admin' ? 'rgba(0,0,0,0.08)' : m.role === 'admin' ? 'rgba(0,212,170,0.12)' : `${T.accentSoft}`,
                         color: m.role === 'super_admin' ? '#7C5CFC' : m.role === 'admin' ? '#00D4AA' : T.textSecondary,
                         fontFamily: T.font,
                       }}>{m.role === 'super_admin' ? 'Super Admin' : m.role === 'admin' ? 'Admin' : 'User'}</span>
@@ -852,7 +852,7 @@ export default function Settings({ user }) {
             </div>
 
             {/* Info card */}
-            <div style={{ ...cardStyle, background: 'rgba(124,92,252,0.06)', borderColor: 'rgba(124,92,252,0.15)' }}>
+            <div style={{ ...cardStyle, background: 'rgba(0,0,0,0.04)', borderColor: 'rgba(0,0,0,0.08)' }}>
               <p style={{ fontSize: 13, color: T.textSecondary, margin: 0, lineHeight: 1.6, fontFamily: T.font }}>
                 <strong style={{ color: T.text }}>How it works:</strong> Anyone who logs in with Google is automatically added as a User. 
                 Super Admins can promote users to Admin or Super Admin. Each user gets their own private Kiko experience — 
@@ -996,7 +996,7 @@ export default function Settings({ user }) {
                   </div>
                 ) : (
                   <button onClick={connectGoogle} style={{
-                    height: 36, padding: '0 16px', borderRadius: T.radiusSm, background: T.accent, color: '#f4f4f6',
+                    height: 36, padding: '0 16px', borderRadius: T.radiusSm, background: T.accent, color: '#0A0A0A',
                     border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
                     display: 'flex', alignItems: 'center', gap: 6,
                   }}><ExternalLink size={12} /> Connect</button>
