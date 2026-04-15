@@ -490,10 +490,10 @@ export default function Pipeline({ user }) {
       />
       {/* Toolbar */}
       <div style={{
-        margin: '0 16px', padding: '12px 20px', borderRadius: 14,
-        background: 'rgba(25,25,25,0.55)', backdropFilter: 'blur(30px) saturate(1.3)', WebkitBackdropFilter: 'blur(30px) saturate(1.3)',
-        border: '0.5px solid rgba(0,0,0,0.08)', borderTop: '0.5px solid rgba(0,0,0,0.06)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(0,0,0,0.04)',
+        margin: '0 16px 12px', padding: '12px 20px', borderRadius: 10,
+        background: '#FFFFFF',
+        border: '1px solid rgba(0,0,0,0.08)',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div></div>
@@ -525,10 +525,11 @@ export default function Pipeline({ user }) {
                   onDrop={e => handleDrop(e, stage.id)}
                   style={{
                     width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column',
-                    borderRadius: 16, border: isOver ? '1px dashed rgba(124,92,252,0.3)' : '0.5px solid rgba(0,0,0,0.04)',
-                    background: isOver ? 'rgba(25,25,25,0.40)' : 'rgba(25,25,25,0.30)', backdropFilter: 'blur(20px) saturate(1.15)', WebkitBackdropFilter: 'blur(20px) saturate(1.15)',
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.35), 0 1px 0 rgba(25,25,25,0.30) inset',
-                    transition: 'all 0.15s ease',
+                    borderRadius: 10,
+                    border: isOver ? '1px dashed rgba(125,138,100,0.45)' : '1px solid rgba(0,0,0,0.06)',
+                    background: isOver ? 'rgba(125,138,100,0.06)' : '#FAFAF7',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
+                    transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
                   }}>
                   <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -536,20 +537,20 @@ export default function Pipeline({ user }) {
                       <span style={{ fontSize: 10, fontWeight: 300, color: stageTextColor[stage.id] || 'rgba(0,0,0,0.10)', fontFamily: 'var(--font)', background: `${stageAccent[stage.id] || 'rgba(25,25,25,0.40)'}33`, borderRadius: 50, padding: '2px 6px' }}>{stageDeals.length}</span>
                     </div>
                   </div>
-                  <div style={{ flex: 1, overflowY: 'auto', padding: '4px 8px 8px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <div style={{ flex: 1, overflowY: 'auto', padding: '4px 8px 8px', display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {loading ? (
-                      [...Array(2)].map((_, i) => <div key={i} style={{ height: 70, background: 'rgba(25,25,25,0.30)', borderRadius: 12 }} />)
+                      [...Array(2)].map((_, i) => <div key={i} style={{ height: 70, background: 'rgba(0,0,0,0.03)', borderRadius: 10 }} />)
                     ) : stageDeals.length === 0 ? (
-                      <p style={{ fontSize: 12, color: '#A0A0A0', textAlign: 'center', padding: '20px 0', fontFamily: 'var(--font)', fontWeight: 300 }}>No deals</p>
+                      <p style={{ fontSize: 12, color: '#A0A0A0', textAlign: 'center', padding: '20px 0', fontFamily: 'var(--font)', fontWeight: 400 }}>No deals</p>
                     ) : stageDeals.map(deal => (
                       <div key={deal._id}
                         draggable
                         onDragStart={e => handleDragStart(e, deal)}
                         onDragEnd={handleDragEnd}
                         onClick={() => selectDeal(deal)}
-                        style={{ background: 'rgba(25,25,25,0.40)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 10, padding: '12px 14px', border: '0.5px solid rgba(0,0,0,0.08)', borderTop: '0.5px solid rgba(0,0,0,0.06)', borderLeft: `3px solid ${stageAccent[stage.id] || 'rgba(0,0,0,0.06)'}`, cursor: 'grab', transition: 'all 0.15s ease', position: 'relative', boxShadow: '0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(0,0,0,0.04)' }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.08)'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)'; e.currentTarget.style.borderLeftColor = stageAccent[stage.id] || 'rgba(0,0,0,0.06)' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(25,25,25,0.55)'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.borderLeftColor = stageAccent[stage.id] || 'rgba(0,0,0,0.06)' }}>
+                        style={{ background: '#FFFFFF', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(0,0,0,0.08)', borderLeft: `3px solid ${stageAccent[stage.id] || 'rgba(0,0,0,0.10)'}`, cursor: 'grab', transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)', position: 'relative', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.18)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.03)'; e.currentTarget.style.transform = 'translateY(0)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           {companyDomains[deal.company] ? (
                             <CompanyLogo name={deal.company} domain={companyDomains[deal.company]} size={18} />

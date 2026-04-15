@@ -1,90 +1,95 @@
 {
-  "generated_at": "2026-04-15T20:40:13.734Z",
+  "generated_at": "2026-04-15T20:47:38.136Z",
   "commits": [
+    {
+      "hash": "cba44c7",
+      "subject": "fix: restore working OLD pages — redesign rebuilt from scratch and lost ~50-78% of functionality. Pipeline gets back its 7 stages, manager dropdown, deal detail panel; Inbox/Command Centre gets back r",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "260fb83",
       "subject": "fix: nav restored — Contacts/Organisations/LinkedIn back in top nav. Contacts page now extracts firstName/lastName/title/company from data JSONB so 4,193 real contacts render properly",
-      "when": "8 minutes ago"
+      "when": "16 minutes ago"
     },
     {
       "hash": "6f1ce29",
       "subject": "fix: cron-compute-outreach-windows — table is kiko_user_config not user_config",
-      "when": "18 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "f32286e",
       "subject": "Merge redesign/legora — Legora aesthetic redesign (16 commits): all 8 main pages ported, 12 Settings tabs, Homepage feature tiles, Supabase outreach intelligence tables + nightly cron, real metrics wi",
-      "when": "22 minutes ago"
+      "when": "29 minutes ago"
     },
     {
       "hash": "4572634",
       "subject": "redesign: Insights sequence leaderboard wired to real kiko_sequences + activities reply counts (mock fallback when no real activity yet)",
-      "when": "26 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "cb58bb8",
       "subject": "redesign: Inbox real-time wiring (joined contacts + Realtime subscription + relative time formatting), Pipeline drag-drop polish (column scale + card grab/lift)",
-      "when": "28 minutes ago"
+      "when": "35 minutes ago"
     },
     {
       "hash": "38e456a",
       "subject": "redesign: Homepage feature tiles — 4 large sage/slate/terra/purple feature tiles below chips, Word Add-in pattern, each fires a starter prompt to Kiko",
-      "when": "32 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "e791ab4",
       "subject": "redesign: Settings — final 8 panels built (Password/Security/Members/Branding/Memory/Voice/Plan/Invoices). All 12 Settings tabs now functional.",
-      "when": "35 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "6a5ac61",
       "subject": "redesign: Settings — Workspace + Personality + Auto-actions + Apps panels fully built",
-      "when": "41 minutes ago"
+      "when": "48 minutes ago"
     },
     {
       "hash": "6720a43",
       "subject": "redesign: nightly outreach windows cron + Settings/Email panel + section descriptions for placeholder tabs",
-      "when": "43 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "8d5fd37",
       "subject": "redesign: pre-prod fixes — revert dev bypass, build outreach intelligence Supabase tables, retrofit ContactDetail/SequenceDetail/Organisations/LinkedInQueue, wire real metrics into Insights and Pipeli",
-      "when": "49 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "e279cee",
       "subject": "redesign: Settings — two-pane port (sections sidebar + Profile panel fully wired)",
-      "when": "57 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "364ce58",
       "subject": "redesign: Insights (PartnershipMatrix) — Bento Grid port",
-      "when": "60 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "0ab8aa4",
       "subject": "redesign: Contacts — Tabular Review port with hover preview popups",
-      "when": "64 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "034a13a",
       "subject": "redesign: Campaigns — sequence list + 5-touch builder port",
-      "when": "66 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "bc6d812",
       "subject": "redesign: Inbox (OutreachIntelligence) — full mockup-faithful two-pane composer port",
-      "when": "74 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "6493442",
       "subject": "redesign: Pipeline — full mockup-faithful Kanban port (5 stages, deal cards, drag-drop)",
-      "when": "78 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "ba0f50b",
       "subject": "redesign: rip out toggle — new design IS the design",
-      "when": "85 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "7703745",
@@ -94,11 +99,6 @@
     {
       "hash": "08f30c5",
       "subject": "redesign: feature flag — toggle between OLD and NEW chrome via floating button",
-      "when": "2 hours ago"
-    },
-    {
-      "hash": "d203a57",
-      "subject": "redesign: legora foundation — top nav + polish layer hook",
       "when": "2 hours ago"
     }
   ]
