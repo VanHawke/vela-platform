@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-15T18:34:02.436Z",
+  "generated_at": "2026-04-15T18:52:43.840Z",
   "commits": [
+    {
+      "hash": "08f30c5",
+      "subject": "redesign: feature flag — toggle between OLD and NEW chrome via floating button",
+      "when": "19 minutes ago"
+    },
     {
       "hash": "d203a57",
       "subject": "redesign: legora foundation — top nav + polish layer hook",
-      "when": "15 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "5205653",
@@ -19,12 +24,12 @@
     {
       "hash": "d51ec07",
       "subject": "v0.0.70: cleanup — park LinkedIn voyager, remove cost vectors, document wrong turn",
-      "when": "27 hours ago"
+      "when": "28 hours ago"
     },
     {
       "hash": "97f9153",
       "subject": "v0.0.69.1: diagnostic captures full response headers + set-cookie details",
-      "when": "28 hours ago"
+      "when": "29 hours ago"
     },
     {
       "hash": "549b130",
@@ -94,11 +99,6 @@
     {
       "hash": "7db5ddc",
       "subject": "fix: add org_id to contact/company upserts in lemlist webhook + backfill",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "7bf5e07",
-      "subject": "v0.0.63: Lemlist webhook safety net",
       "when": "2 days ago"
     }
   ]
