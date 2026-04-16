@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-16T16:00:39.330Z",
+  "generated_at": "2026-04-16T16:29:55.389Z",
   "commits": [
+    {
+      "hash": "f4ccdae",
+      "subject": "KikoFloat Legora polish: panel background changed from semi-transparent rgba(0,0,0,0.03) + blur to solid white #FFFFFF with light shadow (0.12 opacity instead of 0.5). Floating avatar button shadows r",
+      "when": "29 minutes ago"
+    },
     {
       "hash": "8eccfe2",
       "subject": "Nav + KikoFloat overhaul: (1) LegoraTopNav now uses ALL_PAGES master list (9 items including LinkedIn) instead of separate TABS (8) + MORE_ITEMS. Settings writes linkedin to kiko_top_nav_v2 and the re",
-      "when": "56 seconds ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "236edc2",
       "subject": "Settings nav + Command Centre enrichment: (1) Renamed 'Race Calendar' → 'Calendar' across Settings Navigation, Layout nav, and PAGE_LABELS map. Consistent with LegoraTopNav which already said Calendar",
-      "when": "34 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "2af3af0",
       "subject": "Theming pass: (1) Command Centre right pane — added max-height: calc(100vh - 140px) + overflow: hidden to .cc-detail. Previously min-height:500px with no max-height caused the detail card to grow past",
-      "when": "48 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "d4648a5",
       "subject": "Nav reorder + Pipeline org-click fixes: (1) Layout.getTopNavIds — removed over-aggressive '<4 items = corrupt' guard that was treating legitimate user selections as corrupt data and reverting to defau",
-      "when": "57 minutes ago"
+      "when": "87 minutes ago"
     },
     {
       "hash": "3b1af5a",
       "subject": "HOTFIX: LegoraTopNav TDZ — overflow block referenced 'orderedTabs' before its useState declaration. Moved overflowTabs + moreIsActive + visibleMoreItems calculation BELOW orderedTabs useState. Product",
-      "when": "84 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "67909bc",
@@ -44,12 +49,12 @@
     {
       "hash": "4e9dc9b",
       "subject": "UX batch: (1) + removed from Today/Pipeline (showPlus:false). (2) Admin + Health Centre removed from More dropdown. (3) Settings gets faint divider line above it (item.divider flag + .ltn-dropdown-div",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "ca5ea38",
       "subject": "Fix: Layout getTopNavIds reader guard — stored arrays <4 items treated as corrupt, fall back to defaults (matches the same guard added to LegoraTopNav in commit d0da7b3). DEFAULT_TOP_IDS synced to ALL",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "2d52ba3",
@@ -74,7 +79,7 @@
     {
       "hash": "1de2ae5",
       "subject": "Organisations toolbar + table polish: (1) Top action bar — Add Organisation button label now visible (color #FFFFFF on black bg, was #0A0A0A invisible), switched from pill radius-50 to square radius-4",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "47831dd",
@@ -89,16 +94,11 @@
     {
       "hash": "948d234",
       "subject": "KikoChat: agent-plan style thinking steps. Dark-glass 'Kiko's reasoning' button swapped to Legora white card. Purple dot list replaced with status-aware icons: spinning sage ring for in-progress step,",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "641a449",
       "subject": "Calendar redesign: signed-off race spine + outreach intelligence port swapped to active (was NEW_REDESIGN.jsx). Uses Legora tokens (white bg, Source Serif 4, sage/terra/amber/purple for F1/FE/MotoGP/W",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "1abc2cb",
-      "subject": "Contacts: wire up New contact modal — form state, saveContact handler with reloadKey to refresh list on save, resetForm helper, button onClick, full modal JSX with first/last name row + email + phone ",
       "when": "5 hours ago"
     }
   ]
