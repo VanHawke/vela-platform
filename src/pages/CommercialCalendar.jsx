@@ -42,7 +42,17 @@ function outreachTarget(dateStr) {
 }
 
 
-export default function CommercialCalendar() {
+export default function CommercialCalendar({ user }) {
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false)
+
+  // Check if current user is super_admin (controls Team/All filter visibility)
+  useEffect(() => {
+    if (!user?.email) return
+    ;(async () => {
+      const { data } = await supabase.from('kiko_user_config').select('role').eq('email', user.email).maybeSingle()
+      if (data?.role === 'super_admin') setIsSuperAdmin(true)
+    })()
+  }, [user?.email])
   const today = new Date().toISOString().slice(0, 10)
   const [selectedRound, setSelectedRound] = useState(() => {
     // Default to next race in peak window or just next race
@@ -114,8 +124,10 @@ export default function CommercialCalendar() {
           <div className="cclg-filters">
             <div className="cclg-seg">
               <button className={privacyFilter === 'mine' ? 'active' : ''} onClick={() => setPrivacyFilter('mine')}>Mine</button>
-              <button className={privacyFilter === 'team' ? 'active' : ''} onClick={() => setPrivacyFilter('team')}>Team</button>
-              <button className={privacyFilter === 'all' ? 'active' : ''} onClick={() => setPrivacyFilter('all')}>All</button>
+              {isSuperAdmin && <>
+                <button className={privacyFilter === 'team' ? 'active' : ''} onClick={() => setPrivacyFilter('team')}>Team</button>
+                <button className={privacyFilter === 'all' ? 'active' : ''} onClick={() => setPrivacyFilter('all')}>All</button>
+              </>}
             </div>
             <button className={`cclg-chip ${seriesFilter.f1 ? 'active' : ''}`} onClick={() => setSeriesFilter(s => ({ ...s, f1: !s.f1 }))}>F1</button>
             <button className={`cclg-chip ${seriesFilter.fe ? 'active' : ''}`} onClick={() => setSeriesFilter(s => ({ ...s, fe: !s.fe }))}>FE</button>
