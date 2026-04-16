@@ -335,9 +335,10 @@ export default function Organisations({ user }) {
         title="Organisations"
         stats={[{ value: filtered.length.toLocaleString(), label: 'Total' }]}
       />
-      <div style={glass}>
-        <div></div>
-        <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 500, background: 'var(--accent)', color: '#0A0A0A', padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+      <div style={{ ...glass, justifyContent: 'flex-end' }}>
+        <button onClick={() => setShowForm(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 500, background: 'var(--accent)', color: '#FFFFFF', padding: '7px 16px', borderRadius: 4, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', transition: 'background 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#2A2A2A' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'var(--accent)' }}>
           <Plus style={{ width: 14, height: 14 }} /> Add Organisation
         </button>
       </div>
@@ -567,19 +568,19 @@ export default function Organisations({ user }) {
                 <div style={{ width: 60 }}></div>
               </div>
               {paged.map(company => (
-                <div key={company.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 18px', borderRadius: 12, background: selectedOrg?.id === company.id ? 'rgba(0,0,0,0.04)' : 'rgba(25,25,25,0.55)', border: `1px solid ${selectedOrg?.id === company.id ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.08)'}`, cursor: 'pointer', transition: 'all 0.15s' }}
+                <div key={company.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 18px', borderRadius: 10, background: selectedOrg?.id === company.id ? 'rgba(0,0,0,0.04)' : '#FFFFFF', border: `1px solid ${selectedOrg?.id === company.id ? 'rgba(0,0,0,0.14)' : 'rgba(0,0,0,0.08)'}`, cursor: 'pointer', transition: 'all 0.15s' }}
                   onClick={() => selectOrg(company)}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = selectedOrg?.id === company.id ? 'rgba(0,0,0,0.04)' : 'rgba(25,25,25,0.55)'; e.currentTarget.style.borderColor = selectedOrg?.id === company.id ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.08)' }}>
+                  onMouseEnter={e => { if (selectedOrg?.id !== company.id) { e.currentTarget.style.background = 'rgba(0,0,0,0.02)'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.14)' } }}
+                  onMouseLeave={e => { if (selectedOrg?.id !== company.id) { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)' } }}>
                   <OrgLogo domain={listDomainCache[company.id]} name={company.name} size={28} />
-                  <div style={{ width: 200, fontSize: 14, fontWeight: 400, color: '#0A0A0A', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.name}</div>
+                  <div style={{ width: 200, fontSize: 14, fontWeight: 500, color: '#0A0A0A', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.name}</div>
                   <div style={{ width: 130, fontSize: 12, color: '#6B6B6B', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.industry || '—'}</div>
                   <div style={{ width: 120, fontSize: 12, color: '#6B6B6B', fontFamily: 'var(--font)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.country || '—'}</div>
-                  <div style={{ width: 100, fontSize: 12, color: company.totalFunding ? 'rgba(6,214,160,0.5)' : 'rgba(0,0,0,0.05)', fontFamily: 'var(--font)', textAlign: 'right' }}>{company.totalFunding || '—'}</div>
-                  <div style={{ flex: 1, fontSize: 12, color: '#6B6B6B', fontFamily: 'var(--font)', textAlign: 'right' }}>{company.contactCount || 0}</div>
+                  <div style={{ width: 100, fontSize: 12, fontWeight: 500, color: company.totalFunding ? '#5a6644' : '#A0A0A0', fontFamily: 'var(--font)', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{company.totalFunding || '—'}</div>
+                  <div style={{ flex: 1, fontSize: 12, color: '#6B6B6B', fontFamily: 'var(--font)', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{company.contactCount || 0}</div>
                   <div style={{ width: 60, display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
-                    <button onClick={(e) => { e.stopPropagation(); edit(company) }} style={{ fontSize: 11, color: '#6B6B6B', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = 'rgba(90,100,112,0.55)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(0,0,0,0.08)'}>Edit</button>
-                    <button onClick={(e) => { e.stopPropagation(); remove(company.id) }} style={{ color: '#A0A0A0', background: 'none', border: 'none', cursor: 'pointer', padding: 2, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = '#ef4444'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(0,0,0,0.06)'}><X style={{ width: 12, height: 12 }} /></button>
+                    <button onClick={(e) => { e.stopPropagation(); edit(company) }} style={{ fontSize: 11, color: '#6B6B6B', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = '#0A0A0A'} onMouseLeave={e => e.currentTarget.style.color = '#6B6B6B'}>Edit</button>
+                    <button onClick={(e) => { e.stopPropagation(); remove(company.id) }} style={{ color: '#A0A0A0', background: 'none', border: 'none', cursor: 'pointer', padding: 2, transition: 'color 0.15s' }} onMouseEnter={e => e.currentTarget.style.color = '#ef4444'} onMouseLeave={e => e.currentTarget.style.color = '#A0A0A0'}><X style={{ width: 12, height: 12 }} /></button>
                   </div>
                 </div>
               ))}
@@ -689,7 +690,7 @@ export default function Organisations({ user }) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {orgContacts.map(c => (
                       <div key={c.id} onClick={() => nav(`/contacts/${c.id}`)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 50, cursor: 'pointer', transition: 'background 0.15s' }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(25,25,25,0.35)'}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'}
                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                         {c.picture ? (
                           <img src={c.picture} alt="" style={{ width: 28, height: 28, borderRadius: 50, objectFit: 'cover' }} />

@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-16T12:22:14.924Z",
+  "generated_at": "2026-04-16T12:35:50.317Z",
   "commits": [
+    {
+      "hash": "47831dd",
+      "subject": "Organisations + KikoChat: Legora polish. Organisations: 34 dark-glass rgba(25,25,25,0.40/0.50) backgrounds swapped to #FFFFFF, removed wasteful blur-on-white on glass/dropdown (saves GPU), swapped 0.4",
+      "when": "14 minutes ago"
+    },
     {
       "hash": "d0da7b3",
       "subject": "Nav + Partnership Matrix fixes: (1) Avatar either/or render — img OR initials, never both. (2) Settings nav defaults synced with LegoraTopNav TABS (all 8 tabs default-on, was only 5 with stale 'sequen",
-      "when": "6 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "948d234",
       "subject": "KikoChat: agent-plan style thinking steps. Dark-glass 'Kiko's reasoning' button swapped to Legora white card. Purple dot list replaced with status-aware icons: spinning sage ring for in-progress step,",
-      "when": "40 minutes ago"
+      "when": "54 minutes ago"
     },
     {
       "hash": "641a449",
       "subject": "Calendar redesign: signed-off race spine + outreach intelligence port swapped to active (was NEW_REDESIGN.jsx). Uses Legora tokens (white bg, Source Serif 4, sage/terra/amber/purple for F1/FE/MotoGP/W",
-      "when": "49 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "1abc2cb",
       "subject": "Contacts: wire up New contact modal — form state, saveContact handler with reloadKey to refresh list on save, resetForm helper, button onClick, full modal JSX with first/last name row + email + phone ",
-      "when": "54 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "bbbf11e",
       "subject": "Contacts page: Legora redesign ported to active (was NEW_REDESIGN) — tabular view with hover preview popup, sector tags, status chips, Source Serif 4 header. Company name in each row now routes to /or",
-      "when": "70 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "36cf605",
       "subject": "Partnership Matrix: fix active tab black-on-black (color:#FFFFFF when active on T.accent pill) + Add-partnership modal from dark glass to Legora white card with light border",
-      "when": "72 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "7b0718c",
@@ -54,7 +59,7 @@
     {
       "hash": "f0e57cf",
       "subject": "Command Centre: master-detail rebuild. LEFT 440px — grouped priority list (Overdue, Stale deals, Due this week, Market signals). RIGHT — Kiko brief pane that streams from /api/kiko with selected item ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "037a87b",
@@ -94,11 +99,6 @@
     {
       "hash": "30d9398",
       "subject": "feat: Home page upgraded — new HomeDashboard component with 4 Bento cards (weighted pipeline + active deals, stale + overdue, hot replies 24h, next F1 race countdown w/ PEAK badge). Real Supabase data",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "832df4c",
-      "subject": "fix: nav 'Inbox' renamed to 'Command Centre' AND /command-centre layout restored to signed-off 2-pane composer design (was wrongly showing dashboard). Dashboard preserved as OutreachIntelligence.DASHB",
       "when": "15 hours ago"
     }
   ]
