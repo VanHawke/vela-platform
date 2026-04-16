@@ -6,9 +6,9 @@ import { useNavigate, useLocation } from 'react-router-dom'
 const C = {
   bg: '#FFFFFF',
   card: '#FFFFFF',
-  cardHover: '#FFFFFF',
-  border: 'rgba(255,255,255,0.06)',
-  borderHover: 'rgba(255,255,255,0.10)',
+  cardHover: '#FAFAF7',
+  border: 'rgba(0,0,0,0.08)',
+  borderHover: 'rgba(0,0,0,0.12)',
   text: '#0A0A0A',
   textSec: '#6B6B6B',
   textTer: '#A0A0A0',
@@ -496,7 +496,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                       <KikoWaveform width={18} height={10} mini />
                     </div>
                   )}
-                  <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : 8, background: msg.role === 'user' ? C.purple : 'rgba(0,0,0,0.04)', color: msg.role === 'user' ? '#0A0A0A' : C.textSec, fontSize: 13, lineHeight: 1.55, fontFamily: C.font }}>
+                  <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : 8, background: msg.role === 'user' ? C.purple : 'rgba(0,0,0,0.04)', color: msg.role === 'user' ? '#FFFFFF' : C.textSec, fontSize: 13, lineHeight: 1.55, fontFamily: C.font }}>
                     {msg.role === 'user' ? msg.content : <span dangerouslySetInnerHTML={{ __html: md(msg.content) }} />}
                   </div>
                   </div>

@@ -6,8 +6,8 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { usePagePermissions } from '@/lib/usePagePermissions'
 
-// pageKey = the key used in user_page_permissions (matches PermissionGate in App.jsx)
-const TABS = [
+// Master list of all navigable pages. Top nav vs More is controlled by Settings → Navigation.
+const ALL_PAGES = [
   { id: 'home',                label: 'Today',              path: '/',                   showPlus: false, aliases: ['home', 'today', 'dashboard'], pageKey: null },
   { id: 'pipeline',            label: 'Pipeline',           path: '/pipeline',           showPlus: false, aliases: ['pipeline'],                    pageKey: 'pipeline' },
   { id: 'campaigns',           label: 'Campaigns',          path: '/campaigns',          showPlus: false, aliases: ['campaigns', 'sequences'],      pageKey: 'campaigns' },
@@ -16,13 +16,13 @@ const TABS = [
   { id: 'contacts',            label: 'Contacts',           path: '/contacts',           showPlus: false, aliases: ['contacts'],                    pageKey: 'contacts' },
   { id: 'organisations',       label: 'Organisations',      path: '/organisations',      showPlus: false, aliases: ['organisations', 'orgs', 'companies'], pageKey: 'organisations' },
   { id: 'partnership-matrix',  label: 'Partnership Matrix', path: '/partnership-matrix', showPlus: false, aliases: ['partnership-matrix', 'insights'], pageKey: 'partnership_matrix' },
+  { id: 'linkedin',            label: 'LinkedIn',           path: '/linkedin',           showPlus: false, aliases: ['linkedin'],                    pageKey: 'linkedin_queue' },
 ]
-
-// More dropdown — Settings always last with a separator above it.
-const MORE_ITEMS = [
-  { id: 'linkedin',  label: 'LinkedIn',      path: '/linkedin',     pageKey: 'linkedin_queue' },
-  { id: 'settings',  label: 'Settings',      path: '/settings', divider: true }, // divider: render faint line above. MUST stay last.
-]
+// Default top-nav IDs (everything except LinkedIn which defaults to More)
+const DEFAULT_TOP_IDS = ALL_PAGES.filter(p => p.id !== 'linkedin').map(p => p.id)
+// Settings is pinned to More dropdown, never in top nav
+const DEFAULT_TOP_PAGES = DEFAULT_TOP_IDS.map(id => ALL_PAGES.find(p => p.id === id)).filter(Boolean)
+const SETTINGS_ITEM = { id: 'settings', label: 'Settings', path: '/settings', divider: true }
 
 
 export default function LegoraTopNav({ user, profile, customLogo, onSearchClick, onNotificationsClick, onNewClick, hasNotifications, isAdmin = false }) {
@@ -65,7 +65,7 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
   }
 
   // Read custom nav order from Settings (localStorage 'kiko_top_nav_v2')
-  const [orderedTabs, setOrderedTabs] = useState(TABS)
+  const [orderedTabs, setOrderedTabs] = useState(DEFAULT_TOP_PAGES)
   const [moreOrder, setMoreOrder] = useState(() => {
     try { const s = localStorage.getItem('kiko_more_order'); return s ? JSON.parse(s) : null } catch { return null }
   })
@@ -73,23 +73,23 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
     const applyOrder = () => {
       try {
         const stored = localStorage.getItem('kiko_top_nav_v2')
-        if (!stored) { setOrderedTabs(TABS); return }
+        if (!stored) { setOrderedTabs(DEFAULT_TOP_PAGES); return }
         const ids = JSON.parse(stored)
-        if (!Array.isArray(ids) || ids.length === 0) { setOrderedTabs(TABS); return }
+        if (!Array.isArray(ids) || ids.length === 0) { setOrderedTabs(DEFAULT_TOP_PAGES); return }
         // Resolve stored IDs to TAB entries using aliases, preserve user's order.
         // NO append-missing — if user toggled a tab off in Settings, it stays OFF.
-        // (Previously we appended all missing TABS to the end, which made reorder
+        // (Previously we appended all missing pages to the end, which made reorder
         //  look broken — tabs the user removed kept reappearing.)
         const resolved = ids
-          .map(id => TABS.find(t => t.id === id || (t.aliases && t.aliases.includes(id))))
+          .map(id => ALL_PAGES.find(t => t.id === id || (t.aliases && t.aliases.includes(id))))
           .filter(Boolean)
         // Always ensure home is present (it's required — can't be toggled off in UI)
         if (!resolved.some(t => t.id === 'home')) {
-          const homeTab = TABS.find(t => t.id === 'home')
+          const homeTab = ALL_PAGES.find(t => t.id === 'home')
           if (homeTab) resolved.unshift(homeTab)
         }
         setOrderedTabs(resolved)
-      } catch { setOrderedTabs(TABS) }
+      } catch { setOrderedTabs(DEFAULT_TOP_PAGES) }
     }
     applyOrder()
     const onUpdate = () => applyOrder()
@@ -115,7 +115,7 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
 
   // Tabs not in the user's top-nav list should fall through to the More dropdown.
   // IMPORTANT: This must be declared AFTER `orderedTabs` useState (TDZ) — it reads orderedTabs.
-  const overflowTabsRaw = TABS.filter(t => !orderedTabs.some(o => o.id === t.id))
+  const overflowTabsRaw = ALL_PAGES.filter(t => !orderedTabs.some(o => o.id === t.id))
     .filter(t => !t.pageKey || canSee(t.pageKey))
   // Apply user's More-order preference (from Settings → Navigation → More Dropdown Order)
   const overflowTabs = moreOrder && moreOrder.length > 0
@@ -125,10 +125,10 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
       })
     : overflowTabsRaw
 
-  const moreIsActive = MORE_ITEMS.some(m => isActive(m.path)) || overflowTabs.some(t => isActive(t.path))
+  const moreIsActive = [SETTINGS_ITEM].some(m => isActive(m.path)) || overflowTabs.some(t => isActive(t.path))
   const visibleMoreItems = [
     ...overflowTabs.map(t => ({ id: t.id, label: t.label, path: t.path, pageKey: t.pageKey })),
-    ...MORE_ITEMS.filter(m => {
+    ...[SETTINGS_ITEM].filter(m => {
       if (m.adminOnly && !isAdmin) return false
       if (m.pageKey && !canSee(m.pageKey)) return false
       return true

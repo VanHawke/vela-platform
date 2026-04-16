@@ -96,7 +96,6 @@ export default function Settings({ user }) {
     { id: 'email', label: 'Command Centre' }, { id: 'partnership-matrix', label: 'Partnership Matrix' },
     { id: 'calendar', label: 'Calendar' },
     { id: 'lemlist', label: 'Lemlist' },
-    { id: 'lemlist', label: 'Lemlist' },
   ]
   const [navOrder, setNavOrder] = useState(DEFAULT_NAV)
 
