@@ -232,7 +232,7 @@ export default function OutreachIntelligence({ user }) {
         supabase.from('tasks').select('*').order('updated_at', { ascending: false }).limit(80),
         supabase.from('kiko_alerts')
           .select('id, type, title, detail, entity_name, entity_id, metadata, created_at')
-          .or('type.like.reply_from%,type.eq.linkedin_reply,type.eq.email_reply')
+          .or('type.like.reply_from%,type.eq.linkedin_reply,type.eq.email_reply,type.eq.linkedin_connection_accepted,type.like.linkedin_connection%')
           .gte('created_at', dayAgo)
           .order('created_at', { ascending: false })
           .limit(10),
@@ -397,7 +397,7 @@ export default function OutreachIntelligence({ user }) {
         stats={[
           { value: deals.length, label: 'Active deals' },
           { value: fmtCurrency(weightedPipeline), label: 'Weighted' },
-          { value: hotReplies.length, label: 'Hot replies' },
+          { value: hotReplies.length, label: 'Replies & connections' },
           { value: tasks.length, label: 'Open tasks' },
         ]}
         toolbar={
@@ -412,14 +412,14 @@ export default function OutreachIntelligence({ user }) {
         {/* HOT REPLIES BAND */}
         <div className="cc-hot-band">
           <div className="cc-hot-h">
-            <h3><MessageSquare size={13} /> Hot replies</h3>
+            <h3><MessageSquare size={13} /> Replies & connections</h3>
             {hotReplies.length > 0 && <span className="cc-hot-h-count">{hotReplies.length} new</span>}
             <span className="cc-hot-h-meta">last 24h</span>
           </div>
           {loading ? (
             <div className="cc-empty-row">Loading…</div>
           ) : hotReplies.length === 0 ? (
-            <div className="cc-empty-row">No replies in last 24h · email & LinkedIn responses land here when they arrive</div>
+            <div className="cc-empty-row">No replies in last 24h · email replies, LinkedIn messages & connection acceptances land here when they arrive</div>
           ) : (
             <div className="cc-hot-scroll">
               {hotReplies.map(r => {
@@ -435,7 +435,10 @@ export default function OutreachIntelligence({ user }) {
                       <div className="cc-hot-card-from">{r.entity_name || 'Unknown'}</div>
                       <div className="cc-hot-card-when">{relativeTime(r.created_at)}</div>
                     </div>
-                    <div className="cc-hot-card-title">{r.title || '(no subject)'}</div>
+                    <div className="cc-hot-card-title">
+                      {r.type?.includes('connection') && <span style={{ display: 'inline-block', padding: '1px 6px', borderRadius: 4, background: 'rgba(6,214,160,0.12)', color: '#06a87d', fontSize: 10, fontWeight: 600, marginRight: 6, verticalAlign: 'middle' }}>CONNECTED</span>}
+                      {r.title || '(no subject)'}
+                    </div>
                   </div>
                 )
               })}
