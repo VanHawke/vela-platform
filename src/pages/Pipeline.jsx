@@ -323,29 +323,34 @@ export default function Pipeline({ user }) {
 
     try {
       // Find company by name — fuzzy match (trim + lowercase + starts-with fallback)
+      // Find company + contacts for this deal
       if (deal.company) {
+        const needle = deal.company.toLowerCase().trim()
+
+        // Company lookup (fuzzy match)
         const { data: companies } = await supabase
           .from('companies')
           .select('id, data, updated_at')
           .eq('org_id', ORG_ID)
-        const needle = deal.company.toLowerCase().trim()
         const match =
           (companies || []).find(c => (c.data?.name || '').toLowerCase().trim() === needle) ||
           (companies || []).find(c => { const n = (c.data?.name || '').toLowerCase().trim(); return n && (n.startsWith(needle) || needle.startsWith(n)) })
         if (match) {
           setDealCompany({ id: match.id, ...match.data })
-
-          // Contacts at this company
-          const { data: contacts } = await supabase
-            .from('contacts')
-            .select('id, data')
-            .eq('org_id', ORG_ID)
-          const matchedContacts = (contacts || [])
-            .filter(c => (c.data?.company || '').toLowerCase() === deal.company.toLowerCase())
-            .map(c => ({ id: c.id, ...c.data }))
-            .slice(0, 10)
-          setDealContacts(matchedContacts)
         }
+
+        // Contacts — ALWAYS search by company name, even if no org match
+        const { data: contacts } = await supabase
+          .from('contacts')
+          .select('id, data')
+        const matchedContacts = (contacts || [])
+          .filter(c => {
+            const cn = (c.data?.company || '').toLowerCase().trim()
+            return cn === needle || cn.startsWith(needle) || needle.startsWith(cn)
+          })
+          .map(c => ({ id: c.id, ...c.data }))
+          .slice(0, 10)
+        setDealContacts(matchedContacts)
       }
 
       // Tasks linked to this deal
@@ -544,12 +549,15 @@ export default function Pipeline({ user }) {
               )}
             </div>
 
-            {dealCompany && (
+            {(dealCompany || selectedDeal?.company) && (
               <button
-                onClick={() => nav(`/organisations?org=${dealCompany.id}`)}
+                onClick={() => {
+                  if (dealCompany) nav(`/organisations?org=${dealCompany.id}`)
+                  else nav(`/organisations?q=${encodeURIComponent(selectedDeal.company)}`)
+                }}
                 className="pl-panel-link-btn"
               >
-                Open organisation <ExternalLink size={11} />
+                {dealCompany ? 'Open organisation' : 'Search organisation'} <ExternalLink size={11} />
               </button>
             )}
 
