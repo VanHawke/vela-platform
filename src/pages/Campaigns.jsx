@@ -38,7 +38,7 @@ function statusBadge(status) {
     active:    { label: 'Active',   bg: 'rgba(0,0,0,0.06)', fg: '#0A0A0A', br: 'rgba(0,0,0,0.10)' },
     replied:   { label: 'Replied',  bg: 'rgba(0,0,0,0.06)', fg: '#0A0A0A', br: 'rgba(0,0,0,0.10)' },
     bounced:   { label: 'Bounced',  bg: 'rgba(248,113,113,0.10)', fg: '#f87171', br: 'rgba(248,113,113,0.25)' },
-    completed: { label: 'Done',     bg: 'rgba(0,0,0,0.04)', fg: 'rgba(124,92,252,0.5)', br: 'rgba(0,0,0,0.08)' },
+    completed: { label: 'Done',     bg: 'rgba(0,0,0,0.04)', fg: 'rgba(0,0,0,0.35)', br: 'rgba(0,0,0,0.08)' },
     paused:    { label: 'Paused',   bg: 'rgba(251,191,36,0.10)', fg: '#fbbf24', br: 'rgba(251,191,36,0.25)' },
     stale:     { label: 'Stale',    bg: 'rgba(148,163,184,0.10)', fg: '#94a3b8', br: 'rgba(148,163,184,0.25)' },
   }
@@ -298,7 +298,7 @@ export default function Campaigns({ user }) {
 
   // ── styles ──
   const C = T // color tokens shorthand
-  const cell = { padding: '12px 14px', fontSize: 12, color: C.text, borderBottom: `0.5px solid ${C.border || 'rgba(255,255,255,0.06)'}`, verticalAlign: 'middle' }
+  const cell = { padding: '12px 14px', fontSize: 12, color: C.text, borderBottom: `0.5px solid ${C.border || 'rgba(0,0,0,0.06)'}`, verticalAlign: 'middle' }
   const headerCell = { ...cell, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: C.textTertiary || '#6B6B6B', fontWeight: 500, background: 'rgba(0,0,0,0.15)', position: 'sticky', top: 0, zIndex: 1 }
 
   // ── render ──
@@ -306,7 +306,7 @@ export default function Campaigns({ user }) {
     <div style={{ display: 'flex', height: 'calc(100vh - 56px)', fontFamily: C.font, color: C.text, background: C.bg }}>
 
       {/* ─── LEFT RAIL: Campaign list ─── */}
-      <aside style={{ width: 280, flexShrink: 0, borderRight: `1px solid ${C.border || 'rgba(255,255,255,0.06)'}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <aside style={{ width: 280, flexShrink: 0, borderRight: `1px solid ${C.border || 'rgba(0,0,0,0.06)'}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '18px 18px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: 14, fontWeight: 500, color: C.text }}>Campaigns</div>
@@ -316,7 +316,7 @@ export default function Campaigns({ user }) {
             <button
               onClick={() => { setBuildOpen(true); setBuildPhase('idle') }}
               title="Auto-build campaign (deterministic — picks team, sources 50 targets, identifies decision-makers)"
-              style={{ padding: '0 10px', height: 28, borderRadius: 6, border: `1px solid rgba(124,92,252,0.35)`, background: 'rgba(0,0,0,0.05)', color: '#0A0A0A', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: 'inherit', fontWeight: 500 }}
+              style={{ padding: '0 10px', height: 28, borderRadius: 6, border: `1px solid rgba(0,0,0,0.12)`, background: 'rgba(0,0,0,0.05)', color: '#0A0A0A', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: 'inherit', fontWeight: 500 }}
             >⚡ Build</button>
             <button
               onClick={() => setBulkEditOpen(true)}
@@ -374,7 +374,7 @@ export default function Campaigns({ user }) {
         ) : (
           <>
             {/* Header */}
-            <div style={{ padding: '20px 28px 14px', borderBottom: `1px solid ${C.border || 'rgba(255,255,255,0.06)'}` }}>
+            <div style={{ padding: '20px 28px 14px', borderBottom: `1px solid ${C.border || 'rgba(0,0,0,0.06)'}` }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
@@ -405,14 +405,14 @@ export default function Campaigns({ user }) {
             </div>
 
             {/* Filter bar */}
-            <div style={{ padding: '12px 28px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${C.border || 'rgba(255,255,255,0.06)'}` }}>
+            <div style={{ padding: '12px 28px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${C.border || 'rgba(0,0,0,0.06)'}` }}>
               <div style={{ position: 'relative', flex: 1, maxWidth: 320 }}>
                 <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: C.textTertiary }} />
                 <input
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Search prospects..."
-                  style={{ width: '100%', padding: '7px 10px 7px 30px', borderRadius: 6, border: `1px solid ${C.border || 'rgba(255,255,255,0.08)'}`, background: 'rgba(0,0,0,0.20)', color: C.text, fontSize: 12, fontFamily: C.font, outline: 'none' }}
+                  style={{ width: '100%', padding: '7px 10px 7px 30px', borderRadius: 6, border: `1px solid ${C.border || 'rgba(0,0,0,0.08)'}`, background: 'rgba(0,0,0,0.03)', color: C.text, fontSize: 12, fontFamily: C.font, outline: 'none' }}
                 />
               </div>
               <div style={{ display: 'flex', gap: 4 }}>
@@ -469,7 +469,7 @@ export default function Campaigns({ user }) {
                   </thead>
                   <tbody>
                     {filteredProspects.map(p => (
-                      <tr key={p.id} style={{ transition: 'background 0.1s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      <tr key={p.id} style={{ transition: 'background 0.1s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.02)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                         <td style={{ ...cell, paddingLeft: 28 }}>
                           <div
                             onClick={() => nav(`/contacts?email=${encodeURIComponent(p.contact_email || '')}`)}
@@ -597,7 +597,7 @@ export default function Campaigns({ user }) {
                 {/* CRM match preview (v0.0.39) */}
                 <CrmMatchPreview category={buildCategory} />
 
-                <button onClick={runBuildCampaign} style={{ width: '100%', padding: '13px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #7C5CFC, #0A0A0A)', color: 'white', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', marginTop: 12 }}>
+                <button onClick={runBuildCampaign} style={{ width: '100%', padding: '13px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: 'white', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', marginTop: 12 }}>
                   Build {buildCategory} campaign{buildTeam !== 'auto' ? ` for ${buildTeam.replace('_', ' ')}` : ''}
                 </button>
               </div>
@@ -609,7 +609,7 @@ export default function Campaigns({ user }) {
 
             {buildPhase === 'review' && buildResult && (
               <div>
-                <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(0,0,0,0.05)', border: '1px solid rgba(124,92,252,0.2)', marginBottom: 16 }}>
+                <div style={{ padding: '12px 14px', borderRadius: 8, background: 'rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.08)', marginBottom: 16 }}>
                   <div style={{ fontSize: 13, color: C.text, fontWeight: 500 }}>{buildResult.team.name} F1 — {buildResult.category.name}</div>
                   <div style={{ fontSize: 11, color: C.textSecondary, marginTop: 4, lineHeight: 1.5 }}>{buildResult.why}</div>
                 </div>
@@ -647,7 +647,7 @@ export default function Campaigns({ user }) {
                 </div>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button onClick={closeBuildModal} style={{ flex: 1, padding: '12px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSecondary, cursor: 'pointer', fontSize: 13, fontFamily: 'inherit' }}>Cancel</button>
-                  <button onClick={runEnroll} style={{ flex: 2, padding: '12px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #7C5CFC, #0A0A0A)', color: 'white', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <button onClick={runEnroll} style={{ flex: 2, padding: '12px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: 'white', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
                     Enrol all {buildResult.top_50.length} targets (paused for review)
                   </button>
                 </div>
@@ -707,7 +707,7 @@ function CrmMatchPreview({ category }) {
 
   if (loading) {
     return (
-      <div style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.06)', fontSize: 11, color: 'rgba(255,255,255,0.45)', marginBottom: 4 }}>
+      <div style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.03)', border: '0.5px solid rgba(0,0,0,0.06)', fontSize: 11, color: 'rgba(0,0,0,0.45)', marginBottom: 4 }}>
         Checking CRM for {category} matches…
       </div>
     )
@@ -719,32 +719,32 @@ function CrmMatchPreview({ category }) {
   return (
     <div style={{
       padding: '12px 14px', borderRadius: 8,
-      background: hasMatches ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.03)',
-      border: `0.5px solid ${hasMatches ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.08)'}`,
+      background: hasMatches ? 'rgba(0,0,0,0.04)' : 'rgba(0,0,0,0.03)',
+      border: `0.5px solid ${hasMatches ? 'rgba(0,0,0,0.10)' : 'rgba(0,0,0,0.08)'}`,
       marginBottom: 4,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: hasMatches ? 6 : 0 }}>
         <div style={{
           width: 18, height: 18, borderRadius: '50%',
-          background: hasMatches ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.06)',
+          background: hasMatches ? 'rgba(0,0,0,0.10)' : 'rgba(0,0,0,0.06)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 10, color: hasMatches ? '#0A0A0A' : 'rgba(255,255,255,0.4)',
+          fontSize: 10, color: hasMatches ? '#0A0A0A' : 'rgba(0,0,0,0.40)',
         }}>{hasMatches ? '✓' : 'i'}</div>
-        <div style={{ fontSize: 11, fontWeight: 500, color: hasMatches ? '#0A0A0A' : 'rgba(255,255,255,0.55)' }}>
+        <div style={{ fontSize: 11, fontWeight: 500, color: hasMatches ? '#0A0A0A' : 'rgba(0,0,0,0.45)' }}>
           {hasMatches
             ? `${data.contact_count} relevant contacts at ${data.company_count} CRM companies`
             : `No CRM matches — build will source entirely from web search`}
         </div>
       </div>
       {hasMatches && data.sample_companies?.length > 0 && (
-        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.50)', lineHeight: 1.6, paddingLeft: 26 }}>
+        <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.50)', lineHeight: 1.6, paddingLeft: 26 }}>
           {data.sample_companies.slice(0, 4).map((c, i) => (
             <span key={i}>
-              {c.name} <span style={{ color: 'rgba(255,255,255,0.30)' }}>({c.contact_count})</span>
+              {c.name} <span style={{ color: 'rgba(0,0,0,0.30)' }}>({c.contact_count})</span>
               {i < Math.min(3, data.sample_companies.length - 1) ? ' · ' : ''}
             </span>
           ))}
-          {data.sample_companies.length > 4 && <span style={{ color: 'rgba(255,255,255,0.30)' }}> + {data.sample_companies.length - 4} more</span>}
+          {data.sample_companies.length > 4 && <span style={{ color: 'rgba(0,0,0,0.30)' }}> + {data.sample_companies.length - 4} more</span>}
         </div>
       )}
     </div>
@@ -825,8 +825,8 @@ function BuildingProgress({ jobId }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div style={{ fontSize: 14, color: '#fff', fontWeight: 500 }}>⚡ Building campaign...</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {pollMode && <span style={{ fontSize: 9, color: 'rgba(124,92,252,0.7)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>● live</span>}
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', fontFamily: 'ui-monospace,monospace' }}>{elapsed}s elapsed</div>
+          {pollMode && <span style={{ fontSize: 9, color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>● live</span>}
+          <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.45)', fontFamily: 'ui-monospace,monospace' }}>{elapsed}s elapsed</div>
         </div>
       </div>
 
@@ -843,19 +843,19 @@ function BuildingProgress({ jobId }) {
               padding: '12px 14px',
               borderRadius: 8,
               background: isActive ? 'rgba(0,0,0,0.06)' : isDone ? 'rgba(0,0,0,0.03)' : 'transparent',
-              border: `0.5px solid ${isActive ? 'rgba(0,0,0,0.10)' : isDone ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.06)'}`,
+              border: `0.5px solid ${isActive ? 'rgba(0,0,0,0.10)' : isDone ? 'rgba(0,0,0,0.10)' : 'rgba(0,0,0,0.06)'}`,
               transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)',
               opacity: isPending ? 0.4 : 1,
             }}>
-              <div style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0, marginTop: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isDone ? '#0A0A0A' : isActive ? 'transparent' : 'rgba(255,255,255,0.06)', border: isActive ? '1.5px solid #0A0A0A' : 'none' }}>
+              <div style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0, marginTop: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isDone ? '#0A0A0A' : isActive ? 'transparent' : 'rgba(0,0,0,0.06)', border: isActive ? '1.5px solid #0A0A0A' : 'none' }}>
                 {isDone && <span style={{ color: '#FFFFFF', fontSize: 11, fontWeight: 700 }}>✓</span>}
                 {isActive && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#0A0A0A', animation: 'pulse 1.2s ease-in-out infinite' }} />}
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, color: isActive ? '#fff' : isDone ? 'rgba(124,92,252,0.85)' : 'rgba(255,255,255,0.55)', fontWeight: 500, marginBottom: 2 }}>
+                <div style={{ fontSize: 12, color: isActive ? '#fff' : isDone ? 'rgba(0,0,0,0.65)' : 'rgba(0,0,0,0.45)', fontWeight: 500, marginBottom: 2 }}>
                   {stage.label}
                 </div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.40)' }}>
+                <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.40)' }}>
                   {isActive && backendDetail ? backendDetail : stage.sub}
                 </div>
               </div>
@@ -864,7 +864,7 @@ function BuildingProgress({ jobId }) {
         })}
       </div>
 
-      <div style={{ marginTop: 20, fontSize: 10, color: 'rgba(255,255,255,0.35)', textAlign: 'center', lineHeight: 1.6 }}>
+      <div style={{ marginTop: 20, fontSize: 10, color: 'rgba(0,0,0,0.35)', textAlign: 'center', lineHeight: 1.6 }}>
         {pollMode ? 'Live backend progress. Don\'t close this window.' : 'Total expected: 60-90 seconds. Don\'t close this window.'}
       </div>
       <style>{`

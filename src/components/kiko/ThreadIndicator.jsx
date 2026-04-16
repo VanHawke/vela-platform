@@ -129,7 +129,7 @@ export default function ThreadIndicator({ user, currentConvId, onSwitchThread })
         <div style={{
           position: 'absolute', top: 'calc(100% + 8px)', right: 0,
           width: 320,
-          background: 'rgba(20,20,22,0.98)',
+          background: '#FFFFFF',
           backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
           borderRadius: 12,
           border: '1px solid rgba(0,0,0,0.08)',

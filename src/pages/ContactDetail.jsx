@@ -209,7 +209,7 @@ export default function ContactDetail() {
                   Previously in CRM · {campaignHistory.length} campaign{campaignHistory.length === 1 ? '' : 's'}
                 </span>
                 {campaignHistory.slice(0, 3).map(ct => (
-                  <span key={ct.id} onClick={() => nav(`/sequences/${ct.campaign_id}`)} style={{ cursor: 'pointer', padding: '3px 9px', borderRadius: 50, background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)', color: 'var(--text-secondary)', fontSize: 10, fontFamily: 'var(--font)' }} title={ct.kiko_sequences?.is_active ? 'Active campaign' : 'Paused campaign'}>
+                  <span key={ct.id} onClick={() => nav(`/sequences/${ct.campaign_id}`)} style={{ cursor: 'pointer', padding: '3px 9px', borderRadius: 50, background: 'rgba(0,0,0,0.04)', border: '0.5px solid rgba(0,0,0,0.08)', color: 'var(--text-secondary)', fontSize: 10, fontFamily: 'var(--font)' }} title={ct.kiko_sequences?.is_active ? 'Active campaign' : 'Paused campaign'}>
                     {ct.kiko_sequences?.name || 'Campaign'} {ct.verification_status === 'verified_at_company' ? '✓' : ''}
                   </span>
                 ))}

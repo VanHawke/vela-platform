@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-16T16:29:55.389Z",
+  "generated_at": "2026-04-16T16:35:34.934Z",
   "commits": [
+    {
+      "hash": "afd0b94",
+      "subject": "Dev: pre-commit TDZ check script at scripts/check-tdz.mjs — scans staged .jsx files for const declarations referenced before their declaration line. Catches .filter()/.map()/.some()/useState() pattern",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "f4ccdae",
       "subject": "KikoFloat Legora polish: panel background changed from semi-transparent rgba(0,0,0,0.03) + blur to solid white #FFFFFF with light shadow (0.12 opacity instead of 0.5). Floating avatar button shadows r",
-      "when": "29 minutes ago"
+      "when": "35 minutes ago"
     },
     {
       "hash": "8eccfe2",
       "subject": "Nav + KikoFloat overhaul: (1) LegoraTopNav now uses ALL_PAGES master list (9 items including LinkedIn) instead of separate TABS (8) + MORE_ITEMS. Settings writes linkedin to kiko_top_nav_v2 and the re",
-      "when": "30 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "236edc2",
       "subject": "Settings nav + Command Centre enrichment: (1) Renamed 'Race Calendar' → 'Calendar' across Settings Navigation, Layout nav, and PAGE_LABELS map. Consistent with LegoraTopNav which already said Calendar",
-      "when": "64 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "2af3af0",
       "subject": "Theming pass: (1) Command Centre right pane — added max-height: calc(100vh - 140px) + overflow: hidden to .cc-detail. Previously min-height:500px with no max-height caused the detail card to grow past",
-      "when": "78 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "d4648a5",
       "subject": "Nav reorder + Pipeline org-click fixes: (1) Layout.getTopNavIds — removed over-aggressive '<4 items = corrupt' guard that was treating legitimate user selections as corrupt data and reverting to defau",
-      "when": "87 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "3b1af5a",
@@ -39,12 +44,12 @@
     {
       "hash": "80c8a90",
       "subject": "Profile pic + all-pages button audit: (1) Layout passes profile prop to LegoraTopNav so user-uploaded profile_photo_url is preferred over Google avatar_url. Initials fallback also now prefers display_",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "83ba952",
       "subject": "Chat + nav UX fixes: (1) Send button (both welcome + chat mode) — was black icon on dark gradient (invisible); now color toggles white when hasContent, muted grey when disabled. (2) Chat title dropdow",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "4e9dc9b",
@@ -94,11 +99,6 @@
     {
       "hash": "948d234",
       "subject": "KikoChat: agent-plan style thinking steps. Dark-glass 'Kiko's reasoning' button swapped to Legora white card. Purple dot list replaced with status-aware icons: spinning sage ring for in-progress step,",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "641a449",
-      "subject": "Calendar redesign: signed-off race spine + outreach intelligence port swapped to active (was NEW_REDESIGN.jsx). Uses Legora tokens (white bg, Source Serif 4, sage/terra/amber/purple for F1/FE/MotoGP/W",
       "when": "5 hours ago"
     }
   ]

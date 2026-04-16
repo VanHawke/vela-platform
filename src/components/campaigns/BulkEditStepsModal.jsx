@@ -12,7 +12,7 @@ const T = {
   accentTeal: '#0A0A0A',
   border: 'rgba(0,0,0,0.08)',
   surface: 'rgba(0,0,0,0.03)',
-  glass: 'rgba(20,20,22,0.92)',
+  glass: '#FFFFFF',
 }
 
 const CATEGORIES = [

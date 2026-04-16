@@ -92,7 +92,7 @@ function md(text) {
       const thinkHtml = h.slice(0, splitIdx).trim()
       const respHtml = h.slice(splitIdx).trim()
       const steps = (thinkHtml.replace(/<[^>]+>/g, '').match(/(?:Let me|Now let|I'll|I need|Checking|Searching|Looking|I found|I see)/gi) || []).length
-      h = `<details style="margin:0 0 8px;cursor:pointer"><summary style="font-size:12px;color:#A0A0A0;font-weight:500;padding:8px 0;list-style:none;display:flex;align-items:center;gap:8px"><span style="display:inline-flex;width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,0.08);font-size:10px;align-items:center;justify-content:center;flex-shrink:0;color:rgba(0,0,0,0.10)">›</span><span style="color:rgba(90,100,112,0.5)">Kiko's reasoning</span> <span style="color:#A0A0A0">· ${steps} steps</span></summary><div style="font-size:13px;color:#A0A0A0;padding:8px 12px;line-height:1.7;border-left:2px solid rgba(0,0,0,0.05);margin:4px 0 8px 7px;background:rgba(25,25,25,0.30);border-radius:0 6px 6px 0">${thinkHtml}</div></details>${respHtml}`
+      h = `<details style="margin:0 0 8px;cursor:pointer"><summary style="font-size:12px;color:#A0A0A0;font-weight:500;padding:8px 0;list-style:none;display:flex;align-items:center;gap:8px"><span style="display:inline-flex;width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,0.08);font-size:10px;align-items:center;justify-content:center;flex-shrink:0;color:rgba(0,0,0,0.10)">›</span><span style="color:rgba(90,100,112,0.5)">Kiko's reasoning</span> <span style="color:#A0A0A0">· ${steps} steps</span></summary><div style="font-size:13px;color:#A0A0A0;padding:8px 12px;line-height:1.7;border-left:2px solid rgba(0,0,0,0.05);margin:4px 0 8px 7px;background:rgba(0,0,0,0.03);border-radius:0 6px 6px 0">${thinkHtml}</div></details>${respHtml}`
     }
   }
   const result = DOMPurify.sanitize(h, { ADD_TAGS: ['details', 'summary'] })
@@ -1033,7 +1033,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         onMouseEnter={() => setHoveredMsg(i)} onMouseLeave={() => setHoveredMsg(null)}>
         {/* Kiko label with animated waveform avatar */}
         {isKiko && <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 10, background: 'rgba(25,25,25,0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '0.5px solid rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.2)' }}>
+          <div style={{ width: 28, height: 28, borderRadius: 10, background: '#FFFFFF', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '0.5px solid rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.2)' }}>
             <KikoWaveform width={22} height={16} mini />
           </div>
           <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(90,100,112,0.55)', fontFamily: C.font }}>Kiko</span>
@@ -1427,7 +1427,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               <div style={{ maxWidth: 480 }}>
                 <div style={{
                   padding: '16px 20px', borderRadius: 16,
-                  background: 'rgba(25,25,25,0.60)', backdropFilter: 'blur(20px) saturate(1.3)', WebkitBackdropFilter: 'blur(20px) saturate(1.3)',
+                  background: '#FFFFFF', backdropFilter: 'blur(20px) saturate(1.3)', WebkitBackdropFilter: 'blur(20px) saturate(1.3)',
                   border: '0.5px solid rgba(0,0,0,0.08)',
                   borderTop: '0.5px solid rgba(0,0,0,0.08)',
                   boxShadow: '0 4px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(0,0,0,0.04)',

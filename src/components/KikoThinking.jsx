@@ -7,7 +7,7 @@ export default function KikoThinking({ steps = [], isActive = false }) {
       margin: '8px 0 8px 36px',
       padding: '10px 14px',
       borderRadius: 8,
-      background: 'rgba(25,25,25,0.30)',
+      background: 'rgba(0,0,0,0.03)',
       backdropFilter: 'blur(16px) saturate(1.4)',
       WebkitBackdropFilter: 'blur(16px) saturate(1.4)',
       border: '0.5px solid rgba(0,0,0,0.08)',

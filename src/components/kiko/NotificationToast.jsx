@@ -96,7 +96,7 @@ export default function NotificationToast({ user }) {
           <div key={toast.id} style={{
             display: 'flex', alignItems: 'flex-start', gap: 10,
             width: 320, padding: 14,
-            background: 'rgba(20,20,22,0.96)',
+            background: '#FFFFFF',
             backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
             borderRadius: 12,
             border: `1px solid ${c.border}`,
