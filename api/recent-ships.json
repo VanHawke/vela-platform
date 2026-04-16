@@ -1,70 +1,75 @@
 {
-  "generated_at": "2026-04-16T22:21:38.826Z",
+  "generated_at": "2026-04-16T22:25:46.041Z",
   "commits": [
+    {
+      "hash": "2e1d324",
+      "subject": "Self-serve knowledge seeding + data loop: (1) New api/cron-knowledge-seed.js — autonomous research engine. Runs daily at 3:30am, picks 3 domains per run from 10 priority areas (F1 sponsorship, insolve",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "03f1245",
       "subject": "Cron frequency unlocked — learning crons now DAILY: competitive-intel, learning-director, ingest-knowledge, score-companies, enrich, news-agent, news-classify, profile-synthesis, company-enrich, relat",
-      "when": "10 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "2e88148",
       "subject": "Kiko full unlock — proactive research + knowledge building: (1) Added PROACTIVE RESEARCH PROTOCOL to system prompt — Kiko now runs 3-5 searches minimum for complex queries, saves findings via manage_k",
-      "when": "14 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "d8559dd",
       "subject": "Kiko knowledge expansion: (1) Added EXPERTISE DOMAINS to system prompt — 15 deep specialist areas: UK/US company law, HMRC/IRS tax, HR & employment, licensing & IP, commercial/residential property, te",
-      "when": "17 minutes ago"
+      "when": "21 minutes ago"
     },
     {
       "hash": "76e3036",
       "subject": "Google Calendar integration: (1) New api/calendar-events.js endpoint — fetches events from Google Calendar API using stored OAuth tokens (auto-refresh via getGoogleToken). Returns events with title, s",
-      "when": "25 minutes ago"
+      "when": "29 minutes ago"
     },
     {
       "hash": "5c55a4c",
       "subject": "Command Centre: LinkedIn connection acceptances added to Replies section. (1) Query filter expanded to include linkedin_connection_accepted and linkedin_connection% types. (2) Section renamed 'Replies",
-      "when": "29 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "65dd82f",
       "subject": "Command Centre focus v3: (1) Enrichment context wrapper now explicitly says 'ALL THE DATA YOU NEED IS HERE — DO NOT call pipeline overview tools, deal summary tools, or any tool that returns data abou",
-      "when": "48 minutes ago"
+      "when": "53 minutes ago"
     },
     {
       "hash": "54fb103",
       "subject": "CRITICAL FIX: Command Centre item focus — changed currentPage from 'command-centre' to 'home' when viewing a selected item. The command-centre page role was telling Kiko to give broad pipeline overvie",
-      "when": "59 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "a1c6b85",
       "subject": "URGENT FIX — Command Centre + Pipeline buttons: (1) Modified api/kiko.js command-centre page role — replaced broad pipeline overview instructions with SELECTED ITEM FOCUS rule: when user asks about a ",
-      "when": "63 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "3ec353c",
       "subject": "Command Centre prompts rewritten for laser focus: task/deal/reply prompts now explicitly say 'FOCUS ONLY on this specific entity. Do NOT give a general pipeline review.' Each prompt structured with nu",
-      "when": "69 minutes ago"
+      "when": "73 minutes ago"
     },
     {
       "hash": "d7eb987",
       "subject": "Calendar data isolation: Team/All filter tabs now super_admin only. Regular users (Matt etc.) see only 'Mine' tab — they can see their own calendar events + the platform-wide race schedule (F1/FE). Su",
-      "when": "71 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "f5506dc",
       "subject": "Command Centre enrichment + email drafting activation: (1) Enrichment now parses task TITLES to extract company/contact names (e.g. 'Re-engage — Alex Barnett' → searches contacts for Alex Barnett). Fa",
-      "when": "76 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "ffd8960",
       "subject": "UI consistency + market signals: (1) KikoFloat prompt bar — attachment icon changed from paperclip to + matching main chat, send icon changed from ArrowUp to paper plane SVG matching main chat, inacti",
-      "when": "80 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "e2319d3",
       "subject": "Command Centre + Market Signals overhaul: (1) Market signals now render with proper markdown parsing — bold, headers, bullets, numbered lists all display correctly instead of garbled raw text. Added p",
-      "when": "87 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "3371c1a",
@@ -95,11 +100,6 @@
       "hash": "cd20d1e",
       "subject": "Hetzner cron migration COMPLETE: removed all 43 crons from vercel.json. Crons now run on Hetzner kiko-server (178.104.73.22) via node-cron in kiko-worker/src/cron-scheduler.js. Each cron calls the cor",
       "when": "3 hours ago"
-    },
-    {
-      "hash": "dc901c7",
-      "subject": "Pipeline deal panel hotfix: contacts query was fetching ALL 4,193 contacts then filtering client-side — caused panel to hang on 'Loading...' forever. Fixed with server-side Supabase filter: .filter('d",
-      "when": "4 hours ago"
     }
   ]
 }
