@@ -1,30 +1,72 @@
 // src/components/layout/LegoraTopNav.jsx
-// Legora-style Option A top nav — replaces the previous dark-pill header.
-// Reads navigation items from props so it stays compatible with the existing Layout's nav config.
+// Legora-style top nav — main tabs + More dropdown + avatar dropdown
 
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { supabase } from '@/lib/supabase'
 
 const TABS = [
-  { id: 'home',         label: 'Today',         path: '/',                   showPlus: true  },
-  { id: 'pipeline',     label: 'Pipeline',      path: '/pipeline',           showPlus: true  },
-  { id: 'campaigns',    label: 'Campaigns',     path: '/campaigns',          showPlus: false },
-  { id: 'inbox',        label: 'Command Centre', path: '/command-centre',     showPlus: false },
-  { id: 'calendar',     label: 'Calendar',      path: '/calendar',           showPlus: false },
-  { id: 'contacts',     label: 'Contacts',      path: '/contacts',           showPlus: false },
-  { id: 'orgs',         label: 'Organisations', path: '/organisations',      showPlus: false },
-  { id: 'linkedin',     label: 'LinkedIn',      path: '/linkedin',           showPlus: false },
-  { id: 'insights',     label: 'Insights',      path: '/partnership-matrix', showPlus: false },
+  { id: 'home',         label: 'Today',              path: '/',                   showPlus: true  },
+  { id: 'pipeline',     label: 'Pipeline',           path: '/pipeline',           showPlus: true  },
+  { id: 'campaigns',    label: 'Campaigns',          path: '/campaigns',          showPlus: false },
+  { id: 'inbox',        label: 'Command Centre',     path: '/command-centre',     showPlus: false },
+  { id: 'calendar',     label: 'Calendar',           path: '/calendar',           showPlus: false },
+  { id: 'contacts',     label: 'Contacts',           path: '/contacts',           showPlus: false },
+  { id: 'orgs',         label: 'Organisations',      path: '/organisations',      showPlus: false },
+  { id: 'insights',     label: 'Partnership Matrix', path: '/partnership-matrix', showPlus: false },
 ]
 
-export default function LegoraTopNav({ user, customLogo, onSearchClick, onNotificationsClick, onNewClick, hasNotifications }) {
+const MORE_ITEMS = [
+  { id: 'linkedin', label: 'LinkedIn',     path: '/linkedin'     },
+  { id: 'kikocode', label: 'KikoCode',     path: '/kikocode'     },
+  { id: 'memory',   label: 'Memory',       path: '/memory',       adminOnly: true },
+  { id: 'admin',    label: 'Admin',        path: '/admin',        adminOnly: true },
+  { id: 'health',   label: 'Health',       path: '/admin/system', adminOnly: true },
+]
+
+
+export default function LegoraTopNav({ user, customLogo, onSearchClick, onNotificationsClick, onNewClick, hasNotifications, isAdmin = false }) {
   const nav = useNavigate()
   const loc = useLocation()
-  const initials = (user?.email || 'S').slice(0, 1).toUpperCase()
+  const [moreOpen, setMoreOpen] = useState(false)
+  const [avatarOpen, setAvatarOpen] = useState(false)
+  const moreRef = useRef(null)
+  const avatarRef = useRef(null)
+
+  // Google avatar fallback chain
+  const avatarUrl =
+    user?.user_metadata?.avatar_url ||
+    user?.user_metadata?.picture ||
+    user?.identities?.[0]?.identity_data?.avatar_url ||
+    user?.identities?.[0]?.identity_data?.picture ||
+    null
+  const initials = (user?.user_metadata?.full_name || user?.email || 'S').slice(0, 1).toUpperCase()
+
+  // Close dropdowns on outside click / escape
+  useEffect(() => {
+    const onDown = (e) => {
+      if (moreRef.current && !moreRef.current.contains(e.target)) setMoreOpen(false)
+      if (avatarRef.current && !avatarRef.current.contains(e.target)) setAvatarOpen(false)
+    }
+    const onEsc = (e) => { if (e.key === 'Escape') { setMoreOpen(false); setAvatarOpen(false) } }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onEsc)
+    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onEsc) }
+  }, [])
 
   const isActive = (path) => {
     if (path === '/') return loc.pathname === '/' || loc.pathname === '/home' || loc.pathname === '/dashboard'
     return loc.pathname === path || loc.pathname.startsWith(path + '/')
   }
+
+  const moreIsActive = MORE_ITEMS.some(m => isActive(m.path))
+  const visibleMoreItems = MORE_ITEMS.filter(m => !m.adminOnly || isAdmin)
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    window.location.href = '/login'
+  }
+
 
   return (
     <nav className="legora-topnav">
@@ -54,7 +96,33 @@ export default function LegoraTopNav({ user, customLogo, onSearchClick, onNotifi
             {tab.showPlus && <span className="ltn-plus">+</span>}
           </button>
         ))}
+
+        {/* More dropdown */}
+        <div className="ltn-more-wrap" ref={moreRef}>
+          <button
+            className={`ltn-link ${moreIsActive ? 'active' : ''}`}
+            onClick={() => setMoreOpen(o => !o)}
+            aria-expanded={moreOpen}
+          >
+            More
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginLeft: 4 }}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {moreOpen && (
+            <div className="ltn-dropdown">
+              {visibleMoreItems.map(item => (
+                <button
+                  key={item.id}
+                  className={`ltn-dropdown-item ${isActive(item.path) ? 'active' : ''}`}
+                  onClick={() => { nav(item.path); setMoreOpen(false) }}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+
 
       {/* Right cluster */}
       <div className="ltn-right">
@@ -73,7 +141,34 @@ export default function LegoraTopNav({ user, customLogo, onSearchClick, onNotifi
         {onNewClick && (
           <button className="ltn-cta sparkle-cta magnetic" onClick={onNewClick}>+ New</button>
         )}
-        <div className="ltn-avatar">{initials}</div>
+
+        {/* Avatar with dropdown */}
+        <div className="ltn-avatar-wrap" ref={avatarRef}>
+          <button className="ltn-avatar" onClick={() => setAvatarOpen(o => !o)} title={user?.email || ''}>
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt=""
+                referrerPolicy="no-referrer"
+                onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.classList.add('ltn-avatar-fallback') }}
+              />
+            ) : null}
+            <span className="ltn-avatar-initials">{initials}</span>
+          </button>
+          {avatarOpen && (
+            <div className="ltn-dropdown ltn-dropdown-right">
+              {user?.email && (
+                <div className="ltn-dropdown-header">
+                  <div className="ltn-dropdown-name">{user?.user_metadata?.full_name || 'User'}</div>
+                  <div className="ltn-dropdown-email">{user.email}</div>
+                </div>
+              )}
+              <button className="ltn-dropdown-item" onClick={() => { nav('/settings'); setAvatarOpen(false) }}>Settings</button>
+              <div className="ltn-dropdown-divider" />
+              <button className="ltn-dropdown-item ltn-dropdown-danger" onClick={handleSignOut}>Sign out</button>
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   )

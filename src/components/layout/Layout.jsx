@@ -379,6 +379,7 @@ export default function Layout({ user }) {
         user={user}
         customLogo={customLogo}
         hasNotifications={true}
+        isAdmin={isSuperAdmin}
         onSearchClick={() => setCommandPaletteOpen(true)}
       />
 
