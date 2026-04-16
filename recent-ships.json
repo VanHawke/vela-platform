@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-16T09:09:30.786Z",
+  "generated_at": "2026-04-16T09:13:51.232Z",
   "commits": [
+    {
+      "hash": "37df539",
+      "subject": "Homepage: white card prompt bar (welcome only), sage alerts pill (permanent leftmost), 4 dynamic chips, remove feature tiles — matches signed-off kiko-home-nav-c.html. Chat mode prompt bar styling unc",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "7ee5d96",
       "subject": "Group A: nav + identity — 1) 'Insights' renamed to 'Partnership Matrix', 2) 'More' dropdown restored with Settings/LinkedIn/KikoCode and admin items (Memory/Admin/Health), 3) avatar with Google fallba",
@@ -49,7 +54,7 @@
     {
       "hash": "cba44c7",
       "subject": "fix: restore working OLD pages — redesign rebuilt from scratch and lost ~50-78% of functionality. Pipeline gets back its 7 stages, manager dropdown, deal detail panel; Inbox/Command Centre gets back r",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "260fb83",
@@ -94,11 +99,6 @@
     {
       "hash": "6720a43",
       "subject": "redesign: nightly outreach windows cron + Settings/Email panel + section descriptions for placeholder tabs",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "8d5fd37",
-      "subject": "redesign: pre-prod fixes — revert dev bypass, build outreach intelligence Supabase tables, retrofit ContactDetail/SequenceDetail/Organisations/LinkedInQueue, wire real metrics into Insights and Pipeli",
       "when": "13 hours ago"
     }
   ]

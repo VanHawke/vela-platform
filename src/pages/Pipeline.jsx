@@ -459,7 +459,12 @@ export default function Pipeline({ user }) {
           <aside className="pl-panel">
             <div className="pl-panel-h">
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
-                <div className="pl-panel-mark">
+                <div
+                  className="pl-panel-mark"
+                  onClick={() => dealCompany && nav(`/organisations?org=${dealCompany.id}`)}
+                  style={{ cursor: dealCompany ? 'pointer' : 'default' }}
+                  title={dealCompany ? 'Open organisation' : ''}
+                >
                   {companyDomains[selectedDeal.company] ? (
                     <img
                       src={`https://www.google.com/s2/favicons?domain=${companyDomains[selectedDeal.company]}&sz=128`}
@@ -471,7 +476,14 @@ export default function Pipeline({ user }) {
                   )}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <h2 className="pl-panel-title">{selectedDeal.company || selectedDeal.title}</h2>
+                  <h2
+                    className="pl-panel-title"
+                    onClick={() => dealCompany && nav(`/organisations?org=${dealCompany.id}`)}
+                    style={{ cursor: dealCompany ? 'pointer' : 'default' }}
+                    title={dealCompany ? 'Open organisation' : ''}
+                  >
+                    {selectedDeal.company || selectedDeal.title}
+                  </h2>
                   {dealCompany?.industry && (
                     <p className="pl-panel-sub">
                       {dealCompany.industry}{dealCompany.country ? ` · ${dealCompany.country}` : ''}
