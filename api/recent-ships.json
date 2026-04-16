@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-16T20:43:09.517Z",
+  "generated_at": "2026-04-16T20:54:32.532Z",
   "commits": [
+    {
+      "hash": "3371c1a",
+      "subject": "Calendar cleanup: removed ALL hardcoded fake events (Giacomo meetings, Goldman Sachs calls, Van Hawke board check-in, m pipeline, Mark Nelson Stripe, fake prospect pills with fabricated send times, fa",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "fc7f417",
       "subject": "KikoFloat fixes: (1) Prompt bar aligned with main chat — font 14→15px, buttons 28→30px with borders + shadows, send button gradient matches main chat, mic/voice buttons have consistent border treatmen",
-      "when": "9 minutes ago"
+      "when": "21 minutes ago"
     },
     {
       "hash": "f8eabf1",
       "subject": "Fixes: (1) Navigation tab now visible to all users in Settings (Matt can personalise his nav). Other admin tabs still super_admin only. (2) Pipeline logActivity buttons fixed — was silently failing be",
-      "when": "23 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "f7e2683",
       "subject": "Fix: (1) Added kiko_voice, kiko_voice_style, kiko_speed, kiko_personality columns to user_settings table — these were missing, causing 'Could not find column' error when saving voice/personality setti",
-      "when": "36 minutes ago"
+      "when": "48 minutes ago"
     },
     {
       "hash": "bb896d8",
       "subject": "Voice settings overhaul: (1) New Voice Style section with 5 tone presets (Natural, Professional, Warm & Inviting, Energetic, Calm & Soothing) — each passes specific instructions to gpt-4o-mini-tts con",
-      "when": "52 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "cd20d1e",
       "subject": "Hetzner cron migration COMPLETE: removed all 43 crons from vercel.json. Crons now run on Hetzner kiko-server (178.104.73.22) via node-cron in kiko-worker/src/cron-scheduler.js. Each cron calls the cor",
-      "when": "76 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "dc901c7",
@@ -34,12 +39,12 @@
     {
       "hash": "6396d17",
       "subject": "Pipeline deal panel consistency fix: (1) Contacts now load INDEPENDENTLY of org match. Previously contacts fetch was inside the 'if company matches' block — deals without an org record (Cloudflare, Pa",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "eed2877",
       "subject": "Cron migration prep: created kiko-worker/src/cron-scheduler.js with all 43 cron schedules mapped to Vercel API endpoints + node-cron scheduler. Ready to deploy to Hetzner when SSH access granted. COST",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "002eee9",
@@ -94,11 +99,6 @@
     {
       "hash": "2af3af0",
       "subject": "Theming pass: (1) Command Centre right pane — added max-height: calc(100vh - 140px) + overflow: hidden to .cc-detail. Previously min-height:500px with no max-height caused the detail card to grow past",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "d4648a5",
-      "subject": "Nav reorder + Pipeline org-click fixes: (1) Layout.getTopNavIds — removed over-aggressive '<4 items = corrupt' guard that was treating legitimate user selections as corrupt data and reverting to defau",
       "when": "6 hours ago"
     }
   ]

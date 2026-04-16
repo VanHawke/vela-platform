@@ -12,6 +12,21 @@ import {
 } from 'lucide-react'
 import './OutreachIntelligence.css'
 
+// Simple markdown → HTML for Kiko brief responses
+function parseBriefMarkdown(text) {
+  if (!text) return ''
+  return text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/^### (.+)$/gm, '<h4 style="margin:16px 0 6px;font-size:13px;font-weight:600;color:#0A0A0A;font-family:Inter,system-ui,sans-serif">$1</h4>')
+    .replace(/^## (.+)$/gm, '<h3 style="margin:18px 0 8px;font-size:14px;font-weight:600;color:#0A0A0A;font-family:Inter,system-ui,sans-serif">$1</h3>')
+    .replace(/^# (.+)$/gm, '<h3 style="margin:18px 0 8px;font-size:15px;font-weight:600;color:#0A0A0A;font-family:Inter,system-ui,sans-serif">$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#0A0A0A">$1</strong>')
+    .replace(/^[•\-\*] (.+)$/gm, '<div style="padding:2px 0 2px 14px;position:relative"><span style="position:absolute;left:0;color:#A0A0A0">·</span>$1</div>')
+    .replace(/^(\d+)\. (.+)$/gm, '<div style="padding:2px 0 2px 20px;position:relative"><span style="position:absolute;left:0;color:#6B6B6B;font-weight:500">$1.</span>$2</div>')
+    .replace(/\n{2,}/g, '<div style="height:10px"></div>')
+    .replace(/\n/g, '<br/>')
+}
+
 const STAGE_PROB = {
   'To revisit': 10, 'Contact made': 20, 'Qualified': 35,
   'In Dialogue': 50, 'Meeting arranged (brand x RH)': 55,
@@ -120,6 +135,26 @@ async function enrichSelectedForBrief(sel) {
         const contactFacts = [cd.title, cd.email, cd.linkedinUrl && 'has LinkedIn'].filter(Boolean).join(' · ')
         if (contactFacts) facts.push(`CONTACT: ${cd.firstName || ''} ${cd.lastName || ''} — ${contactFacts}`)
         if (cd.notes) facts.push(`CONTACT NOTES: ${String(cd.notes).slice(0, 300)}`)
+      }
+    }
+    // Recent activities for this entity
+    if (companyName) {
+      const { data: acts } = await supabase
+        .from('activities').select('type, subject, direction, created_at')
+        .ilike('entity_name', `%${companyName}%`)
+        .order('created_at', { ascending: false }).limit(5)
+      if (acts?.length) {
+        facts.push(`RECENT ACTIVITY LOG:\n${acts.map(a => `  [${new Date(a.created_at).toLocaleDateString('en-GB', { day:'numeric',month:'short' })}] ${a.direction === 'inbound' ? '← IN' : '→ OUT'} ${a.type}: ${a.subject || '(no subject)'}`).join('\n')}`)
+      }
+    }
+    // Relevant alerts/signals for this entity
+    if (companyName) {
+      const { data: alerts } = await supabase
+        .from('kiko_alerts').select('title, detail, created_at')
+        .ilike('entity_name', `%${companyName}%`)
+        .order('created_at', { ascending: false }).limit(3)
+      if (alerts?.length) {
+        facts.push(`RECENT SIGNALS/ALERTS:\n${alerts.map(a => `  [${new Date(a.created_at).toLocaleDateString('en-GB', { day:'numeric',month:'short' })}] ${a.title}`).join('\n')}`)
       }
     }
     if (facts.length === 0) return basePrompt
@@ -529,7 +564,7 @@ export default function OutreachIntelligence({ user }) {
                 </div>
                 <div className="cc-detail-body">
                   {brief ? (
-                    <div className="cc-detail-section-body" style={{ whiteSpace: 'pre-wrap' }}>{brief}</div>
+                    <div className="cc-detail-section-body" style={{ lineHeight: 1.65, fontSize: 13.5, color: '#2A2A2A', fontFamily: 'Inter, system-ui, sans-serif' }} dangerouslySetInnerHTML={{ __html: parseBriefMarkdown(brief) }} />
                   ) : briefLoading ? (
                     <div className="cc-detail-loading">
                       <span className="dot" /><span className="dot" /><span className="dot" />
@@ -553,6 +588,18 @@ export default function OutreachIntelligence({ user }) {
                         <button className="cc-detail-btn primary" onClick={e => completeTask(selected.payload, e)}>
                           Mark complete <CheckSquare size={11} />
                         </button>
+                      )}
+                      {selected.kind === 'signal' && (
+                        <>
+                          <button className="cc-detail-btn primary" onClick={() => nav('/campaigns')}>
+                            Generate campaign <Zap size={11} />
+                          </button>
+                          {selected.payload?.entity_name && (
+                            <button className="cc-detail-btn secondary" onClick={() => nav('/contacts')}>
+                              Research deeper <ExternalLink size={11} />
+                            </button>
+                          )}
+                        </>
                       )}
                       <button className="cc-detail-btn secondary" onClick={() => setSelected(null)}>Close</button>
                     </div>
