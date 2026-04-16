@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-16T12:35:50.317Z",
+  "generated_at": "2026-04-16T13:12:49.724Z",
   "commits": [
+    {
+      "hash": "1de2ae5",
+      "subject": "Organisations toolbar + table polish: (1) Top action bar — Add Organisation button label now visible (color #FFFFFF on black bg, was #0A0A0A invisible), switched from pill radius-50 to square radius-4",
+      "when": "37 minutes ago"
+    },
     {
       "hash": "47831dd",
       "subject": "Organisations + KikoChat: Legora polish. Organisations: 34 dark-glass rgba(25,25,25,0.40/0.50) backgrounds swapped to #FFFFFF, removed wasteful blur-on-white on glass/dropdown (saves GPU), swapped 0.4",
-      "when": "14 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "d0da7b3",
       "subject": "Nav + Partnership Matrix fixes: (1) Avatar either/or render — img OR initials, never both. (2) Settings nav defaults synced with LegoraTopNav TABS (all 8 tabs default-on, was only 5 with stale 'sequen",
-      "when": "20 minutes ago"
+      "when": "57 minutes ago"
     },
     {
       "hash": "948d234",
       "subject": "KikoChat: agent-plan style thinking steps. Dark-glass 'Kiko's reasoning' button swapped to Legora white card. Purple dot list replaced with status-aware icons: spinning sage ring for in-progress step,",
-      "when": "54 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "641a449",
       "subject": "Calendar redesign: signed-off race spine + outreach intelligence port swapped to active (was NEW_REDESIGN.jsx). Uses Legora tokens (white bg, Source Serif 4, sage/terra/amber/purple for F1/FE/MotoGP/W",
-      "when": "63 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "1abc2cb",
       "subject": "Contacts: wire up New contact modal — form state, saveContact handler with reloadKey to refresh list on save, resetForm helper, button onClick, full modal JSX with first/last name row + email + phone ",
-      "when": "68 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "bbbf11e",
       "subject": "Contacts page: Legora redesign ported to active (was NEW_REDESIGN) — tabular view with hover preview popup, sector tags, status chips, Source Serif 4 header. Company name in each row now routes to /or",
-      "when": "83 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "36cf605",
       "subject": "Partnership Matrix: fix active tab black-on-black (color:#FFFFFF when active on T.accent pill) + Add-partnership modal from dark glass to Legora white card with light border",
-      "when": "86 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "7b0718c",
@@ -49,12 +54,12 @@
     {
       "hash": "21de3a2",
       "subject": "Command Centre: fix Kiko brief streaming — SSE event key is 'delta' not 'text'. Brief now renders in right pane when item selected.",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "bad0fdf",
       "subject": "Command Centre task labelling (use type+contact+company, not generic 'Task'), richer Kiko brief prompt with full task context. Chat-mode prompt bar — now white card matching welcome state, consistent ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f0e57cf",
@@ -69,37 +74,32 @@
     {
       "hash": "8dded1f",
       "subject": "Command Centre rebuilt: Hot Replies band top (email/LinkedIn when webhooks fire) + Priority Deals left + Tasks/Signals right. Real data from deals/tasks/kiko_alerts. Legora design. Replaces experiment",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "4978b81",
       "subject": "Pipeline: deal panel company title + favicon mark now clickable — routes to /organisations?org=<id> and auto-selects that org. Hover shows underline. Contact rows already routed to /contacts/:id.",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "37df539",
       "subject": "Homepage: white card prompt bar (welcome only), sage alerts pill (permanent leftmost), 4 dynamic chips, remove feature tiles — matches signed-off kiko-home-nav-c.html. Chat mode prompt bar styling unc",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "7ee5d96",
       "subject": "Group A: nav + identity — 1) 'Insights' renamed to 'Partnership Matrix', 2) 'More' dropdown restored with Settings/LinkedIn/KikoCode and admin items (Memory/Admin/Health), 3) avatar with Google fallba",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "fdf9a2f",
       "subject": "Group A: nav 'Insights' → 'Partnership Matrix', LinkedIn moved to 'More' dropdown (also contains KikoCode + admin-only Memory/Admin/Health), avatar now shows Google profile picture (with fallback chai",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "f00e098",
       "subject": "fix: revert HomeDashboard from KikoChat (was added without sign-off, changed approved homepage). Restore inbox 2-pane CSS for /command-centre (was overwritten with dashboard CSS, causing unstyled text",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "30d9398",
-      "subject": "feat: Home page upgraded — new HomeDashboard component with 4 Bento cards (weighted pipeline + active deals, stale + overdue, hot replies 24h, next F1 race countdown w/ PEAK badge). Real Supabase data",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     }
   ]
 }

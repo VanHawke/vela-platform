@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 
 let cachedEffective = null
 let cacheUserId = null
+let inFlight = null  // Promise<effective> — dedups concurrent callers (Layout + TopNav + PermissionGate mount simultaneously)
 
 export function usePagePermissions(user, orgId) {
   const [effective, setEffective] = useState(cachedEffective || {})
@@ -11,19 +12,33 @@ export function usePagePermissions(user, orgId) {
 
   useEffect(() => {
     if (!user?.id || !orgId) return
+    // Fast path: cached for this user
     if (cacheUserId === user.id && cachedEffective) { setEffective(cachedEffective); setLoading(false); return }
 
+    let cancelled = false
     setLoading(true)
-    fetch(`/api/user-permissions?user_id=${user.id}&organization_id=${orgId}`)
-      .then(r => r.json())
-      .then(d => {
-        const eff = d.effective || {}
-        cachedEffective = eff
-        cacheUserId = user.id
-        setEffective(eff)
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+
+    // Share one in-flight fetch across all concurrent callers on mount
+    if (!inFlight || cacheUserId !== user.id) {
+      inFlight = fetch(`/api/user-permissions?user_id=${user.id}&organization_id=${orgId}`)
+        .then(r => r.json())
+        .then(d => {
+          const eff = d.effective || {}
+          cachedEffective = eff
+          cacheUserId = user.id
+          return eff
+        })
+        .catch(() => ({}))
+        .finally(() => { inFlight = null })
+    }
+
+    inFlight.then(eff => {
+      if (cancelled) return
+      setEffective(eff)
+      setLoading(false)
+    })
+
+    return () => { cancelled = true }
   }, [user?.id, orgId])
 
   const canSee = (pageKey) => {
@@ -40,4 +55,5 @@ export function usePagePermissions(user, orgId) {
 export function invalidatePagePermissions() {
   cachedEffective = null
   cacheUserId = null
+  inFlight = null
 }

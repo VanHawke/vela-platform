@@ -81,16 +81,20 @@ export default function LegoraTopNav({ user, customLogo, onSearchClick, onNotifi
         const stored = localStorage.getItem('kiko_top_nav_v2')
         if (!stored) { setOrderedTabs(TABS); return }
         const ids = JSON.parse(stored)
-        if (!Array.isArray(ids)) { setOrderedTabs(TABS); return }
-        // Guard: stored array with fewer than 4 items is almost certainly corrupt
-        // (user accidentally toggled everything off, bad migration, etc.) — fall back to defaults
-        if (ids.length < 4) { setOrderedTabs(TABS); return }
-        // Resolve stored IDs to TAB entries using aliases, preserve order, append missing tabs at end
+        if (!Array.isArray(ids) || ids.length === 0) { setOrderedTabs(TABS); return }
+        // Resolve stored IDs to TAB entries using aliases, preserve user's order.
+        // NO append-missing — if user toggled a tab off in Settings, it stays OFF.
+        // (Previously we appended all missing TABS to the end, which made reorder
+        //  look broken — tabs the user removed kept reappearing.)
         const resolved = ids
           .map(id => TABS.find(t => t.id === id || (t.aliases && t.aliases.includes(id))))
           .filter(Boolean)
-        const missing = TABS.filter(t => !resolved.some(r => r.id === t.id))
-        setOrderedTabs([...resolved, ...missing])
+        // Always ensure home is present (it's required — can't be toggled off in UI)
+        if (!resolved.some(t => t.id === 'home')) {
+          const homeTab = TABS.find(t => t.id === 'home')
+          if (homeTab) resolved.unshift(homeTab)
+        }
+        setOrderedTabs(resolved)
       } catch { setOrderedTabs(TABS) }
     }
     applyOrder()
