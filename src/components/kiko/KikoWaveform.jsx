@@ -138,9 +138,9 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
         position: 'relative', width: size, height: size,
         borderRadius: 9999,
         background: T.glass, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-        border: `1px solid ${active ? `rgba(124,92,252,${0.18 + (state === 'speaking' ? level * 0.25 : 0.1)})` : T.glassBorder}`,
+        border: `1px solid ${active ? `rgba(0,0,0,${0.12 + (state === 'speaking' ? level * 0.15 : 0.06)})` : T.glassBorder}`,
         boxShadow: active
-          ? `0 0 16px rgba(0,0,0,0.08), 0 2px 10px rgba(0,0,0,0.15), inset 3px 3px 0.5px -3.5px rgba(0,0,0,0.10), inset -3px -3px 0.5px -3.5px rgba(124,92,252,0.22), inset 1px 1px 1px -0.5px rgba(0,0,0,0.08), inset -1px -1px 1px -0.5px rgba(0,0,0,0.08)`
+          ? `0 0 16px rgba(0,0,0,0.08), 0 2px 10px rgba(0,0,0,0.15), inset 3px 3px 0.5px -3.5px rgba(0,0,0,0.10), inset -3px -3px 0.5px -3.5px rgba(0,0,0,0.10), inset 1px 1px 1px -0.5px rgba(0,0,0,0.08), inset -1px -1px 1px -0.5px rgba(0,0,0,0.08)`
           : T.glassShadow,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden', cursor: onClick ? 'pointer' : 'default',
@@ -149,13 +149,13 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
         {/* Top highlight */}
         <div style={{
           position: 'absolute', top: 0, left: '12%', right: '12%', height: 1,
-          background: `linear-gradient(90deg, transparent, rgba(124,92,252,${active ? 0.22 : 0.08}), transparent)`,
+          background: `linear-gradient(90deg, transparent, rgba(0,0,0,${active ? 0.10 : 0.04}), transparent)`,
           pointerEvents: 'none', zIndex: 3,
         }} />
         {/* Reactive glow ring */}
         {active && <div style={{
           position: 'absolute', inset: -2, borderRadius: 9999,
-          boxShadow: `0 0 ${12 + level * 20}px rgba(124,92,252,${glowI})`,
+          boxShadow: `0 0 ${12 + level * 20}px rgba(0,0,0,${glowI * 0.5})`,
           pointerEvents: 'none',
         }} />}
         {/* Filament Waveform bars */}

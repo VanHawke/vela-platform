@@ -13,7 +13,7 @@ export default function CompanyLogo({ domain, name, size = 24, style = {} }) {
       <div style={{
         width: size, height: size, borderRadius: size > 20 ? 8 : 6, flexShrink: 0,
         background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: size * 0.4, fontWeight: 600, color: 'rgba(124,92,252,0.5)', ...style,
+        fontSize: size * 0.4, fontWeight: 600, color: 'rgba(0,0,0,0.35)', ...style,
       }}>{initial}</div>
     )
   }

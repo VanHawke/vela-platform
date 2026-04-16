@@ -112,13 +112,13 @@ export default function ThreadIndicator({ user, currentConvId, onSwitchThread })
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '5px 12px', borderRadius: 50,
           background: 'rgba(0,0,0,0.04)',
-          border: '1px solid rgba(124,92,252,0.16)',
-          color: 'rgba(124,92,252,0.85)',
+          border: '1px solid rgba(0,0,0,0.10)',
+          color: 'rgba(0,0,0,0.65)',
           fontSize: 11, fontFamily: 'var(--font)', fontWeight: 500,
           cursor: 'pointer', transition: 'all 0.15s',
         }}
-        onMouseOver={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.06)'; e.currentTarget.style.borderColor = 'rgba(124,92,252,0.24)' }}
-        onMouseOut={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = 'rgba(124,92,252,0.16)' }}
+        onMouseOver={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.06)'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.14)' }}
+        onMouseOut={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.10)' }}
         title="Other active conversations"
       >
         <Layers size={11} />
@@ -139,7 +139,7 @@ export default function ThreadIndicator({ user, currentConvId, onSwitchThread })
         }}>
           <div style={{
             padding: '6px 10px 8px',
-            fontSize: 10, fontWeight: 600, color: 'rgba(124,92,252,0.7)',
+            fontSize: 10, fontWeight: 600, color: 'rgba(0,0,0,0.55)',
             textTransform: 'uppercase', letterSpacing: '0.08em',
             borderBottom: '1px solid rgba(255,255,255,0.04)', marginBottom: 4,
           }}>

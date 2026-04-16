@@ -98,7 +98,7 @@ export default function DraftPreview({ draft, onToneAdjust, onCopy, onSendToGmai
   const toneChips = ['More professional', 'More concise', 'More friendly', 'Add urgency', 'Soften tone', 'Make shorter']
 
   return (
-    <div style={{ background: 'rgba(124,92,252,0.025)', border: '1.5px solid rgba(0,0,0,0.08)', borderRadius: 16, overflow: 'hidden', marginTop: 12, maxWidth: 580, backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.08), 0 8px 32px rgba(0,0,0,0.2)' }}>
+    <div style={{ background: 'rgba(0,0,0,0.02)', border: '1.5px solid rgba(0,0,0,0.08)', borderRadius: 16, overflow: 'hidden', marginTop: 12, maxWidth: 580, backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)', boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.08), 0 8px 32px rgba(0,0,0,0.2)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderBottom: '1px solid rgba(0,0,0,0.03)' }}>
         <span style={{ fontSize: 13, fontWeight: 500, color: '#6B6B6B', fontFamily: T.font }}>
@@ -148,7 +148,7 @@ export default function DraftPreview({ draft, onToneAdjust, onCopy, onSendToGmai
           style={{ flex: 1, background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.03)', borderRadius: 8, padding: '6px 10px', fontSize: 12, color: '#6B6B6B', fontFamily: T.font, fontWeight: 300, outline: 'none' }} />
         {editInput.trim() && <button onClick={() => { onToneAdjust?.(editInput.trim()); setEditInput('') }} style={{
           padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.04)',
-          color: 'rgba(124,92,252,0.6)', fontSize: 11, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, flexShrink: 0,
+          color: 'rgba(0,0,0,0.45)', fontSize: 11, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, flexShrink: 0,
         }}>Apply</button>}
       </div>
     </div>

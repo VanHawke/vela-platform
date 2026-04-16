@@ -191,7 +191,7 @@ export default function EmailDraft({ text }) {
       {/* Body */}
       <div style={{ padding: '16px 18px', fontSize: 14, color: '#6B6B6B', fontFamily: T.font, lineHeight: '1.7', opacity: rewriting ? 0.3 : 1, transition: 'opacity 0.3s' }}
         dangerouslySetInnerHTML={{ __html: renderBody(currentBody) }} />
-      {rewriting && <div style={{ padding: '4px 18px 10px', fontSize: 11, color: 'rgba(124,92,252,0.5)', fontFamily: T.font }}>Rewriting...</div>}
+      {rewriting && <div style={{ padding: '4px 18px 10px', fontSize: 11, color: 'rgba(0,0,0,0.35)', fontFamily: T.font }}>Rewriting...</div>}
       {/* Actions */}
       <div style={{ padding: '10px 18px 12px', display: 'flex', alignItems: 'center', gap: 6, borderTop: '0.5px solid rgba(0,0,0,0.08)', flexWrap: 'wrap' }}>
         {tones.map(t => (
@@ -216,7 +216,7 @@ export default function EmailDraft({ text }) {
           padding: '6px 14px', borderRadius: 50,
           background: sent === 'done' ? 'rgba(34,197,94,0.08)' : sent === 'error' ? 'rgba(255,80,80,0.08)' : 'rgba(0,0,0,0.04)',
           border: sent === 'done' ? '1px solid rgba(34,197,94,0.15)' : sent === 'error' ? '1px solid rgba(255,80,80,0.15)' : '1px solid rgba(0,0,0,0.08)',
-          color: sent === 'done' ? 'rgba(34,197,94,0.8)' : sent === 'error' ? 'rgba(255,80,80,0.8)' : 'rgba(124,92,252,0.75)',
+          color: sent === 'done' ? 'rgba(34,197,94,0.8)' : sent === 'error' ? 'rgba(255,80,80,0.8)' : 'rgba(0,0,0,0.55)',
           fontSize: 12, cursor: (sent === 'sending' || sent === 'done') ? 'default' : 'pointer', fontFamily: T.font,
           display: 'flex', alignItems: 'center', gap: 5, fontWeight: 500, transition: 'all 0.15s',
         }}

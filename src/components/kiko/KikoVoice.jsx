@@ -349,7 +349,7 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
         display: 'flex', alignItems: 'center', gap: 6,
         padding: '0 12px', height: 32, borderRadius: 10,
         background: 'rgba(0,0,0,0.04)', border: '1.5px solid rgba(0,0,0,0.10)',
-        cursor: 'pointer', color: 'rgba(124,92,252,0.85)',
+        cursor: 'pointer', color: 'rgba(0,0,0,0.65)',
         fontSize: 11, fontWeight: 500, fontFamily: 'inherit',
         transition: 'all 0.2s',
       }}
@@ -364,7 +364,7 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
         color: '#A0A0A0', transition: 'all 0.2s',
       }}
-        onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(124,92,252,0.2)'; e.currentTarget.style.color = '#6B6B6B' }}
+        onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.10)'; e.currentTarget.style.color = '#6B6B6B' }}
         onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.14)'; e.currentTarget.style.color = '#A0A0A0' }}
       ><X size={14} /></button>
 

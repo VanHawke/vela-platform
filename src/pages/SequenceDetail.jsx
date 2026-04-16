@@ -704,7 +704,7 @@ RULES:
                 <div style={{ width: 20, height: 20, borderRadius: '50%', fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   background: (i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? 'rgba(0,0,0,0.08)' : 'transparent',
                   color: (i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? C.purple : C.textTer,
-                  border: `1px solid ${(i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? 'rgba(124,92,252,0.2)' : C.border}`
+                  border: `1px solid ${(i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? 'rgba(0,0,0,0.10)' : C.border}`
                 }}>{i + 1}</div>
                 {i < 2 && <ChevronRight size={10} style={{ color: C.textMut }} />}
               </div>
@@ -904,12 +904,12 @@ RULES:
                 </div></div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid rgba(0,0,0,0.08)`, background: 'rgba(0,0,0,0.03)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to write this step</button>
-                  {cur.channel === 'email' && <button onClick={() => { setTestModalStep(selStep); setTestModalOpen(true) }} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid ${testSent ? 'rgba(124,92,252,0.2)' : C.border}`, background: testSent ? 'rgba(0,0,0,0.03)' : 'transparent', color: testSent ? C.teal : C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{testSent ? '✓ Test sent' : '📧 Send test'}</button>}
+                  {cur.channel === 'email' && <button onClick={() => { setTestModalStep(selStep); setTestModalOpen(true) }} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `0.5px solid ${testSent ? 'rgba(0,0,0,0.10)' : C.border}`, background: testSent ? 'rgba(0,0,0,0.03)' : 'transparent', color: testSent ? C.teal : C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{testSent ? '✓ Test sent' : '📧 Send test'}</button>}
                 </div>
 
                 {/* ═══ REFINE WITH FEEDBACK — iterate back and forth with Kiko ═══ */}
                 {cur.template && !cur.template.startsWith('⏳') && !cur.template.startsWith('Error') && (
-                  <div style={{ marginTop: 10, padding: 10, borderRadius: 6, background: 'rgba(124,92,252,0.025)', border: `0.5px solid rgba(0,0,0,0.06)` }}>
+                  <div style={{ marginTop: 10, padding: 10, borderRadius: 6, background: 'rgba(0,0,0,0.02)', border: `0.5px solid rgba(0,0,0,0.06)` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                       <Sparkles size={11} color={C.purple} />
                       <span style={{ fontSize: 10, fontWeight: 500, color: C.purple }}>Refine with feedback</span>
@@ -1144,7 +1144,7 @@ RULES:
                       const isSent = a.status === 'sent'; const isFailed = a.status === 'failed'; const isQueued = a.status === 'queued'
                       return (
                         <div key={a.id || i} style={{ display: 'flex', gap: 10, padding: '8px 0', position: 'relative' }}>
-                          <div style={{ position: 'absolute', left: -15, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#FFFFFF', border: `2px solid ${isSent ? 'rgba(124,92,252,0.5)' : isFailed ? 'rgba(248,113,113,0.5)' : '#A0A0A0'}`, zIndex: 1 }} />
+                          <div style={{ position: 'absolute', left: -15, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#FFFFFF', border: `2px solid ${isSent ? 'rgba(0,0,0,0.35)' : isFailed ? 'rgba(248,113,113,0.5)' : '#A0A0A0'}`, zIndex: 1 }} />
                           <div style={{ flex: 1, background: C.cardHover, border: `0.5px solid ${C.border}`, borderRadius: 6, padding: '8px 10px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
                               {isSent ? <Send size={11} style={{ color: C.teal }} /> : isFailed ? <AlertTriangle size={11} style={{ color: C.red }} /> : <Clock size={11} style={{ color: C.textTer }} />}
@@ -1171,7 +1171,7 @@ RULES:
                       )
                     })}
                     <div style={{ display: 'flex', gap: 10, padding: '8px 0', position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: -15, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#FFFFFF', border: `2px solid rgba(124,92,252,0.3)`, zIndex: 1 }} />
+                      <div style={{ position: 'absolute', left: -15, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#FFFFFF', border: `2px solid rgba(0,0,0,0.18)`, zIndex: 1 }} />
                       <div style={{ flex: 1, background: C.cardHover, border: `0.5px solid ${C.border}`, borderRadius: 6, padding: '8px 10px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><UserPlus size={11} style={{ color: C.purple }} /><span style={{ fontSize: 11, fontWeight: 500, color: C.textSec }}>Enrolled</span></div>
                         <div style={{ fontSize: 10, color: C.textMut, marginTop: 2 }}>{selectedLead.created_at ? new Date(selectedLead.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}</div>

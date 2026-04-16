@@ -128,7 +128,7 @@ export default function KikoInsights({ onAction, open, onClose }) {
                     <span style={{ fontSize: 13, color: '#6B6B6B', fontWeight: 400, fontFamily: T.font, display: 'block', lineHeight: 1.4 }}>{alert.title}</span>
                   </div>
                   <button onClick={() => { onAction?.(`Tell me about the ${alert.entity_name} partnership announcement`); onClose?.() }}
-                    style={{ ...btnBase, background: 'rgba(0,0,0,0.04)', color: 'rgba(124,92,252,0.6)', fontSize: 10, width: 'auto', borderRadius: 6, padding: '0 8px', fontFamily: T.font }}>Discuss</button>
+                    style={{ ...btnBase, background: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.45)', fontSize: 10, width: 'auto', borderRadius: 6, padding: '0 8px', fontFamily: T.font }}>Discuss</button>
                   <button onClick={() => { nav('/partnership-matrix'); onClose?.() }}
                     style={{ ...btnBase, background: 'rgba(0,212,170,0.04)', color: 'rgba(0,212,170,0.5)', fontSize: 10, width: 'auto', borderRadius: 6, padding: '0 8px', fontFamily: T.font }}>Matrix</button>
                   <button onClick={() => dismissPartnership(alert)} style={{ ...btnBase, background: 'transparent', color: '#A0A0A0' }}><X size={10} /></button>
@@ -143,7 +143,7 @@ export default function KikoInsights({ onAction, open, onClose }) {
               <div style={{ padding: '4px 8px 8px', fontSize: 11, color: '#A0A0A0', fontFamily: T.font, fontWeight: 500, letterSpacing: '0.5px' }}>SUGGESTED ACTIONS</div>
               {draftActions.map(draft => (
                 <div key={draft.id} style={{ ...pillStyle, background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.05)' }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', flexShrink: 0, background: 'rgba(124,92,252,0.5)' }} />
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', flexShrink: 0, background: 'rgba(0,0,0,0.35)' }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ fontSize: 13, color: '#6B6B6B', fontWeight: 500, fontFamily: T.font }}>{draft.payload?.entity || 'Action'}: </span>
                     <span style={{ fontSize: 13, color: '#A0A0A0', fontWeight: 400, fontFamily: T.font }}>{(draft.payload?.suggested_action || 'Follow up').slice(0, 80)}</span>

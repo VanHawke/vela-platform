@@ -21,12 +21,12 @@ export default function KikoThinking({ steps = [], isActive = false }) {
           return (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0',
-              fontSize: 12, color: done ? '#6B6B6B' : 'rgba(124,92,252,0.7)',
+              fontSize: 12, color: done ? '#6B6B6B' : 'rgba(0,0,0,0.55)',
               fontFamily: "ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
             }}>
               {done
-                ? <Check style={{ width: 13, height: 13, color: 'rgba(124,92,252,0.6)' }} />
-                : <Loader2 style={{ width: 13, height: 13, color: 'rgba(124,92,252,0.5)', animation: 'spin 1s linear infinite' }} />
+                ? <Check style={{ width: 13, height: 13, color: 'rgba(0,0,0,0.45)' }} />
+                : <Loader2 style={{ width: 13, height: 13, color: 'rgba(0,0,0,0.35)', animation: 'spin 1s linear infinite' }} />
               }
               <Wrench style={{ width: 12, height: 12, color: '#A0A0A0' }} />
               <span style={{ fontWeight: 500 }}>{step.label}</span>

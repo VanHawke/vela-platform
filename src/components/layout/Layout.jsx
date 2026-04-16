@@ -564,7 +564,7 @@ export default function Layout({ user }) {
             {avatarOpen && (
               <div style={{
                 position: 'absolute', top: '100%', right: 0, marginTop: 6,
-                width: 200, background: 'rgba(124,92,252,0.035)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
+                width: 200, background: 'rgba(0,0,0,0.03)', backdropFilter: 'blur(40px) saturate(1.6)', WebkitBackdropFilter: 'blur(40px) saturate(1.6)',
                 borderRadius: 18, border: '0.5px solid rgba(0,0,0,0.08)',
                 boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.08), 0 8px 40px rgba(0,0,0,0.5)',
                 padding: '6px', zIndex: 400, animation: 'fadeIn 0.15s ease-out',
@@ -607,7 +607,7 @@ export default function Layout({ user }) {
           zIndex: 240, animation: 'fadeIn 0.15s ease-out',
         }} onClick={() => setMobileMenuOpen(false)}>
           <div style={{
-            background: 'rgba(124,92,252,0.035)', borderBottom: '0.5px solid rgba(0,0,0,0.08)',
+            background: 'rgba(0,0,0,0.03)', borderBottom: '0.5px solid rgba(0,0,0,0.08)',
             padding: '8px 12px', maxHeight: '70vh', overflowY: 'auto',
           }} onClick={e => e.stopPropagation()}>
             {ALL_NAV.map(item => {
