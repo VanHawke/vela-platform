@@ -192,7 +192,20 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
         // Fetch the current user's profile so voice greeting + system prompt use their real name/role
         // (falls back gracefully to generic prompt if anything's missing)
         const voiceProfile = await fetchVoiceProfile(supabase)
-        const sessionInstructions = buildVoiceInstructions(voiceProfile)
+        let sessionInstructions = buildVoiceInstructions(voiceProfile)
+
+        // Append voice style instructions if set
+        const voiceStyleId = localStorage.getItem('kiko_voice_style') || 'natural'
+        const VOICE_STYLE_INSTRUCTIONS = {
+          natural: 'Speak in a natural, relaxed, conversational tone. Be warm and genuine, as if talking to a trusted colleague.',
+          professional: 'Speak clearly and professionally with confident pacing. Articulate precisely, like a senior executive.',
+          warm: 'Speak with warmth, softness, and genuine friendliness. Let your voice feel inviting and approachable, with gentle feminine energy. Smile through your words.',
+          energetic: 'Speak with energy and enthusiasm. Be dynamic and engaging, varying pace and emphasis to keep the listener motivated.',
+          calm: 'Speak slowly and gently with a soothing, measured pace. Be reassuring and calming, like guiding someone through a complex decision.',
+        }
+        if (VOICE_STYLE_INSTRUCTIONS[voiceStyleId]) {
+          sessionInstructions += `\n\n═══ VOICE DELIVERY ═══\n${VOICE_STYLE_INSTRUCTIONS[voiceStyleId]}`
+        }
         // 1. Get ephemeral token
         console.log('[KikoVoice] Getting ephemeral token...')
         const voice = localStorage.getItem('kiko_voice') || 'coral'

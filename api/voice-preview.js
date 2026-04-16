@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   if (!key) return res.status(500).json({ error: 'OPENAI_KEY not configured' });
 
   const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-  const { voice = 'coral', userEmail } = body;
+  const { voice = 'coral', userEmail, speed = 1.0, instructions = '' } = body;
 
   // Resolve the greeting name: prefer user_settings.greeting_name, then first_name,
   // then kiko_user_config.display_name's first token, then neutral fallback.
@@ -54,6 +54,8 @@ export default async function handler(req, res) {
         model: 'gpt-4o-mini-tts',
         voice,
         input,
+        speed: parseFloat(speed) || 1.0,
+        ...(instructions ? { instructions } : {}),
         response_format: 'mp3',
       }),
     });

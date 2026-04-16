@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-16T19:26:53.378Z",
+  "generated_at": "2026-04-16T19:50:31.824Z",
   "commits": [
+    {
+      "hash": "cd20d1e",
+      "subject": "Hetzner cron migration COMPLETE: removed all 43 crons from vercel.json. Crons now run on Hetzner kiko-server (178.104.73.22) via node-cron in kiko-worker/src/cron-scheduler.js. Each cron calls the cor",
+      "when": "24 minutes ago"
+    },
     {
       "hash": "dc901c7",
       "subject": "Pipeline deal panel hotfix: contacts query was fetching ALL 4,193 contacts then filtering client-side — caused panel to hang on 'Loading...' forever. Fixed with server-side Supabase filter: .filter('d",
-      "when": "79 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "6396d17",
@@ -14,7 +19,7 @@
     {
       "hash": "eed2877",
       "subject": "Cron migration prep: created kiko-worker/src/cron-scheduler.js with all 43 cron schedules mapped to Vercel API endpoints + node-cron scheduler. Ready to deploy to Hetzner when SSH access granted. COST",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "002eee9",
@@ -54,12 +59,12 @@
     {
       "hash": "f4ccdae",
       "subject": "KikoFloat Legora polish: panel background changed from semi-transparent rgba(0,0,0,0.03) + blur to solid white #FFFFFF with light shadow (0.12 opacity instead of 0.5). Floating avatar button shadows r",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "8eccfe2",
       "subject": "Nav + KikoFloat overhaul: (1) LegoraTopNav now uses ALL_PAGES master list (9 items including LinkedIn) instead of separate TABS (8) + MORE_ITEMS. Settings writes linkedin to kiko_top_nav_v2 and the re",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "236edc2",
@@ -69,12 +74,12 @@
     {
       "hash": "2af3af0",
       "subject": "Theming pass: (1) Command Centre right pane — added max-height: calc(100vh - 140px) + overflow: hidden to .cc-detail. Previously min-height:500px with no max-height caused the detail card to grow past",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "d4648a5",
       "subject": "Nav reorder + Pipeline org-click fixes: (1) Layout.getTopNavIds — removed over-aggressive '<4 items = corrupt' guard that was treating legitimate user selections as corrupt data and reverting to defau",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "3b1af5a",
@@ -84,21 +89,16 @@
     {
       "hash": "67909bc",
       "subject": "Batch: (1) Pipeline — New deal button wired up with full Legora white-card modal (title/company/value/pipeline dropdown), inserts to deals table with STAGES[0].id default + correct JSONB shape + ORG_I",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "80c8a90",
       "subject": "Profile pic + all-pages button audit: (1) Layout passes profile prop to LegoraTopNav so user-uploaded profile_photo_url is preferred over Google avatar_url. Initials fallback also now prefers display_",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "83ba952",
       "subject": "Chat + nav UX fixes: (1) Send button (both welcome + chat mode) — was black icon on dark gradient (invisible); now color toggles white when hasContent, muted grey when disabled. (2) Chat title dropdow",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "4e9dc9b",
-      "subject": "UX batch: (1) + removed from Today/Pipeline (showPlus:false). (2) Admin + Health Centre removed from More dropdown. (3) Settings gets faint divider line above it (item.divider flag + .ltn-dropdown-div",
       "when": "6 hours ago"
     }
   ]

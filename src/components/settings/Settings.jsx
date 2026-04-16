@@ -14,14 +14,21 @@ import { useOrg } from '@/contexts/OrgContext'
 const AdminSystem = lazy(() => import('@/pages/AdminSystem'))
 
 const VOICES = [
-  { id: 'shimmer', label: 'Shimmer', desc: 'Warm, articulate female' },
-  { id: 'coral', label: 'Coral', desc: 'Friendly, natural female' },
-  { id: 'sage', label: 'Sage', desc: 'Calm, authoritative female' },
-  { id: 'verse', label: 'Verse', desc: 'Expressive, dynamic female' },
-  { id: 'marin', label: 'Marin', desc: 'Smooth, professional female' },
-  { id: 'alloy', label: 'Alloy', desc: 'Neutral, balanced' },
-  { id: 'echo', label: 'Echo', desc: 'Clear, articulate male' },
-  { id: 'cedar', label: 'Cedar', desc: 'Deep, confident male' },
+  { id: 'coral', label: 'Coral', desc: 'Warm, natural, conversational' },
+  { id: 'shimmer', label: 'Shimmer', desc: 'Soft, polished, feminine' },
+  { id: 'sage', label: 'Sage', desc: 'Calm, authoritative, grounded' },
+  { id: 'verse', label: 'Verse', desc: 'Expressive, dynamic, engaging' },
+  { id: 'marin', label: 'Marin', desc: 'Smooth, professional, clear' },
+  { id: 'alloy', label: 'Alloy', desc: 'Neutral, balanced, versatile' },
+  { id: 'echo', label: 'Echo', desc: 'Clear, articulate, masculine' },
+  { id: 'cedar', label: 'Cedar', desc: 'Deep, confident, resonant' },
+]
+const VOICE_STYLES = [
+  { id: 'natural', label: 'Natural', desc: 'Relaxed, human-like delivery', instructions: 'Speak in a natural, relaxed, conversational tone. Be warm and genuine, as if talking to a trusted colleague over coffee.' },
+  { id: 'professional', label: 'Professional', desc: 'Crisp, clear, boardroom-ready', instructions: 'Speak clearly and professionally with confident pacing. Articulate each point precisely, like a senior executive in a board meeting.' },
+  { id: 'warm', label: 'Warm & Inviting', desc: 'Friendly, approachable, feminine', instructions: 'Speak with warmth, softness, and genuine friendliness. Let your voice feel inviting and approachable, with a gentle feminine energy. Smile through your words.' },
+  { id: 'energetic', label: 'Energetic', desc: 'Upbeat, dynamic, motivating', instructions: 'Speak with energy and enthusiasm. Be dynamic and engaging, varying your pace and emphasis to keep the listener engaged and motivated.' },
+  { id: 'calm', label: 'Calm & Soothing', desc: 'Gentle, measured, reassuring', instructions: 'Speak slowly and gently with a soothing, measured pace. Be reassuring and calming, like guiding someone through a complex decision with patience.' },
 ]
 const SPEEDS = [
   { id: 0.8, label: 'Slow' },
@@ -128,12 +135,17 @@ export default function Settings({ user }) {
     if (previewAudioRef.current) { previewAudioRef.current.pause(); previewAudioRef.current = null }
     setPreviewingVoice(voiceId)
     try {
-      // Pass userEmail so voice-preview can personalise the greeting ("Hello Matt..." etc)
       const { data: { session } } = await supabase.auth.getSession()
       const userEmail = session?.user?.email || null
+      const currentStyle = VOICE_STYLES.find(s => s.id === (settings.kiko_voice_style || 'natural'))
       const res = await fetch('/api/voice-preview', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ voice: voiceId, userEmail })
+        body: JSON.stringify({
+          voice: voiceId,
+          userEmail,
+          speed: parseFloat(settings.kiko_speed) || 1.0,
+          instructions: currentStyle?.instructions || '',
+        })
       })
       if (!res.ok) { setPreviewingVoice(null); return }
       const blob = await res.blob()
@@ -570,63 +582,79 @@ export default function Settings({ user }) {
         {tab === 'Kiko' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Voice</h3>
+              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Voice</h3>
+              <p style={{ fontSize: 12, color: T.textTertiary, margin: '0 0 14px', fontFamily: T.font }}>Choose Kiko's voice — click the play button to preview</p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
                 {VOICES.map(v => {
-                  const isSelected = (settings.kiko_voice || 'shimmer') === v.id
+                  const isSelected = (settings.kiko_voice || 'coral') === v.id
                   const isPreviewing = previewingVoice === v.id
                   return (
                     <div key={v.id} style={{
-                      padding: '10px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
-                      background: isSelected ? T.accent : T.surface,
+                      padding: '12px 14px', borderRadius: 8, border: `1.5px solid ${isSelected ? T.accent : T.border}`,
+                      background: isSelected ? T.accent : '#FAFAF7',
                       color: isSelected ? '#FFFFFF' : T.text,
                       display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
                       transition: 'all 0.15s',
                     }} onClick={() => { saveSettings({ kiko_voice: v.id }); try { localStorage.setItem('kiko_voice', v.id) } catch {} }}>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 14, fontWeight: 400, fontFamily: T.font }}>{v.label}</div>
-                        <div style={{ fontSize: 12, opacity: 0.7, fontFamily: T.font }}>{v.desc}</div>
+                        <div style={{ fontSize: 14, fontWeight: 500, fontFamily: T.font }}>{v.label}</div>
+                        <div style={{ fontSize: 11, opacity: 0.65, fontFamily: T.font, marginTop: 2 }}>{v.desc}</div>
                       </div>
                       <button onClick={(e) => { e.stopPropagation(); previewVoice(v.id) }} style={{
-                        width: 30, height: 30, borderRadius: '50%', border: 'none',
-                        background: isSelected ? '#A0A0A0' : T.accentSoft,
-                        color: isSelected ? '#FFFFFF' : T.textSecondary,
+                        width: 34, height: 34, borderRadius: '50%', border: `1.5px solid ${isSelected ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.12)'}`,
+                        background: isSelected ? 'rgba(255,255,255,0.15)' : '#FFFFFF',
+                        color: isSelected ? '#FFFFFF' : T.accent,
                         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 15, flexShrink: 0,
+                        fontSize: 14, flexShrink: 0, fontWeight: 600,
                       }}>{isPreviewing ? '■' : '▶'}</button>
                     </div>
                   )
                 })}
               </div>
             </div>
+
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Speech Speed</h3>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {SPEEDS.map(s => (
-                  <button key={s.id} onClick={() => { saveSettings({ kiko_speed: s.id }); try { localStorage.setItem('kiko_speed', s.id) } catch {} }} style={{
-                    padding: '8px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
-                    background: parseFloat(settings.kiko_speed || 1.0) === s.id ? T.accent : T.surface,
-                    color: parseFloat(settings.kiko_speed || 1.0) === s.id ? '#FFFFFF' : T.textSecondary,
-                    fontSize: 13, cursor: 'pointer', fontFamily: T.font,
-                  }}>{s.label}</button>
-                ))}
+              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Voice Style</h3>
+              <p style={{ fontSize: 12, color: T.textTertiary, margin: '0 0 14px', fontFamily: T.font }}>Controls tone, energy, and delivery — applies to both preview and live voice</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {VOICE_STYLES.map(s => {
+                  const sel = (settings.kiko_voice_style || 'natural') === s.id
+                  return (
+                    <div key={s.id} onClick={() => { saveSettings({ kiko_voice_style: s.id }); try { localStorage.setItem('kiko_voice_style', s.id) } catch {} }} style={{
+                      padding: '12px 16px', borderRadius: 8, border: `1.5px solid ${sel ? T.accent : T.border}`,
+                      background: sel ? T.accent : '#FAFAF7',
+                      color: sel ? '#FFFFFF' : T.text,
+                      cursor: 'pointer', transition: 'all 0.15s',
+                    }}>
+                      <div style={{ fontSize: 14, fontWeight: 500, fontFamily: T.font }}>{s.label}</div>
+                      <div style={{ fontSize: 11, opacity: 0.65, fontFamily: T.font, marginTop: 2 }}>{s.desc}</div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
+
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 8px', fontFamily: T.font }}>Model Routing</h3>
-              <p style={{ fontSize: 14, color: T.textTertiary, lineHeight: 1.5, margin: 0, fontFamily: T.font }}>
-                Kiko automatically routes queries: simple greetings use Haiku (fast), standard queries use Sonnet, complex analysis uses Sonnet with full tools.
-              </p>
+              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Speech Speed</h3>
+              <p style={{ fontSize: 12, color: T.textTertiary, margin: '0 0 14px', fontFamily: T.font }}>Adjust how fast Kiko speaks</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {SPEEDS.map(s => {
+                  const sel = parseFloat(settings.kiko_speed || 1.0) === s.id
+                  return (
+                    <button key={s.id} onClick={() => { saveSettings({ kiko_speed: s.id }); try { localStorage.setItem('kiko_speed', String(s.id)) } catch {} }} style={{
+                      padding: '10px 18px', borderRadius: 8, border: `1.5px solid ${sel ? T.accent : T.border}`,
+                      background: sel ? T.accent : '#FAFAF7',
+                      color: sel ? '#FFFFFF' : T.textSecondary,
+                      fontSize: 13, cursor: 'pointer', fontFamily: T.font, fontWeight: 500,
+                    }}>{s.label}</button>
+                  )
+                })}
+              </div>
             </div>
-            <div style={cardStyle}>
-              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 8px', fontFamily: T.font }}>Memory</h3>
-              <p style={{ fontSize: 14, color: T.textTertiary, lineHeight: 1.5, margin: 0, fontFamily: T.font }}>
-                Kiko remembers preferences, decisions, and context across sessions. Memories are automatically extracted from conversations.
-              </p>
-            </div>
+
             <div style={cardStyle}>
               <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Personality</h3>
-              <p style={{ fontSize: 12, color: T.textTertiary, margin: '0 0 12px', fontFamily: T.font }}>How Kiko communicates with you</p>
+              <p style={{ fontSize: 12, color: T.textTertiary, margin: '0 0 14px', fontFamily: T.font }}>How Kiko communicates in text responses</p>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {[
                   { id: 'concise', label: 'Concise', desc: 'Short, direct answers' },
@@ -637,12 +665,12 @@ export default function Settings({ user }) {
                   const sel = (settings.kiko_personality || 'executive') === p.id
                   return (
                     <button key={p.id} onClick={() => { saveSettings({ kiko_personality: p.id }); try { localStorage.setItem('kiko_personality', p.id) } catch {} }} style={{
-                      padding: '8px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
-                      background: sel ? T.accent : T.surface,
+                      padding: '10px 16px', borderRadius: 8, border: `1.5px solid ${sel ? T.accent : T.border}`,
+                      background: sel ? T.accent : '#FAFAF7',
                       color: sel ? '#FFFFFF' : T.textSecondary,
                       fontSize: 13, cursor: 'pointer', fontFamily: T.font, textAlign: 'left',
                     }}>
-                      <div style={{ fontWeight: 400 }}>{p.label}</div>
+                      <div style={{ fontWeight: 500 }}>{p.label}</div>
                       <div style={{ fontSize: 11, opacity: 0.6, marginTop: 2 }}>{p.desc}</div>
                     </button>
                   )
