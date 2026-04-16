@@ -9,8 +9,8 @@ const C = {
   bg: '#FFFFFF',
   card: '#FFFFFF',
   cardHover: '#FFFFFF',
-  border: 'rgba(255,255,255,0.06)',
-  borderHover: 'rgba(255,255,255,0.10)',
+  border: 'rgba(0,0,0,0.06)',
+  borderHover: 'rgba(0,0,0,0.10)',
   text: '#0A0A0A',
   textSec: '#6B6B6B',
   textTer: '#A0A0A0',
@@ -25,7 +25,7 @@ const C = {
   font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   r: 8,
 }
-const glass = { background: C.card, border: `0.5px solid ${C.border}`, borderTop: `0.5px solid rgba(255,255,255,0.08)`, borderRadius: C.r, boxShadow: '0 1px 3px rgba(0,0,0,0.3)', transition: 'all 0.2s ease' }
+const glass = { background: C.card, border: `0.5px solid ${C.border}`, borderTop: `0.5px solid rgba(0,0,0,0.08)`, borderRadius: C.r, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'all 0.2s ease' }
 import { Mail, Linkedin, Plus, Clock, Trash2, Save, Sparkles, ArrowLeft, Search, UserPlus, X, ChevronRight, Eye, Reply, AlertTriangle, Send, GitBranch, Copy, MoreHorizontal } from 'lucide-react'
 
 const APPROACHES = ['authority-led','scarcity-led','social-proof','reciprocity','data-led','intelligence-led','competitive-led','relationship-led']

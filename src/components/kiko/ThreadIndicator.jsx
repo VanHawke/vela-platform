@@ -133,7 +133,7 @@ export default function ThreadIndicator({ user, currentConvId, onSwitchThread })
           backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
           borderRadius: 12,
           border: '1px solid rgba(0,0,0,0.08)',
-          boxShadow: '0 16px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04)',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.10), inset 0 1px 0 rgba(0,0,0,0.04)',
           padding: 8,
           zIndex: 9999,
         }}>
@@ -141,7 +141,7 @@ export default function ThreadIndicator({ user, currentConvId, onSwitchThread })
             padding: '6px 10px 8px',
             fontSize: 10, fontWeight: 600, color: 'rgba(0,0,0,0.55)',
             textTransform: 'uppercase', letterSpacing: '0.08em',
-            borderBottom: '1px solid rgba(255,255,255,0.04)', marginBottom: 4,
+            borderBottom: '1px solid rgba(0,0,0,0.04)', marginBottom: 4,
           }}>
             Other active conversations
           </div>
@@ -189,7 +189,7 @@ export default function ThreadIndicator({ user, currentConvId, onSwitchThread })
           <div style={{
             padding: '8px 10px 4px', marginTop: 4,
             fontSize: 9, color: 'rgba(255,255,255,0.30)', lineHeight: 1.5,
-            borderTop: '1px solid rgba(255,255,255,0.04)',
+            borderTop: '1px solid rgba(0,0,0,0.04)',
           }}>
             Kiko sees these threads in her context. She can cross-reference what's discussed in each.
           </div>

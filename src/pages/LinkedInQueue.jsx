@@ -116,7 +116,7 @@ export default function LinkedInQueue() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
         <div style={{ position: 'relative', flex: 1, maxWidth: 360 }}>
           <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: T.textTertiary }} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, company, or message..." style={{ width: '100%', padding: '8px 10px 8px 30px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.10)', background: 'rgba(0,0,0,0.20)', color: T.text, fontSize: 12, fontFamily: T.font, outline: 'none' }} />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, company, or message..." style={{ width: '100%', padding: '8px 10px 8px 30px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.10)', background: 'rgba(0,0,0,0.03)', color: T.text, fontSize: 12, fontFamily: T.font, outline: 'none' }} />
         </div>
         <div style={{ display: 'flex', gap: 4 }}>
           {[['pending', 'Pending', counts.pending], ['sent', 'Sent', counts.sent], ['skipped', 'Skipped', counts.skipped], ['all', 'All', counts.all]].map(([id, label, count]) => (
@@ -140,7 +140,7 @@ export default function LinkedInQueue() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {filtered.map(item => (
-            <div key={item.id} style={{ padding: '16px 18px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+            <div key={item.id} style={{ padding: '16px 18px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.06)', background: 'rgba(0,0,0,0.02)' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 10 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 500, color: T.text }}>{item.contact_name || 'Unknown'}</div>
@@ -153,7 +153,7 @@ export default function LinkedInQueue() {
                   {item.status === 'skipped' && <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(148,163,184,0.10)', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.25)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Skipped</span>}
                 </div>
               </div>
-              <div style={{ padding: '12px 14px', borderRadius: 6, background: 'rgba(0,0,0,0.20)', border: '1px solid rgba(255,255,255,0.04)', fontSize: 12, color: T.textSecondary, lineHeight: 1.6, marginBottom: 12, whiteSpace: 'pre-wrap' }}>
+              <div style={{ padding: '12px 14px', borderRadius: 6, background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.04)', fontSize: 12, color: T.textSecondary, lineHeight: 1.6, marginBottom: 12, whiteSpace: 'pre-wrap' }}>
                 {item.message || <em style={{ color: T.textTertiary }}>(no message)</em>}
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
@@ -162,7 +162,7 @@ export default function LinkedInQueue() {
                     <ExternalLink size={11} /> Open LinkedIn profile
                   </a>
                 )}
-                <button onClick={() => copyMessage(item)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.10)', background: 'transparent', color: T.text, fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>
+                <button onClick={() => copyMessage(item)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.10)', background: 'transparent', color: T.text, fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>
                   <Copy size={11} /> {copiedId === item.id ? 'Copied' : 'Copy message'}
                 </button>
                 {item.status === 'pending' && (
@@ -170,7 +170,7 @@ export default function LinkedInQueue() {
                     <button onClick={() => markSent(item)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.10)', background: 'rgba(0,0,0,0.05)', color: '#0A0A0A', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: T.font }}>
                       <Check size={11} /> Mark sent
                     </button>
-                    <button onClick={() => skipItem(item)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.10)', background: 'transparent', color: T.textTertiary, fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>
+                    <button onClick={() => skipItem(item)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.10)', background: 'transparent', color: T.textTertiary, fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>
                       Skip
                     </button>
                   </>

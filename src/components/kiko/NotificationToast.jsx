@@ -100,7 +100,7 @@ export default function NotificationToast({ user }) {
             backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
             borderRadius: 12,
             border: `1px solid ${c.border}`,
-            boxShadow: '0 16px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04)',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.10), inset 0 1px 0 rgba(0,0,0,0.04)',
             pointerEvents: 'auto',
             cursor: toast.link ? 'pointer' : 'default',
             animation: 'slideInRight 0.3s ease-out',

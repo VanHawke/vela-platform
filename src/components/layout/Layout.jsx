@@ -12,8 +12,8 @@ const C = {
   bg: '#FFFFFF',
   card: '#FFFFFF',
   cardHover: '#FFFFFF',
-  border: 'rgba(255,255,255,0.06)',
-  borderHover: 'rgba(255,255,255,0.10)',
+  border: 'rgba(0,0,0,0.06)',
+  borderHover: 'rgba(0,0,0,0.10)',
   text: '#0A0A0A',
   textSec: '#6B6B6B',
   textTer: '#A0A0A0',
@@ -432,7 +432,7 @@ export default function Layout({ user }) {
             (was flex:1 between logo and kiko avatar, which made the centering depend
             on whichever side had more content — looked off-center to Sunny) */}
         <div className="desktop-top-nav" style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
-          <div style={{ display: 'flex', gap: 3, background: 'rgba(40,40,46,0.55)', backdropFilter: 'blur(20px) saturate(1.2)', WebkitBackdropFilter: 'blur(20px) saturate(1.2)', borderRadius: 14, padding: 4, border: `0.5px solid rgba(255,255,255,0.08)`, borderTop: `0.5px solid rgba(255,255,255,0.12)`, boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}>
+          <div style={{ display: 'flex', gap: 3, background: 'rgba(40,40,46,0.55)', backdropFilter: 'blur(20px) saturate(1.2)', WebkitBackdropFilter: 'blur(20px) saturate(1.2)', borderRadius: 14, padding: 4, border: `0.5px solid rgba(0,0,0,0.08)`, borderTop: `0.5px solid rgba(0,0,0,0.10)`, boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}>
             {TABS.map(tab => {
               const active = isTabActive(tab.path)
               return (
@@ -441,13 +441,13 @@ export default function Layout({ user }) {
                   nav(tab.path)
                 }} style={{
                   padding: '8px 22px', borderRadius: 50, border: 'none',
-                  background: active ? 'rgba(255,255,255,0.12)' : 'transparent',
+                  background: active ? 'rgba(0,0,0,0.10)' : 'transparent',
                   color: active ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.6)',
                   fontSize: 14, fontWeight: active ? 500 : 400, cursor: 'pointer', fontFamily: C.font,
                   boxShadow: active ? 'inset 0 1px 0 rgba(255,255,255,0.15), 0 2px 8px rgba(0,0,0,0.2)' : 'none',
                   transition: 'all 0.2s',
                 }}
-                  onMouseOver={e => { if (!active) { e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}}
+                  onMouseOver={e => { if (!active) { e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.background = 'rgba(0,0,0,0.06)' }}}
                   onMouseOut={e => { if (!active) { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent' }}}
                 >{tab.label}</button>
               )
@@ -456,11 +456,11 @@ export default function Layout({ user }) {
             <div ref={moreRef} style={{ position: 'relative' }}>
               <button onClick={() => setMoreOpen(!moreOpen)} style={{
                 padding: '8px 22px', borderRadius: 50, border: 'none',
-                background: moreOpen ? 'rgba(255,255,255,0.10)' : 'transparent',
+                background: moreOpen ? 'rgba(0,0,0,0.10)' : 'transparent',
                 color: moreOpen ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: 400, cursor: 'pointer', fontFamily: C.font,
                 display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.2s',
               }}
-                onMouseOver={e => { if (!moreOpen) { e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}}
+                onMouseOver={e => { if (!moreOpen) { e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.background = 'rgba(0,0,0,0.06)' }}}
                 onMouseOut={e => { if (!moreOpen) { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent' }}}
               >
                 More <ChevronDown size={11} style={{ transition: 'transform 0.2s', transform: moreOpen ? 'rotate(180deg)' : 'none' }} />
