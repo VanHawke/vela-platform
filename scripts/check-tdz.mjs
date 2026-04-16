@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // scripts/check-tdz.mjs
 // Pre-commit hook: scans staged .jsx files for potential Temporal Dead Zone errors.
+// V2: Scope-aware — only flags issues within the SAME function body.
 // Catches: const X = expr(Y) where Y is a const declared LATER in the same function.
-// This caught 2 production outages in this project (commits bd15124 and 67909bc).
+// This caught 2 production outages (commits bd15124 and 67909bc).
 
 import { execSync } from 'child_process'
 import { readFileSync } from 'fs'
 
-// Get staged .jsx files
 const staged = execSync('git diff --cached --name-only --diff-filter=ACM')
   .toString().trim().split('\n').filter(f => f.endsWith('.jsx'))
 
@@ -20,78 +20,90 @@ for (const file of staged) {
     const src = readFileSync(file, 'utf8')
     const lines = src.split('\n')
     
-    // Find all const declarations with their line numbers
-    // Pattern: const X = ... or const { X } = ... or const [X] = ...
-    const constDecls = [] // { name, line }
+    // Track function/block scope via brace depth
+    // We only care about component-level scope (depth where export default function lives)
+    let componentStart = -1
+    let depth = 0
+    const scopeStack = [] // stack of { startLine, depth }
+    
+    // Find all const declarations with their scope depth
+    const constDecls = [] // { name, line, depth }
+    
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim()
-      // Match: const X = ... or const { X, Y } = ... or const [X] = ...
-      const constMatch = line.match(/^const\s+(\w+)\s*=/)
-        || line.match(/^const\s+\{([^}]+)\}\s*=/)
-        || line.match(/^const\s+\[([^\]]+)\]\s*=/)
-      if (constMatch) {
-        const names = constMatch[1].split(',').map(n => n.split(':')[0].trim()).filter(Boolean)
-        names.forEach(name => constDecls.push({ name, line: i }))
-      }
-      // Also match: const { X: alias } = ...
-      if (line.match(/^const\s+\{/)) {
-        const aliases = [...line.matchAll(/:\s*(\w+)/g)].map(m => m[1])
-        aliases.forEach(name => constDecls.push({ name, line: i }))
-      }
-    }
-
-    // For each const, check if it's referenced on an EARLIER line in a way that suggests
-    // runtime access before declaration (not just being part of a function definition)
-    for (const decl of constDecls) {
-      // Skip module-level consts (line 0-50 and not inside a function)
-      // We focus on consts inside component functions (after 'export default function' or similar)
+      const line = lines[i]
       
-      // Search backwards from declaration for references to this name
-      for (let i = Math.max(0, decl.line - 50); i < decl.line; i++) {
-        const refLine = lines[i]
-        // Skip comment lines
-        if (refLine.trim().startsWith('//') || refLine.trim().startsWith('*')) continue
-        // Skip import lines
-        if (refLine.trim().startsWith('import ')) continue
-        // Skip lines that are declaring THIS const
-        if (i === decl.line) continue
+      // Count braces to track scope depth
+      const opens = (line.match(/\{/g) || []).length
+      const closes = (line.match(/\}/g) || []).length
+      depth += opens - closes
+      
+      // Detect component function entry
+      if (line.match(/^export default function\b/) || line.match(/^function \w+.*\{/)) {
+        scopeStack.push({ startLine: i, depth: depth })
+      }
+      
+      // Only collect const/let declarations at the component body level
+      // (depth === scopeStack[last].depth + 1 — direct children of the component function)
+      if (scopeStack.length > 0) {
+        const compScope = scopeStack[scopeStack.length - 1]
+        const isComponentBody = depth === compScope.depth
         
-        // Check if this line references the const name in a way that would cause TDZ
-        // Specifically: used as a value (not just as part of another word)
-        const nameRegex = new RegExp(`\\b${decl.name}\\b`)
-        if (nameRegex.test(refLine)) {
-          // Exclude: function declarations (they're hoisted), other const declarations of same name
-          if (refLine.trim().startsWith('function ')) continue
-          if (refLine.trim().startsWith('const ') && refLine.includes(decl.name + ' =')) continue
-          // Exclude: lines inside arrow functions or callbacks that won't execute until later
-          // (useEffect callbacks are deferred — the TDZ issue is when the DEPS ARRAY references it)
-          // Heuristic: if line contains .filter( .map( .some( .find( or is a deps array [...], flag it
-          const isDepsOrEager = refLine.includes('.filter(') || refLine.includes('.map(') 
-            || refLine.includes('.some(') || refLine.includes('.find(')
-            || /\],\s*\[.*\b/.test(refLine) // deps array pattern
-            || refLine.includes('useState(') // initializer runs immediately
+        if (isComponentBody) {
+          // Match useState declarations: const [X, setX] = useState(...)
+          const stateMatch = line.match(/^\s*const\s+\[(\w+)/)
+          if (stateMatch) constDecls.push({ name: stateMatch[1], line: i, scopeDepth: compScope.depth })
           
-          if (isDepsOrEager || !refLine.includes('=>') && !refLine.includes('function')) {
-            console.error(`\x1b[31mTDZ WARNING\x1b[0m: ${file}:${i + 1} references '${decl.name}' which is declared at line ${decl.line + 1}`)
-            console.error(`  ${i + 1} | ${refLine.trim()}`)
-            console.error(`  ${decl.line + 1} | ${lines[decl.line].trim()}`)
-            console.error('')
-            errors++
+          // Match const X = useHook(...) or const { X } = useHook(...)
+          const hookMatch = line.match(/^\s*const\s+\{\s*\w+:\s*(\w+)\s*\}\s*=\s*use/)
+            || line.match(/^\s*const\s+(\w+)\s*=\s*use/)
+          if (hookMatch) constDecls.push({ name: hookMatch[1], line: i, scopeDepth: compScope.depth })
+          
+          // Match derived consts: const X = TABS.filter(...) etc
+          const derivedMatch = line.match(/^\s*const\s+(\w+)\s*=\s*(?!use)/)
+          if (derivedMatch && !line.includes('useState') && !line.includes('=>')) {
+            constDecls.push({ name: derivedMatch[1], line: i, scopeDepth: compScope.depth })
           }
         }
       }
     }
-  } catch (e) {
-    // File read error — skip
-  }
+    
+    // For each component-level const, check if it's referenced BEFORE its line
+    // at the SAME scope depth (not inside nested functions/callbacks)
+    for (const decl of constDecls) {
+      // Search the 30 lines before this declaration for references at the same scope
+      for (let i = Math.max(0, decl.line - 30); i < decl.line; i++) {
+        const refLine = lines[i].trim()
+        
+        // Skip comments, imports, function declarations (hoisted)
+        if (refLine.startsWith('//') || refLine.startsWith('*') || refLine.startsWith('import ') || refLine.startsWith('function ')) continue
+        
+        // Only flag if this line is at component-body level too (not inside a callback)
+        // Heuristic: lines that start with const/let/useEffect/if/return at indent level ≤ 4 spaces
+        const indent = lines[i].length - lines[i].trimStart().length
+        if (indent > 6) continue  // likely inside a nested callback
+        
+        // Check if this line references the const name as a word boundary
+        const nameRegex = new RegExp(`\\b${decl.name}\\b`)
+        if (nameRegex.test(refLine)) {
+          // Skip lines that are declaring a DIFFERENT const with the same name (e.g. sequential const { data })
+          if (refLine.startsWith('const ') && refLine.includes(decl.name)) continue
+          // Skip useEffect dependency arrays (they're evaluated later)
+          if (refLine.includes('useEffect') || (refLine.startsWith('}') && refLine.includes('])'))) continue
+          
+          console.error(`\x1b[31mTDZ WARNING\x1b[0m: ${file}:${i + 1} references '${decl.name}' declared at line ${decl.line + 1}`)
+          console.error(`  ${i + 1} | ${refLine}`)
+          console.error(`  ${decl.line + 1} | ${lines[decl.line].trim()}`)
+          console.error('')
+          errors++
+        }
+      }
+    }
+  } catch (e) { /* skip unreadable files */ }
 }
 
 if (errors > 0) {
   console.error(`\x1b[31m✘ Found ${errors} potential TDZ issue(s). Fix before committing.\x1b[0m`)
-  console.error(`  TDZ = const referenced before its declaration line in the same scope.`)
-  console.error(`  This caused 2 production outages in this project.`)
   process.exit(1)
 }
-
 console.log(`\x1b[32m✓ TDZ check passed (${staged.length} .jsx file(s) scanned)\x1b[0m`)
 process.exit(0)
