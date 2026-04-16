@@ -699,7 +699,7 @@ export default async function handler(req, res) {
     : [];
   const orgId = userOrgId?.[0]?.organization_id || null;
 
-  const [entityContext, identityResult, selfKnowledge, voiceMemResult, coreBibleResult, orgBibleResult, userBibleResult] = await Promise.all([
+  const [entityContext, identityResult, selfKnowledge, voiceMemResult, coreBibleResult, orgBibleResult, userBibleResult, knowledgeBaseResult] = await Promise.all([
     earlyGreeting ? Promise.resolve('') : fetchEntityContext(pageEntity),
     sbFetch(`kiko_memories?path=eq./memories/identity.md&user_id=eq.${userId}&select=content&limit=1`).catch(() => []),
     earlyGreeting ? Promise.resolve('') : generateSelfKnowledge(userId).catch(() => 'Self-knowledge unavailable.'),
@@ -709,16 +709,19 @@ export default async function handler(req, res) {
     sbFetch('kiko_core_bible?select=content&order=version.desc&limit=1').catch(() => []),
     orgId ? sbFetch(`org_bibles?organization_id=eq.${orgId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
     isRegistered ? sbFetch(`user_bibles?user_id=eq.${userId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
+    earlyGreeting ? Promise.resolve([]) : sbFetch('kiko_knowledge?select=domain,content,researched_at&order=researched_at.desc&limit=10').catch(() => []),
   ]);
 
   // Assemble Bible layers — fallback gracefully if any layer missing
   const coreBible = coreBibleResult?.[0]?.content || '';
   const orgBible = orgBibleResult?.[0]?.content || '';
   const userBible = userBibleResult?.[0]?.content || '';
+  const knowledgeBase = (knowledgeBaseResult || []).filter(k => k.content).map(k => `[${k.domain}] ${k.content.slice(0, 600)}`).join('\n\n');
   const bibleBlock = [
     coreBible ? `\n\n═══ KIKO CORE BIBLE ═══\n${coreBible}` : '',
     orgBible ? `\n\n═══ ORGANISATION DOCTRINE ═══\n${orgBible}` : '',
     userBible ? `\n\n═══ PERSONAL CONTEXT (PRIVATE — THIS USER ONLY) ═══\n${userBible}` : '',
+    knowledgeBase ? `\n\n═══ RESEARCH KNOWLEDGE BASE (auto-updated daily) ═══\n${knowledgeBase}` : '',
   ].join('');
 
   let identityContext = '';

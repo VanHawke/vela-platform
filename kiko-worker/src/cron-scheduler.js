@@ -45,6 +45,7 @@ const SCHEDULES = [
   // Weekly (Monday)
   { schedule: '0 2 * * *',      path: '/api/cron-competitive-intel',       name: 'competitive-intel' },
   { schedule: '0 3 * * *',      path: '/api/cron-learning-director',       name: 'learning-director' },
+  { schedule: '30 3 * * *',     path: '/api/cron-knowledge-seed',          name: 'knowledge-seed' },
   { schedule: '0 5 * * *',      path: '/api/ingest-knowledge',             name: 'ingest-knowledge' },
   { schedule: '0 5 * * *',      path: '/api/cron-score-companies',         name: 'score-companies' },
   { schedule: '0 6 * * *',      path: '/api/cron-enrich',                  name: 'enrich' },
