@@ -61,17 +61,36 @@ export default function Contacts({ user }) {
     let cancelled = false
     ;(async () => {
       setLoading(true)
-      // CRITICAL PATH: just contacts, capped at 500 rows. No blocking companies fetch.
-      const { data: contactsData } = await supabase
+      // Fast first paint: load most recent 500 first, render immediately.
+      // Then load the rest in the background so the full list is there by the time the user scrolls/searches.
+      const { data: initialData } = await supabase
         .from('contacts')
         .select('*')
         .order('updated_at', { ascending: false })
-        .limit(500)
+        .range(0, 499)
       if (cancelled) return
-      setContacts(contactsData || [])
+      setContacts(initialData || [])
       setLoading(false)
+
+      // Stream remaining rows in batches of 1000, append as they arrive
+      ;(async () => {
+        let from = 500
+        const batchSize = 1000
+        while (!cancelled) {
+          const { data: batch } = await supabase
+            .from('contacts')
+            .select('*')
+            .order('updated_at', { ascending: false })
+            .range(from, from + batchSize - 1)
+          if (!batch || batch.length === 0) break
+          if (cancelled) return
+          setContacts(prev => [...prev, ...batch])
+          if (batch.length < batchSize) break
+          from += batchSize
+        }
+      })()
+
       // OFF CRITICAL PATH: load companies lookup map lazily for company→org linking.
-      // Failing to load won't block the page; company links just stay as plain text.
       supabase.from('companies').select('id, data').then(({ data: companiesData }) => {
         if (cancelled) return
         const map = {}

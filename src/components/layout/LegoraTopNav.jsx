@@ -8,8 +8,8 @@ import { usePagePermissions } from '@/lib/usePagePermissions'
 
 // pageKey = the key used in user_page_permissions (matches PermissionGate in App.jsx)
 const TABS = [
-  { id: 'home',                label: 'Today',              path: '/',                   showPlus: true,  aliases: ['home', 'today', 'dashboard'], pageKey: null },
-  { id: 'pipeline',            label: 'Pipeline',           path: '/pipeline',           showPlus: true,  aliases: ['pipeline'],                    pageKey: 'pipeline' },
+  { id: 'home',                label: 'Today',              path: '/',                   showPlus: false, aliases: ['home', 'today', 'dashboard'], pageKey: null },
+  { id: 'pipeline',            label: 'Pipeline',           path: '/pipeline',           showPlus: false, aliases: ['pipeline'],                    pageKey: 'pipeline' },
   { id: 'campaigns',           label: 'Campaigns',          path: '/campaigns',          showPlus: false, aliases: ['campaigns', 'sequences'],      pageKey: 'campaigns' },
   { id: 'command-centre',      label: 'Command Centre',     path: '/command-centre',     showPlus: false, aliases: ['command-centre', 'inbox'],     pageKey: 'command_centre' },
   { id: 'calendar',            label: 'Calendar',           path: '/calendar',           showPlus: false, aliases: ['calendar'],                    pageKey: 'race_calendar' },
@@ -18,13 +18,10 @@ const TABS = [
   { id: 'partnership-matrix',  label: 'Partnership Matrix', path: '/partnership-matrix', showPlus: false, aliases: ['partnership-matrix', 'insights'], pageKey: 'partnership_matrix' },
 ]
 
-// More dropdown — order here matters: Settings ALWAYS last.
-// Admin-only items hidden for non-super-admin users.
+// More dropdown — Settings always last with a separator above it.
 const MORE_ITEMS = [
   { id: 'linkedin',  label: 'LinkedIn',      path: '/linkedin',     pageKey: 'linkedin_queue' },
-  { id: 'admin',     label: 'Admin',         path: '/admin',        adminOnly: true },
-  { id: 'health',    label: 'Health Centre', path: '/admin/system', adminOnly: true },
-  { id: 'settings',  label: 'Settings',      path: '/settings' }, // MUST stay last
+  { id: 'settings',  label: 'Settings',      path: '/settings', divider: true }, // divider: render faint line above. MUST stay last.
 ]
 
 
@@ -155,13 +152,15 @@ export default function LegoraTopNav({ user, customLogo, onSearchClick, onNotifi
           {moreOpen && (
             <div className="ltn-dropdown">
               {visibleMoreItems.map(item => (
-                <button
-                  key={item.id}
-                  className={`ltn-dropdown-item ${isActive(item.path) ? 'active' : ''}`}
-                  onClick={() => { nav(item.path); setMoreOpen(false) }}
-                >
-                  {item.label}
-                </button>
+                <div key={item.id}>
+                  {item.divider && <div className="ltn-dropdown-divider" />}
+                  <button
+                    className={`ltn-dropdown-item ${isActive(item.path) ? 'active' : ''}`}
+                    onClick={() => { nav(item.path); setMoreOpen(false) }}
+                  >
+                    {item.label}
+                  </button>
+                </div>
               ))}
             </div>
           )}

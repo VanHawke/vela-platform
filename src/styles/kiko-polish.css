@@ -452,6 +452,7 @@
 .ltn-dropdown-item:hover { background: rgba(0,0,0,0.03); }
 .ltn-dropdown-item.active { font-weight: 500; background: rgba(0,0,0,0.02); }
 .ltn-dropdown-item.ltn-dropdown-danger { color: #b8643e; }
+.ltn-dropdown-divider { height: 1px; background: rgba(0,0,0,0.06); margin: 6px 8px; }
 .ltn-dropdown-item.ltn-dropdown-danger:hover { background: rgba(184,100,62,0.06); }
 .ltn-dropdown-divider { height: 1px; background: rgba(0,0,0,0.05); margin: 4px 0; }
 .ltn-dropdown-header { padding: 10px 14px 8px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 4px; }

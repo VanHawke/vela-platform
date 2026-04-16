@@ -560,7 +560,7 @@ export default function Settings({ user }) {
               email_signature: settings.email_signature, email_signature_html: settings.email_signature_html, email_signature_cold_html: settings.email_signature_cold_html,
               notification_prefs: settings.notification_prefs,
             })}
-              style={{ height: 44, borderRadius: 50, background: T.accent, color: '#0A0A0A', border: 'none', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
+              style={{ height: 44, borderRadius: 50, background: T.accent, color: '#FFFFFF', border: 'none', fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, width: 'fit-content', padding: '0 28px' }}>
               {saved ? 'Saved!' : 'Save changes'}
             </button>
           </div>
@@ -579,7 +579,7 @@ export default function Settings({ user }) {
                     <div key={v.id} style={{
                       padding: '10px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
                       background: isSelected ? T.accent : T.surface,
-                      color: isSelected ? '#0A0A0A' : T.text,
+                      color: isSelected ? '#FFFFFF' : T.text,
                       display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
                       transition: 'all 0.15s',
                     }} onClick={() => { saveSettings({ kiko_voice: v.id }); try { localStorage.setItem('kiko_voice', v.id) } catch {} }}>
@@ -590,7 +590,7 @@ export default function Settings({ user }) {
                       <button onClick={(e) => { e.stopPropagation(); previewVoice(v.id) }} style={{
                         width: 30, height: 30, borderRadius: '50%', border: 'none',
                         background: isSelected ? '#A0A0A0' : T.accentSoft,
-                        color: isSelected ? '#0A0A0A' : T.textSecondary,
+                        color: isSelected ? '#FFFFFF' : T.textSecondary,
                         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 15, flexShrink: 0,
                       }}>{isPreviewing ? '■' : '▶'}</button>
@@ -606,7 +606,7 @@ export default function Settings({ user }) {
                   <button key={s.id} onClick={() => { saveSettings({ kiko_speed: s.id }); try { localStorage.setItem('kiko_speed', s.id) } catch {} }} style={{
                     padding: '8px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
                     background: parseFloat(settings.kiko_speed || 1.0) === s.id ? T.accent : T.surface,
-                    color: parseFloat(settings.kiko_speed || 1.0) === s.id ? '#0A0A0A' : T.textSecondary,
+                    color: parseFloat(settings.kiko_speed || 1.0) === s.id ? '#FFFFFF' : T.textSecondary,
                     fontSize: 13, cursor: 'pointer', fontFamily: T.font,
                   }}>{s.label}</button>
                 ))}
@@ -639,7 +639,7 @@ export default function Settings({ user }) {
                     <button key={p.id} onClick={() => { saveSettings({ kiko_personality: p.id }); try { localStorage.setItem('kiko_personality', p.id) } catch {} }} style={{
                       padding: '8px 14px', borderRadius: T.radiusSm, border: `1px solid ${T.border}`,
                       background: sel ? T.accent : T.surface,
-                      color: sel ? '#0A0A0A' : T.textSecondary,
+                      color: sel ? '#FFFFFF' : T.textSecondary,
                       fontSize: 13, cursor: 'pointer', fontFamily: T.font, textAlign: 'left',
                     }}>
                       <div style={{ fontWeight: 400 }}>{p.label}</div>
@@ -777,7 +777,7 @@ export default function Settings({ user }) {
                     {currentUserRole === 'super_admin' && <option value="super_admin">Super Admin</option>}
                   </select>
                   <button onClick={sendInvite} style={{
-                    height: 44, padding: '0 16px', borderRadius: 50, background: T.accent, color: '#0A0A0A',
+                    height: 44, padding: '0 16px', borderRadius: 50, background: T.accent, color: '#FFFFFF',
                     border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
                     display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
                   }}><UserPlus size={14} /> Add</button>
@@ -999,7 +999,7 @@ export default function Settings({ user }) {
                   </div>
                 ) : (
                   <button onClick={connectGoogle} style={{
-                    height: 36, padding: '0 16px', borderRadius: T.radiusSm, background: T.accent, color: '#0A0A0A',
+                    height: 36, padding: '0 16px', borderRadius: T.radiusSm, background: T.accent, color: '#FFFFFF',
                     border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
                     display: 'flex', alignItems: 'center', gap: 6,
                   }}><ExternalLink size={12} /> Connect</button>
