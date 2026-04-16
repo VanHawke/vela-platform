@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-16T10:39:10.208Z",
+  "generated_at": "2026-04-16T10:44:45.698Z",
   "commits": [
+    {
+      "hash": "21de3a2",
+      "subject": "Command Centre: fix Kiko brief streaming — SSE event key is 'delta' not 'text'. Brief now renders in right pane when item selected.",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "bad0fdf",
       "subject": "Command Centre task labelling (use type+contact+company, not generic 'Task'), richer Kiko brief prompt with full task context. Chat-mode prompt bar — now white card matching welcome state, consistent ",
-      "when": "14 minutes ago"
+      "when": "19 minutes ago"
     },
     {
       "hash": "f0e57cf",
       "subject": "Command Centre: master-detail rebuild. LEFT 440px — grouped priority list (Overdue, Stale deals, Due this week, Market signals). RIGHT — Kiko brief pane that streams from /api/kiko with selected item ",
-      "when": "38 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "037a87b",
       "subject": "nav: permission filter (hide pages user can't access), Settings always last in More dropdown, remove KikoCode/Memory from More (Memory stays inside Settings), add Health tab in Settings (super-admin o",
-      "when": "54 minutes ago"
+      "when": "60 minutes ago"
     },
     {
       "hash": "8dded1f",
       "subject": "Command Centre rebuilt: Hot Replies band top (email/LinkedIn when webhooks fire) + Priority Deals left + Tasks/Signals right. Real data from deals/tasks/kiko_alerts. Legora design. Replaces experiment",
-      "when": "78 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "4978b81",
       "subject": "Pipeline: deal panel company title + favicon mark now clickable — routes to /organisations?org=<id> and auto-selects that org. Hover shows underline. Contact rows already routed to /contacts/:id.",
-      "when": "85 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "37df539",
@@ -44,7 +49,7 @@
     {
       "hash": "f00e098",
       "subject": "fix: revert HomeDashboard from KikoChat (was added without sign-off, changed approved homepage). Restore inbox 2-pane CSS for /command-centre (was overwritten with dashboard CSS, causing unstyled text",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "30d9398",
@@ -94,11 +99,6 @@
     {
       "hash": "f32286e",
       "subject": "Merge redesign/legora — Legora aesthetic redesign (16 commits): all 8 main pages ported, 12 Settings tabs, Homepage feature tiles, Supabase outreach intelligence tables + nightly cron, real metrics wi",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "4572634",
-      "subject": "redesign: Insights sequence leaderboard wired to real kiko_sequences + activities reply counts (mock fallback when no real activity yet)",
       "when": "14 hours ago"
     }
   ]

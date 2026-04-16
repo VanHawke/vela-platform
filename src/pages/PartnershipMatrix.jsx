@@ -3,22 +3,24 @@ import { setPageContext } from '@/lib/pageContext'
 import { RefreshCw, Loader2, AlertTriangle, Plus, X, ExternalLink, FileDown, Check, Grid3X3, Target, Users } from 'lucide-react'
 
 const T = {
-  bg: '#000000', surface: 'rgba(25,25,25,0.40)', surfaceHover: 'rgba(0,0,0,0.04)',
-  border: 'rgba(0,0,0,0.05)', borderHover: 'rgba(0,0,0,0.06)',
-  text: '#0A0A0A', textSecondary: 'rgba(124,92,252,0.55)', textTertiary: '#A0A0A0',
-  accent: '#0A0A0A', accentSoft: 'rgba(0,0,0,0.05)',
-  blue: '#007AFF', red: '#FF3B30', yellow: '#FF9500', green: '#34C759',
-  font: "'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-  gap: 'rgba(255,59,48,0.06)', gapBorder: 'rgba(255,59,48,0.15)', filled: 'rgba(52,199,89,0.06)', filledBorder: 'rgba(52,199,89,0.15)',
+  bg: '#FEFEFC', surface: '#FFFFFF', surfaceHover: 'rgba(0,0,0,0.03)',
+  border: 'rgba(0,0,0,0.08)', borderHover: 'rgba(0,0,0,0.14)',
+  text: '#0A0A0A', textSecondary: '#6B6B6B', textTertiary: '#A0A0A0',
+  accent: '#0A0A0A', accentSoft: 'rgba(10,10,10,0.04)',
+  blue: '#5a6470', red: '#b8643e', yellow: '#B89C5C', green: '#7d8a64',
+  font: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+  fontDisplay: "'Source Serif 4', Georgia, serif",
+  gap: 'rgba(184,100,62,0.06)', gapBorder: 'rgba(184,100,62,0.20)',
+  filled: 'rgba(125,138,100,0.08)', filledBorder: 'rgba(125,138,100,0.25)',
 }
 
 const TIER_BADGE = {
-  title: { bg: '#FEF3C7', color: '#92400E', label: 'Title' },
-  principal: { bg: '#DBEAFE', color: '#1E40AF', label: 'Principal' },
-  official: { bg: '#D1FAE5', color: '#065F46', label: 'Official' },
-  technical: { bg: '#E0E7FF', color: '#3730A3', label: 'Technical' },
-  partner: { bg: '#F3F4F6', color: '#374151', label: 'Partner' },
-  supplier: { bg: '#F3F4F6', color: '#6B7280', label: 'Supplier' },
+  title:     { bg: 'rgba(184,156,92,0.14)', color: '#8a6f2c', label: 'Title' },
+  principal: { bg: 'rgba(90,100,112,0.14)', color: '#5a6470', label: 'Principal' },
+  official:  { bg: 'rgba(125,138,100,0.14)', color: '#5a6644', label: 'Official' },
+  technical: { bg: 'rgba(109,78,168,0.14)', color: '#6d4ea8', label: 'Technical' },
+  partner:   { bg: 'rgba(0,0,0,0.05)',      color: '#6B6B6B', label: 'Partner' },
+  supplier:  { bg: 'rgba(0,0,0,0.04)',      color: '#A0A0A0', label: 'Supplier' },
 }
 
 const TABS = [
