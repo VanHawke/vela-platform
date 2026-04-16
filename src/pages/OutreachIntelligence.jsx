@@ -225,7 +225,9 @@ export default function OutreachIntelligence({ user }) {
               if (!raw || raw === '[DONE]') return
               try {
                 const evt = JSON.parse(raw)
-                if (evt.text) setBrief(prev => prev + evt.text)
+                // Kiko SSE stream uses `delta` for text chunks; also support `text` as fallback
+                const chunk = evt.delta || evt.text
+                if (chunk) setBrief(prev => prev + chunk)
               } catch {}
             })
           }
