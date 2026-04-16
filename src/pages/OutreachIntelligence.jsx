@@ -17,14 +17,22 @@ function parseBriefMarkdown(text) {
   if (!text) return ''
   return text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    // Split inline bullet runs (•) into proper line-separated bullets
+    .replace(/•\s*/g, '\n• ')
     .replace(/^### (.+)$/gm, '<h4 style="margin:16px 0 6px;font-size:13px;font-weight:600;color:#0A0A0A;font-family:Inter,system-ui,sans-serif">$1</h4>')
     .replace(/^## (.+)$/gm, '<h3 style="margin:18px 0 8px;font-size:14px;font-weight:600;color:#0A0A0A;font-family:Inter,system-ui,sans-serif">$1</h3>')
     .replace(/^# (.+)$/gm, '<h3 style="margin:18px 0 8px;font-size:15px;font-weight:600;color:#0A0A0A;font-family:Inter,system-ui,sans-serif">$1</h3>')
     .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#0A0A0A">$1</strong>')
-    .replace(/^[•\-\*] (.+)$/gm, '<div style="padding:2px 0 2px 14px;position:relative"><span style="position:absolute;left:0;color:#A0A0A0">·</span>$1</div>')
-    .replace(/^(\d+)\. (.+)$/gm, '<div style="padding:2px 0 2px 20px;position:relative"><span style="position:absolute;left:0;color:#6B6B6B;font-weight:500">$1.</span>$2</div>')
+    .replace(/^[•\-\*] (.+)$/gm, '<div style="padding:3px 0 3px 16px;position:relative"><span style="position:absolute;left:0;color:#A0A0A0">·</span>$1</div>')
+    .replace(/^(\d+)\. (.+)$/gm, '<div style="padding:3px 0 3px 22px;position:relative"><span style="position:absolute;left:0;color:#6B6B6B;font-weight:500">$1.</span>$2</div>')
     .replace(/\n{2,}/g, '<div style="height:10px"></div>')
     .replace(/\n/g, '<br/>')
+}
+
+// Clean raw markdown from titles for list display
+function cleanTitle(text) {
+  if (!text) return ''
+  return text.replace(/\*\*/g, '').replace(/•/g, ' · ').replace(/\s+/g, ' ').trim()
 }
 
 const STAGE_PROB = {
@@ -367,7 +375,7 @@ export default function OutreachIntelligence({ user }) {
   })
   const selectSignal = (s) => setSelected({
     kind: 'signal', id: s.id,
-    title: s.title,
+    title: cleanTitle(s.title),
     meta: `${s.entity_name || ''} · ${relativeTime(s.created_at)}`.trim().replace(/^· /, ''),
     payload: s,
   })
@@ -531,7 +539,7 @@ export default function OutreachIntelligence({ user }) {
                 >
                   <div className="cc-row-icon purple"><Zap size={10} /></div>
                   <div className="cc-row-body">
-                    <div className="cc-row-title">{s.title}</div>
+                    <div className="cc-row-title">{cleanTitle(s.title)}</div>
                     <div className="cc-row-meta">
                       {s.entity_name && <>{s.entity_name} · </>}
                       {relativeTime(s.created_at)}

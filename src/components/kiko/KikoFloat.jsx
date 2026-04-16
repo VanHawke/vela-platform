@@ -588,10 +588,10 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
             </div>
           )}
           <div style={{ padding: '8px 12px 10px', display: 'flex', alignItems: 'center', gap: 6, borderTop: hasMessages ? '1px solid rgba(0,0,0,0.06)' : 'none', marginTop: hasMessages ? 0 : 8 }}>
-            <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} style={{ width: 30, height: 30, borderRadius: 9999, border: `1px solid ${C.border}`, background: 'rgba(0,0,0,0.04)', color: C.textTer, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}>
+            <button onClick={() => fileInputRef.current?.click()} disabled={fileUploading || streaming} style={{ width: 30, height: 30, borderRadius: 9999, border: `1px solid ${C.border}`, background: 'rgba(0,0,0,0.04)', color: '#0A0A0A', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}>
               {fileUploading
                 ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'kikoVortexSpin 1s linear infinite' }}><circle cx="12" cy="12" r="10"/></svg>
-                : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>}
+                : <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>}
             </button>
             <textarea ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && input.trim()) { e.preventDefault(); handleSubmit() } }}
@@ -606,8 +606,8 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               {voiceOpen ? <div style={{ width: 8, height: 8, borderRadius: 1.5, background: 'rgba(255,59,48,0.7)' }} /> : <EqIcon size={14} color="rgba(6,214,160,0.7)" />}
             </button>
             <button onClick={() => { if (pendingFile) submitWithFile(); else handleSubmit(); }} disabled={(!input.trim() && !pendingFile) || streaming}
-              style={{ width: 30, height: 30, borderRadius: 9999, border: (input.trim() || pendingFile) && !streaming ? 'none' : `1px solid ${C.border}`, background: (input.trim() || pendingFile) && !streaming ? 'linear-gradient(135deg, #5a6470, #0A0A0A)' : 'rgba(0,0,0,0.04)', color: (input.trim() || pendingFile) && !streaming ? '#FFFFFF' : C.textTer, cursor: (input.trim() || pendingFile) && !streaming ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 250ms cubic-bezier(0.34, 1.56, 0.64, 1)', boxShadow: (input.trim() || pendingFile) ? '0 4px 16px rgba(90,100,112,0.3)' : '0 1px 2px rgba(0,0,0,0.15)' }}>
-              <ArrowUp size={13} />
+              style={{ width: 30, height: 30, borderRadius: 9999, border: (input.trim() || pendingFile) && !streaming ? 'none' : `1px solid ${C.border}`, background: (input.trim() || pendingFile) && !streaming ? 'linear-gradient(135deg, #5a6470, #0A0A0A)' : 'rgba(0,0,0,0.04)', color: (input.trim() || pendingFile) && !streaming ? '#FFFFFF' : '#A0A0A0', cursor: (input.trim() || pendingFile) && !streaming ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: (input.trim() || pendingFile) && !streaming ? 1 : 0.25, transition: 'all 250ms cubic-bezier(0.34, 1.56, 0.64, 1)', boxShadow: (input.trim() || pendingFile) ? '0 4px 16px rgba(90,100,112,0.3)' : '0 1px 2px rgba(0,0,0,0.15)' }}>
+              <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           </div>
         </div>
