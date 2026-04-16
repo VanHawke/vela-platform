@@ -6,22 +6,23 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 
 const TABS = [
-  { id: 'home',         label: 'Today',              path: '/',                   showPlus: true  },
-  { id: 'pipeline',     label: 'Pipeline',           path: '/pipeline',           showPlus: true  },
-  { id: 'campaigns',    label: 'Campaigns',          path: '/campaigns',          showPlus: false },
-  { id: 'inbox',        label: 'Command Centre',     path: '/command-centre',     showPlus: false },
-  { id: 'calendar',     label: 'Calendar',           path: '/calendar',           showPlus: false },
-  { id: 'contacts',     label: 'Contacts',           path: '/contacts',           showPlus: false },
-  { id: 'orgs',         label: 'Organisations',      path: '/organisations',      showPlus: false },
-  { id: 'insights',     label: 'Partnership Matrix', path: '/partnership-matrix', showPlus: false },
+  { id: 'home',                label: 'Today',              path: '/',                   showPlus: true,  aliases: ['home', 'today', 'dashboard']  },
+  { id: 'pipeline',            label: 'Pipeline',           path: '/pipeline',           showPlus: true,  aliases: ['pipeline']  },
+  { id: 'campaigns',           label: 'Campaigns',          path: '/campaigns',          showPlus: false, aliases: ['campaigns', 'sequences']  },
+  { id: 'command-centre',      label: 'Command Centre',     path: '/command-centre',     showPlus: false, aliases: ['command-centre', 'inbox']  },
+  { id: 'calendar',            label: 'Calendar',           path: '/calendar',           showPlus: false, aliases: ['calendar']  },
+  { id: 'contacts',            label: 'Contacts',           path: '/contacts',           showPlus: false, aliases: ['contacts']  },
+  { id: 'organisations',       label: 'Organisations',      path: '/organisations',      showPlus: false, aliases: ['organisations', 'orgs', 'companies']  },
+  { id: 'partnership-matrix',  label: 'Partnership Matrix', path: '/partnership-matrix', showPlus: false, aliases: ['partnership-matrix', 'insights']  },
 ]
 
 const MORE_ITEMS = [
-  { id: 'linkedin', label: 'LinkedIn',     path: '/linkedin'     },
-  { id: 'kikocode', label: 'KikoCode',     path: '/kikocode'     },
-  { id: 'memory',   label: 'Memory',       path: '/memory',       adminOnly: true },
-  { id: 'admin',    label: 'Admin',        path: '/admin',        adminOnly: true },
-  { id: 'health',   label: 'Health',       path: '/admin/system', adminOnly: true },
+  { id: 'settings',  label: 'Settings',      path: '/settings' },
+  { id: 'linkedin',  label: 'LinkedIn',      path: '/linkedin' },
+  { id: 'kikocode',  label: 'KikoCode',      path: '/kikocode' },
+  { id: 'memory',    label: 'Memory',        path: '/memory',       adminOnly: true },
+  { id: 'admin',     label: 'Admin',         path: '/admin',        adminOnly: true },
+  { id: 'health',    label: 'Health Centre', path: '/admin/system', adminOnly: true },
 ]
 
 
@@ -62,6 +63,33 @@ export default function LegoraTopNav({ user, customLogo, onSearchClick, onNotifi
   const moreIsActive = MORE_ITEMS.some(m => isActive(m.path))
   const visibleMoreItems = MORE_ITEMS.filter(m => !m.adminOnly || isAdmin)
 
+  // Read custom nav order from Settings (localStorage 'kiko_top_nav_v2')
+  const [orderedTabs, setOrderedTabs] = useState(TABS)
+  useEffect(() => {
+    const applyOrder = () => {
+      try {
+        const stored = localStorage.getItem('kiko_top_nav_v2')
+        if (!stored) { setOrderedTabs(TABS); return }
+        const ids = JSON.parse(stored)
+        if (!Array.isArray(ids)) { setOrderedTabs(TABS); return }
+        // Resolve stored IDs to TAB entries using aliases, preserve order, append missing tabs at end
+        const resolved = ids
+          .map(id => TABS.find(t => t.id === id || (t.aliases && t.aliases.includes(id))))
+          .filter(Boolean)
+        const missing = TABS.filter(t => !resolved.some(r => r.id === t.id))
+        setOrderedTabs([...resolved, ...missing])
+      } catch { setOrderedTabs(TABS) }
+    }
+    applyOrder()
+    const onUpdate = () => applyOrder()
+    window.addEventListener('kiko_top_nav_updated', onUpdate)
+    window.addEventListener('storage', onUpdate)
+    return () => {
+      window.removeEventListener('kiko_top_nav_updated', onUpdate)
+      window.removeEventListener('storage', onUpdate)
+    }
+  }, [])
+
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     window.location.href = '/login'
@@ -86,7 +114,7 @@ export default function LegoraTopNav({ user, customLogo, onSearchClick, onNotifi
 
       {/* Center nav */}
       <div className="ltn-links">
-        {TABS.map(tab => (
+        {orderedTabs.map(tab => (
           <button
             key={tab.id}
             className={`ltn-link ${isActive(tab.path) ? 'active' : ''}`}

@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-16T07:17:28.412Z",
+  "generated_at": "2026-04-16T07:25:29.796Z",
   "commits": [
+    {
+      "hash": "fdf9a2f",
+      "subject": "Group A: nav 'Insights' → 'Partnership Matrix', LinkedIn moved to 'More' dropdown (also contains KikoCode + admin-only Memory/Admin/Health), avatar now shows Google profile picture (with fallback chai",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "f00e098",
       "subject": "fix: revert HomeDashboard from KikoChat (was added without sign-off, changed approved homepage). Restore inbox 2-pane CSS for /command-centre (was overwritten with dashboard CSS, causing unstyled text",
@@ -29,7 +34,7 @@
     {
       "hash": "37ee383",
       "subject": "fix: Pipeline rebuilt the right way — Legora design + full OLD plumbing wired through. NEW: page header, stage columns, deal cards (Legora aesthetic). RESTORED: Pipeline Manager dropdown (multiple pip",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "a99bb0a",
@@ -89,16 +94,11 @@
     {
       "hash": "8d5fd37",
       "subject": "redesign: pre-prod fixes — revert dev bypass, build outreach intelligence Supabase tables, retrofit ContactDetail/SequenceDetail/Organisations/LinkedInQueue, wire real metrics into Insights and Pipeli",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "e279cee",
       "subject": "redesign: Settings — two-pane port (sections sidebar + Profile panel fully wired)",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "364ce58",
-      "subject": "redesign: Insights (PartnershipMatrix) — Bento Grid port",
       "when": "12 hours ago"
     }
   ]
