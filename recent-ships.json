@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-16T13:18:43.626Z",
+  "generated_at": "2026-04-16T13:26:58.523Z",
   "commits": [
+    {
+      "hash": "1e4684a",
+      "subject": "Perf: NotificationToast uses shared useUserSettings hook. Was firing its own user_settings fetch on every mount (3rd concurrent query alongside Layout's 2 — all firing within 1ms of each other). Now r",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "bd15124",
       "subject": "Perf: useUserSettings shared hook wired into Layout. New src/lib/useUserSettings.js provides dedup cached fetch for user_settings row (same pattern as usePagePermissions). Layout now calls useUserSett",
-      "when": "22 seconds ago"
+      "when": "9 minutes ago"
     },
     {
       "hash": "58ac7b5",
       "subject": "Perf: usePagePermissions in-flight promise dedup. Three callers (Layout + LegoraTopNav + PermissionGate) mount simultaneously on every route, each firing a /api/user-permissions fetch concurrently (me",
-      "when": "6 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "1de2ae5",
       "subject": "Organisations toolbar + table polish: (1) Top action bar — Add Organisation button label now visible (color #FFFFFF on black bg, was #0A0A0A invisible), switched from pill radius-50 to square radius-4",
-      "when": "43 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "47831dd",
       "subject": "Organisations + KikoChat: Legora polish. Organisations: 34 dark-glass rgba(25,25,25,0.40/0.50) backgrounds swapped to #FFFFFF, removed wasteful blur-on-white on glass/dropdown (saves GPU), swapped 0.4",
-      "when": "56 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "d0da7b3",
       "subject": "Nav + Partnership Matrix fixes: (1) Avatar either/or render — img OR initials, never both. (2) Settings nav defaults synced with LegoraTopNav TABS (all 8 tabs default-on, was only 5 with stale 'sequen",
-      "when": "63 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "948d234",
@@ -95,11 +100,6 @@
       "hash": "37df539",
       "subject": "Homepage: white card prompt bar (welcome only), sage alerts pill (permanent leftmost), 4 dynamic chips, remove feature tiles — matches signed-off kiko-home-nav-c.html. Chat mode prompt bar styling unc",
       "when": "4 hours ago"
-    },
-    {
-      "hash": "7ee5d96",
-      "subject": "Group A: nav + identity — 1) 'Insights' renamed to 'Partnership Matrix', 2) 'More' dropdown restored with Settings/LinkedIn/KikoCode and admin items (Memory/Admin/Health), 3) avatar with Google fallba",
-      "when": "6 hours ago"
     }
   ]
 }

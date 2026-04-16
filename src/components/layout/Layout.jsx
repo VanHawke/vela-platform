@@ -116,14 +116,15 @@ export default function Layout({ user }) {
     return () => { window.removeEventListener('kiko_top_nav_updated', handler); window.removeEventListener('kiko_more_order_updated', moreHandler) }
   }, [])
 
+  // Shared user_settings fetch — dedups across Layout + NotificationToast + OnboardingModal
+  // MUST be declared before any useEffect that references userSettings (TDZ)
+  const { row: userSettings } = useUserSettings(user)
+
   // Onboarding check — show modal for users who haven't completed onboarding
   useEffect(() => {
     if (!userSettings) return
     if (userSettings.onboarded === false) setShowOnboarding(true)
   }, [userSettings?.onboarded])
-
-  // Shared user_settings fetch — dedups across Layout + NotificationToast + OnboardingModal
-  const { row: userSettings } = useUserSettings(user)
 
   // Page permissions — filter nav items based on user's role + per-user overrides
   const userOrgIdNew = '2c6b30da-2d1a-45e5-bbeb-dee1671deba3' // TODO: resolve dynamically when multi-org
