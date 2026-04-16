@@ -13,6 +13,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { useUserSettings } from '@/lib/useUserSettings'
 import { Bell, X, Check, Mail, AlertCircle } from 'lucide-react'
 
 const ICONS = {
@@ -33,17 +34,14 @@ export default function NotificationToast({ user }) {
   const [toasts, setToasts] = useState([])
   const [prefs, setPrefs] = useState({ sequence_send: true, alert: true, default: true })
   const navigate = useNavigate()
+  const { row: userSettings } = useUserSettings(user)
 
-  // Load notification preferences from user_settings
+  // Read notification preferences from the shared user_settings row
   useEffect(() => {
-    if (!user?.id) return
-    supabase.from('user_settings').select('notification_prefs').eq('user_id', user.id).maybeSingle()
-      .then(({ data }) => {
-        if (data?.notification_prefs && typeof data.notification_prefs === 'object') {
-          setPrefs({ sequence_send: true, alert: true, default: true, ...data.notification_prefs })
-        }
-      })
-  }, [user?.id])
+    if (userSettings?.notification_prefs && typeof userSettings.notification_prefs === 'object') {
+      setPrefs({ sequence_send: true, alert: true, default: true, ...userSettings.notification_prefs })
+    }
+  }, [userSettings?.notification_prefs])
 
   useEffect(() => {
     if (!user?.id) return

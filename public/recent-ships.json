@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-16T13:18:18.643Z",
+  "generated_at": "2026-04-16T13:18:43.626Z",
   "commits": [
+    {
+      "hash": "bd15124",
+      "subject": "Perf: useUserSettings shared hook wired into Layout. New src/lib/useUserSettings.js provides dedup cached fetch for user_settings row (same pattern as usePagePermissions). Layout now calls useUserSett",
+      "when": "22 seconds ago"
+    },
     {
       "hash": "58ac7b5",
       "subject": "Perf: usePagePermissions in-flight promise dedup. Three callers (Layout + LegoraTopNav + PermissionGate) mount simultaneously on every route, each firing a /api/user-permissions fetch concurrently (me",
-      "when": "5 minutes ago"
+      "when": "6 minutes ago"
     },
     {
       "hash": "1de2ae5",
       "subject": "Organisations toolbar + table polish: (1) Top action bar — Add Organisation button label now visible (color #FFFFFF on black bg, was #0A0A0A invisible), switched from pill radius-50 to square radius-4",
-      "when": "42 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "47831dd",
@@ -19,7 +24,7 @@
     {
       "hash": "d0da7b3",
       "subject": "Nav + Partnership Matrix fixes: (1) Avatar either/or render — img OR initials, never both. (2) Settings nav defaults synced with LegoraTopNav TABS (all 8 tabs default-on, was only 5 with stale 'sequen",
-      "when": "62 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "948d234",
@@ -94,11 +99,6 @@
     {
       "hash": "7ee5d96",
       "subject": "Group A: nav + identity — 1) 'Insights' renamed to 'Partnership Matrix', 2) 'More' dropdown restored with Settings/LinkedIn/KikoCode and admin items (Memory/Admin/Health), 3) avatar with Google fallba",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "fdf9a2f",
-      "subject": "Group A: nav 'Insights' → 'Partnership Matrix', LinkedIn moved to 'More' dropdown (also contains KikoCode + admin-only Memory/Admin/Health), avatar now shows Google profile picture (with fallback chai",
       "when": "6 hours ago"
     }
   ]
