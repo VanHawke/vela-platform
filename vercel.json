@@ -141,7 +141,7 @@
     },
     {
       "path": "/api/cron-jobs-worker",
-      "schedule": "*/15 8-19 * * 1-5"
+      "schedule": "0 8,10,12,14,16,18 * * 1-5"
     },
     {
       "path": "/api/cron-sequence-enqueue",
