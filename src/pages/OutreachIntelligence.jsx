@@ -1,229 +1,328 @@
-// OutreachIntelligence.jsx — Inbox / two-pane composer
-// Mockup-faithful port of kiko-inbox.html
-// Uses real reply data from Supabase
+// OutreachIntelligence.jsx — Command Centre
+// Legora aesthetic. Replaces the experimental 2-pane inbox.
+// Hot replies band on top (email/LinkedIn when webhooks fire), priority deals main, tasks + signals right.
 
 import { useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-
-function formatWhen(iso) {
-  const d = new Date(iso)
-  const diffMs = Date.now() - d.getTime()
-  const diffMin = Math.floor(diffMs / 60000)
-  if (diffMin < 1) return 'just now'
-  if (diffMin < 60) return `${diffMin}m ago`
-  const diffHr = Math.floor(diffMin / 60)
-  if (diffHr < 24) return `${diffHr}h ago`
-  const diffDay = Math.floor(diffHr / 24)
-  if (diffDay < 7) return `${diffDay}d ago`
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-}
 import PageHeader from '@/components/layout/PageHeader'
+import { Mail, Linkedin, CheckSquare, Square, Zap, AlertTriangle, ChevronRight, RefreshCw, MessageSquare } from 'lucide-react'
 import './OutreachIntelligence.css'
 
+const STAGE_PROB = {
+  'To revisit': 10, 'Contact made': 20, 'Qualified': 35,
+  'In Dialogue': 50, 'Meeting arranged (brand x RH)': 55,
+  'Proposal Sent': 60, 'Negotiation': 70, 'Verbal Agreement': 85, 'Contract Review': 92,
+}
+
+const SIGNAL_TYPE_LABEL = {
+  partnership_detected: 'Partnership',
+  new_partnership: 'Partnership',
+  convergence: 'Convergence',
+  category_recommendation: 'Category',
+  competitive_change: 'Competitor',
+  stale_deal: 'Stale',
+  funding: 'Funding',
+  promotion: 'Promotion',
+}
+const SIGNAL_TYPE_CLASS = {
+  partnership_detected: 'sage', new_partnership: 'sage',
+  convergence: 'purple', category_recommendation: 'amber',
+  competitive_change: 'terra', stale_deal: 'terra',
+  funding: 'slate', promotion: 'amber',
+}
+
+function fmtCurrency(n) {
+  if (!n || isNaN(n)) return '$0'
+  if (n >= 1000000) return `$${(n / 1000000).toFixed(1)}m`
+  if (n >= 1000) return `$${(n / 1000).toFixed(0)}k`
+  return `$${n}`
+}
+function relativeTime(iso) {
+  if (!iso) return ''
+  const diffMs = Date.now() - new Date(iso).getTime()
+  const min = Math.floor(diffMs / 60000)
+  if (min < 1) return 'just now'
+  if (min < 60) return `${min}m ago`
+  const hr = Math.floor(min / 60)
+  if (hr < 24) return `${hr}h ago`
+  const d = Math.floor(hr / 24)
+  if (d < 7) return `${d}d ago`
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
+
+
 export default function OutreachIntelligence({ user }) {
-  const [replies, setReplies] = useState([])
+  const nav = useNavigate()
   const [loading, setLoading] = useState(true)
-  const [selectedId, setSelectedId] = useState(null)
-  const [whyOpen, setWhyOpen] = useState(true)
-  const [filter, setFilter] = useState('all') // all / hot / unread
-  const [draftBody, setDraftBody] = useState('')
+  const [deals, setDeals] = useState([])
+  const [tasks, setTasks] = useState([])
+  const [hotReplies, setHotReplies] = useState([])
+  const [signals, setSignals] = useState([])
 
-  useEffect(() => {
-    if (!user?.id) return
-    let cancelled = false
-    let sub = null
-    const fetchReplies = async () => {
-      setLoading(true)
-      // Pull recent replies, joined with contact info
-      const { data, error } = await supabase
-        .from('activities')
-        .select('id, subject, body, entity_name, created_at, metadata, contact_id, contacts(name, email, company)')
-        .eq('type', 'reply')
-        .order('created_at', { ascending: false })
-        .limit(50)
-      if (cancelled) return
-      if (error) { console.error('[Inbox] fetch error', error); setReplies([]) }
-      else { setReplies(data || []) }
-      setLoading(false)
+  const loadData = async () => {
+    setLoading(true)
+    try {
+      const yesterdayISO = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+      const weekAgoISO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+
+      const [dealsRes, tasksRes, hotRes, signalRes] = await Promise.all([
+        // Active deals
+        supabase.from('deals')
+          .select('id, data, updated_at')
+          .not('data->>status', 'in', '("won","lost")')
+          .order('updated_at', { ascending: false }),
+        // Open tasks
+        supabase.from('tasks')
+          .select('*')
+          .order('updated_at', { ascending: false })
+          .limit(50),
+        // Hot replies — any reply-type alerts in last 24h. When Gmail/LI webhooks fire these populate here.
+        supabase.from('kiko_alerts')
+          .select('id, type, title, detail, entity_name, entity_id, metadata, created_at')
+          .or('type.like.reply_from%,type.eq.linkedin_reply,type.eq.email_reply')
+          .gte('created_at', yesterdayISO)
+          .order('created_at', { ascending: false })
+          .limit(10),
+        // Market signals (last 7d, medium+ severity, excluding reply types)
+        supabase.from('kiko_alerts')
+          .select('id, type, severity, title, detail, entity_name, created_at')
+          .in('type', ['partnership_detected', 'new_partnership', 'convergence', 'category_recommendation', 'competitive_change', 'stale_deal', 'funding', 'promotion'])
+          .in('severity', ['high', 'critical', 'medium'])
+          .gte('created_at', weekAgoISO)
+          .order('created_at', { ascending: false })
+          .limit(10),
+      ])
+
+      setDeals(dealsRes.data || [])
+      setTasks((tasksRes.data || []).filter(t => !t.data?.completed))
+      setHotReplies(hotRes.data || [])
+      setSignals(signalRes.data || [])
+    } catch (err) {
+      console.error('[CommandCentre] load error', err)
     }
-    fetchReplies()
-    // Real-time subscription — new replies appear instantly
-    sub = supabase
-      .channel('inbox-replies')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activities', filter: 'type=eq.reply' }, () => {
-        fetchReplies()
+    setLoading(false)
+  }
+
+  useEffect(() => { loadData() }, [])
+
+  const completeTask = async (task) => {
+    const updated = { ...task.data, completed: true, completedAt: new Date().toISOString() }
+    setTasks(prev => prev.filter(t => t.id !== task.id))
+    await supabase.from('tasks')
+      .update({ data: updated, updated_at: new Date().toISOString() })
+      .eq('id', task.id)
+  }
+
+
+  // Computed metrics
+  const totalPipeline = useMemo(
+    () => deals.reduce((s, d) => s + (parseFloat(d.data?.value) || 0), 0),
+    [deals]
+  )
+  const weightedPipeline = useMemo(
+    () => deals.reduce((s, d) => {
+      const stage = d.data?.stage
+      const prob = (STAGE_PROB[stage] || 10) / 100
+      return s + ((parseFloat(d.data?.value) || 0) * prob)
+    }, 0),
+    [deals]
+  )
+  const overdueTasks = useMemo(
+    () => tasks.filter(t => t.data?.dueDate && new Date(t.data.dueDate) < new Date()).length,
+    [tasks]
+  )
+
+  // Priority deals: stale OR high-weighted, top 8
+  const priorityDeals = useMemo(() => {
+    const now = Date.now()
+    return deals
+      .map(deal => {
+        const d = deal.data || {}
+        const last = d.lastActivity ? new Date(d.lastActivity) : new Date(deal.updated_at)
+        const daysSince = Math.floor((now - last) / 86400000)
+        const stage = d.stage || 'Unknown'
+        const prob = (STAGE_PROB[stage] || 10) / 100
+        return {
+          ...d,
+          _id: deal.id,
+          daysSince,
+          stage,
+          prob,
+          weighted: (parseFloat(d.value) || 0) * prob,
+          isStale: daysSince > 30,
+        }
       })
-      .subscribe()
-    return () => {
-      cancelled = true
-      if (sub) supabase.removeChannel(sub)
-    }
-  }, [user?.id])
+      .sort((a, b) => b.weighted - a.weighted)
+      .slice(0, 8)
+  }, [deals])
 
-  const filtered = useMemo(() => {
-    if (filter === 'hot') return replies.filter(r => r.metadata?.hot)
-    if (filter === 'unread') return replies.filter(r => !r.metadata?.read)
-    return replies
-  }, [replies, filter])
+  // Channel detector for hot reply cards
+  const channelOf = (r) => {
+    if (r.type?.includes('linkedin')) return 'linkedin'
+    if (r.type?.includes('email')) return 'email'
+    return 'reply'
+  }
+  const channelIcon = (ch) => {
+    if (ch === 'linkedin') return <Linkedin size={11} />
+    if (ch === 'email') return <Mail size={11} />
+    return <MessageSquare size={11} />
+  }
 
-  const selected = filtered.find(r => r.id === selectedId) || filtered[0]
-  const hotCount = replies.filter(r => r.metadata?.hot).length
-
-
-  // Fallback mock data if no real replies (for first-time / empty state)
-  const displayList = filtered.length > 0 ? filtered : MOCK_REPLIES
-  const displaySelected = selected || MOCK_REPLIES[0]
 
   return (
-    <div className="ib">
+    <div className="cc">
       <PageHeader
         eyebrowCategory="TODAY"
         eyebrowSuffix="Command Centre"
         title="Command Centre"
         stats={[
-          { value: filtered.length || MOCK_REPLIES.length, label: 'Replies' },
-          { value: hotCount || MOCK_REPLIES.filter(r => r.hot).length, label: 'Hot' },
+          { value: deals.length, label: 'Active deals' },
+          { value: fmtCurrency(weightedPipeline), label: 'Weighted' },
+          { value: hotReplies.length, label: 'Hot replies' },
+          { value: tasks.length, label: 'Open tasks' },
         ]}
         toolbar={
-          <button className="ib-pri-btn">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-            </svg>
-            Compose
+          <button onClick={loadData} className="cc-refresh-btn" disabled={loading}>
+            <RefreshCw size={12} className={loading ? 'spinning' : ''} />
+            Refresh
           </button>
         }
       />
 
-      <div className="ib-body">
-        {/* LEFT: thread list */}
-        <aside className="ib-list">
-          <div className="ib-list-h">
-            <div className="ib-seg">
-              <button className={filter === 'all' ? 'active' : ''} onClick={() => setFilter('all')}>All</button>
-              <button className={filter === 'hot' ? 'active' : ''} onClick={() => setFilter('hot')}>Hot</button>
-              <button className={filter === 'unread' ? 'active' : ''} onClick={() => setFilter('unread')}>Unread</button>
+      <div className="cc-body">
+
+        {/* HOT REPLIES BAND (top) */}
+        <div className="cc-hot-band">
+          <div className="cc-hot-h">
+            <h3><MessageSquare size={13} /> Hot replies</h3>
+            {hotReplies.length > 0 && <span className="cc-hot-h-count">{hotReplies.length} new</span>}
+            <span className="cc-hot-h-meta">last 24h</span>
+          </div>
+          {loading ? (
+            <div className="cc-empty">Loading…</div>
+          ) : hotReplies.length === 0 ? (
+            <div className="cc-empty">No replies in last 24h · email & LinkedIn responses land here when they arrive</div>
+          ) : (
+            <div className="cc-hot-scroll">
+              {hotReplies.map(r => {
+                const ch = channelOf(r)
+                return (
+                  <div key={r.id} className="cc-hot-card" onClick={() => r.entity_id && nav(`/contacts/${r.entity_id}`)}>
+                    <div className="cc-hot-card-row1">
+                      <div className={`cc-hot-card-channel ${ch}`}>{channelIcon(ch)}</div>
+                      <div className="cc-hot-card-from">{r.entity_name || 'Unknown'}</div>
+                      <div className="cc-hot-card-when">{relativeTime(r.created_at)}</div>
+                    </div>
+                    <div className="cc-hot-card-title">{r.title || '(no subject)'}</div>
+                    {r.detail && <div className="cc-hot-card-detail">{r.detail}</div>}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+
+        {/* TWO-COLUMN GRID */}
+        <div className="cc-grid">
+          {/* LEFT: Priority deals */}
+          <div className="cc-col-main">
+            <div className="cc-section">
+              <div className="cc-section-h">
+                <h3>Priority deals</h3>
+                <span className="cc-section-meta">Top {priorityDeals.length} by weighted value</span>
+              </div>
+              <div className="cc-deals-list">
+                {loading ? (
+                  <div className="cc-empty">Loading…</div>
+                ) : priorityDeals.length === 0 ? (
+                  <div className="cc-empty">No active deals</div>
+                ) : priorityDeals.map(d => (
+                  <div key={d._id} className={`cc-deal ${d.isStale ? 'stale' : ''}`} onClick={() => nav('/pipeline')}>
+                    <div className="cc-deal-mark">{(d.company || '?')[0].toUpperCase()}</div>
+                    <div className="cc-deal-body">
+                      <div className="cc-deal-row1">
+                        <span className="cc-deal-name">{d.company || d.title || 'Untitled'}</span>
+                        <span className="cc-deal-value">{fmtCurrency(parseFloat(d.value) || 0)}</span>
+                      </div>
+                      <div className="cc-deal-row2">
+                        <span className="cc-deal-stage">{d.stage}</span>
+                        <span className="cc-deal-meta">·</span>
+                        <span className="cc-deal-meta">{Math.round(d.prob * 100)}% prob</span>
+                        <span className="cc-deal-meta">·</span>
+                        <span className={`cc-deal-meta ${d.isStale ? 'stale-text' : ''}`}>
+                          {d.daysSince}d since activity
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight size={14} className="cc-deal-chev" />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-          <div className="ib-list-body">
-            {displayList.map((r, i) => {
-              const data = r.metadata || r
-              // Prefer joined contact data, fall back to metadata, then mock fields
-              const senderName = r.contacts?.name || data.from_name || data.from || 'Unknown'
-              const senderCompany = r.contacts?.company || data.company || ''
-              const subject = r.subject || data.subject || r.entity_name || data.entity_name || '(no subject)'
-              const snippet = (r.body || data.snippet || data.preview || '').slice(0, 100)
-              const when = data.when || (r.created_at ? formatWhen(r.created_at) : '—')
-              const isSel = (r.id || i) === (displaySelected?.id || 0)
-              return (
-                <div
-                  key={r.id || i}
-                  className={`ib-thread ${isSel ? 'selected' : ''} ${data.hot ? 'hot' : ''}`}
-                  onClick={() => setSelectedId(r.id || i)}
-                >
-                  <div className="ib-thread-row1">
-                    <div className="ib-thread-name">{senderName}{senderCompany && <span style={{ color: '#A0A0A0', fontWeight: 400 }}> · {senderCompany}</span>}</div>
-                    <div className="ib-thread-when">{when}</div>
-                  </div>
-                  <div className="ib-thread-subject">{subject}</div>
-                  <div className="ib-thread-snippet">{snippet || ''}</div>
-                  {data.hot && <span className="ib-thread-tag hot">HOT</span>}
-                </div>
-              )
-            })}
-          </div>
-        </aside>
 
-
-        {/* RIGHT: composer */}
-        <main className="ib-pane">
-          {displaySelected ? (
-            <>
-              <div className="ib-pane-h">
-                <div>
-                  <div className="ib-pane-from">{displaySelected.contacts?.name || displaySelected.metadata?.from_name || displaySelected.from || 'Unknown'}{displaySelected.contacts?.company && <span style={{ color: '#A0A0A0', fontWeight: 400, fontSize: '0.85em' }}> · {displaySelected.contacts.company}</span>}</div>
-                  <div className="ib-pane-meta">{displaySelected.contacts?.email || displaySelected.metadata?.from_email || displaySelected.email || ''} · {displaySelected.metadata?.when || (displaySelected.created_at ? formatWhen(displaySelected.created_at) : displaySelected.when || '')}</div>
-                </div>
-                <div className="ib-pane-actions">
-                  <button className="ib-icon-btn" title="Archive">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-                  </button>
-                  <button className="ib-icon-btn" title="Snooze">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  </button>
-                  <button className="ib-icon-btn" title="More">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                  </button>
-                </div>
+          {/* RIGHT: Tasks + Signals */}
+          <aside className="cc-col-side">
+            <div className="cc-section">
+              <div className="cc-section-h">
+                <h3><CheckSquare size={12} style={{ marginRight: 5 }} />Tasks due</h3>
+                <span className="cc-section-meta">{tasks.length}{overdueTasks > 0 ? ` · ${overdueTasks} overdue` : ''}</span>
               </div>
-
-              <div className="ib-pane-subject">{displaySelected.subject || displaySelected.metadata?.subject || displaySelected.entity_name || '(no subject)'}</div>
-
-              <div className="ib-pane-body">
-                <div className="ib-original">
-                  {(displaySelected.body || displaySelected.metadata?.body || displaySelected.snippet || '').split('\n').map((p, i) => (
-                    <p key={i}>{p}</p>
-                  ))}
-                </div>
-
-                {/* Why this draft — collapsible */}
-                <div className={`ib-why ${whyOpen ? 'open' : ''}`}>
-                  <button className="ib-why-h" onClick={() => setWhyOpen(o => !o)}>
-                    <span className="dot"></span>
-                    <span>Why this draft</span>
-                    <svg className="chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
-                  </button>
-                  {whyOpen && (
-                    <div className="ib-why-body">
-                      <strong>Tone:</strong> Direct, formal — matches your previous touches with this account.<br/>
-                      <strong>Hook:</strong> References the Mercedes renewal angle from Touch 3 (highest reply rate this quarter).<br/>
-                      <strong>CTA:</strong> Specific next step — 30-min call this week.<br/>
-                      <strong>Race context:</strong> Miami GP in 16d — peak window for sponsor decisions.
-                    </div>
-                  )}
-                </div>
-
-                {/* Composer */}
-                <div className="ib-composer">
-                  <div className="ib-composer-h">Reply</div>
-                  <textarea
-                    className="ib-composer-area"
-                    value={draftBody || displaySelected.metadata?.draft_body || generateDraft(displaySelected)}
-                    onChange={(e) => setDraftBody(e.target.value)}
-                  />
-                  <div className="ib-composer-foot">
-                    <div className="ib-composer-tools">
-                      <button className="ib-tool-btn">Regenerate</button>
-                      <button className="ib-tool-btn">Tone: Direct</button>
-                    </div>
-                    <button className="ib-pri-btn">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                      Send
+              {loading ? (
+                <div className="cc-empty">Loading…</div>
+              ) : tasks.length === 0 ? (
+                <div className="cc-empty">All clear</div>
+              ) : tasks.slice(0, 10).map(t => {
+                const overdue = t.data?.dueDate && new Date(t.data.dueDate) < new Date()
+                return (
+                  <div key={t.id} className={`cc-task ${overdue ? 'overdue' : ''}`}>
+                    <button className="cc-task-check" onClick={() => completeTask(t)}>
+                      <Square size={12} />
                     </button>
+                    <div className="cc-task-body">
+                      <div className="cc-task-title">{t.data?.title || t.data?.name || 'Task'}</div>
+                      {t.data?.dueDate && (
+                        <div className="cc-task-due">
+                          Due {new Date(t.data.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                          {overdue && <span className="cc-overdue-tag">OVERDUE</span>}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+
+            <div className="cc-section">
+              <div className="cc-section-h">
+                <h3><Zap size={12} style={{ marginRight: 5 }} />Signals</h3>
+                <span className="cc-section-meta">{signals.length} · last 7d</span>
+              </div>
+              {loading ? (
+                <div className="cc-empty">Loading…</div>
+              ) : signals.length === 0 ? (
+                <div className="cc-empty">No active signals</div>
+              ) : signals.slice(0, 8).map(s => (
+                <div key={s.id} className="cc-signal">
+                  <span className={`cc-signal-tag ${SIGNAL_TYPE_CLASS[s.type] || 'slate'}`}>
+                    {SIGNAL_TYPE_LABEL[s.type] || s.type}
+                  </span>
+                  <div className="cc-signal-body">
+                    <div className="cc-signal-title">{s.title}</div>
+                    <div className="cc-signal-meta">
+                      {s.entity_name && <span>{s.entity_name} · </span>}
+                      {relativeTime(s.created_at)}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </>
-          ) : (
-            <div className="ib-empty">No replies yet</div>
-          )}
-        </main>
+              ))}
+            </div>
+          </aside>
+        </div>
       </div>
     </div>
   )
-}
-
-
-// ── Mock fallback when no real replies in DB ──
-const MOCK_REPLIES = [
-  { id: 'm1', from_name: 'James Bardrick', from: 'james.bardrick@citi.com', subject: 'Re: F1 2027 Banking — Mercedes renewal', snippet: 'Hi Sunny, interesting point on Mercedes. Let me discuss with the team and revert next week...', when: '2h ago', hot: true, body: 'Hi Sunny,\n\nInteresting point on Mercedes — the renewal cycle does present an opening we should think about properly.\n\nLet me discuss with the team here and revert next week. Could we set up a 30 min call to walk through the commercial structure?\n\nBest,\nJames' },
-  { id: 'm2', from_name: 'David Sundheim', from: 'd.sundheim@d1.com', subject: 'Re: F1 partnership thesis', snippet: 'Sunny, this aligns with what we have been thinking. Happy to take a meeting. Could you send the deck?', when: '4h ago', hot: true, body: 'Sunny,\n\nThis aligns with what we have been thinking on the sports IP side. Happy to take a meeting.\n\nCould you send through the deck and a couple of comparable transactions?\n\nDS' },
-  { id: 'm3', from_name: 'Catherine Halford', from: 'c.halford@anz.com', subject: 'Re: ANZ × F1 brand strategy', snippet: 'Thanks for reaching out. Could we postpone the conversation until after the Asia road trip?', when: 'Yesterday', hot: false, body: 'Thanks for reaching out, Sunny.\n\nWe are heads-down on the APAC roadshow until end of month. Could we postpone the conversation until after I am back in Singapore?\n\nWill ping you the week of 28th April.\n\nCH' },
-  { id: 'm4', from_name: 'Mark Nelson', from: 'mark@stripe.com', subject: 'Re: Formula E 2026', snippet: 'Sunny, FE is interesting for us. Let me loop in our brand team and come back with thoughts.', when: 'Yesterday', hot: false, body: 'Sunny,\n\nFE is interesting for us — particularly the Berlin and London E-Prix activation potential.\n\nLet me loop in our brand team and come back with thoughts later this week.\n\nM' },
-  { id: 'm5', from_name: 'Paul Gewirtz', from: 'p.gewirtz@gs.com', subject: 'Re: Tomorrow 14:00', snippet: 'Confirmed for tomorrow 14:00. Send through any pre-read by EOD today.', when: '2 days ago', hot: false, body: 'Confirmed for tomorrow 14:00.\n\nPlease send through any pre-read by EOD today so I can review on the train in.\n\nPG' },
-]
-
-function generateDraft(reply) {
-  if (!reply) return ''
-  const name = (reply.metadata?.from_name || reply.from_name || 'there').split(' ')[0]
-  return `${name},\n\nThanks for the quick turnaround.\n\nHappy to set up that call — let me know what works for you next week and I will send through the briefing pack ahead of time.\n\nThe key commercial structure we'd propose mirrors what's worked for the existing Haas roster — fixed annual rights fee plus race-by-race activation budgets, with category exclusivity inside banking.\n\nBest,\nSunny`
 }

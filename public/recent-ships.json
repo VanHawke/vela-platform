@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-16T09:13:51.232Z",
+  "generated_at": "2026-04-16T09:21:04.139Z",
   "commits": [
+    {
+      "hash": "4978b81",
+      "subject": "Pipeline: deal panel company title + favicon mark now clickable — routes to /organisations?org=<id> and auto-selects that org. Hover shows underline. Contact rows already routed to /contacts/:id.",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "37df539",
       "subject": "Homepage: white card prompt bar (welcome only), sage alerts pill (permanent leftmost), 4 dynamic chips, remove feature tiles — matches signed-off kiko-home-nav-c.html. Chat mode prompt bar styling unc",
-      "when": "4 minutes ago"
+      "when": "11 minutes ago"
     },
     {
       "hash": "7ee5d96",
@@ -49,7 +54,7 @@
     {
       "hash": "a99bb0a",
       "subject": "polish: Pipeline stage columns + deal cards restyled to Legora aesthetic — light backgrounds (#FAFAF7 columns, #FFFFFF cards), proper borders (rgba(0,0,0,0.06-0.08)), subtle shadows, clean hover lift.",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "cba44c7",
@@ -94,11 +99,6 @@
     {
       "hash": "6a5ac61",
       "subject": "redesign: Settings — Workspace + Personality + Auto-actions + Apps panels fully built",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "6720a43",
-      "subject": "redesign: nightly outreach windows cron + Settings/Email panel + section descriptions for placeholder tabs",
       "when": "13 hours ago"
     }
   ]
