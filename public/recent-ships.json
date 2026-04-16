@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-16T12:16:09.290Z",
+  "generated_at": "2026-04-16T12:22:14.924Z",
   "commits": [
+    {
+      "hash": "d0da7b3",
+      "subject": "Nav + Partnership Matrix fixes: (1) Avatar either/or render — img OR initials, never both. (2) Settings nav defaults synced with LegoraTopNav TABS (all 8 tabs default-on, was only 5 with stale 'sequen",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "948d234",
       "subject": "KikoChat: agent-plan style thinking steps. Dark-glass 'Kiko's reasoning' button swapped to Legora white card. Purple dot list replaced with status-aware icons: spinning sage ring for in-progress step,",
-      "when": "34 minutes ago"
+      "when": "40 minutes ago"
     },
     {
       "hash": "641a449",
       "subject": "Calendar redesign: signed-off race spine + outreach intelligence port swapped to active (was NEW_REDESIGN.jsx). Uses Legora tokens (white bg, Source Serif 4, sage/terra/amber/purple for F1/FE/MotoGP/W",
-      "when": "43 minutes ago"
+      "when": "49 minutes ago"
     },
     {
       "hash": "1abc2cb",
       "subject": "Contacts: wire up New contact modal — form state, saveContact handler with reloadKey to refresh list on save, resetForm helper, button onClick, full modal JSX with first/last name row + email + phone ",
-      "when": "48 minutes ago"
+      "when": "54 minutes ago"
     },
     {
       "hash": "bbbf11e",
       "subject": "Contacts page: Legora redesign ported to active (was NEW_REDESIGN) — tabular view with hover preview popup, sector tags, status chips, Source Serif 4 header. Company name in each row now routes to /or",
-      "when": "63 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "36cf605",
       "subject": "Partnership Matrix: fix active tab black-on-black (color:#FFFFFF when active on T.accent pill) + Add-partnership modal from dark glass to Legora white card with light border",
-      "when": "66 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "7b0718c",
@@ -94,11 +99,6 @@
     {
       "hash": "832df4c",
       "subject": "fix: nav 'Inbox' renamed to 'Command Centre' AND /command-centre layout restored to signed-off 2-pane composer design (was wrongly showing dashboard). Dashboard preserved as OutreachIntelligence.DASHB",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "8f40e17",
-      "subject": "rebuild: Command Centre — new Legora dashboard wired to OLD plumbing. Stats row (pipeline weighted, stale, overdue, next race countdown with F1/FE/MotoGP/WEC switcher). Two-column layout: priority dea",
       "when": "15 hours ago"
     }
   ]
