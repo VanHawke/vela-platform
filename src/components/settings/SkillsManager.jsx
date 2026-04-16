@@ -70,7 +70,7 @@ export default function SkillsManager() {
             <textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} placeholder="Skill content — the knowledge Kiko will use when this skill is triggered..." rows={8} style={{ ...inp, resize: 'vertical', lineHeight: 1.6 }} />
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button onClick={() => setEditing(null)} style={{ padding: '6px 16px', borderRadius: 50, background: 'transparent', border: `1px solid ${T.border}`, color: T.textTertiary, fontSize: 13, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
-              <button onClick={save} disabled={!form.name || !form.content} style={{ padding: '6px 16px', borderRadius: 50, background: T.accentGradient, border: 'none', color: '#0A0A0A', fontSize: 13, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, opacity: form.name && form.content ? 1 : 0.4 }}>Save</button>
+              <button onClick={save} disabled={!form.name || !form.content} style={{ padding: '6px 16px', borderRadius: 50, background: T.accentGradient, border: 'none', color: '#FFFFFF', fontSize: 13, cursor: 'pointer', fontFamily: T.font, fontWeight: 400, opacity: form.name && form.content ? 1 : 0.4 }}>Save</button>
             </div>
           </div>
         </div>

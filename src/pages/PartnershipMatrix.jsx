@@ -160,7 +160,7 @@ export default function PartnershipMatrix({ user }) {
               </select>
               <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                 <button onClick={() => setShowAdd(false)} style={{ flex: 1, fontSize: 13, padding: '6px 0', borderRadius: 6, border: `1px solid ${T.border}`, background: T.surface, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
-                <button onClick={addPartnership} style={{ flex: 1, fontSize: 13, padding: '6px 0', borderRadius: 6, border: 'none', background: T.accent, color: '#0A0A0A', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>Add</button>
+                <button onClick={addPartnership} style={{ flex: 1, fontSize: 13, padding: '6px 0', borderRadius: 6, border: 'none', background: T.accent, color: '#FFFFFF', cursor: 'pointer', fontFamily: T.font, fontWeight: 500 }}>Add</button>
               </div>
             </div>
           </div>

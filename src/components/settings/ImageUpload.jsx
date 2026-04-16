@@ -145,7 +145,7 @@ export default function ImageUpload({ label, storageKey, folder = 'uploads', asp
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
               <button onClick={cancelCrop} style={{ height: 36, padding: '0 16px', borderRadius: 50, border: `1px solid ${T.border}`, background: T.surface, color: T.textSecondary, fontSize: 14, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
-              <button onClick={saveCrop} disabled={uploading} style={{ height: 36, padding: '0 20px', borderRadius: 50, border: 'none', background: T.accent, color: '#0A0A0A', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <button onClick={saveCrop} disabled={uploading} style={{ height: 36, padding: '0 20px', borderRadius: 50, border: 'none', background: T.accent, color: '#FFFFFF', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 6 }}>
                 {uploading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Save
               </button>
             </div>

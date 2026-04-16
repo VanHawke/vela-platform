@@ -25,7 +25,7 @@ const T = {
   border: 'rgba(0,0,0,0.08)',
   surface: 'rgba(0,0,0,0.03)',
   surfaceHover: 'rgba(0,0,0,0.04)',
-  glass: 'rgba(20,20,22,0.6)',
+  glass: '#FFFFFF',
   glassBorder: 'rgba(0,0,0,0.08)',
   font: 'inherit',
   radius: 12,
@@ -216,8 +216,8 @@ export default function MemoryTab({ user, canExport = true }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Header card */}
       <div style={{
-        background: T.glass, backdropFilter: 'blur(24px) saturate(1.2)',
-        WebkitBackdropFilter: 'blur(24px) saturate(1.2)',
+        background: T.glass, 
+        
         borderRadius: T.radius, border: `0.5px solid ${T.glassBorder}`,
         borderTop: `0.5px solid rgba(0,0,0,0.08)`, padding: 20,
       }}>

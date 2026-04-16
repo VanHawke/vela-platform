@@ -395,6 +395,7 @@ export default function Layout({ user }) {
       {/* Legora top nav */}
       <LegoraTopNav
         user={user}
+        profile={profile}
         customLogo={customLogo}
         hasNotifications={true}
         isAdmin={isSuperAdmin}

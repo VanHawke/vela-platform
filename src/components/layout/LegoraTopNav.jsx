@@ -25,7 +25,7 @@ const MORE_ITEMS = [
 ]
 
 
-export default function LegoraTopNav({ user, customLogo, onSearchClick, onNotificationsClick, onNewClick, hasNotifications, isAdmin = false }) {
+export default function LegoraTopNav({ user, profile, customLogo, onSearchClick, onNotificationsClick, onNewClick, hasNotifications, isAdmin = false }) {
   const nav = useNavigate()
   const loc = useLocation()
   const [moreOpen, setMoreOpen] = useState(false)
@@ -37,14 +37,15 @@ export default function LegoraTopNav({ user, customLogo, onSearchClick, onNotifi
   const orgId = user?.app_metadata?.org_id
   const { canSee } = usePagePermissions(user, orgId)
 
-  // Google avatar fallback chain
+  // Avatar source chain: user-uploaded profile photo first, then Google avatar, then nothing
   const avatarUrl =
+    profile?.profile_photo_url ||
     user?.user_metadata?.avatar_url ||
     user?.user_metadata?.picture ||
     user?.identities?.[0]?.identity_data?.avatar_url ||
     user?.identities?.[0]?.identity_data?.picture ||
     null
-  const initials = (user?.user_metadata?.full_name || user?.email || 'S').slice(0, 1).toUpperCase()
+  const initials = (profile?.display_name || profile?.first_name || user?.user_metadata?.full_name || user?.email || 'S').slice(0, 1).toUpperCase()
 
   // Close dropdowns on outside click / escape
   useEffect(() => {

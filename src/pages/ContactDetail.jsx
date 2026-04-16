@@ -326,7 +326,7 @@ export default function ContactDetail() {
                     <div key={f.key}><p style={labelStyle}>{f.label}</p><input value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} style={inputStyle} /></div>
                   ))}
                   <div><p style={labelStyle}>Notes</p><textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} rows={3} style={{ ...inputStyle, resize: 'none' }} /></div>
-                  <button onClick={save} style={{ alignSelf: 'flex-end', fontSize: 14, fontWeight: 500, background: 'var(--accent)', color: '#0A0A0A', padding: '8px 20px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Save Changes</button>
+                  <button onClick={save} style={{ alignSelf: 'flex-end', fontSize: 14, fontWeight: 500, background: 'var(--accent)', color: '#FFFFFF', padding: '8px 20px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>Save Changes</button>
                 </div>
               </>
             ) : (

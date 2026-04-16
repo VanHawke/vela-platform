@@ -113,7 +113,7 @@ export default function MemoryConsole({ user }) {
             style={{ width: '100%', height: 120, borderRadius: 50, border: `1px solid ${T.border}`, padding: 14, fontSize: 14, color: T.text, fontFamily: T.font, outline: 'none', background: T.bg, resize: 'vertical', lineHeight: 1.5 }} />
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             <button onClick={handleCreate} disabled={saving} style={{
-              height: 36, padding: '0 16px', borderRadius: 50, background: T.accent, color: '#0A0A0A',
+              height: 36, padding: '0 16px', borderRadius: 50, background: T.accent, color: '#FFFFFF',
               border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font
             }}>{saving ? 'Saving...' : 'Create'}</button>
             <button onClick={() => { setCreating(false); setNewPath(''); setNewContent('') }} style={{
@@ -164,7 +164,7 @@ export default function MemoryConsole({ user }) {
                             style={{ width: '100%', minHeight: 200, borderRadius: 50, border: `1px solid ${T.border}`, padding: 14, fontSize: 14, color: T.text, fontFamily: 'monospace', outline: 'none', background: T.bg, resize: 'vertical', lineHeight: 1.6 }} />
                           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                             <button onClick={() => handleSave(mem.id)} disabled={saving} style={{
-                              height: 32, padding: '0 14px', borderRadius: 50, background: T.accent, color: '#0A0A0A',
+                              height: 32, padding: '0 14px', borderRadius: 50, background: T.accent, color: '#FFFFFF',
                               border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 4
                             }}><Save size={12} /> {saving ? 'Saving...' : 'Save'}</button>
                             <button onClick={() => setEditing(null)} style={{
