@@ -4,25 +4,27 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { usePagePermissions } from '@/lib/usePagePermissions'
 
+// pageKey = the key used in user_page_permissions (matches PermissionGate in App.jsx)
 const TABS = [
-  { id: 'home',                label: 'Today',              path: '/',                   showPlus: true,  aliases: ['home', 'today', 'dashboard']  },
-  { id: 'pipeline',            label: 'Pipeline',           path: '/pipeline',           showPlus: true,  aliases: ['pipeline']  },
-  { id: 'campaigns',           label: 'Campaigns',          path: '/campaigns',          showPlus: false, aliases: ['campaigns', 'sequences']  },
-  { id: 'command-centre',      label: 'Command Centre',     path: '/command-centre',     showPlus: false, aliases: ['command-centre', 'inbox']  },
-  { id: 'calendar',            label: 'Calendar',           path: '/calendar',           showPlus: false, aliases: ['calendar']  },
-  { id: 'contacts',            label: 'Contacts',           path: '/contacts',           showPlus: false, aliases: ['contacts']  },
-  { id: 'organisations',       label: 'Organisations',      path: '/organisations',      showPlus: false, aliases: ['organisations', 'orgs', 'companies']  },
-  { id: 'partnership-matrix',  label: 'Partnership Matrix', path: '/partnership-matrix', showPlus: false, aliases: ['partnership-matrix', 'insights']  },
+  { id: 'home',                label: 'Today',              path: '/',                   showPlus: true,  aliases: ['home', 'today', 'dashboard'], pageKey: null },
+  { id: 'pipeline',            label: 'Pipeline',           path: '/pipeline',           showPlus: true,  aliases: ['pipeline'],                    pageKey: 'pipeline' },
+  { id: 'campaigns',           label: 'Campaigns',          path: '/campaigns',          showPlus: false, aliases: ['campaigns', 'sequences'],      pageKey: 'campaigns' },
+  { id: 'command-centre',      label: 'Command Centre',     path: '/command-centre',     showPlus: false, aliases: ['command-centre', 'inbox'],     pageKey: 'command_centre' },
+  { id: 'calendar',            label: 'Calendar',           path: '/calendar',           showPlus: false, aliases: ['calendar'],                    pageKey: 'race_calendar' },
+  { id: 'contacts',            label: 'Contacts',           path: '/contacts',           showPlus: false, aliases: ['contacts'],                    pageKey: 'contacts' },
+  { id: 'organisations',       label: 'Organisations',      path: '/organisations',      showPlus: false, aliases: ['organisations', 'orgs', 'companies'], pageKey: 'organisations' },
+  { id: 'partnership-matrix',  label: 'Partnership Matrix', path: '/partnership-matrix', showPlus: false, aliases: ['partnership-matrix', 'insights'], pageKey: 'partnership_matrix' },
 ]
 
+// More dropdown — order here matters: Settings ALWAYS last.
+// Admin-only items hidden for non-super-admin users.
 const MORE_ITEMS = [
-  { id: 'settings',  label: 'Settings',      path: '/settings' },
-  { id: 'linkedin',  label: 'LinkedIn',      path: '/linkedin' },
-  { id: 'kikocode',  label: 'KikoCode',      path: '/kikocode' },
-  { id: 'memory',    label: 'Memory',        path: '/memory',       adminOnly: true },
+  { id: 'linkedin',  label: 'LinkedIn',      path: '/linkedin',     pageKey: 'linkedin_queue' },
   { id: 'admin',     label: 'Admin',         path: '/admin',        adminOnly: true },
   { id: 'health',    label: 'Health Centre', path: '/admin/system', adminOnly: true },
+  { id: 'settings',  label: 'Settings',      path: '/settings' }, // MUST stay last
 ]
 
 
@@ -33,6 +35,10 @@ export default function LegoraTopNav({ user, customLogo, onSearchClick, onNotifi
   const [avatarOpen, setAvatarOpen] = useState(false)
   const moreRef = useRef(null)
   const avatarRef = useRef(null)
+
+  // Permission resolver — hides tabs the user can't access
+  const orgId = user?.app_metadata?.org_id
+  const { canSee } = usePagePermissions(user, orgId)
 
   // Google avatar fallback chain
   const avatarUrl =
@@ -61,7 +67,11 @@ export default function LegoraTopNav({ user, customLogo, onSearchClick, onNotifi
   }
 
   const moreIsActive = MORE_ITEMS.some(m => isActive(m.path))
-  const visibleMoreItems = MORE_ITEMS.filter(m => !m.adminOnly || isAdmin)
+  const visibleMoreItems = MORE_ITEMS.filter(m => {
+    if (m.adminOnly && !isAdmin) return false
+    if (m.pageKey && !canSee(m.pageKey)) return false
+    return true
+  })
 
   // Read custom nav order from Settings (localStorage 'kiko_top_nav_v2')
   const [orderedTabs, setOrderedTabs] = useState(TABS)
@@ -114,7 +124,7 @@ export default function LegoraTopNav({ user, customLogo, onSearchClick, onNotifi
 
       {/* Center nav */}
       <div className="ltn-links">
-        {orderedTabs.map(tab => (
+        {orderedTabs.filter(tab => !tab.pageKey || canSee(tab.pageKey)).map(tab => (
           <button
             key={tab.id}
             className={`ltn-link ${isActive(tab.path) ? 'active' : ''}`}

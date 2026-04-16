@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-16T09:21:04.139Z",
+  "generated_at": "2026-04-16T09:44:57.641Z",
   "commits": [
+    {
+      "hash": "8dded1f",
+      "subject": "Command Centre rebuilt: Hot Replies band top (email/LinkedIn when webhooks fire) + Priority Deals left + Tasks/Signals right. Real data from deals/tasks/kiko_alerts. Legora design. Replaces experiment",
+      "when": "24 minutes ago"
+    },
     {
       "hash": "4978b81",
       "subject": "Pipeline: deal panel company title + favicon mark now clickable — routes to /organisations?org=<id> and auto-selects that org. Hover shows underline. Contact rows already routed to /contacts/:id.",
-      "when": "7 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "37df539",
       "subject": "Homepage: white card prompt bar (welcome only), sage alerts pill (permanent leftmost), 4 dynamic chips, remove feature tiles — matches signed-off kiko-home-nav-c.html. Chat mode prompt bar styling unc",
-      "when": "11 minutes ago"
+      "when": "35 minutes ago"
     },
     {
       "hash": "7ee5d96",
@@ -24,32 +29,32 @@
     {
       "hash": "f00e098",
       "subject": "fix: revert HomeDashboard from KikoChat (was added without sign-off, changed approved homepage). Restore inbox 2-pane CSS for /command-centre (was overwritten with dashboard CSS, causing unstyled text",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "30d9398",
       "subject": "feat: Home page upgraded — new HomeDashboard component with 4 Bento cards (weighted pipeline + active deals, stale + overdue, hot replies 24h, next F1 race countdown w/ PEAK badge). Real Supabase data",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "832df4c",
       "subject": "fix: nav 'Inbox' renamed to 'Command Centre' AND /command-centre layout restored to signed-off 2-pane composer design (was wrongly showing dashboard). Dashboard preserved as OutreachIntelligence.DASHB",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "8f40e17",
       "subject": "rebuild: Command Centre — new Legora dashboard wired to OLD plumbing. Stats row (pipeline weighted, stale, overdue, next race countdown with F1/FE/MotoGP/WEC switcher). Two-column layout: priority dea",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "2072b77",
       "subject": "fix: Pipeline horizontal scroll when Show Closed enabled — pl-cols-wrap now has overflow-x:auto with proper scrollbar styling, columns flex-shrink:0 at fixed 240px so 7 stages can scroll right",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "37ee383",
       "subject": "fix: Pipeline rebuilt the right way — Legora design + full OLD plumbing wired through. NEW: page header, stage columns, deal cards (Legora aesthetic). RESTORED: Pipeline Manager dropdown (multiple pip",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "a99bb0a",
@@ -79,27 +84,22 @@
     {
       "hash": "4572634",
       "subject": "redesign: Insights sequence leaderboard wired to real kiko_sequences + activities reply counts (mock fallback when no real activity yet)",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "cb58bb8",
       "subject": "redesign: Inbox real-time wiring (joined contacts + Realtime subscription + relative time formatting), Pipeline drag-drop polish (column scale + card grab/lift)",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "38e456a",
       "subject": "redesign: Homepage feature tiles — 4 large sage/slate/terra/purple feature tiles below chips, Word Add-in pattern, each fires a starter prompt to Kiko",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "e791ab4",
       "subject": "redesign: Settings — final 8 panels built (Password/Security/Members/Branding/Memory/Voice/Plan/Invoices). All 12 Settings tabs now functional.",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "6a5ac61",
-      "subject": "redesign: Settings — Workspace + Personality + Auto-actions + Apps panels fully built",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     }
   ]
 }

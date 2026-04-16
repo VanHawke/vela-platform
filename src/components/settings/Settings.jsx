@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import T from '@/lib/theme'
@@ -9,6 +9,9 @@ import { Check, ExternalLink, Unplug, UserPlus, Trash2, LogOut, X, Shield } from
 import { ALL_PAGES, ROLE_DEFAULTS } from '@/lib/pagePermissions'
 import { applyFavicon, DEFAULT_FAVICON } from '@/lib/favicon'
 import { useOrg } from '@/contexts/OrgContext'
+
+// Lazy-loaded health dashboard for the Health tab (super admin only)
+const AdminSystem = lazy(() => import('@/pages/AdminSystem'))
 
 const VOICES = [
   { id: 'shimmer', label: 'Shimmer', desc: 'Warm, articulate female' },
@@ -27,8 +30,8 @@ const SPEEDS = [
   { id: 1.1, label: 'Brisk' },
   { id: 1.2, label: 'Fast' },
 ]
-const TABS = ['Profile', 'Kiko', 'Memory', 'Skills', 'Navigation', 'Team', 'Organisation', 'Appearance', 'Accounts']
-const SUPER_ADMIN_TABS = ['Kiko', 'Team', 'Organisation'] // Only visible to super_admin
+const TABS = ['Profile', 'Kiko', 'Memory', 'Skills', 'Navigation', 'Team', 'Organisation', 'Appearance', 'Accounts', 'Health']
+const SUPER_ADMIN_TABS = ['Kiko', 'Team', 'Organisation', 'Health'] // Only visible to super_admin
 
 // Theme imported from @/lib/theme.js
 
@@ -1009,6 +1012,14 @@ export default function Settings({ user }) {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {tab === 'Health' && currentUserRole === 'super_admin' && (
+          <div>
+            <Suspense fallback={<div style={{ padding: 40, color: T.textTertiary, fontFamily: T.font }}>Loading health centre…</div>}>
+              <AdminSystem />
+            </Suspense>
           </div>
         )}
       </div>
