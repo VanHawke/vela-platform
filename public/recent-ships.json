@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-16T20:33:42.354Z",
+  "generated_at": "2026-04-16T20:43:09.517Z",
   "commits": [
+    {
+      "hash": "fc7f417",
+      "subject": "KikoFloat fixes: (1) Prompt bar aligned with main chat — font 14→15px, buttons 28→30px with borders + shadows, send button gradient matches main chat, mic/voice buttons have consistent border treatmen",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "f8eabf1",
       "subject": "Fixes: (1) Navigation tab now visible to all users in Settings (Matt can personalise his nav). Other admin tabs still super_admin only. (2) Pipeline logActivity buttons fixed — was silently failing be",
-      "when": "13 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "f7e2683",
       "subject": "Fix: (1) Added kiko_voice, kiko_voice_style, kiko_speed, kiko_personality columns to user_settings table — these were missing, causing 'Could not find column' error when saving voice/personality setti",
-      "when": "27 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "bb896d8",
       "subject": "Voice settings overhaul: (1) New Voice Style section with 5 tone presets (Natural, Professional, Warm & Inviting, Energetic, Calm & Soothing) — each passes specific instructions to gpt-4o-mini-tts con",
-      "when": "43 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "cd20d1e",
       "subject": "Hetzner cron migration COMPLETE: removed all 43 crons from vercel.json. Crons now run on Hetzner kiko-server (178.104.73.22) via node-cron in kiko-worker/src/cron-scheduler.js. Each cron calls the cor",
-      "when": "67 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "dc901c7",
       "subject": "Pipeline deal panel hotfix: contacts query was fetching ALL 4,193 contacts then filtering client-side — caused panel to hang on 'Loading...' forever. Fixed with server-side Supabase filter: .filter('d",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "6396d17",
@@ -89,16 +94,11 @@
     {
       "hash": "2af3af0",
       "subject": "Theming pass: (1) Command Centre right pane — added max-height: calc(100vh - 140px) + overflow: hidden to .cc-detail. Previously min-height:500px with no max-height caused the detail card to grow past",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "d4648a5",
       "subject": "Nav reorder + Pipeline org-click fixes: (1) Layout.getTopNavIds — removed over-aggressive '<4 items = corrupt' guard that was treating legitimate user selections as corrupt data and reverting to defau",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "3b1af5a",
-      "subject": "HOTFIX: LegoraTopNav TDZ — overflow block referenced 'orderedTabs' before its useState declaration. Moved overflowTabs + moreIsActive + visibleMoreItems calculation BELOW orderedTabs useState. Product",
       "when": "6 hours ago"
     }
   ]

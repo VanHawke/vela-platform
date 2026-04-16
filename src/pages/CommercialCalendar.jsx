@@ -170,38 +170,28 @@ export default function CommercialCalendar() {
 
           <div className="cclg-day-block">
             <div className="cclg-day-h today"><div className="num">{new Date().getDate()}</div><div className="day-name">{new Date().toLocaleDateString('en-GB', { weekday: 'short' })} · Today</div></div>
-            {peakWindow && (
-              <div className="cclg-ow-inline">
-                <span className="bolt"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
-                <span><strong>Optimum send window now → 16:00 UK</strong> · 12 banking prospects · 78% historical reply rate · pre-{peakWindow.city} GP push</span>
-                <span className="cta">Schedule batch</span>
-              </div>
-            )}
             <div className="cclg-day-events">
-              <div className="cclg-ev kiko"><div className="t">09:00<span>30 min</span></div><div className="info"><div className="title">Kiko morning brief <span className="tag kiko">Kiko</span></div><div className="sub"><strong>3 hot replies</strong> · pipeline moved $2.4m</div></div><div className="att"><div className="av">S</div></div></div>
-              <div className="cclg-ev private"><div className="t">11:30<span>45 min</span></div><div className="info"><div className="title">Giacomo · Maison product review <span className="priv">🔒</span></div><div className="sub">Archive 01 walkthrough</div></div><div className="att"><div className="av">S</div><div className="av">G</div></div></div>
-              <div className="cclg-ev kiko"><div className="t">14:00<span>15 min</span></div><div className="info"><div className="title">Touch 3 sends — F1 Banking <span className="tag kiko">Auto</span></div><div className="sub">28 prospects · {peakWindow?.city || 'Miami'} GP angle</div></div><div className="att"><div className="av">K</div></div></div>
-              <div className="cclg-ev kiko"><div className="t">16:00<span>30 min</span></div><div className="info"><div className="title">Prep: Gewirtz briefing <span className="tag brief">Prep</span></div><div className="sub">Ready 15:30</div></div><div className="att"><div className="av">K</div></div></div>
+              <div style={{ padding: '16px 0', textAlign: 'center', color: '#A0A0A0', fontSize: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>
+                No events today — Google Calendar integration coming soon
+              </div>
             </div>
           </div>
 
           <div className="cclg-day-block">
             <div className="cclg-day-h"><div className="num">16</div><div className="day-name">Thu · Tomorrow</div></div>
-            <div className="cclg-ow-inline">
-              <span className="bolt"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
-              <span><strong>Optimum send 09:00 — 11:00 UK</strong> · 8 fintech prospects · 64% historical reply rate</span>
-              <span className="cta">Schedule batch</span>
-            </div>
             <div className="cclg-day-events">
-              <div className="cclg-ev team"><div className="t">14:00<span>30 min</span></div><div className="info"><div className="title">Paul Gewirtz · Goldman Sachs <span className="tag f1">F1 2027</span></div><div className="sub">Head of Brand · briefing pack <strong>ready 15:30 today</strong></div></div><div className="att"><div className="av">S</div><div className="av">PG</div></div></div>
+              <div style={{ padding: '16px 0', textAlign: 'center', color: '#A0A0A0', fontSize: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>
+                No events scheduled
+              </div>
             </div>
           </div>
 
           <div className="cclg-day-block">
             <div className="cclg-day-h"><div className="num">21</div><div className="day-name">Mon next week</div></div>
             <div className="cclg-day-events">
-              <div className="cclg-ev team"><div className="t">10:00<span>30 min</span></div><div className="info"><div className="title">Mark Nelson · Stripe <span className="tag f1">FE 2026</span></div><div className="sub">10:00 PT / 18:00 UK</div></div><div className="att"><div className="av">S</div><div className="av">MN</div></div></div>
-              <div className="cclg-ev team"><div className="t">14:00<span>60 min</span></div><div className="info"><div className="title">Van Hawke board check-in</div><div className="sub">Q2 pipeline review · <strong>$73m weighted</strong></div></div><div className="att"><div className="av">S</div><div className="av">+3</div></div></div>
+              <div style={{ padding: '16px 0', textAlign: 'center', color: '#A0A0A0', fontSize: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>
+                No events scheduled
+              </div>
             </div>
           </div>
         </main>
@@ -226,86 +216,41 @@ export default function CommercialCalendar() {
                 <div className="ow-callout">
                   <div className="ow-callout-h">
                     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                    Peak outreach window · open now
+                    Peak outreach window
                   </div>
-                  <div className="ow-window">Today → +7 days</div>
-                  <div className="ow-reason"><strong>14—21 days before race is peak window for sponsor decisions.</strong> Brand committees finalise activation budgets in this window. Send Haas pipeline follow-ups now to land before the {selectedRace.city} media cycle.</div>
-                  <button className="ow-cta-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                    Schedule batch · 12 prospects
-                  </button>
+                  <div className="ow-window">14—21 days before race</div>
+                  <div className="ow-reason">Brand committees finalise activation budgets in this window. Prioritise Haas pipeline follow-ups before the {selectedRace.city} media cycle.</div>
                 </div>
               )}
-
-              <div className="prospects-block">
-                <div className="prospects-h">Your prospects watching · best send time</div>
-                <div className="prospect-pill"><div className="pp-init">JB</div><div className="pp-name">Bardrick · Citi</div><div className="pp-best">best <strong>Tue 10:00 UK</strong></div></div>
-                <div className="prospect-pill"><div className="pp-init">DS</div><div className="pp-name">Sundheim · D1</div><div className="pp-best">best <strong>Wed 14:00 UK</strong></div></div>
-                <div className="prospect-pill"><div className="pp-init">CH</div><div className="pp-name">Halford · ANZ</div><div className="pp-best">best <strong>Thu 09:00 SGT</strong></div></div>
-                <div className="prospect-pill"><div className="pp-init">AC</div><div className="pp-name">Cross · Barclays</div><div className="pp-best">best <strong>Fri 11:00 UK</strong></div></div>
-                <div className="prospect-pill"><div className="pp-init">MN</div><div className="pp-name">Nelson · Stripe</div><div className="pp-best">best <strong>Mon 09:00 PT</strong></div></div>
-              </div>
             </div>
           </div>
 
 
           {/* Optimum outreach windows */}
           <div className="cclg-side-section">
-            <h4>Optimum outreach windows<span className="h-pill">Live data</span></h4>
+            <h4>Outreach intelligence</h4>
 
-            <div className="ow-card">
-              <div className="ow-card-h">
-                <div className="ow-when">Today · 14:00 — 16:00 UK</div>
-                <div className="ow-stars">★★★★★</div>
+            {liveWindows.length > 0 ? liveWindows.map((w, i) => (
+              <div key={i} className="ow-card">
+                <div className="ow-card-h">
+                  <div className="ow-when">{w.window_label || 'Window'}</div>
+                  <div className="ow-stars">{'★'.repeat(Math.min(w.confidence_stars || 3, 5))}</div>
+                </div>
+                <div className="ow-context">{w.context || ''}</div>
+                <div className="ow-stat">{w.description || ''}</div>
               </div>
-              <div className="ow-context">PRE-{peakWindow?.city.toUpperCase() || 'MIAMI'} GP · {peakWindow ? daysUntil(peakWindow.date, today) : 16}D OUT · PEAK WINDOW</div>
-              <div className="ow-stat"><strong>12 banking prospects</strong> · <span className="pct">78%</span> historical reply rate in this window</div>
-              <div className="ow-action">Schedule batch send →</div>
-            </div>
-
-            <div className="ow-card">
-              <div className="ow-card-h">
-                <div className="ow-when">Tomorrow · 09:00 — 11:00 UK</div>
-                <div className="ow-stars">★★★★</div>
+            )) : (
+              <div style={{ padding: '20px 0', textAlign: 'center', color: '#A0A0A0', fontSize: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>
+                No outreach intelligence yet — data populates as campaigns run
               </div>
-              <div className="ow-context">PRE-{peakWindow?.city.toUpperCase() || 'MIAMI'} GP · UK MORNING SLOT</div>
-              <div className="ow-stat"><strong>8 fintech prospects</strong> · <span className="pct">64%</span> historical reply rate · post-coffee window</div>
-              <div className="ow-action">Schedule batch send →</div>
-            </div>
-
-            <div className="ow-card">
-              <div className="ow-card-h">
-                <div className="ow-when">Tue · 10:00 PT</div>
-                <div className="ow-stars">★★★★</div>
-              </div>
-              <div className="ow-context">US PROSPECTS · MID-MORNING</div>
-              <div className="ow-stat"><strong>5 US-based prospects</strong> · <span className="pct">61%</span> reply rate · Stripe / D1 / Goldman cluster</div>
-              <div className="ow-action">Schedule batch send →</div>
-            </div>
-
-            <div className="ow-card">
-              <div className="ow-card-h">
-                <div className="ow-when">Thu · 09:00 SGT</div>
-                <div className="ow-stars">★★★</div>
-              </div>
-              <div className="ow-context">APAC PROSPECTS · LAST PRE-RACE DAY</div>
-              <div className="ow-stat"><strong>4 APAC prospects</strong> · <span className="pct">52%</span> reply rate · DBS / Citi APAC / ANZ</div>
-              <div className="ow-action">Schedule batch send →</div>
-            </div>
+            )}
           </div>
 
           {/* Briefs ready */}
           <div className="cclg-side-section">
-            <h4>Briefs ready</h4>
-            <div className="prep">
-              <div className="when">Tomorrow 14:00</div>
-              <div className="who">Paul Gewirtz · GS</div>
-              <div className="what">F1 vs rugby economics 1-pager</div>
-            </div>
-            <div className="prep">
-              <div className="when">Mon 21 · 10:00 PT</div>
-              <div className="who">Mark Nelson · Stripe</div>
-              <div className="what">Auto-prep at Mon 09:00</div>
+            <h4>Briefs</h4>
+            <div style={{ padding: '16px 0', textAlign: 'center', color: '#A0A0A0', fontSize: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>
+              No upcoming briefs — Kiko will auto-prep before scheduled meetings
             </div>
           </div>
 
