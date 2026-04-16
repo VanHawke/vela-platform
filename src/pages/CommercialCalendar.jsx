@@ -65,7 +65,26 @@ export default function CommercialCalendar({ user }) {
   const [privacyFilter, setPrivacyFilter] = useState('mine')
   const [liveWindows, setLiveWindows] = useState([])
   const [livePerProspect, setLivePerProspect] = useState([])
+  const [calEvents, setCalEvents] = useState([])
+  const [calLoading, setCalLoading] = useState(true)
 
+  // Fetch Google Calendar events
+  useEffect(() => {
+    if (!user?.email) { setCalLoading(false); return }
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/calendar-events?email=${encodeURIComponent(user.email)}`)
+        if (!res.ok) { setCalLoading(false); return }
+        const data = await res.json()
+        if (!cancelled) setCalEvents(data.events || [])
+      } catch (e) {
+        console.warn('[Calendar] Failed to fetch events:', e.message)
+      }
+      if (!cancelled) setCalLoading(false)
+    })()
+    return () => { cancelled = true }
+  }, [user?.email])
   // Load live outreach intelligence from Supabase (computed nightly cron)
   useEffect(() => {
     let cancelled = false
@@ -180,32 +199,57 @@ export default function CommercialCalendar({ user }) {
             </div>
           </div>
 
-          <div className="cclg-day-block">
-            <div className="cclg-day-h today"><div className="num">{new Date().getDate()}</div><div className="day-name">{new Date().toLocaleDateString('en-GB', { weekday: 'short' })} · Today</div></div>
-            <div className="cclg-day-events">
-              <div style={{ padding: '16px 0', textAlign: 'center', color: '#A0A0A0', fontSize: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>
-                No events today — Google Calendar integration coming soon
+          {(() => {
+            // Group events by day and show next 7 days
+            const days = []
+            for (let i = 0; i < 7; i++) {
+              const d = new Date(new Date().getTime() + i * 86400000)
+              const dateKey = d.toISOString().split('T')[0]
+              const dayEvents = calEvents.filter(ev => {
+                const evDate = (ev.start || '').split('T')[0]
+                return evDate === dateKey
+              })
+              const dayName = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+              days.push({ date: d, dateKey, dayName, events: dayEvents, isToday: i === 0 })
+            }
+            return days.map(day => (
+              <div key={day.dateKey} className="cclg-day-block">
+                <div className={`cclg-day-h ${day.isToday ? 'today' : ''}`}>
+                  <div className="num">{day.date.getDate()}</div>
+                  <div className="day-name">{day.date.toLocaleDateString('en-GB', { weekday: 'short' })} · {day.dayName}</div>
+                </div>
+                <div className="cclg-day-events">
+                  {calLoading ? (
+                    <div style={{ padding: '12px 0', textAlign: 'center', color: '#A0A0A0', fontSize: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>Loading calendar…</div>
+                  ) : day.events.length === 0 ? (
+                    <div style={{ padding: '12px 0', textAlign: 'center', color: '#A0A0A0', fontSize: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>
+                      {day.isToday ? 'No events today' : 'No events'}
+                    </div>
+                  ) : day.events.map(ev => (
+                    <div key={ev.id} className="cclg-ev team" style={{ display: 'flex', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+                      <div className="t" style={{ fontSize: 11, color: '#6B6B6B', fontFamily: 'Inter, system-ui, sans-serif', minWidth: 50, flexShrink: 0 }}>
+                        {ev.allDay ? 'All day' : new Date(ev.start).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                        {!ev.allDay && ev.end && <span style={{ display: 'block', fontSize: 10, color: '#A0A0A0' }}>{Math.round((new Date(ev.end) - new Date(ev.start)) / 60000)} min</span>}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 450, color: '#0A0A0A', fontFamily: 'Inter, system-ui, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ev.title}</div>
+                        {ev.attendees?.length > 0 && (
+                          <div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 2, fontFamily: 'Inter, system-ui, sans-serif' }}>
+                            {ev.attendees.slice(0, 3).map(a => a.name || a.email?.split('@')[0]).join(', ')}
+                            {ev.attendees.length > 3 && ` +${ev.attendees.length - 3}`}
+                          </div>
+                        )}
+                        {ev.location && <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 1, fontFamily: 'Inter, system-ui, sans-serif' }}>{ev.location.slice(0, 50)}</div>}
+                      </div>
+                      {ev.meetLink && (
+                        <a href={ev.meetLink} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: '#06a87d', textDecoration: 'none', flexShrink: 0, alignSelf: 'center' }}>Join</a>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          </div>
-
-          <div className="cclg-day-block">
-            <div className="cclg-day-h"><div className="num">16</div><div className="day-name">Thu · Tomorrow</div></div>
-            <div className="cclg-day-events">
-              <div style={{ padding: '16px 0', textAlign: 'center', color: '#A0A0A0', fontSize: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>
-                No events scheduled
-              </div>
-            </div>
-          </div>
-
-          <div className="cclg-day-block">
-            <div className="cclg-day-h"><div className="num">21</div><div className="day-name">Mon next week</div></div>
-            <div className="cclg-day-events">
-              <div style={{ padding: '16px 0', textAlign: 'center', color: '#A0A0A0', fontSize: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>
-                No events scheduled
-              </div>
-            </div>
-          </div>
+            ))
+          })()}
         </main>
 
 
