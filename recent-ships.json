@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-16T13:55:22.198Z",
+  "generated_at": "2026-04-16T14:01:02.562Z",
   "commits": [
+    {
+      "hash": "4e9dc9b",
+      "subject": "UX batch: (1) + removed from Today/Pipeline (showPlus:false). (2) Admin + Health Centre removed from More dropdown. (3) Settings gets faint divider line above it (item.divider flag + .ltn-dropdown-div",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "ca5ea38",
       "subject": "Fix: Layout getTopNavIds reader guard — stored arrays <4 items treated as corrupt, fall back to defaults (matches the same guard added to LegoraTopNav in commit d0da7b3). DEFAULT_TOP_IDS synced to ALL",
-      "when": "23 minutes ago"
+      "when": "29 minutes ago"
     },
     {
       "hash": "2d52ba3",
       "subject": "HOTFIX: Layout TDZ error — production was blank screen. Moved useUserSettings hook call above the onboarded useEffect that references userSettings. The JS temporal dead zone threw 'Cannot access L bef",
-      "when": "28 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "1e4684a",
       "subject": "Perf: NotificationToast uses shared useUserSettings hook. Was firing its own user_settings fetch on every mount (3rd concurrent query alongside Layout's 2 — all firing within 1ms of each other). Now r",
-      "when": "37 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "bd15124",
       "subject": "Perf: useUserSettings shared hook wired into Layout. New src/lib/useUserSettings.js provides dedup cached fetch for user_settings row (same pattern as usePagePermissions). Layout now calls useUserSett",
-      "when": "37 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "58ac7b5",
       "subject": "Perf: usePagePermissions in-flight promise dedup. Three callers (Layout + LegoraTopNav + PermissionGate) mount simultaneously on every route, each firing a /api/user-permissions fetch concurrently (me",
-      "when": "43 minutes ago"
+      "when": "48 minutes ago"
     },
     {
       "hash": "1de2ae5",
       "subject": "Organisations toolbar + table polish: (1) Top action bar — Add Organisation button label now visible (color #FFFFFF on black bg, was #0A0A0A invisible), switched from pill radius-50 to square radius-4",
-      "when": "79 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "47831dd",
@@ -54,7 +59,7 @@
     {
       "hash": "1abc2cb",
       "subject": "Contacts: wire up New contact modal — form state, saveContact handler with reloadKey to refresh list on save, resetForm helper, button onClick, full modal JSX with first/last name row + email + phone ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "bbbf11e",
@@ -95,11 +100,6 @@
       "hash": "037a87b",
       "subject": "nav: permission filter (hide pages user can't access), Settings always last in More dropdown, remove KikoCode/Memory from More (Memory stays inside Settings), add Health tab in Settings (super-admin o",
       "when": "4 hours ago"
-    },
-    {
-      "hash": "8dded1f",
-      "subject": "Command Centre rebuilt: Hot Replies band top (email/LinkedIn when webhooks fire) + Priority Deals left + Tasks/Signals right. Real data from deals/tasks/kiko_alerts. Legora design. Replaces experiment",
-      "when": "5 hours ago"
     }
   ]
 }

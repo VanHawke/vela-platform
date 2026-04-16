@@ -163,7 +163,7 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
       <div style={{ padding: '14px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 15, fontWeight: 500, color: '#fff', fontFamily: T.font }}>Chats</span>
         <div style={{ display: 'flex', gap: 4 }}>
-          <button onClick={() => { onNewChat(); }} title="New chat" style={{ width: 30, height: 30, borderRadius: 50, border: 'none', background: T.accentSoft, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}><Plus size={14} /></button>
+          <button onClick={() => { onNewChat(); }} title="New chat" style={{ width: 30, height: 30, borderRadius: 50, border: 'none', background: '#0A0A0A', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = '#2A2A2A'} onMouseLeave={e => e.currentTarget.style.background = '#0A0A0A'}><Plus size={14} /></button>
           <button onClick={onToggle} style={{ width: 30, height: 30, borderRadius: 50, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#A0A0A0' }}><ChevronLeft size={14} /></button>
         </div>
       </div>

@@ -132,7 +132,14 @@ export default function LegoraTopNav({ user, customLogo, onSearchClick, onNotifi
           <button
             key={tab.id}
             className={`ltn-link ${isActive(tab.path) ? 'active' : ''}`}
-            onClick={() => nav(tab.path)}
+            onClick={() => {
+              // If user clicks a nav item for the page they're already on (e.g. "Today" while
+              // the chat pane is covering home), dispatch an event so page can reset state.
+              if (isActive(tab.path)) {
+                window.dispatchEvent(new CustomEvent('kiko_nav_same_tab', { detail: { path: tab.path, id: tab.id } }))
+              }
+              nav(tab.path)
+            }}
           >
             {tab.label}
             {tab.showPlus && <span className="ltn-plus">+</span>}

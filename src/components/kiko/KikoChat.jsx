@@ -499,6 +499,15 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     inputRef.current?.focus()
   }
 
+  // Listen for "Today" nav click when already on home — reset chat to welcome state
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.detail?.path === '/' || e.detail?.id === 'home') startNewChat()
+    }
+    window.addEventListener('kiko_nav_same_tab', handler)
+    return () => window.removeEventListener('kiko_nav_same_tab', handler)
+  }, [])
+
   useEffect(() => { if (initialMessage && !messages.length) handleSubmit(initialMessage) }, [])
   const justLoadedRef = useRef(false)
   useEffect(() => {
@@ -928,7 +937,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {streaming ? (
             <button onClick={stopKiko} style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}><div style={{ width: 8, height: 8, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
           ) : (
-            <button onClick={() => handleSubmit()} disabled={!hasContent} style={{ width: 30, height: 30, borderRadius: 9999, background: hasContent ? 'linear-gradient(135deg, #5a6470, #0A0A0A)' : 'rgba(0,0,0,0.04)', border: hasContent ? 'none' : `1px solid ${C.border}`, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', color: '#0A0A0A', cursor: hasContent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: hasContent ? 1 : 0.25, boxShadow: hasContent ? `0 4px 16px rgba(90,100,112,0.3)` : '0 1px 2px rgba(0,0,0,0.15)', transition: `all 250ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}` }}>
+            <button onClick={() => handleSubmit()} disabled={!hasContent} style={{ width: 30, height: 30, borderRadius: 9999, background: hasContent ? 'linear-gradient(135deg, #5a6470, #0A0A0A)' : 'rgba(0,0,0,0.04)', border: hasContent ? 'none' : `1px solid ${C.border}`, color: hasContent ? '#FFFFFF' : '#A0A0A0', cursor: hasContent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: hasContent ? 1 : 0.25, boxShadow: hasContent ? '0 4px 16px rgba(90,100,112,0.3)' : '0 1px 2px rgba(0,0,0,0.15)', transition: `all 250ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}` }}>
               <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           )}
@@ -994,7 +1003,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {streaming ? (
             <button onClick={stopKiko} style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}><div style={{ width: 8, height: 8, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
           ) : (
-            <button onClick={() => handleSubmit()} disabled={!hasContent} style={{ width: 30, height: 30, borderRadius: 9999, background: hasContent ? 'linear-gradient(135deg, #5a6470, #0A0A0A)' : 'rgba(0,0,0,0.04)', border: hasContent ? 'none' : `1px solid ${C.border}`, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', color: '#0A0A0A', cursor: hasContent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: hasContent ? 1 : 0.25, boxShadow: hasContent ? `0 4px 16px rgba(90,100,112,0.3)` : '0 1px 2px rgba(0,0,0,0.15)', transition: `all 250ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}` }}>
+            <button onClick={() => handleSubmit()} disabled={!hasContent} style={{ width: 30, height: 30, borderRadius: 9999, background: hasContent ? 'linear-gradient(135deg, #5a6470, #0A0A0A)' : 'rgba(0,0,0,0.04)', border: hasContent ? 'none' : `1px solid ${C.border}`, color: hasContent ? '#FFFFFF' : '#A0A0A0', cursor: hasContent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: hasContent ? 1 : 0.25, boxShadow: hasContent ? '0 4px 16px rgba(90,100,112,0.3)' : '0 1px 2px rgba(0,0,0,0.15)', transition: `all 250ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}` }}>
               <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           )}
@@ -1379,7 +1388,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           )}
           {/* Dropdown menu */}
           {titleMenuOpen && (
-            <div style={{ position: 'absolute', top: '100%', left: 16, zIndex: 50, minWidth: 160, background: 'rgba(25,25,25,0.30)', backdropFilter: 'blur(40px) saturate(1.4)', WebkitBackdropFilter: 'blur(40px) saturate(1.4)', border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 10, padding: 4, boxShadow: '0 12px 40px rgba(0,0,0,0.4)' }}>
+            <div style={{ position: 'absolute', top: '100%', left: 16, zIndex: 50, minWidth: 160, background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, padding: 4, boxShadow: '0 8px 24px rgba(0,0,0,0.10)' }}>
               <button onClick={toggleStar} style={{ width: '100%', textAlign: 'left', padding: '8px 12px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: C.text, fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 8 }}
                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'none'}>
