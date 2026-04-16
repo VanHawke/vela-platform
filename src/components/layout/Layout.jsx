@@ -63,7 +63,8 @@ const ADMIN_NAV = [
   { id: 'health', label: 'Health Center', path: '/admin/system', Icon: Activity },
 ]
 const VALID_NAV_IDS = new Set(ALL_NAV.map(n => n.id))
-const DEFAULT_TOP_IDS = ['home', 'command-centre', 'pipeline', 'partnership-matrix', 'sequences']
+// Default = ALL valid tabs so reorder toggles show the full list on first load
+const DEFAULT_TOP_IDS = ALL_NAV.map(n => n.id)
 const TOP_NAV_STORAGE_KEY = 'kiko_top_nav_v2'
 
 function getTopNavIds() {
@@ -71,6 +72,10 @@ function getTopNavIds() {
     const s = localStorage.getItem(TOP_NAV_STORAGE_KEY)
     if (s) {
       const parsed = JSON.parse(s)
+      if (!Array.isArray(parsed)) return DEFAULT_TOP_IDS
+      // Guard: stored arrays with fewer than 4 items are almost certainly corrupt
+      // (user accidentally toggled everything off, bad migration, etc.) — use defaults
+      if (parsed.length < 4) return DEFAULT_TOP_IDS
       // Remove stale items that no longer exist in nav
       const cleaned = parsed.filter(id => VALID_NAV_IDS.has(id))
       if (cleaned.length !== parsed.length) {

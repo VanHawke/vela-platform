@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-16T13:26:58.523Z",
+  "generated_at": "2026-04-16T13:31:59.088Z",
   "commits": [
+    {
+      "hash": "2d52ba3",
+      "subject": "HOTFIX: Layout TDZ error — production was blank screen. Moved useUserSettings hook call above the onboarded useEffect that references userSettings. The JS temporal dead zone threw 'Cannot access L bef",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "1e4684a",
       "subject": "Perf: NotificationToast uses shared useUserSettings hook. Was firing its own user_settings fetch on every mount (3rd concurrent query alongside Layout's 2 — all firing within 1ms of each other). Now r",
-      "when": "8 minutes ago"
+      "when": "13 minutes ago"
     },
     {
       "hash": "bd15124",
       "subject": "Perf: useUserSettings shared hook wired into Layout. New src/lib/useUserSettings.js provides dedup cached fetch for user_settings row (same pattern as usePagePermissions). Layout now calls useUserSett",
-      "when": "9 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "58ac7b5",
       "subject": "Perf: usePagePermissions in-flight promise dedup. Three callers (Layout + LegoraTopNav + PermissionGate) mount simultaneously on every route, each firing a /api/user-permissions fetch concurrently (me",
-      "when": "14 minutes ago"
+      "when": "19 minutes ago"
     },
     {
       "hash": "1de2ae5",
       "subject": "Organisations toolbar + table polish: (1) Top action bar — Add Organisation button label now visible (color #FFFFFF on black bg, was #0A0A0A invisible), switched from pill radius-50 to square radius-4",
-      "when": "51 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "47831dd",
       "subject": "Organisations + KikoChat: Legora polish. Organisations: 34 dark-glass rgba(25,25,25,0.40/0.50) backgrounds swapped to #FFFFFF, removed wasteful blur-on-white on glass/dropdown (saves GPU), swapped 0.4",
-      "when": "65 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "d0da7b3",
       "subject": "Nav + Partnership Matrix fixes: (1) Avatar either/or render — img OR initials, never both. (2) Settings nav defaults synced with LegoraTopNav TABS (all 8 tabs default-on, was only 5 with stale 'sequen",
-      "when": "71 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "948d234",
@@ -79,7 +84,7 @@
     {
       "hash": "f0e57cf",
       "subject": "Command Centre: master-detail rebuild. LEFT 440px — grouped priority list (Overdue, Stale deals, Due this week, Market signals). RIGHT — Kiko brief pane that streams from /api/kiko with selected item ",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "037a87b",
@@ -94,11 +99,6 @@
     {
       "hash": "4978b81",
       "subject": "Pipeline: deal panel company title + favicon mark now clickable — routes to /organisations?org=<id> and auto-selects that org. Hover shows underline. Contact rows already routed to /contacts/:id.",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "37df539",
-      "subject": "Homepage: white card prompt bar (welcome only), sage alerts pill (permanent leftmost), 4 dynamic chips, remove feature tiles — matches signed-off kiko-home-nav-c.html. Chat mode prompt bar styling unc",
       "when": "4 hours ago"
     }
   ]
