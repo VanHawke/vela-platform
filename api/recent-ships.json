@@ -1,50 +1,55 @@
 {
-  "generated_at": "2026-04-16T21:12:52.487Z",
+  "generated_at": "2026-04-16T21:18:55.264Z",
   "commits": [
+    {
+      "hash": "3ec353c",
+      "subject": "Command Centre prompts rewritten for laser focus: task/deal/reply prompts now explicitly say 'FOCUS ONLY on this specific entity. Do NOT give a general pipeline review.' Each prompt structured with nu",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "d7eb987",
       "subject": "Calendar data isolation: Team/All filter tabs now super_admin only. Regular users (Matt etc.) see only 'Mine' tab — they can see their own calendar events + the platform-wide race schedule (F1/FE). Su",
-      "when": "2 minutes ago"
+      "when": "8 minutes ago"
     },
     {
       "hash": "f5506dc",
       "subject": "Command Centre enrichment + email drafting activation: (1) Enrichment now parses task TITLES to extract company/contact names (e.g. 'Re-engage — Alex Barnett' → searches contacts for Alex Barnett). Fa",
-      "when": "8 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "ffd8960",
       "subject": "UI consistency + market signals: (1) KikoFloat prompt bar — attachment icon changed from paperclip to + matching main chat, send icon changed from ArrowUp to paper plane SVG matching main chat, inacti",
-      "when": "11 minutes ago"
+      "when": "17 minutes ago"
     },
     {
       "hash": "e2319d3",
       "subject": "Command Centre + Market Signals overhaul: (1) Market signals now render with proper markdown parsing — bold, headers, bullets, numbered lists all display correctly instead of garbled raw text. Added p",
-      "when": "18 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "3371c1a",
       "subject": "Calendar cleanup: removed ALL hardcoded fake events (Giacomo meetings, Goldman Sachs calls, Van Hawke board check-in, m pipeline, Mark Nelson Stripe, fake prospect pills with fabricated send times, fa",
-      "when": "28 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "fc7f417",
       "subject": "KikoFloat fixes: (1) Prompt bar aligned with main chat — font 14→15px, buttons 28→30px with borders + shadows, send button gradient matches main chat, mic/voice buttons have consistent border treatmen",
-      "when": "39 minutes ago"
+      "when": "45 minutes ago"
     },
     {
       "hash": "f8eabf1",
       "subject": "Fixes: (1) Navigation tab now visible to all users in Settings (Matt can personalise his nav). Other admin tabs still super_admin only. (2) Pipeline logActivity buttons fixed — was silently failing be",
-      "when": "53 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "f7e2683",
       "subject": "Fix: (1) Added kiko_voice, kiko_voice_style, kiko_speed, kiko_personality columns to user_settings table — these were missing, causing 'Could not find column' error when saving voice/personality setti",
-      "when": "66 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "bb896d8",
       "subject": "Voice settings overhaul: (1) New Voice Style section with 5 tone presets (Natural, Professional, Warm & Inviting, Energetic, Calm & Soothing) — each passes specific instructions to gpt-4o-mini-tts con",
-      "when": "82 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "cd20d1e",
@@ -74,12 +79,12 @@
     {
       "hash": "329c0ba",
       "subject": "Audit phase 3: purged white-on-white borders in LinkedInQueue (5 instances — search input, card borders, message bg, button borders), SequenceDetail (C.border/borderHover + glass borderTop), ThreadInd",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "8b1e6dc",
       "subject": "Audit phase 2: purged ALL remaining purple across 14 files. SequenceDetail (5 instances — tab borders, test-sent badge, timeline dots), SkillsManager (new skill button text), Settings (team role badge",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "96447b2",
@@ -94,11 +99,6 @@
     {
       "hash": "51f1ee7",
       "subject": "Platform audit: purged 35+ old-theme artifacts across 7 active files. Campaigns.jsx — 8x purple rgba(124,92,252) → black opacities, 2x gradient #7C5CFC → solid #0A0A0A, 14x white-on-white rgba(255,255",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "afd0b94",
-      "subject": "Dev: pre-commit TDZ check script at scripts/check-tdz.mjs — scans staged .jsx files for const declarations referenced before their declaration line. Catches .filter()/.map()/.some()/useState() pattern",
       "when": "5 hours ago"
     }
   ]

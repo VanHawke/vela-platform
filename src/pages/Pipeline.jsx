@@ -209,6 +209,7 @@ export default function Pipeline({ user }) {
     setSavingNewDeal(false)
   }
   const [savingActivity, setSavingActivity] = useState(false)
+  const [activityLogged, setActivityLogged] = useState(null)
 
   // Drag-drop state
   const [dragDeal, setDragDeal] = useState(null)
@@ -389,9 +390,18 @@ export default function Pipeline({ user }) {
       direction: 'outbound', created_at: now,
       metadata: { contact: selectedDeal.contactName, pipeline: selectedDeal.pipeline, logged_by: 'user' }
     })
-    if (error) console.error('[logActivity] Failed:', error.message)
+    if (error) {
+      console.error('[logActivity] Failed:', error.message)
+      setSavingActivity(false)
+      return
+    }
+    // Update the deal's updated_at to refresh "days since activity"
+    await supabase.from('deals').update({ updated_at: now }).eq('id', selectedDeal._id)
     setActivityNote('')
     setSavingActivity(false)
+    // Brief visual confirmation
+    setActivityLogged(type)
+    setTimeout(() => setActivityLogged(null), 2000)
   }
 
 
@@ -630,10 +640,19 @@ export default function Pipeline({ user }) {
                 className="pl-panel-textarea"
               />
               <div className="pl-panel-activity-row">
-                <button onClick={() => logActivity('email')} disabled={savingActivity}>Email sent</button>
-                <button onClick={() => logActivity('call')} disabled={savingActivity}>Call made</button>
-                <button onClick={() => logActivity('meeting')} disabled={savingActivity}>Meeting</button>
-                <button onClick={() => logActivity('note')} disabled={savingActivity}>Note</button>
+                {activityLogged ? (
+                  <div style={{ padding: '8px 0', color: '#06D6A0', fontSize: 12, fontWeight: 500, fontFamily: 'Inter, system-ui, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    {activityLogged === 'email' ? 'Email logged' : activityLogged === 'call' ? 'Call logged' : activityLogged === 'meeting' ? 'Meeting logged' : 'Note saved'}
+                  </div>
+                ) : (
+                  <>
+                    <button onClick={() => logActivity('email')} disabled={savingActivity}>Email sent</button>
+                    <button onClick={() => logActivity('call')} disabled={savingActivity}>Call made</button>
+                    <button onClick={() => logActivity('meeting')} disabled={savingActivity}>Meeting</button>
+                    <button onClick={() => logActivity('note')} disabled={savingActivity}>Note</button>
+                  </>
+                )}
               </div>
             </div>
           </aside>
