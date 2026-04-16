@@ -317,7 +317,7 @@ export default function OutreachIntelligence({ user }) {
           body: JSON.stringify({
             message: enriched,
             userEmail: user?.email || 'sunny@vanhawke.com',
-            currentPage: 'command-centre',
+            currentPage: 'home',
             pageContext: { selectedItem: selected },
           }),
           signal: controller.signal,
