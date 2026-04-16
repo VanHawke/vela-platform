@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-04-16T14:19:46.942Z",
+  "generated_at": "2026-04-16T14:36:59.233Z",
   "commits": [
+    {
+      "hash": "67909bc",
+      "subject": "Batch: (1) Pipeline — New deal button wired up with full Legora white-card modal (title/company/value/pipeline dropdown), inserts to deals table with STAGES[0].id default + correct JSONB shape + ORG_I",
+      "when": "17 minutes ago"
+    },
     {
       "hash": "80c8a90",
       "subject": "Profile pic + all-pages button audit: (1) Layout passes profile prop to LegoraTopNav so user-uploaded profile_photo_url is preferred over Google avatar_url. Initials fallback also now prefers display_",
-      "when": "17 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "83ba952",
       "subject": "Chat + nav UX fixes: (1) Send button (both welcome + chat mode) — was black icon on dark gradient (invisible); now color toggles white when hasContent, muted grey when disabled. (2) Chat title dropdow",
-      "when": "19 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "4e9dc9b",
       "subject": "UX batch: (1) + removed from Today/Pipeline (showPlus:false). (2) Admin + Health Centre removed from More dropdown. (3) Settings gets faint divider line above it (item.divider flag + .ltn-dropdown-div",
-      "when": "24 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "ca5ea38",
       "subject": "Fix: Layout getTopNavIds reader guard — stored arrays <4 items treated as corrupt, fall back to defaults (matches the same guard added to LegoraTopNav in commit d0da7b3). DEFAULT_TOP_IDS synced to ALL",
-      "when": "48 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "2d52ba3",
       "subject": "HOTFIX: Layout TDZ error — production was blank screen. Moved useUserSettings hook call above the onboarded useEffect that references userSettings. The JS temporal dead zone threw 'Cannot access L bef",
-      "when": "53 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "1e4684a",
       "subject": "Perf: NotificationToast uses shared useUserSettings hook. Was firing its own user_settings fetch on every mount (3rd concurrent query alongside Layout's 2 — all firing within 1ms of each other). Now r",
-      "when": "61 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "bd15124",
       "subject": "Perf: useUserSettings shared hook wired into Layout. New src/lib/useUserSettings.js provides dedup cached fetch for user_settings row (same pattern as usePagePermissions). Layout now calls useUserSett",
-      "when": "61 minutes ago"
+      "when": "79 minutes ago"
     },
     {
       "hash": "58ac7b5",
       "subject": "Perf: usePagePermissions in-flight promise dedup. Three callers (Layout + LegoraTopNav + PermissionGate) mount simultaneously on every route, each firing a /api/user-permissions fetch concurrently (me",
-      "when": "67 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "1de2ae5",
@@ -94,11 +99,6 @@
     {
       "hash": "21de3a2",
       "subject": "Command Centre: fix Kiko brief streaming — SSE event key is 'delta' not 'text'. Brief now renders in right pane when item selected.",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "bad0fdf",
-      "subject": "Command Centre task labelling (use type+contact+company, not generic 'Task'), richer Kiko brief prompt with full task context. Chat-mode prompt bar — now white card matching welcome state, consistent ",
       "when": "4 hours ago"
     }
   ]
