@@ -176,7 +176,7 @@ export default function ContactDetail() {
 
   const urgencyColor = (u) => u === 'overdue' ? '#ef4444' : u === 'high' ? '#f59e0b' : u === 'due' ? '#3b82f6' : 'var(--text-tertiary)'
 
-  const glass = { background: 'rgba(0,0,0,0.03)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', border: '0.5px solid rgba(0,0,0,0.08)', boxShadow: '0 8px 36px rgba(0,0,0,0.3)' }
+  const glass = { background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }
   const card = { background: 'rgba(0,0,0,0.03)', borderRadius: 18, padding: 24, border: '0.5px solid rgba(0,0,0,0.08)', boxShadow: 'none' }
   const inputStyle = { width: '100%', background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)', borderRadius: 50, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font)', boxSizing: 'border-box' }
   const labelStyle = { fontSize: 12, fontWeight: 500, color: 'var(--text-tertiary)', fontFamily: 'var(--font)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }

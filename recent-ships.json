@@ -1,30 +1,40 @@
 {
-  "generated_at": "2026-04-16T16:35:34.934Z",
+  "generated_at": "2026-04-16T16:38:20.786Z",
   "commits": [
+    {
+      "hash": "32c3f66",
+      "subject": "Dev: TDZ check v2 — scope-aware, zero false positives. V1 produced 93 false positives by not understanding function boundaries (different functions reusing 'data' variable name). V2 only checks compon",
+      "when": "37 seconds ago"
+    },
+    {
+      "hash": "51f1ee7",
+      "subject": "Platform audit: purged 35+ old-theme artifacts across 7 active files. Campaigns.jsx — 8x purple rgba(124,92,252) → black opacities, 2x gradient #7C5CFC → solid #0A0A0A, 14x white-on-white rgba(255,255",
+      "when": "2 minutes ago"
+    },
     {
       "hash": "afd0b94",
       "subject": "Dev: pre-commit TDZ check script at scripts/check-tdz.mjs — scans staged .jsx files for const declarations referenced before their declaration line. Catches .filter()/.map()/.some()/useState() pattern",
-      "when": "5 minutes ago"
+      "when": "8 minutes ago"
     },
     {
       "hash": "f4ccdae",
       "subject": "KikoFloat Legora polish: panel background changed from semi-transparent rgba(0,0,0,0.03) + blur to solid white #FFFFFF with light shadow (0.12 opacity instead of 0.5). Floating avatar button shadows r",
-      "when": "35 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "8eccfe2",
       "subject": "Nav + KikoFloat overhaul: (1) LegoraTopNav now uses ALL_PAGES master list (9 items including LinkedIn) instead of separate TABS (8) + MORE_ITEMS. Settings writes linkedin to kiko_top_nav_v2 and the re",
-      "when": "36 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "236edc2",
       "subject": "Settings nav + Command Centre enrichment: (1) Renamed 'Race Calendar' → 'Calendar' across Settings Navigation, Layout nav, and PAGE_LABELS map. Consistent with LegoraTopNav which already said Calendar",
-      "when": "69 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "2af3af0",
       "subject": "Theming pass: (1) Command Centre right pane — added max-height: calc(100vh - 140px) + overflow: hidden to .cc-detail. Previously min-height:500px with no max-height caused the detail card to grow past",
-      "when": "83 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "d4648a5",
@@ -90,16 +100,6 @@
       "hash": "47831dd",
       "subject": "Organisations + KikoChat: Legora polish. Organisations: 34 dark-glass rgba(25,25,25,0.40/0.50) backgrounds swapped to #FFFFFF, removed wasteful blur-on-white on glass/dropdown (saves GPU), swapped 0.4",
       "when": "4 hours ago"
-    },
-    {
-      "hash": "d0da7b3",
-      "subject": "Nav + Partnership Matrix fixes: (1) Avatar either/or render — img OR initials, never both. (2) Settings nav defaults synced with LegoraTopNav TABS (all 8 tabs default-on, was only 5 with stale 'sequen",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "948d234",
-      "subject": "KikoChat: agent-plan style thinking steps. Dark-glass 'Kiko's reasoning' button swapped to Legora white card. Purple dot list replaced with status-aware icons: spinning sage ring for in-progress step,",
-      "when": "5 hours ago"
     }
   ]
 }
