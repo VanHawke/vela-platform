@@ -1444,32 +1444,52 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   <div style={{ marginTop: 6 }}>
                     <button onClick={() => setShowSteps(!showSteps)} style={{
                       display: 'flex', alignItems: 'center', gap: 8, width: '100%',
-                      fontSize: 12, color: 'rgba(124,92,252,0.6)', background: 'rgba(25,25,25,0.50)',
-                      backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-                      border: '0.5px solid rgba(0,0,0,0.08)', borderRadius: 10,
-                      cursor: 'pointer', fontFamily: C.font, padding: '8px 12px', fontWeight: 500,
-                      transition: 'all 0.2s', boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.03)',
-                    }}>
-                      <span style={{ width: 16, height: 16, borderRadius: '50%', border: '1.5px solid rgba(124,92,252,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(124,92,252,0.6)" strokeWidth="2.5"><path d={showSteps ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"}/></svg>
+                      fontSize: 12, color: '#0A0A0A',
+                      background: '#FFFFFF',
+                      border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10,
+                      cursor: 'pointer', fontFamily: C.font, padding: '9px 12px', fontWeight: 500,
+                      transition: 'border-color 0.15s, background 0.15s',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                    }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.14)' }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)' }}
+                    >
+                      <span style={{ width: 16, height: 16, borderRadius: '50%', border: '1.5px solid rgba(125,138,100,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#7d8a64" strokeWidth="2.5"><path d={showSteps ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"}/></svg>
                       </span>
-                      <span>Kiko's reasoning</span>
-                      <span style={{ marginLeft: 'auto', fontSize: 11, color: '#6B6B6B' }}>{thinkingSteps.length} steps</span>
+                      <span>Kiko's plan</span>
+                      <span style={{ marginLeft: 'auto', fontSize: 11, color: '#A0A0A0', fontVariantNumeric: 'tabular-nums' }}>
+                        {streaming ? `${thinkingSteps.length} steps` : `${thinkingSteps.length} steps · done`}
+                      </span>
                     </button>
                     <div style={{ maxHeight: showSteps ? 400 : 0, overflow: 'hidden', transition: 'max-height 0.4s cubic-bezier(0.4,0,0.2,1)' }}>
-                      <div style={{ padding: '8px 0 0' }}>
+                      <div style={{ padding: '10px 0 4px 6px' }}>
                         {thinkingSteps.map((step, si) => {
                           const isLast = si === thinkingSteps.length - 1
-                          const isAgent = step.label.includes('Agent') || step.label.includes('agent')
-                          const isMemory = step.label.includes('memory') || step.label.includes('Memory')
-                          const dotColor = isAgent ? 'rgba(124,92,252,0.6)' : isMemory ? 'rgba(124,92,252,0.5)' : 'rgba(124,92,252,0.5)'
+                          const isInProgress = isLast && streaming
+                          const isDone = !isInProgress
                           return (
-                            <div key={si} style={{ display: 'flex', gap: 10, padding: '5px 0', opacity: 1, transition: 'opacity 0.3s' }}>
-                              <div style={{ width: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 5 }}>
-                                <span style={{ width: 7, height: 7, borderRadius: '50%', background: isLast ? 'rgba(124,92,252,0.7)' : dotColor, flexShrink: 0, animation: isLast ? 'pulse 1.2s infinite' : 'none' }} />
-                                {!isLast && <span style={{ flex: 1, width: 1, background: 'rgba(0,0,0,0.05)', marginTop: 4 }} />}
+                            <div key={si} style={{ display: 'flex', gap: 10, padding: '5px 0' }}>
+                              <div style={{ width: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 3 }}>
+                                {/* Status icon */}
+                                {isInProgress ? (
+                                  <span style={{ width: 12, height: 12, borderRadius: '50%', border: '1.5px solid rgba(125,138,100,0.35)', borderTopColor: '#7d8a64', flexShrink: 0, animation: 'spinSlow 0.8s linear infinite' }} />
+                                ) : isDone ? (
+                                  <span style={{ width: 12, height: 12, borderRadius: '50%', background: 'rgba(125,138,100,0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#5a6644" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                                      <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                  </span>
+                                ) : (
+                                  <span style={{ width: 12, height: 12, borderRadius: '50%', border: '1.5px solid rgba(0,0,0,0.12)', flexShrink: 0 }} />
+                                )}
+                                {!isLast && <span style={{ flex: 1, width: 1, background: 'rgba(0,0,0,0.06)', marginTop: 4, minHeight: 10 }} />}
                               </div>
-                              <span style={{ fontSize: 12, color: isLast ? 'rgba(124,92,252,0.65)' : '#A0A0A0', fontFamily: C.font, fontWeight: 400, lineHeight: 1.5 }}>{step.label}</span>
+                              <span style={{
+                                fontSize: 12.5,
+                                color: isInProgress ? '#0A0A0A' : '#6B6B6B',
+                                fontFamily: C.font, fontWeight: isInProgress ? 500 : 400, lineHeight: 1.5,
+                              }}>{step.label}</span>
                             </div>
                           )
                         })}

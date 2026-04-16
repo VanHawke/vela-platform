@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-16T11:33:00.667Z",
+  "generated_at": "2026-04-16T11:41:45.545Z",
   "commits": [
+    {
+      "hash": "641a449",
+      "subject": "Calendar redesign: signed-off race spine + outreach intelligence port swapped to active (was NEW_REDESIGN.jsx). Uses Legora tokens (white bg, Source Serif 4, sage/terra/amber/purple for F1/FE/MotoGP/W",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "1abc2cb",
       "subject": "Contacts: wire up New contact modal — form state, saveContact handler with reloadKey to refresh list on save, resetForm helper, button onClick, full modal JSX with first/last name row + email + phone ",
-      "when": "5 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "bbbf11e",
       "subject": "Contacts page: Legora redesign ported to active (was NEW_REDESIGN) — tabular view with hover preview popup, sector tags, status chips, Source Serif 4 header. Company name in each row now routes to /or",
-      "when": "20 minutes ago"
+      "when": "29 minutes ago"
     },
     {
       "hash": "36cf605",
       "subject": "Partnership Matrix: fix active tab black-on-black (color:#FFFFFF when active on T.accent pill) + Add-partnership modal from dark glass to Legora white card with light border",
-      "when": "23 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "7b0718c",
       "subject": "Chat prompt bar: complete Legora polish. Swap 6 dark glass button backgrounds (rgba(20,20,24,0.65)) to rgba(0,0,0,0.04) + 4 dark gray icon colors #3A3A3E to #6B6B6B + 2 #555558 to #6B6B6B. Outer card ",
-      "when": "47 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "cf01bcd",
       "subject": "Partnership Matrix: aesthetic refresh to Legora tokens. T object swapped (black bg -> warm off-white #FEFEFC, DM Sans -> Inter + Source Serif 4, bright Apple colors -> sage/terra/amber/slate/purple). ",
-      "when": "48 minutes ago"
+      "when": "57 minutes ago"
     },
     {
       "hash": "21de3a2",
       "subject": "Command Centre: fix Kiko brief streaming — SSE event key is 'delta' not 'text'. Brief now renders in right pane when item selected.",
-      "when": "54 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "bad0fdf",
       "subject": "Command Centre task labelling (use type+contact+company, not generic 'Task'), richer Kiko brief prompt with full task context. Chat-mode prompt bar — now white card matching welcome state, consistent ",
-      "when": "67 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "f0e57cf",
@@ -59,7 +64,7 @@
     {
       "hash": "37df539",
       "subject": "Homepage: white card prompt bar (welcome only), sage alerts pill (permanent leftmost), 4 dynamic chips, remove feature tiles — matches signed-off kiko-home-nav-c.html. Chat mode prompt bar styling unc",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "7ee5d96",
@@ -79,26 +84,21 @@
     {
       "hash": "30d9398",
       "subject": "feat: Home page upgraded — new HomeDashboard component with 4 Bento cards (weighted pipeline + active deals, stale + overdue, hot replies 24h, next F1 race countdown w/ PEAK badge). Real Supabase data",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "832df4c",
       "subject": "fix: nav 'Inbox' renamed to 'Command Centre' AND /command-centre layout restored to signed-off 2-pane composer design (was wrongly showing dashboard). Dashboard preserved as OutreachIntelligence.DASHB",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "8f40e17",
       "subject": "rebuild: Command Centre — new Legora dashboard wired to OLD plumbing. Stats row (pipeline weighted, stale, overdue, next race countdown with F1/FE/MotoGP/WEC switcher). Two-column layout: priority dea",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "2072b77",
       "subject": "fix: Pipeline horizontal scroll when Show Closed enabled — pl-cols-wrap now has overflow-x:auto with proper scrollbar styling, columns flex-shrink:0 at fixed 240px so 7 stages can scroll right",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "37ee383",
-      "subject": "fix: Pipeline rebuilt the right way — Legora design + full OLD plumbing wired through. NEW: page header, stage columns, deal cards (Legora aesthetic). RESTORED: Pipeline Manager dropdown (multiple pip",
       "when": "15 hours ago"
     }
   ]
