@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-16T19:50:31.824Z",
+  "generated_at": "2026-04-16T20:06:59.490Z",
   "commits": [
+    {
+      "hash": "bb896d8",
+      "subject": "Voice settings overhaul: (1) New Voice Style section with 5 tone presets (Natural, Professional, Warm & Inviting, Energetic, Calm & Soothing) — each passes specific instructions to gpt-4o-mini-tts con",
+      "when": "16 minutes ago"
+    },
     {
       "hash": "cd20d1e",
       "subject": "Hetzner cron migration COMPLETE: removed all 43 crons from vercel.json. Crons now run on Hetzner kiko-server (178.104.73.22) via node-cron in kiko-worker/src/cron-scheduler.js. Each cron calls the cor",
-      "when": "24 minutes ago"
+      "when": "40 minutes ago"
     },
     {
       "hash": "dc901c7",
@@ -14,7 +19,7 @@
     {
       "hash": "6396d17",
       "subject": "Pipeline deal panel consistency fix: (1) Contacts now load INDEPENDENTLY of org match. Previously contacts fetch was inside the 'if company matches' block — deals without an org record (Cloudflare, Pa",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "eed2877",
@@ -49,12 +54,12 @@
     {
       "hash": "51f1ee7",
       "subject": "Platform audit: purged 35+ old-theme artifacts across 7 active files. Campaigns.jsx — 8x purple rgba(124,92,252) → black opacities, 2x gradient #7C5CFC → solid #0A0A0A, 14x white-on-white rgba(255,255",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "afd0b94",
       "subject": "Dev: pre-commit TDZ check script at scripts/check-tdz.mjs — scans staged .jsx files for const declarations referenced before their declaration line. Catches .filter()/.map()/.some()/useState() pattern",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "f4ccdae",
@@ -69,7 +74,7 @@
     {
       "hash": "236edc2",
       "subject": "Settings nav + Command Centre enrichment: (1) Renamed 'Race Calendar' → 'Calendar' across Settings Navigation, Layout nav, and PAGE_LABELS map. Consistent with LegoraTopNav which already said Calendar",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "2af3af0",
@@ -84,7 +89,7 @@
     {
       "hash": "3b1af5a",
       "subject": "HOTFIX: LegoraTopNav TDZ — overflow block referenced 'orderedTabs' before its useState declaration. Moved overflowTabs + moreIsActive + visibleMoreItems calculation BELOW orderedTabs useState. Product",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "67909bc",
@@ -94,11 +99,6 @@
     {
       "hash": "80c8a90",
       "subject": "Profile pic + all-pages button audit: (1) Layout passes profile prop to LegoraTopNav so user-uploaded profile_photo_url is preferred over Google avatar_url. Initials fallback also now prefers display_",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "83ba952",
-      "subject": "Chat + nav UX fixes: (1) Send button (both welcome + chat mode) — was black icon on dark gradient (invisible); now color toggles white when hasContent, muted grey when disabled. (2) Chat title dropdow",
       "when": "6 hours ago"
     }
   ]

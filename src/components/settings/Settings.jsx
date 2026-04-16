@@ -38,7 +38,7 @@ const SPEEDS = [
   { id: 1.2, label: 'Fast' },
 ]
 const TABS = ['Profile', 'Kiko', 'Memory', 'Skills', 'Navigation', 'Team', 'Organisation', 'Appearance', 'Accounts', 'Health']
-const SUPER_ADMIN_TABS = ['Kiko', 'Team', 'Organisation', 'Health'] // Only visible to super_admin
+const SUPER_ADMIN_TABS = ['Kiko', 'Memory', 'Skills', 'Navigation', 'Team', 'Organisation', 'Appearance', 'Accounts', 'Health'] // Only visible to super_admin — regular users see Profile only
 
 // Theme imported from @/lib/theme.js
 
