@@ -382,12 +382,14 @@ export default function Pipeline({ user }) {
     if (savingActivity || !selectedDeal) return
     setSavingActivity(true)
     const now = new Date().toISOString()
-    await supabase.from('activities').insert({
+    const { error } = await supabase.from('activities').insert({
+      org_id: ORG_ID,
       type, entity_name: selectedDeal.company || selectedDeal.title,
       deal_id: selectedDeal._id, subject: activityNote || `${type} logged`,
       direction: 'outbound', created_at: now,
       metadata: { contact: selectedDeal.contactName, pipeline: selectedDeal.pipeline, logged_by: 'user' }
     })
+    if (error) console.error('[logActivity] Failed:', error.message)
     setActivityNote('')
     setSavingActivity(false)
   }

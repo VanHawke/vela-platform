@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-16T20:06:59.490Z",
+  "generated_at": "2026-04-16T20:20:17.484Z",
   "commits": [
+    {
+      "hash": "f7e2683",
+      "subject": "Fix: (1) Added kiko_voice, kiko_voice_style, kiko_speed, kiko_personality columns to user_settings table — these were missing, causing 'Could not find column' error when saving voice/personality setti",
+      "when": "13 minutes ago"
+    },
     {
       "hash": "bb896d8",
       "subject": "Voice settings overhaul: (1) New Voice Style section with 5 tone presets (Natural, Professional, Warm & Inviting, Energetic, Calm & Soothing) — each passes specific instructions to gpt-4o-mini-tts con",
-      "when": "16 minutes ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "cd20d1e",
       "subject": "Hetzner cron migration COMPLETE: removed all 43 crons from vercel.json. Crons now run on Hetzner kiko-server (178.104.73.22) via node-cron in kiko-worker/src/cron-scheduler.js. Each cron calls the cor",
-      "when": "40 minutes ago"
+      "when": "53 minutes ago"
     },
     {
       "hash": "dc901c7",
@@ -34,22 +39,22 @@
     {
       "hash": "329c0ba",
       "subject": "Audit phase 3: purged white-on-white borders in LinkedInQueue (5 instances — search input, card borders, message bg, button borders), SequenceDetail (C.border/borderHover + glass borderTop), ThreadInd",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "8b1e6dc",
       "subject": "Audit phase 2: purged ALL remaining purple across 14 files. SequenceDetail (5 instances — tab borders, test-sent badge, timeline dots), SkillsManager (new skill button text), Settings (team role badge",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "96447b2",
       "subject": "Audit cleanup: Settings cardStyle removed wasteful backdropFilter blur on white bg + simplified to clean white card with 1px border and light shadow. ContactDetail glass panel: heavy 0.3 opacity shado",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "32c3f66",
       "subject": "Dev: TDZ check v2 — scope-aware, zero false positives. V1 produced 93 false positives by not understanding function boundaries (different functions reusing 'data' variable name). V2 only checks compon",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "51f1ee7",
@@ -94,11 +99,6 @@
     {
       "hash": "67909bc",
       "subject": "Batch: (1) Pipeline — New deal button wired up with full Legora white-card modal (title/company/value/pipeline dropdown), inserts to deals table with STAGES[0].id default + correct JSONB shape + ORG_I",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "80c8a90",
-      "subject": "Profile pic + all-pages button audit: (1) Layout passes profile prop to LegoraTopNav so user-uploaded profile_photo_url is preferred over Google avatar_url. Initials fallback also now prefers display_",
       "when": "6 hours ago"
     }
   ]
