@@ -847,15 +847,15 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     return (
       <div ref={barRef} onMouseMove={handleBarMouseMove} style={{
         display: 'flex', flexDirection: 'column',
-        background: welcome ? '#FFFFFF' : 'rgba(25,25,25,0.85)',
-        backdropFilter: welcome ? 'none' : 'blur(24px)', WebkitBackdropFilter: welcome ? 'none' : 'blur(24px)',
-        borderRadius: welcome ? 16 : 24,
-        padding: welcome ? '14px 16px 10px' : '12px 14px 8px',
+        background: '#FFFFFF',
+        backdropFilter: 'none', WebkitBackdropFilter: 'none',
+        borderRadius: 16,
+        padding: '14px 16px 10px',
         position: 'relative',
-        border: `1px solid ${promptFocused ? (welcome ? '#0A0A0A' : 'rgba(124,92,252,0.2)') : transcribing ? 'rgba(34,197,94,0.2)' : (welcome ? 'rgba(0,0,0,0.08)' : C.border)}`,
-        boxShadow: welcome
-          ? (promptFocused ? '0 0 0 3px rgba(10,10,10,0.04), 0 1px 2px rgba(0,0,0,0.04)' : '0 1px 2px rgba(0,0,0,0.04)')
-          : (promptFocused ? '0 0 0 1px rgba(124,92,252,0.1), 0 0 20px rgba(0,0,0,0.04), 0 2px 6px rgba(0,0,0,0.35)' : '0 1px 2px rgba(0,0,0,0.3)'),
+        border: `1px solid ${promptFocused ? '#0A0A0A' : transcribing ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.08)'}`,
+        boxShadow: promptFocused
+          ? '0 0 0 3px rgba(10,10,10,0.04), 0 1px 2px rgba(0,0,0,0.04)'
+          : '0 1px 2px rgba(0,0,0,0.04)',
         transition: `all 400ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}`,
         maxWidth: welcome ? 680 : (compact ? '100%' : 680),
         width: '100%', margin: '0 auto',

@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-16T10:01:07.349Z",
+  "generated_at": "2026-04-16T10:24:34.114Z",
   "commits": [
+    {
+      "hash": "f0e57cf",
+      "subject": "Command Centre: master-detail rebuild. LEFT 440px — grouped priority list (Overdue, Stale deals, Due this week, Market signals). RIGHT — Kiko brief pane that streams from /api/kiko with selected item ",
+      "when": "23 minutes ago"
+    },
     {
       "hash": "037a87b",
       "subject": "nav: permission filter (hide pages user can't access), Settings always last in More dropdown, remove KikoCode/Memory from More (Memory stays inside Settings), add Health tab in Settings (super-admin o",
-      "when": "16 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "8dded1f",
       "subject": "Command Centre rebuilt: Hot Replies band top (email/LinkedIn when webhooks fire) + Priority Deals left + Tasks/Signals right. Real data from deals/tasks/kiko_alerts. Legora design. Replaces experiment",
-      "when": "40 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "4978b81",
       "subject": "Pipeline: deal panel company title + favicon mark now clickable — routes to /organisations?org=<id> and auto-selects that org. Hover shows underline. Contact rows already routed to /contacts/:id.",
-      "when": "47 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "37df539",
       "subject": "Homepage: white card prompt bar (welcome only), sage alerts pill (permanent leftmost), 4 dynamic chips, remove feature tiles — matches signed-off kiko-home-nav-c.html. Chat mode prompt bar styling unc",
-      "when": "51 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "7ee5d96",
@@ -64,17 +69,17 @@
     {
       "hash": "a99bb0a",
       "subject": "polish: Pipeline stage columns + deal cards restyled to Legora aesthetic — light backgrounds (#FAFAF7 columns, #FFFFFF cards), proper borders (rgba(0,0,0,0.06-0.08)), subtle shadows, clean hover lift.",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "cba44c7",
       "subject": "fix: restore working OLD pages — redesign rebuilt from scratch and lost ~50-78% of functionality. Pipeline gets back its 7 stages, manager dropdown, deal detail panel; Inbox/Command Centre gets back r",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "260fb83",
       "subject": "fix: nav restored — Contacts/Organisations/LinkedIn back in top nav. Contacts page now extracts firstName/lastName/title/company from data JSONB so 4,193 real contacts render properly",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "6f1ce29",
@@ -94,11 +99,6 @@
     {
       "hash": "cb58bb8",
       "subject": "redesign: Inbox real-time wiring (joined contacts + Realtime subscription + relative time formatting), Pipeline drag-drop polish (column scale + card grab/lift)",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "38e456a",
-      "subject": "redesign: Homepage feature tiles — 4 large sage/slate/terra/purple feature tiles below chips, Word Add-in pattern, each fires a starter prompt to Kiko",
       "when": "14 hours ago"
     }
   ]

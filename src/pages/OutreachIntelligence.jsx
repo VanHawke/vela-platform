@@ -36,6 +36,26 @@ function relativeTime(iso) {
   if (d < 7) return `${d}d ago`
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
+// Task rows have no 'title' field — reconstruct a useful label from type/contact/company.
+function taskLabel(task) {
+  const d = task.data || {}
+  if (d.title) return d.title
+  if (d.name) return d.name
+  const who = d.contact || d.company
+  if (d.type && who) return `${d.type} — ${who}`
+  if (d.type) return d.type
+  if (d.notes) return d.notes.slice(0, 80)
+  return 'Task'
+}
+function taskSub(task) {
+  const d = task.data || {}
+  const parts = []
+  if (d.company && d.contact) parts.push(`${d.contact} · ${d.company}`)
+  else if (d.company) parts.push(d.company)
+  else if (d.contact) parts.push(d.contact)
+  return parts.join(' · ')
+}
+
 function dueLabel(iso) {
   if (!iso) return ''
   const due = new Date(iso)
@@ -58,7 +78,14 @@ function buildBriefPrompt(sel) {
     return `Brief me on this reply from ${p.entity_name || 'prospect'}. Subject/title: "${sel.title}". Detail: "${p.detail || ''}". Arrived ${relativeTime(p.created_at)}. Give me: (1) where we stand with this account, (2) what needs to happen next, (3) a drafted reply ready to send. Keep it tight — senior sales leader voice.`
   }
   if (sel.kind === 'task') {
-    return `Brief me on this task: "${sel.title}". ${p.data?.dueDate ? `Due: ${p.data.dueDate}.` : ''} ${p.data?.notes ? `Notes: ${p.data.notes}` : ''} Give me: (1) context — what's the goal, (2) what specifically needs to happen, (3) draft anything I need (email, message, doc skeleton).`
+    const d = p.data || {}
+    const bits = []
+    if (d.type) bits.push(`Type: ${d.type}`)
+    if (d.company) bits.push(`Company: ${d.company}`)
+    if (d.contact) bits.push(`Contact: ${d.contact}`)
+    if (d.dueDate) bits.push(`Due: ${d.dueDate}`)
+    if (d.notes) bits.push(`Notes: ${d.notes}`)
+    return `Brief me on this task.\n${bits.join('\n')}\n\nGive me: (1) full context on this account/contact — who they are, where we stand in the pipeline, our history with them. (2) What specifically needs to happen on this task. (3) A drafted email or LinkedIn message ready to send if outreach is the right move. Keep it tight — senior sales voice, no fluff.`
   }
   if (sel.kind === 'deal') {
     return `Brief me on this deal — ${p.company || p.title}. Stage: ${p.stage}. Value: ${p.value ? '$' + p.value : 'n/a'}. ${p.daysSince}d since last activity. Give me: (1) where we are, (2) the best next move, (3) any recent market signals on this company, (4) draft outreach to reanimate if they're stale.`
@@ -224,8 +251,8 @@ export default function OutreachIntelligence({ user }) {
   })
   const selectTask = (t) => setSelected({
     kind: 'task', id: t.id,
-    title: t.data?.title || t.data?.name || 'Task',
-    meta: t.data?.dueDate ? dueLabel(t.data.dueDate) : 'no due date',
+    title: taskLabel(t),
+    meta: [taskSub(t), t.data?.dueDate ? dueLabel(t.data.dueDate) : 'no due date'].filter(Boolean).join(' · '),
     payload: t,
   })
   const selectDeal = (d) => setSelected({
@@ -320,8 +347,9 @@ export default function OutreachIntelligence({ user }) {
                     <Square size={10} />
                   </button>
                   <div className="cc-row-body">
-                    <div className="cc-row-title">{t.data?.title || t.data?.name || 'Task'}</div>
+                    <div className="cc-row-title">{taskLabel(t)}</div>
                     <div className="cc-row-meta">
+                      {taskSub(t) && <>{taskSub(t)} · </>}
                       {dueLabel(t.data?.dueDate)}
                       <span className="cc-row-tag overdue">OVERDUE</span>
                     </div>
@@ -373,8 +401,11 @@ export default function OutreachIntelligence({ user }) {
                     <Square size={10} />
                   </button>
                   <div className="cc-row-body">
-                    <div className="cc-row-title">{t.data?.title || t.data?.name || 'Task'}</div>
-                    <div className="cc-row-meta">{dueLabel(t.data?.dueDate)}</div>
+                    <div className="cc-row-title">{taskLabel(t)}</div>
+                    <div className="cc-row-meta">
+                      {taskSub(t) && <>{taskSub(t)} · </>}
+                      {dueLabel(t.data?.dueDate)}
+                    </div>
                   </div>
                 </div>
               ))}
