@@ -170,7 +170,7 @@ async function enrichSelectedForBrief(sel) {
       }
     }
     if (facts.length === 0) return basePrompt
-    return `${basePrompt}\n\n---\nLIVE CONTEXT (from CRM):\n${facts.join('\n')}\n---\nUse the facts above verbatim when answering. Don't say "I don't have details" — I just handed you the details.`
+    return `${basePrompt}\n\n---\nLIVE CONTEXT (from CRM) — USE THIS DATA:\n${facts.join('\n')}\n---\nIMPORTANT: Use the CRM facts above in your response. Reference specific names, dates, deal stages, and values from this data. Do NOT give a general pipeline health review. Focus ONLY on the entity being asked about.`
   } catch {
     return basePrompt
   }
@@ -193,10 +193,10 @@ function buildBriefPrompt(sel) {
     if (d.contact) bits.push(`Contact: ${d.contact}`)
     if (d.dueDate) bits.push(`Due: ${d.dueDate}`)
     if (d.notes) bits.push(`Notes: ${d.notes}`)
-    return `Brief me on this task.\n${bits.join('\n')}\n\nGive me: (1) full context on this account/contact — who they are, their role, where we stand in the pipeline, our history with them, any correspondence to date. (2) What specifically needs to happen on this task and recommended next steps. (3) A drafted email ready to send — format it with Subject: on its own line, then Dear [Name], body, Kind regards. Be specific — use actual names, deal stages, and dates from the CRM data. Senior sales voice, no fluff.`
+    return `FOCUS: Brief me ONLY on this specific task and the person/company involved. Do NOT give a general pipeline review or mention other deals, tasks, or pipeline health.\n\n${bits.join('\n')}\n\nRespond with ONLY:\n1. WHO is ${d.contact || 'this contact'} — their role, company background, our relationship history, any correspondence to date\n2. DEAL STATUS — current stage, value, timeline, what's happened so far with this specific account\n3. THIS TASK — what needs to happen, why it matters, recommended approach\n4. DRAFT EMAIL — format with Subject: on its own line, then Dear [Name], body, Kind regards\n\nStay focused on ${d.contact || d.company || sel.title} ONLY. Do not discuss other deals, tasks, or give a pipeline overview. Senior sales voice, specific names and dates.`
   }
   if (sel.kind === 'deal') {
-    return `Brief me on this deal — ${p.company || p.title}. Stage: ${p.stage}. Value: ${p.value ? '$' + p.value : 'n/a'}. ${p.daysSince}d since last activity. Give me: (1) where we are, (2) the best next move, (3) any recent market signals on this company, (4) draft outreach to reanimate if stale — format with Subject: on its own line, then Dear [Name], body, Kind regards. Be specific with names, stages, dates.`
+    return `FOCUS: Brief me ONLY on this specific deal. Do NOT give a general pipeline review.\n\nDeal: ${p.company || p.title}\nStage: ${p.stage}\nValue: ${p.value ? '$' + p.value : 'n/a'}\nDays since activity: ${p.daysSince}\n\nRespond with ONLY:\n1. ACCOUNT STATUS — where we are with ${p.company || p.title} specifically, what's happened, key contacts\n2. NEXT MOVE — the single best action to progress this deal\n3. MARKET SIGNALS — any recent news or signals on this company\n4. DRAFT EMAIL — format with Subject: on its own line, then Dear [Name], body, Kind regards\n\nStay focused on ${p.company || p.title} ONLY. Senior sales voice, specific names and dates.`
   }
   if (sel.kind === 'signal') {
     return `Brief me on this market signal: "${sel.title}". Entity: ${p.entity_name || 'unknown'}. Detail: "${p.detail || ''}". Give me: (1) what this actually means commercially, (2) whether we should act on it and how, (3) a draft outreach if there's an opening.`
