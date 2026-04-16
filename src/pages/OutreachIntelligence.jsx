@@ -100,8 +100,11 @@ async function enrichSelectedForBrief(sel) {
   try {
     const p = sel?.payload || {}
     const d = p.data || {}
-    const companyName = d.company || p.company || sel?.meta?.split('·')?.[0]?.trim() || null
-    const contactName = d.contact || p.contact || null
+    // Extract company/contact from data fields, meta line, OR parse from the task/deal title
+    const titleParts = (sel?.title || '').split(/\s*[—–-]\s*/)
+    const titleSuffix = titleParts.length > 1 ? titleParts[titleParts.length - 1].trim() : null
+    const companyName = d.company || p.company || sel?.meta?.split('·')?.[0]?.trim() || p.entity_name || titleSuffix || null
+    const contactName = d.contact || p.contact || p.contactName || null
     if (!companyName && !contactName) return basePrompt
 
     const facts = []
@@ -127,10 +130,11 @@ async function enrichSelectedForBrief(sel) {
       }
     }
     // Contact row + history
-    if (contactName) {
+    const contactSearch = contactName || titleSuffix
+    if (contactSearch) {
       const { data: contacts } = await supabase
         .from('contacts').select('id, data')
-      const needle = contactName.toLowerCase().trim()
+      const needle = contactSearch.toLowerCase().trim()
       const match = (contacts || []).find(c => {
         const full = `${c.data?.firstName || ''} ${c.data?.lastName || ''}`.toLowerCase().trim()
         return full === needle
@@ -179,20 +183,20 @@ function buildBriefPrompt(sel) {
   if (!sel) return 'Brief me.'
   const p = sel.payload || {}
   if (sel.kind === 'reply') {
-    return `Brief me on this reply from ${p.entity_name || 'prospect'}. Subject/title: "${sel.title}". Detail: "${p.detail || ''}". Arrived ${relativeTime(p.created_at)}. Give me: (1) where we stand with this account, (2) what needs to happen next, (3) a drafted reply ready to send. Keep it tight — senior sales leader voice.`
+    return `Brief me on this reply from ${p.entity_name || 'prospect'}. Subject/title: "${sel.title}". Detail: "${p.detail || ''}". Arrived ${relativeTime(p.created_at)}. Give me: (1) where we stand with this account, (2) what needs to happen next, (3) a drafted reply — format with Subject: on its own line, then Dear [Name], body, Kind regards. Keep it tight — senior sales leader voice.`
   }
   if (sel.kind === 'task') {
     const d = p.data || {}
-    const bits = []
+    const bits = [`Task: "${sel.title}"`]
     if (d.type) bits.push(`Type: ${d.type}`)
     if (d.company) bits.push(`Company: ${d.company}`)
     if (d.contact) bits.push(`Contact: ${d.contact}`)
     if (d.dueDate) bits.push(`Due: ${d.dueDate}`)
     if (d.notes) bits.push(`Notes: ${d.notes}`)
-    return `Brief me on this task.\n${bits.join('\n')}\n\nGive me: (1) full context on this account/contact — who they are, where we stand in the pipeline, our history with them. (2) What specifically needs to happen on this task. (3) A drafted email or LinkedIn message ready to send if outreach is the right move. Keep it tight — senior sales voice, no fluff.`
+    return `Brief me on this task.\n${bits.join('\n')}\n\nGive me: (1) full context on this account/contact — who they are, their role, where we stand in the pipeline, our history with them, any correspondence to date. (2) What specifically needs to happen on this task and recommended next steps. (3) A drafted email ready to send — format it with Subject: on its own line, then Dear [Name], body, Kind regards. Be specific — use actual names, deal stages, and dates from the CRM data. Senior sales voice, no fluff.`
   }
   if (sel.kind === 'deal') {
-    return `Brief me on this deal — ${p.company || p.title}. Stage: ${p.stage}. Value: ${p.value ? '$' + p.value : 'n/a'}. ${p.daysSince}d since last activity. Give me: (1) where we are, (2) the best next move, (3) any recent market signals on this company, (4) draft outreach to reanimate if they're stale.`
+    return `Brief me on this deal — ${p.company || p.title}. Stage: ${p.stage}. Value: ${p.value ? '$' + p.value : 'n/a'}. ${p.daysSince}d since last activity. Give me: (1) where we are, (2) the best next move, (3) any recent market signals on this company, (4) draft outreach to reanimate if stale — format with Subject: on its own line, then Dear [Name], body, Kind regards. Be specific with names, stages, dates.`
   }
   if (sel.kind === 'signal') {
     return `Brief me on this market signal: "${sel.title}". Entity: ${p.entity_name || 'unknown'}. Detail: "${p.detail || ''}". Give me: (1) what this actually means commercially, (2) whether we should act on it and how, (3) a draft outreach if there's an opening.`
