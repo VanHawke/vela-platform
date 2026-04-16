@@ -339,18 +339,13 @@ export default function Pipeline({ user }) {
           setDealCompany({ id: match.id, ...match.data })
         }
 
-        // Contacts — ALWAYS search by company name, even if no org match
+        // Contacts — server-side filter by company name, independent of org match
         const { data: contacts } = await supabase
           .from('contacts')
           .select('id, data')
-        const matchedContacts = (contacts || [])
-          .filter(c => {
-            const cn = (c.data?.company || '').toLowerCase().trim()
-            return cn === needle || cn.startsWith(needle) || needle.startsWith(cn)
-          })
-          .map(c => ({ id: c.id, ...c.data }))
-          .slice(0, 10)
-        setDealContacts(matchedContacts)
+          .filter('data->>company', 'ilike', `%${deal.company}%`)
+          .limit(10)
+        setDealContacts((contacts || []).map(c => ({ id: c.id, ...c.data })))
       }
 
       // Tasks linked to this deal
