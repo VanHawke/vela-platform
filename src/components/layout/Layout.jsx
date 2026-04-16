@@ -49,7 +49,7 @@ import { useKikoPolish } from '@/lib/useKikoPolish'
 const ALL_NAV = [
   { id: 'home', label: 'Home', path: '/', Icon: Home },
   { id: 'pipeline', label: 'Pipeline', path: '/pipeline', Icon: GitBranch },
-  { id: 'calendar', label: 'Race Calendar', path: '/calendar', Icon: Calendar },
+  { id: 'calendar', label: 'Calendar', path: '/calendar', Icon: Calendar },
   { id: 'contacts', label: 'Contacts', path: '/contacts', Icon: Users },
   { id: 'organisations', label: 'Organisations', path: '/organisations', Icon: Building2 },
   { id: 'command-centre', label: 'Command Centre', path: '/command-centre', Icon: Target },
@@ -88,7 +88,7 @@ function getTopNavIds() {
 }
 
 const PAGE_LABELS = {
-  '/pipeline': 'Pipeline', '/calendar': 'Race Calendar', '/contacts': 'Contacts',
+  '/pipeline': 'Pipeline', '/calendar': 'Calendar', '/contacts': 'Contacts',
   '/partnership-matrix': 'Partnership Matrix', '/email': 'Command Centre',
   '/organisations': 'Organisations', '/campaigns': 'Campaigns', '/sequences': 'Campaigns', '/inbox': 'Inbox', '/segments': 'Segments', '/packs': 'Vertical Pack', '/targets': 'Targets',
   '/settings': 'Settings', '/dashboard': 'Dashboard',

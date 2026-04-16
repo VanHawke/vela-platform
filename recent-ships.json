@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-16T15:12:12.013Z",
+  "generated_at": "2026-04-16T15:25:47.472Z",
   "commits": [
+    {
+      "hash": "2af3af0",
+      "subject": "Theming pass: (1) Command Centre right pane — added max-height: calc(100vh - 140px) + overflow: hidden to .cc-detail. Previously min-height:500px with no max-height caused the detail card to grow past",
+      "when": "14 minutes ago"
+    },
     {
       "hash": "d4648a5",
       "subject": "Nav reorder + Pipeline org-click fixes: (1) Layout.getTopNavIds — removed over-aggressive '<4 items = corrupt' guard that was treating legitimate user selections as corrupt data and reverting to defau",
-      "when": "9 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "3b1af5a",
       "subject": "HOTFIX: LegoraTopNav TDZ — overflow block referenced 'orderedTabs' before its useState declaration. Moved overflowTabs + moreIsActive + visibleMoreItems calculation BELOW orderedTabs useState. Product",
-      "when": "35 minutes ago"
+      "when": "49 minutes ago"
     },
     {
       "hash": "67909bc",
       "subject": "Batch: (1) Pipeline — New deal button wired up with full Legora white-card modal (title/company/value/pipeline dropdown), inserts to deals table with STAGES[0].id default + correct JSONB shape + ORG_I",
-      "when": "52 minutes ago"
+      "when": "66 minutes ago"
     },
     {
       "hash": "80c8a90",
       "subject": "Profile pic + all-pages button audit: (1) Layout passes profile prop to LegoraTopNav so user-uploaded profile_photo_url is preferred over Google avatar_url. Initials fallback also now prefers display_",
-      "when": "69 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "83ba952",
       "subject": "Chat + nav UX fixes: (1) Send button (both welcome + chat mode) — was black icon on dark gradient (invisible); now color toggles white when hasContent, muted grey when disabled. (2) Chat title dropdow",
-      "when": "71 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "4e9dc9b",
       "subject": "UX batch: (1) + removed from Today/Pipeline (showPlus:false). (2) Admin + Health Centre removed from More dropdown. (3) Settings gets faint divider line above it (item.divider flag + .ltn-dropdown-div",
-      "when": "77 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "ca5ea38",
@@ -94,11 +99,6 @@
     {
       "hash": "36cf605",
       "subject": "Partnership Matrix: fix active tab black-on-black (color:#FFFFFF when active on T.accent pill) + Add-partnership modal from dark glass to Legora white card with light border",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "7b0718c",
-      "subject": "Chat prompt bar: complete Legora polish. Swap 6 dark glass button backgrounds (rgba(20,20,24,0.65)) to rgba(0,0,0,0.04) + 4 dark gray icon colors #3A3A3E to #6B6B6B + 2 #555558 to #6B6B6B. Outer card ",
       "when": "4 hours ago"
     }
   ]

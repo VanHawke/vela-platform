@@ -68,6 +68,67 @@ function dueLabel(iso) {
   return `Due ${due.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
 }
 
+// ─── Enrich selected item with live Supabase data ───
+// Pulls the real company row, recent deals, contact record, and recent emails for the
+// entity attached to this task/deal/reply — then builds a dense fact-packed prompt.
+// Returns a string. Falls back to buildBriefPrompt() if no enrichment data found.
+async function enrichSelectedForBrief(sel) {
+  const basePrompt = buildBriefPrompt(sel)
+  try {
+    const p = sel?.payload || {}
+    const d = p.data || {}
+    const companyName = d.company || p.company || sel?.meta?.split('·')?.[0]?.trim() || null
+    const contactName = d.contact || p.contact || null
+    if (!companyName && !contactName) return basePrompt
+
+    const facts = []
+    // Fetch company row (+ last touchpoint hint)
+    if (companyName) {
+      const { data: companies } = await supabase
+        .from('companies').select('id, data')
+      const needle = companyName.toLowerCase().trim()
+      const match = (companies || []).find(c => (c.data?.name || '').toLowerCase().trim() === needle)
+        || (companies || []).find(c => { const n = (c.data?.name || '').toLowerCase().trim(); return n && (n.startsWith(needle) || needle.startsWith(n)) })
+      if (match) {
+        const cd = match.data || {}
+        const companyFacts = [cd.industry, cd.country, cd.size && `~${cd.size} employees`, cd.website].filter(Boolean).join(' · ')
+        if (companyFacts) facts.push(`COMPANY: ${cd.name} — ${companyFacts}`)
+        if (cd.description) facts.push(`ABOUT: ${String(cd.description).slice(0, 400)}`)
+        // Recent deals for this company
+        const { data: deals } = await supabase
+          .from('deals').select('id, data, updated_at').order('updated_at', { ascending: false }).limit(200)
+        const related = (deals || []).filter(dl => ((dl.data?.company || '').toLowerCase().trim() === needle)).slice(0, 3)
+        if (related.length) {
+          facts.push(`OUR DEALS WITH THEM: ${related.map(r => `[${r.data?.stage || '?'}] ${r.data?.title || '(untitled)'} — ${r.data?.value ? '$' + r.data.value : 'no value'}`).join(' | ')}`)
+        }
+      }
+    }
+    // Contact row + history
+    if (contactName) {
+      const { data: contacts } = await supabase
+        .from('contacts').select('id, data')
+      const needle = contactName.toLowerCase().trim()
+      const match = (contacts || []).find(c => {
+        const full = `${c.data?.firstName || ''} ${c.data?.lastName || ''}`.toLowerCase().trim()
+        return full === needle
+      }) || (contacts || []).find(c => {
+        const full = `${c.data?.firstName || ''} ${c.data?.lastName || ''}`.toLowerCase().trim()
+        return full.startsWith(needle) || needle.startsWith(full)
+      })
+      if (match) {
+        const cd = match.data || {}
+        const contactFacts = [cd.title, cd.email, cd.linkedinUrl && 'has LinkedIn'].filter(Boolean).join(' · ')
+        if (contactFacts) facts.push(`CONTACT: ${cd.firstName || ''} ${cd.lastName || ''} — ${contactFacts}`)
+        if (cd.notes) facts.push(`CONTACT NOTES: ${String(cd.notes).slice(0, 300)}`)
+      }
+    }
+    if (facts.length === 0) return basePrompt
+    return `${basePrompt}\n\n---\nLIVE CONTEXT (from CRM):\n${facts.join('\n')}\n---\nUse the facts above verbatim when answering. Don't say "I don't have details" — I just handed you the details.`
+  } catch {
+    return basePrompt
+  }
+}
+
 // ─── Build the /api/kiko prompt from a selected item ───
 // Kiko's command-centre page-role prompt handles the rest — this just wraps
 // the selected entity so she knows what to brief on.
@@ -188,6 +249,10 @@ export default function OutreachIntelligence({ user }) {
   }, [deals, now])
 
   // ── Kiko brief loader (SSE streaming from /api/kiko) ──
+  // Pre-fetches relevant deal/contact/email context for the selected item and stuffs it
+  // directly into the message string — this is a workaround because /api/kiko isn't
+  // consuming `pageContext.selectedItem` for command-centre task detail, which caused
+  // briefs to come back generic with no company/contact context attached.
   useEffect(() => {
     if (!selected) { setBrief(''); return }
     if (briefAbortRef.current) briefAbortRef.current.abort()
@@ -197,11 +262,13 @@ export default function OutreachIntelligence({ user }) {
     setBriefLoading(true)
     ;(async () => {
       try {
+        // Enrich the prompt with live data from Supabase for task/deal/reply
+        const enriched = await enrichSelectedForBrief(selected)
         const res = await fetch('/api/kiko', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            message: buildBriefPrompt(selected),
+            message: enriched,
             userEmail: user?.email || 'sunny@vanhawke.com',
             currentPage: 'command-centre',
             pageContext: { selectedItem: selected },
