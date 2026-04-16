@@ -102,7 +102,7 @@ const BAR_COUNT = BAR_ENVELOPE.length
  *   onClick — click handler
  *   state — "idle" | "listening" | "speaking" (new API)
  */
-function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, energy = 0, mini = false, onClick, state: stateProp }) {
+function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, energy = 0, mini = false, onClick, state: stateProp, lightBars = false }) {
   // Backwards compat: derive state from legacy props if stateProp not given
   const state = stateProp || (speaking ? 'speaking' : (volume > 0.02 || energy > 0.02) ? 'listening' : 'idle')
   
@@ -177,14 +177,16 @@ function KikoWaveform({ width = 200, height = 60, volume = 0, speaking = false, 
                     position: 'absolute', top: -1, left: '50%', transform: 'translateX(-50%)',
                     width: shellBw * 4, height: shellBw * 4,
                     borderRadius: 9999,
-                    background: T.accent,
+                    background: lightBars ? 'rgba(6,214,160,0.9)' : T.accent,
                     filter: 'blur(2.5px)',
                     opacity: (barLevels[i] - 0.4) * 0.5,
                   }} />
                 )}
                 <div style={{
                   width: shellBw, height: '100%', borderRadius: shellBw,
-                  background: `linear-gradient(180deg, ${T.accent} 0%, rgba(0,0,0,0.06) 100%)`,
+                  background: lightBars
+                    ? `linear-gradient(180deg, rgba(6,214,160,0.9) 0%, rgba(255,255,255,0.3) 100%)`
+                    : `linear-gradient(180deg, ${T.accent} 0%, rgba(0,0,0,0.06) 100%)`,
                   opacity: state === 'speaking' ? 0.45 + barLevels[i] * 0.55 : 0.3 + env * 0.55,
                   transition: state === 'speaking' ? 'height 50ms linear, opacity 50ms linear' : 'all 500ms cubic-bezier(0.22,1,0.36,1)',
                 }} />
