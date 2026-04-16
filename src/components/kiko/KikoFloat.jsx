@@ -455,7 +455,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           style={{
           position: 'fixed', bottom: 88, right: 24, width: panelW,
           zIndex: 100, borderRadius: 24,
-          background: 'rgba(124,92,252,0.035)',
+          background: 'rgba(0,0,0,0.03)',
           backdropFilter: 'blur(40px) saturate(1.5)', WebkitBackdropFilter: 'blur(40px) saturate(1.5)',
           border: `0.5px solid ${C.border}`,
           borderTop: `0.5px solid rgba(0,0,0,0.08)`,
@@ -581,7 +581,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 10, background: 'rgba(0,0,0,0.02)', border: '0.5px solid rgba(0,0,0,0.08)' }}>
                 {pendingFile.previewUrl
                   ? <img src={pendingFile.previewUrl} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
-                  : <div style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(124,92,252,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'rgba(124,92,252,0.7)', fontWeight: 500 }}>{pendingFile.name.split('.').pop()?.toUpperCase()}</div>
+                  : <div style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'rgba(0,0,0,0.55)', fontWeight: 500 }}>{pendingFile.name.split('.').pop()?.toUpperCase()}</div>
                 }
                 <span style={{ fontSize: 11, color: '#6B6B6B', fontFamily: C.font, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pendingFile.name}</span>
                 <button onClick={clearPendingFile} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0', padding: 2, fontSize: 12, lineHeight: 1 }}>✕</button>
@@ -607,7 +607,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               {voiceOpen ? <div style={{ width: 8, height: 8, borderRadius: 1.5, background: 'rgba(255,59,48,0.7)' }} /> : <EqIcon size={14} color="rgba(6,214,160,0.7)" />}
             </button>
             <button onClick={() => { if (pendingFile) submitWithFile(); else handleSubmit(); }} disabled={(!input.trim() && !pendingFile) || streaming}
-              style={{ width: 28, height: 28, borderRadius: 50, border: 'none', background: (input.trim() || pendingFile) && !streaming ? 'linear-gradient(135deg, #7C5CFC, #0A0A0A)' : 'rgba(0,0,0,0.03)', color: (input.trim() || pendingFile) && !streaming ? '#0A0A0A' : C.textTer, cursor: (input.trim() || pendingFile) && !streaming ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s', boxShadow: (input.trim() || pendingFile) ? '0 2px 8px rgba(124,92,252,0.2)' : 'none' }}>
+              style={{ width: 28, height: 28, borderRadius: 50, border: 'none', background: (input.trim() || pendingFile) && !streaming ? '#0A0A0A' : 'rgba(0,0,0,0.03)', color: (input.trim() || pendingFile) && !streaming ? '#FFFFFF' : C.textTer, cursor: (input.trim() || pendingFile) && !streaming ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s', boxShadow: (input.trim() || pendingFile) ? '0 2px 8px rgba(0,0,0,0.14)' : 'none' }}>
               <ArrowUp size={13} />
             </button>
           </div>
@@ -631,19 +631,19 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           background: voiceOpen
             ? 'radial-gradient(circle at 40% 35%, rgba(10,28,24,1), rgba(8,8,12,1))'
             : 'radial-gradient(circle at 40% 35%, rgba(35,28,55,1), rgba(15,13,22,1))',
-          border: voiceOpen ? '2px solid rgba(6,214,160,0.25)' : '2px solid rgba(124,92,252,0.35)',
+          border: voiceOpen ? '2px solid rgba(6,214,160,0.25)' : '2px solid rgba(0,0,0,0.14)',
           color: '#0A0A0A',
           cursor: 'pointer',
           boxShadow: voiceOpen
             ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(0,0,0,0.08)'
-            : '0 0 0 3px rgba(124,92,252,0.1), 0 0 28px rgba(0,0,0,0.08), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(0,0,0,0.08)',
+            : '0 0 0 3px rgba(0,0,0,0.06), 0 0 28px rgba(0,0,0,0.08), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(0,0,0,0.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           overflow: 'hidden',
           transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
           transformOrigin: 'center',
           position: 'relative',
         }}
-          onMouseEnter={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.4)' : 'rgba(124,92,252,0.35)'; e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 5px rgba(6,214,160,0.12), 0 0 40px rgba(6,214,160,0.2), 0 12px 36px rgba(0,0,0,0.5)' : '0 0 0 4px rgba(0,0,0,0.05), 0 0 32px rgba(0,0,0,0.08), 0 12px 36px rgba(0,0,0,0.5)' }}}
+          onMouseEnter={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.4)' : 'rgba(0,0,0,0.14)'; e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 5px rgba(6,214,160,0.12), 0 0 40px rgba(6,214,160,0.2), 0 12px 36px rgba(0,0,0,0.5)' : '0 0 0 4px rgba(0,0,0,0.05), 0 0 32px rgba(0,0,0,0.08), 0 12px 36px rgba(0,0,0,0.5)' }}}
           onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4)' : '0 0 0 3px rgba(0,0,0,0.03), 0 0 20px rgba(0,0,0,0.05), 0 8px 28px rgba(0,0,0,0.4)' }}}
         >
           {voiceOpen

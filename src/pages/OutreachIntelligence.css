@@ -185,7 +185,9 @@
   border: 1px solid var(--border);
   border-radius: var(--r-card);
   min-height: 500px;
+  max-height: calc(100vh - 140px);
   display: flex; flex-direction: column;
+  overflow: hidden;
 }
 .cc-detail-empty {
   flex: 1;
