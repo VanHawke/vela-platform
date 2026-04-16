@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-16T07:25:29.796Z",
+  "generated_at": "2026-04-16T09:09:30.786Z",
   "commits": [
+    {
+      "hash": "7ee5d96",
+      "subject": "Group A: nav + identity — 1) 'Insights' renamed to 'Partnership Matrix', 2) 'More' dropdown restored with Settings/LinkedIn/KikoCode and admin items (Memory/Admin/Health), 3) avatar with Google fallba",
+      "when": "2 hours ago"
+    },
     {
       "hash": "fdf9a2f",
       "subject": "Group A: nav 'Insights' → 'Partnership Matrix', LinkedIn moved to 'More' dropdown (also contains KikoCode + admin-only Memory/Admin/Health), avatar now shows Google profile picture (with fallback chai",
-      "when": "8 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "f00e098",
       "subject": "fix: revert HomeDashboard from KikoChat (was added without sign-off, changed approved homepage). Restore inbox 2-pane CSS for /command-centre (was overwritten with dashboard CSS, causing unstyled text",
-      "when": "10 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "30d9398",
       "subject": "feat: Home page upgraded — new HomeDashboard component with 4 Bento cards (weighted pipeline + active deals, stale + overdue, hot replies 24h, next F1 race countdown w/ PEAK badge). Real Supabase data",
-      "when": "10 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "832df4c",
       "subject": "fix: nav 'Inbox' renamed to 'Command Centre' AND /command-centre layout restored to signed-off 2-pane composer design (was wrongly showing dashboard). Dashboard preserved as OutreachIntelligence.DASHB",
-      "when": "10 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "8f40e17",
       "subject": "rebuild: Command Centre — new Legora dashboard wired to OLD plumbing. Stats row (pipeline weighted, stale, overdue, next race countdown with F1/FE/MotoGP/WEC switcher). Two-column layout: priority dea",
-      "when": "10 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "2072b77",
       "subject": "fix: Pipeline horizontal scroll when Show Closed enabled — pl-cols-wrap now has overflow-x:auto with proper scrollbar styling, columns flex-shrink:0 at fixed 240px so 7 stages can scroll right",
-      "when": "10 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "37ee383",
       "subject": "fix: Pipeline rebuilt the right way — Legora design + full OLD plumbing wired through. NEW: page header, stage columns, deal cards (Legora aesthetic). RESTORED: Pipeline Manager dropdown (multiple pip",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "a99bb0a",
       "subject": "polish: Pipeline stage columns + deal cards restyled to Legora aesthetic — light backgrounds (#FAFAF7 columns, #FFFFFF cards), proper borders (rgba(0,0,0,0.06-0.08)), subtle shadows, clean hover lift.",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "cba44c7",
       "subject": "fix: restore working OLD pages — redesign rebuilt from scratch and lost ~50-78% of functionality. Pipeline gets back its 7 stages, manager dropdown, deal detail panel; Inbox/Command Centre gets back r",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "260fb83",
       "subject": "fix: nav restored — Contacts/Organisations/LinkedIn back in top nav. Contacts page now extracts firstName/lastName/title/company from data JSONB so 4,193 real contacts render properly",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "6f1ce29",
       "subject": "fix: cron-compute-outreach-windows — table is kiko_user_config not user_config",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "f32286e",
       "subject": "Merge redesign/legora — Legora aesthetic redesign (16 commits): all 8 main pages ported, 12 Settings tabs, Homepage feature tiles, Supabase outreach intelligence tables + nightly cron, real metrics wi",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "4572634",
       "subject": "redesign: Insights sequence leaderboard wired to real kiko_sequences + activities reply counts (mock fallback when no real activity yet)",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "cb58bb8",
       "subject": "redesign: Inbox real-time wiring (joined contacts + Realtime subscription + relative time formatting), Pipeline drag-drop polish (column scale + card grab/lift)",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "38e456a",
       "subject": "redesign: Homepage feature tiles — 4 large sage/slate/terra/purple feature tiles below chips, Word Add-in pattern, each fires a starter prompt to Kiko",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "e791ab4",
       "subject": "redesign: Settings — final 8 panels built (Password/Security/Members/Branding/Memory/Voice/Plan/Invoices). All 12 Settings tabs now functional.",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "6a5ac61",
       "subject": "redesign: Settings — Workspace + Personality + Auto-actions + Apps panels fully built",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "6720a43",
       "subject": "redesign: nightly outreach windows cron + Settings/Email panel + section descriptions for placeholder tabs",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "8d5fd37",
       "subject": "redesign: pre-prod fixes — revert dev bypass, build outreach intelligence Supabase tables, retrofit ContactDetail/SequenceDetail/Organisations/LinkedInQueue, wire real metrics into Insights and Pipeli",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "e279cee",
-      "subject": "redesign: Settings — two-pane port (sections sidebar + Profile panel fully wired)",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     }
   ]
 }

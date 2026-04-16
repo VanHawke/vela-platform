@@ -847,14 +847,15 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     return (
       <div ref={barRef} onMouseMove={handleBarMouseMove} style={{
         display: 'flex', flexDirection: 'column',
-        background: 'rgba(25,25,25,0.85)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
-        borderRadius: 24,
-        padding: welcome ? '12px 14px 8px' : '12px 14px 8px',
+        background: welcome ? '#FFFFFF' : 'rgba(25,25,25,0.85)',
+        backdropFilter: welcome ? 'none' : 'blur(24px)', WebkitBackdropFilter: welcome ? 'none' : 'blur(24px)',
+        borderRadius: welcome ? 16 : 24,
+        padding: welcome ? '14px 16px 10px' : '12px 14px 8px',
         position: 'relative',
-        border: `1px solid ${promptFocused ? 'rgba(124,92,252,0.2)' : transcribing ? 'rgba(34,197,94,0.2)' : C.border}`,
-        boxShadow: promptFocused
-          ? `0 0 0 1px rgba(124,92,252,0.1), 0 0 20px rgba(0,0,0,0.04), ${'0 2px 6px rgba(0,0,0,0.35)'}`
-          : '0 1px 2px rgba(0,0,0,0.3)',
+        border: `1px solid ${promptFocused ? (welcome ? '#0A0A0A' : 'rgba(124,92,252,0.2)') : transcribing ? 'rgba(34,197,94,0.2)' : (welcome ? 'rgba(0,0,0,0.08)' : C.border)}`,
+        boxShadow: welcome
+          ? (promptFocused ? '0 0 0 3px rgba(10,10,10,0.04), 0 1px 2px rgba(0,0,0,0.04)' : '0 1px 2px rgba(0,0,0,0.04)')
+          : (promptFocused ? '0 0 0 1px rgba(124,92,252,0.1), 0 0 20px rgba(0,0,0,0.04), 0 2px 6px rgba(0,0,0,0.35)' : '0 1px 2px rgba(0,0,0,0.3)'),
         transition: `all 400ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}`,
         maxWidth: welcome ? 680 : (compact ? '100%' : 680),
         width: '100%', margin: '0 auto',
@@ -1274,66 +1275,49 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 )}
               </div>
 
-              {/* 4 chips only — below prompt bar */}
+              {/* Alerts pill (permanent sage, left) + 4 dynamic chips */}
               <div id="kikoChipsWrap" style={{
                 display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center', maxWidth: 720, marginBottom: voiceActive ? 0 : 20,
                 opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 60,
                 transform: voiceActive ? 'translateY(30px)' : 'translateY(0)',
                 transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.1s',
                 overflow: 'hidden', pointerEvents: voiceActive ? 'none' : 'auto',
+                flexWrap: 'wrap',
               }}>
-                {alertCount > 0 && <InsightsBadge count={alertCount} onClick={() => setInsightsOpen(true)} />}
-                {dynamicChips.slice(0, 3).map(c => (
+                {/* Permanent alerts pill — sage so it stands out */}
+                <button onClick={() => setInsightsOpen(true)} style={{
+                  padding: '6px 14px', borderRadius: 50,
+                  background: 'rgba(125,138,100,0.14)',
+                  border: '1px solid rgba(125,138,100,0.30)',
+                  color: '#5a6644',
+                  fontSize: 12, fontWeight: 500,
+                  cursor: 'pointer', fontFamily: C.font,
+                  whiteSpace: 'nowrap',
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  transition: 'all 250ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+                }}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(125,138,100,0.22)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(125,138,100,0.14)'; e.currentTarget.style.transform = 'translateY(0)' }}
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                  {alertCount || 0} alerts
+                </button>
+                {/* Dynamic chips — Kiko decides (up to 4) */}
+                {dynamicChips.slice(0, 4).map(c => (
                   <button key={c} onClick={() => handleSubmit(c)} style={{
-                    padding: '6px 16px', borderRadius: 50, background: 'rgba(20,20,24,0.65)',
-                    backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-                    border: `1px solid ${C.border}`, color: '#6B6B6B',
-                    fontSize: 12, cursor: 'pointer', fontFamily: C.font, fontWeight: 400,
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.15)', whiteSpace: 'nowrap',
-                    transition: `all 250ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}`,
+                    padding: '6px 14px', borderRadius: 50,
+                    background: '#FFFFFF',
+                    border: '1px solid rgba(0,0,0,0.08)',
+                    color: '#0A0A0A',
+                    fontSize: 12, cursor: 'pointer', fontFamily: C.font, fontWeight: 450,
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)', whiteSpace: 'nowrap',
+                    transition: 'all 250ms cubic-bezier(0.34, 1.56, 0.64, 1)',
                   }}
-                    onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(26,26,30,0.80)'; e.currentTarget.style.color = '#0A0A0A'; e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
-                    onMouseOut={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = '#6B6B6B'; e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.15)'; e.currentTarget.style.transform = 'translateY(0)' }}
+                    onMouseOver={e => { e.currentTarget.style.background = '#0A0A0A'; e.currentTarget.style.color = 'white'; e.currentTarget.style.borderColor = '#0A0A0A'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                    onMouseOut={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#0A0A0A'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}
                   >{c}</button>
                 ))}
               </div>
-
-          {/* Feature tiles — Word Add-in pattern, opens core flows */}
-          <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14,
-            maxWidth: 720, width: '100%', margin: '24px auto 0',
-            opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 400,
-            transform: voiceActive ? 'translateY(40px)' : 'translateY(0)',
-            transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.15s',
-            overflow: voiceActive ? 'hidden' : 'visible', pointerEvents: voiceActive ? 'none' : 'auto',
-          }}>
-            {[
-              { label: 'Draft outreach',     prompt: "Draft a 5-touch sequence for a Citi banking F1 prospect",         color: '#7d8a64', icon: 'M' },
-              { label: 'Brief a meeting',    prompt: "Brief me on tomorrow's first meeting — full context",              color: '#5a6470', icon: '📅' },
-              { label: 'Score a partnership',prompt: "Score the Bardrick × Citi partnership — board-level analysis",    color: '#b8643e', icon: '◆' },
-              { label: 'Read latest signals',prompt: "What new SponsorSignal alerts came in overnight?",                  color: '#6d4ea8', icon: '⚡' },
-            ].map((t, i) => (
-              <button key={i} onClick={() => handleSubmit(t.prompt)} style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'space-between',
-                padding: '20px 18px', background: '#FFFFFF',
-                border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14,
-                cursor: 'pointer', textAlign: 'left',
-                fontFamily: C.font,
-                minHeight: 130,
-                transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-              }}
-                onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.18)'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.06)' }}
-                onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.03)' }}
-              >
-                <div style={{ width: 38, height: 38, borderRadius: '50%', background: `${t.color}22`, color: t.color, display: 'grid', placeItems: 'center', fontSize: 16, fontWeight: 600 }}>{t.icon}</div>
-                <div>
-                  <div style={{ fontSize: 13.5, color: '#0A0A0A', fontWeight: 500, marginBottom: 4 }}>{t.label}</div>
-                  <div style={{ fontSize: 11, color: '#6B6B6B', lineHeight: 1.4 }}>{t.prompt.length > 48 ? t.prompt.slice(0, 48) + '...' : t.prompt}</div>
-                </div>
-              </button>
-            ))}
-          </div>
 
           {/* Bottom spacer — equal to top so content sits at true visual centre */}
           <div style={{ flex: voiceActive ? 1 : 0.5, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
