@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-16T18:08:04.867Z",
+  "generated_at": "2026-04-16T19:26:53.378Z",
   "commits": [
+    {
+      "hash": "dc901c7",
+      "subject": "Pipeline deal panel hotfix: contacts query was fetching ALL 4,193 contacts then filtering client-side — caused panel to hang on 'Loading...' forever. Fixed with server-side Supabase filter: .filter('d",
+      "when": "79 minutes ago"
+    },
     {
       "hash": "6396d17",
       "subject": "Pipeline deal panel consistency fix: (1) Contacts now load INDEPENDENTLY of org match. Previously contacts fetch was inside the 'if company matches' block — deals without an org record (Cloudflare, Pa",
-      "when": "43 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "eed2877",
       "subject": "Cron migration prep: created kiko-worker/src/cron-scheduler.js with all 43 cron schedules mapped to Vercel API endpoints + node-cron scheduler. Ready to deploy to Hetzner when SSH access granted. COST",
-      "when": "50 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "002eee9",
       "subject": "Cleanup: (1) NotificationToast — removed wasteful backdropFilter blur on white bg, strengthened shadow from 0.10 to dual-layer 0.08+0.12 for better visibility against white page background. (2) Layout",
-      "when": "75 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "329c0ba",
       "subject": "Audit phase 3: purged white-on-white borders in LinkedInQueue (5 instances — search input, card borders, message bg, button borders), SequenceDetail (C.border/borderHover + glass borderTop), ThreadInd",
-      "when": "82 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "8b1e6dc",
       "subject": "Audit phase 2: purged ALL remaining purple across 14 files. SequenceDetail (5 instances — tab borders, test-sent badge, timeline dots), SkillsManager (new skill button text), Settings (team role badge",
-      "when": "83 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "96447b2",
       "subject": "Audit cleanup: Settings cardStyle removed wasteful backdropFilter blur on white bg + simplified to clean white card with 1px border and light shadow. ContactDetail glass panel: heavy 0.3 opacity shado",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "32c3f66",
       "subject": "Dev: TDZ check v2 — scope-aware, zero false positives. V1 produced 93 false positives by not understanding function boundaries (different functions reusing 'data' variable name). V2 only checks compon",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "51f1ee7",
       "subject": "Platform audit: purged 35+ old-theme artifacts across 7 active files. Campaigns.jsx — 8x purple rgba(124,92,252) → black opacities, 2x gradient #7C5CFC → solid #0A0A0A, 14x white-on-white rgba(255,255",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "afd0b94",
       "subject": "Dev: pre-commit TDZ check script at scripts/check-tdz.mjs — scans staged .jsx files for const declarations referenced before their declaration line. Catches .filter()/.map()/.some()/useState() pattern",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f4ccdae",
       "subject": "KikoFloat Legora polish: panel background changed from semi-transparent rgba(0,0,0,0.03) + blur to solid white #FFFFFF with light shadow (0.12 opacity instead of 0.5). Floating avatar button shadows r",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "8eccfe2",
       "subject": "Nav + KikoFloat overhaul: (1) LegoraTopNav now uses ALL_PAGES master list (9 items including LinkedIn) instead of separate TABS (8) + MORE_ITEMS. Settings writes linkedin to kiko_top_nav_v2 and the re",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "236edc2",
       "subject": "Settings nav + Command Centre enrichment: (1) Renamed 'Race Calendar' → 'Calendar' across Settings Navigation, Layout nav, and PAGE_LABELS map. Consistent with LegoraTopNav which already said Calendar",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "2af3af0",
       "subject": "Theming pass: (1) Command Centre right pane — added max-height: calc(100vh - 140px) + overflow: hidden to .cc-detail. Previously min-height:500px with no max-height caused the detail card to grow past",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "d4648a5",
       "subject": "Nav reorder + Pipeline org-click fixes: (1) Layout.getTopNavIds — removed over-aggressive '<4 items = corrupt' guard that was treating legitimate user selections as corrupt data and reverting to defau",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "3b1af5a",
       "subject": "HOTFIX: LegoraTopNav TDZ — overflow block referenced 'orderedTabs' before its useState declaration. Moved overflowTabs + moreIsActive + visibleMoreItems calculation BELOW orderedTabs useState. Product",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "67909bc",
       "subject": "Batch: (1) Pipeline — New deal button wired up with full Legora white-card modal (title/company/value/pipeline dropdown), inserts to deals table with STAGES[0].id default + correct JSONB shape + ORG_I",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "80c8a90",
       "subject": "Profile pic + all-pages button audit: (1) Layout passes profile prop to LegoraTopNav so user-uploaded profile_photo_url is preferred over Google avatar_url. Initials fallback also now prefers display_",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "83ba952",
       "subject": "Chat + nav UX fixes: (1) Send button (both welcome + chat mode) — was black icon on dark gradient (invisible); now color toggles white when hasContent, muted grey when disabled. (2) Chat title dropdow",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "4e9dc9b",
       "subject": "UX batch: (1) + removed from Today/Pipeline (showPlus:false). (2) Admin + Health Centre removed from More dropdown. (3) Settings gets faint divider line above it (item.divider flag + .ltn-dropdown-div",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "ca5ea38",
-      "subject": "Fix: Layout getTopNavIds reader guard — stored arrays <4 items treated as corrupt, fall back to defaults (matches the same guard added to LegoraTopNav in commit d0da7b3). DEFAULT_TOP_IDS synced to ALL",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     }
   ]
 }
