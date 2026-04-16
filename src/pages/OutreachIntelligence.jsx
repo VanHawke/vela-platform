@@ -170,7 +170,7 @@ async function enrichSelectedForBrief(sel) {
       }
     }
     if (facts.length === 0) return basePrompt
-    return `${basePrompt}\n\n---\nLIVE CONTEXT (from CRM) — USE THIS DATA:\n${facts.join('\n')}\n---\nIMPORTANT: Use the CRM facts above in your response. Reference specific names, dates, deal stages, and values from this data. Do NOT give a general pipeline health review. Focus ONLY on the entity being asked about.`
+    return `${basePrompt}\n\n---\nLIVE CONTEXT (from CRM) — ALL THE DATA YOU NEED IS HERE:\n${facts.join('\n')}\n---\nCRITICAL INSTRUCTIONS:\n1. You already have all the relevant CRM data above. DO NOT call pipeline overview tools, deal summary tools, or any tool that returns data about OTHER entities.\n2. If you must use a tool, ONLY search for more information about the SPECIFIC entity mentioned above.\n3. Your response must be EXCLUSIVELY about this entity. Do NOT mention other deals, other tasks, or pipeline health.\n4. Do NOT give a pipeline overview, pipeline health assessment, or mention how many overdue tasks exist.\n5. Structure your response as: WHO they are → DEAL STATUS → WHAT TO DO NEXT → DRAFT EMAIL.`
   } catch {
     return basePrompt
   }
@@ -182,6 +182,8 @@ async function enrichSelectedForBrief(sel) {
 function buildBriefPrompt(sel) {
   if (!sel) return 'Brief me.'
   const p = sel.payload || {}
+  const titleParts = (sel?.title || '').split(/\s*[—–-]\s*/)
+  const titleSuffix = titleParts.length > 1 ? titleParts[titleParts.length - 1].trim() : null
   if (sel.kind === 'reply') {
     return `Brief me on this reply from ${p.entity_name || 'prospect'}. Subject/title: "${sel.title}". Detail: "${p.detail || ''}". Arrived ${relativeTime(p.created_at)}. Give me: (1) where we stand with this account, (2) what needs to happen next, (3) a drafted reply — format with Subject: on its own line, then Dear [Name], body, Kind regards. Keep it tight — senior sales leader voice.`
   }
@@ -193,7 +195,7 @@ function buildBriefPrompt(sel) {
     if (d.contact) bits.push(`Contact: ${d.contact}`)
     if (d.dueDate) bits.push(`Due: ${d.dueDate}`)
     if (d.notes) bits.push(`Notes: ${d.notes}`)
-    return `FOCUS: Brief me ONLY on this specific task and the person/company involved. Do NOT give a general pipeline review or mention other deals, tasks, or pipeline health.\n\n${bits.join('\n')}\n\nRespond with ONLY:\n1. WHO is ${d.contact || 'this contact'} — their role, company background, our relationship history, any correspondence to date\n2. DEAL STATUS — current stage, value, timeline, what's happened so far with this specific account\n3. THIS TASK — what needs to happen, why it matters, recommended approach\n4. DRAFT EMAIL — format with Subject: on its own line, then Dear [Name], body, Kind regards\n\nStay focused on ${d.contact || d.company || sel.title} ONLY. Do not discuss other deals, tasks, or give a pipeline overview. Senior sales voice, specific names and dates.`
+    return `I need a focused brief on ONE SPECIFIC PERSON: ${d.contact || titleSuffix || 'the contact'} at ${d.company || 'their company'}.\n\n${bits.join('\n')}\n\nRESPOND WITH ONLY THESE 4 SECTIONS:\n1. WHO — ${d.contact || titleSuffix || 'This person'}: their role, their company, what the company does, our relationship history\n2. DEAL STATUS — current deal stage with ${d.company || 'this company'}, value, last touchpoint date\n3. RECOMMENDED ACTION — what specifically to do for this re-engagement task and why\n4. DRAFT EMAIL — Subject: line, then Dear ${d.contact ? d.contact.split(' ')[0] : '[Name]'}, body, Kind regards\n\nDO NOT mention any other deals, companies, tasks, or pipeline metrics. This is about ${d.contact || d.company || sel.title} ONLY.`
   }
   if (sel.kind === 'deal') {
     return `FOCUS: Brief me ONLY on this specific deal. Do NOT give a general pipeline review.\n\nDeal: ${p.company || p.title}\nStage: ${p.stage}\nValue: ${p.value ? '$' + p.value : 'n/a'}\nDays since activity: ${p.daysSince}\n\nRespond with ONLY:\n1. ACCOUNT STATUS — where we are with ${p.company || p.title} specifically, what's happened, key contacts\n2. NEXT MOVE — the single best action to progress this deal\n3. MARKET SIGNALS — any recent news or signals on this company\n4. DRAFT EMAIL — format with Subject: on its own line, then Dear [Name], body, Kind regards\n\nStay focused on ${p.company || p.title} ONLY. Senior sales voice, specific names and dates.`
