@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-16T15:59:29.106Z",
+  "generated_at": "2026-04-16T16:00:39.330Z",
   "commits": [
+    {
+      "hash": "8eccfe2",
+      "subject": "Nav + KikoFloat overhaul: (1) LegoraTopNav now uses ALL_PAGES master list (9 items including LinkedIn) instead of separate TABS (8) + MORE_ITEMS. Settings writes linkedin to kiko_top_nav_v2 and the re",
+      "when": "56 seconds ago"
+    },
     {
       "hash": "236edc2",
       "subject": "Settings nav + Command Centre enrichment: (1) Renamed 'Race Calendar' → 'Calendar' across Settings Navigation, Layout nav, and PAGE_LABELS map. Consistent with LegoraTopNav which already said Calendar",
-      "when": "33 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "2af3af0",
       "subject": "Theming pass: (1) Command Centre right pane — added max-height: calc(100vh - 140px) + overflow: hidden to .cc-detail. Previously min-height:500px with no max-height caused the detail card to grow past",
-      "when": "47 minutes ago"
+      "when": "48 minutes ago"
     },
     {
       "hash": "d4648a5",
       "subject": "Nav reorder + Pipeline org-click fixes: (1) Layout.getTopNavIds — removed over-aggressive '<4 items = corrupt' guard that was treating legitimate user selections as corrupt data and reverting to defau",
-      "when": "56 minutes ago"
+      "when": "57 minutes ago"
     },
     {
       "hash": "3b1af5a",
       "subject": "HOTFIX: LegoraTopNav TDZ — overflow block referenced 'orderedTabs' before its useState declaration. Moved overflowTabs + moreIsActive + visibleMoreItems calculation BELOW orderedTabs useState. Product",
-      "when": "82 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "67909bc",
@@ -94,11 +99,6 @@
     {
       "hash": "1abc2cb",
       "subject": "Contacts: wire up New contact modal — form state, saveContact handler with reloadKey to refresh list on save, resetForm helper, button onClick, full modal JSX with first/last name row + email + phone ",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "bbbf11e",
-      "subject": "Contacts page: Legora redesign ported to active (was NEW_REDESIGN) — tabular view with hover preview popup, sector tags, status chips, Source Serif 4 header. Company name in each row now routes to /or",
       "when": "5 hours ago"
     }
   ]

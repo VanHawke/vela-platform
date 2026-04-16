@@ -455,11 +455,10 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           style={{
           position: 'fixed', bottom: 88, right: 24, width: panelW,
           zIndex: 100, borderRadius: 24,
-          background: 'rgba(0,0,0,0.03)',
-          backdropFilter: 'blur(40px) saturate(1.5)', WebkitBackdropFilter: 'blur(40px) saturate(1.5)',
-          border: `0.5px solid ${C.border}`,
-          borderTop: `0.5px solid rgba(0,0,0,0.08)`,
-          boxShadow: '0 12px 40px rgba(0,0,0,0.5)' || '0 16px 48px rgba(0,0,0,0.45), 0 4px 16px rgba(0,0,0,0.3), 0 1px 0 rgba(0,0,0,0.03) inset',
+          background: '#FFFFFF',
+          border: `1px solid rgba(0,0,0,0.08)`,
+          borderTop: `1px solid rgba(0,0,0,0.06)`,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
           display: 'flex', flexDirection: 'column',
           maxHeight: 'calc(100vh - 160px)',
           opacity: open ? 1 : 0,
@@ -635,16 +634,16 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           color: '#0A0A0A',
           cursor: 'pointer',
           boxShadow: voiceOpen
-            ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(0,0,0,0.08)'
-            : '0 0 0 3px rgba(0,0,0,0.06), 0 0 28px rgba(0,0,0,0.08), 0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(0,0,0,0.08)',
+            ? '0 0 0 3px rgba(6,214,160,0.08), 0 0 20px rgba(6,214,160,0.10), 0 6px 20px rgba(0,0,0,0.12), inset 0 1px 0 rgba(0,0,0,0.08)'
+            : '0 0 0 3px rgba(0,0,0,0.04), 0 0 16px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.12), inset 0 1px 0 rgba(0,0,0,0.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           overflow: 'hidden',
           transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
           transformOrigin: 'center',
           position: 'relative',
         }}
-          onMouseEnter={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.4)' : 'rgba(0,0,0,0.14)'; e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 5px rgba(6,214,160,0.12), 0 0 40px rgba(6,214,160,0.2), 0 12px 36px rgba(0,0,0,0.5)' : '0 0 0 4px rgba(0,0,0,0.05), 0 0 32px rgba(0,0,0,0.08), 0 12px 36px rgba(0,0,0,0.5)' }}}
-          onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 32px rgba(6,214,160,0.15), 0 8px 28px rgba(0,0,0,0.4)' : '0 0 0 3px rgba(0,0,0,0.03), 0 0 20px rgba(0,0,0,0.05), 0 8px 28px rgba(0,0,0,0.4)' }}}
+          onMouseEnter={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.4)' : 'rgba(0,0,0,0.14)'; e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 4px rgba(6,214,160,0.08), 0 0 24px rgba(6,214,160,0.12), 0 8px 24px rgba(0,0,0,0.14)' : '0 0 0 4px rgba(0,0,0,0.05), 0 0 32px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.14)' }}}
+          onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 3px rgba(6,214,160,0.08), 0 0 20px rgba(6,214,160,0.10), 0 6px 20px rgba(0,0,0,0.12)' : '0 0 0 2px rgba(0,0,0,0.03), 0 0 14px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.12)' }}}
         >
           {voiceOpen
             ? <div style={{ transform: open ? 'rotate(-45deg)' : 'none', transition: 'transform 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><KikoWaveform width={40} height={40} mini volume={0} speaking={voiceSpeaking} /></div>
