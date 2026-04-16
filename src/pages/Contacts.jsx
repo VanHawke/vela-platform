@@ -29,7 +29,9 @@ export default function Contacts({ user }) {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
-  const [sortBy, setSortBy] = useState('recent') // recent | name_asc | name_desc | company_asc
+  const [sortBy, setSortBy] = useState(() => {
+    try { return localStorage.getItem('kiko_contacts_sort') || 'recent' } catch { return 'recent' }
+  }) // recent | name_asc | name_desc | company_asc
   const [hoverContact, setHoverContact] = useState(null)
   const [hoverPos, setHoverPos] = useState({ top: 0, left: 0 })
   const hoverTimer = useRef(null)
@@ -180,7 +182,11 @@ export default function Contacts({ user }) {
             <select
               className="ct-sort"
               value={sortBy}
-              onChange={(e) => { setSortBy(e.target.value); setPage(0) }}
+              onChange={(e) => {
+                setSortBy(e.target.value)
+                setPage(0)
+                try { localStorage.setItem('kiko_contacts_sort', e.target.value) } catch {}
+              }}
               title="Sort contacts"
             >
               <option value="recent">Recent</option>

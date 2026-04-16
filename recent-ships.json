@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-04-16T14:02:47.238Z",
+  "generated_at": "2026-04-16T14:19:46.942Z",
   "commits": [
+    {
+      "hash": "80c8a90",
+      "subject": "Profile pic + all-pages button audit: (1) Layout passes profile prop to LegoraTopNav so user-uploaded profile_photo_url is preferred over Google avatar_url. Initials fallback also now prefers display_",
+      "when": "17 minutes ago"
+    },
     {
       "hash": "83ba952",
       "subject": "Chat + nav UX fixes: (1) Send button (both welcome + chat mode) — was black icon on dark gradient (invisible); now color toggles white when hasContent, muted grey when disabled. (2) Chat title dropdow",
-      "when": "2 minutes ago"
+      "when": "19 minutes ago"
     },
     {
       "hash": "4e9dc9b",
       "subject": "UX batch: (1) + removed from Today/Pipeline (showPlus:false). (2) Admin + Health Centre removed from More dropdown. (3) Settings gets faint divider line above it (item.divider flag + .ltn-dropdown-div",
-      "when": "7 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "ca5ea38",
       "subject": "Fix: Layout getTopNavIds reader guard — stored arrays <4 items treated as corrupt, fall back to defaults (matches the same guard added to LegoraTopNav in commit d0da7b3). DEFAULT_TOP_IDS synced to ALL",
-      "when": "31 minutes ago"
+      "when": "48 minutes ago"
     },
     {
       "hash": "2d52ba3",
       "subject": "HOTFIX: Layout TDZ error — production was blank screen. Moved useUserSettings hook call above the onboarded useEffect that references userSettings. The JS temporal dead zone threw 'Cannot access L bef",
-      "when": "36 minutes ago"
+      "when": "53 minutes ago"
     },
     {
       "hash": "1e4684a",
       "subject": "Perf: NotificationToast uses shared useUserSettings hook. Was firing its own user_settings fetch on every mount (3rd concurrent query alongside Layout's 2 — all firing within 1ms of each other). Now r",
-      "when": "44 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "bd15124",
       "subject": "Perf: useUserSettings shared hook wired into Layout. New src/lib/useUserSettings.js provides dedup cached fetch for user_settings row (same pattern as usePagePermissions). Layout now calls useUserSett",
-      "when": "44 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "58ac7b5",
       "subject": "Perf: usePagePermissions in-flight promise dedup. Three callers (Layout + LegoraTopNav + PermissionGate) mount simultaneously on every route, each firing a /api/user-permissions fetch concurrently (me",
-      "when": "50 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "1de2ae5",
       "subject": "Organisations toolbar + table polish: (1) Top action bar — Add Organisation button label now visible (color #FFFFFF on black bg, was #0A0A0A invisible), switched from pill radius-50 to square radius-4",
-      "when": "87 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "47831dd",
@@ -54,7 +59,7 @@
     {
       "hash": "948d234",
       "subject": "KikoChat: agent-plan style thinking steps. Dark-glass 'Kiko's reasoning' button swapped to Legora white card. Purple dot list replaced with status-aware icons: spinning sage ring for in-progress step,",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "641a449",
@@ -79,26 +84,21 @@
     {
       "hash": "7b0718c",
       "subject": "Chat prompt bar: complete Legora polish. Swap 6 dark glass button backgrounds (rgba(20,20,24,0.65)) to rgba(0,0,0,0.04) + 4 dark gray icon colors #3A3A3E to #6B6B6B + 2 #555558 to #6B6B6B. Outer card ",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "cf01bcd",
       "subject": "Partnership Matrix: aesthetic refresh to Legora tokens. T object swapped (black bg -> warm off-white #FEFEFC, DM Sans -> Inter + Source Serif 4, bright Apple colors -> sage/terra/amber/slate/purple). ",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "21de3a2",
       "subject": "Command Centre: fix Kiko brief streaming — SSE event key is 'delta' not 'text'. Brief now renders in right pane when item selected.",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "bad0fdf",
       "subject": "Command Centre task labelling (use type+contact+company, not generic 'Task'), richer Kiko brief prompt with full task context. Chat-mode prompt bar — now white card matching welcome state, consistent ",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "f0e57cf",
-      "subject": "Command Centre: master-detail rebuild. LEFT 440px — grouped priority list (Overdue, Stale deals, Due this week, Market signals). RIGHT — Kiko brief pane that streams from /api/kiko with selected item ",
       "when": "4 hours ago"
     }
   ]

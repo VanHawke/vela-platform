@@ -183,6 +183,31 @@ export default function Pipeline({ user }) {
   const [dealTasks, setDealTasks] = useState([])
   const [activityNote, setActivityNote] = useState('')
   const [loadingPanel, setLoadingPanel] = useState(false)
+
+  // New deal modal
+  const [showNewDeal, setShowNewDeal] = useState(false)
+  const [newDeal, setNewDeal] = useState({ title: '', company: '', value: '', pipeline: '' })
+  const [savingNewDeal, setSavingNewDeal] = useState(false)
+  const createNewDeal = async () => {
+    if (!newDeal.title.trim()) return
+    setSavingNewDeal(true)
+    const id = `d${Date.now()}`
+    const now = new Date().toISOString()
+    const data = {
+      id,
+      title: newDeal.title.trim(),
+      company: newDeal.company.trim() || '',
+      value: newDeal.value ? Number(String(newDeal.value).replace(/[^\d.]/g, '')) || 0 : 0,
+      pipeline: newDeal.pipeline || (pipelines[0]?.name || ''),
+      stage: STAGES[0].id,
+      created_at: now,
+    }
+    await supabase.from('deals').insert({ id, org_id: ORG_ID, data, updated_at: now })
+    setDeals(prev => [{ _id: id, ...data, updated_at: now }, ...prev])
+    setShowNewDeal(false)
+    setNewDeal({ title: '', company: '', value: '', pipeline: '' })
+    setSavingNewDeal(false)
+  }
   const [savingActivity, setSavingActivity] = useState(false)
 
   // Drag-drop state
@@ -392,7 +417,7 @@ export default function Pipeline({ user }) {
               onSelect={setPipelineFilter}
               onUpdate={setPipelines}
             />
-            <button className="pl-pri-btn">
+            <button className="pl-pri-btn" onClick={() => setShowNewDeal(true)}>
               <Plus size={12} />
               New deal
             </button>
@@ -600,6 +625,33 @@ export default function Pipeline({ user }) {
           </aside>
         )}
       </div>
+
+      {/* NEW DEAL MODAL */}
+      {showNewDeal && (
+        <div onClick={() => setShowNewDeal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 12, width: 420, maxWidth: '92vw', boxShadow: '0 16px 48px rgba(0,0,0,0.15)', fontFamily: 'Inter, system-ui, sans-serif' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px 14px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+              <h3 style={{ margin: 0, fontFamily: "'Source Serif 4', Georgia, serif", fontWeight: 400, fontSize: 18, color: '#0A0A0A' }}>New deal</h3>
+              <button onClick={() => setShowNewDeal(false)} style={{ width: 26, height: 26, border: 'none', background: 'transparent', cursor: 'pointer', color: '#A0A0A0', borderRadius: '50%', display: 'grid', placeItems: 'center' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div style={{ padding: '16px 22px 8px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <input autoFocus placeholder="Deal title *" value={newDeal.title} onChange={e => setNewDeal(p => ({ ...p, title: e.target.value }))} style={{ padding: '9px 12px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 6, fontSize: 13, fontFamily: 'inherit' }} />
+              <input placeholder="Company" value={newDeal.company} onChange={e => setNewDeal(p => ({ ...p, company: e.target.value }))} style={{ padding: '9px 12px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 6, fontSize: 13, fontFamily: 'inherit' }} />
+              <input placeholder="Value (USD)" value={newDeal.value} onChange={e => setNewDeal(p => ({ ...p, value: e.target.value }))} style={{ padding: '9px 12px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 6, fontSize: 13, fontFamily: 'inherit' }} />
+              <select value={newDeal.pipeline} onChange={e => setNewDeal(p => ({ ...p, pipeline: e.target.value }))} style={{ padding: '9px 12px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 6, fontSize: 13, fontFamily: 'inherit', background: '#FFFFFF' }}>
+                <option value="">Pipeline: default</option>
+                {pipelines.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+              </select>
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', padding: '14px 22px 18px' }}>
+              <button onClick={() => setShowNewDeal(false)} style={{ height: 34, padding: '0 16px', borderRadius: 4, background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', color: '#0A0A0A', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Cancel</button>
+              <button onClick={createNewDeal} disabled={savingNewDeal || !newDeal.title.trim()} style={{ height: 34, padding: '0 16px', borderRadius: 4, background: '#0A0A0A', border: '1px solid #0A0A0A', color: '#FFFFFF', fontSize: 13, fontWeight: 500, cursor: savingNewDeal ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: !newDeal.title.trim() ? 0.4 : 1 }}>{savingNewDeal ? 'Creating…' : 'Create deal'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

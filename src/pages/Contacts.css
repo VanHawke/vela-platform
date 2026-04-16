@@ -25,16 +25,18 @@
 .ct button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
 .ct input { font: inherit; color: inherit; background: none; border: none; outline: none; }
 
-.ct-search {
+.ct-search, input.ct-search {
   height: 32px;
   width: 280px;
   padding: 0 12px;
   background: #FFFFFF;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: 4px;
   font-size: 12.5px;
+  transition: border-color 0.15s;
 }
-.ct-search:focus { border-color: #0A0A0A; }
+.ct-search:hover, input.ct-search:hover { border-color: rgba(0,0,0,0.14); }
+.ct-search:focus, input.ct-search:focus { border-color: #0A0A0A; outline: none; }
 
 .ct-pri-btn {
   height: 32px; padding: 0 14px;

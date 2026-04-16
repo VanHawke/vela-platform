@@ -64,12 +64,26 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
     return loc.pathname === path || loc.pathname.startsWith(path + '/')
   }
 
-  const moreIsActive = MORE_ITEMS.some(m => isActive(m.path))
-  const visibleMoreItems = MORE_ITEMS.filter(m => {
-    if (m.adminOnly && !isAdmin) return false
-    if (m.pageKey && !canSee(m.pageKey)) return false
-    return true
-  })
+  // Tabs not in the user's top-nav list should fall through to the More dropdown.
+  // So More = [overflow TABS] + [divider] + [Settings etc.]
+  const overflowTabs = TABS.filter(t => !orderedTabs.some(o => o.id === t.id))
+    .filter(t => !t.pageKey || canSee(t.pageKey))
+
+  const moreIsActive = MORE_ITEMS.some(m => isActive(m.path)) || overflowTabs.some(t => isActive(t.path))
+  const visibleMoreItems = [
+    ...overflowTabs.map(t => ({ id: t.id, label: t.label, path: t.path, pageKey: t.pageKey })),
+    ...MORE_ITEMS.filter(m => {
+      if (m.adminOnly && !isAdmin) return false
+      if (m.pageKey && !canSee(m.pageKey)) return false
+      return true
+    }).map((m, idx, arr) => {
+      // Ensure Settings always has divider when overflow tabs are present above it
+      if (m.id === 'settings' && (overflowTabs.length > 0 || arr.length > 1)) {
+        return { ...m, divider: true }
+      }
+      return m
+    }),
+  ]
 
   // Read custom nav order from Settings (localStorage 'kiko_top_nav_v2')
   const [orderedTabs, setOrderedTabs] = useState(TABS)
