@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-16T13:12:49.724Z",
+  "generated_at": "2026-04-16T13:18:18.643Z",
   "commits": [
+    {
+      "hash": "58ac7b5",
+      "subject": "Perf: usePagePermissions in-flight promise dedup. Three callers (Layout + LegoraTopNav + PermissionGate) mount simultaneously on every route, each firing a /api/user-permissions fetch concurrently (me",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "1de2ae5",
       "subject": "Organisations toolbar + table polish: (1) Top action bar — Add Organisation button label now visible (color #FFFFFF on black bg, was #0A0A0A invisible), switched from pill radius-50 to square radius-4",
-      "when": "37 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "47831dd",
       "subject": "Organisations + KikoChat: Legora polish. Organisations: 34 dark-glass rgba(25,25,25,0.40/0.50) backgrounds swapped to #FFFFFF, removed wasteful blur-on-white on glass/dropdown (saves GPU), swapped 0.4",
-      "when": "51 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "d0da7b3",
       "subject": "Nav + Partnership Matrix fixes: (1) Avatar either/or render — img OR initials, never both. (2) Settings nav defaults synced with LegoraTopNav TABS (all 8 tabs default-on, was only 5 with stale 'sequen",
-      "when": "57 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "948d234",
@@ -44,12 +49,12 @@
     {
       "hash": "7b0718c",
       "subject": "Chat prompt bar: complete Legora polish. Swap 6 dark glass button backgrounds (rgba(20,20,24,0.65)) to rgba(0,0,0,0.04) + 4 dark gray icon colors #3A3A3E to #6B6B6B + 2 #555558 to #6B6B6B. Outer card ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "cf01bcd",
       "subject": "Partnership Matrix: aesthetic refresh to Legora tokens. T object swapped (black bg -> warm off-white #FEFEFC, DM Sans -> Inter + Source Serif 4, bright Apple colors -> sage/terra/amber/slate/purple). ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "21de3a2",
@@ -69,7 +74,7 @@
     {
       "hash": "037a87b",
       "subject": "nav: permission filter (hide pages user can't access), Settings always last in More dropdown, remove KikoCode/Memory from More (Memory stays inside Settings), add Health tab in Settings (super-admin o",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "8dded1f",
@@ -95,11 +100,6 @@
       "hash": "fdf9a2f",
       "subject": "Group A: nav 'Insights' → 'Partnership Matrix', LinkedIn moved to 'More' dropdown (also contains KikoCode + admin-only Memory/Admin/Health), avatar now shows Google profile picture (with fallback chai",
       "when": "6 hours ago"
-    },
-    {
-      "hash": "f00e098",
-      "subject": "fix: revert HomeDashboard from KikoChat (was added without sign-off, changed approved homepage). Restore inbox 2-pane CSS for /command-centre (was overwritten with dashboard CSS, causing unstyled text",
-      "when": "16 hours ago"
     }
   ]
 }

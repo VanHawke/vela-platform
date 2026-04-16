@@ -35,6 +35,7 @@ import NotificationToast from '../kiko/NotificationToast'
 import BackgroundTasksPanel from '../kiko/BackgroundTasksPanel'
 import OnboardingModal from '../onboarding/OnboardingModal'
 import { usePagePermissions } from '@/lib/usePagePermissions'
+import { useUserSettings } from '@/lib/useUserSettings'
 import { useOrg } from '@/contexts/OrgContext'
 import KikoVoice from '../kiko/KikoVoice'
 import KikoToast from '../kiko/KikoToast'
@@ -117,10 +118,12 @@ export default function Layout({ user }) {
 
   // Onboarding check — show modal for users who haven't completed onboarding
   useEffect(() => {
-    if (!user?.id) return
-    supabase.from('user_settings').select('onboarded').eq('user_id', user.id).maybeSingle()
-      .then(({ data }) => { if (!data?.onboarded) setShowOnboarding(true) })
-  }, [user?.id])
+    if (!userSettings) return
+    if (userSettings.onboarded === false) setShowOnboarding(true)
+  }, [userSettings?.onboarded])
+
+  // Shared user_settings fetch — dedups across Layout + NotificationToast + OnboardingModal
+  const { row: userSettings } = useUserSettings(user)
 
   // Page permissions — filter nav items based on user's role + per-user overrides
   const userOrgIdNew = '2c6b30da-2d1a-45e5-bbeb-dee1671deba3' // TODO: resolve dynamically when multi-org
@@ -163,15 +166,24 @@ export default function Layout({ user }) {
 
   useEffect(() => {
     if (!user?.id) return
+    // Pull profile fields from the shared user_settings row (already deduped by useUserSettings)
+    if (userSettings && userSettings.user_id) {
+      setProfile({
+        first_name: userSettings.first_name,
+        last_name: userSettings.last_name,
+        display_name: userSettings.display_name,
+        profile_photo_url: userSettings.profile_photo_url,
+      })
+    }
+    // Re-fetch on explicit profile-updated event (e.g. after uploading new photo)
     const load = () => {
       supabase.from('user_settings').select('first_name, last_name, display_name, profile_photo_url')
         .eq('user_id', user.id).single()
         .then(({ data }) => { if (data) setProfile(data) })
     }
-    load()
     window.addEventListener('kiko_profile_updated', load)
     return () => window.removeEventListener('kiko_profile_updated', load)
-  }, [user?.id])
+  }, [user?.id, userSettings])
 
   // Close avatar dropdown on outside click
   useEffect(() => {
