@@ -1,50 +1,55 @@
 {
-  "generated_at": "2026-04-16T14:36:59.233Z",
+  "generated_at": "2026-04-16T15:02:51.692Z",
   "commits": [
+    {
+      "hash": "3b1af5a",
+      "subject": "HOTFIX: LegoraTopNav TDZ — overflow block referenced 'orderedTabs' before its useState declaration. Moved overflowTabs + moreIsActive + visibleMoreItems calculation BELOW orderedTabs useState. Product",
+      "when": "26 minutes ago"
+    },
     {
       "hash": "67909bc",
       "subject": "Batch: (1) Pipeline — New deal button wired up with full Legora white-card modal (title/company/value/pipeline dropdown), inserts to deals table with STAGES[0].id default + correct JSONB shape + ORG_I",
-      "when": "17 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "80c8a90",
       "subject": "Profile pic + all-pages button audit: (1) Layout passes profile prop to LegoraTopNav so user-uploaded profile_photo_url is preferred over Google avatar_url. Initials fallback also now prefers display_",
-      "when": "34 minutes ago"
+      "when": "60 minutes ago"
     },
     {
       "hash": "83ba952",
       "subject": "Chat + nav UX fixes: (1) Send button (both welcome + chat mode) — was black icon on dark gradient (invisible); now color toggles white when hasContent, muted grey when disabled. (2) Chat title dropdow",
-      "when": "36 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "4e9dc9b",
       "subject": "UX batch: (1) + removed from Today/Pipeline (showPlus:false). (2) Admin + Health Centre removed from More dropdown. (3) Settings gets faint divider line above it (item.divider flag + .ltn-dropdown-div",
-      "when": "41 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "ca5ea38",
       "subject": "Fix: Layout getTopNavIds reader guard — stored arrays <4 items treated as corrupt, fall back to defaults (matches the same guard added to LegoraTopNav in commit d0da7b3). DEFAULT_TOP_IDS synced to ALL",
-      "when": "65 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "2d52ba3",
       "subject": "HOTFIX: Layout TDZ error — production was blank screen. Moved useUserSettings hook call above the onboarded useEffect that references userSettings. The JS temporal dead zone threw 'Cannot access L bef",
-      "when": "70 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "1e4684a",
       "subject": "Perf: NotificationToast uses shared useUserSettings hook. Was firing its own user_settings fetch on every mount (3rd concurrent query alongside Layout's 2 — all firing within 1ms of each other). Now r",
-      "when": "78 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "bd15124",
       "subject": "Perf: useUserSettings shared hook wired into Layout. New src/lib/useUserSettings.js provides dedup cached fetch for user_settings row (same pattern as usePagePermissions). Layout now calls useUserSett",
-      "when": "79 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "58ac7b5",
       "subject": "Perf: usePagePermissions in-flight promise dedup. Three callers (Layout + LegoraTopNav + PermissionGate) mount simultaneously on every route, each firing a /api/user-permissions fetch concurrently (me",
-      "when": "84 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "1de2ae5",
@@ -54,12 +59,12 @@
     {
       "hash": "47831dd",
       "subject": "Organisations + KikoChat: Legora polish. Organisations: 34 dark-glass rgba(25,25,25,0.40/0.50) backgrounds swapped to #FFFFFF, removed wasteful blur-on-white on glass/dropdown (saves GPU), swapped 0.4",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "d0da7b3",
       "subject": "Nav + Partnership Matrix fixes: (1) Avatar either/or render — img OR initials, never both. (2) Settings nav defaults synced with LegoraTopNav TABS (all 8 tabs default-on, was only 5 with stale 'sequen",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "948d234",
@@ -69,22 +74,22 @@
     {
       "hash": "641a449",
       "subject": "Calendar redesign: signed-off race spine + outreach intelligence port swapped to active (was NEW_REDESIGN.jsx). Uses Legora tokens (white bg, Source Serif 4, sage/terra/amber/purple for F1/FE/MotoGP/W",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "1abc2cb",
       "subject": "Contacts: wire up New contact modal — form state, saveContact handler with reloadKey to refresh list on save, resetForm helper, button onClick, full modal JSX with first/last name row + email + phone ",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "bbbf11e",
       "subject": "Contacts page: Legora redesign ported to active (was NEW_REDESIGN) — tabular view with hover preview popup, sector tags, status chips, Source Serif 4 header. Company name in each row now routes to /or",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "36cf605",
       "subject": "Partnership Matrix: fix active tab black-on-black (color:#FFFFFF when active on T.accent pill) + Add-partnership modal from dark glass to Legora white card with light border",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "7b0718c",
@@ -94,11 +99,6 @@
     {
       "hash": "cf01bcd",
       "subject": "Partnership Matrix: aesthetic refresh to Legora tokens. T object swapped (black bg -> warm off-white #FEFEFC, DM Sans -> Inter + Source Serif 4, bright Apple colors -> sage/terra/amber/slate/purple). ",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "21de3a2",
-      "subject": "Command Centre: fix Kiko brief streaming — SSE event key is 'delta' not 'text'. Brief now renders in right pane when item selected.",
       "when": "4 hours ago"
     }
   ]

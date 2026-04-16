@@ -322,13 +322,16 @@ export default function Pipeline({ user }) {
     setDealCompany(null); setDealContacts([]); setDealCampaigns([]); setDealTasks([])
 
     try {
-      // Find company by name
+      // Find company by name — fuzzy match (trim + lowercase + starts-with fallback)
       if (deal.company) {
         const { data: companies } = await supabase
           .from('companies')
           .select('id, data, updated_at')
           .eq('org_id', ORG_ID)
-        const match = (companies || []).find(c => (c.data?.name || '').toLowerCase() === deal.company.toLowerCase())
+        const needle = deal.company.toLowerCase().trim()
+        const match =
+          (companies || []).find(c => (c.data?.name || '').toLowerCase().trim() === needle) ||
+          (companies || []).find(c => { const n = (c.data?.name || '').toLowerCase().trim(); return n && (n.startsWith(needle) || needle.startsWith(n)) })
         if (match) {
           setDealCompany({ id: match.id, ...match.data })
 
@@ -486,9 +489,12 @@ export default function Pipeline({ user }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
                 <div
                   className="pl-panel-mark"
-                  onClick={() => dealCompany && nav(`/organisations?org=${dealCompany.id}`)}
-                  style={{ cursor: dealCompany ? 'pointer' : 'default' }}
-                  title={dealCompany ? 'Open organisation' : ''}
+                  onClick={() => {
+                    if (dealCompany) nav(`/organisations?org=${dealCompany.id}`)
+                    else if (selectedDeal?.company) nav(`/organisations?q=${encodeURIComponent(selectedDeal.company)}`)
+                  }}
+                  style={{ cursor: (dealCompany || selectedDeal?.company) ? 'pointer' : 'default' }}
+                  title={dealCompany ? 'Open organisation' : selectedDeal?.company ? 'Search organisations' : ''}
                 >
                   {companyDomains[selectedDeal.company] ? (
                     <img
@@ -503,9 +509,12 @@ export default function Pipeline({ user }) {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <h2
                     className="pl-panel-title"
-                    onClick={() => dealCompany && nav(`/organisations?org=${dealCompany.id}`)}
-                    style={{ cursor: dealCompany ? 'pointer' : 'default' }}
-                    title={dealCompany ? 'Open organisation' : ''}
+                    onClick={() => {
+                      if (dealCompany) nav(`/organisations?org=${dealCompany.id}`)
+                      else if (selectedDeal?.company) nav(`/organisations?q=${encodeURIComponent(selectedDeal.company)}`)
+                    }}
+                    style={{ cursor: (dealCompany || selectedDeal?.company) ? 'pointer' : 'default' }}
+                    title={dealCompany ? 'Open organisation' : selectedDeal?.company ? 'Search organisations' : ''}
                   >
                     {selectedDeal.company || selectedDeal.title}
                   </h2>

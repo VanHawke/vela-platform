@@ -74,8 +74,14 @@ export default function Organisations({ user }) {
   useEffect(() => { if (user?.id) load() }, [user?.id])
 
   // Auto-open org from query param (e.g. from Pipeline or ContactDetail clickthrough)
+  // Also supports ?q=company+name fallback which pre-fills the search filter
   useEffect(() => {
     const orgParam = searchParams.get('org')
+    const qParam = searchParams.get('q')
+    if (qParam && !orgParam) {
+      // Pre-fill search filter — user can pick the right org
+      try { setSearch(qParam) } catch {}
+    }
     if (orgParam && companies.length > 0 && !selectedOrg) {
       const found = companies.find(c => c.id === orgParam)
       if (found) {

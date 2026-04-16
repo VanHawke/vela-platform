@@ -66,6 +66,9 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
 
   // Read custom nav order from Settings (localStorage 'kiko_top_nav_v2')
   const [orderedTabs, setOrderedTabs] = useState(TABS)
+  const [moreOrder, setMoreOrder] = useState(() => {
+    try { const s = localStorage.getItem('kiko_more_order'); return s ? JSON.parse(s) : null } catch { return null }
+  })
   useEffect(() => {
     const applyOrder = () => {
       try {
@@ -90,11 +93,18 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
     }
     applyOrder()
     const onUpdate = () => applyOrder()
+    const onMoreUpdate = () => {
+      try { const s = localStorage.getItem('kiko_more_order'); setMoreOrder(s ? JSON.parse(s) : null) } catch {}
+    }
     window.addEventListener('kiko_top_nav_updated', onUpdate)
+    window.addEventListener('kiko_more_order_updated', onMoreUpdate)
     window.addEventListener('storage', onUpdate)
+    window.addEventListener('storage', onMoreUpdate)
     return () => {
       window.removeEventListener('kiko_top_nav_updated', onUpdate)
+      window.removeEventListener('kiko_more_order_updated', onMoreUpdate)
       window.removeEventListener('storage', onUpdate)
+      window.removeEventListener('storage', onMoreUpdate)
     }
   }, [])
 
@@ -105,8 +115,15 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
 
   // Tabs not in the user's top-nav list should fall through to the More dropdown.
   // IMPORTANT: This must be declared AFTER `orderedTabs` useState (TDZ) — it reads orderedTabs.
-  const overflowTabs = TABS.filter(t => !orderedTabs.some(o => o.id === t.id))
+  const overflowTabsRaw = TABS.filter(t => !orderedTabs.some(o => o.id === t.id))
     .filter(t => !t.pageKey || canSee(t.pageKey))
+  // Apply user's More-order preference (from Settings → Navigation → More Dropdown Order)
+  const overflowTabs = moreOrder && moreOrder.length > 0
+    ? [...overflowTabsRaw].sort((a, b) => {
+        const ai = moreOrder.indexOf(a.id); const bi = moreOrder.indexOf(b.id)
+        return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi)
+      })
+    : overflowTabsRaw
 
   const moreIsActive = MORE_ITEMS.some(m => isActive(m.path)) || overflowTabs.some(t => isActive(t.path))
   const visibleMoreItems = [

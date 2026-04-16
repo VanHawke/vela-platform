@@ -73,16 +73,15 @@ function getTopNavIds() {
     if (s) {
       const parsed = JSON.parse(s)
       if (!Array.isArray(parsed)) return DEFAULT_TOP_IDS
-      // Guard: stored arrays with fewer than 4 items are almost certainly corrupt
-      // (user accidentally toggled everything off, bad migration, etc.) — use defaults
-      if (parsed.length < 4) return DEFAULT_TOP_IDS
       // Remove stale items that no longer exist in nav
       const cleaned = parsed.filter(id => VALID_NAV_IDS.has(id))
+      // If user legitimately cleared down to even 1 item, respect it (was previously <4 treated as corrupt).
+      // Only fall back to defaults if the list is genuinely empty.
+      if (cleaned.length === 0) return DEFAULT_TOP_IDS
       if (cleaned.length !== parsed.length) {
-        localStorage.setItem('kiko_top_nav_v2', JSON.stringify(cleaned.length > 0 ? cleaned : DEFAULT_TOP_IDS))
-        return cleaned.length > 0 ? cleaned : DEFAULT_TOP_IDS
+        localStorage.setItem(TOP_NAV_STORAGE_KEY, JSON.stringify(cleaned))
       }
-      return parsed
+      return cleaned
     }
   } catch {}
   return DEFAULT_TOP_IDS
