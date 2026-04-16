@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-16T11:12:33.675Z",
+  "generated_at": "2026-04-16T11:27:48.982Z",
   "commits": [
+    {
+      "hash": "bbbf11e",
+      "subject": "Contacts page: Legora redesign ported to active (was NEW_REDESIGN) — tabular view with hover preview popup, sector tags, status chips, Source Serif 4 header. Company name in each row now routes to /or",
+      "when": "15 minutes ago"
+    },
     {
       "hash": "36cf605",
       "subject": "Partnership Matrix: fix active tab black-on-black (color:#FFFFFF when active on T.accent pill) + Add-partnership modal from dark glass to Legora white card with light border",
-      "when": "2 minutes ago"
+      "when": "17 minutes ago"
     },
     {
       "hash": "7b0718c",
       "subject": "Chat prompt bar: complete Legora polish. Swap 6 dark glass button backgrounds (rgba(20,20,24,0.65)) to rgba(0,0,0,0.04) + 4 dark gray icon colors #3A3A3E to #6B6B6B + 2 #555558 to #6B6B6B. Outer card ",
-      "when": "26 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "cf01bcd",
       "subject": "Partnership Matrix: aesthetic refresh to Legora tokens. T object swapped (black bg -> warm off-white #FEFEFC, DM Sans -> Inter + Source Serif 4, bright Apple colors -> sage/terra/amber/slate/purple). ",
-      "when": "28 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "21de3a2",
       "subject": "Command Centre: fix Kiko brief streaming — SSE event key is 'delta' not 'text'. Brief now renders in right pane when item selected.",
-      "when": "33 minutes ago"
+      "when": "49 minutes ago"
     },
     {
       "hash": "bad0fdf",
       "subject": "Command Centre task labelling (use type+contact+company, not generic 'Task'), richer Kiko brief prompt with full task context. Chat-mode prompt bar — now white card matching welcome state, consistent ",
-      "when": "47 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "f0e57cf",
       "subject": "Command Centre: master-detail rebuild. LEFT 440px — grouped priority list (Overdue, Stale deals, Due this week, Market signals). RIGHT — Kiko brief pane that streams from /api/kiko with selected item ",
-      "when": "71 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "037a87b",
       "subject": "nav: permission filter (hide pages user can't access), Settings always last in More dropdown, remove KikoCode/Memory from More (Memory stays inside Settings), add Health tab in Settings (super-admin o",
-      "when": "87 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "8dded1f",
@@ -89,16 +94,11 @@
     {
       "hash": "37ee383",
       "subject": "fix: Pipeline rebuilt the right way — Legora design + full OLD plumbing wired through. NEW: page header, stage columns, deal cards (Legora aesthetic). RESTORED: Pipeline Manager dropdown (multiple pip",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "a99bb0a",
       "subject": "polish: Pipeline stage columns + deal cards restyled to Legora aesthetic — light backgrounds (#FAFAF7 columns, #FFFFFF cards), proper borders (rgba(0,0,0,0.06-0.08)), subtle shadows, clean hover lift.",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "cba44c7",
-      "subject": "fix: restore working OLD pages — redesign rebuilt from scratch and lost ~50-78% of functionality. Pipeline gets back its 7 stages, manager dropdown, deal detail panel; Inbox/Command Centre gets back r",
       "when": "15 hours ago"
     }
   ]
