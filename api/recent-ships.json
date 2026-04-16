@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-16T10:44:45.698Z",
+  "generated_at": "2026-04-16T10:46:06.103Z",
   "commits": [
+    {
+      "hash": "cf01bcd",
+      "subject": "Partnership Matrix: aesthetic refresh to Legora tokens. T object swapped (black bg -> warm off-white #FEFEFC, DM Sans -> Inter + Source Serif 4, bright Apple colors -> sage/terra/amber/slate/purple). ",
+      "when": "72 seconds ago"
+    },
     {
       "hash": "21de3a2",
       "subject": "Command Centre: fix Kiko brief streaming — SSE event key is 'delta' not 'text'. Brief now renders in right pane when item selected.",
-      "when": "6 minutes ago"
+      "when": "7 minutes ago"
     },
     {
       "hash": "bad0fdf",
       "subject": "Command Centre task labelling (use type+contact+company, not generic 'Task'), richer Kiko brief prompt with full task context. Chat-mode prompt bar — now white card matching welcome state, consistent ",
-      "when": "19 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "f0e57cf",
       "subject": "Command Centre: master-detail rebuild. LEFT 440px — grouped priority list (Overdue, Stale deals, Due this week, Market signals). RIGHT — Kiko brief pane that streams from /api/kiko with selected item ",
-      "when": "43 minutes ago"
+      "when": "45 minutes ago"
     },
     {
       "hash": "037a87b",
       "subject": "nav: permission filter (hide pages user can't access), Settings always last in More dropdown, remove KikoCode/Memory from More (Memory stays inside Settings), add Health tab in Settings (super-admin o",
-      "when": "60 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "8dded1f",
       "subject": "Command Centre rebuilt: Hot Replies band top (email/LinkedIn when webhooks fire) + Priority Deals left + Tasks/Signals right. Real data from deals/tasks/kiko_alerts. Legora design. Replaces experiment",
-      "when": "83 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "4978b81",
@@ -94,11 +99,6 @@
     {
       "hash": "6f1ce29",
       "subject": "fix: cron-compute-outreach-windows — table is kiko_user_config not user_config",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "f32286e",
-      "subject": "Merge redesign/legora — Legora aesthetic redesign (16 commits): all 8 main pages ported, 12 Settings tabs, Homepage feature tiles, Supabase outreach intelligence tables + nightly cron, real metrics wi",
       "when": "14 hours ago"
     }
   ]
