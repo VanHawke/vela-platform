@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-16T09:44:57.641Z",
+  "generated_at": "2026-04-16T10:01:07.349Z",
   "commits": [
+    {
+      "hash": "037a87b",
+      "subject": "nav: permission filter (hide pages user can't access), Settings always last in More dropdown, remove KikoCode/Memory from More (Memory stays inside Settings), add Health tab in Settings (super-admin o",
+      "when": "16 minutes ago"
+    },
     {
       "hash": "8dded1f",
       "subject": "Command Centre rebuilt: Hot Replies band top (email/LinkedIn when webhooks fire) + Priority Deals left + Tasks/Signals right. Real data from deals/tasks/kiko_alerts. Legora design. Replaces experiment",
-      "when": "24 minutes ago"
+      "when": "40 minutes ago"
     },
     {
       "hash": "4978b81",
       "subject": "Pipeline: deal panel company title + favicon mark now clickable — routes to /organisations?org=<id> and auto-selects that org. Hover shows underline. Contact rows already routed to /contacts/:id.",
-      "when": "31 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "37df539",
       "subject": "Homepage: white card prompt bar (welcome only), sage alerts pill (permanent leftmost), 4 dynamic chips, remove feature tiles — matches signed-off kiko-home-nav-c.html. Chat mode prompt bar styling unc",
-      "when": "35 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "7ee5d96",
       "subject": "Group A: nav + identity — 1) 'Insights' renamed to 'Partnership Matrix', 2) 'More' dropdown restored with Settings/LinkedIn/KikoCode and admin items (Memory/Admin/Health), 3) avatar with Google fallba",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "fdf9a2f",
       "subject": "Group A: nav 'Insights' → 'Partnership Matrix', LinkedIn moved to 'More' dropdown (also contains KikoCode + admin-only Memory/Admin/Health), avatar now shows Google profile picture (with fallback chai",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f00e098",
@@ -74,12 +79,12 @@
     {
       "hash": "6f1ce29",
       "subject": "fix: cron-compute-outreach-windows — table is kiko_user_config not user_config",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "f32286e",
       "subject": "Merge redesign/legora — Legora aesthetic redesign (16 commits): all 8 main pages ported, 12 Settings tabs, Homepage feature tiles, Supabase outreach intelligence tables + nightly cron, real metrics wi",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "4572634",
@@ -94,11 +99,6 @@
     {
       "hash": "38e456a",
       "subject": "redesign: Homepage feature tiles — 4 large sage/slate/terra/purple feature tiles below chips, Word Add-in pattern, each fires a starter prompt to Kiko",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "e791ab4",
-      "subject": "redesign: Settings — final 8 panels built (Password/Security/Members/Branding/Memory/Voice/Plan/Invoices). All 12 Settings tabs now functional.",
       "when": "14 hours ago"
     }
   ]
