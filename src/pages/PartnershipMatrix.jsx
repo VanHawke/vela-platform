@@ -136,7 +136,7 @@ export default function PartnershipMatrix({ user }) {
           {TABS.map(t => { const I = t.icon; return (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
               display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: T.font, fontSize: 13, fontWeight: tab === t.id ? 600 : 400, transition: 'all 0.15s',
-              background: tab === t.id ? T.accent : 'transparent', color: tab === t.id ? '#0A0A0A' : T.textSecondary,
+              background: tab === t.id ? T.accent : 'transparent', color: tab === t.id ? '#FFFFFF' : T.textSecondary,
             }}><I size={13} />{t.label}</button>
           )})}
         </div>
@@ -145,7 +145,7 @@ export default function PartnershipMatrix({ user }) {
       {/* Add Modal */}
       {showAdd && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowAdd(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: 'rgba(25,25,25,0.50)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', borderRadius: 20, padding: 20, width: 360, border: '0.5px solid rgba(0,0,0,0.08)', boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.05), 0 16px 64px rgba(0,0,0,0.5)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#FFFFFF', borderRadius: 12, padding: 20, width: 360, border: `1px solid ${T.border}`, boxShadow: '0 16px 48px rgba(0,0,0,0.12)' }}>
             <h3 style={{ fontSize: 15, fontWeight: 400, margin: '0 0 12px' }}>Add Partnership</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <select value={addForm.team_id} onChange={e => setAddForm(p => ({ ...p, team_id: e.target.value }))} style={{ fontSize: 13, padding: '6px 8px', borderRadius: 6, border: `1px solid ${T.border}`, fontFamily: T.font }}>
