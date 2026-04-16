@@ -269,9 +269,9 @@ export default function PartnershipMatrix({ user }) {
                       </p>
                     </div>
                     <div style={{ display: 'flex', gap: 6 }}>
-                      <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 50, background: T.filled, color: '#166534', fontWeight: 500 }}>{tp.length} partners</span>
+                      <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 50, background: T.filled, color: T.green, fontWeight: 500 }}>{tp.length} partners</span>
                       <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 50, background: T.accentSoft, color: T.textSecondary, fontWeight: 500 }}>{filled.length}/{categories.length} categories</span>
-                      {gaps.length > 0 && <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 50, background: T.gap, color: '#991B1B', fontWeight: 500 }}>{gaps.length} gaps</span>}
+                      {gaps.length > 0 && <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 50, background: T.gap, color: T.red, fontWeight: 500 }}>{gaps.length} gaps</span>}
                     </div>
                   </div>
 
@@ -294,12 +294,12 @@ export default function PartnershipMatrix({ user }) {
                   {/* Gaps section */}
                   {gaps.length > 0 && (
                     <div style={{ background: T.gap, borderRadius: 14, padding: 14, border: `1px solid ${T.gapBorder}` }}>
-                      <p style={{ fontSize: 11, fontWeight: 400, color: '#991B1B', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 8px' }}>
+                      <p style={{ fontSize: 11, fontWeight: 500, color: T.red, textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 8px' }}>
                         {gaps.length} open categories — Van Hawke targeting opportunity
                       </p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                         {gaps.map(c => (
-                          <span key={c.id} style={{ fontSize: 12, padding: '3px 10px', borderRadius: 6, background: '#6B6B6B', color: '#991B1B', border: '1px solid rgba(226,75,74,0.2)', fontWeight: 500 }}>{c.name}</span>
+                          <span key={c.id} style={{ fontSize: 12, padding: '3px 10px', borderRadius: 6, background: '#FFFFFF', color: T.red, border: `1px solid ${T.gapBorder}`, fontWeight: 500 }}>{c.name}</span>
                         ))}
                       </div>
                     </div>

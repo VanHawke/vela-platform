@@ -25,10 +25,11 @@ function initials(name) {
 export default function Contacts({ user }) {
   const nav = useNavigate()
   const [contacts, setContacts] = useState([])
-  const [companyIdByName, setCompanyIdByName] = useState({}) // { "Citi": "org123", ... }
+  const [companyIdByName, setCompanyIdByName] = useState({}) // { "citi": "org123", ... }
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
+  const [sortBy, setSortBy] = useState('recent') // recent | name_asc | name_desc | company_asc
   const [hoverContact, setHoverContact] = useState(null)
   const [hoverPos, setHoverPos] = useState({ top: 0, left: 0 })
   const hoverTimer = useRef(null)
@@ -60,37 +61,26 @@ export default function Contacts({ user }) {
     let cancelled = false
     ;(async () => {
       setLoading(true)
-      // Parallel fetch — contacts (paginated) + companies (for id lookup)
-      const [contactsRes, companiesRes] = await Promise.all([
-        (async () => {
-          let all = []
-          let from = 0
-          const batch = 1000
-          while (true) {
-            const { data } = await supabase
-              .from('contacts')
-              .select('*')
-              .order('updated_at', { ascending: false })
-              .range(from, from + batch - 1)
-            if (!data || data.length === 0) break
-            all = all.concat(data)
-            if (data.length < batch) break
-            from += batch
-          }
-          return all
-        })(),
-        supabase.from('companies').select('id, data'),
-      ])
+      // CRITICAL PATH: just contacts, capped at 500 rows. No blocking companies fetch.
+      const { data: contactsData } = await supabase
+        .from('contacts')
+        .select('*')
+        .order('updated_at', { ascending: false })
+        .limit(500)
       if (cancelled) return
-      setContacts(contactsRes || [])
-      // Build name -> id map. Lowercased for case-insensitive match.
-      const map = {}
-      ;(companiesRes.data || []).forEach(c => {
-        const name = c.data?.name
-        if (name) map[name.toLowerCase().trim()] = c.id
-      })
-      setCompanyIdByName(map)
+      setContacts(contactsData || [])
       setLoading(false)
+      // OFF CRITICAL PATH: load companies lookup map lazily for company→org linking.
+      // Failing to load won't block the page; company links just stay as plain text.
+      supabase.from('companies').select('id, data').then(({ data: companiesData }) => {
+        if (cancelled) return
+        const map = {}
+        ;(companiesData || []).forEach(c => {
+          const n = c.data?.name
+          if (n) map[n.toLowerCase().trim()] = c.id
+        })
+        setCompanyIdByName(map)
+      })
     })()
     return () => { cancelled = true }
   }, [user?.id, reloadKey])
@@ -113,21 +103,27 @@ export default function Contacts({ user }) {
         _raw: c,
       }
     })
-    if (!search) return normalized
     const q = search.toLowerCase()
-    return normalized.filter(c =>
+    const matched = !search ? normalized : normalized.filter(c =>
       c.name.toLowerCase().includes(q) ||
       c.company.toLowerCase().includes(q) ||
       c.email.toLowerCase().includes(q) ||
       c.title.toLowerCase().includes(q)
     )
-  }, [contacts, search])
+    // Apply sort
+    const sorted = [...matched]
+    if (sortBy === 'name_asc') sorted.sort((a, b) => a.name.localeCompare(b.name))
+    else if (sortBy === 'name_desc') sorted.sort((a, b) => b.name.localeCompare(a.name))
+    else if (sortBy === 'company_asc') sorted.sort((a, b) => (a.company || 'zz').localeCompare(b.company || 'zz'))
+    // 'recent' is the default order from the query (updated_at desc)
+    return sorted
+  }, [contacts, search, sortBy])
 
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
 
-
-  const display = paged.length > 0 ? paged : MOCK_CONTACTS
+  // No MOCK fallback — real data only. Empty state rendered below when filtered is empty.
+  const display = paged
 
   // Hover preview popup positioning
   const onRowEnter = (c, e) => {
@@ -162,6 +158,17 @@ export default function Contacts({ user }) {
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(0) }}
             />
+            <select
+              className="ct-sort"
+              value={sortBy}
+              onChange={(e) => { setSortBy(e.target.value); setPage(0) }}
+              title="Sort contacts"
+            >
+              <option value="recent">Recent</option>
+              <option value="name_asc">Name A–Z</option>
+              <option value="name_desc">Name Z–A</option>
+              <option value="company_asc">Company A–Z</option>
+            </select>
             <button className="ct-pri-btn" onClick={() => setShowForm(true)}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -218,6 +225,15 @@ export default function Contacts({ user }) {
             })}
           </tbody>
         </table>
+
+        {!loading && filtered.length === 0 && (
+          <div className="ct-empty">
+            {search
+              ? <>No contacts match "<strong>{search}</strong>". Try a different search or <button className="ct-empty-link" onClick={() => setSearch('')}>clear</button>.</>
+              : <>No contacts yet. Click <strong>+ New contact</strong> to add one.</>
+            }
+          </div>
+        )}
 
         {filtered.length > PAGE_SIZE && (
           <div className="ct-pager">

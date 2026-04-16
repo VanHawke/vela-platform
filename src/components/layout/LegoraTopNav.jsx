@@ -82,6 +82,9 @@ export default function LegoraTopNav({ user, customLogo, onSearchClick, onNotifi
         if (!stored) { setOrderedTabs(TABS); return }
         const ids = JSON.parse(stored)
         if (!Array.isArray(ids)) { setOrderedTabs(TABS); return }
+        // Guard: stored array with fewer than 4 items is almost certainly corrupt
+        // (user accidentally toggled everything off, bad migration, etc.) — fall back to defaults
+        if (ids.length < 4) { setOrderedTabs(TABS); return }
         // Resolve stored IDs to TAB entries using aliases, preserve order, append missing tabs at end
         const resolved = ids
           .map(id => TABS.find(t => t.id === id || (t.aliases && t.aliases.includes(id))))
@@ -188,10 +191,16 @@ export default function LegoraTopNav({ user, customLogo, onSearchClick, onNotifi
                 src={avatarUrl}
                 alt=""
                 referrerPolicy="no-referrer"
-                onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement.classList.add('ltn-avatar-fallback') }}
+                onError={(e) => {
+                  // Image load failed — hide img and reveal initials fallback
+                  e.currentTarget.style.display = 'none'
+                  const parent = e.currentTarget.parentElement
+                  if (parent) parent.classList.add('ltn-avatar-fallback')
+                }}
               />
-            ) : null}
-            <span className="ltn-avatar-initials">{initials}</span>
+            ) : (
+              <span className="ltn-avatar-initials">{initials}</span>
+            )}
           </button>
           {avatarOpen && (
             <div className="ltn-dropdown ltn-dropdown-right">
