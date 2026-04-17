@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-17T17:58:30.759Z",
+  "generated_at": "2026-04-17T18:18:43.079Z",
   "commits": [
+    {
+      "hash": "9602d0f",
+      "subject": "SequenceDetail full Legora theme alignment: 81 style fixes. (1) All 0.5px borders → 1px solid. (2) All Tailwind danger colors (rgba 248,113,113) → Legora terra (rgba 184,100,62). (3) All Tailwind ambe",
+      "when": "20 minutes ago"
+    },
     {
       "hash": "6f2fc54",
       "subject": "Prospect detail panel + campaign overview analytics: (1) Clicking any prospect name in the campaign table opens a right-side detail panel showing: contact header (name, title, company, email, status b",
-      "when": "42 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "19acd2a",
@@ -19,7 +24,7 @@
     {
       "hash": "fd045b3",
       "subject": "Fix: Accounts tab now visible to all users (was super_admin only). Every user needs to connect their own Google + LinkedIn — these are personal account connections, not admin settings. Matt can now ac",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "95d886e",
@@ -39,17 +44,17 @@
     {
       "hash": "4bffa98",
       "subject": "RAG debug: lower threshold to 0.15, add query_dims to response",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "f352669",
       "subject": "Fix RAG: lowered match threshold to 0.3, fixed match_embeddings RPC to accept text input and cast to vector internally. All 15 domains embedded (35 chunks).",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "2ce0721",
       "subject": "Rewrite embed.js with health check + better error handling",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "e963183",
@@ -69,12 +74,12 @@
     {
       "hash": "b0229d9",
       "subject": "MotoGP/WEC calendars + pipeline analytics: (1) MotoGP 2026 — 21 races (Thai GP through Valencian GP, Qatar postponed to Nov 8 due to Iran war). (2) WEC 2026 — 8 rounds (Imola through Bahrain, Qatar re",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "0369620",
       "subject": "LinkedIn connect + 3 bug fixes + knowledge versioning: (1) LinkedIn connection in Settings → Accounts — blue Connect button, 3-step guided flow (open LinkedIn, find li_at cookie, paste), stores in use",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "aec500e",
@@ -84,21 +89,16 @@
     {
       "hash": "fc7c2e3",
       "subject": "Final session documentation update: KIKO_SESSION_BRIEF.md updated with all 40+ commits from marathon session. Recent changes expanded to 22 items. Backlog trimmed — voice stability, LinkedIn enrichmen",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "0cd344d",
       "subject": "Voice stability: auto-reconnect + health heartbeat + status indicator. (1) Auto-reconnect on WebRTC failure — up to 3 retries with exponential backoff (2s, 4s, 8s). Cleans up old connection before rec",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "4a22311",
       "subject": "Audit fix: calendar intent regex expanded — now matches 'What is on my calendar', 'check my calendar', 'am I free', 'do I have any meetings', 'calendar today/tomorrow/this week'. Previously only match",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "7e3e9a3",
-      "subject": "Audit fix: added page roles for campaigns, sequences, linkedin, knowledge pages. Kiko now adapts behaviour across all 13 platform pages. campaigns/sequences → Campaign Commander (manage sequences, con",
       "when": "7 hours ago"
     }
   ]

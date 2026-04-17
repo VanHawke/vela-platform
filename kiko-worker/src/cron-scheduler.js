@@ -75,13 +75,23 @@ const SCHEDULES = [
   { schedule: '30 6 * * 0',     path: '/api/cron-pipeline-hygiene',        name: 'pipeline-hygiene' },
   { schedule: '0 10 * * 0',     path: '/api/cron-email-template-learning', name: 'email-template' },
   { schedule: '0 19 * * 0',     path: '/api/cron-weekly-report',           name: 'weekly-report' },
+
+  // LOCAL crons — run against the Hetzner worker itself (not Vercel)
+  { schedule: '*/30 9-18 * * 1-5', path: '/linkedin-queue/process', name: 'linkedin-queue', local: true },
+  { schedule: '0 8 * * *',         path: '/linkedin-queue/sync-cookies', name: 'linkedin-sync', local: true },
 ]
 
 async function callEndpoint(job) {
-  const url = `${VERCEL_URL}${job.path}`
+  const url = job.local
+    ? `http://127.0.0.1:${process.env.PORT || 3000}${job.path}`
+    : `${VERCEL_URL}${job.path}`
   try {
     const headers = { 'Content-Type': 'application/json' }
-    if (CRON_SECRET) headers['Authorization'] = `Bearer ${CRON_SECRET}`
+    if (job.local) {
+      headers['Authorization'] = `Bearer ${process.env.KIKO_WORKER_SECRET || 'dev-secret-change-me'}`
+    } else if (CRON_SECRET) {
+      headers['Authorization'] = `Bearer ${CRON_SECRET}`
+    }
     const res = await fetch(url, { method: 'POST', headers, body: job.body || undefined, signal: AbortSignal.timeout(280000) })
     console.log(`[cron] ${job.name} → ${res.status} (${url})`)
   } catch (err) {

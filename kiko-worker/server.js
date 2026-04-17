@@ -11,6 +11,7 @@ import 'dotenv/config';
 
 import healthRoutes from './routes/health.js';
 import linkedinRoutes from './routes/linkedin.js';
+import linkedinQueueRoutes from './routes/linkedin-queue.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf8'));
@@ -46,12 +47,13 @@ app.use((req, res, next) => {
 
 // Root
 app.get('/', (req, res) => {
-  res.type('text/plain').send(`kiko-worker v${pkg.version} - running\nEndpoints: /health, /linkedin/*\n`);
+  res.type('text/plain').send(`kiko-worker v${pkg.version} - running\nEndpoints: /health, /linkedin/*, /linkedin-queue/*\n`);
 });
 
 // Routes
 app.use('/', healthRoutes);
 app.use('/linkedin', linkedinRoutes);
+app.use('/linkedin-queue', linkedinQueueRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {
