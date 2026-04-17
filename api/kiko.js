@@ -627,6 +627,27 @@ const TOOL_LABELS = {
   manage_knowledge: 'Managing knowledge library...',
 };
 
+// ── Rate Limiter (in-memory, per Vercel instance) ──
+const rateLimitMap = new Map();
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const RATE_LIMIT_MAX = 30; // 30 requests per minute per user
+function checkRateLimit(userEmail) {
+  const now = Date.now();
+  const key = userEmail || 'anon';
+  const record = rateLimitMap.get(key) || { count: 0, windowStart: now };
+  if (now - record.windowStart > RATE_LIMIT_WINDOW) {
+    record.count = 1; record.windowStart = now;
+  } else {
+    record.count++;
+  }
+  rateLimitMap.set(key, record);
+  // Cleanup old entries every 100 checks
+  if (rateLimitMap.size > 100) {
+    for (const [k, v] of rateLimitMap) { if (now - v.windowStart > RATE_LIMIT_WINDOW * 2) rateLimitMap.delete(k); }
+  }
+  return record.count <= RATE_LIMIT_MAX;
+}
+
 // ── Main Handler ──
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
@@ -640,6 +661,11 @@ export default async function handler(req, res) {
   const { message: rawMessage, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null, pageContext = null, attachments = [], deepThink = false, personality = 'executive', voiceMode = false } = req.body;
   const message = sanitizeUnicode(rawMessage);
   if (!message && action !== 'title') return res.status(400).json({ error: 'message required' });
+
+  // Rate limit check
+  if (!checkRateLimit(userEmail)) {
+    return res.status(429).json({ error: 'Rate limit exceeded. Please wait a moment before sending another message.' });
+  }
 
   // ── Title generation ──
   if (action === 'title') {
@@ -731,7 +757,7 @@ export default async function handler(req, res) {
   const coreBible = coreBibleResult?.[0]?.content || '';
   const orgBible = orgBibleResult?.[0]?.content || '';
   const userBible = userBibleResult?.[0]?.content || '';
-  const knowledgeBase = (knowledgeBaseResult || []).filter(k => k.content).map(k => `[${k.domain} — researched ${new Date(k.researched_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}]\n${k.content.slice(0, 1200)}`).join('\n\n');
+  const knowledgeBase = (knowledgeBaseResult || []).filter(k => k.content).map(k => `[${k.domain} — researched ${new Date(k.researched_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}]\n${k.content.slice(0, 2000)}`).join('\n\n');
   const bibleBlock = [
     coreBible ? `\n\n═══ KIKO CORE BIBLE ═══\n${coreBible}` : '',
     orgBible ? `\n\n═══ ORGANISATION DOCTRINE ═══\n${orgBible}` : '',
@@ -824,10 +850,23 @@ export default async function handler(req, res) {
   try {
     write({ toolStatus: 'Connecting...' });
     const queryStartTime = Date.now();
-    // Build messages
+    // Build messages — summarise older history if conversation is long
+    let conversationSummary = '';
+    if (conversationHistory.length > 20) {
+      const olderMessages = conversationHistory.slice(0, -20).filter(m => m.role === 'user' || m.role === 'assistant');
+      if (olderMessages.length > 4) {
+        // Summarise older messages into a context block
+        const summaryParts = olderMessages.slice(-10).map(m => `${m.role === 'user' ? 'User' : 'Kiko'}: ${(m.content || '').slice(0, 150)}`).join('\n');
+        conversationSummary = `\n\n── EARLIER IN THIS CONVERSATION (summarised) ──\n${summaryParts}\n── END SUMMARY ──`;
+      }
+    }
     const messages = conversationHistory.slice(-20)
       .filter(m => m.role === 'user' || m.role === 'assistant')
-      .map(m => ({ role: m.role, content: sanitizeUnicode(m.content || '') }));
+      .map(m => {
+        // Token budget: truncate very long messages to ~5K chars each
+        const content = sanitizeUnicode(m.content || '');
+        return { role: m.role, content: content.length > 5000 ? content.slice(0, 4800) + '\n[... response truncated ...]' : content };
+      });
 
     // File attachments
     if (attachments.length > 0) {
@@ -1400,7 +1439,7 @@ DEAL STAGE MAPPING:
       } catch {}
     }
 
-    const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + activeThreadsHint + inboxHint + morningBrief + modeHint + identityHint + attributionHint + emailStyleHint;
+    const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + activeThreadsHint + inboxHint + morningBrief + modeHint + identityHint + attributionHint + emailStyleHint + conversationSummary;
 
     // ── Prompt Caching ──
     // Split system content into stable (cached) and dynamic (not cached) blocks
@@ -1527,10 +1566,11 @@ DEAL STAGE MAPPING:
           // Detect Google OAuth/token expiry
           if (errMsg.includes('401') || errMsg.includes('403') || errMsg.includes('invalid_grant') || errMsg.includes('Token has been expired')) {
             result = `AUTH_EXPIRED: Google authentication has expired. Please ask Sunny to reconnect his Google account in Settings → Accounts. The ${block.name.replace('ask_', '').replace('read_', '')} tool cannot run until re-authenticated.`;
-          } else if (errMsg.includes('ECONNREFUSED') || errMsg.includes('ETIMEDOUT') || errMsg.includes('fetch failed') || errMsg.includes('network')) {
-            // Retry once for transient network errors
+          } else if (errMsg.includes('ECONNREFUSED') || errMsg.includes('ETIMEDOUT') || errMsg.includes('fetch failed') || errMsg.includes('network') || errMsg.includes('429') || errMsg.includes('rate limit') || errMsg.includes('500') || errMsg.includes('503') || errMsg.includes('overloaded')) {
+            // Retry once for transient network/rate limit/server errors
             try {
-              await new Promise(r => setTimeout(r, 2000));
+              const backoff = errMsg.includes('429') || errMsg.includes('rate limit') ? 5000 : 2000;
+              await new Promise(r => setTimeout(r, backoff));
               result = block.name === 'memory'
                 ? await handleMemory(block.input, userId)
                 : await executeTool(block.name, block.input, userEmail, pageContext, userId);
