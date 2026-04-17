@@ -22,7 +22,7 @@ const AdminSystem = lazy(() => import('@/pages/AdminSystem'))
 const MemoryConsole = lazy(() => import('@/pages/MemoryConsole'))
 
 const Campaigns = lazy(() => import('@/pages/Campaigns'))
-const LinkedInQueue = lazy(() => import('@/pages/LinkedInQueue'))
+// LinkedInQueue removed — functionality handled by Hetzner worker + campaign prospect detail panel
 const KnowledgeBrowser = lazy(() => import('@/pages/KnowledgeBrowser'))
 
 const SequenceDetail = lazy(() => import('@/pages/SequenceDetail'))
@@ -145,7 +145,7 @@ export default function App() {
           <Route path="sequences" element={<Navigate to="/campaigns" replace />} />
           <Route path="campaigns/:id" element={<SequenceDetail user={user} />} />
           <Route path="sequences/:id" element={<SequenceDetail user={user} />} />
-          <Route path="linkedin" element={<LinkedInQueue user={user} />} />
+          {/* LinkedIn page removed — handled by campaign prospect detail panel */}
           <Route path="knowledge" element={<KnowledgeBrowser />} />
           <Route path="inbox" element={<Navigate to="/command-centre" replace />} />
           <Route path="segments" element={<Navigate to="/campaigns" replace />} />

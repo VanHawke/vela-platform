@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-17T18:52:36.970Z",
+  "generated_at": "2026-04-17T19:02:40.939Z",
   "commits": [
+    {
+      "hash": "d076f19",
+      "subject": "Formula E calendar + campaign stats + Google Maps directions + backup: (1) Formula E 2025-26 calendar complete — 17 races (was only 2). São Paulo Dec 6, Mexico City Jan 10, Miami Jan 31, Jeddah double",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "1cf1ef6",
       "subject": "Multi-user reply detection + LinkedIn acceptance monitoring: (1) cron-sequence-reply-detect.js — now scans EACH sender's Gmail inbox, not just the first available. Resolves send_from_user_id per enrol",
-      "when": "25 minutes ago"
+      "when": "35 minutes ago"
     },
     {
       "hash": "1669f6d",
       "subject": "LinkedIn pipeline complete — Hetzner queue processor: (1) kiko-worker/routes/linkedin-queue.js — POST /linkedin-queue/process reads pending LinkedIn queue items from Supabase, syncs li_at cookies from",
-      "when": "34 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "9602d0f",
       "subject": "SequenceDetail full Legora theme alignment: 81 style fixes. (1) All 0.5px borders → 1px solid. (2) All Tailwind danger colors (rgba 248,113,113) → Legora terra (rgba 184,100,62). (3) All Tailwind ambe",
-      "when": "54 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "6f2fc54",
@@ -24,7 +29,7 @@
     {
       "hash": "19acd2a",
       "subject": "Campaign section Legora theme overhaul: (1) SequenceDetail.jsx — replaced hardcoded C object with Legora tokens. bg #FEFEFC, cardHover #F5F4F1, green → sage #7d8a64, red → terra #B8643E, amber → #B89C",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "8f6915d",
@@ -64,12 +69,12 @@
     {
       "hash": "2ce0721",
       "subject": "Rewrite embed.js with health check + better error handling",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "e963183",
       "subject": "Fix vector embedding format: changed from JSON.stringify to pgvector string format for both insert and RPC query. Fixed HNSW index (IVFFlat fails on empty tables). Added POST-only guard.",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "fc354f0",
@@ -89,16 +94,11 @@
     {
       "hash": "0369620",
       "subject": "LinkedIn connect + 3 bug fixes + knowledge versioning: (1) LinkedIn connection in Settings → Accounts — blue Connect button, 3-step guided flow (open LinkedIn, find li_at cookie, paste), stores in use",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "aec500e",
       "subject": "Knowledge versioning + push notifications: (1) kiko_knowledge_history table for version tracking. Seeder now computes content hash, detects changes, archives previous version before overwriting, incre",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "fc7c2e3",
-      "subject": "Final session documentation update: KIKO_SESSION_BRIEF.md updated with all 40+ commits from marathon session. Recent changes expanded to 22 items. Backlog trimmed — voice stability, LinkedIn enrichmen",
       "when": "7 hours ago"
     }
   ]

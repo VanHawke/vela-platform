@@ -57,7 +57,7 @@ const ALL_NAV = [
   { id: 'command-centre', label: 'Command Centre', path: '/command-centre', Icon: Target },
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
   { id: 'sequences', label: 'Campaigns', path: '/campaigns', Icon: Zap },
-  { id: 'linkedin', label: 'LinkedIn Queue', path: '/linkedin', Icon: Linkedin },
+  // LinkedIn page removed — functionality in campaign prospect detail panel
   { id: 'knowledge', label: 'Knowledge', path: '/knowledge', Icon: Brain },
 ]
 // Super-admin-only nav items appended to ALL_NAV at runtime if user role is super_admin.
