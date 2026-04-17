@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-17T11:05:51.114Z",
+  "generated_at": "2026-04-17T11:13:40.043Z",
   "commits": [
+    {
+      "hash": "f8305b8",
+      "subject": "LinkedIn profile enrichment complete + Hetzner cron: (1) api/linkedin-enrich.js — full AI-powered enrichment using Claude Sonnet + web search. Extracts headline, role, location, experience years, prev",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "0ebf3a0",
       "subject": "Infrastructure: backups + CI/CD: (1) Supabase backup script — scripts/backup-supabase.sh deployed to Hetzner. pg_dump + gzip, keeps 14 days, runs daily at 1am via system cron. pg_dump installed on Het",
-      "when": "16 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "73c01f7",
       "subject": "Navigation + inline editing + docs: (1) Knowledge page added to navigation (Brain icon, accessible from More menu). (2) Inline deal value editing — click value in deal panel to edit, Enter/blur saves,",
-      "when": "22 minutes ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "943f5e3",
       "subject": "Pipeline analytics + Command Centre task creation: (1) Pipeline analytics — win rate %, avg deal value computed from deals data, displayed in PageHeader stats bar alongside active deals and weighted t",
-      "when": "27 minutes ago"
+      "when": "35 minutes ago"
     },
     {
       "hash": "f0050b2",
       "subject": "Knowledge Browser page: (1) New /knowledge route + KnowledgeBrowser.jsx page. Shows all 15 research domains from kiko_knowledge table. Each domain shows: name, research date (relative), content size. ",
-      "when": "46 minutes ago"
+      "when": "54 minutes ago"
     },
     {
       "hash": "329513c",
       "subject": "Command Centre task filters + contacts enrichment + toast wiring: (1) Task filter tabs in Command Centre — Overdue/This week/All with live counts, dynamic filtered display, OVERDUE badge per individua",
-      "when": "48 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "6919f56",
       "subject": "Pipeline activity history + toast feedback: (1) Activity history section in deal panel — shows type icons (email/call/meeting/note), subject text, and date for up to 8 most recent activities. Fetched ",
-      "when": "68 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "8715c32",
       "subject": "AI engine + security improvements: (1) Conversation summarisation — after 20+ messages, older history compressed into context block appended to system prompt, keeping last 20 messages full-fidelity. (",
-      "when": "77 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "6bab4ed",
@@ -64,7 +69,7 @@
     {
       "hash": "1a196e0",
       "subject": "Knowledge seed: added manual domain override (?domains=x,y or ?all=1) for on-demand seeding",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "3eeb684",
@@ -94,11 +99,6 @@
     {
       "hash": "76e3036",
       "subject": "Google Calendar integration: (1) New api/calendar-events.js endpoint — fetches events from Google Calendar API using stored OAuth tokens (auto-refresh via getGoogleToken). Returns events with title, s",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "5c55a4c",
-      "subject": "Command Centre: LinkedIn connection acceptances added to Replies section. (1) Query filter expanded to include linkedin_connection_accepted and linkedin_connection% types. (2) Section renamed 'Replies",
       "when": "13 hours ago"
     }
   ]

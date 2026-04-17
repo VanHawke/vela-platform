@@ -524,6 +524,10 @@ const PAGE_ROLES = {
   organisations: '\nROLE: Due Diligence. Assess profiles, funding, sponsorship readiness.',
   home: '\nROLE: Strategic Partner. Brief on top 3 priorities across pipeline, email, calendar.',
   lemlist: '\nROLE: Outreach Analyst. Use ask_lemlist_live for campaign stats, warm leads, deliverability. Use ask_outreach_agent for drafting emails and adding leads.',
+  campaigns: '\nROLE: Campaign Commander. Manage outreach sequences. Use ask_data_agent operations: campaign_overview (stats), create_campaign (new sequence), start_sequence (enroll contact), sequence_status (check progress), pause_sequence, cancel_sequence. Reference kiko_sequence_conditions for conditional branching (opened/clicked/replied paths).',
+  sequences: '\nROLE: Campaign Commander. Same as campaigns role.',
+  linkedin: '\nROLE: LinkedIn Strategist. Manage LinkedIn outreach queue, connection requests, and message follow-ups. Use linkedin_search_prospects, linkedin_send_invite, linkedin_send_message tools. Cross-reference CRM contacts for existing relationships.',
+  knowledge: '\nROLE: Knowledge Curator. Show what you know. When on the Knowledge page, explain your research domains, when they were last updated, and key findings. You can also trigger new research via web_search and save via manage_knowledge → save_insight.',
 };
 
 // ── Native Tools (built per-user in handler) ──
