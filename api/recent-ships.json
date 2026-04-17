@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-17T14:46:09.644Z",
+  "generated_at": "2026-04-17T14:57:29.687Z",
   "commits": [
+    {
+      "hash": "fd045b3",
+      "subject": "Fix: Accounts tab now visible to all users (was super_admin only). Every user needs to connect their own Google + LinkedIn — these are personal account connections, not admin settings. Matt can now ac",
+      "when": "11 minutes ago"
+    },
     {
       "hash": "95d886e",
       "subject": "Sequence drag-to-reorder + contact dedup polish: (1) SequenceFlowView.jsx rewritten with full HTML5 drag-and-drop — drag handle (GripVertical icon) on each step node, blue drop indicator line between ",
-      "when": "31 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "9db8627",
       "subject": "RAG wired into Kiko + contact dedup UI complete: (1) learning_search in data.js — semantic fallback when keyword results < 3, calls /api/embed for vector search, returns SEMANTIC MATCHES with similari",
-      "when": "40 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "6dc6e56",
       "subject": "Sequence visual builder + RAG fix: (1) SequenceFlowView.jsx — visual flow diagram for campaign sequences. Shows steps as connected nodes (Email blue, LinkedIn teal, Condition amber). Condition nodes d",
-      "when": "54 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "4bffa98",
       "subject": "RAG debug: lower threshold to 0.15, add query_dims to response",
-      "when": "63 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "f352669",
       "subject": "Fix RAG: lowered match threshold to 0.3, fixed match_embeddings RPC to accept text input and cast to vector internally. All 15 domains embedded (35 chunks).",
-      "when": "65 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "2ce0721",
       "subject": "Rewrite embed.js with health check + better error handling",
-      "when": "76 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "e963183",
       "subject": "Fix vector embedding format: changed from JSON.stringify to pgvector string format for both insert and RPC query. Fixed HNSW index (IVFFlat fails on empty tables). Added POST-only guard.",
-      "when": "80 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "fc354f0",
@@ -59,7 +64,7 @@
     {
       "hash": "aec500e",
       "subject": "Knowledge versioning + push notifications: (1) kiko_knowledge_history table for version tracking. Seeder now computes content hash, detects changes, archives previous version before overwriting, incre",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "fc7c2e3",
@@ -94,11 +99,6 @@
     {
       "hash": "73c01f7",
       "subject": "Navigation + inline editing + docs: (1) Knowledge page added to navigation (Brain icon, accessible from More menu). (2) Inline deal value editing — click value in deal panel to edit, Enter/blur saves,",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "943f5e3",
-      "subject": "Pipeline analytics + Command Centre task creation: (1) Pipeline analytics — win rate %, avg deal value computed from deals data, displayed in PageHeader stats bar alongside active deals and weighted t",
       "when": "4 hours ago"
     }
   ]

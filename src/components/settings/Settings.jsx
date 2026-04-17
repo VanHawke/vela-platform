@@ -1134,7 +1134,7 @@ export default function Settings({ user }) {
                     </div>
                     <div style={{ display: 'flex', gap: 10 }}>
                       <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#0077B5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, flexShrink: 0 }}>2</span>
-                      <span>Press <strong>F12</strong> → <strong>Application</strong> tab → <strong>Cookies</strong> → <strong>linkedin.com</strong> → find <strong>li_at</strong> → copy its value</span>
+                      <span>Right-click anywhere on LinkedIn → <strong>Inspect</strong> (or <strong>Cmd+Option+I</strong> on Mac, <strong>F12</strong> on Windows) → <strong>Application</strong> tab → <strong>Cookies</strong> → <strong>linkedin.com</strong> → find <strong>li_at</strong> → copy its value</span>
                     </div>
                     <div style={{ display: 'flex', gap: 10 }}>
                       <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#0077B5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, flexShrink: 0 }}>3</span>
