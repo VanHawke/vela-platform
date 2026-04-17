@@ -900,7 +900,7 @@ export default async function handler(req, res) {
       greeting: /^(hi|hey|hello|good\s+(morning|afternoon|evening)|howdy|what'?s?\s+up|yo)\b/i,
       navigate: /^(go\s+to|open|show\s+me|navigate|take\s+me\s+to)\s+(home|pipeline|contacts|calendar|settings|tasks|outreach)/i,
       email_read: /^(check|read|show|get|any)\s*(my)?\s*(new|unread|latest|recent)?\s*(email|inbox|mail|gmail)/i,
-      calendar: /^(what'?s?\s+on\s+my\s+calendar|any\s+meetings|my\s+schedule|calendar|meetings?\s+(today|tomorrow|this\s+week))/i,
+      calendar: /^(what(?:'s|\s+is)?\s+on\s+my\s+calendar|any\s+meetings|my\s+schedule|check\s+(?:my\s+)?calendar|meetings?\s+(today|tomorrow|this\s+week)|what(?:'s|\s+is)\s+(?:on\s+)?my\s+schedule|am\s+i\s+free|do\s+i\s+have\s+any\s+meetings|calendar\s+(?:today|tomorrow|this\s+week))/i,
     };
     const fastMatch = Object.entries(FAST_INTENTS).find(([, re]) => re.test(msgLower));
     if (fastMatch) {
