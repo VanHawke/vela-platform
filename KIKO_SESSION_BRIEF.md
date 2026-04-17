@@ -1,52 +1,90 @@
-# KIKO SESSION BRIEF — UPDATED 6 APRIL 2026
+# KIKO SESSION BRIEF
+## Last updated: 2026-04-17 — Commit `f2bad3a`
 
-## PLATFORM
-- **Live URL:** https://vela-platform-one.vercel.app
-- **Codebase:** /Users/sunny/Desktop/vela-platform/
-- **Deploy:** `npm run build → git commit → git push → npx vercel --prod --yes`
-- **NEVER** use `--force` or `VERCEL_FORCE_NO_BUILD_CACHE=1`
-- **Functions:** ~97 deployed handlers (71 in api/ flat + 26 in api/agents/ + api/admin/orgs.js). Vercel does NOT impose a 50-function limit on Pro — the `functions:` block in vercel.json is per-function configuration overrides, not a registration list. Every `.js` with a default export is auto-deployed.
-- **Real cost driver:** the 32-cron schedule, not function count. Top spenders before Apr 6 audit: meeting-prep (was hourly 24/7, now every 4hrs business hrs MF), health-check (was hourly 24/7, now every 6hrs), learning-director (was daily, now MF only). Audit cut ~290 wasted invocations/wk.
-- **Env:** `ANTHROPIC_KEY` (not ANTHROPIC_API_KEY)
+---
 
-## WHAT'S OPERATIONAL
-### Intelligence Layer (all running, verified via heartbeats 6 Apr)
-- 33 crons active, heartbeating every 30min-weekly
-- 246 learning log entries, preferences at 0.85-0.95 confidence
-- 75 news feeds, 17 companies enriched, proactive alerts daily
-- Reply detection, deal attribution, edit-delta feedback loop
+## QUICK START (paste this to start any session)
 
-### Campaign Engine (built 6 Apr — FULLY OPERATIONAL)
-- **5 campaign tools** in Kiko's brain: campaign_overview, create_campaign, source_companies, source_contacts, bulk_enroll
-- **System prompt** explicitly tells Kiko about her campaign toolkit + proactive recommendations
-- **Draft → Launch flow:** Campaigns start as draft, guided Sequence → Leads → Launch wizard
-- **Conditional branching:** Backend evaluates no_reply/has_linkedin/has_email conditions, routes to yes/no branches. UI shows condition steps with branch visual.
-- **Timezone-aware sending:** Auto-detects prospect location from company intel, targets 9-10am local time
-- **Reply → Pipeline bridge:** Auto-creates/updates CRM deal on reply, moves to "Contact Made"
-- **Category recommender:** Proactive cron alerts on open HIGH-priority categories
-- **LinkedIn alert flow:** When LinkedIn actions queued, creates alert for manual execution
-- **Email:** Helvetica 12pt, auto-signature, subject encoding fixed
+```
+Continue on Kiko platform. Repo: /Users/sunny/Desktop/vela-platform
+Live: https://kiko.vanhawke.agency
+Supabase: dwiywqeleyckzcxbwrlb
+Hetzner: ssh root@178.104.73.22 (key auth)
+PM2: 48 crons running on kiko-worker
+```
 
-### What Kiko Can Do Via Conversation
-- "What campaigns do we have?" → campaign_overview
-- "Create a Banking campaign for Haas" → generates 7-step AI sequence as draft
-- "Source companies for FinTech" → web searches, cross-refs CRM, scores fit
-- "Find contacts at JPMorgan" → finds decision-makers via web search
-- "Enroll Banking contacts into the campaign" → bulk_enroll from CRM
-- "What categories should we target?" → analyses gaps, recommends HIGH-priority
+---
 
-### HIGH-PRIORITY OPEN CATEGORIES (no campaigns)
-Banking/Financial Services, FinTech/Payments, Telecoms/Connectivity, Energy/Petrochemical, Gaming/Entertainment
+## DEPLOYMENT CHECKLIST
 
-## KEY DOCS IN REPO
-- KIKO_PROSPECTING_ARCHITECTURE.md — Full system architecture + 12-feature build plan
-- KIKO_LEMLIST_FEATURE_MAP.md — Complete Lemlist vs Kiko comparison + condition types + build sessions
-- KIKO_SESSION_BRIEF.md — This file
-- KIKO_EVOLUTION_PLAN.md — Original 19-phase spec (Phases 6-14 complete)
+### Standard deploy (frontend + API):
+```bash
+cd /Users/sunny/Desktop/vela-platform
+npm run build                        # Verify no errors
+git add -A
+git commit --no-verify -m "..."      # Describe changes
+git push origin main                 # Auto-deploys to Vercel (~90s)
+```
 
-## STILL TO BUILD
-1. **Open/click tracking** — tracking pixel + link wrapping for email_opened condition
-2. **LinkedIn execution** — PhantomBuster API or manual queue alert flow (alerts built, execution pending)
-3. **UI polish** — condition step branch editing, drag-drop reorder, A/B testing
-4. **Campaign performance learning** — feed reply data back into sequence generation
-5. **Unified inbox** — all replies in one view
+### Hetzner cron deploy:
+```bash
+scp kiko-worker/src/cron-scheduler.js root@178.104.73.22:/home/kiko/kiko-worker/src/cron-scheduler.js
+ssh root@178.104.73.22 "chown kiko:kiko /home/kiko/kiko-worker/src/cron-scheduler.js && su - kiko -c 'pm2 restart kiko-worker'"
+```
+
+### Verify Hetzner:
+```bash
+ssh root@178.104.73.22 "su - kiko -c 'pm2 logs kiko-worker --lines 10 --nostream'"
+```
+
+---
+
+## RING-FENCED FILES (need explicit permission)
+- `api/kiko.js` — Main AI engine
+- `api/kiko-tools.js` — Tool definitions
+- `api/kiko-health.js` — Health monitoring
+- `api/kiko-self-knowledge.js` — Capability map
+- `src/contexts/` — React context providers
+- `api/_lib/get-user-role.js` — Role resolution
+
+---
+
+## CURRENT STATE
+
+### Data volumes:
+- Contacts: 4,193 | Companies: 2,249 | Deals: 308 (38 active)
+- Tasks: 37 | Conversations: 20 | Alerts: 424
+- Knowledge domains: 15 (auto-researched daily)
+- Crons: 48 on Hetzner | 0 on Vercel
+
+### Recent major changes:
+- Legora design system (full platform audit, zero old-theme artifacts)
+- RLS on all 12 tables (org-level + user-level isolation)
+- 48 crons migrated from Vercel to Hetzner
+- Voice settings: 5 tone presets, 8 voices, speed control
+- Google Calendar integration (read + write)
+- Command Centre focused briefing (entity-specific, not pipeline dumps)
+- Knowledge seeder: 15 domains researched nightly
+- Toast notification system
+- Notification bell with real alert data
+- F1 2026 calendar: 22 races (full official)
+- Email draft detection improved
+- Test coverage: API smoke + RLS + build tests
+
+---
+
+## BACKLOG (priority order)
+1. **Voice stability** — WebRTC reconnection, connection health, dedicated session
+2. **Onboarding flow** — First-run wizard for new users
+3. **Mobile responsiveness** — Pipeline list view, KikoFloat fullscreen
+4. **Analytics dashboard** — Usage stats, pipeline velocity, campaign ROI
+5. **Multi-tenant billing** — Stripe integration for client subscriptions
+
+---
+
+## KEY ENVIRONMENT VARIABLES (Vercel)
+- `ANTHROPIC_KEY` — Claude API key
+- `OPENAI_KEY` — GPT-4o Realtime + TTS
+- `VITE_SUPABASE_URL` — Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY` — Server-side Supabase access
+- `VITE_SUPABASE_ANON_KEY` — Client-side Supabase access

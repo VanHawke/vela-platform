@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-17T09:03:05.028Z",
+  "generated_at": "2026-04-17T09:05:37.207Z",
   "commits": [
+    {
+      "hash": "f2bad3a",
+      "subject": "Test coverage + notification bell + badge: (1) 3 test suites: api-smoke.spec.js (7 tests: homepage, health, calendar, voice-preview, knowledge-seed, login, auth redirect), rls-verification.spec.js (5 ",
+      "when": "2 minutes ago"
+    },
     {
       "hash": "1d56da7",
       "subject": "F1 calendar + toast system + error handling: (1) F1 2026 calendar updated from 12 to 22 races — full official calendar with Bahrain/Saudi cancellations, Madrid debut, all sprint weekends marked (China",
-      "when": "15 minutes ago"
+      "when": "17 minutes ago"
     },
     {
       "hash": "5838c4b",
@@ -94,11 +99,6 @@
     {
       "hash": "e2319d3",
       "subject": "Command Centre + Market Signals overhaul: (1) Market signals now render with proper markdown parsing — bold, headers, bullets, numbered lists all display correctly instead of garbled raw text. Added p",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "3371c1a",
-      "subject": "Calendar cleanup: removed ALL hardcoded fake events (Giacomo meetings, Goldman Sachs calls, Van Hawke board check-in, m pipeline, Mark Nelson Stripe, fake prospect pills with fabricated send times, fa",
       "when": "12 hours ago"
     }
   ]
