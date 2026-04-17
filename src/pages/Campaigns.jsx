@@ -299,7 +299,7 @@ export default function Campaigns({ user }) {
   // ── styles ──
   const C = T // color tokens shorthand
   const cell = { padding: '12px 14px', fontSize: 12, color: C.text, borderBottom: `0.5px solid ${C.border || 'rgba(0,0,0,0.06)'}`, verticalAlign: 'middle' }
-  const headerCell = { ...cell, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: C.textTertiary || '#6B6B6B', fontWeight: 500, background: 'rgba(0,0,0,0.15)', position: 'sticky', top: 0, zIndex: 1 }
+  const headerCell = { ...cell, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: C.textTertiary || '#6B6B6B', fontWeight: 500, background: '#F5F4F1', position: 'sticky', top: 0, zIndex: 1 }
 
   // ── render ──
   return (
@@ -351,7 +351,7 @@ export default function Campaigns({ user }) {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: c.is_active ? '#0A0A0A' : 'rgba(148,163,184,0.4)' }} />
-                  <span style={{ fontSize: 13, fontWeight: 500, color: isSelected ? '#fff' : '#0A0A0A', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
                 </div>
                 <div style={{ fontSize: 10, color: C.textTertiary, display: 'flex', gap: 8, paddingLeft: 12 }}>
                   <span>{c.counts.total} prospects</span>
@@ -368,8 +368,73 @@ export default function Campaigns({ user }) {
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
 
         {!selectedCampaign ? (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.textTertiary, fontSize: 13 }}>
-            Select a campaign from the left
+          <div style={{ flex: 1, padding: '32px 28px', overflowY: 'auto' }}>
+            <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: 24, fontWeight: 300, color: '#0A0A0A', marginBottom: 4 }}>Campaign Overview</div>
+            <div style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 24 }}>Outreach performance across all campaigns</div>
+            {/* Aggregate stats */}
+            {(() => {
+              const active = campaigns.filter(c => c.is_active).length
+              const totalProspects = campaigns.reduce((s, c) => s + (c.counts?.total || 0), 0)
+              const totalReplied = campaigns.reduce((s, c) => s + (c.counts?.replied || 0), 0)
+              const totalBounced = campaigns.reduce((s, c) => s + (c.counts?.bounced || 0), 0)
+              const replyRate = totalProspects > 0 ? Math.round((totalReplied / totalProspects) * 100) : 0
+              const bounceRate = totalProspects > 0 ? Math.round((totalBounced / totalProspects) * 100) : 0
+              return (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 28 }}>
+                  <div style={{ padding: '16px 20px', background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14 }}>
+                    <div style={{ fontSize: 24, fontWeight: 600 }}>{active}</div>
+                    <div style={{ fontSize: 11, color: '#A0A0A0', marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Active campaigns</div>
+                  </div>
+                  <div style={{ padding: '16px 20px', background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14 }}>
+                    <div style={{ fontSize: 24, fontWeight: 600 }}>{totalProspects.toLocaleString()}</div>
+                    <div style={{ fontSize: 11, color: '#A0A0A0', marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Contacts enrolled</div>
+                  </div>
+                  <div style={{ padding: '16px 20px', background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14 }}>
+                    <div style={{ fontSize: 24, fontWeight: 600, color: '#7d8a64' }}>{replyRate}%</div>
+                    <div style={{ fontSize: 11, color: '#A0A0A0', marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Reply rate</div>
+                  </div>
+                  <div style={{ padding: '16px 20px', background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14 }}>
+                    <div style={{ fontSize: 24, fontWeight: 600, color: bounceRate > 5 ? '#B8643E' : '#0A0A0A' }}>{bounceRate}%</div>
+                    <div style={{ fontSize: 11, color: '#A0A0A0', marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Bounce rate</div>
+                  </div>
+                </div>
+              )
+            })()}
+            {/* Campaign performance table */}
+            {campaigns.length > 0 && (
+              <div style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14, overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, fontFamily: C.font }}>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: 'left', padding: '10px 14px', fontSize: 11, color: '#A0A0A0', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid rgba(0,0,0,0.08)', background: '#FAFAF7' }}>Campaign</th>
+                      <th style={{ textAlign: 'left', padding: '10px 14px', fontSize: 11, color: '#A0A0A0', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid rgba(0,0,0,0.08)', background: '#FAFAF7' }}>Status</th>
+                      <th style={{ textAlign: 'right', padding: '10px 14px', fontSize: 11, color: '#A0A0A0', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid rgba(0,0,0,0.08)', background: '#FAFAF7' }}>Enrolled</th>
+                      <th style={{ textAlign: 'right', padding: '10px 14px', fontSize: 11, color: '#A0A0A0', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid rgba(0,0,0,0.08)', background: '#FAFAF7' }}>Replied</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {campaigns.map(c => (
+                      <tr key={c.id} style={{ cursor: 'pointer' }} onClick={() => setSelectedId(c.id)}
+                        onMouseOver={e => e.currentTarget.style.background = '#FAFAF7'}
+                        onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
+                        <td style={{ padding: '10px 14px', fontWeight: 500, borderBottom: '1px solid rgba(0,0,0,0.04)' }}>{c.name}</td>
+                        <td style={{ padding: '10px 14px', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+                          {c.is_active
+                            ? <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(125,138,100,0.12)', color: '#7d8a64', border: '1px solid rgba(125,138,100,0.2)', textTransform: 'uppercase', fontWeight: 500 }}>Active</span>
+                            : <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: '#F5F4F1', color: '#6B6B6B', border: '1px solid rgba(0,0,0,0.08)', textTransform: 'uppercase', fontWeight: 500 }}>Draft</span>
+                          }
+                        </td>
+                        <td style={{ padding: '10px 14px', textAlign: 'right', borderBottom: '1px solid rgba(0,0,0,0.04)', color: '#6B6B6B' }}>{c.counts?.total || 0}</td>
+                        <td style={{ padding: '10px 14px', textAlign: 'right', borderBottom: '1px solid rgba(0,0,0,0.04)', color: c.counts?.replied > 0 ? '#7d8a64' : '#A0A0A0', fontWeight: c.counts?.replied > 0 ? 500 : 400 }}>{c.counts?.replied || 0}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {campaigns.length === 0 && (
+              <div style={{ textAlign: 'center', padding: 40, color: '#A0A0A0', fontSize: 13 }}>No campaigns yet. Click ⚡ Build to create your first.</div>
+            )}
           </div>
         ) : (
           <>
@@ -380,9 +445,9 @@ export default function Campaigns({ user }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                     <h1 style={{ fontSize: 20, fontWeight: 500, color: C.text, margin: 0 }}>{selectedCampaign.name}</h1>
                     {selectedCampaign.is_active ? (
-                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.06)', color: '#0A0A0A', border: '1px solid rgba(0,0,0,0.10)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Live</span>
+                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(125,138,100,0.12)', color: '#7d8a64', border: '1px solid rgba(125,138,100,0.2)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Active</span>
                     ) : (
-                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(251,191,36,0.10)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.25)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Draft</span>
+                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(184,156,92,0.10)', color: '#B89C5C', border: '1px solid rgba(184,156,92,0.2)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Draft</span>
                     )}
                   </div>
                   <div style={{ fontSize: 12, color: C.textTertiary }}>
@@ -392,7 +457,7 @@ export default function Campaigns({ user }) {
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <button
                     onClick={() => toggleCampaign(selectedCampaign)}
-                    style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid ${selectedCampaign.is_active ? 'rgba(251,191,36,0.30)' : 'rgba(0,0,0,0.10)'}`, background: selectedCampaign.is_active ? 'rgba(251,191,36,0.08)' : 'rgba(0,0,0,0.05)', color: selectedCampaign.is_active ? '#fbbf24' : '#0A0A0A', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
+                    style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid ${selectedCampaign.is_active ? 'rgba(184,156,92,0.30)' : 'rgba(0,0,0,0.10)'}`, background: selectedCampaign.is_active ? 'rgba(184,156,92,0.08)' : 'rgba(0,0,0,0.04)', color: selectedCampaign.is_active ? '#B89C5C' : '#0A0A0A', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
                   >
                     {selectedCampaign.is_active ? <><Pause size={12} /> Pause</> : <><Play size={12} /> Activate</>}
                   </button>

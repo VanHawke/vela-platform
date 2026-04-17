@@ -6,26 +6,27 @@ import { setPageContext } from '@/lib/pageContext'
 import PageHeader from '@/components/layout/PageHeader'
 // Design tokens — hardcoded (matching Sequences.jsx)
 const C = {
-  bg: '#FFFFFF',
+  bg: '#FEFEFC',
   card: '#FFFFFF',
-  cardHover: '#FFFFFF',
-  border: 'rgba(0,0,0,0.06)',
-  borderHover: 'rgba(0,0,0,0.10)',
+  cardHover: '#F5F4F1',
+  border: 'rgba(0,0,0,0.08)',
+  borderHover: 'rgba(0,0,0,0.14)',
   text: '#0A0A0A',
   textSec: '#6B6B6B',
   textTer: '#A0A0A0',
-  textMut: '#A0A0A0',
+  textMut: '#C0C0C0',
   purple: '#0A0A0A',
   teal: '#0A0A0A',
-  green: '#34D399',
-  red: '#F87171',
-  amber: '#FBBF24',
-  blue: '#60A5FA',
+  green: '#7d8a64',
+  red: '#B8643E',
+  amber: '#B89C5C',
+  blue: '#5a6470',
   linkedin: '#0077B5',
-  font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-  r: 8,
+  font: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  fontDisplay: "'Source Serif 4', Georgia, serif",
+  r: 10,
 }
-const glass = { background: C.card, border: `0.5px solid ${C.border}`, borderTop: `0.5px solid rgba(0,0,0,0.08)`, borderRadius: C.r, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'all 0.2s ease' }
+const glass = { background: C.card, border: `1px solid ${C.border}`, borderRadius: C.r, boxShadow: '0 1px 2px rgba(0,0,0,0.04)', transition: 'all 0.15s ease' }
 import { Mail, Linkedin, Plus, Clock, Trash2, Save, Sparkles, ArrowLeft, Search, UserPlus, X, ChevronRight, Eye, Reply, AlertTriangle, Send, GitBranch, Copy, MoreHorizontal, LayoutList, Workflow } from 'lucide-react'
 import SequenceFlowView from '@/components/campaigns/SequenceFlowView'
 

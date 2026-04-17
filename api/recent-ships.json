@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-17T14:57:29.687Z",
+  "generated_at": "2026-04-17T16:28:14.259Z",
   "commits": [
+    {
+      "hash": "8f6915d",
+      "subject": "Fix LinkedIn guide: DevTools shortcut updated to 'Right-click → Inspect (or Cmd+Option+I on Mac, F12 on Windows)' — was incorrectly showing F12 only",
+      "when": "2 hours ago"
+    },
     {
       "hash": "fd045b3",
       "subject": "Fix: Accounts tab now visible to all users (was super_admin only). Every user needs to connect their own Google + LinkedIn — these are personal account connections, not admin settings. Matt can now ac",
-      "when": "11 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "95d886e",
       "subject": "Sequence drag-to-reorder + contact dedup polish: (1) SequenceFlowView.jsx rewritten with full HTML5 drag-and-drop — drag handle (GripVertical icon) on each step node, blue drop indicator line between ",
-      "when": "42 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "9db8627",
       "subject": "RAG wired into Kiko + contact dedup UI complete: (1) learning_search in data.js — semantic fallback when keyword results < 3, calls /api/embed for vector search, returns SEMANTIC MATCHES with similari",
-      "when": "51 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "6dc6e56",
       "subject": "Sequence visual builder + RAG fix: (1) SequenceFlowView.jsx — visual flow diagram for campaign sequences. Shows steps as connected nodes (Email blue, LinkedIn teal, Condition amber). Condition nodes d",
-      "when": "65 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "4bffa98",
       "subject": "RAG debug: lower threshold to 0.15, add query_dims to response",
-      "when": "75 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f352669",
       "subject": "Fix RAG: lowered match threshold to 0.3, fixed match_embeddings RPC to accept text input and cast to vector internally. All 15 domains embedded (35 chunks).",
-      "when": "77 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "2ce0721",
       "subject": "Rewrite embed.js with health check + better error handling",
-      "when": "88 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "e963183",
       "subject": "Fix vector embedding format: changed from JSON.stringify to pgvector string format for both insert and RPC query. Fixed HNSW index (IVFFlat fails on empty tables). Added POST-only guard.",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "fc354f0",
       "subject": "Vector embedding pipeline complete: (1) api/embed.js — dual-mode endpoint: 'embed' mode chunks knowledge domains into ~2000 char segments and stores as 1536-dim vectors via OpenAI text-embedding-3-sma",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "d7ba580",
       "subject": "Notification quiet hours + contact dedup API + vector embeddings infra: (1) Quiet hours in Settings — enable/disable toggle + from/to time pickers. Wired into NotificationToast — suppresses all notifi",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "b0229d9",
       "subject": "MotoGP/WEC calendars + pipeline analytics: (1) MotoGP 2026 — 21 races (Thai GP through Valencian GP, Qatar postponed to Nov 8 due to Iran war). (2) WEC 2026 — 8 rounds (Imola through Bahrain, Qatar re",
-      "when": "2 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "0369620",
       "subject": "LinkedIn connect + 3 bug fixes + knowledge versioning: (1) LinkedIn connection in Settings → Accounts — blue Connect button, 3-step guided flow (open LinkedIn, find li_at cookie, paste), stores in use",
-      "when": "2 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "aec500e",
       "subject": "Knowledge versioning + push notifications: (1) kiko_knowledge_history table for version tracking. Seeder now computes content hash, detects changes, archives previous version before overwriting, incre",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "fc7c2e3",
       "subject": "Final session documentation update: KIKO_SESSION_BRIEF.md updated with all 40+ commits from marathon session. Recent changes expanded to 22 items. Backlog trimmed — voice stability, LinkedIn enrichmen",
-      "when": "3 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "0cd344d",
       "subject": "Voice stability: auto-reconnect + health heartbeat + status indicator. (1) Auto-reconnect on WebRTC failure — up to 3 retries with exponential backoff (2s, 4s, 8s). Cleans up old connection before rec",
-      "when": "3 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "4a22311",
       "subject": "Audit fix: calendar intent regex expanded — now matches 'What is on my calendar', 'check my calendar', 'am I free', 'do I have any meetings', 'calendar today/tomorrow/this week'. Previously only match",
-      "when": "3 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "7e3e9a3",
       "subject": "Audit fix: added page roles for campaigns, sequences, linkedin, knowledge pages. Kiko now adapts behaviour across all 13 platform pages. campaigns/sequences → Campaign Commander (manage sequences, con",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "f8305b8",
       "subject": "LinkedIn profile enrichment complete + Hetzner cron: (1) api/linkedin-enrich.js — full AI-powered enrichment using Claude Sonnet + web search. Extracts headline, role, location, experience years, prev",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "0ebf3a0",
       "subject": "Infrastructure: backups + CI/CD: (1) Supabase backup script — scripts/backup-supabase.sh deployed to Hetzner. pg_dump + gzip, keeps 14 days, runs daily at 1am via system cron. pg_dump installed on Het",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "73c01f7",
-      "subject": "Navigation + inline editing + docs: (1) Knowledge page added to navigation (Brain icon, accessible from More menu). (2) Inline deal value editing — click value in deal panel to edit, Enter/blur saves,",
-      "when": "4 hours ago"
+      "when": "6 hours ago"
     }
   ]
 }
