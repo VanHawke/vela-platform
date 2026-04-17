@@ -45,7 +45,11 @@ const SCHEDULES = [
   // Weekly (Monday)
   { schedule: '0 2 * * *',      path: '/api/cron-competitive-intel',       name: 'competitive-intel' },
   { schedule: '0 3 * * *',      path: '/api/cron-learning-director',       name: 'learning-director' },
-  { schedule: '30 3 * * *',     path: '/api/cron-knowledge-seed',          name: 'knowledge-seed' },
+  { schedule: '30 3 * * *',     path: '/api/cron-knowledge-seed?domains=f1-sponsorship,insolvency-bbls,cross-border-tax', name: 'knowledge-seed-1' },
+  { schedule: '35 3 * * *',     path: '/api/cron-knowledge-seed?domains=luxury-fashion,gaming-esports,ai-saas', name: 'knowledge-seed-2' },
+  { schedule: '40 3 * * *',     path: '/api/cron-knowledge-seed?domains=sports-entertainment-law,uk-property,hr-employment', name: 'knowledge-seed-3' },
+  { schedule: '45 3 * * *',     path: '/api/cron-knowledge-seed?domains=fundraising-vc,hedge-funds-trading,kyc-aml-compliance', name: 'knowledge-seed-4' },
+  { schedule: '50 3 * * *',     path: '/api/cron-knowledge-seed?domains=financial-regulation,contract-disputes,retail-consumer', name: 'knowledge-seed-5' },
   { schedule: '0 5 * * *',      path: '/api/ingest-knowledge',             name: 'ingest-knowledge' },
   { schedule: '0 5 * * *',      path: '/api/cron-score-companies',         name: 'score-companies' },
   { schedule: '0 6 * * *',      path: '/api/cron-enrich',                  name: 'enrich' },

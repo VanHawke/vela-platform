@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-17T06:58:58.343Z",
+  "generated_at": "2026-04-17T07:10:03.289Z",
   "commits": [
+    {
+      "hash": "3506906",
+      "subject": "Major upgrade — 5 improvements: (1) Knowledge seeder expanded: 15 domains (added hedge funds/trading, KYC/AML compliance, financial regulation, contract disputes, retail/consumer law) + ALL 15 now run",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "1a196e0",
       "subject": "Knowledge seed: added manual domain override (?domains=x,y or ?all=1) for on-demand seeding",
-      "when": "21 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "3eeb684",
@@ -44,7 +49,7 @@
     {
       "hash": "65dd82f",
       "subject": "Command Centre focus v3: (1) Enrichment context wrapper now explicitly says 'ALL THE DATA YOU NEED IS HERE — DO NOT call pipeline overview tools, deal summary tools, or any tool that returns data abou",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "54fb103",
@@ -89,16 +94,11 @@
     {
       "hash": "fc7f417",
       "subject": "KikoFloat fixes: (1) Prompt bar aligned with main chat — font 14→15px, buttons 28→30px with borders + shadows, send button gradient matches main chat, mic/voice buttons have consistent border treatmen",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "f8eabf1",
       "subject": "Fixes: (1) Navigation tab now visible to all users in Settings (Matt can personalise his nav). Other admin tabs still super_admin only. (2) Pipeline logActivity buttons fixed — was silently failing be",
-      "when": "11 hours ago"
-    },
-    {
-      "hash": "f7e2683",
-      "subject": "Fix: (1) Added kiko_voice, kiko_voice_style, kiko_speed, kiko_personality columns to user_settings table — these were missing, causing 'Could not find column' error when saving voice/personality setti",
       "when": "11 hours ago"
     }
   ]

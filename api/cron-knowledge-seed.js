@@ -42,8 +42,11 @@ export default async function handler(req, res) {
   } else if (queryDomains.length > 0) {
     todaysDomains = DOMAINS.filter(d => queryDomains.includes(d.id));
   } else {
-    // Default: run ALL domains every night. Hetzner = flat rate, no per-execution cost.
-    todaysDomains = [...DOMAINS];
+    // Default: run 3 domains based on daily rotation (called 5x by Hetzner cron = all 15 covered)
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+    const startIdx = (dayOfYear * 3) % DOMAINS.length;
+    todaysDomains = [];
+    for (let i = 0; i < 3; i++) todaysDomains.push(DOMAINS[(startIdx + i) % DOMAINS.length]);
   }
 
   const results = [];
