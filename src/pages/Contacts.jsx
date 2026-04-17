@@ -350,34 +350,82 @@ export default function Contacts({ user }) {
       {/* Dedup Modal */}
       {showDedup && (
         <div className="ct-modal-overlay" onClick={() => setShowDedup(false)}>
-          <div className="ct-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 600, maxHeight: '80vh', overflow: 'auto' }}>
+          <div className="ct-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 700, maxHeight: '85vh', overflow: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h3>Duplicate Contacts ({dedupGroups.length} groups)</h3>
+              <div>
+                <h3 style={{ margin: 0 }}>Duplicate Contacts</h3>
+                <span style={{ fontSize: 12, color: '#6B6B6B' }}>{dedupGroups.length} groups found · {dedupGroups.reduce((s, g) => s + g.contacts.length, 0)} contacts</span>
+              </div>
               <button className="ct-modal-btn secondary" onClick={() => setShowDedup(false)} style={{ padding: '4px 10px' }}>✕</button>
             </div>
             {dedupGroups.length === 0 ? (
-              <p style={{ color: '#6B6B6B', fontSize: 14, textAlign: 'center', padding: 30 }}>No duplicates found. Your contacts are clean.</p>
+              <div style={{ textAlign: 'center', padding: 40 }}>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>✨</div>
+                <p style={{ color: '#6B6B6B', fontSize: 14 }}>No duplicates found. Your contacts are clean.</p>
+              </div>
             ) : (
-              dedupGroups.map((group, gi) => (
-                <div key={gi} style={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, padding: 12, marginBottom: 10 }}>
-                  <div style={{ fontSize: 11, color: '#A0A0A0', marginBottom: 8 }}>{group.reason}</div>
-                  {group.contacts.map((c, ci) => (
-                    <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderTop: ci > 0 ? '1px solid rgba(0,0,0,0.04)' : 'none' }}>
-                      <div style={{ flex: 1 }}>
-                        <span style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A' }}>{c.name || c.firstName + ' ' + c.lastName}</span>
-                        <span style={{ fontSize: 12, color: '#6B6B6B', marginLeft: 8 }}>{c.company} · {c.title || c.email}</span>
-                      </div>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        {ci === 0 ? (
-                          <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, background: '#ECFDF5', color: '#059669' }}>Keep</span>
-                        ) : (
-                          <button onClick={() => mergeContacts(group.contacts[0].id, c.id)} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, border: '1px solid rgba(239,68,68,0.2)', background: '#FEF2F2', color: '#DC2626', cursor: 'pointer' }}>Merge into first</button>
-                        )}
-                      </div>
+              dedupGroups.map((group, gi) => {
+                const FIELDS = ['name', 'firstName', 'lastName', 'email', 'title', 'company', 'phone', 'linkedinUrl', 'linkedin_headline', 'linkedin_industry']
+                const displayFields = FIELDS.filter(f => group.contacts.some(c => c[f]))
+                return (
+                  <div key={gi} style={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, marginBottom: 12, overflow: 'hidden' }}>
+                    <div style={{ padding: '8px 14px', background: '#FAFAF7', borderBottom: '1px solid rgba(0,0,0,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: 11, color: '#A0A0A0', fontWeight: 500 }}>{group.reason}</span>
+                      <span style={{ fontSize: 10, color: '#A0A0A0' }}>{group.contacts.length} contacts</span>
                     </div>
-                  ))}
-                </div>
-              ))
+                    {/* Field comparison table */}
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                        <thead>
+                          <tr>
+                            <th style={{ padding: '8px 12px', textAlign: 'left', color: '#A0A0A0', fontWeight: 500, fontSize: 11, borderBottom: '1px solid rgba(0,0,0,0.06)' }}>Field</th>
+                            {group.contacts.map((c, ci) => (
+                              <th key={c.id} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 500, fontSize: 11, borderBottom: '1px solid rgba(0,0,0,0.06)', color: ci === 0 ? '#059669' : '#0A0A0A' }}>
+                                {ci === 0 ? '✓ Primary' : `Contact ${ci + 1}`}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {displayFields.map(f => {
+                            const values = group.contacts.map(c => c[f] || '')
+                            const allSame = values.every(v => v === values[0])
+                            return (
+                              <tr key={f}>
+                                <td style={{ padding: '5px 12px', color: '#6B6B6B', fontSize: 11, borderBottom: '1px solid rgba(0,0,0,0.03)' }}>{f.replace(/_/g, ' ')}</td>
+                                {values.map((v, vi) => (
+                                  <td key={vi} style={{ padding: '5px 12px', color: '#0A0A0A', borderBottom: '1px solid rgba(0,0,0,0.03)', background: !allSame && v && vi > 0 ? '#FEF3C7' : 'transparent', fontSize: 12 }}>
+                                    {v || <span style={{ color: '#D0D0D0' }}>—</span>}
+                                  </td>
+                                ))}
+                              </tr>
+                            )
+                          })}
+                          <tr>
+                            <td style={{ padding: '5px 12px', color: '#6B6B6B', fontSize: 11 }}>updated</td>
+                            {group.contacts.map(c => (
+                              <td key={c.id} style={{ padding: '5px 12px', fontSize: 11, color: '#A0A0A0' }}>
+                                {c.updated_at ? new Date(c.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }) : '—'}
+                              </td>
+                            ))}
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    {/* Merge actions */}
+                    <div style={{ padding: '10px 14px', background: '#FAFAF7', borderTop: '1px solid rgba(0,0,0,0.06)', display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                      {group.contacts.slice(1).map(c => (
+                        <button key={c.id} onClick={() => mergeContacts(group.contacts[0].id, c.id)} style={{
+                          padding: '5px 12px', borderRadius: 6, border: '1px solid rgba(239,68,68,0.2)', background: '#FEF2F2', color: '#DC2626',
+                          fontSize: 11, cursor: 'pointer', fontWeight: 500,
+                        }}>
+                          Merge "{c.name || c.firstName || 'Contact'}" → Primary
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })
             )}
           </div>
         </div>

@@ -759,7 +759,7 @@ RULES:
 
         {viewMode === 'flow' ? (
           <div style={{ ...glass, padding: 16, minHeight: 480 }}>
-            <SequenceFlowView steps={steps} conditions={conditions} selectedStep={selStep} onSelectStep={(i) => { setSelStep(i); setViewMode('list') }} onAddStep={(type) => { addStep(type); setViewMode('list') }} />
+            <SequenceFlowView steps={steps} conditions={conditions} selectedStep={selStep} onSelectStep={(i) => { setSelStep(i); setViewMode('list') }} onAddStep={(type) => { addStep(type); setViewMode('list') }} onReorder={(reordered) => { setSteps(reordered); setDirty(true) }} onDeleteStep={(i) => { del(i) }} />
           </div>
         ) : (
         <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 14, minHeight: 480 }}>
