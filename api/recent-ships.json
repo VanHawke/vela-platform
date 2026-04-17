@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-17T10:43:37.528Z",
+  "generated_at": "2026-04-17T10:49:45.636Z",
   "commits": [
+    {
+      "hash": "73c01f7",
+      "subject": "Navigation + inline editing + docs: (1) Knowledge page added to navigation (Brain icon, accessible from More menu). (2) Inline deal value editing — click value in deal panel to edit, Enter/blur saves,",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "943f5e3",
       "subject": "Pipeline analytics + Command Centre task creation: (1) Pipeline analytics — win rate %, avg deal value computed from deals data, displayed in PageHeader stats bar alongside active deals and weighted t",
-      "when": "5 minutes ago"
+      "when": "11 minutes ago"
     },
     {
       "hash": "f0050b2",
       "subject": "Knowledge Browser page: (1) New /knowledge route + KnowledgeBrowser.jsx page. Shows all 15 research domains from kiko_knowledge table. Each domain shows: name, research date (relative), content size. ",
-      "when": "24 minutes ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "329513c",
       "subject": "Command Centre task filters + contacts enrichment + toast wiring: (1) Task filter tabs in Command Centre — Overdue/This week/All with live counts, dynamic filtered display, OVERDUE badge per individua",
-      "when": "26 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "6919f56",
       "subject": "Pipeline activity history + toast feedback: (1) Activity history section in deal panel — shows type icons (email/call/meeting/note), subject text, and date for up to 8 most recent activities. Fetched ",
-      "when": "46 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "8715c32",
       "subject": "AI engine + security improvements: (1) Conversation summarisation — after 20+ messages, older history compressed into context block appended to system prompt, keeping last 20 messages full-fidelity. (",
-      "when": "55 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "6bab4ed",
@@ -94,11 +99,6 @@
     {
       "hash": "65dd82f",
       "subject": "Command Centre focus v3: (1) Enrichment context wrapper now explicitly says 'ALL THE DATA YOU NEED IS HERE — DO NOT call pipeline overview tools, deal summary tools, or any tool that returns data abou",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "54fb103",
-      "subject": "CRITICAL FIX: Command Centre item focus — changed currentPage from 'command-centre' to 'home' when viewing a selected item. The command-centre page role was telling Kiko to give broad pipeline overvie",
       "when": "13 hours ago"
     }
   ]
