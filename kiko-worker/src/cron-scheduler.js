@@ -65,6 +65,7 @@ const SCHEDULES = [
   { schedule: '0 4 * * *',      path: '/api/cron-job-cleanup',             name: 'job-cleanup' },
   { schedule: '30 4 * * *',     path: '/api/cron-company-enrich',          name: 'company-enrich' },
   { schedule: '45 4 * * *',     path: '/api/linkedin-enrich',              name: 'linkedin-enrich' },
+  { schedule: '0 5 * * *',      path: '/api/embed',                        name: 'embed-knowledge', method: 'POST', body: '{"mode":"embed"}' },
   { schedule: '0 5 * * *',      path: '/api/cron-relationship-intel',      name: 'relationship-intel' },
   { schedule: '0 5 * * *',      path: '/api/cron-partnership-verify',      name: 'partnership-verify' },
   { schedule: '30 5 * * 1-5',   path: '/api/cron-people-verify',           name: 'people-verify' },
@@ -81,7 +82,7 @@ async function callEndpoint(job) {
   try {
     const headers = { 'Content-Type': 'application/json' }
     if (CRON_SECRET) headers['Authorization'] = `Bearer ${CRON_SECRET}`
-    const res = await fetch(url, { method: 'POST', headers, signal: AbortSignal.timeout(280000) })
+    const res = await fetch(url, { method: 'POST', headers, body: job.body || undefined, signal: AbortSignal.timeout(280000) })
     console.log(`[cron] ${job.name} → ${res.status} (${url})`)
   } catch (err) {
     console.error(`[cron] ${job.name} FAILED: ${err.message}`)

@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-17T13:08:21.877Z",
+  "generated_at": "2026-04-17T13:11:31.561Z",
   "commits": [
+    {
+      "hash": "d7ba580",
+      "subject": "Notification quiet hours + contact dedup API + vector embeddings infra: (1) Quiet hours in Settings — enable/disable toggle + from/to time pickers. Wired into NotificationToast — suppresses all notifi",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "b0229d9",
       "subject": "MotoGP/WEC calendars + pipeline analytics: (1) MotoGP 2026 — 21 races (Thai GP through Valencian GP, Qatar postponed to Nov 8 due to Iran war). (2) WEC 2026 — 8 rounds (Imola through Bahrain, Qatar re",
-      "when": "24 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "0369620",
       "subject": "LinkedIn connect + 3 bug fixes + knowledge versioning: (1) LinkedIn connection in Settings → Accounts — blue Connect button, 3-step guided flow (open LinkedIn, find li_at cookie, paste), stores in use",
-      "when": "36 minutes ago"
+      "when": "40 minutes ago"
     },
     {
       "hash": "aec500e",
       "subject": "Knowledge versioning + push notifications: (1) kiko_knowledge_history table for version tracking. Seeder now computes content hash, detects changes, archives previous version before overwriting, incre",
-      "when": "51 minutes ago"
+      "when": "54 minutes ago"
     },
     {
       "hash": "fc7c2e3",
       "subject": "Final session documentation update: KIKO_SESSION_BRIEF.md updated with all 40+ commits from marathon session. Recent changes expanded to 22 items. Backlog trimmed — voice stability, LinkedIn enrichmen",
-      "when": "80 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "0cd344d",
       "subject": "Voice stability: auto-reconnect + health heartbeat + status indicator. (1) Auto-reconnect on WebRTC failure — up to 3 retries with exponential backoff (2s, 4s, 8s). Cleans up old connection before rec",
-      "when": "81 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "4a22311",
       "subject": "Audit fix: calendar intent regex expanded — now matches 'What is on my calendar', 'check my calendar', 'am I free', 'do I have any meetings', 'calendar today/tomorrow/this week'. Previously only match",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "7e3e9a3",
@@ -54,7 +59,7 @@
     {
       "hash": "943f5e3",
       "subject": "Pipeline analytics + Command Centre task creation: (1) Pipeline analytics — win rate %, avg deal value computed from deals data, displayed in PageHeader stats bar alongside active deals and weighted t",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f0050b2",
@@ -94,11 +99,6 @@
     {
       "hash": "5838c4b",
       "subject": "Knowledge seeder restructured for Vercel 300s limit: split into 5 staggered cron calls (3 domains each, 5min apart) covering all 15 domains nightly between 3:30am-3:50am. Each call stays within Vercel",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "3506906",
-      "subject": "Major upgrade — 5 improvements: (1) Knowledge seeder expanded: 15 domains (added hedge funds/trading, KYC/AML compliance, financial regulation, contract disputes, retail/consumer law) + ALL 15 now run",
       "when": "6 hours ago"
     }
   ]
