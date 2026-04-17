@@ -79,6 +79,8 @@ export default function Campaigns({ user }) {
   const [campaigns, setCampaigns] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [prospects, setProspects] = useState([])
+  const [prospectQueue, setProspectQueue] = useState([]) // raw queue rows for detail panel
+  const [selectedProspect, setSelectedProspect] = useState(null)
   const [loading, setLoading] = useState(true)
   const [detailLoading, setDetailLoading] = useState(false)
   const [search, setSearch] = useState('')
@@ -138,7 +140,7 @@ export default function Campaigns({ user }) {
     if (enrollIds.length > 0) {
       const { data: q } = await supabase
         .from('kiko_outreach_queue')
-        .select('enrollment_id, step_number, channel, status, sent_at, opened_at, opens_count, clicked_at, clicks_count, last_clicked_url, reply_received_at, reply_snippet, subject, scheduled_for')
+        .select('enrollment_id, step_number, channel, status, sent_at, opened_at, last_opened_at, opens_count, clicked_at, last_clicked_at, clicks_count, last_clicked_url, reply_received_at, reply_snippet, subject, scheduled_for')
         .in('enrollment_id', enrollIds)
       queue = q || []
     }
@@ -182,10 +184,11 @@ export default function Campaigns({ user }) {
       }
     })
     setProspects(rows)
+    setProspectQueue(queue || [])
     setDetailLoading(false)
   }, [])
 
-  useEffect(() => { if (selectedId) loadProspects(selectedId) }, [selectedId, loadProspects])
+  useEffect(() => { if (selectedId) { loadProspects(selectedId); setSelectedProspect(null) } }, [selectedId, loadProspects])
 
   // Realtime subscription — refresh prospects when queue or enrollments change,
   // refresh campaigns list when any sequence's is_active flag flips so the rail dot updates
@@ -537,11 +540,11 @@ export default function Campaigns({ user }) {
                       <tr key={p.id} style={{ transition: 'background 0.1s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.02)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                         <td style={{ ...cell, paddingLeft: 28 }}>
                           <div
-                            onClick={() => nav(`/contacts?email=${encodeURIComponent(p.contact_email || '')}`)}
-                            style={{ fontSize: 13, color: C.text, fontWeight: 500, cursor: 'pointer', textDecoration: 'none' }}
-                            onMouseEnter={e => e.currentTarget.style.color = '#0A0A0A'}
-                            onMouseLeave={e => e.currentTarget.style.color = C.text}
-                            title="Open contact record"
+                            onClick={() => setSelectedProspect(selectedProspect?.id === p.id ? null : p)}
+                            style={{ fontSize: 13, color: selectedProspect?.id === p.id ? '#0A0A0A' : C.text, fontWeight: 500, cursor: 'pointer', textDecoration: 'none' }}
+                            onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+                            onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
+                            title="View prospect detail"
                           >{p.contact_name}</div>
                           <div style={{ fontSize: 11, color: C.textTertiary, marginTop: 2 }}>{p.contact_email}</div>
                           {p.title && <div style={{ fontSize: 11, color: C.textSecondary, marginTop: 2, fontStyle: 'italic' }}>{p.title}</div>}
@@ -600,6 +603,111 @@ export default function Campaigns({ user }) {
           </>
         )}
       </main>
+
+      {/* ── Prospect Detail Panel (slides from right) ── */}
+      {selectedProspect && (() => {
+        const p = selectedProspect
+        const qRows = prospectQueue.filter(q => q.enrollment_id === p.id).sort((a, b) => (a.step_number || 0) - (b.step_number || 0))
+        const campaignName = selectedCampaign?.name || 'Campaign'
+        return (
+          <div style={{ width: 360, flexShrink: 0, borderLeft: `1px solid ${C.border}`, background: '#FFFFFF', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+            {/* Header */}
+            <div style={{ padding: '18px 20px', borderBottom: `1px solid ${C.border}` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 500, color: '#0A0A0A' }}>{p.contact_name}</div>
+                  {p.title && <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 2 }}>{p.title}</div>}
+                  <div style={{ fontSize: 12, color: '#A0A0A0', marginTop: 2 }}>{p.company}</div>
+                </div>
+                <button onClick={() => setSelectedProspect(null)} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#A0A0A0', fontSize: 14 }}>✕</button>
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                {p.contact_email && <span style={{ fontSize: 11, color: '#6B6B6B', padding: '2px 8px', background: '#F5F4F1', borderRadius: 4 }}>{p.contact_email}</span>}
+                {statusBadge(p.status)}
+              </div>
+            </div>
+
+            {/* Campaign info */}
+            <div style={{ padding: '12px 20px', borderBottom: `1px solid ${C.border}`, background: '#FAFAF7' }}>
+              <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>Campaign</div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A' }}>{campaignName}</div>
+              <div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 2 }}>Step {p.current_step} of {totalSteps || '?'} · {p.sent_count} sent · {p.opens_count} opens · {p.clicks_count} clicks</div>
+            </div>
+
+            {/* Step-by-step timeline */}
+            <div style={{ padding: '16px 20px', flex: 1 }}>
+              <div style={{ fontSize: 11, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12, fontWeight: 500 }}>Sequence Timeline</div>
+              {qRows.length === 0 && <div style={{ fontSize: 12, color: '#A0A0A0', padding: '12px 0' }}>No steps sent yet</div>}
+              {qRows.map((q, qi) => {
+                const isSent = q.status === 'sent'
+                const isPending = q.status === 'pending' || q.status === 'queued'
+                const isLI = q.channel === 'linkedin'
+                const hasOpened = q.opens_count > 0
+                const hasClicked = q.clicks_count > 0
+                const hasReply = !!q.reply_received_at
+                return (
+                  <div key={qi} style={{ display: 'flex', gap: 10, marginBottom: 0 }}>
+                    {/* Timeline line + dot */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 20, flexShrink: 0 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: '50%', background: isSent ? (hasReply ? '#7d8a64' : hasOpened ? '#0A0A0A' : '#6B6B6B') : isPending ? '#B89C5C' : '#C0C0C0', border: '2px solid #FFFFFF', boxShadow: '0 0 0 1px rgba(0,0,0,0.08)', marginTop: 4, flexShrink: 0 }} />
+                      {qi < qRows.length - 1 && <div style={{ width: 1.5, flex: 1, background: 'rgba(0,0,0,0.08)', minHeight: 24 }} />}
+                    </div>
+                    {/* Step content */}
+                    <div style={{ flex: 1, paddingBottom: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                        <span style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A' }}>
+                          Step {q.step_number || qi + 1}: {isLI ? 'LinkedIn' : 'Email'}
+                        </span>
+                        {isPending && <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 10, background: 'rgba(184,156,92,0.12)', color: '#B89C5C', fontWeight: 500 }}>Pending</span>}
+                      </div>
+                      {q.subject && <div style={{ fontSize: 11, color: '#6B6B6B', marginBottom: 4 }}>{q.subject}</div>}
+                      {isSent && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: 11 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#6B6B6B' }}>
+                            <Mail size={10} /> Sent {q.sent_at ? timeAgo(q.sent_at) : ''}
+                          </div>
+                          {hasOpened && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#0A0A0A' }}>
+                              <Eye size={10} /> Opened {q.opens_count}× {q.opened_at ? '· ' + timeAgo(q.opened_at) : ''}
+                            </div>
+                          )}
+                          {hasClicked && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#0A0A0A' }}>
+                              <MousePointer size={10} /> Clicked {q.clicks_count}× {q.last_clicked_url ? '· ' + q.last_clicked_url.slice(0, 30) + '...' : ''}
+                            </div>
+                          )}
+                          {hasReply && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#7d8a64', fontWeight: 500 }}>
+                              <Reply size={10} /> Replied {q.reply_received_at ? timeAgo(q.reply_received_at) : ''}
+                            </div>
+                          )}
+                          {q.reply_snippet && (
+                            <div style={{ fontSize: 11, color: '#6B6B6B', background: '#F5F4F1', padding: '6px 10px', borderRadius: 6, marginTop: 2, fontStyle: 'italic', lineHeight: 1.4 }}>
+                              "{q.reply_snippet.slice(0, 120)}{q.reply_snippet.length > 120 ? '...' : ''}"
+                            </div>
+                          )}
+                          {!hasOpened && !hasClicked && !hasReply && (
+                            <div style={{ fontSize: 11, color: '#A0A0A0' }}>No engagement yet</div>
+                          )}
+                        </div>
+                      )}
+                      {isPending && q.scheduled_for && (
+                        <div style={{ fontSize: 11, color: '#B89C5C' }}>Scheduled: {new Date(q.scheduled_for).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Footer actions */}
+            <div style={{ padding: '12px 20px', borderTop: `1px solid ${C.border}`, display: 'flex', gap: 6 }}>
+              <button onClick={() => nav(`/contacts?email=${encodeURIComponent(p.contact_email || '')}`)} style={{ flex: 1, padding: '8px 0', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#0A0A0A', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}>View Contact</button>
+              {p.linkedin_url && <a href={p.linkedin_url} target="_blank" rel="noopener noreferrer" style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid rgba(0,119,181,0.2)', background: 'rgba(0,119,181,0.06)', color: '#0077B5', fontSize: 12, fontWeight: 500, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}><Linkedin size={12} />LinkedIn</a>}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* ── Build Campaign modal ── */}
       {buildOpen && (
