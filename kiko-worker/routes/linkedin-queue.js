@@ -165,4 +165,75 @@ router.post('/sync-cookies', async (req, res) => {
   }
 });
 
+// POST /linkedin-queue/check-replies — Scan for LinkedIn replies and connection acceptances
+// Visits each enrolled contact's profile to check connection status
+router.post('/check-replies', async (req, res) => {
+  const startTime = Date.now();
+  try {
+    const syncResult = await syncCookies();
+    if (syncResult.synced === 0) return res.json({ ok: true, checked: 0, message: 'No LinkedIn tokens' });
+
+    // Get active LinkedIn enrollments (sent a connection request or message)
+    const enrollments = await sbFetch(
+      "kiko_sequence_enrollments?status=eq.active&select=id,contact_name,contact_email,company,linkedin_url,sequence_id"
+    );
+    if (!enrollments?.length) return res.json({ ok: true, checked: 0, message: 'No active enrollments' });
+
+    // Filter to those with LinkedIn URLs
+    const withLinkedin = enrollments.filter(e => e.linkedin_url);
+    const identity = syncResult.identities?.[0];
+    if (!identity) return res.json({ ok: true, checked: 0, message: 'No identity available' });
+
+    let checked = 0, replies = 0, acceptances = 0;
+    const results = [];
+
+    for (const enrollment of withLinkedin.slice(0, 10)) {
+      try {
+        // Check the profile — if we can now message them, connection was accepted
+        const profile = await engine.getProfile(identity, enrollment.linkedin_url);
+        if (profile?.ok && profile?.data) {
+          const isConnected = profile.data.connectionDegree === '1st' || profile.data.isConnection;
+          if (isConnected) {
+            // Check if we had sent a connection request for this enrollment
+            const queueRows = await sbFetch(
+              `kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&channel=eq.linkedin&status=eq.sent&select=id,step_number`
+            );
+            if (queueRows?.length) {
+              // Mark acceptance in the queue
+              await sbFetch(`kiko_outreach_queue?id=eq.${queueRows[0].id}`, {
+                method: 'PATCH', body: JSON.stringify({ opens_count: 1, opened_at: new Date().toISOString() }),
+              });
+              // Create alert
+              await sbFetch('kiko_alerts', {
+                method: 'POST', body: JSON.stringify({
+                  type: 'linkedin_connection_accepted', severity: 'medium',
+                  title: `LinkedIn: ${enrollment.contact_name} accepted connection`,
+                  detail: `${enrollment.contact_name} at ${enrollment.company} accepted your LinkedIn connection request.`,
+                  entity_type: 'contact', entity_name: enrollment.contact_name,
+                  created_at: new Date().toISOString(),
+                }),
+              });
+              acceptances++;
+              results.push({ id: enrollment.id, contact: enrollment.contact_name, status: 'accepted' });
+            }
+          }
+        }
+        checked++;
+        // Rate limit: 15-25s between profile checks
+        if (checked < withLinkedin.length) {
+          await new Promise(r => setTimeout(r, 15000 + Math.random() * 10000));
+        }
+      } catch (err) {
+        results.push({ id: enrollment.id, contact: enrollment.contact_name, status: 'error', error: err.message });
+      }
+    }
+
+    const duration = Date.now() - startTime;
+    console.log(`[linkedin-queue] Reply check: ${checked} checked, ${acceptances} acceptances, ${replies} replies (${duration}ms)`);
+    res.json({ ok: true, checked, acceptances, replies, duration_ms: duration, results });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 export default router;

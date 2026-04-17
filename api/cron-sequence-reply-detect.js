@@ -13,17 +13,24 @@ export default async function handler(req, res) {
   const __hbId = await cronHeartbeat('cron-sequence-reply-detect', 'started');
   try {
     const users = await getActiveUsers();
-    let token = null;
-    let tokenUserId = null;
-    for (const u of users) { token = await getGoogleToken(u.email); if (token) { tokenUserId = u.id || null; break; } }
-    if (!token) {
-      await cronHeartbeat('cron-sequence-reply-detect', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 });
-      return res.status(200).json({ ok: false, error: 'No Google token' });
+    // Build token cache: user_id → { token, email }
+    const tokenCache = {};
+    for (const u of users) {
+      const t = await getGoogleToken(u.email);
+      if (t) tokenCache[u.id] = { token: t, email: u.email };
     }
+    if (Object.keys(tokenCache).length === 0) {
+      await cronHeartbeat('cron-sequence-reply-detect', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 });
+      return res.status(200).json({ ok: false, error: 'No Google tokens' });
+    }
+    // Default fallback token (first available)
+    const fallbackUserId = Object.keys(tokenCache)[0];
 
     // Get active enrollments that have at least 1 sent email
     const enrollments = await sbFetch('kiko_sequence_enrollments?status=eq.active&current_step=gt.1&limit=30');
     const safe = Array.isArray(enrollments) ? enrollments : [];
+    // Pre-fetch send_from_user_id for each sequence (cached)
+    const seqSenderCache = {};
     let replies = 0, bounces = 0;
 
     for (const enrollment of safe) {
@@ -31,7 +38,20 @@ export default async function handler(req, res) {
         const email = enrollment.contact_email;
         if (!email) continue;
 
-        // Search for replies from this contact
+        // Resolve which user's inbox to check for this enrollment
+        let senderId = fallbackUserId;
+        if (enrollment.sequence_id) {
+          if (!seqSenderCache[enrollment.sequence_id]) {
+            const seqRow = await sbFetch(`kiko_sequences?id=eq.${enrollment.sequence_id}&select=send_from_user_id&limit=1`);
+            seqSenderCache[enrollment.sequence_id] = seqRow?.[0]?.send_from_user_id || null;
+          }
+          const seqSender = seqSenderCache[enrollment.sequence_id];
+          if (seqSender && tokenCache[seqSender]) senderId = seqSender;
+        }
+        const { token, email: senderEmail } = tokenCache[senderId] || tokenCache[fallbackUserId];
+        const tokenUserId = senderId;
+
+        // Search for replies from this contact in the SENDER's inbox
         const q = `from:${email} newer_than:7d`;
         const searchRes = await fetch(
           `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(q)}&maxResults=3`,

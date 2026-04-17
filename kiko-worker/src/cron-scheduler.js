@@ -79,6 +79,7 @@ const SCHEDULES = [
   // LOCAL crons — run against the Hetzner worker itself (not Vercel)
   { schedule: '*/30 9-18 * * 1-5', path: '/linkedin-queue/process', name: 'linkedin-queue', local: true },
   { schedule: '0 8 * * *',         path: '/linkedin-queue/sync-cookies', name: 'linkedin-sync', local: true },
+  { schedule: '0 10,14,17 * * 1-5', path: '/linkedin-queue/check-replies', name: 'linkedin-replies', local: true },
 ]
 
 async function callEndpoint(job) {
