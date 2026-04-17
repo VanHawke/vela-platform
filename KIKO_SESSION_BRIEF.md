@@ -1,5 +1,5 @@
 # KIKO SESSION BRIEF
-## Last updated: 2026-04-17 — Commit `f2bad3a`
+## Last updated: 2026-04-17 — Commit `943f5e3`+
 
 ---
 
@@ -74,11 +74,13 @@ ssh root@178.104.73.22 "su - kiko -c 'pm2 logs kiko-worker --lines 10 --nostream
 ---
 
 ## BACKLOG (priority order)
-1. **Voice stability** — WebRTC reconnection, connection health, dedicated session
+1. **Voice stability** — WebRTC reconnection, connection health, dedicated 3-4hr session
 2. **Onboarding flow** — First-run wizard for new users
 3. **Mobile responsiveness** — Pipeline list view, KikoFloat fullscreen
-4. **Analytics dashboard** — Usage stats, pipeline velocity, campaign ROI
-5. **Multi-tenant billing** — Stripe integration for client subscriptions
+4. **LinkedIn profile data pull** — Hetzner worker (replicate lemlist AI agent)
+5. **Sequence conditional branching** — Yes/No paths in campaigns
+6. **Email inbox page** — Thread view in platform
+7. **CI/CD pipeline** — Wire tests into GitHub Actions
 
 ---
 

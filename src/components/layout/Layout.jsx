@@ -28,7 +28,7 @@ const C = {
   font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   r: 8,
 }
-import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X, Zap, Mail, Filter, Layers, Database, Compass, Linkedin, Activity } from 'lucide-react'
+import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, Home, GitBranch, Calendar, Users, MoreHorizontal, Send, Target, Menu, X, Zap, Mail, Filter, Layers, Database, Compass, Linkedin, Activity, Brain } from 'lucide-react'
 import KikoFloat from '../kiko/KikoFloat'
 import ThreadIndicator from '../kiko/ThreadIndicator'
 import NotificationToast from '../kiko/NotificationToast'
@@ -57,6 +57,7 @@ const ALL_NAV = [
   { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix', Icon: Grid3X3 },
   { id: 'sequences', label: 'Campaigns', path: '/campaigns', Icon: Zap },
   { id: 'linkedin', label: 'LinkedIn Queue', path: '/linkedin', Icon: Linkedin },
+  { id: 'knowledge', label: 'Knowledge', path: '/knowledge', Icon: Brain },
 ]
 // Super-admin-only nav items appended to ALL_NAV at runtime if user role is super_admin.
 // Health Center surfaces system_health alerts (replaces the old health-warning emails).

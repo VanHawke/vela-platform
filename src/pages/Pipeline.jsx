@@ -212,6 +212,8 @@ export default function Pipeline({ user }) {
   }
   const [savingActivity, setSavingActivity] = useState(false)
   const [activityLogged, setActivityLogged] = useState(null)
+  const [editingValue, setEditingValue] = useState(false)
+  const [editValue, setEditValue] = useState('')
 
   // Drag-drop state
   const [dragDeal, setDragDeal] = useState(null)
@@ -400,6 +402,17 @@ export default function Pipeline({ user }) {
     setDealCampaigns([]); setDealTasks([]); setDealActivities([]); setActivityNote('')
   }
 
+  const saveDealValue = async () => {
+    if (!selectedDeal || !editValue) { setEditingValue(false); return }
+    const newVal = parseFloat(editValue.replace(/[^0-9.]/g, ''))
+    if (isNaN(newVal)) { setEditingValue(false); return }
+    const now = new Date().toISOString()
+    await supabase.from('deals').update({ data: { ...selectedDeal, value: newVal }, updated_at: now }).eq('id', selectedDeal._id)
+    setDeals(prev => prev.map(d => d._id === selectedDeal._id ? { ...d, value: newVal, updated_at: now } : d))
+    setEditingValue(false)
+    showToast('Deal value updated', 'success')
+  }
+
   const logActivity = async (type) => {
     if (savingActivity || !selectedDeal) return
     setSavingActivity(true)
@@ -577,8 +590,12 @@ export default function Pipeline({ user }) {
                 <Clock size={12} /> Stage: <strong>{selectedDeal.stage || '—'}</strong>
               </div>
               {selectedDeal.value && (
-                <div className="pl-panel-meta-row">
-                  Value: <strong>{fmtCurrency(parseFloat(selectedDeal.value))}</strong>
+                <div className="pl-panel-meta-row" style={{ cursor: 'pointer' }}>
+                  Value: {editingValue ? (
+                    <input value={editValue} onChange={e => setEditValue(e.target.value)} onBlur={saveDealValue} onKeyDown={e => { if (e.key === 'Enter') saveDealValue(); if (e.key === 'Escape') setEditingValue(false) }} autoFocus style={{ width: 100, padding: '2px 6px', border: '1px solid rgba(0,0,0,0.15)', borderRadius: 4, fontSize: 13, fontWeight: 600, fontFamily: 'Inter, system-ui, sans-serif' }} />
+                  ) : (
+                    <strong onClick={() => { setEditingValue(true); setEditValue(selectedDeal.value?.toString() || '') }} title="Click to edit">{fmtCurrency(parseFloat(selectedDeal.value))}</strong>
+                  )}
                 </div>
               )}
             </div>

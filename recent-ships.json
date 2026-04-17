@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-17T10:38:47.042Z",
+  "generated_at": "2026-04-17T10:43:37.528Z",
   "commits": [
+    {
+      "hash": "943f5e3",
+      "subject": "Pipeline analytics + Command Centre task creation: (1) Pipeline analytics — win rate %, avg deal value computed from deals data, displayed in PageHeader stats bar alongside active deals and weighted t",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "f0050b2",
       "subject": "Knowledge Browser page: (1) New /knowledge route + KnowledgeBrowser.jsx page. Shows all 15 research domains from kiko_knowledge table. Each domain shows: name, research date (relative), content size. ",
-      "when": "19 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "329513c",
       "subject": "Command Centre task filters + contacts enrichment + toast wiring: (1) Task filter tabs in Command Centre — Overdue/This week/All with live counts, dynamic filtered display, OVERDUE badge per individua",
-      "when": "21 minutes ago"
+      "when": "26 minutes ago"
     },
     {
       "hash": "6919f56",
       "subject": "Pipeline activity history + toast feedback: (1) Activity history section in deal panel — shows type icons (email/call/meeting/note), subject text, and date for up to 8 most recent activities. Fetched ",
-      "when": "41 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "8715c32",
       "subject": "AI engine + security improvements: (1) Conversation summarisation — after 20+ messages, older history compressed into context block appended to system prompt, keeping last 20 messages full-fidelity. (",
-      "when": "50 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "6bab4ed",
@@ -39,7 +44,7 @@
     {
       "hash": "5838c4b",
       "subject": "Knowledge seeder restructured for Vercel 300s limit: split into 5 staggered cron calls (3 domains each, 5min apart) covering all 15 domains nightly between 3:30am-3:50am. Each call stays within Vercel",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "3506906",
@@ -64,7 +69,7 @@
     {
       "hash": "03f1245",
       "subject": "Cron frequency unlocked — learning crons now DAILY: competitive-intel, learning-director, ingest-knowledge, score-companies, enrich, news-agent, news-classify, profile-synthesis, company-enrich, relat",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "2e88148",
@@ -94,11 +99,6 @@
     {
       "hash": "54fb103",
       "subject": "CRITICAL FIX: Command Centre item focus — changed currentPage from 'command-centre' to 'home' when viewing a selected item. The command-centre page role was telling Kiko to give broad pipeline overvie",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "a1c6b85",
-      "subject": "URGENT FIX — Command Centre + Pipeline buttons: (1) Modified api/kiko.js command-centre page role — replaced broad pipeline overview instructions with SELECTED ITEM FOCUS rule: when user asks about a ",
       "when": "13 hours ago"
     }
   ]
