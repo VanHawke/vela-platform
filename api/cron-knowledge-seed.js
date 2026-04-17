@@ -65,14 +65,36 @@ export default async function handler(req, res) {
 
       const text = response.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
       if (text.length > 50) {
-        // Save to knowledge base
+        // Compute simple hash for change detection
+        const hash = Buffer.from(text.slice(0, 500)).toString('base64').slice(0, 32);
+
+        // Check if content actually changed
+        const { data: existing } = await supabase.from('kiko_knowledge').select('content_hash, version, content').eq('domain', domain.id).single();
+        const changed = !existing || existing.content_hash !== hash;
+
+        if (changed && existing?.content) {
+          // Save previous version to history before overwriting
+          await supabase.from('kiko_knowledge_history').insert({
+            domain: domain.id,
+            content: existing.content,
+            researched_at: new Date().toISOString(),
+            source: 'version-archive',
+            content_hash: existing.content_hash,
+            chars_changed: Math.abs(text.length - (existing.content || '').length),
+          });
+        }
+
+        // Save current version
+        const newVersion = (existing?.version || 0) + (changed ? 1 : 0);
         await supabase.from('kiko_knowledge').upsert({
           domain: domain.id,
           content: text,
           researched_at: new Date().toISOString(),
           source: 'cron-knowledge-seed',
+          content_hash: hash,
+          version: newVersion,
         }, { onConflict: 'domain' });
-        results.push({ domain: domain.id, status: 'saved', length: text.length });
+        results.push({ domain: domain.id, status: changed ? 'updated' : 'unchanged', version: newVersion, length: text.length });
       } else {
         results.push({ domain: domain.id, status: 'empty', length: text.length });
       }

@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-04-17T11:47:59.751Z",
+  "generated_at": "2026-04-17T12:17:08.181Z",
   "commits": [
+    {
+      "hash": "fc7c2e3",
+      "subject": "Final session documentation update: KIKO_SESSION_BRIEF.md updated with all 40+ commits from marathon session. Recent changes expanded to 22 items. Backlog trimmed — voice stability, LinkedIn enrichmen",
+      "when": "29 minutes ago"
+    },
     {
       "hash": "0cd344d",
       "subject": "Voice stability: auto-reconnect + health heartbeat + status indicator. (1) Auto-reconnect on WebRTC failure — up to 3 retries with exponential backoff (2s, 4s, 8s). Cleans up old connection before rec",
-      "when": "65 seconds ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "4a22311",
       "subject": "Audit fix: calendar intent regex expanded — now matches 'What is on my calendar', 'check my calendar', 'am I free', 'do I have any meetings', 'calendar today/tomorrow/this week'. Previously only match",
-      "when": "8 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "7e3e9a3",
       "subject": "Audit fix: added page roles for campaigns, sequences, linkedin, knowledge pages. Kiko now adapts behaviour across all 13 platform pages. campaigns/sequences → Campaign Commander (manage sequences, con",
-      "when": "34 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "f8305b8",
       "subject": "LinkedIn profile enrichment complete + Hetzner cron: (1) api/linkedin-enrich.js — full AI-powered enrichment using Claude Sonnet + web search. Extracts headline, role, location, experience years, prev",
-      "when": "42 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "0ebf3a0",
       "subject": "Infrastructure: backups + CI/CD: (1) Supabase backup script — scripts/backup-supabase.sh deployed to Hetzner. pg_dump + gzip, keeps 14 days, runs daily at 1am via system cron. pg_dump installed on Het",
-      "when": "58 minutes ago"
+      "when": "87 minutes ago"
     },
     {
       "hash": "73c01f7",
       "subject": "Navigation + inline editing + docs: (1) Knowledge page added to navigation (Brain icon, accessible from More menu). (2) Inline deal value editing — click value in deal panel to edit, Enter/blur saves,",
-      "when": "64 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "943f5e3",
       "subject": "Pipeline analytics + Command Centre task creation: (1) Pipeline analytics — win rate %, avg deal value computed from deals data, displayed in PageHeader stats bar alongside active deals and weighted t",
-      "when": "69 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "f0050b2",
       "subject": "Knowledge Browser page: (1) New /knowledge route + KnowledgeBrowser.jsx page. Shows all 15 research domains from kiko_knowledge table. Each domain shows: name, research date (relative), content size. ",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "329513c",
@@ -84,21 +89,16 @@
     {
       "hash": "1a196e0",
       "subject": "Knowledge seed: added manual domain override (?domains=x,y or ?all=1) for on-demand seeding",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "3eeb684",
       "subject": "Fix: ANTHROPIC_KEY env var name in cron-knowledge-seed.js (was ANTHROPIC_API_KEY)",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "2e1d324",
       "subject": "Self-serve knowledge seeding + data loop: (1) New api/cron-knowledge-seed.js — autonomous research engine. Runs daily at 3:30am, picks 3 domains per run from 10 priority areas (F1 sponsorship, insolve",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "03f1245",
-      "subject": "Cron frequency unlocked — learning crons now DAILY: competitive-intel, learning-director, ingest-knowledge, score-companies, enrich, news-agent, news-classify, profile-synthesis, company-enrich, relat",
       "when": "14 hours ago"
     }
   ]

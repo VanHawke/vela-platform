@@ -33,6 +33,7 @@ import KikoFloat from '../kiko/KikoFloat'
 import ThreadIndicator from '../kiko/ThreadIndicator'
 import NotificationToast from '../kiko/NotificationToast'
 import ToastContainer from '../ui/Toast'
+import { requestPushPermission } from '@/lib/pushNotifications'
 import BackgroundTasksPanel from '../kiko/BackgroundTasksPanel'
 import OnboardingModal from '../onboarding/OnboardingModal'
 import { usePagePermissions } from '@/lib/usePagePermissions'
@@ -216,6 +217,7 @@ export default function Layout({ user }) {
       if (!cancelled) setNotifItems(data || [])
     }
     fetchNotifs()
+    requestPushPermission() // Request browser push permission
     const interval = setInterval(fetchNotifs, 60000) // Refresh every 60s
     return () => { cancelled = true; clearInterval(interval) }
   }, [user?.id])

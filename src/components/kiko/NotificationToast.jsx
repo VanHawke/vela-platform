@@ -14,6 +14,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useUserSettings } from '@/lib/useUserSettings'
+import { showPushNotification } from '@/lib/pushNotifications'
 import { Bell, X, Check, Mail, AlertCircle } from 'lucide-react'
 
 const ICONS = {
@@ -60,6 +61,8 @@ export default function NotificationToast({ user }) {
             const next = [...prev, n].slice(-4)
             return next
           })
+          // Browser push notification (only shows when tab is NOT focused)
+          showPushNotification(n.title || 'Kiko', n.body || n.message || '', { tag: n.type || 'kiko', url: n.link || '/command-centre' })
           setTimeout(() => {
             setToasts(prev => prev.filter(t => t.id !== n.id))
           }, 8000)
