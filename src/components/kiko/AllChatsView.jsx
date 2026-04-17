@@ -60,7 +60,7 @@ export default function AllChatsView({ convos, onSelect, onDelete, onClose, user
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 700, margin: '0 auto', padding: '40px 24px 24px', width: '100%' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 600, color: '#fff', fontFamily: T.font, margin: 0 }}>Chats</h1>
+        <h1 style={{ fontSize: 24, fontWeight: 600, color: '#0A0A0A', fontFamily: T.font, margin: 0 }}>Chats</h1>
         <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 50, border: 'none', background: 'rgba(0,0,0,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B6B6B', transition: 'background 0.15s' }}
           onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.08)'}
           onMouseOut={e => e.currentTarget.style.background = 'rgba(0,0,0,0.08)'}>
@@ -73,7 +73,7 @@ export default function AllChatsView({ convos, onSelect, onDelete, onClose, user
         <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#A0A0A0' }} />
         <input ref={inputRef} value={search} onChange={e => handleSearch(e.target.value)}
           placeholder="Search your chats…"
-          style={{ width: '100%', padding: '12px 14px 12px 40px', borderRadius: 12, border: `1.5px solid ${T.glassBorder}`, background: T.glass, backdropFilter: T.glassBlur, color: '#fff', fontSize: 14, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
+          style={{ width: '100%', padding: '12px 14px 12px 40px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.10)', background: '#FAFAF7', color: '#0A0A0A', fontSize: 14, fontFamily: T.font, outline: 'none', boxSizing: 'border-box' }} />
       </div>
 
       {/* Count */}
@@ -91,10 +91,10 @@ export default function AllChatsView({ convos, onSelect, onDelete, onClose, user
           displayed.map(conv => (
             <div key={conv.id} onClick={() => { onSelect(conv); onClose() }}
               style={{ padding: '14px 16px', borderBottom: `1px solid rgba(0,0,0,0.03)`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'background 0.1s', borderRadius: 8 }}
-              onMouseOver={e => e.currentTarget.style.background = T.surfaceHover}
+              onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
               onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: 14, fontWeight: 500, color: '#fff', fontFamily: T.font, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <span style={{ fontSize: 14, fontWeight: 500, color: '#0A0A0A', fontFamily: T.font, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {(conv.title || 'Untitled').replace('🎤 ', '')}
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
@@ -107,7 +107,7 @@ export default function AllChatsView({ convos, onSelect, onDelete, onClose, user
               <button onClick={(e) => { e.stopPropagation(); onDelete(conv) }}
                 style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#A0A0A0', transition: 'color 0.15s', flexShrink: 0 }}
                 onMouseOver={e => e.currentTarget.style.color = 'rgba(198,40,40,0.8)'}
-                onMouseOut={e => e.currentTarget.style.color = 'rgba(0,0,0,0.08)'}>
+                onMouseOut={e => e.currentTarget.style.color = '#A0A0A0'}>
                 <Trash2 size={14} />
               </button>
             </div>

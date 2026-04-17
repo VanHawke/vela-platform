@@ -74,6 +74,9 @@ export default function Settings({ user }) {
   const [saveError, setSaveError] = useState(null)
   const [settings, setSettings] = useState({})
   const [googleStatus, setGoogleStatus] = useState(null)
+  const [linkedinStatus, setLinkedinStatus] = useState(null)
+  const [linkedinInput, setLinkedinInput] = useState('')
+  const [showLinkedinGuide, setShowLinkedinGuide] = useState(false)
   const [teamMembers, setTeamMembers] = useState([])
   const [invitations, setInvitations] = useState([])
   const [inviteEmail, setInviteEmail] = useState('')
@@ -166,7 +169,7 @@ export default function Settings({ user }) {
   }, [])
 
   useEffect(() => {
-    if (email) { loadSettings(); checkGoogleStatus(); loadTeam(); loadBibles() }
+    if (email) { loadSettings(); checkGoogleStatus(); checkLinkedinStatus(); loadTeam(); loadBibles() }
   }, [email])
 
   const loadBibles = async () => {
@@ -304,6 +307,33 @@ export default function Settings({ user }) {
   }
 
   const connectGoogle = () => { window.location.href = `/api/google-auth?email=${encodeURIComponent(email)}` }
+
+  const checkLinkedinStatus = async () => {
+    try {
+      const { data } = await supabase.from('user_tokens').select('access_token, updated_at').eq('user_email', email).eq('provider', 'linkedin').single()
+      setLinkedinStatus(data ? { connected: true, last_updated: data.updated_at } : { connected: false })
+    } catch { setLinkedinStatus({ connected: false }) }
+  }
+
+  const connectLinkedin = async () => {
+    if (!linkedinInput.trim()) return
+    try {
+      await supabase.from('user_tokens').upsert({
+        user_email: email,
+        provider: 'linkedin',
+        access_token: linkedinInput.trim(),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_email,provider' })
+      setLinkedinStatus({ connected: true, last_updated: new Date().toISOString() })
+      setLinkedinInput('')
+      setShowLinkedinGuide(false)
+    } catch (e) { console.error('LinkedIn connect error:', e) }
+  }
+
+  const disconnectLinkedin = async () => {
+    await supabase.from('user_tokens').delete().eq('user_email', email).eq('provider', 'linkedin')
+    setLinkedinStatus({ connected: false })
+  }
 
   const disconnectGoogle = async () => {
     try { await supabase.from('user_tokens').delete().eq('user_email', email).eq('provider', 'google'); setGoogleStatus({ connected: false }) } catch {}
@@ -1037,6 +1067,65 @@ export default function Settings({ user }) {
                 <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 12, paddingLeft: 52, fontFamily: T.font }}>
                   <p style={{ margin: '0 0 2px' }}>Scopes: Gmail (full), Calendar, Profile</p>
                   <p style={{ margin: 0 }}>Last updated: {googleStatus.last_updated ? new Date(googleStatus.last_updated).toLocaleString() : 'Unknown'}</p>
+                </div>
+              )}
+            </div>
+
+            {/* LinkedIn Connection */}
+            <div style={cardStyle}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: T.radiusSm, background: 'rgba(0,119,181,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#0077B5"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 15, fontWeight: 500, color: T.text, margin: 0, fontFamily: T.font }}>LinkedIn</p>
+                    <p style={{ fontSize: 13, color: T.textTertiary, margin: '2px 0 0', fontFamily: T.font }}>Outreach & connections</p>
+                  </div>
+                </div>
+                {linkedinStatus?.connected ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: '#2E7D32' }}><Check size={12} /> Connected</span>
+                    <button onClick={disconnectLinkedin} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: T.textTertiary }}>
+                      <Unplug size={12} /> Disconnect
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={() => setShowLinkedinGuide(true)} style={{
+                    height: 36, padding: '0 16px', borderRadius: T.radiusSm, background: '#0077B5', color: '#FFFFFF',
+                    border: 'none', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: T.font,
+                    display: 'flex', alignItems: 'center', gap: 6,
+                  }}>Connect</button>
+                )}
+              </div>
+              {linkedinStatus?.connected && (
+                <div style={{ fontSize: 12, color: T.textTertiary, marginTop: 12, paddingLeft: 52, fontFamily: T.font }}>
+                  <p style={{ margin: 0 }}>Last updated: {linkedinStatus.last_updated ? new Date(linkedinStatus.last_updated).toLocaleString() : 'Unknown'}</p>
+                </div>
+              )}
+              {showLinkedinGuide && (
+                <div style={{ marginTop: 16, padding: 20, border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, background: '#FAFAF7' }}>
+                  <h4 style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: '0 0 12px', fontFamily: T.font }}>Connect LinkedIn in 3 steps</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13, color: T.text, fontFamily: T.font }}>
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#0077B5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, flexShrink: 0 }}>1</span>
+                      <span>Open <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" style={{ color: '#0077B5', textDecoration: 'none', fontWeight: 500 }}>linkedin.com</a> in a new tab and make sure you're logged in</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#0077B5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, flexShrink: 0 }}>2</span>
+                      <span>Press <strong>F12</strong> → <strong>Application</strong> tab → <strong>Cookies</strong> → <strong>linkedin.com</strong> → find <strong>li_at</strong> → copy its value</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#0077B5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, flexShrink: 0 }}>3</span>
+                      <span>Paste the value below and click Connect</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                    <input value={linkedinInput} onChange={e => setLinkedinInput(e.target.value)} placeholder="Paste li_at cookie value..." style={{ flex: 1, padding: '8px 12px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.12)', fontSize: 13, fontFamily: T.font }} onKeyDown={e => e.key === 'Enter' && connectLinkedin()} />
+                    <button onClick={connectLinkedin} disabled={!linkedinInput.trim()} style={{ padding: '8px 18px', borderRadius: 6, background: linkedinInput.trim() ? '#0077B5' : 'rgba(0,0,0,0.08)', color: linkedinInput.trim() ? '#fff' : '#A0A0A0', border: 'none', fontSize: 13, fontWeight: 500, cursor: linkedinInput.trim() ? 'pointer' : 'default', fontFamily: T.font }}>Connect</button>
+                    <button onClick={() => setShowLinkedinGuide(false)} style={{ padding: '8px 12px', borderRadius: 6, background: 'none', border: '1px solid rgba(0,0,0,0.08)', color: T.textTertiary, fontSize: 13, cursor: 'pointer', fontFamily: T.font }}>Cancel</button>
+                  </div>
+                  <p style={{ fontSize: 11, color: '#A0A0A0', marginTop: 10, fontFamily: T.font }}>Your LinkedIn session is stored securely. It expires after ~12 months. Kiko uses residential proxies to send connections and messages on your behalf.</p>
                 </div>
               )}
             </div>

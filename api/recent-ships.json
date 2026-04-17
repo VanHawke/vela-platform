@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-17T12:17:08.181Z",
+  "generated_at": "2026-04-17T12:31:28.697Z",
   "commits": [
+    {
+      "hash": "aec500e",
+      "subject": "Knowledge versioning + push notifications: (1) kiko_knowledge_history table for version tracking. Seeder now computes content hash, detects changes, archives previous version before overwriting, incre",
+      "when": "14 minutes ago"
+    },
     {
       "hash": "fc7c2e3",
       "subject": "Final session documentation update: KIKO_SESSION_BRIEF.md updated with all 40+ commits from marathon session. Recent changes expanded to 22 items. Backlog trimmed — voice stability, LinkedIn enrichmen",
-      "when": "29 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "0cd344d",
       "subject": "Voice stability: auto-reconnect + health heartbeat + status indicator. (1) Auto-reconnect on WebRTC failure — up to 3 retries with exponential backoff (2s, 4s, 8s). Cleans up old connection before rec",
-      "when": "30 minutes ago"
+      "when": "45 minutes ago"
     },
     {
       "hash": "4a22311",
       "subject": "Audit fix: calendar intent regex expanded — now matches 'What is on my calendar', 'check my calendar', 'am I free', 'do I have any meetings', 'calendar today/tomorrow/this week'. Previously only match",
-      "when": "38 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "7e3e9a3",
       "subject": "Audit fix: added page roles for campaigns, sequences, linkedin, knowledge pages. Kiko now adapts behaviour across all 13 platform pages. campaigns/sequences → Campaign Commander (manage sequences, con",
-      "when": "63 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "f8305b8",
       "subject": "LinkedIn profile enrichment complete + Hetzner cron: (1) api/linkedin-enrich.js — full AI-powered enrichment using Claude Sonnet + web search. Extracts headline, role, location, experience years, prev",
-      "when": "71 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "0ebf3a0",
       "subject": "Infrastructure: backups + CI/CD: (1) Supabase backup script — scripts/backup-supabase.sh deployed to Hetzner. pg_dump + gzip, keeps 14 days, runs daily at 1am via system cron. pg_dump installed on Het",
-      "when": "87 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "73c01f7",
@@ -54,12 +59,12 @@
     {
       "hash": "6919f56",
       "subject": "Pipeline activity history + toast feedback: (1) Activity history section in deal panel — shows type icons (email/call/meeting/note), subject text, and date for up to 8 most recent activities. Fetched ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "8715c32",
       "subject": "AI engine + security improvements: (1) Conversation summarisation — after 20+ messages, older history compressed into context block appended to system prompt, keeping last 20 messages full-fidelity. (",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "6bab4ed",
@@ -74,7 +79,7 @@
     {
       "hash": "1d56da7",
       "subject": "F1 calendar + toast system + error handling: (1) F1 2026 calendar updated from 12 to 22 races — full official calendar with Bahrain/Saudi cancellations, Madrid debut, all sprint weekends marked (China",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "5838c4b",
@@ -84,7 +89,7 @@
     {
       "hash": "3506906",
       "subject": "Major upgrade — 5 improvements: (1) Knowledge seeder expanded: 15 domains (added hedge funds/trading, KYC/AML compliance, financial regulation, contract disputes, retail/consumer law) + ALL 15 now run",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "1a196e0",
@@ -94,11 +99,6 @@
     {
       "hash": "3eeb684",
       "subject": "Fix: ANTHROPIC_KEY env var name in cron-knowledge-seed.js (was ANTHROPIC_API_KEY)",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "2e1d324",
-      "subject": "Self-serve knowledge seeding + data loop: (1) New api/cron-knowledge-seed.js — autonomous research engine. Runs daily at 3:30am, picks 3 domains per run from 10 priority areas (F1 sponsorship, insolve",
       "when": "14 hours ago"
     }
   ]

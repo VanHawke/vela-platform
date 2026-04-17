@@ -117,7 +117,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#14141a', color: 'rgba(255,255,255,0.3)', fontFamily: "'DM Sans', sans-serif", fontSize: 14 }}>Loading...</div>}>
+      <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#FEFEFC', color: '#A0A0A0', fontFamily: "Inter, system-ui, sans-serif", fontSize: 13 }}>Loading...</div>}>
       <Routes>
         <Route path="/login" element={session ? <Navigate to="/" replace /> : <LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
