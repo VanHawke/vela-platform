@@ -169,7 +169,11 @@ async function enrichSelectedForBrief(sel) {
         facts.push(`RECENT SIGNALS/ALERTS:\n${alerts.map(a => `  [${new Date(a.created_at).toLocaleDateString('en-GB', { day:'numeric',month:'short' })}] ${a.title}`).join('\n')}`)
       }
     }
-    if (facts.length === 0) return basePrompt
+    if (facts.length === 0) {
+      // No CRM data found — tell Kiko to web search the entity
+      const entityName = companyName || contactSearch || titleSuffix || sel?.title || ''
+      return `${basePrompt}\n\n---\nNO CRM DATA FOUND for "${entityName}". Use web_search to research this company/person before responding. Search for: "${entityName}" to find their website, LinkedIn, recent news, funding, and key people. Then give a comprehensive brief based on what you find.`
+    }
     return `${basePrompt}\n\n---\nLIVE CONTEXT (from CRM) — ALL THE DATA YOU NEED IS HERE:\n${facts.join('\n')}\n---\nCRITICAL INSTRUCTIONS:\n1. You already have all the relevant CRM data above. DO NOT call pipeline overview tools, deal summary tools, or any tool that returns data about OTHER entities.\n2. If you must use a tool, ONLY search for more information about the SPECIFIC entity mentioned above.\n3. Your response must be EXCLUSIVELY about this entity. Do NOT mention other deals, other tasks, or pipeline health.\n4. Do NOT give a pipeline overview, pipeline health assessment, or mention how many overdue tasks exist.\n5. Structure your response as: WHO they are → DEAL STATUS → WHAT TO DO NEXT → DRAFT EMAIL.`
   } catch {
     return basePrompt

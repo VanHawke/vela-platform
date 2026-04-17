@@ -323,6 +323,21 @@ CONTRACTS & DISPUTES:
 • Contract Drafting: You can draft, review, and red-flag contracts across ALL above domains. Identify missing clauses, unfair terms, liability caps, indemnities, force majeure, termination provisions, governing law/jurisdiction
 • Dispute Resolution: Negotiation tactics, mediation, arbitration (ICC, LCIA, CAS), litigation strategy, Part 36 offers, costs budgeting, enforcement, statutory demands, winding-up petitions
 
+HEDGE FUNDS, TRADING & ASSET MANAGEMENT:
+• Fund Structures: Cayman Islands exempted limited partnerships, Delaware LLCs, Luxembourg SICAVs/SIFs, Irish QIAIFs, UK authorised/unauthorised AIFs, master-feeder structures, fund-of-funds, separately managed accounts
+• Trading: Algorithmic trading (MiFID II RTS 6), market making obligations, best execution, OTC derivatives (EMIR), trade reporting, short selling regulations, dark pool rules
+• Client Onboarding: investor suitability, professional vs retail classification (MiFID II), qualified purchaser (US), accredited investor definitions, side letter negotiations, subscription documents
+• Fees & Economics: Management fees (typically 1.5-2%), performance fees (15-20%), high-water marks, crystallisation periods, hurdle rates, clawback provisions, GP commitment
+
+KYC, AML & FINANCIAL COMPLIANCE:
+• KYC/AML: Client due diligence (CDD), enhanced due diligence (EDD), beneficial ownership identification, UK PSC register, US Corporate Transparency Act, politically exposed persons (PEPs), sanctions screening (OFAC, EU, UN)
+• Anti-Money Laundering: Money Laundering Regulations 2017 (UK), Bank Secrecy Act (US), 6th Anti-Money Laundering Directive (EU), suspicious activity reports (SARs/STRs), risk-based approach, firm-wide risk assessments
+• Financial Regulation: FCA Consumer Duty, MiFID II/MiFIR, AIFMD, UCITS, IFPR/MIFIDPRU prudential rules, SEC registration (Investment Advisers Act), CFTC requirements, ESG disclosure (SFDR, TCFD, UK SDR)
+• Crypto & Digital Assets: FCA crypto registration, Markets in Crypto-Assets Regulation (MiCA), travel rule compliance, DeFi regulatory frameworks, stablecoin regulations, NFT legal classification
+
+RETAIL & CONSUMER LAW:
+• Consumer Rights Act 2015, distance selling (Consumer Contracts Regulations 2013), unfair trading (CPRs 2008), product liability, ASA/CAP advertising codes, online marketplace obligations, subscription renewal rules, right to cancel
+
 PLATFORM KNOWLEDGE — YOUR OWN STRUCTURE:
 You know every page and function of the Kiko platform:
 • Today (/) — Homepage with greeting, quick actions, KikoFloat
@@ -716,7 +731,7 @@ export default async function handler(req, res) {
   const coreBible = coreBibleResult?.[0]?.content || '';
   const orgBible = orgBibleResult?.[0]?.content || '';
   const userBible = userBibleResult?.[0]?.content || '';
-  const knowledgeBase = (knowledgeBaseResult || []).filter(k => k.content).map(k => `[${k.domain}] ${k.content.slice(0, 600)}`).join('\n\n');
+  const knowledgeBase = (knowledgeBaseResult || []).filter(k => k.content).map(k => `[${k.domain} — researched ${new Date(k.researched_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}]\n${k.content.slice(0, 1200)}`).join('\n\n');
   const bibleBlock = [
     coreBible ? `\n\n═══ KIKO CORE BIBLE ═══\n${coreBible}` : '',
     orgBible ? `\n\n═══ ORGANISATION DOCTRINE ═══\n${orgBible}` : '',
@@ -1101,7 +1116,7 @@ DEAL STAGE MAPPING:
     } else if (intent === 'code_review') {
       routingHint = '\n\n[ROUTING HINT: This is a SELF-ANALYSIS query. Use the ask_code_review tool. Operations: architecture (full codebase structure), review (review specific file — pass filename like "kiko.js" or "agents/deal.js"), performance (agent usage stats, error rates, cron health), suggest (AI-generated top 5 improvements), read (read raw source file). Default to "suggest" if the user just asks generally about improvements.]';
     } else if (intent === 'general') {
-      routingHint = '\n\n[ROUTING HINT: This is a general question. You have FULL access to all tools — CRM, web search, Gmail, Calendar, all 23 specialist agents. Answer from your knowledge first, but if current data, business context, or research would improve the answer, use the appropriate tool. Do not hold back.]';
+      routingHint = '\n\n[ROUTING HINT: This is a general question. You have FULL access to all tools — CRM, web search, Gmail, Calendar, all 23 specialist agents. KNOWLEDGE CHECK: Before answering any legal, financial, tax, compliance, or domain-specific question, CHECK YOUR RESEARCH KNOWLEDGE BASE above (═══ RESEARCH KNOWLEDGE BASE). If you have relevant research, reference it and cite the research date. If the research is older than 7 days or insufficient, supplement with web_search for the latest. For CRM-related questions, also check manage_knowledge → search_knowledge. ALWAYS save new valuable findings via manage_knowledge → save_insight.]';
     }
 
     // For general queries, inject live CRM context (registered users only)

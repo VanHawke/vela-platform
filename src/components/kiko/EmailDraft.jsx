@@ -4,18 +4,22 @@ import { Send, Pen, RotateCcw } from 'lucide-react'
 import T from '@/lib/theme'
 
 export function isEmailDraft(text) {
-  if (!text || text.length < 80) return false
+  if (!text || text.length < 60) return false
   const lower = text.toLowerCase()
-  // Must have Subject: in some form
-  const hasSubject = /\*?\*?subject\*?\*?\s*:/i.test(text)
-  if (!hasSubject) return false
-  const hasGreeting = /\b(dear|hi |hello |hey )\b/i.test(text)
-  const hasSignoff = /\b(regards|sincerely|best,|sunny|cheers|thank)/i.test(lower)
-  const hasDraftLabel = lower.includes('suggested draft') || lower.includes('email draft') || lower.includes('draft email') || lower.includes('here\'s the email') || lower.includes('here is the email') || lower.includes('drafted')
+  // Subject line detection — multiple formats Kiko might use
+  const hasSubject = /\*?\*?subject\*?\*?\s*:/i.test(text) || /^subject\s*:/im.test(text) || /re:\s/i.test(text.split('\n')[0] || '')
+  // Greeting patterns
+  const hasGreeting = /\b(dear\s|hi\s|hello\s|hey\s|good\s(morning|afternoon|evening))/i.test(text)
+  // Sign-off patterns
+  const hasSignoff = /\b(kind\s+regards|best\s+regards|warm\s+regards|sincerely|best,|regards,|cheers,|thank\s+you)/i.test(lower)
+  // Draft label patterns
+  const hasDraftLabel = lower.includes('suggested draft') || lower.includes('email draft') || lower.includes('draft email') || lower.includes('here\'s the email') || lower.includes('here is the email') || lower.includes('i\'ve drafted') || lower.includes('here\'s a draft') || lower.includes('draft:') || lower.includes('proposed email')
   const hasTo = /\*?\*?to\*?\*?\s*:/i.test(text)
-  // Also match when Subject: + To: appear together (strong signal even without greeting)
   const hasSubjectAndTo = hasSubject && hasTo
-  return hasGreeting || hasSignoff || hasDraftLabel || hasSubjectAndTo
+  // Strong signal: Subject + greeting/signoff, OR draft label + greeting/signoff
+  const hasEmailStructure = hasSubject && (hasGreeting || hasSignoff)
+  const hasDraftStructure = hasDraftLabel && (hasGreeting || hasSignoff)
+  return hasEmailStructure || hasDraftStructure || hasSubjectAndTo || (hasGreeting && hasSignoff && text.length > 150)
 }
 
 export function extractEmailSection(text) {

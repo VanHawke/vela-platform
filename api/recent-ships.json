@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-17T06:38:17.079Z",
+  "generated_at": "2026-04-17T06:58:58.343Z",
   "commits": [
+    {
+      "hash": "1a196e0",
+      "subject": "Knowledge seed: added manual domain override (?domains=x,y or ?all=1) for on-demand seeding",
+      "when": "21 minutes ago"
+    },
     {
       "hash": "3eeb684",
       "subject": "Fix: ANTHROPIC_KEY env var name in cron-knowledge-seed.js (was ANTHROPIC_API_KEY)",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "2e1d324",
       "subject": "Self-serve knowledge seeding + data loop: (1) New api/cron-knowledge-seed.js — autonomous research engine. Runs daily at 3:30am, picks 3 domains per run from 10 priority areas (F1 sponsorship, insolve",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "03f1245",
       "subject": "Cron frequency unlocked — learning crons now DAILY: competitive-intel, learning-director, ingest-knowledge, score-companies, enrich, news-agent, news-classify, profile-synthesis, company-enrich, relat",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "2e88148",
@@ -44,22 +49,22 @@
     {
       "hash": "54fb103",
       "subject": "CRITICAL FIX: Command Centre item focus — changed currentPage from 'command-centre' to 'home' when viewing a selected item. The command-centre page role was telling Kiko to give broad pipeline overvie",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "a1c6b85",
       "subject": "URGENT FIX — Command Centre + Pipeline buttons: (1) Modified api/kiko.js command-centre page role — replaced broad pipeline overview instructions with SELECTED ITEM FOCUS rule: when user asks about a ",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "3ec353c",
       "subject": "Command Centre prompts rewritten for laser focus: task/deal/reply prompts now explicitly say 'FOCUS ONLY on this specific entity. Do NOT give a general pipeline review.' Each prompt structured with nu",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "d7eb987",
       "subject": "Calendar data isolation: Team/All filter tabs now super_admin only. Regular users (Matt etc.) see only 'Mine' tab — they can see their own calendar events + the platform-wide race schedule (F1/FE). Su",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "f5506dc",
@@ -89,16 +94,11 @@
     {
       "hash": "f8eabf1",
       "subject": "Fixes: (1) Navigation tab now visible to all users in Settings (Matt can personalise his nav). Other admin tabs still super_admin only. (2) Pipeline logActivity buttons fixed — was silently failing be",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "f7e2683",
       "subject": "Fix: (1) Added kiko_voice, kiko_voice_style, kiko_speed, kiko_personality columns to user_settings table — these were missing, causing 'Could not find column' error when saving voice/personality setti",
-      "when": "11 hours ago"
-    },
-    {
-      "hash": "bb896d8",
-      "subject": "Voice settings overhaul: (1) New Voice Style section with 5 tone presets (Natural, Professional, Warm & Inviting, Energetic, Calm & Soothing) — each passes specific instructions to gpt-4o-mini-tts con",
       "when": "11 hours ago"
     }
   ]

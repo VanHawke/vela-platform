@@ -266,10 +266,10 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'read_calendar',
-    description: 'Read and manage Google Calendar. Use when: "what\'s on my calendar", "any meetings today", "what\'s my schedule", "am I free on Tuesday", "upcoming meetings", "calendar this week".',
+    description: 'Read and manage Google Calendar. Use when: "what\'s on my calendar", "any meetings today", "what\'s my schedule", "am I free on Tuesday", "upcoming meetings", "calendar this week", "schedule a meeting", "book time with", "create a calendar event".',
     input_schema: { type: 'object', properties: {
-      operation: { type: 'string', enum: ['today', 'upcoming', 'search', 'free_slots'], description: 'today: today\'s events. upcoming: next 7 days. search: search by query. free_slots: find available time.' },
-      query: { type: 'string', description: 'For search: keywords. For free_slots: date range like "next Tuesday".' },
+      operation: { type: 'string', enum: ['today', 'upcoming', 'search', 'free_slots', 'create_event'], description: 'today: today\'s events. upcoming: next 7 days. search: search by query. free_slots: find available time. create_event: create a new calendar event.' },
+      query: { type: 'string', description: 'For search: keywords. For free_slots: date range like "next Tuesday". For create_event: JSON with {title, start, end?, description?, location?, attendees?[emails]}.' },
     }, required: ['operation'] },
   },
   {
@@ -850,6 +850,33 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       const GCAL = 'https://www.googleapis.com/calendar/v3/calendars/primary';
       const gcfetch = (path) => fetch(`${GCAL}${path}`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
 
+      // Handle create_event before fetching events
+      if (operation === 'create_event') {
+        try {
+          const params = typeof query === 'string' ? JSON.parse(query) : (query || {});
+          const { title, start, end, description, location, attendees } = params;
+          if (!title || !start) return 'Error: title and start required. Example: {"title":"Meeting","start":"2026-04-18T14:00:00"}';
+          const event = {
+            summary: title,
+            start: start.includes('T') ? { dateTime: start, timeZone: 'Europe/London' } : { date: start },
+            end: end ? (end.includes('T') ? { dateTime: end, timeZone: 'Europe/London' } : { date: end })
+              : start.includes('T') ? { dateTime: new Date(new Date(start).getTime() + 30 * 60000).toISOString(), timeZone: 'Europe/London' } : { date: start },
+          };
+          if (description) event.description = description;
+          if (location) event.location = location;
+          if (attendees?.length) event.attendees = attendees.map(a => typeof a === 'string' ? { email: a } : a);
+          const created = await fetch(`${GCAL}/events`, {
+            method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(event),
+          }).then(r => r.json());
+          if (created.error) return `Failed: ${created.error.message}`;
+          const evStart = created.start?.dateTime ? new Date(created.start.dateTime).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : created.start?.date;
+          return `✓ Event created: "${created.summary}" on ${evStart}${created.htmlLink ? '\nLink: ' + created.htmlLink : ''}`;
+        } catch (parseErr) {
+          return `Error: ${parseErr.message}. Pass query as JSON: {"title":"...", "start":"2026-04-18T14:00:00"}`;
+        }
+      }
+
       const now = new Date();
       let timeMin, timeMax;
 
@@ -887,6 +914,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
         const time = start ? start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : 'All day';
         out += `• ${day} ${time}: ${e.summary || '(no title)'}${e.location ? ' @ ' + e.location : ''}\n`;
       }
+
       return out;
     } catch (e) {
       if (e.message?.includes('No Google token') || e.message?.includes('refresh failed')) {

@@ -8,7 +8,9 @@ const supabase = createClient(
 );
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET') return res.status(405).json({ error: 'GET only' });
+  // POST = create event, GET = read events
+  if (req.method === 'POST') return createEvent(req, res);
+  if (req.method !== 'GET') return res.status(405).json({ error: 'GET or POST only' });
 
   const userEmail = req.query.email;
   if (!userEmail) return res.status(400).json({ error: 'email required' });
@@ -57,6 +59,59 @@ export default async function handler(req, res) {
     res.json({ events, count: events.length });
   } catch (err) {
     console.error('[calendar-events]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+
+async function createEvent(req, res) {
+  const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+  const { email, title, start, end, description, location, attendees } = body;
+
+  if (!email) return res.status(400).json({ error: 'email required' });
+  if (!title || !start) return res.status(400).json({ error: 'title and start required' });
+
+  try {
+    const accessToken = await getGoogleToken(email);
+
+    // Build event object
+    const event = {
+      summary: title,
+      start: start.includes('T')
+        ? { dateTime: start, timeZone: 'Europe/London' }
+        : { date: start },
+      end: end
+        ? (end.includes('T') ? { dateTime: end, timeZone: 'Europe/London' } : { date: end })
+        : start.includes('T')
+          ? { dateTime: new Date(new Date(start).getTime() + 30 * 60000).toISOString(), timeZone: 'Europe/London' }
+          : { date: start },
+    };
+    if (description) event.description = description;
+    if (location) event.location = location;
+    if (attendees?.length) event.attendees = attendees.map(a => typeof a === 'string' ? { email: a } : a);
+
+    const gcalRes = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(event),
+    });
+
+    if (!gcalRes.ok) {
+      const err = await gcalRes.json().catch(() => ({}));
+      return res.status(gcalRes.status).json({ error: 'Failed to create event', detail: err.error?.message });
+    }
+
+    const created = await gcalRes.json();
+    res.json({
+      id: created.id,
+      title: created.summary,
+      start: created.start?.dateTime || created.start?.date,
+      end: created.end?.dateTime || created.end?.date,
+      link: created.htmlLink,
+      status: 'created',
+    });
+  } catch (err) {
+    console.error('[calendar-events] Create failed:', err.message);
     res.status(500).json({ error: err.message });
   }
 }

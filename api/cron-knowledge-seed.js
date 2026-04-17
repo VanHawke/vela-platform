@@ -9,7 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
-// 10 domains — rotated daily so each gets deep research every 2-3 days
+// 15 domains — ALL researched every run. Hetzner is flat-rate, zero incremental cost.
 const DOMAINS = [
   { id: 'f1-sponsorship', topic: 'F1 2026 sponsorship market: latest sponsor announcements, team budget changes, open categories, activation trends, any new deals signed this week' },
   { id: 'insolvency-bbls', topic: 'UK insolvency and Bounce Back Loan Scheme: latest MCA disputes, CDDA disqualification cases, personal guarantee enforcement, Insolvency Service actions, new case law from 2025-2026' },
@@ -21,6 +21,11 @@ const DOMAINS = [
   { id: 'uk-property', topic: 'UK property law updates: Renters Reform Act progress, Section 21 abolition timeline, commercial lease trends, EPC regulations, recent tribunal decisions' },
   { id: 'hr-employment', topic: 'UK employment law: recent tribunal decisions, settlement agreement trends, IR35 updates, unfair dismissal cases, redundancy case law, TUPE transfers' },
   { id: 'fundraising-vc', topic: 'Fundraising and venture capital: UK/US pre-seed and seed trends, EIS/SEIS changes, Reg D updates, notable term sheets, valuation multiples for AI/SaaS startups' },
+  { id: 'hedge-funds-trading', topic: 'Hedge fund industry: fund structures (Cayman, Delaware, Luxembourg), prime brokerage trends, algorithmic trading regulations, high-water marks, carry structures, recent fund launches and closures, performance data, managed accounts vs commingled' },
+  { id: 'kyc-aml-compliance', topic: 'KYC/AML compliance: client onboarding regulations, beneficial ownership requirements (UK PSC, US CTA), sanctions screening updates (OFAC, EU), PEP monitoring, FCA guidance on financial crime, 6th Anti-Money Laundering Directive, crypto compliance requirements' },
+  { id: 'financial-regulation', topic: 'Financial regulation and compliance: FCA Consumer Duty updates, MiFID II changes, SEC enforcement actions, AIFMD updates, UCITS developments, ESG disclosure requirements (SFDR, TCFD), prudential rules for investment firms (IFPR/MIFIDPRU)' },
+  { id: 'contract-disputes', topic: 'Contract law and disputes: recent High Court and Court of Appeal commercial cases, force majeure developments, limitation periods, Part 36 offers, mediation trends, arbitration (LCIA, ICC), unfair contract terms, penalty clauses' },
+  { id: 'retail-consumer', topic: 'Retail and consumer law: Consumer Rights Act 2015 developments, distance selling regulations, advertising standards (ASA/CAP), consumer protection from unfair trading, product liability, online marketplace obligations, subscription trap rules' },
 ];
 
 export default async function handler(req, res) {
@@ -37,10 +42,8 @@ export default async function handler(req, res) {
   } else if (queryDomains.length > 0) {
     todaysDomains = DOMAINS.filter(d => queryDomains.includes(d.id));
   } else {
-    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-    const startIdx = (dayOfYear * 3) % DOMAINS.length;
-    todaysDomains = [];
-    for (let i = 0; i < 3; i++) todaysDomains.push(DOMAINS[(startIdx + i) % DOMAINS.length]);
+    // Default: run ALL domains every night. Hetzner = flat rate, no per-execution cost.
+    todaysDomains = [...DOMAINS];
   }
 
   const results = [];
