@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-04-17T14:14:51.599Z",
+  "generated_at": "2026-04-17T14:46:09.644Z",
   "commits": [
+    {
+      "hash": "95d886e",
+      "subject": "Sequence drag-to-reorder + contact dedup polish: (1) SequenceFlowView.jsx rewritten with full HTML5 drag-and-drop — drag handle (GripVertical icon) on each step node, blue drop indicator line between ",
+      "when": "31 minutes ago"
+    },
     {
       "hash": "9db8627",
       "subject": "RAG wired into Kiko + contact dedup UI complete: (1) learning_search in data.js — semantic fallback when keyword results < 3, calls /api/embed for vector search, returns SEMANTIC MATCHES with similari",
-      "when": "9 minutes ago"
+      "when": "40 minutes ago"
     },
     {
       "hash": "6dc6e56",
       "subject": "Sequence visual builder + RAG fix: (1) SequenceFlowView.jsx — visual flow diagram for campaign sequences. Shows steps as connected nodes (Email blue, LinkedIn teal, Condition amber). Condition nodes d",
-      "when": "22 minutes ago"
+      "when": "54 minutes ago"
     },
     {
       "hash": "4bffa98",
       "subject": "RAG debug: lower threshold to 0.15, add query_dims to response",
-      "when": "32 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "f352669",
       "subject": "Fix RAG: lowered match threshold to 0.3, fixed match_embeddings RPC to accept text input and cast to vector internally. All 15 domains embedded (35 chunks).",
-      "when": "34 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "2ce0721",
       "subject": "Rewrite embed.js with health check + better error handling",
-      "when": "45 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "e963183",
       "subject": "Fix vector embedding format: changed from JSON.stringify to pgvector string format for both insert and RPC query. Fixed HNSW index (IVFFlat fails on empty tables). Added POST-only guard.",
-      "when": "49 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "fc354f0",
       "subject": "Vector embedding pipeline complete: (1) api/embed.js — dual-mode endpoint: 'embed' mode chunks knowledge domains into ~2000 char segments and stores as 1536-dim vectors via OpenAI text-embedding-3-sma",
-      "when": "63 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "d7ba580",
       "subject": "Notification quiet hours + contact dedup API + vector embeddings infra: (1) Quiet hours in Settings — enable/disable toggle + from/to time pickers. Wired into NotificationToast — suppresses all notifi",
-      "when": "66 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "b0229d9",
@@ -59,12 +64,12 @@
     {
       "hash": "fc7c2e3",
       "subject": "Final session documentation update: KIKO_SESSION_BRIEF.md updated with all 40+ commits from marathon session. Recent changes expanded to 22 items. Backlog trimmed — voice stability, LinkedIn enrichmen",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "0cd344d",
       "subject": "Voice stability: auto-reconnect + health heartbeat + status indicator. (1) Auto-reconnect on WebRTC failure — up to 3 retries with exponential backoff (2s, 4s, 8s). Cleans up old connection before rec",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "4a22311",
@@ -74,17 +79,17 @@
     {
       "hash": "7e3e9a3",
       "subject": "Audit fix: added page roles for campaigns, sequences, linkedin, knowledge pages. Kiko now adapts behaviour across all 13 platform pages. campaigns/sequences → Campaign Commander (manage sequences, con",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "f8305b8",
       "subject": "LinkedIn profile enrichment complete + Hetzner cron: (1) api/linkedin-enrich.js — full AI-powered enrichment using Claude Sonnet + web search. Extracts headline, role, location, experience years, prev",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "0ebf3a0",
       "subject": "Infrastructure: backups + CI/CD: (1) Supabase backup script — scripts/backup-supabase.sh deployed to Hetzner. pg_dump + gzip, keeps 14 days, runs daily at 1am via system cron. pg_dump installed on Het",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "73c01f7",
@@ -94,11 +99,6 @@
     {
       "hash": "943f5e3",
       "subject": "Pipeline analytics + Command Centre task creation: (1) Pipeline analytics — win rate %, avg deal value computed from deals data, displayed in PageHeader stats bar alongside active deals and weighted t",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "f0050b2",
-      "subject": "Knowledge Browser page: (1) New /knowledge route + KnowledgeBrowser.jsx page. Shows all 15 research domains from kiko_knowledge table. Each domain shows: name, research date (relative), content size. ",
       "when": "4 hours ago"
     }
   ]
