@@ -293,6 +293,18 @@ export default function Pipeline({ user }) {
     [filteredDeals]
   )
 
+  // Pipeline analytics
+  const pipelineAnalytics = useMemo(() => {
+    const closedWon = deals.filter(d => d.stage === 'Closed Won')
+    const closedLost = deals.filter(d => d.stage === 'Closed Lost')
+    const totalClosed = closedWon.length + closedLost.length
+    const winRate = totalClosed > 0 ? Math.round((closedWon.length / totalClosed) * 100) : 0
+    const active = deals.filter(d => d.stage !== 'Closed Won' && d.stage !== 'Closed Lost')
+    const avgValue = active.length > 0 ? Math.round(active.reduce((s, d) => s + parseFloat(d.value || 0), 0) / active.length) : 0
+    const wonValue = closedWon.reduce((s, d) => s + parseFloat(d.value || 0), 0)
+    return { winRate, avgValue, wonValue, closedWon: closedWon.length, closedLost: closedLost.length, totalClosed, activeCount: active.length }
+  }, [deals])
+
   // Drag-drop handlers
   const onDragStart = (deal) => setDragDeal(deal)
   const onDragOver = (e, stageId) => { e.preventDefault(); setDragOverStage(stageId) }
@@ -427,6 +439,8 @@ export default function Pipeline({ user }) {
         stats={[
           { value: activeDealCount, label: 'Active deals' },
           { value: fmtCurrency(totalValue), label: 'Weighted' },
+          { value: `${pipelineAnalytics.winRate}%`, label: 'Win rate' },
+          { value: fmtCurrency(pipelineAnalytics.avgValue), label: 'Avg deal' },
         ]}
         toolbar={
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-17T10:19:49.380Z",
+  "generated_at": "2026-04-17T10:38:47.042Z",
   "commits": [
+    {
+      "hash": "f0050b2",
+      "subject": "Knowledge Browser page: (1) New /knowledge route + KnowledgeBrowser.jsx page. Shows all 15 research domains from kiko_knowledge table. Each domain shows: name, research date (relative), content size. ",
+      "when": "19 minutes ago"
+    },
     {
       "hash": "329513c",
       "subject": "Command Centre task filters + contacts enrichment + toast wiring: (1) Task filter tabs in Command Centre — Overdue/This week/All with live counts, dynamic filtered display, OVERDUE badge per individua",
-      "when": "2 minutes ago"
+      "when": "21 minutes ago"
     },
     {
       "hash": "6919f56",
       "subject": "Pipeline activity history + toast feedback: (1) Activity history section in deal panel — shows type icons (email/call/meeting/note), subject text, and date for up to 8 most recent activities. Fetched ",
-      "when": "22 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "8715c32",
       "subject": "AI engine + security improvements: (1) Conversation summarisation — after 20+ messages, older history compressed into context block appended to system prompt, keeping last 20 messages full-fidelity. (",
-      "when": "31 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "6bab4ed",
       "subject": "Documentation: (1) ARCHITECTURE.md — complete platform architecture: stack, infrastructure (Vercel/Hetzner/Supabase), directory structure, RLS data isolation matrix, AI engine prompt architecture, too",
-      "when": "74 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "f2bad3a",
       "subject": "Test coverage + notification bell + badge: (1) 3 test suites: api-smoke.spec.js (7 tests: homepage, health, calendar, voice-preview, knowledge-seed, login, auth redirect), rls-verification.spec.js (5 ",
-      "when": "77 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "1d56da7",
@@ -39,7 +44,7 @@
     {
       "hash": "3506906",
       "subject": "Major upgrade — 5 improvements: (1) Knowledge seeder expanded: 15 domains (added hedge funds/trading, KYC/AML compliance, financial regulation, contract disputes, retail/consumer law) + ALL 15 now run",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "1a196e0",
@@ -64,22 +69,22 @@
     {
       "hash": "2e88148",
       "subject": "Kiko full unlock — proactive research + knowledge building: (1) Added PROACTIVE RESEARCH PROTOCOL to system prompt — Kiko now runs 3-5 searches minimum for complex queries, saves findings via manage_k",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "d8559dd",
       "subject": "Kiko knowledge expansion: (1) Added EXPERTISE DOMAINS to system prompt — 15 deep specialist areas: UK/US company law, HMRC/IRS tax, HR & employment, licensing & IP, commercial/residential property, te",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "76e3036",
       "subject": "Google Calendar integration: (1) New api/calendar-events.js endpoint — fetches events from Google Calendar API using stored OAuth tokens (auto-refresh via getGoogleToken). Returns events with title, s",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "5c55a4c",
       "subject": "Command Centre: LinkedIn connection acceptances added to Replies section. (1) Query filter expanded to include linkedin_connection_accepted and linkedin_connection% types. (2) Section renamed 'Replies",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "65dd82f",
@@ -94,11 +99,6 @@
     {
       "hash": "a1c6b85",
       "subject": "URGENT FIX — Command Centre + Pipeline buttons: (1) Modified api/kiko.js command-centre page role — replaced broad pipeline overview instructions with SELECTED ITEM FOCUS rule: when user asks about a ",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "3ec353c",
-      "subject": "Command Centre prompts rewritten for laser focus: task/deal/reply prompts now explicitly say 'FOCUS ONLY on this specific entity. Do NOT give a general pipeline review.' Each prompt structured with nu",
       "when": "13 hours ago"
     }
   ]

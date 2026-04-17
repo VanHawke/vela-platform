@@ -14,7 +14,8 @@ export default async function handler(req, res) {
   try {
     const users = await getActiveUsers();
     let token = null;
-    for (const u of users) { token = await getGoogleToken(u.email); if (token) break; }
+    let tokenUserId = null;
+    for (const u of users) { token = await getGoogleToken(u.email); if (token) { tokenUserId = u.id || null; break; } }
     if (!token) {
       await cronHeartbeat('cron-sequence-reply-detect', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 });
       return res.status(200).json({ ok: false, error: 'No Google token' });
@@ -81,6 +82,7 @@ export default async function handler(req, res) {
             entity_type: 'contact',
             entity_name: enrollment.contact_name || email,
             entity_id: enrollment.contact_id || null,
+            user_id: tokenUserId,
             metadata: { gmail_id: msgId, thread_id: threadId, sequence_id: enrollment.sequence_id, enrollment_id: enrollment.id, source: 'sequence_reply_detect' },
             created_at: new Date().toISOString()
           }) }).catch(() => {});
@@ -153,7 +155,7 @@ export default async function handler(req, res) {
           await sbFetch(`kiko_sequence_enrollments?id=eq.${enrollment.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'replied', reply_detected_at: new Date().toISOString() }) });
           await sbFetch(`kiko_outreach_queue?enrollment_id=eq.${enrollment.id}&status=eq.queued`, { method: 'PATCH', body: JSON.stringify({ status: 'cancelled' }) });
           await sbFetch(`kiko_linkedin_queue?enrollment_id=eq.${enrollment.id}&status=eq.pending`, { method: 'PATCH', body: JSON.stringify({ status: 'skipped', actioned_at: new Date().toISOString() }) });
-          await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({ type: 'reply_from_prospect', severity: 'high', title: `LinkedIn reply: ${enrollment.contact_name}`, detail: `${enrollment.contact_name} at ${enrollment.company} replied via LinkedIn. Sequence auto-stopped.`, entity_type: 'contact', entity_name: enrollment.contact_name, metadata: { source: 'linkedin_reply_detect', conversation_urn: conv.conversationUrn }, created_at: new Date().toISOString() }) });
+          await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({ type: 'reply_from_prospect', severity: 'high', title: `LinkedIn reply: ${enrollment.contact_name}`, detail: `${enrollment.contact_name} at ${enrollment.company} replied via LinkedIn. Sequence auto-stopped.`, entity_type: 'contact', entity_name: enrollment.contact_name, user_id: tokenUserId, metadata: { source: 'linkedin_reply_detect', conversation_urn: conv.conversationUrn }, created_at: new Date().toISOString() }) });
           replies++;
         }
       }

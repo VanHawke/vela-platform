@@ -219,6 +219,10 @@ export default function OutreachIntelligence({ user }) {
   const [taskFilter, setTaskFilter] = useState('overdue')
   const [hotReplies, setHotReplies] = useState([])
   const [signals, setSignals] = useState([])
+  const [showNewTask, setShowNewTask] = useState(false)
+  const [newTaskTitle, setNewTaskTitle] = useState('')
+  const [newTaskCompany, setNewTaskCompany] = useState('')
+  const [newTaskDue, setNewTaskDue] = useState('')
 
   // Selected item state — drives right pane
   const [selected, setSelected] = useState(null) // { kind, id, title, meta, payload }
@@ -269,6 +273,24 @@ export default function OutreachIntelligence({ user }) {
     if (selected?.kind === 'task' && selected.id === task.id) setSelected(null)
     await supabase.from('tasks').update({ data: updated, updated_at: new Date().toISOString() }).eq('id', task.id)
     showToast('Task completed', 'success')
+  }
+
+  const createTask = async () => {
+    if (!newTaskTitle.trim()) return
+    const taskData = {
+      title: newTaskTitle.trim(),
+      type: 'follow_up',
+      company: newTaskCompany.trim() || null,
+      dueDate: newTaskDue || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
+      completed: false,
+      source: 'manual',
+    }
+    const { data, error } = await supabase.from('tasks').insert({ data: taskData, updated_at: new Date().toISOString() }).select('id').single()
+    if (!error && data) {
+      setTasks(prev => [{ id: data.id, data: taskData, updated_at: new Date().toISOString() }, ...prev])
+      setNewTaskTitle(''); setNewTaskCompany(''); setNewTaskDue(''); setShowNewTask(false)
+      showToast('Task created', 'success')
+    }
   }
 
   // ── Derived groupings ──
@@ -458,7 +480,7 @@ export default function OutreachIntelligence({ user }) {
           {/* LEFT: Grouped priority list */}
           <div className="cc-list">
             {/* TASK FILTER TABS */}
-            <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(0,0,0,0.06)', marginBottom: 8 }}>
+            <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(0,0,0,0.06)', marginBottom: 8, alignItems: 'center' }}>
               {[
                 { id: 'overdue', label: 'Overdue', count: overdueTasks.length },
                 { id: 'week', label: 'This week', count: thisWeekTasks.length },
@@ -474,7 +496,20 @@ export default function OutreachIntelligence({ user }) {
                   {tab.label} <span style={{ color: '#A0A0A0', marginLeft: 4 }}>{tab.count}</span>
                 </button>
               ))}
+              <button onClick={() => setShowNewTask(!showNewTask)} style={{ marginLeft: 'auto', width: 28, height: 28, borderRadius: 6, border: '1px solid rgba(0,0,0,0.10)', background: 'none', cursor: 'pointer', fontSize: 14, color: '#6B6B6B', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Create task">+</button>
             </div>
+
+            {/* INLINE TASK CREATION */}
+            {showNewTask && (
+              <div style={{ padding: '10px 12px', marginBottom: 8, border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, background: '#FAFAF7', fontFamily: 'Inter, system-ui, sans-serif' }}>
+                <input value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} placeholder="Task title..." style={{ width: '100%', padding: '6px 8px', border: '1px solid rgba(0,0,0,0.10)', borderRadius: 4, fontSize: 13, marginBottom: 6, fontFamily: 'Inter, system-ui, sans-serif' }} onKeyDown={e => e.key === 'Enter' && createTask()} autoFocus />
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <input value={newTaskCompany} onChange={e => setNewTaskCompany(e.target.value)} placeholder="Company (optional)" style={{ flex: 1, padding: '5px 8px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 4, fontSize: 12, fontFamily: 'Inter, system-ui, sans-serif' }} />
+                  <input type="date" value={newTaskDue} onChange={e => setNewTaskDue(e.target.value)} style={{ padding: '5px 8px', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 4, fontSize: 12, fontFamily: 'Inter, system-ui, sans-serif' }} />
+                  <button onClick={createTask} disabled={!newTaskTitle.trim()} style={{ padding: '5px 12px', background: '#0A0A0A', color: '#fff', border: 'none', borderRadius: 4, fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif', opacity: newTaskTitle.trim() ? 1 : 0.4 }}>Add</button>
+                </div>
+              </div>
+            )}
 
             {/* FILTERED TASKS */}
             <div className="cc-group">
