@@ -564,7 +564,26 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
             matches.push({ type: 'learned', category: l.category, content: l.content.slice(0, 200), entity: l.entity_name });
           }
         }
-        if (!matches.length) return `No knowledge found for "${params.query}". I can learn about this — ask me to "learn about ${params.query}".`;
+        if (!matches.length) {
+          // Semantic search fallback via RAG vector embeddings
+          try {
+            const embedRes = await fetch('https://kiko.vanhawke.agency/api/embed', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ mode: 'search', query: params.query }),
+            });
+            if (embedRes.ok) {
+              const embedData = await embedRes.json();
+              if (embedData.results?.length) {
+                let out = `SEMANTIC SEARCH: "${params.query}" — ${embedData.results.length} vector matches\n\n`;
+                for (const r of embedData.results.slice(0, 5)) {
+                  out += `🔍 [${r.source_id}] (${(r.similarity * 100).toFixed(0)}% match): ${r.chunk_text?.slice(0, 250)}\n\n`;
+                }
+                return out;
+              }
+            }
+          } catch (e) { console.error('[search_knowledge] RAG fallback error:', e.message); }
+          return `No knowledge found for "${params.query}". I can learn about this — ask me to "learn about ${params.query}".`;
+        }
         let out = `KNOWLEDGE SEARCH: "${params.query}" — ${matches.length} results\n\n`;
         for (const m of matches.slice(0, 10)) {
           out += m.type === 'source' ? `📚 [${m.category}] ${m.name}: ${m.summary}\n` : `🧠 [${m.category}] ${m.content}\n`;

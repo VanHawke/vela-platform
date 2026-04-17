@@ -39,6 +39,31 @@ export default function Contacts({ user }) {
 
   // Add-contact modal state
   const [showForm, setShowForm] = useState(false)
+  const [showDedup, setShowDedup] = useState(false)
+  const [dedupGroups, setDedupGroups] = useState([])
+  const [dedupLoading, setDedupLoading] = useState(false)
+
+  async function findDuplicates() {
+    setDedupLoading(true)
+    try {
+      const res = await fetch('/api/contact-dedup')
+      const data = await res.json()
+      setDedupGroups(data.groups || [])
+      setShowDedup(true)
+    } catch (e) { console.error('Dedup error:', e) }
+    setDedupLoading(false)
+  }
+
+  async function mergeContacts(keepId, deleteId) {
+    try {
+      await fetch('/api/contact-dedup', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keepId, deleteId }),
+      })
+      setDedupGroups(prev => prev.filter(g => !g.contacts.some(c => c.id === deleteId)))
+      setContacts(prev => prev.filter(c => c.id !== deleteId))
+    } catch (e) { console.error('Merge error:', e) }
+  }
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', company: '', title: '', notes: '' })
   const resetForm = () => {
@@ -194,6 +219,9 @@ export default function Contacts({ user }) {
               <option value="name_desc">Name Z–A</option>
               <option value="company_asc">Company A–Z</option>
             </select>
+            <button className="ct-pri-btn" style={{ background: 'transparent', color: '#6B6B6B', border: '1px solid rgba(0,0,0,0.10)' }} onClick={findDuplicates} disabled={dedupLoading}>
+              {dedupLoading ? 'Scanning...' : 'Find duplicates'}
+            </button>
             <button className="ct-pri-btn" onClick={() => setShowForm(true)}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -315,6 +343,42 @@ export default function Contacts({ user }) {
                 {saving ? 'Saving…' : 'Save contact'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dedup Modal */}
+      {showDedup && (
+        <div className="ct-modal-overlay" onClick={() => setShowDedup(false)}>
+          <div className="ct-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 600, maxHeight: '80vh', overflow: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h3>Duplicate Contacts ({dedupGroups.length} groups)</h3>
+              <button className="ct-modal-btn secondary" onClick={() => setShowDedup(false)} style={{ padding: '4px 10px' }}>✕</button>
+            </div>
+            {dedupGroups.length === 0 ? (
+              <p style={{ color: '#6B6B6B', fontSize: 14, textAlign: 'center', padding: 30 }}>No duplicates found. Your contacts are clean.</p>
+            ) : (
+              dedupGroups.map((group, gi) => (
+                <div key={gi} style={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, padding: 12, marginBottom: 10 }}>
+                  <div style={{ fontSize: 11, color: '#A0A0A0', marginBottom: 8 }}>{group.reason}</div>
+                  {group.contacts.map((c, ci) => (
+                    <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderTop: ci > 0 ? '1px solid rgba(0,0,0,0.04)' : 'none' }}>
+                      <div style={{ flex: 1 }}>
+                        <span style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A' }}>{c.name || c.firstName + ' ' + c.lastName}</span>
+                        <span style={{ fontSize: 12, color: '#6B6B6B', marginLeft: 8 }}>{c.company} · {c.title || c.email}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {ci === 0 ? (
+                          <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, background: '#ECFDF5', color: '#059669' }}>Keep</span>
+                        ) : (
+                          <button onClick={() => mergeContacts(group.contacts[0].id, c.id)} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, border: '1px solid rgba(239,68,68,0.2)', background: '#FEF2F2', color: '#DC2626', cursor: 'pointer' }}>Merge into first</button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}

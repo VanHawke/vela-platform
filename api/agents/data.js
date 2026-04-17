@@ -342,13 +342,42 @@ async function searchLearningLog({ query, category }) {
   let url = 'kiko_learning_log?select=*&order=created_at.desc&limit=20';
   if (category) url += `&category=eq.${category}`;
   const rows = await sbFetch(url);
-  if (!rows?.length) return `No learning log entries found.`;
-  const matches = query ? rows.filter(r => r.content?.toLowerCase().includes(query.toLowerCase()) || r.entity_name?.toLowerCase().includes(query.toLowerCase())) : rows;
-  if (!matches.length) return `No entries matching "${query}".`;
-  let out = `LEARNING LOG (${matches.length} matches):\n\n`;
-  for (const r of matches.slice(0, 10)) {
-    const date = new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-    out += `[${r.category}] ${date}${r.entity_name ? ` — ${r.entity_name}` : ''}: ${r.content}\n`;
+  const matches = query ? (rows || []).filter(r => r.content?.toLowerCase().includes(query.toLowerCase()) || r.entity_name?.toLowerCase().includes(query.toLowerCase())) : (rows || []);
+
+  // Semantic search fallback via RAG embeddings
+  let semanticResults = [];
+  if (query && matches.length < 3) {
+    try {
+      const embedRes = await fetch(`${process.env.VITE_SUPABASE_URL ? 'https://kiko.vanhawke.agency' : ''}/api/embed`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'search', query }),
+      });
+      if (embedRes.ok) {
+        const embedData = await embedRes.json();
+        semanticResults = (embedData.results || []).map(r => ({
+          source: 'semantic', source_id: r.source_id, similarity: r.similarity,
+          content: r.chunk_text?.slice(0, 300), source_type: r.source_type,
+        }));
+      }
+    } catch (e) { console.error('[learning_search] semantic fallback error:', e.message); }
+  }
+
+  if (!matches.length && !semanticResults.length) return `No knowledge found for "${query}". I can learn about this — use web_search to research it, then save findings with manage_knowledge → save_insight.`;
+
+  let out = '';
+  if (matches.length) {
+    out += `LEARNING LOG (${matches.length} matches):\n\n`;
+    for (const r of matches.slice(0, 10)) {
+      const date = new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      out += `[${r.category}] ${date}${r.entity_name ? ` — ${r.entity_name}` : ''}: ${r.content}\n`;
+    }
+  }
+  if (semanticResults.length) {
+    out += `\n\nSEMANTIC MATCHES (vector search, ${semanticResults.length} results):\n\n`;
+    for (const r of semanticResults.slice(0, 5)) {
+      out += `[${r.source_id}] (${(r.similarity * 100).toFixed(0)}% match): ${r.content}\n`;
+    }
   }
   return out;
 }
