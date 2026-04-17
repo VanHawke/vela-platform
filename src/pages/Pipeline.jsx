@@ -8,7 +8,7 @@ import { createPortal } from 'react-dom'
 import { supabase } from '@/lib/supabase'
 import { showToast } from '@/components/ui/Toast'
 import PageHeader from '@/components/layout/PageHeader'
-import { ChevronDown, X, Check, Plus, GripVertical, Eye, EyeOff, Building2, Users, Mail, Calendar, Clock, ExternalLink } from 'lucide-react'
+import { ChevronDown, X, Check, Plus, GripVertical, Eye, EyeOff, Building2, Users, Mail, Calendar, Clock, ExternalLink, Activity } from 'lucide-react'
 import './Pipeline.css'
 
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5'
@@ -182,6 +182,7 @@ export default function Pipeline({ user }) {
   const [dealContacts, setDealContacts] = useState([])
   const [dealCampaigns, setDealCampaigns] = useState([])
   const [dealTasks, setDealTasks] = useState([])
+  const [dealActivities, setDealActivities] = useState([])
   const [activityNote, setActivityNote] = useState('')
   const [loadingPanel, setLoadingPanel] = useState(false)
 
@@ -321,7 +322,7 @@ export default function Pipeline({ user }) {
   const selectDeal = async (deal) => {
     setSelectedDeal(deal)
     setLoadingPanel(true)
-    setDealCompany(null); setDealContacts([]); setDealCampaigns([]); setDealTasks([])
+    setDealCompany(null); setDealContacts([]); setDealCampaigns([]); setDealTasks([]); setDealActivities([])
 
     try {
       // Find company by name — fuzzy match (trim + lowercase + starts-with fallback)
@@ -369,6 +370,13 @@ export default function Pipeline({ user }) {
           .limit(20)
         setDealCampaigns(enrollments || [])
       }
+
+      // Activity history for this deal
+      const actQuery = supabase.from('activities').select('id, type, subject, entity_name, direction, created_at, metadata').order('created_at', { ascending: false }).limit(15)
+      if (deal._id) actQuery.eq('deal_id', deal._id)
+      else if (deal.company) actQuery.ilike('entity_name', `%${deal.company}%`)
+      const { data: activities } = await actQuery
+      setDealActivities(activities || [])
     } catch (err) {
       console.error('[Pipeline] panel load error', err)
     }
@@ -377,7 +385,7 @@ export default function Pipeline({ user }) {
 
   const closePanel = () => {
     setSelectedDeal(null); setDealCompany(null); setDealContacts([])
-    setDealCampaigns([]); setDealTasks([]); setActivityNote('')
+    setDealCampaigns([]); setDealTasks([]); setDealActivities([]); setActivityNote('')
   }
 
   const logActivity = async (type) => {
@@ -402,7 +410,11 @@ export default function Pipeline({ user }) {
     setSavingActivity(false)
     // Brief visual confirmation
     setActivityLogged(type)
+    showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} logged`, 'success')
     setTimeout(() => setActivityLogged(null), 2000)
+    // Refresh activity list
+    const { data: refreshed } = await supabase.from('activities').select('id, data, created_at').or(`data->>deal_id.eq.${selectedDeal._id},data->>company.ilike.%${selectedDeal.company || ''}%`).order('created_at', { ascending: false }).limit(15)
+    setDealActivities((refreshed || []).map(a => ({ id: a.id, ...a.data, created_at: a.created_at })))
   }
 
 
@@ -627,6 +639,30 @@ export default function Pipeline({ user }) {
                 <div key={t.id} className="pl-panel-task">
                   <input type="checkbox" defaultChecked={t.completed} />
                   <span>{t.title || t.name || 'Task'}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* ACTIVITY HISTORY */}
+            <div className="pl-panel-section">
+              <p className="pl-panel-section-title">
+                <Activity size={11} style={{ marginRight: 6 }} />
+                Activity history ({dealActivities.length})
+              </p>
+              {dealActivities.length === 0 ? (
+                <p className="pl-panel-empty">No activity logged yet</p>
+              ) : dealActivities.slice(0, 8).map(a => (
+                <div key={a.id} style={{ display: 'flex', gap: 8, padding: '6px 0', borderBottom: '1px solid rgba(0,0,0,0.04)', fontSize: 12, fontFamily: 'Inter, system-ui, sans-serif' }}>
+                  <span style={{ minWidth: 60, color: '#6B6B6B', flexShrink: 0 }}>
+                    {a.type === 'email' ? '📧' : a.type === 'call' ? '📞' : a.type === 'meeting' ? '📅' : '📝'}
+                    {' '}{a.type || 'note'}
+                  </span>
+                  <span style={{ flex: 1, color: '#0A0A0A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {a.subject || '—'}
+                  </span>
+                  <span style={{ color: '#A0A0A0', flexShrink: 0, fontSize: 10 }}>
+                    {a.created_at ? new Date(a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''}
+                  </span>
                 </div>
               ))}
             </div>
