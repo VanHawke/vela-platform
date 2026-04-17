@@ -118,7 +118,6 @@ export default function Settings({ user }) {
     { id: 'contacts', label: 'Contacts', path: '/contacts' },
     { id: 'organisations', label: 'Organisations', path: '/organisations' },
     { id: 'partnership-matrix', label: 'Partnership Matrix', path: '/partnership-matrix' },
-    { id: 'linkedin', label: 'LinkedIn', path: '/linkedin' },
   ]
   const DEFAULT_TOP_NAV = ALL_TOP_NAV.map(t => t.id)
   const [topNavItems, setTopNavItems] = useState(DEFAULT_TOP_NAV)

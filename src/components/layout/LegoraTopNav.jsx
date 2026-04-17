@@ -16,10 +16,8 @@ const ALL_PAGES = [
   { id: 'contacts',            label: 'Contacts',           path: '/contacts',           showPlus: false, aliases: ['contacts'],                    pageKey: 'contacts' },
   { id: 'organisations',       label: 'Organisations',      path: '/organisations',      showPlus: false, aliases: ['organisations', 'orgs', 'companies'], pageKey: 'organisations' },
   { id: 'partnership-matrix',  label: 'Partnership Matrix', path: '/partnership-matrix', showPlus: false, aliases: ['partnership-matrix', 'insights'], pageKey: 'partnership_matrix' },
-  { id: 'linkedin',            label: 'LinkedIn',           path: '/linkedin',           showPlus: false, aliases: ['linkedin'],                    pageKey: 'linkedin_queue' },
 ]
-// Default top-nav IDs (everything except LinkedIn which defaults to More)
-const DEFAULT_TOP_IDS = ALL_PAGES.filter(p => p.id !== 'linkedin').map(p => p.id)
+const DEFAULT_TOP_IDS = ALL_PAGES.map(p => p.id)
 // Settings is pinned to More dropdown, never in top nav
 const DEFAULT_TOP_PAGES = DEFAULT_TOP_IDS.map(id => ALL_PAGES.find(p => p.id === id)).filter(Boolean)
 const SETTINGS_ITEM = { id: 'settings', label: 'Settings', path: '/settings', divider: true }
