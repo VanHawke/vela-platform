@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabase'
 import { buildVoiceInstructions, fetchVoiceProfile } from '@/lib/buildVoiceInstructions'
 
 const BAR_COLORS = {
-  connecting: '#f59e0b', listening: '#22c55e', thinking: '#8b5cf6',
+  connecting: '#f59e0b', reconnecting: '#f59e0b', listening: '#22c55e', thinking: '#8b5cf6',
   speaking: '#22c55e', error: '#f87171', idle: 'rgba(0,0,0,0.08)',
 }
 
@@ -78,11 +78,15 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
   const [status, setStatus] = useState('connecting')
   const [speaking, setSpeaking] = useState(false)
   const [volume, setVolume] = useState(0)
+  const [reconnectCount, setReconnectCount] = useState(0)
+  const MAX_RECONNECTS = 3
   const pcRef = useRef(null)
   const dcRef = useRef(null)
   const audioRef = useRef(null)
   const energyRAF = useRef(null)
   const analyserRef = useRef(null)
+  const reconnectTimerRef = useRef(null)
+  const healthTimerRef = useRef(null)
 
   // Expose close handler globally for executeTool's close_voice
   const onCloseRef = useRef(onClose)
@@ -295,11 +299,47 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
         await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp })
         console.log('[KikoVoice] WebRTC connected!')
 
-        // Monitor connection state
+        // Monitor connection state + auto-reconnect
         pc.onconnectionstatechange = () => {
           console.log('[KikoVoice] Connection state:', pc.connectionState)
-          if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') setStatus('error')
+          if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
+            setReconnectCount(prev => {
+              if (prev < MAX_RECONNECTS) {
+                const delay = Math.min(2000 * Math.pow(2, prev), 8000)
+                console.log(`[KikoVoice] Reconnecting in ${delay}ms (attempt ${prev + 1}/${MAX_RECONNECTS})`)
+                setStatus('reconnecting')
+                // Cleanup current connection
+                try { dc.close() } catch {}
+                try { pc.close() } catch {}
+                if (audioRef.current) { audioRef.current.srcObject = null }
+                // Schedule reconnect
+                reconnectTimerRef.current = setTimeout(() => {
+                  dead = false
+                  connect()
+                }, delay)
+                return prev + 1
+              } else {
+                console.error('[KikoVoice] Max reconnection attempts reached')
+                setStatus('error')
+                return prev
+              }
+            })
+          }
+          if (pc.connectionState === 'connected') {
+            setReconnectCount(0)
+          }
         }
+
+        // Health heartbeat — detect silently dead connections every 10s
+        healthTimerRef.current = setInterval(() => {
+          if (!pcRef.current) return
+          const state = pcRef.current.connectionState
+          const iceState = pcRef.current.iceConnectionState
+          if (state === 'failed' || state === 'closed' || iceState === 'failed') {
+            console.warn('[KikoVoice] Health check: bad state', state, iceState)
+            if (pcRef.current.onconnectionstatechange) pcRef.current.onconnectionstatechange()
+          }
+        }, 10000)
 
       } catch (err) {
         console.error('[KikoVoice] Connection error:', err)
@@ -311,6 +351,8 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
     // Cleanup
     return () => {
       dead = true
+      clearTimeout(reconnectTimerRef.current)
+      clearInterval(healthTimerRef.current)
       cancelAnimationFrame(energyRAF.current)
       if (analyserRef.current?.ctx) analyserRef.current.ctx.close().catch(() => {})
       if (dcRef.current) dcRef.current.close()
@@ -333,6 +375,8 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
   }, [status])
 
   const handleClose = useCallback(() => {
+    clearTimeout(reconnectTimerRef.current)
+    clearInterval(healthTimerRef.current)
     cancelAnimationFrame(energyRAF.current)
     if (analyserRef.current?.ctx) analyserRef.current.ctx.close().catch(() => {})
     if (dcRef.current) dcRef.current.close()
@@ -392,7 +436,18 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
       </div>
 
       {/* Status bar — color-coded: amber=connecting, green=active, purple=thinking */}
-      <div style={{ position: 'relative', zIndex: 1, width: 280, height: 3, borderRadius: 50, overflow: 'hidden', marginBottom: 40 }}>
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+        {/* Connection status indicator */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 400, color: 'rgba(0,0,0,0.4)', fontFamily: 'Inter, system-ui, sans-serif' }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}60`, transition: 'background 0.3s' }} />
+          {status === 'connecting' && 'Connecting...'}
+          {status === 'reconnecting' && `Reconnecting (${reconnectCount}/${MAX_RECONNECTS})...`}
+          {status === 'listening' && 'Listening'}
+          {status === 'speaking' && 'Kiko is speaking'}
+          {status === 'thinking' && 'Thinking...'}
+          {status === 'error' && 'Connection lost'}
+        </div>
+        <div style={{ width: 280, height: 3, borderRadius: 50, overflow: 'hidden', marginBottom: 40 }}>
         <div style={{
           width: '100%', height: '100%', borderRadius: 50,
           background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
@@ -400,6 +455,7 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
           animation: 'kikoBarPulse 2.5s ease-in-out infinite',
           transition: 'background 0.5s, box-shadow 0.5s',
         }} />
+      </div>
       </div>
 
       {/* Goodbye Kiko */}
