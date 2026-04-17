@@ -26,7 +26,8 @@ const C = {
   r: 8,
 }
 const glass = { background: C.card, border: `0.5px solid ${C.border}`, borderTop: `0.5px solid rgba(0,0,0,0.08)`, borderRadius: C.r, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'all 0.2s ease' }
-import { Mail, Linkedin, Plus, Clock, Trash2, Save, Sparkles, ArrowLeft, Search, UserPlus, X, ChevronRight, Eye, Reply, AlertTriangle, Send, GitBranch, Copy, MoreHorizontal } from 'lucide-react'
+import { Mail, Linkedin, Plus, Clock, Trash2, Save, Sparkles, ArrowLeft, Search, UserPlus, X, ChevronRight, Eye, Reply, AlertTriangle, Send, GitBranch, Copy, MoreHorizontal, LayoutList, Workflow } from 'lucide-react'
+import SequenceFlowView from '@/components/campaigns/SequenceFlowView'
 
 const APPROACHES = ['authority-led','scarcity-led','social-proof','reciprocity','data-led','intelligence-led','competitive-led','relationship-led']
 const PSYCHOLOGY = ['reciprocity','scarcity','authority','social_proof','commitment','liking','strategic_withdrawal','pattern_interrupt']
@@ -79,6 +80,7 @@ export default function SequenceDetail() {
   const [topPatterns, setTopPatterns] = useState([])
   const [conditions, setConditions] = useState([])
   const [showAddCondition, setShowAddCondition] = useState(false)
+  const [viewMode, setViewMode] = useState('list') // 'list' or 'flow'
   const [newCondition, setNewCondition] = useState({ condition_type: 'opened', operator: 'is', value: '', reference_step: 1, true_next_step: '', false_next_step: '', wait_hours: 0 })
   const [regenPrompt, setRegenPrompt] = useState(false)
   const [refineText, setRefineText] = useState('')  // feedback input for refine-with-feedback loop
@@ -749,6 +751,17 @@ RULES:
       {/* ═══ SEQUENCE TAB ═══ */}
       {tab === 'sequence' && (
         <>
+        {/* View mode toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+          <button onClick={() => setViewMode('list')} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.08)', background: viewMode === 'list' ? '#0A0A0A' : 'transparent', color: viewMode === 'list' ? '#fff' : '#6B6B6B', fontSize: 11, cursor: 'pointer', fontFamily: C.font }}><LayoutList size={12} /> List</button>
+          <button onClick={() => setViewMode('flow')} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.08)', background: viewMode === 'flow' ? '#0A0A0A' : 'transparent', color: viewMode === 'flow' ? '#fff' : '#6B6B6B', fontSize: 11, cursor: 'pointer', fontFamily: C.font }}><Workflow size={12} /> Flow</button>
+        </div>
+
+        {viewMode === 'flow' ? (
+          <div style={{ ...glass, padding: 16, minHeight: 480 }}>
+            <SequenceFlowView steps={steps} conditions={conditions} selectedStep={selStep} onSelectStep={(i) => { setSelStep(i); setViewMode('list') }} onAddStep={(type) => { addStep(type); setViewMode('list') }} />
+          </div>
+        ) : (
         <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 14, minHeight: 480 }}>
           <div style={{ ...glass, padding: 14, overflowY: 'auto' }}>
             <div style={{ textAlign: 'center', padding: '6px 0 12px', fontSize: 11, color: C.textTer, borderBottom: `0.5px solid ${C.border}`, marginBottom: 8 }}>
@@ -1038,6 +1051,7 @@ RULES:
             )}
           </div>
         </div>
+        )} {/* end viewMode ternary */}
         {/* Continue to Leads button (draft flow) */}
         {isDraft && steps.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
