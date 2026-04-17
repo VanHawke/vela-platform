@@ -231,7 +231,7 @@ export default function Contacts({ user }) {
               return (
                 <tr key={c.id} onClick={() => nav(`/contacts/${c.id}`)} onMouseEnter={(e) => onRowEnter(c, e)} onMouseLeave={onRowLeave}>
                   <td><div className="ct-mark">{initials(c.name)}</div></td>
-                  <td><div className="ct-name">{c.name || '—'}</div></td>
+                  <td><div className="ct-name">{c.name || '—'} {(c.email && c.company && c.title) ? <span title="Enriched profile" style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#06D6A0', marginLeft: 6, verticalAlign: 'middle' }} /> : <span title="Thin profile — needs enrichment" style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#D1D1D1', marginLeft: 6, verticalAlign: 'middle' }} />}</div></td>
                   <td>
                     {c.company ? (
                       <span

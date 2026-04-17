@@ -5,6 +5,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { showToast } from '@/components/ui/Toast'
 import PageHeader from '@/components/layout/PageHeader'
 import {
   Mail, Linkedin, MessageSquare, CheckSquare, Square, AlertTriangle,
@@ -215,6 +216,7 @@ export default function OutreachIntelligence({ user }) {
   const [loading, setLoading] = useState(true)
   const [deals, setDeals] = useState([])
   const [tasks, setTasks] = useState([])
+  const [taskFilter, setTaskFilter] = useState('overdue')
   const [hotReplies, setHotReplies] = useState([])
   const [signals, setSignals] = useState([])
 
@@ -266,6 +268,7 @@ export default function OutreachIntelligence({ user }) {
     setTasks(prev => prev.filter(t => t.id !== task.id))
     if (selected?.kind === 'task' && selected.id === task.id) setSelected(null)
     await supabase.from('tasks').update({ data: updated, updated_at: new Date().toISOString() }).eq('id', task.id)
+    showToast('Task completed', 'success')
   }
 
   // ── Derived groupings ──
@@ -454,33 +457,55 @@ export default function OutreachIntelligence({ user }) {
         <div className="cc-grid">
           {/* LEFT: Grouped priority list */}
           <div className="cc-list">
-            {/* OVERDUE TASKS */}
+            {/* TASK FILTER TABS */}
+            <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(0,0,0,0.06)', marginBottom: 8 }}>
+              {[
+                { id: 'overdue', label: 'Overdue', count: overdueTasks.length },
+                { id: 'week', label: 'This week', count: thisWeekTasks.length },
+                { id: 'all', label: 'All', count: tasks.length },
+              ].map(tab => (
+                <button key={tab.id} onClick={() => setTaskFilter(tab.id)} style={{
+                  padding: '8px 14px', fontSize: 12, fontWeight: taskFilter === tab.id ? 600 : 400,
+                  color: taskFilter === tab.id ? '#0A0A0A' : '#6B6B6B',
+                  borderBottom: taskFilter === tab.id ? '2px solid #0A0A0A' : '2px solid transparent',
+                  background: 'none', border: 'none', borderBottomStyle: 'solid',
+                  cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif',
+                }}>
+                  {tab.label} <span style={{ color: '#A0A0A0', marginLeft: 4 }}>{tab.count}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* FILTERED TASKS */}
             <div className="cc-group">
               <div className="cc-group-h">
-                <h3><AlertTriangle size={10} />Overdue</h3>
-                <span className="cc-group-count">{overdueTasks.length}</span>
+                <h3><AlertTriangle size={10} />{taskFilter === 'overdue' ? 'Overdue' : taskFilter === 'week' ? 'This week' : 'All tasks'}</h3>
+                <span className="cc-group-count">{(taskFilter === 'overdue' ? overdueTasks : taskFilter === 'week' ? thisWeekTasks : tasks).length}</span>
               </div>
-              {overdueTasks.length === 0 ? (
-                <div className="cc-empty-row">Nothing overdue</div>
-              ) : overdueTasks.slice(0, 8).map(t => (
-                <div
-                  key={t.id}
-                  className={`cc-row ${isSelected('task', t.id) ? 'selected' : ''}`}
-                  onClick={() => selectTask(t)}
-                >
-                  <button className="cc-row-icon terra" onClick={e => completeTask(t, e)} title="Mark done">
-                    <Square size={10} />
-                  </button>
-                  <div className="cc-row-body">
-                    <div className="cc-row-title">{taskLabel(t)}</div>
-                    <div className="cc-row-meta">
-                      {taskSub(t) && <>{taskSub(t)} · </>}
-                      {dueLabel(t.data?.dueDate)}
-                      <span className="cc-row-tag overdue">OVERDUE</span>
+              {(() => {
+                const filtered = taskFilter === 'overdue' ? overdueTasks : taskFilter === 'week' ? thisWeekTasks : tasks
+                return filtered.length === 0 ? (
+                  <div className="cc-empty-row">{taskFilter === 'overdue' ? 'Nothing overdue' : taskFilter === 'week' ? 'No tasks this week' : 'No open tasks'}</div>
+                ) : filtered.map(t => (
+                  <div
+                    key={t.id}
+                    className={`cc-row ${isSelected('task', t.id) ? 'selected' : ''}`}
+                    onClick={() => selectTask(t)}
+                  >
+                    <button className="cc-row-icon terra" onClick={e => completeTask(t, e)} title="Mark done">
+                      <Square size={10} />
+                    </button>
+                    <div className="cc-row-body">
+                      <div className="cc-row-title">{taskLabel(t)}</div>
+                      <div className="cc-row-meta">
+                        {taskSub(t) && <>{taskSub(t)} · </>}
+                        {dueLabel(t.data?.dueDate)}
+                        {t.data?.dueDate && new Date(t.data.dueDate) < new Date() && <span className="cc-row-tag overdue">OVERDUE</span>}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              })()}
             </div>
 
             {/* STALE DEALS */}
