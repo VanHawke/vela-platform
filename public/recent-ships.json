@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-17T10:17:40.344Z",
+  "generated_at": "2026-04-17T10:19:49.380Z",
   "commits": [
+    {
+      "hash": "329513c",
+      "subject": "Command Centre task filters + contacts enrichment + toast wiring: (1) Task filter tabs in Command Centre — Overdue/This week/All with live counts, dynamic filtered display, OVERDUE badge per individua",
+      "when": "2 minutes ago"
+    },
     {
       "hash": "6919f56",
       "subject": "Pipeline activity history + toast feedback: (1) Activity history section in deal panel — shows type icons (email/call/meeting/note), subject text, and date for up to 8 most recent activities. Fetched ",
-      "when": "20 minutes ago"
+      "when": "22 minutes ago"
     },
     {
       "hash": "8715c32",
       "subject": "AI engine + security improvements: (1) Conversation summarisation — after 20+ messages, older history compressed into context block appended to system prompt, keeping last 20 messages full-fidelity. (",
-      "when": "29 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "6bab4ed",
       "subject": "Documentation: (1) ARCHITECTURE.md — complete platform architecture: stack, infrastructure (Vercel/Hetzner/Supabase), directory structure, RLS data isolation matrix, AI engine prompt architecture, too",
-      "when": "72 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "f2bad3a",
       "subject": "Test coverage + notification bell + badge: (1) 3 test suites: api-smoke.spec.js (7 tests: homepage, health, calendar, voice-preview, knowledge-seed, login, auth redirect), rls-verification.spec.js (5 ",
-      "when": "74 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "1d56da7",
       "subject": "F1 calendar + toast system + error handling: (1) F1 2026 calendar updated from 12 to 22 races — full official calendar with Bahrain/Saudi cancellations, Madrid debut, all sprint weekends marked (China",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "5838c4b",
@@ -94,11 +99,6 @@
     {
       "hash": "3ec353c",
       "subject": "Command Centre prompts rewritten for laser focus: task/deal/reply prompts now explicitly say 'FOCUS ONLY on this specific entity. Do NOT give a general pipeline review.' Each prompt structured with nu",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "d7eb987",
-      "subject": "Calendar data isolation: Team/All filter tabs now super_admin only. Regular users (Matt etc.) see only 'Mine' tab — they can see their own calendar events + the platform-wide race schedule (F1/FE). Su",
       "when": "13 hours ago"
     }
   ]
