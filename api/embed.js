@@ -33,6 +33,7 @@ function chunkText(text, maxChars = 2000, overlap = 200) {
 }
 
 export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
   try {
     // POST mode 1: Embed knowledge domains (cron/batch)
     // POST mode 2: Search by query (returns matching chunks)
@@ -43,7 +44,7 @@ export default async function handler(req, res) {
       // Semantic search — embed query, find nearest chunks
       const queryEmbedding = await getEmbedding(query);
       const { data, error } = await supabase.rpc('match_embeddings', {
-        query_embedding: JSON.stringify(queryEmbedding),
+        query_embedding: `[${queryEmbedding.join(',')}]`,
         match_count: 5,
         match_threshold: 0.65,
       });
@@ -76,7 +77,7 @@ export default async function handler(req, res) {
               source_type: 'knowledge',
               source_id: k.domain,
               chunk_text: chunks[i],
-              embedding: JSON.stringify(embedding),
+              embedding: `[${embedding.join(',')}]`,
               metadata: { chunk_index: i, total_chunks: chunks.length, domain: k.domain },
             });
             embedded++;

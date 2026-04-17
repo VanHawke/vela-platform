@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-17T13:11:31.561Z",
+  "generated_at": "2026-04-17T13:26:18.428Z",
   "commits": [
+    {
+      "hash": "fc354f0",
+      "subject": "Vector embedding pipeline complete: (1) api/embed.js — dual-mode endpoint: 'embed' mode chunks knowledge domains into ~2000 char segments and stores as 1536-dim vectors via OpenAI text-embedding-3-sma",
+      "when": "15 minutes ago"
+    },
     {
       "hash": "d7ba580",
       "subject": "Notification quiet hours + contact dedup API + vector embeddings infra: (1) Quiet hours in Settings — enable/disable toggle + from/to time pickers. Wired into NotificationToast — suppresses all notifi",
-      "when": "3 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "b0229d9",
       "subject": "MotoGP/WEC calendars + pipeline analytics: (1) MotoGP 2026 — 21 races (Thai GP through Valencian GP, Qatar postponed to Nov 8 due to Iran war). (2) WEC 2026 — 8 rounds (Imola through Bahrain, Qatar re",
-      "when": "27 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "0369620",
       "subject": "LinkedIn connect + 3 bug fixes + knowledge versioning: (1) LinkedIn connection in Settings → Accounts — blue Connect button, 3-step guided flow (open LinkedIn, find li_at cookie, paste), stores in use",
-      "when": "40 minutes ago"
+      "when": "54 minutes ago"
     },
     {
       "hash": "aec500e",
       "subject": "Knowledge versioning + push notifications: (1) kiko_knowledge_history table for version tracking. Seeder now computes content hash, detects changes, archives previous version before overwriting, incre",
-      "when": "54 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "fc7c2e3",
       "subject": "Final session documentation update: KIKO_SESSION_BRIEF.md updated with all 40+ commits from marathon session. Recent changes expanded to 22 items. Backlog trimmed — voice stability, LinkedIn enrichmen",
-      "when": "83 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "0cd344d",
       "subject": "Voice stability: auto-reconnect + health heartbeat + status indicator. (1) Auto-reconnect on WebRTC failure — up to 3 retries with exponential backoff (2s, 4s, 8s). Cleans up old connection before rec",
-      "when": "85 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "4a22311",
@@ -49,12 +54,12 @@
     {
       "hash": "0ebf3a0",
       "subject": "Infrastructure: backups + CI/CD: (1) Supabase backup script — scripts/backup-supabase.sh deployed to Hetzner. pg_dump + gzip, keeps 14 days, runs daily at 1am via system cron. pg_dump installed on Het",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "73c01f7",
       "subject": "Navigation + inline editing + docs: (1) Knowledge page added to navigation (Brain icon, accessible from More menu). (2) Inline deal value editing — click value in deal panel to edit, Enter/blur saves,",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "943f5e3",
@@ -79,7 +84,7 @@
     {
       "hash": "8715c32",
       "subject": "AI engine + security improvements: (1) Conversation summarisation — after 20+ messages, older history compressed into context block appended to system prompt, keeping last 20 messages full-fidelity. (",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "6bab4ed",
@@ -94,12 +99,7 @@
     {
       "hash": "1d56da7",
       "subject": "F1 calendar + toast system + error handling: (1) F1 2026 calendar updated from 12 to 22 races — full official calendar with Bahrain/Saudi cancellations, Madrid debut, all sprint weekends marked (China",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "5838c4b",
-      "subject": "Knowledge seeder restructured for Vercel 300s limit: split into 5 staggered cron calls (3 domains each, 5min apart) covering all 15 domains nightly between 3:30am-3:50am. Each call stays within Vercel",
-      "when": "6 hours ago"
+      "when": "5 hours ago"
     }
   ]
 }
