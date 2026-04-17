@@ -64,6 +64,7 @@ const SCHEDULES = [
   { schedule: '0 4 * * 0,3',    path: '/api/cron-email-voice-learning',    name: 'email-voice' },
   { schedule: '0 4 * * *',      path: '/api/cron-job-cleanup',             name: 'job-cleanup' },
   { schedule: '30 4 * * *',     path: '/api/cron-company-enrich',          name: 'company-enrich' },
+  { schedule: '45 4 * * *',     path: '/api/linkedin-enrich',              name: 'linkedin-enrich' },
   { schedule: '0 5 * * *',      path: '/api/cron-relationship-intel',      name: 'relationship-intel' },
   { schedule: '0 5 * * *',      path: '/api/cron-partnership-verify',      name: 'partnership-verify' },
   { schedule: '30 5 * * 1-5',   path: '/api/cron-people-verify',           name: 'people-verify' },

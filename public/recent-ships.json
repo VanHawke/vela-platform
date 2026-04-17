@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-17T10:49:45.636Z",
+  "generated_at": "2026-04-17T11:05:51.114Z",
   "commits": [
+    {
+      "hash": "0ebf3a0",
+      "subject": "Infrastructure: backups + CI/CD: (1) Supabase backup script — scripts/backup-supabase.sh deployed to Hetzner. pg_dump + gzip, keeps 14 days, runs daily at 1am via system cron. pg_dump installed on Het",
+      "when": "16 minutes ago"
+    },
     {
       "hash": "73c01f7",
       "subject": "Navigation + inline editing + docs: (1) Knowledge page added to navigation (Brain icon, accessible from More menu). (2) Inline deal value editing — click value in deal panel to edit, Enter/blur saves,",
-      "when": "6 minutes ago"
+      "when": "22 minutes ago"
     },
     {
       "hash": "943f5e3",
       "subject": "Pipeline analytics + Command Centre task creation: (1) Pipeline analytics — win rate %, avg deal value computed from deals data, displayed in PageHeader stats bar alongside active deals and weighted t",
-      "when": "11 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "f0050b2",
       "subject": "Knowledge Browser page: (1) New /knowledge route + KnowledgeBrowser.jsx page. Shows all 15 research domains from kiko_knowledge table. Each domain shows: name, research date (relative), content size. ",
-      "when": "30 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "329513c",
       "subject": "Command Centre task filters + contacts enrichment + toast wiring: (1) Task filter tabs in Command Centre — Overdue/This week/All with live counts, dynamic filtered display, OVERDUE badge per individua",
-      "when": "32 minutes ago"
+      "when": "48 minutes ago"
     },
     {
       "hash": "6919f56",
       "subject": "Pipeline activity history + toast feedback: (1) Activity history section in deal panel — shows type icons (email/call/meeting/note), subject text, and date for up to 8 most recent activities. Fetched ",
-      "when": "52 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "8715c32",
       "subject": "AI engine + security improvements: (1) Conversation summarisation — after 20+ messages, older history compressed into context block appended to system prompt, keeping last 20 messages full-fidelity. (",
-      "when": "61 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "6bab4ed",
@@ -64,12 +69,12 @@
     {
       "hash": "3eeb684",
       "subject": "Fix: ANTHROPIC_KEY env var name in cron-knowledge-seed.js (was ANTHROPIC_API_KEY)",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "2e1d324",
       "subject": "Self-serve knowledge seeding + data loop: (1) New api/cron-knowledge-seed.js — autonomous research engine. Runs daily at 3:30am, picks 3 domains per run from 10 priority areas (F1 sponsorship, insolve",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "03f1245",
@@ -94,11 +99,6 @@
     {
       "hash": "5c55a4c",
       "subject": "Command Centre: LinkedIn connection acceptances added to Replies section. (1) Query filter expanded to include linkedin_connection_accepted and linkedin_connection% types. (2) Section renamed 'Replies",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "65dd82f",
-      "subject": "Command Centre focus v3: (1) Enrichment context wrapper now explicitly says 'ALL THE DATA YOU NEED IS HERE — DO NOT call pipeline overview tools, deal summary tools, or any tool that returns data abou",
       "when": "13 hours ago"
     }
   ]
