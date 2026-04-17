@@ -32,6 +32,7 @@ import { Settings, LogOut, Search, ChevronDown, BarChart3, Grid3X3, Building2, H
 import KikoFloat from '../kiko/KikoFloat'
 import ThreadIndicator from '../kiko/ThreadIndicator'
 import NotificationToast from '../kiko/NotificationToast'
+import ToastContainer from '../ui/Toast'
 import BackgroundTasksPanel from '../kiko/BackgroundTasksPanel'
 import OnboardingModal from '../onboarding/OnboardingModal'
 import { usePagePermissions } from '@/lib/usePagePermissions'
@@ -448,6 +449,7 @@ export default function Layout({ user }) {
 
       {/* Realtime notifications toast (v0.0.39) */}
       <NotificationToast user={user} />
+      <ToastContainer />
       <BackgroundTasksPanel user={user} />
       {showOnboarding && <OnboardingModal user={user} onDismiss={() => setShowOnboarding(false)} />}
 

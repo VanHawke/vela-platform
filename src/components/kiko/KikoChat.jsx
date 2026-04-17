@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { showToast } from '@/components/ui/Toast'
 import DOMPurify from 'dompurify'
 // Design tokens — hardcoded (matching Sequences.jsx)
 const C = {
@@ -741,6 +742,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         if (streamText) setMessages(prev => [...prev, { role: 'assistant', content: streamText + '\n\n*[Stopped by user]*' }])
       } else {
         setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message}` }])
+        showToast(err.message?.includes('token') ? 'Session expired — please refresh' : 'Kiko encountered an error', 'error')
       }
       setStreamText('')
     }
