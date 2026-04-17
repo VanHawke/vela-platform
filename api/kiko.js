@@ -901,6 +901,7 @@ export default async function handler(req, res) {
       navigate: /^(go\s+to|open|show\s+me|navigate|take\s+me\s+to)\s+(home|pipeline|contacts|calendar|settings|tasks|outreach)/i,
       email_read: /^(check|read|show|get|any)\s*(my)?\s*(new|unread|latest|recent)?\s*(email|inbox|mail|gmail)/i,
       calendar: /^(what(?:'s|\s+is)?\s+on\s+my\s+calendar|any\s+meetings|my\s+schedule|check\s+(?:my\s+)?calendar|meetings?\s+(today|tomorrow|this\s+week)|what(?:'s|\s+is)\s+(?:on\s+)?my\s+schedule|am\s+i\s+free|do\s+i\s+have\s+any\s+meetings|calendar\s+(?:today|tomorrow|this\s+week))/i,
+      directions: /^(directions?\s+to|how\s+do\s+i\s+get\s+to|navigate\s+me\s+to|route\s+to|take\s+me\s+to(?!\s+(home|pipeline|contacts|calendar|settings)))\b/i,
     };
     const fastMatch = Object.entries(FAST_INTENTS).find(([, re]) => re.test(msgLower));
     if (fastMatch) {
@@ -942,6 +943,20 @@ export default async function handler(req, res) {
       finished = true; clearTimeout(watchdog);
       finishResponse();
       return;
+    }
+
+    // Handle deterministic directions — Google Maps link
+    if (intent === 'directions') {
+      const dest = message.replace(/^(directions?\s+to|how\s+do\s+i\s+get\s+to|navigate\s+me\s+to|route\s+to|take\s+me\s+to)\s*/i, '').trim();
+      if (dest) {
+        const userLoc = userConfig?.location || 'Weybridge, UK';
+        const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(userLoc)}&destination=${encodeURIComponent(dest)}&travelmode=driving`;
+        write({ delta: `Here are your directions to **${dest}**:\n\n🗺️ [Open in Google Maps](${mapsUrl})\n\nStarting from ${userLoc}. The link will open with driving directions — you can switch to walking, transit, or cycling once there.` });
+        write({ meta: { done: true, model: 'deterministic', intent: 'directions' } });
+        finished = true; clearTimeout(watchdog);
+        finishResponse();
+        return;
+      }
     }
 
     // Handle deterministic category-gap analysis — no Claude needed

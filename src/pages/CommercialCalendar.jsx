@@ -34,8 +34,23 @@ const F1_2026 = [
 ]
 
 const FE_2026 = [
-  { round: 9,  name: 'Monaco E-Prix',  city: 'Monaco',   date: '2026-05-16', end: '2026-05-16', flag: '⚡' },
-  { round: 11, name: 'Sanya E-Prix',   city: 'Sanya',    date: '2026-06-20', end: '2026-06-20', flag: '⚡' },
+  { round: 1,  name: 'São Paulo ePrix',    city: 'São Paulo',   date: '2025-12-06', end: '2025-12-06', flag: '⚡' },
+  { round: 2,  name: 'Mexico City ePrix',  city: 'Mexico City', date: '2026-01-10', end: '2026-01-10', flag: '⚡' },
+  { round: 3,  name: 'Miami ePrix',        city: 'Miami',       date: '2026-01-31', end: '2026-01-31', flag: '⚡' },
+  { round: 4,  name: 'Jeddah ePrix I',     city: 'Jeddah',      date: '2026-02-13', end: '2026-02-13', flag: '⚡' },
+  { round: 5,  name: 'Jeddah ePrix II',    city: 'Jeddah',      date: '2026-02-14', end: '2026-02-14', flag: '⚡' },
+  { round: 6,  name: 'Madrid ePrix',       city: 'Madrid',      date: '2026-03-21', end: '2026-03-21', flag: '⚡' },
+  { round: 7,  name: 'Berlin ePrix I',     city: 'Berlin',      date: '2026-05-02', end: '2026-05-02', flag: '⚡' },
+  { round: 8,  name: 'Berlin ePrix II',    city: 'Berlin',      date: '2026-05-03', end: '2026-05-03', flag: '⚡' },
+  { round: 9,  name: 'Monaco ePrix I',     city: 'Monaco',      date: '2026-05-16', end: '2026-05-16', flag: '⚡' },
+  { round: 10, name: 'Monaco ePrix II',    city: 'Monaco',      date: '2026-05-17', end: '2026-05-17', flag: '⚡' },
+  { round: 11, name: 'Sanya ePrix',        city: 'Sanya',       date: '2026-06-20', end: '2026-06-20', flag: '⚡' },
+  { round: 12, name: 'Shanghai ePrix I',   city: 'Shanghai',    date: '2026-07-04', end: '2026-07-04', flag: '⚡' },
+  { round: 13, name: 'Shanghai ePrix II',  city: 'Shanghai',    date: '2026-07-05', end: '2026-07-05', flag: '⚡' },
+  { round: 14, name: 'Tokyo ePrix I',      city: 'Tokyo',       date: '2026-07-25', end: '2026-07-25', flag: '⚡' },
+  { round: 15, name: 'Tokyo ePrix II',     city: 'Tokyo',       date: '2026-07-26', end: '2026-07-26', flag: '⚡' },
+  { round: 16, name: 'London ePrix I',     city: 'London',      date: '2026-08-15', end: '2026-08-15', flag: '⚡' },
+  { round: 17, name: 'London ePrix II',    city: 'London',      date: '2026-08-16', end: '2026-08-16', flag: '⚡' },
 ]
 
 const MGP_2026 = [

@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-17T18:27:40.447Z",
+  "generated_at": "2026-04-17T18:52:36.970Z",
   "commits": [
+    {
+      "hash": "1cf1ef6",
+      "subject": "Multi-user reply detection + LinkedIn acceptance monitoring: (1) cron-sequence-reply-detect.js — now scans EACH sender's Gmail inbox, not just the first available. Resolves send_from_user_id per enrol",
+      "when": "25 minutes ago"
+    },
     {
       "hash": "1669f6d",
       "subject": "LinkedIn pipeline complete — Hetzner queue processor: (1) kiko-worker/routes/linkedin-queue.js — POST /linkedin-queue/process reads pending LinkedIn queue items from Supabase, syncs li_at cookies from",
-      "when": "9 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "9602d0f",
       "subject": "SequenceDetail full Legora theme alignment: 81 style fixes. (1) All 0.5px borders → 1px solid. (2) All Tailwind danger colors (rgba 248,113,113) → Legora terra (rgba 184,100,62). (3) All Tailwind ambe",
-      "when": "29 minutes ago"
+      "when": "54 minutes ago"
     },
     {
       "hash": "6f2fc54",
       "subject": "Prospect detail panel + campaign overview analytics: (1) Clicking any prospect name in the campaign table opens a right-side detail panel showing: contact header (name, title, company, email, status b",
-      "when": "72 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "19acd2a",
@@ -34,12 +39,12 @@
     {
       "hash": "95d886e",
       "subject": "Sequence drag-to-reorder + contact dedup polish: (1) SequenceFlowView.jsx rewritten with full HTML5 drag-and-drop — drag handle (GripVertical icon) on each step node, blue drop indicator line between ",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "9db8627",
       "subject": "RAG wired into Kiko + contact dedup UI complete: (1) learning_search in data.js — semantic fallback when keyword results < 3, calls /api/embed for vector search, returns SEMANTIC MATCHES with similari",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "6dc6e56",
@@ -69,12 +74,12 @@
     {
       "hash": "fc354f0",
       "subject": "Vector embedding pipeline complete: (1) api/embed.js — dual-mode endpoint: 'embed' mode chunks knowledge domains into ~2000 char segments and stores as 1536-dim vectors via OpenAI text-embedding-3-sma",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "d7ba580",
       "subject": "Notification quiet hours + contact dedup API + vector embeddings infra: (1) Quiet hours in Settings — enable/disable toggle + from/to time pickers. Wired into NotificationToast — suppresses all notifi",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "b0229d9",
@@ -89,16 +94,11 @@
     {
       "hash": "aec500e",
       "subject": "Knowledge versioning + push notifications: (1) kiko_knowledge_history table for version tracking. Seeder now computes content hash, detects changes, archives previous version before overwriting, incre",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "fc7c2e3",
       "subject": "Final session documentation update: KIKO_SESSION_BRIEF.md updated with all 40+ commits from marathon session. Recent changes expanded to 22 items. Backlog trimmed — voice stability, LinkedIn enrichmen",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "0cd344d",
-      "subject": "Voice stability: auto-reconnect + health heartbeat + status indicator. (1) Auto-reconnect on WebRTC failure — up to 3 retries with exponential backoff (2s, 4s, 8s). Cleans up old connection before rec",
       "when": "7 hours ago"
     }
   ]

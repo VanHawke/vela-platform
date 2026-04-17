@@ -472,6 +472,38 @@ export default function Campaigns({ user }) {
               </div>
             </div>
 
+            {/* Campaign performance stats bar */}
+            {(() => {
+              const total = prospects.length
+              const sent = prospects.reduce((s, p) => s + (p.sent_count || 0), 0)
+              const opens = prospects.reduce((s, p) => s + (p.opens_count || 0), 0)
+              const clicks = prospects.reduce((s, p) => s + (p.clicks_count || 0), 0)
+              const replied = prospects.filter(p => p.replied).length
+              const bounced = prospects.filter(p => p.bounced).length
+              const openRate = sent > 0 ? Math.round((opens / sent) * 100) : 0
+              const replyRate = total > 0 ? Math.round((replied / total) * 100) : 0
+              const clickRate = sent > 0 ? Math.round((clicks / sent) * 100) : 0
+              const bounceRate = total > 0 ? Math.round((bounced / total) * 100) : 0
+              const stats = [
+                { label: 'Enrolled', value: total, color: '#0A0A0A' },
+                { label: 'Sent', value: sent, color: '#0A0A0A' },
+                { label: 'Open rate', value: `${openRate}%`, color: openRate > 30 ? '#7d8a64' : '#0A0A0A' },
+                { label: 'Click rate', value: `${clickRate}%`, color: clickRate > 5 ? '#7d8a64' : '#0A0A0A' },
+                { label: 'Reply rate', value: `${replyRate}%`, color: replyRate > 10 ? '#7d8a64' : '#0A0A0A' },
+                { label: 'Bounced', value: `${bounceRate}%`, color: bounceRate > 5 ? '#B8643E' : '#A0A0A0' },
+              ]
+              return (
+                <div style={{ display: 'flex', gap: 0, padding: '0 28px', borderBottom: `1px solid ${C.border}` }}>
+                  {stats.map((s, i) => (
+                    <div key={i} style={{ flex: 1, padding: '12px 0', textAlign: 'center', borderRight: i < stats.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+                      <div style={{ fontSize: 18, fontWeight: 600, color: s.color, fontFamily: C.font }}>{s.value}</div>
+                      <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 1 }}>{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+              )
+            })()}
+
             {/* Filter bar */}
             <div style={{ padding: '12px 28px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${C.border || 'rgba(0,0,0,0.06)'}` }}>
               <div style={{ position: 'relative', flex: 1, maxWidth: 320 }}>
