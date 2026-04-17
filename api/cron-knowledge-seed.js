@@ -26,11 +26,22 @@ const DOMAINS = [
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-  // Pick 3 domains per run (rotated daily) — covers all 10 every ~3.3 days
-  const startIdx = (dayOfYear * 3) % DOMAINS.length;
-  const todaysDomains = [];
-  for (let i = 0; i < 3; i++) todaysDomains.push(DOMAINS[(startIdx + i) % DOMAINS.length]);
+  // Allow manual override via ?domains=gaming-esports,ai-saas or seed all with ?all=1
+  const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+  const queryAll = req.query?.all === '1' || body.all;
+  const queryDomains = (req.query?.domains || body.domains || '').split(',').filter(Boolean);
+
+  let todaysDomains;
+  if (queryAll) {
+    todaysDomains = [...DOMAINS];
+  } else if (queryDomains.length > 0) {
+    todaysDomains = DOMAINS.filter(d => queryDomains.includes(d.id));
+  } else {
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+    const startIdx = (dayOfYear * 3) % DOMAINS.length;
+    todaysDomains = [];
+    for (let i = 0; i < 3; i++) todaysDomains.push(DOMAINS[(startIdx + i) % DOMAINS.length]);
+  }
 
   const results = [];
   for (const domain of todaysDomains) {
