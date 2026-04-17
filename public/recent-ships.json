@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-04-17T11:46:41.710Z",
+  "generated_at": "2026-04-17T11:47:59.751Z",
   "commits": [
+    {
+      "hash": "0cd344d",
+      "subject": "Voice stability: auto-reconnect + health heartbeat + status indicator. (1) Auto-reconnect on WebRTC failure — up to 3 retries with exponential backoff (2s, 4s, 8s). Cleans up old connection before rec",
+      "when": "65 seconds ago"
+    },
     {
       "hash": "4a22311",
       "subject": "Audit fix: calendar intent regex expanded — now matches 'What is on my calendar', 'check my calendar', 'am I free', 'do I have any meetings', 'calendar today/tomorrow/this week'. Previously only match",
-      "when": "7 minutes ago"
+      "when": "8 minutes ago"
     },
     {
       "hash": "7e3e9a3",
       "subject": "Audit fix: added page roles for campaigns, sequences, linkedin, knowledge pages. Kiko now adapts behaviour across all 13 platform pages. campaigns/sequences → Campaign Commander (manage sequences, con",
-      "when": "33 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "f8305b8",
       "subject": "LinkedIn profile enrichment complete + Hetzner cron: (1) api/linkedin-enrich.js — full AI-powered enrichment using Claude Sonnet + web search. Extracts headline, role, location, experience years, prev",
-      "when": "41 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "0ebf3a0",
       "subject": "Infrastructure: backups + CI/CD: (1) Supabase backup script — scripts/backup-supabase.sh deployed to Hetzner. pg_dump + gzip, keeps 14 days, runs daily at 1am via system cron. pg_dump installed on Het",
-      "when": "57 minutes ago"
+      "when": "58 minutes ago"
     },
     {
       "hash": "73c01f7",
       "subject": "Navigation + inline editing + docs: (1) Knowledge page added to navigation (Brain icon, accessible from More menu). (2) Inline deal value editing — click value in deal panel to edit, Enter/blur saves,",
-      "when": "63 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "943f5e3",
       "subject": "Pipeline analytics + Command Centre task creation: (1) Pipeline analytics — win rate %, avg deal value computed from deals data, displayed in PageHeader stats bar alongside active deals and weighted t",
-      "when": "68 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "f0050b2",
       "subject": "Knowledge Browser page: (1) New /knowledge route + KnowledgeBrowser.jsx page. Shows all 15 research domains from kiko_knowledge table. Each domain shows: name, research date (relative), content size. ",
-      "when": "87 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "329513c",
       "subject": "Command Centre task filters + contacts enrichment + toast wiring: (1) Task filter tabs in Command Centre — Overdue/This week/All with live counts, dynamic filtered display, OVERDUE badge per individua",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "6919f56",
@@ -94,11 +99,6 @@
     {
       "hash": "03f1245",
       "subject": "Cron frequency unlocked — learning crons now DAILY: competitive-intel, learning-director, ingest-knowledge, score-companies, enrich, news-agent, news-classify, profile-synthesis, company-enrich, relat",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "2e88148",
-      "subject": "Kiko full unlock — proactive research + knowledge building: (1) Added PROACTIVE RESEARCH PROTOCOL to system prompt — Kiko now runs 3-5 searches minimum for complex queries, saves findings via manage_k",
       "when": "14 hours ago"
     }
   ]

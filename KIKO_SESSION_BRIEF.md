@@ -1,5 +1,5 @@
 # KIKO SESSION BRIEF
-## Last updated: 2026-04-17 — Commit `943f5e3`+
+## Last updated: 2026-04-17 — Commit `0cd344d`
 
 ---
 
@@ -60,27 +60,35 @@ ssh root@178.104.73.22 "su - kiko -c 'pm2 logs kiko-worker --lines 10 --nostream
 ### Recent major changes:
 - Legora design system (full platform audit, zero old-theme artifacts)
 - RLS on all 12 tables (org-level + user-level isolation)
-- 48 crons migrated from Vercel to Hetzner
-- Voice settings: 5 tone presets, 8 voices, speed control
-- Google Calendar integration (read + write)
-- Command Centre focused briefing (entity-specific, not pipeline dumps)
-- Knowledge seeder: 15 domains researched nightly
-- Toast notification system
-- Notification bell with real alert data
-- F1 2026 calendar: 22 races (full official)
-- Email draft detection improved
-- Test coverage: API smoke + RLS + build tests
+- 49 crons on Hetzner (daily intelligence + knowledge seeding)
+- Voice: 5 tone presets, 8 voices, speed control, auto-reconnect (3 retries), health heartbeat, connection status indicator
+- Google Calendar integration (read + write via Kiko tools)
+- Command Centre: focused briefing, task filters (Overdue/This week/All), task creation, web search fallback
+- Knowledge seeder: 15 domains researched nightly (all populated)
+- LinkedIn profile enrichment (AI-powered, daily cron)
+- Pipeline: activity history in deal panel, analytics (win rate, avg deal), inline value editing
+- Contacts: enrichment badge (green/grey dots), detail page (448 lines)
+- Toast notification system wired into KikoChat, Pipeline, Command Centre
+- Notification bell with real kiko_alerts data, dropdown panel
+- F1 2026 calendar: 22 races (full official, Bahrain/Saudi cancelled)
+- AI engine: conversation summarisation, token budget, tool retry, rate limiting (30 req/min)
+- Test coverage: 3 suites, 18 tests (API, RLS, build)
+- CI/CD: GitHub Actions build verification on every push
+- Supabase backups: pg_dump daily at 1am on Hetzner (14-day retention)
+- Documentation: ARCHITECTURE.md + KIKO_SESSION_BRIEF.md
+- Knowledge browser page at /knowledge
+- Page roles for all 13 platform pages
+- Calendar intent regex fixed (matches all common phrasings)
+- Sequence conditional branching (table + API + evaluation + UI all complete)
 
 ---
 
 ## BACKLOG (priority order)
-1. **Voice stability** — WebRTC reconnection, connection health, dedicated 3-4hr session
-2. **Onboarding flow** — First-run wizard for new users
-3. **Mobile responsiveness** — Pipeline list view, KikoFloat fullscreen
-4. **LinkedIn profile data pull** — Hetzner worker (replicate lemlist AI agent)
-5. **Sequence conditional branching** — Yes/No paths in campaigns
-6. **Email inbox page** — Thread view in platform
-7. **CI/CD pipeline** — Wire tests into GitHub Actions
+1. **Onboarding flow** — First-run wizard for new users
+2. **Mobile responsiveness** — Pipeline list view, KikoFloat fullscreen
+3. **Email inbox page** — Thread view in platform
+4. **Pipeline analytics dashboard** — Charts, conversion funnel, stage velocity
+5. **Multi-tenant billing** — Stripe integration for client subscriptions
 
 ---
 
