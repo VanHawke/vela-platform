@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-17T13:29:40.739Z",
+  "generated_at": "2026-04-17T13:40:44.221Z",
   "commits": [
+    {
+      "hash": "2ce0721",
+      "subject": "Rewrite embed.js with health check + better error handling",
+      "when": "11 minutes ago"
+    },
     {
       "hash": "e963183",
       "subject": "Fix vector embedding format: changed from JSON.stringify to pgvector string format for both insert and RPC query. Fixed HNSW index (IVFFlat fails on empty tables). Added POST-only guard.",
-      "when": "3 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "fc354f0",
       "subject": "Vector embedding pipeline complete: (1) api/embed.js — dual-mode endpoint: 'embed' mode chunks knowledge domains into ~2000 char segments and stores as 1536-dim vectors via OpenAI text-embedding-3-sma",
-      "when": "18 minutes ago"
+      "when": "29 minutes ago"
     },
     {
       "hash": "d7ba580",
       "subject": "Notification quiet hours + contact dedup API + vector embeddings infra: (1) Quiet hours in Settings — enable/disable toggle + from/to time pickers. Wired into NotificationToast — suppresses all notifi",
-      "when": "21 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "b0229d9",
       "subject": "MotoGP/WEC calendars + pipeline analytics: (1) MotoGP 2026 — 21 races (Thai GP through Valencian GP, Qatar postponed to Nov 8 due to Iran war). (2) WEC 2026 — 8 rounds (Imola through Bahrain, Qatar re",
-      "when": "46 minutes ago"
+      "when": "57 minutes ago"
     },
     {
       "hash": "0369620",
       "subject": "LinkedIn connect + 3 bug fixes + knowledge versioning: (1) LinkedIn connection in Settings → Accounts — blue Connect button, 3-step guided flow (open LinkedIn, find li_at cookie, paste), stores in use",
-      "when": "58 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "aec500e",
       "subject": "Knowledge versioning + push notifications: (1) kiko_knowledge_history table for version tracking. Seeder now computes content hash, detects changes, archives previous version before overwriting, incre",
-      "when": "72 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "fc7c2e3",
@@ -54,7 +59,7 @@
     {
       "hash": "f8305b8",
       "subject": "LinkedIn profile enrichment complete + Hetzner cron: (1) api/linkedin-enrich.js — full AI-powered enrichment using Claude Sonnet + web search. Extracts headline, role, location, experience years, prev",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "0ebf3a0",
@@ -94,12 +99,7 @@
     {
       "hash": "6bab4ed",
       "subject": "Documentation: (1) ARCHITECTURE.md — complete platform architecture: stack, infrastructure (Vercel/Hetzner/Supabase), directory structure, RLS data isolation matrix, AI engine prompt architecture, too",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "f2bad3a",
-      "subject": "Test coverage + notification bell + badge: (1) 3 test suites: api-smoke.spec.js (7 tests: homepage, health, calendar, voice-preview, knowledge-seed, login, auth redirect), rls-verification.spec.js (5 ",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     }
   ]
 }
