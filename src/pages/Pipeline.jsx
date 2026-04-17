@@ -304,8 +304,18 @@ export default function Pipeline({ user }) {
     const active = deals.filter(d => d.stage !== 'Closed Won' && d.stage !== 'Closed Lost')
     const avgValue = active.length > 0 ? Math.round(active.reduce((s, d) => s + parseFloat(d.value || 0), 0) / active.length) : 0
     const wonValue = closedWon.reduce((s, d) => s + parseFloat(d.value || 0), 0)
-    return { winRate, avgValue, wonValue, closedWon: closedWon.length, closedLost: closedLost.length, totalClosed, activeCount: active.length }
+    // Stage distribution for funnel
+    const stageCounts = {}
+    const stageValues = {}
+    deals.forEach(d => {
+      const s = d.stage || 'Unknown'
+      stageCounts[s] = (stageCounts[s] || 0) + 1
+      stageValues[s] = (stageValues[s] || 0) + parseFloat(d.value || 0)
+    })
+    return { winRate, avgValue, wonValue, closedWon: closedWon.length, closedLost: closedLost.length, totalClosed, activeCount: active.length, stageCounts, stageValues }
   }, [deals])
+
+  const [showAnalytics, setShowAnalytics] = useState(false)
 
   // Drag-drop handlers
   const onDragStart = (deal) => setDragDeal(deal)
@@ -466,6 +476,9 @@ export default function Pipeline({ user }) {
               />
               Show closed
             </label>
+            <button onClick={() => setShowAnalytics(v => !v)} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.08)', background: showAnalytics ? '#0A0A0A' : 'transparent', color: showAnalytics ? '#fff' : '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>
+              {showAnalytics ? 'Hide analytics' : 'Analytics'}
+            </button>
             <PipelineManager
               pipelines={pipelines}
               activePipeline={pipelineFilter}
@@ -479,6 +492,44 @@ export default function Pipeline({ user }) {
           </div>
         }
       />
+
+      {/* Analytics Panel — toggled from stats bar */}
+      {showAnalytics && (
+        <div style={{ margin: '0 0 16px', padding: '20px 24px', background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 10, fontFamily: 'Inter, system-ui, sans-serif' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h3 style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: 0 }}>Pipeline Analytics</h3>
+            <button onClick={() => setShowAnalytics(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0', fontSize: 18 }}>×</button>
+          </div>
+
+          {/* Conversion Funnel */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {['To Revisit', 'Contact Made', 'In Dialogue', 'Qualified', 'Meeting Arranged', 'Proposal Sent', 'Closed Won'].map((stage, i) => {
+              const count = pipelineAnalytics.stageCounts[stage] || 0
+              const value = pipelineAnalytics.stageValues[stage] || 0
+              const maxCount = Math.max(...Object.values(pipelineAnalytics.stageCounts), 1)
+              const pct = Math.round((count / maxCount) * 100)
+              return (
+                <div key={stage} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 11, color: '#6B6B6B', width: 100, textAlign: 'right', flexShrink: 0 }}>{stage}</span>
+                  <div style={{ flex: 1, height: 20, background: '#F5F4F1', borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
+                    <div style={{ height: '100%', width: `${pct}%`, background: stage === 'Closed Won' ? '#06D6A0' : '#0A0A0A', borderRadius: 4, transition: 'width 0.5s', minWidth: count > 0 ? 20 : 0 }} />
+                    <span style={{ position: 'absolute', right: 6, top: 2, fontSize: 10, color: pct > 60 ? '#fff' : '#6B6B6B', fontWeight: 500 }}>{count} · {fmtCurrency(value)}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Summary stats */}
+          <div style={{ display: 'flex', gap: 24, marginTop: 16, paddingTop: 12, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+            <div><span style={{ fontSize: 20, fontWeight: 600, color: '#0A0A0A' }}>{pipelineAnalytics.winRate}%</span><span style={{ fontSize: 11, color: '#6B6B6B', display: 'block' }}>Win rate</span></div>
+            <div><span style={{ fontSize: 20, fontWeight: 600, color: '#0A0A0A' }}>{pipelineAnalytics.closedWon}</span><span style={{ fontSize: 11, color: '#6B6B6B', display: 'block' }}>Won</span></div>
+            <div><span style={{ fontSize: 20, fontWeight: 600, color: '#0A0A0A' }}>{pipelineAnalytics.closedLost}</span><span style={{ fontSize: 11, color: '#6B6B6B', display: 'block' }}>Lost</span></div>
+            <div><span style={{ fontSize: 20, fontWeight: 600, color: '#06D6A0' }}>{fmtCurrency(pipelineAnalytics.wonValue)}</span><span style={{ fontSize: 11, color: '#6B6B6B', display: 'block' }}>Won value</span></div>
+            <div><span style={{ fontSize: 20, fontWeight: 600, color: '#0A0A0A' }}>{fmtCurrency(pipelineAnalytics.avgValue)}</span><span style={{ fontSize: 11, color: '#6B6B6B', display: 'block' }}>Avg deal</span></div>
+          </div>
+        </div>
+      )}
 
       <div className={`pl-board ${selectedDeal ? 'with-panel' : ''}`}>
         <div className="pl-cols-wrap">

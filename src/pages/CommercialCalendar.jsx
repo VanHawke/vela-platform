@@ -38,6 +38,41 @@ const FE_2026 = [
   { round: 11, name: 'Sanya E-Prix',   city: 'Sanya',    date: '2026-06-20', end: '2026-06-20', flag: '⚡' },
 ]
 
+const MGP_2026 = [
+  { round: 1,  name: 'Thai GP',           city: 'Buriram',     date: '2026-02-27', end: '2026-03-01', flag: '🏍️' },
+  { round: 2,  name: 'Brazilian GP',      city: 'Goiânia',     date: '2026-03-20', end: '2026-03-22', flag: '🏍️' },
+  { round: 3,  name: 'Americas GP',       city: 'Austin',      date: '2026-03-27', end: '2026-03-29', flag: '🏍️' },
+  { round: 4,  name: 'Spanish GP',        city: 'Jerez',       date: '2026-04-24', end: '2026-04-26', flag: '🏍️' },
+  { round: 5,  name: 'French GP',         city: 'Le Mans',     date: '2026-05-08', end: '2026-05-10', flag: '🏍️' },
+  { round: 6,  name: 'Catalan GP',        city: 'Barcelona',   date: '2026-05-15', end: '2026-05-17', flag: '🏍️' },
+  { round: 7,  name: 'Italian GP',        city: 'Mugello',     date: '2026-05-29', end: '2026-05-31', flag: '🏍️' },
+  { round: 8,  name: 'Hungarian GP',      city: 'Balaton Park', date: '2026-06-05', end: '2026-06-07', flag: '🏍️' },
+  { round: 9,  name: 'Czech GP',          city: 'Brno',        date: '2026-06-19', end: '2026-06-21', flag: '🏍️' },
+  { round: 10, name: 'Dutch GP',          city: 'Assen',       date: '2026-06-26', end: '2026-06-28', flag: '🏍️' },
+  { round: 11, name: 'German GP',         city: 'Sachsenring', date: '2026-07-10', end: '2026-07-12', flag: '🏍️' },
+  { round: 12, name: 'British GP',        city: 'Silverstone', date: '2026-08-14', end: '2026-08-16', flag: '🏍️' },
+  { round: 13, name: 'Austrian GP',       city: 'Spielberg',   date: '2026-09-04', end: '2026-09-06', flag: '🏍️' },
+  { round: 14, name: 'San Marino GP',     city: 'Misano',      date: '2026-09-11', end: '2026-09-13', flag: '🏍️' },
+  { round: 15, name: 'Indonesian GP',     city: 'Mandalika',   date: '2026-09-25', end: '2026-09-27', flag: '🏍️' },
+  { round: 16, name: 'Japanese GP',       city: 'Motegi',      date: '2026-10-02', end: '2026-10-04', flag: '🏍️' },
+  { round: 17, name: 'Australian GP',     city: 'Phillip Island', date: '2026-10-16', end: '2026-10-18', flag: '🏍️' },
+  { round: 18, name: 'Malaysian GP',      city: 'Sepang',      date: '2026-10-23', end: '2026-10-25', flag: '🏍️' },
+  { round: 19, name: 'Qatar GP',          city: 'Lusail',      date: '2026-11-08', end: '2026-11-08', flag: '🏍️' },
+  { round: 20, name: 'Portuguese GP',     city: 'Portimão',    date: '2026-11-15', end: '2026-11-15', flag: '🏍️' },
+  { round: 21, name: 'Valencian GP',      city: 'Valencia',    date: '2026-11-22', end: '2026-11-22', flag: '🏍️' },
+]
+
+const WEC_2026 = [
+  { round: 1, name: '6H of Imola',         city: 'Imola',          date: '2026-04-19', end: '2026-04-19', flag: '🏎️' },
+  { round: 2, name: '6H of Spa',           city: 'Spa',            date: '2026-05-09', end: '2026-05-09', flag: '🏎️' },
+  { round: 3, name: '24H of Le Mans',      city: 'Le Mans',        date: '2026-06-13', end: '2026-06-14', flag: '🏎️' },
+  { round: 4, name: '6H of São Paulo',     city: 'São Paulo',      date: '2026-07-12', end: '2026-07-12', flag: '🏎️' },
+  { round: 5, name: '6H of Austin',        city: 'Austin',         date: '2026-09-06', end: '2026-09-06', flag: '🏎️' },
+  { round: 6, name: '6H of Fuji',          city: 'Fuji',           date: '2026-09-20', end: '2026-09-20', flag: '🏎️' },
+  { round: 7, name: '1812km of Qatar',     city: 'Lusail',         date: '2026-10-24', end: '2026-10-24', flag: '🏎️' },
+  { round: 8, name: '8H of Bahrain',       city: 'Sakhir',         date: '2026-11-07', end: '2026-11-07', flag: '🏎️' },
+]
+
 function daysUntil(targetDate, fromDate) {
   const t = new Date(targetDate)
   const f = new Date(fromDate)
@@ -121,6 +156,8 @@ export default function CommercialCalendar({ user }) {
     const list = []
     if (seriesFilter.f1) F1_2026.forEach(r => list.push({ ...r, series: 'f1', id: `f1-${r.round}` }))
     if (seriesFilter.fe) FE_2026.forEach(r => list.push({ ...r, series: 'fe', id: `fe-${r.round}` }))
+    if (seriesFilter.motogp) MGP_2026.forEach(r => list.push({ ...r, series: 'motogp', id: `mgp-${r.round}` }))
+    if (seriesFilter.wec) WEC_2026.forEach(r => list.push({ ...r, series: 'wec', id: `wec-${r.round}` }))
     return list.sort((a, b) => a.date.localeCompare(b.date))
   }, [seriesFilter])
 
