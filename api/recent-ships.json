@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-17T13:40:44.221Z",
+  "generated_at": "2026-04-17T13:42:47.272Z",
   "commits": [
+    {
+      "hash": "f352669",
+      "subject": "Fix RAG: lowered match threshold to 0.3, fixed match_embeddings RPC to accept text input and cast to vector internally. All 15 domains embedded (35 chunks).",
+      "when": "2 minutes ago"
+    },
     {
       "hash": "2ce0721",
       "subject": "Rewrite embed.js with health check + better error handling",
-      "when": "11 minutes ago"
+      "when": "13 minutes ago"
     },
     {
       "hash": "e963183",
       "subject": "Fix vector embedding format: changed from JSON.stringify to pgvector string format for both insert and RPC query. Fixed HNSW index (IVFFlat fails on empty tables). Added POST-only guard.",
-      "when": "14 minutes ago"
+      "when": "16 minutes ago"
     },
     {
       "hash": "fc354f0",
       "subject": "Vector embedding pipeline complete: (1) api/embed.js — dual-mode endpoint: 'embed' mode chunks knowledge domains into ~2000 char segments and stores as 1536-dim vectors via OpenAI text-embedding-3-sma",
-      "when": "29 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "d7ba580",
       "subject": "Notification quiet hours + contact dedup API + vector embeddings infra: (1) Quiet hours in Settings — enable/disable toggle + from/to time pickers. Wired into NotificationToast — suppresses all notifi",
-      "when": "32 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "b0229d9",
       "subject": "MotoGP/WEC calendars + pipeline analytics: (1) MotoGP 2026 — 21 races (Thai GP through Valencian GP, Qatar postponed to Nov 8 due to Iran war). (2) WEC 2026 — 8 rounds (Imola through Bahrain, Qatar re",
-      "when": "57 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "0369620",
       "subject": "LinkedIn connect + 3 bug fixes + knowledge versioning: (1) LinkedIn connection in Settings → Accounts — blue Connect button, 3-step guided flow (open LinkedIn, find li_at cookie, paste), stores in use",
-      "when": "69 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "aec500e",
       "subject": "Knowledge versioning + push notifications: (1) kiko_knowledge_history table for version tracking. Seeder now computes content hash, detects changes, archives previous version before overwriting, incre",
-      "when": "83 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "fc7c2e3",
@@ -95,11 +100,6 @@
       "hash": "8715c32",
       "subject": "AI engine + security improvements: (1) Conversation summarisation — after 20+ messages, older history compressed into context block appended to system prompt, keeping last 20 messages full-fidelity. (",
       "when": "4 hours ago"
-    },
-    {
-      "hash": "6bab4ed",
-      "subject": "Documentation: (1) ARCHITECTURE.md — complete platform architecture: stack, infrastructure (Vercel/Hetzner/Supabase), directory structure, RLS data isolation matrix, AI engine prompt architecture, too",
-      "when": "5 hours ago"
     }
   ]
 }

@@ -48,10 +48,10 @@ export default async function handler(req, res) {
       const { data, error } = await supabase.rpc('match_embeddings', {
         query_embedding: `[${emb.join(',')}]`,
         match_count: 5,
-        match_threshold: 0.3,
+        match_threshold: 0.15,
       });
-      if (error) return res.status(500).json({ error: error.message });
-      return res.json({ results: data || [] });
+      if (error) return res.status(500).json({ error: error.message, hint: 'RPC call failed' });
+      return res.json({ results: data || [], query_dims: emb.length });
     }
 
     // Embed knowledge domains
