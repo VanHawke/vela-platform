@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-17T19:21:40.345Z",
+  "generated_at": "2026-04-17T19:32:31.795Z",
   "commits": [
+    {
+      "hash": "51efb83",
+      "subject": "LinkedIn page fully removed — all references: (1) LegoraTopNav.jsx — removed from ALL_PAGES array and DEFAULT_TOP_IDS filter. (2) Settings.jsx — removed from ALL_TOP_NAV navigation config. (3) Layout.",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "3bf861c",
       "subject": "4 more knowledge domains + system prompt: (1) brand-licensing — fashion/sports/entertainment/automotive licensing deals, royalty benchmarks. (2) sports-licensing — team merch, league programmes, kit m",
-      "when": "17 minutes ago"
+      "when": "28 minutes ago"
     },
     {
       "hash": "1050f4a",
       "subject": "LinkedIn page removed + 7 sports knowledge domains + campaign stats bar: (1) LinkedIn page deleted from routes, navigation, page roles, voice nav. (2) 7 new knowledge domains: football-sponsorship, us",
-      "when": "19 minutes ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "d076f19",
       "subject": "Formula E calendar + campaign stats + Google Maps directions + backup: (1) Formula E 2025-26 calendar complete — 17 races (was only 2). São Paulo Dec 6, Mexico City Jan 10, Miami Jan 31, Jeddah double",
-      "when": "29 minutes ago"
+      "when": "40 minutes ago"
     },
     {
       "hash": "1cf1ef6",
       "subject": "Multi-user reply detection + LinkedIn acceptance monitoring: (1) cron-sequence-reply-detect.js — now scans EACH sender's Gmail inbox, not just the first available. Resolves send_from_user_id per enrol",
-      "when": "54 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "1669f6d",
       "subject": "LinkedIn pipeline complete — Hetzner queue processor: (1) kiko-worker/routes/linkedin-queue.js — POST /linkedin-queue/process reads pending LinkedIn queue items from Supabase, syncs li_at cookies from",
-      "when": "63 minutes ago"
+      "when": "73 minutes ago"
     },
     {
       "hash": "9602d0f",
       "subject": "SequenceDetail full Legora theme alignment: 81 style fixes. (1) All 0.5px borders → 1px solid. (2) All Tailwind danger colors (rgba 248,113,113) → Legora terra (rgba 184,100,62). (3) All Tailwind ambe",
-      "when": "83 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "6f2fc54",
@@ -44,7 +49,7 @@
     {
       "hash": "8f6915d",
       "subject": "Fix LinkedIn guide: DevTools shortcut updated to 'Right-click → Inspect (or Cmd+Option+I on Mac, F12 on Windows)' — was incorrectly showing F12 only",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "fd045b3",
@@ -64,7 +69,7 @@
     {
       "hash": "6dc6e56",
       "subject": "Sequence visual builder + RAG fix: (1) SequenceFlowView.jsx — visual flow diagram for campaign sequences. Shows steps as connected nodes (Email blue, LinkedIn teal, Condition amber). Condition nodes d",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "4bffa98",
@@ -95,11 +100,6 @@
       "hash": "d7ba580",
       "subject": "Notification quiet hours + contact dedup API + vector embeddings infra: (1) Quiet hours in Settings — enable/disable toggle + from/to time pickers. Wired into NotificationToast — suppresses all notifi",
       "when": "6 hours ago"
-    },
-    {
-      "hash": "b0229d9",
-      "subject": "MotoGP/WEC calendars + pipeline analytics: (1) MotoGP 2026 — 21 races (Thai GP through Valencian GP, Qatar postponed to Nov 8 due to Iran war). (2) WEC 2026 — 8 rounds (Imola through Bahrain, Qatar re",
-      "when": "7 hours ago"
     }
   ]
 }

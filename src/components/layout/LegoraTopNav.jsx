@@ -68,6 +68,16 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
     try { const s = localStorage.getItem('kiko_more_order'); return s ? JSON.parse(s) : null } catch { return null }
   })
   useEffect(() => {
+    // ── Force-clean stale 'linkedin' from saved nav order ──
+    try {
+      ['kiko_top_nav_v2', 'kiko_nav_order', 'kiko_more_order'].forEach(key => {
+        const raw = localStorage.getItem(key)
+        if (raw && raw.includes('linkedin')) {
+          const arr = JSON.parse(raw).filter(id => id !== 'linkedin')
+          localStorage.setItem(key, JSON.stringify(arr))
+        }
+      })
+    } catch {}
     const applyOrder = () => {
       try {
         const stored = localStorage.getItem('kiko_top_nav_v2')
