@@ -108,6 +108,9 @@ export default function Layout({ user }) {
   const [moreOpen, setMoreOpen] = useState(false)
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
+  const [notifCount, setNotifCount] = useState(0)
+  const [notifItems, setNotifItems] = useState([])
   const [voiceActive, setVoiceActive] = useState(false)
   const [voiceStatus, setVoiceStatus] = useState('Listening')
   const [topNavIds, setTopNavIds] = useState(getTopNavIds)
@@ -200,6 +203,21 @@ export default function Layout({ user }) {
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
+
+  // Fetch notification count from kiko_alerts
+  useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    const fetchNotifs = async () => {
+      const { count } = await supabase.from('kiko_alerts').select('id', { count: 'exact', head: true }).eq('dismissed', false).gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+      if (!cancelled) setNotifCount(count || 0)
+      const { data } = await supabase.from('kiko_alerts').select('id, type, title, entity_name, created_at').eq('dismissed', false).order('created_at', { ascending: false }).limit(8)
+      if (!cancelled) setNotifItems(data || [])
+    }
+    fetchNotifs()
+    const interval = setInterval(fetchNotifs, 60000) // Refresh every 60s
+    return () => { cancelled = true; clearInterval(interval) }
+  }, [user?.id])
 
   // ⌘K shortcut
   useEffect(() => {
@@ -397,11 +415,37 @@ export default function Layout({ user }) {
         user={user}
         profile={profile}
         customLogo={customLogo}
-        hasNotifications={true}
+        hasNotifications={notifCount > 0}
+        notifCount={notifCount}
         isAdmin={isSuperAdmin}
         onSearchClick={() => setCommandPaletteOpen(true)}
+        onNotificationsClick={() => setNotifOpen(!notifOpen)}
       />
 
+
+      {/* Notification dropdown */}
+      {notifOpen && (
+        <div style={{ position: 'fixed', top: 52, right: 60, width: 360, maxHeight: 420, background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,0.12)', zIndex: 200, overflow: 'hidden', fontFamily: 'Inter, system-ui, sans-serif' }} onClick={e => e.stopPropagation()}>
+          <div style={{ padding: '14px 18px 10px', borderBottom: '1px solid rgba(0,0,0,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A' }}>Notifications</span>
+            {notifCount > 0 && <span style={{ fontSize: 11, color: '#06a87d', fontWeight: 500 }}>{notifCount} new</span>}
+          </div>
+          <div style={{ overflowY: 'auto', maxHeight: 350 }}>
+            {notifItems.length === 0 ? (
+              <div style={{ padding: '30px 18px', textAlign: 'center', color: '#A0A0A0', fontSize: 13 }}>No recent notifications</div>
+            ) : notifItems.map(n => (
+              <div key={n.id} onClick={() => { setNotifOpen(false); nav('/command-centre') }} style={{ padding: '10px 18px', borderBottom: '1px solid rgba(0,0,0,0.03)', cursor: 'pointer', transition: 'background 150ms' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.02)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                <div style={{ fontSize: 13, fontWeight: 450, color: '#0A0A0A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{n.title}</div>
+                <div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 2 }}>{n.entity_name ? `${n.entity_name} · ` : ''}{new Date(n.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ padding: '10px 18px', borderTop: '1px solid rgba(0,0,0,0.06)', textAlign: 'center' }}>
+            <button onClick={() => { setNotifOpen(false); nav('/command-centre') }} style={{ fontSize: 12, color: '#0A0A0A', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>View all in Command Centre →</button>
+          </div>
+        </div>
+      )}
+      {notifOpen && <div style={{ position: 'fixed', inset: 0, zIndex: 199 }} onClick={() => setNotifOpen(false)} />}
 
       {/* Mobile navigation menu overlay */}
       {mobileMenuOpen && (

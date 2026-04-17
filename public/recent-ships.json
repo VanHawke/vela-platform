@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-17T08:48:20.932Z",
+  "generated_at": "2026-04-17T09:03:05.028Z",
   "commits": [
+    {
+      "hash": "1d56da7",
+      "subject": "F1 calendar + toast system + error handling: (1) F1 2026 calendar updated from 12 to 22 races — full official calendar with Bahrain/Saudi cancellations, Madrid debut, all sprint weekends marked (China",
+      "when": "15 minutes ago"
+    },
     {
       "hash": "5838c4b",
       "subject": "Knowledge seeder restructured for Vercel 300s limit: split into 5 staggered cron calls (3 domains each, 5min apart) covering all 15 domains nightly between 3:30am-3:50am. Each call stays within Vercel",
@@ -19,12 +24,12 @@
     {
       "hash": "3eeb684",
       "subject": "Fix: ANTHROPIC_KEY env var name in cron-knowledge-seed.js (was ANTHROPIC_API_KEY)",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "2e1d324",
       "subject": "Self-serve knowledge seeding + data loop: (1) New api/cron-knowledge-seed.js — autonomous research engine. Runs daily at 3:30am, picks 3 domains per run from 10 priority areas (F1 sponsorship, insolve",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "03f1245",
@@ -54,17 +59,17 @@
     {
       "hash": "65dd82f",
       "subject": "Command Centre focus v3: (1) Enrichment context wrapper now explicitly says 'ALL THE DATA YOU NEED IS HERE — DO NOT call pipeline overview tools, deal summary tools, or any tool that returns data abou",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "54fb103",
       "subject": "CRITICAL FIX: Command Centre item focus — changed currentPage from 'command-centre' to 'home' when viewing a selected item. The command-centre page role was telling Kiko to give broad pipeline overvie",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "a1c6b85",
       "subject": "URGENT FIX — Command Centre + Pipeline buttons: (1) Modified api/kiko.js command-centre page role — replaced broad pipeline overview instructions with SELECTED ITEM FOCUS rule: when user asks about a ",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "3ec353c",
@@ -94,11 +99,6 @@
     {
       "hash": "3371c1a",
       "subject": "Calendar cleanup: removed ALL hardcoded fake events (Giacomo meetings, Goldman Sachs calls, Van Hawke board check-in, m pipeline, Mark Nelson Stripe, fake prospect pills with fabricated send times, fa",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "fc7f417",
-      "subject": "KikoFloat fixes: (1) Prompt bar aligned with main chat — font 14→15px, buttons 28→30px with borders + shadows, send button gradient matches main chat, mic/voice buttons have consistent border treatmen",
       "when": "12 hours ago"
     }
   ]

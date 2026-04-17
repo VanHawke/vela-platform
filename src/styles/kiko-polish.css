@@ -380,11 +380,17 @@
 }
 .ltn-icon:hover { background: rgba(0,0,0,0.03); color: #0A0A0A; }
 .ltn-dot {
-  position: absolute; top: 7px; right: 8px;
-  width: 6px; height: 6px;
-  border-radius: 50%;
+  position: absolute; top: 4px; right: 4px;
+  min-width: 16px; height: 16px;
+  border-radius: 9px;
   background: #b8643e;
   box-shadow: 0 0 0 2px #FEFEFC;
+  font-size: 9px; font-weight: 600; color: #FFFFFF;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 4px; line-height: 1;
+}
+.ltn-dot:empty {
+  min-width: 6px; height: 6px; padding: 0; top: 7px; right: 8px;
 }
 .ltn-cta {
   height: 32px; padding: 0 14px;
