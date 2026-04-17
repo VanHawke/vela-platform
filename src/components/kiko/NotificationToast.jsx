@@ -54,6 +54,15 @@ export default function NotificationToast({ user }) {
         (payload) => {
           const n = payload.new
           if (!n) return
+          // Check quiet hours
+          if (prefs.quiet_enabled) {
+            const now = new Date()
+            const hhmm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`
+            const start = prefs.quiet_start || '22:00'
+            const end = prefs.quiet_end || '08:00'
+            const inQuiet = start < end ? (hhmm >= start && hhmm < end) : (hhmm >= start || hhmm < end)
+            if (inQuiet) return // suppress during quiet hours
+          }
           // Check mute preference for this notification type
           const typeKey = n.type in prefs ? n.type : 'default'
           if (prefs[typeKey] === false) return  // muted, skip toast

@@ -571,6 +571,27 @@ export default function Settings({ user }) {
               })}
             </div>
 
+            {/* Quiet Hours */}
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Quiet Hours</h3>
+              <div style={{ fontSize: 11, color: T.textTertiary, marginBottom: 12 }}>Suppress all notifications during these hours. Kiko will still work — you just won't be interrupted.</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0' }}>
+                <span style={{ fontSize: 14, color: T.textSecondary, fontFamily: T.font }}>Enable quiet hours</span>
+                <div onClick={() => setSettings(p => ({ ...p, notification_prefs: { ...(p.notification_prefs || {}), quiet_enabled: !(p.notification_prefs?.quiet_enabled) } }))}
+                  style={{ width: 44, height: 24, borderRadius: 50, background: settings.notification_prefs?.quiet_enabled ? T.accent : T.border, position: 'relative', cursor: 'pointer', transition: 'background 0.2s' }}>
+                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,0.04)', position: 'absolute', top: 2, transition: 'right 0.2s', right: settings.notification_prefs?.quiet_enabled ? 2 : 22, boxShadow: '0 1px 3px #C0C0C0' }} />
+                </div>
+              </div>
+              {settings.notification_prefs?.quiet_enabled && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+                  <label style={{ fontSize: 13, color: T.textSecondary, fontFamily: T.font }}>From</label>
+                  <input type="time" value={settings.notification_prefs?.quiet_start || '22:00'} onChange={e => setSettings(p => ({ ...p, notification_prefs: { ...(p.notification_prefs || {}), quiet_start: e.target.value } }))} style={{ padding: '4px 8px', borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 13, fontFamily: T.font }} />
+                  <label style={{ fontSize: 13, color: T.textSecondary, fontFamily: T.font }}>To</label>
+                  <input type="time" value={settings.notification_prefs?.quiet_end || '08:00'} onChange={e => setSettings(p => ({ ...p, notification_prefs: { ...(p.notification_prefs || {}), quiet_end: e.target.value } }))} style={{ padding: '4px 8px', borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 13, fontFamily: T.font }} />
+                </div>
+              )}
+            </div>
+
             {/* Personal Bible (Layer 3) — moved from Kiko tab per Sunny's direction */}
             <div style={cardStyle}>
               <h3 style={{ fontSize: 15, fontWeight: 400, color: T.text, margin: '0 0 4px', fontFamily: T.font }}>Your Personal Context (Layer 3)</h3>

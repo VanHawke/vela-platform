@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-17T12:43:53.171Z",
+  "generated_at": "2026-04-17T13:08:21.877Z",
   "commits": [
+    {
+      "hash": "b0229d9",
+      "subject": "MotoGP/WEC calendars + pipeline analytics: (1) MotoGP 2026 — 21 races (Thai GP through Valencian GP, Qatar postponed to Nov 8 due to Iran war). (2) WEC 2026 — 8 rounds (Imola through Bahrain, Qatar re",
+      "when": "24 minutes ago"
+    },
     {
       "hash": "0369620",
       "subject": "LinkedIn connect + 3 bug fixes + knowledge versioning: (1) LinkedIn connection in Settings → Accounts — blue Connect button, 3-step guided flow (open LinkedIn, find li_at cookie, paste), stores in use",
-      "when": "12 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "aec500e",
       "subject": "Knowledge versioning + push notifications: (1) kiko_knowledge_history table for version tracking. Seeder now computes content hash, detects changes, archives previous version before overwriting, incre",
-      "when": "26 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "fc7c2e3",
       "subject": "Final session documentation update: KIKO_SESSION_BRIEF.md updated with all 40+ commits from marathon session. Recent changes expanded to 22 items. Backlog trimmed — voice stability, LinkedIn enrichmen",
-      "when": "56 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "0cd344d",
       "subject": "Voice stability: auto-reconnect + health heartbeat + status indicator. (1) Auto-reconnect on WebRTC failure — up to 3 retries with exponential backoff (2s, 4s, 8s). Cleans up old connection before rec",
-      "when": "57 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "4a22311",
       "subject": "Audit fix: calendar intent regex expanded — now matches 'What is on my calendar', 'check my calendar', 'am I free', 'do I have any meetings', 'calendar today/tomorrow/this week'. Previously only match",
-      "when": "64 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "7e3e9a3",
@@ -54,12 +59,12 @@
     {
       "hash": "f0050b2",
       "subject": "Knowledge Browser page: (1) New /knowledge route + KnowledgeBrowser.jsx page. Shows all 15 research domains from kiko_knowledge table. Each domain shows: name, research date (relative), content size. ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "329513c",
       "subject": "Command Centre task filters + contacts enrichment + toast wiring: (1) Task filter tabs in Command Centre — Overdue/This week/All with live counts, dynamic filtered display, OVERDUE badge per individua",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "6919f56",
@@ -94,11 +99,6 @@
     {
       "hash": "3506906",
       "subject": "Major upgrade — 5 improvements: (1) Knowledge seeder expanded: 15 domains (added hedge funds/trading, KYC/AML compliance, financial regulation, contract disputes, retail/consumer law) + ALL 15 now run",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "1a196e0",
-      "subject": "Knowledge seed: added manual domain override (?domains=x,y or ?all=1) for on-demand seeding",
       "when": "6 hours ago"
     }
   ]
