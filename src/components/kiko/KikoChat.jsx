@@ -196,7 +196,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     try {
       const [alertsRes, tasksRes, campaignsRes] = await Promise.all([
         supabase.from('kiko_alerts').select('*').order('created_at', { ascending: false }).limit(20),
-        supabase.from('tasks').select('*').eq('org_id', '35975d96-c2c9-4b6c-b4d4-bb947ae817d5').order('created_at', { ascending: false }).limit(20),
+        supabase.from('tasks').select('*').eq('org_id', '35975d96-c2c9-4b6c-b4d4-bb947ae817d5').order('updated_at', { ascending: false }).limit(20),
         supabase.from('kiko_sequences').select('id, name, is_active, steps').eq('is_active', true).limit(10),
       ])
       // Get enrollment counts for active campaigns
@@ -211,7 +211,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         return { ...c, enrolled: enrs.length, replied: enrs.filter(e => e.reply_detected_at).length, bounced: enrs.filter(e => e.bounce_detected_at).length }
       })
       // Filter alerts to replies and important items
-      const replies = (alertsRes.data || []).filter(a => a.type && (a.type.includes('reply') || a.type.includes('linkedin') || a.type.includes('bounce') || a.type.includes('email')))
+      const replies = (alertsRes.data || [])
       const tasks = (tasksRes.data || []).filter(t => !t.data?.completed).map(t => ({ ...t, ...(t.data || {}) }))
       setCommandData({ replies, tasks, campaigns })
     } catch (err) { console.error('[MobileCommand]', err) }
@@ -220,7 +220,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   // Load mobile chat history
   const loadMobileHistory = useCallback(async () => {
     try {
-      const { data } = await supabase.from('kiko_conversations').select('id, title, updated_at').eq('user_id', user?.id).order('updated_at', { ascending: false }).limit(30)
+      const { data } = await supabase.from('conversations').select('id, title, updated_at').eq('user_id', user?.id).order('updated_at', { ascending: false }).limit(30)
       setMobileHistoryConvos(data || [])
     } catch (e) { console.error('[MobileHistory]', e) }
   }, [user?.id])
@@ -1271,8 +1271,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     const { replies, tasks, campaigns } = commandData
     const timeAgo = (d) => { if (!d) return ''; const s = Math.floor((Date.now() - new Date(d)) / 1000); if (s < 60) return 'just now'; if (s < 3600) return `${Math.floor(s/60)}m ago`; if (s < 86400) return `${Math.floor(s/3600)}h ago`; return `${Math.floor(s/86400)}d ago` }
     const isOverdue = (d) => d && new Date(d) < new Date()
-    const typeColor = (t) => t === 'reply_from_prospect' ? '#7d8a64' : t === 'linkedin_connection_accepted' ? '#B89C5C' : '#B8643E'
-    const typeLabel = (t) => t === 'reply_from_prospect' ? 'Email' : t === 'linkedin_connection_accepted' ? 'LinkedIn' : 'Bounce'
+    const getTaskDue = (t) => t.data?.dueDate || t.data?.due_date
+    const typeColor = (t) => t === 'task_due' || t === 'task_automation' ? '#B8643E' : t === 'morning_brief' ? '#7d8a64' : t === 'new_partnership' ? '#B89C5C' : t === 'category_recommendation' ? '#534AB7' : t === 'reply_from_prospect' ? '#7d8a64' : t === 'linkedin_connection_accepted' ? '#B89C5C' : t === 'bounce_detected' ? '#B8643E' : '#5A6470'
+    const typeLabel = (t) => t === 'task_due' ? 'Task' : t === 'task_automation' ? 'Auto' : t === 'morning_brief' ? 'Brief' : t === 'new_partnership' ? 'Deal' : t === 'category_recommendation' ? 'Insight' : t === 'reply_from_prospect' ? 'Email' : t === 'linkedin_connection_accepted' ? 'LinkedIn' : t === 'bounce_detected' ? 'Bounce' : t === 'monitoring' ? 'Monitor' : t?.replace(/_/g, ' ') || 'Alert'
     const Sect = ({ label }) => <div style={{ fontSize: 11, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, padding: '14px 0 8px' }}>{label}</div>
     return (
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column' }}>
@@ -1310,14 +1311,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <Sect label="Tasks due" />
           {tasks.length === 0 && <div style={{ fontSize: 12, color: '#A0A0A0', padding: '8px 0' }}>No tasks</div>}
           {tasks.map(t => {
-            const overdue = isOverdue(t.data?.due_date)
+            const overdue = isOverdue(getTaskDue(t))
             return (
               <div key={t.id} style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 12, padding: '12px 14px', marginBottom: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 18, height: 18, borderRadius: 5, border: `1.5px solid ${overdue ? 'rgba(184,100,62,0.4)' : 'rgba(0,0,0,0.15)'}`, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 500, color: '#0A0A0A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.data?.subject || t.data?.title || 'Task'}</div>
-                    <div style={{ fontSize: 12, color: overdue ? '#B8643E' : '#6B6B6B', marginTop: 2 }}>{t.data?.entity_name || ''}{t.data?.due_date ? ` · ${overdue ? 'Overdue' : 'Due ' + new Date(t.data.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : ''}</div>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: '#0A0A0A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.data?.subject || t.data?.title || t.data?.notes || t.data?.contact || 'Task'}</div>
+                    <div style={{ fontSize: 12, color: overdue ? '#B8643E' : '#6B6B6B', marginTop: 2 }}>{t.data?.company || t.data?.entity_name || ''}{(t.data?.dueDate || t.data?.due_date) ? ` · ${overdue ? 'Overdue' : 'Due ' + new Date(t.data.dueDate || t.data.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : ''}</div>
                   </div>
                 </div>
               </div>

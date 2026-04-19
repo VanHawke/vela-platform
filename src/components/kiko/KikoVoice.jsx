@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { X, MessageSquare } from 'lucide-react'
 import KikoAvatar from './KikoAvatar'
 import AuroraCanvas from '../AuroraCanvas'
+import useMobile from '@/hooks/useMobile'
 import T from '@/lib/theme'
 import { supabase } from '@/lib/supabase'
 import { buildVoiceInstructions, fetchVoiceProfile } from '@/lib/buildVoiceInstructions'
@@ -75,6 +76,7 @@ async function executeTool(name, args) {
 
 export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
   // inline prop removed — voice is always fullscreen now per UX decision 2026-04-09
+  const isMobile = useMobile()
   const [status, setStatus] = useState('connecting')
   const [speaking, setSpeaking] = useState(false)
   const [volume, setVolume] = useState(0)
@@ -394,7 +396,7 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
   // ── Render — always fullscreen now ──
   const voiceUI = (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF' }}>
-      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}><AuroraCanvas /></div>
+      {!isMobile && <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}><AuroraCanvas /></div>}
 
       {/* X close */}
       {/* Continue in chat — voice → text handoff (Sunny spec 2026-04-12) */}
