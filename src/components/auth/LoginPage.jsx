@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Loader2, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react'
 import T from '@/lib/theme'
-import KikoWaveform from '@/components/kiko/KikoWaveform'
+import KikoAvatar from '@/components/kiko/KikoAvatar'
 import { useOrg } from '@/contexts/OrgContext'
 
 export default function LoginPage() {
@@ -95,7 +95,7 @@ export default function LoginPage() {
           maskImage: 'linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)',
           ...fade(0.2),
         }}>
-          <KikoWaveform width={240} height={42} volume={0.12} />
+          <KikoAvatar size={42} state="idle" />
         </div>
 
         {/* Kiko name in Source Serif 4 */}

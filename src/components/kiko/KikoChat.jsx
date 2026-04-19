@@ -28,8 +28,7 @@ import taskManager from '@/lib/kikoTaskManager'
 import KikoVoice from './KikoVoice'
 import ChatHistory from './ChatHistory'
 import AllChatsView from './AllChatsView'
-import KikoSymbol from './KikoSymbol'
-import KikoWaveform from './KikoWaveform'
+import KikoAvatar from './KikoAvatar'
 import HomeDashboard from './HomeDashboard'
 // DraftPreview disabled — EmailDraft handles all email drafts
 import KikoInsights, { InsightsBadge } from './KikoInsights'
@@ -1011,7 +1010,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment..." : "Ask me anything...."}
               autoFocus rows={1}
               style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: isMobile ? 14 : 15, color: '#0A0A0A', fontFamily: C.font, minHeight: 24, maxHeight: 200, fontWeight: 400, resize: 'none', lineHeight: '24px', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content', verticalAlign: 'middle', display: 'block', position: 'relative', zIndex: 2 }} />
-              style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: 15, color: '#0A0A0A', fontFamily: C.font, minHeight: 24, maxHeight: 200, fontWeight: 400, resize: 'none', lineHeight: '24px', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content', verticalAlign: 'middle', display: 'block', position: 'relative', zIndex: 2 }} />
           </div>
           {voiceActive ? (
             <button onClick={stopVoice} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'rgba(239,68,68,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
@@ -1079,7 +1077,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         {/* Kiko label with animated waveform avatar */}
         {isKiko && <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
           <div style={{ width: 28, height: 28, borderRadius: 10, background: '#FFFFFF', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '0.5px solid rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.2)' }}>
-            <KikoWaveform width={22} height={16} mini />
+            <KikoAvatar size={16} state="idle" />
           </div>
           <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(90,100,112,0.55)', fontFamily: C.font }}>Kiko</span>
           {msg.meta?.fromBackgroundTask && <span style={{ fontSize: 9, fontWeight: 500, color: C.textTer, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 50, padding: '1px 8px', marginLeft: 4 }}>background task</span>}
@@ -1220,7 +1218,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         {/* Kiko Waveform signature — below the action icons */}
         {isKiko && !streaming && (
           <div style={{ marginTop: 6, opacity: 0.7 }}>
-            <KikoWaveform width={80} height={18} mini />
+            <KikoAvatar size={14} state="idle" />
           </div>
         )}
       </div>
@@ -1369,7 +1367,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           }}
             onMouseEnter={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1.02)' }}
             onMouseLeave={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1)' }}>
-            <KikoWaveform width={isMobile ? 340 : 900} height={isMobile ? 56 : 96} speaking={voiceActive && voiceState.speaking} volume={voiceActive ? (voiceState.energy || 0) : 0} onClick={voiceActive ? undefined : () => startVoice()} />
+            <KikoAvatar size={isMobile ? 40 : 64} state={voiceActive ? (voiceState.speaking ? 'responding' : 'thinking') : 'idle'} onClick={voiceActive ? undefined : () => startVoice()} />
           </div>
 
           {/* Voice controls — visible only in voice mode */}
@@ -1580,7 +1578,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(0,0,0,0.03)', border: '0.5px solid rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <KikoWaveform width={24} height={20} mini />
+                      <KikoAvatar size={16} state="thinking" />
                     </div>
                     <span style={{ fontSize: 14, color: 'rgba(90,100,112,0.75)', fontFamily: C.font, fontWeight: 400, flex: 1 }}>
                       {toolStatus || 'Kiko is thinking...'}

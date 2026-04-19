@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-19T15:47:36.452Z",
+  "generated_at": "2026-04-19T16:41:12.926Z",
   "commits": [
+    {
+      "hash": "bcfc7ad",
+      "subject": "Remove debug screenshot",
+      "when": "53 minutes ago"
+    },
+    {
+      "hash": "dd0e5f7",
+      "subject": "Add clear-cache.html — force SW unregistration and cache clearing before redirecting to main app",
+      "when": "53 minutes ago"
+    },
     {
       "hash": "49c8c02",
       "subject": "Add test-mobile.html + kill service worker: (1) test-mobile.html — standalone HTML page that replicates the exact mobile layout (conversation + command centre) using plain HTML/CSS with position:fixed",
-      "when": "21 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "e9a259f",
       "subject": "Mobile layout: position fixed + CSS fix + SW cache bust: (1) Both welcome and conversation states use position:fixed on mobile with inset 0, background #FEFEFC, zIndex 50. This bypasses the entire par",
-      "when": "34 minutes ago"
+      "when": "87 minutes ago"
     },
     {
       "hash": "5b063a6",
       "subject": "Service worker cache bust + viewport fixes: (1) SW rewritten to v2 — deletes ALL old caches on activate, never caches anything. The old SW was caching index.html with stale JS bundle URLs, meaning new",
-      "when": "64 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "1827c1f",
       "subject": "Critical: Fix blank conversation page + rebuild Command Centre to match render: (1) BLANK PAGE FIX: Both welcome and conversation state wrappers now use position:absolute on mobile instead of flex:1+h",
-      "when": "78 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "11dbfc2",
       "subject": "Updated app icons to match platform identity: (1) favicon.svg — new dark gradient orb with waveform bars (was old 4-circle design). (2) kiko-icon-192.png — regenerated to match platform's KikoFloat da",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "281e7e7",
       "subject": "Mobile redesign — no bottom nav, bell icon Command Centre, blank page fix: (1) Bottom nav completely removed — no MobileBottomNav component, no CSS references, no import. Like ChatGPT/Claude/Gemini, c",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "263defe",
       "subject": "Critical fixes — blank page + footer + nav restructure: (1) Conversation state blank page fix — wrapper div changed from height:100% to flex:1 + minHeight:0. The height:100% wasn't resolving in the mo",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "22606f2",
       "subject": "Mobile prompt bar matches approved render exactly: (1) +menu button hidden on mobile (both welcome + conversation states). (2) Mic/dictate button hidden on mobile (voice accessible via header mic butt",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "c50c138",
       "subject": "Mobile: viewport lock, slim nav, centered waveform, pill prompt bar: (1) viewport meta: maximum-scale=1, user-scalable=no — prevents pinch zoom. (2) Bottom nav: auto height, paddingTop 5, icons 20px, ",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "bfe3f80",
       "subject": "Remove debug screenshot files",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "7148d9c",
       "subject": "Mobile scaling fixes — full-width rendering on all viewports: (1) Welcome waveform: 340px wide (was 280), container width 100% on mobile (was 90%), maxWidth none (was 900), marginBottom 20 (was 28). (",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "6bdbb1b",
       "subject": "Mobile homepage + conversation view — built to approved renders: (1) MobileBottomNav rebuilt: 48px height (was 78px), env(safe-area-inset-bottom) for iPhone, dark radial gradient orb for Kiko tab, SVG",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "df337d7",
       "subject": "KikoChat mobile header + MobileHeader in both states: (1) Mobile header added — serif 'Kiko' title (Source Serif 4, weight 300, 20px) with mic button (gradient orb when voice active) and settings gear",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "16835d9",
       "subject": "Mobile CSS fixes: (1) Pipeline deal panel — fixed class name from .pl-detail to .pl-panel, now goes fullscreen on mobile. (2) Command Centre — .cc-hot-card shrunk to 220px on mobile, .cc-hot-scroll ga",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "f8208c9",
       "subject": "Mobile: KikoFloat hidden, ChatHistory hidden, Orgs detail fullscreen: (1) Layout.jsx — KikoFloat and global voice mode hidden on mobile (isMobile conditional). KikoFloat is desktop-only; on mobile Kik",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "d3a31c1",
       "subject": "Mobile responsive: full CSS overrides for all 7 pages + useMobile hook + Layout conditional nav: (1) useMobile.js hook — detects ≤768px breakpoint. (2) Layout.jsx — LegoraTopNav conditionally hidden o",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "3351cde",
       "subject": "Mobile nav stripped to 7 pages only + render-matched styling: (1) MobileBottomNav rebuilt — only 5 tabs: Kiko (purple/teal gradient orb matching platform voice orb), Pipeline, Hub, Calendar, More. Mor",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "2d8747b",
       "subject": "Mobile PWA + bottom nav + concierge intelligence + 28 domains: (1) MobileBottomNav.jsx — 5-tab bottom bar (Kiko, Pipeline, Hub, Calendar, More) with slide-up More menu for Contacts/Organisations/Matri",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "0d9dfd2",
-      "subject": "Force-remove LinkedIn from localStorage + last code refs: (1) LegoraTopNav.jsx — on mount, strips 'linkedin' from kiko_top_nav_v2, kiko_nav_order, kiko_more_order in localStorage. This was the actual ",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "51efb83",
-      "subject": "LinkedIn page fully removed — all references: (1) LegoraTopNav.jsx — removed from ALL_PAGES array and DEFAULT_TOP_IDS filter. (2) Settings.jsx — removed from ALL_TOP_NAV navigation config. (3) Layout.",
-      "when": "2 days ago"
+      "when": "8 hours ago"
     }
   ]
 }

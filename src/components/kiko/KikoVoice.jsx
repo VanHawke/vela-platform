@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { X, MessageSquare } from 'lucide-react'
-import KikoWaveform from './KikoWaveform'
+import KikoAvatar from './KikoAvatar'
 import AuroraCanvas from '../AuroraCanvas'
 import T from '@/lib/theme'
 import { supabase } from '@/lib/supabase'
@@ -432,7 +432,7 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
         WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
         maskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
       }}>
-        <KikoWaveform width={1100} height={110} speaking={speaking} volume={volume} />
+        <KikoAvatar size={110} state={speaking ? 'responding' : 'thinking'} light />
       </div>
 
       {/* Status bar — color-coded: amber=connecting, green=active, purple=thinking */}

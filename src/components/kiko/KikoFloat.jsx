@@ -23,7 +23,7 @@ const C = {
   font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   r: 8,
 }
-import KikoWaveform from './KikoWaveform'
+import KikoAvatar from './KikoAvatar'
 import { useRealtimeVoice } from '@/hooks/useRealtimeVoice'
 // KikoVoice removed — voice stays in FAB circle
 import DOMPurify from 'dompurify'
@@ -469,7 +469,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           <div style={{ padding: '12px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: hasMessages ? '1.5px solid rgba(0,0,0,0.04)' : 'none' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 24, height: 12, overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)', maskImage: 'linear-gradient(to right, transparent, black 20%, black 80%, transparent)' }}>
-                <KikoWaveform width={24} height={12} mini />
+                <KikoAvatar size={12} state="idle" />
               </div>
               <span style={{ fontSize: 14, fontWeight: 500, color: C.text, fontFamily: C.font }}>Kiko</span>
               {voiceOpen && (
@@ -492,7 +492,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                   <div style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                   {msg.role !== 'user' && (
                     <div style={{ width: 20, height: 20, borderRadius: 50, background: C.purple, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
-                      <KikoWaveform width={18} height={10} mini />
+                      <KikoAvatar size={10} state="idle" />
                     </div>
                   )}
                   <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : 8, background: msg.role === 'user' ? C.purple : 'rgba(0,0,0,0.04)', color: msg.role === 'user' ? '#FFFFFF' : C.textSec, fontSize: 13, lineHeight: 1.55, fontFamily: C.font }}>
@@ -516,7 +516,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
               {streaming && !streamText && (
                 <div style={{ marginBottom: 8, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                   <div style={{ width: 20, height: 20, borderRadius: 6, background: C.purple, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
-                    <KikoWaveform width={18} height={10} mini />
+                    <KikoAvatar size={10} state="idle" />
                   </div>
                   <div style={{ padding: '7px 11px', borderRadius: 50, background: 'rgba(0,0,0,0.04)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -533,7 +533,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                 <div style={{ marginBottom: 8 }}>
                   <div style={{ display: 'flex' }}>
                     <div style={{ width: 20, height: 20, borderRadius: 6, background: C.purple, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
-                      <KikoWaveform width={18} height={10} mini />
+                      <KikoAvatar size={10} state="idle" />
                     </div>
                     <div style={{ maxWidth: '82%', padding: '7px 11px', borderRadius: 50, background: 'rgba(0,0,0,0.04)', fontSize: 13, color: C.textSec, lineHeight: 1.55, fontFamily: C.font }}>
                       <span dangerouslySetInnerHTML={{ __html: md(streamText) }} />
@@ -613,7 +613,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
         </div>
       )}
 
-      {/* ── FAB button — Dark sphere with KikoWaveform, teal aura when speaking ── */}
+      {/* ── FAB button — Dark sphere with KikoAvatar, teal aura when speaking ── */}
       <div className="kiko-float-trigger" style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 101, width: 60, height: 60 }}>
         {/* Teal aura rings — visible when voice is active */}
         {voiceOpen && <>
@@ -646,10 +646,10 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = voiceOpen ? 'rgba(6,214,160,0.25)' : 'rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = voiceOpen ? '0 0 0 3px rgba(6,214,160,0.08), 0 0 20px rgba(6,214,160,0.10), 0 6px 20px rgba(0,0,0,0.12)' : '0 0 0 2px rgba(0,0,0,0.03), 0 0 14px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.12)' }}}
         >
           {voiceOpen
-            ? <div style={{ transform: open ? 'rotate(-45deg)' : 'none', transition: 'transform 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><KikoWaveform width={40} height={40} mini volume={0} speaking={voiceSpeaking} lightBars /></div>
+            ? <div style={{ transform: open ? 'rotate(-45deg)' : 'none', transition: 'transform 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><KikoAvatar size={20} state={voiceSpeaking ? 'responding' : 'thinking'} light /></div>
             : open
               ? <X size={18} />
-              : <KikoWaveform width={40} height={40} mini volume={0} speaking={false} lightBars />
+              : <KikoAvatar size={20} state="idle" light />
           }
         </button>
       </div>
