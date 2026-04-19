@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-19T10:44:42.700Z",
+  "generated_at": "2026-04-19T10:49:19.889Z",
   "commits": [
+    {
+      "hash": "16835d9",
+      "subject": "Mobile CSS fixes: (1) Pipeline deal panel — fixed class name from .pl-detail to .pl-panel, now goes fullscreen on mobile. (2) Command Centre — .cc-hot-card shrunk to 220px on mobile, .cc-hot-scroll ga",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "f8208c9",
       "subject": "Mobile: KikoFloat hidden, ChatHistory hidden, Orgs detail fullscreen: (1) Layout.jsx — KikoFloat and global voice mode hidden on mobile (isMobile conditional). KikoFloat is desktop-only; on mobile Kik",
-      "when": "12 minutes ago"
+      "when": "17 minutes ago"
     },
     {
       "hash": "d3a31c1",
       "subject": "Mobile responsive: full CSS overrides for all 7 pages + useMobile hook + Layout conditional nav: (1) useMobile.js hook — detects ≤768px breakpoint. (2) Layout.jsx — LegoraTopNav conditionally hidden o",
-      "when": "34 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "3351cde",
       "subject": "Mobile nav stripped to 7 pages only + render-matched styling: (1) MobileBottomNav rebuilt — only 5 tabs: Kiko (purple/teal gradient orb matching platform voice orb), Pipeline, Hub, Calendar, More. Mor",
-      "when": "75 minutes ago"
+      "when": "79 minutes ago"
     },
     {
       "hash": "2d8747b",
@@ -94,11 +99,6 @@
     {
       "hash": "6dc6e56",
       "subject": "Sequence visual builder + RAG fix: (1) SequenceFlowView.jsx — visual flow diagram for campaign sequences. Shows steps as connected nodes (Email blue, LinkedIn teal, Condition amber). Condition nodes d",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "4bffa98",
-      "subject": "RAG debug: lower threshold to 0.15, add query_dims to response",
       "when": "2 days ago"
     }
   ]
