@@ -90,7 +90,7 @@
     max-height: none !important;
   }
   /* Deal detail panel — fullscreen on mobile */
-  .pl-detail {
+  .pl-panel {
     position: fixed !important;
     top: 0 !important;
     right: 0 !important;
@@ -112,28 +112,19 @@
   .cc-body {
     padding: 0 16px 80px !important;
   }
-  .cc-hot-row {
-    flex-direction: column !important;
+  .cc-hot-scroll {
     gap: 8px !important;
   }
   .cc-hot-card {
-    width: 100% !important;
-    min-width: unset !important;
+    width: 220px !important;
+    min-width: 220px !important;
   }
-  .cc-tabs {
-    overflow-x: auto !important;
-    flex-wrap: nowrap !important;
-    padding: 0 16px !important;
-    gap: 4px !important;
-  }
-  .cc-tabs button {
-    white-space: nowrap !important;
-    flex-shrink: 0 !important;
-    font-size: 11px !important;
-    padding: 6px 12px !important;
+  .cc-list {
+    padding: 0 !important;
   }
   /* Thread/detail panel fullscreen */
-  .cc-thread-panel {
+  .cc-thread-panel,
+  .cc-detail {
     position: fixed !important;
     top: 0 !important;
     right: 0 !important;
