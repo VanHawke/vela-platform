@@ -1045,14 +1045,6 @@ export default function Settings({ user }) {
                   <ImageUpload label="Logo" storageKey="logo" folder="logos" aspectHint="Shown in the top-left nav bar and above the sign-in form on the login page" currentUrl={navLogo} onUploaded={(url) => saveBranding({ logo_url: url })} />
                 </div>
 
-                {/* Browser Favicon */}
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: favicon ? 6 : 0 }}>
-                    <span />
-                    {favicon && <button onClick={() => saveBranding({ favicon_url: null })} title="Reset to default" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: T.textTertiary, padding: 0 }}><X size={12} /> Reset to default</button>}
-                  </div>
-                  <ImageUpload label="Browser Favicon" storageKey="favicon" folder="logos" aspectHint="Square, shown in the browser tab (32×32 recommended)" currentUrl={favicon} onUploaded={(url) => saveBranding({ favicon_url: url })} />
-                </div>
 
               </div>
             </div>

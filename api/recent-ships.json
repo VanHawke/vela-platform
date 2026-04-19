@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-19T16:41:12.926Z",
+  "generated_at": "2026-04-19T16:50:01.609Z",
   "commits": [
+    {
+      "hash": "4c52e5c",
+      "subject": "Kiko avatar identity system — 5-dot pipeline replaces waveform everywhere: (1) KikoAvatar.jsx — 5 solid circular nodes, #0A0A0A, 4 states: idle (gentle pulse), thinking (confident wave L→R, 1.4s), res",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "bcfc7ad",
       "subject": "Remove debug screenshot",
-      "when": "53 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "dd0e5f7",
       "subject": "Add clear-cache.html — force SW unregistration and cache clearing before redirecting to main app",
-      "when": "53 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "49c8c02",
       "subject": "Add test-mobile.html + kill service worker: (1) test-mobile.html — standalone HTML page that replicates the exact mobile layout (conversation + command centre) using plain HTML/CSS with position:fixed",
-      "when": "74 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "e9a259f",
       "subject": "Mobile layout: position fixed + CSS fix + SW cache bust: (1) Both welcome and conversation states use position:fixed on mobile with inset 0, background #FEFEFC, zIndex 50. This bypasses the entire par",
-      "when": "87 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "5b063a6",
@@ -95,11 +100,6 @@
       "hash": "3351cde",
       "subject": "Mobile nav stripped to 7 pages only + render-matched styling: (1) MobileBottomNav rebuilt — only 5 tabs: Kiko (purple/teal gradient orb matching platform voice orb), Pipeline, Hub, Calendar, More. Mor",
       "when": "7 hours ago"
-    },
-    {
-      "hash": "2d8747b",
-      "subject": "Mobile PWA + bottom nav + concierge intelligence + 28 domains: (1) MobileBottomNav.jsx — 5-tab bottom bar (Kiko, Pipeline, Hub, Calendar, More) with slide-up More menu for Contacts/Organisations/Matri",
-      "when": "8 hours ago"
     }
   ]
 }
