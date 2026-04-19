@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-19T13:36:32.742Z",
+  "generated_at": "2026-04-19T14:09:37.694Z",
   "commits": [
+    {
+      "hash": "281e7e7",
+      "subject": "Mobile redesign — no bottom nav, bell icon Command Centre, blank page fix: (1) Bottom nav completely removed — no MobileBottomNav component, no CSS references, no import. Like ChatGPT/Claude/Gemini, c",
+      "when": "33 minutes ago"
+    },
     {
       "hash": "263defe",
       "subject": "Critical fixes — blank page + footer + nav restructure: (1) Conversation state blank page fix — wrapper div changed from height:100% to flex:1 + minHeight:0. The height:100% wasn't resolving in the mo",
-      "when": "33 minutes ago"
+      "when": "66 minutes ago"
     },
     {
       "hash": "22606f2",
@@ -19,17 +24,17 @@
     {
       "hash": "bfe3f80",
       "subject": "Remove debug screenshot files",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "7148d9c",
       "subject": "Mobile scaling fixes — full-width rendering on all viewports: (1) Welcome waveform: 340px wide (was 280), container width 100% on mobile (was 90%), maxWidth none (was 900), marginBottom 20 (was 28). (",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "6bdbb1b",
       "subject": "Mobile homepage + conversation view — built to approved renders: (1) MobileBottomNav rebuilt: 48px height (was 78px), env(safe-area-inset-bottom) for iPhone, dark radial gradient orb for Kiko tab, SVG",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "df337d7",
@@ -44,22 +49,22 @@
     {
       "hash": "f8208c9",
       "subject": "Mobile: KikoFloat hidden, ChatHistory hidden, Orgs detail fullscreen: (1) Layout.jsx — KikoFloat and global voice mode hidden on mobile (isMobile conditional). KikoFloat is desktop-only; on mobile Kik",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "d3a31c1",
       "subject": "Mobile responsive: full CSS overrides for all 7 pages + useMobile hook + Layout conditional nav: (1) useMobile.js hook — detects ≤768px breakpoint. (2) Layout.jsx — LegoraTopNav conditionally hidden o",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "3351cde",
       "subject": "Mobile nav stripped to 7 pages only + render-matched styling: (1) MobileBottomNav rebuilt — only 5 tabs: Kiko (purple/teal gradient orb matching platform voice orb), Pipeline, Hub, Calendar, More. Mor",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "2d8747b",
       "subject": "Mobile PWA + bottom nav + concierge intelligence + 28 domains: (1) MobileBottomNav.jsx — 5-tab bottom bar (Kiko, Pipeline, Hub, Calendar, More) with slide-up More menu for Contacts/Organisations/Matri",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "0d9dfd2",
@@ -94,11 +99,6 @@
     {
       "hash": "1669f6d",
       "subject": "LinkedIn pipeline complete — Hetzner queue processor: (1) kiko-worker/routes/linkedin-queue.js — POST /linkedin-queue/process reads pending LinkedIn queue items from Supabase, syncs li_at cookies from",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "9602d0f",
-      "subject": "SequenceDetail full Legora theme alignment: 81 style fixes. (1) All 0.5px borders → 1px solid. (2) All Tailwind danger colors (rgba 248,113,113) → Legora terra (rgba 184,100,62). (3) All Tailwind ambe",
       "when": "2 days ago"
     }
   ]
