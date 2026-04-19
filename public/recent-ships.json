@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-19T15:13:41.315Z",
+  "generated_at": "2026-04-19T15:26:39.097Z",
   "commits": [
+    {
+      "hash": "e9a259f",
+      "subject": "Mobile layout: position fixed + CSS fix + SW cache bust: (1) Both welcome and conversation states use position:fixed on mobile with inset 0, background #FEFEFC, zIndex 50. This bypasses the entire par",
+      "when": "13 minutes ago"
+    },
     {
       "hash": "5b063a6",
       "subject": "Service worker cache bust + viewport fixes: (1) SW rewritten to v2 — deletes ALL old caches on activate, never caches anything. The old SW was caching index.html with stale JS bundle URLs, meaning new",
-      "when": "30 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "1827c1f",
       "subject": "Critical: Fix blank conversation page + rebuild Command Centre to match render: (1) BLANK PAGE FIX: Both welcome and conversation state wrappers now use position:absolute on mobile instead of flex:1+h",
-      "when": "44 minutes ago"
+      "when": "57 minutes ago"
     },
     {
       "hash": "11dbfc2",
       "subject": "Updated app icons to match platform identity: (1) favicon.svg — new dark gradient orb with waveform bars (was old 4-circle design). (2) kiko-icon-192.png — regenerated to match platform's KikoFloat da",
-      "when": "64 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "281e7e7",
@@ -29,12 +34,12 @@
     {
       "hash": "22606f2",
       "subject": "Mobile prompt bar matches approved render exactly: (1) +menu button hidden on mobile (both welcome + conversation states). (2) Mic/dictate button hidden on mobile (voice accessible via header mic butt",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "c50c138",
       "subject": "Mobile: viewport lock, slim nav, centered waveform, pill prompt bar: (1) viewport meta: maximum-scale=1, user-scalable=no — prevents pinch zoom. (2) Bottom nav: auto height, paddingTop 5, icons 20px, ",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "bfe3f80",
@@ -54,12 +59,12 @@
     {
       "hash": "df337d7",
       "subject": "KikoChat mobile header + MobileHeader in both states: (1) Mobile header added — serif 'Kiko' title (Source Serif 4, weight 300, 20px) with mic button (gradient orb when voice active) and settings gear",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "16835d9",
       "subject": "Mobile CSS fixes: (1) Pipeline deal panel — fixed class name from .pl-detail to .pl-panel, now goes fullscreen on mobile. (2) Command Centre — .cc-hot-card shrunk to 220px on mobile, .cc-hot-scroll ga",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "f8208c9",
@@ -94,11 +99,6 @@
     {
       "hash": "3bf861c",
       "subject": "4 more knowledge domains + system prompt: (1) brand-licensing — fashion/sports/entertainment/automotive licensing deals, royalty benchmarks. (2) sports-licensing — team merch, league programmes, kit m",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "1050f4a",
-      "subject": "LinkedIn page removed + 7 sports knowledge domains + campaign stats bar: (1) LinkedIn page deleted from routes, navigation, page roles, voice nav. (2) 7 new knowledge domains: football-sponsorship, us",
       "when": "2 days ago"
     }
   ]
