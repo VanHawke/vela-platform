@@ -1234,16 +1234,16 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   // ── Mobile header — approved render: serif "Kiko" + mic + bell (command centre) ──
   const MobileHeader = () => isMobile ? (
-    <div style={{ padding: '4px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-      <div onClick={startNewChat} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 22, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer' }}>Kiko</div>
+    <div style={{ padding: '8px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+      <div onClick={startNewChat} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 24, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer' }}>Kiko</div>
       <div style={{ display: 'flex', gap: 8 }}>
         <button onClick={() => { if (!voiceActive) startVoice(); else stopVoice() }}
-          style={{ width: 30, height: 30, borderRadius: '50%', background: voiceActive ? 'radial-gradient(circle at 40% 35%, rgba(35,28,55,1), rgba(15,13,22,1))' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: voiceActive ? '0 0 6px rgba(124,92,252,0.25)' : 'none' }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={voiceActive ? '#FFFFFF' : '#6B6B6B'} strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+          style={{ width: 34, height: 34, borderRadius: '50%', background: voiceActive ? 'radial-gradient(circle at 40% 35%, rgba(35,28,55,1), rgba(15,13,22,1))' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: voiceActive ? '0 0 6px rgba(124,92,252,0.25)' : 'none' }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={voiceActive ? '#FFFFFF' : '#6B6B6B'} strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
         </button>
         <button onClick={() => { setMobileCommandOpen(!mobileCommandOpen); if (!mobileCommandOpen) loadCommandData() }}
-          style={{ width: 30, height: 30, borderRadius: '50%', background: mobileCommandOpen ? '#0A0A0A' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={mobileCommandOpen ? '#FEFEFC' : '#6B6B6B'} strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          style={{ width: 34, height: 34, borderRadius: '50%', background: mobileCommandOpen ? '#0A0A0A' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={mobileCommandOpen ? '#FEFEFC' : '#6B6B6B'} strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           {alertCount > 0 && <div style={{ position: 'absolute', top: 4, right: 4, width: 7, height: 7, borderRadius: '50%', background: '#B8643E', border: '1.5px solid #FEFEFC' }} />}
         </button>
       </div>
@@ -1262,15 +1262,15 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     return (
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column' }}>
         {/* Header — matches MobileHeader but bell is active */}
-        <div style={{ padding: '4px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <div onClick={() => { setMobileCommandOpen(false); startNewChat() }} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 22, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer' }}>Kiko</div>
+        <div style={{ padding: '8px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          <div onClick={() => { setMobileCommandOpen(false); startNewChat() }} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 24, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer' }}>Kiko</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#F5F4F1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+            <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#F5F4F1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
             </div>
             <button onClick={() => setMobileCommandOpen(false)}
-              style={{ width: 30, height: 30, borderRadius: '50%', background: '#0A0A0A', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FEFEFC" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              style={{ width: 34, height: 34, borderRadius: '50%', background: '#0A0A0A', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FEFEFC" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             </button>
           </div>
         </div>
@@ -1415,9 +1415,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <p style={{ fontSize: isMobile ? 13 : 16, color: '#6B6B6B', margin: '0 0 0', fontFamily: C.font, fontWeight: 400, textAlign: 'center' }}>What would you like to work on?</p>
           </div>
 
-          {/* Prompt bar — slides down in voice mode */}
-          <div id="kikoPromptWrap" style={{
-            width: '100%', maxWidth: isMobile ? 'none' : 720, marginBottom: 14, marginTop: isMobile ? 24 : 48,
+          {/* Prompt bar — on mobile: rendered OUTSIDE kikoHomeContent (at bottom). On desktop: here */}
+          {!isMobile && <div id="kikoPromptWrap" style={{
+            width: '100%', maxWidth: 720, marginBottom: 14, marginTop: 48,
             opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 300,
             transform: voiceActive ? 'translateY(40px)' : 'translateY(0)',
             transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.05s',
@@ -1427,7 +1427,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 {dictateError && (
                   <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(255,80,80,0.7)', fontFamily: C.font, margin: '8px 0 0', animation: 'fadeIn 0.2s' }}>{dictateError}</p>
                 )}
-              </div>
+              </div>}
 
               {/* Alerts pill (permanent sage, left) + 4 dynamic chips — hidden on mobile */}
               {!isMobile && <div id="kikoChipsWrap" style={{
@@ -1473,8 +1473,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 ))}
               </div>}
 
-          {/* Bottom spacer — equal to top so content sits at true visual centre */}
-          <div style={{ flex: voiceActive ? 1 : 0.5, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
+          {/* Bottom spacer — desktop only, mobile has prompt bar at bottom */}
+          {!isMobile && <div style={{ flex: voiceActive ? 1 : 0.5, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />}
         </div>
         )}
 
@@ -1483,6 +1483,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
         {/* Notifications panel — slides from right */}
         <KikoInsights open={insightsOpen} onClose={() => setInsightsOpen(false)} onAction={(text) => { setInsightsOpen(false); handleSubmit(text) }} />
+
+        {/* Mobile prompt bar — pinned to bottom, outside centered content */}
+        {isMobile && !voiceActive && (
+          <div style={{ flexShrink: 0, padding: '8px 16px', paddingBottom: 'calc(8px + env(safe-area-inset-bottom, 0px))' }}>
+            {PromptBar({ welcome: true })}
+          </div>
+        )}
       </div>
       </div>
     )
@@ -1696,13 +1703,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       )}
       </>
       )}
-      <div style={{ padding: compact ? 12 : (isMobile ? 12 : 16) }}>
+      <div style={{ padding: compact ? 12 : (isMobile ? '8px 16px' : 16), paddingBottom: isMobile ? 'calc(8px + env(safe-area-inset-bottom, 0px))' : undefined, flexShrink: 0 }}>
         <div style={{ maxWidth: compact ? '100%' : (isMobile ? '100%' : 720), margin: '0 auto' }}>
           {PromptBar({})}
-          {dictateError && (
+          {!isMobile && dictateError && (
             <p style={{ textAlign: 'center', fontSize: 12, color: '#C62828', fontFamily: C.font, margin: '6px 0 0' }}>{dictateError}</p>
           )}
-          <p style={{ textAlign: 'center', fontSize: 11, color: '#A0A0A0', fontFamily: C.font, margin: '8px 0 0', fontWeight: 300 }}>Kiko is AI and can make mistakes. Please double-check responses.</p>
+          {!isMobile && <p style={{ textAlign: 'center', fontSize: 11, color: '#A0A0A0', fontFamily: C.font, margin: '8px 0 0', fontWeight: 300 }}>Kiko is AI and can make mistakes. Please double-check responses.</p>}
         </div>
       </div>
       {/* Voice overlay — always fullscreen, captures transcript via onMessage */}

@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-19T18:50:39.639Z",
+  "generated_at": "2026-04-19T19:53:20.245Z",
   "commits": [
+    {
+      "hash": "a34e41a",
+      "subject": "Mobile render match — 6 fixes: (1) KikoVoice avatar colour — was light (white dots on white bg = invisible), now dark (#0A0A0A dots on light Aurora bg). (2) Homepage avatar — removed waveform-era edge",
+      "when": "62 minutes ago"
+    },
     {
       "hash": "0590f7b",
       "subject": "Fix 5 mobile/voice issues: (1) Mobile mic button — was calling non-existent activateVoice/deactivateVoice, now calls startVoice/stopVoice. (2) KikoVoice avatar — removed waveform edge mask, centred av",
-      "when": "17 minutes ago"
+      "when": "79 minutes ago"
     },
     {
       "hash": "cddeec5",
       "subject": "Lock favicon — remove custom upload: (1) Settings.jsx — removed Browser Favicon ImageUpload section. Favicon is now system-locked to the 5-dot identity mark. (2) index.html — replaced dynamic favicon ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "4c52e5c",
       "subject": "Kiko avatar identity system — 5-dot pipeline replaces waveform everywhere: (1) KikoAvatar.jsx — 5 solid circular nodes, #0A0A0A, 4 states: idle (gentle pulse), thinking (confident wave L→R, 1.4s), res",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "bcfc7ad",
       "subject": "Remove debug screenshot",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "dd0e5f7",
       "subject": "Add clear-cache.html — force SW unregistration and cache clearing before redirecting to main app",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "49c8c02",
       "subject": "Add test-mobile.html + kill service worker: (1) test-mobile.html — standalone HTML page that replicates the exact mobile layout (conversation + command centre) using plain HTML/CSS with position:fixed",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "e9a259f",
       "subject": "Mobile layout: position fixed + CSS fix + SW cache bust: (1) Both welcome and conversation states use position:fixed on mobile with inset 0, background #FEFEFC, zIndex 50. This bypasses the entire par",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "5b063a6",
       "subject": "Service worker cache bust + viewport fixes: (1) SW rewritten to v2 — deletes ALL old caches on activate, never caches anything. The old SW was caching index.html with stale JS bundle URLs, meaning new",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "1827c1f",
       "subject": "Critical: Fix blank conversation page + rebuild Command Centre to match render: (1) BLANK PAGE FIX: Both welcome and conversation state wrappers now use position:absolute on mobile instead of flex:1+h",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "11dbfc2",
       "subject": "Updated app icons to match platform identity: (1) favicon.svg — new dark gradient orb with waveform bars (was old 4-circle design). (2) kiko-icon-192.png — regenerated to match platform's KikoFloat da",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "281e7e7",
       "subject": "Mobile redesign — no bottom nav, bell icon Command Centre, blank page fix: (1) Bottom nav completely removed — no MobileBottomNav component, no CSS references, no import. Like ChatGPT/Claude/Gemini, c",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "263defe",
       "subject": "Critical fixes — blank page + footer + nav restructure: (1) Conversation state blank page fix — wrapper div changed from height:100% to flex:1 + minHeight:0. The height:100% wasn't resolving in the mo",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "22606f2",
       "subject": "Mobile prompt bar matches approved render exactly: (1) +menu button hidden on mobile (both welcome + conversation states). (2) Mic/dictate button hidden on mobile (voice accessible via header mic butt",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "c50c138",
       "subject": "Mobile: viewport lock, slim nav, centered waveform, pill prompt bar: (1) viewport meta: maximum-scale=1, user-scalable=no — prevents pinch zoom. (2) Bottom nav: auto height, paddingTop 5, icons 20px, ",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "bfe3f80",
       "subject": "Remove debug screenshot files",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "7148d9c",
       "subject": "Mobile scaling fixes — full-width rendering on all viewports: (1) Welcome waveform: 340px wide (was 280), container width 100% on mobile (was 90%), maxWidth none (was 900), marginBottom 20 (was 28). (",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "6bdbb1b",
       "subject": "Mobile homepage + conversation view — built to approved renders: (1) MobileBottomNav rebuilt: 48px height (was 78px), env(safe-area-inset-bottom) for iPhone, dark radial gradient orb for Kiko tab, SVG",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "df337d7",
       "subject": "KikoChat mobile header + MobileHeader in both states: (1) Mobile header added — serif 'Kiko' title (Source Serif 4, weight 300, 20px) with mic button (gradient orb when voice active) and settings gear",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "16835d9",
       "subject": "Mobile CSS fixes: (1) Pipeline deal panel — fixed class name from .pl-detail to .pl-panel, now goes fullscreen on mobile. (2) Command Centre — .cc-hot-card shrunk to 220px on mobile, .cc-hot-scroll ga",
-      "when": "8 hours ago"
-    },
-    {
-      "hash": "f8208c9",
-      "subject": "Mobile: KikoFloat hidden, ChatHistory hidden, Orgs detail fullscreen: (1) Layout.jsx — KikoFloat and global voice mode hidden on mobile (isMobile conditional). KikoFloat is desktop-only; on mobile Kik",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     }
   ]
 }
