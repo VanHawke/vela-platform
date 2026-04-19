@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-19T20:11:46.649Z",
+  "generated_at": "2026-04-19T20:26:43.196Z",
   "commits": [
+    {
+      "hash": "8740bbc",
+      "subject": "Test page: pixel-accurate 4-screen mobile reference (Home/Chat/Voice/Command) with tab switching. User can compare directly with React app on their phone at /test-mobile.html.",
+      "when": "14 minutes ago"
+    },
     {
       "hash": "cdd6619",
       "subject": "Nuclear cache fix: (1) clear-cache.html rebuilt — shows step-by-step log of what it unregistered/deleted with counts, does NOT auto-redirect, shows manual 'Open Kiko' button with cache-bust param. (2)",
-      "when": "12 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "e2b43de",
       "subject": "Mobile layout: prompt bar to bottom + header sizes up: (1) Homepage prompt bar moved from centred content to bottom of screen with safe-area padding. (2) Kiko logo 22→24px, buttons 30→34px, icons 13→1",
-      "when": "18 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "a34e41a",
       "subject": "Mobile render match — 6 fixes: (1) KikoVoice avatar colour — was light (white dots on white bg = invisible), now dark (#0A0A0A dots on light Aurora bg). (2) Homepage avatar — removed waveform-era edge",
-      "when": "81 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "0590f7b",
@@ -24,22 +29,22 @@
     {
       "hash": "cddeec5",
       "subject": "Lock favicon — remove custom upload: (1) Settings.jsx — removed Browser Favicon ImageUpload section. Favicon is now system-locked to the 5-dot identity mark. (2) index.html — replaced dynamic favicon ",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "4c52e5c",
       "subject": "Kiko avatar identity system — 5-dot pipeline replaces waveform everywhere: (1) KikoAvatar.jsx — 5 solid circular nodes, #0A0A0A, 4 states: idle (gentle pulse), thinking (confident wave L→R, 1.4s), res",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "bcfc7ad",
       "subject": "Remove debug screenshot",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "dd0e5f7",
       "subject": "Add clear-cache.html — force SW unregistration and cache clearing before redirecting to main app",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "49c8c02",
@@ -54,7 +59,7 @@
     {
       "hash": "5b063a6",
       "subject": "Service worker cache bust + viewport fixes: (1) SW rewritten to v2 — deletes ALL old caches on activate, never caches anything. The old SW was caching index.html with stale JS bundle URLs, meaning new",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "1827c1f",
@@ -79,12 +84,12 @@
     {
       "hash": "22606f2",
       "subject": "Mobile prompt bar matches approved render exactly: (1) +menu button hidden on mobile (both welcome + conversation states). (2) Mic/dictate button hidden on mobile (voice accessible via header mic butt",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "c50c138",
       "subject": "Mobile: viewport lock, slim nav, centered waveform, pill prompt bar: (1) viewport meta: maximum-scale=1, user-scalable=no — prevents pinch zoom. (2) Bottom nav: auto height, paddingTop 5, icons 20px, ",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "bfe3f80",
@@ -94,11 +99,6 @@
     {
       "hash": "7148d9c",
       "subject": "Mobile scaling fixes — full-width rendering on all viewports: (1) Welcome waveform: 340px wide (was 280), container width 100% on mobile (was 90%), maxWidth none (was 900), marginBottom 20 (was 28). (",
-      "when": "9 hours ago"
-    },
-    {
-      "hash": "6bdbb1b",
-      "subject": "Mobile homepage + conversation view — built to approved renders: (1) MobileBottomNav rebuilt: 48px height (was 78px), env(safe-area-inset-bottom) for iPhone, dark radial gradient orb for Kiko tab, SVG",
       "when": "9 hours ago"
     }
   ]
