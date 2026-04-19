@@ -493,7 +493,7 @@ export default function Layout({ user }) {
         </div>
       )}
 
-      <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1, paddingBottom: isMobile ? 48 : 0 }}>
+      <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1, paddingBottom: isMobile ? 42 : 0 }}>
         <Outlet context={{ kikoMessages, setKikoMessages, kikoConvId, setKikoConvId, kikoNavigate, kikoResetKey, openPalette: () => setPaletteOpen(true), isMobile }} />
       </main>
 
@@ -574,7 +574,7 @@ export default function Layout({ user }) {
       </nav>
 
       {/* Mobile bottom tab bar */}
-      <MobileBottomNav onKikoTap={() => { if (loc.pathname !== '/') nav('/') }} />
+      <MobileBottomNav />
     </div>
   )
 }

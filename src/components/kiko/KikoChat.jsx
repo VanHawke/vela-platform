@@ -1218,7 +1218,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   // ── WELCOME STATE (no text messages, not in voice mode) ──
   if (!hasMessages && !compact) {
     return (
-      <div style={{ display: 'flex', height: '100%', flex: 1 }}>
+      <div style={{ display: 'flex', flex: 1, height: '100%', minHeight: 0 }}>
       {!compact && !isMobile && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
       <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
         style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'transparent', position: 'relative', overflow: 'hidden', minWidth: 0 }}>
@@ -1380,7 +1380,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   // ── CONVERSATION STATE (text messages) ──
   return (
-    <div style={{ display: 'flex', height: '100%' }}>
+    <div style={{ display: 'flex', flex: 1, height: '100%', minHeight: 0 }}>
       {!compact && !isMobile && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
     <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
       style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, background: 'transparent', position: 'relative', overflow: 'hidden' }}>
