@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-19T11:47:52.825Z",
+  "generated_at": "2026-04-19T11:56:20.444Z",
   "commits": [
+    {
+      "hash": "c50c138",
+      "subject": "Mobile: viewport lock, slim nav, centered waveform, pill prompt bar: (1) viewport meta: maximum-scale=1, user-scalable=no — prevents pinch zoom. (2) Bottom nav: auto height, paddingTop 5, icons 20px, ",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "bfe3f80",
       "subject": "Remove debug screenshot files",
-      "when": "15 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "7148d9c",
       "subject": "Mobile scaling fixes — full-width rendering on all viewports: (1) Welcome waveform: 340px wide (was 280), container width 100% on mobile (was 90%), maxWidth none (was 900), marginBottom 20 (was 28). (",
-      "when": "17 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "6bdbb1b",
       "subject": "Mobile homepage + conversation view — built to approved renders: (1) MobileBottomNav rebuilt: 48px height (was 78px), env(safe-area-inset-bottom) for iPhone, dark radial gradient orb for Kiko tab, SVG",
-      "when": "37 minutes ago"
+      "when": "45 minutes ago"
     },
     {
       "hash": "df337d7",
       "subject": "KikoChat mobile header + MobileHeader in both states: (1) Mobile header added — serif 'Kiko' title (Source Serif 4, weight 300, 20px) with mic button (gradient orb when voice active) and settings gear",
-      "when": "58 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "16835d9",
       "subject": "Mobile CSS fixes: (1) Pipeline deal panel — fixed class name from .pl-detail to .pl-panel, now goes fullscreen on mobile. (2) Command Centre — .cc-hot-card shrunk to 220px on mobile, .cc-hot-scroll ga",
-      "when": "63 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "f8208c9",
       "subject": "Mobile: KikoFloat hidden, ChatHistory hidden, Orgs detail fullscreen: (1) Layout.jsx — KikoFloat and global voice mode hidden on mobile (isMobile conditional). KikoFloat is desktop-only; on mobile Kik",
-      "when": "75 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "d3a31c1",
@@ -94,11 +99,6 @@
     {
       "hash": "19acd2a",
       "subject": "Campaign section Legora theme overhaul: (1) SequenceDetail.jsx — replaced hardcoded C object with Legora tokens. bg #FEFEFC, cardHover #F5F4F1, green → sage #7d8a64, red → terra #B8643E, amber → #B89C",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "8f6915d",
-      "subject": "Fix LinkedIn guide: DevTools shortcut updated to 'Right-click → Inspect (or Cmd+Option+I on Mac, F12 on Windows)' — was incorrectly showing F12 only",
       "when": "2 days ago"
     }
   ]
