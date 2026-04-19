@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-19T10:49:19.889Z",
+  "generated_at": "2026-04-19T11:10:44.550Z",
   "commits": [
+    {
+      "hash": "df337d7",
+      "subject": "KikoChat mobile header + MobileHeader in both states: (1) Mobile header added — serif 'Kiko' title (Source Serif 4, weight 300, 20px) with mic button (gradient orb when voice active) and settings gear",
+      "when": "21 minutes ago"
+    },
     {
       "hash": "16835d9",
       "subject": "Mobile CSS fixes: (1) Pipeline deal panel — fixed class name from .pl-detail to .pl-panel, now goes fullscreen on mobile. (2) Command Centre — .cc-hot-card shrunk to 220px on mobile, .cc-hot-scroll ga",
-      "when": "4 minutes ago"
+      "when": "26 minutes ago"
     },
     {
       "hash": "f8208c9",
       "subject": "Mobile: KikoFloat hidden, ChatHistory hidden, Orgs detail fullscreen: (1) Layout.jsx — KikoFloat and global voice mode hidden on mobile (isMobile conditional). KikoFloat is desktop-only; on mobile Kik",
-      "when": "17 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "d3a31c1",
       "subject": "Mobile responsive: full CSS overrides for all 7 pages + useMobile hook + Layout conditional nav: (1) useMobile.js hook — detects ≤768px breakpoint. (2) Layout.jsx — LegoraTopNav conditionally hidden o",
-      "when": "39 minutes ago"
+      "when": "60 minutes ago"
     },
     {
       "hash": "3351cde",
       "subject": "Mobile nav stripped to 7 pages only + render-matched styling: (1) MobileBottomNav rebuilt — only 5 tabs: Kiko (purple/teal gradient orb matching platform voice orb), Pipeline, Hub, Calendar, More. Mor",
-      "when": "79 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "2d8747b",
@@ -94,11 +99,6 @@
     {
       "hash": "9db8627",
       "subject": "RAG wired into Kiko + contact dedup UI complete: (1) learning_search in data.js — semantic fallback when keyword results < 3, calls /api/embed for vector search, returns SEMANTIC MATCHES with similari",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "6dc6e56",
-      "subject": "Sequence visual builder + RAG fix: (1) SequenceFlowView.jsx — visual flow diagram for campaign sequences. Shows steps as connected nodes (Email blue, LinkedIn teal, Condition amber). Condition nodes d",
       "when": "2 days ago"
     }
   ]

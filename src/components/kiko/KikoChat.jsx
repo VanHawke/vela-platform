@@ -1185,18 +1185,18 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     )
   })
 
-  // ── Mobile header — matches render mockup ──
+  // ── Mobile header — approved render: serif "Kiko" + mic + new chat ──
   const MobileHeader = () => isMobile ? (
-    <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-      <div style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 20, fontWeight: 300, color: '#0A0A0A' }}>Kiko</div>
+    <div style={{ padding: '4px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+      <div style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 22, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em' }}>Kiko</div>
       <div style={{ display: 'flex', gap: 8 }}>
         <button onClick={() => { if (!voiceActive) activateVoice(); else deactivateVoice() }}
-          style={{ width: 32, height: 32, borderRadius: '50%', background: voiceActive ? 'linear-gradient(135deg, #7C5CFC, #00D4AA)' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: voiceActive ? '#FFFFFF' : '#6B6B6B', fontSize: 14 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+          style={{ width: 30, height: 30, borderRadius: '50%', background: voiceActive ? 'radial-gradient(circle at 40% 35%, rgba(35,28,55,1), rgba(15,13,22,1))' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: voiceActive ? '0 0 6px rgba(124,92,252,0.25)' : 'none' }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={voiceActive ? '#FFFFFF' : '#6B6B6B'} strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
         </button>
-        <button onClick={() => navigate('/settings')}
-          style={{ width: 32, height: 32, borderRadius: '50%', background: '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B6B6B', fontSize: 14 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <button onClick={() => startNewChat()}
+          style={{ width: 30, height: 30, borderRadius: '50%', background: '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="2"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
         </button>
       </div>
     </div>
@@ -1230,7 +1230,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             onClose={() => setAllChatsData(null)}
           />
         ) : (
-        <div id="kikoHomeContent" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: trans, minHeight: 0, padding: '20px 24px 40px' }}>
+        <div id="kikoHomeContent" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: trans, minHeight: 0, padding: isMobile ? '16px 20px 8px' : '20px 24px 40px' }}>
 
           {/* Top spacer — balanced 0.5/0.5 for true centre, voice mode pushes more */}
           <div style={{ flex: voiceActive ? 1 : 0.5, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
@@ -1246,7 +1246,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           }}
             onMouseEnter={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1.02)' }}
             onMouseLeave={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1)' }}>
-            <KikoWaveform width={900} height={96} speaking={voiceActive && voiceState.speaking} volume={voiceState.energy || 0} onClick={voiceActive ? undefined : () => startVoice()} />
+            <KikoWaveform width={isMobile ? 280 : 900} height={isMobile ? 52 : 96} speaking={voiceActive && voiceState.speaking} volume={voiceState.energy || 0} onClick={voiceActive ? undefined : () => startVoice()} />
           </div>
 
           {/* Voice controls — visible only in voice mode */}
@@ -1285,15 +1285,15 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div style={{ textAlign: 'center', marginBottom: 12, fontSize: 11, fontWeight: 500, letterSpacing: '0.10em', textTransform: 'uppercase', color: '#6B6B6B' }}>
               <span style={{ color: '#0A0A0A', fontWeight: 600 }}>TODAY</span><span style={{ color: '#C0C0C0', margin: '0 8px' }}>·</span>{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
             </div>
-            <h1 style={{ fontSize: 42, fontWeight: 300, color: '#0A0A0A', margin: '0 0 6px', fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', textAlign: 'center' }}>
+            <h1 style={{ fontSize: isMobile ? 28 : 42, fontWeight: 300, color: '#0A0A0A', margin: '0 0 6px', fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', textAlign: 'center' }}>
               {getGreeting()}, {firstName}
             </h1>
-            <p style={{ fontSize: 16, color: '#6B6B6B', margin: '0 0 0', fontFamily: C.font, fontWeight: 400, textAlign: 'center' }}>What would you like to work on?</p>
+            <p style={{ fontSize: isMobile ? 13 : 16, color: '#6B6B6B', margin: '0 0 0', fontFamily: C.font, fontWeight: 400, textAlign: 'center' }}>What would you like to work on?</p>
           </div>
 
           {/* Prompt bar — slides down in voice mode */}
           <div id="kikoPromptWrap" style={{
-            width: '100%', maxWidth: 720, marginBottom: 14, marginTop: 48,
+            width: '100%', maxWidth: 720, marginBottom: 14, marginTop: isMobile ? 24 : 48,
             opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 300,
             transform: voiceActive ? 'translateY(40px)' : 'translateY(0)',
             transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.05s',
@@ -1305,8 +1305,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 )}
               </div>
 
-              {/* Alerts pill (permanent sage, left) + 4 dynamic chips */}
-              <div id="kikoChipsWrap" style={{
+              {/* Alerts pill (permanent sage, left) + 4 dynamic chips — hidden on mobile */}
+              {!isMobile && <div id="kikoChipsWrap" style={{
                 display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center', maxWidth: 720, marginBottom: voiceActive ? 0 : 20,
                 opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 60,
                 transform: voiceActive ? 'translateY(30px)' : 'translateY(0)',
@@ -1347,7 +1347,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                     onMouseOut={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#0A0A0A'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}
                   >{c}</button>
                 ))}
-              </div>
+              </div>}
 
           {/* Bottom spacer — equal to top so content sits at true visual centre */}
           <div style={{ flex: voiceActive ? 1 : 0.5, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
