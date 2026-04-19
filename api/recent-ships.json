@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-19T14:09:37.694Z",
+  "generated_at": "2026-04-19T14:28:25.980Z",
   "commits": [
+    {
+      "hash": "11dbfc2",
+      "subject": "Updated app icons to match platform identity: (1) favicon.svg — new dark gradient orb with waveform bars (was old 4-circle design). (2) kiko-icon-192.png — regenerated to match platform's KikoFloat da",
+      "when": "19 minutes ago"
+    },
     {
       "hash": "281e7e7",
       "subject": "Mobile redesign — no bottom nav, bell icon Command Centre, blank page fix: (1) Bottom nav completely removed — no MobileBottomNav component, no CSS references, no import. Like ChatGPT/Claude/Gemini, c",
-      "when": "33 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "263defe",
       "subject": "Critical fixes — blank page + footer + nav restructure: (1) Conversation state blank page fix — wrapper div changed from height:100% to flex:1 + minHeight:0. The height:100% wasn't resolving in the mo",
-      "when": "66 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "22606f2",
       "subject": "Mobile prompt bar matches approved render exactly: (1) +menu button hidden on mobile (both welcome + conversation states). (2) Mic/dictate button hidden on mobile (voice accessible via header mic butt",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "c50c138",
       "subject": "Mobile: viewport lock, slim nav, centered waveform, pill prompt bar: (1) viewport meta: maximum-scale=1, user-scalable=no — prevents pinch zoom. (2) Bottom nav: auto height, paddingTop 5, icons 20px, ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "bfe3f80",
@@ -39,12 +44,12 @@
     {
       "hash": "df337d7",
       "subject": "KikoChat mobile header + MobileHeader in both states: (1) Mobile header added — serif 'Kiko' title (Source Serif 4, weight 300, 20px) with mic button (gradient orb when voice active) and settings gear",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "16835d9",
       "subject": "Mobile CSS fixes: (1) Pipeline deal panel — fixed class name from .pl-detail to .pl-panel, now goes fullscreen on mobile. (2) Command Centre — .cc-hot-card shrunk to 220px on mobile, .cc-hot-scroll ga",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "f8208c9",
@@ -94,11 +99,6 @@
     {
       "hash": "1cf1ef6",
       "subject": "Multi-user reply detection + LinkedIn acceptance monitoring: (1) cron-sequence-reply-detect.js — now scans EACH sender's Gmail inbox, not just the first available. Resolves send_from_user_id per enrol",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "1669f6d",
-      "subject": "LinkedIn pipeline complete — Hetzner queue processor: (1) kiko-worker/routes/linkedin-queue.js — POST /linkedin-queue/process reads pending LinkedIn queue items from Supabase, syncs li_at cookies from",
       "when": "2 days ago"
     }
   ]

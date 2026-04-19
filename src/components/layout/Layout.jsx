@@ -418,7 +418,7 @@ export default function Layout({ user }) {
   }, [isHome, voiceFullscreen])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden', background: C.bg }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: isMobile ? '100dvh' : '100vh', width: '100vw', overflow: 'hidden', background: C.bg }}>
       {/* Aurora gradient orbs */}
       {!isMobile && <AuroraCanvas extraOrb={loc.pathname === '/pipeline' ? 'amber' : null} />}
 

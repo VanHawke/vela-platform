@@ -1251,41 +1251,61 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     const { replies, tasks, campaigns } = commandData
     const timeAgo = (d) => { if (!d) return ''; const s = Math.floor((Date.now() - new Date(d)) / 1000); if (s < 60) return 'just now'; if (s < 3600) return `${Math.floor(s/60)}m ago`; if (s < 86400) return `${Math.floor(s/3600)}h ago`; return `${Math.floor(s/86400)}d ago` }
     const isOverdue = (d) => d && new Date(d) < new Date()
+    const typeColor = (t) => t === 'reply_from_prospect' ? '#7d8a64' : t === 'linkedin_connection_accepted' ? '#B89C5C' : '#B8643E'
+    const typeLabel = (t) => t === 'reply_from_prospect' ? 'Email' : t === 'linkedin_connection_accepted' ? 'LinkedIn' : 'Bounce'
+    const Sect = ({ label }) => <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, padding: '12px 0 6px' }}>{label}</div>
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column', fontFamily: "'Inter', system-ui, sans-serif" }}>
-        <div style={{ padding: '52px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <div style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 22, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em' }}>Command Centre</div>
-          <button onClick={() => setMobileCommandOpen(false)} style={{ width: 30, height: 30, borderRadius: '50%', background: '#0A0A0A', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FEFEFC" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
-          </button>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column' }}>
+        {/* Header — matches MobileHeader but bell is active */}
+        <div style={{ padding: '4px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          <div style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 22, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em' }}>Kiko</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#F5F4F1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+            </div>
+            <button onClick={() => setMobileCommandOpen(false)}
+              style={{ width: 30, height: 30, borderRadius: '50%', background: '#0A0A0A', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FEFEFC" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </button>
+          </div>
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 24px', WebkitOverflowScrolling: 'touch' }}>
-          <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, padding: '10px 0 6px' }}>Replies received</div>
+        {/* Scrollable content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 14px 24px', WebkitOverflowScrolling: 'touch' }}>
+          {/* Replies */}
+          <Sect label="Today" />
           {replies.length === 0 && <div style={{ fontSize: 12, color: '#A0A0A0', padding: '8px 0' }}>No replies yet</div>}
           {replies.map(r => (
-            <div key={r.id} style={{ background: '#FFFFFF', borderRadius: '0 10px 10px 0', padding: '10px 12px', marginBottom: 6, border: '1px solid rgba(0,0,0,0.04)', borderLeft: `3px solid ${r.type === 'reply_from_prospect' ? '#7d8a64' : r.type === 'linkedin_connection_accepted' ? '#B89C5C' : '#B8643E'}` }}>
+            <div key={r.id} style={{ background: '#FFFFFF', borderRadius: '0 10px 10px 0', padding: '10px 12px', marginBottom: 6, border: '1px solid rgba(0,0,0,0.04)', borderLeft: `3px solid ${typeColor(r.type)}` }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A' }}>{r.title || r.entity_name}</div>
-                <div style={{ fontSize: 9, fontWeight: 500, color: r.type === 'reply_from_prospect' ? '#7d8a64' : r.type === 'linkedin_connection_accepted' ? '#B89C5C' : '#B8643E' }}>{r.type === 'reply_from_prospect' ? 'Email' : r.type === 'linkedin_connection_accepted' ? 'LinkedIn' : 'Bounce'}</div>
+                <div style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A' }}>{r.title || r.entity_name || 'Reply'}</div>
+                <div style={{ fontSize: 9, fontWeight: 500, color: typeColor(r.type) }}>{typeLabel(r.type)}</div>
               </div>
-              {r.detail && <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 3, fontStyle: 'italic' }}>{r.detail.slice(0, 100)}{r.detail.length > 100 ? '...' : ''}</div>}
+              {r.detail && <div style={{ fontSize: 10, color: '#6B6B6B', marginTop: 2 }}>{r.entity_type || ''}</div>}
+              {r.detail && <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 3, fontStyle: 'italic' }}>"{r.detail.slice(0, 80)}{r.detail.length > 80 ? '...' : ''}"</div>}
               <div style={{ fontSize: 9, color: '#A0A0A0', marginTop: 4 }}>{timeAgo(r.created_at)}</div>
             </div>
           ))}
-          <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, padding: '12px 0 6px', borderTop: '1px solid rgba(0,0,0,0.04)', marginTop: 4 }}>Tasks due</div>
+
+          {/* Tasks */}
+          <Sect label="Tasks due" />
           {tasks.length === 0 && <div style={{ fontSize: 12, color: '#A0A0A0', padding: '8px 0' }}>No tasks</div>}
-          {tasks.map(t => (
-            <div key={t.id} style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 10, padding: '10px 12px', marginBottom: 6 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 16, height: 16, borderRadius: 4, border: `1.5px solid ${isOverdue(t.data?.due_date) ? 'rgba(184,100,62,0.4)' : 'rgba(0,0,0,0.15)'}`, flexShrink: 0 }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.data?.subject || t.data?.title || 'Task'}</div>
-                  <div style={{ fontSize: 10, color: isOverdue(t.data?.due_date) ? '#B8643E' : '#6B6B6B' }}>{t.data?.entity_name || ''}{t.data?.due_date ? ` · ${isOverdue(t.data.due_date) ? 'Overdue' : 'Due ' + new Date(t.data.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : ''}</div>
+          {tasks.map(t => {
+            const overdue = isOverdue(t.data?.due_date)
+            return (
+              <div key={t.id} style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 10, padding: '10px 12px', marginBottom: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 16, height: 16, borderRadius: 4, border: `1.5px solid ${overdue ? 'rgba(184,100,62,0.4)' : 'rgba(0,0,0,0.15)'}`, flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.data?.subject || t.data?.title || 'Task'}</div>
+                    <div style={{ fontSize: 10, color: overdue ? '#B8643E' : '#6B6B6B' }}>{t.data?.entity_name || ''}{t.data?.due_date ? ` · ${overdue ? 'Overdue' : 'Due ' + new Date(t.data.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : ''}</div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-          <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, padding: '12px 0 6px', borderTop: '1px solid rgba(0,0,0,0.04)', marginTop: 4 }}>Campaigns active</div>
+            )
+          })}
+
+          {/* Active campaigns */}
+          <Sect label="Campaigns active" />
           {campaigns.length === 0 && <div style={{ fontSize: 12, color: '#A0A0A0', padding: '8px 0' }}>No active campaigns</div>}
           {campaigns.map(c => (
             <div key={c.id} style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 10, padding: '10px 12px', marginBottom: 6 }}>
@@ -1294,7 +1314,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   <div style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A' }}>{c.name}</div>
                   <div style={{ fontSize: 10, color: '#6B6B6B', marginTop: 2 }}>{c.enrolled} enrolled · {c.replied} replies · {c.bounced} bounced</div>
                 </div>
-                <div style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(125,138,100,0.10)', color: '#7d8a64' }}>Active</div>
+                <div style={{ fontSize: 9, padding: '2px 8px', borderRadius: 6, background: 'rgba(125,138,100,0.10)', color: '#7d8a64', fontWeight: 500 }}>Active</div>
               </div>
             </div>
           ))}
@@ -1306,7 +1326,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   // ── WELCOME STATE (no text messages, not in voice mode) ──
   if (!hasMessages && !compact) {
     return (
-      <div style={{ display: 'flex', flex: 1, height: '100%', minHeight: 0 }}>
+      <div style={isMobile ? { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column' } : { display: 'flex', flex: 1, height: '100%', minHeight: 0 }}>
       {!compact && !isMobile && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
       <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
         style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'transparent', position: 'relative', overflow: 'hidden', minWidth: 0 }}>
@@ -1469,7 +1489,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   // ── CONVERSATION STATE (text messages) ──
   return (
-    <div style={{ display: 'flex', flex: 1, height: '100%', minHeight: 0 }}>
+    <div style={isMobile ? { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column' } : { display: 'flex', flex: 1, height: '100%', minHeight: 0 }}>
       {!compact && !isMobile && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
     <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
       style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, background: 'transparent', position: 'relative', overflow: 'hidden' }}>
