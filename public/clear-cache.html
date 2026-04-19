@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Kiko — Loading</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', system-ui, sans-serif; background: #FEFEFC; }
+.loading {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: #FEFEFC;
+}
+.loading h1 { font-family: 'Source Serif 4', Georgia, serif; font-size: 28px; font-weight: 400; color: #0A0A0A; margin-bottom: 16px; }
+.loading p { font-size: 13px; color: #6B6B6B; }
+.loading .dot { display: inline-block; animation: pulse 1.5s infinite; }
+.loading .dot:nth-child(2) { animation-delay: 0.3s; }
+.loading .dot:nth-child(3) { animation-delay: 0.6s; }
+@keyframes pulse { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="loading">
+  <h1>Kiko</h1>
+  <p>Clearing cache<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></p>
+</div>
+<script>
+async function cleanAndRedirect() {
+  try {
+    // Unregister ALL service workers
+    if ('serviceWorker' in navigator) {
+      var regs = await navigator.serviceWorker.getRegistrations();
+      for (var i = 0; i < regs.length; i++) {
+        await regs[i].unregister();
+      }
+      console.log('Unregistered ' + regs.length + ' service workers');
+    }
+    // Delete ALL caches
+    if (window.caches) {
+      var keys = await caches.keys();
+      for (var j = 0; j < keys.length; j++) {
+        await caches.delete(keys[j]);
+      }
+      console.log('Deleted ' + keys.length + ' caches');
+    }
+    // Clear localStorage items that might cause issues
+    try {
+      localStorage.removeItem('kiko_top_nav_v2');
+      localStorage.removeItem('kiko_nav_order');
+      localStorage.removeItem('kiko_more_order');
+    } catch(e) {}
+    
+    console.log('Cache cleared, redirecting...');
+    // Redirect to main app after cleanup
+    setTimeout(function() {
+      window.location.href = '/?cache_bust=' + Date.now();
+    }, 1500);
+  } catch(err) {
+    console.error('Cleanup error:', err);
+    // Redirect anyway
+    setTimeout(function() {
+      window.location.href = '/?cache_bust=' + Date.now();
+    }, 2000);
+  }
+}
+cleanAndRedirect();
+</script>
+</body>
+</html>

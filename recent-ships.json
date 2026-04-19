@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-19T15:26:39.097Z",
+  "generated_at": "2026-04-19T15:47:36.452Z",
   "commits": [
+    {
+      "hash": "49c8c02",
+      "subject": "Add test-mobile.html + kill service worker: (1) test-mobile.html — standalone HTML page that replicates the exact mobile layout (conversation + command centre) using plain HTML/CSS with position:fixed",
+      "when": "21 minutes ago"
+    },
     {
       "hash": "e9a259f",
       "subject": "Mobile layout: position fixed + CSS fix + SW cache bust: (1) Both welcome and conversation states use position:fixed on mobile with inset 0, background #FEFEFC, zIndex 50. This bypasses the entire par",
-      "when": "13 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "5b063a6",
       "subject": "Service worker cache bust + viewport fixes: (1) SW rewritten to v2 — deletes ALL old caches on activate, never caches anything. The old SW was caching index.html with stale JS bundle URLs, meaning new",
-      "when": "43 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "1827c1f",
       "subject": "Critical: Fix blank conversation page + rebuild Command Centre to match render: (1) BLANK PAGE FIX: Both welcome and conversation state wrappers now use position:absolute on mobile instead of flex:1+h",
-      "when": "57 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "11dbfc2",
       "subject": "Updated app icons to match platform identity: (1) favicon.svg — new dark gradient orb with waveform bars (was old 4-circle design). (2) kiko-icon-192.png — regenerated to match platform's KikoFloat da",
-      "when": "77 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "281e7e7",
@@ -29,7 +34,7 @@
     {
       "hash": "263defe",
       "subject": "Critical fixes — blank page + footer + nav restructure: (1) Conversation state blank page fix — wrapper div changed from height:100% to flex:1 + minHeight:0. The height:100% wasn't resolving in the mo",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "22606f2",
@@ -54,7 +59,7 @@
     {
       "hash": "6bdbb1b",
       "subject": "Mobile homepage + conversation view — built to approved renders: (1) MobileBottomNav rebuilt: 48px height (was 78px), env(safe-area-inset-bottom) for iPhone, dark radial gradient orb for Kiko tab, SVG",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "df337d7",
@@ -74,7 +79,7 @@
     {
       "hash": "d3a31c1",
       "subject": "Mobile responsive: full CSS overrides for all 7 pages + useMobile hook + Layout conditional nav: (1) useMobile.js hook — detects ≤768px breakpoint. (2) Layout.jsx — LegoraTopNav conditionally hidden o",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "3351cde",
@@ -84,7 +89,7 @@
     {
       "hash": "2d8747b",
       "subject": "Mobile PWA + bottom nav + concierge intelligence + 28 domains: (1) MobileBottomNav.jsx — 5-tab bottom bar (Kiko, Pipeline, Hub, Calendar, More) with slide-up More menu for Contacts/Organisations/Matri",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "0d9dfd2",
@@ -94,11 +99,6 @@
     {
       "hash": "51efb83",
       "subject": "LinkedIn page fully removed — all references: (1) LegoraTopNav.jsx — removed from ALL_PAGES array and DEFAULT_TOP_IDS filter. (2) Settings.jsx — removed from ALL_TOP_NAV navigation config. (3) Layout.",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "3bf861c",
-      "subject": "4 more knowledge domains + system prompt: (1) brand-licensing — fashion/sports/entertainment/automotive licensing deals, royalty benchmarks. (2) sports-licensing — team merch, league programmes, kit m",
       "when": "2 days ago"
     }
   ]
