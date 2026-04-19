@@ -1,30 +1,22 @@
-// Kiko Intelligence OS — Service Worker
-// Minimal: caches shell for offline, passes all API calls through to network
+// Kiko Intelligence OS — Service Worker v2
+// Minimal: network-first, no caching of HTML
 
-const CACHE_NAME = 'kiko-v1';
-const SHELL_URLS = ['/', '/index.html'];
+const CACHE_NAME = 'kiko-v2';
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_URLS))
-  );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+      Promise.all(keys.map((k) => caches.delete(k)))
     )
   );
   self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-  // Never cache API calls or SSE streams
-  if (url.pathname.startsWith('/api/')) return;
-  event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request))
-  );
+  // Always go to network, never cache
+  return;
 });
