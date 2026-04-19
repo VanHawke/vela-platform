@@ -168,6 +168,7 @@ const CtaEq = () => {
 export default function KikoChat({ user, compact = false, initialMessage = '' }) {
   const navigate = useNavigate()
   const outletCtx = useOutletContext() || {}
+  const isMobile = outletCtx.isMobile || false
   const dynamicChips = useDynamicChips('home', false)
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState(initialMessage)
@@ -1188,7 +1189,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   if (!hasMessages && !compact) {
     return (
       <div style={{ display: 'flex', height: '100%', flex: 1 }}>
-      {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
+      {!compact && !isMobile && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
       <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
         style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'transparent', position: 'relative', overflow: 'hidden', minWidth: 0 }}>
         {chatDragOver && (
@@ -1348,7 +1349,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   // ── CONVERSATION STATE (text messages) ──
   return (
     <div style={{ display: 'flex', height: '100%' }}>
-      {!compact && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
+      {!compact && !isMobile && <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />}
     <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
       style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, background: 'transparent', position: 'relative', overflow: 'hidden' }}>
       {chatDragOver && (

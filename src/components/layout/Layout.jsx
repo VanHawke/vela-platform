@@ -493,7 +493,7 @@ export default function Layout({ user }) {
         </div>
       )}
 
-      <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1 }}>
+      <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1, paddingBottom: isMobile ? 86 : 0 }}>
         <Outlet context={{ kikoMessages, setKikoMessages, kikoConvId, setKikoConvId, kikoNavigate, kikoResetKey, openPalette: () => setPaletteOpen(true), isMobile }} />
       </main>
 
@@ -504,7 +504,7 @@ export default function Layout({ user }) {
       {showOnboarding && <OnboardingModal user={user} onDismiss={() => setShowOnboarding(false)} />}
 
       {/* Kiko floating — present on every page except home */}
-      {!isHome && (
+      {!isHome && !isMobile && (
         <KikoFloat
           user={user}
           messages={kikoMessages}
@@ -518,7 +518,7 @@ export default function Layout({ user }) {
       )}
 
       {/* Global voice mode — triggered from KikoFloat EQ button on non-home pages */}
-      {globalVoiceMode && (
+      {globalVoiceMode && !isMobile && (
         <KikoVoice
           onClose={() => setGlobalVoiceMode(false)}
           user={user}

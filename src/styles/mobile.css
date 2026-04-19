@@ -55,25 +55,10 @@
   }
 
   /* ══════════════════════════════════════
-     KIKO CHAT / FLOAT
+     KIKO CHAT — fullscreen on mobile
+     KikoFloat is hidden entirely on mobile;
+     Kiko is accessed via the home page tab
      ══════════════════════════════════════ */
-  .kiko-panel {
-    position: fixed !important;
-    bottom: 78px !important;
-    left: 0 !important;
-    right: 0 !important;
-    top: 0 !important;
-    width: 100vw !important;
-    height: calc(100dvh - 78px) !important;
-    max-height: none !important;
-    border-radius: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-  .kiko-float-trigger {
-    bottom: 86px !important;
-    right: 16px !important;
-  }
 
   /* ══════════════════════════════════════
      PIPELINE — vertical card stack

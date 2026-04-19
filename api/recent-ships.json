@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-19T10:10:36.936Z",
+  "generated_at": "2026-04-19T10:32:17.583Z",
   "commits": [
+    {
+      "hash": "d3a31c1",
+      "subject": "Mobile responsive: full CSS overrides for all 7 pages + useMobile hook + Layout conditional nav: (1) useMobile.js hook — detects ≤768px breakpoint. (2) Layout.jsx — LegoraTopNav conditionally hidden o",
+      "when": "21 minutes ago"
+    },
     {
       "hash": "3351cde",
       "subject": "Mobile nav stripped to 7 pages only + render-matched styling: (1) MobileBottomNav rebuilt — only 5 tabs: Kiko (purple/teal gradient orb matching platform voice orb), Pipeline, Hub, Calendar, More. Mor",
-      "when": "40 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "2d8747b",
       "subject": "Mobile PWA + bottom nav + concierge intelligence + 28 domains: (1) MobileBottomNav.jsx — 5-tab bottom bar (Kiko, Pipeline, Hub, Calendar, More) with slide-up More menu for Contacts/Organisations/Matri",
-      "when": "60 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "0d9dfd2",
@@ -94,11 +99,6 @@
     {
       "hash": "f352669",
       "subject": "Fix RAG: lowered match threshold to 0.3, fixed match_embeddings RPC to accept text input and cast to vector internally. All 15 domains embedded (35 chunks).",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "2ce0721",
-      "subject": "Rewrite embed.js with health check + better error handling",
       "when": "2 days ago"
     }
   ]

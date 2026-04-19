@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
+import useMobile from '@/hooks/useMobile'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
@@ -34,6 +35,7 @@ function OrgLogo({ domain, name, size = 36 }) {
 
 export default function Organisations({ user }) {
   const nav = useNavigate()
+  const isMobile = useMobile()
   const [searchParams] = useSearchParams()
   const [companies, setCompanies] = useState([])
   const [loading, setLoading] = useState(true)
@@ -595,7 +597,7 @@ export default function Organisations({ user }) {
         </div>
 
         {/* Slide-out panel */}
-        <div style={{ width: panelOpen ? 400 : 0, minWidth: panelOpen ? 400 : 0, transition: 'width 0.3s ease, min-width 0.3s ease, opacity 0.2s ease', opacity: panelOpen ? 1 : 0, overflow: 'hidden', marginLeft: panelOpen ? 16 : 0 }}>
+        <div style={isMobile && panelOpen ? { position: 'fixed', top: 0, left: 0, right: 0, bottom: 78, width: '100%', zIndex: 90, background: '#FFFFFF', overflow: 'auto' } : { width: panelOpen ? 400 : 0, minWidth: panelOpen ? 400 : 0, transition: 'width 0.3s ease, min-width 0.3s ease, opacity 0.2s ease', opacity: panelOpen ? 1 : 0, overflow: 'hidden', marginLeft: panelOpen ? 16 : 0 }}>
           {selectedOrg && (
             <div style={{ width: 400, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
               {/* Header card */}
