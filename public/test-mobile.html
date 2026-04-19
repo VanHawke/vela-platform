@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Kiko Mobile Test</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Kiko Mobile — Live Test</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Inter', system-ui, sans-serif; background: #FEFEFC; overflow: hidden; }
+body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #FEFEFC; overflow: hidden; -webkit-text-size-adjust: 100%; }
 
+/* App shell — position fixed, full viewport */
 .app {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -16,6 +18,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #FEFEFC; overflo
   background: #FEFEFC;
 }
 
+/* Header */
 .header {
   padding: 8px 20px;
   display: flex;
@@ -25,24 +28,50 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #FEFEFC; overflo
 }
 .header-title {
   font-family: 'Source Serif 4', Georgia, serif;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 400;
   color: #0A0A0A;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 .header-btns { display: flex; gap: 8px; }
 .header-btn {
-  width: 30px; height: 30px; border-radius: 50%;
+  width: 34px; height: 34px; border-radius: 50%;
   background: #F5F4F1; border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  position: relative;
+}
+.header-btn:active { transform: scale(0.92); }
+.notif-dot {
+  position: absolute; top: 5px; right: 5px;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #B8643E; border: 1.5px solid #FEFEFC;
 }
 
+/* KikoAvatar dots */
+.ka { display: flex; gap: 4px; align-items: center; justify-content: center; }
+.ka-d { width: 7px; height: 7px; border-radius: 50%; background: #0A0A0A; }
+
+/* Messages */
 .messages {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 16px;
+  padding: 8px 16px;
 }
-
+.msg-label {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+}
+.msg-avatar {
+  width: 28px; height: 28px; border-radius: 10px;
+  background: #FFFFFF; border: 0.5px solid rgba(0,0,0,0.08);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 1px 0 rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.2);
+}
+.msg-name { font-size: 12px; font-weight: 500; color: rgba(90,100,112,0.55); }
 .msg {
   max-width: 85%;
   padding: 10px 14px;
@@ -50,18 +79,34 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #FEFEFC; overflo
   font-size: 14px;
   line-height: 1.5;
 }
-.msg.kiko {
+.msg-k {
   background: #F5F4F1;
   border-radius: 16px 16px 16px 4px;
   color: #0A0A0A;
 }
-.msg.user {
+.msg-u {
   background: #0A0A0A;
   color: #FEFEFC;
   border-radius: 16px 16px 4px 16px;
   margin-left: auto;
 }
+.thinking-bar {
+  max-width: 85%;
+  padding: 10px 14px;
+  background: #F5F4F1;
+  border-radius: 16px 16px 16px 4px;
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px;
+}
+.thinking-icon {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: rgba(0,0,0,0.03); border: 0.5px solid rgba(0,0,0,0.06);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.thinking-text { font-size: 13px; color: rgba(90,100,112,0.75); }
 
+/* Prompt bar */
 .prompt-area {
   padding: 8px 16px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
@@ -73,143 +118,230 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #FEFEFC; overflo
   gap: 6px;
   background: #F5F4F1;
   border-radius: 24px;
-  padding: 4px 4px 4px 16px;
+  padding: 6px 6px 6px 16px;
 }
 .prompt-bar input {
   flex: 1;
   border: none;
   background: transparent;
   outline: none;
-  font-size: 14px;
+  font-size: 15px;
   color: #0A0A0A;
   font-family: inherit;
 }
 .prompt-bar input::placeholder { color: #A0A0A0; }
-.send-btn {
+.clip-btn {
   width: 28px; height: 28px; border-radius: 50%;
+  background: transparent; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.send-btn {
+  width: 30px; height: 30px; border-radius: 50%;
   background: #0A0A0A; border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
 
-.debug {
-  position: fixed; bottom: 60px; left: 10px;
-  font-size: 10px; color: #999; z-index: 100;
+/* Voice overlay */
+.voice-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #FEFEFC;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.voice-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 34px; height: 34px; border-radius: 10px;
+  background: rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.12);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.voice-status {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: rgba(0,0,0,0.35);
+  margin-top: 24px;
+}
+
+/* Page nav */
+.page-tabs {
+  display: flex; gap: 12px; padding: 12px 0;
+  justify-content: center;
+}
+.page-tab {
+  padding: 6px 16px; border-radius: 20px;
+  background: rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.06);
+  font-size: 12px; color: #6B6B6B; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.page-tab.active { background: #0A0A0A; color: #FEFEFC; border-color: #0A0A0A; }
+
+/* Screen labels */
+.screen-label {
+  position: fixed; bottom: 4px; left: 50%; transform: translateX(-50%);
+  font-size: 10px; color: #A0A0A0; z-index: 300;
+  background: rgba(254,254,252,0.9); padding: 2px 10px; border-radius: 8px;
 }
 </style>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400&display=swap" rel="stylesheet">
 </head>
 <body>
-<div class="app">
+
+<!-- Page tabs for switching views -->
+<div style="position:fixed;top:0;left:0;right:0;z-index:300;background:#FEFEFC;border-bottom:1px solid rgba(0,0,0,0.06)">
+<div class="page-tabs">
+  <div class="page-tab active" onclick="showPage('home')">Home</div>
+  <div class="page-tab" onclick="showPage('chat')">Chat</div>
+  <div class="page-tab" onclick="showPage('voice')">Voice</div>
+  <div class="page-tab" onclick="showPage('cmd')">Command</div>
+</div>
+</div>
+
+<!-- HOME -->
+<div class="app" id="page-home" style="padding-top:48px">
   <div class="header">
     <div class="header-title">Kiko</div>
     <div class="header-btns">
-      <button class="header-btn">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+      <button class="header-btn" onclick="showPage('voice')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
       </button>
-      <button class="header-btn" id="bellBtn" style="position:relative">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        <div style="position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:#B8643E;border:1.5px solid #FEFEFC"></div>
+      <button class="header-btn" onclick="showPage('cmd')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="notif-dot"></div>
       </button>
     </div>
   </div>
-
-  <div class="messages" id="messages">
-    <div class="msg kiko">Good morning, Sunny. You have 3 meetings today. The Haas call is at 2pm.</div>
-    <div class="msg user">Show me the campaign replies</div>
-    <div class="msg kiko">2 replies received overnight from Cyber-25 campaign. James Collins from CrowdStrike wants to schedule a call, and Michael Torres from Palantir accepted your LinkedIn connection.</div>
-    <div class="msg user">Draft a reply to James — suggest Thursday 2pm</div>
-    <div class="msg kiko">Here's a draft reply:<br><br>Hi James,<br>Great to hear from you. Thursday 2pm works perfectly — I'll send a calendar invite.<br>Best, Matt</div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 20px">
+    <div style="font-size:11px;font-weight:500;letter-spacing:0.10em;text-transform:uppercase;color:#6B6B6B;margin-bottom:12px">
+      <span style="color:#0A0A0A;font-weight:600">TODAY</span><span style="color:#C0C0C0;margin:0 8px">·</span>19 April 2026
+    </div>
+    <h1 style="font-size:28px;font-weight:300;color:#0A0A0A;font-family:'Source Serif 4',Georgia,serif;letter-spacing:-0.018em;text-align:center;margin:0 0 6px">Good morning, Sunny</h1>
+    <p style="font-size:13px;color:#6B6B6B;text-align:center;margin:0">What would you like to work on?</p>
+    <div class="ka" id="home-avatar" style="margin-top:20px"></div>
   </div>
-
   <div class="prompt-area">
     <div class="prompt-bar">
-      <input type="text" placeholder="Ask Kiko anything..." id="input">
-      <button class="header-btn" style="background:transparent">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" stroke-width="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-      </button>
-      <button class="send-btn" id="sendBtn">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FEFEFC" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-      </button>
+      <input type="text" placeholder="Ask Kiko anything...">
+      <button class="clip-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" stroke-width="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></button>
+      <button class="send-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FEFEFC" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
     </div>
   </div>
 </div>
 
-<!-- Command Centre overlay -->
-<div id="commandCentre" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#FEFEFC;z-index:200;flex-direction:column">
+<!-- CHAT -->
+<div class="app" id="page-chat" style="display:none;padding-top:48px">
   <div class="header">
-    <div class="header-title">Kiko</div>
+    <div class="header-title" onclick="showPage('home')">Kiko</div>
     <div class="header-btns">
-      <button class="header-btn">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+      <button class="header-btn" onclick="showPage('voice')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
       </button>
-      <button class="header-btn" id="closeBell" style="background:#0A0A0A">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FEFEFC" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <button class="header-btn" onclick="showPage('cmd')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="notif-dot"></div>
       </button>
+    </div>
+  </div>
+  <div class="messages">
+    <div class="msg-label">
+      <div class="msg-avatar"><div class="ka" id="msg-av" style="gap:2px"></div></div>
+      <span class="msg-name">Kiko</span>
+    </div>
+    <div class="msg msg-k">You have 3 replies overnight. James Collins from CrowdStrike wants to schedule a call.</div>
+    <div class="msg msg-u">Draft a reply — suggest Thursday 2pm</div>
+    <div style="margin-top:8px">
+      <div class="msg-label">
+        <div class="msg-avatar"><div class="ka" style="gap:2px" id="msg-av2"></div></div>
+        <span class="msg-name">Kiko</span>
+      </div>
+    </div>
+    <div class="msg msg-k">Here's a draft reply:<br><br>Hi James,<br>Great to hear from you. Thursday 2pm works perfectly — I'll send a calendar invite.<br>Best, Matt</div>
+    <div class="msg msg-u">Send it</div>
+    <div class="thinking-bar">
+      <div class="thinking-icon"><div class="ka" id="think-av" style="gap:1.5px"></div></div>
+      <span class="thinking-text">Kiko is thinking...</span>
+    </div>
+  </div>
+  <div class="prompt-area">
+    <div class="prompt-bar">
+      <input type="text" placeholder="Ask Kiko anything...">
+      <button class="clip-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" stroke-width="1.8"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></button>
+      <button class="send-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FEFEFC" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<!-- VOICE -->
+<div class="app" id="page-voice" style="display:none">
+  <div class="voice-overlay">
+    <button class="voice-close" onclick="showPage('home')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="ka" id="voice-av" style="gap:10px"></div>
+    <div class="voice-status">
+      <div style="width:6px;height:6px;border-radius:50%;background:#22c55e"></div>
+      Listening
+    </div>
+    <button onclick="showPage('home')" style="margin-top:32px;padding:10px 28px;border-radius:50px;background:rgba(0,0,0,0.03);border:0.5px solid rgba(0,0,0,0.08);font-size:13px;color:#A0A0A0;cursor:pointer;font-family:inherit">Goodbye Kiko</button>
+  </div>
+</div>
+
+<!-- COMMAND -->
+<div class="app" id="page-cmd" style="display:none;padding-top:48px">
+  <div class="header">
+    <div class="header-title" onclick="showPage('home')">Kiko</div>
+    <div class="header-btns">
+      <div class="header-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg></div>
+      <button class="header-btn" style="background:#0A0A0A" onclick="showPage('home')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FEFEFC" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
     </div>
   </div>
   <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 14px 24px">
     <div style="font-size:10px;color:#A0A0A0;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;padding:10px 0 6px">Today</div>
     <div style="background:#FFF;border-radius:0 10px 10px 0;padding:10px 12px;margin-bottom:6px;border:1px solid rgba(0,0,0,0.04);border-left:3px solid #7d8a64">
-      <div style="display:flex;justify-content:space-between"><div style="font-size:12px;font-weight:500;color:#0A0A0A">James Collins replied</div><div style="font-size:9px;color:#7d8a64;font-weight:500">Email</div></div>
-      <div style="font-size:10px;color:#6B6B6B;margin-top:2px">CrowdStrike · Cyber-25 campaign</div>
-      <div style="font-size:10px;color:#A0A0A0;margin-top:3px;font-style:italic">"Thanks Matt — let's schedule a call..."</div>
-      <div style="font-size:9px;color:#A0A0A0;margin-top:4px">2 hours ago</div>
+      <div style="display:flex;justify-content:space-between"><div style="font-size:13px;font-weight:500;color:#0A0A0A">James Collins replied</div><div style="font-size:10px;color:#7d8a64;font-weight:500">Email</div></div>
+      <div style="font-size:11px;color:#6B6B6B;margin-top:2px">CrowdStrike · Cyber-25 campaign</div>
+      <div style="font-size:10px;color:#A0A0A0;margin-top:4px">2 hours ago</div>
     </div>
     <div style="background:#FFF;border-radius:0 10px 10px 0;padding:10px 12px;margin-bottom:6px;border:1px solid rgba(0,0,0,0.04);border-left:3px solid #B89C5C">
-      <div style="display:flex;justify-content:space-between"><div style="font-size:12px;font-weight:500;color:#0A0A0A">Michael Torres accepted</div><div style="font-size:9px;color:#B89C5C;font-weight:500">LinkedIn</div></div>
-      <div style="font-size:10px;color:#6B6B6B;margin-top:2px">Palantir · VP Sales</div>
-      <div style="font-size:9px;color:#A0A0A0;margin-top:4px">4 hours ago</div>
+      <div style="display:flex;justify-content:space-between"><div style="font-size:13px;font-weight:500;color:#0A0A0A">Michael Torres accepted</div><div style="font-size:10px;color:#B89C5C;font-weight:500">LinkedIn</div></div>
+      <div style="font-size:11px;color:#6B6B6B;margin-top:2px">Palantir · VP Sales</div>
+      <div style="font-size:10px;color:#A0A0A0;margin-top:4px">4 hours ago</div>
     </div>
     <div style="font-size:10px;color:#A0A0A0;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;padding:12px 0 6px;border-top:1px solid rgba(0,0,0,0.04)">Tasks due</div>
     <div style="background:#FFF;border:1px solid rgba(0,0,0,0.04);border-radius:10px;padding:10px 12px;margin-bottom:6px">
-      <div style="display:flex;align-items:center;gap:8px"><div style="width:16px;height:16px;border-radius:4px;border:1.5px solid rgba(0,0,0,0.15);flex-shrink:0"></div><div><div style="font-size:12px;font-weight:500;color:#0A0A0A">Follow up with James Collins</div><div style="font-size:10px;color:#6B6B6B">CrowdStrike · Due today</div></div></div>
-    </div>
-    <div style="background:#FFF;border:1px solid rgba(0,0,0,0.04);border-radius:10px;padding:10px 12px;margin-bottom:6px">
-      <div style="display:flex;align-items:center;gap:8px"><div style="width:16px;height:16px;border-radius:4px;border:1.5px solid rgba(184,100,62,0.4);flex-shrink:0"></div><div><div style="font-size:12px;font-weight:500;color:#0A0A0A">Send Haas deck to Sarah</div><div style="font-size:10px;color:#B8643E">Overdue · 2 days</div></div></div>
+      <div style="display:flex;align-items:center;gap:8px"><div style="width:16px;height:16px;border-radius:4px;border:1.5px solid rgba(0,0,0,0.15);flex-shrink:0"></div><div><div style="font-size:13px;font-weight:500;color:#0A0A0A">Follow up with James Collins</div><div style="font-size:11px;color:#6B6B6B">CrowdStrike · Due today</div></div></div>
     </div>
     <div style="font-size:10px;color:#A0A0A0;text-transform:uppercase;letter-spacing:0.06em;font-weight:500;padding:12px 0 6px;border-top:1px solid rgba(0,0,0,0.04)">Campaigns active</div>
-    <div style="background:#FFF;border:1px solid rgba(0,0,0,0.04);border-radius:10px;padding:10px 12px;margin-bottom:6px">
-      <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:500;color:#0A0A0A">Cyber-25</div><div style="font-size:10px;color:#6B6B6B;margin-top:2px">8 enrolled · 1 reply · 0 bounced</div></div><div style="font-size:9px;padding:2px 8px;border-radius:6px;background:rgba(125,138,100,0.10);color:#7d8a64;font-weight:500">Active</div></div>
-    </div>
     <div style="background:#FFF;border:1px solid rgba(0,0,0,0.04);border-radius:10px;padding:10px 12px">
-      <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:500;color:#0A0A0A">Data-AI Q2</div><div style="font-size:10px;color:#6B6B6B;margin-top:2px">5 enrolled · 0 replies · 0 bounced</div></div><div style="font-size:9px;padding:2px 8px;border-radius:6px;background:rgba(125,138,100,0.10);color:#7d8a64;font-weight:500">Active</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:500;color:#0A0A0A">Cyber-25</div><div style="font-size:11px;color:#6B6B6B;margin-top:2px">8 enrolled · 1 reply · 0 bounced</div></div><div style="font-size:10px;padding:3px 10px;border-radius:6px;background:rgba(125,138,100,0.10);color:#7d8a64;font-weight:500">Active</div></div>
     </div>
   </div>
 </div>
 
-<div class="debug" id="debug"></div>
 <script>
-document.getElementById('debug').textContent = window.innerWidth + 'x' + window.innerHeight;
-document.getElementById('bellBtn').onclick = function() {
-  var cc = document.getElementById('commandCentre');
-  cc.style.display = 'flex';
-};
-document.getElementById('closeBell').onclick = function() {
-  document.getElementById('commandCentre').style.display = 'none';
-};
-document.getElementById('sendBtn').onclick = function() {
-  var input = document.getElementById('input');
-  var msg = input.value.trim();
-  if (!msg) return;
-  var msgs = document.getElementById('messages');
-  var d = document.createElement('div');
-  d.className = 'msg user';
-  d.textContent = msg;
-  msgs.appendChild(d);
-  input.value = '';
-  msgs.scrollTop = msgs.scrollHeight;
-  setTimeout(function() {
-    var r = document.createElement('div');
-    r.className = 'msg kiko';
-    r.textContent = 'This is a test response from Kiko. The mobile layout is working correctly with position:fixed, flex column layout, and overflow-y:auto scrolling.';
-    msgs.appendChild(r);
-    msgs.scrollTop = msgs.scrollHeight;
-  }, 500);
-};
-document.getElementById('input').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') { e.preventDefault(); document.getElementById('sendBtn').click(); }
-});
+var C=5;
+function mkDots(el,s){for(var i=0;i<C;i++){var d=document.createElement('div');d.className='ka-d';d.style.width=s+'px';d.style.height=s+'px';el.appendChild(d)}return el.querySelectorAll('.ka-d')}
+function idle(el,s){var dots=mkDots(el,s);var st=performance.now();(function t(n){var e=n-st;for(var i=0;i<C;i++){var sc=1+Math.sin(e/1000*1.5+i*0.8)*0.06;dots[i].style.transform='scale('+sc.toFixed(3)+')';dots[i].style.opacity='0.5'}requestAnimationFrame(t)})(st)}
+function think(el,s){var dots=mkDots(el,s);var st=performance.now();(function t(n){var e=n-st;for(var i=0;i<C;i++){var p=((e-i*180)%1400);if(p<0)p+=1400;var w=Math.sin(p/1400*Math.PI*2);var sc=1+Math.max(0,w)*0.35;var op=0.6+Math.max(0,w)*0.4;var lift=Math.max(0,w)*2;dots[i].style.transform='scale('+sc.toFixed(3)+') translateY('+(-lift).toFixed(1)+'px)';dots[i].style.opacity=op.toFixed(2)}requestAnimationFrame(t)})(st)}
+function voice(el){var dots=mkDots(el,10);var st=performance.now();(function t(n){var e=n-st;var fE=Math.sin(e/400)*0.5+0.5;for(var i=0;i<C;i++){var p=((e-i*120)%1000);if(p<0)p+=1000;var w=Math.sin(p/1000*Math.PI*2);var pk=Math.max(0,w);pk=pk*pk;var amp=0.4+fE*0.35;var sc=1+pk*amp;var op=0.55+pk*(0.45+fE*0.15);var lift=pk*(2.5+fE*4);dots[i].style.transform='scale('+sc.toFixed(3)+') translateY('+(-lift).toFixed(1)+'px)';dots[i].style.opacity=op.toFixed(2)}requestAnimationFrame(t)})(st)}
+
+idle(document.getElementById('home-avatar'),7);
+idle(document.getElementById('msg-av'),3);
+idle(document.getElementById('msg-av2'),3);
+think(document.getElementById('think-av'),3);
+voice(document.getElementById('voice-av'));
+
+function showPage(id){
+  document.querySelectorAll('.app').forEach(function(el){el.style.display='none'});
+  document.getElementById('page-'+id).style.display='flex';
+  document.querySelectorAll('.page-tab').forEach(function(el){el.classList.remove('active')});
+  event.target.classList.add('active');
+}
 </script>
 </body>
 </html>

@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-19T19:59:21.771Z",
+  "generated_at": "2026-04-19T20:11:46.649Z",
   "commits": [
+    {
+      "hash": "cdd6619",
+      "subject": "Nuclear cache fix: (1) clear-cache.html rebuilt — shows step-by-step log of what it unregistered/deleted with counts, does NOT auto-redirect, shows manual 'Open Kiko' button with cache-bust param. (2)",
+      "when": "12 minutes ago"
+    },
     {
       "hash": "e2b43de",
       "subject": "Mobile layout: prompt bar to bottom + header sizes up: (1) Homepage prompt bar moved from centred content to bottom of screen with safe-area padding. (2) Kiko logo 22→24px, buttons 30→34px, icons 13→1",
-      "when": "6 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "a34e41a",
       "subject": "Mobile render match — 6 fixes: (1) KikoVoice avatar colour — was light (white dots on white bg = invisible), now dark (#0A0A0A dots on light Aurora bg). (2) Homepage avatar — removed waveform-era edge",
-      "when": "68 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "0590f7b",
       "subject": "Fix 5 mobile/voice issues: (1) Mobile mic button — was calling non-existent activateVoice/deactivateVoice, now calls startVoice/stopVoice. (2) KikoVoice avatar — removed waveform edge mask, centred av",
-      "when": "85 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "cddeec5",
@@ -54,7 +59,7 @@
     {
       "hash": "1827c1f",
       "subject": "Critical: Fix blank conversation page + rebuild Command Centre to match render: (1) BLANK PAGE FIX: Both welcome and conversation state wrappers now use position:absolute on mobile instead of flex:1+h",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "11dbfc2",
@@ -64,7 +69,7 @@
     {
       "hash": "281e7e7",
       "subject": "Mobile redesign — no bottom nav, bell icon Command Centre, blank page fix: (1) Bottom nav completely removed — no MobileBottomNav component, no CSS references, no import. Like ChatGPT/Claude/Gemini, c",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "263defe",
@@ -84,21 +89,16 @@
     {
       "hash": "bfe3f80",
       "subject": "Remove debug screenshot files",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "7148d9c",
       "subject": "Mobile scaling fixes — full-width rendering on all viewports: (1) Welcome waveform: 340px wide (was 280), container width 100% on mobile (was 90%), maxWidth none (was 900), marginBottom 20 (was 28). (",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "6bdbb1b",
       "subject": "Mobile homepage + conversation view — built to approved renders: (1) MobileBottomNav rebuilt: 48px height (was 78px), env(safe-area-inset-bottom) for iPhone, dark radial gradient orb for Kiko tab, SVG",
-      "when": "9 hours ago"
-    },
-    {
-      "hash": "df337d7",
-      "subject": "KikoChat mobile header + MobileHeader in both states: (1) Mobile header added — serif 'Kiko' title (Source Serif 4, weight 300, 20px) with mic button (gradient orb when voice active) and settings gear",
       "when": "9 hours ago"
     }
   ]
