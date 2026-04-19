@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-19T14:42:59.371Z",
+  "generated_at": "2026-04-19T15:13:41.315Z",
   "commits": [
+    {
+      "hash": "5b063a6",
+      "subject": "Service worker cache bust + viewport fixes: (1) SW rewritten to v2 — deletes ALL old caches on activate, never caches anything. The old SW was caching index.html with stale JS bundle URLs, meaning new",
+      "when": "30 minutes ago"
+    },
     {
       "hash": "1827c1f",
       "subject": "Critical: Fix blank conversation page + rebuild Command Centre to match render: (1) BLANK PAGE FIX: Both welcome and conversation state wrappers now use position:absolute on mobile instead of flex:1+h",
-      "when": "13 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "11dbfc2",
       "subject": "Updated app icons to match platform identity: (1) favicon.svg — new dark gradient orb with waveform bars (was old 4-circle design). (2) kiko-icon-192.png — regenerated to match platform's KikoFloat da",
-      "when": "33 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "281e7e7",
       "subject": "Mobile redesign — no bottom nav, bell icon Command Centre, blank page fix: (1) Bottom nav completely removed — no MobileBottomNav component, no CSS references, no import. Like ChatGPT/Claude/Gemini, c",
-      "when": "66 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "263defe",
@@ -34,12 +39,12 @@
     {
       "hash": "bfe3f80",
       "subject": "Remove debug screenshot files",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "7148d9c",
       "subject": "Mobile scaling fixes — full-width rendering on all viewports: (1) Welcome waveform: 340px wide (was 280), container width 100% on mobile (was 90%), maxWidth none (was 900), marginBottom 20 (was 28). (",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "6bdbb1b",
@@ -59,7 +64,7 @@
     {
       "hash": "f8208c9",
       "subject": "Mobile: KikoFloat hidden, ChatHistory hidden, Orgs detail fullscreen: (1) Layout.jsx — KikoFloat and global voice mode hidden on mobile (isMobile conditional). KikoFloat is desktop-only; on mobile Kik",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "d3a31c1",
@@ -69,7 +74,7 @@
     {
       "hash": "3351cde",
       "subject": "Mobile nav stripped to 7 pages only + render-matched styling: (1) MobileBottomNav rebuilt — only 5 tabs: Kiko (purple/teal gradient orb matching platform voice orb), Pipeline, Hub, Calendar, More. Mor",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "2d8747b",
@@ -94,11 +99,6 @@
     {
       "hash": "1050f4a",
       "subject": "LinkedIn page removed + 7 sports knowledge domains + campaign stats bar: (1) LinkedIn page deleted from routes, navigation, page roles, voice nav. (2) 7 new knowledge domains: football-sponsorship, us",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "d076f19",
-      "subject": "Formula E calendar + campaign stats + Google Maps directions + backup: (1) Formula E 2025-26 calendar complete — 17 races (was only 2). São Paulo Dec 6, Mexico City Jan 10, Miami Jan 31, Jeddah double",
       "when": "2 days ago"
     }
   ]
