@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-17T19:32:31.795Z",
+  "generated_at": "2026-04-19T09:10:05.994Z",
   "commits": [
+    {
+      "hash": "0d9dfd2",
+      "subject": "Force-remove LinkedIn from localStorage + last code refs: (1) LegoraTopNav.jsx — on mount, strips 'linkedin' from kiko_top_nav_v2, kiko_nav_order, kiko_more_order in localStorage. This was the actual ",
+      "when": "2 days ago"
+    },
     {
       "hash": "51efb83",
       "subject": "LinkedIn page fully removed — all references: (1) LegoraTopNav.jsx — removed from ALL_PAGES array and DEFAULT_TOP_IDS filter. (2) Settings.jsx — removed from ALL_TOP_NAV navigation config. (3) Layout.",
-      "when": "10 minutes ago"
+      "when": "2 days ago"
     },
     {
       "hash": "3bf861c",
       "subject": "4 more knowledge domains + system prompt: (1) brand-licensing — fashion/sports/entertainment/automotive licensing deals, royalty benchmarks. (2) sports-licensing — team merch, league programmes, kit m",
-      "when": "28 minutes ago"
+      "when": "2 days ago"
     },
     {
       "hash": "1050f4a",
       "subject": "LinkedIn page removed + 7 sports knowledge domains + campaign stats bar: (1) LinkedIn page deleted from routes, navigation, page roles, voice nav. (2) 7 new knowledge domains: football-sponsorship, us",
-      "when": "30 minutes ago"
+      "when": "2 days ago"
     },
     {
       "hash": "d076f19",
       "subject": "Formula E calendar + campaign stats + Google Maps directions + backup: (1) Formula E 2025-26 calendar complete — 17 races (was only 2). São Paulo Dec 6, Mexico City Jan 10, Miami Jan 31, Jeddah double",
-      "when": "40 minutes ago"
+      "when": "2 days ago"
     },
     {
       "hash": "1cf1ef6",
       "subject": "Multi-user reply detection + LinkedIn acceptance monitoring: (1) cron-sequence-reply-detect.js — now scans EACH sender's Gmail inbox, not just the first available. Resolves send_from_user_id per enrol",
-      "when": "64 minutes ago"
+      "when": "2 days ago"
     },
     {
       "hash": "1669f6d",
       "subject": "LinkedIn pipeline complete — Hetzner queue processor: (1) kiko-worker/routes/linkedin-queue.js — POST /linkedin-queue/process reads pending LinkedIn queue items from Supabase, syncs li_at cookies from",
-      "when": "73 minutes ago"
+      "when": "2 days ago"
     },
     {
       "hash": "9602d0f",
       "subject": "SequenceDetail full Legora theme alignment: 81 style fixes. (1) All 0.5px borders → 1px solid. (2) All Tailwind danger colors (rgba 248,113,113) → Legora terra (rgba 184,100,62). (3) All Tailwind ambe",
-      "when": "2 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "6f2fc54",
       "subject": "Prospect detail panel + campaign overview analytics: (1) Clicking any prospect name in the campaign table opens a right-side detail panel showing: contact header (name, title, company, email, status b",
-      "when": "2 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "19acd2a",
       "subject": "Campaign section Legora theme overhaul: (1) SequenceDetail.jsx — replaced hardcoded C object with Legora tokens. bg #FEFEFC, cardHover #F5F4F1, green → sage #7d8a64, red → terra #B8643E, amber → #B89C",
-      "when": "3 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "8f6915d",
       "subject": "Fix LinkedIn guide: DevTools shortcut updated to 'Right-click → Inspect (or Cmd+Option+I on Mac, F12 on Windows)' — was incorrectly showing F12 only",
-      "when": "5 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "fd045b3",
       "subject": "Fix: Accounts tab now visible to all users (was super_admin only). Every user needs to connect their own Google + LinkedIn — these are personal account connections, not admin settings. Matt can now ac",
-      "when": "5 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "95d886e",
       "subject": "Sequence drag-to-reorder + contact dedup polish: (1) SequenceFlowView.jsx rewritten with full HTML5 drag-and-drop — drag handle (GripVertical icon) on each step node, blue drop indicator line between ",
-      "when": "5 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "9db8627",
       "subject": "RAG wired into Kiko + contact dedup UI complete: (1) learning_search in data.js — semantic fallback when keyword results < 3, calls /api/embed for vector search, returns SEMANTIC MATCHES with similari",
-      "when": "5 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "6dc6e56",
       "subject": "Sequence visual builder + RAG fix: (1) SequenceFlowView.jsx — visual flow diagram for campaign sequences. Shows steps as connected nodes (Email blue, LinkedIn teal, Condition amber). Condition nodes d",
-      "when": "6 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "4bffa98",
       "subject": "RAG debug: lower threshold to 0.15, add query_dims to response",
-      "when": "6 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "f352669",
       "subject": "Fix RAG: lowered match threshold to 0.3, fixed match_embeddings RPC to accept text input and cast to vector internally. All 15 domains embedded (35 chunks).",
-      "when": "6 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "2ce0721",
       "subject": "Rewrite embed.js with health check + better error handling",
-      "when": "6 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "e963183",
       "subject": "Fix vector embedding format: changed from JSON.stringify to pgvector string format for both insert and RPC query. Fixed HNSW index (IVFFlat fails on empty tables). Added POST-only guard.",
-      "when": "6 hours ago"
+      "when": "2 days ago"
     },
     {
       "hash": "fc354f0",
       "subject": "Vector embedding pipeline complete: (1) api/embed.js — dual-mode endpoint: 'embed' mode chunks knowledge domains into ~2000 char segments and stores as 1536-dim vectors via OpenAI text-embedding-3-sma",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "d7ba580",
-      "subject": "Notification quiet hours + contact dedup API + vector embeddings infra: (1) Quiet hours in Settings — enable/disable toggle + from/to time pickers. Wired into NotificationToast — suppresses all notifi",
-      "when": "6 hours ago"
+      "when": "2 days ago"
     }
   ]
 }

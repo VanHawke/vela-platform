@@ -44,6 +44,7 @@ import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
 import CommandPalette from './CommandPalette'
 import LegoraTopNav from './LegoraTopNav'
+import MobileBottomNav from './MobileBottomNav'
 import AuroraCanvas from '../AuroraCanvas'
 import { useKikoPolish } from '@/lib/useKikoPolish'
 
@@ -570,13 +571,8 @@ export default function Layout({ user }) {
         </button>
       </nav>
 
-      {/* Mobile responsive styles */}
-      <style>{`
-        @media (max-width: 768px) {
-          .mobile-bottom-nav { display: flex !important; }
-          main { padding-bottom: 72px !important; }
-        }
-      `}</style>
+      {/* Mobile bottom tab bar */}
+      <MobileBottomNav onKikoTap={() => { if (loc.pathname !== '/') nav('/') }} />
     </div>
   )
 }

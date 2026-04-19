@@ -55,6 +55,7 @@ const SCHEDULES = [
   { schedule: '5 4 * * *',      path: '/api/cron-knowledge-seed?domains=sports-business-trends', name: 'knowledge-seed-8' },
   { schedule: '10 4 * * *',     path: '/api/cron-knowledge-seed?domains=brand-licensing,sports-licensing,entertainment-licensing', name: 'knowledge-seed-9' },
   { schedule: '15 4 * * *',     path: '/api/cron-knowledge-seed?domains=fashion-business', name: 'knowledge-seed-10' },
+  { schedule: '20 4 * * *',     path: '/api/cron-knowledge-seed?domains=miami-lifestyle,luxury-lifestyle-global', name: 'knowledge-seed-11' },
   { schedule: '0 5 * * *',      path: '/api/ingest-knowledge',             name: 'ingest-knowledge' },
   { schedule: '0 5 * * *',      path: '/api/cron-score-companies',         name: 'score-companies' },
   { schedule: '0 6 * * *',      path: '/api/cron-enrich',                  name: 'enrich' },

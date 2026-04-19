@@ -614,7 +614,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
       )}
 
       {/* ── FAB button — Dark sphere with KikoWaveform, teal aura when speaking ── */}
-      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 101, width: 60, height: 60 }}>
+      <div className="kiko-float-trigger" style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 101, width: 60, height: 60 }}>
         {/* Teal aura rings — visible when voice is active */}
         {voiceOpen && <>
           <div style={{ position: 'absolute', inset: -5, borderRadius: '50%', border: '2px solid rgba(6,214,160,0.25)', animation: 'kikoPulseRing 2s ease-in-out infinite', pointerEvents: 'none' }} />
