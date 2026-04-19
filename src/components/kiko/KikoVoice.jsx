@@ -432,7 +432,7 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
         position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
         marginBottom: 24, padding: '48px 0',
       }}>
-        <KikoAvatar size={110} state={speaking ? 'responding' : 'thinking'} energy={voiceEnergy} light />
+        <KikoAvatar size={110} state={speaking ? 'responding' : 'thinking'} energy={voiceEnergy} />
       </div>
 
       {/* Status bar — color-coded: amber=connecting, green=active, purple=thinking */}

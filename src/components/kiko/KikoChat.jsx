@@ -1146,13 +1146,20 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           )
         })()}
         <div style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
-        <div style={{
+        <div style={isMobile ? {
+          maxWidth: isUser ? '80%' : '85%',
+          padding: '10px 14px',
+          borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+          background: isUser ? '#0A0A0A' : '#F5F4F1',
+          color: isUser ? '#FEFEFC' : '#0A0A0A',
+          fontSize: 14, lineHeight: 1.5, fontFamily: C.font, fontWeight: 400,
+        } : {
           maxWidth: isUser ? '65%' : '100%',
           padding: isUser ? '13px 20px' : '0',
           borderRadius: isUser ? '8px 8px 4px 8px' : 0,
           background: isUser ? 'rgba(0,0,0,0.03)' : 'transparent',
           border: isUser ? `0.5px solid ${C.border}` : 'none',
-          color: isUser ? '#0A0A0A' : '#0A0A0A',
+          color: '#0A0A0A',
           fontSize: 15, lineHeight: 1.7, fontFamily: C.font, fontWeight: 400,
         }}>
           {isUser ? <>
@@ -1357,16 +1364,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
           {/* Wave — always visible, scales up in voice mode */}
           <div id="kikoWaveHome" style={{
-            width: isMobile ? '100%' : '90%', maxWidth: isMobile ? 'none' : 900, marginBottom: voiceActive ? 0 : (isMobile ? 20 : 28), overflow: 'visible', padding: isMobile ? '8px 0' : '16px 0',
+            marginBottom: voiceActive ? 0 : (isMobile ? 20 : 28), overflow: 'visible', padding: isMobile ? '8px 0' : '16px 0',
             cursor: voiceActive ? 'default' : 'pointer',
             transform: voiceActive ? 'scale(1.15)' : 'scale(1)',
             transition: 'all 0.7s cubic-bezier(0.34,1.56,0.64,1)',
             display: 'flex', justifyContent: 'center', alignItems: 'center',
-            WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
-            maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
-          }}
-            onMouseEnter={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1.02)' }}
-            onMouseLeave={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1)' }}>
+          }}>
             <KikoAvatar size={isMobile ? 40 : 64} state={voiceActive ? (voiceState.speaking ? 'responding' : 'thinking') : 'idle'} onClick={voiceActive ? undefined : () => startVoice()} />
           </div>
 
@@ -1568,8 +1571,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {/* Thinking indicator — glass panel with animated waveform */}
           {streaming && !streamText && (
             <div style={{ marginBottom: 24, padding: '12px 0' }}>
-              <div style={{ maxWidth: 480 }}>
-                <div style={{
+              <div style={{ maxWidth: isMobile ? '85%' : 480 }}>
+                <div style={isMobile ? {
+                  padding: '10px 14px', borderRadius: '16px 16px 16px 4px',
+                  background: '#F5F4F1',
+                } : {
                   padding: '16px 20px', borderRadius: 16,
                   background: '#FFFFFF', backdropFilter: 'blur(20px) saturate(1.3)', WebkitBackdropFilter: 'blur(20px) saturate(1.3)',
                   border: '0.5px solid rgba(0,0,0,0.08)',

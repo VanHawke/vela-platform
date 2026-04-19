@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-19T18:33:40.235Z",
+  "generated_at": "2026-04-19T18:50:39.639Z",
   "commits": [
+    {
+      "hash": "0590f7b",
+      "subject": "Fix 5 mobile/voice issues: (1) Mobile mic button — was calling non-existent activateVoice/deactivateVoice, now calls startVoice/stopVoice. (2) KikoVoice avatar — removed waveform edge mask, centred av",
+      "when": "17 minutes ago"
+    },
     {
       "hash": "cddeec5",
       "subject": "Lock favicon — remove custom upload: (1) Settings.jsx — removed Browser Favicon ImageUpload section. Favicon is now system-locked to the 5-dot identity mark. (2) index.html — replaced dynamic favicon ",
@@ -29,7 +34,7 @@
     {
       "hash": "e9a259f",
       "subject": "Mobile layout: position fixed + CSS fix + SW cache bust: (1) Both welcome and conversation states use position:fixed on mobile with inset 0, background #FEFEFC, zIndex 50. This bypasses the entire par",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "5b063a6",
@@ -44,7 +49,7 @@
     {
       "hash": "11dbfc2",
       "subject": "Updated app icons to match platform identity: (1) favicon.svg — new dark gradient orb with waveform bars (was old 4-circle design). (2) kiko-icon-192.png — regenerated to match platform's KikoFloat da",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "281e7e7",
@@ -79,7 +84,7 @@
     {
       "hash": "6bdbb1b",
       "subject": "Mobile homepage + conversation view — built to approved renders: (1) MobileBottomNav rebuilt: 48px height (was 78px), env(safe-area-inset-bottom) for iPhone, dark radial gradient orb for Kiko tab, SVG",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "df337d7",
@@ -94,11 +99,6 @@
     {
       "hash": "f8208c9",
       "subject": "Mobile: KikoFloat hidden, ChatHistory hidden, Orgs detail fullscreen: (1) Layout.jsx — KikoFloat and global voice mode hidden on mobile (isMobile conditional). KikoFloat is desktop-only; on mobile Kik",
-      "when": "8 hours ago"
-    },
-    {
-      "hash": "d3a31c1",
-      "subject": "Mobile responsive: full CSS overrides for all 7 pages + useMobile hook + Layout conditional nav: (1) useMobile.js hook — detects ≤768px breakpoint. (2) Layout.jsx — LegoraTopNav conditionally hidden o",
       "when": "8 hours ago"
     }
   ]
