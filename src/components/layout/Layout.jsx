@@ -45,6 +45,7 @@ import KikoSymbol from '../kiko/KikoSymbol'
 import CommandPalette from './CommandPalette'
 import LegoraTopNav from './LegoraTopNav'
 import MobileBottomNav from './MobileBottomNav'
+import useMobile from '@/hooks/useMobile'
 import AuroraCanvas from '../AuroraCanvas'
 import { useKikoPolish } from '@/lib/useKikoPolish'
 
@@ -103,6 +104,7 @@ export default function Layout({ user }) {
   useKikoPolish()
   const loc = useLocation()
   const nav = useNavigate()
+  const isMobile = useMobile()
   const isHome = loc.pathname === '/' || loc.pathname === '/home'
 
   const [profile, setProfile] = useState({})
@@ -414,8 +416,8 @@ export default function Layout({ user }) {
       {/* Aurora gradient orbs */}
       <AuroraCanvas extraOrb={loc.pathname === '/pipeline' ? 'amber' : null} />
 
-      {/* Legora top nav */}
-      <LegoraTopNav
+      {/* Legora top nav — hidden on mobile, replaced by bottom tab bar */}
+      {!isMobile && <LegoraTopNav
         user={user}
         profile={profile}
         customLogo={customLogo}
@@ -424,7 +426,7 @@ export default function Layout({ user }) {
         isAdmin={isSuperAdmin}
         onSearchClick={() => setCommandPaletteOpen(true)}
         onNotificationsClick={() => setNotifOpen(!notifOpen)}
-      />
+      />}
 
 
       {/* Notification dropdown */}
@@ -492,7 +494,7 @@ export default function Layout({ user }) {
       )}
 
       <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1 }}>
-        <Outlet context={{ kikoMessages, setKikoMessages, kikoConvId, setKikoConvId, kikoNavigate, kikoResetKey, openPalette: () => setPaletteOpen(true) }} />
+        <Outlet context={{ kikoMessages, setKikoMessages, kikoConvId, setKikoConvId, kikoNavigate, kikoResetKey, openPalette: () => setPaletteOpen(true), isMobile }} />
       </main>
 
       {/* Realtime notifications toast (v0.0.39) */}

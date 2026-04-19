@@ -1,29 +1,62 @@
-/* mobile.css — Kiko Mobile: stripped-down, render-matched */
-/* Only pages: Kiko Chat, Kiko Voice, Pipeline, Command Centre, Calendar, Contacts, Organisations */
+/* ═══════════════════════════════════════════════════════════════
+   KIKO MOBILE — Stripped-down mobile experience
+   Pages: Kiko Chat, Voice, Pipeline, Command Centre, Calendar,
+          Contacts, Organisations
+   ═══════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
 
-  /* ═══ Hide desktop top nav, show mobile bottom nav ═══ */
-  .legora-top-nav-desktop {
+  /* ── Navigation ── */
+  .legora-top-nav-desktop,
+  .legora-topnav {
     display: none !important;
   }
   .kiko-mobile-bottom-nav {
     display: flex !important;
   }
 
-  /* ═══ Safe area for bottom nav ═══ */
-  main,
-  [data-page-content] {
+  /* ── Safe areas ── */
+  main, [data-page-content] {
     padding-bottom: 86px !important;
   }
-
-  /* ═══ Page headers: Source Serif 4, weight 300 ═══ */
-  h1, [data-page-title] {
-    font-size: 20px !important;
-    font-weight: 300 !important;
+  body {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
-  /* ═══ KikoFloat: fullscreen above bottom nav ═══ */
+  /* ── Page header ── */
+  .lg-page-head {
+    padding: 14px 16px 10px !important;
+  }
+  .lg-page-head-row {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  .lg-page-title {
+    font-size: 20px !important;
+  }
+  .lg-eyebrow {
+    display: none !important;
+  }
+  .lg-stats {
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+  }
+  .lg-stat-val { font-size: 15px !important; }
+  .lg-stat-lbl { font-size: 9px !important; }
+  .lg-toolbar {
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+  }
+  .lg-toolbar button,
+  .lg-toolbar .ct-pri-btn {
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+  }
+
+  /* ══════════════════════════════════════
+     KIKO CHAT / FLOAT
+     ══════════════════════════════════════ */
   .kiko-panel {
     position: fixed !important;
     bottom: 78px !important;
@@ -42,62 +75,219 @@
     right: 16px !important;
   }
 
-  /* ═══ Pipeline: vertical card stack ═══ */
-  .pipeline-kanban {
+  /* ══════════════════════════════════════
+     PIPELINE — vertical card stack
+     ══════════════════════════════════════ */
+  .pl {
+    overflow-y: auto !important;
+  }
+  .pl-board {
+    flex-direction: column !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+  .pl-board.with-panel {
+    display: flex !important;
+    grid-template-columns: unset !important;
+  }
+  .pl-cols-wrap {
     flex-direction: column !important;
     overflow-x: visible !important;
     gap: 8px !important;
-    padding: 8px 16px !important;
+    padding: 0 16px 16px !important;
   }
-  .pipeline-column {
+  .pl-col {
+    width: 100% !important;
     min-width: unset !important;
-    width: 100% !important;
+    flex-shrink: unset !important;
   }
-
-  /* ═══ Tables: horizontal scroll ═══ */
-  table {
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+  .pl-col-body {
+    max-height: none !important;
   }
-
-  /* ═══ Command Centre: stack vertically ═══ */
-  .command-centre-split {
-    flex-direction: column !important;
-  }
-  .command-centre-sidebar {
-    width: 100% !important;
-    max-height: 180px !important;
-    border-right: none !important;
-    border-bottom: 1px solid rgba(0,0,0,0.06) !important;
-  }
-
-  /* ═══ Calendar: vertical list ═══ */
-  .calendar-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 6px !important;
-  }
-
-  /* ═══ Prospect detail: fullscreen slide-over ═══ */
-  .prospect-detail-panel {
+  /* Deal detail panel — fullscreen on mobile */
+  .pl-detail {
     position: fixed !important;
     top: 0 !important;
     right: 0 !important;
     bottom: 78px !important;
+    left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    z-index: 90 !important;
+    border-left: none !important;
+    border-radius: 0 !important;
+  }
+
+  /* ══════════════════════════════════════
+     COMMAND CENTRE — tighter mobile
+     ══════════════════════════════════════ */
+  .cc {
+    overflow-y: auto !important;
+  }
+  .cc-body {
+    padding: 0 16px 80px !important;
+  }
+  .cc-hot-row {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .cc-hot-card {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+  .cc-tabs {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    padding: 0 16px !important;
+    gap: 4px !important;
+  }
+  .cc-tabs button {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    font-size: 11px !important;
+    padding: 6px 12px !important;
+  }
+  /* Thread/detail panel fullscreen */
+  .cc-thread-panel {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 78px !important;
+    left: 0 !important;
     width: 100% !important;
     z-index: 90 !important;
   }
 
-  /* ═══ Modals: full-width on mobile ═══ */
-  .modal-overlay > div {
+  /* ══════════════════════════════════════
+     CALENDAR — vertical timeline
+     ══════════════════════════════════════ */
+  .cclg {
+    overflow-y: auto !important;
+  }
+  .cclg-head {
+    padding: 14px 16px 10px !important;
+  }
+  .cclg-head-row {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .cclg-title {
+    font-size: 20px !important;
+  }
+  .cclg-eyebrow {
+    display: none !important;
+  }
+  .cclg-filters {
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+  }
+  .cclg-chip {
+    padding: 5px 10px !important;
+    font-size: 11px !important;
+  }
+  .cclg-seg button {
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+  }
+  .cclg-spine-wrap {
+    padding: 0 16px 14px !important;
+  }
+  .cclg-spine {
+    gap: 4px !important;
+  }
+  .cclg-round {
+    width: 80px !important;
+    padding: 8px 10px !important;
+  }
+  .cclg-round .rname {
+    font-size: 10px !important;
+  }
+  .cclg-round .rcount {
+    font-size: 8px !important;
+  }
+
+  /* ══════════════════════════════════════
+     CONTACTS — responsive table
+     ══════════════════════════════════════ */
+  .ct {
+    overflow-y: auto !important;
+  }
+  .ct-head {
+    padding: 14px 16px 10px !important;
+  }
+  .ct-head-row {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .ct-head h1 {
+    font-size: 20px !important;
+  }
+  .ct-filters {
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 0 16px !important;
+  }
+  .ct-search {
+    width: 100% !important;
+    max-width: none !important;
+  }
+  .ct-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .ct-table {
+    font-size: 12px !important;
+  }
+  .ct-table thead th,
+  .ct-table tbody td {
+    padding: 8px 10px !important;
+    white-space: nowrap !important;
+  }
+  /* Hide less important columns on mobile */
+  .ct-table th:nth-child(5),
+  .ct-table td:nth-child(5),
+  .ct-table th:nth-child(6),
+  .ct-table td:nth-child(6),
+  .ct-table th:nth-child(7),
+  .ct-table td:nth-child(7) {
+    display: none !important;
+  }
+  .ct-mark {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 10px !important;
+  }
+  .ct-name {
+    font-size: 12px !important;
+  }
+
+  /* ══════════════════════════════════════
+     ORGANISATIONS — responsive
+     ══════════════════════════════════════ */
+  /* Org page uses inline styles - override via attribute selectors where possible */
+  .org-page {
+    overflow-y: auto !important;
+  }
+
+  /* ══════════════════════════════════════
+     CAMPAIGNS — responsive
+     ══════════════════════════════════════ */
+  /* Hidden from mobile nav but still accessible via URL */
+
+  /* ══════════════════════════════════════
+     MODALS — full-width on mobile
+     ══════════════════════════════════════ */
+  .modal-overlay > div,
+  [style*="position: fixed"][style*="inset: 0"] > div {
     width: calc(100vw - 24px) !important;
     max-width: none !important;
     max-height: 80vh !important;
     border-radius: 16px !important;
   }
 
-  /* ═══ General spacing: tighter on mobile ═══ */
+  /* ══════════════════════════════════════
+     GENERAL SPACING
+     ══════════════════════════════════════ */
   [style*="padding: 0 28px"],
   [style*="padding:0 28px"],
   [style*="padding: 8px 28px"],
@@ -107,24 +297,14 @@
     padding-left: 16px !important;
     padding-right: 16px !important;
   }
-
-  /* ═══ Typography: prevent text-size-adjust ═══ */
-  body {
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-  }
 }
 
-/* ═══ Tablet (769-1024px): keep desktop nav, adjust KikoFloat ═══ */
+/* ══════ Tablet ══════ */
 @media (min-width: 769px) and (max-width: 1024px) {
-  .kiko-mobile-bottom-nav {
-    display: none !important;
-  }
+  .kiko-mobile-bottom-nav { display: none !important; }
 }
 
-/* ═══ Desktop: hide mobile elements ═══ */
+/* ══════ Desktop: hide mobile-only ══════ */
 @media (min-width: 769px) {
-  .kiko-mobile-bottom-nav {
-    display: none !important;
-  }
+  .kiko-mobile-bottom-nav { display: none !important; }
 }

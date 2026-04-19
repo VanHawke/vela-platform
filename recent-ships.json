@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-19T09:29:52.101Z",
+  "generated_at": "2026-04-19T10:10:36.936Z",
   "commits": [
+    {
+      "hash": "3351cde",
+      "subject": "Mobile nav stripped to 7 pages only + render-matched styling: (1) MobileBottomNav rebuilt — only 5 tabs: Kiko (purple/teal gradient orb matching platform voice orb), Pipeline, Hub, Calendar, More. Mor",
+      "when": "40 minutes ago"
+    },
     {
       "hash": "2d8747b",
       "subject": "Mobile PWA + bottom nav + concierge intelligence + 28 domains: (1) MobileBottomNav.jsx — 5-tab bottom bar (Kiko, Pipeline, Hub, Calendar, More) with slide-up More menu for Contacts/Organisations/Matri",
-      "when": "19 minutes ago"
+      "when": "60 minutes ago"
     },
     {
       "hash": "0d9dfd2",
@@ -94,11 +99,6 @@
     {
       "hash": "2ce0721",
       "subject": "Rewrite embed.js with health check + better error handling",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "e963183",
-      "subject": "Fix vector embedding format: changed from JSON.stringify to pgvector string format for both insert and RPC query. Fixed HNSW index (IVFFlat fails on empty tables). Added POST-only guard.",
       "when": "2 days ago"
     }
   ]

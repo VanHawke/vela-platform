@@ -334,7 +334,7 @@ export default function Organisations({ user }) {
   }, [companies])
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className="org-page" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <PageHeader
         eyebrowCategory="DATABASE"
         eyebrowSuffix="Companies"
