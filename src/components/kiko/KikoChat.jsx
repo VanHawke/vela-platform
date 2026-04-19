@@ -1488,6 +1488,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         {isMobile && !voiceActive && (
           <div style={{ flexShrink: 0, padding: '8px 16px', paddingBottom: 'calc(8px + env(safe-area-inset-bottom, 0px))' }}>
             {PromptBar({ welcome: true })}
+            <div style={{ textAlign: 'center', fontSize: 9, color: '#D0D0D0', marginTop: 6 }}>v19.04-B</div>
           </div>
         )}
       </div>

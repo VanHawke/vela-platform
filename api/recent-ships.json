@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-19T20:26:43.196Z",
+  "generated_at": "2026-04-19T20:34:12.914Z",
   "commits": [
+    {
+      "hash": "2932e6e",
+      "subject": "Mobile size enlargement — all elements scaled up for better mobile readability: (1) Kiko logo 24→28px. (2) Header buttons 34→40px, icons 15→18px. (3) Greeting h1 28→32px, subtitle 13→15px. (4) Prompt ",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "8740bbc",
       "subject": "Test page: pixel-accurate 4-screen mobile reference (Home/Chat/Voice/Command) with tab switching. User can compare directly with React app on their phone at /test-mobile.html.",
-      "when": "14 minutes ago"
+      "when": "22 minutes ago"
     },
     {
       "hash": "cdd6619",
       "subject": "Nuclear cache fix: (1) clear-cache.html rebuilt — shows step-by-step log of what it unregistered/deleted with counts, does NOT auto-redirect, shows manual 'Open Kiko' button with cache-bust param. (2)",
-      "when": "27 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "e2b43de",
       "subject": "Mobile layout: prompt bar to bottom + header sizes up: (1) Homepage prompt bar moved from centred content to bottom of screen with safe-area padding. (2) Kiko logo 22→24px, buttons 30→34px, icons 13→1",
-      "when": "33 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "a34e41a",
@@ -79,7 +84,7 @@
     {
       "hash": "263defe",
       "subject": "Critical fixes — blank page + footer + nav restructure: (1) Conversation state blank page fix — wrapper div changed from height:100% to flex:1 + minHeight:0. The height:100% wasn't resolving in the mo",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "22606f2",
@@ -94,11 +99,6 @@
     {
       "hash": "bfe3f80",
       "subject": "Remove debug screenshot files",
-      "when": "9 hours ago"
-    },
-    {
-      "hash": "7148d9c",
-      "subject": "Mobile scaling fixes — full-width rendering on all viewports: (1) Welcome waveform: 340px wide (was 280), container width 100% on mobile (was 90%), maxWidth none (was 900), marginBottom 20 (was 28). (",
       "when": "9 hours ago"
     }
   ]
