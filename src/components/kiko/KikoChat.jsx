@@ -187,6 +187,35 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [historyOpen, setHistoryOpen] = useState(false)
   const [insightsOpen, setInsightsOpen] = useState(false)
   const [alertCount, setAlertCount] = useState(0)
+  const [mobileCommandOpen, setMobileCommandOpen] = useState(false)
+  const [commandData, setCommandData] = useState({ replies: [], tasks: [], campaigns: [] })
+
+  // Load command centre data when bell is tapped
+  const loadCommandData = useCallback(async () => {
+    try {
+      const [alertsRes, tasksRes, campaignsRes] = await Promise.all([
+        supabase.from('kiko_alerts').select('*').order('created_at', { ascending: false }).limit(20),
+        supabase.from('tasks').select('*').eq('org_id', '35975d96-c2c9-4b6c-b4d4-bb947ae817d5').order('created_at', { ascending: false }).limit(20),
+        supabase.from('kiko_sequences').select('id, name, is_active, steps').eq('is_active', true).limit(10),
+      ])
+      // Get enrollment counts for active campaigns
+      const campaignIds = (campaignsRes.data || []).map(c => c.id)
+      let enrollments = []
+      if (campaignIds.length) {
+        const { data: enr } = await supabase.from('kiko_sequence_enrollments').select('sequence_id, status, reply_detected_at, bounce_detected_at').in('sequence_id', campaignIds)
+        enrollments = enr || []
+      }
+      const campaigns = (campaignsRes.data || []).map(c => {
+        const enrs = enrollments.filter(e => e.sequence_id === c.id)
+        return { ...c, enrolled: enrs.length, replied: enrs.filter(e => e.reply_detected_at).length, bounced: enrs.filter(e => e.bounce_detected_at).length }
+      })
+      // Filter alerts to replies and important items
+      const replies = (alertsRes.data || []).filter(a => a.type === 'reply_from_prospect' || a.type === 'linkedin_connection_accepted' || a.type === 'bounce_detected')
+      // Filter tasks to incomplete
+      const tasks = (tasksRes.data || []).filter(t => !t.data?.completed).map(t => ({ ...t, ...t.data }))
+      setCommandData({ replies, tasks, campaigns })
+    } catch (err) { console.error('[MobileCommand]', err) }
+  }, [])
 
   // Poll alert count from KikoInsights
   useEffect(() => {
@@ -1198,7 +1227,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     )
   })
 
-  // ── Mobile header — approved render: serif "Kiko" + mic + new chat ──
+  // ── Mobile header — approved render: serif "Kiko" + mic + bell (command centre) ──
   const MobileHeader = () => isMobile ? (
     <div style={{ padding: '4px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
       <div style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 22, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em' }}>Kiko</div>
@@ -1207,13 +1236,72 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           style={{ width: 30, height: 30, borderRadius: '50%', background: voiceActive ? 'radial-gradient(circle at 40% 35%, rgba(35,28,55,1), rgba(15,13,22,1))' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: voiceActive ? '0 0 6px rgba(124,92,252,0.25)' : 'none' }}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={voiceActive ? '#FFFFFF' : '#6B6B6B'} strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
         </button>
-        <button onClick={() => startNewChat()}
-          style={{ width: 30, height: 30, borderRadius: '50%', background: '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="2"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+        <button onClick={() => { setMobileCommandOpen(!mobileCommandOpen); if (!mobileCommandOpen) loadCommandData() }}
+          style={{ width: 30, height: 30, borderRadius: '50%', background: mobileCommandOpen ? '#0A0A0A' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={mobileCommandOpen ? '#FEFEFC' : '#6B6B6B'} strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          {alertCount > 0 && <div style={{ position: 'absolute', top: 4, right: 4, width: 7, height: 7, borderRadius: '50%', background: '#B8643E', border: '1.5px solid #FEFEFC' }} />}
         </button>
       </div>
     </div>
   ) : null
+
+  // ── Mobile Command Centre panel (bell icon) ──
+  const MobileCommandCentre = () => {
+    if (!isMobile || !mobileCommandOpen) return null
+    const { replies, tasks, campaigns } = commandData
+    const timeAgo = (d) => { if (!d) return ''; const s = Math.floor((Date.now() - new Date(d)) / 1000); if (s < 60) return 'just now'; if (s < 3600) return `${Math.floor(s/60)}m ago`; if (s < 86400) return `${Math.floor(s/3600)}h ago`; return `${Math.floor(s/86400)}d ago` }
+    const isOverdue = (d) => d && new Date(d) < new Date()
+    return (
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column', fontFamily: "'Inter', system-ui, sans-serif" }}>
+        <div style={{ padding: '52px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          <div style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 22, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em' }}>Command Centre</div>
+          <button onClick={() => setMobileCommandOpen(false)} style={{ width: 30, height: 30, borderRadius: '50%', background: '#0A0A0A', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FEFEFC" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 24px', WebkitOverflowScrolling: 'touch' }}>
+          <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, padding: '10px 0 6px' }}>Replies received</div>
+          {replies.length === 0 && <div style={{ fontSize: 12, color: '#A0A0A0', padding: '8px 0' }}>No replies yet</div>}
+          {replies.map(r => (
+            <div key={r.id} style={{ background: '#FFFFFF', borderRadius: '0 10px 10px 0', padding: '10px 12px', marginBottom: 6, border: '1px solid rgba(0,0,0,0.04)', borderLeft: `3px solid ${r.type === 'reply_from_prospect' ? '#7d8a64' : r.type === 'linkedin_connection_accepted' ? '#B89C5C' : '#B8643E'}` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A' }}>{r.title || r.entity_name}</div>
+                <div style={{ fontSize: 9, fontWeight: 500, color: r.type === 'reply_from_prospect' ? '#7d8a64' : r.type === 'linkedin_connection_accepted' ? '#B89C5C' : '#B8643E' }}>{r.type === 'reply_from_prospect' ? 'Email' : r.type === 'linkedin_connection_accepted' ? 'LinkedIn' : 'Bounce'}</div>
+              </div>
+              {r.detail && <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 3, fontStyle: 'italic' }}>{r.detail.slice(0, 100)}{r.detail.length > 100 ? '...' : ''}</div>}
+              <div style={{ fontSize: 9, color: '#A0A0A0', marginTop: 4 }}>{timeAgo(r.created_at)}</div>
+            </div>
+          ))}
+          <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, padding: '12px 0 6px', borderTop: '1px solid rgba(0,0,0,0.04)', marginTop: 4 }}>Tasks due</div>
+          {tasks.length === 0 && <div style={{ fontSize: 12, color: '#A0A0A0', padding: '8px 0' }}>No tasks</div>}
+          {tasks.map(t => (
+            <div key={t.id} style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 10, padding: '10px 12px', marginBottom: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 16, height: 16, borderRadius: 4, border: `1.5px solid ${isOverdue(t.data?.due_date) ? 'rgba(184,100,62,0.4)' : 'rgba(0,0,0,0.15)'}`, flexShrink: 0 }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.data?.subject || t.data?.title || 'Task'}</div>
+                  <div style={{ fontSize: 10, color: isOverdue(t.data?.due_date) ? '#B8643E' : '#6B6B6B' }}>{t.data?.entity_name || ''}{t.data?.due_date ? ` · ${isOverdue(t.data.due_date) ? 'Overdue' : 'Due ' + new Date(t.data.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : ''}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+          <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, padding: '12px 0 6px', borderTop: '1px solid rgba(0,0,0,0.04)', marginTop: 4 }}>Campaigns active</div>
+          {campaigns.length === 0 && <div style={{ fontSize: 12, color: '#A0A0A0', padding: '8px 0' }}>No active campaigns</div>}
+          {campaigns.map(c => (
+            <div key={c.id} style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 10, padding: '10px 12px', marginBottom: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A' }}>{c.name}</div>
+                  <div style={{ fontSize: 10, color: '#6B6B6B', marginTop: 2 }}>{c.enrolled} enrolled · {c.replied} replies · {c.bounced} bounced</div>
+                </div>
+                <div style={{ fontSize: 9, padding: '2px 6px', borderRadius: 6, background: 'rgba(125,138,100,0.10)', color: '#7d8a64' }}>Active</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   // ── WELCOME STATE (no text messages, not in voice mode) ──
   if (!hasMessages && !compact) {
@@ -1223,6 +1311,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
         style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'transparent', position: 'relative', overflow: 'hidden', minWidth: 0 }}>
         {MobileHeader()}
+        {MobileCommandCentre()}
         {chatDragOver && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(10,10,14,0.92)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(90,100,112,0.5)', borderRadius: 8, margin: 8, pointerEvents: 'none' }}>
             <div style={{ width: 48, height: 48, borderRadius: 50, background: 'rgba(90,100,112,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
@@ -1385,6 +1474,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     <div onDragEnter={handleFileDragEnter} onDragLeave={handleFileDragLeave} onDragOver={handleFileDragOver} onDrop={handleFileDrop}
       style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, background: 'transparent', position: 'relative', overflow: 'hidden' }}>
       {MobileHeader()}
+      {MobileCommandCentre()}
       {chatDragOver && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(10,10,14,0.92)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(90,100,112,0.5)', borderRadius: 8, margin: 8, pointerEvents: 'none' }}>
           <div style={{ width: 48, height: 48, borderRadius: 50, background: 'rgba(90,100,112,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>

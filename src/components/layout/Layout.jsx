@@ -44,7 +44,6 @@ import KikoToast from '../kiko/KikoToast'
 import KikoSymbol from '../kiko/KikoSymbol'
 import CommandPalette from './CommandPalette'
 import LegoraTopNav from './LegoraTopNav'
-import MobileBottomNav from './MobileBottomNav'
 import useMobile from '@/hooks/useMobile'
 import AuroraCanvas from '../AuroraCanvas'
 import { useKikoPolish } from '@/lib/useKikoPolish'
@@ -120,6 +119,13 @@ export default function Layout({ user }) {
   const [voiceStatus, setVoiceStatus] = useState('Listening')
   const [topNavIds, setTopNavIds] = useState(getTopNavIds)
   
+  // Strip stale OAuth error params from URL
+  useEffect(() => {
+    if (window.location.search.includes('error=')) {
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [])
+
   // Listen for Settings nav changes
   useEffect(() => {
     const handler = () => setTopNavIds(getTopNavIds())
@@ -493,7 +499,7 @@ export default function Layout({ user }) {
         </div>
       )}
 
-      <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1, paddingBottom: isMobile ? 42 : 0 }}>
+      <main style={{ flex: 1, overflow: isMobile ? 'hidden' : 'auto', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1 }}>
         <Outlet context={{ kikoMessages, setKikoMessages, kikoConvId, setKikoConvId, kikoNavigate, kikoResetKey, openPalette: () => setPaletteOpen(true), isMobile }} />
       </main>
 
@@ -574,7 +580,7 @@ export default function Layout({ user }) {
       </nav>
 
       {/* Mobile bottom tab bar */}
-      <MobileBottomNav />
+      {/* Bottom nav removed — mobile is Kiko-only with bell for Command Centre */}
     </div>
   )
 }
