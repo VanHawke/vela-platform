@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-19T20:34:12.914Z",
+  "generated_at": "2026-04-19T21:04:37.976Z",
   "commits": [
+    {
+      "hash": "2b7ca0d",
+      "subject": "Add visible version stamp v19.04-B below mobile prompt bar — diagnostic to confirm which code version is running on user's phone",
+      "when": "30 minutes ago"
+    },
     {
       "hash": "2932e6e",
       "subject": "Mobile size enlargement — all elements scaled up for better mobile readability: (1) Kiko logo 24→28px. (2) Header buttons 34→40px, icons 15→18px. (3) Greeting h1 28→32px, subtitle 13→15px. (4) Prompt ",
-      "when": "7 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "8740bbc",
       "subject": "Test page: pixel-accurate 4-screen mobile reference (Home/Chat/Voice/Command) with tab switching. User can compare directly with React app on their phone at /test-mobile.html.",
-      "when": "22 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "cdd6619",
       "subject": "Nuclear cache fix: (1) clear-cache.html rebuilt — shows step-by-step log of what it unregistered/deleted with counts, does NOT auto-redirect, shows manual 'Open Kiko' button with cache-bust param. (2)",
-      "when": "34 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "e2b43de",
       "subject": "Mobile layout: prompt bar to bottom + header sizes up: (1) Homepage prompt bar moved from centred content to bottom of screen with safe-area padding. (2) Kiko logo 22→24px, buttons 30→34px, icons 13→1",
-      "when": "41 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "a34e41a",
@@ -29,7 +34,7 @@
     {
       "hash": "0590f7b",
       "subject": "Fix 5 mobile/voice issues: (1) Mobile mic button — was calling non-existent activateVoice/deactivateVoice, now calls startVoice/stopVoice. (2) KikoVoice avatar — removed waveform edge mask, centred av",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "cddeec5",
@@ -54,12 +59,12 @@
     {
       "hash": "49c8c02",
       "subject": "Add test-mobile.html + kill service worker: (1) test-mobile.html — standalone HTML page that replicates the exact mobile layout (conversation + command centre) using plain HTML/CSS with position:fixed",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "e9a259f",
       "subject": "Mobile layout: position fixed + CSS fix + SW cache bust: (1) Both welcome and conversation states use position:fixed on mobile with inset 0, background #FEFEFC, zIndex 50. This bypasses the entire par",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "5b063a6",
@@ -69,12 +74,12 @@
     {
       "hash": "1827c1f",
       "subject": "Critical: Fix blank conversation page + rebuild Command Centre to match render: (1) BLANK PAGE FIX: Both welcome and conversation state wrappers now use position:absolute on mobile instead of flex:1+h",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "11dbfc2",
       "subject": "Updated app icons to match platform identity: (1) favicon.svg — new dark gradient orb with waveform bars (was old 4-circle design). (2) kiko-icon-192.png — regenerated to match platform's KikoFloat da",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "281e7e7",
@@ -94,11 +99,6 @@
     {
       "hash": "c50c138",
       "subject": "Mobile: viewport lock, slim nav, centered waveform, pill prompt bar: (1) viewport meta: maximum-scale=1, user-scalable=no — prevents pinch zoom. (2) Bottom nav: auto height, paddingTop 5, icons 20px, ",
-      "when": "9 hours ago"
-    },
-    {
-      "hash": "bfe3f80",
-      "subject": "Remove debug screenshot files",
       "when": "9 hours ago"
     }
   ]
