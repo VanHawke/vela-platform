@@ -78,6 +78,7 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
   const [status, setStatus] = useState('connecting')
   const [speaking, setSpeaking] = useState(false)
   const [volume, setVolume] = useState(0)
+  const [voiceEnergy, setVoiceEnergy] = useState(0)
   const [reconnectCount, setReconnectCount] = useState(0)
   const MAX_RECONNECTS = 3
   const pcRef = useRef(null)
@@ -119,6 +120,7 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
         const isTalking = rms > 0.02
         if (isTalking !== speaking) setSpeaking(isTalking)
         setVolume(rms > 0.02 ? Math.min(0.55, rms * 2.5) : 0)
+        setVoiceEnergy(rms > 0.02 ? Math.min(1, rms * 3.5) : 0)
         energyRAF.current = requestAnimationFrame(pump)
       }
       energyRAF.current = requestAnimationFrame(pump)
@@ -425,14 +427,12 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
         onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.14)'; e.currentTarget.style.color = '#A0A0A0' }}
       ><X size={14} /></button>
 
-      {/* KikoWaveform — fullscreen size */}
+      {/* KikoAvatar — centred, voice-reactive */}
       <div style={{
-        position: 'relative', zIndex: 1, width: '95%', maxWidth: 1100, marginBottom: 24,
-        overflow: 'visible', padding: '48px 0',
-        WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
-        maskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)',
+        position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        marginBottom: 24, padding: '48px 0',
       }}>
-        <KikoAvatar size={110} state={speaking ? 'responding' : 'thinking'} light />
+        <KikoAvatar size={110} state={speaking ? 'responding' : 'thinking'} energy={voiceEnergy} light />
       </div>
 
       {/* Status bar — color-coded: amber=connecting, green=active, purple=thinking */}

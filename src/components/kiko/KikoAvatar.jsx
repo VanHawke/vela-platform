@@ -1,16 +1,21 @@
 // KikoAvatar — 5-node processing pipeline identity
 // States: idle, thinking, responding, complete
 // Colour: #0A0A0A (Legora near-black) — locked
+// Energy: 0–1 float for voice-reactive modulation
 import { useRef, useEffect, memo } from 'react'
 
 const COUNT = 5
 const COL = '#0A0A0A'
 const COL_LIGHT = '#FEFEFC'
 
-function KikoAvatar({ size = 32, state = 'idle', onClick, light = false, className = '' }) {
+function KikoAvatar({ size = 32, state = 'idle', energy = 0, onClick, light = false, className = '' }) {
   const containerRef = useRef(null)
   const rafRef = useRef(null)
   const startRef = useRef(null)
+  const energyRef = useRef(energy)
+
+  // Keep energy in a ref so the animation loop reads the latest value without re-mounting
+  useEffect(() => { energyRef.current = energy }, [energy])
 
   const dotSize = Math.max(2, Math.round(size * 0.18))
   const gap = Math.max(2, Math.round(size * 0.14))
@@ -27,6 +32,7 @@ function KikoAvatar({ size = 32, state = 'idle', onClick, light = false, classNa
 
     const animate = (now) => {
       const t = now - startRef.current
+      const e = energyRef.current || 0
 
       for (let i = 0; i < COUNT; i++) {
         let sc = 1, op = 0.5, lift = 0
@@ -38,17 +44,21 @@ function KikoAvatar({ size = 32, state = 'idle', onClick, light = false, classNa
           let p = ((t - i * 180) % 1400)
           if (p < 0) p += 1400
           const w = Math.sin(p / 1400 * Math.PI * 2)
-          sc = 1 + Math.max(0, w) * 0.35
-          op = 0.6 + Math.max(0, w) * 0.4
-          lift = Math.max(0, w) * 2
+          // Energy modulates the wave amplitude
+          const amp = 0.35 + e * 0.25
+          sc = 1 + Math.max(0, w) * amp
+          op = 0.6 + Math.max(0, w) * (0.4 + e * 0.2)
+          lift = Math.max(0, w) * (2 + e * 3)
         } else if (state === 'responding') {
           let p = ((t - i * 120) % 1000)
           if (p < 0) p += 1000
           const w = Math.sin(p / 1000 * Math.PI * 2)
           const peak = Math.max(0, w) ** 2
-          sc = 1 + peak * 0.4
-          op = 0.55 + peak * 0.45
-          lift = peak * 2.5
+          // Energy drives scale and lift intensity
+          const amp = 0.4 + e * 0.35
+          sc = 1 + peak * amp
+          op = 0.55 + peak * (0.45 + e * 0.15)
+          lift = peak * (2.5 + e * 4)
         } else if (state === 'complete') {
           const cycle = t % 3000
           if (cycle < 800) {

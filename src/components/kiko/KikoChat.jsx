@@ -1228,9 +1228,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   // ── Mobile header — approved render: serif "Kiko" + mic + bell (command centre) ──
   const MobileHeader = () => isMobile ? (
     <div style={{ padding: '4px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-      <div style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 22, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em' }}>Kiko</div>
+      <div onClick={startNewChat} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 22, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer' }}>Kiko</div>
       <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={() => { if (!voiceActive) activateVoice(); else deactivateVoice() }}
+        <button onClick={() => { if (!voiceActive) startVoice(); else stopVoice() }}
           style={{ width: 30, height: 30, borderRadius: '50%', background: voiceActive ? 'radial-gradient(circle at 40% 35%, rgba(35,28,55,1), rgba(15,13,22,1))' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: voiceActive ? '0 0 6px rgba(124,92,252,0.25)' : 'none' }}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={voiceActive ? '#FFFFFF' : '#6B6B6B'} strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
         </button>
@@ -1256,7 +1256,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column' }}>
         {/* Header — matches MobileHeader but bell is active */}
         <div style={{ padding: '4px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <div style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 22, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em' }}>Kiko</div>
+          <div onClick={() => { setMobileCommandOpen(false); startNewChat() }} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 22, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer' }}>Kiko</div>
           <div style={{ display: 'flex', gap: 8 }}>
             <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#F5F4F1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
