@@ -37,7 +37,7 @@ export default function MobileBottomNav({ onKikoTap }) {
     <>
       {moreOpen && (
         <div onClick={() => setMoreOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.2)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', zIndex: 998 }}>
-          <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', bottom: 56, left: 16, right: 16, background: '#FFFFFF', borderRadius: 16, padding: 6, boxShadow: '0 -8px 32px rgba(0,0,0,0.08)', border: '1px solid rgba(0,0,0,0.05)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', bottom: 'calc(40px + env(safe-area-inset-bottom, 4px))', left: 16, right: 16, background: '#FFFFFF', borderRadius: 16, padding: 6, boxShadow: '0 -8px 32px rgba(0,0,0,0.08)', border: '1px solid rgba(0,0,0,0.05)' }}>
             {MORE_ITEMS.map(m => (
               <button key={m.path} onClick={() => { nav(m.path); setMoreOpen(false) }}
                 style={{
@@ -56,10 +56,9 @@ export default function MobileBottomNav({ onKikoTap }) {
 
       <nav className="kiko-mobile-bottom-nav" style={{
         position: 'fixed', bottom: 0, left: 0, right: 0,
-        height: 'calc(48px + env(safe-area-inset-bottom, 0px))',
         background: '#FEFEFC', borderTop: '1px solid rgba(0,0,0,0.05)',
         display: 'none', alignItems: 'flex-start', justifyContent: 'space-around',
-        paddingTop: 6, paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        paddingTop: 5, paddingBottom: 'env(safe-area-inset-bottom, 4px)',
         zIndex: 999, fontFamily: "'Inter', system-ui, sans-serif",
       }}>
         {tabs.map(t => {
@@ -70,20 +69,20 @@ export default function MobileBottomNav({ onKikoTap }) {
               else if (t.id === 'more') setMoreOpen(!moreOpen)
               else nav(t.path)
             }} style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-              background: 'none', border: 'none', cursor: 'pointer', padding: '2px 12px',
-              color: active ? '#0A0A0A' : '#A0A0A0', fontSize: 8,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+              background: 'none', border: 'none', cursor: 'pointer', padding: '2px 10px',
+              color: active ? '#0A0A0A' : '#A0A0A0', fontSize: 9,
               fontFamily: "'Inter', system-ui, sans-serif", fontWeight: active ? 500 : 400,
             }}>
               {t.id === 'kiko' ? (
                 <div style={{
-                  width: 22, height: 22, borderRadius: '50%',
+                  width: 20, height: 20, borderRadius: '50%',
                   background: 'radial-gradient(circle at 40% 35%, rgba(35,28,55,1), rgba(15,13,22,1))',
                   boxShadow: active ? '0 0 6px rgba(124,92,252,0.25)' : 'none',
                 }} />
               ) : (
                 <div style={{
-                  width: 22, height: 22, borderRadius: '50%',
+                  width: 20, height: 20, borderRadius: '50%',
                   background: active ? '#0A0A0A' : '#F5F4F1',
                   color: active ? '#FEFEFC' : '#A0A0A0',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',

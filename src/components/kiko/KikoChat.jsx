@@ -857,18 +857,18 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       }, 40)
     }, [])
     return (
-      <div ref={barRef} onMouseMove={handleBarMouseMove} style={{
+      <div ref={barRef} onMouseMove={isMobile ? undefined : handleBarMouseMove} style={{
         display: 'flex', flexDirection: 'column',
-        background: '#FFFFFF',
+        background: isMobile ? '#F5F4F1' : '#FFFFFF',
         backdropFilter: 'none', WebkitBackdropFilter: 'none',
-        borderRadius: 16,
-        padding: '14px 16px 10px',
+        borderRadius: isMobile ? 24 : 16,
+        padding: isMobile ? '4px 4px 4px 16px' : '14px 16px 10px',
         position: 'relative',
-        border: `1px solid ${promptFocused ? '#0A0A0A' : transcribing ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.08)'}`,
-        boxShadow: promptFocused
+        border: isMobile ? 'none' : `1px solid ${promptFocused ? '#0A0A0A' : transcribing ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.08)'}`,
+        boxShadow: isMobile ? 'none' : (promptFocused
           ? '0 0 0 3px rgba(10,10,10,0.04), 0 1px 2px rgba(0,0,0,0.04)'
-          : '0 1px 2px rgba(0,0,0,0.04)',
-        transition: `all 400ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}`,
+          : '0 1px 2px rgba(0,0,0,0.04)'),
+        transition: isMobile ? 'none' : `all 400ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}`,
         maxWidth: welcome ? (isMobile ? '100%' : 680) : (compact ? '100%' : (isMobile ? '100%' : 680)),
         width: '100%', margin: '0 auto',
         overflow: 'visible',
@@ -1237,10 +1237,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
           {/* Wave — always visible, scales up in voice mode */}
           <div id="kikoWaveHome" style={{
-            width: isMobile ? '100%' : '90%', maxWidth: isMobile ? 'none' : 900, marginBottom: voiceActive ? 0 : (isMobile ? 20 : 28), overflow: 'visible', padding: '16px 0',
+            width: isMobile ? '100%' : '90%', maxWidth: isMobile ? 'none' : 900, marginBottom: voiceActive ? 0 : (isMobile ? 20 : 28), overflow: 'visible', padding: isMobile ? '8px 0' : '16px 0',
             cursor: voiceActive ? 'default' : 'pointer',
             transform: voiceActive ? 'scale(1.15)' : 'scale(1)',
             transition: 'all 0.7s cubic-bezier(0.34,1.56,0.64,1)',
+            display: 'flex', justifyContent: 'center', alignItems: 'center',
             WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
             maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
           }}
