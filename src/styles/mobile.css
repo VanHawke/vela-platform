@@ -1,162 +1,128 @@
-/* mobile.css — Mobile responsive layer for Kiko Intelligence OS */
-/* Breakpoint: 768px and below = mobile, 769-1024px = tablet */
+/* mobile.css — Kiko Mobile: stripped-down, render-matched */
+/* Only pages: Kiko Chat, Kiko Voice, Pipeline, Command Centre, Calendar, Contacts, Organisations */
 
-/* ═══════════════════════════════════════════════════════════════
-   BOTTOM TAB BAR (replaces top nav on mobile)
-   ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  /* Hide the desktop top nav */
+
+  /* ═══ Hide desktop top nav, show mobile bottom nav ═══ */
   .legora-top-nav-desktop {
     display: none !important;
   }
-
-  /* Show the mobile bottom nav */
   .kiko-mobile-bottom-nav {
     display: flex !important;
   }
 
-  /* Main content padding to account for bottom nav */
-  .kiko-main-content,
+  /* ═══ Safe area for bottom nav ═══ */
   main,
   [data-page-content] {
-    padding-bottom: 80px !important;
+    padding-bottom: 86px !important;
   }
 
-  /* ── Global typography adjustments ── */
-  body {
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
+  /* ═══ Page headers: Source Serif 4, weight 300 ═══ */
+  h1, [data-page-title] {
+    font-size: 20px !important;
+    font-weight: 300 !important;
   }
 
-  /* ── KikoFloat fullscreen on mobile ── */
+  /* ═══ KikoFloat: fullscreen above bottom nav ═══ */
   .kiko-panel {
     position: fixed !important;
-    bottom: 72px !important;
+    bottom: 78px !important;
     left: 0 !important;
     right: 0 !important;
     top: 0 !important;
-    width: 100% !important;
-    height: calc(100dvh - 72px) !important;
+    width: 100vw !important;
+    height: calc(100dvh - 78px) !important;
     max-height: none !important;
     border-radius: 0 !important;
     border: none !important;
     box-shadow: none !important;
-    z-index: 100 !important;
   }
-
-  /* KikoFloat trigger button repositions above bottom nav */
   .kiko-float-trigger {
-    bottom: 80px !important;
+    bottom: 86px !important;
     right: 16px !important;
   }
 
-  /* ── Pipeline mobile ── */
+  /* ═══ Pipeline: vertical card stack ═══ */
   .pipeline-kanban {
     flex-direction: column !important;
     overflow-x: visible !important;
-    gap: 12px !important;
-    padding: 12px 16px !important;
+    gap: 8px !important;
+    padding: 8px 16px !important;
   }
   .pipeline-column {
     min-width: unset !important;
     width: 100% !important;
   }
 
-  /* ── Tables scroll horizontally ── */
+  /* ═══ Tables: horizontal scroll ═══ */
   table {
     display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
 
-  /* ── Campaigns prospect table ── */
-  .campaign-prospect-table {
-    font-size: 12px !important;
-  }
-  .campaign-prospect-table th,
-  .campaign-prospect-table td {
-    padding: 8px 10px !important;
-    white-space: nowrap;
-  }
-
-  /* ── Calendar: stack race cards ── */
-  .calendar-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 8px !important;
-  }
-
-  /* ── Settings full width ── */
-  .settings-sidebar {
-    display: none !important;
-  }
-  .settings-content {
-    max-width: 100% !important;
-    padding: 16px !important;
-  }
-
-  /* ── Contacts table → list view ── */
-  .contacts-table-desktop {
-    display: none !important;
-  }
-  .contacts-list-mobile {
-    display: block !important;
-  }
-
-  /* ── Modals adapt to mobile ── */
-  .modal-overlay > div {
-    width: calc(100vw - 32px) !important;
-    max-width: none !important;
-    max-height: 85vh !important;
-  }
-
-  /* ── Command Centre tabs ── */
+  /* ═══ Command Centre: stack vertically ═══ */
   .command-centre-split {
     flex-direction: column !important;
   }
   .command-centre-sidebar {
     width: 100% !important;
-    max-height: 200px !important;
+    max-height: 180px !important;
     border-right: none !important;
     border-bottom: 1px solid rgba(0,0,0,0.06) !important;
   }
 
-  /* ── Prospect detail panel ── */
+  /* ═══ Calendar: vertical list ═══ */
+  .calendar-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+
+  /* ═══ Prospect detail: fullscreen slide-over ═══ */
   .prospect-detail-panel {
     position: fixed !important;
     top: 0 !important;
     right: 0 !important;
-    bottom: 72px !important;
+    bottom: 78px !important;
     width: 100% !important;
-    max-width: 100% !important;
     z-index: 90 !important;
-    box-shadow: -4px 0 24px rgba(0,0,0,0.12) !important;
   }
 
-  /* ── General spacing ── */
+  /* ═══ Modals: full-width on mobile ═══ */
+  .modal-overlay > div {
+    width: calc(100vw - 24px) !important;
+    max-width: none !important;
+    max-height: 80vh !important;
+    border-radius: 16px !important;
+  }
+
+  /* ═══ General spacing: tighter on mobile ═══ */
   [style*="padding: 0 28px"],
-  [style*="padding:0 28px"] {
+  [style*="padding:0 28px"],
+  [style*="padding: 8px 28px"],
+  [style*="padding:8px 28px"],
+  [style*="padding: 12px 28px"],
+  [style*="padding:12px 28px"] {
     padding-left: 16px !important;
     padding-right: 16px !important;
   }
+
+  /* ═══ Typography: prevent text-size-adjust ═══ */
+  body {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   TABLET (769px - 1024px)
-   ═══════════════════════════════════════════════════════════════ */
+/* ═══ Tablet (769-1024px): keep desktop nav, adjust KikoFloat ═══ */
 @media (min-width: 769px) and (max-width: 1024px) {
   .kiko-mobile-bottom-nav {
     display: none !important;
   }
-  .kiko-float-container {
-    width: 400px !important;
-    max-height: 80vh !important;
-  }
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   DESKTOP: hide mobile elements
-   ═══════════════════════════════════════════════════════════════ */
+/* ═══ Desktop: hide mobile elements ═══ */
 @media (min-width: 769px) {
   .kiko-mobile-bottom-nav {
     display: none !important;

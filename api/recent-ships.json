@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-19T09:10:05.994Z",
+  "generated_at": "2026-04-19T09:29:52.101Z",
   "commits": [
+    {
+      "hash": "2d8747b",
+      "subject": "Mobile PWA + bottom nav + concierge intelligence + 28 domains: (1) MobileBottomNav.jsx — 5-tab bottom bar (Kiko, Pipeline, Hub, Calendar, More) with slide-up More menu for Contacts/Organisations/Matri",
+      "when": "19 minutes ago"
+    },
     {
       "hash": "0d9dfd2",
       "subject": "Force-remove LinkedIn from localStorage + last code refs: (1) LegoraTopNav.jsx — on mount, strips 'linkedin' from kiko_top_nav_v2, kiko_nav_order, kiko_more_order in localStorage. This was the actual ",
@@ -94,11 +99,6 @@
     {
       "hash": "e963183",
       "subject": "Fix vector embedding format: changed from JSON.stringify to pgvector string format for both insert and RPC query. Fixed HNSW index (IVFFlat fails on empty tables). Added POST-only guard.",
-      "when": "2 days ago"
-    },
-    {
-      "hash": "fc354f0",
-      "subject": "Vector embedding pipeline complete: (1) api/embed.js — dual-mode endpoint: 'embed' mode chunks knowledge domains into ~2000 char segments and stores as 1536-dim vectors via OpenAI text-embedding-3-sma",
       "when": "2 days ago"
     }
   ]
