@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-19T21:29:13.234Z",
+  "generated_at": "2026-04-19T21:35:47.978Z",
   "commits": [
+    {
+      "hash": "ed1ee71",
+      "subject": "Fix 4 data/voice issues: (1) Chat history — was querying empty kiko_conversations table, now queries conversations table where data actually lives. (2) Command centre alerts — removed type filter that",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "0950955",
       "subject": "Mobile fixes v19.04-D: (1) Homepage centering — removed top spacer on mobile, equal padding 0/24px, greeting always visible (no voice-fade on mobile). (2) Inline voice controls hidden on mobile — Kiko",
-      "when": "10 minutes ago"
+      "when": "17 minutes ago"
     },
     {
       "hash": "25059c6",
       "subject": "Mobile render-match v19.04-C: All sizes enlarged to match approved renders. (1) Prompt bar: padding 10/22px, radius 28px, send button 36px on mobile. (2) Message bubbles: padding 12/16px, radius 18px,",
-      "when": "24 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "2b7ca0d",
       "subject": "Add visible version stamp v19.04-B below mobile prompt bar — diagnostic to confirm which code version is running on user's phone",
-      "when": "55 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "2932e6e",
       "subject": "Mobile size enlargement — all elements scaled up for better mobile readability: (1) Kiko logo 24→28px. (2) Header buttons 34→40px, icons 15→18px. (3) Greeting h1 28→32px, subtitle 13→15px. (4) Prompt ",
-      "when": "62 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "8740bbc",
       "subject": "Test page: pixel-accurate 4-screen mobile reference (Home/Chat/Voice/Command) with tab switching. User can compare directly with React app on their phone at /test-mobile.html.",
-      "when": "77 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "cdd6619",
       "subject": "Nuclear cache fix: (1) clear-cache.html rebuilt — shows step-by-step log of what it unregistered/deleted with counts, does NOT auto-redirect, shows manual 'Open Kiko' button with cache-bust param. (2)",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "e2b43de",
@@ -94,11 +99,6 @@
     {
       "hash": "281e7e7",
       "subject": "Mobile redesign — no bottom nav, bell icon Command Centre, blank page fix: (1) Bottom nav completely removed — no MobileBottomNav component, no CSS references, no import. Like ChatGPT/Claude/Gemini, c",
-      "when": "8 hours ago"
-    },
-    {
-      "hash": "263defe",
-      "subject": "Critical fixes — blank page + footer + nav restructure: (1) Conversation state blank page fix — wrapper div changed from height:100% to flex:1 + minHeight:0. The height:100% wasn't resolving in the mo",
       "when": "8 hours ago"
     }
   ]

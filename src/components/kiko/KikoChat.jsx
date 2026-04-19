@@ -1276,7 +1276,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     const typeLabel = (t) => t === 'task_due' ? 'Task' : t === 'task_automation' ? 'Auto' : t === 'morning_brief' ? 'Brief' : t === 'new_partnership' ? 'Deal' : t === 'category_recommendation' ? 'Insight' : t === 'reply_from_prospect' ? 'Email' : t === 'linkedin_connection_accepted' ? 'LinkedIn' : t === 'bounce_detected' ? 'Bounce' : t === 'monitoring' ? 'Monitor' : t?.replace(/_/g, ' ') || 'Alert'
     const Sect = ({ label }) => <div style={{ fontSize: 11, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, padding: '14px 0 8px' }}>{label}</div>
     return (
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column' }}>
         {/* Header — matches MobileHeader but bell is active */}
         <div style={{ padding: '8px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div onClick={() => { setMobileCommandOpen(false); startNewChat() }} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 28, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>Kiko</div>
@@ -1359,7 +1359,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ' + time
     }
     return (
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '8px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <button onClick={() => setMobileHistoryOpen(false)}
@@ -1383,7 +1383,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '0 18px 24px' }}>
           {mobileHistoryConvos.length === 0 && <div style={{ fontSize: 14, color: '#A0A0A0', padding: '20px 0', textAlign: 'center' }}>No conversations yet</div>}
           {mobileHistoryConvos.map(c => (
-            <button key={c.id} onClick={() => { setMobileHistoryOpen(false); loadConversation(c) }}
+            <button key={c.id} onClick={async () => { 
+              const { data } = await supabase.from('conversations').select('id, title, messages, updated_at').eq('id', c.id).single()
+              if (data) { setMobileHistoryOpen(false); loadConversation(data) }
+            }}
               style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '14px 14px', marginBottom: 4, borderRadius: 12, background: c.id === activeConvId ? 'rgba(0,0,0,0.04)' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', WebkitTapHighlightColor: 'transparent' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" strokeWidth="1.8" style={{ flexShrink: 0 }}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -1479,7 +1482,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div style={{ textAlign: 'center', marginBottom: 12, fontSize: 11, fontWeight: 500, letterSpacing: '0.10em', textTransform: 'uppercase', color: '#6B6B6B' }}>
               <span style={{ color: '#0A0A0A', fontWeight: 600 }}>TODAY</span><span style={{ color: '#C0C0C0', margin: '0 8px' }}>·</span>{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
             </div>
-            <h1 style={{ fontSize: isMobile ? 32 : 42, fontWeight: 300, color: '#0A0A0A', margin: '0 0 6px', fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', textAlign: 'center' }}>
+            <h1 style={{ fontSize: isMobile ? 34 : 42, fontWeight: 300, color: '#0A0A0A', margin: '0 0 8px', fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', textAlign: 'center' }}>
               {getGreeting()}, {firstName}
             </h1>
             <p style={{ fontSize: isMobile ? 15 : 16, color: '#6B6B6B', margin: '0 0 0', fontFamily: C.font, fontWeight: 400, textAlign: 'center' }}>What would you like to work on?</p>

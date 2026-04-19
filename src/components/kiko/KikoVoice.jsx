@@ -474,6 +474,6 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
       <style>{`@keyframes kikoBarPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
     </div>
   )
-  // Always fullscreen — renders into document.body via portal
-  return createPortal(voiceUI, document.body)
+  // On mobile render inline (portal can cause issues on iOS Safari), on desktop use portal
+  return isMobile ? voiceUI : createPortal(voiceUI, document.body)
 }
