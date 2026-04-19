@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-19T19:53:20.245Z",
+  "generated_at": "2026-04-19T19:59:21.771Z",
   "commits": [
+    {
+      "hash": "e2b43de",
+      "subject": "Mobile layout: prompt bar to bottom + header sizes up: (1) Homepage prompt bar moved from centred content to bottom of screen with safe-area padding. (2) Kiko logo 22→24px, buttons 30→34px, icons 13→1",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "a34e41a",
       "subject": "Mobile render match — 6 fixes: (1) KikoVoice avatar colour — was light (white dots on white bg = invisible), now dark (#0A0A0A dots on light Aurora bg). (2) Homepage avatar — removed waveform-era edge",
-      "when": "62 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "0590f7b",
       "subject": "Fix 5 mobile/voice issues: (1) Mobile mic button — was calling non-existent activateVoice/deactivateVoice, now calls startVoice/stopVoice. (2) KikoVoice avatar — removed waveform edge mask, centred av",
-      "when": "79 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "cddeec5",
@@ -34,7 +39,7 @@
     {
       "hash": "49c8c02",
       "subject": "Add test-mobile.html + kill service worker: (1) test-mobile.html — standalone HTML page that replicates the exact mobile layout (conversation + command centre) using plain HTML/CSS with position:fixed",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "e9a259f",
@@ -94,11 +99,6 @@
     {
       "hash": "df337d7",
       "subject": "KikoChat mobile header + MobileHeader in both states: (1) Mobile header added — serif 'Kiko' title (Source Serif 4, weight 300, 20px) with mic button (gradient orb when voice active) and settings gear",
-      "when": "9 hours ago"
-    },
-    {
-      "hash": "16835d9",
-      "subject": "Mobile CSS fixes: (1) Pipeline deal panel — fixed class name from .pl-detail to .pl-panel, now goes fullscreen on mobile. (2) Command Centre — .cc-hot-card shrunk to 220px on mobile, .cc-hot-scroll ga",
       "when": "9 hours ago"
     }
   ]
