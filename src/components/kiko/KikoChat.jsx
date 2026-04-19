@@ -211,9 +211,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         return { ...c, enrolled: enrs.length, replied: enrs.filter(e => e.reply_detected_at).length, bounced: enrs.filter(e => e.bounce_detected_at).length }
       })
       // Filter alerts to replies and important items
-      const replies = (alertsRes.data || []).filter(a => a.type === 'reply_from_prospect' || a.type === 'linkedin_connection_accepted' || a.type === 'bounce_detected')
-      // Filter tasks to incomplete
-      const tasks = (tasksRes.data || []).filter(t => !t.data?.completed).map(t => ({ ...t, ...t.data }))
+      const replies = (alertsRes.data || []).filter(a => a.type && (a.type.includes('reply') || a.type.includes('linkedin') || a.type.includes('bounce') || a.type.includes('email')))
+      const tasks = (tasksRes.data || []).filter(t => !t.data?.completed).map(t => ({ ...t, ...(t.data || {}) }))
       setCommandData({ replies, tasks, campaigns })
     } catch (err) { console.error('[MobileCommand]', err) }
   }, [])
@@ -1427,10 +1426,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             onClose={() => setAllChatsData(null)}
           />
         ) : (
-        <div id="kikoHomeContent" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: trans, minHeight: 0, padding: isMobile ? '16px 20px 8px' : '20px 24px 40px' }}>
+        <div id="kikoHomeContent" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: trans, minHeight: 0, padding: isMobile ? '0 24px' : '20px 24px 40px' }}>
 
-          {/* Top spacer — balanced 0.5/0.5 for true centre, voice mode pushes more */}
-          <div style={{ flex: voiceActive ? 1 : 0.5, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />
+          {/* Top spacer — desktop only, mobile content is naturally centred */}
+          {!isMobile && <div style={{ flex: voiceActive ? 1 : 0.5, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />}
 
           {/* Wave — always visible, scales up in voice mode */}
           <div id="kikoWaveHome" style={{
@@ -1443,8 +1442,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <KikoAvatar size={isMobile ? 40 : 64} state={voiceActive ? (voiceState.speaking ? 'responding' : 'thinking') : 'idle'} onClick={voiceActive ? undefined : () => startVoice()} />
           </div>
 
-          {/* Voice controls — visible only in voice mode */}
-          <div style={{
+          {/* Voice controls — desktop only, mobile uses fullscreen KikoVoice */}
+          {!isMobile && <div style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center',
             opacity: voiceActive ? 1 : 0, maxHeight: voiceActive ? 200 : 0,
             transform: voiceActive ? 'translateY(0)' : 'translateY(-20px)',
@@ -1467,10 +1466,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,80,80,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,80,80,0.15)'; e.currentTarget.style.color = 'rgba(255,80,80,0.5)' }}
               onMouseOut={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.color = '#A0A0A0' }}
             >Goodbye Kiko</button>
-          </div>
+          </div>}
 
-          {/* Greeting — slides down and fades in voice mode */}
-          <div id="kikoGreeting" style={{
+          {/* Greeting — on desktop fades in voice mode, on mobile always visible */}
+          <div id="kikoGreeting" style={isMobile ? { textAlign: 'center' } : {
             opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 140,
             transform: voiceActive ? 'translateY(40px)' : 'translateY(0)',
             transition: 'all 0.5s cubic-bezier(0.4,0,0,1)',
@@ -1556,9 +1555,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
         {/* Mobile prompt bar — pinned to bottom, outside centered content */}
         {isMobile && !voiceActive && (
-          <div style={{ flexShrink: 0, padding: '8px 16px', paddingBottom: 'calc(8px + env(safe-area-inset-bottom, 0px))' }}>
+          <div style={{ flexShrink: 0, padding: '10px 18px', paddingBottom: 'calc(10px + env(safe-area-inset-bottom, 0px))' }}>
             {PromptBar({ welcome: true })}
-            <div style={{ textAlign: 'center', fontSize: 9, color: '#D0D0D0', marginTop: 6 }}>v19.04-C</div>
           </div>
         )}
       </div>

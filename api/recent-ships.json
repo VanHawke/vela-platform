@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-19T21:04:37.976Z",
+  "generated_at": "2026-04-19T21:18:35.639Z",
   "commits": [
+    {
+      "hash": "25059c6",
+      "subject": "Mobile render-match v19.04-C: All sizes enlarged to match approved renders. (1) Prompt bar: padding 10/22px, radius 28px, send button 36px on mobile. (2) Message bubbles: padding 12/16px, radius 18px,",
+      "when": "14 minutes ago"
+    },
     {
       "hash": "2b7ca0d",
       "subject": "Add visible version stamp v19.04-B below mobile prompt bar — diagnostic to confirm which code version is running on user's phone",
-      "when": "30 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "2932e6e",
       "subject": "Mobile size enlargement — all elements scaled up for better mobile readability: (1) Kiko logo 24→28px. (2) Header buttons 34→40px, icons 15→18px. (3) Greeting h1 28→32px, subtitle 13→15px. (4) Prompt ",
-      "when": "38 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "8740bbc",
       "subject": "Test page: pixel-accurate 4-screen mobile reference (Home/Chat/Voice/Command) with tab switching. User can compare directly with React app on their phone at /test-mobile.html.",
-      "when": "52 minutes ago"
+      "when": "66 minutes ago"
     },
     {
       "hash": "cdd6619",
       "subject": "Nuclear cache fix: (1) clear-cache.html rebuilt — shows step-by-step log of what it unregistered/deleted with counts, does NOT auto-redirect, shows manual 'Open Kiko' button with cache-bust param. (2)",
-      "when": "65 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "e2b43de",
       "subject": "Mobile layout: prompt bar to bottom + header sizes up: (1) Homepage prompt bar moved from centred content to bottom of screen with safe-area padding. (2) Kiko logo 22→24px, buttons 30→34px, icons 13→1",
-      "when": "71 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "a34e41a",
@@ -44,17 +49,17 @@
     {
       "hash": "4c52e5c",
       "subject": "Kiko avatar identity system — 5-dot pipeline replaces waveform everywhere: (1) KikoAvatar.jsx — 5 solid circular nodes, #0A0A0A, 4 states: idle (gentle pulse), thinking (confident wave L→R, 1.4s), res",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "bcfc7ad",
       "subject": "Remove debug screenshot",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "dd0e5f7",
       "subject": "Add clear-cache.html — force SW unregistration and cache clearing before redirecting to main app",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "49c8c02",
@@ -69,7 +74,7 @@
     {
       "hash": "5b063a6",
       "subject": "Service worker cache bust + viewport fixes: (1) SW rewritten to v2 — deletes ALL old caches on activate, never caches anything. The old SW was caching index.html with stale JS bundle URLs, meaning new",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "1827c1f",
@@ -84,7 +89,7 @@
     {
       "hash": "281e7e7",
       "subject": "Mobile redesign — no bottom nav, bell icon Command Centre, blank page fix: (1) Bottom nav completely removed — no MobileBottomNav component, no CSS references, no import. Like ChatGPT/Claude/Gemini, c",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "263defe",
@@ -94,11 +99,6 @@
     {
       "hash": "22606f2",
       "subject": "Mobile prompt bar matches approved render exactly: (1) +menu button hidden on mobile (both welcome + conversation states). (2) Mic/dictate button hidden on mobile (voice accessible via header mic butt",
-      "when": "9 hours ago"
-    },
-    {
-      "hash": "c50c138",
-      "subject": "Mobile: viewport lock, slim nav, centered waveform, pill prompt bar: (1) viewport meta: maximum-scale=1, user-scalable=no — prevents pinch zoom. (2) Bottom nav: auto height, paddingTop 5, icons 20px, ",
       "when": "9 hours ago"
     }
   ]
