@@ -869,7 +869,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           ? '0 0 0 3px rgba(10,10,10,0.04), 0 1px 2px rgba(0,0,0,0.04)'
           : '0 1px 2px rgba(0,0,0,0.04)',
         transition: `all 400ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}`,
-        maxWidth: welcome ? 680 : (compact ? '100%' : 680),
+        maxWidth: welcome ? (isMobile ? '100%' : 680) : (compact ? '100%' : (isMobile ? '100%' : 680)),
         width: '100%', margin: '0 auto',
         overflow: 'visible',
       }}>
@@ -1237,7 +1237,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
           {/* Wave — always visible, scales up in voice mode */}
           <div id="kikoWaveHome" style={{
-            width: '90%', maxWidth: 900, marginBottom: voiceActive ? 0 : 28, overflow: 'visible', padding: '16px 0',
+            width: isMobile ? '100%' : '90%', maxWidth: isMobile ? 'none' : 900, marginBottom: voiceActive ? 0 : (isMobile ? 20 : 28), overflow: 'visible', padding: '16px 0',
             cursor: voiceActive ? 'default' : 'pointer',
             transform: voiceActive ? 'scale(1.15)' : 'scale(1)',
             transition: 'all 0.7s cubic-bezier(0.34,1.56,0.64,1)',
@@ -1246,7 +1246,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           }}
             onMouseEnter={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1.02)' }}
             onMouseLeave={e => { if (!voiceActive) e.currentTarget.style.transform = 'scale(1)' }}>
-            <KikoWaveform width={isMobile ? 280 : 900} height={isMobile ? 52 : 96} speaking={voiceActive && voiceState.speaking} volume={voiceState.energy || 0} onClick={voiceActive ? undefined : () => startVoice()} />
+            <KikoWaveform width={isMobile ? 340 : 900} height={isMobile ? 56 : 96} speaking={voiceActive && voiceState.speaking} volume={voiceActive ? (voiceState.energy || 0) : 0} onClick={voiceActive ? undefined : () => startVoice()} />
           </div>
 
           {/* Voice controls — visible only in voice mode */}
@@ -1293,7 +1293,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
           {/* Prompt bar — slides down in voice mode */}
           <div id="kikoPromptWrap" style={{
-            width: '100%', maxWidth: 720, marginBottom: 14, marginTop: isMobile ? 24 : 48,
+            width: '100%', maxWidth: isMobile ? 'none' : 720, marginBottom: 14, marginTop: isMobile ? 24 : 48,
             opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 300,
             transform: voiceActive ? 'translateY(40px)' : 'translateY(0)',
             transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.05s',
@@ -1391,7 +1391,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       ) : (
       <>
       {/* Chat title bar with dropdown */}
-      {activeConvId && convTitle && (
+      {activeConvId && convTitle && !isMobile && (
         <div style={{ padding: '10px 24px', display: 'flex', alignItems: 'center', gap: 8, position: 'relative', flexShrink: 0 }}>
           {isRenaming ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
@@ -1435,8 +1435,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         const el = e.currentTarget
         const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80
         setShowScrollDown(!atBottom)
-      }} style={{ flex: 1, overflowY: 'auto', padding: compact ? 16 : 24, position: 'relative' }}>
-        <div style={{ maxWidth: compact ? '100%' : 680, margin: '0 auto', width: '100%' }}>
+      }} style={{ flex: 1, overflowY: 'auto', padding: compact ? 16 : (isMobile ? 16 : 24), position: 'relative' }}>
+        <div style={{ maxWidth: compact ? '100%' : (isMobile ? '100%' : 680), margin: '0 auto', width: '100%' }}>
           {messages.length > 40 && !showAllMsgs && (
             <button onClick={() => setShowAllMsgs(true)} style={{ display: 'block', margin: '0 auto 16px', padding: '6px 16px', borderRadius: 12, background: 'rgba(0,0,0,0.03)', border: '0.5px solid rgba(0,0,0,0.14)', color: '#A0A0A0', fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>
               Show {messages.length - 40} earlier messages
@@ -1568,8 +1568,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       )}
       </>
       )}
-      <div style={{ padding: compact ? 12 : 16 }}>
-        <div style={{ maxWidth: compact ? '100%' : 720, margin: '0 auto' }}>
+      <div style={{ padding: compact ? 12 : (isMobile ? 12 : 16) }}>
+        <div style={{ maxWidth: compact ? '100%' : (isMobile ? '100%' : 720), margin: '0 auto' }}>
           {PromptBar({})}
           {dictateError && (
             <p style={{ textAlign: 'center', fontSize: 12, color: '#C62828', fontFamily: C.font, margin: '6px 0 0' }}>{dictateError}</p>
