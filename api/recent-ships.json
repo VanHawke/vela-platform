@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-20T06:53:24.052Z",
+  "generated_at": "2026-04-20T09:51:59.974Z",
   "commits": [
+    {
+      "hash": "b8a3bce",
+      "subject": "Force no-cache headers via vercel.json: Added Cache-Control no-cache/no-store/must-revalidate headers for / and /index.html routes. This forces Vercel CDN to not cache the HTML, ensuring users always ",
+      "when": "3 hours ago"
+    },
     {
       "hash": "ede2c8e",
       "subject": "Voice UI visibility fix: Mobile voice overlay status text changed from rgba(0,0,0,0.4) to #0A0A0A for high contrast. Status dot enlarged to 8px with glow. All states have visible labels including fall",
-      "when": "8 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "39d7864",
       "subject": "Fix chat history click + voice + command centre stability + greeting size: (1) Chat history click — was calling loadConversation(c) which expects messages field, but query only fetched id/title/update",
-      "when": "9 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "ed1ee71",
       "subject": "Fix 4 data/voice issues: (1) Chat history — was querying empty kiko_conversations table, now queries conversations table where data actually lives. (2) Command centre alerts — removed type filter that",
-      "when": "9 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "0950955",
       "subject": "Mobile fixes v19.04-D: (1) Homepage centering — removed top spacer on mobile, equal padding 0/24px, greeting always visible (no voice-fade on mobile). (2) Inline voice controls hidden on mobile — Kiko",
-      "when": "10 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "25059c6",
       "subject": "Mobile render-match v19.04-C: All sizes enlarged to match approved renders. (1) Prompt bar: padding 10/22px, radius 28px, send button 36px on mobile. (2) Message bubbles: padding 12/16px, radius 18px,",
-      "when": "10 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "2b7ca0d",
       "subject": "Add visible version stamp v19.04-B below mobile prompt bar — diagnostic to confirm which code version is running on user's phone",
-      "when": "10 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "2932e6e",
       "subject": "Mobile size enlargement — all elements scaled up for better mobile readability: (1) Kiko logo 24→28px. (2) Header buttons 34→40px, icons 15→18px. (3) Greeting h1 28→32px, subtitle 13→15px. (4) Prompt ",
-      "when": "10 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "8740bbc",
       "subject": "Test page: pixel-accurate 4-screen mobile reference (Home/Chat/Voice/Command) with tab switching. User can compare directly with React app on their phone at /test-mobile.html.",
-      "when": "11 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "cdd6619",
       "subject": "Nuclear cache fix: (1) clear-cache.html rebuilt — shows step-by-step log of what it unregistered/deleted with counts, does NOT auto-redirect, shows manual 'Open Kiko' button with cache-bust param. (2)",
-      "when": "11 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "e2b43de",
       "subject": "Mobile layout: prompt bar to bottom + header sizes up: (1) Homepage prompt bar moved from centred content to bottom of screen with safe-area padding. (2) Kiko logo 22→24px, buttons 30→34px, icons 13→1",
-      "when": "11 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "a34e41a",
       "subject": "Mobile render match — 6 fixes: (1) KikoVoice avatar colour — was light (white dots on white bg = invisible), now dark (#0A0A0A dots on light Aurora bg). (2) Homepage avatar — removed waveform-era edge",
-      "when": "12 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "0590f7b",
       "subject": "Fix 5 mobile/voice issues: (1) Mobile mic button — was calling non-existent activateVoice/deactivateVoice, now calls startVoice/stopVoice. (2) KikoVoice avatar — removed waveform edge mask, centred av",
-      "when": "12 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "cddeec5",
       "subject": "Lock favicon — remove custom upload: (1) Settings.jsx — removed Browser Favicon ImageUpload section. Favicon is now system-locked to the 5-dot identity mark. (2) index.html — replaced dynamic favicon ",
-      "when": "14 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "4c52e5c",
       "subject": "Kiko avatar identity system — 5-dot pipeline replaces waveform everywhere: (1) KikoAvatar.jsx — 5 solid circular nodes, #0A0A0A, 4 states: idle (gentle pulse), thinking (confident wave L→R, 1.4s), res",
-      "when": "14 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "bcfc7ad",
       "subject": "Remove debug screenshot",
-      "when": "15 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "dd0e5f7",
       "subject": "Add clear-cache.html — force SW unregistration and cache clearing before redirecting to main app",
-      "when": "15 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "49c8c02",
       "subject": "Add test-mobile.html + kill service worker: (1) test-mobile.html — standalone HTML page that replicates the exact mobile layout (conversation + command centre) using plain HTML/CSS with position:fixed",
-      "when": "15 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "e9a259f",
       "subject": "Mobile layout: position fixed + CSS fix + SW cache bust: (1) Both welcome and conversation states use position:fixed on mobile with inset 0, background #FEFEFC, zIndex 50. This bypasses the entire par",
-      "when": "16 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "5b063a6",
       "subject": "Service worker cache bust + viewport fixes: (1) SW rewritten to v2 — deletes ALL old caches on activate, never caches anything. The old SW was caching index.html with stale JS bundle URLs, meaning new",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "1827c1f",
-      "subject": "Critical: Fix blank conversation page + rebuild Command Centre to match render: (1) BLANK PAGE FIX: Both welcome and conversation state wrappers now use position:absolute on mobile instead of flex:1+h",
-      "when": "16 hours ago"
+      "when": "19 hours ago"
     }
   ]
 }

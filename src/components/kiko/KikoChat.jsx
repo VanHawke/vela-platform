@@ -900,6 +900,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         backdropFilter: 'none', WebkitBackdropFilter: 'none',
         borderRadius: isMobile ? 28 : 16,
         padding: isMobile ? '10px 10px 10px 22px' : '14px 16px 10px',
+        minHeight: isMobile ? 52 : undefined,
         position: 'relative',
         border: isMobile ? 'none' : `1px solid ${promptFocused ? '#0A0A0A' : transcribing ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.08)'}`,
         boxShadow: isMobile ? 'none' : (promptFocused
@@ -953,7 +954,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <textarea ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
               onFocus={() => setPromptFocused(true)} onBlur={() => setTimeout(() => setPromptFocused(false), 150)}
               placeholder="" autoFocus rows={1}
-              style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: isMobile ? 16 : 15, color: '#0A0A0A', fontFamily: C.font, minHeight: 24, maxHeight: 200, fontWeight: 400, resize: 'none', lineHeight: '24px', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content', verticalAlign: 'middle', display: 'block', position: 'relative', zIndex: 2 }} />
+              style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: isMobile ? 17 : 15, color: '#0A0A0A', fontFamily: C.font, minHeight: 24, maxHeight: 200, fontWeight: 400, resize: 'none', lineHeight: '24px', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content', verticalAlign: 'middle', display: 'block', position: 'relative', zIndex: 2 }} />
             {!input && !fileUploading && !pendingAttachment && typewriterText && (
               <div style={{ position: 'absolute', top: 4, left: 0, fontSize: 15, color: '#A0A0A0', fontFamily: C.font, fontWeight: 400, pointerEvents: 'none', lineHeight: '24px' }}>
                 {typewriterText}<span style={{ opacity: typewriterText.length < 19 ? 1 : 0, animation: typewriterText.length < 19 ? 'kikoBreathe 0.6s step-end infinite' : 'none' }}>|</span>
@@ -983,7 +984,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {streaming ? (
             <button onClick={stopKiko} style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}><div style={{ width: 8, height: 8, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
           ) : (
-            <button onClick={() => handleSubmit()} disabled={!hasContent} style={{ width: isMobile ? 36 : 30, height: isMobile ? 36 : 30, borderRadius: 9999, background: hasContent ? 'linear-gradient(135deg, #5a6470, #0A0A0A)' : 'rgba(0,0,0,0.04)', border: hasContent ? 'none' : `1px solid ${C.border}`, color: hasContent ? '#FFFFFF' : '#A0A0A0', cursor: hasContent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: hasContent ? 1 : 0.25, boxShadow: hasContent ? '0 4px 16px rgba(90,100,112,0.3)' : '0 1px 2px rgba(0,0,0,0.15)', transition: `all 250ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}` }}>
+            <button onClick={() => handleSubmit()} disabled={!hasContent} style={{ width: isMobile ? 38 : 30, height: isMobile ? 38 : 30, borderRadius: 9999, background: hasContent ? 'linear-gradient(135deg, #5a6470, #0A0A0A)' : 'rgba(0,0,0,0.04)', border: hasContent ? 'none' : `1px solid ${C.border}`, color: hasContent ? '#FFFFFF' : '#A0A0A0', cursor: hasContent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: hasContent ? 1 : 0.25, boxShadow: hasContent ? '0 4px 16px rgba(90,100,112,0.3)' : '0 1px 2px rgba(0,0,0,0.15)', transition: `all 250ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}` }}>
               <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           )}
@@ -1018,7 +1019,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               onFocus={() => setPromptFocused(true)} onBlur={() => setTimeout(() => setPromptFocused(false), 150)}
               placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment..." : "Ask me anything...."}
               autoFocus rows={1}
-              style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: isMobile ? 16 : 15, color: '#0A0A0A', fontFamily: C.font, minHeight: 24, maxHeight: 200, fontWeight: 400, resize: 'none', lineHeight: '24px', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content', verticalAlign: 'middle', display: 'block', position: 'relative', zIndex: 2 }} />
+              style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: isMobile ? 17 : 15, color: '#0A0A0A', fontFamily: C.font, minHeight: 24, maxHeight: 200, fontWeight: 400, resize: 'none', lineHeight: '24px', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content', verticalAlign: 'middle', display: 'block', position: 'relative', zIndex: 2 }} />
           </div>
           {voiceActive ? (
             <button onClick={stopVoice} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'rgba(239,68,68,0.1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><div style={{ width: 8, height: 8, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
@@ -1055,7 +1056,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {streaming ? (
             <button onClick={stopKiko} style={{ width: 30, height: 30, borderRadius: 9999, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}><div style={{ width: 8, height: 8, borderRadius: 2, background: 'rgba(239,68,68,0.7)' }} /></button>
           ) : (
-            <button onClick={() => handleSubmit()} disabled={!hasContent} style={{ width: isMobile ? 36 : 30, height: isMobile ? 36 : 30, borderRadius: 9999, background: hasContent ? 'linear-gradient(135deg, #5a6470, #0A0A0A)' : 'rgba(0,0,0,0.04)', border: hasContent ? 'none' : `1px solid ${C.border}`, color: hasContent ? '#FFFFFF' : '#A0A0A0', cursor: hasContent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: hasContent ? 1 : 0.25, boxShadow: hasContent ? '0 4px 16px rgba(90,100,112,0.3)' : '0 1px 2px rgba(0,0,0,0.15)', transition: `all 250ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}` }}>
+            <button onClick={() => handleSubmit()} disabled={!hasContent} style={{ width: isMobile ? 38 : 30, height: isMobile ? 38 : 30, borderRadius: 9999, background: hasContent ? 'linear-gradient(135deg, #5a6470, #0A0A0A)' : 'rgba(0,0,0,0.04)', border: hasContent ? 'none' : `1px solid ${C.border}`, color: hasContent ? '#FFFFFF' : '#A0A0A0', cursor: hasContent ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: hasContent ? 1 : 0.25, boxShadow: hasContent ? '0 4px 16px rgba(90,100,112,0.3)' : '0 1px 2px rgba(0,0,0,0.15)', transition: `all 250ms ${'cubic-bezier(0.34, 1.56, 0.64, 1)'}` }}>
               <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           )}
@@ -1085,10 +1086,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         onMouseEnter={() => setHoveredMsg(i)} onMouseLeave={() => setHoveredMsg(null)}>
         {/* Kiko label with animated waveform avatar */}
         {isKiko && <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-          <div style={{ width: isMobile ? 30 : 28, height: isMobile ? 30 : 28, borderRadius: 10, background: '#FFFFFF', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '0.5px solid rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 1px 0 rgba(0,0,0,0.05), 0 1px 4px rgba(0,0,0,0.12)' }}>
+          <div style={{ width: isMobile ? 32 : 28, height: isMobile ? 32 : 28, borderRadius: 10, background: '#FFFFFF', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '0.5px solid rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.12)' }}>
             <KikoAvatar size={16} state="idle" />
           </div>
-          <span style={{ fontSize: isMobile ? 13 : 12, fontWeight: 500, color: 'rgba(90,100,112,0.55)', fontFamily: C.font }}>Kiko</span>
+          <span style={{ fontSize: isMobile ? 14 : 12, fontWeight: 500, color: 'rgba(90,100,112,0.55)', fontFamily: C.font }}>Kiko</span>
           {msg.meta?.fromBackgroundTask && <span style={{ fontSize: 9, fontWeight: 500, color: C.textTer, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 50, padding: '1px 8px', marginLeft: 4 }}>background task</span>}
         </div>}
         {/* Collapsible reasoning steps on completed messages */}
@@ -1157,11 +1158,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         <div style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
         <div style={isMobile ? {
           maxWidth: isUser ? '80%' : '85%',
-          padding: '12px 16px',
-          borderRadius: isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+          padding: '14px 18px',
+          borderRadius: isUser ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
           background: isUser ? '#0A0A0A' : '#F5F4F1',
           color: isUser ? '#FEFEFC' : '#0A0A0A',
-          fontSize: 15, lineHeight: 1.5, fontFamily: C.font, fontWeight: 400,
+          fontSize: 16, lineHeight: 1.5, fontFamily: C.font, fontWeight: 400,
         } : {
           maxWidth: isUser ? '65%' : '100%',
           padding: isUser ? '13px 20px' : '0',
@@ -1243,22 +1244,22 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
   // ── Mobile header — approved render: serif "Kiko" + mic + bell (command centre) ──
   const MobileHeader = () => isMobile ? (
-    <div style={{ padding: '8px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+    <div style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <button onClick={() => { setMobileHistoryOpen(!mobileHistoryOpen); if (!mobileHistoryOpen) loadMobileHistory() }}
           style={{ width: 40, height: 40, borderRadius: '50%', background: mobileHistoryOpen ? '#0A0A0A' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={mobileHistoryOpen ? '#FEFEFC' : '#6B6B6B'} strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="12" y1="7" x2="12" y2="13"/></svg>
         </button>
-        <div onClick={startNewChat} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 28, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>Kiko</div>
+        <div onClick={startNewChat} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 30, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>Kiko</div>
       </div>
       <div style={{ display: 'flex', gap: 10 }}>
         <button onClick={() => { if (!voiceActive) startVoice(); else stopVoice() }}
-          style={{ width: 40, height: 40, borderRadius: '50%', background: voiceActive ? 'radial-gradient(circle at 40% 35%, rgba(35,28,55,1), rgba(15,13,22,1))' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: voiceActive ? '0 0 6px rgba(124,92,252,0.25)' : 'none', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={voiceActive ? '#FFFFFF' : '#6B6B6B'} strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+          style={{ width: 44, height: 44, borderRadius: '50%', background: voiceActive ? 'radial-gradient(circle at 40% 35%, rgba(35,28,55,1), rgba(15,13,22,1))' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: voiceActive ? '0 0 6px rgba(124,92,252,0.25)' : 'none', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={voiceActive ? '#FFFFFF' : '#6B6B6B'} strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
         </button>
         <button onClick={() => { setMobileCommandOpen(!mobileCommandOpen); if (!mobileCommandOpen) loadCommandData() }}
-          style={{ width: 40, height: 40, borderRadius: '50%', background: mobileCommandOpen ? '#0A0A0A' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={mobileCommandOpen ? '#FEFEFC' : '#6B6B6B'} strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          style={{ width: 44, height: 44, borderRadius: '50%', background: mobileCommandOpen ? '#0A0A0A' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={mobileCommandOpen ? '#FEFEFC' : '#6B6B6B'} strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           {alertCount > 0 && <div style={{ position: 'absolute', top: 4, right: 4, width: 7, height: 7, borderRadius: '50%', background: '#B8643E', border: '1.5px solid #FEFEFC' }} />}
         </button>
       </div>
@@ -1274,19 +1275,19 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     const getTaskDue = (t) => t.data?.dueDate || t.data?.due_date
     const typeColor = (t) => t === 'task_due' || t === 'task_automation' ? '#B8643E' : t === 'morning_brief' ? '#7d8a64' : t === 'new_partnership' ? '#B89C5C' : t === 'category_recommendation' ? '#534AB7' : t === 'reply_from_prospect' ? '#7d8a64' : t === 'linkedin_connection_accepted' ? '#B89C5C' : t === 'bounce_detected' ? '#B8643E' : '#5A6470'
     const typeLabel = (t) => t === 'task_due' ? 'Task' : t === 'task_automation' ? 'Auto' : t === 'morning_brief' ? 'Brief' : t === 'new_partnership' ? 'Deal' : t === 'category_recommendation' ? 'Insight' : t === 'reply_from_prospect' ? 'Email' : t === 'linkedin_connection_accepted' ? 'LinkedIn' : t === 'bounce_detected' ? 'Bounce' : t === 'monitoring' ? 'Monitor' : t?.replace(/_/g, ' ') || 'Alert'
-    const Sect = ({ label }) => <div style={{ fontSize: 11, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, padding: '14px 0 8px' }}>{label}</div>
+    const Sect = ({ label }) => <div style={{ fontSize: 12, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, padding: '14px 0 8px' }}>{label}</div>
     return (
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column' }}>
         {/* Header — matches MobileHeader but bell is active */}
         <div style={{ padding: '8px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <div onClick={() => { setMobileCommandOpen(false); startNewChat() }} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 28, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>Kiko</div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#F5F4F1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+          <div onClick={() => { setMobileCommandOpen(false); startNewChat() }} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 30, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>Kiko</div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#F5F4F1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
             </div>
             <button onClick={() => setMobileCommandOpen(false)}
-              style={{ width: 40, height: 40, borderRadius: '50%', background: '#0A0A0A', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FEFEFC" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              style={{ width: 44, height: 44, borderRadius: '50%', background: '#0A0A0A', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FEFEFC" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             </button>
           </div>
         </div>
@@ -1296,14 +1297,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <Sect label="Today" />
           {replies.length === 0 && <div style={{ fontSize: 12, color: '#A0A0A0', padding: '8px 0' }}>No replies yet</div>}
           {replies.map(r => (
-            <div key={r.id} style={{ background: '#FFFFFF', borderRadius: '0 12px 12px 0', padding: '12px 14px', marginBottom: 8, border: '1px solid rgba(0,0,0,0.04)', borderLeft: `3px solid ${typeColor(r.type)}` }}>
+            <div key={r.id} style={{ background: '#FFFFFF', borderRadius: '0 12px 12px 0', padding: '14px 16px', marginBottom: 8, border: '1px solid rgba(0,0,0,0.04)', borderLeft: `3px solid ${typeColor(r.type)}` }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div style={{ fontSize: 14, fontWeight: 500, color: '#0A0A0A' }}>{r.title || r.entity_name || 'Reply'}</div>
-                <div style={{ fontSize: 11, fontWeight: 500, color: typeColor(r.type) }}>{typeLabel(r.type)}</div>
+                <div style={{ fontSize: 15, fontWeight: 500, color: '#0A0A0A' }}>{r.title || r.entity_name || 'Reply'}</div>
+                <div style={{ fontSize: 12, fontWeight: 500, color: typeColor(r.type) }}>{typeLabel(r.type)}</div>
               </div>
-              {r.detail && <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 3 }}>{r.entity_type || ''}</div>}
-              {r.detail && <div style={{ fontSize: 11, color: '#A0A0A0', marginTop: 4, fontStyle: 'italic' }}>"{r.detail.slice(0, 80)}{r.detail.length > 80 ? '...' : ''}"</div>}
-              <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 5 }}>{timeAgo(r.created_at)}</div>
+              {r.detail && <div style={{ fontSize: 13, color: '#6B6B6B', marginTop: 3 }}>{r.entity_type || ''}</div>}
+              {r.detail && <div style={{ fontSize: 12, color: '#A0A0A0', marginTop: 4, fontStyle: 'italic' }}>"{r.detail.slice(0, 80)}{r.detail.length > 80 ? '...' : ''}"</div>}
+              <div style={{ fontSize: 11, color: '#A0A0A0', marginTop: 5 }}>{timeAgo(r.created_at)}</div>
             </div>
           ))}
 
@@ -1313,12 +1314,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {tasks.map(t => {
             const overdue = isOverdue(getTaskDue(t))
             return (
-              <div key={t.id} style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 12, padding: '12px 14px', marginBottom: 8 }}>
+              <div key={t.id} style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 12, padding: '14px 16px', marginBottom: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 18, height: 18, borderRadius: 5, border: `1.5px solid ${overdue ? 'rgba(184,100,62,0.4)' : 'rgba(0,0,0,0.15)'}`, flexShrink: 0 }} />
+                  <div style={{ width: 20, height: 20, borderRadius: 5, border: `1.5px solid ${overdue ? 'rgba(184,100,62,0.4)' : 'rgba(0,0,0,0.15)'}`, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 500, color: '#0A0A0A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.data?.subject || t.data?.title || t.data?.notes || t.data?.contact || 'Task'}</div>
-                    <div style={{ fontSize: 12, color: overdue ? '#B8643E' : '#6B6B6B', marginTop: 2 }}>{t.data?.company || t.data?.entity_name || ''}{(t.data?.dueDate || t.data?.due_date) ? ` · ${overdue ? 'Overdue' : 'Due ' + new Date(t.data.dueDate || t.data.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : ''}</div>
+                    <div style={{ fontSize: 15, fontWeight: 500, color: '#0A0A0A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.data?.subject || t.data?.title || t.data?.notes || t.data?.contact || 'Task'}</div>
+                    <div style={{ fontSize: 13, color: overdue ? '#B8643E' : '#6B6B6B', marginTop: 3 }}>{t.data?.company || t.data?.entity_name || ''}{(t.data?.dueDate || t.data?.due_date) ? ` · ${overdue ? 'Overdue' : 'Due ' + new Date(t.data.dueDate || t.data.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : ''}</div>
                   </div>
                 </div>
               </div>
@@ -1329,13 +1330,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <Sect label="Campaigns active" />
           {campaigns.length === 0 && <div style={{ fontSize: 12, color: '#A0A0A0', padding: '8px 0' }}>No active campaigns</div>}
           {campaigns.map(c => (
-            <div key={c.id} style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 12, padding: '12px 14px', marginBottom: 8 }}>
+            <div key={c.id} style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 12, padding: '14px 16px', marginBottom: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: '#0A0A0A' }}>{c.name}</div>
-                  <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 3 }}>{c.enrolled} enrolled · {c.replied} replies · {c.bounced} bounced</div>
+                  <div style={{ fontSize: 15, fontWeight: 500, color: '#0A0A0A' }}>{c.name}</div>
+                  <div style={{ fontSize: 13, color: '#6B6B6B', marginTop: 3 }}>{c.enrolled} enrolled · {c.replied} replies · {c.bounced} bounced</div>
                 </div>
-                <div style={{ fontSize: 11, padding: '4px 10px', borderRadius: 8, background: 'rgba(125,138,100,0.10)', color: '#7d8a64', fontWeight: 500 }}>Active</div>
+                <div style={{ fontSize: 12, padding: '4px 12px', borderRadius: 8, background: 'rgba(125,138,100,0.10)', color: '#7d8a64', fontWeight: 500 }}>Active</div>
               </div>
             </div>
           ))}
@@ -1363,10 +1364,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         <div style={{ padding: '8px 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <button onClick={() => setMobileHistoryOpen(false)}
-              style={{ width: 40, height: 40, borderRadius: '50%', background: '#0A0A0A', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FEFEFC" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="12" y1="7" x2="12" y2="13"/></svg>
+              style={{ width: 44, height: 44, borderRadius: '50%', background: '#0A0A0A', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FEFEFC" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="12" y1="7" x2="12" y2="13"/></svg>
             </button>
-            <div onClick={() => { setMobileHistoryOpen(false); startNewChat() }} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 28, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer' }}>Kiko</div>
+            <div onClick={() => { setMobileHistoryOpen(false); startNewChat() }} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 30, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer' }}>Kiko</div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#F5F4F1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1485,7 +1486,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <h1 style={{ fontSize: isMobile ? 38 : 42, fontWeight: 300, color: '#0A0A0A', margin: '0 0 8px', fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', textAlign: 'center' }}>
               {getGreeting()}, {firstName}
             </h1>
-            <p style={{ fontSize: isMobile ? 15 : 16, color: '#6B6B6B', margin: '0 0 0', fontFamily: C.font, fontWeight: 400, textAlign: 'center' }}>What would you like to work on?</p>
+            <p style={{ fontSize: isMobile ? 16 : 16, color: '#6B6B6B', margin: '0 0 0', fontFamily: C.font, fontWeight: 400, textAlign: 'center' }}>What would you like to work on?</p>
           </div>
 
           {/* Prompt bar — on mobile: rendered OUTSIDE kikoHomeContent (at bottom). On desktop: here */}
@@ -1654,7 +1655,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div style={{ marginBottom: 24, padding: '12px 0' }}>
               <div style={{ maxWidth: isMobile ? '85%' : 480 }}>
                 <div style={isMobile ? {
-                  padding: '12px 16px', borderRadius: '18px 18px 18px 4px',
+                  padding: '14px 18px', borderRadius: '20px 20px 20px 4px',
                   background: '#F5F4F1',
                 } : {
                   padding: '16px 20px', borderRadius: 16,
