@@ -110,10 +110,14 @@ export default function MobileVoicePage() {
               setSpeaking(true)
               if (micTrackRef.current) micTrackRef.current.enabled = false
             }
-            if (msg.type === 'response.audio.done' || msg.type === 'response.done') {
+            if (msg.type === 'response.done') {
               setSpeaking(false)
-              // Re-enable mic after a short delay to avoid picking up tail audio
-              setTimeout(() => { if (micTrackRef.current) micTrackRef.current.enabled = true }, 400)
+              // Clear any buffered echo audio, then re-enable mic after delay
+              try { dc.send(JSON.stringify({ type: 'input_audio_buffer.clear' })) } catch(e) {}
+              setTimeout(() => { 
+                try { dc.send(JSON.stringify({ type: 'input_audio_buffer.clear' })) } catch(e) {}
+                if (micTrackRef.current) micTrackRef.current.enabled = true 
+              }, 800)
             }
             if (msg.type === 'input_audio_buffer.speech_started') { setSpeaking(false); setStatus('listening') }
             if (msg.type === 'input_audio_buffer.speech_stopped') setStatus('thinking')

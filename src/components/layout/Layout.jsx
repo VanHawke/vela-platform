@@ -505,7 +505,7 @@ export default function Layout({ user }) {
       {/* Realtime notifications toast (v0.0.39) */}
       <NotificationToast user={user} />
       <ToastContainer />
-      <BackgroundTasksPanel user={user} />
+      {!isMobile && <BackgroundTasksPanel user={user} />}
       {showOnboarding && <OnboardingModal user={user} onDismiss={() => setShowOnboarding(false)} />}
 
       {/* Kiko floating — present on every page except home */}

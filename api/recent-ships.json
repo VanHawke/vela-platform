@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-20T12:30:11.630Z",
+  "generated_at": "2026-04-20T12:39:05.558Z",
   "commits": [
+    {
+      "hash": "9f8d620",
+      "subject": "5 fixes (DoD6akVZ): (1) VOICE LOOP — mic track disabled while Kiko speaks, re-enabled 400ms after speech ends. (2) GOODBYE KIKO — close_voice tool added to session, model calls it when user says goodb",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "9e0d676",
       "subject": "Fix voice feedback loop: (1) VAD threshold 0.6→0.8, silence duration 500→800ms — prevents Kiko from triggering on her own speaker output. (2) Added echoCancellation, noiseSuppression, autoGainControl ",
-      "when": "9 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "c1925b2",
       "subject": "Fix voice SDP 400: Wrong API URL (/v1/realtime?model= → /v1/realtime/calls). Session update format updated to match working KikoVoice (nested audio.input/output structure, tools array).",
-      "when": "14 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "a340519",
       "subject": "Standalone voice page: Mobile voice now navigates to /voice (standalone route, no portal/overlay). MobileVoicePage.jsx handles WebRTC connection, mic permission, and full UI independently. Completely ",
-      "when": "21 minutes ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "a54a0d2",
       "subject": "Voice portal + nav fix (CohrQoVQ): (1) Voice uses dedicated portal root div appended to body (not direct portal to body). Background #E8E6E1 (visible grey). Content uses absolute positioning inside fi",
-      "when": "37 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "3bbbf4c",
       "subject": "CRITICAL FIX: Cache headers were only on / and /index.html — SPA routes like /kiko and /login had NO no-cache headers, so Safari cached old HTML forever. Now ALL routes get no-cache except /assets/ wh",
-      "when": "55 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "386e2d2",
       "subject": "Build E (D-YW5atp): (1) VOICE — restored createPortal for mobile (inline render was clipped by overflow:hidden parent). Gradient bg so it can never look blank. (2) GREETING 48px. (3) Build E diagnosti",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "b89fdcd",
@@ -74,7 +79,7 @@
     {
       "hash": "25059c6",
       "subject": "Mobile render-match v19.04-C: All sizes enlarged to match approved renders. (1) Prompt bar: padding 10/22px, radius 28px, send button 36px on mobile. (2) Message bubbles: padding 12/16px, radius 18px,",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "2b7ca0d",
@@ -94,11 +99,6 @@
     {
       "hash": "cdd6619",
       "subject": "Nuclear cache fix: (1) clear-cache.html rebuilt — shows step-by-step log of what it unregistered/deleted with counts, does NOT auto-redirect, shows manual 'Open Kiko' button with cache-bust param. (2)",
-      "when": "17 hours ago"
-    },
-    {
-      "hash": "e2b43de",
-      "subject": "Mobile layout: prompt bar to bottom + header sizes up: (1) Homepage prompt bar moved from centred content to bottom of screen with safe-area padding. (2) Kiko logo 22→24px, buttons 30→34px, icons 13→1",
       "when": "17 hours ago"
     }
   ]

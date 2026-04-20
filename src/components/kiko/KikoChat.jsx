@@ -1056,8 +1056,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               <svg width={14} height={14} viewBox="0 0 24 24" fill="none"><rect x="4" y="8" width="2" height="8" rx="1" fill="rgba(90,100,112,0.6)" /><rect x="8" y="5" width="2" height="14" rx="1" fill="rgba(90,100,112,0.8)" /><rect x="12" y="7" width="2" height="10" rx="1" fill="rgba(90,100,112,1)" /><rect x="16" y="4" width="2" height="16" rx="1" fill="rgba(90,100,112,0.8)" /><rect x="20" y="9" width="2" height="6" rx="1" fill="rgba(90,100,112,0.6)" /></svg>
             </button>
           </>}</>)}
-          {/* Phase 3: Run in background button */}
-          {!streaming && !voiceActive && (
+          {/* Phase 3: Run in background button — desktop only */}
+          {!isMobile && !streaming && !voiceActive && (
             <button onClick={runInBackground} disabled={!input.trim() || bgTaskLoading} title="Run this query in the background"
               style={{ width: 30, height: 30, borderRadius: 9999, background: input.trim() ? 'rgba(0,0,0,0.05)' : 'transparent', border: `1px solid ${input.trim() ? 'rgba(0,0,0,0.10)' : C.border}`, color: input.trim() ? C.purple : C.textMut, cursor: input.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: input.trim() ? 1 : 0.3, transition: 'all 200ms ease', boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }}
               onMouseEnter={e => { if (input.trim()) { e.currentTarget.style.background = 'rgba(90,100,112,0.14)'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.10)' }}}
@@ -1076,7 +1076,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           )}
         </div>
         )}
-        {bgTaskMsg && <div style={{ fontSize: 11, color: bgTaskMsg.startsWith('Error') ? C.red : C.purple, padding: '4px 0 0 12px', fontFamily: C.font, fontWeight: 400 }}>{bgTaskMsg}</div>}
+        {!isMobile && bgTaskMsg && <div style={{ fontSize: 11, color: bgTaskMsg.startsWith('Error') ? C.red : C.purple, padding: '4px 0 0 12px', fontFamily: C.font, fontWeight: 400 }}>{bgTaskMsg}</div>}
       </div>
     )
   }
