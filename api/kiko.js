@@ -797,7 +797,7 @@ export default async function handler(req, res) {
     isRegistered ? sbFetch(`user_bibles?user_id=eq.${userId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
     earlyGreeting ? Promise.resolve([]) : sbFetch('kiko_knowledge?select=domain,content,researched_at&order=researched_at.desc&limit=10').catch(() => []),
     earlyGreeting ? Promise.resolve([]) : sbFetch(`kiko_learned_rules?active=eq.true&select=id,rule_text,category,evidence_count,weight&order=weight.desc&limit=20`).catch(() => []),
-    earlyGreeting ? Promise.resolve([]) : sbFetch(`kiko_preferences?select=category,content,confidence&order=confidence.desc&limit=15`).catch(() => []),
+    earlyGreeting ? Promise.resolve([]) : sbFetch(`kiko_preferences?select=category,preference,confidence&order=confidence.desc&limit=15`).catch(() => []),
   ]);
 
   // Assemble Bible layers — fallback gracefully if any layer missing
@@ -813,7 +813,7 @@ export default async function handler(req, res) {
   ].join('');
 
   // Learned rules — self-promoted patterns Kiko must follow
-  const activeRules = (learnedRulesResult || []).filter(r => r.rule_text);
+  const activeRules = Array.isArray(learnedRulesResult) ? learnedRulesResult.filter(r => r.rule_text) : [];
   let learnedRulesBlock = '';
   if (activeRules.length > 0) {
     learnedRulesBlock = '\n\n═══ LEARNED RULES (self-promoted from patterns — APPLY THESE) ═══\n' +
@@ -821,16 +821,16 @@ export default async function handler(req, res) {
     // Increment applied_count for loaded rules (fire and forget)
     const ruleIds = activeRules.map(r => r.id);
     sbFetch(`kiko_learned_rules?id=in.(${ruleIds.join(',')})`, {
-      method: 'PATCH', body: JSON.stringify({ applied_count: activeRules[0].applied_count || 0 + 1 })
+      method: 'PATCH', body: JSON.stringify({ applied_count: (activeRules[0]?.applied_count || 0) + 1 })
     }).catch(() => {});
   }
 
   // Preferences — strategic positions and user communication preferences
-  const prefs = (preferencesResult || []).filter(p => p.content);
+  const prefs = Array.isArray(preferencesResult) ? preferencesResult.filter(p => p.preference) : [];
   let preferencesBlock = '';
   if (prefs.length > 0) {
     preferencesBlock = '\n\n═══ LEARNED PREFERENCES ═══\n' +
-      prefs.map(p => `• [${p.category}|${p.confidence}] ${p.content}`).join('\n');
+      prefs.map(p => `• [${p.category}|${p.confidence}] ${p.preference}`).join('\n');
   }
 
   let identityContext = '';
