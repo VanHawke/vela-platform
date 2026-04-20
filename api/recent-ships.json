@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-20T11:00:27.770Z",
+  "generated_at": "2026-04-20T11:34:13.927Z",
   "commits": [
+    {
+      "hash": "386e2d2",
+      "subject": "Build E (D-YW5atp): (1) VOICE — restored createPortal for mobile (inline render was clipped by overflow:hidden parent). Gradient bg so it can never look blank. (2) GREETING 48px. (3) Build E diagnosti",
+      "when": "33 minutes ago"
+    },
     {
       "hash": "b89fdcd",
       "subject": "3 critical fixes (build R-eYInFY): (1) VOICE — rewritten mobile render: no createPortal, renders inline with z-index 99999 and explicit width/height 100%. flex:1 1 auto instead of flex:1. Color fallba",
-      "when": "11 minutes ago"
+      "when": "45 minutes ago"
     },
     {
       "hash": "f2ec557",
       "subject": "5 fixes verified in build r5SHM7ZE: (1) VOICE — mic now requested in user gesture context (startVoice gets mic BEFORE mounting KikoVoice), stream passed as micStream prop. Error state visible on scree",
-      "when": "23 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "bd272a9",
       "subject": "Mobile size overhaul — all sizes verified in build: Logo 30px, buttons 44px, icons 20px, greeting 38px, subtitle 16px, prompt bar min-height 52px/input 17px/send 38px/radius 28, messages 16px/14+18px ",
-      "when": "68 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "b8a3bce",
       "subject": "Force no-cache headers via vercel.json: Added Cache-Control no-cache/no-store/must-revalidate headers for / and /index.html routes. This forces Vercel CDN to not cache the HTML, ensuring users always ",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "ede2c8e",
       "subject": "Voice UI visibility fix: Mobile voice overlay status text changed from rgba(0,0,0,0.4) to #0A0A0A for high contrast. Status dot enlarged to 8px with glow. All states have visible labels including fall",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "39d7864",
       "subject": "Fix chat history click + voice + command centre stability + greeting size: (1) Chat history click — was calling loadConversation(c) which expects messages field, but query only fetched id/title/update",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "ed1ee71",
@@ -49,7 +54,7 @@
     {
       "hash": "2b7ca0d",
       "subject": "Add visible version stamp v19.04-B below mobile prompt bar — diagnostic to confirm which code version is running on user's phone",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "2932e6e",
@@ -64,42 +69,37 @@
     {
       "hash": "cdd6619",
       "subject": "Nuclear cache fix: (1) clear-cache.html rebuilt — shows step-by-step log of what it unregistered/deleted with counts, does NOT auto-redirect, shows manual 'Open Kiko' button with cache-bust param. (2)",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "e2b43de",
       "subject": "Mobile layout: prompt bar to bottom + header sizes up: (1) Homepage prompt bar moved from centred content to bottom of screen with safe-area padding. (2) Kiko logo 22→24px, buttons 30→34px, icons 13→1",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "a34e41a",
       "subject": "Mobile render match — 6 fixes: (1) KikoVoice avatar colour — was light (white dots on white bg = invisible), now dark (#0A0A0A dots on light Aurora bg). (2) Homepage avatar — removed waveform-era edge",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "0590f7b",
       "subject": "Fix 5 mobile/voice issues: (1) Mobile mic button — was calling non-existent activateVoice/deactivateVoice, now calls startVoice/stopVoice. (2) KikoVoice avatar — removed waveform edge mask, centred av",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "cddeec5",
       "subject": "Lock favicon — remove custom upload: (1) Settings.jsx — removed Browser Favicon ImageUpload section. Favicon is now system-locked to the 5-dot identity mark. (2) index.html — replaced dynamic favicon ",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "4c52e5c",
       "subject": "Kiko avatar identity system — 5-dot pipeline replaces waveform everywhere: (1) KikoAvatar.jsx — 5 solid circular nodes, #0A0A0A, 4 states: idle (gentle pulse), thinking (confident wave L→R, 1.4s), res",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "bcfc7ad",
       "subject": "Remove debug screenshot",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "dd0e5f7",
-      "subject": "Add clear-cache.html — force SW unregistration and cache clearing before redirecting to main app",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     }
   ]
 }

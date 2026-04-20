@@ -398,23 +398,25 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage, micS
   // Mobile: render directly into a portal container appended to body
   // Desktop: createPortal as before  
   const mobileVoiceContent = (
-    <div id="kiko-voice-mobile" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', zIndex: 99999, display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg, #FEFEFC 0%, #F0EDE8 100%)' }}>
-      <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-        <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: 30, fontWeight: 400, color: '#0A0A0A' }}>Kiko</div>
-        <button onClick={handleClose} style={{ width: 44, height: 44, borderRadius: '50%', background: '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent' }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <div id="kiko-voice-mobile" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', zIndex: 99999, display: 'flex', flexDirection: 'column', background: '#F5F4F1' }}>
+      <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ fontFamily: 'Georgia, serif', fontSize: 30, fontWeight: 400, color: '#0A0A0A' }}>Kiko</div>
+        <button onClick={handleClose} style={{ width: 44, height: 44, borderRadius: 22, background: '#E8E6E1', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
-      <div style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28, minHeight: 0 }}>
-        <KikoAvatar size={80} state={speaking ? 'responding' : (status === 'listening' ? 'thinking' : 'idle')} energy={voiceEnergy} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 16, color: '#0A0A0A', fontFamily: 'Inter, system-ui, sans-serif' }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: color || '#f59e0b', boxShadow: `0 0 6px ${(color || '#f59e0b')}60` }} />
-          <span>{status === 'connecting' ? 'Connecting...' : status === 'reconnecting' ? 'Reconnecting...' : status === 'listening' ? 'Listening' : status === 'thinking' ? 'Thinking...' : status === 'speaking' ? 'Speaking...' : status === 'error' ? 'Connection failed' : 'Starting...'}</span>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 32 }}>
+          {[0,1,2,3,4].map(i => <div key={i} style={{ width: 12, height: 12, borderRadius: 6, background: '#0A0A0A', opacity: 0.5 }} />)}
         </div>
-        {errorMsg && <div style={{ fontSize: 13, color: '#A32D2D', textAlign: 'center', padding: '0 24px' }}>{errorMsg}</div>}
+        <div style={{ fontSize: 18, color: '#0A0A0A', fontFamily: 'Inter, system-ui, sans-serif', marginBottom: 8 }}>
+          {status === 'error' ? 'Connection failed' : status === 'listening' ? 'Listening' : 'Connecting...'}
+        </div>
+        {errorMsg && <div style={{ fontSize: 14, color: '#A32D2D', padding: '0 24px', textAlign: 'center' }}>{errorMsg}</div>}
+        <div style={{ fontSize: 13, color: '#A0A0A0', marginTop: 4 }}>Status: {status}</div>
       </div>
-      <div style={{ padding: '16px 20px', paddingBottom: 'calc(28px + env(safe-area-inset-bottom, 0px))', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
-        <button onClick={handleClose} style={{ padding: '14px 40px', borderRadius: 50, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.12)', fontSize: 17, color: '#6B6B6B', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent' }}>Goodbye Kiko</button>
+      <div style={{ padding: 20, paddingBottom: 40, display: 'flex', justifyContent: 'center' }}>
+        <button onClick={handleClose} style={{ padding: '16px 44px', borderRadius: 50, background: '#E8E6E1', border: 'none', fontSize: 17, color: '#0A0A0A', fontFamily: 'inherit' }}>Goodbye Kiko</button>
       </div>
     </div>
   )
