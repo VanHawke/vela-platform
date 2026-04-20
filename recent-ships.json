@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-20T06:44:51.605Z",
+  "generated_at": "2026-04-20T06:53:24.052Z",
   "commits": [
+    {
+      "hash": "ede2c8e",
+      "subject": "Voice UI visibility fix: Mobile voice overlay status text changed from rgba(0,0,0,0.4) to #0A0A0A for high contrast. Status dot enlarged to 8px with glow. All states have visible labels including fall",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "39d7864",
       "subject": "Fix chat history click + voice + command centre stability + greeting size: (1) Chat history click — was calling loadConversation(c) which expects messages field, but query only fetched id/title/update",
@@ -14,7 +19,7 @@
     {
       "hash": "0950955",
       "subject": "Mobile fixes v19.04-D: (1) Homepage centering — removed top spacer on mobile, equal padding 0/24px, greeting always visible (no voice-fade on mobile). (2) Inline voice controls hidden on mobile — Kiko",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "25059c6",
@@ -95,11 +100,6 @@
       "hash": "1827c1f",
       "subject": "Critical: Fix blank conversation page + rebuild Command Centre to match render: (1) BLANK PAGE FIX: Both welcome and conversation state wrappers now use position:absolute on mobile instead of flex:1+h",
       "when": "16 hours ago"
-    },
-    {
-      "hash": "11dbfc2",
-      "subject": "Updated app icons to match platform identity: (1) favicon.svg — new dark gradient orb with waveform bars (was old 4-circle design). (2) kiko-icon-192.png — regenerated to match platform's KikoFloat da",
-      "when": "17 hours ago"
     }
   ]
 }
