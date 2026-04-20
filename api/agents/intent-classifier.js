@@ -169,6 +169,9 @@ export async function classifyIntent(message, currentPage = 'home', conversation
   // Document library queries
   if (lower.includes('team deck') || lower.includes('team decks') || lower.includes('document library') || lower.includes('agency agreement') || lower.includes('show me the') && (lower.includes('contract') || lower.includes('deck') || lower.includes('document')) || lower.includes('uploaded document') || lower.includes('find the') && lower.includes('deck') || lower.includes('haas deck') || lower.includes('alpine deck') || lower.includes('williams deck')) return { intent: 'document_query' };
 
+  // Master brief / operating instructions digest
+  if (lower.includes('master brief') || lower.includes('digest this') || lower.includes('operating instructions') || lower.includes('learn from this') || lower.includes('update your brief') || lower.includes('rewrite your brief') || lower.includes('these are your instructions') || lower.includes('absorb this')) return { intent: 'master_brief' };
+
   // Code review / self-analysis shortcuts
   // SHIP / COMMIT / HISTORY questions go to general (uses git log injection in self-knowledge), NOT code_review
   if (/\b(ship(ped)?|commit(s|ted)?|deploy(ed|ment)?|release(s|d)?|build(s|t)?\s*(yesterday|recently|today|this week|last week|last \d+ days?))\b/i.test(message) && /\b(you|your)\b/i.test(message)) {

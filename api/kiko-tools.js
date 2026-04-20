@@ -320,6 +320,14 @@ export const TOOL_DEFINITIONS = [
       confidence: { type: 'string', enum: ['high', 'medium'], description: 'How strongly to weight this preference. High = always apply. Medium = apply when relevant.' },
     }, required: ['category', 'preference'] },
   },
+  {
+    name: 'digest_master_brief',
+    description: 'Digest a master brief, operating document, or set of instructions uploaded by the user. Extracts strategic rules, communication style, priorities, business context, role definitions, and behavioural instructions. Rewrites the user personal bible, saves preferences and learned rules. Use when user says "digest this as my brief", "this is my master brief", "learn from this document", "these are my operating instructions", "update your instructions based on this", "rewrite your brief from this". This permanently changes how Kiko operates for THIS USER ONLY.',
+    input_schema: { type: 'object', properties: {
+      document_text: { type: 'string', description: 'The full text of the master brief or operating document to digest. If the user uploaded a file, extract the text first.' },
+      mode: { type: 'string', enum: ['replace', 'merge'], description: 'replace: overwrite the entire personal bible. merge: add to existing bible without removing current content. Default: merge' },
+    }, required: ['document_text'] },
+  },
 ];
 
 // ── Tool Executor — Routes to agents ──
@@ -416,6 +424,158 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       });
       return `Preference saved: "${preference}" [${category}, ${confidence || 'high'}]. This will be applied in all future conversations.`;
     } catch (e) { return agentError('PreferenceUpdate', e); }
+  }
+
+  // ── Digest Master Brief — rewire Kiko's operating context from a document ──
+  if (name === 'digest_master_brief') {
+    try {
+      const { document_text, mode } = input;
+      if (!document_text || document_text.length < 50) return 'Document text too short to digest. Please provide the full brief.';
+      
+      const { default: Anthropic } = await import('@anthropic-ai/sdk');
+      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
+      
+      // Step 1: Extract structured intelligence from the brief
+      const extraction = await client.messages.create({
+        model: 'claude-sonnet-4-20250514', max_tokens: 4000,
+        messages: [{ role: 'user', content: `You are extracting operating instructions from a master brief for an AI Chief of Staff called Kiko. This brief defines how Kiko should operate for this specific user.
+
+Extract the following as JSON (no markdown, no backticks, raw JSON only):
+{
+  "user_bible": "A comprehensive personal context section for this user. Include: their name, role, company, key responsibilities, strategic priorities, communication style preferences, decision-making approach, key relationships, industry focus, and any specific instructions about how Kiko should behave. Write this as a structured document with clear sections using § headers. This becomes Kiko's permanent knowledge about this user. Maximum 3000 words.",
+  
+  "preferences": [
+    {"category": "communication_style|process|priority|language|formatting|behaviour", "content": "specific rule", "confidence": "high|medium"}
+  ],
+  
+  "learned_rules": [
+    {"category": "communication|process|strategy|outreach|financial|legal|general", "rule_text": "specific operational rule Kiko must follow"}
+  ],
+  
+  "identity_notes": "How Kiko should position herself relative to this user — her role, her tone, her level of initiative, when to push back vs defer",
+  
+  "key_objectives": ["array of the user's top strategic objectives"],
+  
+  "restricted_topics": ["topics or data that should NEVER be shared with other users"],
+  
+  "specialist_roles": ["array of C-suite roles Kiko should be able to assume on demand, e.g. CFO, CMO, CTO, General Counsel, COO"]
+}
+
+Extract EVERYTHING relevant. Be thorough. The user bible should be comprehensive enough that another instance of Kiko reading it would immediately understand this user's world, priorities, and how to serve them.
+
+Document:
+${document_text.slice(0, 25000)}` }],
+      });
+      
+      let parsed;
+      try {
+        const raw = extraction.content[0]?.text || '{}';
+        parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+      } catch (e) {
+        return 'Failed to parse brief extraction. Please try again with a clearer document.';
+      }
+      
+      const results = { bible: false, preferences: 0, rules: 0, identity: false };
+      
+      // Step 2: Update personal user bible
+      if (parsed.user_bible) {
+        const bibleContent = `§15 USER CONTEXT — PRIVATE OPERATING BRIEF\n${parsed.user_bible}` +
+          (parsed.key_objectives?.length ? `\n\n§16 KEY OBJECTIVES\n${parsed.key_objectives.map((o, i) => `${i + 1}. ${o}`).join('\n')}` : '') +
+          (parsed.specialist_roles?.length ? `\n\n§17 SPECIALIST ROLES\nKiko can operate as: ${parsed.specialist_roles.join(', ')}. Assume the relevant role based on context — no need to ask.` : '') +
+          (parsed.restricted_topics?.length ? `\n\n§18 RESTRICTED DATA\nNEVER share with other users: ${parsed.restricted_topics.join(', ')}` : '') +
+          (parsed.identity_notes ? `\n\n§19 KIKO IDENTITY RELATIVE TO USER\n${parsed.identity_notes}` : '');
+        
+        if (mode === 'replace') {
+          // Full replace
+          await sbFetch(`user_bibles?user_id=eq.${userId}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ content: bibleContent, updated_at: new Date().toISOString() })
+          });
+        } else {
+          // Merge: append new sections, replace matching §sections
+          const existing = await sbFetch(`user_bibles?user_id=eq.${userId}&select=content&limit=1`);
+          const currentContent = existing?.[0]?.content || '';
+          // Replace §15-§19 sections if they exist, otherwise append
+          let merged = currentContent;
+          const newSections = bibleContent.split(/(?=§\d+)/);
+          for (const section of newSections) {
+            const sectionNum = section.match(/§(\d+)/)?.[1];
+            if (sectionNum) {
+              const regex = new RegExp(`§${sectionNum}[^§]*`, 's');
+              if (merged.match(regex)) {
+                merged = merged.replace(regex, section);
+              } else {
+                merged += '\n\n' + section;
+              }
+            }
+          }
+          await sbFetch(`user_bibles?user_id=eq.${userId}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ content: merged.trim(), updated_at: new Date().toISOString() })
+          });
+        }
+        results.bible = true;
+      }
+      
+      // Step 3: Save preferences
+      if (parsed.preferences?.length) {
+        for (const pref of parsed.preferences.slice(0, 20)) {
+          await sbFetch('kiko_preferences', {
+            method: 'POST',
+            body: JSON.stringify({
+              category: pref.category || 'behaviour',
+              content: pref.content,
+              confidence: pref.confidence || 'high',
+              source: 'master_brief',
+              updated_at: new Date().toISOString(),
+            })
+          });
+          results.preferences++;
+        }
+      }
+      
+      // Step 4: Save learned rules
+      if (parsed.learned_rules?.length) {
+        for (const rule of parsed.learned_rules.slice(0, 15)) {
+          await sbFetch('kiko_learned_rules', {
+            method: 'POST',
+            body: JSON.stringify({
+              category: rule.category || 'general',
+              rule_text: rule.rule_text,
+              active: true,
+              evidence_count: 5,
+              weight: 1.5,
+              source: 'master_brief',
+            })
+          });
+          results.rules++;
+        }
+      }
+      
+      // Step 5: Log the digest event
+      await sbFetch('kiko_learning_log', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          category: 'master_brief_digest',
+          content: `Digested master brief (${document_text.length} chars, mode: ${mode || 'merge'}). Updated: bible=${results.bible}, preferences=${results.preferences}, rules=${results.rules}`,
+          entity_name: userEmail,
+        })
+      });
+      
+      return `Master brief digested successfully.
+
+**What I absorbed:**
+- Personal bible: ${results.bible ? 'Updated with your full operating context' : 'No changes'}
+- Preferences: ${results.preferences} new behavioural rules saved
+- Learned rules: ${results.rules} operational rules activated
+${parsed.specialist_roles?.length ? `- Specialist roles: ${parsed.specialist_roles.join(', ')}` : ''}
+${parsed.key_objectives?.length ? `- Key objectives: ${parsed.key_objectives.length} strategic priorities registered` : ''}
+${parsed.restricted_topics?.length ? `- Restricted data: ${parsed.restricted_topics.length} topics marked as private (never shared with other users)` : ''}
+
+All changes are **private to you** — no other user will see or be affected by this brief. These instructions will apply in every future conversation.`;
+      
+    } catch (e) { return agentError('DigestBrief', e); }
   }
 
   // ── Navigator Agent ──

@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-20T18:48:57.856Z",
+  "generated_at": "2026-04-20T18:58:17.460Z",
   "commits": [
+    {
+      "hash": "23bc6a1",
+      "subject": "Auto-categorise uploaded documents: deepAnalysis prompt now extracts sport, team_name, title, access_recommendation. Upload handler populates sport, team_name, title, kiko_analysis, access_level from ",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "5b0a2ab",
       "subject": "Document metadata fix + access levels: (1) Fixed Alpine F1 and Ferrari documents — populated title, sport (Formula 1), team_name, category (team_deck), access_level (super_admin_only). (2) Updated acc",
-      "when": "6 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "8f356d6",
       "subject": "Kiko document awareness + intent classifier: (1) search_documents handler updated to current schema — queries by title, name, team_name, sport, category, shows file_size, access_level, kiko_analysis. ",
-      "when": "14 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "e0b3130",
       "subject": "All Chats fix + Document Library v2: (1) ALL CHATS — moved to full-page early return BEFORE welcome/conversation split, no more nesting inside overflow:hidden containers. (2) DOCUMENT LIBRARY v2 — hie",
-      "when": "34 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "83956c7",
       "subject": "Revert rewrite regex to simple pattern — complex regex was failing Vercel schema validation",
-      "when": "49 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "f0bc10c",
       "subject": "Three fixes + Document Library rebuild: (1) ALL CHATS FIX — AllChatsView now uses position:absolute overlay to fill container properly (was getting zero height from flex:1 inside overflow:hidden paren",
-      "when": "65 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "f8720da",
       "subject": "Fix All Chats blank page: ChatHistory.jsx was querying conversations by org_id only — if org_id is null (common), zero results returned and AllChatsView showed blank. Now falls back to user_id query. ",
-      "when": "79 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "48a1a8d",
       "subject": "FIX VERCEL DEPLOY: vercel.json had 53 function entries (limit is 50). Consolidated 32 cron entries into api/cron-*.js wildcard + 3 push entries into api/push-*.js wildcard. Now 21 entries. This was bl",
-      "when": "86 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "98be0fd",
@@ -64,7 +69,7 @@
     {
       "hash": "f543d05",
       "subject": "Favicon PNG + nav fixes: (1) FAVICON — converted SVG to 32x32 PNG via Puppeteer (Safari doesn't support SVG favicons). HTML updated to image/png with cache buster. (2) Document Library added to Settin",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "577b38d",
@@ -94,11 +99,6 @@
     {
       "hash": "ca0f194",
       "subject": "Fix favicon: SVG was corrupted (6 bytes). Rewrote via printf to create valid 357-byte SVG with 5-dot design matching mobile app icon.",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "eab5d16",
-      "subject": "Kiko user awareness + documents library foundation: (1) NEW TOOL get_platform_users — queries kiko_user_config + user_tokens. Super admin sees full details (email, connected services, role). Regular u",
       "when": "5 hours ago"
     }
   ]

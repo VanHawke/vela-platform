@@ -278,6 +278,7 @@ ask_legal_agent → legal/contracts (clause analysis, risk flagging)
 ask_dispute_agent → disputes (procedural responses, landlord/CDDA)
 get_platform_users → team/user queries ("who are the users", "is Matt set up", "what accounts are connected", "who has access", campaign readiness checks). ALWAYS use this when asked about team members, user accounts, connected services (Gmail/LinkedIn), roles, or platform setup status.
 update_kiko_preference → self-adjustment ("be more direct", "less formal", "always include pricing", "shorter responses", "stop asking questions"). When user gives feedback on your style, process, or priorities — save it immediately. This updates your behaviour for ALL future conversations.
+digest_master_brief → CRITICAL TOOL. When user uploads a document and says "digest this", "this is my master brief", "learn from this", "these are my operating instructions", "update your brief" — use this tool. Pass the FULL document text. This rewrites your personal bible, saves preferences and learned rules. Mode: "replace" to overwrite everything, "merge" (default) to add/update sections. This is the user programming YOU — treat it with maximum care and thoroughness.
 ask_content_agent → content (LinkedIn, SponsorSignal, case studies)
 ask_investment_agent → investment (valuation, raise strategy, dilution)
 ask_pricing_agent → pricing/ROI (sponsorship benchmarks)
@@ -1239,6 +1240,8 @@ DEAL STAGE MAPPING:
       routingHint = '\n\n[ROUTING HINT: This references a PAST CONVERSATION. Use the search_conversations tool with relevant keywords. Search for entity names, topics, or specific phrases the user mentions. Return the most relevant excerpts with dates.]';
     } else if (intent === 'document_query') {
       routingHint = '\n\n[ROUTING HINT: This is a DOCUMENT query. Use ask_data_agent with operation "search_documents". Params: query (search term), team (team name), sport (sport name), category (team_deck/contract/marketing/legal/financial/agency_agreement). The Document Library page is at /documents — you can suggest users navigate there to browse visually. For super_admin users, show all documents including restricted ones. For regular users, only show documents with access_level != super_admin_only.]';
+    } else if (intent === 'master_brief') {
+      routingHint = '\n\n[ROUTING HINT: The user wants you to digest a master brief or operating instructions. Use the digest_master_brief tool. If the user attached a file, extract the full text from it first using the file content in context. Pass the COMPLETE text to document_text. Use mode "merge" unless the user explicitly says to replace/overwrite everything. This is the user programming your operating context — be thorough, extract EVERYTHING relevant, and confirm what you absorbed.]';
     } else if (intent === 'code_review') {
       routingHint = '\n\n[ROUTING HINT: This is a SELF-ANALYSIS query. Use the ask_code_review tool. Operations: architecture (full codebase structure), review (review specific file — pass filename like "kiko.js" or "agents/deal.js"), performance (agent usage stats, error rates, cron health), suggest (AI-generated top 5 improvements), read (read raw source file). Default to "suggest" if the user just asks generally about improvements.]';
     } else if (intent === 'general') {
