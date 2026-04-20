@@ -117,7 +117,7 @@ export default function DocumentLibrary() {
 
           {folderKeys.length === 0 && (
             <div style={{ fontSize: 14, color: C.textTer, padding: '20px 0', textAlign: 'center' }}>
-              {docs.length === 0 ? 'No documents uploaded yet. Upload files via Kiko chat.' : 'No matching documents.'}
+              {docs.length === 0 ? 'No documents yet — upload files via Kiko to get started.' : 'No matching documents.'}
             </div>
           )}
 

@@ -130,3 +130,5 @@ export async function requestPushPermission() {
   const result = await Notification.requestPermission()
   return result
 }
+// favicon-fix-1776699943
+export const PUSH_VERSION = '5dot3'
