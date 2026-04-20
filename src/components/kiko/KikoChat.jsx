@@ -1311,7 +1311,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <Sect label="Today" />
           {replies.length === 0 && <div style={{ fontSize: 12, color: '#A0A0A0', padding: '8px 0' }}>No replies yet</div>}
           {replies.map(r => (
-            <div key={r.id} style={{ background: '#FFFFFF', borderRadius: '0 12px 12px 0', padding: '14px 16px', marginBottom: 8, border: '1px solid rgba(0,0,0,0.04)', borderLeft: `3px solid ${typeColor(r.type)}` }}>
+            <div key={r.id} onClick={() => {
+              const alertName = r.title || r.entity_name || 'Alert'
+              setMobileCommandOpen(false)
+              handleSubmit(`Tell me about this alert: "${alertName}". What happened, what does it mean, and what should I do next?`)
+            }} style={{ background: '#FFFFFF', borderRadius: '0 12px 12px 0', padding: '14px 16px', marginBottom: 8, border: '1px solid rgba(0,0,0,0.04)', borderLeft: `3px solid ${typeColor(r.type)}`, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div style={{ fontSize: 15, fontWeight: 500, color: '#0A0A0A' }}>{r.title || r.entity_name || 'Reply'}</div>
                 <div style={{ fontSize: 12, fontWeight: 500, color: typeColor(r.type) }}>{typeLabel(r.type)}</div>
@@ -1328,7 +1332,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {tasks.map(t => {
             const overdue = isOverdue(getTaskDue(t))
             return (
-              <div key={t.id} style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 12, padding: '14px 16px', marginBottom: 8 }}>
+              <div key={t.id} onClick={() => {
+                const taskName = t.data?.subject || t.data?.title || t.data?.notes || t.data?.contact || 'Task'
+                const company = t.data?.company || t.data?.entity_name || ''
+                setMobileCommandOpen(false)
+                handleSubmit(`Tell me about this task and what I need to do: "${taskName}"${company ? ` for ${company}` : ''}. Include any relevant context, next steps, and suggested actions.`)
+              }} style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 12, padding: '14px 16px', marginBottom: 8, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 20, height: 20, borderRadius: 5, border: `1.5px solid ${overdue ? 'rgba(184,100,62,0.4)' : 'rgba(0,0,0,0.15)'}`, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -1344,7 +1353,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <Sect label="Campaigns active" />
           {campaigns.length === 0 && <div style={{ fontSize: 12, color: '#A0A0A0', padding: '8px 0' }}>No active campaigns</div>}
           {campaigns.map(c => (
-            <div key={c.id} style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 12, padding: '14px 16px', marginBottom: 8 }}>
+            <div key={c.id} onClick={() => {
+              setMobileCommandOpen(false)
+              handleSubmit(`Give me a status update on the "${c.name}" campaign. How many enrolled, replies, bounces? What's working and what needs attention?`)
+            }} style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.04)', borderRadius: 12, padding: '14px 16px', marginBottom: 8, cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 500, color: '#0A0A0A' }}>{c.name}</div>
@@ -1587,7 +1599,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         {isMobile && !voiceActive && (
           <div style={{ flexShrink: 0, padding: '10px 18px', paddingBottom: 'calc(10px + env(safe-area-inset-bottom, 0px))' }}>
             {PromptBar({ welcome: true })}
-            <div style={{ textAlign: 'center', marginTop: 8, padding: '4px 12px', background: '#0A0A0A', color: '#FEFEFC', borderRadius: 8, fontSize: 11, display: 'inline-block', width: '100%' }}>Build E · {new Date().toLocaleDateString()}</div>
           </div>
         )}
       </div>

@@ -2,14 +2,9 @@
 // Avoids all portal/z-index/overflow issues by being a clean separate route
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase'
 import KikoAvatar from '../components/kiko/KikoAvatar'
 import { fetchVoiceProfile, buildVoiceInstructions } from '../lib/buildVoiceInstructions'
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-)
 
 const BAR_COLORS = {
   connecting: '#f59e0b', reconnecting: '#f59e0b', listening: '#22c55e',
@@ -25,6 +20,7 @@ export default function MobileVoicePage() {
   const pcRef = useRef(null)
   const dcRef = useRef(null)
   const audioRef = useRef(null)
+  const micTrackRef = useRef(null)
   const color = BAR_COLORS[status] || BAR_COLORS.idle
 
   const handleClose = useCallback(() => {
@@ -81,6 +77,7 @@ export default function MobileVoicePage() {
         }
 
         pc.addTrack(ms.getTracks()[0])
+        micTrackRef.current = ms.getTracks()[0]
 
         const dc = pc.createDataChannel('oai-events')
         dcRef.current = dc
@@ -99,6 +96,7 @@ export default function MobileVoicePage() {
               instructions: sessionInstructions,
               tools: [
                 { type: 'function', name: 'ask_kiko', description: 'MANDATORY for every user query. Access Kiko intelligence: pipeline, deals, contacts, tasks, memory, news, web search, strategy.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'The full question or request' } }, required: ['query'] } },
+                { type: 'function', name: 'close_voice', description: 'Close the voice session. Call this when the user says goodbye, bye, stop, end, close, or any variation of ending the conversation like "goodbye kiko", "bye kiko", "that will be all", "thanks kiko goodbye".', parameters: { type: 'object', properties: { reason: { type: 'string' } }, required: [] } },
               ],
               tool_choice: 'auto',
             }
@@ -107,10 +105,22 @@ export default function MobileVoicePage() {
         dc.onmessage = (evt) => {
           try {
             const msg = JSON.parse(evt.data)
-            if (msg.type === 'response.audio.delta') setSpeaking(true)
-            if (msg.type === 'response.audio.done') setSpeaking(false)
+            // Mute mic while Kiko speaks to prevent feedback loop
+            if (msg.type === 'response.audio.delta') {
+              setSpeaking(true)
+              if (micTrackRef.current) micTrackRef.current.enabled = false
+            }
+            if (msg.type === 'response.audio.done' || msg.type === 'response.done') {
+              setSpeaking(false)
+              // Re-enable mic after a short delay to avoid picking up tail audio
+              setTimeout(() => { if (micTrackRef.current) micTrackRef.current.enabled = true }, 400)
+            }
             if (msg.type === 'input_audio_buffer.speech_started') { setSpeaking(false); setStatus('listening') }
             if (msg.type === 'input_audio_buffer.speech_stopped') setStatus('thinking')
+            // Handle close_voice tool call (user said "goodbye kiko")
+            if (msg.type === 'response.function_call_arguments.done' && msg.name === 'close_voice') {
+              handleClose()
+            }
           } catch(e) {}
         }
 

@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-20T12:20:46.284Z",
+  "generated_at": "2026-04-20T12:30:11.630Z",
   "commits": [
+    {
+      "hash": "9e0d676",
+      "subject": "Fix voice feedback loop: (1) VAD threshold 0.6→0.8, silence duration 500→800ms — prevents Kiko from triggering on her own speaker output. (2) Added echoCancellation, noiseSuppression, autoGainControl ",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "c1925b2",
       "subject": "Fix voice SDP 400: Wrong API URL (/v1/realtime?model= → /v1/realtime/calls). Session update format updated to match working KikoVoice (nested audio.input/output structure, tools array).",
-      "when": "5 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "a340519",
       "subject": "Standalone voice page: Mobile voice now navigates to /voice (standalone route, no portal/overlay). MobileVoicePage.jsx handles WebRTC connection, mic permission, and full UI independently. Completely ",
-      "when": "12 minutes ago"
+      "when": "21 minutes ago"
     },
     {
       "hash": "a54a0d2",
       "subject": "Voice portal + nav fix (CohrQoVQ): (1) Voice uses dedicated portal root div appended to body (not direct portal to body). Background #E8E6E1 (visible grey). Content uses absolute positioning inside fi",
-      "when": "28 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "3bbbf4c",
       "subject": "CRITICAL FIX: Cache headers were only on / and /index.html — SPA routes like /kiko and /login had NO no-cache headers, so Safari cached old HTML forever. Now ALL routes get no-cache except /assets/ wh",
-      "when": "46 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "386e2d2",
       "subject": "Build E (D-YW5atp): (1) VOICE — restored createPortal for mobile (inline render was clipped by overflow:hidden parent). Gradient bg so it can never look blank. (2) GREETING 48px. (3) Build E diagnosti",
-      "when": "80 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "b89fdcd",
@@ -39,12 +44,12 @@
     {
       "hash": "bd272a9",
       "subject": "Mobile size overhaul — all sizes verified in build: Logo 30px, buttons 44px, icons 20px, greeting 38px, subtitle 16px, prompt bar min-height 52px/input 17px/send 38px/radius 28, messages 16px/14+18px ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "b8a3bce",
       "subject": "Force no-cache headers via vercel.json: Added Cache-Control no-cache/no-store/must-revalidate headers for / and /index.html routes. This forces Vercel CDN to not cache the HTML, ensuring users always ",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "ede2c8e",
@@ -89,17 +94,12 @@
     {
       "hash": "cdd6619",
       "subject": "Nuclear cache fix: (1) clear-cache.html rebuilt — shows step-by-step log of what it unregistered/deleted with counts, does NOT auto-redirect, shows manual 'Open Kiko' button with cache-bust param. (2)",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "e2b43de",
       "subject": "Mobile layout: prompt bar to bottom + header sizes up: (1) Homepage prompt bar moved from centred content to bottom of screen with safe-area padding. (2) Kiko logo 22→24px, buttons 30→34px, icons 13→1",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "a34e41a",
-      "subject": "Mobile render match — 6 fixes: (1) KikoVoice avatar colour — was light (white dots on white bg = invisible), now dark (#0A0A0A dots on light Aurora bg). (2) Homepage avatar — removed waveform-era edge",
-      "when": "18 hours ago"
+      "when": "17 hours ago"
     }
   ]
 }
