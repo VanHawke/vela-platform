@@ -304,6 +304,13 @@ export const TOOL_DEFINITIONS = [
       message: { type: 'string', description: 'Message text (keep under 1000 chars for readability)' },
     }, required: ['profile_url_or_conversation_urn', 'message'] },
   },
+  {
+    name: 'get_platform_users',
+    description: 'Get information about platform users, their roles, connected accounts, and team setup. Super admin sees full details (role, email, connected services, job title). Regular users see team member names and roles only. Use this when: user asks about team members, who is on the platform, campaign setup readiness, account connections, or who has access to what.',
+    input_schema: { type: 'object', properties: {
+      include_connections: { type: 'boolean', description: 'Include connected services (Gmail, LinkedIn, Calendar) for each user. Default true.' },
+    } },
+  },
 ];
 
 // ── Tool Executor — Routes to agents ──
@@ -325,6 +332,54 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       })});
     } catch {} // Never fail on logging
   };
+
+  // ── Platform Users — user/role awareness ──
+  if (name === 'get_platform_users') {
+    try {
+      // Get caller's role
+      const callerConfig = await sbFetch(`kiko_user_config?email=eq.${encodeURIComponent(userEmail)}&select=role&limit=1`);
+      const callerRole = callerConfig?.[0]?.role || 'user';
+      const isSuperAdmin = callerRole === 'super_admin';
+
+      // Get all users in the org
+      const users = await sbFetch('kiko_user_config?select=email,display_name,job_title,company_name,role&order=display_name.asc');
+      
+      // Get connected accounts
+      const tokens = input.include_connections !== false 
+        ? await sbFetch('user_tokens?select=user_email,provider,updated_at&order=user_email.asc')
+        : [];
+
+      // Build response
+      const userList = (users || []).map(u => {
+        const connections = (tokens || []).filter(t => t.user_email === u.email);
+        const entry = {
+          name: u.display_name,
+          role: u.role === 'super_admin' ? 'Super Admin' : 'User',
+          job_title: u.job_title,
+          company: u.company_name,
+        };
+        // Super admin sees full details, regular users see limited info
+        if (isSuperAdmin) {
+          entry.email = u.email;
+          entry.connected_services = connections.map(c => ({
+            service: c.provider === 'google' ? 'Google (Gmail + Calendar)' : c.provider === 'linkedin' ? 'LinkedIn' : c.provider,
+            last_refreshed: c.updated_at,
+          }));
+          if (connections.length === 0) entry.connected_services = ['None — needs setup'];
+        }
+        return entry;
+      });
+
+      return JSON.stringify({
+        total_users: userList.length,
+        caller_role: callerRole,
+        users: userList,
+        note: isSuperAdmin 
+          ? 'Full user details shown (super admin access).' 
+          : 'Limited view — contact your admin for account connection details.',
+      }, null, 2);
+    } catch (e) { return agentError('PlatformUsers', e); }
+  }
 
   // ── Navigator Agent ──
   if (name === 'ask_navigator') {

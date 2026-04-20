@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-20T13:08:32.038Z",
+  "generated_at": "2026-04-20T13:28:31.003Z",
   "commits": [
+    {
+      "hash": "37fd693",
+      "subject": "Voice loop + favicon + portrait: (1) VOICE — server-side VAD disabled via session.update(turn_detection:null) while speaking, re-enabled 1500ms after response.done with buffer clear. (2) FAVICON — 5-d",
+      "when": "20 minutes ago"
+    },
     {
       "hash": "378b344",
       "subject": "Voice loop + PWA fixes (D8RwEojo): (1) VOICE LOOP — mic disabled on first audio delta only (not every chunk), buffer cleared immediately + 1200ms delay before mic re-enable. Speaking guard prevents re",
-      "when": "16 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "8d02ebf",
       "subject": "Voice loop fix + mobile cleanup (CUvpW8Bp): (1) VOICE LOOP — mic disabled during speech + input_audio_buffer.clear sent twice (immediately and after 800ms delay) after each response to flush echoed au",
-      "when": "29 minutes ago"
+      "when": "49 minutes ago"
     },
     {
       "hash": "9f8d620",
       "subject": "5 fixes (DoD6akVZ): (1) VOICE LOOP — mic track disabled while Kiko speaks, re-enabled 400ms after speech ends. (2) GOODBYE KIKO — close_voice tool added to session, model calls it when user says goodb",
-      "when": "38 minutes ago"
+      "when": "58 minutes ago"
     },
     {
       "hash": "9e0d676",
       "subject": "Fix voice feedback loop: (1) VAD threshold 0.6→0.8, silence duration 500→800ms — prevents Kiko from triggering on her own speaker output. (2) Added echoCancellation, noiseSuppression, autoGainControl ",
-      "when": "48 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "c1925b2",
       "subject": "Fix voice SDP 400: Wrong API URL (/v1/realtime?model= → /v1/realtime/calls). Session update format updated to match working KikoVoice (nested audio.input/output structure, tools array).",
-      "when": "53 minutes ago"
+      "when": "73 minutes ago"
     },
     {
       "hash": "a340519",
       "subject": "Standalone voice page: Mobile voice now navigates to /voice (standalone route, no portal/overlay). MobileVoicePage.jsx handles WebRTC connection, mic permission, and full UI independently. Completely ",
-      "when": "60 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "a54a0d2",
       "subject": "Voice portal + nav fix (CohrQoVQ): (1) Voice uses dedicated portal root div appended to body (not direct portal to body). Background #E8E6E1 (visible grey). Content uses absolute positioning inside fi",
-      "when": "76 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "3bbbf4c",
@@ -49,7 +54,7 @@
     {
       "hash": "b89fdcd",
       "subject": "3 critical fixes (build R-eYInFY): (1) VOICE — rewritten mobile render: no createPortal, renders inline with z-index 99999 and explicit width/height 100%. flex:1 1 auto instead of flex:1. Color fallba",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f2ec557",
@@ -59,17 +64,17 @@
     {
       "hash": "bd272a9",
       "subject": "Mobile size overhaul — all sizes verified in build: Logo 30px, buttons 44px, icons 20px, greeting 38px, subtitle 16px, prompt bar min-height 52px/input 17px/send 38px/radius 28, messages 16px/14+18px ",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "b8a3bce",
       "subject": "Force no-cache headers via vercel.json: Added Cache-Control no-cache/no-store/must-revalidate headers for / and /index.html routes. This forces Vercel CDN to not cache the HTML, ensuring users always ",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "ede2c8e",
       "subject": "Voice UI visibility fix: Mobile voice overlay status text changed from rgba(0,0,0,0.4) to #0A0A0A for high contrast. Status dot enlarged to 8px with glow. All states have visible labels including fall",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "39d7864",
@@ -94,11 +99,6 @@
     {
       "hash": "2b7ca0d",
       "subject": "Add visible version stamp v19.04-B below mobile prompt bar — diagnostic to confirm which code version is running on user's phone",
-      "when": "17 hours ago"
-    },
-    {
-      "hash": "2932e6e",
-      "subject": "Mobile size enlargement — all elements scaled up for better mobile readability: (1) Kiko logo 24→28px. (2) Header buttons 34→40px, icons 15→18px. (3) Greeting h1 28→32px, subtitle 13→15px. (4) Prompt ",
       "when": "17 hours ago"
     }
   ]
