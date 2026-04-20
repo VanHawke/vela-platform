@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-20T18:43:05.286Z",
+  "generated_at": "2026-04-20T18:48:57.856Z",
   "commits": [
+    {
+      "hash": "5b0a2ab",
+      "subject": "Document metadata fix + access levels: (1) Fixed Alpine F1 and Ferrari documents — populated title, sport (Formula 1), team_name, category (team_deck), access_level (super_admin_only). (2) Updated acc",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "8f356d6",
       "subject": "Kiko document awareness + intent classifier: (1) search_documents handler updated to current schema — queries by title, name, team_name, sport, category, shows file_size, access_level, kiko_analysis. ",
-      "when": "8 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "e0b3130",
       "subject": "All Chats fix + Document Library v2: (1) ALL CHATS — moved to full-page early return BEFORE welcome/conversation split, no more nesting inside overflow:hidden containers. (2) DOCUMENT LIBRARY v2 — hie",
-      "when": "28 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "83956c7",
       "subject": "Revert rewrite regex to simple pattern — complex regex was failing Vercel schema validation",
-      "when": "43 minutes ago"
+      "when": "49 minutes ago"
     },
     {
       "hash": "f0bc10c",
       "subject": "Three fixes + Document Library rebuild: (1) ALL CHATS FIX — AllChatsView now uses position:absolute overlay to fill container properly (was getting zero height from flex:1 inside overflow:hidden paren",
-      "when": "59 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "f8720da",
       "subject": "Fix All Chats blank page: ChatHistory.jsx was querying conversations by org_id only — if org_id is null (common), zero results returned and AllChatsView showed blank. Now falls back to user_id query. ",
-      "when": "73 minutes ago"
+      "when": "79 minutes ago"
     },
     {
       "hash": "48a1a8d",
       "subject": "FIX VERCEL DEPLOY: vercel.json had 53 function entries (limit is 50). Consolidated 32 cron entries into api/cron-*.js wildcard + 3 push entries into api/push-*.js wildcard. Now 21 entries. This was bl",
-      "when": "80 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "98be0fd",
       "subject": "FIX VERCEL BUILD: Removed import crypto from push-send.js — this was causing ALL deploys to fail since commit 59c2e76. Simplified push-send to queue notifications without crypto dependency. Favicon ba",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "c0d3c91",
@@ -79,7 +84,7 @@
     {
       "hash": "7e75dc5",
       "subject": "Document Library + Push Notifications + Self-Improvement Engine (Bpci6Bet): CLIENT: (1) Document Library page at /documents — folder tree, search, thumbnails, document detail overlay, role-based acces",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "44fb110",
@@ -95,11 +100,6 @@
       "hash": "eab5d16",
       "subject": "Kiko user awareness + documents library foundation: (1) NEW TOOL get_platform_users — queries kiko_user_config + user_tokens. Super admin sees full details (email, connected services, role). Regular u",
       "when": "5 hours ago"
-    },
-    {
-      "hash": "37fd693",
-      "subject": "Voice loop + favicon + portrait: (1) VOICE — server-side VAD disabled via session.update(turn_detection:null) while speaking, re-enabled 1500ms after response.done with buffer clear. (2) FAVICON — 5-d",
-      "when": "6 hours ago"
     }
   ]
 }

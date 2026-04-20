@@ -138,6 +138,9 @@ This could be from any industry — F1, Formula E, other motorsports, technology
 Extract the following as JSON (no markdown, no backticks, just raw JSON):
 {
   "summary": "2-3 sentence summary of the document",
+  "title": "A clean, professional title for this document (e.g. 'BWT Alpine F1 — Partnership Deck 2025')",
+  "sport": "The sport this relates to: Formula 1, Formula E, MMA, Football, Cricket, Rugby, Tennis, or null if not sport-related",
+  "team_name": "The specific team or organisation name (e.g. Alpine F1, Haas F1, Ferrari) — or null",
   "key_stats": ["array of specific numbers, metrics, financial figures mentioned"],
   "messaging_tone": "describe the tone and communication style in one phrase",
   "positioning": "how does this entity position itself in one sentence",
@@ -150,7 +153,8 @@ Extract the following as JSON (no markdown, no backticks, just raw JSON):
   "detected_entity": "the primary organisation, team, brand, or company this document is about — or null",
   "detected_team": "if this relates to an F1 team specifically, which one (Alpine, Aston Martin, Audi, Cadillac, Ferrari, Haas, McLaren, Mercedes, Racing Bulls, Red Bull Racing, Williams) — or null",
   "detected_company": "company or organisation name mentioned — or null",
-  "suggested_category": "one of: deck, proposal, contract, brief, report, media_kit, research, playbook, other"
+  "suggested_category": "one of: team_deck, agency_agreement, contract, marketing, legal, financial, proposal, report, media_kit, research, playbook, general",
+  "access_recommendation": "super_admin_only if this contains pricing, contracts, financials, agency agreements, or sensitive commercial terms. Otherwise all_users"
 }
 
 Be specific. Extract real numbers. If data isn't present, use null or empty arrays.
@@ -212,15 +216,25 @@ export default async function handler(req, res) {
       const docPayload = {
         user_email: userEmail, name: fileName, doc_type: fileType || 'text/plain',
         summary: intelligence.summary || '', content: text.slice(0, 15000),
-        storage_path: storagePath, access_level: accessLevel || 'private',
+        storage_path: storagePath, 
+        access_level: accessLevel || intelligence.access_recommendation || 'workspace',
         org_id: ORG_ID, intelligence, scan_status: 'complete',
         last_scanned_at: new Date().toISOString(), scan_version: 1,
-        category: category || intelligence.suggested_category || 'other',
+        category: category || intelligence.suggested_category || 'general',
         context: intelligence.detected_context || 'general',
         linked_entity: intelligence.detected_entity || null,
         linked_team: linkedTeam || links.linked_team, linked_company_id: linkedCompanyId || links.linked_company_id,
         linked_deal_id: linkedDealId || null,
         source: 'upload', created_at: new Date().toISOString(),
+        // New columns — auto-populated from AI analysis
+        title: intelligence.title || fileName.replace(/\.[^.]+$/, '').replace(/_/g, ' '),
+        sport: intelligence.sport || null,
+        team_name: intelligence.team_name || intelligence.detected_team || null,
+        kiko_analysis: [
+          intelligence.positioning,
+          intelligence.talking_points?.length ? 'Key points: ' + intelligence.talking_points.join(', ') : null,
+          intelligence.key_stats?.length ? 'Stats: ' + intelligence.key_stats.join(', ') : null,
+        ].filter(Boolean).join('. ') || null,
       }
       const docRes = await fetch(`${SB}/rest/v1/documents`, {
         method: 'POST', headers: { ...h, Prefer: 'return=representation' }, body: JSON.stringify(docPayload),
@@ -302,10 +316,29 @@ export default async function handler(req, res) {
       const intelligence = await deepAnalysis(text, doc.name)
       const links = await autoLink(intelligence, SB, h)
 
-      // Update document
+      // Update document with new intelligence + auto-populated metadata
+      const updatePayload = {
+        intelligence, scan_status: 'complete', 
+        last_scanned_at: new Date().toISOString(), 
+        scan_version: (doc.scan_version || 0) + 1, 
+        linked_team: links.linked_team || doc.linked_team, 
+        linked_company_id: links.linked_company_id || doc.linked_company_id, 
+        category: intelligence.suggested_category || doc.category, 
+        summary: intelligence.summary || doc.summary,
+        // Auto-populate new columns from AI analysis
+        title: intelligence.title || doc.title || doc.name?.replace(/\.[^.]+$/, '').replace(/_/g, ' '),
+        sport: intelligence.sport || doc.sport || null,
+        team_name: intelligence.team_name || intelligence.detected_team || doc.team_name || null,
+        access_level: intelligence.access_recommendation || doc.access_level || 'workspace',
+        kiko_analysis: [
+          intelligence.positioning,
+          intelligence.talking_points?.length ? 'Key points: ' + intelligence.talking_points.join(', ') : null,
+          intelligence.key_stats?.length ? 'Stats: ' + intelligence.key_stats.join(', ') : null,
+        ].filter(Boolean).join('. ') || doc.kiko_analysis || null,
+      }
       await fetch(`${SB}/rest/v1/documents?id=eq.${documentId}`, {
         method: 'PATCH', headers: { ...h, Prefer: 'return=minimal' },
-        body: JSON.stringify({ intelligence, scan_status: 'complete', last_scanned_at: new Date().toISOString(), scan_version: (doc.scan_version || 0) + 1, linked_team: links.linked_team || doc.linked_team, linked_company_id: links.linked_company_id || doc.linked_company_id, category: intelligence.suggested_category || doc.category, summary: intelligence.summary || doc.summary }),
+        body: JSON.stringify(updatePayload),
       })
       return res.status(200).json({ success: true, intelligence, links })
     } catch (err) {
