@@ -74,10 +74,10 @@ async function executeTool(name, args) {
   } catch (err) { console.error('[KikoVoice] Tool error:', err); return JSON.stringify({ error: err.message }) }
 }
 
-export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
-  // inline prop removed — voice is always fullscreen now per UX decision 2026-04-09
+export default function KikoVoice({ onClose, user, onVoiceState, onMessage, micStream: externalMicStream }) {
   const isMobile = useMobile()
   const [status, setStatus] = useState('connecting')
+  const [errorMsg, setErrorMsg] = useState(null)
   const [speaking, setSpeaking] = useState(false)
   const [volume, setVolume] = useState(0)
   const [voiceEnergy, setVoiceEnergy] = useState(0)
@@ -248,8 +248,8 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
 
         // 4. Add local mic audio
         console.log('[KikoVoice] Getting microphone...')
-        const ms = await navigator.mediaDevices.getUserMedia({ audio: true })
-        if (dead) { ms.getTracks().forEach(t => t.stop()); return }
+        const ms = externalMicStream || await navigator.mediaDevices.getUserMedia({ audio: true })
+        if (dead) { if (!externalMicStream) ms.getTracks().forEach(t => t.stop()); return }
         pc.addTrack(ms.getTracks()[0])
 
         // 5. Set up data channel for events
@@ -348,6 +348,7 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
       } catch (err) {
         console.error('[KikoVoice] Connection error:', err)
         setStatus('error')
+        setErrorMsg(err.message || 'Connection failed')
       }
     }
     connect()
@@ -408,8 +409,9 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage }) {
         <KikoAvatar size={80} state={speaking ? 'responding' : (status === 'listening' ? 'thinking' : 'idle')} energy={voiceEnergy} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, color: '#0A0A0A' }}>
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}60` }} />
-          {status === 'connecting' ? 'Connecting...' : status === 'reconnecting' ? 'Reconnecting...' : status === 'listening' ? 'Listening' : status === 'thinking' ? 'Thinking...' : status === 'speaking' ? 'Speaking...' : status === 'error' ? 'Connection failed — try again' : 'Starting...'}
+          {status === 'connecting' ? 'Connecting...' : status === 'reconnecting' ? 'Reconnecting...' : status === 'listening' ? 'Listening' : status === 'thinking' ? 'Thinking...' : status === 'speaking' ? 'Speaking...' : status === 'error' ? 'Connection failed' : 'Starting...'}
         </div>
+        {errorMsg && <div style={{ fontSize: 12, color: '#A32D2D', textAlign: 'center', padding: '0 24px', marginTop: 8 }}>{errorMsg}</div>}
       </div>
       {/* Bottom button */}
       <div style={{ padding: '16px 20px', paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))', display: 'flex', justifyContent: 'center' }}>
