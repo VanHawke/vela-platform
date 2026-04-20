@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-20T19:44:12.473Z",
+  "generated_at": "2026-04-20T19:51:09.662Z",
   "commits": [
+    {
+      "hash": "ec825be",
+      "subject": "CRITICAL FIX: intent variable used before declaration (TDZ error). Moved digest_master_brief injection AFTER intent classification. allTools.push() instead of ternary at declaration.",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "320fb5c",
       "subject": "FIX KIKO API CRASH: digest_master_brief tool removed from default TOOL_DEFINITIONS (was making every API call too large). Now exported separately as DIGEST_BRIEF_TOOL, injected ONLY when intent is mas",
-      "when": "10 minutes ago"
+      "when": "17 minutes ago"
     },
     {
       "hash": "a3de782",
       "subject": "digest_master_brief tool: Kiko can now absorb a master brief and rewire herself. (1) NEW TOOL digest_master_brief — takes full document text, uses Claude Sonnet to extract: personal bible content (str",
-      "when": "46 minutes ago"
+      "when": "53 minutes ago"
     },
     {
       "hash": "23bc6a1",
       "subject": "Auto-categorise uploaded documents: deepAnalysis prompt now extracts sport, team_name, title, access_recommendation. Upload handler populates sport, team_name, title, kiko_analysis, access_level from ",
-      "when": "55 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "5b0a2ab",
       "subject": "Document metadata fix + access levels: (1) Fixed Alpine F1 and Ferrari documents — populated title, sport (Formula 1), team_name, category (team_deck), access_level (super_admin_only). (2) Updated acc",
-      "when": "61 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "8f356d6",
       "subject": "Kiko document awareness + intent classifier: (1) search_documents handler updated to current schema — queries by title, name, team_name, sport, category, shows file_size, access_level, kiko_analysis. ",
-      "when": "70 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "e0b3130",
       "subject": "All Chats fix + Document Library v2: (1) ALL CHATS — moved to full-page early return BEFORE welcome/conversation split, no more nesting inside overflow:hidden containers. (2) DOCUMENT LIBRARY v2 — hie",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "83956c7",
@@ -54,7 +59,7 @@
     {
       "hash": "98be0fd",
       "subject": "FIX VERCEL BUILD: Removed import crypto from push-send.js — this was causing ALL deploys to fail since commit 59c2e76. Simplified push-send to queue notifications without crypto dependency. Favicon ba",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "c0d3c91",
@@ -94,11 +99,6 @@
     {
       "hash": "3066ca5",
       "subject": "VAPID keys from Supabase: push-subscribe.js and push-send.js now read VAPID keys from platform_config table instead of env vars. Lazy-loaded with ensureVapid() — tries env vars first, falls back to Su",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "7e75dc5",
-      "subject": "Document Library + Push Notifications + Self-Improvement Engine (Bpci6Bet): CLIENT: (1) Document Library page at /documents — folder tree, search, thumbnails, document detail overlay, role-based acces",
       "when": "5 hours ago"
     }
   ]
