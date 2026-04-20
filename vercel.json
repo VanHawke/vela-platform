@@ -82,7 +82,7 @@
       "destination": "/api/$1"
     },
     {
-      "source": "/((?!api/|.*\\.(ico|png|svg|jpg|webp|json|xml|txt|webmanifest)$).*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],
