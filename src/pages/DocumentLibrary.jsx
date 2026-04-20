@@ -106,7 +106,7 @@ export default function DocumentLibrary() {
   }
 
   if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 56px)', fontFamily: C.font, color: C.textTertiary }}>Loading...</div>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 56px)', fontFamily: C.font, color: C.textTertiary }}>Loading documents...</div>
   )
 
   const cell = { padding: '12px 14px', fontSize: 12, color: C.text, borderBottom: `0.5px solid ${C.border}`, verticalAlign: 'middle' }
