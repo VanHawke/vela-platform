@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-20T16:17:30.912Z",
+  "generated_at": "2026-04-20T17:22:32.552Z",
   "commits": [
+    {
+      "hash": "98be0fd",
+      "subject": "FIX VERCEL BUILD: Removed import crypto from push-send.js — this was causing ALL deploys to fail since commit 59c2e76. Simplified push-send to queue notifications without crypto dependency. Favicon ba",
+      "when": "64 minutes ago"
+    },
     {
       "hash": "c0d3c91",
       "subject": "Favicon embedded as base64 data URI in HTML — bypasses all file serving, caching, and rewrite issues. No external file needed.",
-      "when": "7 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "327fb8d",
       "subject": "Force deploy: favicon.ico replaced with 5-dot PNG (old 1819-byte ICO was overriding all link tags). HTML references updated to v=5dot3. Minor text change to DocumentLibrary to force new bundle hash.",
-      "when": "28 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "47f021a",
       "subject": "FAVICON FIX: Old favicon.ico (1819 bytes) was overriding PNG link tags. Browsers load /favicon.ico by default regardless of HTML. Replaced with 5-dot PNG (425 bytes). Added explicit ico link tag with ",
-      "when": "42 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "59c2e76",
       "subject": "Push dispatcher + confidence tracking + tool tracking: (1) NEW cron-push-dispatcher.js — checks kiko_alerts every 5 min for unprocessed reply/bounce/linkedin/task alerts, sends push notifications via ",
-      "when": "47 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "f543d05",
       "subject": "Favicon PNG + nav fixes: (1) FAVICON — converted SVG to 32x32 PNG via Puppeteer (Safari doesn't support SVG favicons). HTML updated to image/png with cache buster. (2) Document Library added to Settin",
-      "when": "52 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "577b38d",
       "subject": "Document Library in More menu + favicon cache bust: (1) Added documents to ALL_PAGES in LegoraTopNav.jsx — now appears in More dropdown as 'Document Library'. (2) Favicon link in index.html updated wi",
-      "when": "72 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "a5a9849",
       "subject": "Remove web-push dependency: push-subscribe.js simplified (no web-push import). push-send.js rewritten with native crypto — VAPID JWT signing using Node.js crypto.sign + EC key derivation. Both endpoin",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "3066ca5",
       "subject": "VAPID keys from Supabase: push-subscribe.js and push-send.js now read VAPID keys from platform_config table instead of env vars. Lazy-loaded with ensureVapid() — tries env vars first, falls back to Su",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "7e75dc5",
       "subject": "Document Library + Push Notifications + Self-Improvement Engine (Bpci6Bet): CLIENT: (1) Document Library page at /documents — folder tree, search, thumbnails, document detail overlay, role-based acces",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "44fb110",
       "subject": "Kiko self-improvement engine activated: (1) LEARNED RULES now loaded into system prompt — 12 active rules from kiko_learned_rules injected per conversation, applied_count incremented. (2) PREFERENCES ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "ca0f194",
       "subject": "Fix favicon: SVG was corrupted (6 bytes). Rewrote via printf to create valid 357-byte SVG with 5-dot design matching mobile app icon.",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "eab5d16",
       "subject": "Kiko user awareness + documents library foundation: (1) NEW TOOL get_platform_users — queries kiko_user_config + user_tokens. Super admin sees full details (email, connected services, role). Regular u",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "37fd693",
       "subject": "Voice loop + favicon + portrait: (1) VOICE — server-side VAD disabled via session.update(turn_detection:null) while speaking, re-enabled 1500ms after response.done with buffer clear. (2) FAVICON — 5-d",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "378b344",
       "subject": "Voice loop + PWA fixes (D8RwEojo): (1) VOICE LOOP — mic disabled on first audio delta only (not every chunk), buffer cleared immediately + 1200ms delay before mic re-enable. Speaking guard prevents re",
-      "when": "3 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "8d02ebf",
       "subject": "Voice loop fix + mobile cleanup (CUvpW8Bp): (1) VOICE LOOP — mic disabled during speech + input_audio_buffer.clear sent twice (immediately and after 800ms delay) after each response to flush echoed au",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "9f8d620",
       "subject": "5 fixes (DoD6akVZ): (1) VOICE LOOP — mic track disabled while Kiko speaks, re-enabled 400ms after speech ends. (2) GOODBYE KIKO — close_voice tool added to session, model calls it when user says goodb",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "9e0d676",
       "subject": "Fix voice feedback loop: (1) VAD threshold 0.6→0.8, silence duration 500→800ms — prevents Kiko from triggering on her own speaker output. (2) Added echoCancellation, noiseSuppression, autoGainControl ",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "c1925b2",
       "subject": "Fix voice SDP 400: Wrong API URL (/v1/realtime?model= → /v1/realtime/calls). Session update format updated to match working KikoVoice (nested audio.input/output structure, tools array).",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "a340519",
       "subject": "Standalone voice page: Mobile voice now navigates to /voice (standalone route, no portal/overlay). MobileVoicePage.jsx handles WebRTC connection, mic permission, and full UI independently. Completely ",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "a54a0d2",
-      "subject": "Voice portal + nav fix (CohrQoVQ): (1) Voice uses dedicated portal root div appended to body (not direct portal to body). Background #E8E6E1 (visible grey). Content uses absolute positioning inside fi",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     }
   ]
 }

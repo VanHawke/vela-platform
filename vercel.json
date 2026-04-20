@@ -26,9 +26,6 @@
     "api/news-agent.js": {
       "maxDuration": 120
     },
-    "api/cron-news-classify.js": {
-      "maxDuration": 120
-    },
     "api/health.js": {
       "maxDuration": 45
     },
@@ -50,65 +47,8 @@
     "api/enrichment-agent.js": {
       "maxDuration": 45
     },
-    "api/cron-enrich.js": {
-      "maxDuration": 45
-    },
-    "api/cron-outreach-score.js": {
-      "maxDuration": 45
-    },
-    "api/cron-partnership-scan.js": {
-      "maxDuration": 45
-    },
     "api/documents.js": {
       "maxDuration": 30
-    },
-    "api/cron-document-scan.js": {
-      "maxDuration": 30
-    },
-    "api/cron-proactive.js": {
-      "maxDuration": 45
-    },
-    "api/cron-preference-synthesis.js": {
-      "maxDuration": 45
-    },
-    "api/cron-profile-synthesis.js": {
-      "maxDuration": 45
-    },
-    "api/cron-company-enrich.js": {
-      "maxDuration": 60
-    },
-    "api/cron-people-verify.js": {
-      "maxDuration": 60
-    },
-    "api/cron-pipeline-hygiene.js": {
-      "maxDuration": 30
-    },
-    "api/cron-deal-attribution.js": {
-      "maxDuration": 30
-    },
-    "api/cron-sequence-enqueue.js": {
-      "maxDuration": 60
-    },
-    "api/cron-sequence-sender.js": {
-      "maxDuration": 30
-    },
-    "api/cron-sequence-reply-detect.js": {
-      "maxDuration": 30
-    },
-    "api/cron-edit-delta.js": {
-      "maxDuration": 30
-    },
-    "api/cron-relationship-intel.js": {
-      "maxDuration": 45
-    },
-    "api/cron-meeting-prep.js": {
-      "maxDuration": 45
-    },
-    "api/cron-inbox-triage.js": {
-      "maxDuration": 45
-    },
-    "api/cron-task-automation.js": {
-      "maxDuration": 45
     },
     "api/import-conversations.js": {
       "maxDuration": 120
@@ -116,56 +56,20 @@
     "api/ingest-knowledge.js": {
       "maxDuration": 60
     },
-    "api/cron-learning-director.js": {
-      "maxDuration": 120
-    },
-    "api/cron-morning-intelligence.js": {
-      "maxDuration": 90
-    },
-    "api/cron-morning-email.js": {
-      "maxDuration": 60
-    },
-    "api/cron-competitive-intel.js": {
-      "maxDuration": 120
-    },
     "api/embed-conversations.js": {
       "maxDuration": 120
     },
     "api/kiko-draft-actions.js": {
       "maxDuration": 30
     },
-    "api/cron-task-executor.js": {
-      "maxDuration": 45
-    },
-    "api/cron-email-template-learning.js": {
-      "maxDuration": 45
-    },
-    "api/cron-weekly-report.js": {
-      "maxDuration": 60
-    },
-    "api/cron-push-dispatcher.js": {
-      "maxDuration": 20
-    },
-    "api/push-subscribe.js": {
-      "maxDuration": 10
-    },
-    "api/push-send.js": {
-      "maxDuration": 20
-    },
-    "api/cron-partnership-verify.js": {
-      "maxDuration": 120
-    },
-    "api/cron-health-check.js": {
-      "maxDuration": 45
-    },
-    "api/cron-self-awareness.js": {
-      "maxDuration": 60
-    },
-    "api/cron-rule-promotion.js": {
-      "maxDuration": 60
-    },
     "api/kiko-async.js": {
       "maxDuration": 300
+    },
+    "api/cron-*.js": {
+      "maxDuration": 120
+    },
+    "api/push-*.js": {
+      "maxDuration": 20
     }
   },
   "rewrites": [
@@ -186,14 +90,23 @@
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
-        { "key": "Pragma", "value": "no-cache" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        }
       ]
     },
     {
       "source": "/assets/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     }
   ]
