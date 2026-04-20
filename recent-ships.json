@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-20T10:48:24.363Z",
+  "generated_at": "2026-04-20T11:00:27.770Z",
   "commits": [
+    {
+      "hash": "b89fdcd",
+      "subject": "3 critical fixes (build R-eYInFY): (1) VOICE — rewritten mobile render: no createPortal, renders inline with z-index 99999 and explicit width/height 100%. flex:1 1 auto instead of flex:1. Color fallba",
+      "when": "11 minutes ago"
+    },
     {
       "hash": "f2ec557",
       "subject": "5 fixes verified in build r5SHM7ZE: (1) VOICE — mic now requested in user gesture context (startVoice gets mic BEFORE mounting KikoVoice), stream passed as micStream prop. Error state visible on scree",
-      "when": "11 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "bd272a9",
       "subject": "Mobile size overhaul — all sizes verified in build: Logo 30px, buttons 44px, icons 20px, greeting 38px, subtitle 16px, prompt bar min-height 52px/input 17px/send 38px/radius 28, messages 16px/14+18px ",
-      "when": "56 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "b8a3bce",
@@ -29,7 +34,7 @@
     {
       "hash": "ed1ee71",
       "subject": "Fix 4 data/voice issues: (1) Chat history — was querying empty kiko_conversations table, now queries conversations table where data actually lives. (2) Command centre alerts — removed type filter that",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "0950955",
@@ -49,7 +54,7 @@
     {
       "hash": "2932e6e",
       "subject": "Mobile size enlargement — all elements scaled up for better mobile readability: (1) Kiko logo 24→28px. (2) Header buttons 34→40px, icons 15→18px. (3) Greeting h1 28→32px, subtitle 13→15px. (4) Prompt ",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "8740bbc",
@@ -94,11 +99,6 @@
     {
       "hash": "dd0e5f7",
       "subject": "Add clear-cache.html — force SW unregistration and cache clearing before redirecting to main app",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "49c8c02",
-      "subject": "Add test-mobile.html + kill service worker: (1) test-mobile.html — standalone HTML page that replicates the exact mobile layout (conversation + command centre) using plain HTML/CSS with position:fixed",
       "when": "19 hours ago"
     }
   ]

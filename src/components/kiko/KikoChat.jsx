@@ -1254,18 +1254,18 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const MobileHeader = () => isMobile ? (
     <div style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button onClick={() => { setMobileHistoryOpen(!mobileHistoryOpen); if (!mobileHistoryOpen) loadMobileHistory() }}
+        <button onClick={() => { if (voiceActive) stopVoice(); setMobileHistoryOpen(!mobileHistoryOpen); setMobileCommandOpen(false); if (!mobileHistoryOpen) loadMobileHistory() }}
           style={{ width: 40, height: 40, borderRadius: '50%', background: mobileHistoryOpen ? '#0A0A0A' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={mobileHistoryOpen ? '#FEFEFC' : '#6B6B6B'} strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="12" y1="7" x2="12" y2="13"/></svg>
         </button>
         <div onClick={startNewChat} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 30, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>Kiko</div>
       </div>
       <div style={{ display: 'flex', gap: 10 }}>
-        <button onClick={() => { if (!voiceActive) startVoice(); else stopVoice() }}
+        <button onClick={() => { setMobileHistoryOpen(false); setMobileCommandOpen(false); if (!voiceActive) startVoice(); else stopVoice() }}
           style={{ width: 44, height: 44, borderRadius: '50%', background: voiceActive ? 'radial-gradient(circle at 40% 35%, rgba(35,28,55,1), rgba(15,13,22,1))' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: voiceActive ? '0 0 6px rgba(124,92,252,0.25)' : 'none', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={voiceActive ? '#FFFFFF' : '#6B6B6B'} strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
         </button>
-        <button onClick={() => { setMobileCommandOpen(!mobileCommandOpen); if (!mobileCommandOpen) loadCommandData() }}
+        <button onClick={() => { if (voiceActive) stopVoice(); setMobileCommandOpen(!mobileCommandOpen); setMobileHistoryOpen(false); if (!mobileCommandOpen) loadCommandData() }}
           style={{ width: 44, height: 44, borderRadius: '50%', background: mobileCommandOpen ? '#0A0A0A' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={mobileCommandOpen ? '#FEFEFC' : '#6B6B6B'} strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           {alertCount > 0 && <div style={{ position: 'absolute', top: 4, right: 4, width: 7, height: 7, borderRadius: '50%', background: '#B8643E', border: '1.5px solid #FEFEFC' }} />}
@@ -1502,7 +1502,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div style={{ textAlign: 'center', marginBottom: 12, fontSize: 11, fontWeight: 500, letterSpacing: '0.10em', textTransform: 'uppercase', color: '#6B6B6B' }}>
               <span style={{ color: '#0A0A0A', fontWeight: 600 }}>TODAY</span><span style={{ color: '#C0C0C0', margin: '0 8px' }}>·</span>{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
             </div>
-            <h1 style={{ fontSize: isMobile ? 44 : 42, fontWeight: 300, color: '#0A0A0A', margin: '0 0 10px', fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', textAlign: 'center' }}>
+            <h1 style={{ fontSize: isMobile ? 48 : 42, fontWeight: 300, color: '#0A0A0A', margin: '0 0 10px', fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', textAlign: 'center' }}>
               {getGreeting()}, {firstName}
             </h1>
             <p style={{ fontSize: isMobile ? 19 : 16, color: '#6B6B6B', margin: '0 0 0', fontFamily: C.font, fontWeight: 400, textAlign: 'center' }}>What would you like to work on?</p>
@@ -1581,6 +1581,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         {isMobile && !voiceActive && (
           <div style={{ flexShrink: 0, padding: '10px 18px', paddingBottom: 'calc(10px + env(safe-area-inset-bottom, 0px))' }}>
             {PromptBar({ welcome: true })}
+            <div style={{ textAlign: 'center', marginTop: 8, padding: '4px 12px', background: '#0A0A0A', color: '#FEFEFC', borderRadius: 8, fontSize: 11, display: 'inline-block', width: '100%' }}>Build E · {new Date().toLocaleDateString()}</div>
           </div>
         )}
       </div>

@@ -398,7 +398,7 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage, micS
   // Mobile: render directly into a portal container appended to body
   // Desktop: createPortal as before  
   const mobileVoiceContent = (
-    <div id="kiko-voice-mobile" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', zIndex: 99999, display: 'flex', flexDirection: 'column', background: '#FEFEFC' }}>
+    <div id="kiko-voice-mobile" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', zIndex: 99999, display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg, #FEFEFC 0%, #F0EDE8 100%)' }}>
       <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: 30, fontWeight: 400, color: '#0A0A0A' }}>Kiko</div>
         <button onClick={handleClose} style={{ width: 44, height: 44, borderRadius: '50%', background: '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent' }}>
@@ -499,7 +499,7 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage, micS
       <style>{`@keyframes kikoBarPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
     </div>
   )
-  // Mobile: render inline (z-index 99999 escapes everything). Desktop: portal to body.
-  if (isMobile) return mobileVoiceContent
+  // ALWAYS use portal to escape parent overflow:hidden clipping
+  if (isMobile) return createPortal(mobileVoiceContent, document.body)
   return createPortal(voiceUI, document.body)
 }
