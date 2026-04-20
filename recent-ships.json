@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-20T19:33:06.545Z",
+  "generated_at": "2026-04-20T19:44:12.473Z",
   "commits": [
+    {
+      "hash": "320fb5c",
+      "subject": "FIX KIKO API CRASH: digest_master_brief tool removed from default TOOL_DEFINITIONS (was making every API call too large). Now exported separately as DIGEST_BRIEF_TOOL, injected ONLY when intent is mas",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "a3de782",
       "subject": "digest_master_brief tool: Kiko can now absorb a master brief and rewire herself. (1) NEW TOOL digest_master_brief — takes full document text, uses Claude Sonnet to extract: personal bible content (str",
-      "when": "35 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "23bc6a1",
       "subject": "Auto-categorise uploaded documents: deepAnalysis prompt now extracts sport, team_name, title, access_recommendation. Upload handler populates sport, team_name, title, kiko_analysis, access_level from ",
-      "when": "44 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "5b0a2ab",
       "subject": "Document metadata fix + access levels: (1) Fixed Alpine F1 and Ferrari documents — populated title, sport (Formula 1), team_name, category (team_deck), access_level (super_admin_only). (2) Updated acc",
-      "when": "50 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "8f356d6",
       "subject": "Kiko document awareness + intent classifier: (1) search_documents handler updated to current schema — queries by title, name, team_name, sport, category, shows file_size, access_level, kiko_analysis. ",
-      "when": "59 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "e0b3130",
       "subject": "All Chats fix + Document Library v2: (1) ALL CHATS — moved to full-page early return BEFORE welcome/conversation split, no more nesting inside overflow:hidden containers. (2) DOCUMENT LIBRARY v2 — hie",
-      "when": "78 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "83956c7",
@@ -54,7 +59,7 @@
     {
       "hash": "c0d3c91",
       "subject": "Favicon embedded as base64 data URI in HTML — bypasses all file serving, caching, and rewrite issues. No external file needed.",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "327fb8d",
@@ -79,7 +84,7 @@
     {
       "hash": "577b38d",
       "subject": "Document Library in More menu + favicon cache bust: (1) Added documents to ALL_PAGES in LegoraTopNav.jsx — now appears in More dropdown as 'Document Library'. (2) Favicon link in index.html updated wi",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "a5a9849",
@@ -95,11 +100,6 @@
       "hash": "7e75dc5",
       "subject": "Document Library + Push Notifications + Self-Improvement Engine (Bpci6Bet): CLIENT: (1) Document Library page at /documents — folder tree, search, thumbnails, document detail overlay, role-based acces",
       "when": "5 hours ago"
-    },
-    {
-      "hash": "44fb110",
-      "subject": "Kiko self-improvement engine activated: (1) LEARNED RULES now loaded into system prompt — 12 active rules from kiko_learned_rules injected per conversation, applied_count incremented. (2) PREFERENCES ",
-      "when": "6 hours ago"
     }
   ]
 }

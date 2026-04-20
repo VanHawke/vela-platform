@@ -958,7 +958,7 @@ export default async function handler(req, res) {
       ? [...nativeTools.filter(t => t.name !== 'memory'), ...TOOL_DEFINITIONS]
       : [...nativeTools, ...TOOL_DEFINITIONS];
     // Inject digest_master_brief only when intent matches (too large for every call)
-    const allTools = intent === 'master_brief' ? [...voiceTools, DIGEST_BRIEF_TOOL] : voiceTools;
+    const allTools = voiceTools;
 
     // ── PHASE 1: Intent Classification ──
     // Fast-path: skip Haiku API call for obvious patterns (~60% of queries, saves 800ms)
@@ -978,6 +978,9 @@ export default async function handler(req, res) {
       classification = await classifyIntent(message, currentPage, conversationHistory);
     }
     const { intent, target } = classification;
+
+    // Inject digest_master_brief tool only for master_brief intent
+    if (intent === 'master_brief') allTools.push(DIGEST_BRIEF_TOOL);
 
     // Audit: log every query
     auditLog('query', { userId, userEmail, intent, detail: (message || '').slice(0, 200) });
