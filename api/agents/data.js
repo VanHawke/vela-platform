@@ -278,21 +278,28 @@ async function getOutreachIntelligence({ focus = 'patterns', company, pipeline }
   return `Outreach data: ${total} scored, ${replyRate}% reply rate. Ask about "patterns", "timing", "race_windows", "persona", or "company".`;
 }
 
-async function searchDocuments({ query, team, category }) {
+async function searchDocuments({ query, team, category, sport }) {
   const words = (query || '').toLowerCase().split(/\s+/).filter(w => w.length > 2).slice(0, 3);
-  let filter = 'select=id,name,linked_team,category,intelligence,summary,content&limit=8&order=created_at.desc';
-  if (words.length) filter = words.map(w => `content.ilike.*${encodeURIComponent(w)}*`).join('&') + `&${filter}`;
-  if (team) filter += `&linked_team=ilike.*${encodeURIComponent(team)}*`;
+  let filter = 'select=id,title,name,file_name,team_name,sport,category,summary,kiko_analysis,file_size,access_level,file_url,created_at&limit=15&order=created_at.desc';
+  if (words.length) filter += '&or=(' + words.map(w => `title.ilike.*${encodeURIComponent(w)}*,name.ilike.*${encodeURIComponent(w)}*,summary.ilike.*${encodeURIComponent(w)}*,team_name.ilike.*${encodeURIComponent(w)}*,sport.ilike.*${encodeURIComponent(w)}*`).join(',') + ')';
+  if (team) filter += `&team_name=ilike.*${encodeURIComponent(team)}*`;
+  if (sport) filter += `&sport=ilike.*${encodeURIComponent(sport)}*`;
   if (category) filter += `&category=eq.${encodeURIComponent(category)}`;
   const docs = await sbFetch(`documents?${filter}`);
-  if (!docs?.length) return `No documents found matching "${query}".`;
-  let out = `DOCUMENT SEARCH: "${query}" — ${docs.length} found\n\n`;
+  if (!docs?.length) return `No documents found matching "${query || team || sport || category}".`;
+  let out = `DOCUMENT SEARCH — ${docs.length} found\n\n`;
   for (const doc of docs) {
-    out += `📄 ${doc.name}${doc.linked_team ? ` (${doc.linked_team})` : ''}${doc.category ? ` [${doc.category}]` : ''}\n`;
-    const intel = doc.intelligence || {};
-    if (intel.key_stats?.length) out += `   Stats: ${intel.key_stats.join(', ')}\n`;
-    if (intel.talking_points?.length) out += `   Talking points: ${intel.talking_points.join(', ')}\n`;
-    if (doc.summary) out += `   Summary: ${doc.summary}\n`;
+    const label = doc.title || doc.name || doc.file_name || 'Untitled';
+    const size = doc.file_size ? (doc.file_size < 1048576 ? (doc.file_size / 1024).toFixed(0) + ' KB' : (doc.file_size / 1048576).toFixed(1) + ' MB') : '';
+    out += `📄 ${label}`;
+    if (doc.sport) out += ` | ${doc.sport}`;
+    if (doc.team_name) out += ` — ${doc.team_name}`;
+    if (doc.category) out += ` [${doc.category}]`;
+    if (size) out += ` (${size})`;
+    out += ` | Access: ${doc.access_level === 'super_admin_only' ? 'Super Admin only' : 'All users'}`;
+    out += '\n';
+    if (doc.summary) out += `   ${doc.summary}\n`;
+    if (doc.kiko_analysis) out += `   Analysis: ${doc.kiko_analysis}\n`;
     out += '\n';
   }
   return out;

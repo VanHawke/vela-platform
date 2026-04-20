@@ -126,6 +126,7 @@ INTENTS:
 - self_monitor: System health, errors, "are you working", "what broke", "diagnose yourself", "is inbox triage running", cron status, agent stats
 - knowledge: Knowledge management — "learn from this URL", "add this source", "what do you know about X", "show me your sources", "remember this", "save this insight", "create an agent for Y", "show my agents", "run the X agent", managing Kiko's knowledge base and custom agents
 - conversation_search: Recall past conversations — "we discussed X before", "you mentioned Y", "what did we talk about last week", "recall our conversation about Z", references to prior discussions
+- document_query: Find or browse uploaded documents — "show me the Haas deck", "find the agency agreement", "what team decks do we have", "documents for F1", "any contracts uploaded", browsing the document library
 - code_review: Self-analysis — "review your code", "analyse your architecture", "how can you improve", "suggest improvements", "your weaknesses", "performance report", "read your source code", introspection about Kiko's own capabilities and code. NOT for ship/commit/release history (those use git log injection — route to 'general').
 - general: General conversation, greetings, questions Claude can answer from knowledge
 
@@ -164,6 +165,9 @@ export async function classifyIntent(message, currentPage = 'home', conversation
 
   // Conversation search shortcuts
   if (lower.includes('we discussed') || lower.includes('you mentioned') || lower.includes('what did we talk') || lower.includes('recall our conversation') || lower.includes('we talked about') || lower.includes('previous conversation') || lower.includes('earlier conversation') || lower.includes('last time we spoke')) return { intent: 'conversation_search' };
+
+  // Document library queries
+  if (lower.includes('team deck') || lower.includes('team decks') || lower.includes('document library') || lower.includes('agency agreement') || lower.includes('show me the') && (lower.includes('contract') || lower.includes('deck') || lower.includes('document')) || lower.includes('uploaded document') || lower.includes('find the') && lower.includes('deck') || lower.includes('haas deck') || lower.includes('alpine deck') || lower.includes('williams deck')) return { intent: 'document_query' };
 
   // Code review / self-analysis shortcuts
   // SHIP / COMMIT / HISTORY questions go to general (uses git log injection in self-knowledge), NOT code_review
@@ -240,6 +244,7 @@ export const INTENT_TO_AGENT = {
   memory:      { tool: 'ask_memory_engine' },
   finance:     { tool: 'ask_finance_agent' },
   document:    { tool: 'ask_document_agent' },
+  document_query: { tool: 'ask_data_agent' },
   negotiation: { tool: 'ask_negotiation_agent' },
   category:    { tool: 'ask_category_agent' },
   legal:       { tool: 'ask_legal_agent' },
