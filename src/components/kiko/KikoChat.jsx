@@ -315,6 +315,12 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const voiceStartedFromConvId = useRef(null)
 
   const startVoice = async () => {
+    // Mobile: navigate to standalone voice page (avoids portal/z-index/overflow issues)
+    if (isMobile) {
+      navigate('/voice')
+      return
+    }
+    // Desktop: use inline KikoVoice overlay
     // Request mic FIRST — iOS Safari requires this in user gesture context
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -1261,7 +1267,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         <div onClick={startNewChat} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 30, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>Kiko</div>
       </div>
       <div style={{ display: 'flex', gap: 10 }}>
-        <button onClick={() => { setMobileHistoryOpen(false); setMobileCommandOpen(false); if (!voiceActive) startVoice(); else stopVoice() }}
+        <button onClick={() => { setMobileHistoryOpen(false); setMobileCommandOpen(false); navigate('/voice') }}
           style={{ width: 44, height: 44, borderRadius: '50%', background: voiceActive ? 'radial-gradient(circle at 40% 35%, rgba(35,28,55,1), rgba(15,13,22,1))' : '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: voiceActive ? '0 0 6px rgba(124,92,252,0.25)' : 'none', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={voiceActive ? '#FFFFFF' : '#6B6B6B'} strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
         </button>
@@ -1290,7 +1296,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         <div style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div onClick={() => { setMobileCommandOpen(false); startNewChat() }} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 30, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>Kiko</div>
           <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={() => { setMobileCommandOpen(false); startVoice() }} style={{ width: 44, height: 44, borderRadius: '50%', background: '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
+            <button onClick={() => { setMobileCommandOpen(false); navigate('/voice') }} style={{ width: 44, height: 44, borderRadius: '50%', background: '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
             </button>
             <button onClick={() => setMobileCommandOpen(false)}
@@ -1378,7 +1384,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div onClick={() => { setMobileHistoryOpen(false); startNewChat() }} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 30, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer' }}>Kiko</div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={() => { setMobileHistoryOpen(false); startVoice() }} style={{ width: 44, height: 44, borderRadius: '50%', background: '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
+            <button onClick={() => { setMobileHistoryOpen(false); navigate('/voice') }} style={{ width: 44, height: 44, borderRadius: '50%', background: '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
             </button>
             <button onClick={() => { setMobileHistoryOpen(false); setMobileCommandOpen(true); loadCommandData() }} style={{ width: 44, height: 44, borderRadius: '50%', background: '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}>

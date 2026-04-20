@@ -26,6 +26,7 @@ const Campaigns = lazy(() => import('@/pages/Campaigns'))
 const KnowledgeBrowser = lazy(() => import('@/pages/KnowledgeBrowser'))
 
 const SequenceDetail = lazy(() => import('@/pages/SequenceDetail'))
+const MobileVoicePage = lazy(() => import('@/pages/MobileVoicePage'))
 
 const INACTIVITY_MS   = 20 * 60 * 1000
 const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click']
@@ -123,6 +124,7 @@ export default function App() {
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/admin" element={session ? <AdminRoute><Admin /></AdminRoute> : <Navigate to="/login" replace />} />
         <Route path="/admin/system" element={session ? <AdminRoute><AdminSystem /></AdminRoute> : <Navigate to="/login" replace />} />
+        <Route path="/voice" element={session ? <Suspense fallback={null}><MobileVoicePage /></Suspense> : <Navigate to="/login" replace />} />
         <Route element={session ? <Layout key="app" user={user} /> : <Navigate to="/login" replace />}>
           <Route index element={<KikoChat user={user} />} />
           <Route path="home" element={<KikoChat user={user} />} />

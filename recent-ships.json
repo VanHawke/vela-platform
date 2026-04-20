@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-20T11:51:27.888Z",
+  "generated_at": "2026-04-20T12:07:56.305Z",
   "commits": [
+    {
+      "hash": "a54a0d2",
+      "subject": "Voice portal + nav fix (CohrQoVQ): (1) Voice uses dedicated portal root div appended to body (not direct portal to body). Background #E8E6E1 (visible grey). Content uses absolute positioning inside fi",
+      "when": "15 minutes ago"
+    },
     {
       "hash": "3bbbf4c",
       "subject": "CRITICAL FIX: Cache headers were only on / and /index.html — SPA routes like /kiko and /login had NO no-cache headers, so Safari cached old HTML forever. Now ALL routes get no-cache except /assets/ wh",
-      "when": "17 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "386e2d2",
       "subject": "Build E (D-YW5atp): (1) VOICE — restored createPortal for mobile (inline render was clipped by overflow:hidden parent). Gradient bg so it can never look blank. (2) GREETING 48px. (3) Build E diagnosti",
-      "when": "50 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "b89fdcd",
       "subject": "3 critical fixes (build R-eYInFY): (1) VOICE — rewritten mobile render: no createPortal, renders inline with z-index 99999 and explicit width/height 100%. flex:1 1 auto instead of flex:1. Color fallba",
-      "when": "62 minutes ago"
+      "when": "79 minutes ago"
     },
     {
       "hash": "f2ec557",
       "subject": "5 fixes verified in build r5SHM7ZE: (1) VOICE — mic now requested in user gesture context (startVoice gets mic BEFORE mounting KikoVoice), stream passed as micStream prop. Error state visible on scree",
-      "when": "74 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "bd272a9",
@@ -39,12 +44,12 @@
     {
       "hash": "39d7864",
       "subject": "Fix chat history click + voice + command centre stability + greeting size: (1) Chat history click — was calling loadConversation(c) which expects messages field, but query only fetched id/title/update",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "ed1ee71",
       "subject": "Fix 4 data/voice issues: (1) Chat history — was querying empty kiko_conversations table, now queries conversations table where data actually lives. (2) Command centre alerts — removed type filter that",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "0950955",
@@ -59,12 +64,12 @@
     {
       "hash": "2b7ca0d",
       "subject": "Add visible version stamp v19.04-B below mobile prompt bar — diagnostic to confirm which code version is running on user's phone",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "2932e6e",
       "subject": "Mobile size enlargement — all elements scaled up for better mobile readability: (1) Kiko logo 24→28px. (2) Header buttons 34→40px, icons 15→18px. (3) Greeting h1 28→32px, subtitle 13→15px. (4) Prompt ",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "8740bbc",
@@ -89,16 +94,11 @@
     {
       "hash": "0590f7b",
       "subject": "Fix 5 mobile/voice issues: (1) Mobile mic button — was calling non-existent activateVoice/deactivateVoice, now calls startVoice/stopVoice. (2) KikoVoice avatar — removed waveform edge mask, centred av",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "cddeec5",
       "subject": "Lock favicon — remove custom upload: (1) Settings.jsx — removed Browser Favicon ImageUpload section. Favicon is now system-locked to the 5-dot identity mark. (2) index.html — replaced dynamic favicon ",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "4c52e5c",
-      "subject": "Kiko avatar identity system — 5-dot pipeline replaces waveform everywhere: (1) KikoAvatar.jsx — 5 solid circular nodes, #0A0A0A, 4 states: idle (gentle pulse), thinking (confident wave L→R, 1.4s), res",
       "when": "19 hours ago"
     }
   ]
