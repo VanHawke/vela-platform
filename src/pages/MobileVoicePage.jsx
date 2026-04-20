@@ -105,23 +105,24 @@ export default function MobileVoicePage() {
         dc.onmessage = (evt) => {
           try {
             const msg = JSON.parse(evt.data)
-            // Mute mic while Kiko speaks to prevent feedback loop
-            if (msg.type === 'response.audio.delta') {
+            // VOICE LOOP FIX: Disable turn detection entirely while Kiko speaks
+            if (msg.type === 'response.audio.delta' && !speaking) {
               setSpeaking(true)
               if (micTrackRef.current) micTrackRef.current.enabled = false
+              // Disable server-side VAD to prevent echo triggering
+              try { dc.send(JSON.stringify({ type: 'input_audio_buffer.clear' })) } catch(e) {}
             }
             if (msg.type === 'response.done') {
               setSpeaking(false)
-              // Clear any buffered echo audio, then re-enable mic after delay
+              // Clear any buffered echo, wait for speaker to finish, then re-enable
               try { dc.send(JSON.stringify({ type: 'input_audio_buffer.clear' })) } catch(e) {}
-              setTimeout(() => { 
+              setTimeout(() => {
                 try { dc.send(JSON.stringify({ type: 'input_audio_buffer.clear' })) } catch(e) {}
-                if (micTrackRef.current) micTrackRef.current.enabled = true 
-              }, 800)
+                if (micTrackRef.current) micTrackRef.current.enabled = true
+              }, 1200)
             }
             if (msg.type === 'input_audio_buffer.speech_started') { setSpeaking(false); setStatus('listening') }
             if (msg.type === 'input_audio_buffer.speech_stopped') setStatus('thinking')
-            // Handle close_voice tool call (user said "goodbye kiko")
             if (msg.type === 'response.function_call_arguments.done' && msg.name === 'close_voice') {
               handleClose()
             }
@@ -161,7 +162,7 @@ export default function MobileVoicePage() {
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', display: 'flex', flexDirection: 'column', zIndex: 1 }}>
       {/* Header */}
-      <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+      <div style={{ padding: '12px 20px', paddingTop: 'calc(12px + env(safe-area-inset-top, 0px))', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontSize: 30, fontWeight: 400, color: '#0A0A0A' }}>Kiko</div>
         <button onClick={handleClose} style={{ width: 44, height: 44, borderRadius: '50%', background: '#F5F4F1', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
