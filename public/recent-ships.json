@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-20T15:49:14.811Z",
+  "generated_at": "2026-04-20T16:10:05.645Z",
   "commits": [
+    {
+      "hash": "327fb8d",
+      "subject": "Force deploy: favicon.ico replaced with 5-dot PNG (old 1819-byte ICO was overriding all link tags). HTML references updated to v=5dot3. Minor text change to DocumentLibrary to force new bundle hash.",
+      "when": "21 minutes ago"
+    },
     {
       "hash": "47f021a",
       "subject": "FAVICON FIX: Old favicon.ico (1819 bytes) was overriding PNG link tags. Browsers load /favicon.ico by default regardless of HTML. Replaced with 5-dot PNG (425 bytes). Added explicit ico link tag with ",
-      "when": "13 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "59c2e76",
       "subject": "Push dispatcher + confidence tracking + tool tracking: (1) NEW cron-push-dispatcher.js — checks kiko_alerts every 5 min for unprocessed reply/bounce/linkedin/task alerts, sends push notifications via ",
-      "when": "18 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "f543d05",
       "subject": "Favicon PNG + nav fixes: (1) FAVICON — converted SVG to 32x32 PNG via Puppeteer (Safari doesn't support SVG favicons). HTML updated to image/png with cache buster. (2) Document Library added to Settin",
-      "when": "24 minutes ago"
+      "when": "45 minutes ago"
     },
     {
       "hash": "577b38d",
       "subject": "Document Library in More menu + favicon cache bust: (1) Added documents to ALL_PAGES in LegoraTopNav.jsx — now appears in More dropdown as 'Document Library'. (2) Favicon link in index.html updated wi",
-      "when": "44 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "a5a9849",
       "subject": "Remove web-push dependency: push-subscribe.js simplified (no web-push import). push-send.js rewritten with native crypto — VAPID JWT signing using Node.js crypto.sign + EC key derivation. Both endpoin",
-      "when": "62 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "3066ca5",
       "subject": "VAPID keys from Supabase: push-subscribe.js and push-send.js now read VAPID keys from platform_config table instead of env vars. Lazy-loaded with ensureVapid() — tries env vars first, falls back to Su",
-      "when": "68 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "7e75dc5",
@@ -49,7 +54,7 @@
     {
       "hash": "eab5d16",
       "subject": "Kiko user awareness + documents library foundation: (1) NEW TOOL get_platform_users — queries kiko_user_config + user_tokens. Super admin sees full details (email, connected services, role). Regular u",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "37fd693",
@@ -64,17 +69,17 @@
     {
       "hash": "8d02ebf",
       "subject": "Voice loop fix + mobile cleanup (CUvpW8Bp): (1) VOICE LOOP — mic disabled during speech + input_audio_buffer.clear sent twice (immediately and after 800ms delay) after each response to flush echoed au",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "9f8d620",
       "subject": "5 fixes (DoD6akVZ): (1) VOICE LOOP — mic track disabled while Kiko speaks, re-enabled 400ms after speech ends. (2) GOODBYE KIKO — close_voice tool added to session, model calls it when user says goodb",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "9e0d676",
       "subject": "Fix voice feedback loop: (1) VAD threshold 0.6→0.8, silence duration 500→800ms — prevents Kiko from triggering on her own speaker output. (2) Added echoCancellation, noiseSuppression, autoGainControl ",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "c1925b2",
@@ -94,11 +99,6 @@
     {
       "hash": "3bbbf4c",
       "subject": "CRITICAL FIX: Cache headers were only on / and /index.html — SPA routes like /kiko and /login had NO no-cache headers, so Safari cached old HTML forever. Now ALL routes get no-cache except /assets/ wh",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "386e2d2",
-      "subject": "Build E (D-YW5atp): (1) VOICE — restored createPortal for mobile (inline render was clipped by overflow:hidden parent). Gradient bg so it can never look blank. (2) GREETING 48px. (3) Build E diagnosti",
       "when": "5 hours ago"
     }
   ]
