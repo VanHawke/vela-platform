@@ -322,6 +322,16 @@ export const TOOL_DEFINITIONS = [
   },
 ];
 
+// Conditional tool — only injected when intent is master_brief
+export const DIGEST_BRIEF_TOOL = {
+  name: 'digest_master_brief',
+  description: 'Digest a master brief or operating instructions. Extracts rules, preferences, priorities, and rewrites the user personal bible. Use when user says "digest this as my brief" or "learn from this".',
+  input_schema: { type: 'object', properties: {
+    document_text: { type: 'string', description: 'Full text of the brief to digest.' },
+    mode: { type: 'string', enum: ['replace', 'merge'], description: 'replace = overwrite bible. merge (default) = add/update sections.' },
+  }, required: ['document_text'] },
+};
+
 // ── Tool Executor — Routes to agents ──
 function agentError(agentName, err) {
   console.error(`[KIKO] ${agentName} FAILED:`, err.message);
@@ -416,6 +426,65 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       });
       return `Preference saved: "${preference}" [${category}, ${confidence || 'high'}]. This will be applied in all future conversations.`;
     } catch (e) { return agentError('PreferenceUpdate', e); }
+  }
+
+  // ── Digest Master Brief — rewire Kiko from a document ──
+  if (name === 'digest_master_brief') {
+    try {
+      const { document_text, mode } = input;
+      if (!document_text || document_text.length < 50) return 'Document text too short. Please provide the full brief.';
+      const { default: Anthropic } = await import('@anthropic-ai/sdk');
+      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
+      const extraction = await client.messages.create({
+        model: 'claude-sonnet-4-20250514', max_tokens: 4000,
+        messages: [{ role: 'user', content: `Extract operating instructions from this master brief for an AI Chief of Staff. Return raw JSON only (no markdown):
+{
+  "user_bible": "Comprehensive personal context: name, role, company, responsibilities, priorities, communication style, decision-making, key relationships, industry focus. Use § headers. Max 3000 words.",
+  "preferences": [{"category": "communication_style|process|priority|language|formatting|behaviour", "content": "specific rule", "confidence": "high|medium"}],
+  "learned_rules": [{"category": "communication|process|strategy|outreach|financial|legal|general", "rule_text": "specific operational rule"}],
+  "specialist_roles": ["C-suite roles to assume on demand"],
+  "key_objectives": ["top strategic objectives"],
+  "restricted_topics": ["data NEVER shared with other users"]
+}
+
+Document:\n${document_text.slice(0, 25000)}` }],
+      });
+      let parsed;
+      try { parsed = JSON.parse((extraction.content[0]?.text || '{}').replace(/```json|```/g, '').trim()); } catch { return 'Failed to parse brief. Please try again.'; }
+      const results = { bible: false, preferences: 0, rules: 0 };
+      if (parsed.user_bible) {
+        const bible = `§15 USER CONTEXT — PRIVATE OPERATING BRIEF\n${parsed.user_bible}` +
+          (parsed.key_objectives?.length ? `\n\n§16 KEY OBJECTIVES\n${parsed.key_objectives.map((o, i) => `${i + 1}. ${o}`).join('\n')}` : '') +
+          (parsed.specialist_roles?.length ? `\n\n§17 SPECIALIST ROLES\nKiko operates as: ${parsed.specialist_roles.join(', ')}.` : '') +
+          (parsed.restricted_topics?.length ? `\n\n§18 RESTRICTED DATA\nNEVER share with other users: ${parsed.restricted_topics.join(', ')}` : '');
+        if (mode === 'replace') {
+          await sbFetch(`user_bibles?user_id=eq.${userId}`, { method: 'PATCH', body: JSON.stringify({ content: bible, updated_at: new Date().toISOString() }) });
+        } else {
+          const existing = await sbFetch(`user_bibles?user_id=eq.${userId}&select=content&limit=1`);
+          let merged = Array.isArray(existing) && existing[0]?.content ? existing[0].content : '';
+          for (const section of bible.split(/(?=§\d+)/)) {
+            const num = section.match(/§(\d+)/)?.[1];
+            if (num) { const re = new RegExp(`§${num}[^§]*`, 's'); merged = merged.match(re) ? merged.replace(re, section) : merged + '\n\n' + section; }
+          }
+          await sbFetch(`user_bibles?user_id=eq.${userId}`, { method: 'PATCH', body: JSON.stringify({ content: merged.trim(), updated_at: new Date().toISOString() }) });
+        }
+        results.bible = true;
+      }
+      if (Array.isArray(parsed.preferences)) {
+        for (const p of parsed.preferences.slice(0, 20)) {
+          await sbFetch('kiko_preferences', { method: 'POST', body: JSON.stringify({ category: p.category || 'behaviour', preference: p.content, confidence: p.confidence || 'high', updated_at: new Date().toISOString() }) });
+          results.preferences++;
+        }
+      }
+      if (Array.isArray(parsed.learned_rules)) {
+        for (const r of parsed.learned_rules.slice(0, 15)) {
+          await sbFetch('kiko_learned_rules', { method: 'POST', body: JSON.stringify({ category: r.category || 'general', rule_text: r.rule_text, active: true, evidence_count: 5, weight: 1.5, source: 'master_brief' }) });
+          results.rules++;
+        }
+      }
+      await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({ user_id: userId, category: 'master_brief_digest', content: `Digested brief (${document_text.length} chars, mode: ${mode || 'merge'}). Bible=${results.bible}, prefs=${results.preferences}, rules=${results.rules}`, entity_name: userEmail }) });
+      return `Master brief digested.\n- Personal bible: ${results.bible ? 'Updated' : 'No changes'}\n- Preferences: ${results.preferences} saved\n- Rules: ${results.rules} activated\n${parsed.specialist_roles?.length ? `- Roles: ${parsed.specialist_roles.join(', ')}\n` : ''}${parsed.restricted_topics?.length ? `- ${parsed.restricted_topics.length} restricted topics marked private\n` : ''}All changes private to you.`;
+    } catch (e) { return agentError('DigestBrief', e); }
   }
 
   // ── Navigator Agent ──

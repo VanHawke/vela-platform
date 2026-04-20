@@ -2,7 +2,7 @@
 // Step 1: Haiku classifies intent (~100ms)
 // Step 2: Deterministic navigation OR agent dispatch OR full tool loop
 import Anthropic from '@anthropic-ai/sdk';
-import { TOOL_DEFINITIONS, executeTool, fetchEntityContext, sbFetch, logError } from './kiko-tools.js';
+import { TOOL_DEFINITIONS, DIGEST_BRIEF_TOOL, executeTool, fetchEntityContext, sbFetch, logError } from './kiko-tools.js';
 import { classifyIntent, INTENT_TO_AGENT } from './agents/intent-classifier.js';
 import { generateSelfKnowledge } from './kiko-self-knowledge.js';
 import { describeScreen } from './agents/screen-reader.js';
@@ -977,6 +977,9 @@ export default async function handler(req, res) {
     }
     const { intent, target } = classification;
 
+    // Inject digest tool only for master_brief intent (kept out of default tools to avoid bloat)
+    if (intent === 'master_brief') allTools.push(DIGEST_BRIEF_TOOL);
+
     // Audit: log every query
     auditLog('query', { userId, userEmail, intent, detail: (message || '').slice(0, 200) });
 
@@ -1239,6 +1242,8 @@ DEAL STAGE MAPPING:
       routingHint = '\n\n[ROUTING HINT: This references a PAST CONVERSATION. Use the search_conversations tool with relevant keywords. Search for entity names, topics, or specific phrases the user mentions. Return the most relevant excerpts with dates.]';
     } else if (intent === 'document_query') {
       routingHint = '\n\n[ROUTING HINT: This is a DOCUMENT query. Use ask_data_agent with operation "search_documents". Params: query (search term), team (team name), sport (sport name), category (team_deck/contract/marketing/legal/financial/agency_agreement). The Document Library page is at /documents — you can suggest users navigate there to browse visually. For super_admin users, show all documents including restricted ones. For regular users, only show documents with access_level != super_admin_only.]';
+    } else if (intent === 'master_brief') {
+      routingHint = '\n\n[ROUTING HINT: The user wants you to digest a master brief or operating instructions. Use the digest_master_brief tool. If the user attached a file, extract the full text from it first using the file content in context. Pass the COMPLETE text to document_text. Use mode "merge" unless the user explicitly says to replace/overwrite everything.]';
     } else if (intent === 'code_review') {
       routingHint = '\n\n[ROUTING HINT: This is a SELF-ANALYSIS query. Use the ask_code_review tool. Operations: architecture (full codebase structure), review (review specific file — pass filename like "kiko.js" or "agents/deal.js"), performance (agent usage stats, error rates, cron health), suggest (AI-generated top 5 improvements), read (read raw source file). Default to "suggest" if the user just asks generally about improvements.]';
     } else if (intent === 'general') {
