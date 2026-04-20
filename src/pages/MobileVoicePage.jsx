@@ -105,21 +105,28 @@ export default function MobileVoicePage() {
         dc.onmessage = (evt) => {
           try {
             const msg = JSON.parse(evt.data)
-            // VOICE LOOP FIX: Disable turn detection entirely while Kiko speaks
+            // VOICE LOOP FIX: Disable server-side VAD while Kiko speaks
             if (msg.type === 'response.audio.delta' && !speaking) {
               setSpeaking(true)
+              // Mute mic AND disable server-side turn detection
               if (micTrackRef.current) micTrackRef.current.enabled = false
-              // Disable server-side VAD to prevent echo triggering
-              try { dc.send(JSON.stringify({ type: 'input_audio_buffer.clear' })) } catch(e) {}
+              try {
+                dc.send(JSON.stringify({ type: 'input_audio_buffer.clear' }))
+                dc.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: null } } } }))
+              } catch(e) {}
             }
             if (msg.type === 'response.done') {
               setSpeaking(false)
-              // Clear any buffered echo, wait for speaker to finish, then re-enable
+              // Clear buffer, wait for speaker to finish, then re-enable everything
               try { dc.send(JSON.stringify({ type: 'input_audio_buffer.clear' })) } catch(e) {}
               setTimeout(() => {
-                try { dc.send(JSON.stringify({ type: 'input_audio_buffer.clear' })) } catch(e) {}
+                try {
+                  dc.send(JSON.stringify({ type: 'input_audio_buffer.clear' }))
+                  // Re-enable server-side VAD
+                  dc.send(JSON.stringify({ type: 'session.update', session: { audio: { input: { turn_detection: { type: 'server_vad', threshold: 0.8, prefix_padding_ms: 300, silence_duration_ms: 1000 } } } } }))
+                } catch(e) {}
                 if (micTrackRef.current) micTrackRef.current.enabled = true
-              }, 1200)
+              }, 1500)
             }
             if (msg.type === 'input_audio_buffer.speech_started') { setSpeaking(false); setStatus('listening') }
             if (msg.type === 'input_audio_buffer.speech_stopped') setStatus('thinking')

@@ -287,7 +287,8 @@
 }
 
 /* ══════ Portrait lock — force portrait on mobile ══════ */
-@media (max-width: 768px) and (orientation: landscape) {
+@media (max-height: 500px) and (orientation: landscape),
+       (max-width: 932px) and (orientation: landscape) {
   #root > * {
     display: none !important;
   }

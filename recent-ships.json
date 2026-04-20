@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-20T12:52:39.858Z",
+  "generated_at": "2026-04-20T13:08:32.038Z",
   "commits": [
+    {
+      "hash": "378b344",
+      "subject": "Voice loop + PWA fixes (D8RwEojo): (1) VOICE LOOP — mic disabled on first audio delta only (not every chunk), buffer cleared immediately + 1200ms delay before mic re-enable. Speaking guard prevents re",
+      "when": "16 minutes ago"
+    },
     {
       "hash": "8d02ebf",
       "subject": "Voice loop fix + mobile cleanup (CUvpW8Bp): (1) VOICE LOOP — mic disabled during speech + input_audio_buffer.clear sent twice (immediately and after 800ms delay) after each response to flush echoed au",
-      "when": "13 minutes ago"
+      "when": "29 minutes ago"
     },
     {
       "hash": "9f8d620",
       "subject": "5 fixes (DoD6akVZ): (1) VOICE LOOP — mic track disabled while Kiko speaks, re-enabled 400ms after speech ends. (2) GOODBYE KIKO — close_voice tool added to session, model calls it when user says goodb",
-      "when": "22 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "9e0d676",
       "subject": "Fix voice feedback loop: (1) VAD threshold 0.6→0.8, silence duration 500→800ms — prevents Kiko from triggering on her own speaker output. (2) Added echoCancellation, noiseSuppression, autoGainControl ",
-      "when": "32 minutes ago"
+      "when": "48 minutes ago"
     },
     {
       "hash": "c1925b2",
       "subject": "Fix voice SDP 400: Wrong API URL (/v1/realtime?model= → /v1/realtime/calls). Session update format updated to match working KikoVoice (nested audio.input/output structure, tools array).",
-      "when": "37 minutes ago"
+      "when": "53 minutes ago"
     },
     {
       "hash": "a340519",
       "subject": "Standalone voice page: Mobile voice now navigates to /voice (standalone route, no portal/overlay). MobileVoicePage.jsx handles WebRTC connection, mic permission, and full UI independently. Completely ",
-      "when": "44 minutes ago"
+      "when": "60 minutes ago"
     },
     {
       "hash": "a54a0d2",
       "subject": "Voice portal + nav fix (CohrQoVQ): (1) Voice uses dedicated portal root div appended to body (not direct portal to body). Background #E8E6E1 (visible grey). Content uses absolute positioning inside fi",
-      "when": "60 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "3bbbf4c",
       "subject": "CRITICAL FIX: Cache headers were only on / and /index.html — SPA routes like /kiko and /login had NO no-cache headers, so Safari cached old HTML forever. Now ALL routes get no-cache except /assets/ wh",
-      "when": "78 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "386e2d2",
@@ -49,7 +54,7 @@
     {
       "hash": "f2ec557",
       "subject": "5 fixes verified in build r5SHM7ZE: (1) VOICE — mic now requested in user gesture context (startVoice gets mic BEFORE mounting KikoVoice), stream passed as micStream prop. Error state visible on scree",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "bd272a9",
@@ -69,12 +74,12 @@
     {
       "hash": "39d7864",
       "subject": "Fix chat history click + voice + command centre stability + greeting size: (1) Chat history click — was calling loadConversation(c) which expects messages field, but query only fetched id/title/update",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "ed1ee71",
       "subject": "Fix 4 data/voice issues: (1) Chat history — was querying empty kiko_conversations table, now queries conversations table where data actually lives. (2) Command centre alerts — removed type filter that",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "0950955",
@@ -89,16 +94,11 @@
     {
       "hash": "2b7ca0d",
       "subject": "Add visible version stamp v19.04-B below mobile prompt bar — diagnostic to confirm which code version is running on user's phone",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "2932e6e",
       "subject": "Mobile size enlargement — all elements scaled up for better mobile readability: (1) Kiko logo 24→28px. (2) Header buttons 34→40px, icons 15→18px. (3) Greeting h1 28→32px, subtitle 13→15px. (4) Prompt ",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "8740bbc",
-      "subject": "Test page: pixel-accurate 4-screen mobile reference (Home/Chat/Voice/Command) with tab switching. User can compare directly with React app on their phone at /test-mobile.html.",
       "when": "17 hours ago"
     }
   ]
