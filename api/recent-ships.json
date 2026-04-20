@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-04-20T21:11:14.070Z",
+  "generated_at": "2026-04-20T21:16:59.900Z",
   "commits": [
+    {
+      "hash": "38c9c18",
+      "subject": "Complete knowledge refresh: (1) KIKO_BIBLE.md rewritten — all 12 pages, 35 tools, self-improvement engine, document management, push notifications, multi-user isolation, 46 crons. (2) kiko-self-knowle",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "286edac",
       "subject": "Re-add digest_master_brief + master_brief intent (properly this time): DIGEST_BRIEF_TOOL exported separately from kiko-tools.js, imported in kiko.js, injected ONLY after intent is classified as master",
-      "when": "14 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "4602a37",
       "subject": "ROOT CAUSE FIX: kiko_preferences column is 'preference' not 'content'. Query selected wrong column → Supabase returned error object → .filter() crashed on object instead of array → FUNCTION_INVOCATION",
-      "when": "28 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "b5c3d14",
       "subject": "Add kiko-debug diagnostic endpoint to find actual crash cause",
-      "when": "54 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "b5d4b5b",
       "subject": "Force deploy with reverted server files",
-      "when": "66 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "f7cc8fb",
       "subject": "REVERT TO WORKING STATE: Reverted kiko.js, kiko-tools.js, intent-classifier.js, data.js to commit 23bc6a1 (last confirmed working state). digest_master_brief and related changes removed entirely. Will",
-      "when": "71 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "ab6d981",
       "subject": "Force new hash to deploy intent TDZ fix",
-      "when": "79 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "2c54e11",
       "subject": "Force deploy: fix intent TDZ error blocking all Kiko responses",
-      "when": "80 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "ec825be",
       "subject": "CRITICAL FIX: intent variable used before declaration (TDZ error). Moved digest_master_brief injection AFTER intent classification. allTools.push() instead of ternary at declaration.",
-      "when": "87 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "320fb5c",
@@ -59,7 +64,7 @@
     {
       "hash": "5b0a2ab",
       "subject": "Document metadata fix + access levels: (1) Fixed Alpine F1 and Ferrari documents — populated title, sport (Formula 1), team_name, category (team_deck), access_level (super_admin_only). (2) Updated acc",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "8f356d6",
@@ -79,7 +84,7 @@
     {
       "hash": "f0bc10c",
       "subject": "Three fixes + Document Library rebuild: (1) ALL CHATS FIX — AllChatsView now uses position:absolute overlay to fill container properly (was getting zero height from flex:1 inside overflow:hidden paren",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "f8720da",
@@ -94,11 +99,6 @@
     {
       "hash": "98be0fd",
       "subject": "FIX VERCEL BUILD: Removed import crypto from push-send.js — this was causing ALL deploys to fail since commit 59c2e76. Simplified push-send to queue notifications without crypto dependency. Favicon ba",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "c0d3c91",
-      "subject": "Favicon embedded as base64 data URI in HTML — bypasses all file serving, caching, and rewrite issues. No external file needed.",
       "when": "5 hours ago"
     }
   ]
