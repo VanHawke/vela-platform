@@ -123,7 +123,7 @@ async function logDecision(toolName, toolInput, toolResult, userMessage, userId)
 }
 
 // Phase 18: Output tracking — measure agent quality over time
-async function trackOutput(toolName, intent, userMessage, result, userId) {
+async function trackOutput(toolName, intent, userMessage, result, userId, extra = {}) {
   try {
     const agent = toolName ? toolName.replace('ask_', '').replace('_agent', '') : 'general';
     const resultStr = typeof result === 'string' ? result : JSON.stringify(result);
@@ -134,6 +134,9 @@ async function trackOutput(toolName, intent, userMessage, result, userId) {
         agent, intent: intent || 'unknown',
         user_message: (userMessage || '').slice(0, 150),
         output_preview: resultStr.slice(0, 300),
+        tools_used: extra.toolsUsed || [],
+        response_time_ms: extra.responseTimeMs || null,
+        confidence_score: extra.confidenceScore || null,
       })
     });
   } catch {} // Non-blocking
@@ -793,7 +796,7 @@ export default async function handler(req, res) {
     orgId ? sbFetch(`org_bibles?organization_id=eq.${orgId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
     isRegistered ? sbFetch(`user_bibles?user_id=eq.${userId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
     earlyGreeting ? Promise.resolve([]) : sbFetch('kiko_knowledge?select=domain,content,researched_at&order=researched_at.desc&limit=10').catch(() => []),
-    earlyGreeting ? Promise.resolve([]) : sbFetch(`kiko_learned_rules?active=eq.true&select=id,rule_text,category,evidence_count&order=evidence_count.desc&limit=20`).catch(() => []),
+    earlyGreeting ? Promise.resolve([]) : sbFetch(`kiko_learned_rules?active=eq.true&select=id,rule_text,category,evidence_count,weight&order=weight.desc&limit=20`).catch(() => []),
     earlyGreeting ? Promise.resolve([]) : sbFetch(`kiko_preferences?select=category,content,confidence&order=confidence.desc&limit=15`).catch(() => []),
   ]);
 
@@ -814,7 +817,7 @@ export default async function handler(req, res) {
   let learnedRulesBlock = '';
   if (activeRules.length > 0) {
     learnedRulesBlock = '\n\n═══ LEARNED RULES (self-promoted from patterns — APPLY THESE) ═══\n' +
-      activeRules.map(r => `• [${r.category}] ${r.rule_text}`).join('\n');
+      activeRules.map(r => `• [${r.category}|w:${r.weight || 1.0}] ${r.rule_text}`).join('\n');
     // Increment applied_count for loaded rules (fire and forget)
     const ruleIds = activeRules.map(r => r.id);
     sbFetch(`kiko_learned_rules?id=in.(${ruleIds.join(',')})`, {

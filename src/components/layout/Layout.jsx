@@ -59,6 +59,7 @@ const ALL_NAV = [
   { id: 'sequences', label: 'Campaigns', path: '/campaigns', Icon: Zap },
   // LinkedIn page removed — functionality in campaign prospect detail panel
   { id: 'knowledge', label: 'Knowledge', path: '/knowledge', Icon: Brain },
+  { id: 'documents', label: 'Document Library', path: '/documents', Icon: Layers },
 ]
 // Super-admin-only nav items appended to ALL_NAV at runtime if user role is super_admin.
 // Health Center surfaces system_health alerts (replaces the old health-warning emails).
@@ -124,6 +125,15 @@ export default function Layout({ user }) {
       window.history.replaceState({}, '', window.location.pathname)
     }
   }, [])
+
+  // Register push notifications on mobile
+  useEffect(() => {
+    if (isMobile && user?.id && user?.email) {
+      import('@/lib/pushNotifications').then(({ registerPush }) => {
+        registerPush(user.id, user.email)
+      }).catch(() => {})
+    }
+  }, [isMobile, user?.id, user?.email])
 
   // Listen for Settings nav changes
   useEffect(() => {

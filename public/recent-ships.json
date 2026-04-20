@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-20T13:53:50.615Z",
+  "generated_at": "2026-04-20T14:16:19.197Z",
   "commits": [
+    {
+      "hash": "44fb110",
+      "subject": "Kiko self-improvement engine activated: (1) LEARNED RULES now loaded into system prompt — 12 active rules from kiko_learned_rules injected per conversation, applied_count incremented. (2) PREFERENCES ",
+      "when": "22 minutes ago"
+    },
     {
       "hash": "ca0f194",
       "subject": "Fix favicon: SVG was corrupted (6 bytes). Rewrote via printf to create valid 357-byte SVG with 5-dot design matching mobile app icon.",
-      "when": "7 minutes ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "eab5d16",
       "subject": "Kiko user awareness + documents library foundation: (1) NEW TOOL get_platform_users — queries kiko_user_config + user_tokens. Super admin sees full details (email, connected services, role). Regular u",
-      "when": "24 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "37fd693",
       "subject": "Voice loop + favicon + portrait: (1) VOICE — server-side VAD disabled via session.update(turn_detection:null) while speaking, re-enabled 1500ms after response.done with buffer clear. (2) FAVICON — 5-d",
-      "when": "45 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "378b344",
       "subject": "Voice loop + PWA fixes (D8RwEojo): (1) VOICE LOOP — mic disabled on first audio delta only (not every chunk), buffer cleared immediately + 1200ms delay before mic re-enable. Speaking guard prevents re",
-      "when": "61 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "8d02ebf",
       "subject": "Voice loop fix + mobile cleanup (CUvpW8Bp): (1) VOICE LOOP — mic disabled during speech + input_audio_buffer.clear sent twice (immediately and after 800ms delay) after each response to flush echoed au",
-      "when": "75 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "9f8d620",
       "subject": "5 fixes (DoD6akVZ): (1) VOICE LOOP — mic track disabled while Kiko speaks, re-enabled 400ms after speech ends. (2) GOODBYE KIKO — close_voice tool added to session, model calls it when user says goodb",
-      "when": "83 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "9e0d676",
@@ -54,7 +59,7 @@
     {
       "hash": "3bbbf4c",
       "subject": "CRITICAL FIX: Cache headers were only on / and /index.html — SPA routes like /kiko and /login had NO no-cache headers, so Safari cached old HTML forever. Now ALL routes get no-cache except /assets/ wh",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "386e2d2",
@@ -69,7 +74,7 @@
     {
       "hash": "f2ec557",
       "subject": "5 fixes verified in build r5SHM7ZE: (1) VOICE — mic now requested in user gesture context (startVoice gets mic BEFORE mounting KikoVoice), stream passed as micStream prop. Error state visible on scree",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "bd272a9",
@@ -84,21 +89,16 @@
     {
       "hash": "ede2c8e",
       "subject": "Voice UI visibility fix: Mobile voice overlay status text changed from rgba(0,0,0,0.4) to #0A0A0A for high contrast. Status dot enlarged to 8px with glow. All states have visible labels including fall",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "39d7864",
       "subject": "Fix chat history click + voice + command centre stability + greeting size: (1) Chat history click — was calling loadConversation(c) which expects messages field, but query only fetched id/title/update",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "ed1ee71",
       "subject": "Fix 4 data/voice issues: (1) Chat history — was querying empty kiko_conversations table, now queries conversations table where data actually lives. (2) Command centre alerts — removed type filter that",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "0950955",
-      "subject": "Mobile fixes v19.04-D: (1) Homepage centering — removed top spacer on mobile, equal padding 0/24px, greeting always visible (no voice-fade on mobile). (2) Inline voice controls hidden on mobile — Kiko",
       "when": "17 hours ago"
     }
   ]

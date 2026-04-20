@@ -27,6 +27,7 @@ const KnowledgeBrowser = lazy(() => import('@/pages/KnowledgeBrowser'))
 
 const SequenceDetail = lazy(() => import('@/pages/SequenceDetail'))
 const MobileVoicePage = lazy(() => import('@/pages/MobileVoicePage'))
+const DocumentLibrary = lazy(() => import('@/pages/DocumentLibrary'))
 
 const INACTIVITY_MS   = 20 * 60 * 1000
 const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click']
@@ -149,6 +150,7 @@ export default function App() {
           <Route path="sequences/:id" element={<SequenceDetail user={user} />} />
           {/* LinkedIn page removed — handled by campaign prospect detail panel */}
           <Route path="knowledge" element={<KnowledgeBrowser />} />
+          <Route path="documents" element={<DocumentLibrary />} />
           <Route path="inbox" element={<Navigate to="/command-centre" replace />} />
           <Route path="segments" element={<Navigate to="/campaigns" replace />} />
           <Route path="packs" element={<Navigate to="/settings" replace />} />
