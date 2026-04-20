@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-20T12:07:56.305Z",
+  "generated_at": "2026-04-20T12:15:35.489Z",
   "commits": [
+    {
+      "hash": "a340519",
+      "subject": "Standalone voice page: Mobile voice now navigates to /voice (standalone route, no portal/overlay). MobileVoicePage.jsx handles WebRTC connection, mic permission, and full UI independently. Completely ",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "a54a0d2",
       "subject": "Voice portal + nav fix (CohrQoVQ): (1) Voice uses dedicated portal root div appended to body (not direct portal to body). Background #E8E6E1 (visible grey). Content uses absolute positioning inside fi",
-      "when": "15 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "3bbbf4c",
       "subject": "CRITICAL FIX: Cache headers were only on / and /index.html — SPA routes like /kiko and /login had NO no-cache headers, so Safari cached old HTML forever. Now ALL routes get no-cache except /assets/ wh",
-      "when": "33 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "386e2d2",
       "subject": "Build E (D-YW5atp): (1) VOICE — restored createPortal for mobile (inline render was clipped by overflow:hidden parent). Gradient bg so it can never look blank. (2) GREETING 48px. (3) Build E diagnosti",
-      "when": "67 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "b89fdcd",
       "subject": "3 critical fixes (build R-eYInFY): (1) VOICE — rewritten mobile render: no createPortal, renders inline with z-index 99999 and explicit width/height 100%. flex:1 1 auto instead of flex:1. Color fallba",
-      "when": "79 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "f2ec557",
@@ -39,7 +44,7 @@
     {
       "hash": "ede2c8e",
       "subject": "Voice UI visibility fix: Mobile voice overlay status text changed from rgba(0,0,0,0.4) to #0A0A0A for high contrast. Status dot enlarged to 8px with glow. All states have visible labels including fall",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "39d7864",
@@ -95,11 +100,6 @@
       "hash": "0590f7b",
       "subject": "Fix 5 mobile/voice issues: (1) Mobile mic button — was calling non-existent activateVoice/deactivateVoice, now calls startVoice/stopVoice. (2) KikoVoice avatar — removed waveform edge mask, centred av",
       "when": "18 hours ago"
-    },
-    {
-      "hash": "cddeec5",
-      "subject": "Lock favicon — remove custom upload: (1) Settings.jsx — removed Browser Favicon ImageUpload section. Favicon is now system-locked to the 5-dot identity mark. (2) index.html — replaced dynamic favicon ",
-      "when": "19 hours ago"
     }
   ]
 }

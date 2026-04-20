@@ -86,10 +86,19 @@ export default function MobileVoicePage() {
           dc.send(JSON.stringify({
             type: 'session.update',
             session: {
+              type: 'realtime',
+              audio: {
+                input: {
+                  turn_detection: { type: 'server_vad', threshold: 0.6, prefix_padding_ms: 300, silence_duration_ms: 500 },
+                  transcription: { model: 'whisper-1' },
+                },
+                output: { voice },
+              },
               instructions: sessionInstructions,
-              voice,
-              input_audio_transcription: { model: 'whisper-1' },
-              turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
+              tools: [
+                { type: 'function', name: 'ask_kiko', description: 'MANDATORY for every user query. Access Kiko intelligence: pipeline, deals, contacts, tasks, memory, news, web search, strategy.', parameters: { type: 'object', properties: { query: { type: 'string', description: 'The full question or request' } }, required: ['query'] } },
+              ],
+              tool_choice: 'auto',
             }
           }))
         }
@@ -106,7 +115,7 @@ export default function MobileVoicePage() {
         const offer = await pc.createOffer()
         await pc.setLocalDescription(offer)
 
-        const sdpRes = await fetch('https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17', {
+        const sdpRes = await fetch('https://api.openai.com/v1/realtime/calls', {
           method: 'POST',
           headers: { Authorization: `Bearer ${ephemeralKey}`, 'Content-Type': 'application/sdp' },
           body: offer.sdp,
