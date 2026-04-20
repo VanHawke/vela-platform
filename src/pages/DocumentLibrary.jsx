@@ -3,22 +3,22 @@ import { useState, useEffect, useCallback } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import T from '@/lib/theme'
-import { Plus, Search, X, Download, Trash2 } from 'lucide-react'
+import { ChevronRight, Download, X, Lock, Users } from 'lucide-react'
 
 const CATEGORY_LABELS = {
   team_deck: 'Team Deck', contract: 'Contract', marketing: 'Marketing',
-  legal: 'Legal', financial: 'Financial', agency_agreement: 'Agency', general: 'General',
+  legal: 'Legal', financial: 'Financial', agency_agreement: 'Agency Agreement', general: 'General',
 }
 
 function formatSize(b) {
-  if (!b) return ''
+  if (!b) return '—'
   if (b < 1024) return b + ' B'
   if (b < 1048576) return (b / 1024).toFixed(0) + ' KB'
   return (b / 1048576).toFixed(1) + ' MB'
 }
 
 function formatDate(d) {
-  if (!d) return ''
+  if (!d) return '—'
   return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
 
@@ -27,11 +27,15 @@ export default function DocumentLibrary() {
   const [docs, setDocs] = useState([])
   const [loading, setLoading] = useState(true)
   const [userRole, setUserRole] = useState('user')
-  const [selectedFolder, setSelectedFolder] = useState(null)
+  const [selectedSport, setSelectedSport] = useState(null)
+  const [selectedTeam, setSelectedTeam] = useState(null)
+  const [selectedType, setSelectedType] = useState(null)
   const [selectedDoc, setSelectedDoc] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [expandedSports, setExpandedSports] = useState({})
 
   const C = T
+  const isSuperAdmin = userRole === 'super_admin'
 
   useEffect(() => {
     async function load() {
@@ -48,89 +52,134 @@ export default function DocumentLibrary() {
     load()
   }, [])
 
-  // Build folder tree
-  const buildTree = useCallback(() => {
-    const bySport = {}, byType = {}
-    const filtered = docs.filter(d => {
-      if (userRole !== 'super_admin' && d.access_level === 'super_admin_only') return false
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase()
-        return [d.title, d.name, d.file_name, d.team_name, d.sport, d.summary].some(f => (f || '').toLowerCase().includes(q))
+  // Filter docs by access level
+  const visibleDocs = docs.filter(d => {
+    if (!isSuperAdmin && d.access_level === 'super_admin_only') return false
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase()
+      return [d.title, d.name, d.file_name, d.team_name, d.sport, d.summary, d.category].some(f => (f || '').toLowerCase().includes(q))
+    }
+    return true
+  })
+
+  // Build hierarchical tree: Sport → Team → Docs
+  const sportTree = {}
+  const typeTree = {}
+  visibleDocs.forEach(doc => {
+    const sport = doc.sport || null
+    const team = doc.team_name || null
+    const cat = doc.category || 'general'
+    if (sport) {
+      if (!sportTree[sport]) sportTree[sport] = { teams: {}, docs: [] }
+      if (team) {
+        if (!sportTree[sport].teams[team]) sportTree[sport].teams[team] = []
+        sportTree[sport].teams[team].push(doc)
+      } else {
+        sportTree[sport].docs.push(doc)
       }
-      return true
-    })
-    filtered.forEach(doc => {
-      const sport = doc.sport || 'General'
-      const cat = doc.category || 'general'
-      if (!bySport[sport]) bySport[sport] = []
-      bySport[sport].push(doc)
-      if (!byType[cat]) byType[cat] = []
-      byType[cat].push(doc)
-    })
-    return { bySport, byType, total: filtered.length }
-  }, [docs, userRole, searchQuery])
+    }
+    if (!typeTree[cat]) typeTree[cat] = []
+    typeTree[cat].push(doc)
+  })
 
-  const { bySport, byType, total } = buildTree()
-  const currentDocs = selectedFolder
-    ? (selectedFolder.startsWith('sport:')
-      ? bySport[selectedFolder.replace('sport:', '')] || []
-      : byType[selectedFolder.replace('type:', '')] || [])
-    : docs.filter(d => userRole === 'super_admin' || d.access_level !== 'super_admin_only')
+  // Current docs based on selection
+  const getCurrentDocs = () => {
+    if (searchQuery) return visibleDocs
+    if (selectedTeam && selectedSport) return sportTree[selectedSport]?.teams[selectedTeam] || []
+    if (selectedSport) {
+      const s = sportTree[selectedSport]
+      if (!s) return []
+      return [...s.docs, ...Object.values(s.teams).flat()]
+    }
+    if (selectedType) return typeTree[selectedType] || []
+    return visibleDocs
+  }
+  const currentDocs = getCurrentDocs()
 
-  const folderLabel = selectedFolder
-    ? selectedFolder.replace('sport:', '').replace('type:', '')
-    : 'All documents'
+  const currentLabel = selectedTeam || selectedSport || (selectedType ? (CATEGORY_LABELS[selectedType] || selectedType) : 'All documents')
+
+  const toggleSportExpand = (sport) => {
+    setExpandedSports(prev => ({ ...prev, [sport]: !prev[sport] }))
+  }
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 56px)', fontFamily: C.font, color: C.textTertiary }}>Loading...</div>
   )
 
-  // Styles matching Campaigns page exactly
   const cell = { padding: '12px 14px', fontSize: 12, color: C.text, borderBottom: `0.5px solid ${C.border}`, verticalAlign: 'middle' }
   const headerCell = { ...cell, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: C.textTertiary, fontWeight: 500, background: '#F5F4F1', position: 'sticky', top: 0, zIndex: 1, textAlign: 'left' }
 
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 56px)', fontFamily: C.font, color: C.text, background: C.bg }}>
 
-      {/* ─── LEFT RAIL: Folder tree ─── */}
-      {(!isMobile || !selectedFolder) && (
+      {/* ─── LEFT RAIL ─── */}
+      {(!isMobile || (!selectedSport && !selectedType)) && (
         <aside style={{ width: isMobile ? '100%' : 280, flexShrink: 0, borderRight: isMobile ? 'none' : `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div style={{ padding: '18px 18px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div style={{ fontSize: 14, fontWeight: 500, color: C.text }}>Document Library</div>
-              <div style={{ fontSize: 11, color: C.textTertiary, marginTop: 2 }}>{total} documents</div>
+              <div style={{ fontSize: 11, color: C.textTertiary, marginTop: 2 }}>{visibleDocs.length} document{visibleDocs.length !== 1 ? 's' : ''}</div>
             </div>
           </div>
 
           <div style={{ padding: '0 12px 8px' }}>
-            <input type="text" placeholder="Search documents..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+            <input type="text" placeholder="Search documents..." value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setSelectedSport(null); setSelectedTeam(null); setSelectedType(null) }}
               style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.03)', border: `1px solid ${C.border}`, fontSize: 12, fontFamily: C.font, outline: 'none', color: C.text, boxSizing: 'border-box' }} />
           </div>
 
           <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px 12px' }}>
-            {/* By sport */}
-            <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: C.textTertiary, fontWeight: 500, padding: '12px 12px 6px' }}>By sport</div>
-            {Object.entries(bySport).sort().map(([sport, sportDocs]) => {
-              const key = 'sport:' + sport
-              const isSelected = selectedFolder === key
+            {/* All documents */}
+            <button onClick={() => { setSelectedSport(null); setSelectedTeam(null); setSelectedType(null); setSearchQuery('') }}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '10px 12px', marginBottom: 2, borderRadius: 6, border: 'none', background: !selectedSport && !selectedType ? 'rgba(0,0,0,0.06)' : 'transparent', cursor: 'pointer', fontFamily: C.font, fontSize: 13, color: !selectedSport && !selectedType ? C.text : C.textSecondary, fontWeight: !selectedSport && !selectedType ? 500 : 400 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: !selectedSport && !selectedType ? C.text : C.textTertiary }} />
+              All documents
+              <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textTertiary }}>{visibleDocs.length}</span>
+            </button>
+
+            {/* By sport — expandable with teams */}
+            <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: C.textTertiary, fontWeight: 500, padding: '14px 12px 6px' }}>By sport</div>
+            {Object.entries(sportTree).sort().map(([sport, data]) => {
+              const teamCount = Object.keys(data.teams).length
+              const totalDocs = data.docs.length + Object.values(data.teams).flat().length
+              const isExpanded = expandedSports[sport]
+              const isSelected = selectedSport === sport && !selectedTeam
               return (
-                <button key={key} onClick={() => setSelectedFolder(isSelected ? null : key)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '10px 12px', marginBottom: 2, borderRadius: 6, border: 'none', background: isSelected ? 'rgba(0,0,0,0.06)' : 'transparent', cursor: 'pointer', fontFamily: C.font, fontSize: 13, color: isSelected ? C.text : C.textSecondary, fontWeight: isSelected ? 500 : 400, transition: 'background 0.1s' }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: isSelected ? C.text : C.textTertiary, flexShrink: 0 }} />
-                  {sport}
-                  <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textTertiary }}>{sportDocs.length}</span>
-                </button>
+                <div key={sport}>
+                  <button onClick={() => { 
+                    if (teamCount > 0) toggleSportExpand(sport)
+                    setSelectedSport(sport); setSelectedTeam(null); setSelectedType(null) 
+                  }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '10px 12px', marginBottom: 1, borderRadius: 6, border: 'none', background: isSelected ? 'rgba(0,0,0,0.06)' : 'transparent', cursor: 'pointer', fontFamily: C.font, fontSize: 13, color: isSelected ? C.text : C.textSecondary, fontWeight: isSelected ? 500 : 400 }}>
+                    {teamCount > 0 && (
+                      <ChevronRight size={12} style={{ transform: isExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s', flexShrink: 0, color: C.textTertiary }} />
+                    )}
+                    {teamCount === 0 && <span style={{ width: 6, height: 6, borderRadius: '50%', background: isSelected ? C.text : C.textTertiary, flexShrink: 0 }} />}
+                    {sport}
+                    <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textTertiary }}>{totalDocs}</span>
+                  </button>
+                  {/* Team sub-items */}
+                  {isExpanded && Object.entries(data.teams).sort().map(([team, teamDocs]) => {
+                    const isTeamSelected = selectedSport === sport && selectedTeam === team
+                    return (
+                      <button key={team} onClick={() => { setSelectedSport(sport); setSelectedTeam(team); setSelectedType(null) }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '8px 12px 8px 32px', marginBottom: 1, borderRadius: 6, border: 'none', background: isTeamSelected ? 'rgba(0,0,0,0.06)' : 'transparent', cursor: 'pointer', fontFamily: C.font, fontSize: 12, color: isTeamSelected ? C.text : C.textTertiary, fontWeight: isTeamSelected ? 500 : 400 }}>
+                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: isTeamSelected ? C.text : 'rgba(0,0,0,0.12)', flexShrink: 0 }} />
+                        {team}
+                        <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textTertiary }}>{teamDocs.length}</span>
+                      </button>
+                    )
+                  })}
+                </div>
               )
             })}
 
             {/* By type */}
-            <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: C.textTertiary, fontWeight: 500, padding: '12px 12px 6px' }}>By type</div>
-            {Object.entries(byType).sort().map(([cat, catDocs]) => {
-              const key = 'type:' + cat
-              const isSelected = selectedFolder === key
+            <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: C.textTertiary, fontWeight: 500, padding: '14px 12px 6px' }}>By type</div>
+            {Object.entries(typeTree).sort().map(([cat, catDocs]) => {
+              const isSelected = selectedType === cat
               return (
-                <button key={key} onClick={() => setSelectedFolder(isSelected ? null : key)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '10px 12px', marginBottom: 2, borderRadius: 6, border: 'none', background: isSelected ? 'rgba(0,0,0,0.06)' : 'transparent', cursor: 'pointer', fontFamily: C.font, fontSize: 13, color: isSelected ? C.text : C.textSecondary, fontWeight: isSelected ? 500 : 400, transition: 'background 0.1s' }}>
+                <button key={cat} onClick={() => { setSelectedType(isSelected ? null : cat); setSelectedSport(null); setSelectedTeam(null) }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '10px 12px', marginBottom: 2, borderRadius: 6, border: 'none', background: isSelected ? 'rgba(0,0,0,0.06)' : 'transparent', cursor: 'pointer', fontFamily: C.font, fontSize: 13, color: isSelected ? C.text : C.textSecondary, fontWeight: isSelected ? 500 : 400 }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: isSelected ? C.text : C.textTertiary, flexShrink: 0 }} />
                   {CATEGORY_LABELS[cat] || cat}
                   <span style={{ marginLeft: 'auto', fontSize: 10, color: C.textTertiary }}>{catDocs.length}</span>
@@ -141,17 +190,18 @@ export default function DocumentLibrary() {
         </aside>
       )}
 
-      {/* ─── MAIN: Document table ─── */}
-      {(!isMobile || selectedFolder) && (
+      {/* ─── MAIN ─── */}
+      {(!isMobile || selectedSport || selectedType) && (
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
           <div style={{ padding: '18px 20px 12px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', borderBottom: `0.5px solid ${C.border}` }}>
             <div>
               {isMobile && (
-                <button onClick={() => setSelectedFolder(null)} style={{ background: 'none', border: 'none', fontSize: 12, color: C.textSecondary, cursor: 'pointer', fontFamily: C.font, padding: 0, marginBottom: 4 }}>← Back</button>
+                <button onClick={() => { setSelectedSport(null); setSelectedTeam(null); setSelectedType(null) }} style={{ background: 'none', border: 'none', fontSize: 12, color: C.textSecondary, cursor: 'pointer', fontFamily: C.font, padding: 0, marginBottom: 4 }}>← Back</button>
               )}
-              <div style={{ fontSize: 16, fontWeight: 500, color: C.text }}>{selectedFolder ? folderLabel : 'All documents'}</div>
+              <div style={{ fontSize: 16, fontWeight: 500, color: C.text }}>{currentLabel}</div>
               <div style={{ fontSize: 11, color: C.textTertiary, marginTop: 2 }}>{currentDocs.length} document{currentDocs.length !== 1 ? 's' : ''}</div>
             </div>
+            {isSuperAdmin && <div style={{ fontSize: 10, color: '#7d8a64', background: 'rgba(125,138,100,0.08)', padding: '3px 10px', borderRadius: 6, fontWeight: 500 }}>Super Admin</div>}
           </div>
 
           <div style={{ flex: 1, overflowY: 'auto' }}>
@@ -164,11 +214,11 @@ export default function DocumentLibrary() {
                 <thead>
                   <tr>
                     <th style={headerCell}>Name</th>
-                    <th style={{ ...headerCell, width: 90 }}>Type</th>
-                    {!isMobile && <th style={{ ...headerCell, width: 100 }}>Team</th>}
-                    {!isMobile && <th style={{ ...headerCell, width: 80 }}>Size</th>}
+                    <th style={{ ...headerCell, width: 100 }}>Type</th>
+                    {!isMobile && <th style={{ ...headerCell, width: 110 }}>Team</th>}
+                    <th style={{ ...headerCell, width: 80 }}>Size</th>
                     <th style={{ ...headerCell, width: 80 }}>Updated</th>
-                    <th style={{ ...headerCell, width: 70 }}>Access</th>
+                    <th style={{ ...headerCell, width: 100 }}>Access</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -183,11 +233,17 @@ export default function DocumentLibrary() {
                         </span>
                       </td>
                       {!isMobile && <td style={cell}>{doc.team_name || '—'}</td>}
-                      {!isMobile && <td style={{ ...cell, color: C.textTertiary }}>{formatSize(doc.file_size)}</td>}
+                      <td style={{ ...cell, color: C.textTertiary }}>{formatSize(doc.file_size)}</td>
                       <td style={{ ...cell, color: C.textTertiary }}>{formatDate(doc.updated_at || doc.created_at)}</td>
                       <td style={cell}>
-                        {doc.access_level === 'super_admin_only' && (
-                          <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 4, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', background: 'rgba(184,100,62,0.08)', color: '#B8643E', border: '1px solid rgba(184,100,62,0.15)' }}>Admin</span>
+                        {doc.access_level === 'super_admin_only' ? (
+                          <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 4, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', background: 'rgba(184,100,62,0.08)', color: '#B8643E', border: '1px solid rgba(184,100,62,0.15)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                            <Lock size={8} /> Super Admin
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 4, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', background: 'rgba(125,138,100,0.08)', color: '#7d8a64', border: '1px solid rgba(125,138,100,0.15)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                            <Users size={8} /> All Users
+                          </span>
                         )}
                       </td>
                     </tr>
@@ -199,7 +255,7 @@ export default function DocumentLibrary() {
         </main>
       )}
 
-      {/* Document detail overlay */}
+      {/* Detail overlay */}
       {selectedDoc && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
           onClick={() => setSelectedDoc(null)}>
@@ -209,12 +265,15 @@ export default function DocumentLibrary() {
               <button onClick={() => setSelectedDoc(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textTertiary, padding: 4 }}><X size={18} /></button>
             </div>
             {selectedDoc.summary && <p style={{ fontSize: 13, color: C.textSecondary, lineHeight: 1.6, margin: '0 0 16px' }}>{selectedDoc.summary}</p>}
-            <div style={{ fontSize: 12, color: C.textTertiary, marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {selectedDoc.category && <div>Type: {CATEGORY_LABELS[selectedDoc.category] || selectedDoc.category}</div>}
-              {selectedDoc.sport && <div>Sport: {selectedDoc.sport}</div>}
-              {selectedDoc.team_name && <div>Team: {selectedDoc.team_name}</div>}
-              {selectedDoc.file_size && <div>Size: {formatSize(selectedDoc.file_size)}</div>}
-              <div>Uploaded: {formatDate(selectedDoc.created_at)}</div>
+            {selectedDoc.kiko_analysis && <p style={{ fontSize: 12, color: C.textTertiary, lineHeight: 1.5, margin: '0 0 16px', padding: 12, background: 'rgba(0,0,0,0.02)', borderRadius: 8 }}>{selectedDoc.kiko_analysis}</p>}
+            <div style={{ fontSize: 12, color: C.textTertiary, marginBottom: 16, display: 'grid', gridTemplateColumns: '100px 1fr', gap: '6px 12px' }}>
+              {selectedDoc.category && <><span>Type</span><span style={{ color: C.textSecondary }}>{CATEGORY_LABELS[selectedDoc.category] || selectedDoc.category}</span></>}
+              {selectedDoc.sport && <><span>Sport</span><span style={{ color: C.textSecondary }}>{selectedDoc.sport}</span></>}
+              {selectedDoc.team_name && <><span>Team</span><span style={{ color: C.textSecondary }}>{selectedDoc.team_name}</span></>}
+              <span>Size</span><span style={{ color: C.textSecondary }}>{formatSize(selectedDoc.file_size)}</span>
+              <span>Uploaded</span><span style={{ color: C.textSecondary }}>{formatDate(selectedDoc.created_at)}</span>
+              {selectedDoc.uploaded_by && <><span>By</span><span style={{ color: C.textSecondary }}>{selectedDoc.uploaded_by}</span></>}
+              <span>Access</span><span style={{ color: C.textSecondary }}>{selectedDoc.access_level === 'super_admin_only' ? 'Super Admin only' : 'All users'}</span>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               {(selectedDoc.file_url || selectedDoc.storage_path) && (

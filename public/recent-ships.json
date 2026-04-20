@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-20T17:59:33.800Z",
+  "generated_at": "2026-04-20T18:15:10.001Z",
   "commits": [
+    {
+      "hash": "83956c7",
+      "subject": "Revert rewrite regex to simple pattern — complex regex was failing Vercel schema validation",
+      "when": "16 minutes ago"
+    },
     {
       "hash": "f0bc10c",
       "subject": "Three fixes + Document Library rebuild: (1) ALL CHATS FIX — AllChatsView now uses position:absolute overlay to fill container properly (was getting zero height from flex:1 inside overflow:hidden paren",
-      "when": "15 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "f8720da",
       "subject": "Fix All Chats blank page: ChatHistory.jsx was querying conversations by org_id only — if org_id is null (common), zero results returned and AllChatsView showed blank. Now falls back to user_id query. ",
-      "when": "30 minutes ago"
+      "when": "45 minutes ago"
     },
     {
       "hash": "48a1a8d",
       "subject": "FIX VERCEL DEPLOY: vercel.json had 53 function entries (limit is 50). Consolidated 32 cron entries into api/cron-*.js wildcard + 3 push entries into api/push-*.js wildcard. Now 21 entries. This was bl",
-      "when": "37 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "98be0fd",
@@ -34,12 +39,12 @@
     {
       "hash": "47f021a",
       "subject": "FAVICON FIX: Old favicon.ico (1819 bytes) was overriding PNG link tags. Browsers load /favicon.ico by default regardless of HTML. Replaced with 5-dot PNG (425 bytes). Added explicit ico link tag with ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "59c2e76",
       "subject": "Push dispatcher + confidence tracking + tool tracking: (1) NEW cron-push-dispatcher.js — checks kiko_alerts every 5 min for unprocessed reply/bounce/linkedin/task alerts, sends push notifications via ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f543d05",
@@ -59,7 +64,7 @@
     {
       "hash": "3066ca5",
       "subject": "VAPID keys from Supabase: push-subscribe.js and push-send.js now read VAPID keys from platform_config table instead of env vars. Lazy-loaded with ensureVapid() — tries env vars first, falls back to Su",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "7e75dc5",
@@ -94,12 +99,7 @@
     {
       "hash": "8d02ebf",
       "subject": "Voice loop fix + mobile cleanup (CUvpW8Bp): (1) VOICE LOOP — mic disabled during speech + input_audio_buffer.clear sent twice (immediately and after 800ms delay) after each response to flush echoed au",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "9f8d620",
-      "subject": "5 fixes (DoD6akVZ): (1) VOICE LOOP — mic track disabled while Kiko speaks, re-enabled 400ms after speech ends. (2) GOODBYE KIKO — close_voice tool added to session, model calls it when user says goodb",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     }
   ]
 }

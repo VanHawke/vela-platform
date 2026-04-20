@@ -1438,6 +1438,24 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     )
   }
 
+  // ── ALL CHATS VIEW — full page, before welcome/conversation split ──
+  if (allChatsData && !compact && !isMobile) {
+    return (
+      <div style={{ display: 'flex', flex: 1, height: '100%', minHeight: 0 }}>
+        <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#FEFEFC', overflow: 'hidden' }}>
+          <AllChatsView
+            convos={allChatsData.convos}
+            userId={user?.id}
+            onSelect={(conv) => { allChatsData.onSelect(conv); setAllChatsData(null) }}
+            onDelete={(conv) => { allChatsData.onDelete(conv); setAllChatsData(d => d ? { ...d, convos: d.convos.filter(c => c.id !== conv.id) } : null) }}
+            onClose={() => setAllChatsData(null)}
+          />
+        </div>
+      </div>
+    )
+  }
+
   // ── WELCOME STATE (no text messages, not in voice mode) ──
   if (!hasMessages && !compact) {
     return (

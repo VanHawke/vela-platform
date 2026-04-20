@@ -57,7 +57,6 @@ export default function AllChatsView({ convos, onSelect, onDelete, onClose, user
   const displayed = searchResults !== null ? searchResults : convos
 
   return (
-    <div style={{ position: 'absolute', inset: 0, zIndex: 10, background: '#FEFEFC', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 700, margin: '0 auto', padding: '40px 24px 24px', width: '100%', overflow: 'hidden' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
@@ -115,7 +114,6 @@ export default function AllChatsView({ convos, onSelect, onDelete, onClose, user
           ))
         )}
       </div>
-    </div>
     </div>
   )
 }
