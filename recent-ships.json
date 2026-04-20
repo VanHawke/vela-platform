@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-20T17:29:02.141Z",
+  "generated_at": "2026-04-20T17:43:59.035Z",
   "commits": [
+    {
+      "hash": "f8720da",
+      "subject": "Fix All Chats blank page: ChatHistory.jsx was querying conversations by org_id only — if org_id is null (common), zero results returned and AllChatsView showed blank. Now falls back to user_id query. ",
+      "when": "14 minutes ago"
+    },
     {
       "hash": "48a1a8d",
       "subject": "FIX VERCEL DEPLOY: vercel.json had 53 function entries (limit is 50). Consolidated 32 cron entries into api/cron-*.js wildcard + 3 push entries into api/push-*.js wildcard. Now 21 entries. This was bl",
-      "when": "6 minutes ago"
+      "when": "21 minutes ago"
     },
     {
       "hash": "98be0fd",
       "subject": "FIX VERCEL BUILD: Removed import crypto from push-send.js — this was causing ALL deploys to fail since commit 59c2e76. Simplified push-send to queue notifications without crypto dependency. Favicon ba",
-      "when": "71 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "c0d3c91",
       "subject": "Favicon embedded as base64 data URI in HTML — bypasses all file serving, caching, and rewrite issues. No external file needed.",
-      "when": "79 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "327fb8d",
@@ -39,7 +44,7 @@
     {
       "hash": "577b38d",
       "subject": "Document Library in More menu + favicon cache bust: (1) Added documents to ALL_PAGES in LegoraTopNav.jsx — now appears in More dropdown as 'Document Library'. (2) Favicon link in index.html updated wi",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "a5a9849",
@@ -74,7 +79,7 @@
     {
       "hash": "37fd693",
       "subject": "Voice loop + favicon + portrait: (1) VOICE — server-side VAD disabled via session.update(turn_detection:null) while speaking, re-enabled 1500ms after response.done with buffer clear. (2) FAVICON — 5-d",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "378b344",
@@ -94,11 +99,6 @@
     {
       "hash": "9e0d676",
       "subject": "Fix voice feedback loop: (1) VAD threshold 0.6→0.8, silence duration 500→800ms — prevents Kiko from triggering on her own speaker output. (2) Added echoCancellation, noiseSuppression, autoGainControl ",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "c1925b2",
-      "subject": "Fix voice SDP 400: Wrong API URL (/v1/realtime?model= → /v1/realtime/calls). Session update format updated to match working KikoVoice (nested audio.input/output structure, tools array).",
       "when": "5 hours ago"
     }
   ]
