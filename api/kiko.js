@@ -2,7 +2,7 @@
 // Step 1: Haiku classifies intent (~100ms)
 // Step 2: Deterministic navigation OR agent dispatch OR full tool loop
 import Anthropic from '@anthropic-ai/sdk';
-import { TOOL_DEFINITIONS, executeTool, fetchEntityContext, sbFetch, logError } from './kiko-tools.js';
+import { TOOL_DEFINITIONS, DIGEST_BRIEF_TOOL, executeTool, fetchEntityContext, sbFetch, logError } from './kiko-tools.js';
 import { classifyIntent, INTENT_TO_AGENT } from './agents/intent-classifier.js';
 import { generateSelfKnowledge } from './kiko-self-knowledge.js';
 import { describeScreen } from './agents/screen-reader.js';
@@ -957,7 +957,8 @@ export default async function handler(req, res) {
     const voiceTools = voiceMode
       ? [...nativeTools.filter(t => t.name !== 'memory'), ...TOOL_DEFINITIONS]
       : [...nativeTools, ...TOOL_DEFINITIONS];
-    const allTools = voiceTools;
+    // Inject digest_master_brief only when intent matches (too large for every call)
+    const allTools = intent === 'master_brief' ? [...voiceTools, DIGEST_BRIEF_TOOL] : voiceTools;
 
     // ── PHASE 1: Intent Classification ──
     // Fast-path: skip Haiku API call for obvious patterns (~60% of queries, saves 800ms)

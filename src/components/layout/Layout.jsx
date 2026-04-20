@@ -235,7 +235,7 @@ export default function Layout({ user }) {
       if (!cancelled) setNotifItems(data || [])
     }
     fetchNotifs()
-    requestPushPermission() // Request browser push permission
+    try { requestPushPermission() } catch {} // Request browser push permission — safe on all browsers
     const interval = setInterval(fetchNotifs, 60000) // Refresh every 60s
     return () => { cancelled = true; clearInterval(interval) }
   }, [user?.id])

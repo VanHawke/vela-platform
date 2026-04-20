@@ -320,15 +320,17 @@ export const TOOL_DEFINITIONS = [
       confidence: { type: 'string', enum: ['high', 'medium'], description: 'How strongly to weight this preference. High = always apply. Medium = apply when relevant.' },
     }, required: ['category', 'preference'] },
   },
-  {
-    name: 'digest_master_brief',
-    description: 'Digest a master brief, operating document, or set of instructions uploaded by the user. Extracts strategic rules, communication style, priorities, business context, role definitions, and behavioural instructions. Rewrites the user personal bible, saves preferences and learned rules. Use when user says "digest this as my brief", "this is my master brief", "learn from this document", "these are my operating instructions", "update your instructions based on this", "rewrite your brief from this". This permanently changes how Kiko operates for THIS USER ONLY.',
-    input_schema: { type: 'object', properties: {
-      document_text: { type: 'string', description: 'The full text of the master brief or operating document to digest. If the user uploaded a file, extract the text first.' },
-      mode: { type: 'string', enum: ['replace', 'merge'], description: 'replace: overwrite the entire personal bible. merge: add to existing bible without removing current content. Default: merge' },
-    }, required: ['document_text'] },
-  },
 ];
+
+// Conditional tool — only injected when intent is master_brief (too large for every call)
+export const DIGEST_BRIEF_TOOL = {
+  name: 'digest_master_brief',
+  description: 'Digest a master brief, operating document, or set of instructions uploaded by the user. Extracts strategic rules, communication style, priorities, business context, role definitions, and behavioural instructions. Rewrites the user personal bible, saves preferences and learned rules. This permanently changes how Kiko operates for THIS USER ONLY.',
+  input_schema: { type: 'object', properties: {
+    document_text: { type: 'string', description: 'The full text of the master brief or operating document to digest.' },
+    mode: { type: 'string', enum: ['replace', 'merge'], description: 'replace: overwrite the entire personal bible. merge: add to existing bible without removing current content. Default: merge' },
+  }, required: ['document_text'] },
+};
 
 // ── Tool Executor — Routes to agents ──
 function agentError(agentName, err) {
