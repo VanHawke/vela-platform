@@ -1,40 +1,50 @@
 {
-  "generated_at": "2026-04-20T13:28:31.003Z",
+  "generated_at": "2026-04-20T13:53:50.615Z",
   "commits": [
+    {
+      "hash": "ca0f194",
+      "subject": "Fix favicon: SVG was corrupted (6 bytes). Rewrote via printf to create valid 357-byte SVG with 5-dot design matching mobile app icon.",
+      "when": "7 minutes ago"
+    },
+    {
+      "hash": "eab5d16",
+      "subject": "Kiko user awareness + documents library foundation: (1) NEW TOOL get_platform_users — queries kiko_user_config + user_tokens. Super admin sees full details (email, connected services, role). Regular u",
+      "when": "24 minutes ago"
+    },
     {
       "hash": "37fd693",
       "subject": "Voice loop + favicon + portrait: (1) VOICE — server-side VAD disabled via session.update(turn_detection:null) while speaking, re-enabled 1500ms after response.done with buffer clear. (2) FAVICON — 5-d",
-      "when": "20 minutes ago"
+      "when": "45 minutes ago"
     },
     {
       "hash": "378b344",
       "subject": "Voice loop + PWA fixes (D8RwEojo): (1) VOICE LOOP — mic disabled on first audio delta only (not every chunk), buffer cleared immediately + 1200ms delay before mic re-enable. Speaking guard prevents re",
-      "when": "36 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "8d02ebf",
       "subject": "Voice loop fix + mobile cleanup (CUvpW8Bp): (1) VOICE LOOP — mic disabled during speech + input_audio_buffer.clear sent twice (immediately and after 800ms delay) after each response to flush echoed au",
-      "when": "49 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "9f8d620",
       "subject": "5 fixes (DoD6akVZ): (1) VOICE LOOP — mic track disabled while Kiko speaks, re-enabled 400ms after speech ends. (2) GOODBYE KIKO — close_voice tool added to session, model calls it when user says goodb",
-      "when": "58 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "9e0d676",
       "subject": "Fix voice feedback loop: (1) VAD threshold 0.6→0.8, silence duration 500→800ms — prevents Kiko from triggering on her own speaker output. (2) Added echoCancellation, noiseSuppression, autoGainControl ",
-      "when": "68 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "c1925b2",
       "subject": "Fix voice SDP 400: Wrong API URL (/v1/realtime?model= → /v1/realtime/calls). Session update format updated to match working KikoVoice (nested audio.input/output structure, tools array).",
-      "when": "73 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "a340519",
       "subject": "Standalone voice page: Mobile voice now navigates to /voice (standalone route, no portal/overlay). MobileVoicePage.jsx handles WebRTC connection, mic permission, and full UI independently. Completely ",
-      "when": "80 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "a54a0d2",
@@ -49,7 +59,7 @@
     {
       "hash": "386e2d2",
       "subject": "Build E (D-YW5atp): (1) VOICE — restored createPortal for mobile (inline render was clipped by overflow:hidden parent). Gradient bg so it can never look blank. (2) GREETING 48px. (3) Build E diagnosti",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "b89fdcd",
@@ -89,16 +99,6 @@
     {
       "hash": "0950955",
       "subject": "Mobile fixes v19.04-D: (1) Homepage centering — removed top spacer on mobile, equal padding 0/24px, greeting always visible (no voice-fade on mobile). (2) Inline voice controls hidden on mobile — Kiko",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "25059c6",
-      "subject": "Mobile render-match v19.04-C: All sizes enlarged to match approved renders. (1) Prompt bar: padding 10/22px, radius 28px, send button 36px on mobile. (2) Message bubbles: padding 12/16px, radius 18px,",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "2b7ca0d",
-      "subject": "Add visible version stamp v19.04-B below mobile prompt bar — diagnostic to confirm which code version is running on user's phone",
       "when": "17 hours ago"
     }
   ]

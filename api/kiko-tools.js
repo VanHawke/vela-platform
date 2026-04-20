@@ -311,6 +311,15 @@ export const TOOL_DEFINITIONS = [
       include_connections: { type: 'boolean', description: 'Include connected services (Gmail, LinkedIn, Calendar) for each user. Default true.' },
     } },
   },
+  {
+    name: 'update_kiko_preference',
+    description: 'Update Kiko behaviour preferences based on user feedback. Use when user says things like "be more direct", "less formal", "always include pricing", "shorter responses", "more detail on financials", "stop asking clarifying questions". Saves the preference so it applies in ALL future conversations. Also use for process adjustments like "always check CRM before emailing" or "prioritise cyber deals".',
+    input_schema: { type: 'object', properties: {
+      category: { type: 'string', enum: ['communication_style', 'process', 'priority', 'language', 'formatting', 'behaviour'], description: 'Type of preference being set' },
+      preference: { type: 'string', description: 'The specific preference to save, stated as a clear rule (e.g. "Use direct, concise language with no filler")' },
+      confidence: { type: 'string', enum: ['high', 'medium'], description: 'How strongly to weight this preference. High = always apply. Medium = apply when relevant.' },
+    }, required: ['category', 'preference'] },
+  },
 ];
 
 // ── Tool Executor — Routes to agents ──
@@ -379,6 +388,34 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
           : 'Limited view — contact your admin for account connection details.',
       }, null, 2);
     } catch (e) { return agentError('PlatformUsers', e); }
+  }
+
+  // ── Preference Update — self-adjustment via user prompting ──
+  if (name === 'update_kiko_preference') {
+    try {
+      const { category, preference, confidence } = input;
+      await sbFetch('kiko_preferences', {
+        method: 'POST',
+        body: JSON.stringify({
+          category: category || 'behaviour',
+          content: preference,
+          confidence: confidence || 'high',
+          source: 'user_instruction',
+          updated_at: new Date().toISOString(),
+        })
+      });
+      // Also log to learning_log for the self-improvement loop
+      await sbFetch('kiko_learning_log', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          category: 'preference_update',
+          content: `[${category}] ${preference} (confidence: ${confidence || 'high'})`,
+          entity_name: userEmail,
+        })
+      });
+      return `Preference saved: "${preference}" [${category}, ${confidence || 'high'}]. This will be applied in all future conversations.`;
+    } catch (e) { return agentError('PreferenceUpdate', e); }
   }
 
   // ── Navigator Agent ──

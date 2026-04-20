@@ -274,6 +274,7 @@ ask_ea_agent → briefing/priorities ("brief me", "morning brief", "prioritise t
 ask_legal_agent → legal/contracts (clause analysis, risk flagging)
 ask_dispute_agent → disputes (procedural responses, landlord/CDDA)
 get_platform_users → team/user queries ("who are the users", "is Matt set up", "what accounts are connected", "who has access", campaign readiness checks). ALWAYS use this when asked about team members, user accounts, connected services (Gmail/LinkedIn), roles, or platform setup status.
+update_kiko_preference → self-adjustment ("be more direct", "less formal", "always include pricing", "shorter responses", "stop asking questions"). When user gives feedback on your style, process, or priorities — save it immediately. This updates your behaviour for ALL future conversations.
 ask_content_agent → content (LinkedIn, SponsorSignal, case studies)
 ask_investment_agent → investment (valuation, raise strategy, dilution)
 ask_pricing_agent → pricing/ROI (sponsorship benchmarks)
@@ -781,7 +782,7 @@ export default async function handler(req, res) {
     : [];
   const orgId = userOrgId?.[0]?.organization_id || null;
 
-  const [entityContext, identityResult, selfKnowledge, voiceMemResult, coreBibleResult, orgBibleResult, userBibleResult, knowledgeBaseResult] = await Promise.all([
+  const [entityContext, identityResult, selfKnowledge, voiceMemResult, coreBibleResult, orgBibleResult, userBibleResult, knowledgeBaseResult, learnedRulesResult, preferencesResult] = await Promise.all([
     earlyGreeting ? Promise.resolve('') : fetchEntityContext(pageEntity),
     sbFetch(`kiko_memories?path=eq./memories/identity.md&user_id=eq.${userId}&select=content&limit=1`).catch(() => []),
     earlyGreeting ? Promise.resolve('') : generateSelfKnowledge(userId).catch(() => 'Self-knowledge unavailable.'),
@@ -792,6 +793,8 @@ export default async function handler(req, res) {
     orgId ? sbFetch(`org_bibles?organization_id=eq.${orgId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
     isRegistered ? sbFetch(`user_bibles?user_id=eq.${userId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
     earlyGreeting ? Promise.resolve([]) : sbFetch('kiko_knowledge?select=domain,content,researched_at&order=researched_at.desc&limit=10').catch(() => []),
+    earlyGreeting ? Promise.resolve([]) : sbFetch(`kiko_learned_rules?active=eq.true&select=id,rule_text,category,evidence_count&order=evidence_count.desc&limit=20`).catch(() => []),
+    earlyGreeting ? Promise.resolve([]) : sbFetch(`kiko_preferences?select=category,content,confidence&order=confidence.desc&limit=15`).catch(() => []),
   ]);
 
   // Assemble Bible layers — fallback gracefully if any layer missing
@@ -805,6 +808,27 @@ export default async function handler(req, res) {
     userBible ? `\n\n═══ PERSONAL CONTEXT (PRIVATE — THIS USER ONLY) ═══\n${userBible}` : '',
     knowledgeBase ? `\n\n═══ RESEARCH KNOWLEDGE BASE (auto-updated daily) ═══\n${knowledgeBase}` : '',
   ].join('');
+
+  // Learned rules — self-promoted patterns Kiko must follow
+  const activeRules = (learnedRulesResult || []).filter(r => r.rule_text);
+  let learnedRulesBlock = '';
+  if (activeRules.length > 0) {
+    learnedRulesBlock = '\n\n═══ LEARNED RULES (self-promoted from patterns — APPLY THESE) ═══\n' +
+      activeRules.map(r => `• [${r.category}] ${r.rule_text}`).join('\n');
+    // Increment applied_count for loaded rules (fire and forget)
+    const ruleIds = activeRules.map(r => r.id);
+    sbFetch(`kiko_learned_rules?id=in.(${ruleIds.join(',')})`, {
+      method: 'PATCH', body: JSON.stringify({ applied_count: activeRules[0].applied_count || 0 + 1 })
+    }).catch(() => {});
+  }
+
+  // Preferences — strategic positions and user communication preferences
+  const prefs = (preferencesResult || []).filter(p => p.content);
+  let preferencesBlock = '';
+  if (prefs.length > 0) {
+    preferencesBlock = '\n\n═══ LEARNED PREFERENCES ═══\n' +
+      prefs.map(p => `• [${p.category}|${p.confidence}] ${p.content}`).join('\n');
+  }
 
   let identityContext = '';
   if (identityResult?.[0]?.content) identityContext = '\n\n── KIKO IDENTITY ──\n' + identityResult[0].content.slice(0, 2000);
@@ -842,6 +866,8 @@ export default async function handler(req, res) {
     .replace('{USER_LOCATION}', userConfig.location || '')
     .replace(/\{USER_NAME\}/g, userConfig.display_name || userEmail.split('@')[0])
     + bibleBlock
+    + learnedRulesBlock
+    + preferencesBlock
     + `\n[${dateStr}, ${timeStr} UK | Page: ${currentPage}]`
     + (pageContext?.summary ? `\n[Context: ${pageContext.summary}${pageContext.stageDistribution ? ` | Stages: ${JSON.stringify(pageContext.stageDistribution)}` : ''}${pageContext.visibleItems ? `\nVisible: ${pageContext.visibleItems}` : ''}]` : '')
     + (pageContext?.selectedItem ? `\n[SELECTED ITEM — FOCUS ON THIS: ${pageContext.selectedItem.kind} — "${pageContext.selectedItem.title}" ${pageContext.selectedItem.meta ? `(${pageContext.selectedItem.meta})` : ''}. Your response must be about THIS entity only.]` : '')
