@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-20T16:10:05.645Z",
+  "generated_at": "2026-04-20T16:17:30.912Z",
   "commits": [
+    {
+      "hash": "c0d3c91",
+      "subject": "Favicon embedded as base64 data URI in HTML — bypasses all file serving, caching, and rewrite issues. No external file needed.",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "327fb8d",
       "subject": "Force deploy: favicon.ico replaced with 5-dot PNG (old 1819-byte ICO was overriding all link tags). HTML references updated to v=5dot3. Minor text change to DocumentLibrary to force new bundle hash.",
-      "when": "21 minutes ago"
+      "when": "28 minutes ago"
     },
     {
       "hash": "47f021a",
       "subject": "FAVICON FIX: Old favicon.ico (1819 bytes) was overriding PNG link tags. Browsers load /favicon.ico by default regardless of HTML. Replaced with 5-dot PNG (425 bytes). Added explicit ico link tag with ",
-      "when": "34 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "59c2e76",
       "subject": "Push dispatcher + confidence tracking + tool tracking: (1) NEW cron-push-dispatcher.js — checks kiko_alerts every 5 min for unprocessed reply/bounce/linkedin/task alerts, sends push notifications via ",
-      "when": "39 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "f543d05",
       "subject": "Favicon PNG + nav fixes: (1) FAVICON — converted SVG to 32x32 PNG via Puppeteer (Safari doesn't support SVG favicons). HTML updated to image/png with cache buster. (2) Document Library added to Settin",
-      "when": "45 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "577b38d",
       "subject": "Document Library in More menu + favicon cache bust: (1) Added documents to ALL_PAGES in LegoraTopNav.jsx — now appears in More dropdown as 'Document Library'. (2) Favicon link in index.html updated wi",
-      "when": "65 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "a5a9849",
       "subject": "Remove web-push dependency: push-subscribe.js simplified (no web-push import). push-send.js rewritten with native crypto — VAPID JWT signing using Node.js crypto.sign + EC key derivation. Both endpoin",
-      "when": "83 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "3066ca5",
       "subject": "VAPID keys from Supabase: push-subscribe.js and push-send.js now read VAPID keys from platform_config table instead of env vars. Lazy-loaded with ensureVapid() — tries env vars first, falls back to Su",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "7e75dc5",
@@ -49,7 +54,7 @@
     {
       "hash": "ca0f194",
       "subject": "Fix favicon: SVG was corrupted (6 bytes). Rewrote via printf to create valid 357-byte SVG with 5-dot design matching mobile app icon.",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "eab5d16",
@@ -95,11 +100,6 @@
       "hash": "a54a0d2",
       "subject": "Voice portal + nav fix (CohrQoVQ): (1) Voice uses dedicated portal root div appended to body (not direct portal to body). Background #E8E6E1 (visible grey). Content uses absolute positioning inside fi",
       "when": "4 hours ago"
-    },
-    {
-      "hash": "3bbbf4c",
-      "subject": "CRITICAL FIX: Cache headers were only on / and /index.html — SPA routes like /kiko and /login had NO no-cache headers, so Safari cached old HTML forever. Now ALL routes get no-cache except /assets/ wh",
-      "when": "5 hours ago"
     }
   ]
 }
