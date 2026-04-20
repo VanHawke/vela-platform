@@ -1285,7 +1285,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     const typeLabel = (t) => t === 'task_due' ? 'Task' : t === 'task_automation' ? 'Auto' : t === 'morning_brief' ? 'Brief' : t === 'new_partnership' ? 'Deal' : t === 'category_recommendation' ? 'Insight' : t === 'reply_from_prospect' ? 'Email' : t === 'linkedin_connection_accepted' ? 'LinkedIn' : t === 'bounce_detected' ? 'Bounce' : t === 'monitoring' ? 'Monitor' : t?.replace(/_/g, ' ') || 'Alert'
     const Sect = ({ label }) => <div style={{ fontSize: 12, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, padding: '14px 0 8px' }}>{label}</div>
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column', overflow: 'hidden', overscrollBehavior: 'none' }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column', overflow: 'hidden', overscrollBehavior: 'none', touchAction: 'none' }}>
         {/* Header — matches MobileHeader but bell is active */}
         <div style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div onClick={() => { setMobileCommandOpen(false); startNewChat() }} style={{ fontFamily: "'Source Serif 4', 'Source Serif Pro', Georgia, serif", fontSize: 30, fontWeight: 400, color: '#0A0A0A', letterSpacing: '-0.02em', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>Kiko</div>
@@ -1300,7 +1300,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           </div>
         </div>
         {/* Scrollable content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '0 18px 24px', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 18px 24px', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', touchAction: 'pan-y' }}>
           {/* Replies */}
           <Sect label="Today" />
           {replies.length === 0 && <div style={{ fontSize: 12, color: '#A0A0A0', padding: '8px 0' }}>No replies yet</div>}
@@ -1368,7 +1368,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ' + time
     }
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column', overflow: 'hidden', overscrollBehavior: 'none' }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#FEFEFC', zIndex: 200, display: 'flex', flexDirection: 'column', overflow: 'hidden', overscrollBehavior: 'none', touchAction: 'none' }}>
         <div style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <button onClick={() => setMobileHistoryOpen(false)}
@@ -1389,7 +1389,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         <div style={{ padding: '4px 20px 10px', flexShrink: 0 }}>
           <div style={{ fontSize: 11, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500 }}>Recent conversations</div>
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '0 18px 24px', overscrollBehavior: 'contain' }}>
+        <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '0 18px 24px', overscrollBehavior: 'contain', touchAction: 'pan-y' }}>
           {mobileHistoryConvos.length === 0 && <div style={{ fontSize: 14, color: '#A0A0A0', padding: '20px 0', textAlign: 'center' }}>No conversations yet</div>}
           {mobileHistoryConvos.map(c => (
             <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 4 }}>
@@ -1502,7 +1502,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             <div style={{ textAlign: 'center', marginBottom: 12, fontSize: 11, fontWeight: 500, letterSpacing: '0.10em', textTransform: 'uppercase', color: '#6B6B6B' }}>
               <span style={{ color: '#0A0A0A', fontWeight: 600 }}>TODAY</span><span style={{ color: '#C0C0C0', margin: '0 8px' }}>·</span>{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
             </div>
-            <h1 style={{ fontSize: isMobile ? 41 : 42, fontWeight: 300, color: '#0A0A0A', margin: '0 0 10px', fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', textAlign: 'center' }}>
+            <h1 style={{ fontSize: isMobile ? 44 : 42, fontWeight: 300, color: '#0A0A0A', margin: '0 0 10px', fontFamily: "'Source Serif 4', Georgia, serif", letterSpacing: '-0.018em', textAlign: 'center' }}>
               {getGreeting()}, {firstName}
             </h1>
             <p style={{ fontSize: isMobile ? 19 : 16, color: '#6B6B6B', margin: '0 0 0', fontFamily: C.font, fontWeight: 400, textAlign: 'center' }}>What would you like to work on?</p>

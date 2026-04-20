@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-20T10:37:06.144Z",
+  "generated_at": "2026-04-20T10:48:24.363Z",
   "commits": [
+    {
+      "hash": "f2ec557",
+      "subject": "5 fixes verified in build r5SHM7ZE: (1) VOICE — mic now requested in user gesture context (startVoice gets mic BEFORE mounting KikoVoice), stream passed as micStream prop. Error state visible on scree",
+      "when": "11 minutes ago"
+    },
     {
       "hash": "bd272a9",
       "subject": "Mobile size overhaul — all sizes verified in build: Logo 30px, buttons 44px, icons 20px, greeting 38px, subtitle 16px, prompt bar min-height 52px/input 17px/send 38px/radius 28, messages 16px/14+18px ",
-      "when": "44 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "b8a3bce",
@@ -29,7 +34,7 @@
     {
       "hash": "0950955",
       "subject": "Mobile fixes v19.04-D: (1) Homepage centering — removed top spacer on mobile, equal padding 0/24px, greeting always visible (no voice-fade on mobile). (2) Inline voice controls hidden on mobile — Kiko",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "25059c6",
@@ -49,7 +54,7 @@
     {
       "hash": "8740bbc",
       "subject": "Test page: pixel-accurate 4-screen mobile reference (Home/Chat/Voice/Command) with tab switching. User can compare directly with React app on their phone at /test-mobile.html.",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "cdd6619",
@@ -94,11 +99,6 @@
     {
       "hash": "49c8c02",
       "subject": "Add test-mobile.html + kill service worker: (1) test-mobile.html — standalone HTML page that replicates the exact mobile layout (conversation + command centre) using plain HTML/CSS with position:fixed",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "e9a259f",
-      "subject": "Mobile layout: position fixed + CSS fix + SW cache bust: (1) Both welcome and conversation states use position:fixed on mobile with inset 0, background #FEFEFC, zIndex 50. This bypasses the entire par",
       "when": "19 hours ago"
     }
   ]
