@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-20T17:22:32.552Z",
+  "generated_at": "2026-04-20T17:29:02.141Z",
   "commits": [
+    {
+      "hash": "48a1a8d",
+      "subject": "FIX VERCEL DEPLOY: vercel.json had 53 function entries (limit is 50). Consolidated 32 cron entries into api/cron-*.js wildcard + 3 push entries into api/push-*.js wildcard. Now 21 entries. This was bl",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "98be0fd",
       "subject": "FIX VERCEL BUILD: Removed import crypto from push-send.js — this was causing ALL deploys to fail since commit 59c2e76. Simplified push-send to queue notifications without crypto dependency. Favicon ba",
-      "when": "64 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "c0d3c91",
       "subject": "Favicon embedded as base64 data URI in HTML — bypasses all file serving, caching, and rewrite issues. No external file needed.",
-      "when": "72 minutes ago"
+      "when": "79 minutes ago"
     },
     {
       "hash": "327fb8d",
@@ -54,7 +59,7 @@
     {
       "hash": "44fb110",
       "subject": "Kiko self-improvement engine activated: (1) LEARNED RULES now loaded into system prompt — 12 active rules from kiko_learned_rules injected per conversation, applied_count incremented. (2) PREFERENCES ",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "ca0f194",
@@ -94,11 +99,6 @@
     {
       "hash": "c1925b2",
       "subject": "Fix voice SDP 400: Wrong API URL (/v1/realtime?model= → /v1/realtime/calls). Session update format updated to match working KikoVoice (nested audio.input/output structure, tools array).",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "a340519",
-      "subject": "Standalone voice page: Mobile voice now navigates to /voice (standalone route, no portal/overlay). MobileVoicePage.jsx handles WebRTC connection, mic permission, and full UI independently. Completely ",
       "when": "5 hours ago"
     }
   ]

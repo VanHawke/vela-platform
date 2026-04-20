@@ -43,7 +43,10 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
     setLoading(true)
     try {
       const [kikoRes, importedRes] = await Promise.all([
-        orgId ? supabase.from('conversations').select('id, title, updated_at').eq('org_id', orgId).neq('archived', true).order('updated_at', { ascending: false }).limit(50) : Promise.resolve({ data: [] }),
+        // Query by org_id if available, otherwise by user_id
+        orgId
+          ? supabase.from('conversations').select('id, title, updated_at').eq('org_id', orgId).neq('archived', true).order('updated_at', { ascending: false }).limit(50)
+          : supabase.from('conversations').select('id, title, updated_at').eq('user_id', user.id).neq('archived', true).order('updated_at', { ascending: false }).limit(50),
         supabase.from('kiko_imported_conversations').select('id, title, source, original_date').eq('user_id', user.id).eq('processed', true).order('original_date', { ascending: false }).limit(500),
       ])
       const kiko = (kikoRes.data || []).filter(c => !deletedIdsRef.current.has(c.id)).map(c => ({ id: c.id, title: c.title || 'Untitled', date: c.updated_at, type: 'kiko' }))
