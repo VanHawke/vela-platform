@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-04-20T20:05:19.778Z",
+  "generated_at": "2026-04-20T20:17:37.040Z",
   "commits": [
+    {
+      "hash": "b5d4b5b",
+      "subject": "Force deploy with reverted server files",
+      "when": "12 minutes ago"
+    },
     {
       "hash": "f7cc8fb",
       "subject": "REVERT TO WORKING STATE: Reverted kiko.js, kiko-tools.js, intent-classifier.js, data.js to commit 23bc6a1 (last confirmed working state). digest_master_brief and related changes removed entirely. Will",
-      "when": "5 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "ab6d981",
       "subject": "Force new hash to deploy intent TDZ fix",
-      "when": "13 minutes ago"
+      "when": "26 minutes ago"
     },
     {
       "hash": "2c54e11",
       "subject": "Force deploy: fix intent TDZ error blocking all Kiko responses",
-      "when": "14 minutes ago"
+      "when": "26 minutes ago"
     },
     {
       "hash": "ec825be",
       "subject": "CRITICAL FIX: intent variable used before declaration (TDZ error). Moved digest_master_brief injection AFTER intent classification. allTools.push() instead of ternary at declaration.",
-      "when": "21 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "320fb5c",
       "subject": "FIX KIKO API CRASH: digest_master_brief tool removed from default TOOL_DEFINITIONS (was making every API call too large). Now exported separately as DIGEST_BRIEF_TOOL, injected ONLY when intent is mas",
-      "when": "31 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "a3de782",
       "subject": "digest_master_brief tool: Kiko can now absorb a master brief and rewire herself. (1) NEW TOOL digest_master_brief — takes full document text, uses Claude Sonnet to extract: personal bible content (str",
-      "when": "67 minutes ago"
+      "when": "79 minutes ago"
     },
     {
       "hash": "23bc6a1",
       "subject": "Auto-categorise uploaded documents: deepAnalysis prompt now extracts sport, team_name, title, access_recommendation. Upload handler populates sport, team_name, title, kiko_analysis, access_level from ",
-      "when": "76 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "5b0a2ab",
       "subject": "Document metadata fix + access levels: (1) Fixed Alpine F1 and Ferrari documents — populated title, sport (Formula 1), team_name, category (team_deck), access_level (super_admin_only). (2) Updated acc",
-      "when": "82 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "8f356d6",
@@ -59,7 +64,7 @@
     {
       "hash": "f0bc10c",
       "subject": "Three fixes + Document Library rebuild: (1) ALL CHATS FIX — AllChatsView now uses position:absolute overlay to fill container properly (was getting zero height from flex:1 inside overflow:hidden paren",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f8720da",
@@ -89,16 +94,11 @@
     {
       "hash": "47f021a",
       "subject": "FAVICON FIX: Old favicon.ico (1819 bytes) was overriding PNG link tags. Browsers load /favicon.ico by default regardless of HTML. Replaced with 5-dot PNG (425 bytes). Added explicit ico link tag with ",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "59c2e76",
       "subject": "Push dispatcher + confidence tracking + tool tracking: (1) NEW cron-push-dispatcher.js — checks kiko_alerts every 5 min for unprocessed reply/bounce/linkedin/task alerts, sends push notifications via ",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "f543d05",
-      "subject": "Favicon PNG + nav fixes: (1) FAVICON — converted SVG to 32x32 PNG via Puppeteer (Safari doesn't support SVG favicons). HTML updated to image/png with cache buster. (2) Document Library added to Settin",
       "when": "5 hours ago"
     }
   ]
