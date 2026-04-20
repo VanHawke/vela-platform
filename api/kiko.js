@@ -1626,6 +1626,7 @@ DEAL STAGE MAPPING:
     const skipTools = isSimpleGreeting;
     let response = await streamCall(messages, skipTools ? { noTools: true, maxTokens: voiceMode ? 300 : 1500, useHaiku: useHaikuForGreeting } : {});
     let toolRounds = 0;
+    const toolsUsedList = [];
 
     // Tool execution loop — time-aware, stops before timeout
     const maxRounds = voiceMode ? 5 : 5;
@@ -1676,7 +1677,8 @@ DEAL STAGE MAPPING:
         });
         if (isRegistered) {
           logDecision(block.name, block.input, result, message, userId);
-          trackOutput(block.name, intent, message, result, userId);
+          toolsUsedList.push(block.name);
+          trackOutput(block.name, intent, message, result, userId, { toolsUsed: toolsUsedList, responseTimeMs: Date.now() - requestStart });
           journalInsight(block.name, block.input, result, message, userId);
         }
         // Audit: log every tool call

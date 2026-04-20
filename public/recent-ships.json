@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-20T15:23:25.428Z",
+  "generated_at": "2026-04-20T15:30:45.658Z",
   "commits": [
+    {
+      "hash": "f543d05",
+      "subject": "Favicon PNG + nav fixes: (1) FAVICON — converted SVG to 32x32 PNG via Puppeteer (Safari doesn't support SVG favicons). HTML updated to image/png with cache buster. (2) Document Library added to Settin",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "577b38d",
       "subject": "Document Library in More menu + favicon cache bust: (1) Added documents to ALL_PAGES in LegoraTopNav.jsx — now appears in More dropdown as 'Document Library'. (2) Favicon link in index.html updated wi",
-      "when": "18 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "a5a9849",
       "subject": "Remove web-push dependency: push-subscribe.js simplified (no web-push import). push-send.js rewritten with native crypto — VAPID JWT signing using Node.js crypto.sign + EC key derivation. Both endpoin",
-      "when": "36 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "3066ca5",
       "subject": "VAPID keys from Supabase: push-subscribe.js and push-send.js now read VAPID keys from platform_config table instead of env vars. Lazy-loaded with ensureVapid() — tries env vars first, falls back to Su",
-      "when": "42 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "7e75dc5",
       "subject": "Document Library + Push Notifications + Self-Improvement Engine (Bpci6Bet): CLIENT: (1) Document Library page at /documents — folder tree, search, thumbnails, document detail overlay, role-based acces",
-      "when": "67 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "44fb110",
       "subject": "Kiko self-improvement engine activated: (1) LEARNED RULES now loaded into system prompt — 12 active rules from kiko_learned_rules injected per conversation, applied_count incremented. (2) PREFERENCES ",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "ca0f194",
@@ -84,7 +89,7 @@
     {
       "hash": "386e2d2",
       "subject": "Build E (D-YW5atp): (1) VOICE — restored createPortal for mobile (inline render was clipped by overflow:hidden parent). Gradient bg so it can never look blank. (2) GREETING 48px. (3) Build E diagnosti",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "b89fdcd",
@@ -95,11 +100,6 @@
       "hash": "f2ec557",
       "subject": "5 fixes verified in build r5SHM7ZE: (1) VOICE — mic now requested in user gesture context (startVoice gets mic BEFORE mounting KikoVoice), stream passed as micStream prop. Error state visible on scree",
       "when": "5 hours ago"
-    },
-    {
-      "hash": "bd272a9",
-      "subject": "Mobile size overhaul — all sizes verified in build: Logo 30px, buttons 44px, icons 20px, greeting 38px, subtitle 16px, prompt bar min-height 52px/input 17px/send 38px/radius 28, messages 16px/14+18px ",
-      "when": "6 hours ago"
     }
   ]
 }

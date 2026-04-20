@@ -143,6 +143,15 @@
     "api/cron-weekly-report.js": {
       "maxDuration": 60
     },
+    "api/cron-push-dispatcher.js": {
+      "maxDuration": 20
+    },
+    "api/push-subscribe.js": {
+      "maxDuration": 10
+    },
+    "api/push-send.js": {
+      "maxDuration": 20
+    },
     "api/cron-partnership-verify.js": {
       "maxDuration": 120
     },
