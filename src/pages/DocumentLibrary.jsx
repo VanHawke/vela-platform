@@ -54,7 +54,10 @@ export default function DocumentLibrary() {
 
   // Filter docs by access level
   const visibleDocs = docs.filter(d => {
-    if (!isSuperAdmin && d.access_level === 'super_admin_only') return false
+    if (!isSuperAdmin) {
+      // Regular users only see 'workspace' and 'all_users' docs
+      if (d.access_level === 'super_admin_only' || d.access_level === 'private') return false
+    }
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
       return [d.title, d.name, d.file_name, d.team_name, d.sport, d.summary, d.category].some(f => (f || '').toLowerCase().includes(q))
@@ -236,7 +239,7 @@ export default function DocumentLibrary() {
                       <td style={{ ...cell, color: C.textTertiary }}>{formatSize(doc.file_size)}</td>
                       <td style={{ ...cell, color: C.textTertiary }}>{formatDate(doc.updated_at || doc.created_at)}</td>
                       <td style={cell}>
-                        {doc.access_level === 'super_admin_only' ? (
+                        {(doc.access_level === 'super_admin_only' || doc.access_level === 'private') ? (
                           <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 4, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', background: 'rgba(184,100,62,0.08)', color: '#B8643E', border: '1px solid rgba(184,100,62,0.15)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
                             <Lock size={8} /> Super Admin
                           </span>
