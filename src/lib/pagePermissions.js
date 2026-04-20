@@ -9,12 +9,13 @@ export const ALL_PAGES = [
   { key: 'campaigns', label: 'Campaigns', path: '/campaigns' },
   { key: 'partnership_matrix', label: 'Partnership Matrix', path: '/partnership-matrix' },
   { key: 'race_calendar', label: 'Race Calendar', path: '/calendar' },
+  { key: 'documents', label: 'Document Library', path: '/documents' },
 ]
 
 export const ROLE_DEFAULTS = {
   super_admin: ALL_PAGES.map(p => p.key),
   admin: ALL_PAGES.map(p => p.key),
-  user: ['home', 'command_centre', 'pipeline', 'contacts', 'organisations', 'campaigns', 'partnership_matrix', 'race_calendar'],
+  user: ['home', 'command_centre', 'pipeline', 'contacts', 'organisations', 'campaigns', 'partnership_matrix', 'race_calendar', 'documents'],
 }
 
 export function canUserSeePage(role, pageKey, overrides = {}) {
