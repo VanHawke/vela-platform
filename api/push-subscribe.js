@@ -4,11 +4,27 @@ import webpush from 'web-push'
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-webpush.setVapidDetails(
-  'mailto:sunny@vanhawke.com',
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-)
+let vapidReady = false
+async function ensureVapid() {
+  if (vapidReady) return
+  try {
+    // Try env vars first, fall back to Supabase
+    let pub = process.env.VAPID_PUBLIC_KEY
+    let priv = process.env.VAPID_PRIVATE_KEY
+    if (!pub || !priv) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/platform_config?key=in.(VAPID_PUBLIC_KEY,VAPID_PRIVATE_KEY)&select=key,value`, {
+        headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` }
+      })
+      const rows = await res.json()
+      pub = rows.find(r => r.key === 'VAPID_PUBLIC_KEY')?.value
+      priv = rows.find(r => r.key === 'VAPID_PRIVATE_KEY')?.value
+    }
+    if (pub && priv) {
+      webpush.setVapidDetails('mailto:sunny@vanhawke.com', pub, priv)
+      vapidReady = true
+    }
+  } catch (e) { console.error('[Push] VAPID init error:', e) }
+}
 
 async function sbFetch(path, opts = {}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
@@ -30,6 +46,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' })
   
   try {
+    await ensureVapid()
     const { action, subscription, userId, userEmail, deviceInfo } = req.body
     
     if (action === 'subscribe') {
@@ -64,7 +81,12 @@ export default async function handler(req, res) {
     
     // Get VAPID public key
     if (action === 'vapid-key') {
-      return res.json({ publicKey: process.env.VAPID_PUBLIC_KEY })
+      let pub = process.env.VAPID_PUBLIC_KEY
+      if (!pub) {
+        const rows = await sbFetch('platform_config?key=eq.VAPID_PUBLIC_KEY&select=value&limit=1')
+        pub = rows?.[0]?.value
+      }
+      return res.json({ publicKey: pub })
     }
     
     return res.status(400).json({ error: 'Unknown action' })

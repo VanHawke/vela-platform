@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-20T14:16:19.197Z",
+  "generated_at": "2026-04-20T14:40:54.754Z",
   "commits": [
+    {
+      "hash": "7e75dc5",
+      "subject": "Document Library + Push Notifications + Self-Improvement Engine (Bpci6Bet): CLIENT: (1) Document Library page at /documents — folder tree, search, thumbnails, document detail overlay, role-based acces",
+      "when": "24 minutes ago"
+    },
     {
       "hash": "44fb110",
       "subject": "Kiko self-improvement engine activated: (1) LEARNED RULES now loaded into system prompt — 12 active rules from kiko_learned_rules injected per conversation, applied_count incremented. (2) PREFERENCES ",
-      "when": "22 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "ca0f194",
       "subject": "Fix favicon: SVG was corrupted (6 bytes). Rewrote via printf to create valid 357-byte SVG with 5-dot design matching mobile app icon.",
-      "when": "30 minutes ago"
+      "when": "54 minutes ago"
     },
     {
       "hash": "eab5d16",
       "subject": "Kiko user awareness + documents library foundation: (1) NEW TOOL get_platform_users — queries kiko_user_config + user_tokens. Super admin sees full details (email, connected services, role). Regular u",
-      "when": "47 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "37fd693",
       "subject": "Voice loop + favicon + portrait: (1) VOICE — server-side VAD disabled via session.update(turn_detection:null) while speaking, re-enabled 1500ms after response.done with buffer clear. (2) FAVICON — 5-d",
-      "when": "68 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "378b344",
       "subject": "Voice loop + PWA fixes (D8RwEojo): (1) VOICE LOOP — mic disabled on first audio delta only (not every chunk), buffer cleared immediately + 1200ms delay before mic re-enable. Speaking guard prevents re",
-      "when": "83 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "8d02ebf",
@@ -49,12 +54,12 @@
     {
       "hash": "a340519",
       "subject": "Standalone voice page: Mobile voice now navigates to /voice (standalone route, no portal/overlay). MobileVoicePage.jsx handles WebRTC connection, mic permission, and full UI independently. Completely ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "a54a0d2",
       "subject": "Voice portal + nav fix (CohrQoVQ): (1) Voice uses dedicated portal root div appended to body (not direct portal to body). Background #E8E6E1 (visible grey). Content uses absolute positioning inside fi",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "3bbbf4c",
@@ -64,12 +69,12 @@
     {
       "hash": "386e2d2",
       "subject": "Build E (D-YW5atp): (1) VOICE — restored createPortal for mobile (inline render was clipped by overflow:hidden parent). Gradient bg so it can never look blank. (2) GREETING 48px. (3) Build E diagnosti",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "b89fdcd",
       "subject": "3 critical fixes (build R-eYInFY): (1) VOICE — rewritten mobile render: no createPortal, renders inline with z-index 99999 and explicit width/height 100%. flex:1 1 auto instead of flex:1. Color fallba",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "f2ec557",
@@ -79,12 +84,12 @@
     {
       "hash": "bd272a9",
       "subject": "Mobile size overhaul — all sizes verified in build: Logo 30px, buttons 44px, icons 20px, greeting 38px, subtitle 16px, prompt bar min-height 52px/input 17px/send 38px/radius 28, messages 16px/14+18px ",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "b8a3bce",
       "subject": "Force no-cache headers via vercel.json: Added Cache-Control no-cache/no-store/must-revalidate headers for / and /index.html routes. This forces Vercel CDN to not cache the HTML, ensuring users always ",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "ede2c8e",
@@ -94,11 +99,6 @@
     {
       "hash": "39d7864",
       "subject": "Fix chat history click + voice + command centre stability + greeting size: (1) Chat history click — was calling loadConversation(c) which expects messages field, but query only fetched id/title/update",
-      "when": "17 hours ago"
-    },
-    {
-      "hash": "ed1ee71",
-      "subject": "Fix 4 data/voice issues: (1) Chat history — was querying empty kiko_conversations table, now queries conversations table where data actually lives. (2) Command centre alerts — removed type filter that",
       "when": "17 hours ago"
     }
   ]
