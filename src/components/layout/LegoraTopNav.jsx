@@ -16,6 +16,7 @@ const ALL_PAGES = [
   { id: 'contacts',            label: 'Contacts',           path: '/contacts',           showPlus: false, aliases: ['contacts'],                    pageKey: 'contacts' },
   { id: 'organisations',       label: 'Organisations',      path: '/organisations',      showPlus: false, aliases: ['organisations', 'orgs', 'companies'], pageKey: 'organisations' },
   { id: 'partnership-matrix',  label: 'Partnership Matrix', path: '/partnership-matrix', showPlus: false, aliases: ['partnership-matrix', 'insights'], pageKey: 'partnership_matrix' },
+  { id: 'documents',           label: 'Document Library',   path: '/documents',          showPlus: false, aliases: ['documents', 'library', 'docs'], pageKey: null },
 ]
 const DEFAULT_TOP_IDS = ALL_PAGES.map(p => p.id)
 // Settings is pinned to More dropdown, never in top nav

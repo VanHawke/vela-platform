@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-20T14:46:28.293Z",
+  "generated_at": "2026-04-20T15:05:17.510Z",
   "commits": [
+    {
+      "hash": "a5a9849",
+      "subject": "Remove web-push dependency: push-subscribe.js simplified (no web-push import). push-send.js rewritten with native crypto — VAPID JWT signing using Node.js crypto.sign + EC key derivation. Both endpoin",
+      "when": "18 minutes ago"
+    },
     {
       "hash": "3066ca5",
       "subject": "VAPID keys from Supabase: push-subscribe.js and push-send.js now read VAPID keys from platform_config table instead of env vars. Lazy-loaded with ensureVapid() — tries env vars first, falls back to Su",
-      "when": "5 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "7e75dc5",
       "subject": "Document Library + Push Notifications + Self-Improvement Engine (Bpci6Bet): CLIENT: (1) Document Library page at /documents — folder tree, search, thumbnails, document detail overlay, role-based acces",
-      "when": "30 minutes ago"
+      "when": "48 minutes ago"
     },
     {
       "hash": "44fb110",
       "subject": "Kiko self-improvement engine activated: (1) LEARNED RULES now loaded into system prompt — 12 active rules from kiko_learned_rules injected per conversation, applied_count incremented. (2) PREFERENCES ",
-      "when": "52 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "ca0f194",
       "subject": "Fix favicon: SVG was corrupted (6 bytes). Rewrote via printf to create valid 357-byte SVG with 5-dot design matching mobile app icon.",
-      "when": "60 minutes ago"
+      "when": "79 minutes ago"
     },
     {
       "hash": "eab5d16",
       "subject": "Kiko user awareness + documents library foundation: (1) NEW TOOL get_platform_users — queries kiko_user_config + user_tokens. Super admin sees full details (email, connected services, role). Regular u",
-      "when": "77 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "37fd693",
@@ -44,12 +49,12 @@
     {
       "hash": "9f8d620",
       "subject": "5 fixes (DoD6akVZ): (1) VOICE LOOP — mic track disabled while Kiko speaks, re-enabled 400ms after speech ends. (2) GOODBYE KIKO — close_voice tool added to session, model calls it when user says goodb",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "9e0d676",
       "subject": "Fix voice feedback loop: (1) VAD threshold 0.6→0.8, silence duration 500→800ms — prevents Kiko from triggering on her own speaker output. (2) Added echoCancellation, noiseSuppression, autoGainControl ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "c1925b2",
@@ -69,7 +74,7 @@
     {
       "hash": "3bbbf4c",
       "subject": "CRITICAL FIX: Cache headers were only on / and /index.html — SPA routes like /kiko and /login had NO no-cache headers, so Safari cached old HTML forever. Now ALL routes get no-cache except /assets/ wh",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "386e2d2",
@@ -94,11 +99,6 @@
     {
       "hash": "b8a3bce",
       "subject": "Force no-cache headers via vercel.json: Added Cache-Control no-cache/no-store/must-revalidate headers for / and /index.html routes. This forces Vercel CDN to not cache the HTML, ensuring users always ",
-      "when": "8 hours ago"
-    },
-    {
-      "hash": "ede2c8e",
-      "subject": "Voice UI visibility fix: Mobile voice overlay status text changed from rgba(0,0,0,0.4) to #0A0A0A for high contrast. Status dot enlarged to 8px with glow. All states have visible labels including fall",
       "when": "8 hours ago"
     }
   ]
