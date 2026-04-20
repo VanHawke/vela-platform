@@ -210,7 +210,7 @@ export default function DocumentLibrary() {
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {currentDocs.length === 0 ? (
               <div style={{ padding: 40, textAlign: 'center', color: C.textTertiary, fontSize: 13 }}>
-                {docs.length === 0 ? 'No documents yet — upload files via Kiko to get started.' : 'No documents in this folder.'}
+                {docs.length === 0 ? 'No documents yet — — upload files via Kiko to get started.' : 'No documents in this folder.'}
               </div>
             ) : (
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>

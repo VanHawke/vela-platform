@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-20T19:51:09.662Z",
+  "generated_at": "2026-04-20T19:51:53.418Z",
   "commits": [
+    {
+      "hash": "2c54e11",
+      "subject": "Force deploy: fix intent TDZ error blocking all Kiko responses",
+      "when": "40 seconds ago"
+    },
     {
       "hash": "ec825be",
       "subject": "CRITICAL FIX: intent variable used before declaration (TDZ error). Moved digest_master_brief injection AFTER intent classification. allTools.push() instead of ternary at declaration.",
-      "when": "7 minutes ago"
+      "when": "8 minutes ago"
     },
     {
       "hash": "320fb5c",
       "subject": "FIX KIKO API CRASH: digest_master_brief tool removed from default TOOL_DEFINITIONS (was making every API call too large). Now exported separately as DIGEST_BRIEF_TOOL, injected ONLY when intent is mas",
-      "when": "17 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "a3de782",
@@ -19,12 +24,12 @@
     {
       "hash": "23bc6a1",
       "subject": "Auto-categorise uploaded documents: deepAnalysis prompt now extracts sport, team_name, title, access_recommendation. Upload handler populates sport, team_name, title, kiko_analysis, access_level from ",
-      "when": "62 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "5b0a2ab",
       "subject": "Document metadata fix + access levels: (1) Fixed Alpine F1 and Ferrari documents — populated title, sport (Formula 1), team_name, category (team_deck), access_level (super_admin_only). (2) Updated acc",
-      "when": "68 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "8f356d6",
@@ -94,11 +99,6 @@
     {
       "hash": "a5a9849",
       "subject": "Remove web-push dependency: push-subscribe.js simplified (no web-push import). push-send.js rewritten with native crypto — VAPID JWT signing using Node.js crypto.sign + EC key derivation. Both endpoin",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "3066ca5",
-      "subject": "VAPID keys from Supabase: push-subscribe.js and push-send.js now read VAPID keys from platform_config table instead of env vars. Lazy-loaded with ensureVapid() — tries env vars first, falls back to Su",
       "when": "5 hours ago"
     }
   ]
