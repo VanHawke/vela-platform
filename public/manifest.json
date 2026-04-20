@@ -6,7 +6,7 @@
   "display": "standalone",
   "background_color": "#FEFEFC",
   "theme_color": "#FEFEFC",
-  "orientation": "any",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "/kiko-icon-192.png",

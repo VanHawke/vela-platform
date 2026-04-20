@@ -285,3 +285,24 @@
 /* ══════ Desktop: hide mobile-only ══════ */
 @media (min-width: 769px) {
 }
+
+/* ══════ Portrait lock — force portrait on mobile ══════ */
+@media (max-width: 768px) and (orientation: landscape) {
+  #root > * {
+    display: none !important;
+  }
+  #root::before {
+    content: 'Please rotate your device to portrait mode';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 20px;
+    color: #0A0A0A;
+    text-align: center;
+    padding: 40px;
+    background: #FEFEFC;
+  }
+}
