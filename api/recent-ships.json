@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-20T11:34:13.927Z",
+  "generated_at": "2026-04-20T11:51:27.888Z",
   "commits": [
+    {
+      "hash": "3bbbf4c",
+      "subject": "CRITICAL FIX: Cache headers were only on / and /index.html — SPA routes like /kiko and /login had NO no-cache headers, so Safari cached old HTML forever. Now ALL routes get no-cache except /assets/ wh",
+      "when": "17 minutes ago"
+    },
     {
       "hash": "386e2d2",
       "subject": "Build E (D-YW5atp): (1) VOICE — restored createPortal for mobile (inline render was clipped by overflow:hidden parent). Gradient bg so it can never look blank. (2) GREETING 48px. (3) Build E diagnosti",
-      "when": "33 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "b89fdcd",
       "subject": "3 critical fixes (build R-eYInFY): (1) VOICE — rewritten mobile render: no createPortal, renders inline with z-index 99999 and explicit width/height 100%. flex:1 1 auto instead of flex:1. Color fallba",
-      "when": "45 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "f2ec557",
       "subject": "5 fixes verified in build r5SHM7ZE: (1) VOICE — mic now requested in user gesture context (startVoice gets mic BEFORE mounting KikoVoice), stream passed as micStream prop. Error state visible on scree",
-      "when": "56 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "bd272a9",
@@ -44,12 +49,12 @@
     {
       "hash": "0950955",
       "subject": "Mobile fixes v19.04-D: (1) Homepage centering — removed top spacer on mobile, equal padding 0/24px, greeting always visible (no voice-fade on mobile). (2) Inline voice controls hidden on mobile — Kiko",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "25059c6",
       "subject": "Mobile render-match v19.04-C: All sizes enlarged to match approved renders. (1) Prompt bar: padding 10/22px, radius 28px, send button 36px on mobile. (2) Message bubbles: padding 12/16px, radius 18px,",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "2b7ca0d",
@@ -64,7 +69,7 @@
     {
       "hash": "8740bbc",
       "subject": "Test page: pixel-accurate 4-screen mobile reference (Home/Chat/Voice/Command) with tab switching. User can compare directly with React app on their phone at /test-mobile.html.",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "cdd6619",
@@ -95,11 +100,6 @@
       "hash": "4c52e5c",
       "subject": "Kiko avatar identity system — 5-dot pipeline replaces waveform everywhere: (1) KikoAvatar.jsx — 5 solid circular nodes, #0A0A0A, 4 states: idle (gentle pulse), thinking (confident wave L→R, 1.4s), res",
       "when": "19 hours ago"
-    },
-    {
-      "hash": "bcfc7ad",
-      "subject": "Remove debug screenshot",
-      "when": "20 hours ago"
     }
   ]
 }

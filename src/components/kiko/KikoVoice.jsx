@@ -394,11 +394,23 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage, micS
     onClose?.()
   }, [onClose])
 
+  // ── Mobile portal: create dedicated root on document.body ──
+  const [portalEl, setPortalEl] = useState(null)
+  useEffect(() => {
+    if (!isMobile) return
+    const el = document.createElement('div')
+    el.id = 'kiko-voice-root'
+    el.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;pointer-events:auto;'
+    document.body.appendChild(el)
+    setPortalEl(el)
+    return () => { try { document.body.removeChild(el) } catch(e) {} }
+  }, [isMobile])
+
   // ── Render — always fullscreen now ──
   // Mobile: render directly into a portal container appended to body
   // Desktop: createPortal as before  
   const mobileVoiceContent = (
-    <div id="kiko-voice-mobile" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', zIndex: 99999, display: 'flex', flexDirection: 'column', background: '#F5F4F1' }}>
+    <div id="kiko-voice-mobile" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', background: '#E8E6E1' }}>
       <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ fontFamily: 'Georgia, serif', fontSize: 30, fontWeight: 400, color: '#0A0A0A' }}>Kiko</div>
         <button onClick={handleClose} style={{ width: 44, height: 44, borderRadius: 22, background: '#E8E6E1', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -502,6 +514,9 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage, micS
     </div>
   )
   // ALWAYS use portal to escape parent overflow:hidden clipping
-  if (isMobile) return createPortal(mobileVoiceContent, document.body)
+  if (isMobile) {
+    if (!portalEl) return null // Wait for portal element to be created
+    return createPortal(mobileVoiceContent, portalEl)
+  }
   return createPortal(voiceUI, document.body)
 }
