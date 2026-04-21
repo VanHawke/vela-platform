@@ -181,10 +181,10 @@ export default function SequenceDetail() {
   async function save() {
     setSaving(true)
     if (isNew) {
-      const { data } = await supabase.from('kiko_sequences').insert({ name: seq.name || 'New Campaign', description: seq.description, target_persona: seq.target_persona, steps, is_active: false, send_from_user_id: seq.send_from_user_id || null }).select().single()
+      const { data } = await supabase.from('kiko_sequences').insert({ name: seq.name || 'New Campaign', description: seq.description, target_persona: seq.target_persona, steps, is_active: false, send_from_user_id: seq.send_from_user_id || null, send_days: seq.send_days || ['mon','tue','wed','thu','fri'], send_window_start: seq.send_window_start || '09:00', send_window_end: seq.send_window_end || '17:00', auto_timezone: seq.auto_timezone !== false }).select().single()
       if (data) nav(`/sequences/${data.id}`, { replace: true })
     } else {
-      await supabase.from('kiko_sequences').update({ name: seq.name, description: seq.description, target_persona: seq.target_persona, steps, send_from_user_id: seq.send_from_user_id || null, updated_at: new Date().toISOString() }).eq('id', id)
+      await supabase.from('kiko_sequences').update({ name: seq.name, description: seq.description, target_persona: seq.target_persona, steps, send_from_user_id: seq.send_from_user_id || null, send_days: seq.send_days || ['mon','tue','wed','thu','fri'], send_window_start: seq.send_window_start || '09:00', send_window_end: seq.send_window_end || '17:00', auto_timezone: seq.auto_timezone !== false, updated_at: new Date().toISOString() }).eq('id', id)
     }
     setSaving(false); setDirty(false)
   }
@@ -695,6 +695,32 @@ RULES:
               <option key={m.user_id} value={m.user_id}>{m.display_name || m.email}{m.email ? ` (${m.email})` : ''}</option>
             ))}
           </select>
+        </div>
+        {/* Scheduling — send days and window */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 11, color: C.textTer, whiteSpace: 'nowrap' }}>Days:</span>
+          <div style={{ display: 'flex', gap: 3 }}>
+            {['mon','tue','wed','thu','fri','sat','sun'].map(day => {
+              const days = seq?.send_days || ['mon','tue','wed','thu','fri']
+              const active = days.includes(day)
+              return <button key={day} onClick={() => {
+                const newDays = active ? days.filter(d => d !== day) : [...days, day]
+                setSeq({ ...seq, send_days: newDays }); setDirty(true)
+              }} style={{ padding: '4px 8px', borderRadius: 4, border: `1px solid ${active ? 'rgba(125,138,100,0.4)' : C.border}`, background: active ? 'rgba(125,138,100,0.1)' : 'transparent', color: active ? '#7d8a64' : C.textTer, fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, textTransform: 'uppercase' }}>{day}</button>
+            })}
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 11, color: C.textTer, whiteSpace: 'nowrap' }}>Window:</span>
+          <input type="time" value={seq?.send_window_start || '09:00'} onChange={e => { setSeq({ ...seq, send_window_start: e.target.value }); setDirty(true) }}
+            style={{ padding: '5px 8px', borderRadius: 6, border: `1px solid ${C.border}`, background: '#FAFAF7', fontSize: 11, fontFamily: C.font, outline: 'none', color: C.text }} />
+          <span style={{ fontSize: 11, color: C.textTer }}>to</span>
+          <input type="time" value={seq?.send_window_end || '17:00'} onChange={e => { setSeq({ ...seq, send_window_end: e.target.value }); setDirty(true) }}
+            style={{ padding: '5px 8px', borderRadius: 6, border: `1px solid ${C.border}`, background: '#FAFAF7', fontSize: 11, fontFamily: C.font, outline: 'none', color: C.text }} />
+          <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: C.textTer, cursor: 'pointer' }}>
+            <input type="checkbox" checked={seq?.auto_timezone !== false} onChange={e => { setSeq({ ...seq, auto_timezone: e.target.checked }); setDirty(true) }} />
+            Auto-timezone
+          </label>
         </div>
       </div>
       {/* Draft/Live status banner */}

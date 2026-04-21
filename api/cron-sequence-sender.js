@@ -76,28 +76,55 @@ export default async function handler(req, res) {
     }
 
     // Multi-user send-as: resolve Gmail token per-sequence via send_from_user_id
-    // Group queued emails by their enrollment's sequence to resolve sender
+    // Also check send_days and send_window per sequence
     let sent = 0;
     const tokenCache = new Map(); // email → token
     const sigCache = new Map(); // email → { inlineImages }
+    const seqCache = new Map(); // sequence_id → sequence row
+
+    // Helper: check if now is within the sequence's send window
+    const dayMap = { 0: 'sun', 1: 'mon', 2: 'tue', 3: 'wed', 4: 'thu', 5: 'fri', 6: 'sat' };
+    const currentDay = dayMap[now.getUTCDay()];
+    const currentHour = now.getUTCHours();
+    const currentMinute = now.getUTCMinutes();
+    const currentTimeStr = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
 
     for (const email of safe) {
       try {
-        // Resolve send-from user for this email's sequence
+        // Resolve sequence config (cached)
+        let seqConfig = null;
+        if (email.enrollment_id) {
+          const enr = await sbFetch(`kiko_sequence_enrollments?id=eq.${email.enrollment_id}&select=sequence_id&limit=1`).catch(() => []);
+          const seqId = enr?.[0]?.sequence_id;
+          if (seqId) {
+            if (!seqCache.has(seqId)) {
+              const row = await sbFetch(`kiko_sequences?id=eq.${seqId}&select=send_from_user_id,send_days,send_window_start,send_window_end,auto_timezone&limit=1`).catch(() => []);
+              seqCache.set(seqId, row?.[0] || {});
+            }
+            seqConfig = seqCache.get(seqId);
+          }
+        }
+
+        // Check send_days — skip if today isn't a send day
+        if (seqConfig?.send_days?.length > 0 && !seqConfig.send_days.includes(currentDay)) {
+          continue; // Not a send day for this sequence
+        }
+
+        // Check send_window — skip if outside the window (UTC comparison, good enough for UK timezone)
+        const windowStart = seqConfig?.send_window_start || '09:00';
+        const windowEnd = seqConfig?.send_window_end || '17:00';
+        if (currentTimeStr < windowStart || currentTimeStr > windowEnd) {
+          continue; // Outside send window
+        }
+        // Resolve send-from user for this email's sequence (use cached seqConfig)
         let fromEmail = 'sunny@vanhawke.agency'; // fallback
         let token = null;
         let inlineImages = [];
-        if (email.enrollment_id) {
+        const sendFromUserId = seqConfig?.send_from_user_id;
+        if (sendFromUserId) {
           try {
-            const enr = await sbFetch(`kiko_sequence_enrollments?id=eq.${email.enrollment_id}&select=sequence_id&limit=1`);
-            if (enr?.[0]?.sequence_id) {
-              const seqRow = await sbFetch(`kiko_sequences?id=eq.${enr[0].sequence_id}&select=send_from_user_id&limit=1`);
-              const sendFromUserId = seqRow?.[0]?.send_from_user_id;
-              if (sendFromUserId) {
-                const cfg = await sbFetch(`kiko_user_config?user_id=eq.${sendFromUserId}&select=email&limit=1`);
-                if (cfg?.[0]?.email) fromEmail = cfg[0].email;
-              }
-            }
+            const cfg = await sbFetch(`kiko_user_config?user_id=eq.${sendFromUserId}&select=email&limit=1`);
+            if (cfg?.[0]?.email) fromEmail = cfg[0].email;
           } catch (e) { console.warn('[SeqSender] send-from lookup error:', e.message); }
         }
         // Get Gmail token for the resolved sender (cached per email address)

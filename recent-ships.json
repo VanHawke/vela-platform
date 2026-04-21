@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-21T12:12:56.905Z",
+  "generated_at": "2026-04-21T13:17:59.734Z",
   "commits": [
+    {
+      "hash": "d227d18",
+      "subject": "Three critical fixes: (1) ALL CHATS — complete rearchitect. Removed all 3 inline AllChatsView instances. Now renders as position:fixed overlay at z-index 200 — guaranteed to work regardless of flex la",
+      "when": "65 minutes ago"
+    },
     {
       "hash": "44ecdb5",
       "subject": "Pipeline intelligence + company monitoring + add prospects UX: (1) DEAL CARD — Company Intelligence section shows funding, revenue, employees, CEO, CMO, industry, business model, sponsorships, fit sco",
-      "when": "36 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "6797cdd",
       "subject": "Critical bug fixes: (1) CAMPAIGN DELETE — variable shadowing fixed, delete permanently now works. (2) PIPELINE NOTES — activityNote cleared when switching deals, no more cross-deal contamination. (3) ",
-      "when": "45 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "4446d22",
       "subject": "6 bug fixes + task due dates: (1) CAMPAIGN DELETE — variable shadowing fixed, delete now works. (2) PIPELINE NOTES — activityNote cleared on deal switch, no longer shared across deals. (3) PIPELINE CA",
-      "when": "51 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "ed2ca48",
       "subject": "Campaign management: archive, delete, add prospects. (1) DB: archived + archived_at columns on kiko_sequences. (2) Left rail: Active/Archived toggle tabs with counts. (3) Campaign header: Add Prospect",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "7fdc15e",
       "subject": "FIX: kiko-self-knowledge.js syntax error — premature backtick closing template literal at line 147 left bullet points outside the string. Broke ALL imports of kiko.js and health.js. Fixed by removing ",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "e5379b0",
       "subject": "Full knowledge update: (1) KIKO_BIBLE.md rewritten — all 12 pages, self-improvement engine, document library, push notifications, multi-user system, cron schedule, language rules. (2) kiko_core_bible ",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "38c9c18",
       "subject": "Complete knowledge refresh: (1) KIKO_BIBLE.md rewritten — all 12 pages, 35 tools, self-improvement engine, document management, push notifications, multi-user isolation, 46 crons. (2) kiko-self-knowle",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "286edac",
       "subject": "Re-add digest_master_brief + master_brief intent (properly this time): DIGEST_BRIEF_TOOL exported separately from kiko-tools.js, imported in kiko.js, injected ONLY after intent is classified as master",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "4602a37",
       "subject": "ROOT CAUSE FIX: kiko_preferences column is 'preference' not 'content'. Query selected wrong column → Supabase returned error object → .filter() crashed on object instead of array → FUNCTION_INVOCATION",
-      "when": "15 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "b5c3d14",
       "subject": "Add kiko-debug diagnostic endpoint to find actual crash cause",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "b5d4b5b",
       "subject": "Force deploy with reverted server files",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "f7cc8fb",
       "subject": "REVERT TO WORKING STATE: Reverted kiko.js, kiko-tools.js, intent-classifier.js, data.js to commit 23bc6a1 (last confirmed working state). digest_master_brief and related changes removed entirely. Will",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "ab6d981",
       "subject": "Force new hash to deploy intent TDZ fix",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "2c54e11",
       "subject": "Force deploy: fix intent TDZ error blocking all Kiko responses",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "ec825be",
       "subject": "CRITICAL FIX: intent variable used before declaration (TDZ error). Moved digest_master_brief injection AFTER intent classification. allTools.push() instead of ternary at declaration.",
-      "when": "16 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "320fb5c",
       "subject": "FIX KIKO API CRASH: digest_master_brief tool removed from default TOOL_DEFINITIONS (was making every API call too large). Now exported separately as DIGEST_BRIEF_TOOL, injected ONLY when intent is mas",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "a3de782",
       "subject": "digest_master_brief tool: Kiko can now absorb a master brief and rewire herself. (1) NEW TOOL digest_master_brief — takes full document text, uses Claude Sonnet to extract: personal bible content (str",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "23bc6a1",
       "subject": "Auto-categorise uploaded documents: deepAnalysis prompt now extracts sport, team_name, title, access_recommendation. Upload handler populates sport, team_name, title, kiko_analysis, access_level from ",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "5b0a2ab",
       "subject": "Document metadata fix + access levels: (1) Fixed Alpine F1 and Ferrari documents — populated title, sport (Formula 1), team_name, category (team_deck), access_level (super_admin_only). (2) Updated acc",
-      "when": "18 hours ago"
-    },
-    {
-      "hash": "8f356d6",
-      "subject": "Kiko document awareness + intent classifier: (1) search_documents handler updated to current schema — queries by title, name, team_name, sport, category, shows file_size, access_level, kiko_analysis. ",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     }
   ]
 }

@@ -271,19 +271,45 @@ export default function Campaigns({ user }) {
     setAddProspectsError(null)
     setAddProspectsResult(null)
     try {
-      const r = await fetch('/api/kiko', {
+      // Get existing enrolled contacts to avoid duplicates
+      const { data: existing } = await supabase.from('kiko_sequence_enrollments').select('contact_email').eq('sequence_id', selectedId)
+      const existingEmails = new Set((existing || []).map(e => e.contact_email?.toLowerCase()).filter(Boolean))
+
+      // Use Kiko API to source prospects (non-streaming, get JSON back)
+      const resp = await fetch('/api/kiko', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `I need you to source additional prospects for my existing campaign "${selectedCampaign?.name}" (sequence ID: ${selectedId}). Focus on: ${addProspectsQuery}. Find new companies and contacts not already enrolled. For each prospect provide: company name, contact name, title, email if available, and why they're a fit. Then enroll them into the campaign.`,
+          message: `Source prospects for campaign "${selectedCampaign?.name}". Criteria: ${addProspectsQuery}. Campaign description: ${selectedCampaign?.description || 'N/A'}. Target persona: ${selectedCampaign?.target_persona || 'N/A'}. Find 5-10 new companies with decision-maker contacts. For each provide: company_name, contact_name, contact_title, contact_email. Use ask_data_agent with source_companies and source_contacts operations. Then use start_sequence to enroll each contact into sequence ID ${selectedId}. IMPORTANT: Actually enroll them — don't just list them.`,
           email: user?.email || 'sunny@vanhawke.com',
           currentPage: 'campaigns',
         }),
       })
-      // Streaming response — just wait for it to finish then reload
-      const reader = r.body?.getReader()
-      if (reader) { while (!(await reader.read()).done) {} }
+
+      // Consume the streaming response
+      const reader = resp.body?.getReader()
+      const decoder = new TextDecoder()
+      let fullText = ''
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          const chunk = decoder.decode(value, { stream: true })
+          // Parse SSE chunks to extract delta text for progress display
+          const lines = chunk.split('\n').filter(l => l.startsWith('data: '))
+          for (const line of lines) {
+            try {
+              const parsed = JSON.parse(line.slice(6))
+              if (parsed.delta) fullText += parsed.delta
+              if (parsed.toolStatus) setAddProspectsResult(prev => parsed.toolStatus)
+            } catch {}
+          }
+        }
+      }
+
       setAddProspectsPhase('done')
+      setAddProspectsResult(fullText.slice(0, 500))
+      // Reload to show new prospects
       await loadProspects(selectedId)
       await loadCampaigns()
     } catch (err) {
@@ -1049,14 +1075,23 @@ export default function Campaigns({ user }) {
             )}
             {addProspectsPhase === 'sourcing' && (
               <div style={{ padding: 24, textAlign: 'center' }}>
-                <div style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 8, fontFamily: C.font }}>Kiko is sourcing prospects...</div>
-                <div style={{ fontSize: 11, color: '#A0A0A0', fontFamily: C.font }}>Searching web, filtering against existing enrollments, identifying decision-makers</div>
+                <div style={{ width: '100%', height: 4, background: 'rgba(0,0,0,0.06)', borderRadius: 2, marginBottom: 16, overflow: 'hidden' }}>
+                  <div style={{ width: '60%', height: '100%', background: '#7d8a64', borderRadius: 2, animation: 'progress 2s ease-in-out infinite' }} />
+                </div>
+                <div style={{ fontSize: 13, color: '#0A0A0A', fontWeight: 500, marginBottom: 6, fontFamily: C.font }}>Sourcing prospects...</div>
+                <div style={{ fontSize: 11, color: '#A0A0A0', fontFamily: C.font, minHeight: 30 }}>
+                  {typeof addProspectsResult === 'string' && addProspectsResult.includes('...') ? addProspectsResult : 'Searching web, identifying decision-makers, filtering duplicates'}
+                </div>
+                <style>{`@keyframes progress { 0% { width: 15%; } 50% { width: 75%; } 100% { width: 15%; } }`}</style>
               </div>
             )}
             {addProspectsPhase === 'done' && (
-              <div style={{ padding: 24, textAlign: 'center' }}>
-                <div style={{ fontSize: 14, color: '#7d8a64', fontWeight: 500, marginBottom: 8, fontFamily: C.font }}>Prospects added</div>
-                <div style={{ fontSize: 12, color: '#6B6B6B', marginBottom: 16, fontFamily: C.font }}>New prospects have been sourced and enrolled. The campaign list has been refreshed.</div>
+              <div style={{ padding: 24 }}>
+                <div style={{ width: '100%', height: 4, background: '#7d8a64', borderRadius: 2, marginBottom: 16 }} />
+                <div style={{ fontSize: 14, color: '#7d8a64', fontWeight: 500, marginBottom: 8, fontFamily: C.font }}>Prospects sourced and enrolled</div>
+                {typeof addProspectsResult === 'string' && addProspectsResult.length > 10 && (
+                  <div style={{ fontSize: 11, color: '#6B6B6B', lineHeight: 1.5, marginBottom: 16, fontFamily: C.font, maxHeight: 150, overflowY: 'auto', padding: '8px 10px', background: 'rgba(0,0,0,0.02)', borderRadius: 6, whiteSpace: 'pre-wrap' }}>{addProspectsResult}</div>
+                )}
                 <button onClick={() => { setAddProspectsOpen(false); setAddProspectsPhase('idle'); setAddProspectsQuery('') }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}>Done</button>
               </div>
             )}

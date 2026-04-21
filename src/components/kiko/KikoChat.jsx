@@ -1594,6 +1594,19 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           </div>
         )}
       </div>
+
+      {/* All Chats overlay — fixed position, works in welcome state */}
+      {allChatsData && !compact && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 200, background: '#FEFEFC', display: 'flex', flexDirection: 'column' }}>
+          <AllChatsView
+            convos={allChatsData.convos}
+            userId={user?.id}
+            onSelect={(conv) => { allChatsData.onSelect(conv); setAllChatsData(null) }}
+            onDelete={(conv) => { allChatsData.onDelete(conv); setAllChatsData(d => d ? { ...d, convos: d.convos.filter(c => c.id !== conv.id) } : null) }}
+            onClose={() => setAllChatsData(null)}
+          />
+        </div>
+      )}
       </div>
     )
   }
