@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-21T15:33:36.896Z",
+  "generated_at": "2026-04-21T16:00:26.654Z",
   "commits": [
+    {
+      "hash": "5f5a1ae",
+      "subject": "LinkedIn test sends immediately: after queuing to kiko_linkedin_queue, triggers /api/cron-linkedin-sender instantly instead of waiting for hourly cron.",
+      "when": "27 minutes ago"
+    },
     {
       "hash": "a77d06c",
       "subject": "LinkedIn test fix: (1) URL check now case-insensitive and requires '/in/' path. (2) Added try/catch with alert() error feedback. (3) Checks Supabase insert error response. (4) Falls back to 'Test Link",
-      "when": "8 minutes ago"
+      "when": "35 minutes ago"
     },
     {
       "hash": "432426f",
       "subject": "LinkedIn test modal + campaign nav fix: (1) LINKEDIN TEST — replaced prompt() with proper modal. Input field for LinkedIn URL + 'Send test' button + confirmation message. Modal stays open showing conf",
-      "when": "20 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "cf2afea",
       "subject": "Google Maps + All Chats positioning + concierge mode: (1) GOOGLE MAPS TOOL — google_maps_link generates tappable links that open Maps app on mobile. Search mode finds places, directions mode gives tur",
-      "when": "32 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "852776d",
       "subject": "All Chats fixes: (1) Overlay now covers full screen at z-index 300 (above nav z-250) — fixes text cut-off at top. (2) All Chats button added to mobile chat history panel. (3) Both welcome and conversa",
-      "when": "46 minutes ago"
+      "when": "73 minutes ago"
     },
     {
       "hash": "181d0c6",
       "subject": "Timezone-aware sending: Sequence sender now resolves each prospect's location from contacts table, maps to UTC offset via 100+ city/country/region keywords covering Americas, Europe, Middle East, Afri",
-      "when": "67 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "8bdc593",
       "subject": "Notifications fix + Pipeline delete + LinkedIn test + alerts cleared: (1) NOTIFICATIONS — panel now uses calc(100vh-80px) maxHeight (was 420px fixed, cut off 'View all'). Clicking notification sends a",
-      "when": "84 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "691db24",
@@ -44,12 +49,12 @@
     {
       "hash": "4ca9baa",
       "subject": "Campaign scheduling + All Chats fix + Add Prospects progress: (1) ALL CHATS — overlay added to BOTH welcome and conversation state returns. Previous fix only covered conversation state, so clicking Al",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "d227d18",
       "subject": "Three critical fixes: (1) ALL CHATS — complete rearchitect. Removed all 3 inline AllChatsView instances. Now renders as position:fixed overlay at z-index 200 — guaranteed to work regardless of flex la",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "44ecdb5",
@@ -59,12 +64,12 @@
     {
       "hash": "6797cdd",
       "subject": "Critical bug fixes: (1) CAMPAIGN DELETE — variable shadowing fixed, delete permanently now works. (2) PIPELINE NOTES — activityNote cleared when switching deals, no more cross-deal contamination. (3) ",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "4446d22",
       "subject": "6 bug fixes + task due dates: (1) CAMPAIGN DELETE — variable shadowing fixed, delete now works. (2) PIPELINE NOTES — activityNote cleared on deal switch, no longer shared across deals. (3) PIPELINE CA",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "ed2ca48",
@@ -74,17 +79,17 @@
     {
       "hash": "7fdc15e",
       "subject": "FIX: kiko-self-knowledge.js syntax error — premature backtick closing template literal at line 147 left bullet points outside the string. Broke ALL imports of kiko.js and health.js. Fixed by removing ",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "e5379b0",
       "subject": "Full knowledge update: (1) KIKO_BIBLE.md rewritten — all 12 pages, self-improvement engine, document library, push notifications, multi-user system, cron schedule, language rules. (2) kiko_core_bible ",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "38c9c18",
       "subject": "Complete knowledge refresh: (1) KIKO_BIBLE.md rewritten — all 12 pages, 35 tools, self-improvement engine, document management, push notifications, multi-user isolation, 46 crons. (2) kiko-self-knowle",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "286edac",
@@ -94,11 +99,6 @@
     {
       "hash": "4602a37",
       "subject": "ROOT CAUSE FIX: kiko_preferences column is 'preference' not 'content'. Query selected wrong column → Supabase returned error object → .filter() crashed on object instead of array → FUNCTION_INVOCATION",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "b5c3d14",
-      "subject": "Add kiko-debug diagnostic endpoint to find actual crash cause",
       "when": "19 hours ago"
     }
   ]
