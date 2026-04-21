@@ -38,13 +38,14 @@ export default function KikoInsights({ onAction, open, onClose }) {
 
   const loadData = async () => {
     try {
-      const [alertRes, partnerRes, draftRes] = await Promise.all([
+      const [alertRes, partnerRes, signalRes, draftRes] = await Promise.all([
         supabase.from('kiko_alerts').select('id', { count: 'exact', head: true }).eq('dismissed', false),
         supabase.from('kiko_alerts').select('id,title,detail,entity_name,metadata').eq('type', 'new_partnership').eq('dismissed', false).order('created_at', { ascending: false }).limit(10),
+        supabase.from('kiko_alerts').select('id,title,detail,entity_name,severity,metadata').eq('type', 'company_signal').eq('dismissed', false).order('created_at', { ascending: false }).limit(10),
         supabase.from('kiko_draft_actions').select('id,action_type,payload,created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(10),
       ])
       setAlertCount(alertRes.count || 0)
-      setPartnershipAlerts(partnerRes.data || [])
+      setPartnershipAlerts([...(partnerRes.data || []), ...(signalRes.data || [])].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)))
       setDraftActions(draftRes.data || [])
     } catch (e) { console.error('[KikoInsights]', e) }
     finally { setLoading(false) }
@@ -120,16 +121,16 @@ export default function KikoInsights({ onAction, open, onClose }) {
           {/* Section: Partnership signals */}
           {partnershipAlerts.length > 0 && (
             <div style={{ marginBottom: 16 }}>
-              <div style={{ padding: '4px 8px 8px', fontSize: 11, color: '#A0A0A0', fontFamily: T.font, fontWeight: 500, letterSpacing: '0.5px' }}>PARTNERSHIP SIGNALS</div>
+              <div style={{ padding: '4px 8px 8px', fontSize: 11, color: '#A0A0A0', fontFamily: T.font, fontWeight: 500, letterSpacing: '0.5px' }}>INTELLIGENCE SIGNALS</div>
               {partnershipAlerts.map(alert => (
                 <div key={alert.id} style={{ ...pillStyle, background: 'rgba(6,214,160,0.03)', border: '1px solid rgba(6,214,160,0.08)' }}>
                   <div style={{ width: 5, height: 5, borderRadius: '50%', flexShrink: 0, background: 'rgba(6,214,160,0.6)' }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ fontSize: 13, color: '#6B6B6B', fontWeight: 400, fontFamily: T.font, display: 'block', lineHeight: 1.4 }}>{alert.title}</span>
                   </div>
-                  <button onClick={() => { onAction?.(`Tell me about the ${alert.entity_name} partnership announcement`); onClose?.() }}
+                  <button onClick={() => { onAction?.(`Search the web for the latest news about "${alert.title}". The alert detail says: "${alert.detail || ''}". Find the full details from official sources, summarise what happened, and tell me how this affects our sponsorship strategy. If this is a new partnership, identify who the sponsor is, the category, and the estimated deal value.`); onClose?.() }}
                     style={{ ...btnBase, background: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.45)', fontSize: 10, width: 'auto', borderRadius: 6, padding: '0 8px', fontFamily: T.font }}>Discuss</button>
-                  <button onClick={() => { nav('/partnership-matrix'); onClose?.() }}
+                  <button onClick={() => { onAction?.(`Add this to the partnership matrix: "${alert.title}". Search the web for details — identify the team, the sponsor/partner company, the sponsorship category, and update the matrix accordingly. Then navigate to the partnership matrix page.`); onClose?.() }}
                     style={{ ...btnBase, background: 'rgba(0,212,170,0.04)', color: 'rgba(0,212,170,0.5)', fontSize: 10, width: 'auto', borderRadius: 6, padding: '0 8px', fontFamily: T.font }}>Matrix</button>
                   <button onClick={() => dismissPartnership(alert)} style={{ ...btnBase, background: 'transparent', color: '#A0A0A0' }}><X size={10} /></button>
                 </div>

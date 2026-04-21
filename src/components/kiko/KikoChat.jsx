@@ -1438,23 +1438,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     )
   }
 
-  // ── ALL CHATS VIEW — full page, before welcome/conversation split ──
-  if (allChatsData && !compact && !isMobile) {
-    return (
-      <div style={{ display: 'flex', flex: 1, height: '100%', minHeight: 0 }}>
-        <ChatHistory user={user} open={historyOpen} onToggle={() => toggleHistory()} onSelectConversation={loadConversation} onNewChat={startNewChat} activeConvId={activeConvId} onShowAllChats={(convos, onSelect, onDelete) => setAllChatsData({ convos, onSelect, onDelete })} />
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#FEFEFC', overflow: 'hidden' }}>
-          <AllChatsView
-            convos={allChatsData.convos}
-            userId={user?.id}
-            onSelect={(conv) => { allChatsData.onSelect(conv); setAllChatsData(null) }}
-            onDelete={(conv) => { allChatsData.onDelete(conv); setAllChatsData(d => d ? { ...d, convos: d.convos.filter(c => c.id !== conv.id) } : null) }}
-            onClose={() => setAllChatsData(null)}
-          />
-        </div>
-      </div>
-    )
-  }
+  // ── ALL CHATS — rendered as fixed overlay below ──
 
   // ── WELCOME STATE (no text messages, not in voice mode) ──
   if (!hasMessages && !compact) {
@@ -1477,15 +1461,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         )}
 
         {/* Center content */}
-        {allChatsData ? (
-          <AllChatsView
-            convos={allChatsData.convos}
-            userId={user?.id}
-            onSelect={(conv) => { allChatsData.onSelect(conv); setAllChatsData(null) }}
-            onDelete={(conv) => { allChatsData.onDelete(conv); setAllChatsData(d => d ? { ...d, convos: d.convos.filter(c => c.id !== conv.id) } : null) }}
-            onClose={() => setAllChatsData(null)}
-          />
-        ) : (
         <div id="kikoHomeContent" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: trans, minHeight: 0, padding: isMobile ? '0 24px' : '20px 24px 40px' }}>
 
           {/* Top spacer — desktop only, mobile content is naturally centred */}
@@ -1605,7 +1580,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           {/* Bottom spacer — desktop only, mobile has prompt bar at bottom */}
           {!isMobile && <div style={{ flex: voiceActive ? 1 : 0.5, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />}
         </div>
-        )}
 
         {/* Voice overlay — always fullscreen, captures transcript via onMessage */}
         {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} onMessage={handleVoiceMessage} micStream={voiceMicStream} />}
@@ -1642,15 +1616,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           <p style={{ fontSize: 13, color: '#A0A0A0', fontFamily: C.font, margin: 0 }}>PDF, Word, Excel, PowerPoint, images, text files</p>
         </div>
       )}
-      {allChatsData ? (
-        <AllChatsView
-          convos={allChatsData.convos}
-          userId={user?.id}
-          onSelect={(conv) => { allChatsData.onSelect(conv); setAllChatsData(null) }}
-          onDelete={(conv) => { allChatsData.onDelete(conv); setAllChatsData(d => d ? { ...d, convos: d.convos.filter(c => c.id !== conv.id) } : null) }}
-          onClose={() => setAllChatsData(null)}
-        />
-      ) : (
       <>
       {/* Chat title bar with dropdown */}
       {activeConvId && convTitle && !isMobile && (
@@ -1832,7 +1797,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         </div>
       )}
       </>
-      )}
       <div style={{ padding: compact ? 12 : (isMobile ? '8px 16px' : 16), paddingBottom: isMobile ? 'calc(8px + env(safe-area-inset-bottom, 0px))' : undefined, flexShrink: 0 }}>
         <div style={{ maxWidth: compact ? '100%' : (isMobile ? '100%' : 720), margin: '0 auto' }}>
           {PromptBar({})}
@@ -1844,6 +1808,19 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       </div>
       {/* Voice overlay — always fullscreen, captures transcript via onMessage */}
       {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} onMessage={handleVoiceMessage} micStream={voiceMicStream} />}
+
+      {/* All Chats overlay — fixed position, guaranteed to render on top */}
+      {allChatsData && !compact && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 200, background: '#FEFEFC', display: 'flex', flexDirection: 'column' }}>
+          <AllChatsView
+            convos={allChatsData.convos}
+            userId={user?.id}
+            onSelect={(conv) => { allChatsData.onSelect(conv); setAllChatsData(null) }}
+            onDelete={(conv) => { allChatsData.onDelete(conv); setAllChatsData(d => d ? { ...d, convos: d.convos.filter(c => c.id !== conv.id) } : null) }}
+            onClose={() => setAllChatsData(null)}
+          />
+        </div>
+      )}
     </div>
     </div>
   )

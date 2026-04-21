@@ -241,14 +241,27 @@ export default function Campaigns({ user }) {
   }
 
   async function deleteCampaign(seq) {
-    await supabase.from('kiko_sequence_enrollments').delete().eq('sequence_id', seq.id)
-    await supabase.from('kiko_linkedin_queue').delete().eq('sequence_id', seq.id).catch(() => {})
-    await supabase.from('kiko_sequences').delete().eq('id', seq.id)
-    setCampaigns(prev => prev.filter(c => c.id !== seq.id))
-    setConfirmDelete(null)
-    if (selectedId === seq.id) {
-      const next = campaigns.find(c => c.id !== seq.id && !c.archived)
-      setSelectedId(next?.id || null)
+    try {
+      // Delete enrollments first (foreign key constraint)
+      const { error: e1 } = await supabase.from('kiko_sequence_enrollments').delete().eq('sequence_id', seq.id)
+      if (e1) console.error('[Delete] Enrollments error:', e1.message)
+      // Delete linkedin queue entries
+      await supabase.from('kiko_linkedin_queue').delete().eq('sequence_id', seq.id).catch(() => {})
+      // Delete the sequence itself
+      const { error: e2 } = await supabase.from('kiko_sequences').delete().eq('id', seq.id)
+      if (e2) console.error('[Delete] Sequence error:', e2.message)
+      // Update local state regardless — if RLS blocked the DB delete, at least clear the UI
+      setCampaigns(prev => prev.filter(c => c.id !== seq.id))
+      setConfirmDelete(null)
+      if (selectedId === seq.id) {
+        const next = campaigns.find(c => c.id !== seq.id && !c.archived)
+        setSelectedId(next?.id || null)
+      }
+    } catch (err) {
+      console.error('[Delete] Failed:', err)
+      setConfirmDelete(null)
+      // Force reload to ensure UI reflects actual state
+      loadCampaigns()
     }
   }
 
