@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-21T18:29:02.998Z",
+  "generated_at": "2026-04-21T18:46:48.345Z",
   "commits": [
+    {
+      "hash": "3fa2dce",
+      "subject": "Speed fix for casual queries: (1) LIGHTWEIGHT DETECTION — regex detects casual/personal questions (games, food, weather, recommendations, mood, etc). Skips ALL heavy loading: knowledge base (10 entrie",
+      "when": "17 minutes ago"
+    },
     {
       "hash": "48d603e",
       "subject": "LinkedIn campaign blocks + template variables: (1) PREDEFINED BLOCKS — Connection Request, Connection Accepted, LinkedIn Message as separate step types with distinct colors/icons. (2) CONDITIONS — con",
-      "when": "32 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "f38fe2a",
       "subject": "LinkedIn test button fix: removed IIFE pattern that prevented clicks. Button always blue now (validation on click with alert). No disabled attribute. Alert for every failure path.",
-      "when": "56 minutes ago"
+      "when": "73 minutes ago"
     },
     {
       "hash": "b90999c",
       "subject": "LinkedIn immediate send fix: browser can't call HTTP Hetzner from HTTPS page (mixed content). Created /api/linkedin-trigger.js Vercel proxy that forwards to Hetzner worker. Frontend now calls /api/lin",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "e0b56bf",
       "subject": "LinkedIn FULLY WIRED: (1) kiko-worker on Hetzner now reads kiko_linkedin_queue (was kiko_outreach_queue). (2) sendMessage function added to linkedinEngine.js — sends DMs via Playwright to connected pr",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "5f5a1ae",
@@ -34,12 +39,12 @@
     {
       "hash": "432426f",
       "subject": "LinkedIn test modal + campaign nav fix: (1) LINKEDIN TEST — replaced prompt() with proper modal. Input field for LinkedIn URL + 'Send test' button + confirmation message. Modal stays open showing conf",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "cf2afea",
       "subject": "Google Maps + All Chats positioning + concierge mode: (1) GOOGLE MAPS TOOL — google_maps_link generates tappable links that open Maps app on mobile. Search mode finds places, directions mode gives tur",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "852776d",
@@ -54,7 +59,7 @@
     {
       "hash": "8bdc593",
       "subject": "Notifications fix + Pipeline delete + LinkedIn test + alerts cleared: (1) NOTIFICATIONS — panel now uses calc(100vh-80px) maxHeight (was 420px fixed, cut off 'View all'). Clicking notification sends a",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "691db24",
@@ -74,7 +79,7 @@
     {
       "hash": "d227d18",
       "subject": "Three critical fixes: (1) ALL CHATS — complete rearchitect. Removed all 3 inline AllChatsView instances. Now renders as position:fixed overlay at z-index 200 — guaranteed to work regardless of flex la",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "44ecdb5",
@@ -94,12 +99,7 @@
     {
       "hash": "ed2ca48",
       "subject": "Campaign management: archive, delete, add prospects. (1) DB: archived + archived_at columns on kiko_sequences. (2) Left rail: Active/Archived toggle tabs with counts. (3) Campaign header: Add Prospect",
-      "when": "8 hours ago"
-    },
-    {
-      "hash": "7fdc15e",
-      "subject": "FIX: kiko-self-knowledge.js syntax error — premature backtick closing template literal at line 147 left bullet points outside the string. Broke ALL imports of kiko.js and health.js. Fixed by removing ",
-      "when": "12 hours ago"
+      "when": "9 hours ago"
     }
   ]
 }

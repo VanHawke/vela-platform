@@ -266,7 +266,7 @@ export default function Campaigns({ user }) {
   }
 
   async function addMoreProspects() {
-    if (!selectedId || !addProspectsQuery.trim()) return
+    if (!selectedId) return
     setAddProspectsPhase('sourcing')
     setAddProspectsError(null)
     setAddProspectsResult(null)
@@ -275,47 +275,78 @@ export default function Campaigns({ user }) {
       const { data: existing } = await supabase.from('kiko_sequence_enrollments').select('contact_email').eq('sequence_id', selectedId)
       const existingEmails = new Set((existing || []).map(e => e.contact_email?.toLowerCase()).filter(Boolean))
 
-      // Use Kiko API to source prospects (non-streaming, get JSON back)
-      const resp = await fetch('/api/kiko', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: `Source prospects for campaign "${selectedCampaign?.name}". Criteria: ${addProspectsQuery}. Campaign description: ${selectedCampaign?.description || 'N/A'}. Target persona: ${selectedCampaign?.target_persona || 'N/A'}. Find 5-10 new companies with decision-maker contacts. For each provide: company_name, contact_name, contact_title, contact_email. Use ask_data_agent with source_companies and source_contacts operations. Then use start_sequence to enroll each contact into sequence ID ${selectedId}. IMPORTANT: Actually enroll them — don't just list them.`,
-          email: user?.email || 'sunny@vanhawke.com',
-          currentPage: 'campaigns',
-        }),
-      })
+      // Search CRM contacts matching criteria
+      const query = (addProspectsQuery || selectedCampaign?.description || selectedCampaign?.target_persona || '').toLowerCase()
+      const keywords = query.split(/[\s,]+/).filter(w => w.length > 2)
 
-      // Consume the streaming response
-      const reader = resp.body?.getReader()
-      const decoder = new TextDecoder()
-      let fullText = ''
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-          const chunk = decoder.decode(value, { stream: true })
-          // Parse SSE chunks to extract delta text for progress display
-          const lines = chunk.split('\n').filter(l => l.startsWith('data: '))
-          for (const line of lines) {
-            try {
-              const parsed = JSON.parse(line.slice(6))
-              if (parsed.delta) fullText += parsed.delta
-              if (parsed.toolStatus) setAddProspectsResult(prev => parsed.toolStatus)
-            } catch {}
-          }
+      // Build Supabase text search — search across company, title, industry
+      let contacts = []
+      if (keywords.length > 0) {
+        // Search by each keyword across key fields
+        const { data: allContacts } = await supabase.from('contacts').select('id, data').limit(500)
+        if (allContacts) {
+          contacts = allContacts.filter(c => {
+            const d = c.data || {}
+            const searchable = [d.company, d.title, d.industry, d.firstName, d.lastName, d.location, d.notes, d.researchNotes].filter(Boolean).join(' ').toLowerCase()
+            return keywords.some(kw => searchable.includes(kw))
+          }).filter(c => {
+            const email = (c.data?.email || '').toLowerCase()
+            return email && !existingEmails.has(email)
+          })
         }
       }
 
-      setAddProspectsPhase('done')
-      setAddProspectsResult(fullText.slice(0, 500))
-      // Reload to show new prospects
-      await loadProspects(selectedId)
-      await loadCampaigns()
+      if (contacts.length === 0) {
+        setAddProspectsPhase('review')
+        setAddProspectsResult({ contacts: [], message: 'No matching contacts found in CRM. Try broader criteria or ask Kiko to research new prospects.' })
+        return
+      }
+
+      // Show contacts for review (max 20)
+      const candidates = contacts.slice(0, 20).map(c => ({
+        id: c.id,
+        name: [c.data?.firstName, c.data?.lastName].filter(Boolean).join(' ') || 'Unknown',
+        email: c.data?.email || '',
+        title: c.data?.title || '',
+        company: c.data?.company || '',
+        linkedin: c.data?.linkedin || c.data?.linkedinUrl || '',
+        selected: true,
+      }))
+      setAddProspectsPhase('review')
+      setAddProspectsResult({ contacts: candidates, message: `Found ${contacts.length} matching contacts. ${contacts.length > 20 ? 'Showing first 20.' : ''}` })
     } catch (err) {
-      setAddProspectsError(err.message)
       setAddProspectsPhase('error')
+      setAddProspectsError(err.message)
     }
+  }
+
+  async function enrollSelected() {
+    if (!addProspectsResult?.contacts) return
+    const toEnroll = addProspectsResult.contacts.filter(c => c.selected)
+    if (!toEnroll.length) { alert('Select at least one prospect to enroll'); return }
+    setAddProspectsPhase('enrolling')
+    let enrolled = 0, skipped = 0
+    for (const c of toEnroll) {
+      try {
+        const { error } = await supabase.from('kiko_sequence_enrollments').insert({
+          sequence_id: selectedId,
+          contact_id: c.id,
+          contact_name: c.name,
+          contact_email: c.email,
+          company: c.company,
+          linkedin_url: c.linkedin,
+          status: 'active',
+          current_step: 1,
+          enrolled_at: new Date().toISOString(),
+        })
+        if (error) { skipped++; continue }
+        enrolled++
+      } catch { skipped++ }
+    }
+    setAddProspectsPhase('done')
+    setAddProspectsResult(`Enrolled ${enrolled} prospects into campaign. ${skipped > 0 ? `${skipped} skipped (already enrolled or missing data).` : ''}`)
+    await loadProspects(selectedId)
+    await loadCampaigns()
   }
 
   // ── Deterministic campaign builder ──
@@ -1051,7 +1082,6 @@ export default function Campaigns({ user }) {
             </div>
             {addProspectsPhase === 'idle' && (
               <>
-                {/* Show existing campaign criteria as context */}
                 {selectedCampaign && (
                   <div style={{ padding: '10px 12px', background: 'rgba(0,0,0,0.02)', borderRadius: 8, marginBottom: 12, fontSize: 11, color: '#6B6B6B', fontFamily: C.font }}>
                     <div style={{ fontWeight: 500, color: '#0A0A0A', marginBottom: 4 }}>Current campaign criteria</div>
@@ -1060,16 +1090,16 @@ export default function Campaigns({ user }) {
                     <div style={{ marginTop: 4, color: '#A0A0A0' }}>Enrolled: {selectedCampaign.counts?.total || 0} prospects</div>
                   </div>
                 )}
-                <div style={{ fontSize: 11, color: '#A0A0A0', marginBottom: 6, fontFamily: C.font }}>Refine or expand — Kiko will source new companies matching your criteria and enroll them:</div>
+                <div style={{ fontSize: 11, color: '#A0A0A0', marginBottom: 6, fontFamily: C.font }}>Search your CRM for matching contacts. Use keywords like company names, job titles, industries, or locations:</div>
                 <textarea
                   value={addProspectsQuery}
                   onChange={e => setAddProspectsQuery(e.target.value)}
-                  placeholder={`e.g. "10 more companies in the same sector" or "Add fintech companies in London with $50M+ revenue" or "Find healthcare companies with recent funding rounds"`}
-                  style={{ width: '100%', height: 80, padding: 12, borderRadius: 8, border: `1px solid rgba(0,0,0,0.1)`, background: 'rgba(0,0,0,0.02)', fontSize: 13, fontFamily: C.font, resize: 'vertical', outline: 'none', boxSizing: 'border-box', color: '#0A0A0A' }}
+                  placeholder={selectedCampaign?.description || selectedCampaign?.target_persona || 'e.g. CMO, fintech, London, series B, sponsorship'}
+                  style={{ width: '100%', height: 60, padding: 12, borderRadius: 8, border: `1px solid rgba(0,0,0,0.1)`, background: 'rgba(0,0,0,0.02)', fontSize: 13, fontFamily: C.font, resize: 'vertical', outline: 'none', boxSizing: 'border-box', color: '#0A0A0A' }}
                 />
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
                   <button onClick={() => { setAddProspectsOpen(false); setAddProspectsPhase('idle') }} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid rgba(0,0,0,0.1)`, background: 'transparent', color: '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
-                  <button onClick={addMoreProspects} disabled={!addProspectsQuery.trim()} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: addProspectsQuery.trim() ? '#0A0A0A' : 'rgba(0,0,0,0.1)', color: addProspectsQuery.trim() ? '#FEFEFC' : '#A0A0A0', fontSize: 12, fontWeight: 500, cursor: addProspectsQuery.trim() ? 'pointer' : 'default', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}><UserPlus size={12} /> Source &amp; enroll</button>
+                  <button onClick={addMoreProspects} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}><Search size={12} /> Search CRM</button>
                 </div>
               </>
             )}
@@ -1078,11 +1108,49 @@ export default function Campaigns({ user }) {
                 <div style={{ width: '100%', height: 4, background: 'rgba(0,0,0,0.06)', borderRadius: 2, marginBottom: 16, overflow: 'hidden' }}>
                   <div style={{ width: '60%', height: '100%', background: '#7d8a64', borderRadius: 2, animation: 'progress 2s ease-in-out infinite' }} />
                 </div>
-                <div style={{ fontSize: 13, color: '#0A0A0A', fontWeight: 500, marginBottom: 6, fontFamily: C.font }}>Sourcing prospects...</div>
-                <div style={{ fontSize: 11, color: '#A0A0A0', fontFamily: C.font, minHeight: 30 }}>
-                  {typeof addProspectsResult === 'string' && addProspectsResult.includes('...') ? addProspectsResult : 'Searching web, identifying decision-makers, filtering duplicates'}
-                </div>
+                <div style={{ fontSize: 13, color: '#0A0A0A', fontWeight: 500, fontFamily: C.font }}>Searching CRM...</div>
                 <style>{`@keyframes progress { 0% { width: 15%; } 50% { width: 75%; } 100% { width: 15%; } }`}</style>
+              </div>
+            )}
+            {addProspectsPhase === 'review' && addProspectsResult && (
+              <div>
+                <div style={{ fontSize: 12, color: '#6B6B6B', marginBottom: 12, fontFamily: C.font }}>{addProspectsResult.message}</div>
+                {addProspectsResult.contacts?.length > 0 && (
+                  <>
+                    <div style={{ maxHeight: 300, overflowY: 'auto', border: `1px solid rgba(0,0,0,0.06)`, borderRadius: 8 }}>
+                      {addProspectsResult.contacts.map((c, i) => (
+                        <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderBottom: i < addProspectsResult.contacts.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none' }}>
+                          <input type="checkbox" checked={c.selected} onChange={() => {
+                            const updated = [...addProspectsResult.contacts]
+                            updated[i] = { ...updated[i], selected: !updated[i].selected }
+                            setAddProspectsResult({ ...addProspectsResult, contacts: updated })
+                          }} style={{ accentColor: '#0A0A0A' }} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A', fontFamily: C.font }}>{c.name}</div>
+                            <div style={{ fontSize: 11, color: '#6B6B6B', fontFamily: C.font, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title} · {c.company}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+                      <div style={{ fontSize: 11, color: '#A0A0A0', fontFamily: C.font }}>{addProspectsResult.contacts.filter(c => c.selected).length} selected</div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={() => setAddProspectsPhase('idle')} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid rgba(0,0,0,0.1)`, background: 'transparent', color: '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>Back</button>
+                        <button onClick={enrollSelected} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}><UserPlus size={12} /> Enroll selected</button>
+                      </div>
+                    </div>
+                  </>
+                )}
+                {(!addProspectsResult.contacts || addProspectsResult.contacts.length === 0) && (
+                  <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                    <button onClick={() => setAddProspectsPhase('idle')} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid rgba(0,0,0,0.1)`, background: 'transparent', color: '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>Try different criteria</button>
+                  </div>
+                )}
+              </div>
+            )}
+            {addProspectsPhase === 'enrolling' && (
+              <div style={{ padding: 24, textAlign: 'center' }}>
+                <div style={{ fontSize: 13, color: '#0A0A0A', fontWeight: 500, fontFamily: C.font }}>Enrolling prospects...</div>
               </div>
             )}
             {addProspectsPhase === 'done' && (
