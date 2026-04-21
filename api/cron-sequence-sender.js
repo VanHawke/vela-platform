@@ -82,20 +82,48 @@ export default async function handler(req, res) {
     const sigCache = new Map(); // email → { inlineImages }
     const seqCache = new Map(); // sequence_id → sequence row
 
+    // Timezone offset map — maps location keywords to UTC offset hours
+    // Based on research: optimal B2B email send times are 9-11am local (Tue-Thu peak)
+    const TZ_MAP = {
+      // Americas
+      'new york': -4, 'boston': -4, 'washington': -4, 'miami': -4, 'atlanta': -4, 'charlotte': -4, 'philadelphia': -4, 'detroit': -4, 'pittsburgh': -4, 'eastern': -4, 'est': -4, 'edt': -4,
+      'chicago': -5, 'houston': -5, 'dallas': -5, 'austin': -5, 'nashville': -5, 'central': -5, 'cst': -5, 'cdt': -5, 'minneapolis': -5, 'milwaukee': -5,
+      'denver': -6, 'salt lake': -6, 'phoenix': -7, 'mountain': -6, 'mst': -6, 'mdt': -6,
+      'los angeles': -7, 'san francisco': -7, 'seattle': -7, 'portland': -7, 'pacific': -7, 'pst': -7, 'pdt': -7, 'silicon valley': -7, 'bay area': -7, 'san jose': -7, 'san diego': -7,
+      'toronto': -4, 'montreal': -4, 'vancouver': -7, 'calgary': -6, 'canada': -5,
+      'mexico city': -6, 'brazil': -3, 'sao paulo': -3, 'bogota': -5, 'buenos aires': -3,
+      // Europe
+      'london': 1, 'united kingdom': 1, 'uk': 1, 'england': 1, 'scotland': 1, 'wales': 1, 'ireland': 1, 'dublin': 1, 'manchester': 1, 'birmingham': 1, 'edinburgh': 1, 'gmt': 0, 'bst': 1,
+      'paris': 2, 'france': 2, 'berlin': 2, 'germany': 2, 'amsterdam': 2, 'netherlands': 2, 'brussels': 2, 'belgium': 2, 'zurich': 2, 'switzerland': 2, 'madrid': 2, 'spain': 2, 'rome': 2, 'italy': 2, 'milan': 2, 'vienna': 2, 'austria': 2, 'stockholm': 2, 'sweden': 2, 'oslo': 2, 'norway': 2, 'copenhagen': 2, 'denmark': 2, 'helsinki': 3, 'finland': 3, 'warsaw': 2, 'poland': 2, 'prague': 2, 'lisbon': 1, 'portugal': 1, 'cet': 2, 'cest': 2,
+      // Middle East & Africa
+      'dubai': 4, 'uae': 4, 'abu dhabi': 4, 'riyadh': 3, 'saudi': 3, 'qatar': 3, 'doha': 3, 'bahrain': 3, 'kuwait': 3, 'tel aviv': 3, 'israel': 3, 'johannesburg': 2, 'south africa': 2, 'cairo': 2, 'lagos': 1, 'nairobi': 3,
+      // Asia Pacific
+      'mumbai': 5.5, 'india': 5.5, 'delhi': 5.5, 'bangalore': 5.5, 'singapore': 8, 'hong kong': 8, 'shanghai': 8, 'beijing': 8, 'china': 8, 'tokyo': 9, 'japan': 9, 'seoul': 9, 'korea': 9, 'sydney': 11, 'melbourne': 11, 'australia': 11, 'auckland': 13, 'new zealand': 13, 'bangkok': 7, 'jakarta': 7,
+    };
+
+    function getTimezoneOffset(location) {
+      if (!location) return 0; // default UTC (UK-ish)
+      const loc = location.toLowerCase();
+      for (const [keyword, offset] of Object.entries(TZ_MAP)) {
+        if (loc.includes(keyword)) return offset;
+      }
+      // Fallback: if location contains "United States" but no city match, assume ET
+      if (loc.includes('united states') || loc.includes('usa')) return -4;
+      return 0; // default to UTC
+    }
+
     // Helper: check if now is within the sequence's send window
     const dayMap = { 0: 'sun', 1: 'mon', 2: 'tue', 3: 'wed', 4: 'thu', 5: 'fri', 6: 'sat' };
     const currentDay = dayMap[now.getUTCDay()];
-    const currentHour = now.getUTCHours();
-    const currentMinute = now.getUTCMinutes();
-    const currentTimeStr = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
 
     for (const email of safe) {
       try {
         // Resolve sequence config (cached)
         let seqConfig = null;
+        let seqId = null;
         if (email.enrollment_id) {
-          const enr = await sbFetch(`kiko_sequence_enrollments?id=eq.${email.enrollment_id}&select=sequence_id&limit=1`).catch(() => []);
-          const seqId = enr?.[0]?.sequence_id;
+          const enr = await sbFetch(`kiko_sequence_enrollments?id=eq.${email.enrollment_id}&select=sequence_id,contact_id&limit=1`).catch(() => []);
+          seqId = enr?.[0]?.sequence_id;
           if (seqId) {
             if (!seqCache.has(seqId)) {
               const row = await sbFetch(`kiko_sequences?id=eq.${seqId}&select=send_from_user_id,send_days,send_window_start,send_window_end,auto_timezone&limit=1`).catch(() => []);
@@ -103,18 +131,33 @@ export default async function handler(req, res) {
             }
             seqConfig = seqCache.get(seqId);
           }
-        }
 
-        // Check send_days — skip if today isn't a send day
-        if (seqConfig?.send_days?.length > 0 && !seqConfig.send_days.includes(currentDay)) {
-          continue; // Not a send day for this sequence
-        }
+          // Resolve prospect timezone if auto_timezone is on
+          let tzOffset = 0;
+          if (seqConfig?.auto_timezone !== false && enr?.[0]?.contact_id) {
+            try {
+              const contact = await sbFetch(`contacts?id=eq.${enr[0].contact_id}&select=data&limit=1`).catch(() => []);
+              const loc = contact?.[0]?.data?.location || '';
+              tzOffset = getTimezoneOffset(loc);
+            } catch {}
+          }
 
-        // Check send_window — skip if outside the window (UTC comparison, good enough for UK timezone)
-        const windowStart = seqConfig?.send_window_start || '09:00';
-        const windowEnd = seqConfig?.send_window_end || '17:00';
-        if (currentTimeStr < windowStart || currentTimeStr > windowEnd) {
-          continue; // Outside send window
+          // Calculate prospect's local time
+          const prospectHour = (now.getUTCHours() + tzOffset + 24) % 24;
+          const prospectMinute = now.getUTCMinutes();
+          const prospectTimeStr = `${String(Math.floor(prospectHour)).padStart(2, '0')}:${String(prospectMinute).padStart(2, '0')}`;
+
+          // Check send_days
+          if (seqConfig?.send_days?.length > 0 && !seqConfig.send_days.includes(currentDay)) {
+            continue;
+          }
+
+          // Check send_window in prospect's local time
+          const windowStart = seqConfig?.send_window_start || '09:00';
+          const windowEnd = seqConfig?.send_window_end || '17:00';
+          if (prospectTimeStr < windowStart || prospectTimeStr > windowEnd) {
+            continue;
+          }
         }
         // Resolve send-from user for this email's sequence (use cached seqConfig)
         let fromEmail = 'sunny@vanhawke.agency'; // fallback
