@@ -1541,21 +1541,27 @@ RULES:
             )}
             <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
               <button onClick={() => setLiTestOpen(false)} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>Close</button>
-              {!liTestSent && (
-                <button disabled={!liTestUrl.includes('linkedin.com')} onClick={async () => {
-                  const cur = steps[selStep] || {}
-                  const senderMember = seq?.send_from_user_id ? orgMembers.find(m => m.user_id === seq.send_from_user_id) : orgMembers[0]
-                  const msg = (cur.template || '').replace(/\{firstName\}/g, 'Test').replace(/\{companyName\}/g, 'Test Company').replace(/\{category\}/g, seq?.name?.split(' - ')[1] || 'Category').slice(0, 200)
-                  await supabase.from('kiko_linkedin_queue').insert({
-                    contact_name: 'Test Recipient', company: 'Test', linkedin_url: liTestUrl.trim(),
-                    message_type: cur.action === 'invite' ? 'invite' : 'message',
-                    message: '[TEST] ' + msg,
-                    context: JSON.stringify({ test: true, sender: senderMember?.email || 'sunny@vanhawke.com', step: selStep }),
-                    status: 'pending', priority: 10,
-                  })
-                  setLiTestSent(true)
-                }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: liTestUrl.includes('linkedin.com') ? '#0077B5' : 'rgba(0,0,0,0.1)', color: liTestUrl.includes('linkedin.com') ? '#fff' : '#A0A0A0', fontSize: 12, fontWeight: 500, cursor: liTestUrl.includes('linkedin.com') ? 'pointer' : 'default', fontFamily: C.font }}>Send test</button>
-              )}
+              {!liTestSent && (() => {
+                const isValid = liTestUrl.toLowerCase().includes('linkedin.com/in/')
+                return (
+                <button disabled={!isValid} onClick={async () => {
+                  try {
+                    const cur = steps[selStep] || {}
+                    const senderMember = seq?.send_from_user_id ? orgMembers.find(m => m.user_id === seq.send_from_user_id) : orgMembers[0]
+                    const msg = (cur.template || '').replace(/\{firstName\}/g, 'Test').replace(/\{companyName\}/g, 'Test Company').replace(/\{category\}/g, seq?.name?.split(' - ')[1] || 'Category').slice(0, 200)
+                    const { error } = await supabase.from('kiko_linkedin_queue').insert({
+                      contact_name: 'Test Recipient', company: 'Test', linkedin_url: liTestUrl.trim(),
+                      message_type: cur.action === 'invite' ? 'invite' : 'message',
+                      message: '[TEST] ' + (msg || 'Test LinkedIn message'),
+                      context: JSON.stringify({ test: true, sender: senderMember?.email || 'sunny@vanhawke.com', step: selStep }),
+                      status: 'pending', priority: 10,
+                    })
+                    if (error) { console.error('[LinkedIn test]', error); alert('Failed: ' + error.message); return }
+                    setLiTestSent(true)
+                  } catch (err) { console.error('[LinkedIn test]', err); alert('Error: ' + err.message) }
+                }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: isValid ? '#0077B5' : 'rgba(0,0,0,0.1)', color: isValid ? '#fff' : '#A0A0A0', fontSize: 12, fontWeight: 500, cursor: isValid ? 'pointer' : 'default', fontFamily: C.font }}>Send test</button>
+                )
+              })()}
             </div>
           </div>
         </div>

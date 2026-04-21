@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-21T15:13:09.877Z",
+  "generated_at": "2026-04-21T15:25:50.598Z",
   "commits": [
+    {
+      "hash": "432426f",
+      "subject": "LinkedIn test modal + campaign nav fix: (1) LINKEDIN TEST — replaced prompt() with proper modal. Input field for LinkedIn URL + 'Send test' button + confirmation message. Modal stays open showing conf",
+      "when": "12 minutes ago"
+    },
     {
       "hash": "cf2afea",
       "subject": "Google Maps + All Chats positioning + concierge mode: (1) GOOGLE MAPS TOOL — google_maps_link generates tappable links that open Maps app on mobile. Search mode finds places, directions mode gives tur",
-      "when": "12 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "852776d",
       "subject": "All Chats fixes: (1) Overlay now covers full screen at z-index 300 (above nav z-250) — fixes text cut-off at top. (2) All Chats button added to mobile chat history panel. (3) Both welcome and conversa",
-      "when": "26 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "181d0c6",
       "subject": "Timezone-aware sending: Sequence sender now resolves each prospect's location from contacts table, maps to UTC offset via 100+ city/country/region keywords covering Americas, Europe, Middle East, Afri",
-      "when": "46 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "8bdc593",
       "subject": "Notifications fix + Pipeline delete + LinkedIn test + alerts cleared: (1) NOTIFICATIONS — panel now uses calc(100vh-80px) maxHeight (was 420px fixed, cut off 'View all'). Clicking notification sends a",
-      "when": "63 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "691db24",
       "subject": "Match Kiko nav font to mobile: 24px (was 18px), letter-spacing -0.02em (was 0.04em), added Source Serif Pro fallback",
-      "when": "82 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "e3ffabf",
@@ -94,11 +99,6 @@
     {
       "hash": "b5d4b5b",
       "subject": "Force deploy with reverted server files",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "f7cc8fb",
-      "subject": "REVERT TO WORKING STATE: Reverted kiko.js, kiko-tools.js, intent-classifier.js, data.js to commit 23bc6a1 (last confirmed working state). digest_master_brief and related changes removed entirely. Will",
       "when": "19 hours ago"
     }
   ]
