@@ -10,6 +10,7 @@ import BulkEditStepsModal from '@/components/campaigns/BulkEditStepsModal'
 import {
   Mail, Linkedin, Eye, MousePointer, Reply, AlertTriangle, Clock,
   Pause, Play, Plus, Search, RefreshCw, X, ChevronRight, Trash2,
+  Archive, ArchiveRestore, UserPlus,
 } from 'lucide-react'
 
 // ── helpers ──
@@ -93,6 +94,13 @@ export default function Campaigns({ user }) {
   const [buildPhase, setBuildPhase] = useState('idle') // idle, building, review, enrolling, done, error
   const [buildResult, setBuildResult] = useState(null)
   const [buildError, setBuildError] = useState(null)
+  const [showArchived, setShowArchived] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(null) // campaign id to confirm delete
+  const [addProspectsOpen, setAddProspectsOpen] = useState(false)
+  const [addProspectsQuery, setAddProspectsQuery] = useState('')
+  const [addProspectsPhase, setAddProspectsPhase] = useState('idle') // idle, sourcing, review, enrolling, done, error
+  const [addProspectsResult, setAddProspectsResult] = useState(null)
+  const [addProspectsError, setAddProspectsError] = useState(null)
 
   // Load all campaigns for the left rail
   const loadCampaigns = useCallback(async () => {
@@ -114,6 +122,9 @@ export default function Campaigns({ user }) {
     }))
     // Sort: live first, then by created
     arr.sort((a, b) => {
+      // Archived always last
+      if (a.archived && !b.archived) return 1
+      if (!a.archived && b.archived) return -1
       if (a.is_active && !b.is_active) return -1
       if (!a.is_active && b.is_active) return 1
       return new Date(b.created_at) - new Date(a.created_at)
@@ -210,6 +221,62 @@ export default function Campaigns({ user }) {
     setCampaigns(prev => prev.map(c => c.id === seq.id ? { ...c, is_active: newState } : c))
     // Also reload to make sure rail sort + dot reflects truth
     loadCampaigns()
+  }
+
+  async function archiveCampaign(seq) {
+    if (seq.is_active) {
+      await supabase.from('kiko_sequences').update({ is_active: false }).eq('id', seq.id)
+    }
+    await supabase.from('kiko_sequences').update({ archived: true, archived_at: new Date().toISOString(), is_active: false }).eq('id', seq.id)
+    setCampaigns(prev => prev.map(c => c.id === seq.id ? { ...c, archived: true, is_active: false } : c))
+    if (selectedId === seq.id) {
+      const next = campaigns.find(c => c.id !== seq.id && !c.archived)
+      setSelectedId(next?.id || null)
+    }
+  }
+
+  async function unarchiveCampaign(seq) {
+    await supabase.from('kiko_sequences').update({ archived: false, archived_at: null }).eq('id', seq.id)
+    setCampaigns(prev => prev.map(c => c.id === seq.id ? { ...c, archived: false } : c))
+  }
+
+  async function deleteCampaign(seq) {
+    await supabase.from('kiko_sequence_enrollments').delete().eq('sequence_id', seq.id)
+    await supabase.from('kiko_linkedin_queue').delete().eq('sequence_id', seq.id).catch(() => {})
+    await supabase.from('kiko_sequences').delete().eq('id', seq.id)
+    setCampaigns(prev => prev.filter(c => c.id !== seq.id))
+    setConfirmDelete(null)
+    if (selectedId === seq.id) {
+      const next = campaigns.find(c => c.id !== seq.id && !c.archived)
+      setSelectedId(next?.id || null)
+    }
+  }
+
+  async function addMoreProspects() {
+    if (!selectedId || !addProspectsQuery.trim()) return
+    setAddProspectsPhase('sourcing')
+    setAddProspectsError(null)
+    setAddProspectsResult(null)
+    try {
+      const r = await fetch('/api/kiko', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `I need you to source additional prospects for my existing campaign "${selectedCampaign?.name}" (sequence ID: ${selectedId}). Focus on: ${addProspectsQuery}. Find new companies and contacts not already enrolled. For each prospect provide: company name, contact name, title, email if available, and why they're a fit. Then enroll them into the campaign.`,
+          email: user?.email || 'sunny@vanhawke.com',
+          currentPage: 'campaigns',
+        }),
+      })
+      // Streaming response — just wait for it to finish then reload
+      const reader = r.body?.getReader()
+      if (reader) { while (!(await reader.read()).done) {} }
+      setAddProspectsPhase('done')
+      await loadProspects(selectedId)
+      await loadCampaigns()
+    } catch (err) {
+      setAddProspectsError(err.message)
+      setAddProspectsPhase('error')
+    }
   }
 
   // ── Deterministic campaign builder ──
@@ -333,12 +400,17 @@ export default function Campaigns({ user }) {
             ><Plus size={14} /></button>
           </div>
         </div>
+        {/* Archive toggle */}
+        <div style={{ padding: '0 18px 8px', display: 'flex', gap: 8 }}>
+          <button onClick={() => setShowArchived(false)} style={{ flex: 1, padding: '6px 0', borderRadius: 5, border: 'none', background: !showArchived ? 'rgba(0,0,0,0.06)' : 'transparent', cursor: 'pointer', fontFamily: C.font, fontSize: 11, color: !showArchived ? C.text : C.textTertiary, fontWeight: !showArchived ? 500 : 400 }}>Active ({campaigns.filter(c => !c.archived).length})</button>
+          <button onClick={() => setShowArchived(true)} style={{ flex: 1, padding: '6px 0', borderRadius: 5, border: 'none', background: showArchived ? 'rgba(0,0,0,0.06)' : 'transparent', cursor: 'pointer', fontFamily: C.font, fontSize: 11, color: showArchived ? C.text : C.textTertiary, fontWeight: showArchived ? 500 : 400 }}>Archived ({campaigns.filter(c => c.archived).length})</button>
+        </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px 12px' }}>
           {loading ? (
             <div style={{ padding: 24, fontSize: 11, color: C.textTertiary, textAlign: 'center' }}>Loading...</div>
-          ) : campaigns.length === 0 ? (
-            <div style={{ padding: 24, fontSize: 11, color: C.textTertiary, textAlign: 'center' }}>No campaigns yet</div>
-          ) : campaigns.map(c => {
+          ) : campaigns.filter(c => showArchived ? c.archived : !c.archived).length === 0 ? (
+            <div style={{ padding: 24, fontSize: 11, color: C.textTertiary, textAlign: 'center' }}>{showArchived ? 'No archived campaigns' : 'No campaigns yet'}</div>
+          ) : campaigns.filter(c => showArchived ? c.archived : !c.archived).map(c => {
             const isSelected = c.id === selectedId
             return (
               <button
@@ -468,6 +540,27 @@ export default function Campaigns({ user }) {
                     onClick={() => nav(`/campaigns/${selectedCampaign.id}`)}
                     style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 12, cursor: 'pointer', fontFamily: C.font }}
                   >Edit sequence</button>
+                  <button
+                    onClick={() => setAddProspectsOpen(true)}
+                    style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid rgba(125,138,100,0.25)`, background: 'rgba(125,138,100,0.06)', color: '#7d8a64', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
+                  ><UserPlus size={12} /> Add prospects</button>
+                  {selectedCampaign.archived ? (
+                    <button
+                      onClick={() => unarchiveCampaign(selectedCampaign)}
+                      style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSecondary, fontSize: 12, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
+                    ><ArchiveRestore size={12} /> Restore</button>
+                  ) : (
+                    <button
+                      onClick={() => archiveCampaign(selectedCampaign)}
+                      title="Archive this campaign — pauses and moves to archive"
+                      style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textTertiary, fontSize: 12, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
+                    ><Archive size={12} /> Archive</button>
+                  )}
+                  <button
+                    onClick={() => setConfirmDelete(selectedCampaign.id)}
+                    title="Permanently delete this campaign and all prospects"
+                    style={{ padding: '7px 14px', borderRadius: 6, border: '1px solid rgba(248,113,113,0.25)', background: 'rgba(248,113,113,0.06)', color: '#f87171', fontSize: 12, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
+                  ><Trash2 size={12} /> Delete</button>
                 </div>
               </div>
             </div>
@@ -888,6 +981,71 @@ export default function Campaigns({ user }) {
       {/* Bulk edit steps modal (v0.0.40) */}
       {bulkEditOpen && (
         <BulkEditStepsModal onClose={() => setBulkEditOpen(false)} initialCategory="cybersecurity" />
+      )}
+
+      {/* Delete confirmation modal */}
+      {confirmDelete && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setConfirmDelete(null)}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#FEFEFC', borderRadius: 14, maxWidth: 400, width: '100%', padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
+            <div style={{ fontSize: 16, fontWeight: 500, color: '#0A0A0A', marginBottom: 8, fontFamily: C.font }}>Delete campaign?</div>
+            <div style={{ fontSize: 13, color: '#6B6B6B', lineHeight: 1.5, marginBottom: 20, fontFamily: C.font }}>
+              This will permanently delete <strong>{campaigns.find(c => c.id === confirmDelete)?.name}</strong> and remove all {campaigns.find(c => c.id === confirmDelete)?.counts?.total || 0} enrolled prospects. This cannot be undone.
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => setConfirmDelete(null)} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid rgba(0,0,0,0.1)`, background: 'transparent', color: '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
+              <button onClick={() => { const c = campaigns.find(c => c.id === confirmDelete); if (c) deleteCampaign(c) }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#f87171', color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}>Delete permanently</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add prospects panel */}
+      {addProspectsOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => { setAddProspectsOpen(false); setAddProspectsPhase('idle'); setAddProspectsError(null) }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#FEFEFC', borderRadius: 14, maxWidth: 520, width: '100%', padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div style={{ fontSize: 16, fontWeight: 500, color: '#0A0A0A', fontFamily: C.font }}>Add prospects to {selectedCampaign?.name}</div>
+              <button onClick={() => { setAddProspectsOpen(false); setAddProspectsPhase('idle') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0' }}><X size={18} /></button>
+            </div>
+            <div style={{ fontSize: 12, color: '#6B6B6B', lineHeight: 1.5, marginBottom: 16, fontFamily: C.font }}>
+              Describe who you want to add. Kiko will source new companies and decision-makers, then enroll them into this campaign. Existing prospects won't be duplicated.
+            </div>
+            {addProspectsPhase === 'idle' && (
+              <>
+                <textarea
+                  value={addProspectsQuery}
+                  onChange={e => setAddProspectsQuery(e.target.value)}
+                  placeholder="e.g. 'More fintech companies in London with $50M+ revenue' or 'Add 10 more cybersecurity firms targeting CISOs' or 'Find healthcare companies with recent funding rounds'"
+                  style={{ width: '100%', height: 100, padding: 12, borderRadius: 8, border: `1px solid rgba(0,0,0,0.1)`, background: 'rgba(0,0,0,0.02)', fontSize: 13, fontFamily: C.font, resize: 'vertical', outline: 'none', boxSizing: 'border-box', color: '#0A0A0A' }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
+                  <button onClick={() => { setAddProspectsOpen(false); setAddProspectsPhase('idle') }} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid rgba(0,0,0,0.1)`, background: 'transparent', color: '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
+                  <button onClick={addMoreProspects} disabled={!addProspectsQuery.trim()} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: addProspectsQuery.trim() ? '#0A0A0A' : 'rgba(0,0,0,0.1)', color: addProspectsQuery.trim() ? '#FEFEFC' : '#A0A0A0', fontSize: 12, fontWeight: 500, cursor: addProspectsQuery.trim() ? 'pointer' : 'default', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}><UserPlus size={12} /> Source &amp; enroll</button>
+                </div>
+              </>
+            )}
+            {addProspectsPhase === 'sourcing' && (
+              <div style={{ padding: 24, textAlign: 'center' }}>
+                <div style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 8, fontFamily: C.font }}>Kiko is sourcing prospects...</div>
+                <div style={{ fontSize: 11, color: '#A0A0A0', fontFamily: C.font }}>Searching web, filtering against existing enrollments, identifying decision-makers</div>
+              </div>
+            )}
+            {addProspectsPhase === 'done' && (
+              <div style={{ padding: 24, textAlign: 'center' }}>
+                <div style={{ fontSize: 14, color: '#7d8a64', fontWeight: 500, marginBottom: 8, fontFamily: C.font }}>Prospects added</div>
+                <div style={{ fontSize: 12, color: '#6B6B6B', marginBottom: 16, fontFamily: C.font }}>New prospects have been sourced and enrolled. The campaign list has been refreshed.</div>
+                <button onClick={() => { setAddProspectsOpen(false); setAddProspectsPhase('idle'); setAddProspectsQuery('') }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}>Done</button>
+              </div>
+            )}
+            {addProspectsPhase === 'error' && (
+              <div style={{ padding: 24, textAlign: 'center' }}>
+                <div style={{ fontSize: 13, color: '#f87171', marginBottom: 8, fontFamily: C.font }}>Something went wrong</div>
+                <div style={{ fontSize: 11, color: '#A0A0A0', marginBottom: 16, fontFamily: C.font }}>{addProspectsError}</div>
+                <button onClick={() => setAddProspectsPhase('idle')} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid rgba(0,0,0,0.1)`, background: 'transparent', color: '#0A0A0A', fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>Try again</button>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   )
