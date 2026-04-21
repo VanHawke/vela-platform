@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-21T13:17:59.734Z",
+  "generated_at": "2026-04-21T13:34:58.613Z",
   "commits": [
+    {
+      "hash": "4ca9baa",
+      "subject": "Campaign scheduling + All Chats fix + Add Prospects progress: (1) ALL CHATS — overlay added to BOTH welcome and conversation state returns. Previous fix only covered conversation state, so clicking Al",
+      "when": "17 minutes ago"
+    },
     {
       "hash": "d227d18",
       "subject": "Three critical fixes: (1) ALL CHATS — complete rearchitect. Removed all 3 inline AllChatsView instances. Now renders as position:fixed overlay at z-index 200 — guaranteed to work regardless of flex la",
-      "when": "65 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "44ecdb5",
@@ -24,7 +29,7 @@
     {
       "hash": "ed2ca48",
       "subject": "Campaign management: archive, delete, add prospects. (1) DB: archived + archived_at columns on kiko_sequences. (2) Left rail: Active/Archived toggle tabs with counts. (3) Campaign header: Add Prospect",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "7fdc15e",
@@ -44,7 +49,7 @@
     {
       "hash": "286edac",
       "subject": "Re-add digest_master_brief + master_brief intent (properly this time): DIGEST_BRIEF_TOOL exported separately from kiko-tools.js, imported in kiko.js, injected ONLY after intent is classified as master",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "4602a37",
@@ -59,22 +64,22 @@
     {
       "hash": "b5d4b5b",
       "subject": "Force deploy with reverted server files",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "f7cc8fb",
       "subject": "REVERT TO WORKING STATE: Reverted kiko.js, kiko-tools.js, intent-classifier.js, data.js to commit 23bc6a1 (last confirmed working state). digest_master_brief and related changes removed entirely. Will",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "ab6d981",
       "subject": "Force new hash to deploy intent TDZ fix",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "2c54e11",
       "subject": "Force deploy: fix intent TDZ error blocking all Kiko responses",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "ec825be",
@@ -89,16 +94,11 @@
     {
       "hash": "a3de782",
       "subject": "digest_master_brief tool: Kiko can now absorb a master brief and rewire herself. (1) NEW TOOL digest_master_brief — takes full document text, uses Claude Sonnet to extract: personal bible content (str",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "23bc6a1",
       "subject": "Auto-categorise uploaded documents: deepAnalysis prompt now extracts sport, team_name, title, access_recommendation. Upload handler populates sport, team_name, title, kiko_analysis, access_level from ",
-      "when": "18 hours ago"
-    },
-    {
-      "hash": "5b0a2ab",
-      "subject": "Document metadata fix + access levels: (1) Fixed Alpine F1 and Ferrari documents — populated title, sport (Formula 1), team_name, category (team_deck), access_level (super_admin_only). (2) Updated acc",
       "when": "19 hours ago"
     }
   ]

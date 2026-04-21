@@ -75,17 +75,8 @@ export default function LoginPage() {
 
       <div style={{ width: '100%', maxWidth: 380, textAlign: 'center', position: 'relative', zIndex: 5, padding: '0 24px' }}>
 
-        {/* Brand wordmark — Van Hawke */}
-        <div style={{ marginBottom: 56, display: 'flex', justifyContent: 'center', ...fade(0) }}>
-          {customLogo ? (
-            <img src={customLogo} alt="Logo" style={{ height: 24, maxWidth: 160, objectFit: 'contain', opacity: 0.9 }} />
-          ) : (
-            <span style={{
-              fontSize: 11, fontWeight: 500, color: T.textSecondary,
-              letterSpacing: '0.18em', fontFamily: T.font, textTransform: 'uppercase',
-            }}>Van Hawke</span>
-          )}
-        </div>
+        {/* Spacer — brand wordmark removed */}
+        <div style={{ marginBottom: 56, ...fade(0) }} />
 
         {/* Kiko waveform — soft, centred */}
         <div style={{

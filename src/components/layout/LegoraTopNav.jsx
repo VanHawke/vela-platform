@@ -158,12 +158,7 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
         {customLogo ? (
           <img src={customLogo} alt="Logo" className="ltn-logo" />
         ) : (
-          <>
-            <svg className="ltn-mark" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2l1.5 7.5L21 11l-7.5 1.5L12 20l-1.5-7.5L3 11l7.5-1.5L12 2z" />
-            </svg>
-            <span className="ltn-name">Kiko</span>
-          </>
+          <span className="ltn-name">Kiko</span>
         )}
       </button>
 
