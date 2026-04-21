@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-21T11:21:45.763Z",
+  "generated_at": "2026-04-21T11:27:21.048Z",
   "commits": [
+    {
+      "hash": "4446d22",
+      "subject": "6 bug fixes + task due dates: (1) CAMPAIGN DELETE — variable shadowing fixed, delete now works. (2) PIPELINE NOTES — activityNote cleared on deal switch, no longer shared across deals. (3) PIPELINE CA",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "ed2ca48",
       "subject": "Campaign management: archive, delete, add prospects. (1) DB: archived + archived_at columns on kiko_sequences. (2) Left rail: Active/Archived toggle tabs with counts. (3) Campaign header: Add Prospect",
-      "when": "81 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "7fdc15e",
@@ -24,7 +29,7 @@
     {
       "hash": "286edac",
       "subject": "Re-add digest_master_brief + master_brief intent (properly this time): DIGEST_BRIEF_TOOL exported separately from kiko-tools.js, imported in kiko.js, injected ONLY after intent is classified as master",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "4602a37",
@@ -95,11 +100,6 @@
       "hash": "83956c7",
       "subject": "Revert rewrite regex to simple pattern — complex regex was failing Vercel schema validation",
       "when": "17 hours ago"
-    },
-    {
-      "hash": "f0bc10c",
-      "subject": "Three fixes + Document Library rebuild: (1) ALL CHATS FIX — AllChatsView now uses position:absolute overlay to fill container properly (was getting zero height from flex:1 inside overflow:hidden paren",
-      "when": "18 hours ago"
     }
   ]
 }
