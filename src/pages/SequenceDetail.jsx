@@ -1557,6 +1557,8 @@ RULES:
                       status: 'pending', priority: 10,
                     })
                     if (error) { console.error('[LinkedIn test]', error); alert('Failed: ' + error.message); return }
+                    // Trigger LinkedIn sender immediately — don't wait for hourly cron
+                    fetch('/api/cron-linkedin-sender', { method: 'POST' }).catch(() => {})
                     setLiTestSent(true)
                   } catch (err) { console.error('[LinkedIn test]', err); alert('Error: ' + err.message) }
                 }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: isValid ? '#0077B5' : 'rgba(0,0,0,0.1)', color: isValid ? '#fff' : '#A0A0A0', fontSize: 12, fontWeight: 500, cursor: isValid ? 'pointer' : 'default', fontFamily: C.font }}>Send test</button>

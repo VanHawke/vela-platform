@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-21T15:25:50.598Z",
+  "generated_at": "2026-04-21T15:33:36.896Z",
   "commits": [
+    {
+      "hash": "a77d06c",
+      "subject": "LinkedIn test fix: (1) URL check now case-insensitive and requires '/in/' path. (2) Added try/catch with alert() error feedback. (3) Checks Supabase insert error response. (4) Falls back to 'Test Link",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "432426f",
       "subject": "LinkedIn test modal + campaign nav fix: (1) LINKEDIN TEST — replaced prompt() with proper modal. Input field for LinkedIn URL + 'Send test' button + confirmation message. Modal stays open showing conf",
-      "when": "12 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "cf2afea",
       "subject": "Google Maps + All Chats positioning + concierge mode: (1) GOOGLE MAPS TOOL — google_maps_link generates tappable links that open Maps app on mobile. Search mode finds places, directions mode gives tur",
-      "when": "25 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "852776d",
       "subject": "All Chats fixes: (1) Overlay now covers full screen at z-index 300 (above nav z-250) — fixes text cut-off at top. (2) All Chats button added to mobile chat history panel. (3) Both welcome and conversa",
-      "when": "39 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "181d0c6",
       "subject": "Timezone-aware sending: Sequence sender now resolves each prospect's location from contacts table, maps to UTC offset via 100+ city/country/region keywords covering Americas, Europe, Middle East, Afri",
-      "when": "59 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "8bdc593",
       "subject": "Notifications fix + Pipeline delete + LinkedIn test + alerts cleared: (1) NOTIFICATIONS — panel now uses calc(100vh-80px) maxHeight (was 420px fixed, cut off 'View all'). Clicking notification sends a",
-      "when": "76 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "691db24",
@@ -64,7 +69,7 @@
     {
       "hash": "ed2ca48",
       "subject": "Campaign management: archive, delete, add prospects. (1) DB: archived + archived_at columns on kiko_sequences. (2) Left rail: Active/Archived toggle tabs with counts. (3) Campaign header: Add Prospect",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "7fdc15e",
@@ -84,7 +89,7 @@
     {
       "hash": "286edac",
       "subject": "Re-add digest_master_brief + master_brief intent (properly this time): DIGEST_BRIEF_TOOL exported separately from kiko-tools.js, imported in kiko.js, injected ONLY after intent is classified as master",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "4602a37",
@@ -94,11 +99,6 @@
     {
       "hash": "b5c3d14",
       "subject": "Add kiko-debug diagnostic endpoint to find actual crash cause",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "b5d4b5b",
-      "subject": "Force deploy with reverted server files",
       "when": "19 hours ago"
     }
   ]
