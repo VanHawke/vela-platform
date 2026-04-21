@@ -8,7 +8,7 @@ import { createPortal } from 'react-dom'
 import { supabase } from '@/lib/supabase'
 import { showToast } from '@/components/ui/Toast'
 import PageHeader from '@/components/layout/PageHeader'
-import { ChevronDown, X, Check, Plus, GripVertical, Eye, EyeOff, Building2, Users, Mail, Calendar, Clock, ExternalLink, Activity } from 'lucide-react'
+import { ChevronDown, X, Check, Plus, GripVertical, Eye, EyeOff, Building2, Users, Mail, Calendar, Clock, ExternalLink, Activity, TrendingUp } from 'lucide-react'
 import './Pipeline.css'
 
 const ORG_ID = '35975d96-c2c9-4b6c-b4d4-bb947ae817d5'
@@ -182,6 +182,7 @@ export default function Pipeline({ user }) {
   const [dealContacts, setDealContacts] = useState([])
   const [dealCampaigns, setDealCampaigns] = useState([])
   const [dealTasks, setDealTasks] = useState([])
+  const [dealIntel, setDealIntel] = useState(null)
   const [dealActivities, setDealActivities] = useState([])
   const [activityNote, setActivityNote] = useState('')
   const [loadingPanel, setLoadingPanel] = useState(false)
@@ -349,7 +350,7 @@ export default function Pipeline({ user }) {
   const selectDeal = async (deal) => {
     setSelectedDeal(deal)
     setLoadingPanel(true)
-    setDealCompany(null); setDealContacts([]); setDealCampaigns([]); setDealTasks([]); setDealActivities([]); setActivityNote(''); setActivityLogged(null); setNewTaskNote(''); setNewTaskDate('')
+    setDealCompany(null); setDealContacts([]); setDealCampaigns([]); setDealTasks([]); setDealIntel(null); setDealActivities([]); setActivityNote(''); setActivityLogged(null); setNewTaskNote(''); setNewTaskDate('')
 
     try {
       // Find company by name — fuzzy match (trim + lowercase + starts-with fallback)
@@ -376,6 +377,15 @@ export default function Pipeline({ user }) {
           .filter('data->>company', 'ilike', `%${deal.company}%`)
           .limit(10)
         setDealContacts((contacts || []).map(c => ({ id: c.id, ...c.data })))
+
+        // Company intelligence — funding, revenue, leadership, news
+        const { data: intel } = await supabase
+          .from('company_intelligence')
+          .select('*')
+          .ilike('company_name', `%${deal.company}%`)
+          .order('enriched_at', { ascending: false })
+          .limit(1)
+        if (intel?.[0]) setDealIntel(intel[0])
       }
 
       // Tasks linked to this deal
@@ -413,7 +423,7 @@ export default function Pipeline({ user }) {
 
   const closePanel = () => {
     setSelectedDeal(null); setDealCompany(null); setDealContacts([])
-    setDealCampaigns([]); setDealTasks([]); setDealActivities([]); setActivityNote(''); setNewTaskNote(''); setNewTaskDate('')
+    setDealCampaigns([]); setDealTasks([]); setDealIntel(null); setDealActivities([]); setActivityNote(''); setNewTaskNote(''); setNewTaskDate('')
   }
 
   const saveDealValue = async () => {
@@ -705,6 +715,38 @@ export default function Pipeline({ user }) {
               >
                 {dealCompany ? 'Open organisation' : 'Search organisation'} <ExternalLink size={11} />
               </button>
+            )}
+
+            {/* COMPANY INTELLIGENCE */}
+            {dealIntel && (
+              <div className="pl-panel-section">
+                <p className="pl-panel-section-title">
+                  <TrendingUp size={11} style={{ marginRight: 6 }} />
+                  Company Intelligence
+                  {dealIntel.enriched_at && <span style={{ fontSize: 9, color: '#A0A0A0', marginLeft: 6, fontWeight: 400 }}>Updated {new Date(dealIntel.enriched_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>}
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 12px', fontSize: 11, color: '#6B6B6B', padding: '4px 0' }}>
+                  {dealIntel.funding_total && <><span style={{ color: '#A0A0A0' }}>Funding</span><span style={{ fontWeight: 500, color: '#0A0A0A' }}>{dealIntel.funding_total}</span></>}
+                  {dealIntel.last_funding_round && <><span style={{ color: '#A0A0A0' }}>Last round</span><span>{dealIntel.last_funding_round}{dealIntel.last_funding_amount ? ` (${dealIntel.last_funding_amount})` : ''}</span></>}
+                  {dealIntel.revenue_estimate && <><span style={{ color: '#A0A0A0' }}>Revenue</span><span style={{ fontWeight: 500, color: '#0A0A0A' }}>{dealIntel.revenue_estimate}</span></>}
+                  {dealIntel.employee_count && <><span style={{ color: '#A0A0A0' }}>Employees</span><span>{dealIntel.employee_count}{dealIntel.employee_growth ? ` (${dealIntel.employee_growth})` : ''}</span></>}
+                  {dealIntel.ceo && <><span style={{ color: '#A0A0A0' }}>CEO</span><span>{dealIntel.ceo}</span></>}
+                  {dealIntel.cmo && <><span style={{ color: '#A0A0A0' }}>CMO</span><span>{dealIntel.cmo}</span></>}
+                  {dealIntel.industry && <><span style={{ color: '#A0A0A0' }}>Industry</span><span>{dealIntel.industry}</span></>}
+                  {dealIntel.business_model && <><span style={{ color: '#A0A0A0' }}>Model</span><span>{dealIntel.business_model}</span></>}
+                </div>
+                {dealIntel.existing_sponsorships && (
+                  <div style={{ fontSize: 10, color: '#6B6B6B', marginTop: 4, padding: '4px 8px', background: 'rgba(0,0,0,0.02)', borderRadius: 4 }}>
+                    <span style={{ color: '#A0A0A0' }}>Sponsorships: </span>{dealIntel.existing_sponsorships}
+                  </div>
+                )}
+                {dealIntel.sponsorship_fit_score && (
+                  <div style={{ fontSize: 10, marginTop: 4 }}>
+                    <span style={{ color: '#A0A0A0' }}>Fit score: </span>
+                    <span style={{ fontWeight: 500, color: Number(dealIntel.sponsorship_fit_score) >= 7 ? '#7d8a64' : Number(dealIntel.sponsorship_fit_score) >= 4 ? '#B8643E' : '#f87171' }}>{dealIntel.sponsorship_fit_score}/10</span>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* CONTACTS */}

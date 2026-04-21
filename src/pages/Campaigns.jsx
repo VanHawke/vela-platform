@@ -1012,11 +1012,21 @@ export default function Campaigns({ user }) {
             </div>
             {addProspectsPhase === 'idle' && (
               <>
+                {/* Show existing campaign criteria as context */}
+                {selectedCampaign && (
+                  <div style={{ padding: '10px 12px', background: 'rgba(0,0,0,0.02)', borderRadius: 8, marginBottom: 12, fontSize: 11, color: '#6B6B6B', fontFamily: C.font }}>
+                    <div style={{ fontWeight: 500, color: '#0A0A0A', marginBottom: 4 }}>Current campaign criteria</div>
+                    {selectedCampaign.description && <div style={{ marginBottom: 2 }}>{selectedCampaign.description}</div>}
+                    {selectedCampaign.target_persona && <div>Target: {selectedCampaign.target_persona}</div>}
+                    <div style={{ marginTop: 4, color: '#A0A0A0' }}>Enrolled: {selectedCampaign.counts?.total || 0} prospects</div>
+                  </div>
+                )}
+                <div style={{ fontSize: 11, color: '#A0A0A0', marginBottom: 6, fontFamily: C.font }}>Refine or expand — Kiko will source new companies matching your criteria and enroll them:</div>
                 <textarea
                   value={addProspectsQuery}
                   onChange={e => setAddProspectsQuery(e.target.value)}
-                  placeholder="e.g. 'More fintech companies in London with $50M+ revenue' or 'Add 10 more cybersecurity firms targeting CISOs' or 'Find healthcare companies with recent funding rounds'"
-                  style={{ width: '100%', height: 100, padding: 12, borderRadius: 8, border: `1px solid rgba(0,0,0,0.1)`, background: 'rgba(0,0,0,0.02)', fontSize: 13, fontFamily: C.font, resize: 'vertical', outline: 'none', boxSizing: 'border-box', color: '#0A0A0A' }}
+                  placeholder={`e.g. "10 more companies in the same sector" or "Add fintech companies in London with $50M+ revenue" or "Find healthcare companies with recent funding rounds"`}
+                  style={{ width: '100%', height: 80, padding: 12, borderRadius: 8, border: `1px solid rgba(0,0,0,0.1)`, background: 'rgba(0,0,0,0.02)', fontSize: 13, fontFamily: C.font, resize: 'vertical', outline: 'none', boxSizing: 'border-box', color: '#0A0A0A' }}
                 />
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
                   <button onClick={() => { setAddProspectsOpen(false); setAddProspectsPhase('idle') }} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid rgba(0,0,0,0.1)`, background: 'transparent', color: '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>

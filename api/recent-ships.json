@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-21T11:27:21.048Z",
+  "generated_at": "2026-04-21T11:36:51.574Z",
   "commits": [
+    {
+      "hash": "6797cdd",
+      "subject": "Critical bug fixes: (1) CAMPAIGN DELETE — variable shadowing fixed, delete permanently now works. (2) PIPELINE NOTES — activityNote cleared when switching deals, no more cross-deal contamination. (3) ",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "4446d22",
       "subject": "6 bug fixes + task due dates: (1) CAMPAIGN DELETE — variable shadowing fixed, delete now works. (2) PIPELINE NOTES — activityNote cleared on deal switch, no longer shared across deals. (3) PIPELINE CA",
-      "when": "5 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "ed2ca48",
       "subject": "Campaign management: archive, delete, add prospects. (1) DB: archived + archived_at columns on kiko_sequences. (2) Left rail: Active/Archived toggle tabs with counts. (3) Campaign header: Add Prospect",
-      "when": "86 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "7fdc15e",
@@ -44,12 +49,12 @@
     {
       "hash": "b5d4b5b",
       "subject": "Force deploy with reverted server files",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "f7cc8fb",
       "subject": "REVERT TO WORKING STATE: Reverted kiko.js, kiko-tools.js, intent-classifier.js, data.js to commit 23bc6a1 (last confirmed working state). digest_master_brief and related changes removed entirely. Will",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "ab6d981",
@@ -74,7 +79,7 @@
     {
       "hash": "a3de782",
       "subject": "digest_master_brief tool: Kiko can now absorb a master brief and rewire herself. (1) NEW TOOL digest_master_brief — takes full document text, uses Claude Sonnet to extract: personal bible content (str",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "23bc6a1",
@@ -94,11 +99,6 @@
     {
       "hash": "e0b3130",
       "subject": "All Chats fix + Document Library v2: (1) ALL CHATS — moved to full-page early return BEFORE welcome/conversation split, no more nesting inside overflow:hidden containers. (2) DOCUMENT LIBRARY v2 — hie",
-      "when": "17 hours ago"
-    },
-    {
-      "hash": "83956c7",
-      "subject": "Revert rewrite regex to simple pattern — complex regex was failing Vercel schema validation",
       "when": "17 hours ago"
     }
   ]
