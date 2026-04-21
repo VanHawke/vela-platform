@@ -144,7 +144,9 @@ Documents uploaded via Kiko chat are auto-analysed: AI extracts title, sport, te
 ═══ PUSH NOTIFICATIONS ═══
 
 Service worker v3. VAPID keys in platform_config. Client auto-registers on mobile PWA login. Push dispatcher cron checks kiko_alerts every 5min for: reply_from_prospect, linkedin_connection_accepted, bounce_detected, new_partnership, new_user_joined, task_due.
-`;
+
+═══ BACKGROUND JOBS ═══
+
 • enrich_batch → Enrich multiple companies in background
 • voice_relearn → Re-analyse sent emails
 • campaign_draft → Draft full campaign sequence
