@@ -1541,10 +1541,9 @@ RULES:
             )}
             <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
               <button onClick={() => setLiTestOpen(false)} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>Close</button>
-              {!liTestSent && (() => {
-                const isValid = liTestUrl.toLowerCase().includes('linkedin.com/in/')
-                return (
-                <button disabled={!isValid} onClick={async () => {
+              {!liTestSent && (
+                <button onClick={async () => {
+                  if (!liTestUrl.toLowerCase().includes('linkedin.com/in/')) { alert('Please paste a valid LinkedIn profile URL (e.g. https://linkedin.com/in/username)'); return }
                   try {
                     const cur = steps[selStep] || {}
                     const senderMember = seq?.send_from_user_id ? orgMembers.find(m => m.user_id === seq.send_from_user_id) : orgMembers[0]
@@ -1556,14 +1555,12 @@ RULES:
                       context: JSON.stringify({ test: true, sender: senderMember?.email || 'sunny@vanhawke.com', step: selStep }),
                       status: 'pending', priority: 10,
                     })
-                    if (error) { console.error('[LinkedIn test]', error); alert('Failed: ' + error.message); return }
-                    // Trigger LinkedIn worker immediately via Vercel proxy → Hetzner
+                    if (error) { alert('Insert failed: ' + error.message); return }
                     fetch('/api/linkedin-trigger', { method: 'POST' }).catch(() => {})
                     setLiTestSent(true)
-                  } catch (err) { console.error('[LinkedIn test]', err); alert('Error: ' + err.message) }
-                }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: isValid ? '#0077B5' : 'rgba(0,0,0,0.1)', color: isValid ? '#fff' : '#A0A0A0', fontSize: 12, fontWeight: 500, cursor: isValid ? 'pointer' : 'default', fontFamily: C.font }}>Send test</button>
-                )
-              })()}
+                  } catch (err) { alert('Error: ' + err.message) }
+                }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#0077B5', color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}>Send test</button>
+              )}
             </div>
           </div>
         </div>
