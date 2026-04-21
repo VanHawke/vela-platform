@@ -55,19 +55,21 @@ function buildRawEmail({ from, to, subject, htmlBody, plainBody }) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' })
-  const { to, subject, body, send = false, contactStatus = 'cold' } = req.body || {}
+  const { to, subject, body, send = false, contactStatus = 'cold', senderEmail } = req.body || {}
   if (!subject || !body) return res.status(400).json({ error: 'Missing subject or body' })
 
   try {
-    // Use the canonical token helper (same one the cron uses successfully)
-    // Auto-refreshes if expired or expiring within 5 minutes
-    const accessToken = await getGoogleToken('sunny@vanhawke.com')
-    if (!accessToken) return res.status(401).json({ error: 'No Google token' })
+    // Resolve sender — use senderEmail if provided, otherwise default to Sunny
+    const resolvedSender = senderEmail || 'sunny@vanhawke.com'
+    const accessToken = await getGoogleToken(resolvedSender)
+    if (!accessToken) return res.status(401).json({ error: `No Google token for ${resolvedSender}` })
 
-    // Pull real signature from Gmail sendAs API + wrap body with real Helvetica/signature template
-    const SUNNY_USER_ID = '9f486437-4bf5-4111-abfe-fe19bfa76063'
-    const FROM_ADDRESS = 'sunny@vanhawke.agency'
-    const signatures = await loadUserSignatures(sbFetch, SUNNY_USER_ID, accessToken, FROM_ADDRESS).catch(() => ({ signature: '', coldSignature: '' }))
+    // Resolve user_id and from_address for this sender
+    const senderConfig = await sbFetch(`kiko_user_config?email=eq.${encodeURIComponent(resolvedSender)}&select=user_id,email,display_name&limit=1`).catch(() => [])
+    const senderUserId = senderConfig?.[0]?.user_id || '9f486437-4bf5-4111-abfe-fe19bfa76063'
+    // Use .agency address for sending if available, otherwise .com
+    const fromAddress = resolvedSender.replace('@vanhawke.com', '@vanhawke.agency')
+    const signatures = await loadUserSignatures(sbFetch, senderUserId, accessToken, fromAddress).catch(() => ({ signature: '', coldSignature: '' }))
     const { html: htmlBody, text: plainBody } = wrapEmailBody(body, {
       contactStatus,
       signature: signatures.signature,
@@ -83,8 +85,11 @@ export default async function handler(req, res) {
       .replace(/â€"/g, '-')
     const encodedSubject = /^[\x20-\x7E]*$/.test(cleanSubject) ? cleanSubject : `=?UTF-8?B?${Buffer.from(cleanSubject).toString('base64')}?=`
 
+    // Resolve sender display name
+    const senderDisplayName = senderConfig?.[0]?.display_name || resolvedSender.split('@')[0].split('.').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+
     const raw = buildMimeWithInlineImages({
-      from: 'Sunny Sidhu <sunny@vanhawke.agency>',
+      from: `${senderDisplayName} <${fromAddress}>`,
       to: to || '',
       subject: encodedSubject,
       htmlBody,

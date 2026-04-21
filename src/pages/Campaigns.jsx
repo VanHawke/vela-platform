@@ -993,7 +993,7 @@ export default function Campaigns({ user }) {
             </div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button onClick={() => setConfirmDelete(null)} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid rgba(0,0,0,0.1)`, background: 'transparent', color: '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
-              <button onClick={() => { const c = campaigns.find(c => c.id === confirmDelete); if (c) deleteCampaign(c) }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#f87171', color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}>Delete permanently</button>
+              <button onClick={() => { const target = campaigns.find(camp => camp.id === confirmDelete); if (target) deleteCampaign(target) }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#f87171', color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}>Delete permanently</button>
             </div>
           </div>
         </div>

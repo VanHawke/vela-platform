@@ -212,6 +212,9 @@ export default function Pipeline({ user }) {
   }
   const [savingActivity, setSavingActivity] = useState(false)
   const [activityLogged, setActivityLogged] = useState(null)
+  const [newTaskNote, setNewTaskNote] = useState('')
+  const [newTaskDate, setNewTaskDate] = useState('')
+  const [savingTask, setSavingTask] = useState(false)
   const [editingValue, setEditingValue] = useState(false)
   const [editValue, setEditValue] = useState('')
 
@@ -346,7 +349,7 @@ export default function Pipeline({ user }) {
   const selectDeal = async (deal) => {
     setSelectedDeal(deal)
     setLoadingPanel(true)
-    setDealCompany(null); setDealContacts([]); setDealCampaigns([]); setDealTasks([]); setDealActivities([])
+    setDealCompany(null); setDealContacts([]); setDealCampaigns([]); setDealTasks([]); setDealActivities([]); setActivityNote(''); setActivityLogged(null); setNewTaskNote(''); setNewTaskDate('')
 
     try {
       // Find company by name — fuzzy match (trim + lowercase + starts-with fallback)
@@ -386,11 +389,12 @@ export default function Pipeline({ user }) {
         .map(t => ({ id: t.id, ...t.data }))
       setDealTasks(dealTasks)
 
-      // Campaigns this deal/contacts are enrolled in
+      // Campaigns this deal/contacts are enrolled in — filtered by company name
       if (deal.company) {
         const { data: enrollments } = await supabase
           .from('kiko_sequence_enrollments')
-          .select('id, sequence_id, contact_id, status, kiko_sequences(name)')
+          .select('id, sequence_id, contact_id, contact_name, company, status, kiko_sequences(name)')
+          .ilike('company', `%${deal.company}%`)
           .limit(20)
         setDealCampaigns(enrollments || [])
       }
@@ -409,7 +413,7 @@ export default function Pipeline({ user }) {
 
   const closePanel = () => {
     setSelectedDeal(null); setDealCompany(null); setDealContacts([])
-    setDealCampaigns([]); setDealTasks([]); setDealActivities([]); setActivityNote('')
+    setDealCampaigns([]); setDealTasks([]); setDealActivities([]); setActivityNote(''); setNewTaskNote(''); setNewTaskDate('')
   }
 
   const saveDealValue = async () => {
@@ -450,6 +454,46 @@ export default function Pipeline({ user }) {
     // Refresh activity list
     const { data: refreshed } = await supabase.from('activities').select('id, data, created_at').or(`data->>deal_id.eq.${selectedDeal._id},data->>company.ilike.%${selectedDeal.company || ''}%`).order('created_at', { ascending: false }).limit(15)
     setDealActivities((refreshed || []).map(a => ({ id: a.id, ...a.data, created_at: a.created_at })))
+  }
+
+  const createTask = async () => {
+    if (!selectedDeal || !newTaskNote.trim() || savingTask) return
+    setSavingTask(true)
+    try {
+      const taskId = `t${Date.now()}${Math.random().toString(36).slice(2, 6)}`
+      const taskData = {
+        type: 'Follow-up',
+        notes: newTaskNote,
+        company: selectedDeal.company || selectedDeal.title,
+        contact: selectedDeal.contactName || '',
+        dueDate: newTaskDate || null,
+        completed: false,
+        createdAt: new Date().toISOString(),
+        assignedTo: 'Sunny Sidhu',
+        deal_id: selectedDeal._id,
+        deal: selectedDeal.company,
+      }
+      await supabase.from('tasks').insert({ id: taskId, data: taskData, org_id: selectedDeal.org_id || null, user_id: selectedDeal.user_id || null })
+      setDealTasks(prev => [{ id: taskId, ...taskData }, ...prev])
+      setNewTaskNote('')
+      setNewTaskDate('')
+      // Also create a kiko_alert for the due date
+      if (newTaskDate) {
+        await supabase.from('kiko_alerts').insert({
+          type: 'task_due',
+          title: `Task due: ${selectedDeal.company}`,
+          detail: newTaskNote,
+          entity_type: 'deal',
+          entity_name: selectedDeal.company,
+          severity: 'medium',
+          metadata: { deal_id: selectedDeal._id, due_date: newTaskDate, task_id: taskId },
+          created_at: new Date(newTaskDate + 'T09:00:00Z').toISOString(),
+        }).catch(() => {})
+      }
+    } catch (err) {
+      console.error('[Pipeline] task create error:', err)
+    }
+    setSavingTask(false)
   }
 
 
@@ -720,9 +764,17 @@ export default function Pipeline({ user }) {
               ) : dealTasks.slice(0, 5).map(t => (
                 <div key={t.id} className="pl-panel-task">
                   <input type="checkbox" defaultChecked={t.completed} />
-                  <span>{t.title || t.name || 'Task'}</span>
+                  <span>{t.notes || t.title || t.name || 'Task'}{t.dueDate ? ` — due ${new Date(t.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}</span>
                 </div>
               ))}
+              {/* Create new task */}
+              <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <input type="text" value={newTaskNote} onChange={e => setNewTaskNote(e.target.value)} placeholder="Add a task..." style={{ width: '100%', padding: '7px 10px', borderRadius: 5, border: '1px solid rgba(0,0,0,0.08)', fontSize: 11, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }} />
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <input type="date" value={newTaskDate} onChange={e => setNewTaskDate(e.target.value)} style={{ flex: 1, padding: '6px 8px', borderRadius: 5, border: '1px solid rgba(0,0,0,0.08)', fontSize: 11, fontFamily: 'inherit', outline: 'none' }} />
+                  <button onClick={createTask} disabled={!newTaskNote.trim() || savingTask} style={{ padding: '6px 12px', borderRadius: 5, border: 'none', background: newTaskNote.trim() ? '#0A0A0A' : 'rgba(0,0,0,0.06)', color: newTaskNote.trim() ? '#FEFEFC' : '#A0A0A0', fontSize: 10, fontWeight: 500, cursor: newTaskNote.trim() ? 'pointer' : 'default', fontFamily: 'inherit' }}>{savingTask ? '...' : 'Set task'}</button>
+                </div>
+              </div>
             </div>
 
             {/* ACTIVITY HISTORY */}

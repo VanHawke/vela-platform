@@ -484,7 +484,10 @@ RULES:
     const body = (s.template || '').replace(/\{firstName\}/g, 'Test').replace(/\{lastName\}/g, 'User').replace(/\{companyName\}/g, 'Test Company').replace(/\{category\}/g, category).replace(/\{revenue\}/g, '$1B').replace(/\{ceo\}/g, 'CEO Name').replace(/\{raceWindow\}/g, 'Miami Grand Prix').replace(/\{recentNews\}/g, 'recent development').replace(/\{prevSubject\}/g, 'Previous subject').replace(/\{signature\}/g, '').replace(/\n\n+$/, '')
     const subject = '[TEST] ' + (s.subject || 'Test').replace(/\{category\}/g, category)
     const recipient = toEmail || 'sunny@vanhawke.com'
-    const r = await fetch('/api/gmail-draft', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: recipient, subject, body, send: true, contactStatus: 'cold' }) })
+    // Resolve sender email from send_from_user_id
+    const senderMember = seq?.send_from_user_id ? orgMembers.find(m => m.user_id === seq.send_from_user_id) : null
+    const senderEmail = senderMember?.email || null
+    const r = await fetch('/api/gmail-draft', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: recipient, subject, body, send: true, contactStatus: 'cold', senderEmail }) })
     const data = await r.json().catch(() => ({}))
     if (!r.ok) throw new Error(data.error || r.statusText)
     return data
