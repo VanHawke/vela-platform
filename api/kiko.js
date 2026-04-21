@@ -777,6 +777,9 @@ export default async function handler(req, res) {
 
   // ── Early greeting detection — skip heavy fetches for simple greetings ──
   const earlyGreeting = /^(hi|hey|hello|good\s+(morning|afternoon|evening)|howdy|what'?s?\s+up|yo)\b/i.test((message || '').trim());
+  // Casual/personal questions that don't need CRM, knowledge base, or entity context
+  const casualQuery = !earlyGreeting && /^(should\s+i|what\s+should\s+(i|we)|can\s+you\s+recommend|what('?s| is)\s+(a\s+good|the\s+best)|do\s+you\s+think|how\s+about|what\s+are\s+your?\s+thoughts?|tell\s+me\s+(a\s+joke|something\s+fun|about)|play|watch|eat|cook|read|listen|drink|wear|buy|order|try|visit|go\s+to|make\s+me|sing|dance|joke|game|movie|show|book|song|recipe|weather|temp|rain|snow|sun|time|date|day|tomorrow|tonight|weekend|plan\s+for|uno|chess|cards|board\s+game|netflix|spotify|music|playlist|dinner|lunch|breakfast|snack|coffee|tea|beer|wine|cocktail|restaurant|bar|pub|club|pool|beach|park|gym|walk|run|hike|swim|yoga|meditat|relax|sleep|nap|rest|chill|vibe|mood|feel|happy|sad|tired|bored|excit|fun|funny|humou?r|laugh|smile|love|hate|favo[u]?rite)/i.test((message || '').trim());
+  const isLightweight = earlyGreeting || casualQuery;
 
   // ── PARALLEL INITIAL LOAD — entityContext, identity, selfKnowledge, Bible layers all at once ──
   // Bible layers: Core (universal) + Org (per-org) + Personal (per-user) — loaded from DB tables
@@ -786,18 +789,18 @@ export default async function handler(req, res) {
   const orgId = userOrgId?.[0]?.organization_id || null;
 
   const [entityContext, identityResult, selfKnowledge, voiceMemResult, coreBibleResult, orgBibleResult, userBibleResult, knowledgeBaseResult, learnedRulesResult, preferencesResult] = await Promise.all([
-    earlyGreeting ? Promise.resolve('') : fetchEntityContext(pageEntity),
+    isLightweight ? Promise.resolve('') : fetchEntityContext(pageEntity),
     sbFetch(`kiko_memories?path=eq./memories/identity.md&user_id=eq.${userId}&select=content&limit=1`).catch(() => []),
-    earlyGreeting ? Promise.resolve('') : generateSelfKnowledge(userId).catch(() => 'Self-knowledge unavailable.'),
+    isLightweight ? Promise.resolve('') : generateSelfKnowledge(userId).catch(() => 'Self-knowledge unavailable.'),
     (voiceMode || currentPage === 'voice')
       ? sbFetch(`kiko_memories?select=path,content&is_directory=eq.false&user_id=eq.${userId}&path=like./memories/%_profile.md&order=path.asc`).catch(() => [])
       : Promise.resolve([]),
     sbFetch('kiko_core_bible?select=content&order=version.desc&limit=1').catch(() => []),
     orgId ? sbFetch(`org_bibles?organization_id=eq.${orgId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
     isRegistered ? sbFetch(`user_bibles?user_id=eq.${userId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
-    earlyGreeting ? Promise.resolve([]) : sbFetch('kiko_knowledge?select=domain,content,researched_at&order=researched_at.desc&limit=10').catch(() => []),
-    earlyGreeting ? Promise.resolve([]) : sbFetch(`kiko_learned_rules?active=eq.true&select=id,rule_text,category,evidence_count,weight&order=weight.desc&limit=20`).catch(() => []),
-    earlyGreeting ? Promise.resolve([]) : sbFetch(`kiko_preferences?select=category,preference,confidence&order=confidence.desc&limit=15`).catch(() => []),
+    isLightweight ? Promise.resolve([]) : sbFetch('kiko_knowledge?select=domain,content,researched_at&order=researched_at.desc&limit=10').catch(() => []),
+    isLightweight ? Promise.resolve([]) : sbFetch(`kiko_learned_rules?active=eq.true&select=id,rule_text,category,evidence_count,weight&order=weight.desc&limit=20`).catch(() => []),
+    isLightweight ? Promise.resolve([]) : sbFetch(`kiko_preferences?select=category,preference,confidence&order=confidence.desc&limit=15`).catch(() => []),
   ]);
 
   // Assemble Bible layers — fallback gracefully if any layer missing
@@ -1630,7 +1633,7 @@ DEAL STAGE MAPPING:
     const FAST_RESPONSE_INTENTS = ['greeting', 'identity'];
     const isSimpleGreeting = FAST_RESPONSE_INTENTS.includes(intent);
     const useHaikuForGreeting = intent === 'greeting' && (voiceMode || !isFirstMessage);
-    const skipTools = isSimpleGreeting;
+    const skipTools = isSimpleGreeting || casualQuery;
     let response = await streamCall(messages, skipTools ? { noTools: true, maxTokens: voiceMode ? 300 : 1500, useHaiku: useHaikuForGreeting } : {});
     let toolRounds = 0;
     const toolsUsedList = [];

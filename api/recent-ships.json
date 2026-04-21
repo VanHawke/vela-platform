@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-21T17:56:57.830Z",
+  "generated_at": "2026-04-21T18:29:02.998Z",
   "commits": [
+    {
+      "hash": "48d603e",
+      "subject": "LinkedIn campaign blocks + template variables: (1) PREDEFINED BLOCKS — Connection Request, Connection Accepted, LinkedIn Message as separate step types with distinct colors/icons. (2) CONDITIONS — con",
+      "when": "32 minutes ago"
+    },
     {
       "hash": "f38fe2a",
       "subject": "LinkedIn test button fix: removed IIFE pattern that prevented clicks. Button always blue now (validation on click with alert). No disabled attribute. Alert for every failure path.",
-      "when": "23 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "b90999c",
@@ -19,7 +24,7 @@
     {
       "hash": "5f5a1ae",
       "subject": "LinkedIn test sends immediately: after queuing to kiko_linkedin_queue, triggers /api/cron-linkedin-sender instantly instead of waiting for hourly cron.",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "a77d06c",
@@ -39,7 +44,7 @@
     {
       "hash": "852776d",
       "subject": "All Chats fixes: (1) Overlay now covers full screen at z-index 300 (above nav z-250) — fixes text cut-off at top. (2) All Chats button added to mobile chat history panel. (3) Both welcome and conversa",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "181d0c6",
@@ -54,12 +59,12 @@
     {
       "hash": "691db24",
       "subject": "Match Kiko nav font to mobile: 24px (was 18px), letter-spacing -0.02em (was 0.04em), added Source Serif Pro fallback",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "e3ffabf",
       "subject": "Remove branding: star SVG icon removed from top nav (just Kiko serif text remains). Van Hawke wordmark removed from login page.",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "4ca9baa",
@@ -74,12 +79,12 @@
     {
       "hash": "44ecdb5",
       "subject": "Pipeline intelligence + company monitoring + add prospects UX: (1) DEAL CARD — Company Intelligence section shows funding, revenue, employees, CEO, CMO, industry, business model, sponsorships, fit sco",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "6797cdd",
       "subject": "Critical bug fixes: (1) CAMPAIGN DELETE — variable shadowing fixed, delete permanently now works. (2) PIPELINE NOTES — activityNote cleared when switching deals, no more cross-deal contamination. (3) ",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "4446d22",
@@ -95,11 +100,6 @@
       "hash": "7fdc15e",
       "subject": "FIX: kiko-self-knowledge.js syntax error — premature backtick closing template literal at line 147 left bullet points outside the string. Broke ALL imports of kiko.js and health.js. Fixed by removing ",
       "when": "12 hours ago"
-    },
-    {
-      "hash": "e5379b0",
-      "subject": "Full knowledge update: (1) KIKO_BIBLE.md rewritten — all 12 pages, self-improvement engine, document library, push notifications, multi-user system, cron schedule, language rules. (2) kiko_core_bible ",
-      "when": "21 hours ago"
     }
   ]
 }
