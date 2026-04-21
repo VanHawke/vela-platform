@@ -57,7 +57,7 @@ export default function AllChatsView({ convos, onSelect, onDelete, onClose, user
   const displayed = searchResults !== null ? searchResults : convos
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 700, margin: '0 auto', padding: '40px 24px 24px', width: '100%', overflow: 'hidden' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 700, margin: '0 auto', paddingTop: 'max(40px, calc(20px + env(safe-area-inset-top, 20px)))', paddingLeft: 24, paddingRight: 24, paddingBottom: 24, width: '100%', overflow: 'hidden' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 600, color: '#0A0A0A', fontFamily: T.font, margin: 0 }}>Chats</h1>

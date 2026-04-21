@@ -1604,7 +1604,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
       {/* All Chats overlay — fixed position, works in welcome state */}
       {allChatsData && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 300, background: '#FEFEFC', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ position: 'fixed', top: isMobile ? 0 : 60, left: 0, right: 0, bottom: 0, zIndex: isMobile ? 300 : 260, background: '#FEFEFC', display: 'flex', flexDirection: 'column' }}>
           <AllChatsView
             convos={allChatsData.convos}
             userId={user?.id}
@@ -1831,7 +1831,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
 
       {/* All Chats overlay — fixed position, guaranteed to render on top */}
       {allChatsData && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 300, background: '#FEFEFC', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ position: 'fixed', top: isMobile ? 0 : 60, left: 0, right: 0, bottom: 0, zIndex: isMobile ? 300 : 260, background: '#FEFEFC', display: 'flex', flexDirection: 'column' }}>
           <AllChatsView
             convos={allChatsData.convos}
             userId={user?.id}

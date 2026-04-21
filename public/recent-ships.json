@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-21T14:46:43.620Z",
+  "generated_at": "2026-04-21T15:00:52.927Z",
   "commits": [
+    {
+      "hash": "852776d",
+      "subject": "All Chats fixes: (1) Overlay now covers full screen at z-index 300 (above nav z-250) — fixes text cut-off at top. (2) All Chats button added to mobile chat history panel. (3) Both welcome and conversa",
+      "when": "14 minutes ago"
+    },
     {
       "hash": "181d0c6",
       "subject": "Timezone-aware sending: Sequence sender now resolves each prospect's location from contacts table, maps to UTC offset via 100+ city/country/region keywords covering Americas, Europe, Middle East, Afri",
-      "when": "20 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "8bdc593",
       "subject": "Notifications fix + Pipeline delete + LinkedIn test + alerts cleared: (1) NOTIFICATIONS — panel now uses calc(100vh-80px) maxHeight (was 420px fixed, cut off 'View all'). Clicking notification sends a",
-      "when": "37 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "691db24",
       "subject": "Match Kiko nav font to mobile: 24px (was 18px), letter-spacing -0.02em (was 0.04em), added Source Serif Pro fallback",
-      "when": "55 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "e3ffabf",
       "subject": "Remove branding: star SVG icon removed from top nav (just Kiko serif text remains). Van Hawke wordmark removed from login page.",
-      "when": "72 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "4ca9baa",
       "subject": "Campaign scheduling + All Chats fix + Add Prospects progress: (1) ALL CHATS — overlay added to BOTH welcome and conversation state returns. Previous fix only covered conversation state, so clicking Al",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "d227d18",
@@ -39,12 +44,12 @@
     {
       "hash": "6797cdd",
       "subject": "Critical bug fixes: (1) CAMPAIGN DELETE — variable shadowing fixed, delete permanently now works. (2) PIPELINE NOTES — activityNote cleared when switching deals, no more cross-deal contamination. (3) ",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "4446d22",
       "subject": "6 bug fixes + task due dates: (1) CAMPAIGN DELETE — variable shadowing fixed, delete now works. (2) PIPELINE NOTES — activityNote cleared on deal switch, no longer shared across deals. (3) PIPELINE CA",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "ed2ca48",
@@ -54,7 +59,7 @@
     {
       "hash": "7fdc15e",
       "subject": "FIX: kiko-self-knowledge.js syntax error — premature backtick closing template literal at line 147 left bullet points outside the string. Broke ALL imports of kiko.js and health.js. Fixed by removing ",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "e5379b0",
@@ -79,7 +84,7 @@
     {
       "hash": "b5c3d14",
       "subject": "Add kiko-debug diagnostic endpoint to find actual crash cause",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "b5d4b5b",
@@ -94,11 +99,6 @@
     {
       "hash": "ab6d981",
       "subject": "Force new hash to deploy intent TDZ fix",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "2c54e11",
-      "subject": "Force deploy: fix intent TDZ error blocking all Kiko responses",
       "when": "19 hours ago"
     }
   ]

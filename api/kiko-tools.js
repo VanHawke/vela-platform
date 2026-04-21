@@ -320,6 +320,15 @@ export const TOOL_DEFINITIONS = [
       confidence: { type: 'string', enum: ['high', 'medium'], description: 'How strongly to weight this preference. High = always apply. Medium = apply when relevant.' },
     }, required: ['category', 'preference'] },
   },
+  {
+    name: 'google_maps_link',
+    description: 'Generate a Google Maps link for a place, directions, or search. On mobile, these links launch Google Maps directly. Use this whenever discussing venues, restaurants, hotels, addresses, or giving directions. Return the link in markdown format so the user can tap/click it.',
+    input_schema: { type: 'object', properties: {
+      place: { type: 'string', description: 'The place name or address (e.g. "Komodo Miami", "Faena Hotel Miami Beach", "1100 Biscayne Blvd Miami")' },
+      mode: { type: 'string', enum: ['search', 'directions'], description: 'search = find the place. directions = get directions to the place from the user\'s current location.' },
+      travel_mode: { type: 'string', enum: ['driving', 'walking', 'transit', 'bicycling'], description: 'Only for directions mode. Default: driving.' },
+    }, required: ['place'] },
+  },
 ];
 
 // Conditional tool — only injected when intent is master_brief
@@ -665,6 +674,19 @@ Document:\n${document_text.slice(0, 25000)}` }],
   }
 
   // ── Direct tools (kept for backwards compatibility) ──
+  // ── Google Maps Link Generator ──
+  if (name === 'google_maps_link') {
+    const { place, mode = 'search', travel_mode = 'driving' } = input;
+    const encoded = encodeURIComponent(place);
+    if (mode === 'directions') {
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${encoded}&travelmode=${travel_mode}`;
+      return `📍 **[Get directions to ${place}](${url})**\n\nThis link opens Google Maps with directions. On mobile, it launches the Google Maps app directly.`;
+    } else {
+      const url = `https://www.google.com/maps/search/?api=1&query=${encoded}`;
+      return `📍 **[${place} on Google Maps](${url})**\n\nTap to open in Google Maps.`;
+    }
+  }
+
   if (name === 'navigate_page') {
     const { page, reason } = input;
     return { navigated: true, page, reason: reason || `Opening ${page}` };
