@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-21T15:00:52.927Z",
+  "generated_at": "2026-04-21T15:13:09.877Z",
   "commits": [
+    {
+      "hash": "cf2afea",
+      "subject": "Google Maps + All Chats positioning + concierge mode: (1) GOOGLE MAPS TOOL — google_maps_link generates tappable links that open Maps app on mobile. Search mode finds places, directions mode gives tur",
+      "when": "12 minutes ago"
+    },
     {
       "hash": "852776d",
       "subject": "All Chats fixes: (1) Overlay now covers full screen at z-index 300 (above nav z-250) — fixes text cut-off at top. (2) All Chats button added to mobile chat history panel. (3) Both welcome and conversa",
-      "when": "14 minutes ago"
+      "when": "26 minutes ago"
     },
     {
       "hash": "181d0c6",
       "subject": "Timezone-aware sending: Sequence sender now resolves each prospect's location from contacts table, maps to UTC offset via 100+ city/country/region keywords covering Americas, Europe, Middle East, Afri",
-      "when": "34 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "8bdc593",
       "subject": "Notifications fix + Pipeline delete + LinkedIn test + alerts cleared: (1) NOTIFICATIONS — panel now uses calc(100vh-80px) maxHeight (was 420px fixed, cut off 'View all'). Clicking notification sends a",
-      "when": "51 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "691db24",
       "subject": "Match Kiko nav font to mobile: 24px (was 18px), letter-spacing -0.02em (was 0.04em), added Source Serif Pro fallback",
-      "when": "69 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "e3ffabf",
       "subject": "Remove branding: star SVG icon removed from top nav (just Kiko serif text remains). Van Hawke wordmark removed from login page.",
-      "when": "86 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "4ca9baa",
@@ -39,7 +44,7 @@
     {
       "hash": "44ecdb5",
       "subject": "Pipeline intelligence + company monitoring + add prospects UX: (1) DEAL CARD — Company Intelligence section shows funding, revenue, employees, CEO, CMO, industry, business model, sponsorships, fit sco",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "6797cdd",
@@ -79,7 +84,7 @@
     {
       "hash": "4602a37",
       "subject": "ROOT CAUSE FIX: kiko_preferences column is 'preference' not 'content'. Query selected wrong column → Supabase returned error object → .filter() crashed on object instead of array → FUNCTION_INVOCATION",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "b5c3d14",
@@ -94,11 +99,6 @@
     {
       "hash": "f7cc8fb",
       "subject": "REVERT TO WORKING STATE: Reverted kiko.js, kiko-tools.js, intent-classifier.js, data.js to commit 23bc6a1 (last confirmed working state). digest_master_brief and related changes removed entirely. Will",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "ab6d981",
-      "subject": "Force new hash to deploy intent TDZ fix",
       "when": "19 hours ago"
     }
   ]

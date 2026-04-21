@@ -91,6 +91,9 @@ export default function SequenceDetail() {
   const [testModalOpen, setTestModalOpen] = useState(false)
   const [testModalStep, setTestModalStep] = useState(null)
   const [testRecipientMode, setTestRecipientMode] = useState('me')
+  const [liTestOpen, setLiTestOpen] = useState(false)
+  const [liTestUrl, setLiTestUrl] = useState('')
+  const [liTestSent, setLiTestSent] = useState(false)
   const [orgMembers, setOrgMembers] = useState([])
   const [launching, setLaunching] = useState(false)
   const [verifying, setVerifying] = useState(false)
@@ -320,7 +323,7 @@ export default function SequenceDetail() {
       await supabase.from('kiko_sequence_enrollments').delete().eq('sequence_id', id)
     }
     await supabase.from('kiko_sequences').delete().eq('id', id)
-    nav('/sequences')
+    nav('/campaigns')
   }
 
   function addStep(ch) {
@@ -675,7 +678,7 @@ RULES:
       <div style={{ padding: '8px 28px 60px', fontFamily: C.font, color: C.text, maxWidth: 1300, margin: '0 auto', overflowY: 'auto', flex: 1 }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-        <button onClick={() => nav('/sequences')} style={{ background: 'none', border: 'none', color: C.textSec, cursor: 'pointer', padding: 4 }}><ArrowLeft size={18} /></button>
+        <button onClick={() => nav('/campaigns')} style={{ background: 'none', border: 'none', color: C.textSec, cursor: 'pointer', padding: 4 }}><ArrowLeft size={18} /></button>
         <input value={seq?.name || ''} onChange={e => { setSeq({ ...seq, name: e.target.value }); setDirty(true) }} placeholder="Campaign name..." style={{ fontSize: 22, fontWeight: 300, background: 'none', border: 'none', color: C.text, fontFamily: C.fontDisplay, outline: 'none', flex: 1 }} />
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           {dirty && <span style={{ fontSize: 11, color: C.amber }}>Unsaved</span>}
@@ -948,23 +951,8 @@ RULES:
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `1px solid rgba(0,0,0,0.08)`, background: 'rgba(0,0,0,0.03)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to write this step</button>
                   {cur.channel === 'email' && <button onClick={() => { setTestModalStep(selStep); setTestModalOpen(true) }} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `1px solid ${testSent ? 'rgba(0,0,0,0.10)' : C.border}`, background: testSent ? 'rgba(0,0,0,0.03)' : 'transparent', color: testSent ? C.teal : C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{testSent ? '✓ Test sent' : '📧 Send test'}</button>}
-                  {cur.channel === 'linkedin' && <button onClick={async () => {
-                    const linkedinUrl = prompt('LinkedIn profile URL of recipient (e.g. https://linkedin.com/in/username):')
-                    if (!linkedinUrl?.includes('linkedin.com')) return
-                    const senderMember = seq?.send_from_user_id ? orgMembers.find(m => m.user_id === seq.send_from_user_id) : orgMembers[0]
-                    const msg = (cur.template || '').replace(/\{firstName\}/g, 'Test').replace(/\{companyName\}/g, 'Test Company').replace(/\{category\}/g, seq?.name?.split(' - ')[1] || 'Category').slice(0, 200)
-                    await supabase.from('kiko_linkedin_queue').insert({
-                      contact_name: 'Test Recipient',
-                      company: 'Test',
-                      linkedin_url: linkedinUrl,
-                      message_type: cur.action === 'invite' ? 'invite' : 'message',
-                      message: '[TEST] ' + msg,
-                      context: JSON.stringify({ test: true, sender: senderMember?.email || 'sunny@vanhawke.com', step: selStep }),
-                      status: 'pending',
-                      priority: 10,
-                    })
-                    alert(`LinkedIn test queued. ${senderMember?.display_name || 'Sender'} will send to the provided profile when the LinkedIn worker next runs.`)
-                  }} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#0077B5', fontSize: 11, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>💼 Test LinkedIn</button>}
+                  {cur.channel === 'linkedin' && <button onClick={() => { setLiTestOpen(true); setLiTestUrl(''); setLiTestSent(false) }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `1px solid ${liTestSent ? 'rgba(0,77,181,0.15)' : C.border}`, background: liTestSent ? 'rgba(0,77,181,0.04)' : 'transparent', color: liTestSent ? '#0077B5' : C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{liTestSent ? '✓ Queued' : '💼 Test LinkedIn'}</button>}
                 </div>
 
                 {/* ═══ REFINE WITH FEEDBACK — iterate back and forth with Kiko ═══ */}
@@ -1532,6 +1520,46 @@ RULES:
           </div>
         )
       })()}
+
+      {/* LinkedIn test modal */}
+      {liTestOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setLiTestOpen(false)}>
+          <div style={{ background: '#FEFEFC', borderRadius: 14, maxWidth: 420, width: '90%', padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ fontSize: 15, fontWeight: 500, color: '#0A0A0A', margin: '0 0 6px', fontFamily: C.font }}>Test LinkedIn message</h3>
+            <p style={{ fontSize: 12, color: '#6B6B6B', margin: '0 0 16px', fontFamily: C.font, lineHeight: 1.5 }}>Paste the recipient's LinkedIn profile URL. The test message will be queued and sent by the LinkedIn worker on its next run.</p>
+            <input
+              value={liTestUrl}
+              onChange={e => setLiTestUrl(e.target.value)}
+              placeholder="https://linkedin.com/in/username"
+              autoFocus
+              style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: '#FAFAF7', fontSize: 13, fontFamily: C.font, outline: 'none', boxSizing: 'border-box', color: '#0A0A0A' }}
+            />
+            {liTestSent && (
+              <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 8, background: 'rgba(0,77,181,0.06)', border: '1px solid rgba(0,77,181,0.15)', fontSize: 12, color: '#0077B5', fontFamily: C.font }}>
+                Test message queued. It will be sent on the next LinkedIn worker run (hourly).
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
+              <button onClick={() => setLiTestOpen(false)} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>Close</button>
+              {!liTestSent && (
+                <button disabled={!liTestUrl.includes('linkedin.com')} onClick={async () => {
+                  const cur = steps[selStep] || {}
+                  const senderMember = seq?.send_from_user_id ? orgMembers.find(m => m.user_id === seq.send_from_user_id) : orgMembers[0]
+                  const msg = (cur.template || '').replace(/\{firstName\}/g, 'Test').replace(/\{companyName\}/g, 'Test Company').replace(/\{category\}/g, seq?.name?.split(' - ')[1] || 'Category').slice(0, 200)
+                  await supabase.from('kiko_linkedin_queue').insert({
+                    contact_name: 'Test Recipient', company: 'Test', linkedin_url: liTestUrl.trim(),
+                    message_type: cur.action === 'invite' ? 'invite' : 'message',
+                    message: '[TEST] ' + msg,
+                    context: JSON.stringify({ test: true, sender: senderMember?.email || 'sunny@vanhawke.com', step: selStep }),
+                    status: 'pending', priority: 10,
+                  })
+                  setLiTestSent(true)
+                }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: liTestUrl.includes('linkedin.com') ? '#0077B5' : 'rgba(0,0,0,0.1)', color: liTestUrl.includes('linkedin.com') ? '#fff' : '#A0A0A0', fontSize: 12, fontWeight: 500, cursor: liTestUrl.includes('linkedin.com') ? 'pointer' : 'default', fontFamily: C.font }}>Send test</button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   )
