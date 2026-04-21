@@ -35,6 +35,7 @@ const PSYCHOLOGY = ['reciprocity','scarcity','authority','social_proof','commitm
 const VARS = ['{firstName}','{companyName}','{category}','{revenue}','{ceo}','{raceWindow}','{recentNews}','{prevSubject}']
 const CONDITIONS = [
   { value: 'no_reply', label: 'No reply after previous step' },
+  { value: 'connection_accepted', label: 'LinkedIn connection accepted' },
   { value: 'has_linkedin', label: 'Lead has LinkedIn URL' },
   { value: 'has_email', label: 'Lead has verified email' },
   { value: 'email_opened', label: 'Email was opened (coming soon)' },
@@ -331,6 +332,12 @@ export default function SequenceDetail() {
     const linkedinTemplate = 'Hi {firstName}, '
     if (ch === 'condition') {
       setSteps([...steps, { step: steps.length + 1, type: 'condition', delay_days: steps.length === 0 ? 0 : 3, condition_type: 'no_reply', condition_params: {}, yes_steps: [{ channel: 'linkedin', action: 'invite', template: linkedinTemplate, approach: 'authority-led', psychology: 'liking' }], no_steps: [{ channel: 'email', subject: 'Haas F1 Team x {category}', template: emailTemplate, approach: 'authority-led', psychology: 'reciprocity' }] }])
+    } else if (ch === 'linkedin_connect') {
+      setSteps([...steps, { step: steps.length + 1, delay_days: steps.length === 0 ? 0 : 3, channel: 'linkedin', action: 'invite', approach: 'authority-led', psychology: 'liking', template: linkedinTemplate }])
+    } else if (ch === 'linkedin_message') {
+      setSteps([...steps, { step: steps.length + 1, delay_days: steps.length === 0 ? 0 : 3, channel: 'linkedin', action: 'message', approach: 'authority-led', psychology: 'reciprocity', template: linkedinTemplate }])
+    } else if (ch === 'condition_accepted') {
+      setSteps([...steps, { step: steps.length + 1, type: 'condition', delay_days: 1, condition_type: 'connection_accepted', condition_params: {}, yes_steps: [], no_steps: [] }])
     } else {
       setSteps([...steps, { step: steps.length + 1, delay_days: steps.length === 0 ? 0 : 3, channel: ch, approach: 'authority-led', psychology: 'reciprocity', subject: ch === 'email' ? 'Haas F1 Team x {category}' : '', template: ch === 'email' ? emailTemplate : linkedinTemplate }])
     }
@@ -817,7 +824,7 @@ RULES:
                     <div style={{ width: 20, height: 20, borderRadius: 6, background: s.type === 'condition' ? 'rgba(184,156,92,0.10)' : isLI ? 'rgba(0,119,181,0.12)' : 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {s.type === 'condition' ? <GitBranch size={10} style={{ color: C.amber }} /> : isLI ? <Linkedin size={10} style={{ color: '#0077B5' }} /> : <Mail size={10} style={{ color: C.purple }} />}
                     </div>
-                    <span style={{ fontSize: 11, fontWeight: 500, flex: 1 }}>{s.type === 'condition' ? 'Condition' : isLI ? 'LinkedIn' : 'Email'} {i + 1}</span>
+                    <span style={{ fontSize: 11, fontWeight: 500, flex: 1 }}>{s.type === 'condition' ? (s.condition_type === 'connection_accepted' ? '✓ Accepted?' : 'Condition') : isLI ? (s.action === 'invite' ? '🔗 Connect' : '💬 LI Message') : '📧 Email'} {i + 1}</span>
                     <button onClick={e => { e.stopPropagation(); del(i) }} style={{ background: 'none', border: 'none', color: C.textTer, cursor: 'pointer', padding: 1 }}><Trash2 size={10} /></button>
                   </div>
                   {s.subject && <div style={{ fontSize: 10, color: C.textTer, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.subject}</div>}
@@ -848,7 +855,9 @@ RULES:
             })}
             <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 12, paddingTop: 10, borderTop: `1px solid ${C.border}` }}>
               <button onClick={() => addStep('email')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '5px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}><Plus size={10} />Email</button>
-              <button onClick={() => addStep('linkedin')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '5px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}><Plus size={10} />LinkedIn</button>
+              <button onClick={() => addStep('linkedin_connect')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '5px 10px', borderRadius: 6, border: `1px solid rgba(0,119,181,0.2)`, background: 'rgba(0,119,181,0.04)', color: '#0077B5', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}><Linkedin size={10} />Connection Request</button>
+              <button onClick={() => addStep('condition_accepted')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '5px 10px', borderRadius: 6, border: `1px solid rgba(0,180,100,0.2)`, background: 'rgba(0,180,100,0.04)', color: '#00B464', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}><GitBranch size={10} />Connection Accepted</button>
+              <button onClick={() => addStep('linkedin_message')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '5px 10px', borderRadius: 6, border: `1px solid rgba(0,119,181,0.2)`, background: 'rgba(0,119,181,0.04)', color: '#0077B5', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}><Linkedin size={10} />LinkedIn Message</button>
               <button onClick={() => addStep('condition')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '5px 10px', borderRadius: 6, border: `1px solid rgba(184,156,92,0.2)`, background: 'rgba(184,156,92,0.06)', color: C.amber, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}><GitBranch size={10} />Condition</button>
             </div>
           </div>
@@ -857,7 +866,7 @@ RULES:
               <>
                 <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
                   {cur.type === 'condition' ? <GitBranch size={14} style={{ color: C.amber }} /> : cur.channel === 'linkedin' ? <Linkedin size={14} style={{ color: '#0077B5' }} /> : <Mail size={14} style={{ color: C.purple }} />}
-                  Step {selStep + 1} · {cur.type === 'condition' ? 'Condition (branch)' : cur.channel === 'email' ? 'Email' : 'LinkedIn message'}
+                  Step {selStep + 1} · {cur.type === 'condition' ? (cur.condition_type === 'connection_accepted' ? 'Connection Accepted?' : 'Condition (branch)') : cur.channel === 'email' ? 'Email' : cur.action === 'invite' ? 'Connection Request' : 'LinkedIn Message'}
                 </div>
                 {/* ═══ CONDITION STEP EDITOR ═══ */}
                 {cur.type === 'condition' ? (
@@ -1079,7 +1088,8 @@ RULES:
                 <span>Add a step to start building</span>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button onClick={() => addStep('email')} style={{ padding: '6px 12px', borderRadius: 6, border: `1px solid rgba(0,0,0,0.08)`, background: 'rgba(0,0,0,0.03)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>+ Email</button>
-                  <button onClick={() => addStep('linkedin')} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(0,119,181,0.15)', background: 'rgba(0,119,181,0.04)', color: '#0077B5', fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>+ LinkedIn</button>
+                  <button onClick={() => addStep('linkedin_connect')} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(0,119,181,0.15)', background: 'rgba(0,119,181,0.04)', color: '#0077B5', fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>+ Connection Request</button>
+                  <button onClick={() => addStep('linkedin_message')} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(0,119,181,0.15)', background: 'rgba(0,119,181,0.04)', color: '#0077B5', fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>+ LinkedIn Message</button>
                   <button onClick={() => addStep('condition')} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(184,156,92,0.15)', background: 'rgba(184,156,92,0.06)', color: C.amber, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>+ Condition</button>
                 </div>
               </div>
@@ -1547,9 +1557,15 @@ RULES:
                   try {
                     const cur = steps[selStep] || {}
                     const senderMember = seq?.send_from_user_id ? orgMembers.find(m => m.user_id === seq.send_from_user_id) : orgMembers[0]
-                    const msg = (cur.template || '').replace(/\{firstName\}/g, 'Test').replace(/\{companyName\}/g, 'Test Company').replace(/\{category\}/g, seq?.name?.split(' - ')[1] || 'Category').slice(0, 200)
+                    // Extract recipient name from LinkedIn URL slug
+                    const slug = liTestUrl.trim().split('/in/')[1]?.replace(/\/$/, '') || ''
+                    const nameParts = slug.split('-').filter(Boolean).slice(0, 3)
+                    const recipientFirst = nameParts[0] ? nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1) : 'Test'
+                    const recipientLast = nameParts[1] ? nameParts[1].charAt(0).toUpperCase() + nameParts[1].slice(1) : ''
+                    const recipientFull = [recipientFirst, recipientLast].filter(Boolean).join(' ')
+                    const msg = (cur.template || '').replace(/\{firstName\}/g, recipientFirst).replace(/\{lastName\}/g, recipientLast).replace(/\{companyName\}/g, seq?.name?.split(' - ')[0]?.replace('Haas F1', 'Haas F1 Team') || 'Company').replace(/\{category\}/g, seq?.name?.split(' - ')[1] || 'Category').replace(/\{revenue\}/g, '$1B').replace(/\{ceo\}/g, 'CEO').replace(/\{raceWindow\}/g, 'Miami Grand Prix').replace(/\{recentNews\}/g, 'recent development').slice(0, 280)
                     const { error } = await supabase.from('kiko_linkedin_queue').insert({
-                      contact_name: 'Test Recipient', company: 'Test', linkedin_url: liTestUrl.trim(),
+                      contact_name: recipientFull || 'Test Recipient', company: seq?.name?.split(' - ')[0] || 'Test', linkedin_url: liTestUrl.trim(),
                       message_type: cur.action === 'invite' ? 'invite' : 'message',
                       message: '[TEST] ' + (msg || 'Test LinkedIn message'),
                       context: JSON.stringify({ test: true, sender: senderMember?.email || 'sunny@vanhawke.com', step: selStep }),
