@@ -1536,7 +1536,7 @@ RULES:
             />
             {liTestSent && (
               <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 8, background: 'rgba(0,77,181,0.06)', border: '1px solid rgba(0,77,181,0.15)', fontSize: 12, color: '#0077B5', fontFamily: C.font }}>
-                Test message queued. It will be sent on the next LinkedIn worker run (hourly).
+                Test message sent. Check the recipient's LinkedIn inbox.
               </div>
             )}
             <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
@@ -1557,8 +1557,8 @@ RULES:
                       status: 'pending', priority: 10,
                     })
                     if (error) { console.error('[LinkedIn test]', error); alert('Failed: ' + error.message); return }
-                    // Trigger LinkedIn worker immediately via Hetzner
-                    fetch('http://178.104.73.22/linkedin-queue/process', { method: 'POST', headers: { 'Authorization': 'Bearer kiko-hetzner-2026-vanhawke', 'Content-Type': 'application/json' } }).catch(() => {})
+                    // Trigger LinkedIn worker immediately via Vercel proxy → Hetzner
+                    fetch('/api/linkedin-trigger', { method: 'POST' }).catch(() => {})
                     setLiTestSent(true)
                   } catch (err) { console.error('[LinkedIn test]', err); alert('Error: ' + err.message) }
                 }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: isValid ? '#0077B5' : 'rgba(0,0,0,0.1)', color: isValid ? '#fff' : '#A0A0A0', fontSize: 12, fontWeight: 500, cursor: isValid ? 'pointer' : 'default', fontFamily: C.font }}>Send test</button>
