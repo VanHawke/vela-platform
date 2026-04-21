@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-21T14:26:44.575Z",
+  "generated_at": "2026-04-21T14:46:43.620Z",
   "commits": [
+    {
+      "hash": "181d0c6",
+      "subject": "Timezone-aware sending: Sequence sender now resolves each prospect's location from contacts table, maps to UTC offset via 100+ city/country/region keywords covering Americas, Europe, Middle East, Afri",
+      "when": "20 minutes ago"
+    },
     {
       "hash": "8bdc593",
       "subject": "Notifications fix + Pipeline delete + LinkedIn test + alerts cleared: (1) NOTIFICATIONS — panel now uses calc(100vh-80px) maxHeight (was 420px fixed, cut off 'View all'). Clicking notification sends a",
-      "when": "17 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "691db24",
       "subject": "Match Kiko nav font to mobile: 24px (was 18px), letter-spacing -0.02em (was 0.04em), added Source Serif Pro fallback",
-      "when": "35 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "e3ffabf",
       "subject": "Remove branding: star SVG icon removed from top nav (just Kiko serif text remains). Van Hawke wordmark removed from login page.",
-      "when": "52 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "4ca9baa",
       "subject": "Campaign scheduling + All Chats fix + Add Prospects progress: (1) ALL CHATS — overlay added to BOTH welcome and conversation state returns. Previous fix only covered conversation state, so clicking Al",
-      "when": "69 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "d227d18",
       "subject": "Three critical fixes: (1) ALL CHATS — complete rearchitect. Removed all 3 inline AllChatsView instances. Now renders as position:fixed overlay at z-index 200 — guaranteed to work regardless of flex la",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "44ecdb5",
@@ -44,7 +49,7 @@
     {
       "hash": "ed2ca48",
       "subject": "Campaign management: archive, delete, add prospects. (1) DB: archived + archived_at columns on kiko_sequences. (2) Left rail: Active/Archived toggle tabs with counts. (3) Campaign header: Add Prospect",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "7fdc15e",
@@ -54,12 +59,12 @@
     {
       "hash": "e5379b0",
       "subject": "Full knowledge update: (1) KIKO_BIBLE.md rewritten — all 12 pages, self-improvement engine, document library, push notifications, multi-user system, cron schedule, language rules. (2) kiko_core_bible ",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "38c9c18",
       "subject": "Complete knowledge refresh: (1) KIKO_BIBLE.md rewritten — all 12 pages, 35 tools, self-improvement engine, document management, push notifications, multi-user isolation, 46 crons. (2) kiko-self-knowle",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "286edac",
@@ -79,12 +84,12 @@
     {
       "hash": "b5d4b5b",
       "subject": "Force deploy with reverted server files",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "f7cc8fb",
       "subject": "REVERT TO WORKING STATE: Reverted kiko.js, kiko-tools.js, intent-classifier.js, data.js to commit 23bc6a1 (last confirmed working state). digest_master_brief and related changes removed entirely. Will",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "ab6d981",
@@ -94,11 +99,6 @@
     {
       "hash": "2c54e11",
       "subject": "Force deploy: fix intent TDZ error blocking all Kiko responses",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "ec825be",
-      "subject": "CRITICAL FIX: intent variable used before declaration (TDZ error). Moved digest_master_brief injection AFTER intent classification. allTools.push() instead of ternary at declaration.",
       "when": "19 hours ago"
     }
   ]

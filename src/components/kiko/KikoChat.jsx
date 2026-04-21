@@ -1433,6 +1433,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               </button>
             </div>
           ))}
+          {mobileHistoryConvos.length > 0 && (
+            <button onClick={() => { setMobileHistoryOpen(false); setAllChatsData({ convos: mobileHistoryConvos, onSelect: loadConversation, onDelete: async (c) => { await supabase.from('conversations').delete().eq('id', c.id); if (c.id === activeConvId) startNewChat() } }) }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '16px 0', marginTop: 8, borderRadius: 12, background: 'rgba(0,0,0,0.03)', border: 'none', cursor: 'pointer', fontSize: 14, color: '#6B6B6B', fontFamily: "'Inter', system-ui, sans-serif", WebkitTapHighlightColor: 'transparent' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              All chats
+            </button>
+          )}
         </div>
       </div>
     )
@@ -1596,8 +1603,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       </div>
 
       {/* All Chats overlay — fixed position, works in welcome state */}
-      {allChatsData && !compact && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 200, background: '#FEFEFC', display: 'flex', flexDirection: 'column' }}>
+      {allChatsData && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 300, background: '#FEFEFC', display: 'flex', flexDirection: 'column' }}>
           <AllChatsView
             convos={allChatsData.convos}
             userId={user?.id}
@@ -1823,8 +1830,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} onMessage={handleVoiceMessage} micStream={voiceMicStream} />}
 
       {/* All Chats overlay — fixed position, guaranteed to render on top */}
-      {allChatsData && !compact && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 200, background: '#FEFEFC', display: 'flex', flexDirection: 'column' }}>
+      {allChatsData && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 300, background: '#FEFEFC', display: 'flex', flexDirection: 'column' }}>
           <AllChatsView
             convos={allChatsData.convos}
             userId={user?.id}
