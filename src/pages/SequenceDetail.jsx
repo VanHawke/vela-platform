@@ -948,6 +948,23 @@ RULES:
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `1px solid rgba(0,0,0,0.08)`, background: 'rgba(0,0,0,0.03)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to write this step</button>
                   {cur.channel === 'email' && <button onClick={() => { setTestModalStep(selStep); setTestModalOpen(true) }} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `1px solid ${testSent ? 'rgba(0,0,0,0.10)' : C.border}`, background: testSent ? 'rgba(0,0,0,0.03)' : 'transparent', color: testSent ? C.teal : C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{testSent ? '✓ Test sent' : '📧 Send test'}</button>}
+                  {cur.channel === 'linkedin' && <button onClick={async () => {
+                    const linkedinUrl = prompt('LinkedIn profile URL of recipient (e.g. https://linkedin.com/in/username):')
+                    if (!linkedinUrl?.includes('linkedin.com')) return
+                    const senderMember = seq?.send_from_user_id ? orgMembers.find(m => m.user_id === seq.send_from_user_id) : orgMembers[0]
+                    const msg = (cur.template || '').replace(/\{firstName\}/g, 'Test').replace(/\{companyName\}/g, 'Test Company').replace(/\{category\}/g, seq?.name?.split(' - ')[1] || 'Category').slice(0, 200)
+                    await supabase.from('kiko_linkedin_queue').insert({
+                      contact_name: 'Test Recipient',
+                      company: 'Test',
+                      linkedin_url: linkedinUrl,
+                      message_type: cur.action === 'invite' ? 'invite' : 'message',
+                      message: '[TEST] ' + msg,
+                      context: JSON.stringify({ test: true, sender: senderMember?.email || 'sunny@vanhawke.com', step: selStep }),
+                      status: 'pending',
+                      priority: 10,
+                    })
+                    alert(`LinkedIn test queued. ${senderMember?.display_name || 'Sender'} will send to the provided profile when the LinkedIn worker next runs.`)
+                  }} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#0077B5', fontSize: 11, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>💼 Test LinkedIn</button>}
                 </div>
 
                 {/* ═══ REFINE WITH FEEDBACK — iterate back and forth with Kiko ═══ */}

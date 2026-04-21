@@ -91,6 +91,13 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
     setNewName(''); setAddingNew(false); setSaving(false)
   }
 
+  const deletePipeline = async (pl) => {
+    if (!confirm(`Delete pipeline "${pl.name}"? Deals in this pipeline will need to be reassigned.`)) return
+    onUpdate(pipelines.filter(p => p.id !== pl.id))
+    await supabase.from('pipelines').delete().eq('id', pl.id)
+    if (activePipeline === pl.name) onSelect('All')
+  }
+
 
   return (
     <>
@@ -136,6 +143,9 @@ function PipelineManager({ pipelines, activePipeline, onSelect, onUpdate }) {
                   <span className={pl.visible ? '' : 'dim'}>{pl.name}</span>
                   <button onClick={() => togglePipelineVisibility(pl.id)} className="pl-mgr-eye">
                     {pl.visible ? <Eye size={12} /> : <EyeOff size={12} />}
+                  </button>
+                  <button onClick={() => deletePipeline(pl)} className="pl-mgr-eye" title="Delete pipeline" style={{ color: '#f87171' }}>
+                    <X size={12} />
                   </button>
                 </div>
               ))}

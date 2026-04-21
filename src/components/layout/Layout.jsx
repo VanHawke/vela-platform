@@ -231,7 +231,7 @@ export default function Layout({ user }) {
     const fetchNotifs = async () => {
       const { count } = await supabase.from('kiko_alerts').select('id', { count: 'exact', head: true }).eq('dismissed', false).gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
       if (!cancelled) setNotifCount(count || 0)
-      const { data } = await supabase.from('kiko_alerts').select('id, type, title, entity_name, created_at').eq('dismissed', false).order('created_at', { ascending: false }).limit(8)
+      const { data } = await supabase.from('kiko_alerts').select('id, type, title, detail, entity_name, created_at').eq('dismissed', false).order('created_at', { ascending: false }).limit(8)
       if (!cancelled) setNotifItems(data || [])
     }
     fetchNotifs()
@@ -446,22 +446,22 @@ export default function Layout({ user }) {
 
       {/* Notification dropdown */}
       {notifOpen && (
-        <div style={{ position: 'fixed', top: 52, right: 60, width: 360, maxHeight: 420, background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,0.12)', zIndex: 200, overflow: 'hidden', fontFamily: 'Inter, system-ui, sans-serif' }} onClick={e => e.stopPropagation()}>
-          <div style={{ padding: '14px 18px 10px', borderBottom: '1px solid rgba(0,0,0,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ position: 'fixed', top: 52, right: 60, width: 360, maxHeight: 'calc(100vh - 80px)', background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,0.12)', zIndex: 200, overflow: 'hidden', fontFamily: 'Inter, system-ui, sans-serif', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+          <div style={{ padding: '14px 18px 10px', borderBottom: '1px solid rgba(0,0,0,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
             <span style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A' }}>Notifications</span>
             {notifCount > 0 && <span style={{ fontSize: 11, color: '#06a87d', fontWeight: 500 }}>{notifCount} new</span>}
           </div>
-          <div style={{ overflowY: 'auto', maxHeight: 350 }}>
+          <div style={{ overflowY: 'auto', flex: 1 }}>
             {notifItems.length === 0 ? (
               <div style={{ padding: '30px 18px', textAlign: 'center', color: '#A0A0A0', fontSize: 13 }}>No recent notifications</div>
             ) : notifItems.map(n => (
-              <div key={n.id} onClick={() => { setNotifOpen(false); nav('/command-centre') }} style={{ padding: '10px 18px', borderBottom: '1px solid rgba(0,0,0,0.03)', cursor: 'pointer', transition: 'background 150ms' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.02)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                <div style={{ fontSize: 13, fontWeight: 450, color: '#0A0A0A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{n.title}</div>
+              <div key={n.id} onClick={() => { setNotifOpen(false); nav('/'); setTimeout(() => window.dispatchEvent(new CustomEvent('kiko-submit', { detail: { message: `Tell me about this alert: "${n.title}". ${n.detail ? 'Details: ' + n.detail : ''} Search the web for the latest information and advise on next steps.` } })), 300) }} style={{ padding: '10px 18px', borderBottom: '1px solid rgba(0,0,0,0.03)', cursor: 'pointer', transition: 'background 150ms' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.02)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                <div style={{ fontSize: 13, fontWeight: 450, color: '#0A0A0A', lineHeight: 1.4 }}>{n.title}</div>
                 <div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 2 }}>{n.entity_name ? `${n.entity_name} · ` : ''}{new Date(n.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</div>
               </div>
             ))}
           </div>
-          <div style={{ padding: '10px 18px', borderTop: '1px solid rgba(0,0,0,0.06)', textAlign: 'center' }}>
+          <div style={{ padding: '10px 18px', borderTop: '1px solid rgba(0,0,0,0.06)', textAlign: 'center', flexShrink: 0 }}>
             <button onClick={() => { setNotifOpen(false); nav('/command-centre') }} style={{ fontSize: 12, color: '#0A0A0A', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>View all in Command Centre →</button>
           </div>
         </div>

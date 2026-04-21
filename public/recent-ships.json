@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-21T13:51:35.463Z",
+  "generated_at": "2026-04-21T14:09:37.915Z",
   "commits": [
+    {
+      "hash": "691db24",
+      "subject": "Match Kiko nav font to mobile: 24px (was 18px), letter-spacing -0.02em (was 0.04em), added Source Serif Pro fallback",
+      "when": "18 minutes ago"
+    },
     {
       "hash": "e3ffabf",
       "subject": "Remove branding: star SVG icon removed from top nav (just Kiko serif text remains). Van Hawke wordmark removed from login page.",
-      "when": "17 minutes ago"
+      "when": "35 minutes ago"
     },
     {
       "hash": "4ca9baa",
       "subject": "Campaign scheduling + All Chats fix + Add Prospects progress: (1) ALL CHATS — overlay added to BOTH welcome and conversation state returns. Previous fix only covered conversation state, so clicking Al",
-      "when": "33 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "d227d18",
@@ -19,17 +24,17 @@
     {
       "hash": "44ecdb5",
       "subject": "Pipeline intelligence + company monitoring + add prospects UX: (1) DEAL CARD — Company Intelligence section shows funding, revenue, employees, CEO, CMO, industry, business model, sponsorships, fit sco",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "6797cdd",
       "subject": "Critical bug fixes: (1) CAMPAIGN DELETE — variable shadowing fixed, delete permanently now works. (2) PIPELINE NOTES — activityNote cleared when switching deals, no more cross-deal contamination. (3) ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "4446d22",
       "subject": "6 bug fixes + task due dates: (1) CAMPAIGN DELETE — variable shadowing fixed, delete now works. (2) PIPELINE NOTES — activityNote cleared on deal switch, no longer shared across deals. (3) PIPELINE CA",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "ed2ca48",
@@ -94,11 +99,6 @@
     {
       "hash": "320fb5c",
       "subject": "FIX KIKO API CRASH: digest_master_brief tool removed from default TOOL_DEFINITIONS (was making every API call too large). Now exported separately as DIGEST_BRIEF_TOOL, injected ONLY when intent is mas",
-      "when": "18 hours ago"
-    },
-    {
-      "hash": "a3de782",
-      "subject": "digest_master_brief tool: Kiko can now absorb a master brief and rewire herself. (1) NEW TOOL digest_master_brief — takes full document text, uses Claude Sonnet to extract: personal bible content (str",
       "when": "19 hours ago"
     }
   ]
