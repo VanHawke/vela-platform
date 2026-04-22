@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-22T10:18:15.732Z",
+  "generated_at": "2026-04-22T10:30:13.230Z",
   "commits": [
+    {
+      "hash": "ce218cd",
+      "subject": "Fix Campaigns.jsx build error: extra closing div tag caused unterminated regex parse failure",
+      "when": "12 minutes ago"
+    },
     {
       "hash": "47b294d",
       "subject": "Generate multichannel sequence: (1) 'Generate sequence' button in campaign header — one click creates full 7-step Email + LinkedIn flow with conditions. (2) generate-sequence.js updated: structure now",
-      "when": "19 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "87402df",
       "subject": "Auto-verify + auto-enrich in sourcing pipeline: (1) EMAIL VERIFICATION — format check, professional domain filter (rejects gmail/yahoo/etc), company domain cross-match. Results show ✓ verified / ⚠ unv",
-      "when": "30 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "fd81d17",
       "subject": "Bulk prospect management + leads cleanup: (1) BULK SELECT — checkboxes on every lead row, select-all header checkbox, bulk action bar (Pause, Resume, Remove, Clear). (2) STATUS INDICATORS — ✓ green fo",
-      "when": "35 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "3897e90",
       "subject": "Campaign builder cleanup: (1) EDITOR MODERNIZED — removed email/linkedin toggle (type set from flow), subject line prominent, larger textarea (13px font), clean labels. (2) TRIGGERS REMOVED — no longe",
-      "when": "53 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "cadea4c",
       "subject": "Condition branching + height matching: (1) CONDITION BRANCHES — condition steps now show YES/NO visual fork with green/red labels. Each branch has its own sub-steps list and '+' button to add steps. A",
-      "when": "79 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "460863d",
       "subject": "Combined flow+editor view (like Lemlist): removed separate list/flow toggle. Now single layout: flow timeline on LEFT (340px, scrollable), step editor on RIGHT. Click any step card in the flow to edit",
-      "when": "85 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "a9b6b8a",
@@ -54,12 +59,12 @@
     {
       "hash": "cd84d4f",
       "subject": "Add source-prospects + linkedin-trigger to vercel.json with maxDuration",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "4f639ce",
       "subject": "Add Prospects REBUILT — deep research pipeline: (1) NEW /api/source-prospects.js endpoint — uses Claude Sonnet + web_search to research companies matching campaign criteria. Finds up to 50 companies, ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "6f66956",
@@ -74,7 +79,7 @@
     {
       "hash": "48d603e",
       "subject": "LinkedIn campaign blocks + template variables: (1) PREDEFINED BLOCKS — Connection Request, Connection Accepted, LinkedIn Message as separate step types with distinct colors/icons. (2) CONDITIONS — con",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "f38fe2a",
@@ -89,16 +94,11 @@
     {
       "hash": "e0b56bf",
       "subject": "LinkedIn FULLY WIRED: (1) kiko-worker on Hetzner now reads kiko_linkedin_queue (was kiko_outreach_queue). (2) sendMessage function added to linkedinEngine.js — sends DMs via Playwright to connected pr",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "5f5a1ae",
       "subject": "LinkedIn test sends immediately: after queuing to kiko_linkedin_queue, triggers /api/cron-linkedin-sender instantly instead of waiting for hourly cron.",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "a77d06c",
-      "subject": "LinkedIn test fix: (1) URL check now case-insensitive and requires '/in/' path. (2) Added try/catch with alert() error feedback. (3) Checks Supabase insert error response. (4) Falls back to 'Test Link",
       "when": "19 hours ago"
     }
   ]
