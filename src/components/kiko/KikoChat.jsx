@@ -708,8 +708,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     const effectiveMsg = msg || (allAttachments.length ? `Analyse this file: "${allAttachments[0].name || 'uploaded file'}"` : '')
     setInput('')
     setPendingAttachment(null)
-    const displayMsg = effectiveMsg
-    const apiMsg = hiddenContext ? effectiveMsg + '\n\n' + hiddenContext : effectiveMsg
+    // Build file context from pending file attachments
+    const fileAtt = allAttachments.find(a => a.type === 'file')
+    const fileContext = fileAtt ? `\n\n[DOCUMENT CONTENTS — "${fileAtt.name}"]\n\n${fileAtt.data}\n\n[END OF DOCUMENT]` : ''
+    const displayMsg = fileAtt ? `📎 ${fileAtt.name} — ${effectiveMsg}` : effectiveMsg
+    const apiMsg = (hiddenContext ? effectiveMsg + '\n\n' + hiddenContext : effectiveMsg) + fileContext
     const imgPreview = allAttachments.find(a => a.type === 'image' && a.previewUrl)?.previewUrl || null
     const userMsg = { role: 'user', content: displayMsg, timestamp: Date.now(), imagePreview: imgPreview }
     if (imgPreview) setImagePreview(null)
@@ -810,9 +813,11 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       const isText = file.type.startsWith('text/') || file.name.match(/\.(txt|md|csv|json|js|jsx|ts|py|html|css|xml|yaml|yml)$/i)
 
       if (isText) {
-        // Text files: read as text, send directly
+        // Text files: store as pending attachment — user continues typing their prompt
         const text = await file.text()
-        handleSubmit(`📎 Uploaded: "${file.name}" (${(text.length/1000).toFixed(0)}K chars). Analyse this file.`, [], `[FILE CONTENTS — "${file.name}"]\n\n${text.slice(0, 50000)}\n\n[END OF FILE]\n\nAnalyse this.`)
+        setPendingAttachment({ type: 'file', name: file.name, data: text.slice(0, 50000), fileType: 'text', size: file.size })
+        setFileUploading(false)
+        return // Don't auto-submit — let user continue their prompt
       } else {
         // Binary files: convert to base64
         const base64 = await new Promise((res, rej) => {
@@ -855,9 +860,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               const result = await res.json()
               if (!res.ok) throw new Error(result.error || 'Extraction failed')
               const meta = result.metadata || {}
-              const displayText = `📎 Uploaded: "${file.name}" (${meta.type}${meta.pages ? `, ${meta.pages} pages` : ''}, ${(result.text.length/1000).toFixed(0)}K chars). Analyse this document.`
-              const context = `[DOCUMENT CONTENTS — "${file.name}"]\n\n${result.text}\n\n[END OF DOCUMENT]\n\nAnalyse this document thoroughly.`
-              handleSubmit(displayText, [], context)
+              // Store as pending attachment — user continues typing their prompt
+              setPendingAttachment({ type: 'file', name: file.name, data: result.text, fileType: meta.type || 'document', size: file.size, pages: meta.pages })
+              setFileUploading(false)
+              return // Don't auto-submit
             } catch (extractErr) {
               handleSubmit(`I uploaded "${file.name}" but extraction failed: ${extractErr.message}. Please try again or use a different format.`)
             }
@@ -965,6 +971,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             )}
           </div>}
           <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
+            {/* File attachment indicator */}
+            {pendingAttachment && pendingAttachment.type === 'file' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', marginBottom: 4, background: 'rgba(0,0,0,0.03)', borderRadius: 6, fontSize: 11, color: '#6B6B6B', fontFamily: "'Inter', system-ui, sans-serif" }}>
+                <span>📎</span>
+                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pendingAttachment.name}{pendingAttachment.pages ? ` · ${pendingAttachment.pages} pages` : ''}</span>
+                <button onClick={() => setPendingAttachment(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0', fontSize: 12, padding: '0 2px' }}>✕</button>
+              </div>
+            )}
             <textarea ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
               onFocus={() => setPromptFocused(true)} onBlur={() => setTimeout(() => setPromptFocused(false), 150)}
               placeholder="" autoFocus rows={1}
@@ -1029,6 +1043,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             )}
           </div>}
           <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
+            {/* File attachment indicator */}
+            {pendingAttachment && pendingAttachment.type === 'file' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', marginBottom: 4, background: 'rgba(0,0,0,0.03)', borderRadius: 6, fontSize: 11, color: '#6B6B6B', fontFamily: "'Inter', system-ui, sans-serif" }}>
+                <span>📎</span>
+                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pendingAttachment.name}{pendingAttachment.pages ? ` · ${pendingAttachment.pages} pages` : ''}</span>
+                <button onClick={() => setPendingAttachment(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0', fontSize: 12, padding: '0 2px' }}>✕</button>
+              </div>
+            )}
             <textarea ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
               onFocus={() => setPromptFocused(true)} onBlur={() => setTimeout(() => setPromptFocused(false), 150)}
               placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment..." : "Ask me anything...."}

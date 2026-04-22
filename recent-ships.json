@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-22T15:30:11.459Z",
+  "generated_at": "2026-04-22T15:45:06.487Z",
   "commits": [
+    {
+      "hash": "250375b",
+      "subject": "Kiko Gmail draft tool: (1) NEW create_email_draft tool added to kiko-tools.js — Kiko can now create drafts in any team member's Gmail. (2) Default: current user (sunny@vanhawke.com). Option: matt.smit",
+      "when": "15 minutes ago"
+    },
     {
       "hash": "178c610",
       "subject": "Gmail draft creation for any team member: new /api/create-gmail-draft endpoint. Takes to, subject, body, draftFor (email of team member). Uses stored OAuth tokens to create drafts in any team member's",
-      "when": "12 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "722ad69",
       "subject": "Condition evaluation engine in sequence sender: (1) When next step is a condition, evaluates it: connection_accepted (checks LinkedIn queue for acceptance), has_linkedin, has_email, no_reply. (2) Rout",
-      "when": "63 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "4f368ff",
       "subject": "Full-depth layout + pagination: (1) Removed constrained heights and overflow:auto from flow editor and text editor panels — both now render at full depth. (2) Removed overflow:hidden from main contain",
-      "when": "66 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "7248fe3",
       "subject": "Campaign page UI polish: (1) BUTTONS — all unified: solid black for primary (Add prospects, Build), outline for secondary (Edit sequence, Pause, Archive). borderRadius 8 across all. Removed green/ambe",
-      "when": "80 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "0aaac0d",
@@ -29,7 +34,7 @@
     {
       "hash": "122666c",
       "subject": "Clean up Prospects tab: (1) Removed 'Verify targets' and 'Research sponsorship data' buttons — both now automatic during sourcing pipeline. (2) Prospects tab now shows just: Back to Sequence + Activat",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "065decf",
@@ -44,7 +49,7 @@
     {
       "hash": "e6c967a",
       "subject": "Email intelligence pipeline wired end-to-end: (1) SMTP timeout reduced to 8s. (2) Gateway detection — if first 2 SMTP checks timeout, skips remaining and returns pattern-based guess (catches Proofpoin",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "da4d6ba",
@@ -94,11 +99,6 @@
     {
       "hash": "cadea4c",
       "subject": "Condition branching + height matching: (1) CONDITION BRANCHES — condition steps now show YES/NO visual fork with green/red labels. Each branch has its own sub-steps list and '+' button to add steps. A",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "460863d",
-      "subject": "Combined flow+editor view (like Lemlist): removed separate list/flow toggle. Now single layout: flow timeline on LEFT (340px, scrollable), step editor on RIGHT. Click any step card in the flow to edit",
       "when": "7 hours ago"
     }
   ]
