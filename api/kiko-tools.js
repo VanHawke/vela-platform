@@ -329,6 +329,16 @@ export const TOOL_DEFINITIONS = [
       travel_mode: { type: 'string', enum: ['driving', 'walking', 'transit', 'bicycling'], description: 'Only for directions mode. Default: driving.' },
     }, required: ['place'] },
   },
+  {
+    name: 'create_email_draft',
+    description: 'Create an email draft in a team member\'s Gmail. Use this when the user asks you to draft an email, compose a message, or prepare outreach. After drafting, the user can refine the content with you, then you push the final version to their Gmail drafts (or another team member like Matt). Always confirm the final draft with the user before creating it. Default: send to the current user\'s Gmail. Option: send to matt.smith@vanhawke.com for Matt to review and send.',
+    input_schema: { type: 'object', properties: {
+      to: { type: 'string', description: 'Recipient email address' },
+      subject: { type: 'string', description: 'Email subject line' },
+      body: { type: 'string', description: 'Email body in HTML format. Use <br> for line breaks, <b> for bold, <i> for italic. Include the full email with greeting and sign-off.' },
+      draft_for: { type: 'string', description: 'Email of the team member whose Gmail drafts folder should receive this draft. Default: sunny@vanhawke.com (current user). Use matt.smith@vanhawke.com to send to Matt\'s drafts.' },
+    }, required: ['to', 'subject', 'body'] },
+  },
 ];
 
 // Conditional tool — only injected when intent is master_brief
@@ -690,6 +700,26 @@ Document:\n${document_text.slice(0, 25000)}` }],
   if (name === 'navigate_page') {
     const { page, reason } = input;
     return { navigated: true, page, reason: reason || `Opening ${page}` };
+  }
+
+  if (name === 'create_email_draft') {
+    const { to, subject, body, draft_for } = input;
+    const targetEmail = draft_for || 'sunny@vanhawke.com';
+    try {
+      const res = await fetch('https://kiko.vanhawke.agency/api/create-gmail-draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to, subject, body: body.replace(/\n/g, '<br>'), htmlBody: body, draftFor: targetEmail }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        return `✅ Draft created in ${targetEmail === 'matt.smith@vanhawke.com' ? "Matt's" : "your"} Gmail drafts.\n\n**To:** ${to}\n**Subject:** ${subject}\n**Draft in:** ${targetEmail}\n\n${targetEmail === 'matt.smith@vanhawke.com' ? 'Matt can review and send from his Gmail.' : 'Open Gmail to review and send.'}`;
+      } else {
+        return `❌ Failed to create draft: ${data.error}`;
+      }
+    } catch (err) {
+      return `❌ Error creating draft: ${err.message}`;
+    }
   }
 
   if (name === 'log_activity') {

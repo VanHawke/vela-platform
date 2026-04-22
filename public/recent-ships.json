@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-22T15:18:02.760Z",
+  "generated_at": "2026-04-22T15:30:11.459Z",
   "commits": [
+    {
+      "hash": "178c610",
+      "subject": "Gmail draft creation for any team member: new /api/create-gmail-draft endpoint. Takes to, subject, body, draftFor (email of team member). Uses stored OAuth tokens to create drafts in any team member's",
+      "when": "12 minutes ago"
+    },
     {
       "hash": "722ad69",
       "subject": "Condition evaluation engine in sequence sender: (1) When next step is a condition, evaluates it: connection_accepted (checks LinkedIn queue for acceptance), has_linkedin, has_email, no_reply. (2) Rout",
-      "when": "51 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "4f368ff",
       "subject": "Full-depth layout + pagination: (1) Removed constrained heights and overflow:auto from flow editor and text editor panels — both now render at full depth. (2) Removed overflow:hidden from main contain",
-      "when": "54 minutes ago"
+      "when": "66 minutes ago"
     },
     {
       "hash": "7248fe3",
       "subject": "Campaign page UI polish: (1) BUTTONS — all unified: solid black for primary (Add prospects, Build), outline for secondary (Edit sequence, Pause, Archive). borderRadius 8 across all. Removed green/ambe",
-      "when": "68 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "0aaac0d",
@@ -29,7 +34,7 @@
     {
       "hash": "065decf",
       "subject": "Restore Prospects tab in campaign editor: (1) Full Sequence → Prospects → Launch flow restored. (2) 'Save & manage prospects' now switches to Prospects tab (not navigating away). (3) Prospects tab sho",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "7a1c751",
@@ -69,7 +74,7 @@
     {
       "hash": "47b294d",
       "subject": "Generate multichannel sequence: (1) 'Generate sequence' button in campaign header — one click creates full 7-step Email + LinkedIn flow with conditions. (2) generate-sequence.js updated: structure now",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "87402df",
@@ -89,16 +94,11 @@
     {
       "hash": "cadea4c",
       "subject": "Condition branching + height matching: (1) CONDITION BRANCHES — condition steps now show YES/NO visual fork with green/red labels. Each branch has its own sub-steps list and '+' button to add steps. A",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "460863d",
       "subject": "Combined flow+editor view (like Lemlist): removed separate list/flow toggle. Now single layout: flow timeline on LEFT (340px, scrollable), step editor on RIGHT. Click any step card in the flow to edit",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "a9b6b8a",
-      "subject": "Lemlist-style campaign builder: (1) SequenceFlowView completely rebuilt — vertical flow timeline with step cards connected by lines. (2) Step cards show icon + type label + content preview + step numb",
       "when": "7 hours ago"
     }
   ]
