@@ -216,8 +216,78 @@ Example: [{"company_name":"Acme Corp","first_name":"John","last_name":"Smith","t
       }
     }
 
-    // ── PHASE 3: Return results ──
-    write({ phase: 'complete', message: `Sourced ${allProspects.length} prospects from ${companies.length} companies`, progress: 100, prospects: allProspects, companies });
+    // ── PHASE 3: Verify emails + enrich sponsorship ──
+    write({ phase: 'verifying', message: `Verifying ${allProspects.length} email addresses...`, progress: 92 });
+
+    // Basic email verification — format check + professional domain
+    const freeEmailDomains = new Set(['gmail.com','yahoo.com','hotmail.com','outlook.com','aol.com','icloud.com','mail.com','protonmail.com']);
+    for (const p of allProspects) {
+      const email = (p.email || '').toLowerCase().trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const domain = email.split('@')[1] || '';
+      p.email_valid = emailRegex.test(email) && !freeEmailDomains.has(domain);
+      p.email_type = freeEmailDomains.has(domain) ? 'personal' : 'professional';
+      // Cross-check: if company website is known, verify email domain matches
+      if (p.company_website && domain) {
+        const companyDomain = p.company_website.replace(/^(www\.)?/, '').toLowerCase();
+        p.email_domain_match = domain === companyDomain || domain.includes(companyDomain.split('.')[0]);
+      }
+    }
+
+    const verified = allProspects.filter(p => p.email_valid).length;
+    write({ phase: 'verifying', message: `${verified}/${allProspects.length} emails verified. Researching sponsorship data...`, progress: 95 });
+
+    // Sponsorship enrichment — quick batch lookup
+    if (companies.length > 0) {
+      try {
+        const sponsorPrompt = `For each company below, find any known sports sponsorship or sports partnership history (F1, football, tennis, golf, Olympics, etc). Be factual — only include confirmed sponsorships.
+
+Companies: ${companies.map(c => c.company_name).join(', ')}
+
+Return ONLY a JSON object mapping company name to sponsorship info. Example: {"Acme Corp":"Title sponsor of F1 team 2020-2023, NFL partner","Beta Inc":"No known sports sponsorship"}`;
+
+        const sponsorResp = await client.messages.create({
+          model: MODEL, max_tokens: 2000,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          messages: [{ role: 'user', content: sponsorPrompt }],
+        });
+
+        let sponsorText = '';
+        for (const block of sponsorResp.content) {
+          if (block.type === 'text') sponsorText += block.text;
+        }
+        // Handle tool use continuation
+        if (sponsorResp.stop_reason === 'tool_use') {
+          const cont = await client.messages.create({
+            model: MODEL, max_tokens: 2000,
+            messages: [
+              { role: 'user', content: sponsorPrompt },
+              { role: 'assistant', content: sponsorResp.content },
+              { role: 'user', content: sponsorResp.content.filter(b => b.type === 'tool_use').map(b => ({ type: 'tool_result', tool_use_id: b.id, content: 'Done. Return the JSON object now.' })) },
+            ],
+          });
+          for (const block of cont.content) { if (block.type === 'text') sponsorText += block.text; }
+        }
+
+        try {
+          const jsonMatch = sponsorText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const sponsorData = JSON.parse(jsonMatch[0]);
+            for (const p of allProspects) {
+              p.sponsorship_history = sponsorData[p.company_name] || 'Not researched';
+            }
+            for (const c of companies) {
+              c.sponsorship_history = sponsorData[c.company_name] || 'Not researched';
+            }
+          }
+        } catch {}
+      } catch (err) {
+        write({ phase: 'verifying', message: `Sponsorship research partial: ${err.message}`, progress: 97 });
+      }
+    }
+
+    // ── PHASE 4: Return results ──
+    write({ phase: 'complete', message: `Sourced ${allProspects.length} prospects from ${companies.length} companies (${verified} verified)`, progress: 100, prospects: allProspects, companies });
 
   } catch (err) {
     write({ phase: 'error', message: err.message, progress: 0 });

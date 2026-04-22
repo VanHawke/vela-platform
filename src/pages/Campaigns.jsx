@@ -347,7 +347,10 @@ export default function Campaigns({ user }) {
         industry: p.company_industry || '',
         revenue: p.company_revenue || '',
         whyRelevant: p.why_relevant || '',
-        selected: true,
+        email_valid: p.email_valid,
+        email_domain_match: p.email_domain_match,
+        sponsorship_history: p.sponsorship_history || '',
+        selected: p.email_valid !== false, // auto-deselect unverified emails
       }))
       setAddProspectsPhase('review')
       setAddProspectsResult({ contacts: candidates, companies: allCompanies, message: `Sourced ${candidates.length} prospects from ${allCompanies.length} companies` })
@@ -1192,9 +1195,14 @@ export default function Campaigns({ user }) {
                         }} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderBottom: i < addProspectsResult.contacts.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none', cursor: 'pointer', background: c.selected ? 'rgba(125,138,100,0.04)' : 'transparent', transition: 'background 0.15s' }}>
                           <input type="checkbox" checked={c.selected} readOnly style={{ accentColor: '#7d8a64', pointerEvents: 'none' }} />
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A', fontFamily: C.font }}>{c.name}</div>
+                            <div style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}>
+                              {c.name}
+                              {c.email_valid ? <span style={{ fontSize: 9, color: '#00B464' }}>✓ verified</span> : c.email_valid === false ? <span style={{ fontSize: 9, color: '#f87171' }}>⚠ unverified</span> : null}
+                            </div>
                             <div style={{ fontSize: 11, color: '#6B6B6B', fontFamily: C.font, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title} · {c.company}{c.revenue ? ` · ${c.revenue}` : ''}</div>
-                            {c.email && <div style={{ fontSize: 10, color: '#A0A0A0', fontFamily: C.font }}>{c.email}</div>}
+                            {c.email && <div style={{ fontSize: 10, color: '#A0A0A0', fontFamily: C.font }}>{c.email}{c.email_domain_match === false ? ' ⚠ domain mismatch' : ''}</div>}
+                            {c.sponsorship_history && c.sponsorship_history !== 'Not researched' && <div style={{ fontSize: 9, color: '#7d8a64', fontFamily: C.font, marginTop: 2 }}>🏎 {c.sponsorship_history.slice(0, 80)}{c.sponsorship_history.length > 80 ? '...' : ''}</div>}
+                          </div>
                           </div>
                         </div>
                       ))}

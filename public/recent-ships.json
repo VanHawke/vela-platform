@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-22T09:43:15.022Z",
+  "generated_at": "2026-04-22T09:48:22.932Z",
   "commits": [
+    {
+      "hash": "fd81d17",
+      "subject": "Bulk prospect management + leads cleanup: (1) BULK SELECT — checkboxes on every lead row, select-all header checkbox, bulk action bar (Pause, Resume, Remove, Clear). (2) STATUS INDICATORS — ✓ green fo",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "3897e90",
       "subject": "Campaign builder cleanup: (1) EDITOR MODERNIZED — removed email/linkedin toggle (type set from flow), subject line prominent, larger textarea (13px font), clean labels. (2) TRIGGERS REMOVED — no longe",
-      "when": "18 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "cadea4c",
       "subject": "Condition branching + height matching: (1) CONDITION BRANCHES — condition steps now show YES/NO visual fork with green/red labels. Each branch has its own sub-steps list and '+' button to add steps. A",
-      "when": "44 minutes ago"
+      "when": "49 minutes ago"
     },
     {
       "hash": "460863d",
       "subject": "Combined flow+editor view (like Lemlist): removed separate list/flow toggle. Now single layout: flow timeline on LEFT (340px, scrollable), step editor on RIGHT. Click any step card in the flow to edit",
-      "when": "50 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "a9b6b8a",
       "subject": "Lemlist-style campaign builder: (1) SequenceFlowView completely rebuilt — vertical flow timeline with step cards connected by lines. (2) Step cards show icon + type label + content preview + step numb",
-      "when": "60 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "d33a0cb",
       "subject": "Fix Add Prospects: (1) Pre-fill textarea with campaign criteria when opening modal. (2) Use criteria fallback directly in fetch (not stale React state). (3) Show error if no criteria available.",
-      "when": "70 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "3cdddd6",
       "subject": "Move Anthropic client init inside handler for source-prospects",
-      "when": "83 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "1a7be62",
       "subject": "Fix ANTHROPIC_KEY env var name in source-prospects.js",
-      "when": "87 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "cd84d4f",
@@ -94,11 +99,6 @@
     {
       "hash": "cf2afea",
       "subject": "Google Maps + All Chats positioning + concierge mode: (1) GOOGLE MAPS TOOL — google_maps_link generates tappable links that open Maps app on mobile. Search mode finds places, directions mode gives tur",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "852776d",
-      "subject": "All Chats fixes: (1) Overlay now covers full screen at z-index 300 (above nav z-250) — fixes text cut-off at top. (2) All Chats button added to mobile chat history panel. (3) Both welcome and conversa",
       "when": "19 hours ago"
     }
   ]
