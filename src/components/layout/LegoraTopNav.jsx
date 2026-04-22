@@ -247,11 +247,12 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
       <div className="ltn-right">
         <div ref={tasksRef} style={{ position: 'relative' }}>
           <button className="ltn-icon" onClick={() => setTasksOpen(!tasksOpen)} title="Background tasks">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ animation: bgTasks.filter(t => t.status === 'queued' || t.status === 'processing').length > 0 ? 'spin-cog 3s linear infinite' : 'none' }}>
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
             </svg>
             {bgTasks.filter(t => t.status === 'queued' || t.status === 'processing').length > 0 && (
-              <span className="ltn-dot" style={{ animation: 'pulse-dot 1.5s infinite' }}>{bgTasks.filter(t => t.status === 'queued' || t.status === 'processing').length}</span>
+              <span className="ltn-dot" style={{ background: '#7C5CFC' }}>{bgTasks.filter(t => t.status === 'queued' || t.status === 'processing').length}</span>
             )}
           </button>
           {tasksOpen && (
@@ -280,9 +281,6 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
           </svg>
           {hasNotifications && notifCount > 0 && <span className="ltn-dot">{notifCount <= 99 ? notifCount : '99+'}</span>}
         </button>
-        {onNewClick && (
-          <button className="ltn-cta sparkle-cta magnetic" onClick={onNewClick}>+ New</button>
-        )}
 
         {/* Avatar with dropdown */}
         <div className="ltn-avatar-wrap" ref={avatarRef}>

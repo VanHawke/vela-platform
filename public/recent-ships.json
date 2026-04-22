@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-04-22T20:53:58.457Z",
+  "generated_at": "2026-04-22T21:01:34.871Z",
   "commits": [
+    {
+      "hash": "5a06682",
+      "subject": "THREE CRITICAL FIXES: (1) BELL ICON — clean SVG with strokeLinecap/strokeLinejoin round, no artifacts. (2) ALERT PILL PULSATION — window.__kikoAlertCount was never set by Layout.jsx, so alertCount was",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "8138287",
       "subject": "DOCUMENT + MULTI-FILE FIXES: (1) ALL file attachments now sent to Kiko (was only first file). Multiple PDFs, docs, images all included in context. (2) API now handles type='file' attachments — PDFs/DO",
-      "when": "23 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "9d0670d",
       "subject": "Full batch: (1) PUSH TO BACKGROUND — sourcing modal now has 'Push to background' button during sourcing phase AND 'Source in background' option in idle phase. Queues kiko_jobs and closes modal so user",
-      "when": "28 minutes ago"
+      "when": "35 minutes ago"
     },
     {
       "hash": "de40b71",
       "subject": "Alert pill + notification icon fixes: (1) HOMEPAGE ALERT PILL — now pulsates with slow orange glow animation (pulse-pill) using command centre orange (#B8643E). Only pulsates when alerts > 0. (2) TOP ",
-      "when": "34 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "cf695cc",
       "subject": "Remaining fixes: (1) NAV PERSISTENCE — orderedTabs now reads from localStorage synchronously on init instead of via useEffect, prevents flash-to-defaults on refresh. (2) CAMPAIGN EDITOR WIDTH — added ",
-      "when": "39 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "266b2cb",
       "subject": "Fix duplicate closing button tag in LegoraTopNav",
-      "when": "46 minutes ago"
+      "when": "53 minutes ago"
     },
     {
       "hash": "12d6ba4",
       "subject": "UI overhaul: (1) BACKGROUND TASKS NAV ICON — replaced search icon with tasks icon showing pending/processing count with pulsating dot. Dropdown shows all tasks with status, completed tasks click throu",
-      "when": "47 minutes ago"
+      "when": "54 minutes ago"
     },
     {
       "hash": "0184f9d",
       "subject": "FIND LEADS NOW SOURCES VIA KIKO: (1) When CRM has no matching contacts, Find leads now auto-queues a Kiko background sourcing job instead of showing 'No leads found'. (2) Status message shown: 'Kiko i",
-      "when": "82 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "2d52a1f",
       "subject": "FIX CAMPAIGN DELETE: Simplified deleteCampaign to single Supabase delete — CASCADE handles all FK tables automatically. Removed 6 individual FK table delete calls that were silently failing. Now shows",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "91b2d9b",
@@ -69,7 +74,7 @@
     {
       "hash": "4c20cb0",
       "subject": "Batch: (1) BG JOB PROCESSOR — new cron-job-processor.js processes queued jobs from kiko_jobs every 5min on Hetzner. Handles source_companies_bg with auto-enrollment + dedup. (2) 10 MORE DEAD API FILES",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "8ea2512",
@@ -94,11 +99,6 @@
     {
       "hash": "adeb4ea",
       "subject": "Kiko self-knowledge updated + file upload deployed: (1) SELF-KNOWLEDGE — added Email Intelligence Engine (6 APIs, SMTP, pattern detection), Gmail draft tool (create_email_draft for any team member), c",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "813f591",
-      "subject": "File upload system rebuilt: (1) MULTI-FILE SUPPORT — pendingAttachments is now an array, stack multiple files before sending. (2) VISUAL DISPLAY — all attached files shown as chips with icons (📕 PDF,",
       "when": "5 hours ago"
     }
   ]
