@@ -1203,7 +1203,6 @@ export default function Campaigns({ user }) {
                             {c.email && <div style={{ fontSize: 10, color: '#A0A0A0', fontFamily: C.font }}>{c.email}{c.email_domain_match === false ? ' ⚠ domain mismatch' : ''}</div>}
                             {c.sponsorship_history && c.sponsorship_history !== 'Not researched' && <div style={{ fontSize: 9, color: '#7d8a64', fontFamily: C.font, marginTop: 2 }}>🏎 {c.sponsorship_history.slice(0, 80)}{c.sponsorship_history.length > 80 ? '...' : ''}</div>}
                           </div>
-                          </div>
                         </div>
                       ))}
                     </div>
