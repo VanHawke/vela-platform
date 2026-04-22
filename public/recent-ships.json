@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-22T19:17:19.624Z",
+  "generated_at": "2026-04-22T19:24:05.608Z",
   "commits": [
+    {
+      "hash": "91b2d9b",
+      "subject": "Remaining fixes: (1) PROSPECT CTAs SWAPPED — Find leads now has prominent black style, Add from CRM is outline. Deep source (background) button added to campaign editor. (2) EXPORT RESTRICTION — expor",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "e7e23f3",
       "subject": "CRITICAL FIXES: (1) CAMPAIGN DELETE — all FK constraints now CASCADE on delete. Deleting a campaign automatically removes all enrollments, conditions, lead segments, and targets. No more silent failur",
-      "when": "8 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "d3221d6",
       "subject": "CRITICAL FIX: Restored 2 accidentally archived files that are live dependencies. (1) linkedin-client.js — imported by linkedin_search_prospects, linkedin_send_invite, linkedin_send_message tools. (2) ",
-      "when": "75 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "090e296",
       "subject": "FIX CI/DEPLOY FAILURES: (1) Updated .github/workflows/ci.yml — removed checks for archived files (cron-knowledge-seed.js, ARCHITECTURE.md). Now checks cron-sequence-sender.js and README.md instead. (2",
-      "when": "86 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "01eaaa6",
@@ -94,11 +99,6 @@
     {
       "hash": "122666c",
       "subject": "Clean up Prospects tab: (1) Removed 'Verify targets' and 'Research sponsorship data' buttons — both now automatic during sourcing pipeline. (2) Prospects tab now shows just: Back to Sequence + Activat",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "065decf",
-      "subject": "Restore Prospects tab in campaign editor: (1) Full Sequence → Prospects → Launch flow restored. (2) 'Save & manage prospects' now switches to Prospects tab (not navigating away). (3) Prospects tab sho",
       "when": "6 hours ago"
     }
   ]

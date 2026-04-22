@@ -249,25 +249,16 @@ export default function Campaigns({ user }) {
 
   async function deleteCampaign(seq) {
     try {
-      // Delete ALL related data (foreign key constraints on kiko_sequences)
-      await supabase.from('kiko_outreach_queue').delete().eq('sequence_id', seq.id).catch(() => {})
-      await supabase.from('kiko_linkedin_queue').delete().eq('sequence_id', seq.id).catch(() => {})
-      await supabase.from('campaign_targets').delete().eq('campaign_id', seq.id).catch(() => {})
-      await supabase.from('kiko_lead_segments').delete().eq('sequence_id', seq.id).catch(() => {})
-      await supabase.from('kiko_sequence_conditions').delete().eq('sequence_id', seq.id).catch(() => {})
-      await supabase.from('kiko_sequence_enrollments').delete().eq('sequence_id', seq.id).catch(() => {})
-      // Now delete the sequence
-      const { error: e2 } = await supabase.from('kiko_sequences').delete().eq('id', seq.id)
-      if (e2) { console.error('[Delete] Sequence error:', e2.message); alert('Failed to delete: ' + e2.message); setConfirmDelete(null); return }
+      // CASCADE handles all FK tables automatically
+      const { error } = await supabase.from('kiko_sequences').delete().eq('id', seq.id)
+      if (error) { alert('Delete failed: ' + error.message); setConfirmDelete(null); return }
       setConfirmDelete(null)
       setCampaigns(prev => prev.filter(c => c.id !== seq.id))
       if (selectedId === seq.id) setSelectedId(null)
-      await loadCampaigns()
+      setSelectedProspect(null)
     } catch (err) {
-      console.error('[Delete] Failed:', err)
+      alert('Delete failed: ' + err.message)
       setConfirmDelete(null)
-      // Force reload to ensure UI reflects actual state
-      loadCampaigns()
     }
   }
 
