@@ -776,9 +776,9 @@ export default function Campaigns({ user }) {
                   <div style={{ fontSize: 13, color: C.textSecondary, marginBottom: 8 }}>No prospects {statusFilter !== 'all' ? `with status "${statusFilter}"` : 'enrolled yet'}</div>
                   <div style={{ fontSize: 11, color: C.textTertiary, marginBottom: 16 }}>Add contacts to start sending</div>
                   <button
-                    onClick={() => nav(`/campaigns/${selectedId}`)}
-                    style={{ padding: '8px 18px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.10)', background: 'rgba(0,0,0,0.06)', color: '#0A0A0A', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}
-                  >Add prospects</button>
+                    onClick={() => { setAddProspectsQuery(selectedCampaign?.description || selectedCampaign?.target_persona || ''); setAddProspectsOpen(true) }}
+                    style={{ padding: '8px 18px', borderRadius: 6, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
+                  ><UserPlus size={12} /> Add prospects</button>
                 </div>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>

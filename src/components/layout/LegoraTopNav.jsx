@@ -29,8 +29,31 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
   const loc = useLocation()
   const [moreOpen, setMoreOpen] = useState(false)
   const [avatarOpen, setAvatarOpen] = useState(false)
+  const [tasksOpen, setTasksOpen] = useState(false)
+  const [bgTasks, setBgTasks] = useState([])
   const moreRef = useRef(null)
   const avatarRef = useRef(null)
+  const tasksRef = useRef(null)
+
+  // Fetch background tasks
+  useEffect(() => {
+    const loadTasks = async () => {
+      try {
+        const { data } = await supabase.from('kiko_jobs').select('id,title,status,job_type,result,created_at,completed_at,related_entity_id').order('created_at', { ascending: false }).limit(10)
+        setBgTasks(data || [])
+      } catch {}
+    }
+    loadTasks()
+    const interval = setInterval(loadTasks, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Close tasks dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => { if (tasksRef.current && !tasksRef.current.contains(e.target)) setTasksOpen(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   // Permission resolver — hides tabs the user can't access
   const orgId = user?.app_metadata?.org_id
@@ -213,17 +236,40 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
 
       {/* Right cluster */}
       <div className="ltn-right">
-        <button className="ltn-icon" onClick={onSearchClick} title="Search">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <circle cx="11" cy="11" r="7" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-        </button>
-        <button className="ltn-icon" onClick={onNotificationsClick} title="Notifications">
+        <div ref={tasksRef} style={{ position: 'relative' }}>
+          <button className="ltn-icon" onClick={() => setTasksOpen(!tasksOpen)} title="Background tasks">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+            </svg>
+            {bgTasks.filter(t => t.status === 'pending' || t.status === 'processing').length > 0 && (
+              <span className="ltn-dot" style={{ animation: 'pulse-dot 1.5s infinite' }}>{bgTasks.filter(t => t.status === 'pending' || t.status === 'processing').length}</span>
+            )}
+          </button>
+          {tasksOpen && (
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, width: 320, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,0.12)', zIndex: 200, maxHeight: 400, overflowY: 'auto' }}>
+              <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(0,0,0,0.05)', fontWeight: 500, fontSize: 13, color: '#0A0A0A' }}>Background Tasks</div>
+              {bgTasks.length === 0 && <div style={{ padding: '20px 16px', textAlign: 'center', color: '#A0A0A0', fontSize: 12 }}>No background tasks</div>}
+              {bgTasks.map(t => (
+                <div key={t.id} onClick={() => { if (t.related_entity_id && t.status === 'completed') { nav(`/campaigns/${t.related_entity_id}`); setTasksOpen(false) } }} style={{ padding: '10px 16px', borderBottom: '1px solid rgba(0,0,0,0.03)', cursor: t.status === 'completed' ? 'pointer' : 'default' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                    <span style={{ fontSize: 10 }}>{t.status === 'completed' ? '✅' : t.status === 'processing' ? '⏳' : t.status === 'pending' ? '🔄' : '❌'}</span>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A', flex: 1 }}>{t.title}</span>
+                  </div>
+                  <div style={{ fontSize: 10, color: '#A0A0A0' }}>
+                    {t.status === 'completed' && t.result ? `${t.result.prospects_found || 0} prospects found, ${t.result.enrolled || 0} enrolled` : t.status}
+                    {' · '}{new Date(t.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <button className="ltn-icon" onClick={onNotificationsClick} title="Notifications" style={{ position: 'relative' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
           </svg>
-          {hasNotifications && <span className="ltn-dot">{notifCount > 0 && notifCount <= 99 ? notifCount : notifCount > 99 ? '99+' : ''}</span>}
+          {hasNotifications && <span className="ltn-dot" style={{ animation: 'pulse-dot 1.5s infinite' }}>{notifCount > 0 && notifCount <= 99 ? notifCount : notifCount > 99 ? '99+' : ''}</span>}
+        </button>
         </button>
         {onNewClick && (
           <button className="ltn-cta sparkle-cta magnetic" onClick={onNewClick}>+ New</button>
