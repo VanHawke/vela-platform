@@ -2,7 +2,7 @@
 // Left rail: campaign list. Main: prospects table for selected campaign.
 // Real data from Supabase. Realtime updates. Pause/activate per-campaign and per-prospect.
 import React, { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { setPageContext } from '@/lib/pageContext'
 import T from '@/lib/theme'
@@ -77,8 +77,9 @@ function deriveStatus(enr, queueRows) {
 // ── main component ──
 export default function Campaigns({ user }) {
   const nav = useNavigate()
+  const [searchParams] = useSearchParams()
   const [campaigns, setCampaigns] = useState([])
-  const [selectedId, setSelectedId] = useState(null)
+  const [selectedId, setSelectedId] = useState(searchParams.get('selected') || null)
   const [prospects, setProspects] = useState([])
   const [prospectQueue, setProspectQueue] = useState([]) // raw queue rows for detail panel
   const [selectedProspect, setSelectedProspect] = useState(null)
