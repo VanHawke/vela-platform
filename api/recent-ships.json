@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-22T08:16:20.522Z",
+  "generated_at": "2026-04-22T08:19:59.322Z",
   "commits": [
+    {
+      "hash": "1a7be62",
+      "subject": "Fix ANTHROPIC_KEY env var name in source-prospects.js",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "cd84d4f",
       "subject": "Add source-prospects + linkedin-trigger to vercel.json with maxDuration",
-      "when": "20 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "4f639ce",
       "subject": "Add Prospects REBUILT — deep research pipeline: (1) NEW /api/source-prospects.js endpoint — uses Claude Sonnet + web_search to research companies matching campaign criteria. Finds up to 50 companies, ",
-      "when": "21 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "6f66956",
       "subject": "Add Prospects rebuilt: replaced unreliable Kiko chat API streaming approach with direct CRM search. Flow: (1) Enter keywords matching company/title/industry/location. (2) CRM searched directly via Sup",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "3fa2dce",
@@ -64,7 +69,7 @@
     {
       "hash": "852776d",
       "subject": "All Chats fixes: (1) Overlay now covers full screen at z-index 300 (above nav z-250) — fixes text cut-off at top. (2) All Chats button added to mobile chat history panel. (3) Both welcome and conversa",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "181d0c6",
@@ -95,11 +100,6 @@
       "hash": "d227d18",
       "subject": "Three critical fixes: (1) ALL CHATS — complete rearchitect. Removed all 3 inline AllChatsView instances. Now renders as position:fixed overlay at z-index 200 — guaranteed to work regardless of flex la",
       "when": "20 hours ago"
-    },
-    {
-      "hash": "44ecdb5",
-      "subject": "Pipeline intelligence + company monitoring + add prospects UX: (1) DEAL CARD — Company Intelligence section shows funding, revenue, employees, CEO, CMO, industry, business model, sponsorships, fit sco",
-      "when": "21 hours ago"
     }
   ]
 }

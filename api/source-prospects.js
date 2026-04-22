@@ -4,11 +4,12 @@ import Anthropic from '@anthropic-ai/sdk';
 
 export const config = { maxDuration: 300 };
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const MODEL = 'claude-sonnet-4-20250514';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
   const { campaignName, description, targetPersona, sequenceId, existingEmails = [], maxCompanies = 50, contactsPerCompany = 2 } = req.body || {};
   if (!campaignName) return res.status(400).json({ error: 'campaignName required' });
