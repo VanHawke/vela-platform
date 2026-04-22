@@ -1242,16 +1242,27 @@ export default function Campaigns({ user }) {
                     <div style={{ marginTop: 4, color: '#A0A0A0' }}>Enrolled: {selectedCampaign.counts?.total || 0} prospects</div>
                   </div>
                 )}
-                <div style={{ fontSize: 11, color: '#A0A0A0', marginBottom: 6, fontFamily: C.font }}>Kiko will deep-research companies matching your criteria, find decision-makers, and add them to this campaign. Adjust the criteria below or use the defaults:</div>
+                <div style={{ fontSize: 11, color: '#6B6B6B', marginBottom: 6, fontFamily: C.font, lineHeight: 1.5 }}>Describe the types of companies and decision-makers you want to target. Be specific — include industry, company size, geography, or role titles to get better results:</div>
                 <textarea
                   value={addProspectsQuery}
                   onChange={e => setAddProspectsQuery(e.target.value)}
-                  placeholder={selectedCampaign?.description || selectedCampaign?.target_persona || 'e.g. "Technology companies with $100M+ revenue that invest in F1 sponsorships"'}
+                  placeholder={'e.g. "Enterprise cybersecurity companies with 500+ employees in the US and Europe. Target CISOs, CTOs, and VP Engineering."'}
                   style={{ width: '100%', height: 70, padding: 12, borderRadius: 8, border: `1px solid rgba(0,0,0,0.1)`, background: 'rgba(0,0,0,0.02)', fontSize: 13, fontFamily: C.font, resize: 'vertical', outline: 'none', boxSizing: 'border-box', color: '#0A0A0A' }}
                 />
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
                   <button onClick={() => { setAddProspectsOpen(false); setAddProspectsPhase('idle') }} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid rgba(0,0,0,0.1)`, background: 'transparent', color: '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
-                  <button onClick={() => addMoreProspects()} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}><UserPlus size={12} /> Source new prospects</button>
+                  <button onClick={() => addMoreProspects()} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}><UserPlus size={12} /> Source now</button>
+                  <button onClick={async () => {
+                    try {
+                      const userId = user?.id || '9f486437-4bf5-4111-abfe-fe19bfa76063'
+                      const category = addProspectsQuery || selectedCampaign?.description || selectedCampaign?.target_persona || selectedCampaign?.name || ''
+                      await fetch(`/api/kiko-jobs?user_id=${userId}`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ job_type: 'source_companies_bg', title: `Source contacts for "${selectedCampaign?.name}"`, params: { category, count: 15, sequence_id: selectedId }, related_entity_type: 'sequence', related_entity_id: selectedId, user_id: userId }),
+                      })
+                    } catch {}
+                    setAddProspectsOpen(false); setAddProspectsPhase('idle')
+                  }} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#0A0A0A', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}>↗ Source in background</button>
                 </div>
               </>
             )}
@@ -1263,6 +1274,20 @@ export default function Campaigns({ user }) {
                 <div style={{ fontSize: 13, color: '#0A0A0A', fontWeight: 500, marginBottom: 6, fontFamily: C.font }}>Sourcing new prospects...</div>
                 <div style={{ fontSize: 11, color: '#6B6B6B', fontFamily: C.font, lineHeight: 1.5 }}>{sourceMessage}</div>
                 <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 8, fontFamily: C.font }}>This may take 1-3 minutes. Kiko is researching companies and finding decision-makers.</div>
+                <button onClick={async () => {
+                  try {
+                    const userId = user?.id || '9f486437-4bf5-4111-abfe-fe19bfa76063'
+                    const category = selectedCampaign?.description || selectedCampaign?.target_persona || selectedCampaign?.name || ''
+                    await fetch(`/api/kiko-jobs?user_id=${userId}`, {
+                      method: 'POST', headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ job_type: 'source_companies_bg', title: `Source contacts for "${selectedCampaign?.name}"`, params: { category, count: 15, sequence_id: selectedId }, related_entity_type: 'sequence', related_entity_id: selectedId, user_id: userId }),
+                    })
+                  } catch {}
+                  setAddProspectsOpen(false); setAddProspectsPhase('idle')
+                }} style={{ marginTop: 14, padding: '8px 16px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: '#0A0A0A', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  ↗ Push to background
+                </button>
+                <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 4, fontFamily: C.font }}>Close this window and carry on. Check the tasks icon in the top nav for progress.</div>
               </div>
             )}
             {addProspectsPhase === 'review' && addProspectsResult && (

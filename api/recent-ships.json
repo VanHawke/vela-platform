@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-22T20:20:25.034Z",
+  "generated_at": "2026-04-22T20:26:02.300Z",
   "commits": [
+    {
+      "hash": "de40b71",
+      "subject": "Alert pill + notification icon fixes: (1) HOMEPAGE ALERT PILL — now pulsates with slow orange glow animation (pulse-pill) using command centre orange (#B8643E). Only pulsates when alerts > 0. (2) TOP ",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "cf695cc",
       "subject": "Remaining fixes: (1) NAV PERSISTENCE — orderedTabs now reads from localStorage synchronously on init instead of via useEffect, prevents flash-to-defaults on refresh. (2) CAMPAIGN EDITOR WIDTH — added ",
-      "when": "5 minutes ago"
+      "when": "11 minutes ago"
     },
     {
       "hash": "266b2cb",
       "subject": "Fix duplicate closing button tag in LegoraTopNav",
-      "when": "12 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "12d6ba4",
       "subject": "UI overhaul: (1) BACKGROUND TASKS NAV ICON — replaced search icon with tasks icon showing pending/processing count with pulsating dot. Dropdown shows all tasks with status, completed tasks click throu",
-      "when": "13 minutes ago"
+      "when": "19 minutes ago"
     },
     {
       "hash": "0184f9d",
       "subject": "FIND LEADS NOW SOURCES VIA KIKO: (1) When CRM has no matching contacts, Find leads now auto-queues a Kiko background sourcing job instead of showing 'No leads found'. (2) Status message shown: 'Kiko i",
-      "when": "49 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "2d52a1f",
       "subject": "FIX CAMPAIGN DELETE: Simplified deleteCampaign to single Supabase delete — CASCADE handles all FK tables automatically. Removed 6 individual FK table delete calls that were silently failing. Now shows",
-      "when": "56 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "91b2d9b",
       "subject": "Remaining fixes: (1) PROSPECT CTAs SWAPPED — Find leads now has prominent black style, Add from CRM is outline. Deep source (background) button added to campaign editor. (2) EXPORT RESTRICTION — expor",
-      "when": "63 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "e7e23f3",
       "subject": "CRITICAL FIXES: (1) CAMPAIGN DELETE — all FK constraints now CASCADE on delete. Deleting a campaign automatically removes all enrollments, conditions, lead segments, and targets. No more silent failur",
-      "when": "71 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "d3221d6",
@@ -44,7 +49,7 @@
     {
       "hash": "090e296",
       "subject": "FIX CI/DEPLOY FAILURES: (1) Updated .github/workflows/ci.yml — removed checks for archived files (cron-knowledge-seed.js, ARCHITECTURE.md). Now checks cron-sequence-sender.js and README.md instead. (2",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "01eaaa6",
@@ -94,11 +99,6 @@
     {
       "hash": "250375b",
       "subject": "Kiko Gmail draft tool: (1) NEW create_email_draft tool added to kiko-tools.js — Kiko can now create drafts in any team member's Gmail. (2) Default: current user (sunny@vanhawke.com). Option: matt.smit",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "178c610",
-      "subject": "Gmail draft creation for any team member: new /api/create-gmail-draft endpoint. Takes to, subject, body, draftFor (email of team member). Uses stored OAuth tokens to create drafts in any team member's",
       "when": "5 hours ago"
     }
   ]

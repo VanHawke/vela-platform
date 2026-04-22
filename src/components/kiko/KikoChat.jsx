@@ -928,7 +928,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         padding: isMobile ? '10px 10px 10px 22px' : '14px 16px 10px',
         minHeight: isMobile ? 52 : undefined,
         position: 'relative',
-        border: isMobile ? '1px solid rgba(0,0,0,0.10)' : `1px solid ${promptFocused ? '#0A0A0A' : transcribing ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.08)'}`,
+        border: isMobile ? '1px solid rgba(0,0,0,0.10)' : `1px solid ${promptFocused ? 'rgba(0,0,0,0.18)' : transcribing ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.08)'}`,
         boxShadow: isMobile ? '0 1px 4px rgba(0,0,0,0.06)' : (promptFocused
           ? '0 0 0 3px rgba(10,10,10,0.04), 0 1px 2px rgba(0,0,0,0.04)'
           : '0 1px 2px rgba(0,0,0,0.04)'),
