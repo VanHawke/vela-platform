@@ -254,7 +254,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [chatDragOver, setChatDragOver] = useState(false)
   const [fileUploading, setFileUploading] = useState(false)
   const [imagePreview, setImagePreview] = useState(null) // { url, name, file }
-  const [pendingAttachment, setPendingAttachment] = useState(null) // { type, mediaType, data, previewUrl, name }
+  const [pendingAttachments, setPendingAttachments] = useState([]) // array of { type, mediaType, data, previewUrl, name, fileType, size, pages }
   const [allChatsData, setAllChatsData] = useState(null) // { convos, onSelect, onDelete }
   const [showAllMsgs, setShowAllMsgs] = useState(false)
   const abortRef = useRef(null)
@@ -700,14 +700,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const handleSubmit = useCallback(async (text, fileAttachments = [], hiddenContext = '') => {
     const msg = (text || input).trim()
     // Include pending attachment if present
-    const allAttachments = [...fileAttachments]
-    if (pendingAttachment) allAttachments.push(pendingAttachment)
+    const allAttachments = [...fileAttachments, ...pendingAttachments]
     if ((!msg && !allAttachments.length) || streaming) return
     // Stop dictation on submit
     if (transcribing) { transcribeRef.current.active = false; if (transcribeRef.current.sr) { try { transcribeRef.current.sr.stop() } catch {} transcribeRef.current.sr = null }; setTranscribing(false) }
     const effectiveMsg = msg || (allAttachments.length ? `Analyse this file: "${allAttachments[0].name || 'uploaded file'}"` : '')
     setInput('')
-    setPendingAttachment(null)
+    setPendingAttachments([])
     // Build file context from pending file attachments
     const fileAtt = allAttachments.find(a => a.type === 'file')
     const fileContext = fileAtt ? `\n\n[DOCUMENT CONTENTS — "${fileAtt.name}"]\n\n${fileAtt.data}\n\n[END OF DOCUMENT]` : ''
@@ -802,7 +801,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       setStreamText('')
     }
     finally { setStreaming(false); streamingRef.current = false }
-  }, [input, streaming, messages, user, activeConvId, pendingAttachment])
+  }, [input, streaming, messages, user, activeConvId, pendingAttachments])
 
   const processFileForKiko = async (file) => {
     if (!file || fileUploading || streaming) return
@@ -815,7 +814,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       if (isText) {
         // Text files: store as pending attachment — user continues typing their prompt
         const text = await file.text()
-        setPendingAttachment({ type: 'file', name: file.name, data: text.slice(0, 50000), fileType: 'text', size: file.size })
+        setPendingAttachments(prev => [...prev, { type: 'file', name: file.name, data: text.slice(0, 50000), fileType: 'text', size: file.size }])
         setFileUploading(false)
         return // Don't auto-submit — let user continue their prompt
       } else {
@@ -830,7 +829,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           // Store as pending — let user add a comment before submitting
           const previewUrl = URL.createObjectURL(file)
           setImagePreview({ url: previewUrl, name: file.name })
-          setPendingAttachment({ type: 'image', mediaType: file.type, data: base64, previewUrl, name: file.name })
+          setPendingAttachments(prev => [...prev, { type: 'image', mediaType: file.type, data: base64, previewUrl, name: file.name }])
           setFileUploading(false)
           return // Don't auto-submit
         } else {
@@ -861,7 +860,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               if (!res.ok) throw new Error(result.error || 'Extraction failed')
               const meta = result.metadata || {}
               // Store as pending attachment — user continues typing their prompt
-              setPendingAttachment({ type: 'file', name: file.name, data: result.text, fileType: meta.type || 'document', size: file.size, pages: meta.pages })
+              setPendingAttachments(prev => [...prev, { type: 'file', name: file.name, data: result.text, fileType: meta.type || 'document', size: file.size, pages: meta.pages }])
               setFileUploading(false)
               return // Don't auto-submit
             } catch (extractErr) {
@@ -877,7 +876,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     } finally { setFileUploading(false) }
   }
 
-  const handleFileDrop = (e) => { e.preventDefault(); e.stopPropagation(); dragCounterRef.current = 0; setChatDragOver(false); const file = e.dataTransfer.files?.[0]; if (file) processFileForKiko(file) }
+  const handleFileDrop = (e) => { e.preventDefault(); e.stopPropagation(); dragCounterRef.current = 0; setChatDragOver(false); const files = e.dataTransfer.files; if (files) { for (const f of files) processFileForKiko(f) } }
   const handleFileDragEnter = (e) => { e.preventDefault(); e.stopPropagation(); dragCounterRef.current++; setChatDragOver(true) }
   const handleFileDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); dragCounterRef.current--; if (dragCounterRef.current <= 0) { dragCounterRef.current = 0; setChatDragOver(false) } }
   const handleFileDragOver = (e) => { e.preventDefault(); e.stopPropagation() }
@@ -898,7 +897,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   // ── Prompt bar (shared) — rewritten to match approved mockup ──
   const PromptBar = ({ welcome = false }) => {
     const ic = 15
-    const hasContent = input.trim() || pendingAttachment
+    const hasContent = input.trim() || pendingAttachments.length > 0
     const [promptFocused, setPromptFocused] = useState(false)
     const [menuOpen, setMenuOpen] = useState(false)
     const [shimmerDone, setShimmerDone] = useState(false)
@@ -935,15 +934,23 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         {promptFocused && <div style={{ position: 'absolute', inset: 0, borderRadius: 24, pointerEvents: 'none', background: `radial-gradient(circle 140px at ${mousePos.x}% ${mousePos.y}%, rgba(0,0,0,0.04) 0%, transparent 70%)`, transition: `opacity 300ms ${'cubic-bezier(0.25, 0.1, 0.25, 1)'}`, opacity: 1, zIndex: 0 }} />}
         {/* Shimmer edge on focus — plays once then settles */}
         {promptFocused && <div onAnimationEnd={() => setShimmerDone(true)} style={{ position: 'absolute', inset: -1, borderRadius: 25, pointerEvents: 'none', background: 'linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.05) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.05) 75%, transparent 100%)', backgroundSize: '200% 100%', animation: shimmerDone ? 'none' : 'glowShimmer 1.5s linear forwards', opacity: shimmerDone ? 0.15 : 0.6, transition: 'opacity 600ms ease', zIndex: 0 }} />}
-        {/* Pending image preview */}
-        {pendingAttachment?.previewUrl && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 0 10px', marginBottom: 8, borderBottom: '0.5px solid rgba(0,0,0,0.04)' }}>
-            <img src={pendingAttachment.previewUrl} alt="" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover' }} />
-            <span style={{ fontSize: 12, color: '#A0A0A0', fontFamily: C.font, flex: 1 }}>{pendingAttachment.name}</span>
-            <button onClick={() => { setPendingAttachment(null); setImagePreview(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0', padding: 4, fontSize: 14, width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>✕</button>
+        {/* Pending attachments display — shows ALL stacked files */}
+        {pendingAttachments.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '0 0 8px', marginBottom: 6, borderBottom: '0.5px solid rgba(0,0,0,0.04)' }}>
+            {pendingAttachments.map((att, ai) => (
+              <div key={ai} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 8, background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.06)', maxWidth: 200 }}>
+                {att.previewUrl ? (
+                  <img src={att.previewUrl} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
+                ) : (
+                  <span style={{ fontSize: 14, flexShrink: 0 }}>{att.fileType === 'text' ? '📄' : att.name?.match(/\.pdf$/i) ? '📕' : att.name?.match(/\.xlsx?$/i) ? '📊' : att.name?.match(/\.docx?$/i) ? '📝' : att.name?.match(/\.pptx?$/i) ? '📎' : '📄'}</span>
+                )}
+                <span style={{ fontSize: 11, color: '#6B6B6B', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: C.font }}>{att.name}{att.pages ? ` · ${att.pages}p` : ''}</span>
+                <button onClick={() => { setPendingAttachments(prev => prev.filter((_, i) => i !== ai)); if (att.previewUrl) setImagePreview(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0', padding: 0, fontSize: 12, width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✕</button>
+              </div>
+            ))}
           </div>
         )}
-        <input ref={fileInputRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx" onChange={e => { const f = e.target.files?.[0]; if (f) processFileForKiko(f); e.target.value = '' }} style={{ display: 'none' }} />
+        <input ref={fileInputRef} type="file" accept=".pdf,.pptx,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp,.xlsx" multiple onChange={e => { const files = e.target.files; if (files) { for (const f of files) processFileForKiko(f) }; e.target.value = '' }} style={{ display: 'none' }} />
 
         {welcome ? (
         /* ── HOMEPAGE: Single row [+menu] [textarea] [mic] [EQ] [send] ── */
@@ -972,18 +979,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           </div>}
           <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
             {/* File attachment indicator */}
-            {pendingAttachment && pendingAttachment.type === 'file' && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', marginBottom: 4, background: 'rgba(0,0,0,0.03)', borderRadius: 6, fontSize: 11, color: '#6B6B6B', fontFamily: "'Inter', system-ui, sans-serif" }}>
-                <span>📎</span>
-                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pendingAttachment.name}{pendingAttachment.pages ? ` · ${pendingAttachment.pages} pages` : ''}</span>
-                <button onClick={() => setPendingAttachment(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0', fontSize: 12, padding: '0 2px' }}>✕</button>
-              </div>
+            {pendingAttachments.length > 0 && (
+              <div style={{ fontSize: 10, color: '#A0A0A0', marginBottom: 2, fontFamily: C.font }}>{pendingAttachments.length} file{pendingAttachments.length > 1 ? 's' : ''} attached</div>
             )}
             <textarea ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
               onFocus={() => setPromptFocused(true)} onBlur={() => setTimeout(() => setPromptFocused(false), 150)}
               placeholder="" autoFocus rows={1}
               style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: isMobile ? 17 : 15, color: '#0A0A0A', fontFamily: C.font, minHeight: 24, maxHeight: 200, fontWeight: 400, resize: 'none', lineHeight: '24px', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content', verticalAlign: 'middle', display: 'block', position: 'relative', zIndex: 2 }} />
-            {!input && !fileUploading && !pendingAttachment && typewriterText && (
+            {!input && !fileUploading && !pendingAttachments.length && typewriterText && (
               <div style={{ position: 'absolute', top: 4, left: 0, fontSize: 15, color: '#A0A0A0', fontFamily: C.font, fontWeight: 400, pointerEvents: 'none', lineHeight: '24px' }}>
                 {typewriterText}<span style={{ opacity: typewriterText.length < 19 ? 1 : 0, animation: typewriterText.length < 19 ? 'kikoBreathe 0.6s step-end infinite' : 'none' }}>|</span>
               </div>
@@ -1044,12 +1047,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           </div>}
           <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
             {/* File attachment indicator */}
-            {pendingAttachment && pendingAttachment.type === 'file' && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', marginBottom: 4, background: 'rgba(0,0,0,0.03)', borderRadius: 6, fontSize: 11, color: '#6B6B6B', fontFamily: "'Inter', system-ui, sans-serif" }}>
-                <span>📎</span>
-                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pendingAttachment.name}{pendingAttachment.pages ? ` · ${pendingAttachment.pages} pages` : ''}</span>
-                <button onClick={() => setPendingAttachment(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0', fontSize: 12, padding: '0 2px' }}>✕</button>
-              </div>
+            {pendingAttachments.length > 0 && (
+              <div style={{ fontSize: 10, color: '#A0A0A0', marginBottom: 2, fontFamily: C.font }}>{pendingAttachments.length} file{pendingAttachments.length > 1 ? 's' : ''} attached</div>
             )}
             <textarea ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
               onFocus={() => setPromptFocused(true)} onBlur={() => setTimeout(() => setPromptFocused(false), 150)}
