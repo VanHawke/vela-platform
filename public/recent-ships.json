@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-22T10:43:12.154Z",
+  "generated_at": "2026-04-22T11:47:35.053Z",
   "commits": [
+    {
+      "hash": "ccc3a41",
+      "subject": "Remove Leads tab from campaign editor: (1) Leads tab removed entirely (172 lines) — all prospect management now on main campaign page. (2) 'Continue to Leads' button → 'Save & manage prospects' which ",
+      "when": "64 minutes ago"
+    },
     {
       "hash": "6e0a53b",
       "subject": "Campaign page prospect management: (1) BULK SELECT — checkbox on every prospect row + select-all in header. (2) BULK ACTIONS — Pause, Resume, Duplicate to campaign, Remove, Clear. (3) SORTABLE COLUMNS",
-      "when": "7 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "85d6be0",
       "subject": "Fix campaign delete: was failing silently because 4 tables have foreign keys to kiko_sequences but only 2 were being cleaned up. Now deletes from ALL: campaign_targets, kiko_lead_segments, kiko_sequen",
-      "when": "13 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "ce218cd",
       "subject": "Fix Campaigns.jsx build error: extra closing div tag caused unterminated regex parse failure",
-      "when": "25 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "47b294d",
       "subject": "Generate multichannel sequence: (1) 'Generate sequence' button in campaign header — one click creates full 7-step Email + LinkedIn flow with conditions. (2) generate-sequence.js updated: structure now",
-      "when": "44 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "87402df",
       "subject": "Auto-verify + auto-enrich in sourcing pipeline: (1) EMAIL VERIFICATION — format check, professional domain filter (rejects gmail/yahoo/etc), company domain cross-match. Results show ✓ verified / ⚠ unv",
-      "when": "55 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "fd81d17",
       "subject": "Bulk prospect management + leads cleanup: (1) BULK SELECT — checkboxes on every lead row, select-all header checkbox, bulk action bar (Pause, Resume, Remove, Clear). (2) STATUS INDICATORS — ✓ green fo",
-      "when": "60 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "3897e90",
       "subject": "Campaign builder cleanup: (1) EDITOR MODERNIZED — removed email/linkedin toggle (type set from flow), subject line prominent, larger textarea (13px font), clean labels. (2) TRIGGERS REMOVED — no longe",
-      "when": "78 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "cadea4c",
       "subject": "Condition branching + height matching: (1) CONDITION BRANCHES — condition steps now show YES/NO visual fork with green/red labels. Each branch has its own sub-steps list and '+' button to add steps. A",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "460863d",
       "subject": "Combined flow+editor view (like Lemlist): removed separate list/flow toggle. Now single layout: flow timeline on LEFT (340px, scrollable), step editor on RIGHT. Click any step card in the flow to edit",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "a9b6b8a",
       "subject": "Lemlist-style campaign builder: (1) SequenceFlowView completely rebuilt — vertical flow timeline with step cards connected by lines. (2) Step cards show icon + type label + content preview + step numb",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "d33a0cb",
       "subject": "Fix Add Prospects: (1) Pre-fill textarea with campaign criteria when opening modal. (2) Use criteria fallback directly in fetch (not stale React state). (3) Show error if no criteria available.",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "3cdddd6",
       "subject": "Move Anthropic client init inside handler for source-prospects",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "1a7be62",
       "subject": "Fix ANTHROPIC_KEY env var name in source-prospects.js",
-      "when": "2 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "cd84d4f",
       "subject": "Add source-prospects + linkedin-trigger to vercel.json with maxDuration",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "4f639ce",
       "subject": "Add Prospects REBUILT — deep research pipeline: (1) NEW /api/source-prospects.js endpoint — uses Claude Sonnet + web_search to research companies matching campaign criteria. Finds up to 50 companies, ",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "6f66956",
       "subject": "Add Prospects rebuilt: replaced unreliable Kiko chat API streaming approach with direct CRM search. Flow: (1) Enter keywords matching company/title/industry/location. (2) CRM searched directly via Sup",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "3fa2dce",
       "subject": "Speed fix for casual queries: (1) LIGHTWEIGHT DETECTION — regex detects casual/personal questions (games, food, weather, recommendations, mood, etc). Skips ALL heavy loading: knowledge base (10 entrie",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "48d603e",
       "subject": "LinkedIn campaign blocks + template variables: (1) PREDEFINED BLOCKS — Connection Request, Connection Accepted, LinkedIn Message as separate step types with distinct colors/icons. (2) CONDITIONS — con",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "f38fe2a",
       "subject": "LinkedIn test button fix: removed IIFE pattern that prevented clicks. Button always blue now (validation on click with alert). No disabled attribute. Alert for every failure path.",
-      "when": "17 hours ago"
-    },
-    {
-      "hash": "b90999c",
-      "subject": "LinkedIn immediate send fix: browser can't call HTTP Hetzner from HTTPS page (mixed content). Created /api/linkedin-trigger.js Vercel proxy that forwards to Hetzner worker. Frontend now calls /api/lin",
-      "when": "19 hours ago"
+      "when": "18 hours ago"
     }
   ]
 }

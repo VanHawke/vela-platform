@@ -787,9 +787,9 @@ RULES:
             {['Sequence', 'Leads', 'Launch'].map((s, i) => (
               <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <div style={{ width: 20, height: 20, borderRadius: '50%', fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: tab === t.id ? 'rgba(0,0,0,0.08)' : 'transparent',
-                  color: tab === t.id ? C.purple : C.textTer,
-                  border: `1px solid ${tab === t.id ? 'rgba(0,0,0,0.10)' : C.border}`
+                  background: (i === 0 && tab === 'sequence') ? 'rgba(0,0,0,0.08)' : 'transparent',
+                  color: (i === 0 && tab === 'sequence') ? C.purple : C.textTer,
+                  border: `1px solid ${(i === 0 && tab === 'sequence') ? 'rgba(0,0,0,0.10)' : C.border}`
                 }}>{i + 1}</div>
                 {i < 2 && <ChevronRight size={10} style={{ color: C.textMut }} />}
               </div>
