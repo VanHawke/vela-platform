@@ -1,209 +1,174 @@
-// src/components/campaigns/SequenceFlowView.jsx — Visual flow diagram for campaign sequences
-// Renders steps as connected nodes with drag-to-reorder + yes/no branches for conditions.
-import { useState, useRef } from 'react'
-import { Mail, Linkedin, GitBranch, Clock, GripVertical, Trash2 } from 'lucide-react'
+// src/components/campaigns/SequenceFlowView.jsx — Lemlist-style visual sequence builder
+import { useState } from 'react'
+import { Mail, Linkedin, GitBranch, Clock, Trash2, Plus, UserPlus, MessageSquare, Eye, Check } from 'lucide-react'
 
-const NODE_STYLES = {
-  email: { bg: '#F0F7FF', border: '#3B82F6', icon: '#3B82F6', label: 'Email' },
-  linkedin: { bg: '#F0F9FF', border: '#0077B5', icon: '#0077B5', label: 'LinkedIn' },
-  condition: { bg: '#FFFBEB', border: '#F59E0B', icon: '#F59E0B', label: 'Condition' },
+const C = {
+  bg: '#FEFEFC', card: '#FFFFFF', border: 'rgba(0,0,0,0.08)',
+  text: '#0A0A0A', textSec: '#6B6B6B', textTer: '#A0A0A0',
+  purple: '#7C5CFC', teal: '#00D4AA', amber: '#D4A843',
+  font: "'Inter', system-ui, sans-serif",
 }
 
-const CONDITIONS = {
-  opened: 'Email opened', not_opened: 'Not opened',
-  clicked: 'Link clicked', not_clicked: 'Not clicked',
-  replied: 'Replied', not_replied: 'No reply', no_reply: 'No reply',
+const STEP_TYPES = {
+  email: { icon: Mail, color: '#7C5CFC', bg: 'rgba(124,92,252,0.06)', border: 'rgba(124,92,252,0.15)', label: 'Email' },
+  linkedin_connect: { icon: UserPlus, color: '#0077B5', bg: 'rgba(0,119,181,0.06)', border: 'rgba(0,119,181,0.15)', label: 'Connection Request' },
+  linkedin_message: { icon: MessageSquare, color: '#0077B5', bg: 'rgba(0,119,181,0.06)', border: 'rgba(0,119,181,0.15)', label: 'LinkedIn Message' },
+  linkedin_visit: { icon: Eye, color: '#0077B5', bg: 'rgba(0,119,181,0.04)', border: 'rgba(0,119,181,0.10)', label: 'Profile Visit' },
+  condition: { icon: GitBranch, color: '#D4A843', bg: 'rgba(212,168,67,0.06)', border: 'rgba(212,168,67,0.15)', label: 'Condition' },
+  condition_accepted: { icon: Check, color: '#00B464', bg: 'rgba(0,180,100,0.06)', border: 'rgba(0,180,100,0.15)', label: 'Connection Accepted?' },
 }
 
-function Connector({ label, isDropTarget, onDragOver, onDrop }) {
+function getStepType(step) {
+  if (step.type === 'condition') {
+    if (step.condition_type === 'connection_accepted') return 'condition_accepted'
+    return 'condition'
+  }
+  if (step.channel === 'linkedin') {
+    if (step.action === 'invite') return 'linkedin_connect'
+    if (step.action === 'visit') return 'linkedin_visit'
+    return 'linkedin_message'
+  }
+  return 'email'
+}
+
+function StepCard({ step, index, isSelected, onClick, onDelete }) {
+  const type = getStepType(step)
+  const config = STEP_TYPES[type] || STEP_TYPES.email
+  const Icon = config.icon
+  const preview = step.template ? step.template.slice(0, 80) + (step.template.length > 80 ? '...' : '') : step.subject ? step.subject : ''
+
   return (
     <div
-      onDragOver={onDragOver} onDrop={onDrop}
-      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '4px 0', minHeight: 32, transition: 'all 0.15s' }}
-    >
-      <div style={{ width: 2, height: isDropTarget ? 4 : 16, background: isDropTarget ? '#3B82F6' : 'rgba(0,0,0,0.12)', transition: 'all 0.15s' }} />
-      {isDropTarget && (
-        <div style={{ width: 120, height: 3, borderRadius: 2, background: '#3B82F6', margin: '4px 0', boxShadow: '0 0 8px #3B82F640' }} />
-      )}
-      {label && !isDropTarget && <span style={{ fontSize: 10, color: '#A0A0A0', padding: '2px 8px', background: '#F5F4F1', borderRadius: 10, margin: '2px 0' }}>{label}</span>}
-      <div style={{ width: 2, height: isDropTarget ? 4 : 16, background: isDropTarget ? '#3B82F6' : 'rgba(0,0,0,0.12)', transition: 'all 0.15s' }} />
-    </div>
-  )
-}
-
-function StepNode({ step, index, isSelected, isDragging, onClick, onDragStart, onDragEnd, onDelete }) {
-  const isCond = step.type === 'condition'
-  const isLI = step.type === 'linkedin' || step.channel === 'linkedin'
-  const type = isCond ? 'condition' : isLI ? 'linkedin' : 'email'
-  const s = NODE_STYLES[type]
-  const Icon = isCond ? GitBranch : isLI ? Linkedin : Mail
-
-  return (
-    <div
-      draggable
-      onDragStart={e => { e.dataTransfer.effectAllowed = 'move'; onDragStart?.(index) }}
-      onDragEnd={onDragEnd}
-      onClick={() => onClick?.(index)}
+      onClick={onClick}
       style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'grab',
-        opacity: isDragging ? 0.4 : 1, transition: 'opacity 0.15s',
+        width: '100%', maxWidth: 380, padding: '14px 16px', borderRadius: 10,
+        background: isSelected ? config.bg : C.card,
+        border: `1.5px solid ${isSelected ? config.color : config.border}`,
+        cursor: 'pointer', transition: 'all 0.15s ease',
+        boxShadow: isSelected ? `0 2px 12px ${config.color}15` : '0 1px 3px rgba(0,0,0,0.04)',
+        position: 'relative',
       }}
     >
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px',
-        background: s.bg, border: `1.5px solid ${isSelected ? s.border : 'rgba(0,0,0,0.08)'}`,
-        borderRadius: isCond ? 12 : 10, minWidth: 220, position: 'relative',
-        boxShadow: isSelected ? `0 0 0 3px ${s.border}20` : '0 1px 3px rgba(0,0,0,0.04)',
-        transition: 'all 0.15s',
-      }}>
-        {/* Drag handle */}
-        <GripVertical size={14} color="#C0C0C0" style={{ cursor: 'grab', flexShrink: 0 }} />
-        <div style={{ width: 26, height: 26, borderRadius: 6, background: `${s.icon}12`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Icon size={13} color={s.icon} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 8, background: config.bg, border: `1px solid ${config.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Icon size={16} style={{ color: config.color }} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#0A0A0A' }}>
-            Step {index + 1}: {s.label}
-          </div>
-          <div style={{ fontSize: 11, color: '#6B6B6B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {isCond ? CONDITIONS[step.condition_type] || step.condition_type || 'Condition'
-              : step.subject || step.template?.slice(0, 40) || 'Draft pending'}
-          </div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: C.text, fontFamily: C.font }}>{config.label}</div>
+          {preview && <div style={{ fontSize: 11, color: C.textSec, fontFamily: C.font, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 2 }}>{preview}</div>}
+          {!preview && type !== 'condition' && type !== 'condition_accepted' && <div style={{ fontSize: 11, color: C.textTer, fontFamily: C.font, fontStyle: 'italic', marginTop: 2 }}>Click to write content</div>}
         </div>
-        {/* Delete button */}
-        <button onClick={e => { e.stopPropagation(); onDelete?.(index) }} style={{
-          width: 22, height: 22, borderRadius: 4, border: 'none', background: 'transparent',
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#C0C0C0', flexShrink: 0, transition: 'color 0.15s',
-        }} onMouseOver={e => e.currentTarget.style.color = '#EF4444'}
-           onMouseOut={e => e.currentTarget.style.color = '#C0C0C0'}>
-          <Trash2 size={12} />
-        </button>
-        {step.delay_days > 0 && (
-          <span style={{ position: 'absolute', top: -8, right: -8, background: '#fff', border: '1px solid rgba(0,0,0,0.08)',
-            borderRadius: 10, padding: '1px 6px', fontSize: 9, color: '#6B6B6B', display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Clock size={8} /> {step.delay_days}d
-          </span>
-        )}
+        <div style={{ fontSize: 10, color: C.textTer, fontFamily: C.font, fontWeight: 500 }}>#{index + 1}</div>
       </div>
-      {isCond && (
-        <div style={{ display: 'flex', gap: 40, marginTop: 8 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ width: 2, height: 12, background: '#06D6A0' }} />
-            <span style={{ fontSize: 9, fontWeight: 600, color: '#06D6A0', padding: '2px 8px', background: '#ECFDF5', borderRadius: 8 }}>YES</span>
-            <div style={{ width: 2, height: 8, background: '#06D6A0' }} />
-            {step.yes_steps?.[0] && (
-              <div style={{ padding: '6px 12px', background: '#ECFDF5', border: '1px solid #06D6A020', borderRadius: 8, fontSize: 10, color: '#059669' }}>
-                {step.yes_steps[0].channel === 'linkedin' ? '🔗 LinkedIn' : '📧 Email'}
-              </div>
-            )}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ width: 2, height: 12, background: '#F87171' }} />
-            <span style={{ fontSize: 9, fontWeight: 600, color: '#F87171', padding: '2px 8px', background: '#FEF2F2', borderRadius: 8 }}>NO</span>
-            <div style={{ width: 2, height: 8, background: '#F87171' }} />
-            {step.no_steps?.[0] && (
-              <div style={{ padding: '6px 12px', background: '#FEF2F2', border: '1px solid #F8717120', borderRadius: 8, fontSize: 10, color: '#DC2626' }}>
-                {step.no_steps[0].channel === 'linkedin' ? '🔗 LinkedIn' : '📧 Email'}
-              </div>
-            )}
-          </div>
+      {type === 'condition' && step.condition_type && (
+        <div style={{ marginTop: 8, fontSize: 10, color: config.color, fontFamily: C.font, fontWeight: 500 }}>
+          IF: {step.condition_type === 'no_reply' ? 'No reply' : step.condition_type === 'connection_accepted' ? 'Connection accepted' : step.condition_type === 'has_linkedin' ? 'Has LinkedIn' : step.condition_type}
         </div>
+      )}
+      {onDelete && (
+        <button onClick={e => { e.stopPropagation(); onDelete() }} style={{ position: 'absolute', top: 8, right: 8, width: 22, height: 22, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.4 }}
+          onMouseOver={e => e.currentTarget.style.opacity = 1} onMouseOut={e => e.currentTarget.style.opacity = 0.4}>
+          <Trash2 size={12} style={{ color: '#f87171' }} />
+        </button>
       )}
     </div>
   )
 }
 
-export default function SequenceFlowView({ steps = [], conditions = [], selectedStep, onSelectStep, onAddStep, onReorder, onDeleteStep }) {
-  const [dragIndex, setDragIndex] = useState(null)
-  const [dropTarget, setDropTarget] = useState(null)
+function DelayChip({ days, onChange }) {
+  const [editing, setEditing] = useState(false)
+  const [val, setVal] = useState(days || 3)
 
-  function handleDragOver(e, targetIndex) {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-    if (targetIndex !== dropTarget) setDropTarget(targetIndex)
-  }
-
-  function handleDrop(e, targetIndex) {
-    e.preventDefault()
-    if (dragIndex !== null && dragIndex !== targetIndex && onReorder) {
-      // Reorder: remove from dragIndex, insert at targetIndex
-      const reordered = [...steps]
-      const [moved] = reordered.splice(dragIndex, 1)
-      const insertAt = targetIndex > dragIndex ? targetIndex - 1 : targetIndex
-      reordered.splice(insertAt, 0, moved)
-      // Renumber steps
-      const renumbered = reordered.map((s, i) => ({ ...s, step: i + 1 }))
-      onReorder(renumbered)
-    }
-    setDragIndex(null)
-    setDropTarget(null)
-  }
-
-  function handleDragEnd() { setDragIndex(null); setDropTarget(null) }
-
-  if (!steps.length) {
+  if (editing) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 60, color: '#A0A0A0', fontSize: 13 }}>
-        <GitBranch size={32} style={{ marginBottom: 12, opacity: 0.3 }} />
-        <p>No steps yet. Add your first step to build the sequence flow.</p>
-        {onAddStep && (
-          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-            <button onClick={() => onAddStep('email')} style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #3B82F620', background: '#F0F7FF', color: '#3B82F6', fontSize: 12, cursor: 'pointer' }}>+ Email</button>
-            <button onClick={() => onAddStep('linkedin')} style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #0077B520', background: '#F0F9FF', color: '#0077B5', fontSize: 12, cursor: 'pointer' }}>+ LinkedIn</button>
-            <button onClick={() => onAddStep('condition')} style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #F59E0B20', background: '#FFFBEB', color: '#F59E0B', fontSize: 12, cursor: 'pointer' }}>+ Condition</button>
-          </div>
-        )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0' }}>
+        <Clock size={12} style={{ color: C.textTer }} />
+        <span style={{ fontSize: 11, color: C.textSec, fontFamily: C.font }}>Wait</span>
+        <input value={val} onChange={e => setVal(Number(e.target.value) || 0)} onBlur={() => { onChange(val); setEditing(false) }} onKeyDown={e => { if (e.key === 'Enter') { onChange(val); setEditing(false) } }}
+          autoFocus type="number" min={0} max={30}
+          style={{ width: 36, padding: '2px 4px', borderRadius: 4, border: `1px solid ${C.border}`, fontSize: 11, fontFamily: C.font, textAlign: 'center', outline: 'none', color: C.text }} />
+        <span style={{ fontSize: 11, color: C.textSec, fontFamily: C.font }}>days</span>
       </div>
     )
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 16px', overflowY: 'auto' }}>
-      <div style={{ padding: '6px 16px', background: '#0A0A0A', color: '#fff', borderRadius: 20, fontSize: 11, fontWeight: 500, marginBottom: 4 }}>
-        START
-      </div>
+    <button onClick={() => setEditing(true)} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderRadius: 20, border: `1px solid ${C.border}`, background: '#F9F9F7', cursor: 'pointer', fontSize: 10, color: C.textSec, fontFamily: C.font }}>
+      <Clock size={10} /> Wait {days || 0} day{days !== 1 ? 's' : ''}
+    </button>
+  )
+}
 
-      {steps.map((step, i) => (
-        <div key={`step-${i}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Connector
-            label={step.delay_days > 0 ? `Wait ${step.delay_days} day${step.delay_days > 1 ? 's' : ''}` : null}
-            isDropTarget={dropTarget === i}
-            onDragOver={e => handleDragOver(e, i)}
-            onDrop={e => handleDrop(e, i)}
-          />
-          <StepNode
-            step={step} index={i}
-            isSelected={selectedStep === i}
-            isDragging={dragIndex === i}
-            onClick={onSelectStep}
-            onDragStart={setDragIndex}
-            onDragEnd={handleDragEnd}
-            onDelete={onDeleteStep}
-          />
+function AddStepButton({ onAdd }) {
+  const [open, setOpen] = useState(false)
+
+  const options = [
+    { key: 'email', ...STEP_TYPES.email },
+    { key: 'linkedin_connect', ...STEP_TYPES.linkedin_connect },
+    { key: 'linkedin_message', ...STEP_TYPES.linkedin_message },
+    { key: 'condition_accepted', ...STEP_TYPES.condition_accepted },
+    { key: 'condition', ...STEP_TYPES.condition },
+  ]
+
+  return (
+    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <button onClick={() => setOpen(!open)} style={{ width: 28, height: 28, borderRadius: '50%', border: `1.5px dashed ${open ? C.purple : 'rgba(0,0,0,0.15)'}`, background: open ? 'rgba(124,92,252,0.06)' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+        <Plus size={14} style={{ color: open ? C.purple : C.textTer, transition: 'all 0.15s' }} />
+      </button>
+      {open && (
+        <div style={{ position: 'absolute', top: 34, left: '50%', transform: 'translateX(-50%)', background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', padding: 6, zIndex: 10, width: 220 }}>
+          {options.map(opt => {
+            const Icon = opt.icon
+            return (
+              <button key={opt.key} onClick={() => { onAdd(opt.key); setOpen(false) }}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 10px', borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: C.font, transition: 'background 0.1s' }}
+                onMouseOver={e => e.currentTarget.style.background = opt.bg} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
+                <div style={{ width: 26, height: 26, borderRadius: 6, background: opt.bg, border: `1px solid ${opt.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon size={13} style={{ color: opt.color }} />
+                </div>
+                <span style={{ fontSize: 12, color: C.text, fontWeight: 500 }}>{opt.label}</span>
+              </button>
+            )
+          })}
         </div>
-      ))}
+      )}
+    </div>
+  )
+}
 
-      {/* Trailing drop zone */}
-      <Connector
-        isDropTarget={dropTarget === steps.length}
-        onDragOver={e => handleDragOver(e, steps.length)}
-        onDrop={e => handleDrop(e, steps.length)}
-      />
+function VerticalLine() {
+  return <div style={{ width: 2, height: 16, background: 'rgba(0,0,0,0.08)', margin: '0 auto' }} />
+}
 
-      {onAddStep && (
-        <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-          <button onClick={() => onAddStep('email')} style={{ padding: '4px 10px', borderRadius: 6, border: '1px dashed rgba(0,0,0,0.15)', background: 'transparent', color: '#6B6B6B', fontSize: 11, cursor: 'pointer' }}>+ Email</button>
-          <button onClick={() => onAddStep('linkedin')} style={{ padding: '4px 10px', borderRadius: 6, border: '1px dashed rgba(0,0,0,0.15)', background: 'transparent', color: '#6B6B6B', fontSize: 11, cursor: 'pointer' }}>+ LinkedIn</button>
-          <button onClick={() => onAddStep('condition')} style={{ padding: '4px 10px', borderRadius: 6, border: '1px dashed rgba(0,0,0,0.15)', background: 'transparent', color: '#6B6B6B', fontSize: 11, cursor: 'pointer' }}>+ Condition</button>
+export default function SequenceFlowView({ steps, selectedStep, onSelectStep, onAddStep, onDeleteStep, onUpdateDelay }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 16px 40px', minHeight: 300 }}>
+      {steps.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+          <div style={{ fontSize: 14, color: C.textSec, fontFamily: C.font, marginBottom: 16 }}>Add your first step to start building</div>
+          <AddStepButton onAdd={onAddStep} />
         </div>
       )}
 
-      <Connector />
-      <div style={{ padding: '6px 16px', background: '#F5F4F1', color: '#6B6B6B', borderRadius: 20, fontSize: 11, fontWeight: 500 }}>
-        END
-      </div>
+      {steps.map((step, i) => (
+        <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+          {/* Delay chip (not on first step) */}
+          {i > 0 && (
+            <>
+              <VerticalLine />
+              <DelayChip days={step.delay_days} onChange={(d) => onUpdateDelay(i, d)} />
+              <VerticalLine />
+            </>
+          )}
+
+          {/* Step card */}
+          <StepCard step={step} index={i} isSelected={selectedStep === i} onClick={() => onSelectStep(i)} onDelete={() => onDeleteStep(i)} />
+
+          {/* "+" button after step */}
+          <VerticalLine />
+          <AddStepButton onAdd={(type) => onAddStep(type, i + 1)} />
+        </div>
+      ))}
     </div>
   )
 }

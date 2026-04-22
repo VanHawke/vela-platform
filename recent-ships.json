@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-22T08:33:02.120Z",
+  "generated_at": "2026-04-22T08:42:48.661Z",
   "commits": [
+    {
+      "hash": "d33a0cb",
+      "subject": "Fix Add Prospects: (1) Pre-fill textarea with campaign criteria when opening modal. (2) Use criteria fallback directly in fetch (not stale React state). (3) Show error if no criteria available.",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "3cdddd6",
       "subject": "Move Anthropic client init inside handler for source-prospects",
-      "when": "13 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "1a7be62",
       "subject": "Fix ANTHROPIC_KEY env var name in source-prospects.js",
-      "when": "17 minutes ago"
+      "when": "26 minutes ago"
     },
     {
       "hash": "cd84d4f",
       "subject": "Add source-prospects + linkedin-trigger to vercel.json with maxDuration",
-      "when": "36 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "4f639ce",
       "subject": "Add Prospects REBUILT — deep research pipeline: (1) NEW /api/source-prospects.js endpoint — uses Claude Sonnet + web_search to research companies matching campaign criteria. Finds up to 50 companies, ",
-      "when": "38 minutes ago"
+      "when": "48 minutes ago"
     },
     {
       "hash": "6f66956",
@@ -44,7 +49,7 @@
     {
       "hash": "b90999c",
       "subject": "LinkedIn immediate send fix: browser can't call HTTP Hetzner from HTTPS page (mixed content). Created /api/linkedin-trigger.js Vercel proxy that forwards to Hetzner worker. Frontend now calls /api/lin",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "e0b56bf",
@@ -84,7 +89,7 @@
     {
       "hash": "8bdc593",
       "subject": "Notifications fix + Pipeline delete + LinkedIn test + alerts cleared: (1) NOTIFICATIONS — panel now uses calc(100vh-80px) maxHeight (was 420px fixed, cut off 'View all'). Clicking notification sends a",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "691db24",
@@ -94,11 +99,6 @@
     {
       "hash": "e3ffabf",
       "subject": "Remove branding: star SVG icon removed from top nav (just Kiko serif text remains). Van Hawke wordmark removed from login page.",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "4ca9baa",
-      "subject": "Campaign scheduling + All Chats fix + Add Prospects progress: (1) ALL CHATS — overlay added to BOTH welcome and conversation state returns. Previous fix only covered conversation state, so clicking Al",
       "when": "19 hours ago"
     }
   ]

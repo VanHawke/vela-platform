@@ -82,7 +82,7 @@ export default function SequenceDetail() {
   const [topPatterns, setTopPatterns] = useState([])
   const [conditions, setConditions] = useState([])
   const [showAddCondition, setShowAddCondition] = useState(false)
-  const [viewMode, setViewMode] = useState('list') // 'list' or 'flow'
+  const [viewMode, setViewMode] = useState('flow') // 'list' or 'flow' — default to flow (Lemlist-style)
   const [newCondition, setNewCondition] = useState({ condition_type: 'opened', operator: 'is', value: '', reference_step: 1, true_next_step: '', false_next_step: '', wait_hours: 0 })
   const [regenPrompt, setRegenPrompt] = useState(false)
   const [refineText, setRefineText] = useState('')  // feedback input for refine-with-feedback loop
@@ -327,21 +327,34 @@ export default function SequenceDetail() {
     nav('/campaigns')
   }
 
-  function addStep(ch) {
+  function addStep(ch, insertAt = null) {
     const emailTemplate = 'Dear {firstName},\n\n\n\nKind regards,\n\n{signature}'
     const linkedinTemplate = 'Hi {firstName}, '
+    let newStep = null
     if (ch === 'condition') {
-      setSteps([...steps, { step: steps.length + 1, type: 'condition', delay_days: steps.length === 0 ? 0 : 3, condition_type: 'no_reply', condition_params: {}, yes_steps: [{ channel: 'linkedin', action: 'invite', template: linkedinTemplate, approach: 'authority-led', psychology: 'liking' }], no_steps: [{ channel: 'email', subject: 'Haas F1 Team x {category}', template: emailTemplate, approach: 'authority-led', psychology: 'reciprocity' }] }])
+      newStep = { step: 0, type: 'condition', delay_days: 3, condition_type: 'no_reply', condition_params: {}, yes_steps: [], no_steps: [] }
     } else if (ch === 'linkedin_connect') {
-      setSteps([...steps, { step: steps.length + 1, delay_days: steps.length === 0 ? 0 : 3, channel: 'linkedin', action: 'invite', approach: 'authority-led', psychology: 'liking', template: linkedinTemplate }])
+      newStep = { step: 0, delay_days: 3, channel: 'linkedin', action: 'invite', approach: 'authority-led', psychology: 'liking', template: linkedinTemplate }
     } else if (ch === 'linkedin_message') {
-      setSteps([...steps, { step: steps.length + 1, delay_days: steps.length === 0 ? 0 : 3, channel: 'linkedin', action: 'message', approach: 'authority-led', psychology: 'reciprocity', template: linkedinTemplate }])
+      newStep = { step: 0, delay_days: 3, channel: 'linkedin', action: 'message', approach: 'authority-led', psychology: 'reciprocity', template: linkedinTemplate }
+    } else if (ch === 'linkedin_visit') {
+      newStep = { step: 0, delay_days: 1, channel: 'linkedin', action: 'visit', approach: 'authority-led', template: '' }
     } else if (ch === 'condition_accepted') {
-      setSteps([...steps, { step: steps.length + 1, type: 'condition', delay_days: 1, condition_type: 'connection_accepted', condition_params: {}, yes_steps: [], no_steps: [] }])
+      newStep = { step: 0, type: 'condition', delay_days: 1, condition_type: 'connection_accepted', condition_params: {}, yes_steps: [], no_steps: [] }
+    } else if (ch === 'email') {
+      newStep = { step: 0, delay_days: steps.length === 0 ? 0 : 3, channel: 'email', approach: 'authority-led', psychology: 'reciprocity', subject: 'Haas F1 Team x {category}', template: emailTemplate }
     } else {
-      setSteps([...steps, { step: steps.length + 1, delay_days: steps.length === 0 ? 0 : 3, channel: ch, approach: 'authority-led', psychology: 'reciprocity', subject: ch === 'email' ? 'Haas F1 Team x {category}' : '', template: ch === 'email' ? emailTemplate : linkedinTemplate }])
+      newStep = { step: 0, delay_days: 3, channel: ch, approach: 'authority-led', psychology: 'reciprocity', subject: ch === 'email' ? 'Haas F1 Team x {category}' : '', template: ch === 'email' ? emailTemplate : linkedinTemplate }
     }
-    setSelStep(steps.length); setDirty(true)
+    if (insertAt !== null && insertAt <= steps.length) {
+      const updated = [...steps.slice(0, insertAt), newStep, ...steps.slice(insertAt)].map((s, j) => ({ ...s, step: j + 1 }))
+      setSteps(updated)
+      setSelStep(insertAt)
+    } else {
+      setSteps([...steps, newStep].map((s, j) => ({ ...s, step: j + 1 })))
+      setSelStep(steps.length)
+    }
+    setDirty(true)
   }
   function upd(i, k, v) { const u = [...steps]; u[i] = { ...u[i], [k]: v }; setSteps(u); setDirty(true) }
   function updAndRegen(i, k, v) { upd(i, k, v); setRegenPrompt(true) }
@@ -799,7 +812,7 @@ RULES:
 
         {viewMode === 'flow' ? (
           <div style={{ ...glass, padding: 16, minHeight: 480 }}>
-            <SequenceFlowView steps={steps} conditions={conditions} selectedStep={selStep} onSelectStep={(i) => { setSelStep(i); setViewMode('list') }} onAddStep={(type) => { addStep(type); setViewMode('list') }} onReorder={(reordered) => { setSteps(reordered); setDirty(true) }} onDeleteStep={(i) => { del(i) }} />
+            <SequenceFlowView steps={steps} conditions={conditions} selectedStep={selStep} onSelectStep={(i) => { setSelStep(i); setViewMode('list') }} onAddStep={(type, pos) => { addStep(type, pos) }} onReorder={(reordered) => { setSteps(reordered); setDirty(true) }} onDeleteStep={(i) => { del(i) }} onUpdateDelay={(i, d) => { upd(i, 'delay_days', d) }} />
           </div>
         ) : (
         <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 14, minHeight: 480 }}>
