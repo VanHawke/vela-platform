@@ -839,12 +839,12 @@ RULES:
           <div style={{ fontSize: 11, color: C.textSec, fontFamily: C.font }}>{steps.length} steps · {steps.reduce((s, st) => s + (st.delay_days || 0), 0)} day sequence</div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 14, minHeight: 480, alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 14, height: 'calc(100vh - 280px)', minHeight: 400 }}>
           {/* LEFT: Flow view */}
-          <div style={{ ...glass, padding: 0, overflowY: 'auto', maxHeight: 'calc(100vh - 220px)', position: 'sticky', top: 80 }}>
+          <div style={{ ...glass, padding: 0, overflowY: 'auto' }}>
             <SequenceFlowView steps={steps} conditions={conditions} selectedStep={selStep} onSelectStep={(i) => { setSelStep(i) }} onAddStep={(type, pos) => { addStep(type, pos) }} onDeleteStep={(i) => { del(i) }} onUpdateDelay={(i, d) => { upd(i, 'delay_days', d) }} onUpdateStep={(updated) => { setSteps(updated); setDirty(true) }} />
           </div>
-          <div style={{ ...glass, padding: 18, maxHeight: 'calc(100vh - 220px)', overflowY: 'auto', position: 'sticky', top: 80 }}>
+          <div style={{ ...glass, padding: 18, overflowY: 'auto' }}>
             {cur ? (
               <>
                 <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
