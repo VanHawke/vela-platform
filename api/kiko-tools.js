@@ -337,6 +337,7 @@ export const TOOL_DEFINITIONS = [
       subject: { type: 'string', description: 'Email subject line' },
       body: { type: 'string', description: 'Email body in HTML format. Use <br> for line breaks, <b> for bold, <i> for italic. Include the full email with greeting and sign-off.' },
       draft_for: { type: 'string', description: 'Email of the team member whose Gmail drafts folder should receive this draft. Default: sunny@vanhawke.com (current user). Use matt.smith@vanhawke.com to send to Matt\'s drafts.' },
+      original_draft: { type: 'string', description: 'IMPORTANT: If the user made corrections to your original draft, include your FIRST version here so Kiko can learn from the edits. Leave empty if the user accepted the first draft without changes.' },
     }, required: ['to', 'subject', 'body'] },
   },
 ];
@@ -703,7 +704,7 @@ Document:\n${document_text.slice(0, 25000)}` }],
   }
 
   if (name === 'create_email_draft') {
-    const { to, subject, body, draft_for } = input;
+    const { to, subject, body, draft_for, original_draft } = input;
     const targetEmail = draft_for || 'sunny@vanhawke.com';
     try {
       const res = await fetch('https://kiko.vanhawke.agency/api/create-gmail-draft', {
@@ -713,6 +714,14 @@ Document:\n${document_text.slice(0, 25000)}` }],
       });
       const data = await res.json();
       if (data.ok) {
+        // Log draft edit for learning if user made corrections
+        if (original_draft && original_draft !== body) {
+          try {
+            await sbFetch('kiko_draft_edits', { method: 'POST', body: JSON.stringify({
+              user_id: userId, original_draft, final_draft: body, subject, recipient: to,
+            }) });
+          } catch (logErr) { /* silent — don't block draft creation */ }
+        }
         return `✅ Draft created in ${targetEmail === 'matt.smith@vanhawke.com' ? "Matt's" : "your"} Gmail drafts.\n\n**To:** ${to}\n**Subject:** ${subject}\n**Draft in:** ${targetEmail}\n\n${targetEmail === 'matt.smith@vanhawke.com' ? 'Matt can review and send from his Gmail.' : 'Open Gmail to review and send.'}`;
       } else {
         return `❌ Failed to create draft: ${data.error}`;

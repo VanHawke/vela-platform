@@ -74,7 +74,7 @@ async function executeTool(name, args) {
   } catch (err) { console.error('[KikoVoice] Tool error:', err); return JSON.stringify({ error: err.message }) }
 }
 
-export default function KikoVoice({ onClose, user, onVoiceState, onMessage, micStream: externalMicStream }) {
+export default function KikoVoice({ onClose, user, onVoiceState, onMessage, micStream: externalMicStream, preWarmedToken }) {
   const isMobile = useMobile()
   const [status, setStatus] = useState('connecting')
   const [errorMsg, setErrorMsg] = useState(null)
@@ -214,17 +214,22 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage, micS
         if (VOICE_STYLE_INSTRUCTIONS[voiceStyleId]) {
           sessionInstructions += `\n\n═══ VOICE DELIVERY ═══\n${VOICE_STYLE_INSTRUCTIONS[voiceStyleId]}`
         }
-        // 1. Get ephemeral token
-        console.log('[KikoVoice] Getting ephemeral token...')
-        const voice = localStorage.getItem('kiko_voice') || 'coral'
-        const tokenRes = await fetch('/api/realtime-token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ voice }),
-        })
-        if (!tokenRes.ok) { const e = await tokenRes.text(); throw new Error(`Token failed: ${e}`) }
-        const tokenData = await tokenRes.json()
-        const ephemeralKey = tokenData.value
+        // 1. Get ephemeral token (use pre-warmed if available)
+        let ephemeralKey = preWarmedToken
+        if (ephemeralKey) {
+          console.log('[KikoVoice] Using pre-warmed token (faster)')
+        } else {
+          console.log('[KikoVoice] Getting ephemeral token...')
+          const voice = localStorage.getItem('kiko_voice') || 'coral'
+          const tokenRes = await fetch('/api/realtime-token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ voice }),
+          })
+          if (!tokenRes.ok) { const e = await tokenRes.text(); throw new Error(`Token failed: ${e}`) }
+          const tokenData = await tokenRes.json()
+          ephemeralKey = tokenData.value
+        }
         if (!ephemeralKey) throw new Error('No ephemeral key returned')
         if (dead) return
         console.log('[KikoVoice] Got ephemeral key:', ephemeralKey.slice(0, 10) + '...')

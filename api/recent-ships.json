@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-22T17:25:56.990Z",
+  "generated_at": "2026-04-22T17:46:28.787Z",
   "commits": [
+    {
+      "hash": "4c20cb0",
+      "subject": "Batch: (1) BG JOB PROCESSOR — new cron-job-processor.js processes queued jobs from kiko_jobs every 5min on Hetzner. Handles source_companies_bg with auto-enrollment + dedup. (2) 10 MORE DEAD API FILES",
+      "when": "20 minutes ago"
+    },
     {
       "hash": "8ea2512",
       "subject": "Session wrap-up: (1) EMAIL CONFIDENCE DISPLAY — prospect table shows ✓ verified badge or confidence % + source next to emails. Detail panel shows same. (2) KIKO_BIBLE.md fully updated — email intel en",
-      "when": "8 minutes ago"
+      "when": "28 minutes ago"
     },
     {
       "hash": "2a76df0",
       "subject": "Final batch: (1) ALREADY-CONNECTED LinkedIn check — condition engine now handles 3 scenarios: already connected (message delivered), invite accepted, or marked already_connected. (2) CAMPAIGN UI POLIS",
-      "when": "17 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "7047430",
       "subject": "Move prospects + dedup + email confidence: (1) MOVE TO CAMPAIGN — bulk action moves prospects (removes from source + adds to target), alongside existing duplicate. (2) DEDUP — checks target campaign f",
-      "when": "18 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "cfd4952",
       "subject": "Platform audit: (1) Archived 24 HTML mockups + 47 session docs to .archive/. (2) Root now has only 5 essential files. (3) All file processing packages verified (pdf-parse, mammoth, officeparser). (4) ",
-      "when": "50 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "adeb4ea",
       "subject": "Kiko self-knowledge updated + file upload deployed: (1) SELF-KNOWLEDGE — added Email Intelligence Engine (6 APIs, SMTP, pattern detection), Gmail draft tool (create_email_draft for any team member), c",
-      "when": "54 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "813f591",
       "subject": "File upload system rebuilt: (1) MULTI-FILE SUPPORT — pendingAttachments is now an array, stack multiple files before sending. (2) VISUAL DISPLAY — all attached files shown as chips with icons (📕 PDF,",
-      "when": "62 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "911ea2d",
@@ -59,7 +64,7 @@
     {
       "hash": "7248fe3",
       "subject": "Campaign page UI polish: (1) BUTTONS — all unified: solid black for primary (Add prospects, Build), outline for secondary (Edit sequence, Pause, Archive). borderRadius 8 across all. Removed green/ambe",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "0aaac0d",
@@ -69,12 +74,12 @@
     {
       "hash": "122666c",
       "subject": "Clean up Prospects tab: (1) Removed 'Verify targets' and 'Research sponsorship data' buttons — both now automatic during sourcing pipeline. (2) Prospects tab now shows just: Back to Sequence + Activat",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "065decf",
       "subject": "Restore Prospects tab in campaign editor: (1) Full Sequence → Prospects → Launch flow restored. (2) 'Save & manage prospects' now switches to Prospects tab (not navigating away). (3) Prospects tab sho",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "7a1c751",
@@ -84,7 +89,7 @@
     {
       "hash": "e6c967a",
       "subject": "Email intelligence pipeline wired end-to-end: (1) SMTP timeout reduced to 8s. (2) Gateway detection — if first 2 SMTP checks timeout, skips remaining and returns pattern-based guess (catches Proofpoin",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "da4d6ba",
@@ -94,11 +99,6 @@
     {
       "hash": "ccc3a41",
       "subject": "Remove Leads tab from campaign editor: (1) Leads tab removed entirely (172 lines) — all prospect management now on main campaign page. (2) 'Continue to Leads' button → 'Save & manage prospects' which ",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "6e0a53b",
-      "subject": "Campaign page prospect management: (1) BULK SELECT — checkbox on every prospect row + select-all in header. (2) BULK ACTIONS — Pause, Resume, Duplicate to campaign, Remove, Clear. (3) SORTABLE COLUMNS",
       "when": "7 hours ago"
     }
   ]
