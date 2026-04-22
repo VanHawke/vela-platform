@@ -4,7 +4,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 export const config = { maxDuration: 300 };
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 const MODEL = 'claude-sonnet-4-20250514';
 
 export default async function handler(req, res) {
