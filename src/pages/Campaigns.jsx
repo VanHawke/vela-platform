@@ -82,6 +82,11 @@ export default function Campaigns({ user }) {
   const [prospects, setProspects] = useState([])
   const [prospectQueue, setProspectQueue] = useState([]) // raw queue rows for detail panel
   const [selectedProspect, setSelectedProspect] = useState(null)
+  const [bulkSelected, setBulkSelected] = useState(new Set())
+  const [sortField, setSortField] = useState('name') // name, company, status, step
+  const [sortDir, setSortDir] = useState('asc')
+  const [moveModalOpen, setMoveModalOpen] = useState(false)
+  const [moveTargetId, setMoveTargetId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [detailLoading, setDetailLoading] = useState(false)
   const [search, setSearch] = useState('')
@@ -486,6 +491,17 @@ export default function Campaigns({ user }) {
       return (p.contact_name?.toLowerCase().includes(q) || p.company?.toLowerCase().includes(q) || p.contact_email?.toLowerCase().includes(q) || p.title?.toLowerCase().includes(q))
     }
     return true
+  }).sort((a, b) => {
+    let va, vb
+    if (sortField === 'name') { va = a.contact_name || ''; vb = b.contact_name || '' }
+    else if (sortField === 'company') { va = a.company || ''; vb = b.company || '' }
+    else if (sortField === 'status') { va = a.status || ''; vb = b.status || '' }
+    else if (sortField === 'step') { va = a.current_step || 0; vb = b.current_step || 0 }
+    else { va = a.contact_name || ''; vb = b.contact_name || '' }
+    if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase() }
+    if (va < vb) return sortDir === 'asc' ? -1 : 1
+    if (va > vb) return sortDir === 'asc' ? 1 : -1
+    return 0
   })
 
   const selectedCampaign = campaigns.find(c => c.id === selectedId)
@@ -775,20 +791,41 @@ export default function Campaigns({ user }) {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr>
-                      <th style={{ ...headerCell, textAlign: 'left' }}>Prospect</th>
-                      <th style={{ ...headerCell, textAlign: 'left' }}>Company</th>
-                      <th style={{ ...headerCell, textAlign: 'center' }}>Step</th>
-                      <th style={{ ...headerCell, textAlign: 'center' }}>Engagement</th>
-                      <th style={{ ...headerCell, textAlign: 'left' }}>Last action</th>
-                      <th style={{ ...headerCell, textAlign: 'left' }}>Next</th>
-                      <th style={{ ...headerCell, textAlign: 'center' }}>Status</th>
-                      <th style={{ ...headerCell, textAlign: 'right', paddingRight: 28 }}></th>
+                      <th style={{ ...headerCell, width: 36, textAlign: 'center' }}>
+                        <input type="checkbox" checked={bulkSelected.size === filteredProspects.length && filteredProspects.length > 0} onChange={() => { if (bulkSelected.size === filteredProspects.length) setBulkSelected(new Set()); else setBulkSelected(new Set(filteredProspects.map(p => p.id))) }} style={{ accentColor: '#0A0A0A', cursor: 'pointer' }} />
+                      </th>
+                      {[{f:'name',l:'Prospect'},{f:'company',l:'Company'},{f:'step',l:'Step',c:true},{f:null,l:'Engagement',c:true},{f:null,l:'Last action'},{f:null,l:'Next'},{f:'status',l:'Status',c:true},{f:null,l:''}].map((col,ci) => (
+                        <th key={ci} onClick={col.f ? () => { if (sortField === col.f) setSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setSortField(col.f); setSortDir('asc') } } : undefined}
+                          style={{ ...headerCell, textAlign: col.c ? 'center' : ci === 7 ? 'right' : 'left', cursor: col.f ? 'pointer' : 'default', userSelect: 'none', paddingRight: ci === 7 ? 28 : undefined }}>
+                          {col.l}{col.f && sortField === col.f ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
+                  {/* Bulk action bar */}
+                  {bulkSelected.size > 0 && (
+                    <thead>
+                      <tr>
+                        <td colSpan={9} style={{ padding: '8px 16px', background: 'rgba(0,0,0,0.03)', borderBottom: `1px solid ${C.border}` }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, fontFamily: C.font }}>
+                            <span style={{ fontWeight: 500, color: '#0A0A0A' }}>{bulkSelected.size} selected</span>
+                            <button onClick={async () => { for (const id of bulkSelected) await pauseProspect(prospects.find(p => p.id === id)); setBulkSelected(new Set()); await loadProspects(selectedId) }} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#D4A843', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Pause</button>
+                            <button onClick={async () => { for (const id of bulkSelected) { await supabase.from('kiko_sequence_enrollments').update({ status: 'active' }).eq('id', id) }; setBulkSelected(new Set()); await loadProspects(selectedId) }} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#00B464', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Resume</button>
+                            <button onClick={() => setMoveModalOpen(true)} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#0A0A0A', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Duplicate to campaign</button>
+                            <button onClick={async () => { if (!confirm(`Remove ${bulkSelected.size} prospects?`)) return; for (const id of bulkSelected) await removeProspect(prospects.find(p => p.id === id)); setBulkSelected(new Set()); await loadProspects(selectedId) }} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(248,113,113,0.2)', background: 'transparent', color: '#f87171', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Remove</button>
+                            <button onClick={() => setBulkSelected(new Set())} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#A0A0A0', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Clear</button>
+                          </div>
+                        </td>
+                      </tr>
+                    </thead>
+                  )}
                   <tbody>
                     {filteredProspects.map(p => (
-                      <tr key={p.id} style={{ transition: 'background 0.1s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.02)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                        <td style={{ ...cell, paddingLeft: 28 }}>
+                      <tr key={p.id} style={{ transition: 'background 0.1s', background: bulkSelected.has(p.id) ? 'rgba(0,0,0,0.02)' : 'transparent' }} onMouseEnter={e => { if (!bulkSelected.has(p.id)) e.currentTarget.style.background = 'rgba(0,0,0,0.015)' }} onMouseLeave={e => { if (!bulkSelected.has(p.id)) e.currentTarget.style.background = 'transparent' }}>
+                        <td style={{ ...cell, width: 36, textAlign: 'center' }}>
+                          <input type="checkbox" checked={bulkSelected.has(p.id)} onChange={() => { const next = new Set(bulkSelected); if (next.has(p.id)) next.delete(p.id); else next.add(p.id); setBulkSelected(next) }} onClick={e => e.stopPropagation()} style={{ accentColor: '#0A0A0A', cursor: 'pointer' }} />
+                        </td>
+                        <td style={{ ...cell, paddingLeft: 0 }}>
                           <div
                             onClick={() => setSelectedProspect(selectedProspect?.id === p.id ? null : p)}
                             style={{ fontSize: 13, color: selectedProspect?.id === p.id ? '#0A0A0A' : C.text, fontWeight: 500, cursor: 'pointer', textDecoration: 'none' }}
@@ -1125,6 +1162,48 @@ export default function Campaigns({ user }) {
       )}
 
       {/* Add prospects panel */}
+      {/* Duplicate to campaign modal */}
+      {moveModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setMoveModalOpen(false)}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#FEFEFC', borderRadius: 14, maxWidth: 420, width: '100%', padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
+            <h3 style={{ fontSize: 15, fontWeight: 500, color: '#0A0A0A', margin: '0 0 6px', fontFamily: C.font }}>Duplicate {bulkSelected.size} prospects to campaign</h3>
+            <p style={{ fontSize: 12, color: '#6B6B6B', margin: '0 0 16px', fontFamily: C.font }}>Select which campaign to copy these prospects into. They'll be enrolled at step 1.</p>
+            <div style={{ maxHeight: 250, overflowY: 'auto', border: `1px solid rgba(0,0,0,0.06)`, borderRadius: 8, marginBottom: 16 }}>
+              {campaigns.filter(c => c.id !== selectedId && !c.archived).map(c => (
+                <div key={c.id} onClick={() => setMoveTargetId(c.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', cursor: 'pointer', background: moveTargetId === c.id ? 'rgba(0,0,0,0.04)' : 'transparent', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+                  <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${moveTargetId === c.id ? '#0A0A0A' : 'rgba(0,0,0,0.15)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {moveTargetId === c.id && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#0A0A0A' }} />}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A', fontFamily: C.font }}>{c.name}</div>
+                    <div style={{ fontSize: 10, color: '#A0A0A0', fontFamily: C.font }}>{c.counts?.total || 0} prospects</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => setMoveModalOpen(false)} style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
+              <button disabled={!moveTargetId} onClick={async () => {
+                let copied = 0
+                const selected = prospects.filter(p => bulkSelected.has(p.id))
+                for (const p of selected) {
+                  const { error } = await supabase.from('kiko_sequence_enrollments').insert({
+                    sequence_id: moveTargetId, contact_id: p.contact_id || null,
+                    contact_name: p.contact_name, contact_email: p.contact_email, company: p.company,
+                    linkedin_url: p.linkedin_url, status: 'active', current_step: 1,
+                    enrolled_at: new Date().toISOString(),
+                  })
+                  if (!error) copied++
+                }
+                setMoveModalOpen(false); setBulkSelected(new Set())
+                alert(`Duplicated ${copied} prospects to ${campaigns.find(c => c.id === moveTargetId)?.name}`)
+                await loadCampaigns()
+              }} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: moveTargetId ? '#0A0A0A' : 'rgba(0,0,0,0.1)', color: moveTargetId ? '#FEFEFC' : '#A0A0A0', fontSize: 12, fontWeight: 500, cursor: moveTargetId ? 'pointer' : 'default', fontFamily: C.font }}>Duplicate</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {addProspectsOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => { setAddProspectsOpen(false); setAddProspectsPhase('idle'); setAddProspectsError(null) }}>
           <div onClick={e => e.stopPropagation()} style={{ background: '#FEFEFC', borderRadius: 14, maxWidth: 520, width: '100%', padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>

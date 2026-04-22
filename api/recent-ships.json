@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-22T10:30:13.230Z",
+  "generated_at": "2026-04-22T10:36:18.126Z",
   "commits": [
+    {
+      "hash": "85d6be0",
+      "subject": "Fix campaign delete: was failing silently because 4 tables have foreign keys to kiko_sequences but only 2 were being cleaned up. Now deletes from ALL: campaign_targets, kiko_lead_segments, kiko_sequen",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "ce218cd",
       "subject": "Fix Campaigns.jsx build error: extra closing div tag caused unterminated regex parse failure",
-      "when": "12 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "47b294d",
       "subject": "Generate multichannel sequence: (1) 'Generate sequence' button in campaign header — one click creates full 7-step Email + LinkedIn flow with conditions. (2) generate-sequence.js updated: structure now",
-      "when": "31 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "87402df",
       "subject": "Auto-verify + auto-enrich in sourcing pipeline: (1) EMAIL VERIFICATION — format check, professional domain filter (rejects gmail/yahoo/etc), company domain cross-match. Results show ✓ verified / ⚠ unv",
-      "when": "42 minutes ago"
+      "when": "48 minutes ago"
     },
     {
       "hash": "fd81d17",
       "subject": "Bulk prospect management + leads cleanup: (1) BULK SELECT — checkboxes on every lead row, select-all header checkbox, bulk action bar (Pause, Resume, Remove, Clear). (2) STATUS INDICATORS — ✓ green fo",
-      "when": "47 minutes ago"
+      "when": "53 minutes ago"
     },
     {
       "hash": "3897e90",
       "subject": "Campaign builder cleanup: (1) EDITOR MODERNIZED — removed email/linkedin toggle (type set from flow), subject line prominent, larger textarea (13px font), clean labels. (2) TRIGGERS REMOVED — no longe",
-      "when": "65 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "cadea4c",
@@ -94,11 +99,6 @@
     {
       "hash": "e0b56bf",
       "subject": "LinkedIn FULLY WIRED: (1) kiko-worker on Hetzner now reads kiko_linkedin_queue (was kiko_outreach_queue). (2) sendMessage function added to linkedinEngine.js — sends DMs via Playwright to connected pr",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "5f5a1ae",
-      "subject": "LinkedIn test sends immediately: after queuing to kiko_linkedin_queue, triggers /api/cron-linkedin-sender instantly instead of waiting for hourly cron.",
       "when": "19 hours ago"
     }
   ]
