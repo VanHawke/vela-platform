@@ -63,6 +63,7 @@ export default function SequenceDetail() {
   const [tab, setTab] = useState('sequence')
   const [dirty, setDirty] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [generating, setGenerating] = useState(false)
   const [showAddLeads, setShowAddLeads] = useState(false)
   const [leadSearch, setLeadSearch] = useState('')
   const [searchResults, setSearchResults] = useState([])
@@ -360,6 +361,33 @@ export default function SequenceDetail() {
   function upd(i, k, v) { const u = [...steps]; u[i] = { ...u[i], [k]: v }; setSteps(u); setDirty(true) }
   function updAndRegen(i, k, v) { upd(i, k, v); setRegenPrompt(true) }
   function del(i) { setSteps(steps.filter((_, j) => j !== i).map((s, j) => ({ ...s, step: j + 1 }))); if (selStep >= steps.length - 1) setSelStep(Math.max(0, steps.length - 2)); setDirty(true) }
+
+  async function generateMultichannel() {
+    if (steps.length > 0 && !confirm('This will replace your current sequence with a new AI-generated multichannel flow. Continue?')) return
+    setGenerating(true)
+    try {
+      const category = (seq?.name || '').includes(' - ') ? seq.name.split(' - ').slice(1).join(' - ') : seq?.name || 'Technology'
+      const team = (seq?.name || '').includes('Haas') ? 'Haas F1 Team' : 'Haas F1 Team'
+      const res = await fetch('/api/generate-sequence', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, team, persona: seq?.target_persona || `C-suite at ${category} companies`, numSteps: 7 }),
+      })
+      const data = await res.json()
+      if (data.ok && data.sequence?.steps?.length) {
+        // Map generated steps to include proper action types for LinkedIn
+        const mapped = data.sequence.steps.map((s, i) => ({
+          ...s, step: i + 1,
+          action: s.channel === 'linkedin' ? (i <= 2 ? 'invite' : 'message') : undefined,
+        }))
+        setSteps(mapped)
+        setDirty(true)
+        setSelStep(0)
+      } else {
+        alert('Failed to generate: ' + (data.error || 'Unknown error'))
+      }
+    } catch (err) { alert('Error: ' + err.message) }
+    setGenerating(false)
+  }
 
   async function askKiko(i) {
     const s = steps[i]; if (!s) return; upd(i, 'template', '⏳ Kiko is writing...')
@@ -705,7 +733,8 @@ RULES:
           {dirty && <span style={{ fontSize: 11, color: C.amber }}>Unsaved</span>}
           {!isNew && <button onClick={duplicateCampaign} title="Duplicate campaign" style={{ padding: '7px 8px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textTer, cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Copy size={12} /></button>}
           {!isNew && <button onClick={deleteCampaign} title="Delete campaign" style={{ padding: '7px 8px', borderRadius: 6, border: '1px solid rgba(184,100,62,0.15)', background: 'transparent', color: C.red, cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Trash2 size={12} /></button>}
-          <button onClick={save} disabled={saving} style={{ padding: '7px 16px', borderRadius: 6, border: 'none', background: 'rgba(0,0,0,0.06)', color: C.purple, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, opacity: saving ? 0.5 : 1, display: 'flex', alignItems: 'center', gap: 5, boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}><Save size={12} />{saving ? 'Saving...' : 'Save'}</button>
+          <button onClick={generateMultichannel} disabled={generating} style={{ padding: '7px 16px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 12, fontWeight: 500, cursor: generating ? 'wait' : 'pointer', fontFamily: C.font, opacity: generating ? 0.5 : 1, display: 'flex', alignItems: 'center', gap: 5 }}><Sparkles size={12} />{generating ? 'Generating...' : 'Generate sequence'}</button>
+          <button onClick={save} disabled={saving} style={{ padding: '7px 16px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, opacity: saving ? 0.5 : 1, display: 'flex', alignItems: 'center', gap: 5 }}><Save size={12} />{saving ? 'Saving...' : 'Save'}</button>
         </div>
       </div>
       <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>

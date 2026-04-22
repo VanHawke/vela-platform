@@ -90,20 +90,21 @@ CONTEXT:
 - Next race: ${nextRace ? `${nextRace.name} (${Math.ceil((new Date(nextRace.date) - new Date()) / 86400000)} days)` : 'TBC'}
 - Existing ${category} F1 sponsors: ${existingSponsors.length ? existingSponsors.join(', ') : 'limited — category is open'}
 
-STRUCTURE (${steps} steps, 4 emails + 3 LinkedIn over 14 days):
-Step 1: Day 0, email, authority hook + reciprocity
-Step 2: Day 2, linkedin (connection request with note), liking
-Step 3: Day 3, email, deeper context + social proof  
-Step 4: Day 7, email, scarcity + race calendar urgency
-Step 5: Day 10, linkedin (direct message), commitment
-Step 6: Day 12, linkedin (engage content/comment), liking
-Step 7: Day 14, email, strategic withdrawal
+STRUCTURE (${steps} steps — multichannel Email + LinkedIn with conditions):
+Step 1: Day 0, email, authority hook + reciprocity — first touch
+Step 2: Day 2, linkedin, action=invite (connection request with note, max 300 chars), liking
+Step 3: Day 3, condition, condition_type=connection_accepted — checks if LinkedIn invite was accepted
+Step 4: Day 1, email, deeper operational context + social proof (only if NOT accepted — NO branch continues email)
+Step 5: Day 3, linkedin, action=message (sent only to accepted connections — YES branch), commitment
+Step 6: Day 5, email, scarcity + race calendar urgency (continues for all prospects)
+Step 7: Day 7, email, strategic withdrawal — final touch
 
-Return ONLY valid JSON array, no markdown, no backticks:
-[{"step":1,"delay_days":0,"channel":"email","approach":"authority-led","psychology":"reciprocity","subject":"subject","template":"full email body including Dear and Kind regards"},...]`;
+Return ONLY valid JSON array, no markdown, no backticks.
+For condition steps: {"step":N,"delay_days":D,"type":"condition","condition_type":"connection_accepted","yes_steps":[linkedin message step],"no_steps":[email step]}
+For regular steps: {"step":N,"delay_days":D,"channel":"email"|"linkedin","action":"invite"|"message","approach":"...","psychology":"...","subject":"...","template":"..."}`;
 
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', max_tokens: 4000,
+      model: 'claude-sonnet-4-20250514', max_tokens: 6000,
       messages: [{ role: 'user', content: prompt }]
     });
     const text = response.content[0]?.text?.trim();
