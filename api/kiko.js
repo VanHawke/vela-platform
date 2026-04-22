@@ -955,6 +955,7 @@ export default async function handler(req, res) {
         if (att.type === 'image') contentBlocks.push({ type: 'image', source: { type: 'base64', media_type: att.mediaType, data: att.data } });
         else if (att.type === 'document' && att.mediaType === 'application/pdf') contentBlocks.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: att.data } });
         else if (att.type === 'text') contentBlocks.push({ type: 'text', text: `[File: ${att.fileName || 'uploaded'}]\n${Buffer.from(att.data, 'base64').toString('utf-8')}` });
+        else if (att.type === 'file') contentBlocks.push({ type: 'text', text: `[File: ${att.name || 'uploaded'}${att.pages ? ` — ${att.pages} pages` : ''}]\n${att.data}` });
       }
       contentBlocks.push({ type: 'text', text: message || 'Analyse this file.' });
       messages.push({ role: 'user', content: contentBlocks });

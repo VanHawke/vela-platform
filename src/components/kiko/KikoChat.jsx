@@ -715,9 +715,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     setInput('')
     setPendingAttachments([])
     // Build file context from pending file attachments
-    const fileAtt = allAttachments.find(a => a.type === 'file')
-    const fileContext = fileAtt ? `\n\n[DOCUMENT CONTENTS — "${fileAtt.name}"]\n\n${fileAtt.data}\n\n[END OF DOCUMENT]` : ''
-    const displayMsg = fileAtt ? `📎 ${fileAtt.name} — ${effectiveMsg}` : effectiveMsg
+    const fileAtts = allAttachments.filter(a => a.type === 'file')
+    const fileContext = fileAtts.length > 0 ? fileAtts.map(f => `\n\n[DOCUMENT CONTENTS — "${f.name}"${f.pages ? ` (${f.pages} pages)` : ''}]\n\n${f.data}\n\n[END OF DOCUMENT]`).join('') : ''
+    const fileNames = fileAtts.map(f => f.name).join(', ')
+    const displayMsg = fileAtts.length > 0 ? `📎 ${fileNames} — ${effectiveMsg}` : effectiveMsg
     const apiMsg = (hiddenContext ? effectiveMsg + '\n\n' + hiddenContext : effectiveMsg) + fileContext
     const imgPreview = allAttachments.find(a => a.type === 'image' && a.previewUrl)?.previewUrl || null
     const userMsg = { role: 'user', content: displayMsg, timestamp: Date.now(), imagePreview: imgPreview }
