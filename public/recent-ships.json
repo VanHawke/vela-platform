@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-22T20:07:02.170Z",
+  "generated_at": "2026-04-22T20:08:09.387Z",
   "commits": [
+    {
+      "hash": "12d6ba4",
+      "subject": "UI overhaul: (1) BACKGROUND TASKS NAV ICON — replaced search icon with tasks icon showing pending/processing count with pulsating dot. Dropdown shows all tasks with status, completed tasks click throu",
+      "when": "64 seconds ago"
+    },
     {
       "hash": "0184f9d",
       "subject": "FIND LEADS NOW SOURCES VIA KIKO: (1) When CRM has no matching contacts, Find leads now auto-queues a Kiko background sourcing job instead of showing 'No leads found'. (2) Status message shown: 'Kiko i",
-      "when": "36 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "2d52a1f",
       "subject": "FIX CAMPAIGN DELETE: Simplified deleteCampaign to single Supabase delete — CASCADE handles all FK tables automatically. Removed 6 individual FK table delete calls that were silently failing. Now shows",
-      "when": "42 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "91b2d9b",
       "subject": "Remaining fixes: (1) PROSPECT CTAs SWAPPED — Find leads now has prominent black style, Add from CRM is outline. Deep source (background) button added to campaign editor. (2) EXPORT RESTRICTION — expor",
-      "when": "50 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "e7e23f3",
       "subject": "CRITICAL FIXES: (1) CAMPAIGN DELETE — all FK constraints now CASCADE on delete. Deleting a campaign automatically removes all enrollments, conditions, lead segments, and targets. No more silent failur",
-      "when": "58 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "d3221d6",
@@ -94,11 +99,6 @@
     {
       "hash": "4f368ff",
       "subject": "Full-depth layout + pagination: (1) Removed constrained heights and overflow:auto from flow editor and text editor panels — both now render at full depth. (2) Removed overflow:hidden from main contain",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "7248fe3",
-      "subject": "Campaign page UI polish: (1) BUTTONS — all unified: solid black for primary (Add prospects, Build), outline for secondary (Edit sequence, Pause, Archive). borderRadius 8 across all. Removed green/ambe",
       "when": "6 hours ago"
     }
   ]

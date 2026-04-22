@@ -270,7 +270,6 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
           </svg>
           {hasNotifications && <span className="ltn-dot" style={{ animation: 'pulse-dot 1.5s infinite' }}>{notifCount > 0 && notifCount <= 99 ? notifCount : notifCount > 99 ? '99+' : ''}</span>}
         </button>
-        </button>
         {onNewClick && (
           <button className="ltn-cta sparkle-cta magnetic" onClick={onNewClick}>+ New</button>
         )}
