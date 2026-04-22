@@ -87,7 +87,16 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
   }
 
   // Read custom nav order from Settings (localStorage 'kiko_top_nav_v2')
-  const [orderedTabs, setOrderedTabs] = useState(DEFAULT_TOP_PAGES)
+  const [orderedTabs, setOrderedTabs] = useState(() => {
+    try {
+      const stored = localStorage.getItem('kiko_top_nav_v2')
+      if (!stored) return DEFAULT_TOP_PAGES
+      const ids = JSON.parse(stored)
+      const resolved = ids.map(id => ALL_PAGES.find(t => t.id === id || (t.aliases && t.aliases.includes(id)))).filter(Boolean)
+      if (!resolved.some(t => t.id === 'home')) { const h = ALL_PAGES.find(t => t.id === 'home'); if (h) resolved.unshift(h) }
+      return resolved.length > 0 ? resolved : DEFAULT_TOP_PAGES
+    } catch { return DEFAULT_TOP_PAGES }
+  })
   const [moreOrder, setMoreOrder] = useState(() => {
     try { const s = localStorage.getItem('kiko_more_order'); return s ? JSON.parse(s) : null } catch { return null }
   })

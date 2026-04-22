@@ -861,9 +861,9 @@ RULES:
           <div style={{ fontSize: 11, color: C.textSec, fontFamily: C.font }}>{steps.length} steps · {steps.reduce((s, st) => s + (st.delay_days || 0), 0)} day sequence</div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 14, minHeight: 0 }}>
           {/* LEFT: Flow view */}
-          <div style={{ ...glass, padding: 0 }}>
+          <div style={{ ...glass, padding: 0, overflow: 'hidden', minWidth: 0 }}>
             <SequenceFlowView steps={steps} conditions={conditions} selectedStep={selStep} onSelectStep={(i) => { setSelStep(i) }} onAddStep={(type, pos) => { addStep(type, pos) }} onDeleteStep={(i) => { del(i) }} onUpdateDelay={(i, d) => { upd(i, 'delay_days', d) }} onUpdateStep={(updated) => { setSteps(updated); setDirty(true) }} />
           </div>
           <div style={{ ...glass, padding: 18 }}>

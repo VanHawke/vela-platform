@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-22T20:08:09.387Z",
+  "generated_at": "2026-04-22T20:15:22.355Z",
   "commits": [
+    {
+      "hash": "266b2cb",
+      "subject": "Fix duplicate closing button tag in LegoraTopNav",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "12d6ba4",
       "subject": "UI overhaul: (1) BACKGROUND TASKS NAV ICON — replaced search icon with tasks icon showing pending/processing count with pulsating dot. Dropdown shows all tasks with status, completed tasks click throu",
-      "when": "64 seconds ago"
+      "when": "8 minutes ago"
     },
     {
       "hash": "0184f9d",
       "subject": "FIND LEADS NOW SOURCES VIA KIKO: (1) When CRM has no matching contacts, Find leads now auto-queues a Kiko background sourcing job instead of showing 'No leads found'. (2) Status message shown: 'Kiko i",
-      "when": "37 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "2d52a1f",
       "subject": "FIX CAMPAIGN DELETE: Simplified deleteCampaign to single Supabase delete — CASCADE handles all FK tables automatically. Removed 6 individual FK table delete calls that were silently failing. Now shows",
-      "when": "43 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "91b2d9b",
       "subject": "Remaining fixes: (1) PROSPECT CTAs SWAPPED — Find leads now has prominent black style, Add from CRM is outline. Deep source (background) button added to campaign editor. (2) EXPORT RESTRICTION — expor",
-      "when": "51 minutes ago"
+      "when": "58 minutes ago"
     },
     {
       "hash": "e7e23f3",
       "subject": "CRITICAL FIXES: (1) CAMPAIGN DELETE — all FK constraints now CASCADE on delete. Deleting a campaign automatically removes all enrollments, conditions, lead segments, and targets. No more silent failur",
-      "when": "59 minutes ago"
+      "when": "66 minutes ago"
     },
     {
       "hash": "d3221d6",
@@ -79,7 +84,7 @@
     {
       "hash": "911ea2d",
       "subject": "Fix file upload UX: (1) Files no longer auto-submit and discard your prompt. Dropping a file now attaches it as a pending attachment — you continue typing, then submit together. (2) Text files stored ",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "250375b",
@@ -94,11 +99,6 @@
     {
       "hash": "722ad69",
       "subject": "Condition evaluation engine in sequence sender: (1) When next step is a condition, evaluates it: connection_accepted (checks LinkedIn queue for acceptance), has_linkedin, has_email, no_reply. (2) Rout",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "4f368ff",
-      "subject": "Full-depth layout + pagination: (1) Removed constrained heights and overflow:auto from flow editor and text editor panels — both now render at full depth. (2) Removed overflow:hidden from main contain",
       "when": "6 hours ago"
     }
   ]
