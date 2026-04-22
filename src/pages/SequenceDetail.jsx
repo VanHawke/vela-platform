@@ -61,6 +61,8 @@ export default function SequenceDetail() {
   const [queue, setQueue] = useState([])
   const [selStep, setSelStep] = useState(0)
   const [tab, setTab] = useState('sequence')
+  const [prospectPage, setProspectPage] = useState(1)
+  const PROSPECTS_PER_PAGE = 50
   const [dirty, setDirty] = useState(false)
   const [saving, setSaving] = useState(false)
   const [generating, setGenerating] = useState(false)
@@ -718,7 +720,7 @@ RULES:
   const inputStyle = { width: '100%', padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.border}`, background: '#FAFAF7', color: C.text, fontSize: 13, fontFamily: C.font, outline: 'none', boxSizing: 'border-box' }
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       <PageHeader
         eyebrowCategory="OUTREACH"
         eyebrowSuffix="Sequence detail"
@@ -839,12 +841,12 @@ RULES:
           <div style={{ fontSize: 11, color: C.textSec, fontFamily: C.font }}>{steps.length} steps · {steps.reduce((s, st) => s + (st.delay_days || 0), 0)} day sequence</div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 14, height: 'calc(100vh - 280px)', minHeight: 400 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 14 }}>
           {/* LEFT: Flow view */}
-          <div style={{ ...glass, padding: 0, overflowY: 'auto' }}>
+          <div style={{ ...glass, padding: 0 }}>
             <SequenceFlowView steps={steps} conditions={conditions} selectedStep={selStep} onSelectStep={(i) => { setSelStep(i) }} onAddStep={(type, pos) => { addStep(type, pos) }} onDeleteStep={(i) => { del(i) }} onUpdateDelay={(i, d) => { upd(i, 'delay_days', d) }} onUpdateStep={(updated) => { setSteps(updated); setDirty(true) }} />
           </div>
-          <div style={{ ...glass, padding: 18, overflowY: 'auto' }}>
+          <div style={{ ...glass, padding: 18 }}>
             {cur ? (
               <>
                 <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -1043,8 +1045,8 @@ RULES:
               <div style={{ display: 'flex', padding: '8px 18px', borderBottom: `1px solid ${C.border}`, fontSize: 10, color: C.textTer, fontWeight: 500, fontFamily: C.font }}>
                 <span style={{ flex: 1 }}>Name</span><span style={{ width: 140 }}>Company</span><span style={{ width: 80, textAlign: 'center' }}>Step</span><span style={{ width: 80, textAlign: 'center' }}>Status</span>
               </div>
-              <div style={{ maxHeight: 400, overflowY: 'auto' }}>
-                {enrollments.map(e => {
+              <div>
+                {enrollments.slice((prospectPage - 1) * PROSPECTS_PER_PAGE, prospectPage * PROSPECTS_PER_PAGE).map(e => {
                   const statusColor = e.status === 'replied' ? '#00B464' : e.status === 'bounced' ? '#f87171' : e.status === 'paused' ? C.amber : C.teal
                   const statusIcon = e.status === 'replied' ? '✓' : e.status === 'bounced' ? '✗' : e.status === 'paused' ? '⏸' : '●'
                   return (
@@ -1066,6 +1068,15 @@ RULES:
                   )
                 })}
               </div>
+              {/* Pagination */}
+              {enrollments.length > PROSPECTS_PER_PAGE && (
+                <div style={{ padding: '12px 18px', borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6 }}>
+                  {Array.from({ length: Math.ceil(enrollments.length / PROSPECTS_PER_PAGE) }, (_, i) => (
+                    <button key={i} onClick={() => setProspectPage(i + 1)} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${prospectPage === i + 1 ? '#0A0A0A' : C.border}`, background: prospectPage === i + 1 ? '#0A0A0A' : 'transparent', color: prospectPage === i + 1 ? '#FEFEFC' : C.textSec, fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}>{i + 1}</button>
+                  ))}
+                  <span style={{ fontSize: 10, color: C.textTer, marginLeft: 8, fontFamily: C.font }}>{enrollments.length} total</span>
+                </div>
+              )}
             </div>
           ) : (
             <div style={{ padding: 40, textAlign: 'center', color: C.textTer, fontSize: 13, fontFamily: C.font }}>
