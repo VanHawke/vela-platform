@@ -714,7 +714,7 @@ RULES:
   async function cancelEnr(eid) { await supabase.from('kiko_sequence_enrollments').update({ status: 'cancelled' }).eq('id', eid); await supabase.from('kiko_outreach_queue').update({ status: 'cancelled' }).eq('enrollment_id', eid).eq('status', 'queued'); load() }
 
   const cur = steps[selStep]
-  const tabs = [{ id: 'sequence', label: 'Sequence' }, { id: 'leads', label: 'Leads', ct: enrollments.length }, { id: 'activity', label: 'Activity' }, { id: 'performance', label: 'Performance' }]
+  const tabs = [{ id: 'sequence', label: 'Sequence' }, { id: 'activity', label: 'Activity' }, { id: 'performance', label: 'Performance' }]
   const inputStyle = { width: '100%', padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.border}`, background: '#FAFAF7', color: C.text, fontSize: 13, fontFamily: C.font, outline: 'none', boxSizing: 'border-box' }
 
   return (
@@ -787,9 +787,9 @@ RULES:
             {['Sequence', 'Leads', 'Launch'].map((s, i) => (
               <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <div style={{ width: 20, height: 20, borderRadius: '50%', fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: (i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? 'rgba(0,0,0,0.08)' : 'transparent',
-                  color: (i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? C.purple : C.textTer,
-                  border: `1px solid ${(i === 0 && tab === 'sequence') || (i === 1 && tab === 'leads') ? 'rgba(0,0,0,0.10)' : C.border}`
+                  background: tab === t.id ? 'rgba(0,0,0,0.08)' : 'transparent',
+                  color: tab === t.id ? C.purple : C.textTer,
+                  border: `1px solid ${tab === t.id ? 'rgba(0,0,0,0.10)' : C.border}`
                 }}>{i + 1}</div>
                 {i < 2 && <ChevronRight size={10} style={{ color: C.textMut }} />}
               </div>
@@ -1002,189 +1002,17 @@ RULES:
             )}
           </div>
         </div>
-        {/* Continue to Leads button (draft flow) */}
+        {/* Save & return */}
         {isDraft && steps.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
-            <button onClick={() => { if (dirty) save(); setTab('leads') }} style={{ padding: '10px 24px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}>
-              Continue to Leads <ChevronRight size={14} />
+            <button onClick={() => { if (dirty) save(); nav('/campaigns') }} style={{ padding: '10px 24px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}>
+              Save &amp; manage prospects <ChevronRight size={14} />
             </button>
           </div>
         )}
       </>)}
 
       {/* ═══ LEADS TAB ═══ */}
-      {tab === 'leads' && (
-        <>
-        <div style={{ display: 'flex', gap: 0 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ ...glass, overflow: 'hidden' }}>
-              <div style={{ padding: '12px 16px', borderBottom: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: 13, fontWeight: 500 }}>Leads</span>
-                  {enrollments.length > 0 && (
-                    <div style={{ display: 'flex', gap: 8, fontSize: 10, color: C.textTer }}>
-                      <span>{enrollments.length} enrolled</span>
-                      <span style={{ color: C.teal }}>{enrollments.filter(e => e.status === 'active').length} active</span>
-                      <span style={{ color: C.teal }}>{enrollments.filter(e => e.status === 'replied').length} replied</span>
-                      <span style={{ color: C.red }}>{enrollments.filter(e => e.status === 'bounced').length} bounced</span>
-                    </div>
-                  )}
-                </div>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <button onClick={autoSuggestLeads} disabled={loadingSuggestions} style={{ padding: '5px 12px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 11, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><Sparkles size={12} />{loadingSuggestions ? 'Finding...' : 'Find leads'}</button>
-                  <button onClick={queueBackgroundSource} disabled={bgSourcing} style={{ padding: '5px 12px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 11, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}>⚡{bgSourcing ? 'Queueing…' : 'Source in background'}</button>
-                  <button onClick={() => setShowManualAdd(true)} style={{ padding: '5px 12px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 11, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><Plus size={12} />Manual</button>
-                  <button onClick={() => setShowAddLeads(true)} style={{ padding: '5px 12px', borderRadius: 6, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 11, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><UserPlus size={12} />Add from CRM</button>
-                </div>
-              </div>
-              {bgJobMsg && (
-                <div style={{ padding: '8px 16px', borderBottom: `1px solid ${C.border}`, background: bgJobMsg.startsWith('✅') ? 'rgba(0,0,0,0.03)' : 'rgba(184,100,62,0.04)', fontSize: 11, color: bgJobMsg.startsWith('✅') ? C.purple : C.red }}>
-                  {bgJobMsg}
-                </div>
-              )}
-              {suggestions.length > 0 && (
-                <div style={{ padding: '10px 16px', borderBottom: `1px solid ${C.border}`, background: 'rgba(0,0,0,0.02)' }}>
-                  <div style={{ fontSize: 11, color: C.teal, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}><Sparkles size={11} />Kiko found {suggestions.length} potential leads</div>
-                  <div style={{ maxHeight: 200, overflowY: 'auto' }}>
-                    {suggestions.map(s => {
-                      const checked = selectedLeads.some(l => l.id === s.id)
-                      return (
-                        <div key={s.id} onClick={() => checked ? setSelectedLeads(selectedLeads.filter(l => l.id !== s.id)) : setSelectedLeads([...selectedLeads, s])} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 8px', cursor: 'pointer', borderRadius: 6, background: checked ? 'rgba(0,0,0,0.02)' : 'transparent' }}>
-                          <div style={{ width: 14, height: 14, borderRadius: 3, border: `1px solid ${checked ? C.purple : C.border}`, background: checked ? C.purple : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{checked && <span style={{ color: '#111', fontSize: 9 }}>✓</span>}</div>
-                          <span style={{ fontSize: 11, color: C.text, minWidth: 100 }}>{s.name}</span>
-                          <span style={{ fontSize: 10, color: C.textTer, flex: 1 }}>{s.company} · {s.title || '—'}</span>
-                          <span style={{ fontSize: 10, color: C.textTer }}>{s.email}</span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                  {selectedLeads.length > 0 && <button onClick={enrollSelected} style={{ marginTop: 8, padding: '6px 14px', borderRadius: 6, border: 'none', background: 'rgba(0,0,0,0.06)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>Enroll {selectedLeads.length} contact{selectedLeads.length > 1 ? 's' : ''}</button>}
-                </div>
-              )}
-              {enrollments.length ? (<div>
-                {/* Bulk action bar */}
-                {bulkIds.size > 0 && (
-                  <div style={{ padding: '8px 16px', borderBottom: `1px solid ${C.border}`, background: 'rgba(124,92,252,0.04)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 11, fontWeight: 500, color: C.purple, fontFamily: C.font }}>{bulkIds.size} selected</span>
-                    <button onClick={async () => { for (const id of bulkIds) await pauseEnr(id); setBulkIds(new Set()) }} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.amber, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Pause</button>
-                    <button onClick={async () => { for (const id of bulkIds) { await supabase.from('kiko_sequence_enrollments').update({ status: 'active' }).eq('id', id) }; setBulkIds(new Set()); await loadProspects(seq.id) }} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.teal, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Resume</button>
-                    <button onClick={async () => { if (!confirm(`Remove ${bulkIds.size} prospects from this campaign?`)) return; for (const id of bulkIds) await cancelEnr(id); setBulkIds(new Set()) }} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(248,113,113,0.2)', background: 'transparent', color: '#f87171', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Remove</button>
-                    <button onClick={() => setBulkIds(new Set())} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textTer, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Clear</button>
-                  </div>
-                )}
-                <div style={{ display: 'flex', padding: '8px 16px', borderBottom: `1px solid ${C.border}`, fontSize: 10, color: C.textTer, fontWeight: 500, alignItems: 'center' }}>
-                  <input type="checkbox" checked={bulkIds.size === enrollments.length && enrollments.length > 0} onChange={() => { if (bulkIds.size === enrollments.length) setBulkIds(new Set()); else setBulkIds(new Set(enrollments.map(e => e.id))) }} style={{ accentColor: C.purple, marginRight: 10, cursor: 'pointer' }} />
-                  <span style={{ flex: 1 }}>Name</span><span style={{ width: 120 }}>Company</span><span style={{ width: 80, textAlign: 'center' }}>Step</span><span style={{ width: 70, textAlign: 'center' }}>Status</span><span style={{ width: 60, textAlign: 'right' }}>Next</span><span style={{ width: 30 }}></span>
-                </div>
-                {enrollments.map(e => {
-                  const isSelected = selectedLead?.id === e.id
-                  const isBulk = bulkIds.has(e.id)
-                  const statusColor = e.status === 'replied' ? '#00B464' : e.status === 'bounced' ? '#f87171' : e.status === 'paused' ? C.amber : e.status === 'completed' ? C.textTer : C.teal
-                  const statusIcon = e.status === 'replied' ? '✓' : e.status === 'bounced' ? '✗' : e.status === 'paused' ? '⏸' : e.status === 'completed' ? '●' : '●'
-                  return (
-                    <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 0, padding: '8px 16px', borderBottom: `1px solid ${C.border}`, fontSize: 12, cursor: 'pointer', transition: 'background 0.1s', background: isBulk ? 'rgba(124,92,252,0.03)' : isSelected ? 'rgba(0,0,0,0.03)' : 'transparent' }}
-                      onMouseEnter={ev => { if (!isSelected && !isBulk) ev.currentTarget.style.background = 'rgba(0,0,0,0.015)' }}
-                      onMouseLeave={ev => { if (!isSelected && !isBulk) ev.currentTarget.style.background = 'transparent' }}>
-                      <input type="checkbox" checked={isBulk} onChange={() => { const next = new Set(bulkIds); if (isBulk) next.delete(e.id); else next.add(e.id); setBulkIds(next) }} onClick={ev => ev.stopPropagation()} style={{ accentColor: C.purple, marginRight: 10, cursor: 'pointer' }} />
-                      <div onClick={() => selectLeadForTimeline(e)} style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{ flex: 1, minWidth: 0 }}><div style={{ color: C.text, fontWeight: 450, fontFamily: C.font }}>{e.contact_name || e.contact_email}</div></div>
-                        <div style={{ width: 120, fontSize: 11, color: C.textSec, fontFamily: C.font }}>{e.company}</div>
-                        <div style={{ width: 80, textAlign: 'center' }}>
-                          <div style={{ fontSize: 10, color: C.textSec }}>{e.current_step}/{steps.length}</div>
-                          <div style={{ height: 3, background: 'rgba(0,0,0,0.06)', borderRadius: 2, marginTop: 2, width: 40, margin: '2px auto 0' }}><div style={{ height: '100%', borderRadius: 2, background: statusColor, width: `${(e.current_step / Math.max(steps.length, 1)) * 100}%` }} /></div>
-                        </div>
-                        <div style={{ width: 70, textAlign: 'center' }}>
-                          <span style={{ fontSize: 11, color: statusColor, fontWeight: 500, fontFamily: C.font }}>{statusIcon} {e.status}</span>
-                        </div>
-                        <div style={{ width: 60, textAlign: 'right', fontSize: 10, color: C.textTer }}>{e.next_send_at ? new Date(e.next_send_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '—'}</div>
-                        <ChevronRight size={12} style={{ color: C.textTer, flexShrink: 0, marginLeft: 4 }} />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>) : <div style={{ padding: 40, textAlign: 'center', color: C.textTer, fontSize: 12, fontWeight: 300 }}>No leads enrolled. Click "Kiko, find leads", "Manual add", or "Add from CRM".</div>}
-            </div>
-          </div>
-          {selectedLead && (
-            <div style={{ width: 340, borderLeft: `1px solid ${C.border}`, marginLeft: -1, flexShrink: 0, background: '#FEFEFC' }}>
-              <div style={{ padding: '14px 16px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 14, fontWeight: 500, color: C.text }}>{selectedLead.contact_name}</div>
-                  <div style={{ fontSize: 11, color: C.textTer, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selectedLead.contact_email}{selectedLead.company ? ` · ${selectedLead.company}` : ''}</div></div>
-                <button onClick={() => setSelectedLead(null)} style={{ width: 28, height: 28, borderRadius: 6, background: C.cardHover, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.textTer }}><X size={14} /></button>
-              </div>
-              <div style={{ padding: '10px 16px', borderBottom: `1px solid ${C.border}`, display: 'flex', gap: 12, fontSize: 11 }}>
-                <span style={{ color: C.textSec }}>Status: <span style={{ color: selectedLead.status === 'replied' ? C.teal : selectedLead.status === 'bounced' ? C.red : C.teal, textTransform: 'capitalize' }}>{selectedLead.status}</span></span>
-                <span style={{ color: C.textTer }}>Step {selectedLead.current_step}/{steps.length}</span>
-              </div>
-              <div style={{ padding: '12px 16px', overflowY: 'auto', maxHeight: 'calc(100vh - 260px)' }}>
-                <div style={{ fontSize: 10, fontWeight: 500, color: C.textTer, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Activity Timeline</div>
-                {leadActivity.length === 0 ? (
-                  <div style={{ padding: 20, textAlign: 'center', color: C.textTer, fontSize: 12, fontWeight: 300 }}>No activity recorded yet</div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 0, position: 'relative', paddingLeft: 18 }}>
-                    <div style={{ position: 'absolute', left: 5, top: 6, bottom: 6, width: 1, background: C.border }} />
-                    {leadActivity.map((a, i) => {
-                      const isSent = a.status === 'sent'; const isFailed = a.status === 'failed'; const isQueued = a.status === 'queued'
-                      return (
-                        <div key={a.id || i} style={{ display: 'flex', gap: 10, padding: '8px 0', position: 'relative' }}>
-                          <div style={{ position: 'absolute', left: -15, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#FFFFFF', border: `2px solid ${isSent ? 'rgba(0,0,0,0.35)' : isFailed ? 'rgba(184,100,62,0.5)' : '#A0A0A0'}`, zIndex: 1 }} />
-                          <div style={{ flex: 1, background: C.cardHover, border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px 10px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                              {isSent ? <Send size={11} style={{ color: C.teal }} /> : isFailed ? <AlertTriangle size={11} style={{ color: C.red }} /> : <Clock size={11} style={{ color: C.textTer }} />}
-                              <span style={{ fontSize: 11, fontWeight: 500, color: C.textSec, textTransform: 'capitalize' }}>{a.channel || 'email'} · Step {a.step_number} · {isSent ? 'Sent' : isFailed ? 'Failed' : isQueued ? 'Queued' : a.status}</span>
-                            </div>
-                            {a.subject && <div style={{ fontSize: 11, color: C.textTer, marginBottom: 2 }}>{a.subject}</div>}
-                            {(a.opens_count > 0 || a.clicks_count > 0) && (
-                              <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
-                                {a.opens_count > 0 && (
-                                  <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 10, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.18)', color: C.blue }}>
-                                    👁 Opened {a.opens_count > 1 ? `×${a.opens_count}` : ''}
-                                  </span>
-                                )}
-                                {a.clicks_count > 0 && (
-                                  <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 10, background: 'rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.08)', color: C.purple }}>
-                                    🔗 Clicked {a.clicks_count > 1 ? `×${a.clicks_count}` : ''}
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                            <div style={{ fontSize: 10, color: C.textMut, marginTop: 4 }}>{a.sent_at ? new Date(a.sent_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : a.scheduled_for ? `Scheduled: ${new Date(a.scheduled_for).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}</div>
-                          </div>
-                        </div>
-                      )
-                    })}
-                    <div style={{ display: 'flex', gap: 10, padding: '8px 0', position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: -15, top: 12, width: 8, height: 8, borderRadius: '50%', background: '#FFFFFF', border: `2px solid rgba(0,0,0,0.18)`, zIndex: 1 }} />
-                      <div style={{ flex: 1, background: C.cardHover, border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px 10px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><UserPlus size={11} style={{ color: C.purple }} /><span style={{ fontSize: 11, fontWeight: 500, color: C.textSec }}>Enrolled</span></div>
-                        <div style={{ fontSize: 10, color: C.textMut, marginTop: 2 }}>{selectedLead.created_at ? new Date(selectedLead.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-        {/* Launch Campaign button (draft flow) */}
-        {isDraft && enrollments.length > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16, gap: 8, flexWrap: 'wrap' }}>
-            <button onClick={() => setTab('sequence')} style={{ padding: '10px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>
-              ← Back to Sequence
-            </button>
-            <button onClick={verifyTargets} disabled={verifying} style={{ padding: '10px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 12, fontWeight: 500, cursor: verifying ? 'wait' : 'pointer', fontFamily: C.font, opacity: verifying ? 0.6 : 1 }}>
-              {verifying ? 'Verifying...' : 'Verify targets'}
-            </button>
-            <button onClick={enrichSponsorship} disabled={enriching} style={{ padding: '10px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 12, fontWeight: 500, cursor: enriching ? 'wait' : 'pointer', fontFamily: C.font, opacity: enriching ? 0.6 : 1 }}>
-              {enriching ? 'Researching...' : 'Research sponsorship data'}
-            </button>
-            <button onClick={() => setShowLaunchConfirm(true)} disabled={launching} style={{ padding: '10px 24px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 600, cursor: launching ? 'wait' : 'pointer', fontFamily: C.font, opacity: launching ? 0.6 : 1 }}>
-              {launching ? 'Activating...' : 'Activate Campaign'}
-            </button>
-          </div>
-        )}
-      </>)}
-
       {/* ═══ ACTIVITY TAB ═══ */}
       {tab === 'activity' && (
         <div>

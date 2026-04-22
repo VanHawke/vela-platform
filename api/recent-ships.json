@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-22T10:36:18.126Z",
+  "generated_at": "2026-04-22T10:43:12.154Z",
   "commits": [
+    {
+      "hash": "6e0a53b",
+      "subject": "Campaign page prospect management: (1) BULK SELECT — checkbox on every prospect row + select-all in header. (2) BULK ACTIONS — Pause, Resume, Duplicate to campaign, Remove, Clear. (3) SORTABLE COLUMNS",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "85d6be0",
       "subject": "Fix campaign delete: was failing silently because 4 tables have foreign keys to kiko_sequences but only 2 were being cleaned up. Now deletes from ALL: campaign_targets, kiko_lead_segments, kiko_sequen",
-      "when": "6 minutes ago"
+      "when": "13 minutes ago"
     },
     {
       "hash": "ce218cd",
       "subject": "Fix Campaigns.jsx build error: extra closing div tag caused unterminated regex parse failure",
-      "when": "18 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "47b294d",
       "subject": "Generate multichannel sequence: (1) 'Generate sequence' button in campaign header — one click creates full 7-step Email + LinkedIn flow with conditions. (2) generate-sequence.js updated: structure now",
-      "when": "37 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "87402df",
       "subject": "Auto-verify + auto-enrich in sourcing pipeline: (1) EMAIL VERIFICATION — format check, professional domain filter (rejects gmail/yahoo/etc), company domain cross-match. Results show ✓ verified / ⚠ unv",
-      "when": "48 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "fd81d17",
       "subject": "Bulk prospect management + leads cleanup: (1) BULK SELECT — checkboxes on every lead row, select-all header checkbox, bulk action bar (Pause, Resume, Remove, Clear). (2) STATUS INDICATORS — ✓ green fo",
-      "when": "53 minutes ago"
+      "when": "60 minutes ago"
     },
     {
       "hash": "3897e90",
       "subject": "Campaign builder cleanup: (1) EDITOR MODERNIZED — removed email/linkedin toggle (type set from flow), subject line prominent, larger textarea (13px font), clean labels. (2) TRIGGERS REMOVED — no longe",
-      "when": "71 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "cadea4c",
@@ -94,11 +99,6 @@
     {
       "hash": "b90999c",
       "subject": "LinkedIn immediate send fix: browser can't call HTTP Hetzner from HTTPS page (mixed content). Created /api/linkedin-trigger.js Vercel proxy that forwards to Hetzner worker. Frontend now calls /api/lin",
-      "when": "18 hours ago"
-    },
-    {
-      "hash": "e0b56bf",
-      "subject": "LinkedIn FULLY WIRED: (1) kiko-worker on Hetzner now reads kiko_linkedin_queue (was kiko_outreach_queue). (2) sendMessage function added to linkedinEngine.js — sends DMs via Playwright to connected pr",
       "when": "19 hours ago"
     }
   ]
