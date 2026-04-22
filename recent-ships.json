@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-22T17:18:12.388Z",
+  "generated_at": "2026-04-22T17:25:56.990Z",
   "commits": [
+    {
+      "hash": "8ea2512",
+      "subject": "Session wrap-up: (1) EMAIL CONFIDENCE DISPLAY — prospect table shows ✓ verified badge or confidence % + source next to emails. Detail panel shows same. (2) KIKO_BIBLE.md fully updated — email intel en",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "2a76df0",
       "subject": "Final batch: (1) ALREADY-CONNECTED LinkedIn check — condition engine now handles 3 scenarios: already connected (message delivered), invite accepted, or marked already_connected. (2) CAMPAIGN UI POLIS",
-      "when": "9 minutes ago"
+      "when": "17 minutes ago"
     },
     {
       "hash": "7047430",
       "subject": "Move prospects + dedup + email confidence: (1) MOVE TO CAMPAIGN — bulk action moves prospects (removes from source + adds to target), alongside existing duplicate. (2) DEDUP — checks target campaign f",
-      "when": "11 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "cfd4952",
       "subject": "Platform audit: (1) Archived 24 HTML mockups + 47 session docs to .archive/. (2) Root now has only 5 essential files. (3) All file processing packages verified (pdf-parse, mammoth, officeparser). (4) ",
-      "when": "42 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "adeb4ea",
       "subject": "Kiko self-knowledge updated + file upload deployed: (1) SELF-KNOWLEDGE — added Email Intelligence Engine (6 APIs, SMTP, pattern detection), Gmail draft tool (create_email_draft for any team member), c",
-      "when": "46 minutes ago"
+      "when": "54 minutes ago"
     },
     {
       "hash": "813f591",
       "subject": "File upload system rebuilt: (1) MULTI-FILE SUPPORT — pendingAttachments is now an array, stack multiple files before sending. (2) VISUAL DISPLAY — all attached files shown as chips with icons (📕 PDF,",
-      "when": "55 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "911ea2d",
@@ -94,11 +99,6 @@
     {
       "hash": "6e0a53b",
       "subject": "Campaign page prospect management: (1) BULK SELECT — checkbox on every prospect row + select-all in header. (2) BULK ACTIONS — Pause, Resume, Duplicate to campaign, Remove, Clear. (3) SORTABLE COLUMNS",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "85d6be0",
-      "subject": "Fix campaign delete: was failing silently because 4 tables have foreign keys to kiko_sequences but only 2 were being cleaned up. Now deletes from ALL: campaign_targets, kiko_lead_segments, kiko_sequen",
       "when": "7 hours ago"
     }
   ]

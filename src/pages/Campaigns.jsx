@@ -905,28 +905,37 @@ export default function Campaigns({ user }) {
         const qRows = prospectQueue.filter(q => q.enrollment_id === p.id).sort((a, b) => (a.step_number || 0) - (b.step_number || 0))
         const campaignName = selectedCampaign?.name || 'Campaign'
         return (
-          <div style={{ width: 360, flexShrink: 0, borderLeft: `1px solid ${C.border}`, background: '#FFFFFF', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ width: 360, flexShrink: 0, borderLeft: `1px solid ${C.border}`, background: '#FEFEFC', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
             {/* Header */}
-            <div style={{ padding: '18px 20px', borderBottom: `1px solid ${C.border}` }}>
+            <div style={{ padding: '16px 18px', borderBottom: `1px solid ${C.border}` }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <div style={{ fontSize: 16, fontWeight: 500, color: '#0A0A0A' }}>{p.contact_name}</div>
-                  {p.title && <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 2 }}>{p.title}</div>}
-                  <div style={{ fontSize: 12, color: '#A0A0A0', marginTop: 2 }}>{p.company}</div>
+                  <div style={{ fontSize: 15, fontWeight: 500, color: '#0A0A0A', fontFamily: C.font }}>{p.contact_name}</div>
+                  {p.title && <div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 2, fontFamily: C.font }}>{p.title}</div>}
+                  <div style={{ fontSize: 11, color: '#A0A0A0', marginTop: 1, fontFamily: C.font }}>{p.company}</div>
                 </div>
-                <button onClick={() => setSelectedProspect(null)} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#A0A0A0', fontSize: 14 }}>✕</button>
+                <button onClick={() => setSelectedProspect(null)} style={{ width: 26, height: 26, borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#A0A0A0', fontSize: 12 }}>✕</button>
               </div>
-              <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-                {p.contact_email && <span style={{ fontSize: 11, color: '#6B6B6B', padding: '2px 8px', background: '#F5F4F1', borderRadius: 4, display: 'inline-flex', alignItems: 'center', gap: 3 }}>{p.contact_email}{p.email_verified ? <span style={{ color: '#00B464', fontSize: 9, fontWeight: 600 }}>✓</span> : p.email_confidence > 0 ? <span style={{ color: '#A0A0A0', fontSize: 9 }}>{Math.round(p.email_confidence * 100)}%</span> : null}</span>}
+              <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                {p.contact_email && <span style={{ fontSize: 10, color: '#6B6B6B', padding: '2px 8px', background: '#F5F4F1', borderRadius: 4, display: 'inline-flex', alignItems: 'center', gap: 3, fontFamily: C.font }}>{p.contact_email}{p.email_verified ? <span style={{ color: '#00B464', fontSize: 8, fontWeight: 600 }}>✓</span> : p.email_confidence > 0 ? <span style={{ color: '#A0A0A0', fontSize: 8 }}>{Math.round(p.email_confidence * 100)}%</span> : null}</span>}
+                {p.linkedin_url && <a href={p.linkedin_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: '#0077B5', padding: '2px 8px', background: 'rgba(0,119,181,0.06)', borderRadius: 4, textDecoration: 'none', fontFamily: C.font }}>LinkedIn</a>}
                 {statusBadge(p.status)}
               </div>
             </div>
 
-            {/* Campaign info */}
-            <div style={{ padding: '12px 20px', borderBottom: `1px solid ${C.border}`, background: '#FAFAF7' }}>
-              <div style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>Campaign</div>
-              <div style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A' }}>{campaignName}</div>
-              <div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 2 }}>Step {p.current_step} of {totalSteps || '?'} · {p.sent_count} sent · {p.opens_count} opens · {p.clicks_count} clicks</div>
+            {/* Campaign stats */}
+            <div style={{ padding: '10px 18px', borderBottom: `1px solid ${C.border}`, background: '#FAFAF8' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A', fontFamily: C.font }}>{campaignName}</div>
+                  <div style={{ fontSize: 10, color: '#6B6B6B', marginTop: 1, fontFamily: C.font }}>Step {p.current_step} of {totalSteps || '?'}</div>
+                </div>
+                <div style={{ display: 'flex', gap: 10, fontSize: 10, color: '#6B6B6B', fontFamily: C.font }}>
+                  <span>{p.sent_count} sent</span>
+                  <span>{p.opens_count} opens</span>
+                  <span>{p.clicks_count} clicks</span>
+                </div>
+              </div>
             </div>
 
             {/* Step-by-step timeline */}
