@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-22T16:31:50.782Z",
+  "generated_at": "2026-04-22T16:36:22.241Z",
   "commits": [
+    {
+      "hash": "adeb4ea",
+      "subject": "Kiko self-knowledge updated + file upload deployed: (1) SELF-KNOWLEDGE — added Email Intelligence Engine (6 APIs, SMTP, pattern detection), Gmail draft tool (create_email_draft for any team member), c",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "813f591",
       "subject": "File upload system rebuilt: (1) MULTI-FILE SUPPORT — pendingAttachments is now an array, stack multiple files before sending. (2) VISUAL DISPLAY — all attached files shown as chips with icons (📕 PDF,",
-      "when": "8 minutes ago"
+      "when": "13 minutes ago"
     },
     {
       "hash": "911ea2d",
       "subject": "Fix file upload UX: (1) Files no longer auto-submit and discard your prompt. Dropping a file now attaches it as a pending attachment — you continue typing, then submit together. (2) Text files stored ",
-      "when": "47 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "250375b",
       "subject": "Kiko Gmail draft tool: (1) NEW create_email_draft tool added to kiko-tools.js — Kiko can now create drafts in any team member's Gmail. (2) Default: current user (sunny@vanhawke.com). Option: matt.smit",
-      "when": "62 minutes ago"
+      "when": "66 minutes ago"
     },
     {
       "hash": "178c610",
       "subject": "Gmail draft creation for any team member: new /api/create-gmail-draft endpoint. Takes to, subject, body, draftFor (email of team member). Uses stored OAuth tokens to create drafts in any team member's",
-      "when": "74 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "722ad69",
@@ -44,7 +49,7 @@
     {
       "hash": "122666c",
       "subject": "Clean up Prospects tab: (1) Removed 'Verify targets' and 'Research sponsorship data' buttons — both now automatic during sourcing pipeline. (2) Prospects tab now shows just: Back to Sequence + Activat",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "065decf",
@@ -59,7 +64,7 @@
     {
       "hash": "e6c967a",
       "subject": "Email intelligence pipeline wired end-to-end: (1) SMTP timeout reduced to 8s. (2) Gateway detection — if first 2 SMTP checks timeout, skips remaining and returns pattern-based guess (catches Proofpoin",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "da4d6ba",
@@ -94,11 +99,6 @@
     {
       "hash": "87402df",
       "subject": "Auto-verify + auto-enrich in sourcing pipeline: (1) EMAIL VERIFICATION — format check, professional domain filter (rejects gmail/yahoo/etc), company domain cross-match. Results show ✓ verified / ⚠ unv",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "fd81d17",
-      "subject": "Bulk prospect management + leads cleanup: (1) BULK SELECT — checkboxes on every lead row, select-all header checkbox, bulk action bar (Pause, Resume, Remove, Clear). (2) STATUS INDICATORS — ✓ green fo",
       "when": "7 hours ago"
     }
   ]
