@@ -1052,7 +1052,10 @@ RULES:
                       onMouseEnter={ev => ev.currentTarget.style.background = 'rgba(0,0,0,0.015)'} onMouseLeave={ev => ev.currentTarget.style.background = 'transparent'}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ color: C.text, fontWeight: 450 }}>{e.contact_name || e.contact_email}</div>
-                        <div style={{ fontSize: 10, color: C.textTer, marginTop: 1 }}>{e.contact_email}</div>
+                        <div style={{ fontSize: 10, color: C.textTer, marginTop: 1, display: 'flex', alignItems: 'center', gap: 4 }}>
+                          {e.contact_email}
+                          {e.linkedin_url && <a href={e.linkedin_url} target="_blank" rel="noopener noreferrer" onClick={ev => ev.stopPropagation()} style={{ color: '#0077B5', fontSize: 9 }}>LinkedIn</a>}
+                        </div>
                       </div>
                       <div style={{ width: 140, fontSize: 11, color: C.textSec }}>{e.company}</div>
                       <div style={{ width: 80, textAlign: 'center', fontSize: 11, color: C.textSec }}>{e.current_step}/{steps.length}</div>
@@ -1075,12 +1078,6 @@ RULES:
         {enrollments.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
             <button onClick={() => setTab('sequence')} style={{ padding: '10px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>← Back to Sequence</button>
-            <button onClick={verifyTargets} disabled={verifying} style={{ padding: '10px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 12, fontWeight: 500, cursor: verifying ? 'wait' : 'pointer', fontFamily: C.font, opacity: verifying ? 0.6 : 1 }}>
-              {verifying ? 'Verifying...' : 'Verify targets'}
-            </button>
-            <button onClick={enrichSponsorship} disabled={enriching} style={{ padding: '10px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 12, fontWeight: 500, cursor: enriching ? 'wait' : 'pointer', fontFamily: C.font, opacity: enriching ? 0.6 : 1 }}>
-              {enriching ? 'Researching...' : 'Research sponsorship data'}
-            </button>
             {isDraft && <button onClick={() => setShowLaunchConfirm(true)} disabled={launching} style={{ padding: '10px 24px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 600, cursor: launching ? 'wait' : 'pointer', fontFamily: C.font, opacity: launching ? 0.6 : 1 }}>
               {launching ? 'Activating...' : 'Activate Campaign'}
             </button>}

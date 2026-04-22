@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-22T12:56:50.448Z",
+  "generated_at": "2026-04-22T13:02:32.509Z",
   "commits": [
+    {
+      "hash": "065decf",
+      "subject": "Restore Prospects tab in campaign editor: (1) Full Sequence → Prospects → Launch flow restored. (2) 'Save & manage prospects' now switches to Prospects tab (not navigating away). (3) Prospects tab sho",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "7a1c751",
       "subject": "Fix 'Save & manage prospects' navigation: now navigates to /campaigns?selected={campaignId} so the campaign page auto-selects the correct campaign. Reads ?selected= query param on load.",
-      "when": "23 minutes ago"
+      "when": "29 minutes ago"
     },
     {
       "hash": "e6c967a",
       "subject": "Email intelligence pipeline wired end-to-end: (1) SMTP timeout reduced to 8s. (2) Gateway detection — if first 2 SMTP checks timeout, skips remaining and returns pattern-based guess (catches Proofpoin",
-      "when": "51 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "da4d6ba",
       "subject": "Fix blank page on Edit Sequence: t.id was undefined in draft banner — was referencing wrong map variable (t instead of s). Crashed the component on render.",
-      "when": "69 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "ccc3a41",
@@ -29,7 +34,7 @@
     {
       "hash": "85d6be0",
       "subject": "Fix campaign delete: was failing silently because 4 tables have foreign keys to kiko_sequences but only 2 were being cleaned up. Now deletes from ALL: campaign_targets, kiko_lead_segments, kiko_sequen",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "ce218cd",
@@ -95,11 +100,6 @@
       "hash": "4f639ce",
       "subject": "Add Prospects REBUILT — deep research pipeline: (1) NEW /api/source-prospects.js endpoint — uses Claude Sonnet + web_search to research companies matching campaign criteria. Finds up to 50 companies, ",
       "when": "5 hours ago"
-    },
-    {
-      "hash": "6f66956",
-      "subject": "Add Prospects rebuilt: replaced unreliable Kiko chat API streaming approach with direct CRM search. Flow: (1) Enter keywords matching company/title/industry/location. (2) CRM searched directly via Sup",
-      "when": "18 hours ago"
     }
   ]
 }
