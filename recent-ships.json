@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-22T14:23:47.778Z",
+  "generated_at": "2026-04-22T14:27:02.809Z",
   "commits": [
+    {
+      "hash": "4f368ff",
+      "subject": "Full-depth layout + pagination: (1) Removed constrained heights and overflow:auto from flow editor and text editor panels — both now render at full depth. (2) Removed overflow:hidden from main contain",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "7248fe3",
       "subject": "Campaign page UI polish: (1) BUTTONS — all unified: solid black for primary (Add prospects, Build), outline for secondary (Edit sequence, Pause, Archive). borderRadius 8 across all. Removed green/ambe",
-      "when": "14 minutes ago"
+      "when": "17 minutes ago"
     },
     {
       "hash": "0aaac0d",
       "subject": "Hunter.io integrated + sizing fix: (1) HUNTER.IO API — primary email source, tries Hunter first (sub-second, 99% confidence, LinkedIn URLs, job titles). Falls back to SMTP only when Hunter has no resu",
-      "when": "61 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "122666c",
       "subject": "Clean up Prospects tab: (1) Removed 'Verify targets' and 'Research sponsorship data' buttons — both now automatic during sourcing pipeline. (2) Prospects tab now shows just: Back to Sequence + Activat",
-      "when": "81 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "065decf",
       "subject": "Restore Prospects tab in campaign editor: (1) Full Sequence → Prospects → Launch flow restored. (2) 'Save & manage prospects' now switches to Prospects tab (not navigating away). (3) Prospects tab sho",
-      "when": "87 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "7a1c751",
@@ -94,11 +99,6 @@
     {
       "hash": "d33a0cb",
       "subject": "Fix Add Prospects: (1) Pre-fill textarea with campaign criteria when opening modal. (2) Use criteria fallback directly in fetch (not stale React state). (3) Show error if no criteria available.",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "3cdddd6",
-      "subject": "Move Anthropic client init inside handler for source-prospects",
       "when": "6 hours ago"
     }
   ]

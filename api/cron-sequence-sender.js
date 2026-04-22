@@ -237,12 +237,62 @@ export default async function handler(req, res) {
             const seq = await sbFetch(`kiko_sequences?id=eq.${enrollment[0].sequence_id}&limit=1`);
             const steps = seq?.[0]?.steps || [];
             const nextStep = steps.find(s => s.step === enrollment[0].current_step + 1);
-            await sbFetch(`kiko_sequence_enrollments?id=eq.${email.enrollment_id}`, { method: 'PATCH', body: JSON.stringify({
-              current_step: enrollment[0].current_step + 1,
-              next_send_at: nextStep ? new Date(now.getTime() + (nextStep.delay_days || 3) * 86400000).toISOString() : null,
-              status: nextStep ? 'active' : 'completed',
-              completed_at: nextStep ? null : now.toISOString()
-            }) });
+            
+            // ── CONDITION EVALUATION ENGINE ──
+            if (nextStep && nextStep.type === 'condition') {
+              let conditionMet = false;
+              
+              if (nextStep.condition_type === 'connection_accepted') {
+                // Check if LinkedIn connection was accepted
+                const liQueue = await sbFetch(`kiko_linkedin_queue?enrollment_id=eq.${email.enrollment_id}&action=eq.invite&status=eq.sent&limit=1`);
+                if (liQueue?.[0]) {
+                  // Check LinkedIn acceptance monitor results
+                  const accepted = await sbFetch(`kiko_linkedin_queue?enrollment_id=eq.${email.enrollment_id}&action=eq.invite&result=eq.accepted&limit=1`);
+                  conditionMet = accepted?.length > 0;
+                }
+              } else if (nextStep.condition_type === 'has_linkedin') {
+                conditionMet = !!enrollment[0].linkedin_url;
+              } else if (nextStep.condition_type === 'has_email') {
+                conditionMet = !!enrollment[0].contact_email;
+              } else if (nextStep.condition_type === 'no_reply') {
+                conditionMet = enrollment[0].status !== 'replied';
+              }
+              
+              // Route to YES or NO branch sub-steps, then advance past the condition
+              const branchSteps = conditionMet ? (nextStep.yes_steps || []) : (nextStep.no_steps || []);
+              if (branchSteps.length > 0) {
+                const branchStep = branchSteps[0]; // Queue first sub-step
+                const queueTable = branchStep.channel === 'linkedin' ? 'kiko_linkedin_queue' : 'kiko_outreach_queue';
+                const queueEntry = {
+                  enrollment_id: email.enrollment_id, sequence_id: enrollment[0].sequence_id,
+                  to_email: enrollment[0].contact_email, contact_name: enrollment[0].contact_name,
+                  company: enrollment[0].company, channel: branchStep.channel || 'email',
+                  action: branchStep.action || (branchStep.channel === 'linkedin' ? 'message' : 'send'),
+                  step_number: nextStep.step, subject: branchStep.subject || '',
+                  body_plain: branchStep.template || '', status: 'pending',
+                  scheduled_for: new Date(now.getTime() + (branchStep.delay_days || 1) * 86400000).toISOString(),
+                };
+                await sbFetch(queueTable, { method: 'POST', body: JSON.stringify(queueEntry) }).catch(() => {});
+              }
+              
+              // Advance past the condition step to the next main step
+              const afterCondition = steps.find(s => s.step === nextStep.step + 1);
+              await sbFetch(`kiko_sequence_enrollments?id=eq.${email.enrollment_id}`, { method: 'PATCH', body: JSON.stringify({
+                current_step: nextStep.step + 1,
+                next_send_at: afterCondition ? new Date(now.getTime() + (afterCondition.delay_days || 3) * 86400000).toISOString() : null,
+                status: afterCondition ? 'active' : 'completed',
+                completed_at: afterCondition ? null : now.toISOString(),
+                condition_branch: conditionMet ? 'yes' : 'no',
+              }) });
+            } else {
+              // Normal step advancement (no condition)
+              await sbFetch(`kiko_sequence_enrollments?id=eq.${email.enrollment_id}`, { method: 'PATCH', body: JSON.stringify({
+                current_step: enrollment[0].current_step + 1,
+                next_send_at: nextStep ? new Date(now.getTime() + (nextStep.delay_days || 3) * 86400000).toISOString() : null,
+                status: nextStep ? 'active' : 'completed',
+                completed_at: nextStep ? null : now.toISOString()
+              }) });
+            }
           }
         }
 
