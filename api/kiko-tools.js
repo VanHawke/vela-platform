@@ -555,6 +555,15 @@ Document:\n${document_text.slice(0, 25000)}` }],
 
   // ── Document Agent ──
   if (name === 'ask_document_agent') {
+    // Export operations restricted to super_admin only
+    const exportOps = ['export_pipeline', 'export_contacts', 'generate_csv', 'generate_xlsx'];
+    if (exportOps.includes(input.operation)) {
+      const userRow = await sbFetch(`users?id=eq.${userId}&select=role&limit=1`);
+      const role = userRow?.[0]?.role || 'user';
+      if (role !== 'super_admin') {
+        return '❌ Data exports are restricted to admin users only. Contact your administrator if you need access to export data.';
+      }
+    }
     try {
       const { callDocumentAgent } = await import('./agents/document.js');
       return await callDocumentAgent(input.operation, input.params || {}, userId);

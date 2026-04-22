@@ -1033,9 +1033,10 @@ RULES:
               )}
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
-              <button onClick={autoSuggestLeads} disabled={loadingSuggestions} style={{ padding: '6px 12px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><Sparkles size={12} />{loadingSuggestions ? 'Finding...' : 'Find leads'}</button>
+              <button onClick={autoSuggestLeads} disabled={loadingSuggestions} style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><Sparkles size={12} />{loadingSuggestions ? 'Finding...' : 'Find leads'}</button>
+              <button onClick={queueBackgroundSource} disabled={bgSourcing} style={{ padding: '6px 12px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}>{bgSourcing ? '⏳ Queuing...' : '🔍 Deep source'}</button>
+              <button onClick={() => setShowAddLeads(true)} style={{ padding: '6px 12px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><UserPlus size={12} /> Add from CRM</button>
               <button onClick={() => setShowManualAdd(true)} style={{ padding: '6px 12px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><Plus size={12} /> Manual</button>
-              <button onClick={() => setShowAddLeads(true)} style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><UserPlus size={12} /> Add from CRM</button>
             </div>
           </div>
 

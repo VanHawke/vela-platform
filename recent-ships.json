@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-22T19:09:20.959Z",
+  "generated_at": "2026-04-22T19:17:19.624Z",
   "commits": [
+    {
+      "hash": "e7e23f3",
+      "subject": "CRITICAL FIXES: (1) CAMPAIGN DELETE — all FK constraints now CASCADE on delete. Deleting a campaign automatically removes all enrollments, conditions, lead segments, and targets. No more silent failur",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "d3221d6",
       "subject": "CRITICAL FIX: Restored 2 accidentally archived files that are live dependencies. (1) linkedin-client.js — imported by linkedin_search_prospects, linkedin_send_invite, linkedin_send_message tools. (2) ",
-      "when": "67 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "090e296",
       "subject": "FIX CI/DEPLOY FAILURES: (1) Updated .github/workflows/ci.yml — removed checks for archived files (cron-knowledge-seed.js, ARCHITECTURE.md). Now checks cron-sequence-sender.js and README.md instead. (2",
-      "when": "78 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "01eaaa6",
       "subject": "Complete session: (1) BG JOB PROCESSOR — cron-job-processor.js processes kiko_jobs queue every 5min on Hetzner with auto-enrollment + dedup. (2) DEAD API CLEANUP — 33 files archived total (141→109). (",
-      "when": "83 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "4c20cb0",
@@ -54,7 +59,7 @@
     {
       "hash": "911ea2d",
       "subject": "Fix file upload UX: (1) Files no longer auto-submit and discard your prompt. Dropping a file now attaches it as a pending attachment — you continue typing, then submit together. (2) Text files stored ",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "250375b",
@@ -95,11 +100,6 @@
       "hash": "065decf",
       "subject": "Restore Prospects tab in campaign editor: (1) Full Sequence → Prospects → Launch flow restored. (2) 'Save & manage prospects' now switches to Prospects tab (not navigating away). (3) Prospects tab sho",
       "when": "6 hours ago"
-    },
-    {
-      "hash": "7a1c751",
-      "subject": "Fix 'Save & manage prospects' navigation: now navigates to /campaigns?selected={campaignId} so the campaign page auto-selects the correct campaign. Reads ?selected= query param on load.",
-      "when": "7 hours ago"
     }
   ]
 }
