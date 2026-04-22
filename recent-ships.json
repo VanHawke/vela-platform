@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-22T19:24:05.608Z",
+  "generated_at": "2026-04-22T19:31:24.979Z",
   "commits": [
+    {
+      "hash": "2d52a1f",
+      "subject": "FIX CAMPAIGN DELETE: Simplified deleteCampaign to single Supabase delete — CASCADE handles all FK tables automatically. Removed 6 individual FK table delete calls that were silently failing. Now shows",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "91b2d9b",
       "subject": "Remaining fixes: (1) PROSPECT CTAs SWAPPED — Find leads now has prominent black style, Add from CRM is outline. Deep source (background) button added to campaign editor. (2) EXPORT RESTRICTION — expor",
-      "when": "7 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "e7e23f3",
       "subject": "CRITICAL FIXES: (1) CAMPAIGN DELETE — all FK constraints now CASCADE on delete. Deleting a campaign automatically removes all enrollments, conditions, lead segments, and targets. No more silent failur",
-      "when": "15 minutes ago"
+      "when": "22 minutes ago"
     },
     {
       "hash": "d3221d6",
       "subject": "CRITICAL FIX: Restored 2 accidentally archived files that are live dependencies. (1) linkedin-client.js — imported by linkedin_search_prospects, linkedin_send_invite, linkedin_send_message tools. (2) ",
-      "when": "82 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "090e296",
@@ -94,11 +99,6 @@
     {
       "hash": "0aaac0d",
       "subject": "Hunter.io integrated + sizing fix: (1) HUNTER.IO API — primary email source, tries Hunter first (sub-second, 99% confidence, LinkedIn URLs, job titles). Falls back to SMTP only when Hunter has no resu",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "122666c",
-      "subject": "Clean up Prospects tab: (1) Removed 'Verify targets' and 'Research sponsorship data' buttons — both now automatic during sourcing pipeline. (2) Prospects tab now shows just: Back to Sequence + Activat",
       "when": "6 hours ago"
     }
   ]

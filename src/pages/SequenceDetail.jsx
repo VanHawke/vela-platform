@@ -627,7 +627,27 @@ RULES:
 
       setSuggestions(results)
       if (results.length === 0) {
-        alert(`No leads found for ${category}. Try clicking "Add from CRM" or "Manual add".`)
+        // No CRM leads found — auto-trigger Kiko prospect sourcing
+        setBgSourcing(true)
+        try {
+          const userId = '9f486437-4bf5-4111-abfe-fe19bfa76063'
+          const res = await fetch(`/api/kiko-jobs?user_id=${userId}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              job_type: 'source_companies_bg',
+              title: `Source contacts for "${seq?.name || 'campaign'}"`,
+              params: { category, count: 15, sequence_id: id },
+              related_entity_type: 'sequence', related_entity_id: id, user_id: userId,
+            }),
+          })
+          const data = await res.json()
+          if (data.ok) {
+            setBgJobMsg('✅ No CRM matches found — Kiko is now sourcing prospects in the background. Contacts will auto-enroll within 10 minutes. Refresh the page to see new prospects.')
+          } else {
+            setBgJobMsg(`❌ ${data.error || 'Failed to queue sourcing job'}`)
+          }
+        } catch (e) { setBgJobMsg(`❌ ${e.message}`) }
+        setBgSourcing(false)
       }
     } catch (err) {
       console.error('[autoSuggestLeads]', err)
@@ -1081,7 +1101,12 @@ RULES:
             </div>
           ) : (
             <div style={{ padding: 40, textAlign: 'center', color: C.textTer, fontSize: 13, fontFamily: C.font }}>
-              No prospects enrolled yet. Click "Find leads" or "Add from CRM" to get started.
+              No prospects enrolled yet. Click "Find leads" to source prospects automatically.
+            </div>
+          )}
+          {bgJobMsg && (
+            <div style={{ padding: '12px 16px', margin: '8px 0', borderRadius: 8, background: bgJobMsg.startsWith('✅') ? 'rgba(0,180,100,0.08)' : 'rgba(248,113,113,0.08)', border: `1px solid ${bgJobMsg.startsWith('✅') ? 'rgba(0,180,100,0.2)' : 'rgba(248,113,113,0.2)'}`, fontSize: 12, color: '#0A0A0A', fontFamily: C.font, lineHeight: 1.5 }}>
+              {bgJobMsg}
             </div>
           )}
         </div>
