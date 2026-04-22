@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-22T21:01:34.871Z",
+  "generated_at": "2026-04-22T21:07:42.649Z",
   "commits": [
+    {
+      "hash": "2cccf96",
+      "subject": "VISUAL FIXES: (1) REMOVED + NEW BUTTON — this was the 'chevrons' next to the bell icon. Gone entirely. (2) ALERT PILL — animation now uses scale(1.03) + 12px box-shadow spread, much more visible pulsa",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "5a06682",
       "subject": "THREE CRITICAL FIXES: (1) BELL ICON — clean SVG with strokeLinecap/strokeLinejoin round, no artifacts. (2) ALERT PILL PULSATION — window.__kikoAlertCount was never set by Layout.jsx, so alertCount was",
-      "when": "8 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "8138287",
       "subject": "DOCUMENT + MULTI-FILE FIXES: (1) ALL file attachments now sent to Kiko (was only first file). Multiple PDFs, docs, images all included in context. (2) API now handles type='file' attachments — PDFs/DO",
-      "when": "31 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "9d0670d",
       "subject": "Full batch: (1) PUSH TO BACKGROUND — sourcing modal now has 'Push to background' button during sourcing phase AND 'Source in background' option in idle phase. Queues kiko_jobs and closes modal so user",
-      "when": "35 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "de40b71",
       "subject": "Alert pill + notification icon fixes: (1) HOMEPAGE ALERT PILL — now pulsates with slow orange glow animation (pulse-pill) using command centre orange (#B8643E). Only pulsates when alerts > 0. (2) TOP ",
-      "when": "41 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "cf695cc",
       "subject": "Remaining fixes: (1) NAV PERSISTENCE — orderedTabs now reads from localStorage synchronously on init instead of via useEffect, prevents flash-to-defaults on refresh. (2) CAMPAIGN EDITOR WIDTH — added ",
-      "when": "46 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "266b2cb",
       "subject": "Fix duplicate closing button tag in LegoraTopNav",
-      "when": "53 minutes ago"
+      "when": "60 minutes ago"
     },
     {
       "hash": "12d6ba4",
       "subject": "UI overhaul: (1) BACKGROUND TASKS NAV ICON — replaced search icon with tasks icon showing pending/processing count with pulsating dot. Dropdown shows all tasks with status, completed tasks click throu",
-      "when": "54 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "0184f9d",
@@ -94,11 +99,6 @@
     {
       "hash": "cfd4952",
       "subject": "Platform audit: (1) Archived 24 HTML mockups + 47 session docs to .archive/. (2) Root now has only 5 essential files. (3) All file processing packages verified (pdf-parse, mammoth, officeparser). (4) ",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "adeb4ea",
-      "subject": "Kiko self-knowledge updated + file upload deployed: (1) SELF-KNOWLEDGE — added Email Intelligence Engine (6 APIs, SMTP, pattern detection), Gmail draft tool (create_email_draft for any team member), c",
       "when": "5 hours ago"
     }
   ]

@@ -269,6 +269,7 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
                     {t.status === 'completed' && t.result ? `${t.result.prospects_found || 0} prospects found, ${t.result.enrolled || 0} enrolled` : t.status}
                     {' · '}{new Date(t.queued_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                   </div>
+                  {t.status === 'completed' && t.related_entity_id && <div style={{ fontSize: 10, color: '#7C5CFC', marginTop: 3, fontWeight: 500 }}>View campaign →</div>}
                 </div>
               ))}
             </div>

@@ -455,14 +455,18 @@ export default function Layout({ user }) {
             {notifItems.length === 0 ? (
               <div style={{ padding: '30px 18px', textAlign: 'center', color: '#A0A0A0', fontSize: 13 }}>No recent notifications</div>
             ) : notifItems.map(n => (
-              <div key={n.id} onClick={() => { setNotifOpen(false); nav('/'); setTimeout(() => window.dispatchEvent(new CustomEvent('kiko-submit', { detail: { message: `Tell me about this alert: "${n.title}". ${n.detail ? 'Details: ' + n.detail : ''} Search the web for the latest information and advise on next steps.` } })), 300) }} style={{ padding: '10px 18px', borderBottom: '1px solid rgba(0,0,0,0.03)', cursor: 'pointer', transition: 'background 150ms' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.02)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                <div style={{ fontSize: 13, fontWeight: 450, color: '#0A0A0A', lineHeight: 1.4 }}>{n.title}</div>
-                <div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 2 }}>{n.entity_name ? `${n.entity_name} · ` : ''}{new Date(n.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</div>
+              <div key={n.id} style={{ padding: '10px 18px', borderBottom: '1px solid rgba(0,0,0,0.03)', cursor: 'pointer', transition: 'background 150ms', display: 'flex', alignItems: 'flex-start', gap: 8 }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.02)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                <div style={{ flex: 1 }} onClick={() => { setNotifOpen(false); nav('/'); setTimeout(() => window.dispatchEvent(new CustomEvent('kiko-submit', { detail: { message: `Tell me about this alert: "${n.title}". ${n.detail ? 'Details: ' + n.detail : ''} Search the web for the latest information and advise on next steps.` } })), 300) }}>
+                  <div style={{ fontSize: 13, fontWeight: 450, color: '#0A0A0A', lineHeight: 1.4 }}>{n.title}</div>
+                  <div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 2 }}>{n.entity_name ? `${n.entity_name} · ` : ''}{new Date(n.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+                <button onClick={async (e) => { e.stopPropagation(); await supabase.from('kiko_alerts').update({ dismissed: true }).eq('id', n.id); setNotifItems(prev => prev.filter(x => x.id !== n.id)); setNotifCount(prev => Math.max(0, prev - 1)); window.__kikoAlertCount = Math.max(0, (window.__kikoAlertCount || 0) - 1) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0', fontSize: 11, padding: '2px 4px', flexShrink: 0, marginTop: 2 }}>✕</button>
               </div>
             ))}
           </div>
-          <div style={{ padding: '10px 18px', borderTop: '1px solid rgba(0,0,0,0.06)', textAlign: 'center', flexShrink: 0 }}>
-            <button onClick={() => { setNotifOpen(false); nav('/command-centre') }} style={{ fontSize: 12, color: '#0A0A0A', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>View all in Command Centre →</button>
+          <div style={{ padding: '10px 18px', borderTop: '1px solid rgba(0,0,0,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+            <button onClick={async () => { await supabase.from('kiko_alerts').update({ dismissed: true }).eq('dismissed', false); setNotifItems([]); setNotifCount(0); window.__kikoAlertCount = 0 }} style={{ fontSize: 11, color: '#A0A0A0', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>Clear all</button>
+            <button onClick={() => { setNotifOpen(false); nav('/command-centre') }} style={{ fontSize: 12, color: '#0A0A0A', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>Command Centre →</button>
           </div>
         </div>
       )}

@@ -1581,8 +1581,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 {/* Permanent alerts pill — sage so it stands out */}
                 <button onClick={() => setInsightsOpen(true)} style={{
                   padding: '6px 14px', borderRadius: 50,
-                  background: 'rgba(184,100,62,0.12)',
-                  border: '1px solid rgba(184,100,62,0.25)',
+                  background: 'rgba(184,100,62,0.10)',
+                  border: '1px solid rgba(184,100,62,0.20)',
                   color: '#B8643E',
                   fontSize: 12, fontWeight: 500,
                   cursor: 'pointer', fontFamily: C.font,
@@ -1591,8 +1591,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                   animation: alertCount > 0 ? 'pulse-pill 2.5s ease-in-out infinite' : 'none',
                   transition: 'all 250ms cubic-bezier(0.34, 1.56, 0.64, 1)',
                 }}
-                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(125,138,100,0.22)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
-                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(125,138,100,0.14)'; e.currentTarget.style.transform = 'translateY(0)' }}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(184,100,62,0.22)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(184,100,62,0.10)'; e.currentTarget.style.transform = 'translateY(0)' }}
                 >
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
                   {alertCount || 0} alerts
