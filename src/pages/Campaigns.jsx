@@ -836,7 +836,12 @@ export default function Campaigns({ user }) {
                             onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
                             title="View prospect detail"
                           >{p.contact_name}</div>
-                          <div style={{ fontSize: 11, color: C.textTertiary, marginTop: 2 }}>{p.contact_email}</div>
+                          <div style={{ fontSize: 11, color: C.textTertiary, marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            {p.contact_email}
+                            {p.email_verified && <span style={{ fontSize: 8, color: '#00B464', fontWeight: 600 }}>✓ verified</span>}
+                            {p.email_confidence > 0 && !p.email_verified && <span style={{ fontSize: 8, color: p.email_confidence > 0.7 ? '#D4A843' : '#A0A0A0' }}>{Math.round(p.email_confidence * 100)}%</span>}
+                            {p.email_source && <span style={{ fontSize: 8, color: '#A0A0A0' }}>{p.email_source}</span>}
+                          </div>
                           {p.title && <div style={{ fontSize: 11, color: C.textSecondary, marginTop: 2, fontStyle: 'italic' }}>{p.title}</div>}
                         </td>
                         <td style={cell}>
@@ -912,7 +917,7 @@ export default function Campaigns({ user }) {
                 <button onClick={() => setSelectedProspect(null)} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#A0A0A0', fontSize: 14 }}>✕</button>
               </div>
               <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-                {p.contact_email && <span style={{ fontSize: 11, color: '#6B6B6B', padding: '2px 8px', background: '#F5F4F1', borderRadius: 4 }}>{p.contact_email}</span>}
+                {p.contact_email && <span style={{ fontSize: 11, color: '#6B6B6B', padding: '2px 8px', background: '#F5F4F1', borderRadius: 4, display: 'inline-flex', alignItems: 'center', gap: 3 }}>{p.contact_email}{p.email_verified ? <span style={{ color: '#00B464', fontSize: 9, fontWeight: 600 }}>✓</span> : p.email_confidence > 0 ? <span style={{ color: '#A0A0A0', fontSize: 9 }}>{Math.round(p.email_confidence * 100)}%</span> : null}</span>}
                 {statusBadge(p.status)}
               </div>
             </div>

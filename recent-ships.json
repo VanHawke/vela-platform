@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-22T17:09:19.283Z",
+  "generated_at": "2026-04-22T17:18:12.388Z",
   "commits": [
+    {
+      "hash": "2a76df0",
+      "subject": "Final batch: (1) ALREADY-CONNECTED LinkedIn check — condition engine now handles 3 scenarios: already connected (message delivered), invite accepted, or marked already_connected. (2) CAMPAIGN UI POLIS",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "7047430",
       "subject": "Move prospects + dedup + email confidence: (1) MOVE TO CAMPAIGN — bulk action moves prospects (removes from source + adds to target), alongside existing duplicate. (2) DEDUP — checks target campaign f",
-      "when": "2 minutes ago"
+      "when": "11 minutes ago"
     },
     {
       "hash": "cfd4952",
       "subject": "Platform audit: (1) Archived 24 HTML mockups + 47 session docs to .archive/. (2) Root now has only 5 essential files. (3) All file processing packages verified (pdf-parse, mammoth, officeparser). (4) ",
-      "when": "33 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "adeb4ea",
       "subject": "Kiko self-knowledge updated + file upload deployed: (1) SELF-KNOWLEDGE — added Email Intelligence Engine (6 APIs, SMTP, pattern detection), Gmail draft tool (create_email_draft for any team member), c",
-      "when": "37 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "813f591",
       "subject": "File upload system rebuilt: (1) MULTI-FILE SUPPORT — pendingAttachments is now an array, stack multiple files before sending. (2) VISUAL DISPLAY — all attached files shown as chips with icons (📕 PDF,",
-      "when": "46 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "911ea2d",
       "subject": "Fix file upload UX: (1) Files no longer auto-submit and discard your prompt. Dropping a file now attaches it as a pending attachment — you continue typing, then submit together. (2) Text files stored ",
-      "when": "84 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "250375b",
@@ -79,12 +84,12 @@
     {
       "hash": "da4d6ba",
       "subject": "Fix blank page on Edit Sequence: t.id was undefined in draft banner — was referencing wrong map variable (t instead of s). Crashed the component on render.",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "ccc3a41",
       "subject": "Remove Leads tab from campaign editor: (1) Leads tab removed entirely (172 lines) — all prospect management now on main campaign page. (2) 'Continue to Leads' button → 'Save & manage prospects' which ",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "6e0a53b",
@@ -94,11 +99,6 @@
     {
       "hash": "85d6be0",
       "subject": "Fix campaign delete: was failing silently because 4 tables have foreign keys to kiko_sequences but only 2 were being cleaned up. Now deletes from ALL: campaign_targets, kiko_lead_segments, kiko_sequen",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "ce218cd",
-      "subject": "Fix Campaigns.jsx build error: extra closing div tag caused unterminated regex parse failure",
       "when": "7 hours ago"
     }
   ]
