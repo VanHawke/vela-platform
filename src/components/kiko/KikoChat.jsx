@@ -271,19 +271,6 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [voiceMicStream, setVoiceMicStream] = useState(null)
   const [voiceState, setVoiceState] = useState({})
   const [voiceMessages, setVoiceMessages] = useState([])
-  const [preWarmedToken, setPreWarmedToken] = useState(null)
-
-  // Pre-warm voice token on mount — reduces latency when user clicks mic
-  useEffect(() => {
-    const preWarm = async () => {
-      try {
-        const res = await fetch('/api/realtime-token', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: user?.id }) })
-        const data = await res.json()
-        if (data?.value) setPreWarmedToken(data.value)
-      } catch {} // silent — if it fails, KikoVoice will fetch its own
-    }
-    if (user?.id) preWarm()
-  }, [user?.id])
 
   const hasMessages = messages.length > 0 || streaming
 
@@ -480,10 +467,17 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     setTranscribing(false)
   }
 
-  const loadConversation = (conv) => {
-    if (!conv?.messages) return
+  const loadConversation = async (conv) => {
+    if (!conv?.id) return
+    let msgs = conv.messages
+    // If messages not populated, fetch from database
+    if (!msgs || msgs.length === 0) {
+      const { data } = await supabase.from('messages').select('role, content').eq('conversation_id', conv.id).order('created_at', { ascending: true })
+      msgs = data || []
+    }
+    if (msgs.length === 0) return
     justLoadedRef.current = true
-    setMessages(conv.messages.map(m => ({ role: m.role, content: m.content })))
+    setMessages(msgs.map(m => ({ role: m.role, content: m.content })))
     setActiveConvId(conv.id); setStreamText(''); setStreaming(false); setShowAllMsgs(false)
   }
 
@@ -1861,7 +1855,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         </div>
       </div>
       {/* Voice overlay — always fullscreen, captures transcript via onMessage */}
-      {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} onMessage={handleVoiceMessage} micStream={voiceMicStream} preWarmedToken={preWarmedToken} />}
+      {voiceActive && <KikoVoice onClose={stopVoice} user={user} onVoiceState={handleVoiceState} onMessage={handleVoiceMessage} micStream={voiceMicStream} />}
 
       {/* All Chats overlay — fixed position, guaranteed to render on top */}
       {allChatsData && (
