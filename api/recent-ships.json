@@ -1,50 +1,55 @@
 {
-  "generated_at": "2026-04-22T16:36:22.241Z",
+  "generated_at": "2026-04-22T17:07:35.056Z",
   "commits": [
+    {
+      "hash": "cfd4952",
+      "subject": "Platform audit: (1) Archived 24 HTML mockups + 47 session docs to .archive/. (2) Root now has only 5 essential files. (3) All file processing packages verified (pdf-parse, mammoth, officeparser). (4) ",
+      "when": "31 minutes ago"
+    },
     {
       "hash": "adeb4ea",
       "subject": "Kiko self-knowledge updated + file upload deployed: (1) SELF-KNOWLEDGE — added Email Intelligence Engine (6 APIs, SMTP, pattern detection), Gmail draft tool (create_email_draft for any team member), c",
-      "when": "4 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "813f591",
       "subject": "File upload system rebuilt: (1) MULTI-FILE SUPPORT — pendingAttachments is now an array, stack multiple files before sending. (2) VISUAL DISPLAY — all attached files shown as chips with icons (📕 PDF,",
-      "when": "13 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "911ea2d",
       "subject": "Fix file upload UX: (1) Files no longer auto-submit and discard your prompt. Dropping a file now attaches it as a pending attachment — you continue typing, then submit together. (2) Text files stored ",
-      "when": "51 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "250375b",
       "subject": "Kiko Gmail draft tool: (1) NEW create_email_draft tool added to kiko-tools.js — Kiko can now create drafts in any team member's Gmail. (2) Default: current user (sunny@vanhawke.com). Option: matt.smit",
-      "when": "66 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "178c610",
       "subject": "Gmail draft creation for any team member: new /api/create-gmail-draft endpoint. Takes to, subject, body, draftFor (email of team member). Uses stored OAuth tokens to create drafts in any team member's",
-      "when": "78 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "722ad69",
       "subject": "Condition evaluation engine in sequence sender: (1) When next step is a condition, evaluates it: connection_accepted (checks LinkedIn queue for acceptance), has_linkedin, has_email, no_reply. (2) Rout",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "4f368ff",
       "subject": "Full-depth layout + pagination: (1) Removed constrained heights and overflow:auto from flow editor and text editor panels — both now render at full depth. (2) Removed overflow:hidden from main contain",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "7248fe3",
       "subject": "Campaign page UI polish: (1) BUTTONS — all unified: solid black for primary (Add prospects, Build), outline for secondary (Edit sequence, Pause, Archive). borderRadius 8 across all. Removed green/ambe",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "0aaac0d",
       "subject": "Hunter.io integrated + sizing fix: (1) HUNTER.IO API — primary email source, tries Hunter first (sub-second, 99% confidence, LinkedIn URLs, job titles). Falls back to SMTP only when Hunter has no resu",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "122666c",
@@ -59,7 +64,7 @@
     {
       "hash": "7a1c751",
       "subject": "Fix 'Save & manage prospects' navigation: now navigates to /campaigns?selected={campaignId} so the campaign page auto-selects the correct campaign. Reads ?selected= query param on load.",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "e6c967a",
@@ -79,26 +84,21 @@
     {
       "hash": "6e0a53b",
       "subject": "Campaign page prospect management: (1) BULK SELECT — checkbox on every prospect row + select-all in header. (2) BULK ACTIONS — Pause, Resume, Duplicate to campaign, Remove, Clear. (3) SORTABLE COLUMNS",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "85d6be0",
       "subject": "Fix campaign delete: was failing silently because 4 tables have foreign keys to kiko_sequences but only 2 were being cleaned up. Now deletes from ALL: campaign_targets, kiko_lead_segments, kiko_sequen",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "ce218cd",
       "subject": "Fix Campaigns.jsx build error: extra closing div tag caused unterminated regex parse failure",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "47b294d",
       "subject": "Generate multichannel sequence: (1) 'Generate sequence' button in campaign header — one click creates full 7-step Email + LinkedIn flow with conditions. (2) generate-sequence.js updated: structure now",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "87402df",
-      "subject": "Auto-verify + auto-enrich in sourcing pipeline: (1) EMAIL VERIFICATION — format check, professional domain filter (rejects gmail/yahoo/etc), company domain cross-match. Results show ✓ verified / ⚠ unv",
       "when": "7 hours ago"
     }
   ]

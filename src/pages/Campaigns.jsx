@@ -88,6 +88,7 @@ export default function Campaigns({ user }) {
   const [sortDir, setSortDir] = useState('asc')
   const [moveModalOpen, setMoveModalOpen] = useState(false)
   const [moveTargetId, setMoveTargetId] = useState(null)
+  const [moveMode, setMoveMode] = useState('duplicate') // 'duplicate' or 'move'
   const [loading, setLoading] = useState(true)
   const [detailLoading, setDetailLoading] = useState(false)
   const [search, setSearch] = useState('')
@@ -812,7 +813,8 @@ export default function Campaigns({ user }) {
                             <span style={{ fontWeight: 500, color: '#0A0A0A' }}>{bulkSelected.size} selected</span>
                             <button onClick={async () => { for (const id of bulkSelected) await pauseProspect(prospects.find(p => p.id === id)); setBulkSelected(new Set()); await loadProspects(selectedId) }} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#D4A843', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Pause</button>
                             <button onClick={async () => { for (const id of bulkSelected) { await supabase.from('kiko_sequence_enrollments').update({ status: 'active' }).eq('id', id) }; setBulkSelected(new Set()); await loadProspects(selectedId) }} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#00B464', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Resume</button>
-                            <button onClick={() => setMoveModalOpen(true)} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#0A0A0A', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Duplicate to campaign</button>
+                            <button onClick={() => { setMoveMode('duplicate'); setMoveModalOpen(true) }} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#0A0A0A', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Duplicate to campaign</button>
+                            <button onClick={() => { setMoveMode('move'); setMoveModalOpen(true) }} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#0A0A0A', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Move to campaign</button>
                             <button onClick={async () => { if (!confirm(`Remove ${bulkSelected.size} prospects?`)) return; for (const id of bulkSelected) await removeProspect(prospects.find(p => p.id === id)); setBulkSelected(new Set()); await loadProspects(selectedId) }} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(248,113,113,0.2)', background: 'transparent', color: '#f87171', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Remove</button>
                             <button onClick={() => setBulkSelected(new Set())} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#A0A0A0', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Clear</button>
                           </div>
@@ -1167,8 +1169,8 @@ export default function Campaigns({ user }) {
       {moveModalOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setMoveModalOpen(false)}>
           <div onClick={e => e.stopPropagation()} style={{ background: '#FEFEFC', borderRadius: 14, maxWidth: 420, width: '100%', padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }}>
-            <h3 style={{ fontSize: 15, fontWeight: 500, color: '#0A0A0A', margin: '0 0 6px', fontFamily: C.font }}>Duplicate {bulkSelected.size} prospects to campaign</h3>
-            <p style={{ fontSize: 12, color: '#6B6B6B', margin: '0 0 16px', fontFamily: C.font }}>Select which campaign to copy these prospects into. They'll be enrolled at step 1.</p>
+            <h3 style={{ fontSize: 15, fontWeight: 500, color: '#0A0A0A', margin: '0 0 6px', fontFamily: C.font }}>{moveMode === 'move' ? 'Move' : 'Duplicate'} {bulkSelected.size} prospects to campaign</h3>
+            <p style={{ fontSize: 12, color: '#6B6B6B', margin: '0 0 16px', fontFamily: C.font }}>{moveMode === 'move' ? 'Prospects will be removed from this campaign and added to the target.' : 'Prospects will be copied into the target campaign at step 1.'}</p>
             <div style={{ maxHeight: 250, overflowY: 'auto', border: `1px solid rgba(0,0,0,0.06)`, borderRadius: 8, marginBottom: 16 }}>
               {campaigns.filter(c => c.id !== selectedId && !c.archived).map(c => (
                 <div key={c.id} onClick={() => setMoveTargetId(c.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', cursor: 'pointer', background: moveTargetId === c.id ? 'rgba(0,0,0,0.04)' : 'transparent', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
@@ -1185,9 +1187,13 @@ export default function Campaigns({ user }) {
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button onClick={() => setMoveModalOpen(false)} style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
               <button disabled={!moveTargetId} onClick={async () => {
-                let copied = 0
+                let copied = 0; let skipped = 0
                 const selected = prospects.filter(p => bulkSelected.has(p.id))
+                // Dedup: check existing enrollments in target campaign
+                const { data: existing } = await supabase.from('kiko_sequence_enrollments').select('contact_email').eq('sequence_id', moveTargetId)
+                const existingEmails = new Set((existing || []).map(e => e.contact_email?.toLowerCase()).filter(Boolean))
                 for (const p of selected) {
+                  if (existingEmails.has(p.contact_email?.toLowerCase())) { skipped++; continue }
                   const { error } = await supabase.from('kiko_sequence_enrollments').insert({
                     sequence_id: moveTargetId, contact_id: p.contact_id || null,
                     contact_name: p.contact_name, contact_email: p.contact_email, company: p.company,
@@ -1196,10 +1202,16 @@ export default function Campaigns({ user }) {
                   })
                   if (!error) copied++
                 }
+                // If moving, remove from current campaign
+                if (moveMode === 'move') {
+                  for (const p of selected) {
+                    await supabase.from('kiko_sequence_enrollments').delete().eq('id', p.id)
+                  }
+                }
                 setMoveModalOpen(false); setBulkSelected(new Set())
-                alert(`Duplicated ${copied} prospects to ${campaigns.find(c => c.id === moveTargetId)?.name}`)
-                await loadCampaigns()
-              }} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: moveTargetId ? '#0A0A0A' : 'rgba(0,0,0,0.1)', color: moveTargetId ? '#FEFEFC' : '#A0A0A0', fontSize: 12, fontWeight: 500, cursor: moveTargetId ? 'pointer' : 'default', fontFamily: C.font }}>Duplicate</button>
+                alert(`${moveMode === 'move' ? 'Moved' : 'Duplicated'} ${copied} prospects to ${campaigns.find(c => c.id === moveTargetId)?.name}${skipped ? ` (${skipped} already enrolled, skipped)` : ''}`)
+                await loadCampaigns(); await loadProspects(selectedId)
+              }} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: moveTargetId ? '#0A0A0A' : 'rgba(0,0,0,0.1)', color: moveTargetId ? '#FEFEFC' : '#A0A0A0', fontSize: 12, fontWeight: 500, cursor: moveTargetId ? 'pointer' : 'default', fontFamily: C.font }}>{moveMode === 'move' ? 'Move' : 'Duplicate'}</button>
             </div>
           </div>
         </div>
