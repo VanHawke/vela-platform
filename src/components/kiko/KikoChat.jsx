@@ -1580,13 +1580,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 {/* Permanent alerts pill — sage so it stands out */}
                 <button onClick={() => setInsightsOpen(true)} style={{
                   padding: '6px 14px', borderRadius: 50,
-                  background: 'rgba(125,138,100,0.14)',
-                  border: '1px solid rgba(125,138,100,0.30)',
-                  color: '#5a6644',
+                  background: 'rgba(184,100,62,0.12)',
+                  border: '1px solid rgba(184,100,62,0.25)',
+                  color: '#B8643E',
                   fontSize: 12, fontWeight: 500,
                   cursor: 'pointer', fontFamily: C.font,
                   whiteSpace: 'nowrap',
                   display: 'inline-flex', alignItems: 'center', gap: 6,
+                  animation: alertCount > 0 ? 'pulse-pill 2.5s ease-in-out infinite' : 'none',
                   transition: 'all 250ms cubic-bezier(0.34, 1.56, 0.64, 1)',
                 }}
                   onMouseOver={e => { e.currentTarget.style.background = 'rgba(125,138,100,0.22)'; e.currentTarget.style.transform = 'translateY(-1px)' }}

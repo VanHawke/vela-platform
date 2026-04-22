@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-22T20:15:22.355Z",
+  "generated_at": "2026-04-22T20:20:25.034Z",
   "commits": [
+    {
+      "hash": "cf695cc",
+      "subject": "Remaining fixes: (1) NAV PERSISTENCE — orderedTabs now reads from localStorage synchronously on init instead of via useEffect, prevents flash-to-defaults on refresh. (2) CAMPAIGN EDITOR WIDTH — added ",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "266b2cb",
       "subject": "Fix duplicate closing button tag in LegoraTopNav",
-      "when": "7 minutes ago"
+      "when": "12 minutes ago"
     },
     {
       "hash": "12d6ba4",
       "subject": "UI overhaul: (1) BACKGROUND TASKS NAV ICON — replaced search icon with tasks icon showing pending/processing count with pulsating dot. Dropdown shows all tasks with status, completed tasks click throu",
-      "when": "8 minutes ago"
+      "when": "13 minutes ago"
     },
     {
       "hash": "0184f9d",
       "subject": "FIND LEADS NOW SOURCES VIA KIKO: (1) When CRM has no matching contacts, Find leads now auto-queues a Kiko background sourcing job instead of showing 'No leads found'. (2) Status message shown: 'Kiko i",
-      "when": "44 minutes ago"
+      "when": "49 minutes ago"
     },
     {
       "hash": "2d52a1f",
       "subject": "FIX CAMPAIGN DELETE: Simplified deleteCampaign to single Supabase delete — CASCADE handles all FK tables automatically. Removed 6 individual FK table delete calls that were silently failing. Now shows",
-      "when": "51 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "91b2d9b",
       "subject": "Remaining fixes: (1) PROSPECT CTAs SWAPPED — Find leads now has prominent black style, Add from CRM is outline. Deep source (background) button added to campaign editor. (2) EXPORT RESTRICTION — expor",
-      "when": "58 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "e7e23f3",
       "subject": "CRITICAL FIXES: (1) CAMPAIGN DELETE — all FK constraints now CASCADE on delete. Deleting a campaign automatically removes all enrollments, conditions, lead segments, and targets. No more silent failur",
-      "when": "66 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "d3221d6",
@@ -44,7 +49,7 @@
     {
       "hash": "01eaaa6",
       "subject": "Complete session: (1) BG JOB PROCESSOR — cron-job-processor.js processes kiko_jobs queue every 5min on Hetzner with auto-enrollment + dedup. (2) DEAD API CLEANUP — 33 files archived total (141→109). (",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "4c20cb0",
@@ -95,11 +100,6 @@
       "hash": "178c610",
       "subject": "Gmail draft creation for any team member: new /api/create-gmail-draft endpoint. Takes to, subject, body, draftFor (email of team member). Uses stored OAuth tokens to create drafts in any team member's",
       "when": "5 hours ago"
-    },
-    {
-      "hash": "722ad69",
-      "subject": "Condition evaluation engine in sequence sender: (1) When next step is a condition, evaluates it: connection_accepted (checks LinkedIn queue for acceptance), has_linkedin, has_email, no_reply. (2) Rout",
-      "when": "6 hours ago"
     }
   ]
 }

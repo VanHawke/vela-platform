@@ -275,9 +275,10 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
         </div>
         <button className="ltn-icon" onClick={onNotificationsClick} title="Notifications" style={{ position: 'relative' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 01-3.46 0" />
           </svg>
-          {hasNotifications && <span className="ltn-dot" style={{ animation: 'pulse-dot 1.5s infinite' }}>{notifCount > 0 && notifCount <= 99 ? notifCount : notifCount > 99 ? '99+' : ''}</span>}
+          {hasNotifications && notifCount > 0 && <span className="ltn-dot">{notifCount <= 99 ? notifCount : '99+'}</span>}
         </button>
         {onNewClick && (
           <button className="ltn-cta sparkle-cta magnetic" onClick={onNewClick}>+ New</button>
