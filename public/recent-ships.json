@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-22T08:42:48.661Z",
+  "generated_at": "2026-04-22T08:52:35.022Z",
   "commits": [
+    {
+      "hash": "a9b6b8a",
+      "subject": "Lemlist-style campaign builder: (1) SequenceFlowView completely rebuilt — vertical flow timeline with step cards connected by lines. (2) Step cards show icon + type label + content preview + step numb",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "d33a0cb",
       "subject": "Fix Add Prospects: (1) Pre-fill textarea with campaign criteria when opening modal. (2) Use criteria fallback directly in fetch (not stale React state). (3) Show error if no criteria available.",
-      "when": "10 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "3cdddd6",
       "subject": "Move Anthropic client init inside handler for source-prospects",
-      "when": "23 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "1a7be62",
       "subject": "Fix ANTHROPIC_KEY env var name in source-prospects.js",
-      "when": "26 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "cd84d4f",
       "subject": "Add source-prospects + linkedin-trigger to vercel.json with maxDuration",
-      "when": "46 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "4f639ce",
       "subject": "Add Prospects REBUILT — deep research pipeline: (1) NEW /api/source-prospects.js endpoint — uses Claude Sonnet + web_search to research companies matching campaign criteria. Finds up to 50 companies, ",
-      "when": "48 minutes ago"
+      "when": "57 minutes ago"
     },
     {
       "hash": "6f66956",
@@ -69,7 +74,7 @@
     {
       "hash": "432426f",
       "subject": "LinkedIn test modal + campaign nav fix: (1) LINKEDIN TEST — replaced prompt() with proper modal. Input field for LinkedIn URL + 'Send test' button + confirmation message. Modal stays open showing conf",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "cf2afea",
@@ -94,11 +99,6 @@
     {
       "hash": "691db24",
       "subject": "Match Kiko nav font to mobile: 24px (was 18px), letter-spacing -0.02em (was 0.04em), added Source Serif Pro fallback",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "e3ffabf",
-      "subject": "Remove branding: star SVG icon removed from top nav (just Kiko serif text remains). Van Hawke wordmark removed from login page.",
       "when": "19 hours ago"
     }
   ]

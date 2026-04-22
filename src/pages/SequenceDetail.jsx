@@ -806,73 +806,13 @@ RULES:
         <>
         {/* View mode toggle */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-          <button onClick={() => setViewMode('list')} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.08)', background: viewMode === 'list' ? '#0A0A0A' : 'transparent', color: viewMode === 'list' ? '#fff' : '#6B6B6B', fontSize: 11, cursor: 'pointer', fontFamily: C.font }}><LayoutList size={12} /> List</button>
-          <button onClick={() => setViewMode('flow')} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.08)', background: viewMode === 'flow' ? '#0A0A0A' : 'transparent', color: viewMode === 'flow' ? '#fff' : '#6B6B6B', fontSize: 11, cursor: 'pointer', fontFamily: C.font }}><Workflow size={12} /> Flow</button>
+          <div style={{ fontSize: 11, color: C.textSec, fontFamily: C.font }}>{steps.length} steps · {steps.reduce((s, st) => s + (st.delay_days || 0), 0)} day sequence</div>
         </div>
 
-        {viewMode === 'flow' ? (
-          <div style={{ ...glass, padding: 16, minHeight: 480 }}>
-            <SequenceFlowView steps={steps} conditions={conditions} selectedStep={selStep} onSelectStep={(i) => { setSelStep(i); setViewMode('list') }} onAddStep={(type, pos) => { addStep(type, pos) }} onReorder={(reordered) => { setSteps(reordered); setDirty(true) }} onDeleteStep={(i) => { del(i) }} onUpdateDelay={(i, d) => { upd(i, 'delay_days', d) }} />
-          </div>
-        ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 14, minHeight: 480 }}>
-          <div style={{ ...glass, padding: 14, overflowY: 'auto' }}>
-            <div style={{ textAlign: 'center', padding: '6px 0 12px', fontSize: 11, color: C.textTer, borderBottom: `1px solid ${C.border}`, marginBottom: 8 }}>
-              {steps.length > 0 ? `${steps.length} steps · ${steps.reduce((s, st) => s + (st.delay_days || 0), 0)} days` : 'Sequence start'}
-            </div>
-            {steps.map((s, i) => {
-              const isLI = s.channel === 'linkedin'
-              const sel = i === selStep
-              return (<div key={i}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 0' }}><div style={{ width: 1, height: 12, background: C.border }} /></div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, marginBottom: 3 }}>
-                  <Clock size={9} style={{ color: C.textTer }} />
-                  <select value={s.delay_days} onChange={e => upd(i, 'delay_days', +e.target.value)} style={{ background: 'transparent', border: 'none', color: C.amber, fontSize: 10, fontFamily: C.font, cursor: 'pointer', outline: 'none' }}>
-                    <option value={0} style={{ background: '#FFFFFF' }}>Immediately</option>
-                    {[1, 2, 3, 4, 5, 7, 10, 14].map(d => <option key={d} value={d} style={{ background: '#FFFFFF' }}>Wait {d}d</option>)}
-                  </select>
-                </div>
-                <div onClick={() => setSelStep(i)} style={{ ...glass, padding: '8px 10px', cursor: 'pointer', borderColor: sel ? C.purple : C.border, background: sel ? 'rgba(0,0,0,0.03)' : glass.background, transition: 'all 0.15s' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 20, height: 20, borderRadius: 6, background: s.type === 'condition' ? 'rgba(184,156,92,0.10)' : isLI ? 'rgba(0,119,181,0.12)' : 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {s.type === 'condition' ? <GitBranch size={10} style={{ color: C.amber }} /> : isLI ? <Linkedin size={10} style={{ color: '#0077B5' }} /> : <Mail size={10} style={{ color: C.purple }} />}
-                    </div>
-                    <span style={{ fontSize: 11, fontWeight: 500, flex: 1 }}>{s.type === 'condition' ? (s.condition_type === 'connection_accepted' ? '✓ Accepted?' : 'Condition') : isLI ? (s.action === 'invite' ? '🔗 Connect' : '💬 LI Message') : '📧 Email'} {i + 1}</span>
-                    <button onClick={e => { e.stopPropagation(); del(i) }} style={{ background: 'none', border: 'none', color: C.textTer, cursor: 'pointer', padding: 1 }}><Trash2 size={10} /></button>
-                  </div>
-                  {s.subject && <div style={{ fontSize: 10, color: C.textTer, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.subject}</div>}
-                  {s.type === 'condition' && (() => {
-                    const condLabel = CONDITIONS.find(c => c.value === s.condition_type)?.label || s.condition_type
-                    const yesStep = s.yes_steps?.[0]
-                    const noStep = s.no_steps?.[0]
-                    const yesIcon = yesStep?.channel === 'linkedin' ? '💼' : yesStep?.channel === 'email' ? '📧' : '→'
-                    const noIcon = noStep?.channel === 'linkedin' ? '💼' : noStep?.channel === 'email' ? '📧' : '→'
-                    return (
-                      <div style={{ marginTop: 5, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        <div style={{ fontSize: 10, color: C.amber, fontWeight: 500 }}>If: {condLabel}</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingLeft: 8, fontSize: 10 }}>
-                          <span style={{ color: C.teal, fontWeight: 500 }}>✓ YES</span>
-                          <span style={{ color: C.textTer }}>→</span>
-                          <span style={{ color: C.text }}>{yesIcon} {yesStep?.subject || yesStep?.channel || 'next step'}</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingLeft: 8, fontSize: 10 }}>
-                          <span style={{ color: C.red, fontWeight: 500 }}>✗ NO</span>
-                          <span style={{ color: C.textTer }}>→</span>
-                          <span style={{ color: C.text }}>{noIcon} {noStep?.subject || noStep?.channel || 'pause'}</span>
-                        </div>
-                      </div>
-                    )
-                  })()}
-                </div>
-              </div>)
-            })}
-            <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 12, paddingTop: 10, borderTop: `1px solid ${C.border}` }}>
-              <button onClick={() => addStep('email')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '5px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}><Plus size={10} />Email</button>
-              <button onClick={() => addStep('linkedin_connect')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '5px 10px', borderRadius: 6, border: `1px solid rgba(0,119,181,0.2)`, background: 'rgba(0,119,181,0.04)', color: '#0077B5', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}><Linkedin size={10} />Connection Request</button>
-              <button onClick={() => addStep('condition_accepted')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '5px 10px', borderRadius: 6, border: `1px solid rgba(0,180,100,0.2)`, background: 'rgba(0,180,100,0.04)', color: '#00B464', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}><GitBranch size={10} />Connection Accepted</button>
-              <button onClick={() => addStep('linkedin_message')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '5px 10px', borderRadius: 6, border: `1px solid rgba(0,119,181,0.2)`, background: 'rgba(0,119,181,0.04)', color: '#0077B5', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}><Linkedin size={10} />LinkedIn Message</button>
-              <button onClick={() => addStep('condition')} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '5px 10px', borderRadius: 6, border: `1px solid rgba(184,156,92,0.2)`, background: 'rgba(184,156,92,0.06)', color: C.amber, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}><GitBranch size={10} />Condition</button>
-            </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 14, minHeight: 480 }}>
+          {/* LEFT: Flow view */}
+          <div style={{ ...glass, padding: 0, overflowY: 'auto', maxHeight: 'calc(100vh - 240px)' }}>
+            <SequenceFlowView steps={steps} conditions={conditions} selectedStep={selStep} onSelectStep={(i) => { setSelStep(i) }} onAddStep={(type, pos) => { addStep(type, pos) }} onReorder={(reordered) => { setSteps(reordered); setDirty(true) }} onDeleteStep={(i) => { del(i) }} onUpdateDelay={(i, d) => { upd(i, 'delay_days', d) }} />
           </div>
           <div style={{ ...glass, padding: 18 }}>
             {cur ? (
@@ -1109,7 +1049,6 @@ RULES:
             )}
           </div>
         </div>
-        )} {/* end viewMode ternary */}
         {/* Continue to Leads button (draft flow) */}
         {isDraft && steps.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
