@@ -11,6 +11,12 @@
     "api/kiko.js": {
       "maxDuration": 120
     },
+    "api/source-prospects.js": {
+      "maxDuration": 300
+    },
+    "api/linkedin-trigger.js": {
+      "maxDuration": 120
+    },
     "api/generate-sequence.js": {
       "maxDuration": 60
     },

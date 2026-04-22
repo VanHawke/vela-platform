@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-22T07:53:45.747Z",
+  "generated_at": "2026-04-22T07:56:42.794Z",
   "commits": [
+    {
+      "hash": "4f639ce",
+      "subject": "Add Prospects REBUILT — deep research pipeline: (1) NEW /api/source-prospects.js endpoint — uses Claude Sonnet + web_search to research companies matching campaign criteria. Finds up to 50 companies, ",
+      "when": "2 minutes ago"
+    },
     {
       "hash": "6f66956",
       "subject": "Add Prospects rebuilt: replaced unreliable Kiko chat API streaming approach with direct CRM search. Flow: (1) Enter keywords matching company/title/industry/location. (2) CRM searched directly via Sup",
@@ -39,7 +44,7 @@
     {
       "hash": "a77d06c",
       "subject": "LinkedIn test fix: (1) URL check now case-insensitive and requires '/in/' path. (2) Added try/catch with alert() error feedback. (3) Checks Supabase insert error response. (4) Falls back to 'Test Link",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "432426f",
@@ -59,7 +64,7 @@
     {
       "hash": "181d0c6",
       "subject": "Timezone-aware sending: Sequence sender now resolves each prospect's location from contacts table, maps to UTC offset via 100+ city/country/region keywords covering Americas, Europe, Middle East, Afri",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "8bdc593",
@@ -95,11 +100,6 @@
       "hash": "6797cdd",
       "subject": "Critical bug fixes: (1) CAMPAIGN DELETE — variable shadowing fixed, delete permanently now works. (2) PIPELINE NOTES — activityNote cleared when switching deals, no more cross-deal contamination. (3) ",
       "when": "20 hours ago"
-    },
-    {
-      "hash": "4446d22",
-      "subject": "6 bug fixes + task due dates: (1) CAMPAIGN DELETE — variable shadowing fixed, delete now works. (2) PIPELINE NOTES — activityNote cleared on deal switch, no longer shared across deals. (3) PIPELINE CA",
-      "when": "21 hours ago"
     }
   ]
 }
