@@ -1,5 +1,5 @@
 // api/cron-job-processor.js — Background job processor
-// Picks up pending jobs from kiko_jobs, processes them, updates status
+// Picks up pending jobs from kiko_background_jobs, processes them, updates status
 import { sbFetch, cronHeartbeat } from './kiko-tools.js';
 import { getActiveUsers, getGoogleToken } from './cron-utils.js';
 
@@ -11,7 +11,7 @@ export default async function handler(req, res) {
 
   try {
     // Get pending jobs (oldest first, max 3 per run)
-    const jobs = await sbFetch('kiko_jobs?status=eq.pending&order=created_at.asc&limit=3');
+    const jobs = await sbFetch('kiko_background_jobs?status=eq.queued&order=created_at.asc&limit=3');
     if (!Array.isArray(jobs) || jobs.length === 0) {
       await cronHeartbeat('cron-job-processor', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 });
       return res.json({ ok: true, processed: 0 });
@@ -20,7 +20,7 @@ export default async function handler(req, res) {
     let processed = 0;
     for (const job of jobs) {
       // Mark as processing
-      await sbFetch(`kiko_jobs?id=eq.${job.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'processing', started_at: new Date().toISOString() }) });
+      await sbFetch(`kiko_background_jobs?id=eq.${job.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'processing', started_at: new Date().toISOString() }) });
 
       try {
         if (job.job_type === 'source_companies_bg') {
@@ -70,23 +70,23 @@ export default async function handler(req, res) {
               }) });
               enrolled++;
             }
-            await sbFetch(`kiko_jobs?id=eq.${job.id}`, { method: 'PATCH', body: JSON.stringify({
-              status: 'completed', completed_at: new Date().toISOString(),
+            await sbFetch(`kiko_background_jobs?id=eq.${job.id}`, { method: 'PATCH', body: JSON.stringify({
+              status: 'completed', finished_at: new Date().toISOString(),
               result: { prospects_found: result.prospects.length, enrolled, companies: result.companies?.length || 0 },
             }) });
           } else {
-            await sbFetch(`kiko_jobs?id=eq.${job.id}`, { method: 'PATCH', body: JSON.stringify({
-              status: 'completed', completed_at: new Date().toISOString(),
+            await sbFetch(`kiko_background_jobs?id=eq.${job.id}`, { method: 'PATCH', body: JSON.stringify({
+              status: 'completed', finished_at: new Date().toISOString(),
               result: { prospects_found: 0, message: 'No prospects found' },
             }) });
           }
         } else {
           // Unknown job type — mark as failed
-          await sbFetch(`kiko_jobs?id=eq.${job.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'failed', error: `Unknown job type: ${job.job_type}` }) });
+          await sbFetch(`kiko_background_jobs?id=eq.${job.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'failed', error_message: `Unknown job type: ${job.job_type}` }) });
         }
         processed++;
       } catch (jobErr) {
-        await sbFetch(`kiko_jobs?id=eq.${job.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'failed', error: jobErr.message, completed_at: new Date().toISOString() }) });
+        await sbFetch(`kiko_background_jobs?id=eq.${job.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'failed', error_message: jobErr.message, finished_at: new Date().toISOString() }) });
       }
     }
 

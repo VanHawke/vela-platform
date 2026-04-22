@@ -39,7 +39,7 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
   useEffect(() => {
     const loadTasks = async () => {
       try {
-        const { data } = await supabase.from('kiko_jobs').select('id,title,status,job_type,result,created_at,completed_at,related_entity_id').order('created_at', { ascending: false }).limit(10)
+        const { data } = await supabase.from('kiko_background_jobs').select('id,title,status,job_type,result,queued_at,finished_at,related_entity_id').order('queued_at', { ascending: false }).limit(10)
         setBgTasks(data || [])
       } catch {}
     }
@@ -250,8 +250,8 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
             </svg>
-            {bgTasks.filter(t => t.status === 'pending' || t.status === 'processing').length > 0 && (
-              <span className="ltn-dot" style={{ animation: 'pulse-dot 1.5s infinite' }}>{bgTasks.filter(t => t.status === 'pending' || t.status === 'processing').length}</span>
+            {bgTasks.filter(t => t.status === 'queued' || t.status === 'processing').length > 0 && (
+              <span className="ltn-dot" style={{ animation: 'pulse-dot 1.5s infinite' }}>{bgTasks.filter(t => t.status === 'queued' || t.status === 'processing').length}</span>
             )}
           </button>
           {tasksOpen && (
@@ -261,22 +261,22 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
               {bgTasks.map(t => (
                 <div key={t.id} onClick={() => { if (t.related_entity_id && t.status === 'completed') { nav(`/campaigns/${t.related_entity_id}`); setTasksOpen(false) } }} style={{ padding: '10px 16px', borderBottom: '1px solid rgba(0,0,0,0.03)', cursor: t.status === 'completed' ? 'pointer' : 'default' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                    <span style={{ fontSize: 10 }}>{t.status === 'completed' ? '✅' : t.status === 'processing' ? '⏳' : t.status === 'pending' ? '🔄' : '❌'}</span>
+                    <span style={{ fontSize: 10 }}>{t.status === 'completed' ? '✅' : t.status === 'processing' ? '⏳' : t.status === 'queued' ? '🔄' : '❌'}</span>
                     <span style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A', flex: 1 }}>{t.title}</span>
                   </div>
                   <div style={{ fontSize: 10, color: '#A0A0A0' }}>
                     {t.status === 'completed' && t.result ? `${t.result.prospects_found || 0} prospects found, ${t.result.enrolled || 0} enrolled` : t.status}
-                    {' · '}{new Date(t.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                    {' · '}{new Date(t.queued_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
               ))}
             </div>
           )}
         </div>
-        <button className="ltn-icon" onClick={onNotificationsClick} title="Notifications" style={{ position: 'relative' }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 01-3.46 0" />
+        <button className="ltn-icon" onClick={onNotificationsClick} title="Notifications">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
           </svg>
           {hasNotifications && notifCount > 0 && <span className="ltn-dot">{notifCount <= 99 ? notifCount : '99+'}</span>}
         </button>

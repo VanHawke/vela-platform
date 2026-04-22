@@ -1,55 +1,60 @@
 {
-  "generated_at": "2026-04-22T20:30:58.788Z",
+  "generated_at": "2026-04-22T20:53:58.457Z",
   "commits": [
+    {
+      "hash": "8138287",
+      "subject": "DOCUMENT + MULTI-FILE FIXES: (1) ALL file attachments now sent to Kiko (was only first file). Multiple PDFs, docs, images all included in context. (2) API now handles type='file' attachments — PDFs/DO",
+      "when": "23 minutes ago"
+    },
     {
       "hash": "9d0670d",
       "subject": "Full batch: (1) PUSH TO BACKGROUND — sourcing modal now has 'Push to background' button during sourcing phase AND 'Source in background' option in idle phase. Queues kiko_jobs and closes modal so user",
-      "when": "5 minutes ago"
+      "when": "28 minutes ago"
     },
     {
       "hash": "de40b71",
       "subject": "Alert pill + notification icon fixes: (1) HOMEPAGE ALERT PILL — now pulsates with slow orange glow animation (pulse-pill) using command centre orange (#B8643E). Only pulsates when alerts > 0. (2) TOP ",
-      "when": "11 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "cf695cc",
       "subject": "Remaining fixes: (1) NAV PERSISTENCE — orderedTabs now reads from localStorage synchronously on init instead of via useEffect, prevents flash-to-defaults on refresh. (2) CAMPAIGN EDITOR WIDTH — added ",
-      "when": "16 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "266b2cb",
       "subject": "Fix duplicate closing button tag in LegoraTopNav",
-      "when": "23 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "12d6ba4",
       "subject": "UI overhaul: (1) BACKGROUND TASKS NAV ICON — replaced search icon with tasks icon showing pending/processing count with pulsating dot. Dropdown shows all tasks with status, completed tasks click throu",
-      "when": "24 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "0184f9d",
       "subject": "FIND LEADS NOW SOURCES VIA KIKO: (1) When CRM has no matching contacts, Find leads now auto-queues a Kiko background sourcing job instead of showing 'No leads found'. (2) Status message shown: 'Kiko i",
-      "when": "59 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "2d52a1f",
       "subject": "FIX CAMPAIGN DELETE: Simplified deleteCampaign to single Supabase delete — CASCADE handles all FK tables automatically. Removed 6 individual FK table delete calls that were silently failing. Now shows",
-      "when": "66 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "91b2d9b",
       "subject": "Remaining fixes: (1) PROSPECT CTAs SWAPPED — Find leads now has prominent black style, Add from CRM is outline. Deep source (background) button added to campaign editor. (2) EXPORT RESTRICTION — expor",
-      "when": "74 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "e7e23f3",
       "subject": "CRITICAL FIXES: (1) CAMPAIGN DELETE — all FK constraints now CASCADE on delete. Deleting a campaign automatically removes all enrollments, conditions, lead segments, and targets. No more silent failur",
-      "when": "82 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "d3221d6",
       "subject": "CRITICAL FIX: Restored 2 accidentally archived files that are live dependencies. (1) linkedin-client.js — imported by linkedin_search_prospects, linkedin_send_invite, linkedin_send_message tools. (2) ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "090e296",
@@ -69,17 +74,17 @@
     {
       "hash": "8ea2512",
       "subject": "Session wrap-up: (1) EMAIL CONFIDENCE DISPLAY — prospect table shows ✓ verified badge or confidence % + source next to emails. Detail panel shows same. (2) KIKO_BIBLE.md fully updated — email intel en",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "2a76df0",
       "subject": "Final batch: (1) ALREADY-CONNECTED LinkedIn check — condition engine now handles 3 scenarios: already connected (message delivered), invite accepted, or marked already_connected. (2) CAMPAIGN UI POLIS",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "7047430",
       "subject": "Move prospects + dedup + email confidence: (1) MOVE TO CAMPAIGN — bulk action moves prospects (removes from source + adds to target), alongside existing duplicate. (2) DEDUP — checks target campaign f",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "cfd4952",
@@ -94,11 +99,6 @@
     {
       "hash": "813f591",
       "subject": "File upload system rebuilt: (1) MULTI-FILE SUPPORT — pendingAttachments is now an array, stack multiple files before sending. (2) VISUAL DISPLAY — all attached files shown as chips with icons (📕 PDF,",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "911ea2d",
-      "subject": "Fix file upload UX: (1) Files no longer auto-submit and discard your prompt. Dropping a file now attaches it as a pending attachment — you continue typing, then submit together. (2) Text files stored ",
       "when": "5 hours ago"
     }
   ]

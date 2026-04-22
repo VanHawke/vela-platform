@@ -230,7 +230,7 @@ export default function Layout({ user }) {
     let cancelled = false
     const fetchNotifs = async () => {
       const { count } = await supabase.from('kiko_alerts').select('id', { count: 'exact', head: true }).eq('dismissed', false).gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-      if (!cancelled) setNotifCount(count || 0)
+      if (!cancelled) { setNotifCount(count || 0); window.__kikoAlertCount = count || 0 }
       const { data } = await supabase.from('kiko_alerts').select('id, type, title, detail, entity_name, created_at').eq('dismissed', false).order('created_at', { ascending: false }).limit(8)
       if (!cancelled) setNotifItems(data || [])
     }
