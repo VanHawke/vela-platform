@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-22T08:52:35.022Z",
+  "generated_at": "2026-04-22T08:59:20.187Z",
   "commits": [
+    {
+      "hash": "460863d",
+      "subject": "Combined flow+editor view (like Lemlist): removed separate list/flow toggle. Now single layout: flow timeline on LEFT (340px, scrollable), step editor on RIGHT. Click any step card in the flow to edit",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "a9b6b8a",
       "subject": "Lemlist-style campaign builder: (1) SequenceFlowView completely rebuilt — vertical flow timeline with step cards connected by lines. (2) Step cards show icon + type label + content preview + step numb",
-      "when": "10 minutes ago"
+      "when": "16 minutes ago"
     },
     {
       "hash": "d33a0cb",
       "subject": "Fix Add Prospects: (1) Pre-fill textarea with campaign criteria when opening modal. (2) Use criteria fallback directly in fetch (not stale React state). (3) Show error if no criteria available.",
-      "when": "20 minutes ago"
+      "when": "26 minutes ago"
     },
     {
       "hash": "3cdddd6",
       "subject": "Move Anthropic client init inside handler for source-prospects",
-      "when": "33 minutes ago"
+      "when": "39 minutes ago"
     },
     {
       "hash": "1a7be62",
       "subject": "Fix ANTHROPIC_KEY env var name in source-prospects.js",
-      "when": "36 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "cd84d4f",
       "subject": "Add source-prospects + linkedin-trigger to vercel.json with maxDuration",
-      "when": "56 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "4f639ce",
       "subject": "Add Prospects REBUILT — deep research pipeline: (1) NEW /api/source-prospects.js endpoint — uses Claude Sonnet + web_search to research companies matching campaign criteria. Finds up to 50 companies, ",
-      "when": "57 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "6f66956",
@@ -39,7 +44,7 @@
     {
       "hash": "3fa2dce",
       "subject": "Speed fix for casual queries: (1) LIGHTWEIGHT DETECTION — regex detects casual/personal questions (games, food, weather, recommendations, mood, etc). Skips ALL heavy loading: knowledge base (10 entrie",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "48d603e",
@@ -69,7 +74,7 @@
     {
       "hash": "a77d06c",
       "subject": "LinkedIn test fix: (1) URL check now case-insensitive and requires '/in/' path. (2) Added try/catch with alert() error feedback. (3) Checks Supabase insert error response. (4) Falls back to 'Test Link",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "432426f",
@@ -89,16 +94,11 @@
     {
       "hash": "181d0c6",
       "subject": "Timezone-aware sending: Sequence sender now resolves each prospect's location from contacts table, maps to UTC offset via 100+ city/country/region keywords covering Americas, Europe, Middle East, Afri",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "8bdc593",
       "subject": "Notifications fix + Pipeline delete + LinkedIn test + alerts cleared: (1) NOTIFICATIONS — panel now uses calc(100vh-80px) maxHeight (was 420px fixed, cut off 'View all'). Clicking notification sends a",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "691db24",
-      "subject": "Match Kiko nav font to mobile: 24px (was 18px), letter-spacing -0.02em (was 0.04em), added Source Serif Pro fallback",
       "when": "19 hours ago"
     }
   ]
