@@ -31,10 +31,10 @@ jobs:
           test -f api/kiko.js || exit 1
           test -f api/kiko-tools.js || exit 1
           test -f api/kiko-self-knowledge.js || exit 1
-          test -f api/calendar-events.js || exit 1
-          test -f api/cron-knowledge-seed.js || exit 1
+          test -f api/cron-sequence-sender.js || exit 1
+          test -f api/source-prospects.js || exit 1
           test -f KIKO_BIBLE.md || exit 1
-          test -f ARCHITECTURE.md || exit 1
+          test -f README.md || exit 1
           test -d dist || exit 1
           echo "All critical files verified"
 

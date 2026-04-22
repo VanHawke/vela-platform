@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-22T17:46:28.787Z",
+  "generated_at": "2026-04-22T17:51:24.609Z",
   "commits": [
+    {
+      "hash": "01eaaa6",
+      "subject": "Complete session: (1) BG JOB PROCESSOR — cron-job-processor.js processes kiko_jobs queue every 5min on Hetzner with auto-enrollment + dedup. (2) DEAD API CLEANUP — 33 files archived total (141→109). (",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "4c20cb0",
       "subject": "Batch: (1) BG JOB PROCESSOR — new cron-job-processor.js processes queued jobs from kiko_jobs every 5min on Hetzner. Handles source_companies_bg with auto-enrollment + dedup. (2) 10 MORE DEAD API FILES",
-      "when": "20 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "8ea2512",
       "subject": "Session wrap-up: (1) EMAIL CONFIDENCE DISPLAY — prospect table shows ✓ verified badge or confidence % + source next to emails. Detail panel shows same. (2) KIKO_BIBLE.md fully updated — email intel en",
-      "when": "28 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "2a76df0",
       "subject": "Final batch: (1) ALREADY-CONNECTED LinkedIn check — condition engine now handles 3 scenarios: already connected (message delivered), invite accepted, or marked already_connected. (2) CAMPAIGN UI POLIS",
-      "when": "37 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "7047430",
       "subject": "Move prospects + dedup + email confidence: (1) MOVE TO CAMPAIGN — bulk action moves prospects (removes from source + adds to target), alongside existing duplicate. (2) DEDUP — checks target campaign f",
-      "when": "39 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "cfd4952",
       "subject": "Platform audit: (1) Archived 24 HTML mockups + 47 session docs to .archive/. (2) Root now has only 5 essential files. (3) All file processing packages verified (pdf-parse, mammoth, officeparser). (4) ",
-      "when": "70 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "adeb4ea",
       "subject": "Kiko self-knowledge updated + file upload deployed: (1) SELF-KNOWLEDGE — added Email Intelligence Engine (6 APIs, SMTP, pattern detection), Gmail draft tool (create_email_draft for any team member), c",
-      "when": "75 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "813f591",
       "subject": "File upload system rebuilt: (1) MULTI-FILE SUPPORT — pendingAttachments is now an array, stack multiple files before sending. (2) VISUAL DISPLAY — all attached files shown as chips with icons (📕 PDF,",
-      "when": "83 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "911ea2d",
@@ -49,7 +54,7 @@
     {
       "hash": "178c610",
       "subject": "Gmail draft creation for any team member: new /api/create-gmail-draft endpoint. Takes to, subject, body, draftFor (email of team member). Uses stored OAuth tokens to create drafts in any team member's",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "722ad69",
@@ -95,11 +100,6 @@
       "hash": "da4d6ba",
       "subject": "Fix blank page on Edit Sequence: t.id was undefined in draft banner — was referencing wrong map variable (t instead of s). Crashed the component on render.",
       "when": "6 hours ago"
-    },
-    {
-      "hash": "ccc3a41",
-      "subject": "Remove Leads tab from campaign editor: (1) Leads tab removed entirely (172 lines) — all prospect management now on main campaign page. (2) 'Continue to Leads' button → 'Save & manage prospects' which ",
-      "when": "7 hours ago"
     }
   ]
 }

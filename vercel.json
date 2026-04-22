@@ -62,9 +62,6 @@
     "api/ingest-knowledge.js": {
       "maxDuration": 60
     },
-    "api/embed-conversations.js": {
-      "maxDuration": 120
-    },
     "api/kiko-draft-actions.js": {
       "maxDuration": 30
     },
