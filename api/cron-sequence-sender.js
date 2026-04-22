@@ -243,12 +243,21 @@ export default async function handler(req, res) {
               let conditionMet = false;
               
               if (nextStep.condition_type === 'connection_accepted') {
-                // Check if LinkedIn connection was accepted
-                const liQueue = await sbFetch(`kiko_linkedin_queue?enrollment_id=eq.${email.enrollment_id}&action=eq.invite&status=eq.sent&limit=1`);
-                if (liQueue?.[0]) {
-                  // Check LinkedIn acceptance monitor results
+                // Check three scenarios:
+                // 1. Already connected (no invite needed — direct message was successful)
+                const directMsg = await sbFetch(`kiko_linkedin_queue?enrollment_id=eq.${email.enrollment_id}&action=eq.message&status=eq.sent&limit=1`);
+                if (directMsg?.length > 0) {
+                  conditionMet = true; // Already connected — message was delivered
+                } else {
+                  // 2. Invite sent and accepted
                   const accepted = await sbFetch(`kiko_linkedin_queue?enrollment_id=eq.${email.enrollment_id}&action=eq.invite&result=eq.accepted&limit=1`);
-                  conditionMet = accepted?.length > 0;
+                  if (accepted?.length > 0) {
+                    conditionMet = true;
+                  } else {
+                    // 3. Check if marked as already_connected during invite attempt
+                    const alreadyConn = await sbFetch(`kiko_linkedin_queue?enrollment_id=eq.${email.enrollment_id}&result=eq.already_connected&limit=1`);
+                    conditionMet = alreadyConn?.length > 0;
+                  }
                 }
               } else if (nextStep.condition_type === 'has_linkedin') {
                 conditionMet = !!enrollment[0].linkedin_url;

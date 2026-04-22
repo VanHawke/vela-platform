@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-22T17:07:35.056Z",
+  "generated_at": "2026-04-22T17:09:19.283Z",
   "commits": [
+    {
+      "hash": "7047430",
+      "subject": "Move prospects + dedup + email confidence: (1) MOVE TO CAMPAIGN — bulk action moves prospects (removes from source + adds to target), alongside existing duplicate. (2) DEDUP — checks target campaign f",
+      "when": "2 minutes ago"
+    },
     {
       "hash": "cfd4952",
       "subject": "Platform audit: (1) Archived 24 HTML mockups + 47 session docs to .archive/. (2) Root now has only 5 essential files. (3) All file processing packages verified (pdf-parse, mammoth, officeparser). (4) ",
-      "when": "31 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "adeb4ea",
       "subject": "Kiko self-knowledge updated + file upload deployed: (1) SELF-KNOWLEDGE — added Email Intelligence Engine (6 APIs, SMTP, pattern detection), Gmail draft tool (create_email_draft for any team member), c",
-      "when": "36 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "813f591",
       "subject": "File upload system rebuilt: (1) MULTI-FILE SUPPORT — pendingAttachments is now an array, stack multiple files before sending. (2) VISUAL DISPLAY — all attached files shown as chips with icons (📕 PDF,",
-      "when": "44 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "911ea2d",
       "subject": "Fix file upload UX: (1) Files no longer auto-submit and discard your prompt. Dropping a file now attaches it as a pending attachment — you continue typing, then submit together. (2) Text files stored ",
-      "when": "82 minutes ago"
+      "when": "84 minutes ago"
     },
     {
       "hash": "250375b",
@@ -94,11 +99,6 @@
     {
       "hash": "ce218cd",
       "subject": "Fix Campaigns.jsx build error: extra closing div tag caused unterminated regex parse failure",
-      "when": "7 hours ago"
-    },
-    {
-      "hash": "47b294d",
-      "subject": "Generate multichannel sequence: (1) 'Generate sequence' button in campaign header — one click creates full 7-step Email + LinkedIn flow with conditions. (2) generate-sequence.js updated: structure now",
       "when": "7 hours ago"
     }
   ]
