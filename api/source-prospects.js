@@ -286,8 +286,40 @@ Return ONLY a JSON object mapping company name to sponsorship info. Example: {"A
       }
     }
 
+    // ── PHASE 3.5: Email Intelligence — verify/find real emails via Hetzner engine ──
+    write({ phase: 'verifying_emails', message: 'Verifying emails via SMTP...', progress: 85 });
+    const HETZNER = 'http://178.104.73.22:3000';
+    const WORKER_SECRET = process.env.KIKO_WORKER_SECRET || 'kiko-hetzner-2026-vanhawke';
+    
+    let emailsVerified = 0;
+    for (const p of allProspects) {
+      if (!p.first_name || !p.last_name) continue;
+      const domain = (p.company_website || p.email || '').replace(/.*@/, '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+      if (!domain || domain.length < 4) continue;
+      
+      try {
+        const intelRes = await fetch(`${HETZNER}/email-intel/enrich`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${WORKER_SECRET}` },
+          body: JSON.stringify({ firstName: p.first_name, lastName: p.last_name, company: p.company_name, domain }),
+          signal: AbortSignal.timeout(25000),
+        });
+        const intel = await intelRes.json();
+        if (intel.ok) {
+          if (intel.email) { p.email = intel.email; p.email_verified = intel.verified; p.email_confidence = intel.confidence; p.email_source = intel.reason; }
+          if (intel.linkedin_url && intel.linkedin_url.includes('linkedin.com/in/')) { p.linkedin_url = intel.linkedin_url; }
+          emailsVerified++;
+          write({ phase: 'verifying_emails', message: `Verified ${emailsVerified}/${allProspects.length}: ${p.first_name} ${p.last_name} (${intel.reason})`, progress: 85 + Math.round((emailsVerified / allProspects.length) * 10) });
+        }
+      } catch (err) {
+        // Timeout or error — keep the Claude-generated email as fallback
+        p.email_verified = false;
+        p.email_source = 'ai_generated';
+      }
+    }
+
     // ── PHASE 4: Return results ──
-    write({ phase: 'complete', message: `Sourced ${allProspects.length} prospects from ${companies.length} companies (${verified} verified)`, progress: 100, prospects: allProspects, companies });
+    write({ phase: 'complete', message: `Sourced ${allProspects.length} prospects from ${companies.length} companies (${emailsVerified} emails verified)`, progress: 100, prospects: allProspects, companies });
 
   } catch (err) {
     write({ phase: 'error', message: err.message, progress: 0 });

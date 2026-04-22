@@ -1003,9 +1003,9 @@ RULES:
           </div>
         </div>
         {/* Save & return */}
-        {isDraft && steps.length > 0 && (
+        {steps.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
-            <button onClick={() => { if (dirty) save(); nav('/campaigns') }} style={{ padding: '10px 24px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button onClick={async () => { if (dirty) await save(); nav('/campaigns') }} style={{ padding: '10px 24px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}>
               Save &amp; manage prospects <ChevronRight size={14} />
             </button>
           </div>
