@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-22T08:19:59.322Z",
+  "generated_at": "2026-04-22T08:33:02.120Z",
   "commits": [
+    {
+      "hash": "3cdddd6",
+      "subject": "Move Anthropic client init inside handler for source-prospects",
+      "when": "13 minutes ago"
+    },
     {
       "hash": "1a7be62",
       "subject": "Fix ANTHROPIC_KEY env var name in source-prospects.js",
-      "when": "4 minutes ago"
+      "when": "17 minutes ago"
     },
     {
       "hash": "cd84d4f",
       "subject": "Add source-prospects + linkedin-trigger to vercel.json with maxDuration",
-      "when": "23 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "4f639ce",
       "subject": "Add Prospects REBUILT — deep research pipeline: (1) NEW /api/source-prospects.js endpoint — uses Claude Sonnet + web_search to research companies matching campaign criteria. Finds up to 50 companies, ",
-      "when": "25 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "6f66956",
@@ -29,7 +34,7 @@
     {
       "hash": "48d603e",
       "subject": "LinkedIn campaign blocks + template variables: (1) PREDEFINED BLOCKS — Connection Request, Connection Accepted, LinkedIn Message as separate step types with distinct colors/icons. (2) CONDITIONS — con",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "f38fe2a",
@@ -44,7 +49,7 @@
     {
       "hash": "e0b56bf",
       "subject": "LinkedIn FULLY WIRED: (1) kiko-worker on Hetzner now reads kiko_linkedin_queue (was kiko_outreach_queue). (2) sendMessage function added to linkedinEngine.js — sends DMs via Playwright to connected pr",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "5f5a1ae",
@@ -64,7 +69,7 @@
     {
       "hash": "cf2afea",
       "subject": "Google Maps + All Chats positioning + concierge mode: (1) GOOGLE MAPS TOOL — google_maps_link generates tappable links that open Maps app on mobile. Search mode finds places, directions mode gives tur",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "852776d",
@@ -84,7 +89,7 @@
     {
       "hash": "691db24",
       "subject": "Match Kiko nav font to mobile: 24px (was 18px), letter-spacing -0.02em (was 0.04em), added Source Serif Pro fallback",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "e3ffabf",
@@ -95,11 +100,6 @@
       "hash": "4ca9baa",
       "subject": "Campaign scheduling + All Chats fix + Add Prospects progress: (1) ALL CHATS — overlay added to BOTH welcome and conversation state returns. Previous fix only covered conversation state, so clicking Al",
       "when": "19 hours ago"
-    },
-    {
-      "hash": "d227d18",
-      "subject": "Three critical fixes: (1) ALL CHATS — complete rearchitect. Removed all 3 inline AllChatsView instances. Now renders as position:fixed overlay at z-index 200 — guaranteed to work regardless of flex la",
-      "when": "20 hours ago"
     }
   ]
 }

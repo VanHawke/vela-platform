@@ -274,6 +274,11 @@ export default function Campaigns({ user }) {
     setAddProspectsResult(null)
     setSourceProgress(0)
     setSourceMessage('Starting research...')
+
+    // Use typed query, or fall back to campaign criteria
+    const criteria = addProspectsQuery.trim() || selectedCampaign?.description || selectedCampaign?.target_persona || selectedCampaign?.name || ''
+    if (!criteria) { setAddProspectsPhase('error'); setAddProspectsError('No criteria available. Please describe what prospects to find.'); return }
+
     try {
       // Get existing enrolled contacts to avoid duplicates
       const { data: existing } = await supabase.from('kiko_sequence_enrollments').select('contact_email').eq('sequence_id', selectedId)
@@ -284,7 +289,7 @@ export default function Campaigns({ user }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           campaignName: selectedCampaign?.name || '',
-          description: addProspectsQuery || selectedCampaign?.description || '',
+          description: criteria,
           targetPersona: selectedCampaign?.target_persona || '',
           sequenceId: selectedId,
           existingEmails,
@@ -659,7 +664,7 @@ export default function Campaigns({ user }) {
                     style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 12, cursor: 'pointer', fontFamily: C.font }}
                   >Edit sequence</button>
                   <button
-                    onClick={() => setAddProspectsOpen(true)}
+                    onClick={() => { setAddProspectsQuery(selectedCampaign?.description || selectedCampaign?.target_persona || ''); setAddProspectsOpen(true) }}
                     style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid rgba(125,138,100,0.25)`, background: 'rgba(125,138,100,0.06)', color: '#7d8a64', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
                   ><UserPlus size={12} /> Add prospects</button>
                   {selectedCampaign.archived ? (
@@ -1147,7 +1152,7 @@ export default function Campaigns({ user }) {
                 />
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
                   <button onClick={() => { setAddProspectsOpen(false); setAddProspectsPhase('idle') }} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid rgba(0,0,0,0.1)`, background: 'transparent', color: '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
-                  <button onClick={() => { if (!addProspectsQuery.trim()) setAddProspectsQuery(selectedCampaign?.description || selectedCampaign?.target_persona || campaignName || ''); addMoreProspects() }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}><UserPlus size={12} /> Source new prospects</button>
+                  <button onClick={() => addMoreProspects()} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}><UserPlus size={12} /> Source new prospects</button>
                 </div>
               </>
             )}
