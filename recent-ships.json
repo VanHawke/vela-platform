@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-22T12:33:37.056Z",
+  "generated_at": "2026-04-22T12:56:50.448Z",
   "commits": [
+    {
+      "hash": "7a1c751",
+      "subject": "Fix 'Save & manage prospects' navigation: now navigates to /campaigns?selected={campaignId} so the campaign page auto-selects the correct campaign. Reads ?selected= query param on load.",
+      "when": "23 minutes ago"
+    },
     {
       "hash": "e6c967a",
       "subject": "Email intelligence pipeline wired end-to-end: (1) SMTP timeout reduced to 8s. (2) Gateway detection — if first 2 SMTP checks timeout, skips remaining and returns pattern-based guess (catches Proofpoin",
-      "when": "28 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "da4d6ba",
       "subject": "Fix blank page on Edit Sequence: t.id was undefined in draft banner — was referencing wrong map variable (t instead of s). Crashed the component on render.",
-      "when": "46 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "ccc3a41",
@@ -29,7 +34,7 @@
     {
       "hash": "ce218cd",
       "subject": "Fix Campaigns.jsx build error: extra closing div tag caused unterminated regex parse failure",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "47b294d",
@@ -49,7 +54,7 @@
     {
       "hash": "3897e90",
       "subject": "Campaign builder cleanup: (1) EDITOR MODERNIZED — removed email/linkedin toggle (type set from flow), subject line prominent, larger textarea (13px font), clean labels. (2) TRIGGERS REMOVED — no longe",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "cadea4c",
@@ -74,12 +79,12 @@
     {
       "hash": "3cdddd6",
       "subject": "Move Anthropic client init inside handler for source-prospects",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "1a7be62",
       "subject": "Fix ANTHROPIC_KEY env var name in source-prospects.js",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "cd84d4f",
@@ -94,11 +99,6 @@
     {
       "hash": "6f66956",
       "subject": "Add Prospects rebuilt: replaced unreliable Kiko chat API streaming approach with direct CRM search. Flow: (1) Enter keywords matching company/title/industry/location. (2) CRM searched directly via Sup",
-      "when": "18 hours ago"
-    },
-    {
-      "hash": "3fa2dce",
-      "subject": "Speed fix for casual queries: (1) LIGHTWEIGHT DETECTION — regex detects casual/personal questions (games, food, weather, recommendations, mood, etc). Skips ALL heavy loading: knowledge base (10 entrie",
       "when": "18 hours ago"
     }
   ]

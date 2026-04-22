@@ -714,7 +714,7 @@ RULES:
   async function cancelEnr(eid) { await supabase.from('kiko_sequence_enrollments').update({ status: 'cancelled' }).eq('id', eid); await supabase.from('kiko_outreach_queue').update({ status: 'cancelled' }).eq('enrollment_id', eid).eq('status', 'queued'); load() }
 
   const cur = steps[selStep]
-  const tabs = [{ id: 'sequence', label: 'Sequence' }, { id: 'activity', label: 'Activity' }, { id: 'performance', label: 'Performance' }]
+  const tabs = [{ id: 'sequence', label: 'Sequence' }, { id: 'prospects', label: 'Prospects', ct: enrollments.length }, { id: 'activity', label: 'Activity' }, { id: 'performance', label: 'Performance' }]
   const inputStyle = { width: '100%', padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.border}`, background: '#FAFAF7', color: C.text, fontSize: 13, fontFamily: C.font, outline: 'none', boxSizing: 'border-box' }
 
   return (
@@ -1005,7 +1005,7 @@ RULES:
         {/* Save & return */}
         {steps.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
-            <button onClick={async () => { if (dirty) await save(); nav(`/campaigns?selected=${id}`) }} style={{ padding: '10px 24px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button onClick={async () => { if (dirty) await save(); setTab('prospects') }} style={{ padding: '10px 24px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}>
               Save &amp; manage prospects <ChevronRight size={14} />
             </button>
           </div>
@@ -1013,6 +1013,82 @@ RULES:
       </>)}
 
       {/* ═══ LEADS TAB ═══ */}
+      {/* ═══ PROSPECTS TAB ═══ */}
+      {tab === 'prospects' && (
+        <>
+        <div style={{ ...glass, overflow: 'hidden', marginBottom: 14 }}>
+          {/* Header */}
+          <div style={{ padding: '14px 18px', borderBottom: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: 14, fontWeight: 500, fontFamily: C.font }}>Prospects</span>
+              {enrollments.length > 0 && (
+                <div style={{ display: 'flex', gap: 10, fontSize: 11, color: C.textTer, fontFamily: C.font }}>
+                  <span>{enrollments.length} enrolled</span>
+                  <span style={{ color: C.teal }}>{enrollments.filter(e => e.status === 'active').length} active</span>
+                  <span style={{ color: '#00B464' }}>{enrollments.filter(e => e.status === 'replied').length} replied</span>
+                  <span style={{ color: '#f87171' }}>{enrollments.filter(e => e.status === 'bounced').length} bounced</span>
+                </div>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button onClick={autoSuggestLeads} disabled={loadingSuggestions} style={{ padding: '6px 12px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><Sparkles size={12} />{loadingSuggestions ? 'Finding...' : 'Find leads'}</button>
+              <button onClick={() => setShowManualAdd(true)} style={{ padding: '6px 12px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><Plus size={12} /> Manual</button>
+              <button onClick={() => setShowAddLeads(true)} style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><UserPlus size={12} /> Add from CRM</button>
+            </div>
+          </div>
+
+          {/* Prospect list */}
+          {enrollments.length > 0 ? (
+            <div>
+              <div style={{ display: 'flex', padding: '8px 18px', borderBottom: `1px solid ${C.border}`, fontSize: 10, color: C.textTer, fontWeight: 500, fontFamily: C.font }}>
+                <span style={{ flex: 1 }}>Name</span><span style={{ width: 140 }}>Company</span><span style={{ width: 80, textAlign: 'center' }}>Step</span><span style={{ width: 80, textAlign: 'center' }}>Status</span>
+              </div>
+              <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+                {enrollments.map(e => {
+                  const statusColor = e.status === 'replied' ? '#00B464' : e.status === 'bounced' ? '#f87171' : e.status === 'paused' ? C.amber : C.teal
+                  const statusIcon = e.status === 'replied' ? '✓' : e.status === 'bounced' ? '✗' : e.status === 'paused' ? '⏸' : '●'
+                  return (
+                    <div key={e.id} style={{ display: 'flex', alignItems: 'center', padding: '10px 18px', borderBottom: `1px solid rgba(0,0,0,0.03)`, fontSize: 12, fontFamily: C.font }}
+                      onMouseEnter={ev => ev.currentTarget.style.background = 'rgba(0,0,0,0.015)'} onMouseLeave={ev => ev.currentTarget.style.background = 'transparent'}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ color: C.text, fontWeight: 450 }}>{e.contact_name || e.contact_email}</div>
+                        <div style={{ fontSize: 10, color: C.textTer, marginTop: 1 }}>{e.contact_email}</div>
+                      </div>
+                      <div style={{ width: 140, fontSize: 11, color: C.textSec }}>{e.company}</div>
+                      <div style={{ width: 80, textAlign: 'center', fontSize: 11, color: C.textSec }}>{e.current_step}/{steps.length}</div>
+                      <div style={{ width: 80, textAlign: 'center' }}>
+                        <span style={{ fontSize: 11, color: statusColor, fontWeight: 500 }}>{statusIcon} {e.status}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding: 40, textAlign: 'center', color: C.textTer, fontSize: 13, fontFamily: C.font }}>
+              No prospects enrolled yet. Click "Find leads" or "Add from CRM" to get started.
+            </div>
+          )}
+        </div>
+
+        {/* Action buttons */}
+        {enrollments.length > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <button onClick={() => setTab('sequence')} style={{ padding: '10px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>← Back to Sequence</button>
+            <button onClick={verifyTargets} disabled={verifying} style={{ padding: '10px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 12, fontWeight: 500, cursor: verifying ? 'wait' : 'pointer', fontFamily: C.font, opacity: verifying ? 0.6 : 1 }}>
+              {verifying ? 'Verifying...' : 'Verify targets'}
+            </button>
+            <button onClick={enrichSponsorship} disabled={enriching} style={{ padding: '10px 18px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 12, fontWeight: 500, cursor: enriching ? 'wait' : 'pointer', fontFamily: C.font, opacity: enriching ? 0.6 : 1 }}>
+              {enriching ? 'Researching...' : 'Research sponsorship data'}
+            </button>
+            {isDraft && <button onClick={() => setShowLaunchConfirm(true)} disabled={launching} style={{ padding: '10px 24px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 600, cursor: launching ? 'wait' : 'pointer', fontFamily: C.font, opacity: launching ? 0.6 : 1 }}>
+              {launching ? 'Activating...' : 'Activate Campaign'}
+            </button>}
+          </div>
+        )}
+        </>
+      )}
+
       {/* ═══ ACTIVITY TAB ═══ */}
       {tab === 'activity' && (
         <div>
