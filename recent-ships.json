@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-22T09:24:54.076Z",
+  "generated_at": "2026-04-22T09:43:15.022Z",
   "commits": [
+    {
+      "hash": "3897e90",
+      "subject": "Campaign builder cleanup: (1) EDITOR MODERNIZED — removed email/linkedin toggle (type set from flow), subject line prominent, larger textarea (13px font), clean labels. (2) TRIGGERS REMOVED — no longe",
+      "when": "18 minutes ago"
+    },
     {
       "hash": "cadea4c",
       "subject": "Condition branching + height matching: (1) CONDITION BRANCHES — condition steps now show YES/NO visual fork with green/red labels. Each branch has its own sub-steps list and '+' button to add steps. A",
-      "when": "26 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "460863d",
       "subject": "Combined flow+editor view (like Lemlist): removed separate list/flow toggle. Now single layout: flow timeline on LEFT (340px, scrollable), step editor on RIGHT. Click any step card in the flow to edit",
-      "when": "32 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "a9b6b8a",
       "subject": "Lemlist-style campaign builder: (1) SequenceFlowView completely rebuilt — vertical flow timeline with step cards connected by lines. (2) Step cards show icon + type label + content preview + step numb",
-      "when": "42 minutes ago"
+      "when": "60 minutes ago"
     },
     {
       "hash": "d33a0cb",
       "subject": "Fix Add Prospects: (1) Pre-fill textarea with campaign criteria when opening modal. (2) Use criteria fallback directly in fetch (not stale React state). (3) Show error if no criteria available.",
-      "when": "52 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "3cdddd6",
       "subject": "Move Anthropic client init inside handler for source-prospects",
-      "when": "65 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "1a7be62",
       "subject": "Fix ANTHROPIC_KEY env var name in source-prospects.js",
-      "when": "68 minutes ago"
+      "when": "87 minutes ago"
     },
     {
       "hash": "cd84d4f",
       "subject": "Add source-prospects + linkedin-trigger to vercel.json with maxDuration",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "4f639ce",
@@ -54,7 +59,7 @@
     {
       "hash": "48d603e",
       "subject": "LinkedIn campaign blocks + template variables: (1) PREDEFINED BLOCKS — Connection Request, Connection Accepted, LinkedIn Message as separate step types with distinct colors/icons. (2) CONDITIONS — con",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "f38fe2a",
@@ -64,12 +69,12 @@
     {
       "hash": "b90999c",
       "subject": "LinkedIn immediate send fix: browser can't call HTTP Hetzner from HTTPS page (mixed content). Created /api/linkedin-trigger.js Vercel proxy that forwards to Hetzner worker. Frontend now calls /api/lin",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "e0b56bf",
       "subject": "LinkedIn FULLY WIRED: (1) kiko-worker on Hetzner now reads kiko_linkedin_queue (was kiko_outreach_queue). (2) sendMessage function added to linkedinEngine.js — sends DMs via Playwright to connected pr",
-      "when": "17 hours ago"
+      "when": "18 hours ago"
     },
     {
       "hash": "5f5a1ae",
@@ -84,21 +89,16 @@
     {
       "hash": "432426f",
       "subject": "LinkedIn test modal + campaign nav fix: (1) LINKEDIN TEST — replaced prompt() with proper modal. Input field for LinkedIn URL + 'Send test' button + confirmation message. Modal stays open showing conf",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "cf2afea",
       "subject": "Google Maps + All Chats positioning + concierge mode: (1) GOOGLE MAPS TOOL — google_maps_link generates tappable links that open Maps app on mobile. Search mode finds places, directions mode gives tur",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "852776d",
       "subject": "All Chats fixes: (1) Overlay now covers full screen at z-index 300 (above nav z-250) — fixes text cut-off at top. (2) All Chats button added to mobile chat history panel. (3) Both welcome and conversa",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "181d0c6",
-      "subject": "Timezone-aware sending: Sequence sender now resolves each prospect's location from contacts table, maps to UTC offset via 100+ city/country/region keywords covering Americas, Europe, Middle East, Afri",
       "when": "19 hours ago"
     }
   ]
