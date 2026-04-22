@@ -510,8 +510,8 @@ export default function Campaigns({ user }) {
 
   // ── styles ──
   const C = T // color tokens shorthand
-  const cell = { padding: '12px 14px', fontSize: 12, color: C.text, borderBottom: `0.5px solid ${C.border || 'rgba(0,0,0,0.06)'}`, verticalAlign: 'middle' }
-  const headerCell = { ...cell, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: C.textTertiary || '#6B6B6B', fontWeight: 500, background: '#F5F4F1', position: 'sticky', top: 0, zIndex: 1 }
+  const cell = { padding: '10px 14px', fontSize: 12, color: C.text, borderBottom: `1px solid rgba(0,0,0,0.04)`, verticalAlign: 'middle', fontFamily: C.font }
+  const headerCell = { ...cell, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#A0A0A0', fontWeight: 500, background: '#FAFAF8', position: 'sticky', top: 0, zIndex: 1, borderBottom: '1px solid rgba(0,0,0,0.06)' }
 
   // ── render ──
   return (
@@ -527,9 +527,9 @@ export default function Campaigns({ user }) {
           <div style={{ display: 'flex', gap: 6 }}>
             <button
               onClick={() => { setBuildOpen(true); setBuildPhase('idle') }}
-              title="Auto-build campaign (deterministic — picks team, sources 50 targets, identifies decision-makers)"
-              style={{ padding: '0 10px', height: 28, borderRadius: 6, border: `1px solid rgba(0,0,0,0.12)`, background: 'rgba(0,0,0,0.05)', color: '#0A0A0A', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: 'inherit', fontWeight: 500 }}
-            >⚡ Build</button>
+              title="Auto-build campaign"
+              style={{ padding: '0 10px', height: 28, borderRadius: 6, border: 'none', background: '#0A0A0A', color: '#FEFEFC', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontFamily: 'inherit', fontWeight: 500 }}
+            >+ Build</button>
             <button
               onClick={() => setBulkEditOpen(true)}
               title="Bulk find/replace step content across sequences in a category"
@@ -662,9 +662,9 @@ export default function Campaigns({ user }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                     <h1 style={{ fontSize: 20, fontWeight: 500, color: C.text, margin: 0 }}>{selectedCampaign.name}</h1>
                     {selectedCampaign.is_active ? (
-                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(125,138,100,0.12)', color: '#7d8a64', border: '1px solid rgba(125,138,100,0.2)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Active</span>
+                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: 'rgba(0,180,100,0.08)', color: '#00B464', border: '1px solid rgba(0,180,100,0.2)', fontWeight: 500 }}>Active</span>
                     ) : (
-                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(184,156,92,0.10)', color: '#B89C5C', border: '1px solid rgba(184,156,92,0.2)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>Draft</span>
+                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: 'rgba(0,0,0,0.04)', color: '#6B6B6B', border: '1px solid rgba(0,0,0,0.08)', fontWeight: 500 }}>Draft</span>
                     )}
                   </div>
                   <div style={{ fontSize: 12, color: C.textTertiary }}>
@@ -674,28 +674,28 @@ export default function Campaigns({ user }) {
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <button
                     onClick={() => toggleCampaign(selectedCampaign)}
-                    style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid ${selectedCampaign.is_active ? 'rgba(184,156,92,0.30)' : 'rgba(0,0,0,0.10)'}`, background: selectedCampaign.is_active ? 'rgba(184,156,92,0.08)' : 'rgba(0,0,0,0.04)', color: selectedCampaign.is_active ? '#B89C5C' : '#0A0A0A', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
+                    style={{ padding: '7px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
                   >
                     {selectedCampaign.is_active ? <><Pause size={12} /> Pause</> : <><Play size={12} /> Activate</>}
                   </button>
                   <button
                     onClick={() => nav(`/campaigns/${selectedCampaign.id}`)}
-                    style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 12, cursor: 'pointer', fontFamily: C.font }}
+                    style={{ padding: '7px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.text, fontSize: 12, cursor: 'pointer', fontFamily: C.font }}
                   >Edit sequence</button>
                   <button
                     onClick={() => { setAddProspectsQuery(selectedCampaign?.description || selectedCampaign?.target_persona || ''); setAddProspectsOpen(true) }}
-                    style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid rgba(125,138,100,0.25)`, background: 'rgba(125,138,100,0.06)', color: '#7d8a64', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
+                    style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
                   ><UserPlus size={12} /> Add prospects</button>
                   {selectedCampaign.archived ? (
                     <button
                       onClick={() => unarchiveCampaign(selectedCampaign)}
-                      style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSecondary, fontSize: 12, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
+                      style={{ padding: '7px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSecondary, fontSize: 12, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
                     ><ArchiveRestore size={12} /> Restore</button>
                   ) : (
                     <button
                       onClick={() => archiveCampaign(selectedCampaign)}
-                      title="Archive this campaign — pauses and moves to archive"
-                      style={{ padding: '7px 14px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textTertiary, fontSize: 12, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
+                      title="Archive this campaign"
+                      style={{ padding: '7px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.textTertiary, fontSize: 12, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}
                     ><Archive size={12} /> Archive</button>
                   )}
                   <button

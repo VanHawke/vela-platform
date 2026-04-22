@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-22T13:22:20.571Z",
+  "generated_at": "2026-04-22T14:10:07.552Z",
   "commits": [
+    {
+      "hash": "0aaac0d",
+      "subject": "Hunter.io integrated + sizing fix: (1) HUNTER.IO API — primary email source, tries Hunter first (sub-second, 99% confidence, LinkedIn URLs, job titles). Falls back to SMTP only when Hunter has no resu",
+      "when": "48 minutes ago"
+    },
     {
       "hash": "122666c",
       "subject": "Clean up Prospects tab: (1) Removed 'Verify targets' and 'Research sponsorship data' buttons — both now automatic during sourcing pipeline. (2) Prospects tab now shows just: Back to Sequence + Activat",
-      "when": "20 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "065decf",
       "subject": "Restore Prospects tab in campaign editor: (1) Full Sequence → Prospects → Launch flow restored. (2) 'Save & manage prospects' now switches to Prospects tab (not navigating away). (3) Prospects tab sho",
-      "when": "25 minutes ago"
+      "when": "73 minutes ago"
     },
     {
       "hash": "7a1c751",
       "subject": "Fix 'Save & manage prospects' navigation: now navigates to /campaigns?selected={campaignId} so the campaign page auto-selects the correct campaign. Reads ?selected= query param on load.",
-      "when": "49 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "e6c967a",
       "subject": "Email intelligence pipeline wired end-to-end: (1) SMTP timeout reduced to 8s. (2) Gateway detection — if first 2 SMTP checks timeout, skips remaining and returns pattern-based guess (catches Proofpoin",
-      "when": "76 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "da4d6ba",
@@ -34,22 +39,22 @@
     {
       "hash": "6e0a53b",
       "subject": "Campaign page prospect management: (1) BULK SELECT — checkbox on every prospect row + select-all in header. (2) BULK ACTIONS — Pause, Resume, Duplicate to campaign, Remove, Clear. (3) SORTABLE COLUMNS",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "85d6be0",
       "subject": "Fix campaign delete: was failing silently because 4 tables have foreign keys to kiko_sequences but only 2 were being cleaned up. Now deletes from ALL: campaign_targets, kiko_lead_segments, kiko_sequen",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "ce218cd",
       "subject": "Fix Campaigns.jsx build error: extra closing div tag caused unterminated regex parse failure",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "47b294d",
       "subject": "Generate multichannel sequence: (1) 'Generate sequence' button in campaign header — one click creates full 7-step Email + LinkedIn flow with conditions. (2) generate-sequence.js updated: structure now",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "87402df",
@@ -64,12 +69,12 @@
     {
       "hash": "3897e90",
       "subject": "Campaign builder cleanup: (1) EDITOR MODERNIZED — removed email/linkedin toggle (type set from flow), subject line prominent, larger textarea (13px font), clean labels. (2) TRIGGERS REMOVED — no longe",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "cadea4c",
       "subject": "Condition branching + height matching: (1) CONDITION BRANCHES — condition steps now show YES/NO visual fork with green/red labels. Each branch has its own sub-steps list and '+' button to add steps. A",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "460863d",
@@ -84,22 +89,17 @@
     {
       "hash": "d33a0cb",
       "subject": "Fix Add Prospects: (1) Pre-fill textarea with campaign criteria when opening modal. (2) Use criteria fallback directly in fetch (not stale React state). (3) Show error if no criteria available.",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "3cdddd6",
       "subject": "Move Anthropic client init inside handler for source-prospects",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "1a7be62",
       "subject": "Fix ANTHROPIC_KEY env var name in source-prospects.js",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "cd84d4f",
-      "subject": "Add source-prospects + linkedin-trigger to vercel.json with maxDuration",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     }
   ]
 }
