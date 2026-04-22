@@ -867,55 +867,58 @@ RULES:
                   </>
                 ) : (
                   <>
-                {/* ═══ EMAIL / LINKEDIN STEP EDITOR ═══ */}
-                <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-                  {[{ id: 'email', icon: Mail, c: C.purple }, { id: 'linkedin', icon: Linkedin, c: '#0077B5' }].map(ch => (
-                    <button key={ch.id} onClick={() => upd(selStep, 'channel', ch.id)} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${cur.channel === ch.id ? ch.c : C.border}`, background: cur.channel === ch.id ? `${ch.c}10` : 'transparent', color: cur.channel === ch.id ? ch.c : C.textTer, fontSize: 11, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 4 }}><ch.icon size={11} />{ch.id}</button>
-                  ))}
-                </div>
-                <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-                  <div style={{ flex: 1 }}><label style={{ fontSize: 10, color: C.textTer, marginBottom: 2, display: 'block' }}>Approach</label>
-                    <select value={cur.approach || ''} onChange={e => updAndRegen(selStep, 'approach', e.target.value)} style={{ ...inputStyle, padding: '5px 6px', fontSize: 11 }}>{APPROACHES.map(a => <option key={a} value={a} style={{ background: '#FFFFFF' }}>{a}</option>)}</select></div>
-                  <div style={{ flex: 1 }}><label style={{ fontSize: 10, color: C.textTer, marginBottom: 2, display: 'block' }}>Psychology</label>
-                    <select value={cur.psychology || ''} onChange={e => updAndRegen(selStep, 'psychology', e.target.value)} style={{ ...inputStyle, padding: '5px 6px', fontSize: 11 }}>{PSYCHOLOGY.map(p => <option key={p} value={p} style={{ background: '#FFFFFF' }}>{p.replace(/_/g, ' ')}</option>)}</select></div>
-                </div>
-                {cur.channel === 'email' && <div style={{ marginBottom: 12 }}><label style={{ fontSize: 10, color: C.textTer, marginBottom: 2, display: 'block' }}>Subject</label>
-                  <input value={cur.subject || ''} onChange={e => upd(selStep, 'subject', e.target.value)} placeholder="Haas F1 Team x {category}" style={inputStyle} /></div>}
+                {/* ═══ STEP EDITOR — clean, modern ═══ */}
+                {cur.channel === 'email' && <div style={{ marginBottom: 14 }}><label style={{ fontSize: 11, color: C.textSec, marginBottom: 4, display: 'block', fontWeight: 500, fontFamily: C.font }}>Subject line</label>
+                  <input value={cur.subject || ''} onChange={e => upd(selStep, 'subject', e.target.value)} placeholder="Haas F1 Team x {category}" style={{ ...inputStyle, fontSize: 13, padding: '10px 12px' }} /></div>}
 
-                {/* A/B Variants UI removed 2026-04-11 — Sunny doesn't need A/B testing
-                    until campaign volume justifies it (~500+ sends per campaign). One
-                    well-crafted email per step is better than three mediocre A/B tested ones. */}
-                {regenPrompt && <div style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(184,156,92,0.06)', border: '1px solid rgba(184,156,92,0.12)', marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 11, color: C.amber }}>Approach changed — regenerate content?</span>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button onClick={() => { askKiko(selStep); setRegenPrompt(false) }} style={{ padding: '4px 10px', borderRadius: 6, border: 'none', background: 'rgba(0,0,0,0.06)', color: C.purple, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Regenerate</button>
-                    <button onClick={() => setRegenPrompt(false)} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textTer, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Keep</button>
-                  </div>
-                </div>}
-                <div style={{ marginBottom: 10 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                    <label style={{ fontSize: 10, color: C.textTer }}>{cur.channel === 'email' ? 'Email body' : 'Message'}</label>
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                    <label style={{ fontSize: 11, color: C.textSec, fontWeight: 500, fontFamily: C.font }}>{cur.channel === 'email' ? 'Email body' : cur.action === 'invite' ? 'Connection note (max 300 chars)' : 'Message'}</label>
                     <span style={{ fontSize: 10, color: (() => {
-                      if (cur.channel === 'linkedin') return (cur.template || '').length > 280 ? C.red : C.textTer
+                      if (cur.channel === 'linkedin') return (cur.template || '').length > 280 ? '#f87171' : C.textTer
                       const words = (cur.template || '').trim().split(/\s+/).filter(Boolean).length
-                      return words < 50 ? C.amber : words > 125 ? C.red : C.teal
-                    })() }}>
+                      return words < 50 ? C.amber : words > 125 ? '#f87171' : C.teal
+                    })(), fontFamily: C.font }}>
                       {cur.channel === 'linkedin'
-                        ? `${(cur.template || '').length} / 300 chars`
-                        : `${(cur.template || '').trim().split(/\s+/).filter(Boolean).length} words (target: 50-125)`}
+                        ? `${(cur.template || '').length} / 300`
+                        : `${(cur.template || '').trim().split(/\s+/).filter(Boolean).length} words`}
                     </span>
                   </div>
-                  <textarea value={cur.template || ''} onChange={e => upd(selStep, 'template', e.target.value)} rows={cur.channel === 'email' ? 10 : 3} maxLength={cur.channel === 'linkedin' ? 300 : undefined} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, padding: '8px 10px' }} />
+                  <textarea value={cur.template || ''} onChange={e => upd(selStep, 'template', e.target.value)} rows={cur.channel === 'email' ? 12 : 4} maxLength={cur.channel === 'linkedin' ? 300 : undefined} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.7, padding: '12px 14px', fontSize: 13 }} />
                 </div>
-                <div style={{ marginBottom: 12 }}><div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-                  {VARS.map(v => <button key={v} onClick={() => upd(selStep, 'template', (cur.template || '') + v)} style={{ padding: '2px 6px', borderRadius: 3, border: `1px solid ${C.border}`, background: 'transparent', color: C.purple, fontSize: 9, cursor: 'pointer', fontFamily: C.font }}>{v}</button>)}
-                </div></div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `1px solid rgba(0,0,0,0.08)`, background: 'rgba(0,0,0,0.03)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font, flex: 1, justifyContent: 'center' }}><Sparkles size={12} />Ask Kiko to write this step</button>
-                  {cur.channel === 'email' && <button onClick={() => { setTestModalStep(selStep); setTestModalOpen(true) }} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `1px solid ${testSent ? 'rgba(0,0,0,0.10)' : C.border}`, background: testSent ? 'rgba(0,0,0,0.03)' : 'transparent', color: testSent ? C.teal : C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{testSent ? '✓ Test sent' : '📧 Send test'}</button>}
+
+                {/* Variables */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 14 }}>
+                  {VARS.map(v => <button key={v} onClick={() => upd(selStep, 'template', (cur.template || '') + v)} style={{ padding: '3px 8px', borderRadius: 4, border: `1px solid ${C.border}`, background: '#FAFAF8', color: C.purple, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>{v}</button>)}
+                </div>
+
+                {/* Action buttons */}
+                <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+                  <button onClick={() => askKiko(selStep)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, flex: 1, justifyContent: 'center' }}><Sparkles size={13} /> Write with Kiko</button>
+                  {cur.channel === 'email' && <button onClick={() => { setTestModalStep(selStep); setTestModalOpen(true) }} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '9px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 12, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{testSent ? '✓ Sent' : 'Test email'}</button>}
                   {cur.channel === 'linkedin' && <button onClick={() => { setLiTestOpen(true); setLiTestUrl(''); setLiTestSent(false) }}
-                    style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 6, border: `1px solid ${liTestSent ? 'rgba(0,77,181,0.15)' : C.border}`, background: liTestSent ? 'rgba(0,77,181,0.04)' : 'transparent', color: liTestSent ? '#0077B5' : C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{liTestSent ? '✓ Queued' : '💼 Test LinkedIn'}</button>}
+                    style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '9px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 12, cursor: 'pointer', fontFamily: C.font, whiteSpace: 'nowrap' }}>{liTestSent ? '✓ Sent' : 'Test LinkedIn'}</button>}
                 </div>
+
+                {/* Approach & Psychology — collapsed advanced section */}
+                <details style={{ marginTop: 4, borderTop: `1px solid ${C.border}`, paddingTop: 10 }}>
+                  <summary style={{ fontSize: 11, color: C.textTer, cursor: 'pointer', fontFamily: C.font, listStyle: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span style={{ fontSize: 8, color: C.textTer }}>▶</span> Advanced: approach &amp; psychology
+                  </summary>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                    <div style={{ flex: 1 }}><label style={{ fontSize: 10, color: C.textTer, marginBottom: 2, display: 'block' }}>Approach</label>
+                      <select value={cur.approach || ''} onChange={e => updAndRegen(selStep, 'approach', e.target.value)} style={{ ...inputStyle, padding: '5px 6px', fontSize: 11 }}>{APPROACHES.map(a => <option key={a} value={a} style={{ background: '#FFFFFF' }}>{a}</option>)}</select></div>
+                    <div style={{ flex: 1 }}><label style={{ fontSize: 10, color: C.textTer, marginBottom: 2, display: 'block' }}>Psychology</label>
+                      <select value={cur.psychology || ''} onChange={e => updAndRegen(selStep, 'psychology', e.target.value)} style={{ ...inputStyle, padding: '5px 6px', fontSize: 11 }}>{PSYCHOLOGY.map(p => <option key={p} value={p} style={{ background: '#FFFFFF' }}>{p.replace(/_/g, ' ')}</option>)}</select></div>
+                  </div>
+                  {regenPrompt && <div style={{ padding: '6px 10px', borderRadius: 6, background: 'rgba(184,156,92,0.06)', border: '1px solid rgba(184,156,92,0.12)', marginTop: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 10, color: C.amber }}>Regenerate content?</span>
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      <button onClick={() => { askKiko(selStep); setRegenPrompt(false) }} style={{ padding: '3px 8px', borderRadius: 4, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Yes</button>
+                      <button onClick={() => setRegenPrompt(false)} style={{ padding: '3px 8px', borderRadius: 4, border: `1px solid ${C.border}`, background: 'transparent', color: C.textTer, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>Keep</button>
+                    </div>
+                  </div>}
+                </details>
 
                 {/* ═══ REFINE WITH FEEDBACK — iterate back and forth with Kiko ═══ */}
                 {cur.template && !cur.template.startsWith('⏳') && !cur.template.startsWith('Error') && (
@@ -953,86 +956,6 @@ RULES:
                     <div style={{ fontSize: 9, color: C.textTer, marginTop: 4 }}>⌘/Ctrl + Enter to submit</div>
                   </div>
                 )}
-
-                {/* ═══ TRIGGER CONDITIONS — only for non-condition steps ═══ */}
-                {cur.type !== 'condition' && !isNew && (
-                  <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${C.border}` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.amber }} />
-                        <span style={{ fontSize: 12, fontWeight: 500, color: C.text }}>Triggers</span>
-                        <span style={{ fontSize: 9, color: C.textTer }}>· evaluated before this step sends</span>
-                      </div>
-                      <button onClick={() => setShowAddCondition(true)} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'rgba(0,0,0,0.03)', color: C.purple, fontSize: 10, cursor: 'pointer', fontFamily: C.font }}>+ Add trigger</button>
-                    </div>
-
-                    {conditions.filter(c => c.step_number === selStep + 1).length === 0 && !showAddCondition && (
-                      <div style={{ fontSize: 10, color: C.textTer, padding: '8px 0', fontStyle: 'italic' }}>No triggers — this step always sends on schedule. Add a trigger to make it conditional (e.g. only send if previous step was opened).</div>
-                    )}
-
-                    {conditions.filter(c => c.step_number === selStep + 1).map(cond => (
-                      <div key={cond.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', marginBottom: 6, borderRadius: 6, background: 'rgba(184,156,92,0.06)', border: `1px solid rgba(184,156,92,0.10)`, fontSize: 11 }}>
-                        <span style={{ color: C.amber, fontWeight: 500 }}>IF</span>
-                        <span style={{ color: C.text }}>{cond.condition_type.replace(/_/g, ' ')}</span>
-                        {cond.reference_step && <span style={{ color: C.textTer }}>step {cond.reference_step}</span>}
-                        {cond.value && <span style={{ color: C.textSec }}>= {cond.value}</span>}
-                        {cond.true_next_step && <><span style={{ color: C.textTer }}>→ TRUE: jump to step</span><span style={{ color: C.teal, fontWeight: 500 }}>{cond.true_next_step}</span></>}
-                        {cond.false_next_step && <><span style={{ color: C.textTer }}>· FALSE: jump to step</span><span style={{ color: C.red, fontWeight: 500 }}>{cond.false_next_step}</span></>}
-                        {cond.wait_hours > 0 && <span style={{ color: C.textTer }}>· wait {cond.wait_hours}h</span>}
-                        <button onClick={() => deleteCondition(cond.id)} style={{ marginLeft: 'auto', background: 'transparent', border: 'none', color: C.textTer, cursor: 'pointer', fontSize: 12, padding: 2 }}>×</button>
-                      </div>
-                    ))}
-
-                    {showAddCondition && (
-                      <div style={{ padding: 12, marginTop: 6, borderRadius: 6, background: 'rgba(0,0,0,0.03)', border: `1px solid ${C.border}` }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
-                          <div>
-                            <div style={{ fontSize: 9, color: C.textTer, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>If</div>
-                            <select value={newCondition.condition_type} onChange={e => setNewCondition({ ...newCondition, condition_type: e.target.value })} style={{ ...inputStyle, fontSize: 11, padding: '6px 8px' }}>
-                              <option value="opened" style={{ background: '#FFFFFF' }}>opened</option>
-                              <option value="not_opened" style={{ background: '#FFFFFF' }}>not opened</option>
-                              <option value="clicked" style={{ background: '#FFFFFF' }}>clicked</option>
-                              <option value="not_clicked" style={{ background: '#FFFFFF' }}>not clicked</option>
-                              <option value="replied" style={{ background: '#FFFFFF' }}>replied</option>
-                              <option value="not_replied" style={{ background: '#FFFFFF' }}>not replied</option>
-                              <option value="days_since_last_action" style={{ background: '#FFFFFF' }}>days since last action</option>
-                              <option value="company_attribute" style={{ background: '#FFFFFF' }}>company attribute</option>
-                              <option value="has_meeting" style={{ background: '#FFFFFF' }}>has meeting booked</option>
-                            </select>
-                          </div>
-                          <div>
-                            <div style={{ fontSize: 9, color: C.textTer, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Reference step</div>
-                            <input type="number" min="1" max={steps.length} value={newCondition.reference_step} onChange={e => setNewCondition({ ...newCondition, reference_step: parseInt(e.target.value) || 1 })} style={{ ...inputStyle, fontSize: 11, padding: '6px 8px' }} />
-                          </div>
-                        </div>
-                        {(newCondition.condition_type === 'days_since_last_action' || newCondition.condition_type === 'company_attribute') && (
-                          <div style={{ marginBottom: 8 }}>
-                            <div style={{ fontSize: 9, color: C.textTer, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Value</div>
-                            <input value={newCondition.value} onChange={e => setNewCondition({ ...newCondition, value: e.target.value })} placeholder={newCondition.condition_type === 'days_since_last_action' ? 'e.g. 3' : 'e.g. industry:fintech'} style={{ ...inputStyle, fontSize: 11, padding: '6px 8px' }} />
-                          </div>
-                        )}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 10 }}>
-                          <div>
-                            <div style={{ fontSize: 9, color: C.teal, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>If TRUE → step</div>
-                            <input type="number" min="1" max={steps.length} value={newCondition.true_next_step} onChange={e => setNewCondition({ ...newCondition, true_next_step: e.target.value })} placeholder="next" style={{ ...inputStyle, fontSize: 11, padding: '6px 8px' }} />
-                          </div>
-                          <div>
-                            <div style={{ fontSize: 9, color: C.red, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>If FALSE → step</div>
-                            <input type="number" min="1" max={steps.length} value={newCondition.false_next_step} onChange={e => setNewCondition({ ...newCondition, false_next_step: e.target.value })} placeholder="pause" style={{ ...inputStyle, fontSize: 11, padding: '6px 8px' }} />
-                          </div>
-                          <div>
-                            <div style={{ fontSize: 9, color: C.textTer, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Wait (hrs)</div>
-                            <input type="number" min="0" value={newCondition.wait_hours} onChange={e => setNewCondition({ ...newCondition, wait_hours: parseInt(e.target.value) || 0 })} style={{ ...inputStyle, fontSize: 11, padding: '6px 8px' }} />
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                          <button onClick={() => setShowAddCondition(false)} style={{ padding: '6px 12px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textSec, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
-                          <button onClick={addCondition} style={{ padding: '6px 14px', borderRadius: 6, border: 'none', background: 'rgba(0,0,0,0.06)', color: C.purple, fontSize: 11, cursor: 'pointer', fontFamily: C.font }}>Save trigger</button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
                   </>
                 )}
               </>
@@ -1052,7 +975,7 @@ RULES:
         {/* Continue to Leads button (draft flow) */}
         {isDraft && steps.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
-            <button onClick={() => { if (dirty) save(); setTab('leads') }} style={{ padding: '10px 24px', borderRadius: 6, border: 'none', background: 'rgba(0,0,0,0.06)', color: C.purple, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, boxShadow: '0 1px 2px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button onClick={() => { if (dirty) save(); setTab('leads') }} style={{ padding: '10px 24px', borderRadius: 8, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}>
               Continue to Leads <ChevronRight size={14} />
             </button>
           </div>
