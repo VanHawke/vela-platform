@@ -261,6 +261,16 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const scrollRef = useRef(null)
   const scrollContainerRef = useRef(null)
   const [showScrollDown, setShowScrollDown] = useState(false)
+
+  // Auto-scroll to bottom during streaming — like ChatGPT/Claude
+  useEffect(() => {
+    if (!streaming) return
+    const el = scrollContainerRef.current
+    if (!el) return
+    // Only auto-scroll if user is near the bottom (within 200px)
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 200
+    if (atBottom) el.scrollTop = el.scrollHeight
+  }, [streamText, toolStatus, streaming])
   const inputRef = useRef(null)
   const fileInputRef = useRef(null)
   const transcribeRef = useRef({ media: null, recorder: null, sr: null, active: false, baseInput: '', committed: '' })
@@ -823,6 +833,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       const kikoMsg = { role: 'assistant', content: responseContent, timestamp: Date.now(), steps: thinkingSteps.length > 0 ? [...thinkingSteps] : undefined }
       const updated = [...messages, userMsg, kikoMsg]
       setMessages(prev => [...prev, kikoMsg]); setStreamText(''); setToolStatus(null)
+      setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
       const newId = await saveConversation(updated.map(m => ({ role: m.role, content: m.content })), activeConvId, msg, full)
       if (newId && !activeConvId) setActiveConvId(newId)
       if (pendingNav) {
@@ -1824,7 +1835,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                         {streaming ? `${thinkingSteps.length} steps` : `${thinkingSteps.length} steps · done`}
                       </span>
                     </button>
-                    <div style={{ maxHeight: showSteps ? 400 : 0, overflow: 'hidden', transition: 'max-height 0.4s cubic-bezier(0.4,0,0.2,1)' }}>
+                    <div style={{ display: showSteps ? 'block' : 'none' }}>
                       <div style={{ padding: '10px 0 4px 6px' }}>
                         {thinkingSteps.map((step, si) => {
                           const isLast = si === thinkingSteps.length - 1

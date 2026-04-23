@@ -186,7 +186,7 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
   return (
     <nav className="legora-topnav legora-top-nav-desktop">
       {/* Brand */}
-      <button className="ltn-brand" onClick={() => nav('/')}>
+      <button className="ltn-brand" onClick={() => { try { nav('/') } catch { window.location.href = '/' } }}>
         {customLogo ? (
           <img src={customLogo} alt="Logo" className="ltn-logo" />
         ) : (

@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-23T18:10:21.909Z",
+  "generated_at": "2026-04-23T18:33:40.237Z",
   "commits": [
+    {
+      "hash": "6c07fb2",
+      "subject": "FIX COMMAND PALETTE: Dark background (rgba(14,14,20,0.95)) had dark text (#0A0A0A) — everything invisible. Fixed theme to light text (#FAFAFF), light grey sub-text (#B0B0BB), light borders (rgba(255,2",
+      "when": "23 minutes ago"
+    },
     {
       "hash": "f75272a",
       "subject": "BATCH FIX: (1) SEARCH ICON — wired up to command palette (was calling nonexistent function). Swapped to appear BEFORE bg tasks icon. Order: [Search] [BG Tasks] [Avatar]. (2) RETRY ICON on user message",
-      "when": "5 minutes ago"
+      "when": "28 minutes ago"
     },
     {
       "hash": "ab84268",
       "subject": "FIX EMAIL SCANNING + NAV: (1) REWRITTEN read_email handler — now uses sbFetch helper (proven working) instead of inline VITE_SUPABASE_URL which may not resolve. Uses parallel token refresh via Promise",
-      "when": "32 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "b21f100",
       "subject": "MAJOR: EMAIL PERMISSIONS + LEARNING + GREETINGS: (1) EMAIL PERMISSION MODEL — super_admin scans ALL team Gmail accounts, regular users scan ONLY their own. Zero data leakage. Full body extraction (not",
-      "when": "48 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "0f3e1c3",
       "subject": "FIX TEXTAREA + TIMEOUT: (1) TEXTAREA SHRINK — resets height to 'auto' on submit via inputRef. Was staying expanded because only the value was cleared, not the CSS height. (2) EMAIL REGEX TIGHTENED — n",
-      "when": "69 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "d70efff",
       "subject": "SENDER SELECTOR: (1) New 'From:' dropdown in EmailDraft — select who the email is from (Sunny or Matt or any future user). Determines From address + Gmail signature. (2) When sender is selected, draft",
-      "when": "81 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "2a2c19a",
@@ -44,17 +49,17 @@
     {
       "hash": "670eae9",
       "subject": "FIX: VITE_SUPABASE_URL not SUPABASE_URL — was crashing the function entirely (FUNCTION_INVOCATION_FAILED)",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "b8ab594",
       "subject": "REWRITE create-gmail-draft.js: FORCE REFRESH TOKEN EVERY TIME. Previous version used getGoogleToken which cached expired tokens. New version: (1) Uses Supabase service role key directly (not the share",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "a4015a8",
       "subject": "FIX DRAFT RESEND: (1) Removed duplicate client-side body cleanup — body is sent as-is, API handles cleanup. This prevents double-cleaning that was stripping the entire body on resend. (2) Added HTTP s",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "9a87329",
@@ -84,21 +89,16 @@
     {
       "hash": "f2e0267",
       "subject": "FIX KIKO HANGING + DRAFT RESEND: (1) EMAIL FAST PATH — email/draft/compose requests now detected via regex fast-match (skips classifier). Uses LIGHT TOOL SET (7 tools instead of 39) — dramatically red",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "2899c92",
       "subject": "FIX KIKO HANGING DURING TOOL CALLS: (1) HEARTBEAT — sends toolStatus ping every 8s during tool execution so client knows Kiko is alive. Previously nothing streamed during 15-30s sub-agent calls. (2) P",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "f02394b",
       "subject": "FIX KIKO HANGING AFTER 3-4 MESSAGES: ROOT CAUSE — when conversation history included non-string content (images, PDFs from earlier messages), the base64 data was sent UNTRUNCATED on every subsequent r",
-      "when": "8 hours ago"
-    },
-    {
-      "hash": "34c394e",
-      "subject": "FIX ENCODING + HANGING: (1) SUBJECT LINE ENCODING — Subject now uses RFC 2047 UTF-8 Base64 encoding. Em dashes, smart quotes, and all Unicode characters will render correctly in Gmail. Body also uses ",
       "when": "8 hours ago"
     }
   ]
