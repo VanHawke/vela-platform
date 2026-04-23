@@ -60,16 +60,27 @@ async function getGmailSignature(token, email) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-  const { to, subject, body, htmlBody, draftFor } = req.body;
+  const { to, subject, body, htmlBody, draftFor, sender } = req.body;
   const targetEmail = draftFor || 'sunny@vanhawke.com';
+  const senderEmail = sender || targetEmail; // sender determines From + signature
   if (!to || !subject) return res.status(400).json({ error: 'to and subject required' });
 
   try {
     const token = await forceRefreshToken(targetEmail);
     if (!token) return res.status(400).json({ error: `Token refresh failed for ${targetEmail}` });
 
-    // Fetch the user's Gmail signature from their @vanhawke.agency alias
-    const { signature, sendAs } = await getGmailSignature(token, targetEmail);
+    // Get signature for the SENDER — needs sender's token if sender != recipient
+    let signature = '', sendAs = SEND_AS_ALIAS[senderEmail] || senderEmail;
+    if (senderEmail === targetEmail) {
+      const sigResult = await getGmailSignature(token, senderEmail);
+      signature = sigResult.signature; sendAs = sigResult.sendAs;
+    } else {
+      const senderToken = await forceRefreshToken(senderEmail);
+      if (senderToken) {
+        const sigResult = await getGmailSignature(senderToken, senderEmail);
+        signature = sigResult.signature; sendAs = sigResult.sendAs;
+      }
+    }
 
     // Clean body — strip names, titles, company, analysis commentary
     // BUT keep sign-offs (Best, Thanks, Kind regards, etc.) — user wants these

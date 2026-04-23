@@ -1,55 +1,60 @@
 {
-  "generated_at": "2026-04-23T16:36:58.404Z",
+  "generated_at": "2026-04-23T16:49:10.549Z",
   "commits": [
+    {
+      "hash": "2a2c19a",
+      "subject": "FIX SIGNATURE + SIGN-OFFS: (1) AGENCY ALIAS — signature now fetched from @vanhawke.agency alias (not @vanhawke.com). Maps sunny@vanhawke.com→sunny@vanhawke.agency, matt.smith→matt.smith@vanhawke.agenc",
+      "when": "12 minutes ago"
+    },
     {
       "hash": "58cb977",
       "subject": "FIX GMAIL SIGNATURE: Gmail API does NOT auto-insert signatures on API-created drafts (only on compose UI drafts). Now fetches user's Gmail signature via settings/sendAs API and appends it to the draft",
-      "when": "19 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "76bb1b5",
       "subject": "REWRITE create-gmail-draft.js from scratch: NO Supabase client library (was crashing on Vercel module init). Now uses raw fetch() to Supabase REST API — identical pattern to every other working endpoi",
-      "when": "31 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "670eae9",
       "subject": "FIX: VITE_SUPABASE_URL not SUPABASE_URL — was crashing the function entirely (FUNCTION_INVOCATION_FAILED)",
-      "when": "40 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "b8ab594",
       "subject": "REWRITE create-gmail-draft.js: FORCE REFRESH TOKEN EVERY TIME. Previous version used getGoogleToken which cached expired tokens. New version: (1) Uses Supabase service role key directly (not the share",
-      "when": "43 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "a4015a8",
       "subject": "FIX DRAFT RESEND: (1) Removed duplicate client-side body cleanup — body is sent as-is, API handles cleanup. This prevents double-cleaning that was stripping the entire body on resend. (2) Added HTTP s",
-      "when": "56 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "9a87329",
       "subject": "FIX EMAIL SIGNATURE: (1) REMOVED ALL custom signatures from create-gmail-draft.js — Gmail has pre-configured signatures per user that auto-insert when draft is opened. (2) KIKO PROMPT UPDATED — CRITIC",
-      "when": "61 minutes ago"
+      "when": "73 minutes ago"
     },
     {
       "hash": "83e6db8",
       "subject": "FIX EMAIL DRAFT CLEANUP + SIGNATURES: (1) BODY PARSER — now cuts at sign-off line (Best regards, etc), '---' separator, and analysis commentary (This references, Sound right, etc). Matt Smith name now",
-      "when": "70 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "df9897b",
       "subject": "Update KIKO_SESSION_BRIEF.md — full current state: performance architecture, all working systems, outstanding items, key files, ring-fence rules",
-      "when": "77 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "30a328d",
       "subject": "Fix inactivityCheckId variable scope — was using inconsistent names (inactivityCheck vs inactivityCheckId). Now all references use inactivityCheckId correctly. 30s inactivity timeout will properly abo",
-      "when": "77 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "ce1adf7",
       "subject": "FIX KIKO SPEED: (1) EMAIL DRAFT FIRST — system prompt now says WRITE THE DRAFT IMMEDIATELY, do NOT call tools first. No CRM/email/memory lookups before drafting. (2) EMAIL TOOL ROUNDS CAPPED AT 2 — ma",
-      "when": "86 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "f2e0267",
@@ -64,7 +69,7 @@
     {
       "hash": "f02394b",
       "subject": "FIX KIKO HANGING AFTER 3-4 MESSAGES: ROOT CAUSE — when conversation history included non-string content (images, PDFs from earlier messages), the base64 data was sent UNTRUNCATED on every subsequent r",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "34c394e",
@@ -89,16 +94,11 @@
     {
       "hash": "a7185d8",
       "subject": "FIX: MATT IN DROPDOWN + NETWORK ERROR: (1) TEAM MEMBERS API — new /api/team-members endpoint returns all org users via service role key, bypassing RLS. EmailDraft now fetches from this instead of dire",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "067d5a3",
       "subject": "EMAIL DRAFT OVERHAUL: (1) COPY BUTTON — copies full email (Subject + To + Body + sign-off) to clipboard. Shows green check on success. (2) EDIT MODE — pencil icon opens inline textarea for direct edit",
-      "when": "10 hours ago"
-    },
-    {
-      "hash": "39ad856",
-      "subject": "FIX PDF NETWORK ERROR: (1) file-extract.js body limit increased from 4.5MB (default) to 12MB — large PDFs were exceeding Vercel's default and returning network error. (2) Extracted document text now t",
       "when": "10 hours ago"
     }
   ]

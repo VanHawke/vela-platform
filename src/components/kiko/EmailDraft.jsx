@@ -97,9 +97,12 @@ export default function EmailDraft({ text }) {
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState('')
   const [sendDropdownOpen, setSendDropdownOpen] = useState(false)
+  const [senderDropdownOpen, setSenderDropdownOpen] = useState(false)
   const [teamMembers, setTeamMembers] = useState([])
-  const [selectedMember, setSelectedMember] = useState(null)
+  const [selectedMember, setSelectedMember] = useState(null) // whose Gmail drafts folder
+  const [selectedSender, setSelectedSender] = useState(null) // who the email is FROM (determines signature)
   const dropdownRef = useRef(null)
+  const senderDropdownRef = useRef(null)
   const editRef = useRef(null)
   const { subject, to } = parsed
 
@@ -112,7 +115,7 @@ export default function EmailDraft({ text }) {
         if (data.ok && data.members?.length > 0) {
           setTeamMembers(data.members)
           const me = data.members.find(u => u.role === 'super_admin') || data.members[0]
-          if (me) setSelectedMember(me)
+          if (me) { setSelectedMember(me); setSelectedSender(me) }
         }
       } catch {}
     }
@@ -121,7 +124,10 @@ export default function EmailDraft({ text }) {
 
   // Close dropdown on outside click
   useEffect(() => {
-    const handler = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setSendDropdownOpen(false) }
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setSendDropdownOpen(false)
+      if (senderDropdownRef.current && !senderDropdownRef.current.contains(e.target)) setSenderDropdownOpen(false)
+    }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
@@ -151,15 +157,15 @@ export default function EmailDraft({ text }) {
 
   const handleSendGmail = async (member) => {
     const targetEmail = member?.email || selectedMember?.email || 'sunny@vanhawke.com'
+    const senderEmail = selectedSender?.email || 'sunny@vanhawke.com'
     if (!to || !subject) { setSent('error'); setTimeout(() => setSent(false), 3000); return }
     setSent('sending')
     setSendDropdownOpen(false)
     try {
-      // Send the body as-is — the API handles cleanup
       const res = await fetch('/api/create-gmail-draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to, subject, body: currentBody, draftFor: targetEmail })
+        body: JSON.stringify({ to, subject, body: currentBody, draftFor: targetEmail, sender: senderEmail })
       })
       if (!res.ok) { const errText = await res.text(); console.error('[EmailDraft] HTTP error:', res.status, errText); throw new Error(`HTTP ${res.status}`) }
       const data = await res.json()
@@ -251,6 +257,33 @@ export default function EmailDraft({ text }) {
             onMouseOver={e => e.currentTarget.style.color = '#6B6B6B'} onMouseOut={e => e.currentTarget.style.color = '#A0A0A0'}
           ><RotateCcw size={9} /> Revert</button>
         )}
+        {/* Sender selector */}
+        <div ref={senderDropdownRef} style={{ position: 'relative', marginRight: 4 }}>
+          <button onClick={() => setSenderDropdownOpen(!senderDropdownOpen)} style={{
+            padding: '5px 10px', borderRadius: 50, background: 'rgba(0,0,0,0.02)',
+            border: '0.5px solid rgba(0,0,0,0.08)', color: '#6B6B6B',
+            fontSize: 11, cursor: 'pointer', fontFamily: T.font,
+            display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.15s',
+          }} onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.06)'} onMouseOut={e => e.currentTarget.style.background = 'rgba(0,0,0,0.02)'}>
+            From: {selectedSender?.email?.split('@')[0] || 'sunny'} <ChevronDown size={10} />
+          </button>
+          {senderDropdownOpen && (
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 200, overflow: 'hidden' }}>
+              <div style={{ padding: '8px 12px', fontSize: 10, color: '#A0A0A0', borderBottom: '0.5px solid rgba(0,0,0,0.05)', fontFamily: T.font }}>Send as:</div>
+              {teamMembers.map(m => (
+                <button key={m.id} onClick={() => { setSelectedSender(m); setSelectedMember(m); setSenderDropdownOpen(false) }} style={{ width: '100%', padding: '10px 12px', background: selectedSender?.id === m.id ? 'rgba(0,0,0,0.04)' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: '#0A0A0A', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8 }}
+                  onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'} onMouseOut={e => { if (selectedSender?.id !== m.id) e.currentTarget.style.background = 'transparent' }}>
+                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 600, color: '#6B6B6B' }}>{m.email[0].toUpperCase()}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 500 }}>{m.email.split('@')[0]}</div>
+                    <div style={{ fontSize: 10, color: '#A0A0A0' }}>{m.email.replace('@vanhawke.com', '@vanhawke.agency')}</div>
+                  </div>
+                  {selectedSender?.id === m.id && <Check size={14} style={{ color: '#00B464' }} />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         {/* Send to Gmail with member dropdown */}
         <div ref={dropdownRef} style={{ position: 'relative' }}>
           <div style={{ display: 'flex' }}>
