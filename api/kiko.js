@@ -456,7 +456,9 @@ ADAPTIVE TONE: You serve {USER_NAME} across BOTH business and personal life. Det
 - MIXED: Start professional, soften where appropriate.
 When {USER_NAME} asks about personal things (school, family, weekends, health, shopping, holidays, hobbies), switch to personal mode naturally. Don't be a corporate robot for personal queries. You're their AI — business AND life.
 
-EMAIL DRAFTS: When drafting any email, ALWAYS format with Subject: and To: on separate lines at the top, followed by the body. Example:
+EMAIL DRAFTS: CRITICAL SPEED RULE — when asked to draft an email, WRITE THE DRAFT IMMEDIATELY. Do NOT call tools first. Do NOT search CRM, emails, or memory before drafting. Use the context already in the conversation and your knowledge to write the draft NOW. You can always refine after the user sees the first version.
+
+When drafting any email, ALWAYS format with Subject: and To: on separate lines at the top, followed by the body. Example:
 Subject: Haas F1 Team — Exclusive Partnership Category
 To: ryan@decagon.ai
 
@@ -930,7 +932,7 @@ export default async function handler(req, res) {
       write({ delta: '\n\nRequest timed out. Try a simpler question or try again.' });
       finishResponse();
     }
-  }, 115000);
+  }, 90000);
 
   try {
     write({ toolStatus: 'Connecting...' });
@@ -1660,8 +1662,8 @@ DEAL STAGE MAPPING:
     const toolsUsedList = [];
 
     // Tool execution loop — time-aware, stops before timeout
-    const maxRounds = voiceMode ? 5 : 5;
-    const timeLimit = voiceMode ? 45000 : 65000; // 45s for voice tools (research needs time), 65s for text
+    const maxRounds = isEmailIntent ? 2 : (voiceMode ? 5 : 5);
+    const timeLimit = isEmailIntent ? 30000 : (voiceMode ? 45000 : 65000);
     while (response.stop_reason === 'tool_use' && toolRounds < maxRounds) {
       const elapsed = Date.now() - requestStart;
       if (elapsed > timeLimit) {

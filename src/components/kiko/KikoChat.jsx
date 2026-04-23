@@ -737,8 +737,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     // AbortController for stop/halt
     const controller = new AbortController()
     abortRef.current = controller
-    // Hard timeout — if Kiko doesn't respond within 115s, abort
-    const hardTimeout = setTimeout(() => { try { controller.abort() } catch {} }, 115000)
+    // Hard timeout — if Kiko doesn't respond within 90s, abort
+    const hardTimeout = setTimeout(() => { try { controller.abort() } catch {} }, 90000)
 
     try {
       // Page context — tells Kiko what page user is viewing
