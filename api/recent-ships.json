@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-23T20:36:41.629Z",
+  "generated_at": "2026-04-23T20:42:47.787Z",
   "commits": [
+    {
+      "hash": "1cd95dc",
+      "subject": "CONVERSATION SUMMARY + SELF-KNOWLEDGE: (1) Conversation summary now kicks in at 6 messages (was 20). Older messages summarised as bullet points with 200 chars each. Kiko told to maintain continuity. L",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "d9e3ad6",
       "subject": "HETZNER MIGRATION LIVE: Kiko API now runs on Hetzner (api.vanhawke.agency) with ZERO timeout limits. SSL via Let's Encrypt. Frontend updated: Kiko chat, title gen, Gmail drafts, team members all point",
-      "when": "66 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "476fccc",
       "subject": "HETZNER MIGRATION PREP: (1) All 112 API files + agents copied to Hetzner kiko-worker. (2) @anthropic-ai/sdk + @supabase/supabase-js installed on Hetzner. (3) Express route /api/kiko wired to Kiko hand",
-      "when": "83 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "e10fc05",
@@ -24,7 +29,7 @@
     {
       "hash": "6c07fb2",
       "subject": "FIX COMMAND PALETTE: Dark background (rgba(14,14,20,0.95)) had dark text (#0A0A0A) — everything invisible. Fixed theme to light text (#FAFAFF), light grey sub-text (#B0B0BB), light borders (rgba(255,2",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f75272a",
@@ -94,11 +99,6 @@
     {
       "hash": "df9897b",
       "subject": "Update KIKO_SESSION_BRIEF.md — full current state: performance architecture, all working systems, outstanding items, key files, ring-fence rules",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "30a328d",
-      "subject": "Fix inactivityCheckId variable scope — was using inconsistent names (inactivityCheck vs inactivityCheckId). Now all references use inactivityCheckId correctly. 30s inactivity timeout will properly abo",
       "when": "5 hours ago"
     }
   ]

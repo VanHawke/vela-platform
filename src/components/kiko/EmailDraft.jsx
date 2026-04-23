@@ -213,14 +213,14 @@ export default function EmailDraft({ text }) {
           {to && <div style={{ fontSize: 13, color: '#6B6B6B', fontFamily: T.font, marginBottom: 4 }}><span style={{ color: '#A0A0A0' }}>To:</span> {to}</div>}
           <div style={{ fontSize: 15, color: '#0A0A0A', fontFamily: T.font, fontWeight: 500 }}>{subject}</div>
         </div>
-        <div style={{ display: 'flex', gap: 4, marginTop: 2 }}>
-          <button onClick={handleCopy} title="Copy email" style={{ width: 28, height: 28, borderRadius: 6, border: '0.5px solid rgba(0,0,0,0.08)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: copied ? '#00B464' : '#A0A0A0', transition: 'all 0.15s' }}
+        <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
+          <button onClick={handleCopy} title="Copy email" style={{ width: 36, height: 36, borderRadius: 8, border: '0.5px solid rgba(0,0,0,0.08)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: copied ? '#00B464' : '#A0A0A0', transition: 'all 0.15s' }}
             onMouseOver={e => { if (!copied) e.currentTarget.style.color = '#0A0A0A' }} onMouseOut={e => { if (!copied) e.currentTarget.style.color = '#A0A0A0' }}>
-            {copied ? <Check size={13} /> : <Copy size={13} />}
+            {copied ? <Check size={15} /> : <Copy size={15} />}
           </button>
-          <button onClick={handleEdit} title="Edit draft" style={{ width: 28, height: 28, borderRadius: 6, border: '0.5px solid rgba(0,0,0,0.08)', background: editing ? 'rgba(0,0,0,0.06)' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: editing ? '#0A0A0A' : '#A0A0A0', transition: 'all 0.15s' }}
+          <button onClick={handleEdit} title="Edit draft" style={{ width: 36, height: 36, borderRadius: 8, border: '0.5px solid rgba(0,0,0,0.08)', background: editing ? 'rgba(0,0,0,0.06)' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: editing ? '#0A0A0A' : '#A0A0A0', transition: 'all 0.15s' }}
             onMouseOver={e => e.currentTarget.style.color = '#0A0A0A'} onMouseOut={e => { if (!editing) e.currentTarget.style.color = '#A0A0A0' }}>
-            <Pen size={12} />
+            <Pen size={14} />
           </button>
         </div>
       </div>
@@ -239,10 +239,10 @@ export default function EmailDraft({ text }) {
       )}
       {rewriting && <div style={{ padding: '4px 18px 10px', fontSize: 11, color: 'rgba(0,0,0,0.35)', fontFamily: T.font }}>Rewriting...</div>}
       {/* Actions */}
-      <div style={{ padding: '10px 18px 12px', display: 'flex', alignItems: 'center', gap: 6, borderTop: '0.5px solid rgba(0,0,0,0.08)', flexWrap: 'wrap' }}>
+      <div style={{ padding: '10px 14px 12px', display: 'flex', alignItems: 'center', gap: 6, borderTop: '0.5px solid rgba(0,0,0,0.08)', flexWrap: 'wrap' }}>
         {tones.map(t => (
           <button key={t.label} onClick={() => handleRewrite(t.prompt)} disabled={rewriting || editing} style={{
-            padding: '5px 12px', borderRadius: 50, background: 'rgba(0,0,0,0.02)',
+            padding: '7px 14px', borderRadius: 50, background: 'rgba(0,0,0,0.02)',
             border: '0.5px solid rgba(0,0,0,0.08)', color: '#A0A0A0',
             fontSize: 11, cursor: rewriting ? 'wait' : 'pointer', fontFamily: T.font,
             display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.15s',
@@ -268,7 +268,7 @@ export default function EmailDraft({ text }) {
             From: {selectedSender?.email?.split('@')[0] || 'sunny'} <ChevronDown size={10} />
           </button>
           {senderDropdownOpen && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 200, overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 200, maxWidth: 'calc(100vw - 32px)', overflow: 'hidden' }}>
               <div style={{ padding: '8px 12px', fontSize: 10, color: '#A0A0A0', borderBottom: '0.5px solid rgba(0,0,0,0.05)', fontFamily: T.font }}>Send as:</div>
               {teamMembers.map(m => (
                 <button key={m.id} onClick={() => { setSelectedSender(m); setSelectedMember(m); setSenderDropdownOpen(false) }} style={{ width: '100%', padding: '10px 12px', background: selectedSender?.id === m.id ? 'rgba(0,0,0,0.04)' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: '#0A0A0A', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8 }}
@@ -307,7 +307,7 @@ export default function EmailDraft({ text }) {
             </button>
           </div>
           {sendDropdownOpen && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 220, overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 220, maxWidth: 'calc(100vw - 32px)', overflow: 'hidden' }}>
               <div style={{ padding: '8px 12px', fontSize: 10, color: '#A0A0A0', borderBottom: '0.5px solid rgba(0,0,0,0.05)', fontFamily: T.font }}>Send draft to:</div>
               {teamMembers.map(m => (
                 <button key={m.id} onClick={() => { setSelectedMember(m); setSendDropdownOpen(false) }} style={{ width: '100%', padding: '10px 12px', background: selectedMember?.id === m.id ? 'rgba(0,0,0,0.04)' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: '#0A0A0A', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s' }}
