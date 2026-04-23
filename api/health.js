@@ -101,7 +101,7 @@ export default async function handler(req, res) {
 
   // 10. Full Kiko endpoint (the actual thing that matters)
   await check('kiko_endpoint', async () => {
-    const r = await fetch('https://kiko.vanhawke.agency/api/kiko', {
+    const r = await fetch('https://api.vanhawke.agency/api/kiko', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: 'ping', conversationHistory: [], currentPage: 'home', userEmail: 'sunny@vanhawke.com' }),

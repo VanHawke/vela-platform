@@ -8,7 +8,7 @@ import { loadUserSignatures, buildMimeWithInlineImages } from './lib/email-forma
 
 export const config = { maxDuration: 30 };
 
-const TRACK_BASE = 'https://kiko.vanhawke.agency/api/track';
+const TRACK_BASE = 'https://api.vanhawke.agency/api/track';
 
 // Inject open pixel + wrap all http(s) links with click tracker.
 // Recipient sees a normal email; we get open + click telemetry.

@@ -6,7 +6,7 @@
 import { sbFetch } from '../kiko-tools.js';
 import { getUserRole, canExport } from '../_lib/get-user-role.js';
 
-const BASE_URL = () => `https://${process.env.VERCEL_URL || 'kiko.vanhawke.agency'}`;
+const BASE_URL = () => 'https://api.vanhawke.agency';
 
 async function callGenerateDoc(format, payload) {
   const r = await fetch(`${BASE_URL()}/api/generate-doc`, {

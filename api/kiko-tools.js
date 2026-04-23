@@ -929,7 +929,7 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
         if (!matches.length) {
           // Semantic search fallback via RAG vector embeddings
           try {
-            const embedRes = await fetch('https://kiko.vanhawke.agency/api/embed', {
+            const embedRes = await fetch('https://api.vanhawke.agency/api/embed', {
               method: 'POST', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ mode: 'search', query: params.query }),
             });
@@ -970,7 +970,7 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
       if (operation === 'learn_topic') {
         const { topic, category } = params;
         if (!topic) return 'Error: topic is required';
-        const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://kiko.vanhawke.agency';
+        const baseUrl = 'https://api.vanhawke.agency';
         // Trigger the ingestion endpoint with a synthetic source
         await sbFetch('kiko_knowledge_sources', { method: 'POST', body: JSON.stringify({ name: `On-demand: ${topic}`, type: 'topic', category: category || 'general', url: null, content: topic, scrape_frequency: 'once', active: true }) });
         return `Learning topic queued: "${topic}". I'll research this on the next learning cycle, or you can ask me to research it now using web search.`;
@@ -1037,7 +1037,7 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
   // ── On-Demand Triage ──
   if (name === 'trigger_triage') {
     try {
-      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://kiko.vanhawke.agency';
+      const baseUrl = 'https://api.vanhawke.agency';
       const triageRes = await fetch(`${baseUrl}/api/cron-inbox-triage`, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
       const result = await triageRes.json();
       if (result.ok) {

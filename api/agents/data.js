@@ -355,7 +355,7 @@ async function searchLearningLog({ query, category }) {
   let semanticResults = [];
   if (query && matches.length < 3) {
     try {
-      const embedRes = await fetch(`${process.env.VITE_SUPABASE_URL ? 'https://kiko.vanhawke.agency' : ''}/api/embed`, {
+      const embedRes = await fetch(`https://api.vanhawke.agency/api/embed`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mode: 'search', query }),
@@ -801,7 +801,7 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
         if (existing?.length) return `Campaign "${existing[0].name}" already exists for ${category}. Use campaign_overview to see all campaigns.`;
         // Generate via internal API call
         try {
-          const apiUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://kiko.vanhawke.agency';
+          const apiUrl = 'https://api.vanhawke.agency';
           const genRes = await fetch(`${apiUrl}/api/generate-sequence`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ category, team, persona, numSteps: 7 })
