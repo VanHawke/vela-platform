@@ -773,15 +773,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       const pageCtx = window.kikoPageContext || { page: window.location.pathname.replace('/', '') || 'home' }
 
       // Detect deep research queries — route to parallel multi-agent endpoint
-      const RESEARCH_TRIGGERS = ['deep research', 'research ', 'deep dive on', 'full research', 'investigate ', 'intel on ', 'intelligence on ']
-      const isResearch = msg && RESEARCH_TRIGGERS.some(t => msg.toLowerCase().startsWith(t) || msg.toLowerCase().includes(t))
       const KIKO_HOST = import.meta.env.VITE_KIKO_API_HOST || 'https://api.vanhawke.agency'
-      const apiUrl = isResearch ? `${KIKO_HOST}/api/kiko-research` : `${KIKO_HOST}/api/kiko`
+      const apiUrl = `${KIKO_HOST}/api/kiko`
 
       const res = await fetch(apiUrl, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
-        body: JSON.stringify(isResearch ? { query: msg, userEmail: user?.email } : {
+        body: JSON.stringify({
           message: apiMsg, userEmail: user?.email,
           attachments: allAttachments,
           conversationHistory: messages.slice(allAttachments.length > 0 ? -6 : -10).map(m => {
