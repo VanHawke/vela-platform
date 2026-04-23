@@ -7,7 +7,7 @@ const pdfParse = require('pdf-parse');
 const SB_URL = () => process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SB_KEY = () => process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
-export const config = { maxDuration: 30 };
+export const config = { maxDuration: 30, api: { bodyParser: { sizeLimit: '12mb' } } };
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });

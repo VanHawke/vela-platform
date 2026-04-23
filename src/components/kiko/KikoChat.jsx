@@ -868,7 +868,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               if (!res.ok) throw new Error(result.error || 'Extraction failed')
               const meta = result.metadata || {}
               // Store as pending attachment — user continues typing their prompt
-              setPendingAttachments(prev => [...prev, { type: 'file', name: file.name, data: result.text, fileType: meta.type || 'document', size: file.size, pages: meta.pages }])
+              setPendingAttachments(prev => [...prev, { type: 'file', name: file.name, data: (result.text || '').slice(0, 80000), fileType: meta.type || 'document', size: file.size, pages: meta.pages }])
               setFileUploading(false)
               return // Don't auto-submit
             } catch (extractErr) {
@@ -1060,7 +1060,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             )}
             <textarea ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
               onFocus={() => setPromptFocused(true)} onBlur={() => setTimeout(() => setPromptFocused(false), 150)}
-              placeholder={fileUploading ? "Processing file..." : pendingAttachment ? "Add a comment..." : "Ask me anything...."}
+              placeholder={fileUploading ? "Processing file..." : pendingAttachments.length > 0 ? "Add a comment about your files..." : "Ask me anything...."}
               autoFocus rows={1}
               style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: isMobile ? 17 : 15, color: '#0A0A0A', fontFamily: C.font, minHeight: 24, maxHeight: 200, fontWeight: 400, resize: 'none', lineHeight: '24px', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content', verticalAlign: 'middle', display: 'block', position: 'relative', zIndex: 2 }} />
           </div>
