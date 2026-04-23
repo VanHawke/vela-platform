@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-23T14:54:15.491Z",
+  "generated_at": "2026-04-23T15:04:03.578Z",
   "commits": [
+    {
+      "hash": "2899c92",
+      "subject": "FIX KIKO HANGING DURING TOOL CALLS: (1) HEARTBEAT — sends toolStatus ping every 8s during tool execution so client knows Kiko is alive. Previously nothing streamed during 15-30s sub-agent calls. (2) P",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "f02394b",
       "subject": "FIX KIKO HANGING AFTER 3-4 MESSAGES: ROOT CAUSE — when conversation history included non-string content (images, PDFs from earlier messages), the base64 data was sent UNTRUNCATED on every subsequent r",
@@ -59,12 +64,12 @@
     {
       "hash": "8138287",
       "subject": "DOCUMENT + MULTI-FILE FIXES: (1) ALL file attachments now sent to Kiko (was only first file). Multiple PDFs, docs, images all included in context. (2) API now handles type='file' attachments — PDFs/DO",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "9d0670d",
       "subject": "Full batch: (1) PUSH TO BACKGROUND — sourcing modal now has 'Push to background' button during sourcing phase AND 'Source in background' option in idle phase. Queues kiko_jobs and closes modal so user",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "de40b71",
@@ -89,16 +94,11 @@
     {
       "hash": "0184f9d",
       "subject": "FIND LEADS NOW SOURCES VIA KIKO: (1) When CRM has no matching contacts, Find leads now auto-queues a Kiko background sourcing job instead of showing 'No leads found'. (2) Status message shown: 'Kiko i",
-      "when": "19 hours ago"
+      "when": "20 hours ago"
     },
     {
       "hash": "2d52a1f",
       "subject": "FIX CAMPAIGN DELETE: Simplified deleteCampaign to single Supabase delete — CASCADE handles all FK tables automatically. Removed 6 individual FK table delete calls that were silently failing. Now shows",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "91b2d9b",
-      "subject": "Remaining fixes: (1) PROSPECT CTAs SWAPPED — Find leads now has prominent black style, Add from CRM is outline. Deep source (background) button added to campaign editor. (2) EXPORT RESTRICTION — expor",
       "when": "20 hours ago"
     }
   ]

@@ -131,6 +131,8 @@ export default function EmailDraft({ text }) {
       const data = await res.json()
       if (data.ok) {
         setSent(targetEmail === 'sunny@vanhawke.com' ? 'done' : `done-${targetEmail.split('@')[0]}`)
+        // Allow resending to another person after 3s
+        setTimeout(() => setSent(false), 3000)
       } else {
         console.error('[EmailDraft] Gmail draft failed:', data.error)
         setSent('error')
@@ -218,7 +220,7 @@ export default function EmailDraft({ text }) {
         {/* Send to Gmail with member dropdown */}
         <div ref={dropdownRef} style={{ position: 'relative' }}>
           <div style={{ display: 'flex' }}>
-            <button onClick={() => handleSendGmail(selectedMember)} disabled={!!sent} style={{
+            <button onClick={() => handleSendGmail(selectedMember)} disabled={sent === 'sending'} style={{
               padding: '6px 12px', borderRadius: '50px 0 0 50px',
               background: sentLabel?.includes('Saved') ? 'rgba(34,197,94,0.08)' : sent === 'error' ? 'rgba(255,80,80,0.08)' : 'rgba(0,0,0,0.04)',
               border: sentLabel?.includes('Saved') ? '1px solid rgba(34,197,94,0.15)' : sent === 'error' ? '1px solid rgba(255,80,80,0.15)' : '1px solid rgba(0,0,0,0.08)',
@@ -229,7 +231,7 @@ export default function EmailDraft({ text }) {
             }}>
               <Send size={11} /> {sentLabel || `Send to ${selectedMember?.email?.split('@')[0] || 'my'} drafts`}
             </button>
-            <button onClick={() => setSendDropdownOpen(!sendDropdownOpen)} disabled={!!sent} style={{
+            <button onClick={() => setSendDropdownOpen(!sendDropdownOpen)} disabled={sent === 'sending'} style={{
               padding: '6px 8px', borderRadius: '0 50px 50px 0',
               background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.08)', borderLeft: '0.5px solid rgba(0,0,0,0.06)',
               color: 'rgba(0,0,0,0.4)', fontSize: 10, cursor: sent ? 'default' : 'pointer', display: 'flex', alignItems: 'center',

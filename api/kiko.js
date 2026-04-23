@@ -973,6 +973,9 @@ export default async function handler(req, res) {
       ? [...nativeTools.filter(t => t.name !== 'memory'), ...TOOL_DEFINITIONS]
       : [...nativeTools, ...TOOL_DEFINITIONS];
     const allTools = voiceTools;
+    // Light tool set for email/simple intents — dramatically reduces prompt size
+    const EMAIL_TOOL_NAMES = ['create_email_draft', 'read_email', 'ask_data_agent', 'ask_memory_engine', 'search_conversations', 'navigate_page', 'log_activity'];
+    const lightEmailTools = allTools.filter(t => EMAIL_TOOL_NAMES.includes(t.name));
 
     // ── PHASE 1: Intent Classification ──
     // Fast-path: skip Haiku API call for obvious patterns (~60% of queries, saves 800ms)
@@ -984,6 +987,8 @@ export default async function handler(req, res) {
       email_read: /^(check|read|show|get|any)\s*(my)?\s*(new|unread|latest|recent)?\s*(email|inbox|mail|gmail)/i,
       calendar: /^(what(?:'s|\s+is)?\s+on\s+my\s+calendar|any\s+meetings|my\s+schedule|check\s+(?:my\s+)?calendar|meetings?\s+(today|tomorrow|this\s+week)|what(?:'s|\s+is)\s+(?:on\s+)?my\s+schedule|am\s+i\s+free|do\s+i\s+have\s+any\s+meetings|calendar\s+(?:today|tomorrow|this\s+week))/i,
       directions: /^(directions?\s+to|how\s+do\s+i\s+get\s+to|navigate\s+me\s+to|route\s+to|take\s+me\s+to(?!\s+(home|pipeline|contacts|calendar|settings)))\b/i,
+      email: /\b(draft|compose|write|send|email|outreach|follow.?up|re.?engage)\b.*\b(email|draft|message|outreach|letter)\b/i,
+      email2: /\b(email|draft)\b.*\b(to|for|about|regarding)\b/i,
     };
     const fastMatch = Object.entries(FAST_INTENTS).find(([, re]) => re.test(msgLower));
     if (fastMatch) {
@@ -1576,7 +1581,8 @@ DEAL STAGE MAPPING:
       // Build tools array with cache_control on last tool (caches entire tool block)
       let toolsWithCache = undefined;
       if (!opts.noTools) {
-        toolsWithCache = [...allTools];
+        const toolSet = opts.lightTools || allTools;
+        toolsWithCache = [...toolSet];
         if (toolsWithCache.length > 0) {
           const last = { ...toolsWithCache[toolsWithCache.length - 1] };
           last.cache_control = { type: 'ephemeral' };
@@ -1647,7 +1653,9 @@ DEAL STAGE MAPPING:
     const isSimpleGreeting = FAST_RESPONSE_INTENTS.includes(intent);
     const useHaikuForGreeting = intent === 'greeting' && (voiceMode || !isFirstMessage);
     const skipTools = isSimpleGreeting || casualQuery;
-    let response = await streamCall(messages, skipTools ? { noTools: true, maxTokens: voiceMode ? 300 : 1500, useHaiku: useHaikuForGreeting } : {});
+    const isEmailIntent = intent === 'email' || intent === 'email2' || intent === 'outreach';
+    const toolOpts = skipTools ? { noTools: true, maxTokens: voiceMode ? 300 : 1500, useHaiku: useHaikuForGreeting } : isEmailIntent ? { lightTools: lightEmailTools } : {};
+    let response = await streamCall(messages, toolOpts);
     let toolRounds = 0;
     const toolsUsedList = [];
 

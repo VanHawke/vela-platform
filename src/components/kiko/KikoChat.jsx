@@ -794,7 +794,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           } catch {}
         }
       }
-      const kikoMsg = { role: 'assistant', content: full, timestamp: Date.now(), steps: thinkingSteps.length > 0 ? [...thinkingSteps] : undefined }
+      const responseContent = full.trim() || 'I ran into an issue processing that request. Please try again — if drafting an email, try saying "draft an email to [name] about [topic]".'
+      const kikoMsg = { role: 'assistant', content: responseContent, timestamp: Date.now(), steps: thinkingSteps.length > 0 ? [...thinkingSteps] : undefined }
       const updated = [...messages, userMsg, kikoMsg]
       setMessages(prev => [...prev, kikoMsg]); setStreamText(''); setToolStatus(null)
       const newId = await saveConversation(updated.map(m => ({ role: m.role, content: m.content })), activeConvId, msg, full)
