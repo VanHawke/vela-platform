@@ -959,17 +959,21 @@ export default async function handler(req, res) {
   try {
     write({ toolStatus: 'Connecting...' });
     const queryStartTime = Date.now();
-    // Build messages — summarise older history if conversation is long
+    // Build messages — summarise older history for context
     let conversationSummary = '';
-    if (conversationHistory.length > 20) {
-      const olderMessages = conversationHistory.slice(0, -20).filter(m => m.role === 'user' || m.role === 'assistant');
-      if (olderMessages.length > 4) {
-        // Summarise older messages into a context block
-        const summaryParts = olderMessages.slice(-10).map(m => `${m.role === 'user' ? 'User' : 'Kiko'}: ${(m.content || '').slice(0, 150)}`).join('\n');
-        conversationSummary = `\n\n── EARLIER IN THIS CONVERSATION (summarised) ──\n${summaryParts}\n── END SUMMARY ──`;
+    if (conversationHistory.length > 6) {
+      // Summarise older messages so Kiko has context without massive payloads
+      const olderMessages = conversationHistory.slice(0, -6).filter(m => m.role === 'user' || m.role === 'assistant');
+      if (olderMessages.length > 0) {
+        const summaryParts = olderMessages.map(m => {
+          const role = m.role === 'user' ? 'User asked' : 'Kiko responded';
+          const text = (m.content || '').replace(/\n+/g, ' ').slice(0, 200);
+          return `• ${role}: ${text}`;
+        }).join('\n');
+        conversationSummary = `\n\n── EARLIER IN THIS CONVERSATION ──\n${summaryParts}\n── END OF EARLIER CONTEXT ──\nUse this context to maintain continuity. The user expects you to remember what was discussed above.`;
       }
     }
-    const messages = conversationHistory.slice(-10)
+    const messages = conversationHistory.slice(-6)
       .filter(m => m.role === 'user' || m.role === 'assistant')
       .map(m => {
         const content = sanitizeUnicode(m.content || '');
