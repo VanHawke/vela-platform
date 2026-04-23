@@ -40,18 +40,51 @@ function parseEmail(text) {
   if (toMatch) bodyStartIdx = t.indexOf(toMatch[0]) + toMatch[0].length
   else if (subMatch) bodyStartIdx = t.indexOf(subMatch[0]) + subMatch[0].length
   let rawBody = t.slice(bodyStartIdx)
-  const cutPatterns = [
-    /(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards),?\s*(Sunny|Van Hawke)/i,
-    /\n\s*\*\*(Analysis|My recommendation|Key positioning|Strategic|Next steps|Timing|Note)[:\s]/i,
-    /\n\s*(This reengagement|This targets|The email positions|I've framed|I'd push back|I recommend)/i,
+  // Hard cut at sign-off line — everything after is commentary
+  const signoffPatterns = [
+    /\n\s*(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards|Thanks|Thank you),?\s*\n/i,
+    /\n\s*(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards|Thanks|Thank you),?\s*$/i,
+    /\n\s*---\s*\n/,
+    /\n\s*---\s*$/,
+    /\n\s*\*\*(Analysis|My recommendation|Key positioning|Strategic|Next steps|Timing|Note|Why this works|Sound right)[:\s?]/i,
+    /\n\s*(This reengagement|This targets|The email positions|I've framed|I'd push back|I recommend|This references|This approach|This email|This draft|Sound right)/i,
   ]
-  for (const pat of cutPatterns) { const idx = rawBody.search(pat); if (idx > 15) { rawBody = rawBody.slice(0, idx).trim(); break } }
-  let body = rawBody.replace(/\*\*/g, '').replace(/\[Current[^\]]*\]/gi, '').replace(/Best regards,?\s*/gi, '').replace(/Kind regards,?\s*/gi, '').replace(/Warm regards,?\s*/gi, '').replace(/Regards,?\s*/gi, '').replace(/Sincerely,?\s*/gi, '').replace(/Cheers,?\s*/gi, '').replace(/Sunny\s*Sidhu/gi, '').replace(/Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?\s*/gi, '').replace(/\n\s*\n\s*\n/g, '\n\n').trim()
+  for (const pat of signoffPatterns) {
+    const match = rawBody.match(pat)
+    if (match && match.index > 15) {
+      // For sign-off greetings, include the sign-off line but cut everything after
+      if (/Best regards|Kind regards|Regards|Sincerely|Best,|Cheers|Warm regards|Thanks|Thank you/i.test(match[0])) {
+        rawBody = rawBody.slice(0, match.index + match[0].length).trim()
+      } else {
+        rawBody = rawBody.slice(0, match.index).trim()
+      }
+      break
+    }
+  }
+  // Clean up names, signatures, and formatting
+  let body = rawBody
+    .replace(/\*\*/g, '')
+    .replace(/\[Current[^\]]*\]/gi, '')
+    .replace(/\n\s*(Best regards|Kind regards|Warm regards|Regards|Sincerely|Cheers|Thanks|Thank you),?\s*$/im, '')
+    .replace(/\n\s*(Sunny\s*Sidhu|Matt\s*Smith)\s*$/im, '')
+    .replace(/\n\s*(Sunny\s*Sidhu|Matt\s*Smith)\s*\n/gi, '\n')
+    .replace(/Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?\s*$/im, '')
+    .replace(/\n\s*\n\s*\n/g, '\n\n')
+    .trim()
   return { subject, to, body }
 }
 
 function renderBody(text) {
-  return text.replace(/Best regards,?\s*/gi, '').replace(/Kind regards,?\s*/gi, '').replace(/Sunny\s*Sidhu/gi, '').replace(/Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?\s*/gi, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n\s*\n\s*\n/g, '\n\n').replace(/\n/g, '<br/>').replace(/<br\/>\s*<br\/>\s*<br\/>/g, '<br/><br/>').trim()
+  return text
+    .replace(/\n\s*(Best regards|Kind regards|Warm regards|Regards|Sincerely|Cheers|Thanks|Thank you),?\s*$/im, '')
+    .replace(/\n\s*(Sunny\s*Sidhu|Matt\s*Smith)\s*$/im, '')
+    .replace(/\n\s*(Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?)\s*$/im, '')
+    .replace(/\n\s*---\s*\n.*/s, '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\n\s*\n\s*\n/g, '\n\n')
+    .replace(/\n/g, '<br/>')
+    .replace(/<br\/>\s*<br\/>\s*<br\/>/g, '<br/><br/>')
+    .trim()
 }
 
 export default function EmailDraft({ text }) {
@@ -98,7 +131,8 @@ export default function EmailDraft({ text }) {
   useEffect(() => { if (editing && editRef.current) editRef.current.focus() }, [editing])
 
   const handleCopy = () => {
-    const fullEmail = `Subject: ${subject}\nTo: ${to}\n\n${currentBody}\n\nBest regards,\nSunny Sidhu\nVan Hawke Group`
+    const senderName = selectedMember?.email === 'matt.smith@vanhawke.com' ? 'Matt Smith\nVan Hawke Agency' : 'Sunny Sidhu\nCEO\nVan Hawke Group'
+    const fullEmail = `Subject: ${subject}\nTo: ${to}\n\n${currentBody}\n\nBest regards,\n\n${senderName}\nvanhawke.com`
     navigator.clipboard.writeText(fullEmail)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)

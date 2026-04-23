@@ -1,20 +1,30 @@
 {
-  "generated_at": "2026-04-23T15:19:27.464Z",
+  "generated_at": "2026-04-23T15:26:27.939Z",
   "commits": [
+    {
+      "hash": "df9897b",
+      "subject": "Update KIKO_SESSION_BRIEF.md — full current state: performance architecture, all working systems, outstanding items, key files, ring-fence rules",
+      "when": "6 minutes ago"
+    },
+    {
+      "hash": "30a328d",
+      "subject": "Fix inactivityCheckId variable scope — was using inconsistent names (inactivityCheck vs inactivityCheckId). Now all references use inactivityCheckId correctly. 30s inactivity timeout will properly abo",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "ce1adf7",
       "subject": "FIX KIKO SPEED: (1) EMAIL DRAFT FIRST — system prompt now says WRITE THE DRAFT IMMEDIATELY, do NOT call tools first. No CRM/email/memory lookups before drafting. (2) EMAIL TOOL ROUNDS CAPPED AT 2 — ma",
-      "when": "8 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "f2e0267",
       "subject": "FIX KIKO HANGING + DRAFT RESEND: (1) EMAIL FAST PATH — email/draft/compose requests now detected via regex fast-match (skips classifier). Uses LIGHT TOOL SET (7 tools instead of 39) — dramatically red",
-      "when": "15 minutes ago"
+      "when": "22 minutes ago"
     },
     {
       "hash": "2899c92",
       "subject": "FIX KIKO HANGING DURING TOOL CALLS: (1) HEARTBEAT — sends toolStatus ping every 8s during tool execution so client knows Kiko is alive. Previously nothing streamed during 15-30s sub-agent calls. (2) P",
-      "when": "25 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "f02394b",
@@ -69,7 +79,7 @@
     {
       "hash": "5a06682",
       "subject": "THREE CRITICAL FIXES: (1) BELL ICON — clean SVG with strokeLinecap/strokeLinejoin round, no artifacts. (2) ALERT PILL PULSATION — window.__kikoAlertCount was never set by Layout.jsx, so alertCount was",
-      "when": "18 hours ago"
+      "when": "19 hours ago"
     },
     {
       "hash": "8138287",
@@ -89,16 +99,6 @@
     {
       "hash": "cf695cc",
       "subject": "Remaining fixes: (1) NAV PERSISTENCE — orderedTabs now reads from localStorage synchronously on init instead of via useEffect, prevents flash-to-defaults on refresh. (2) CAMPAIGN EDITOR WIDTH — added ",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "266b2cb",
-      "subject": "Fix duplicate closing button tag in LegoraTopNav",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "12d6ba4",
-      "subject": "UI overhaul: (1) BACKGROUND TASKS NAV ICON — replaced search icon with tasks icon showing pending/processing count with pulsating dot. Dropdown shows all tasks with status, completed tasks click throu",
       "when": "19 hours ago"
     }
   ]

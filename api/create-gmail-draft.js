@@ -18,9 +18,27 @@ export default async function handler(req, res) {
     const token = await getGoogleToken(targetEmail);
     if (!token) return res.status(400).json({ error: `No Gmail token for ${targetEmail}` });
     
+    // Signatures per team member
+    const SIGNATURES = {
+      'sunny@vanhawke.com': `<br><br>Best regards,<br><br><b>Sunny Sidhu</b><br>CEO<br>Van Hawke Group<br><a href="https://vanhawke.com" style="color:#0A0A0A;">vanhawke.com</a>`,
+      'matt.smith@vanhawke.com': `<br><br>Best regards,<br><br><b>Matt Smith</b><br>Van Hawke Agency<br><a href="https://vanhawke.com" style="color:#0A0A0A;">vanhawke.com</a>`,
+    };
+    
+    // Clean the body — remove any trailing sign-offs, names, or analysis that leaked through
+    let cleanBody = (htmlBody || body.replace(/\n/g, '<br>'))
+      .replace(/<br\s*\/?>\s*(Best regards|Kind regards|Warm regards|Regards|Sincerely|Cheers|Thanks|Thank you),?\s*(<br\s*\/?>)*/gi, '')
+      .replace(/<br\s*\/?>\s*(Sunny\s*Sidhu|Matt\s*Smith)\s*(<br\s*\/?>)*/gi, '')
+      .replace(/<br\s*\/?>\s*(Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?)\s*(<br\s*\/?>)*/gi, '')
+      .replace(/<br\s*\/?>\s*---\s*(<br\s*\/?>)*.*/gi, '')
+      .replace(/(<br\s*\/?>){3,}/gi, '<br><br>')
+      .replace(/(<br\s*\/?>)+$/i, '')
+      .trim();
+    
+    const signature = SIGNATURES[targetEmail] || SIGNATURES['sunny@vanhawke.com'];
+    const emailContent = cleanBody + signature;
+
     // Build RFC 2822 email message
     const fromHeader = targetEmail;
-    // RFC 2047 encode subject for UTF-8 support (em dashes, smart quotes, etc.)
     const encodedSubject = `=?UTF-8?B?${Buffer.from(subject, 'utf-8').toString('base64')}?=`;
     const headers = [
       `From: ${fromHeader}`,
@@ -31,7 +49,6 @@ export default async function handler(req, res) {
       'Content-Transfer-Encoding: base64',
     ].join('\r\n');
     
-    const emailContent = htmlBody || body.replace(/\n/g, '<br>');
     const encodedBody = Buffer.from(emailContent, 'utf-8').toString('base64');
     const rawMessage = `${headers}\r\n\r\n${encodedBody}`;
     const encodedMessage = Buffer.from(rawMessage).toString('base64url');
