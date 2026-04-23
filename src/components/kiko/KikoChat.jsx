@@ -990,7 +990,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             {pendingAttachments.length > 0 && (
               <div style={{ fontSize: 10, color: '#A0A0A0', marginBottom: 2, fontFamily: C.font }}>{pendingAttachments.length} file{pendingAttachments.length > 1 ? 's' : ''} attached</div>
             )}
-            <textarea ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+            <textarea ref={inputRef} value={input} dir="ltr" onChange={e => { setInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px' }} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+              onPaste={e => { setTimeout(() => { if (inputRef.current) { inputRef.current.style.height = 'auto'; inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 200) + 'px' } }, 0) }}
               onFocus={() => setPromptFocused(true)} onBlur={() => setTimeout(() => setPromptFocused(false), 150)}
               placeholder="" autoFocus rows={1}
               style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: isMobile ? 17 : 15, color: '#0A0A0A', fontFamily: C.font, minHeight: 24, maxHeight: 200, fontWeight: 400, resize: 'none', lineHeight: '24px', padding: '4px 0', overflowY: 'auto', fieldSizing: 'content', verticalAlign: 'middle', display: 'block', position: 'relative', zIndex: 2 }} />
@@ -1058,7 +1059,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             {pendingAttachments.length > 0 && (
               <div style={{ fontSize: 10, color: '#A0A0A0', marginBottom: 2, fontFamily: C.font }}>{pendingAttachments.length} file{pendingAttachments.length > 1 ? 's' : ''} attached</div>
             )}
-            <textarea ref={inputRef} value={input} dir="ltr" onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+            <textarea ref={inputRef} value={input} dir="ltr" onChange={e => { setInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px' }} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+              onPaste={e => { setTimeout(() => { if (inputRef.current) { inputRef.current.style.height = 'auto'; inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 200) + 'px' } }, 0) }}
               onFocus={() => setPromptFocused(true)} onBlur={() => setTimeout(() => setPromptFocused(false), 150)}
               placeholder={fileUploading ? "Processing file..." : pendingAttachments.length > 0 ? "Add a comment about your files..." : "Ask me anything...."}
               autoFocus rows={1}
