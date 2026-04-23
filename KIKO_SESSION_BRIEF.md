@@ -1,5 +1,5 @@
 # KIKO SESSION BRIEF — Read this before writing any code
-## Last updated: 2026-04-22
+## Last updated: 2026-04-23
 
 ### REPO & DEPLOY
 - Repo: `/Users/sunny/Desktop/vela-platform/` → `https://kiko.vanhawke.agency`
@@ -8,59 +8,72 @@
 - Supabase: project_id `dwiywqeleyckzcxbwrlb`
 
 ### HETZNER (178.104.73.22)
-- PM2: `kiko-crons` (21 scheduled jobs) + `kiko-worker` (Express port 3000)
+- PM2 (root): `kiko-crons` (22 scheduled jobs)
+- PM2 (kiko user): `kiko-worker` (Express port 3000) — managed by systemd `pm2-kiko.service`
 - LinkedIn worker: Playwright + Decodo proxy (`isp.decodo.com:10001`)
 - Email Intel Engine: `/home/kiko/kiko-worker/lib/emailIntel.js`
-- Routes: `/email-intel/find`, `/email-intel/enrich`, `/email-intel/verify`, `/email-intel/bulk`
 - Worker secret: `kiko-hetzner-2026-vanhawke` (Authorization: Bearer header)
-- nginx reverse proxy for CORS
 
 ### RING-FENCE RULES
 - NEVER modify `api/kiko.js`, `api/kiko-tools.js`, `api/kiko-self-knowledge.js` without explicit permission
 - Always `node --check` syntax verify before pushing server files
 - Always `Array.isArray()` on Supabase query results
 - LinkedIn worker reads from `kiko_linkedin_queue` (NOT `kiko_outreach_queue`)
+- Background jobs table: `kiko_background_jobs` (NOT `kiko_jobs`)
 
 ### KEY FILES
 | File | Lines | Role |
 |------|-------|------|
-| api/kiko.js | 1943 | Main Kiko API — system prompt, tool routing, streaming |
-| api/kiko-tools.js | 1437 | 36 tools — agents, actions, Gmail drafts |
-| api/kiko-self-knowledge.js | 356 | Capability map, self-knowledge, bible injection |
+| api/kiko.js | 1963 | Main Kiko API — system prompt, tool routing, streaming |
+| api/kiko-tools.js | 1455 | 39 tools — agents, actions, Gmail drafts |
+| api/kiko-self-knowledge.js | 356 | Capability map, self-knowledge |
 | api/cron-sequence-sender.js | 336 | Sequence email sender with condition evaluation |
-| api/source-prospects.js | 329 | Deep research pipeline + email intel integration |
-| src/pages/SequenceDetail.jsx | 1424 | Campaign editor: flow builder + prospects + activity |
-| src/pages/Campaigns.jsx | 1520 | Campaign list + prospect table + detail panel |
-| src/components/kiko/KikoChat.jsx | 1876 | Kiko chat: multi-file upload, streaming, voice |
+| api/cron-job-processor.js | 100 | Background job processor (reads kiko_background_jobs) |
+| api/create-gmail-draft.js | 55 | Gmail draft creation with RFC 2047 UTF-8 encoding |
+| api/team-members.js | 15 | Returns all org members (bypasses RLS) |
+| src/pages/SequenceDetail.jsx | 1445 | Campaign editor: flow builder + prospects |
+| src/pages/Campaigns.jsx | 1535 | Campaign list + prospect table + detail panel |
+| src/components/kiko/KikoChat.jsx | 1905 | Kiko chat: multi-file upload, streaming, inactivity timeout |
+| src/components/kiko/EmailDraft.jsx | 260 | Email draft preview: copy, edit, team Gmail dropdown |
+| src/components/kiko/KikoVoice.jsx | 527 | Voice: GPT-4o Realtime via WebRTC |
+| src/components/layout/LegoraTopNav.jsx | 315 | Top nav: bg tasks cog, bell, avatar |
+| src/components/layout/Layout.jsx | 600+ | Layout: notifications with dismiss + clear all |
 
-### EMAIL INTELLIGENCE API KEYS (on Hetzner)
-- Hunter.io: `404535bb1e247b82992209e153cd2b2fe3eacde6`
-- Snov.io: `553969ec6fbe768f993684fe2dbd2acf` / `8605d5403f512e9cffc46921d9ed166e`
-- Voila Norbert: `2c453a9e-9abc-4b94-aff8-0846d9cb60ad`
-- Skrapp.io: `16488159434pe7UCIl2NPdbiRdyTgkIk2TikkX7bOB`
-- Prospeo: `pk_9142c0872613098079a1f55fdd1c279517d569570db87a71c4778a634a22e091`
-- Clearout: `b60ee141d350e6e807132abc8d0f515d:656f42a896b10daaa5a2ba3a7f5874b5dfb715762d8f778406ed48b9b89879a0`
+### PERFORMANCE ARCHITECTURE
+- Email intent: fast-match regex, 7 light tools (not 39), 2 tool rounds max, 30s time limit
+- Other intents: full 39 tools, 5 tool rounds max, 65s time limit
+- Per-tool timeout: 25s via Promise.race
+- Heartbeat: 8s interval during tool execution
+- Client inactivity timeout: 30s (no data = abort)
+- Server watchdog: 90s
+- Client hard timeout: 90s
+- Conversation history: strips binary data, 2000 char cap per message
 
-### WHAT'S WORKING (April 22, 2026)
-- Kiko chat (streaming, 36 tools, context awareness, multi-file upload)
+### WHAT'S WORKING (April 23, 2026)
+- Kiko chat (streaming, 39 tools, email fast path, inactivity timeout)
+- Email drafting (copy, edit inline, team Gmail dropdown with Matt)
 - CRM (contacts, companies, deals, pipeline)
 - Campaign builder (Lemlist-style flow + editor, conditions, branching)
-- Sequence sender (cron, timezone-aware, condition evaluation engine)
+- Campaign delete (CASCADE on all FK constraints)
+- Sequence sender (cron, timezone-aware, condition evaluation)
 - Email sending via Gmail API + LinkedIn via Playwright
-- Email Intelligence Engine (6 APIs + SMTP, auto-wired into sourcing)
-- Gmail draft creation for any team member
-- Reply detection (email + LinkedIn, auto-stop, alerts, deal creation)
+- Email Intelligence Engine (6 APIs + SMTP)
+- Gmail draft creation (RFC 2047 UTF-8 encoding, any team member)
+- Reply detection (email + LinkedIn)
+- Background tasks (nav cog icon, progress bars, cancel, clear finished)
+- Prospect sourcing (Find leads + Deep source + Source in background)
 - Knowledge base (26 nightly research domains)
-- Self-improvement engine (learning + rules + promotion)
-- Voice (GPT-4o Realtime via WebRTC)
+- Multi-file upload (stack files, drag & drop)
+- Voice (GPT-4o Realtime via WebRTC) — needs testing
+- Notifications (dismiss individual, clear all, click to open in Kiko)
+- Alert pill (pulsating orange when alerts > 0)
+- Export restriction (super_admin only)
 - Multi-user auth (zero data leakage)
-- Supabase backup (14-day retention)
 
 ### OUTSTANDING ITEMS
-1. End-to-end tool testing (verify all 36 tools work)
-2. Background prospect sourcing (job queue for async)
-3. ~22 more dead API files to verify and archive
-4. SponsorSignal LinkedIn posting (not connected)
-5. Voice latency on mobile (pre-warm token)
-6. Kiko learning from email draft edits
-7. Campaign detail panel polish
+1. Kiko still occasionally hangs on complex multi-tool queries (not email)
+2. Voice needs full testing — was reverted but not verified
+3. Nav settings may still not persist on some refreshes
+4. Campaign editor width may still jump on resize
+5. PDF reading improved but needs more testing
+6. SponsorSignal LinkedIn posting not connected
