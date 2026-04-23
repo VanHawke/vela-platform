@@ -1,45 +1,50 @@
 {
-  "generated_at": "2026-04-23T21:21:27.376Z",
+  "generated_at": "2026-04-23T21:26:55.378Z",
   "commits": [
+    {
+      "hash": "8fed273",
+      "subject": "FIX KIKO REASONING: Remove separate research endpoint routing. All prompts now go through /api/kiko which has full conversation history + web_search + all 39 tools. The research triggers ('research', ",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "0fbbe4e",
       "subject": "FIX AUTO-SCROLL: (1) Always scroll to bottom during streaming unless user manually scrolls up. (2) Detects user scroll-up during streaming and pauses auto-scroll. (3) Resets scroll tracking when strea",
-      "when": "2 minutes ago"
+      "when": "7 minutes ago"
     },
     {
       "hash": "91e46f0",
       "subject": "KIKO INTELLIGENCE UPGRADE: (1) FACT VERIFICATION — mandatory verification of all claims (funding rounds, acquisitions, exec changes) before including in emails. Check CRM → emails → web search. Never ",
-      "when": "13 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "4c4f1d6",
       "subject": "FIX: Empty response recovery — (1) Shortened fallback message from confusing specific instructions to simple 'try again'. (2) finally block now clears toolStatus and streamText alongside streaming fla",
-      "when": "17 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "ebe5103",
       "subject": "BATCH EMAIL DRAFTING: New batch_draft_emails tool — drafts re-engagement emails for multiple stalled deals. Queries pipeline for idle deals, generates personalised drafts via Haiku (fast), creates Gma",
-      "when": "25 minutes ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "91d2688",
       "subject": "Add monitor files to repo: email-monitor (user-specific alerts, campaign detection), pipeline-monitor (stale deal detection), scheduler (cron registration), webhooks (Gmail Pub/Sub receiver)",
-      "when": "29 minutes ago"
+      "when": "35 minutes ago"
     },
     {
       "hash": "c3b088a",
       "subject": "Update session brief with remaining tasks and Hetzner migration status",
-      "when": "38 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "679c59e",
       "subject": "MOBILE POLISH: (1) Copy/Edit buttons increased from 28px to 36px (better touch targets). (2) Icon sizes increased from 12-13px to 14-15px. (3) Tone buttons padding increased from 5px to 7px. (4) Dropd",
-      "when": "39 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "1cd95dc",
       "subject": "CONVERSATION SUMMARY + SELF-KNOWLEDGE: (1) Conversation summary now kicks in at 6 messages (was 20). Older messages summarised as bullet points with 200 chars each. Kiko told to maintain continuity. L",
-      "when": "45 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "d9e3ad6",
@@ -94,11 +99,6 @@
     {
       "hash": "2a2c19a",
       "subject": "FIX SIGNATURE + SIGN-OFFS: (1) AGENCY ALIAS — signature now fetched from @vanhawke.agency alias (not @vanhawke.com). Maps sunny@vanhawke.com→sunny@vanhawke.agency, matt.smith→matt.smith@vanhawke.agenc",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "58cb977",
-      "subject": "FIX GMAIL SIGNATURE: Gmail API does NOT auto-insert signatures on API-created drafts (only on compose UI drafts). Now fetches user's Gmail signature via settings/sendAs API and appends it to the draft",
       "when": "5 hours ago"
     }
   ]
