@@ -163,7 +163,7 @@ export default function EmailDraft({ text }) {
   const sentLabel = typeof sent === 'string' && sent.startsWith('done-') ? `Saved to ${sent.replace('done-', '')}'s drafts` : sent === 'done' ? 'Saved to your drafts' : sent === 'sending' ? 'Creating draft...' : sent === 'error' ? 'Failed — retry' : null
 
   return (
-    <div style={{ margin: '12px 0', borderRadius: 14, overflow: 'hidden', border: '0.5px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)' }}>
+    <div style={{ margin: '12px 0', borderRadius: 14, border: '0.5px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)' }}>
       {/* Header */}
       <div style={{ padding: '14px 18px 12px', borderBottom: '0.5px solid rgba(0,0,0,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ flex: 1 }}>
@@ -238,16 +238,17 @@ export default function EmailDraft({ text }) {
             </button>
           </div>
           {sendDropdownOpen && (
-            <div style={{ position: 'absolute', bottom: '100%', right: 0, marginBottom: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 200, overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 220, overflow: 'hidden' }}>
               <div style={{ padding: '8px 12px', fontSize: 10, color: '#A0A0A0', borderBottom: '0.5px solid rgba(0,0,0,0.05)', fontFamily: T.font }}>Send draft to:</div>
               {teamMembers.map(m => (
-                <button key={m.id} onClick={() => { setSelectedMember(m); handleSendGmail(m) }} style={{ width: '100%', padding: '8px 12px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: '#0A0A0A', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s' }}
-                  onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
+                <button key={m.id} onClick={() => { setSelectedMember(m); setSendDropdownOpen(false) }} style={{ width: '100%', padding: '10px 12px', background: selectedMember?.id === m.id ? 'rgba(0,0,0,0.04)' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: '#0A0A0A', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s' }}
+                  onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'} onMouseOut={e => { if (selectedMember?.id !== m.id) e.currentTarget.style.background = 'transparent' }}>
                   <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 600, color: '#6B6B6B' }}>{m.email[0].toUpperCase()}</div>
-                  <div>
+                  <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 500 }}>{m.email.split('@')[0]}</div>
                     <div style={{ fontSize: 10, color: '#A0A0A0' }}>{m.email}</div>
                   </div>
+                  {selectedMember?.id === m.id && <Check size={14} style={{ color: '#00B464' }} />}
                 </button>
               ))}
             </div>
