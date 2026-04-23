@@ -713,6 +713,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     if (transcribing) { transcribeRef.current.active = false; if (transcribeRef.current.sr) { try { transcribeRef.current.sr.stop() } catch {} transcribeRef.current.sr = null }; setTranscribing(false) }
     const effectiveMsg = msg || (allAttachments.length ? `Analyse this file: "${allAttachments[0].name || 'uploaded file'}"` : '')
     setInput('')
+    if (inputRef.current) inputRef.current.style.height = 'auto'
     setPendingAttachments([])
     // Build file context from pending file attachments
     const fileAtts = allAttachments.filter(a => a.type === 'file')

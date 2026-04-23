@@ -1,50 +1,55 @@
 {
-  "generated_at": "2026-04-23T16:49:10.549Z",
+  "generated_at": "2026-04-23T17:01:25.910Z",
   "commits": [
+    {
+      "hash": "d70efff",
+      "subject": "SENDER SELECTOR: (1) New 'From:' dropdown in EmailDraft — select who the email is from (Sunny or Matt or any future user). Determines From address + Gmail signature. (2) When sender is selected, draft",
+      "when": "12 minutes ago"
+    },
     {
       "hash": "2a2c19a",
       "subject": "FIX SIGNATURE + SIGN-OFFS: (1) AGENCY ALIAS — signature now fetched from @vanhawke.agency alias (not @vanhawke.com). Maps sunny@vanhawke.com→sunny@vanhawke.agency, matt.smith→matt.smith@vanhawke.agenc",
-      "when": "12 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "58cb977",
       "subject": "FIX GMAIL SIGNATURE: Gmail API does NOT auto-insert signatures on API-created drafts (only on compose UI drafts). Now fetches user's Gmail signature via settings/sendAs API and appends it to the draft",
-      "when": "31 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "76bb1b5",
       "subject": "REWRITE create-gmail-draft.js from scratch: NO Supabase client library (was crashing on Vercel module init). Now uses raw fetch() to Supabase REST API — identical pattern to every other working endpoi",
-      "when": "44 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "670eae9",
       "subject": "FIX: VITE_SUPABASE_URL not SUPABASE_URL — was crashing the function entirely (FUNCTION_INVOCATION_FAILED)",
-      "when": "52 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "b8ab594",
       "subject": "REWRITE create-gmail-draft.js: FORCE REFRESH TOKEN EVERY TIME. Previous version used getGoogleToken which cached expired tokens. New version: (1) Uses Supabase service role key directly (not the share",
-      "when": "56 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "a4015a8",
       "subject": "FIX DRAFT RESEND: (1) Removed duplicate client-side body cleanup — body is sent as-is, API handles cleanup. This prevents double-cleaning that was stripping the entire body on resend. (2) Added HTTP s",
-      "when": "68 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "9a87329",
       "subject": "FIX EMAIL SIGNATURE: (1) REMOVED ALL custom signatures from create-gmail-draft.js — Gmail has pre-configured signatures per user that auto-insert when draft is opened. (2) KIKO PROMPT UPDATED — CRITIC",
-      "when": "73 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "83e6db8",
       "subject": "FIX EMAIL DRAFT CLEANUP + SIGNATURES: (1) BODY PARSER — now cuts at sign-off line (Best regards, etc), '---' separator, and analysis commentary (This references, Sound right, etc). Matt Smith name now",
-      "when": "83 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "df9897b",
       "subject": "Update KIKO_SESSION_BRIEF.md — full current state: performance architecture, all working systems, outstanding items, key files, ring-fence rules",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "30a328d",
@@ -84,21 +89,16 @@
     {
       "hash": "ece0b30",
       "subject": "FIX MATT DROPDOWN: (1) ROOT CAUSE — parent div had overflow:hidden which clipped the dropdown. Removed overflow:hidden. (2) Dropdown now opens DOWNWARD (top:100%) instead of upward (bottom:100%). (3) ",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "c3edb83",
       "subject": "BACKGROUND TASKS OVERHAUL: (1) PROGRESS BAR — active tasks show purple animated progress bar with elapsed time in minutes. (2) CANCEL — each active task has a Cancel button that sets status to cancell",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "a7185d8",
       "subject": "FIX: MATT IN DROPDOWN + NETWORK ERROR: (1) TEAM MEMBERS API — new /api/team-members endpoint returns all org users via service role key, bypassing RLS. EmailDraft now fetches from this instead of dire",
-      "when": "10 hours ago"
-    },
-    {
-      "hash": "067d5a3",
-      "subject": "EMAIL DRAFT OVERHAUL: (1) COPY BUTTON — copies full email (Subject + To + Body + sign-off) to clipboard. Shows green check on success. (2) EDIT MODE — pencil icon opens inline textarea for direct edit",
       "when": "10 hours ago"
     }
   ]

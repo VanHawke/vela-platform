@@ -989,8 +989,8 @@ export default async function handler(req, res) {
       email_read: /^(check|read|show|get|any)\s*(my)?\s*(new|unread|latest|recent)?\s*(email|inbox|mail|gmail)/i,
       calendar: /^(what(?:'s|\s+is)?\s+on\s+my\s+calendar|any\s+meetings|my\s+schedule|check\s+(?:my\s+)?calendar|meetings?\s+(today|tomorrow|this\s+week)|what(?:'s|\s+is)\s+(?:on\s+)?my\s+schedule|am\s+i\s+free|do\s+i\s+have\s+any\s+meetings|calendar\s+(?:today|tomorrow|this\s+week))/i,
       directions: /^(directions?\s+to|how\s+do\s+i\s+get\s+to|navigate\s+me\s+to|route\s+to|take\s+me\s+to(?!\s+(home|pipeline|contacts|calendar|settings)))\b/i,
-      email: /\b(draft|compose|write|send|email|outreach|follow.?up|re.?engage)\b.*\b(email|draft|message|outreach|letter)\b/i,
-      email2: /\b(email|draft)\b.*\b(to|for|about|regarding)\b/i,
+      email: /^(draft|compose|write|prepare|create)\s+(a\s+|an\s+|the\s+)?(follow.?up\s+)?email/i,
+      email2: /^(draft|compose|write|prepare|create)\s+(a\s+|an\s+|the\s+)?(draft|email|message|outreach)/i,
     };
     const fastMatch = Object.entries(FAST_INTENTS).find(([, re]) => re.test(msgLower));
     if (fastMatch) {
