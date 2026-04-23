@@ -755,7 +755,16 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         body: JSON.stringify(isResearch ? { query: msg, userEmail: user?.email } : {
           message: apiMsg, userEmail: user?.email,
           attachments: allAttachments,
-          conversationHistory: messages.slice(allAttachments.length > 0 ? -8 : -20).map(m => ({ role: m.role, content: typeof m.content === 'string' ? m.content.slice(0, 2000) : m.content })),
+          conversationHistory: messages.slice(allAttachments.length > 0 ? -8 : -20).map(m => {
+            // Strip binary data from previous messages — only send text content
+            if (typeof m.content === 'string') return { role: m.role, content: m.content.slice(0, 2000) }
+            // Non-string content (image/file blocks from earlier) — extract text only
+            if (Array.isArray(m.content)) {
+              const textParts = m.content.filter(b => b.type === 'text').map(b => b.text).join('\n')
+              return { role: m.role, content: (textParts || '[file attachment]').slice(0, 2000) }
+            }
+            return { role: m.role, content: '[previous message]' }
+          }),
           currentPage: pageCtx.page || (window.location.pathname.replace('/', '') || 'home'),
           pageContext: pageCtx,
           pageEntity: (() => {
