@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-23T18:05:29.075Z",
+  "generated_at": "2026-04-23T18:10:21.909Z",
   "commits": [
+    {
+      "hash": "f75272a",
+      "subject": "BATCH FIX: (1) SEARCH ICON — wired up to command palette (was calling nonexistent function). Swapped to appear BEFORE bg tasks icon. Order: [Search] [BG Tasks] [Avatar]. (2) RETRY ICON on user message",
+      "when": "5 minutes ago"
+    },
     {
       "hash": "ab84268",
       "subject": "FIX EMAIL SCANNING + NAV: (1) REWRITTEN read_email handler — now uses sbFetch helper (proven working) instead of inline VITE_SUPABASE_URL which may not resolve. Uses parallel token refresh via Promise",
-      "when": "27 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "b21f100",
       "subject": "MAJOR: EMAIL PERMISSIONS + LEARNING + GREETINGS: (1) EMAIL PERMISSION MODEL — super_admin scans ALL team Gmail accounts, regular users scan ONLY their own. Zero data leakage. Full body extraction (not",
-      "when": "44 minutes ago"
+      "when": "48 minutes ago"
     },
     {
       "hash": "0f3e1c3",
       "subject": "FIX TEXTAREA + TIMEOUT: (1) TEXTAREA SHRINK — resets height to 'auto' on submit via inputRef. Was staying expanded because only the value was cleared, not the CSS height. (2) EMAIL REGEX TIGHTENED — n",
-      "when": "64 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "d70efff",
       "subject": "SENDER SELECTOR: (1) New 'From:' dropdown in EmailDraft — select who the email is from (Sunny or Matt or any future user). Determines From address + Gmail signature. (2) When sender is selected, draft",
-      "when": "76 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "2a2c19a",
       "subject": "FIX SIGNATURE + SIGN-OFFS: (1) AGENCY ALIAS — signature now fetched from @vanhawke.agency alias (not @vanhawke.com). Maps sunny@vanhawke.com→sunny@vanhawke.agency, matt.smith→matt.smith@vanhawke.agenc",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "58cb977",
@@ -95,11 +100,6 @@
       "hash": "34c394e",
       "subject": "FIX ENCODING + HANGING: (1) SUBJECT LINE ENCODING — Subject now uses RFC 2047 UTF-8 Base64 encoding. Em dashes, smart quotes, and all Unicode characters will render correctly in Gmail. Body also uses ",
       "when": "8 hours ago"
-    },
-    {
-      "hash": "f5168a9",
-      "subject": "FIX STUCK TASKS + FORMATTING: (1) CLEARED 8 stuck background jobs from database (6 queued, 2 running for 12+ days). (2) RLS POLICIES added to kiko_background_jobs — Cancel and Clear buttons were silen",
-      "when": "10 hours ago"
     }
   ]
 }
