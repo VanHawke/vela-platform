@@ -153,27 +153,29 @@ export default function EmailDraft({ text }) {
 
   const handleSendGmail = async (member) => {
     const targetEmail = member?.email || selectedMember?.email || 'sunny@vanhawke.com'
+    if (!to || !subject) { setSent('error'); setTimeout(() => setSent(false), 3000); return }
     setSent('sending')
     setSendDropdownOpen(false)
     try {
-      const cleanBody = currentBody.replace(/Sunny\s*Sidhu/gi, '').replace(/Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?\s*/gi, '').replace(/Best regards,?\s*/gi, '').replace(/\n\s*\n\s*\n/g, '\n\n').trim()
+      // Send the body as-is — the API handles cleanup
       const res = await fetch('/api/create-gmail-draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to, subject, body: cleanBody, draftFor: targetEmail })
+        body: JSON.stringify({ to, subject, body: currentBody, draftFor: targetEmail })
       })
+      if (!res.ok) { const errText = await res.text(); console.error('[EmailDraft] HTTP error:', res.status, errText); throw new Error(`HTTP ${res.status}`) }
       const data = await res.json()
       if (data.ok) {
-        setSent(targetEmail === 'sunny@vanhawke.com' ? 'done' : `done-${targetEmail.split('@')[0]}`)
-        // Allow resending to another person after 3s
+        const label = targetEmail === 'sunny@vanhawke.com' ? 'done' : `done-${targetEmail.split('@')[0]}`
+        setSent(label)
         setTimeout(() => setSent(false), 3000)
       } else {
-        console.error('[EmailDraft] Gmail draft failed:', data.error)
+        console.error('[EmailDraft] API error:', data.error)
         setSent('error')
         setTimeout(() => setSent(false), 3000)
       }
     } catch (e) {
-      console.error('[EmailDraft] Gmail draft error:', e)
+      console.error('[EmailDraft] Send failed:', e)
       setSent('error')
       setTimeout(() => setSent(false), 3000)
     }
