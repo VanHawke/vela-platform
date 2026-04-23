@@ -258,10 +258,10 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'read_email',
-    description: 'Read, search, and manage Gmail. Use when: "check my email", "any emails from X", "unread emails", "last email from X", "correspondence with X", "inbox summary", "search emails for X".',
+    description: 'Read, search, and manage Gmail across team accounts. Use when: "check my email", "any emails from X", "correspondence with X", "emails between us and X", "search emails for X". Super admin can search all team members\' emails. Regular users can only search their own.',
     input_schema: { type: 'object', properties: {
-      operation: { type: 'string', enum: ['search', 'unread', 'read_message', 'inbox_summary'], description: 'search: search emails by query. unread: get unread count + recent unread. read_message: read specific email by ID. inbox_summary: overview of recent inbox.' },
-      query: { type: 'string', description: 'For search: Gmail search query (e.g. "from:john subject:proposal"). For read_message: message ID.' },
+      operation: { type: 'string', enum: ['search', 'unread', 'read_thread', 'inbox_summary'], description: 'search: search emails by query across permitted accounts. unread: get unread count. read_thread: read full email thread by threadId. inbox_summary: overview of recent inbox.' },
+      query: { type: 'string', description: 'For search: Gmail search query (e.g. "from:matthew proofpoint", "to:chad startree"). For read_thread: threadId from a previous search result.' },
     }, required: ['operation'] },
   },
   {
@@ -1025,70 +1025,115 @@ Document:\n${document_text.slice(0, 25000)}` }],
   if (name === 'read_email') {
     const { operation, query } = input;
     try {
-      const { getGoogleToken } = await import('./google-token.js');
-      const token = await getGoogleToken(userEmail);
+      const SB_URL = process.env.VITE_SUPABASE_URL;
+      const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      const sbHeaders = { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' };
+
+      // Permission check: get user role
+      const userRows = await fetch(`${SB_URL}/rest/v1/users?id=eq.${userId}&select=role,email&limit=1`, { headers: sbHeaders }).then(r => r.json());
+      const userRole = userRows?.[0]?.role || 'user';
+      const userEmailAddr = userRows?.[0]?.email || userEmail;
+      const isSuperAdmin = userRole === 'super_admin';
+
+      // Token refresh helper
+      async function getToken(email) {
+        const res = await fetch(`${SB_URL}/rest/v1/user_tokens?user_email=eq.${encodeURIComponent(email)}&provider=eq.google&select=refresh_token&limit=1`, { headers: sbHeaders });
+        const rows = await res.json();
+        if (!Array.isArray(rows) || !rows[0]?.refresh_token) return null;
+        const tRes = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ client_id: process.env.GOOGLE_CLIENT_ID, client_secret: process.env.GOOGLE_CLIENT_SECRET, refresh_token: rows[0].refresh_token, grant_type: 'refresh_token' }),
+        });
+        const tData = await tRes.json();
+        return tData.access_token || null;
+      }
+
       const GMAIL = 'https://gmail.googleapis.com/gmail/v1/users/me';
-      const gfetch = (path) => fetch(`${GMAIL}${path}`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
+      const gfetch = (token, path) => fetch(`${GMAIL}${path}`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
+
+      // Build account list based on permissions
+      const accounts = [];
+      if (isSuperAdmin) {
+        // Super admin: search ALL team members
+        const allUsers = await fetch(`${SB_URL}/rest/v1/users?select=email&order=role.asc`, { headers: sbHeaders }).then(r => r.json());
+        for (const u of (allUsers || [])) {
+          const t = await getToken(u.email);
+          if (t) accounts.push({ label: u.email.split('@')[0], email: u.email, token: t });
+        }
+      } else {
+        // Regular user: own email only
+        const t = await getToken(userEmailAddr);
+        if (t) accounts.push({ label: userEmailAddr.split('@')[0], email: userEmailAddr, token: t });
+      }
+
+      if (!accounts.length) return 'Unable to access Gmail — token refresh failed. Try reconnecting Google in Settings.';
 
       if (operation === 'unread' || operation === 'inbox_summary') {
-        const list = await gfetch('/messages?q=is:unread&maxResults=10');
-        if (!list.messages?.length) return 'No unread emails.';
-        const msgs = [];
-        for (const m of list.messages.slice(0, 5)) {
-          const detail = await gfetch(`/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`);
-          const hdrs = detail.payload?.headers || [];
-          const from = hdrs.find(h => h.name === 'From')?.value || '?';
-          const subject = hdrs.find(h => h.name === 'Subject')?.value || '(no subject)';
-          const date = hdrs.find(h => h.name === 'Date')?.value || '';
-          msgs.push({ from, subject, date: date.split(',').slice(0,2).join(',').trim(), id: m.id });
+        let results = [];
+        for (const acct of accounts) {
+          const list = await gfetch(acct.token, '/messages?q=is:unread&maxResults=8');
+          if (!list.messages?.length) continue;
+          for (const m of list.messages.slice(0, 5)) {
+            const detail = await gfetch(acct.token, `/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`);
+            const hdrs = detail.payload?.headers || [];
+            results.push({ account: acct.label, from: (hdrs.find(h => h.name === 'From')?.value || '?').split('<')[0].trim(), subject: hdrs.find(h => h.name === 'Subject')?.value || '(no subject)', date: hdrs.find(h => h.name === 'Date')?.value || '' });
+          }
         }
-        return `UNREAD EMAILS (${list.resultSizeEstimate || list.messages.length}):\n${msgs.map(m => `• ${m.from.split('<')[0].trim()}: ${m.subject} [${m.date}]`).join('\n')}`;
+        if (!results.length) return 'No unread emails across checked accounts.';
+        return `UNREAD EMAILS (${results.length}):\n${results.map(m => `[${m.account}] ${m.from}: ${m.subject} [${m.date}]`).join('\n')}`;
       }
 
       if (operation === 'search') {
         const q = query || 'newer_than:7d';
-        const list = await gfetch(`/messages?q=${encodeURIComponent(q)}&maxResults=10`);
-        if (!list.messages?.length) return `No emails found for: "${q}"`;
-        const msgs = [];
-        for (const m of list.messages.slice(0, 5)) {
-          const detail = await gfetch(`/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`);
-          const hdrs = detail.payload?.headers || [];
-          msgs.push({
-            from: (hdrs.find(h => h.name === 'From')?.value || '?').split('<')[0].trim(),
-            subject: hdrs.find(h => h.name === 'Subject')?.value || '(no subject)',
-            date: (hdrs.find(h => h.name === 'Date')?.value || '').split(',').slice(0,2).join(',').trim(),
-            id: m.id,
-          });
-        }
-        return `EMAIL SEARCH "${q}" (${list.resultSizeEstimate || list.messages.length} results):\n${msgs.map(m => `• ${m.from}: ${m.subject} [${m.date}]`).join('\n')}`;
-      }
-
-      if (operation === 'read_message' && query) {
-        const detail = await gfetch(`/messages/${query}?format=full`);
-        const hdrs = detail.payload?.headers || [];
-        const from = hdrs.find(h => h.name === 'From')?.value || '?';
-        const subject = hdrs.find(h => h.name === 'Subject')?.value || '';
-        const to = hdrs.find(h => h.name === 'To')?.value || '';
-        // Extract body
-        let body = '';
-        const parts = detail.payload?.parts || [detail.payload];
-        for (const p of parts) {
-          if (p?.mimeType === 'text/plain' && p.body?.data) {
-            body = Buffer.from(p.body.data, 'base64url').toString('utf-8');
-            break;
+        let allResults = [];
+        for (const acct of accounts) {
+          const list = await gfetch(acct.token, `/messages?q=${encodeURIComponent(q)}&maxResults=15`);
+          if (!list.messages?.length) continue;
+          for (const m of list.messages.slice(0, 8)) {
+            const detail = await gfetch(acct.token, `/messages/${m.id}?format=full`);
+            const hdrs = detail.payload?.headers || [];
+            // Extract full body text
+            let body = '';
+            const extractText = (part) => {
+              if (part?.mimeType === 'text/plain' && part.body?.data) return Buffer.from(part.body.data, 'base64url').toString('utf-8');
+              if (part?.parts) for (const p of part.parts) { const t = extractText(p); if (t) return t; }
+              return '';
+            };
+            body = extractText(detail.payload) || detail.snippet || '';
+            allResults.push({ account: acct.label, from: (hdrs.find(h => h.name === 'From')?.value || '?').split('<')[0].trim(), to: hdrs.find(h => h.name === 'To')?.value || '', subject: hdrs.find(h => h.name === 'Subject')?.value || '(no subject)', date: hdrs.find(h => h.name === 'Date')?.value || '', body: body.slice(0, 1500), threadId: detail.threadId });
           }
         }
-        if (!body && detail.payload?.body?.data) body = Buffer.from(detail.payload.body.data, 'base64url').toString('utf-8');
-        return `FROM: ${from}\nTO: ${to}\nSUBJECT: ${subject}\n\n${body.slice(0, 2000)}`;
+        if (!allResults.length) return `No emails found for: "${q}" across ${accounts.length} account(s).`;
+        return `EMAIL SEARCH "${q}" — ${allResults.length} results across ${accounts.length} account(s):\n\n${allResults.map(m => `[${m.account.toUpperCase()}] ${m.from} → ${m.to?.split('<')[0]?.trim() || '?'}\nSubject: ${m.subject} [${m.date}]\nThread: ${m.threadId}\n${m.body}\n`).join('\n---\n')}`;
       }
 
-      return 'Specify operation: unread, search, read_message, or inbox_summary.';
-    } catch (e) {
-      if (e.message?.includes('No Google token') || e.message?.includes('refresh failed')) {
-        return `Gmail not connected. Sunny needs to connect Google in Settings: https://kiko.vanhawke.agency/api/google-auth?email=${userEmail}`;
+      if (operation === 'read_thread') {
+        const threadId = query;
+        if (!threadId) return 'Provide a threadId from a previous search result.';
+        for (const acct of accounts) {
+          try {
+            const thread = await gfetch(acct.token, `/threads/${threadId}?format=full`);
+            if (thread.messages?.length) {
+              const msgs = thread.messages.map(m => {
+                const hdrs = m.payload?.headers || [];
+                let body = '';
+                const extractText = (part) => {
+                  if (part?.mimeType === 'text/plain' && part.body?.data) return Buffer.from(part.body.data, 'base64url').toString('utf-8');
+                  if (part?.parts) for (const p of part.parts) { const t = extractText(p); if (t) return t; }
+                  return '';
+                };
+                body = extractText(m.payload) || m.snippet || '';
+                return { from: (hdrs.find(h => h.name === 'From')?.value || '?'), to: hdrs.find(h => h.name === 'To')?.value || '', date: hdrs.find(h => h.name === 'Date')?.value || '', subject: hdrs.find(h => h.name === 'Subject')?.value || '', body: body.slice(0, 3000) };
+              });
+              return `FULL THREAD (${msgs.length} messages, from ${acct.label}'s inbox):\n\n${msgs.map(m => `FROM: ${m.from}\nTO: ${m.to}\nDATE: ${m.date}\nSUBJECT: ${m.subject}\n\n${m.body}\n`).join('\n═══════════════════════════════\n')}`;
+            }
+          } catch {}
+        }
+        return 'Thread not found.';
       }
-      return `Email error: ${e.message}`;
-    }
+
+      return 'Specify operation: unread, inbox_summary, search, or read_thread.';
+    } catch (e) { return `Email access error: ${e.message}`; }
   }
 
   // ── Calendar tool (uses our own Google Calendar API, not MCP) ──

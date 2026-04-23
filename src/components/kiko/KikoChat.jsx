@@ -102,7 +102,22 @@ function md(text) {
 
 function getGreeting() {
   const h = new Date().getHours()
-  return h >= 5 && h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'
+  const d = new Date().getDate()
+  const timeBase = h >= 5 && h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
+  const greetings = [
+    [`Good ${timeBase}`],
+    [`Happy ${['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][new Date().getDay()]}`],
+    ['Welcome back'],
+    ['Great to see you'],
+    [`Hope your ${timeBase} is going well`],
+    ['Ready when you are'],
+    ['Let\'s get to work'],
+    [`Good ${timeBase}, chief`],
+    ['Another day, another deal'],
+    ['Back in the chair'],
+  ]
+  const idx = (d + h + Math.floor(Date.now() / 3600000)) % greetings.length
+  return greetings[idx][0]
 }
 
 // Chips are now dynamic — see useDynamicChips hook
