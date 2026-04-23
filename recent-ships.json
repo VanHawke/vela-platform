@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-23T21:08:40.786Z",
+  "generated_at": "2026-04-23T21:19:24.120Z",
   "commits": [
+    {
+      "hash": "91e46f0",
+      "subject": "KIKO INTELLIGENCE UPGRADE: (1) FACT VERIFICATION — mandatory verification of all claims (funding rounds, acquisitions, exec changes) before including in emails. Check CRM → emails → web search. Never ",
+      "when": "11 minutes ago"
+    },
     {
       "hash": "4c4f1d6",
       "subject": "FIX: Empty response recovery — (1) Shortened fallback message from confusing specific instructions to simple 'try again'. (2) finally block now clears toolStatus and streamText alongside streaming fla",
-      "when": "5 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "ebe5103",
       "subject": "BATCH EMAIL DRAFTING: New batch_draft_emails tool — drafts re-engagement emails for multiple stalled deals. Queries pipeline for idle deals, generates personalised drafts via Haiku (fast), creates Gma",
-      "when": "12 minutes ago"
+      "when": "22 minutes ago"
     },
     {
       "hash": "91d2688",
       "subject": "Add monitor files to repo: email-monitor (user-specific alerts, campaign detection), pipeline-monitor (stale deal detection), scheduler (cron registration), webhooks (Gmail Pub/Sub receiver)",
-      "when": "17 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "c3b088a",
       "subject": "Update session brief with remaining tasks and Hetzner migration status",
-      "when": "25 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "679c59e",
       "subject": "MOBILE POLISH: (1) Copy/Edit buttons increased from 28px to 36px (better touch targets). (2) Icon sizes increased from 12-13px to 14-15px. (3) Tone buttons padding increased from 5px to 7px. (4) Dropd",
-      "when": "26 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "1cd95dc",
       "subject": "CONVERSATION SUMMARY + SELF-KNOWLEDGE: (1) Conversation summary now kicks in at 6 messages (was 20). Older messages summarised as bullet points with 200 chars each. Kiko told to maintain continuity. L",
-      "when": "32 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "d9e3ad6",
@@ -44,7 +49,7 @@
     {
       "hash": "e10fc05",
       "subject": "FIX KIKO HANGING ON FOLLOW-UP: ROOT CAUSE — conversation history was sending 20 messages at 5000 chars each (100KB). After Kiko's long strategic analysis + draft, the follow-up 'create the draft' payl",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "a768113",
@@ -79,7 +84,7 @@
     {
       "hash": "d70efff",
       "subject": "SENDER SELECTOR: (1) New 'From:' dropdown in EmailDraft — select who the email is from (Sunny or Matt or any future user). Determines From address + Gmail signature. (2) When sender is selected, draft",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "2a2c19a",
@@ -94,11 +99,6 @@
     {
       "hash": "76bb1b5",
       "subject": "REWRITE create-gmail-draft.js from scratch: NO Supabase client library (was crashing on Vercel module init). Now uses raw fetch() to Supabase REST API — identical pattern to every other working endpoi",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "670eae9",
-      "subject": "FIX: VITE_SUPABASE_URL not SUPABASE_URL — was crashing the function entirely (FUNCTION_INVOCATION_FAILED)",
       "when": "5 hours ago"
     }
   ]

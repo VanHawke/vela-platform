@@ -263,13 +263,13 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [showScrollDown, setShowScrollDown] = useState(false)
 
   // Auto-scroll to bottom during streaming — like ChatGPT/Claude
+  const userScrolledUp = useRef(false)
   useEffect(() => {
-    if (!streaming) return
+    if (!streaming) { userScrolledUp.current = false; return }
+    if (userScrolledUp.current) return
     const el = scrollContainerRef.current
     if (!el) return
-    // Only auto-scroll if user is near the bottom (within 200px)
-    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 200
-    if (atBottom) el.scrollTop = el.scrollHeight
+    el.scrollTop = el.scrollHeight
   }, [streamText, toolStatus, streaming])
   const inputRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -1774,6 +1774,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         const el = e.currentTarget
         const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80
         setShowScrollDown(!atBottom)
+        if (streaming && !atBottom) userScrolledUp.current = true
+        if (streaming && atBottom) userScrolledUp.current = false
       }} style={{ flex: 1, overflowY: 'auto', padding: compact ? 16 : (isMobile ? 16 : 24), position: 'relative' }}>
         <div style={{ maxWidth: compact ? '100%' : (isMobile ? '100%' : 680), margin: '0 auto', width: '100%' }}>
           {messages.length > 40 && !showAllMsgs && (
