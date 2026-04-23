@@ -18,24 +18,19 @@ export default async function handler(req, res) {
     const token = await getGoogleToken(targetEmail);
     if (!token) return res.status(400).json({ error: `No Gmail token for ${targetEmail}` });
     
-    // Signatures per team member
-    const SIGNATURES = {
-      'sunny@vanhawke.com': `<br><br>Best regards,<br><br><b>Sunny Sidhu</b><br>CEO<br>Van Hawke Group<br><a href="https://vanhawke.com" style="color:#0A0A0A;">vanhawke.com</a>`,
-      'matt.smith@vanhawke.com': `<br><br>Best regards,<br><br><b>Matt Smith</b><br>Van Hawke Agency<br><a href="https://vanhawke.com" style="color:#0A0A0A;">vanhawke.com</a>`,
-    };
-    
-    // Clean the body — remove any trailing sign-offs, names, or analysis that leaked through
+    // Clean the body — remove ALL sign-offs, names, titles, analysis commentary
+    // Gmail inserts the user's configured signature automatically when they open the draft
     let cleanBody = (htmlBody || body.replace(/\n/g, '<br>'))
-      .replace(/<br\s*\/?>\s*(Best regards|Kind regards|Warm regards|Regards|Sincerely|Cheers|Thanks|Thank you),?\s*(<br\s*\/?>)*/gi, '')
-      .replace(/<br\s*\/?>\s*(Sunny\s*Sidhu|Matt\s*Smith)\s*(<br\s*\/?>)*/gi, '')
-      .replace(/<br\s*\/?>\s*(Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?)\s*(<br\s*\/?>)*/gi, '')
-      .replace(/<br\s*\/?>\s*---\s*(<br\s*\/?>)*.*/gi, '')
+      .replace(/<br\s*\/?>\s*(Best regards|Kind regards|Warm regards|Regards|Sincerely|Cheers|Thanks|Thank you|Best|Yours|All the best),?(\s*<br\s*\/?>)*/gi, '')
+      .replace(/<br\s*\/?>\s*(Sunny\s*Sidhu|Matt\s*Smith)(\s*<br\s*\/?>)*/gi, '')
+      .replace(/<br\s*\/?>\s*(CEO|CRO|COO|CFO|Managing Director|Director|Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?|vanhawke\.com)(\s*<br\s*\/?>)*/gi, '')
+      .replace(/<br\s*\/?>\s*---+\s*(<br\s*\/?>)*.*/gis, '')
+      .replace(/<br\s*\/?>\s*(This references|This approach|Sound right|This email|This draft|This positions|This reengagement|I've framed|I'd recommend|The tone).*$/gis, '')
       .replace(/(<br\s*\/?>){3,}/gi, '<br><br>')
       .replace(/(<br\s*\/?>)+$/i, '')
       .trim();
     
-    const signature = SIGNATURES[targetEmail] || SIGNATURES['sunny@vanhawke.com'];
-    const emailContent = cleanBody + signature;
+    const emailContent = cleanBody;
 
     // Build RFC 2822 email message
     const fromHeader = targetEmail;

@@ -42,33 +42,34 @@ function parseEmail(text) {
   let rawBody = t.slice(bodyStartIdx)
   // Hard cut at sign-off line — everything after is commentary
   const signoffPatterns = [
-    /\n\s*(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards|Thanks|Thank you),?\s*\n/i,
-    /\n\s*(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards|Thanks|Thank you),?\s*$/i,
+    /\n\s*(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards|Thanks|Thank you|Yours|All the best),?\s*\n/i,
+    /\n\s*(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards|Thanks|Thank you|Yours|All the best),?\s*$/i,
     /\n\s*---\s*\n/,
     /\n\s*---\s*$/,
+    /\n\s*(Sunny\s*Sidhu|Matt\s*Smith)\s*$/im,
+    /\n\s*(CEO|CRO|COO|Managing Director)\s*$/im,
+    /\n\s*(Van\s*Hawke)\s/im,
     /\n\s*\*\*(Analysis|My recommendation|Key positioning|Strategic|Next steps|Timing|Note|Why this works|Sound right)[:\s?]/i,
-    /\n\s*(This reengagement|This targets|The email positions|I've framed|I'd push back|I recommend|This references|This approach|This email|This draft|Sound right)/i,
+    /\n\s*(This reengagement|This targets|The email positions|I've framed|I'd push back|I recommend|This references|This approach|This email|This draft|Sound right|The tone)/i,
   ]
   for (const pat of signoffPatterns) {
     const match = rawBody.match(pat)
     if (match && match.index > 15) {
-      // For sign-off greetings, include the sign-off line but cut everything after
-      if (/Best regards|Kind regards|Regards|Sincerely|Best,|Cheers|Warm regards|Thanks|Thank you/i.test(match[0])) {
-        rawBody = rawBody.slice(0, match.index + match[0].length).trim()
-      } else {
-        rawBody = rawBody.slice(0, match.index).trim()
-      }
+      // Always cut at the sign-off — Gmail handles signatures
+      rawBody = rawBody.slice(0, match.index).trim()
       break
     }
   }
-  // Clean up names, signatures, and formatting
+  // Clean up any residual names, titles, company — Gmail signature handles all of this
   let body = rawBody
     .replace(/\*\*/g, '')
     .replace(/\[Current[^\]]*\]/gi, '')
-    .replace(/\n\s*(Best regards|Kind regards|Warm regards|Regards|Sincerely|Cheers|Thanks|Thank you),?\s*$/im, '')
+    .replace(/\n\s*(Best regards|Kind regards|Warm regards|Regards|Sincerely|Cheers|Thanks|Thank you|Best|Yours|All the best),?\s*$/im, '')
     .replace(/\n\s*(Sunny\s*Sidhu|Matt\s*Smith)\s*$/im, '')
     .replace(/\n\s*(Sunny\s*Sidhu|Matt\s*Smith)\s*\n/gi, '\n')
-    .replace(/Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?\s*$/im, '')
+    .replace(/\n\s*(CEO|CRO|COO|Managing Director|Director)\s*$/im, '')
+    .replace(/\n?\s*(Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?)\s*$/im, '')
+    .replace(/\n\s*vanhawke\.com\s*$/im, '')
     .replace(/\n\s*\n\s*\n/g, '\n\n')
     .trim()
   return { subject, to, body }
@@ -131,8 +132,7 @@ export default function EmailDraft({ text }) {
   useEffect(() => { if (editing && editRef.current) editRef.current.focus() }, [editing])
 
   const handleCopy = () => {
-    const senderName = selectedMember?.email === 'matt.smith@vanhawke.com' ? 'Matt Smith\nVan Hawke Agency' : 'Sunny Sidhu\nCEO\nVan Hawke Group'
-    const fullEmail = `Subject: ${subject}\nTo: ${to}\n\n${currentBody}\n\nBest regards,\n\n${senderName}\nvanhawke.com`
+    const fullEmail = `Subject: ${subject}\nTo: ${to}\n\n${currentBody}`
     navigator.clipboard.writeText(fullEmail)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
