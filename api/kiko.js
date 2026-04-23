@@ -1665,11 +1665,18 @@ DEAL STAGE MAPPING:
       for (const block of response.content) {
         if (block.type !== 'tool_use') continue;
         write({ toolStatus: TOOL_LABELS[block.name] || `Running ${block.name}...` });
+        // Heartbeat: send periodic pings so client knows we're alive during long tool calls
+        const heartbeat = setInterval(() => { try { write({ toolStatus: TOOL_LABELS[block.name] || `Still working...` }) } catch {} }, 8000);
         let result;
         try {
-          result = block.name === 'memory'
-            ? await handleMemory(block.input, userId)
-            : await executeTool(block.name, block.input, userEmail, pageContext, userId);
+          // Per-tool timeout: 25s max for any single tool call
+          const toolPromise = block.name === 'memory'
+            ? handleMemory(block.input, userId)
+            : executeTool(block.name, block.input, userEmail, pageContext, userId);
+          result = await Promise.race([
+            toolPromise,
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Tool timeout: took longer than 25s')), 25000))
+          ]);
         } catch (toolErr) {
           const errMsg = toolErr.message || String(toolErr);
           // Detect Google OAuth/token expiry
@@ -1692,6 +1699,7 @@ DEAL STAGE MAPPING:
           // Log the error
           try { await logError(`tool:${block.name}`, errMsg, `input: ${JSON.stringify(block.input).slice(0, 300)}`); } catch {}
         }
+        clearInterval(heartbeat);
         // Handle navigation from any tool
         if ((block.name === 'navigate_page' || block.name === 'ask_navigator') && result?.navigated) write({ navigate: result.page });
         toolResults.push({

@@ -1129,7 +1129,16 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   // ── Render message bubbles (shared between text and voice) ──
   const copyToClipboard = (text) => { navigator.clipboard.writeText(text.replace(/<[^>]+>/g, '')); }
   const editAndResend = (idx) => { setEditingIdx(idx); setEditText(messages[idx]?.content || ''); }
-  const stopKiko = () => { if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; setStreaming(false); setToolStatus(null) } }
+  const stopKiko = () => {
+    if (abortRef.current) { abortRef.current.abort(); abortRef.current = null }
+    setStreaming(false); streamingRef.current = false; setToolStatus(null); setThinkingSteps([])
+    // Save partial response if any
+    if (streamTextRef.current) {
+      setMessages(prev => [...prev, { role: 'assistant', content: streamTextRef.current + '\n\n*[Stopped]*' }])
+      setStreamText('')
+      streamTextRef.current = ''
+    }
+  }
   const regenerateResponse = (idx) => {
     // Find the user message before this kiko message
     const userIdx = messages.slice(0, idx).findLastIndex(m => m.role === 'user')
