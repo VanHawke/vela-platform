@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-23T06:44:16.350Z",
+  "generated_at": "2026-04-23T07:01:08.993Z",
   "commits": [
+    {
+      "hash": "39ad856",
+      "subject": "FIX PDF NETWORK ERROR: (1) file-extract.js body limit increased from 4.5MB (default) to 12MB — large PDFs were exceeding Vercel's default and returning network error. (2) Extracted document text now t",
+      "when": "17 minutes ago"
+    },
     {
       "hash": "aa2c562",
       "subject": "UX POLISH: (1) ALERT PILL — light orange bg (rgba 184,100,62,0.10), darker orange on hover (0.22), matching other pill hover patterns. (2) NOTIFICATIONS — each notification now has ✕ dismiss button, c",
@@ -19,22 +24,22 @@
     {
       "hash": "8138287",
       "subject": "DOCUMENT + MULTI-FILE FIXES: (1) ALL file attachments now sent to Kiko (was only first file). Multiple PDFs, docs, images all included in context. (2) API now handles type='file' attachments — PDFs/DO",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "9d0670d",
       "subject": "Full batch: (1) PUSH TO BACKGROUND — sourcing modal now has 'Push to background' button during sourcing phase AND 'Source in background' option in idle phase. Queues kiko_jobs and closes modal so user",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "de40b71",
       "subject": "Alert pill + notification icon fixes: (1) HOMEPAGE ALERT PILL — now pulsates with slow orange glow animation (pulse-pill) using command centre orange (#B8643E). Only pulsates when alerts > 0. (2) TOP ",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "cf695cc",
       "subject": "Remaining fixes: (1) NAV PERSISTENCE — orderedTabs now reads from localStorage synchronously on init instead of via useEffect, prevents flash-to-defaults on refresh. (2) CAMPAIGN EDITOR WIDTH — added ",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "266b2cb",
@@ -49,17 +54,17 @@
     {
       "hash": "0184f9d",
       "subject": "FIND LEADS NOW SOURCES VIA KIKO: (1) When CRM has no matching contacts, Find leads now auto-queues a Kiko background sourcing job instead of showing 'No leads found'. (2) Status message shown: 'Kiko i",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "2d52a1f",
       "subject": "FIX CAMPAIGN DELETE: Simplified deleteCampaign to single Supabase delete — CASCADE handles all FK tables automatically. Removed 6 individual FK table delete calls that were silently failing. Now shows",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "91b2d9b",
       "subject": "Remaining fixes: (1) PROSPECT CTAs SWAPPED — Find leads now has prominent black style, Add from CRM is outline. Deep source (background) button added to campaign editor. (2) EXPORT RESTRICTION — expor",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "e7e23f3",
@@ -84,21 +89,16 @@
     {
       "hash": "4c20cb0",
       "subject": "Batch: (1) BG JOB PROCESSOR — new cron-job-processor.js processes queued jobs from kiko_jobs every 5min on Hetzner. Handles source_companies_bg with auto-enrollment + dedup. (2) 10 MORE DEAD API FILES",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "8ea2512",
       "subject": "Session wrap-up: (1) EMAIL CONFIDENCE DISPLAY — prospect table shows ✓ verified badge or confidence % + source next to emails. Detail panel shows same. (2) KIKO_BIBLE.md fully updated — email intel en",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "2a76df0",
       "subject": "Final batch: (1) ALREADY-CONNECTED LinkedIn check — condition engine now handles 3 scenarios: already connected (message delivered), invite accepted, or marked already_connected. (2) CAMPAIGN UI POLIS",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "7047430",
-      "subject": "Move prospects + dedup + email confidence: (1) MOVE TO CAMPAIGN — bulk action moves prospects (removes from source + adds to target), alongside existing duplicate. (2) DEDUP — checks target campaign f",
       "when": "14 hours ago"
     }
   ]
