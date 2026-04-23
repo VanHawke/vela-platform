@@ -775,7 +775,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       // Detect deep research queries — route to parallel multi-agent endpoint
       const RESEARCH_TRIGGERS = ['deep research', 'research ', 'deep dive on', 'full research', 'investigate ', 'intel on ', 'intelligence on ']
       const isResearch = msg && RESEARCH_TRIGGERS.some(t => msg.toLowerCase().startsWith(t) || msg.toLowerCase().includes(t))
-      const apiUrl = isResearch ? '/api/kiko-research' : '/api/kiko'
+      const KIKO_HOST = import.meta.env.VITE_KIKO_API_HOST || ''
+      const apiUrl = isResearch ? `${KIKO_HOST}/api/kiko-research` : `${KIKO_HOST}/api/kiko`
 
       const res = await fetch(apiUrl, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },

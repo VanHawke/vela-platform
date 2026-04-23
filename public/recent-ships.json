@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-23T18:47:39.491Z",
+  "generated_at": "2026-04-23T19:13:30.041Z",
   "commits": [
+    {
+      "hash": "e10fc05",
+      "subject": "FIX KIKO HANGING ON FOLLOW-UP: ROOT CAUSE — conversation history was sending 20 messages at 5000 chars each (100KB). After Kiko's long strategic analysis + draft, the follow-up 'create the draft' payl",
+      "when": "26 minutes ago"
+    },
     {
       "hash": "a768113",
       "subject": "FIX: (1) KIKO LOGO — always navigates to homepage with fallback to window.location.href if router fails. (2) KIKO'S PLAN — switched from maxHeight CSS animation to display:block/none for reliable expa",
-      "when": "14 minutes ago"
+      "when": "40 minutes ago"
     },
     {
       "hash": "6c07fb2",
       "subject": "FIX COMMAND PALETTE: Dark background (rgba(14,14,20,0.95)) had dark text (#0A0A0A) — everything invisible. Fixed theme to light text (#FAFAFF), light grey sub-text (#B0B0BB), light borders (rgba(255,2",
-      "when": "37 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "f75272a",
       "subject": "BATCH FIX: (1) SEARCH ICON — wired up to command palette (was calling nonexistent function). Swapped to appear BEFORE bg tasks icon. Order: [Search] [BG Tasks] [Avatar]. (2) RETRY ICON on user message",
-      "when": "42 minutes ago"
+      "when": "68 minutes ago"
     },
     {
       "hash": "ab84268",
       "subject": "FIX EMAIL SCANNING + NAV: (1) REWRITTEN read_email handler — now uses sbFetch helper (proven working) instead of inline VITE_SUPABASE_URL which may not resolve. Uses parallel token refresh via Promise",
-      "when": "69 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "b21f100",
       "subject": "MAJOR: EMAIL PERMISSIONS + LEARNING + GREETINGS: (1) EMAIL PERMISSION MODEL — super_admin scans ALL team Gmail accounts, regular users scan ONLY their own. Zero data leakage. Full body extraction (not",
-      "when": "86 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "0f3e1c3",
@@ -39,7 +44,7 @@
     {
       "hash": "2a2c19a",
       "subject": "FIX SIGNATURE + SIGN-OFFS: (1) AGENCY ALIAS — signature now fetched from @vanhawke.agency alias (not @vanhawke.com). Maps sunny@vanhawke.com→sunny@vanhawke.agency, matt.smith→matt.smith@vanhawke.agenc",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "58cb977",
@@ -64,27 +69,27 @@
     {
       "hash": "a4015a8",
       "subject": "FIX DRAFT RESEND: (1) Removed duplicate client-side body cleanup — body is sent as-is, API handles cleanup. This prevents double-cleaning that was stripping the entire body on resend. (2) Added HTTP s",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "9a87329",
       "subject": "FIX EMAIL SIGNATURE: (1) REMOVED ALL custom signatures from create-gmail-draft.js — Gmail has pre-configured signatures per user that auto-insert when draft is opened. (2) KIKO PROMPT UPDATED — CRITIC",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "83e6db8",
       "subject": "FIX EMAIL DRAFT CLEANUP + SIGNATURES: (1) BODY PARSER — now cuts at sign-off line (Best regards, etc), '---' separator, and analysis commentary (This references, Sound right, etc). Matt Smith name now",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "df9897b",
       "subject": "Update KIKO_SESSION_BRIEF.md — full current state: performance architecture, all working systems, outstanding items, key files, ring-fence rules",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "30a328d",
       "subject": "Fix inactivityCheckId variable scope — was using inconsistent names (inactivityCheck vs inactivityCheckId). Now all references use inactivityCheckId correctly. 30s inactivity timeout will properly abo",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "ce1adf7",
@@ -94,11 +99,6 @@
     {
       "hash": "f2e0267",
       "subject": "FIX KIKO HANGING + DRAFT RESEND: (1) EMAIL FAST PATH — email/draft/compose requests now detected via regex fast-match (skips classifier). Uses LIGHT TOOL SET (7 tools instead of 39) — dramatically red",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "2899c92",
-      "subject": "FIX KIKO HANGING DURING TOOL CALLS: (1) HEARTBEAT — sends toolStatus ping every 8s during tool execution so client knows Kiko is alive. Previously nothing streamed during 15-30s sub-agent calls. (2) P",
       "when": "4 hours ago"
     }
   ]
