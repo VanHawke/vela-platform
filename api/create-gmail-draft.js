@@ -36,14 +36,26 @@ async function forceRefreshToken(email) {
   return data.access_token;
 }
 
+// Email-to-alias mapping: registered emails → sending aliases
+const SEND_AS_ALIAS = {
+  'sunny@vanhawke.com': 'sunny@vanhawke.agency',
+  'matt.smith@vanhawke.com': 'matt.smith@vanhawke.agency',
+};
+
 async function getGmailSignature(token, email) {
-  try {
-    const res = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/settings/sendAs/${encodeURIComponent(email)}`, {
-      headers: { 'Authorization': `Bearer ${token}` },
-    });
-    const data = await res.json();
-    return data.signature || '';
-  } catch { return ''; }
+  // Try the agency alias first (primary sending identity), fall back to registered email
+  const alias = SEND_AS_ALIAS[email] || email;
+  const attempts = [alias, email];
+  for (const addr of attempts) {
+    try {
+      const res = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/settings/sendAs/${encodeURIComponent(addr)}`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.signature) return { signature: data.signature, sendAs: addr };
+    } catch {}
+  }
+  return { signature: '', sendAs: alias };
 }
 
 export default async function handler(req, res) {
@@ -56,28 +68,29 @@ export default async function handler(req, res) {
     const token = await forceRefreshToken(targetEmail);
     if (!token) return res.status(400).json({ error: `Token refresh failed for ${targetEmail}` });
 
-    // Fetch the user's Gmail signature
-    const signature = await getGmailSignature(token, targetEmail);
+    // Fetch the user's Gmail signature from their @vanhawke.agency alias
+    const { signature, sendAs } = await getGmailSignature(token, targetEmail);
 
-    // Clean body — strip sign-offs, names, analysis
+    // Clean body — strip names, titles, company, analysis commentary
+    // BUT keep sign-offs (Best, Thanks, Kind regards, etc.) — user wants these
     let clean = (htmlBody || (body || '').replace(/\n/g, '<br>'))
-      .replace(/<br\s*\/?>\s*(Best regards|Kind regards|Warm regards|Regards|Sincerely|Cheers|Thanks|Thank you|Best|Yours|All the best),?(\s*<br\s*\/?>)*/gi, '')
       .replace(/<br\s*\/?>\s*(Sunny\s*Sidhu|Matt\s*Smith)(\s*<br\s*\/?>)*/gi, '')
-      .replace(/<br\s*\/?>\s*(CEO|Van\s*Hawke[^<]*)(\s*<br\s*\/?>)*/gi, '')
-      .replace(/<br\s*\/?>\s*vanhawke\.com(\s*<br\s*\/?>)*/gi, '')
+      .replace(/<br\s*\/?>\s*(CEO|CRO|COO|CFO|Managing Director|Director)(\s*<br\s*\/?>)*/gi, '')
+      .replace(/<br\s*\/?>\s*(Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?)(\s*<br\s*\/?>)*/gi, '')
+      .replace(/<br\s*\/?>\s*vanhawke\.(com|agency)(\s*<br\s*\/?>)*/gi, '')
       .replace(/<br\s*\/?>\s*---+.*/gis, '')
       .replace(/<br\s*\/?>\s*(This references|This approach|Sound right|This email|This draft|This positions|The tone).*$/gis, '')
       .replace(/(<br\s*\/?>){3,}/gi, '<br><br>')
       .replace(/(<br\s*\/?>)+$/i, '').trim();
     if (!clean) clean = body || 'Draft';
 
-    // Append Gmail signature if it exists
-    const emailContent = signature ? `${clean}<br><br>--<br>${signature}` : clean;
+    // Append signature with separator
+    const emailContent = signature ? `${clean}<br><br>${signature}` : clean;
 
-    // Build RFC 2822 email
+    // Build RFC 2822 email — use alias as From address
     const encSubj = `=?UTF-8?B?${Buffer.from(subject, 'utf-8').toString('base64')}?=`;
     const raw = [
-      `From: ${targetEmail}`,
+      `From: ${sendAs}`,
       `To: ${Array.isArray(to) ? to.join(', ') : to}`,
       `Subject: ${encSubj}`,
       'MIME-Version: 1.0',

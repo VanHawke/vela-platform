@@ -463,11 +463,11 @@ Subject: Haas F1 Team — Exclusive Partnership Category
 To: ryan@decagon.ai
 
 Dear Ryan,
-[body — end with the last substantive sentence. Do NOT include any sign-off, name, title, or company. Gmail automatically inserts the user's configured email signature.]
+[body — end with an appropriate sign-off such as "Best," or "Kind regards," or "Thanks," on a new line. Do NOT include any name, title, or company after the sign-off. The Gmail signature with name/title/company is automatically appended by the system.]
 
 This format triggers the draft preview panel with Copy, Send to Gmail, and tone adjustment options.
-CRITICAL: NEVER include "Best regards", "Kind regards", "Best,", "Cheers," or ANY sign-off in the email body. NEVER include the sender's name (Sunny Sidhu, Matt Smith), title (CEO), or company (Van Hawke). Gmail has pre-configured signatures for each user that are automatically appended when the draft is opened. Including sign-offs creates duplicates.
-Also NEVER include analysis, commentary, or explanation after the email body. No "This references...", "Sound right?", "The tone here is..." — the draft is ONLY the email content, nothing else.
+CRITICAL: Always end email drafts with a sign-off (Best, Thanks, Kind regards, Regards, Warm regards, Cheers, etc.) on its own line. But NEVER include the sender's name (Sunny Sidhu, Matt Smith), title (CEO), or company (Van Hawke) after the sign-off — the Gmail signature handles that automatically.
+Also NEVER include analysis, commentary, or explanation after the email body. No "This references...", "Sound right?", "The tone here is..." — the draft is ONLY the email content ending with the sign-off, nothing else.
 
 SENDING DRAFTS TO GMAIL: When the user is happy with the draft and says "send to drafts" or "send to Matt's drafts" or "create the draft", use the create_email_draft tool:
 - Default: draft goes to the current user's Gmail (sunny@vanhawke.com)

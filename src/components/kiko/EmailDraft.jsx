@@ -42,34 +42,32 @@ function parseEmail(text) {
   let rawBody = t.slice(bodyStartIdx)
   // Hard cut at sign-off line — everything after is commentary
   const signoffPatterns = [
-    /\n\s*(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards|Thanks|Thank you|Yours|All the best),?\s*\n/i,
-    /\n\s*(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards|Thanks|Thank you|Yours|All the best),?\s*$/i,
-    /\n\s*---\s*\n/,
-    /\n\s*---\s*$/,
-    /\n\s*(Sunny\s*Sidhu|Matt\s*Smith)\s*$/im,
-    /\n\s*(CEO|CRO|COO|Managing Director)\s*$/im,
-    /\n\s*(Van\s*Hawke)\s/im,
-    /\n\s*\*\*(Analysis|My recommendation|Key positioning|Strategic|Next steps|Timing|Note|Why this works|Sound right)[:\s?]/i,
-    /\n\s*(This reengagement|This targets|The email positions|I've framed|I'd push back|I recommend|This references|This approach|This email|This draft|Sound right|The tone)/i,
+    { pat: /\n\s*(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards|Thanks|Thank you|Yours|All the best),?\s*\n/i, keep: true },
+    { pat: /\n\s*(Best regards|Kind regards|Regards|Sincerely|Best|Cheers|Warm regards|Thanks|Thank you|Yours|All the best),?\s*$/i, keep: true },
+    { pat: /\n\s*---\s*\n/, keep: false },
+    { pat: /\n\s*---\s*$/, keep: false },
+    { pat: /\n\s*(Sunny\s*Sidhu|Matt\s*Smith)\s*$/im, keep: false },
+    { pat: /\n\s*(CEO|CRO|COO|Managing Director)\s*$/im, keep: false },
+    { pat: /\n\s*(Van\s*Hawke)\s/im, keep: false },
+    { pat: /\n\s*\*\*(Analysis|My recommendation|Key positioning|Strategic|Next steps|Timing|Note|Why this works|Sound right)[:\s?]/i, keep: false },
+    { pat: /\n\s*(This reengagement|This targets|The email positions|I've framed|I'd push back|I recommend|This references|This approach|This email|This draft|Sound right|The tone)/i, keep: false },
   ]
-  for (const pat of signoffPatterns) {
+  for (const { pat, keep } of signoffPatterns) {
     const match = rawBody.match(pat)
     if (match && match.index > 15) {
-      // Always cut at the sign-off — Gmail handles signatures
-      rawBody = rawBody.slice(0, match.index).trim()
+      rawBody = keep ? rawBody.slice(0, match.index + match[0].length).trim() : rawBody.slice(0, match.index).trim()
       break
     }
   }
-  // Clean up any residual names, titles, company — Gmail signature handles all of this
+  // Clean up names, titles, company — but KEEP sign-offs
   let body = rawBody
     .replace(/\*\*/g, '')
     .replace(/\[Current[^\]]*\]/gi, '')
-    .replace(/\n\s*(Best regards|Kind regards|Warm regards|Regards|Sincerely|Cheers|Thanks|Thank you|Best|Yours|All the best),?\s*$/im, '')
     .replace(/\n\s*(Sunny\s*Sidhu|Matt\s*Smith)\s*$/im, '')
     .replace(/\n\s*(Sunny\s*Sidhu|Matt\s*Smith)\s*\n/gi, '\n')
     .replace(/\n\s*(CEO|CRO|COO|Managing Director|Director)\s*$/im, '')
     .replace(/\n?\s*(Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?)\s*$/im, '')
-    .replace(/\n\s*vanhawke\.com\s*$/im, '')
+    .replace(/\n\s*vanhawke\.(com|agency)\s*$/im, '')
     .replace(/\n\s*\n\s*\n/g, '\n\n')
     .trim()
   return { subject, to, body }
