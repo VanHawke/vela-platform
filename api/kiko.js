@@ -969,12 +969,11 @@ export default async function handler(req, res) {
         conversationSummary = `\n\n── EARLIER IN THIS CONVERSATION (summarised) ──\n${summaryParts}\n── END SUMMARY ──`;
       }
     }
-    const messages = conversationHistory.slice(-20)
+    const messages = conversationHistory.slice(-10)
       .filter(m => m.role === 'user' || m.role === 'assistant')
       .map(m => {
-        // Token budget: truncate very long messages to ~5K chars each
         const content = sanitizeUnicode(m.content || '');
-        return { role: m.role, content: content.length > 5000 ? content.slice(0, 4800) + '\n[... response truncated ...]' : content };
+        return { role: m.role, content: content.length > 2000 ? content.slice(0, 1800) + '\n[... truncated ...]' : content };
       });
 
     // File attachments
