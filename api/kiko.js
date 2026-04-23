@@ -954,7 +954,7 @@ export default async function handler(req, res) {
       write({ delta: '\n\nRequest timed out. Try a simpler question or try again.' });
       finishResponse();
     }
-  }, 90000);
+  }, 110000);
 
   try {
     write({ toolStatus: 'Connecting...' });
@@ -1685,7 +1685,7 @@ DEAL STAGE MAPPING:
 
     // Tool execution loop — time-aware, stops before timeout
     const maxRounds = isEmailIntent ? 2 : (voiceMode ? 5 : 5);
-    const timeLimit = isEmailIntent ? 30000 : (voiceMode ? 45000 : 65000);
+    const timeLimit = isEmailIntent ? 30000 : (voiceMode ? 45000 : 90000);
     while (response.stop_reason === 'tool_use' && toolRounds < maxRounds) {
       const elapsed = Date.now() - requestStart;
       if (elapsed > timeLimit) {

@@ -439,7 +439,7 @@ export default function Layout({ user }) {
         hasNotifications={notifCount > 0}
         notifCount={notifCount}
         isAdmin={isSuperAdmin}
-        onSearchClick={() => setCommandPaletteOpen(true)}
+        onSearchClick={() => setPaletteOpen(true)}
         onNotificationsClick={() => setNotifOpen(!notifOpen)}
       />}
 

@@ -906,7 +906,7 @@ export default function Organisations({ user }) {
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
               <button onClick={reset} style={{ flex: 1, padding: '10px 0', fontSize: 14, color: 'var(--text-secondary)', border: '1px solid var(--border)', borderRadius: 50, background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font)' }}>Cancel</button>
-              <button onClick={save} style={{ flex: 1, padding: '10px 0', fontSize: 14, color: '#0A0A0A', background: 'var(--accent)', border: 'none', borderRadius: 50, cursor: 'pointer', fontWeight: 500, fontFamily: 'var(--font)' }}>Save</button>
+              <button onClick={save} style={{ flex: 1, padding: '10px 0', fontSize: 14, color: '#FFFFFF', background: '#0A0A0A', border: 'none', borderRadius: 50, cursor: 'pointer', fontWeight: 500, fontFamily: 'var(--font)' }}>Save</button>
             </div>
           </div>
         </div>

@@ -747,14 +747,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     } else {
       setMessages(prev => [...prev, userMsg])
     }
-    setStreaming(true); setStreamText(''); setToolStatus(null); setThinkingSteps([]); setShowSteps(false)
+    setStreaming(true); setStreamText(''); setToolStatus(null); setThinkingSteps([]); setShowSteps(true)
     streamingRef.current = true; streamTextRef.current = ''; lastQueryRef.current = msg || ''
 
     // AbortController for stop/halt
     const controller = new AbortController()
     abortRef.current = controller
-    // Hard timeout — if Kiko doesn't respond within 90s, abort
-    const hardTimeout = setTimeout(() => { try { controller.abort() } catch {} }, 90000)
+    // Hard timeout — if Kiko doesn't respond within 110s, abort
+    const hardTimeout = setTimeout(() => { try { controller.abort() } catch {} }, 110000)
 
     let inactivityCheckId = null
 
@@ -797,9 +797,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       const reader = res.body.getReader(); const dec = new TextDecoder()
       let full = '', buf = '', pendingNav = null
       let lastDataTime = Date.now()
-      // Inactivity check — if no data received for 30s, abort
+      // Inactivity check — if no data received for 45s, abort
       inactivityCheckId = setInterval(() => {
-        if (Date.now() - lastDataTime > 30000) { clearInterval(inactivityCheckId); try { controller.abort() } catch {} }
+        if (Date.now() - lastDataTime > 45000) { clearInterval(inactivityCheckId); try { controller.abort() } catch {} }
       }, 5000)
       while (true) {
         const { done, value } = await reader.read(); if (done) break
@@ -1320,7 +1320,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               const ThumbUpIcon = <svg {...iconSz} viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>
               const ThumbDownIcon = <svg {...iconSz} viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/></svg>
               const RetryIcon = <svg {...iconSz} viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
-              if (isUser) return <>{abtn(() => editAndResend(i), 'Edit', EditIcon)}{abtn(() => copyToClipboard(msg.content), 'Copy', CopyIcon)}</>
+              if (isUser) return <>{abtn(() => editAndResend(i), 'Edit', EditIcon)}{abtn(() => copyToClipboard(msg.content), 'Copy', CopyIcon)}{abtn(() => { setMessages(prev => prev.slice(0, i)); handleSubmit(msg.content.replace(/^📎[^—]*— /, '')) }, 'Retry', RetryIcon)}</>
               if (isKiko) return <>{abtn(() => copyToClipboard(msg.content), 'Copy', CopyIcon)}{abtn(() => {}, 'Good', ThumbUpIcon)}{abtn(() => {}, 'Bad', ThumbDownIcon)}{abtn(() => regenerateResponse(i), 'Retry', RetryIcon)}</>
               return null
             })()}

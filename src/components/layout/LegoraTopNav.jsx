@@ -245,6 +245,12 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
 
       {/* Right cluster */}
       <div className="ltn-right">
+        {/* Search */}
+        <button className="ltn-icon" onClick={onSearchClick} title="Search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+        </button>
         <div ref={tasksRef} style={{ position: 'relative' }}>
           <button className="ltn-icon" onClick={() => setTasksOpen(!tasksOpen)} title="Background tasks">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ animation: bgTasks.filter(t => t.status === 'queued' || t.status === 'processing').length > 0 ? 'spin-cog 3s linear infinite' : 'none' }}>
@@ -293,12 +299,6 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
           )}
         </div>
 
-        {/* Search */}
-        <button className="ltn-icon" onClick={onSearchClick} title="Search">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-        </button>
 
         {/* Avatar with dropdown */}
         <div className="ltn-avatar-wrap" ref={avatarRef}>
