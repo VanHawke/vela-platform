@@ -737,6 +737,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     // AbortController for stop/halt
     const controller = new AbortController()
     abortRef.current = controller
+    // Hard timeout — if Kiko doesn't respond within 115s, abort
+    const hardTimeout = setTimeout(() => { try { controller.abort() } catch {} }, 115000)
 
     try {
       // Page context — tells Kiko what page user is viewing
@@ -800,15 +802,18 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       }
     } catch (err) {
       if (err.name === 'AbortError') {
-        // User stopped Kiko — save partial response
-        if (streamText) setMessages(prev => [...prev, { role: 'assistant', content: streamText + '\n\n*[Stopped by user]*' }])
+        // User stopped Kiko or timeout — save partial response
+        if (streamText) setMessages(prev => [...prev, { role: 'assistant', content: streamText + '\n\n*[Stopped]*' }])
+        else setMessages(prev => [...prev, { role: 'assistant', content: 'Request timed out. Try a shorter question or break it into parts.' }])
       } else {
-        setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message}` }])
+        const isNetwork = err.message?.toLowerCase().includes('network') || err.message?.toLowerCase().includes('failed to fetch')
+        const friendlyMsg = isNetwork ? 'Connection issue — the message may have been too large. Try again with a shorter prompt or fewer attachments.' : `Error: ${err.message}`
+        setMessages(prev => [...prev, { role: 'assistant', content: friendlyMsg }])
         showToast(err.message?.includes('token') ? 'Session expired — please refresh' : 'Kiko encountered an error', 'error')
       }
       setStreamText('')
     }
-    finally { setStreaming(false); streamingRef.current = false }
+    finally { clearTimeout(hardTimeout); setStreaming(false); streamingRef.current = false }
   }, [input, streaming, messages, user, activeConvId, pendingAttachments])
 
   const processFileForKiko = async (file) => {

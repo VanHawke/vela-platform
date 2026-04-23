@@ -20,16 +20,20 @@ export default async function handler(req, res) {
     
     // Build RFC 2822 email message
     const fromHeader = targetEmail;
+    // RFC 2047 encode subject for UTF-8 support (em dashes, smart quotes, etc.)
+    const encodedSubject = `=?UTF-8?B?${Buffer.from(subject, 'utf-8').toString('base64')}?=`;
     const headers = [
       `From: ${fromHeader}`,
       `To: ${Array.isArray(to) ? to.join(', ') : to}`,
-      `Subject: ${subject}`,
+      `Subject: ${encodedSubject}`,
       'MIME-Version: 1.0',
       'Content-Type: text/html; charset=utf-8',
+      'Content-Transfer-Encoding: base64',
     ].join('\r\n');
     
     const emailContent = htmlBody || body.replace(/\n/g, '<br>');
-    const rawMessage = `${headers}\r\n\r\n${emailContent}`;
+    const encodedBody = Buffer.from(emailContent, 'utf-8').toString('base64');
+    const rawMessage = `${headers}\r\n\r\n${encodedBody}`;
     const encodedMessage = Buffer.from(rawMessage).toString('base64url');
     
     // Create draft via Gmail API

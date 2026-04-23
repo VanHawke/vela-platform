@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-23T08:06:42.191Z",
+  "generated_at": "2026-04-23T09:41:15.670Z",
   "commits": [
+    {
+      "hash": "f5168a9",
+      "subject": "FIX STUCK TASKS + FORMATTING: (1) CLEARED 8 stuck background jobs from database (6 queued, 2 running for 12+ days). (2) RLS POLICIES added to kiko_background_jobs — Cancel and Clear buttons were silen",
+      "when": "2 hours ago"
+    },
     {
       "hash": "ece0b30",
       "subject": "FIX MATT DROPDOWN: (1) ROOT CAUSE — parent div had overflow:hidden which clipped the dropdown. Removed overflow:hidden. (2) Dropdown now opens DOWNWARD (top:100%) instead of upward (bottom:100%). (3) ",
-      "when": "43 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "c3edb83",
       "subject": "BACKGROUND TASKS OVERHAUL: (1) PROGRESS BAR — active tasks show purple animated progress bar with elapsed time in minutes. (2) CANCEL — each active task has a Cancel button that sets status to cancell",
-      "when": "45 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "a7185d8",
       "subject": "FIX: MATT IN DROPDOWN + NETWORK ERROR: (1) TEAM MEMBERS API — new /api/team-members endpoint returns all org users via service role key, bypassing RLS. EmailDraft now fetches from this instead of dire",
-      "when": "48 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "067d5a3",
       "subject": "EMAIL DRAFT OVERHAUL: (1) COPY BUTTON — copies full email (Subject + To + Body + sign-off) to clipboard. Shows green check on success. (2) EDIT MODE — pencil icon opens inline textarea for direct edit",
-      "when": "65 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "39ad856",
       "subject": "FIX PDF NETWORK ERROR: (1) file-extract.js body limit increased from 4.5MB (default) to 12MB — large PDFs were exceeding Vercel's default and returning network error. (2) Extracted document text now t",
-      "when": "82 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "aa2c562",
       "subject": "UX POLISH: (1) ALERT PILL — light orange bg (rgba 184,100,62,0.10), darker orange on hover (0.22), matching other pill hover patterns. (2) NOTIFICATIONS — each notification now has ✕ dismiss button, c",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "2cccf96",
       "subject": "VISUAL FIXES: (1) REMOVED + NEW BUTTON — this was the 'chevrons' next to the bell icon. Gone entirely. (2) ALERT PILL — animation now uses scale(1.03) + 12px box-shadow spread, much more visible pulsa",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "5a06682",
       "subject": "THREE CRITICAL FIXES: (1) BELL ICON — clean SVG with strokeLinecap/strokeLinejoin round, no artifacts. (2) ALERT PILL PULSATION — window.__kikoAlertCount was never set by Layout.jsx, so alertCount was",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "8138287",
       "subject": "DOCUMENT + MULTI-FILE FIXES: (1) ALL file attachments now sent to Kiko (was only first file). Multiple PDFs, docs, images all included in context. (2) API now handles type='file' attachments — PDFs/DO",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "9d0670d",
       "subject": "Full batch: (1) PUSH TO BACKGROUND — sourcing modal now has 'Push to background' button during sourcing phase AND 'Source in background' option in idle phase. Queues kiko_jobs and closes modal so user",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "de40b71",
       "subject": "Alert pill + notification icon fixes: (1) HOMEPAGE ALERT PILL — now pulsates with slow orange glow animation (pulse-pill) using command centre orange (#B8643E). Only pulsates when alerts > 0. (2) TOP ",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "cf695cc",
       "subject": "Remaining fixes: (1) NAV PERSISTENCE — orderedTabs now reads from localStorage synchronously on init instead of via useEffect, prevents flash-to-defaults on refresh. (2) CAMPAIGN EDITOR WIDTH — added ",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "266b2cb",
       "subject": "Fix duplicate closing button tag in LegoraTopNav",
-      "when": "12 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "12d6ba4",
       "subject": "UI overhaul: (1) BACKGROUND TASKS NAV ICON — replaced search icon with tasks icon showing pending/processing count with pulsating dot. Dropdown shows all tasks with status, completed tasks click throu",
-      "when": "12 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "0184f9d",
       "subject": "FIND LEADS NOW SOURCES VIA KIKO: (1) When CRM has no matching contacts, Find leads now auto-queues a Kiko background sourcing job instead of showing 'No leads found'. (2) Status message shown: 'Kiko i",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "2d52a1f",
       "subject": "FIX CAMPAIGN DELETE: Simplified deleteCampaign to single Supabase delete — CASCADE handles all FK tables automatically. Removed 6 individual FK table delete calls that were silently failing. Now shows",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "91b2d9b",
       "subject": "Remaining fixes: (1) PROSPECT CTAs SWAPPED — Find leads now has prominent black style, Add from CRM is outline. Deep source (background) button added to campaign editor. (2) EXPORT RESTRICTION — expor",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "e7e23f3",
       "subject": "CRITICAL FIXES: (1) CAMPAIGN DELETE — all FK constraints now CASCADE on delete. Deleting a campaign automatically removes all enrollments, conditions, lead segments, and targets. No more silent failur",
-      "when": "13 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "d3221d6",
       "subject": "CRITICAL FIX: Restored 2 accidentally archived files that are live dependencies. (1) linkedin-client.js — imported by linkedin_search_prospects, linkedin_send_invite, linkedin_send_message tools. (2) ",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "090e296",
-      "subject": "FIX CI/DEPLOY FAILURES: (1) Updated .github/workflows/ci.yml — removed checks for archived files (cron-knowledge-seed.js, ARCHITECTURE.md). Now checks cron-sequence-sender.js and README.md instead. (2",
-      "when": "14 hours ago"
+      "when": "16 hours ago"
     }
   ]
 }
