@@ -740,6 +740,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     // Hard timeout — if Kiko doesn't respond within 90s, abort
     const hardTimeout = setTimeout(() => { try { controller.abort() } catch {} }, 90000)
 
+    let inactivityCheckId = null
+
     try {
       // Page context — tells Kiko what page user is viewing
       const pageCtx = window.kikoPageContext || { page: window.location.pathname.replace('/', '') || 'home' }
@@ -778,8 +780,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       })
       const reader = res.body.getReader(); const dec = new TextDecoder()
       let full = '', buf = '', pendingNav = null
+      let lastDataTime = Date.now()
+      // Inactivity check — if no data received for 30s, abort
+      inactivityCheckId = setInterval(() => {
+        if (Date.now() - lastDataTime > 30000) { clearInterval(inactivityCheckId); try { controller.abort() } catch {} }
+      }, 5000)
       while (true) {
         const { done, value } = await reader.read(); if (done) break
+        lastDataTime = Date.now()
         buf += dec.decode(value, { stream: true })
         const lines = buf.split('\n'); buf = lines.pop() || ''
         for (const line of lines) {
@@ -794,6 +802,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
           } catch {}
         }
       }
+      clearInterval(inactivityCheckId)
       const responseContent = full.trim() || 'I ran into an issue processing that request. Please try again — if drafting an email, try saying "draft an email to [name] about [topic]".'
       const kikoMsg = { role: 'assistant', content: responseContent, timestamp: Date.now(), steps: thinkingSteps.length > 0 ? [...thinkingSteps] : undefined }
       const updated = [...messages, userMsg, kikoMsg]
@@ -823,7 +832,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       }
       setStreamText('')
     }
-    finally { clearTimeout(hardTimeout); setStreaming(false); streamingRef.current = false }
+    finally { clearTimeout(hardTimeout); try { clearInterval(inactivityCheckId) } catch {}; setStreaming(false); streamingRef.current = false }
   }, [input, streaming, messages, user, activeConvId, pendingAttachments])
 
   const processFileForKiko = async (file) => {
