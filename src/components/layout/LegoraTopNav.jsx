@@ -256,22 +256,39 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
             )}
           </button>
           {tasksOpen && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, width: 320, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,0.12)', zIndex: 200, maxHeight: 400, overflowY: 'auto' }}>
-              <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(0,0,0,0.05)', fontWeight: 500, fontSize: 13, color: '#0A0A0A' }}>Background Tasks</div>
-              {bgTasks.length === 0 && <div style={{ padding: '20px 16px', textAlign: 'center', color: '#A0A0A0', fontSize: 12 }}>No background tasks</div>}
-              {bgTasks.map(t => (
-                <div key={t.id} onClick={() => { if (t.related_entity_id && t.status === 'completed') { nav(`/campaigns/${t.related_entity_id}`); setTasksOpen(false) } }} style={{ padding: '10px 16px', borderBottom: '1px solid rgba(0,0,0,0.03)', cursor: t.status === 'completed' ? 'pointer' : 'default' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                    <span style={{ fontSize: 10 }}>{t.status === 'completed' ? '✅' : t.status === 'processing' ? '⏳' : t.status === 'queued' ? '🔄' : '❌'}</span>
-                    <span style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A', flex: 1 }}>{t.title}</span>
-                  </div>
-                  <div style={{ fontSize: 10, color: '#A0A0A0' }}>
-                    {t.status === 'completed' && t.result ? `${t.result.prospects_found || 0} prospects found, ${t.result.enrolled || 0} enrolled` : t.status}
-                    {' · '}{new Date(t.queued_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                  {t.status === 'completed' && t.related_entity_id && <div style={{ fontSize: 10, color: '#7C5CFC', marginTop: 3, fontWeight: 500 }}>View campaign →</div>}
-                </div>
-              ))}
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, width: 340, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,0.12)', zIndex: 200, maxHeight: 420, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontWeight: 500, fontSize: 13, color: '#0A0A0A' }}>Background Tasks</span>
+                {bgTasks.length > 0 && <button onClick={async () => { const ids = bgTasks.filter(t => t.status === 'completed' || t.status === 'failed' || t.status === 'cancelled').map(t => t.id); for (const id of ids) { await supabase.from('kiko_background_jobs').delete().eq('id', id) }; setBgTasks(prev => prev.filter(t => t.status === 'queued' || t.status === 'processing')) }} style={{ fontSize: 10, color: '#A0A0A0', background: 'none', border: 'none', cursor: 'pointer' }}>Clear finished</button>}
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto' }}>
+                {bgTasks.length === 0 && <div style={{ padding: '24px 16px', textAlign: 'center', color: '#A0A0A0', fontSize: 12 }}>No background tasks</div>}
+                {bgTasks.map(t => {
+                  const isActive = t.status === 'queued' || t.status === 'processing'
+                  const isCompleted = t.status === 'completed'
+                  const isFailed = t.status === 'failed'
+                  const elapsed = t.queued_at ? Math.round((Date.now() - new Date(t.queued_at).getTime()) / 60000) : 0
+                  return (<div key={t.id} style={{ padding: '10px 16px', borderBottom: '1px solid rgba(0,0,0,0.03)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                      <span style={{ fontSize: 10 }}>{isCompleted ? '✅' : isActive ? '⏳' : isFailed ? '❌' : '○'}</span>
+                      <span style={{ fontSize: 12, fontWeight: 500, color: '#0A0A0A', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.title}</span>
+                    </div>
+                    {isActive && <div style={{ marginBottom: 4 }}>
+                      <div style={{ width: '100%', height: 3, background: 'rgba(0,0,0,0.06)', borderRadius: 2, overflow: 'hidden' }}><div style={{ width: t.status === 'processing' ? '60%' : '20%', height: '100%', background: '#7C5CFC', borderRadius: 2, transition: 'width 1s', animation: 'pulse 1.5s ease-in-out infinite' }} /></div>
+                      <div style={{ fontSize: 10, color: '#A0A0A0', marginTop: 3, display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{t.status === 'processing' ? 'Processing...' : 'Queued'} · {elapsed}m</span>
+                        <button onClick={async (e) => { e.stopPropagation(); await supabase.from('kiko_background_jobs').update({ status: 'cancelled', finished_at: new Date().toISOString() }).eq('id', t.id); setBgTasks(prev => prev.map(x => x.id === t.id ? { ...x, status: 'cancelled' } : x)) }} style={{ fontSize: 10, color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Cancel</button>
+                      </div>
+                    </div>}
+                    {isCompleted && <div>
+                      <div style={{ fontSize: 10, color: '#6B6B6B' }}>{t.result ? `${t.result.prospects_found || 0} prospects, ${t.result.enrolled || 0} enrolled` : 'Done'} · {new Date(t.queued_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</div>
+                      {t.related_entity_id && <button onClick={() => { nav(`/campaigns/${t.related_entity_id}`); setTasksOpen(false) }} style={{ fontSize: 10, color: '#7C5CFC', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 500, marginTop: 2 }}>View campaign →</button>}
+                    </div>}
+                    {isFailed && <div style={{ fontSize: 10, color: '#f87171' }}>{t.error_message || 'Failed'}</div>}
+                    {t.status === 'cancelled' && <div style={{ fontSize: 10, color: '#A0A0A0' }}>Cancelled</div>}
+                  </div>)
+                })}
+              </div>
             </div>
           )}
         </div>

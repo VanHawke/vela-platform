@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-23T07:19:00.581Z",
+  "generated_at": "2026-04-23T07:21:15.483Z",
   "commits": [
+    {
+      "hash": "a7185d8",
+      "subject": "FIX: MATT IN DROPDOWN + NETWORK ERROR: (1) TEAM MEMBERS API — new /api/team-members endpoint returns all org users via service role key, bypassing RLS. EmailDraft now fetches from this instead of dire",
+      "when": "2 minutes ago"
+    },
     {
       "hash": "067d5a3",
       "subject": "EMAIL DRAFT OVERHAUL: (1) COPY BUTTON — copies full email (Subject + To + Body + sign-off) to clipboard. Shows green check on success. (2) EDIT MODE — pencil icon opens inline textarea for direct edit",
-      "when": "18 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "39ad856",
       "subject": "FIX PDF NETWORK ERROR: (1) file-extract.js body limit increased from 4.5MB (default) to 12MB — large PDFs were exceeding Vercel's default and returning network error. (2) Extracted document text now t",
-      "when": "35 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "aa2c562",
@@ -84,7 +89,7 @@
     {
       "hash": "090e296",
       "subject": "FIX CI/DEPLOY FAILURES: (1) Updated .github/workflows/ci.yml — removed checks for archived files (cron-knowledge-seed.js, ARCHITECTURE.md). Now checks cron-sequence-sender.js and README.md instead. (2",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "01eaaa6",
@@ -94,11 +99,6 @@
     {
       "hash": "4c20cb0",
       "subject": "Batch: (1) BG JOB PROCESSOR — new cron-job-processor.js processes queued jobs from kiko_jobs every 5min on Hetzner. Handles source_companies_bg with auto-enrollment + dedup. (2) 10 MORE DEAD API FILES",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "8ea2512",
-      "subject": "Session wrap-up: (1) EMAIL CONFIDENCE DISPLAY — prospect table shows ✓ verified badge or confidence % + source next to emails. Detail panel shows same. (2) KIKO_BIBLE.md fully updated — email intel en",
       "when": "14 hours ago"
     }
   ]
