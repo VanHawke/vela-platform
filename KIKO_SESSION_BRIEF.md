@@ -77,3 +77,32 @@
 4. Campaign editor width may still jump on resize
 5. PDF reading improved but needs more testing
 6. SponsorSignal LinkedIn posting not connected
+
+### REMAINING TASKS (for next session)
+
+**Priority 1 — Build:**
+1. Batch email drafting — new `batch_draft` tool in kiko-tools.js. Queue processor for N drafts with progress streaming. Uses existing create-gmail-draft endpoint.
+2. Google Cloud Pub/Sub — set up topic + push subscription for instant Gmail webhooks (currently using 15-min polling). Requires Google Cloud Console access.
+3. Supabase Realtime listener — persistent WebSocket on Hetzner for instant CRM change detection (deal stage moves, new contacts). Needs reconnection logic.
+4. Document generation — multi-step research → synthesis → formatted output pipeline for pitch decks, reports, proposals.
+
+**Priority 2 — Verify/Fix:**
+5. Kiko's plan expand/collapse — user reported still not working properly. Switched from maxHeight to display:block/none but needs testing.
+6. Auto-scroll during streaming — deployed but not confirmed by user.
+7. Voice mode — GPT-4o Realtime was reverted, needs end-to-end verification.
+8. SponsorSignal — LinkedIn posting system not connected.
+
+**Priority 3 — Optimise:**
+9. Conversation summary — currently static bullet points. Should use Haiku for AI-powered summarisation of older messages.
+10. Full Vercel elimination — serve frontend from Hetzner, auto-deploy via git hook.
+11. Mobile touch target verification — buttons increased but needs real device testing.
+
+### HETZNER MIGRATION STATUS
+- Kiko Chat API: ✅ Running on api.vanhawke.agency (no timeout limits)
+- Gmail Draft Creation: ✅ On Hetzner
+- Team Members API: ✅ On Hetzner
+- Pipeline Monitor: ✅ Every 30min, 308 deals scanned
+- Email Monitor: ✅ Every 15min, both inboxes
+- Gmail Webhook: ✅ Endpoint ready, awaiting Google Pub/Sub setup
+- SSL: ✅ Let's Encrypt, expires 2026-07-22
+- Vercel: Frontend only (free tier)
