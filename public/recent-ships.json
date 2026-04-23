@@ -1,55 +1,60 @@
 {
-  "generated_at": "2026-04-23T16:05:26.005Z",
+  "generated_at": "2026-04-23T16:17:37.923Z",
   "commits": [
+    {
+      "hash": "76bb1b5",
+      "subject": "REWRITE create-gmail-draft.js from scratch: NO Supabase client library (was crashing on Vercel module init). Now uses raw fetch() to Supabase REST API — identical pattern to every other working endpoi",
+      "when": "12 minutes ago"
+    },
     {
       "hash": "670eae9",
       "subject": "FIX: VITE_SUPABASE_URL not SUPABASE_URL — was crashing the function entirely (FUNCTION_INVOCATION_FAILED)",
-      "when": "8 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "b8ab594",
       "subject": "REWRITE create-gmail-draft.js: FORCE REFRESH TOKEN EVERY TIME. Previous version used getGoogleToken which cached expired tokens. New version: (1) Uses Supabase service role key directly (not the share",
-      "when": "12 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "a4015a8",
       "subject": "FIX DRAFT RESEND: (1) Removed duplicate client-side body cleanup — body is sent as-is, API handles cleanup. This prevents double-cleaning that was stripping the entire body on resend. (2) Added HTTP s",
-      "when": "24 minutes ago"
+      "when": "36 minutes ago"
     },
     {
       "hash": "9a87329",
       "subject": "FIX EMAIL SIGNATURE: (1) REMOVED ALL custom signatures from create-gmail-draft.js — Gmail has pre-configured signatures per user that auto-insert when draft is opened. (2) KIKO PROMPT UPDATED — CRITIC",
-      "when": "29 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "83e6db8",
       "subject": "FIX EMAIL DRAFT CLEANUP + SIGNATURES: (1) BODY PARSER — now cuts at sign-off line (Best regards, etc), '---' separator, and analysis commentary (This references, Sound right, etc). Matt Smith name now",
-      "when": "39 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "df9897b",
       "subject": "Update KIKO_SESSION_BRIEF.md — full current state: performance architecture, all working systems, outstanding items, key files, ring-fence rules",
-      "when": "45 minutes ago"
+      "when": "57 minutes ago"
     },
     {
       "hash": "30a328d",
       "subject": "Fix inactivityCheckId variable scope — was using inconsistent names (inactivityCheck vs inactivityCheckId). Now all references use inactivityCheckId correctly. 30s inactivity timeout will properly abo",
-      "when": "46 minutes ago"
+      "when": "58 minutes ago"
     },
     {
       "hash": "ce1adf7",
       "subject": "FIX KIKO SPEED: (1) EMAIL DRAFT FIRST — system prompt now says WRITE THE DRAFT IMMEDIATELY, do NOT call tools first. No CRM/email/memory lookups before drafting. (2) EMAIL TOOL ROUNDS CAPPED AT 2 — ma",
-      "when": "54 minutes ago"
+      "when": "66 minutes ago"
     },
     {
       "hash": "f2e0267",
       "subject": "FIX KIKO HANGING + DRAFT RESEND: (1) EMAIL FAST PATH — email/draft/compose requests now detected via regex fast-match (skips classifier). Uses LIGHT TOOL SET (7 tools instead of 39) — dramatically red",
-      "when": "61 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "2899c92",
       "subject": "FIX KIKO HANGING DURING TOOL CALLS: (1) HEARTBEAT — sends toolStatus ping every 8s during tool execution so client knows Kiko is alive. Previously nothing streamed during 15-30s sub-agent calls. (2) P",
-      "when": "71 minutes ago"
+      "when": "83 minutes ago"
     },
     {
       "hash": "f02394b",
@@ -59,7 +64,7 @@
     {
       "hash": "34c394e",
       "subject": "FIX ENCODING + HANGING: (1) SUBJECT LINE ENCODING — Subject now uses RFC 2047 UTF-8 Base64 encoding. Em dashes, smart quotes, and all Unicode characters will render correctly in Gmail. Body also uses ",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "f5168a9",
@@ -89,16 +94,11 @@
     {
       "hash": "39ad856",
       "subject": "FIX PDF NETWORK ERROR: (1) file-extract.js body limit increased from 4.5MB (default) to 12MB — large PDFs were exceeding Vercel's default and returning network error. (2) Extracted document text now t",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "aa2c562",
       "subject": "UX POLISH: (1) ALERT PILL — light orange bg (rgba 184,100,62,0.10), darker orange on hover (0.22), matching other pill hover patterns. (2) NOTIFICATIONS — each notification now has ✕ dismiss button, c",
-      "when": "19 hours ago"
-    },
-    {
-      "hash": "2cccf96",
-      "subject": "VISUAL FIXES: (1) REMOVED + NEW BUTTON — this was the 'chevrons' next to the bell icon. Gone entirely. (2) ALERT PILL — animation now uses scale(1.03) + 12px box-shadow spread, much more visible pulsa",
       "when": "19 hours ago"
     }
   ]

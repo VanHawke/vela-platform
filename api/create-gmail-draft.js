@@ -1,5 +1,5 @@
 // api/create-gmail-draft.js — Create a draft in any team member's Gmail
-// Uses raw fetch for Supabase (no client library) + force token refresh
+// Fetches user's Gmail signature and appends it to the draft body
 
 export const config = { maxDuration: 15, api: { bodyParser: { sizeLimit: '4mb' } } };
 
@@ -24,25 +24,26 @@ async function sbPatch(path, body) {
 async function forceRefreshToken(email) {
   const rows = await sbGet(`user_tokens?user_email=eq.${encodeURIComponent(email)}&provider=eq.google&select=refresh_token&limit=1`);
   if (!Array.isArray(rows) || !rows[0]?.refresh_token) return null;
-
   const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      client_id: process.env.GOOGLE_CLIENT_ID,
-      client_secret: process.env.GOOGLE_CLIENT_SECRET,
-      refresh_token: rows[0].refresh_token,
-      grant_type: 'refresh_token',
-    }),
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ client_id: process.env.GOOGLE_CLIENT_ID, client_secret: process.env.GOOGLE_CLIENT_SECRET, refresh_token: rows[0].refresh_token, grant_type: 'refresh_token' }),
   });
   const data = await res.json();
   if (!data.access_token) { console.error('[gmail-draft] Refresh failed:', JSON.stringify(data)); return null; }
   await sbPatch(`user_tokens?user_email=eq.${encodeURIComponent(email)}&provider=eq.google`, {
-    access_token: data.access_token,
-    expires_at: new Date(Date.now() + (data.expires_in || 3600) * 1000).toISOString(),
-    updated_at: new Date().toISOString(),
+    access_token: data.access_token, expires_at: new Date(Date.now() + (data.expires_in || 3600) * 1000).toISOString(), updated_at: new Date().toISOString(),
   });
   return data.access_token;
+}
+
+async function getGmailSignature(token, email) {
+  try {
+    const res = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/settings/sendAs/${encodeURIComponent(email)}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    const data = await res.json();
+    return data.signature || '';
+  } catch { return ''; }
 }
 
 export default async function handler(req, res) {
@@ -55,7 +56,10 @@ export default async function handler(req, res) {
     const token = await forceRefreshToken(targetEmail);
     if (!token) return res.status(400).json({ error: `Token refresh failed for ${targetEmail}` });
 
-    // Clean body — strip sign-offs, names, analysis. Gmail handles signatures.
+    // Fetch the user's Gmail signature
+    const signature = await getGmailSignature(token, targetEmail);
+
+    // Clean body — strip sign-offs, names, analysis
     let clean = (htmlBody || (body || '').replace(/\n/g, '<br>'))
       .replace(/<br\s*\/?>\s*(Best regards|Kind regards|Warm regards|Regards|Sincerely|Cheers|Thanks|Thank you|Best|Yours|All the best),?(\s*<br\s*\/?>)*/gi, '')
       .replace(/<br\s*\/?>\s*(Sunny\s*Sidhu|Matt\s*Smith)(\s*<br\s*\/?>)*/gi, '')
@@ -67,6 +71,10 @@ export default async function handler(req, res) {
       .replace(/(<br\s*\/?>)+$/i, '').trim();
     if (!clean) clean = body || 'Draft';
 
+    // Append Gmail signature if it exists
+    const emailContent = signature ? `${clean}<br><br>--<br>${signature}` : clean;
+
+    // Build RFC 2822 email
     const encSubj = `=?UTF-8?B?${Buffer.from(subject, 'utf-8').toString('base64')}?=`;
     const raw = [
       `From: ${targetEmail}`,
@@ -75,7 +83,7 @@ export default async function handler(req, res) {
       'MIME-Version: 1.0',
       'Content-Type: text/html; charset=utf-8',
       'Content-Transfer-Encoding: base64',
-    ].join('\r\n') + '\r\n\r\n' + Buffer.from(clean, 'utf-8').toString('base64');
+    ].join('\r\n') + '\r\n\r\n' + Buffer.from(emailContent, 'utf-8').toString('base64');
 
     const gRes = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/drafts', {
       method: 'POST',
