@@ -110,7 +110,7 @@ export default function EmailDraft({ text }) {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch('/api/team-members')
+        const res = await fetch('https://api.vanhawke.agency/api/team-members')
         const data = await res.json()
         if (data.ok && data.members?.length > 0) {
           setTeamMembers(data.members)
@@ -162,7 +162,7 @@ export default function EmailDraft({ text }) {
     setSent('sending')
     setSendDropdownOpen(false)
     try {
-      const res = await fetch('/api/create-gmail-draft', {
+      const res = await fetch('https://api.vanhawke.agency/api/create-gmail-draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ to, subject, body: currentBody, draftFor: targetEmail, sender: senderEmail })

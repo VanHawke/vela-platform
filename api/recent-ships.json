@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-23T19:13:30.041Z",
+  "generated_at": "2026-04-23T19:30:47.132Z",
   "commits": [
+    {
+      "hash": "476fccc",
+      "subject": "HETZNER MIGRATION PREP: (1) All 112 API files + agents copied to Hetzner kiko-worker. (2) @anthropic-ai/sdk + @supabase/supabase-js installed on Hetzner. (3) Express route /api/kiko wired to Kiko hand",
+      "when": "17 minutes ago"
+    },
     {
       "hash": "e10fc05",
       "subject": "FIX KIKO HANGING ON FOLLOW-UP: ROOT CAUSE — conversation history was sending 20 messages at 5000 chars each (100KB). After Kiko's long strategic analysis + draft, the follow-up 'create the draft' payl",
-      "when": "26 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "a768113",
       "subject": "FIX: (1) KIKO LOGO — always navigates to homepage with fallback to window.location.href if router fails. (2) KIKO'S PLAN — switched from maxHeight CSS animation to display:block/none for reliable expa",
-      "when": "40 minutes ago"
+      "when": "57 minutes ago"
     },
     {
       "hash": "6c07fb2",
       "subject": "FIX COMMAND PALETTE: Dark background (rgba(14,14,20,0.95)) had dark text (#0A0A0A) — everything invisible. Fixed theme to light text (#FAFAFF), light grey sub-text (#B0B0BB), light borders (rgba(255,2",
-      "when": "63 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "f75272a",
       "subject": "BATCH FIX: (1) SEARCH ICON — wired up to command palette (was calling nonexistent function). Swapped to appear BEFORE bg tasks icon. Order: [Search] [BG Tasks] [Avatar]. (2) RETRY ICON on user message",
-      "when": "68 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "ab84268",
@@ -39,7 +44,7 @@
     {
       "hash": "d70efff",
       "subject": "SENDER SELECTOR: (1) New 'From:' dropdown in EmailDraft — select who the email is from (Sunny or Matt or any future user). Determines From address + Gmail signature. (2) When sender is selected, draft",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "2a2c19a",
@@ -59,12 +64,12 @@
     {
       "hash": "670eae9",
       "subject": "FIX: VITE_SUPABASE_URL not SUPABASE_URL — was crashing the function entirely (FUNCTION_INVOCATION_FAILED)",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "b8ab594",
       "subject": "REWRITE create-gmail-draft.js: FORCE REFRESH TOKEN EVERY TIME. Previous version used getGoogleToken which cached expired tokens. New version: (1) Uses Supabase service role key directly (not the share",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "a4015a8",
@@ -94,11 +99,6 @@
     {
       "hash": "ce1adf7",
       "subject": "FIX KIKO SPEED: (1) EMAIL DRAFT FIRST — system prompt now says WRITE THE DRAFT IMMEDIATELY, do NOT call tools first. No CRM/email/memory lookups before drafting. (2) EMAIL TOOL ROUNDS CAPPED AT 2 — ma",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "f2e0267",
-      "subject": "FIX KIKO HANGING + DRAFT RESEND: (1) EMAIL FAST PATH — email/draft/compose requests now detected via regex fast-match (skips classifier). Uses LIGHT TOOL SET (7 tools instead of 39) — dramatically red",
       "when": "4 hours ago"
     }
   ]

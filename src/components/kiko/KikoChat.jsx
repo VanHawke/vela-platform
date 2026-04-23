@@ -716,7 +716,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       }
       let autoTitle = (userMsg || 'New conversation').slice(0, 60)
       try {
-        const tr = await fetch('/api/kiko', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'title', message: userMsg, response: (kikoResponse || '').slice(0, 300) }) })
+        const tr = await fetch('https://api.vanhawke.agency/api/kiko', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'title', message: userMsg, response: (kikoResponse || '').slice(0, 300) }) })
         if (tr.ok) {
           const tj = await tr.json()
           if (tj.title) autoTitle = tj.title
@@ -775,7 +775,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       // Detect deep research queries — route to parallel multi-agent endpoint
       const RESEARCH_TRIGGERS = ['deep research', 'research ', 'deep dive on', 'full research', 'investigate ', 'intel on ', 'intelligence on ']
       const isResearch = msg && RESEARCH_TRIGGERS.some(t => msg.toLowerCase().startsWith(t) || msg.toLowerCase().includes(t))
-      const KIKO_HOST = import.meta.env.VITE_KIKO_API_HOST || ''
+      const KIKO_HOST = import.meta.env.VITE_KIKO_API_HOST || 'https://api.vanhawke.agency'
       const apiUrl = isResearch ? `${KIKO_HOST}/api/kiko-research` : `${KIKO_HOST}/api/kiko`
 
       const res = await fetch(apiUrl, {
