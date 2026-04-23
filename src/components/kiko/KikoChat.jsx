@@ -716,10 +716,10 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     setPendingAttachments([])
     // Build file context from pending file attachments
     const fileAtts = allAttachments.filter(a => a.type === 'file')
-    const fileContext = fileAtts.length > 0 ? fileAtts.map(f => `\n\n[DOCUMENT CONTENTS — "${f.name}"${f.pages ? ` (${f.pages} pages)` : ''}]\n\n${f.data}\n\n[END OF DOCUMENT]`).join('') : ''
     const fileNames = fileAtts.map(f => f.name).join(', ')
     const displayMsg = fileAtts.length > 0 ? `📎 ${fileNames} — ${effectiveMsg}` : effectiveMsg
-    const apiMsg = (hiddenContext ? effectiveMsg + '\n\n' + hiddenContext : effectiveMsg) + fileContext
+    // Don't duplicate file content in apiMsg — it's already in attachments
+    const apiMsg = hiddenContext ? effectiveMsg + '\n\n' + hiddenContext : effectiveMsg
     const imgPreview = allAttachments.find(a => a.type === 'image' && a.previewUrl)?.previewUrl || null
     const userMsg = { role: 'user', content: displayMsg, timestamp: Date.now(), imagePreview: imgPreview }
     if (imgPreview) setImagePreview(null)
@@ -753,7 +753,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         body: JSON.stringify(isResearch ? { query: msg, userEmail: user?.email } : {
           message: apiMsg, userEmail: user?.email,
           attachments: allAttachments,
-          conversationHistory: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
+          conversationHistory: messages.slice(allAttachments.length > 0 ? -8 : -20).map(m => ({ role: m.role, content: typeof m.content === 'string' ? m.content.slice(0, 2000) : m.content })),
           currentPage: pageCtx.page || (window.location.pathname.replace('/', '') || 'home'),
           pageContext: pageCtx,
           pageEntity: (() => {

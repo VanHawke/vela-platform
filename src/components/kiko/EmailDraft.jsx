@@ -2,7 +2,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Send, Pen, RotateCcw, Copy, Check, ChevronDown } from 'lucide-react'
 import T from '@/lib/theme'
-import { supabase } from '@/lib/supabase'
 
 export function isEmailDraft(text) {
   if (!text || text.length < 60) return false
@@ -72,15 +71,18 @@ export default function EmailDraft({ text }) {
   const editRef = useRef(null)
   const { subject, to } = parsed
 
-  // Load team members
+  // Load team members via API (bypasses RLS)
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.from('users').select('id, email, role')
-      if (data) {
-        setTeamMembers(data)
-        const me = data.find(u => u.role === 'super_admin') || data[0]
-        if (me) setSelectedMember(me)
-      }
+      try {
+        const res = await fetch('/api/team-members')
+        const data = await res.json()
+        if (data.ok && data.members?.length > 0) {
+          setTeamMembers(data.members)
+          const me = data.members.find(u => u.role === 'super_admin') || data.members[0]
+          if (me) setSelectedMember(me)
+        }
+      } catch {}
     }
     load()
   }, [])
