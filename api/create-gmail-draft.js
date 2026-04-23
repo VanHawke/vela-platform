@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 
 export const config = { maxDuration: 15, api: { bodyParser: { sizeLimit: '4mb' } } };
 
-const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+const sb = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 async function forceRefreshToken(email) {
   // Always refresh — never use cached token
