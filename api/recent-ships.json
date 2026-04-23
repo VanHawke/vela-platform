@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-23T17:21:49.684Z",
+  "generated_at": "2026-04-23T17:38:34.260Z",
   "commits": [
+    {
+      "hash": "b21f100",
+      "subject": "MAJOR: EMAIL PERMISSIONS + LEARNING + GREETINGS: (1) EMAIL PERMISSION MODEL — super_admin scans ALL team Gmail accounts, regular users scan ONLY their own. Zero data leakage. Full body extraction (not",
+      "when": "17 minutes ago"
+    },
     {
       "hash": "0f3e1c3",
       "subject": "FIX TEXTAREA + TIMEOUT: (1) TEXTAREA SHRINK — resets height to 'auto' on submit via inputRef. Was staying expanded because only the value was cleared, not the CSS height. (2) EMAIL REGEX TIGHTENED — n",
-      "when": "20 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "d70efff",
       "subject": "SENDER SELECTOR: (1) New 'From:' dropdown in EmailDraft — select who the email is from (Sunny or Matt or any future user). Determines From address + Gmail signature. (2) When sender is selected, draft",
-      "when": "33 minutes ago"
+      "when": "49 minutes ago"
     },
     {
       "hash": "2a2c19a",
       "subject": "FIX SIGNATURE + SIGN-OFFS: (1) AGENCY ALIAS — signature now fetched from @vanhawke.agency alias (not @vanhawke.com). Maps sunny@vanhawke.com→sunny@vanhawke.agency, matt.smith→matt.smith@vanhawke.agenc",
-      "when": "45 minutes ago"
+      "when": "62 minutes ago"
     },
     {
       "hash": "58cb977",
       "subject": "FIX GMAIL SIGNATURE: Gmail API does NOT auto-insert signatures on API-created drafts (only on compose UI drafts). Now fetches user's Gmail signature via settings/sendAs API and appends it to the draft",
-      "when": "64 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "76bb1b5",
       "subject": "REWRITE create-gmail-draft.js from scratch: NO Supabase client library (was crashing on Vercel module init). Now uses raw fetch() to Supabase REST API — identical pattern to every other working endpoi",
-      "when": "76 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "670eae9",
       "subject": "FIX: VITE_SUPABASE_URL not SUPABASE_URL — was crashing the function entirely (FUNCTION_INVOCATION_FAILED)",
-      "when": "85 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "b8ab594",
       "subject": "REWRITE create-gmail-draft.js: FORCE REFRESH TOKEN EVERY TIME. Previous version used getGoogleToken which cached expired tokens. New version: (1) Uses Supabase service role key directly (not the share",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "a4015a8",
@@ -69,12 +74,12 @@
     {
       "hash": "f2e0267",
       "subject": "FIX KIKO HANGING + DRAFT RESEND: (1) EMAIL FAST PATH — email/draft/compose requests now detected via regex fast-match (skips classifier). Uses LIGHT TOOL SET (7 tools instead of 39) — dramatically red",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "2899c92",
       "subject": "FIX KIKO HANGING DURING TOOL CALLS: (1) HEARTBEAT — sends toolStatus ping every 8s during tool execution so client knows Kiko is alive. Previously nothing streamed during 15-30s sub-agent calls. (2) P",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f02394b",
@@ -89,16 +94,11 @@
     {
       "hash": "f5168a9",
       "subject": "FIX STUCK TASKS + FORMATTING: (1) CLEARED 8 stuck background jobs from database (6 queued, 2 running for 12+ days). (2) RLS POLICIES added to kiko_background_jobs — Cancel and Clear buttons were silen",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "ece0b30",
       "subject": "FIX MATT DROPDOWN: (1) ROOT CAUSE — parent div had overflow:hidden which clipped the dropdown. Removed overflow:hidden. (2) Dropdown now opens DOWNWARD (top:100%) instead of upward (bottom:100%). (3) ",
-      "when": "10 hours ago"
-    },
-    {
-      "hash": "c3edb83",
-      "subject": "BACKGROUND TASKS OVERHAUL: (1) PROGRESS BAR — active tasks show purple animated progress bar with elapsed time in minutes. (2) CANCEL — each active task has a Cancel button that sets status to cancell",
       "when": "10 hours ago"
     }
   ]

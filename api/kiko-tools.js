@@ -1025,59 +1025,61 @@ Document:\n${document_text.slice(0, 25000)}` }],
   if (name === 'read_email') {
     const { operation, query } = input;
     try {
-      const SB_URL = process.env.VITE_SUPABASE_URL;
-      const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-      const sbHeaders = { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' };
-
       // Permission check: get user role
-      const userRows = await fetch(`${SB_URL}/rest/v1/users?id=eq.${userId}&select=role,email&limit=1`, { headers: sbHeaders }).then(r => r.json());
-      const userRole = userRows?.[0]?.role || 'user';
-      const userEmailAddr = userRows?.[0]?.email || userEmail;
+      const userRows = await sbFetch(`users?id=eq.${userId}&select=role,email&limit=1`);
+      const userRole = (Array.isArray(userRows) && userRows[0]?.role) || 'user';
+      const userEmailAddr = (Array.isArray(userRows) && userRows[0]?.email) || userEmail;
       const isSuperAdmin = userRole === 'super_admin';
 
-      // Token refresh helper
-      async function getToken(email) {
-        const res = await fetch(`${SB_URL}/rest/v1/user_tokens?user_email=eq.${encodeURIComponent(email)}&provider=eq.google&select=refresh_token&limit=1`, { headers: sbHeaders });
-        const rows = await res.json();
-        if (!Array.isArray(rows) || !rows[0]?.refresh_token) return null;
+      // Token refresh — uses same pattern as create-gmail-draft (proven working)
+      async function refreshGmailToken(email) {
+        const rows = await sbFetch(`user_tokens?user_email=eq.${encodeURIComponent(email)}&provider=eq.google&select=refresh_token&limit=1`);
+        if (!Array.isArray(rows) || !rows[0]?.refresh_token) { console.log(`[read_email] No refresh_token for ${email}`); return null; }
         const tRes = await fetch('https://oauth2.googleapis.com/token', {
           method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: new URLSearchParams({ client_id: process.env.GOOGLE_CLIENT_ID, client_secret: process.env.GOOGLE_CLIENT_SECRET, refresh_token: rows[0].refresh_token, grant_type: 'refresh_token' }),
         });
         const tData = await tRes.json();
-        return tData.access_token || null;
+        if (!tData.access_token) { console.log(`[read_email] Token refresh failed for ${email}:`, JSON.stringify(tData).slice(0, 200)); return null; }
+        return tData.access_token;
       }
 
       const GMAIL = 'https://gmail.googleapis.com/gmail/v1/users/me';
       const gfetch = (token, path) => fetch(`${GMAIL}${path}`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
 
-      // Build account list based on permissions
-      const accounts = [];
-      if (isSuperAdmin) {
-        // Super admin: search ALL team members
-        const allUsers = await fetch(`${SB_URL}/rest/v1/users?select=email&order=role.asc`, { headers: sbHeaders }).then(r => r.json());
-        for (const u of (allUsers || [])) {
-          const t = await getToken(u.email);
-          if (t) accounts.push({ label: u.email.split('@')[0], email: u.email, token: t });
-        }
-      } else {
-        // Regular user: own email only
-        const t = await getToken(userEmailAddr);
-        if (t) accounts.push({ label: userEmailAddr.split('@')[0], email: userEmailAddr, token: t });
+      // Extract full body text from Gmail message payload
+      function extractBody(payload) {
+        if (payload?.mimeType === 'text/plain' && payload.body?.data) return Buffer.from(payload.body.data, 'base64url').toString('utf-8');
+        if (payload?.parts) for (const p of payload.parts) { const t = extractBody(p); if (t) return t; }
+        if (payload?.body?.data) return Buffer.from(payload.body.data, 'base64url').toString('utf-8');
+        return '';
       }
 
-      if (!accounts.length) return 'Unable to access Gmail — token refresh failed. Try reconnecting Google in Settings.';
+      // Build account list based on permissions — parallel token refresh
+      const teamEmails = isSuperAdmin
+        ? (await sbFetch('users?select=email&order=role.asc') || []).map(u => u.email).filter(Boolean)
+        : [userEmailAddr];
+
+      const tokenResults = await Promise.all(teamEmails.map(async email => {
+        const t = await refreshGmailToken(email);
+        return t ? { label: email.split('@')[0], email, token: t } : null;
+      }));
+      const accounts = tokenResults.filter(Boolean);
+
+      if (!accounts.length) return 'Gmail token refresh failed for all accounts. Try reconnecting Google in Settings → Accounts.';
 
       if (operation === 'unread' || operation === 'inbox_summary') {
         let results = [];
         for (const acct of accounts) {
-          const list = await gfetch(acct.token, '/messages?q=is:unread&maxResults=8');
-          if (!list.messages?.length) continue;
-          for (const m of list.messages.slice(0, 5)) {
-            const detail = await gfetch(acct.token, `/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`);
-            const hdrs = detail.payload?.headers || [];
-            results.push({ account: acct.label, from: (hdrs.find(h => h.name === 'From')?.value || '?').split('<')[0].trim(), subject: hdrs.find(h => h.name === 'Subject')?.value || '(no subject)', date: hdrs.find(h => h.name === 'Date')?.value || '' });
-          }
+          try {
+            const list = await gfetch(acct.token, '/messages?q=is:unread&maxResults=8');
+            if (!list.messages?.length) continue;
+            for (const m of list.messages.slice(0, 5)) {
+              const detail = await gfetch(acct.token, `/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`);
+              const hdrs = detail.payload?.headers || [];
+              results.push({ account: acct.label, from: (hdrs.find(h => h.name === 'From')?.value || '?').split('<')[0].trim(), subject: hdrs.find(h => h.name === 'Subject')?.value || '(no subject)', date: hdrs.find(h => h.name === 'Date')?.value || '' });
+            }
+          } catch (e) { console.log(`[read_email] unread error for ${acct.label}:`, e.message); }
         }
         if (!results.length) return 'No unread emails across checked accounts.';
         return `UNREAD EMAILS (${results.length}):\n${results.map(m => `[${m.account}] ${m.from}: ${m.subject} [${m.date}]`).join('\n')}`;
@@ -1087,23 +1089,18 @@ Document:\n${document_text.slice(0, 25000)}` }],
         const q = query || 'newer_than:7d';
         let allResults = [];
         for (const acct of accounts) {
-          const list = await gfetch(acct.token, `/messages?q=${encodeURIComponent(q)}&maxResults=15`);
-          if (!list.messages?.length) continue;
-          for (const m of list.messages.slice(0, 8)) {
-            const detail = await gfetch(acct.token, `/messages/${m.id}?format=full`);
-            const hdrs = detail.payload?.headers || [];
-            // Extract full body text
-            let body = '';
-            const extractText = (part) => {
-              if (part?.mimeType === 'text/plain' && part.body?.data) return Buffer.from(part.body.data, 'base64url').toString('utf-8');
-              if (part?.parts) for (const p of part.parts) { const t = extractText(p); if (t) return t; }
-              return '';
-            };
-            body = extractText(detail.payload) || detail.snippet || '';
-            allResults.push({ account: acct.label, from: (hdrs.find(h => h.name === 'From')?.value || '?').split('<')[0].trim(), to: hdrs.find(h => h.name === 'To')?.value || '', subject: hdrs.find(h => h.name === 'Subject')?.value || '(no subject)', date: hdrs.find(h => h.name === 'Date')?.value || '', body: body.slice(0, 1500), threadId: detail.threadId });
-          }
+          try {
+            const list = await gfetch(acct.token, `/messages?q=${encodeURIComponent(q)}&maxResults=10`);
+            if (!list.messages?.length) continue;
+            for (const m of list.messages.slice(0, 6)) {
+              const detail = await gfetch(acct.token, `/messages/${m.id}?format=full`);
+              const hdrs = detail.payload?.headers || [];
+              const body = extractBody(detail.payload) || detail.snippet || '';
+              allResults.push({ account: acct.label, from: (hdrs.find(h => h.name === 'From')?.value || '?').split('<')[0].trim(), to: hdrs.find(h => h.name === 'To')?.value || '', subject: hdrs.find(h => h.name === 'Subject')?.value || '(no subject)', date: hdrs.find(h => h.name === 'Date')?.value || '', body: body.slice(0, 1500), threadId: detail.threadId });
+            }
+          } catch (e) { console.log(`[read_email] search error for ${acct.label}:`, e.message); }
         }
-        if (!allResults.length) return `No emails found for: "${q}" across ${accounts.length} account(s).`;
+        if (!allResults.length) return `No emails found for: "${q}" across ${accounts.length} account(s). Try a different search query.`;
         return `EMAIL SEARCH "${q}" — ${allResults.length} results across ${accounts.length} account(s):\n\n${allResults.map(m => `[${m.account.toUpperCase()}] ${m.from} → ${m.to?.split('<')[0]?.trim() || '?'}\nSubject: ${m.subject} [${m.date}]\nThread: ${m.threadId}\n${m.body}\n`).join('\n---\n')}`;
       }
 
@@ -1116,16 +1113,10 @@ Document:\n${document_text.slice(0, 25000)}` }],
             if (thread.messages?.length) {
               const msgs = thread.messages.map(m => {
                 const hdrs = m.payload?.headers || [];
-                let body = '';
-                const extractText = (part) => {
-                  if (part?.mimeType === 'text/plain' && part.body?.data) return Buffer.from(part.body.data, 'base64url').toString('utf-8');
-                  if (part?.parts) for (const p of part.parts) { const t = extractText(p); if (t) return t; }
-                  return '';
-                };
-                body = extractText(m.payload) || m.snippet || '';
-                return { from: (hdrs.find(h => h.name === 'From')?.value || '?'), to: hdrs.find(h => h.name === 'To')?.value || '', date: hdrs.find(h => h.name === 'Date')?.value || '', subject: hdrs.find(h => h.name === 'Subject')?.value || '', body: body.slice(0, 3000) };
+                const body = extractBody(m.payload) || m.snippet || '';
+                return { from: hdrs.find(h => h.name === 'From')?.value || '?', to: hdrs.find(h => h.name === 'To')?.value || '', date: hdrs.find(h => h.name === 'Date')?.value || '', subject: hdrs.find(h => h.name === 'Subject')?.value || '', body: body.slice(0, 3000) };
               });
-              return `FULL THREAD (${msgs.length} messages, from ${acct.label}'s inbox):\n\n${msgs.map(m => `FROM: ${m.from}\nTO: ${m.to}\nDATE: ${m.date}\nSUBJECT: ${m.subject}\n\n${m.body}\n`).join('\n═══════════════════════════════\n')}`;
+              return `FULL THREAD (${msgs.length} messages, ${acct.label}'s inbox):\n\n${msgs.map(m => `FROM: ${m.from}\nTO: ${m.to}\nDATE: ${m.date}\nSUBJECT: ${m.subject}\n\n${m.body}\n`).join('\n═══════════════════════════════\n')}`;
             }
           } catch {}
         }
