@@ -828,7 +828,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         }
       }
       clearInterval(inactivityCheckId)
-      const responseContent = full.trim() || 'I ran into an issue processing that request. Please try again — if drafting an email, try saying "draft an email to [name] about [topic]".'
+      const responseContent = full.trim() || 'Something went wrong — please try again.'
+      if (!full.trim()) console.warn('[KikoChat] Empty response from API — stream may have dropped')
       const kikoMsg = { role: 'assistant', content: responseContent, timestamp: Date.now(), steps: thinkingSteps.length > 0 ? [...thinkingSteps] : undefined }
       const updated = [...messages, userMsg, kikoMsg]
       setMessages(prev => [...prev, kikoMsg]); setStreamText(''); setToolStatus(null)
@@ -858,7 +859,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
       }
       setStreamText('')
     }
-    finally { clearTimeout(hardTimeout); try { clearInterval(inactivityCheckId) } catch {}; setStreaming(false); streamingRef.current = false }
+    finally { clearTimeout(hardTimeout); try { clearInterval(inactivityCheckId) } catch {}; setStreaming(false); streamingRef.current = false; setToolStatus(null); setStreamText('') }
   }, [input, streaming, messages, user, activeConvId, pendingAttachments])
 
   const processFileForKiko = async (file) => {

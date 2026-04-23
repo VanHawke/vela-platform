@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-23T20:56:53.773Z",
+  "generated_at": "2026-04-23T21:04:05.626Z",
   "commits": [
+    {
+      "hash": "ebe5103",
+      "subject": "BATCH EMAIL DRAFTING: New batch_draft_emails tool — drafts re-engagement emails for multiple stalled deals. Queries pipeline for idle deals, generates personalised drafts via Haiku (fast), creates Gma",
+      "when": "7 minutes ago"
+    },
     {
       "hash": "91d2688",
       "subject": "Add monitor files to repo: email-monitor (user-specific alerts, campaign detection), pipeline-monitor (stale deal detection), scheduler (cron registration), webhooks (Gmail Pub/Sub receiver)",
-      "when": "5 minutes ago"
+      "when": "12 minutes ago"
     },
     {
       "hash": "c3b088a",
       "subject": "Update session brief with remaining tasks and Hetzner migration status",
-      "when": "14 minutes ago"
+      "when": "21 minutes ago"
     },
     {
       "hash": "679c59e",
       "subject": "MOBILE POLISH: (1) Copy/Edit buttons increased from 28px to 36px (better touch targets). (2) Icon sizes increased from 12-13px to 14-15px. (3) Tone buttons padding increased from 5px to 7px. (4) Dropd",
-      "when": "14 minutes ago"
+      "when": "21 minutes ago"
     },
     {
       "hash": "1cd95dc",
       "subject": "CONVERSATION SUMMARY + SELF-KNOWLEDGE: (1) Conversation summary now kicks in at 6 messages (was 20). Older messages summarised as bullet points with 200 chars each. Kiko told to maintain continuity. L",
-      "when": "20 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "d9e3ad6",
       "subject": "HETZNER MIGRATION LIVE: Kiko API now runs on Hetzner (api.vanhawke.agency) with ZERO timeout limits. SSL via Let's Encrypt. Frontend updated: Kiko chat, title gen, Gmail drafts, team members all point",
-      "when": "86 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "476fccc",
@@ -39,7 +44,7 @@
     {
       "hash": "a768113",
       "subject": "FIX: (1) KIKO LOGO — always navigates to homepage with fallback to window.location.href if router fails. (2) KIKO'S PLAN — switched from maxHeight CSS animation to display:block/none for reliable expa",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "6c07fb2",
@@ -94,11 +99,6 @@
     {
       "hash": "b8ab594",
       "subject": "REWRITE create-gmail-draft.js: FORCE REFRESH TOKEN EVERY TIME. Previous version used getGoogleToken which cached expired tokens. New version: (1) Uses Supabase service role key directly (not the share",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "a4015a8",
-      "subject": "FIX DRAFT RESEND: (1) Removed duplicate client-side body cleanup — body is sent as-is, API handles cleanup. This prevents double-cleaning that was stripping the entire body on resend. (2) Added HTTP s",
       "when": "5 hours ago"
     }
   ]
