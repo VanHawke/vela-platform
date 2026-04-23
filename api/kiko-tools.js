@@ -340,6 +340,17 @@ export const TOOL_DEFINITIONS = [
       original_draft: { type: 'string', description: 'IMPORTANT: If the user made corrections to your original draft, include your FIRST version here so Kiko can learn from the edits. Leave empty if the user accepted the first draft without changes.' },
     }, required: ['to', 'subject', 'body'] },
   },
+  {
+    name: 'batch_draft_emails',
+    description: 'Draft re-engagement emails for multiple stalled deals in one go. Use when: "draft emails for all stalled deals", "re-engage the pipeline", "batch outreach for idle deals". Queries stalled deals, generates personalised drafts for each, and creates Gmail drafts. Reports progress as it works.',
+    input_schema: { type: 'object', properties: {
+      min_days_stale: { type: 'number', description: 'Minimum days since last activity to include. Default: 14' },
+      max_deals: { type: 'number', description: 'Maximum number of deals to draft for. Default: 10' },
+      sender: { type: 'string', description: 'Email of the sender (determines From + signature). Default: matt.smith@vanhawke.com' },
+      draft_for: { type: 'string', description: 'Whose Gmail receives the drafts. Default: same as sender' },
+      tone: { type: 'string', description: 'Tone directive: "direct", "warm", "formal", "casual". Default: "direct"' },
+    } },
+  },
 ];
 
 // Conditional tool — only injected when intent is master_brief
@@ -716,7 +727,7 @@ Document:\n${document_text.slice(0, 25000)}` }],
     const { to, subject, body, draft_for, original_draft } = input;
     const targetEmail = draft_for || 'sunny@vanhawke.com';
     try {
-      const res = await fetch('https://kiko.vanhawke.agency/api/create-gmail-draft', {
+      const res = await fetch('https://api.vanhawke.agency/api/create-gmail-draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ to, subject, body: body.replace(/\n/g, '<br>'), htmlBody: body, draftFor: targetEmail }),
@@ -737,6 +748,126 @@ Document:\n${document_text.slice(0, 25000)}` }],
       }
     } catch (err) {
       return `❌ Error creating draft: ${err.message}`;
+    }
+  }
+
+  // ── Batch Email Drafting — draft re-engagement emails for multiple stalled deals ──
+  if (name === 'batch_draft_emails') {
+    const minDays = input.min_days_stale || 14;
+    const maxDeals = Math.min(input.max_deals || 10, 20); // Cap at 20
+    const senderEmail = input.sender || 'matt.smith@vanhawke.com';
+    const draftFor = input.draft_for || senderEmail;
+    const tone = input.tone || 'direct';
+    
+    try {
+      // Get stalled deals
+      const deals = await sbFetch('deals?select=id,data,updated_at&order=updated_at.asc');
+      if (!Array.isArray(deals) || !deals.length) return 'No deals found in pipeline.';
+      
+      const now = Date.now();
+      const stalledDeals = deals.filter(d => {
+        const data = d.data || {};
+        const stage = data.stage || '';
+        if (/closed|won|lost|dead/i.test(stage)) return false;
+        const lastActivity = data.last_activity_at || d.updated_at;
+        const daysSince = Math.floor((now - new Date(lastActivity).getTime()) / 86400000);
+        return daysSince >= minDays && daysSince < 365;
+      }).slice(0, maxDeals);
+      
+      if (!stalledDeals.length) return `No deals stalled for ${minDays}+ days found.`;
+      
+      // For each deal, find the primary contact and draft an email
+      const results = [];
+      const Anthropic = (await import('@anthropic-ai/sdk')).default;
+      const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
+      
+      for (let i = 0; i < stalledDeals.length; i++) {
+        const deal = stalledDeals[i];
+        const d = deal.data || {};
+        const dealName = d.name || d.company || d.title || 'Unknown';
+        const contactName = d.contact_name || d.contact || '';
+        const contactEmail = d.contact_email || '';
+        const company = d.company || dealName;
+        const stage = d.stage || '';
+        const value = d.value || 0;
+        const lastActivity = d.last_activity_at || deal.updated_at;
+        const daysSince = Math.floor((now - new Date(lastActivity).getTime()) / 86400000);
+        
+        if (!contactEmail) {
+          results.push({ deal: dealName, status: 'skipped', reason: 'No contact email' });
+          continue;
+        }
+        
+        try {
+          // Generate personalised draft using Claude
+          const draftRes = await claude.messages.create({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 500,
+            messages: [{ role: 'user', content: `Draft a short re-engagement email (under 120 words) for a Haas F1 Team sponsorship partnership.
+Tone: ${tone}. Sender: Matt Smith, Van Hawke Agency.
+Recipient: ${contactName} at ${company}
+Last contact: ${daysSince} days ago. Stage: ${stage}. Value: $${(value/1000000).toFixed(1)}M.
+Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous conversations naturally — give a specific reason to reconnect (new season, recent results, upcoming race) — end with a clear ask for a brief call. End with just "Best," on its own line. Do NOT include any name, title, company, or signature after Best. Output ONLY the email body, nothing else.` }],
+          });
+          
+          const emailBody = draftRes.content[0]?.text || '';
+          if (!emailBody || emailBody.length < 30) {
+            results.push({ deal: dealName, status: 'failed', reason: 'Draft generation failed' });
+            continue;
+          }
+          
+          // Create the Gmail draft
+          const gmailRes = await fetch('https://api.vanhawke.agency/api/create-gmail-draft', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: contactEmail,
+              subject: `Haas F1 Team x ${company} — Reconnecting`,
+              body: emailBody,
+              sender: senderEmail,
+              draftFor: draftFor,
+            }),
+          });
+          const gmailData = await gmailRes.json();
+          
+          if (gmailData.ok) {
+            results.push({ deal: dealName, contact: contactName, email: contactEmail, status: 'drafted', draftId: gmailData.draftId });
+          } else {
+            results.push({ deal: dealName, status: 'failed', reason: gmailData.error || 'Gmail error' });
+          }
+        } catch (err) {
+          results.push({ deal: dealName, status: 'failed', reason: err.message?.slice(0, 100) });
+        }
+      }
+      
+      const drafted = results.filter(r => r.status === 'drafted');
+      const skipped = results.filter(r => r.status === 'skipped');
+      const failed = results.filter(r => r.status === 'failed');
+      
+      let report = `📧 BATCH DRAFT COMPLETE\n\n`;
+      report += `✅ ${drafted.length} drafts created in ${draftFor === 'matt.smith@vanhawke.com' ? "Matt's" : "your"} Gmail\n`;
+      if (skipped.length) report += `⏭️ ${skipped.length} skipped (no contact email)\n`;
+      if (failed.length) report += `❌ ${failed.length} failed\n`;
+      report += `\n`;
+      
+      if (drafted.length) {
+        report += `DRAFTS CREATED:\n`;
+        for (const r of drafted) {
+          report += `• ${r.deal} → ${r.contact} (${r.email})\n`;
+        }
+      }
+      if (skipped.length) {
+        report += `\nSKIPPED (no email):\n`;
+        for (const r of skipped) report += `• ${r.deal}\n`;
+      }
+      if (failed.length) {
+        report += `\nFAILED:\n`;
+        for (const r of failed) report += `• ${r.deal}: ${r.reason}\n`;
+      }
+      
+      return report;
+    } catch (err) {
+      return `Batch draft error: ${err.message}`;
     }
   }
 

@@ -1,20 +1,35 @@
 {
-  "generated_at": "2026-04-23T20:42:47.787Z",
+  "generated_at": "2026-04-23T20:56:53.773Z",
   "commits": [
+    {
+      "hash": "91d2688",
+      "subject": "Add monitor files to repo: email-monitor (user-specific alerts, campaign detection), pipeline-monitor (stale deal detection), scheduler (cron registration), webhooks (Gmail Pub/Sub receiver)",
+      "when": "5 minutes ago"
+    },
+    {
+      "hash": "c3b088a",
+      "subject": "Update session brief with remaining tasks and Hetzner migration status",
+      "when": "14 minutes ago"
+    },
+    {
+      "hash": "679c59e",
+      "subject": "MOBILE POLISH: (1) Copy/Edit buttons increased from 28px to 36px (better touch targets). (2) Icon sizes increased from 12-13px to 14-15px. (3) Tone buttons padding increased from 5px to 7px. (4) Dropd",
+      "when": "14 minutes ago"
+    },
     {
       "hash": "1cd95dc",
       "subject": "CONVERSATION SUMMARY + SELF-KNOWLEDGE: (1) Conversation summary now kicks in at 6 messages (was 20). Older messages summarised as bullet points with 200 chars each. Kiko told to maintain continuity. L",
-      "when": "6 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "d9e3ad6",
       "subject": "HETZNER MIGRATION LIVE: Kiko API now runs on Hetzner (api.vanhawke.agency) with ZERO timeout limits. SSL via Let's Encrypt. Frontend updated: Kiko chat, title gen, Gmail drafts, team members all point",
-      "when": "72 minutes ago"
+      "when": "86 minutes ago"
     },
     {
       "hash": "476fccc",
       "subject": "HETZNER MIGRATION PREP: (1) All 112 API files + agents copied to Hetzner kiko-worker. (2) @anthropic-ai/sdk + @supabase/supabase-js installed on Hetzner. (3) Express route /api/kiko wired to Kiko hand",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "e10fc05",
@@ -44,7 +59,7 @@
     {
       "hash": "b21f100",
       "subject": "MAJOR: EMAIL PERMISSIONS + LEARNING + GREETINGS: (1) EMAIL PERMISSION MODEL — super_admin scans ALL team Gmail accounts, regular users scan ONLY their own. Zero data leakage. Full body extraction (not",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "0f3e1c3",
@@ -64,7 +79,7 @@
     {
       "hash": "58cb977",
       "subject": "FIX GMAIL SIGNATURE: Gmail API does NOT auto-insert signatures on API-created drafts (only on compose UI drafts). Now fetches user's Gmail signature via settings/sendAs API and appends it to the draft",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "76bb1b5",
@@ -84,21 +99,6 @@
     {
       "hash": "a4015a8",
       "subject": "FIX DRAFT RESEND: (1) Removed duplicate client-side body cleanup — body is sent as-is, API handles cleanup. This prevents double-cleaning that was stripping the entire body on resend. (2) Added HTTP s",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "9a87329",
-      "subject": "FIX EMAIL SIGNATURE: (1) REMOVED ALL custom signatures from create-gmail-draft.js — Gmail has pre-configured signatures per user that auto-insert when draft is opened. (2) KIKO PROMPT UPDATED — CRITIC",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "83e6db8",
-      "subject": "FIX EMAIL DRAFT CLEANUP + SIGNATURES: (1) BODY PARSER — now cuts at sign-off line (Best regards, etc), '---' separator, and analysis commentary (This references, Sound right, etc). Matt Smith name now",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "df9897b",
-      "subject": "Update KIKO_SESSION_BRIEF.md — full current state: performance architecture, all working systems, outstanding items, key files, ring-fence rules",
       "when": "5 hours ago"
     }
   ]
