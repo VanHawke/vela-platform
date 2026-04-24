@@ -235,10 +235,21 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   // Load mobile chat history
   const loadMobileHistory = useCallback(async () => {
     try {
-      const { data } = await supabase.from('conversations').select('id, title, updated_at').eq('user_id', user?.id).order('updated_at', { ascending: false }).limit(30)
+      const orgId = user?.app_metadata?.org_id
+      const query = orgId
+        ? supabase.from('conversations').select('id, title, updated_at').eq('org_id', orgId).neq('archived', true).order('updated_at', { ascending: false }).limit(50)
+        : supabase.from('conversations').select('id, title, updated_at').eq('user_id', user?.id).neq('archived', true).order('updated_at', { ascending: false }).limit(50)
+      const { data } = await query
       setMobileHistoryConvos(data || [])
     } catch (e) { console.error('[MobileHistory]', e) }
-  }, [user?.id])
+  }, [user?.id, user?.app_metadata?.org_id])
+
+  // Sync mobile history when chats are renamed/updated
+  useEffect(() => {
+    const handler = () => { if (isMobile) loadMobileHistory() }
+    window.addEventListener('kiko-chat-updated', handler)
+    return () => window.removeEventListener('kiko-chat-updated', handler)
+  }, [loadMobileHistory])
 
   // Poll alert count from KikoInsights
   useEffect(() => {
