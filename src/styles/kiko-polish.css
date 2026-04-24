@@ -329,9 +329,9 @@
   background: #FEFEFC;
   border-bottom: 1px solid rgba(0,0,0,0.05);
   padding: 0 32px;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
   position: relative;
   z-index: 250;
   flex-shrink: 0;
@@ -350,7 +350,7 @@
   letter-spacing: -0.02em;
 }
 .ltn-logo { height: 32px; max-width: 160px; object-fit: contain; }
-.ltn-links { display: flex; align-items: center; gap: 30px; }
+.ltn-links { display: flex; align-items: center; gap: 30px; justify-self: center; }
 .ltn-link {
   background: none; border: none; cursor: pointer;
   color: #0A0A0A; font-size: 13px; font-weight: 450;
@@ -368,7 +368,7 @@
   height: 1px; background: #0A0A0A;
   position: absolute; left: 0; right: 0; bottom: -1px;
 }
-.ltn-right { display: flex; align-items: center; gap: 8px; }
+.ltn-right { display: flex; align-items: center; gap: 8px; justify-self: end; }
 .ltn-icon {
   width: 32px; height: 32px;
   background: none; border: none; cursor: pointer;

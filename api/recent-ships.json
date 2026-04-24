@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-24T20:29:20.729Z",
+  "generated_at": "2026-04-24T20:40:24.534Z",
   "commits": [
+    {
+      "hash": "c66c6dd",
+      "subject": "FIX ALIGNMENT: Homepage content padding matched to nav padding (32px both). Document generation pipeline: research uses Haiku (53s vs 105s), structure max_tokens 8000, robust JSON repair for truncatio",
+      "when": "11 minutes ago"
+    },
     {
       "hash": "828ea5d",
       "subject": "FIX: (1) Wrong day greeting — getGreeting now uses fresh new Date() for both day name and hash index, prevents stale day showing. (2) Background tasks icon changed from rectangle-with-lines (mistaken ",
-      "when": "4 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "f774ee1",
       "subject": "Kiko self-knowledge: document generation capability documented — types, divisions, purposes, branding, timing, when to use.",
-      "when": "29 minutes ago"
+      "when": "40 minutes ago"
     },
     {
       "hash": "a992019",
       "subject": "DOCUMENT GENERATION PIPELINE — COMPLETE: (1) generate-document.js: researches topic via Haiku + web search, structures via Sonnet, renders branded HTML or PPTX. (2) Van Hawke brand system: #7C5CFC pur",
-      "when": "31 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "0b6f37d",
@@ -34,7 +39,7 @@
     {
       "hash": "9b5c75b",
       "subject": "PROACTIVE INTELLIGENCE ENGINE: (1) New proactive-intel monitor runs 2x daily (8am + 2pm). Scans F1 sponsorship news, luxury/fashion market, competitor agencies (CAA/WME/Octagon/CSM), new GP announceme",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "5161991",
@@ -64,17 +69,17 @@
     {
       "hash": "d306de3",
       "subject": "GMAIL PUB/SUB WEBHOOK: (1) gmail-webhook.js — receives push notifications from Google, checks for replies to tracked follow-ups, creates instant alerts. Always returns 200 to prevent Pub/Sub retries. ",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "14b1fe2",
       "subject": "EMAIL SPEED: Simple drafts (re-engagement, follow-up, catch-up) now use Haiku (~12s vs 22-37s with Sonnet). Complex drafts (negotiation, strategy, investment, pricing) still use Sonnet. Campaign sende",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "3dcd31c",
       "subject": "FIX CAMPAIGN SENDER: Display name was hardcoded as 'Sunny Sidhu' regardless of sender. Now uses DISPLAY_NAMES mapping — campaigns from Matt show 'Matt Smith' in recipient inbox.",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "3733e73",
@@ -95,11 +100,6 @@
       "hash": "d64af12",
       "subject": "SCHEDULE SEND ENHANCED: (1) Optimum send time — detects recipient timezone from email domain (.com/.ai/.io = US East 9am, .co.uk = UK 9am, .de/.fr = CET 9am). Highlighted in purple at top of dropdown.",
       "when": "5 hours ago"
-    },
-    {
-      "hash": "cf3221a",
-      "subject": "TIMEZONE DETECTION: Dynamic timezone/location from browser Intl API. (1) Frontend sends Intl.DateTimeFormat().resolvedOptions().timeZone + navigator.language with every Kiko request. (2) Backend injec",
-      "when": " Timezone: Europe/London] into system prompt. (3) buildNativeTools uses browser timezone for web_search location. (4) Defaults to Europe/London if detection fails. Kiko now knows each user's local time without manual config."
     }
   ]
 }
