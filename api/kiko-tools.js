@@ -391,6 +391,17 @@ export const TOOL_DEFINITIONS = [
       query: { type: 'string', description: 'Topic, company, or keyword to search conversation history for' },
     }, required: ['query'] },
   },
+  // ── Document Generation ──
+  {
+    name: 'generate_document',
+    description: 'Generate a professional branded document (PDF/PPTX). Researches the topic via web search, structures content, and renders with Van Hawke branding. Use when user asks for a report, proposal, one-pager, pitch deck, partnership overview, or any formal document.',
+    input_schema: { type: 'object', properties: {
+      topic: { type: 'string', description: 'The topic or brief for the document. Be specific — include company names, deal context, objectives.' },
+      documentType: { type: 'string', enum: ['pdf', 'pptx'], description: 'pdf = branded report/proposal (HTML, printable). pptx = slide deck.' },
+      division: { type: 'string', enum: ['agency', 'maison', 'group'], description: 'Which Van Hawke entity this is for. Determines branding.' },
+      purpose: { type: 'string', description: 'Document purpose: report, proposal, one-pager, pitch-deck, partnership-overview, market-analysis, competitive-brief' },
+    }, required: ['topic'] },
+  },
 ];
 
 // Conditional tool — only injected when intent is master_brief
@@ -1441,7 +1452,27 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
     } catch (e) { return `Error checking scheduled emails: ${e.message}`; }
   }
 
-  // ── Relationship Intelligence ──
+  // ── Document Generation ──
+  if (name === 'generate_document') {
+    try {
+      const { topic, documentType = 'pdf', division = 'agency', purpose = 'report' } = input;
+      if (!topic) return 'Error: topic is required';
+      const baseUrl = process.env.HETZNER_URL || 'http://127.0.0.1:3000';
+      const res = await fetch(`${baseUrl}/api/generate-document`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, documentType, division, purpose }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        const publicUrl = `https://api.vanhawke.agency${data.url}`;
+        return `Document generated!\n\nTitle: ${data.title}\nType: ${data.type === 'pptx' ? 'PowerPoint Presentation' : 'Branded Report (HTML — print to PDF)'}\n${data.slides ? `Slides: ${data.slides}` : `Sections: ${data.sections}`}\nGenerated in: ${Math.round(data.duration / 1000)}s\n\nDownload: ${publicUrl}\n\nFor HTML reports, print to PDF using Cmd+P / Ctrl+P in browser.`;
+      }
+      return `Error generating document: ${data.error || 'Unknown error'}`;
+    } catch (e) { return `Error: ${e.message}`; }
+  }
+
+  // ── Relationship Intelligence (handler) ──
   if (name === 'query_relationships') {
     try {
       const q = (input.query || '').toLowerCase();
