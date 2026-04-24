@@ -252,6 +252,59 @@ const CURRICULUM = {
       'fashion PR media relations editorial placement celebrity seeding',
     ]
   },
+  // ═══ COMPETITIVE INTELLIGENCE — Van Hawke Agency ═══
+  'vh_agency_competitive': {
+    name: 'Van Hawke Agency — Competitive Landscape',
+    topics: [
+      'CAA Sports sponsorship deals 2026 clients portfolio strategy latest news',
+      'WME IMG Endeavor sports sponsorship division latest deals clients 2026',
+      'Octagon sponsorship agency clients deals strategy F1 motorsport 2026',
+      'CSM Sport Entertainment sponsorship agency latest deals strategy 2026',
+      'Wasserman Sports sponsorship agency deals clients strategy 2026',
+      'boutique sports sponsorship agencies competing with large agencies market positioning',
+      'independent sponsorship advisory firms competitive advantages vs large agencies',
+      'sports agency M&A acquisitions consolidation market trends 2026',
+    ]
+  },
+  'vh_f1_deal_intel': {
+    name: 'F1 Deal Intelligence & Grid Economics',
+    topics: [
+      'F1 2026 sponsorship deals new sponsors entering grid team announcements',
+      'F1 team sponsorship valuations 2026 principal partner title sponsor costs',
+      'F1 sponsorship categories technology crypto finance consumer brands 2026',
+      'F1 sponsor exits departures 2026 why companies leave Formula 1',
+      'F1 cost cap impact on sponsorship structure team budgets commercial revenue',
+      'Haas F1 Team sponsors partners 2026 commercial strategy grid position',
+      'F1 teams sponsorship revenue breakdown Mercedes Red Bull Ferrari McLaren',
+      'Formula 1 Liberty Media commercial strategy Sprint growth digital audience',
+    ]
+  },
+  'vh_prospect_intel': {
+    name: 'Prospect & Target Intelligence',
+    topics: [
+      'fast growing technology companies 2026 Series B C D funding sponsorship potential',
+      'cybersecurity companies marketing budgets brand awareness sponsorship interest 2026',
+      'AI companies enterprise marketing strategy brand building sponsorship 2026',
+      'cloud infrastructure companies brand sponsorship sports marketing 2026',
+      'fintech companies IPO pipeline 2026 marketing spend brand awareness',
+      'B2B SaaS companies entering sports sponsorship F1 motorsport 2026',
+      'companies increasing marketing budgets 2026 brand sponsorship appetite signals',
+      'predictive indicators company ready for F1 sponsorship funding revenue growth CMO hire',
+    ]
+  },
+  'vh_agency_positioning': {
+    name: 'Agency Positioning & Messaging',
+    topics: [
+      'how top sports sponsorship agencies pitch to prospects messaging frameworks',
+      'sponsorship agency differentiation strategy boutique vs full service positioning',
+      'authority led sales methodology thought leadership content sponsorship advisory',
+      'C-suite engagement strategies CMO CEO CFO sponsorship decision making process',
+      'sponsorship sales cycle enterprise B2B timing decision makers budget cycles',
+      'sports sponsorship industry trends conferences events networking opportunities 2026',
+      'digital content strategy LinkedIn thought leadership sponsorship advisory positioning',
+      'case study led selling sponsorship ROI evidence based advisory methodology',
+    ]
+  },
 };
 
 async function getLearnedTopicCount() {
@@ -331,6 +384,51 @@ Be specific and practical. This knowledge will be used operationally.` }],
   } catch (e) { return { topic, error: e.message }; }
 }
 
+// ═══ COMPETITIVE INTELLIGENCE — writes to kiko_knowledge (loaded into prompt) ═══
+async function researchCompetitiveIntel(pillarKey, topic) {
+  try {
+    const research = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6', max_tokens: 3000,
+      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+      messages: [{ role: 'user', content: `You are a competitive intelligence analyst for Van Hawke Group — an F1 sponsorship advisory and luxury eyewear company.
+
+Research this topic with MAXIMUM DEPTH: "${topic}"
+
+Find:
+1. SPECIFIC deals, numbers, names, dates — not generalities
+2. WHO is doing WHAT right now — companies, people, moves
+3. Business structure details — how they operate, what makes them successful
+4. Client rosters, case studies, pitch approaches where available
+5. What's CHANGING — new entrants, exits, shifts in strategy
+6. Messaging analysis — how competitors position themselves, their language, their angles
+7. Gaps and opportunities — what nobody else is doing that Van Hawke could exploit
+
+Be a forensic analyst, not a news summariser. Dig deep. Find the details that give strategic advantage.` }],
+    });
+
+    const researchText = research.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
+    if (!researchText || researchText.length < 300) return null;
+
+    // Write to kiko_knowledge (loaded into Kiko's prompt every conversation)
+    const domain = pillarKey.replace(/_/g, '-');
+    await sbFetch('kiko_knowledge', {
+      method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' },
+      body: JSON.stringify({
+        domain,
+        content: `## ${topic.split(' ').slice(0, 6).join(' ').toUpperCase()}\n**Researched:** ${new Date().toISOString().split('T')[0]}\n\n${researchText.slice(0, 5000)}`,
+        researched_at: new Date().toISOString(),
+        source: 'competitive-intel',
+      })
+    });
+
+    console.log(`[learning-director] Competitive intel written to kiko_knowledge: ${domain} (${researchText.length} chars)`);
+    return { topic, domain, chars: researchText.length };
+  } catch (e) {
+    console.error(`[learning-director] Competitive intel failed: ${e.message}`);
+    return null;
+  }
+}
+
 export default async function handler(req, res) {
   const __hbStart = Date.now();
   const __hbId = await cronHeartbeat('cron-learning-director', 'started');
@@ -353,25 +451,59 @@ export default async function handler(req, res) {
       pillarScores.push({ key, pillar, total, covered, gap: total - covered, ratio: covered / total });
     }
 
-    // Pick the pillar with the biggest gap (least covered)
-    pillarScores.sort((a, b) => a.ratio - b.ratio);
-    const target = pillarScores[0];
+    // Prioritize competitive intelligence domains (vh_*) — these refresh regularly, not just once
+    const COMPETITIVE_KEYS = ['vh_agency_competitive', 'vh_f1_deal_intel', 'vh_prospect_intel', 'vh_agency_positioning'];
+    const isCompetitive = (key) => COMPETITIVE_KEYS.includes(key);
 
-    if (!target || target.gap === 0) {
+    // Competitive domains: pick a random topic each run (they need FRESH data, not one-time coverage)
+    // Academic domains: pick the least covered pillar (one-time learning)
+    const competitivePillars = pillarScores.filter(p => isCompetitive(p.key));
+    const academicPillars = pillarScores.filter(p => !isCompetitive(p.key) && p.gap > 0);
+
+    // Alternate: 2 out of 3 runs do competitive intel, 1 does academic
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+    const doCompetitive = dayOfYear % 3 !== 0; // 2 of 3 days do competitive
+
+    let target, useCompetitiveResearch = false;
+    if (doCompetitive && competitivePillars.length > 0) {
+      // Pick a random competitive pillar
+      target = competitivePillars[Math.floor(Math.random() * competitivePillars.length)];
+      useCompetitiveResearch = true;
+    } else if (academicPillars.length > 0) {
+      academicPillars.sort((a, b) => a.ratio - b.ratio);
+      target = academicPillars[0];
+    } else if (competitivePillars.length > 0) {
+      target = competitivePillars[Math.floor(Math.random() * competitivePillars.length)];
+      useCompetitiveResearch = true;
+    }
+
+    if (!target) {
       await cronHeartbeat('cron-learning-director', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: 0 });
       return res.status(200).json({ ok: true, message: 'All curriculum topics covered!', pillars: pillarScores.map(p => `${p.key}: ${p.covered}/${p.total}`) });
     }
 
-    // Learn 2-3 topics from the target pillar (budget: ~120s total)
+    // For competitive: pick a random topic (not sequential — varied coverage)
+    // For academic: pick the first unlearned topic
     const unlearned = target.pillar.topics.filter(t =>
       !learned.has(`${target.key}:${t.split(' ').slice(0, 3).join('_')}`)
     );
-    const batch = unlearned.slice(0, 1); // 1 topic per run — Claude calls take 20-40s each, must finish before 120s timeout
+    const allTopics = target.pillar.topics;
+    const topicPool = useCompetitiveResearch ? allTopics : unlearned;
+    const batch = useCompetitiveResearch
+      ? [topicPool[Math.floor(Math.random() * topicPool.length)]]
+      : [topicPool[0]];
 
     const results = [];
     for (const topic of batch) {
-      const result = await learnTopic(target.key, target.pillar, topic);
-      if (result) results.push(result);
+      if (useCompetitiveResearch) {
+        // Competitive intel: deep web research → writes to kiko_knowledge (in-prompt)
+        const result = await researchCompetitiveIntel(target.key, topic);
+        if (result) results.push(result);
+      } else {
+        // Academic: textbook learning → writes to learning_log + memories
+        const result = await learnTopic(target.key, target.pillar, topic);
+        if (result) results.push(result);
+      }
     }
 
     // ── CURIOSITY ENGINE: learn 1 topic — only if time allows (under 80s elapsed) ──
