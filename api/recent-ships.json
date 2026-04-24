@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-24T15:21:39.650Z",
+  "generated_at": "2026-04-24T15:25:09.897Z",
   "commits": [
+    {
+      "hash": "cf3221a",
+      "subject": "TIMEZONE DETECTION: Dynamic timezone/location from browser Intl API. (1) Frontend sends Intl.DateTimeFormat().resolvedOptions().timeZone + navigator.language with every Kiko request. (2) Backend injec",
+      "when": " Timezone: Europe/London] into system prompt. (3) buildNativeTools uses browser timezone for web_search location. (4) Defaults to Europe/London if detection fails. Kiko now knows each user's local time without manual config."
+    },
     {
       "hash": "d0442aa",
       "subject": "FIX ALL RELIABILITY: (1) Send-to-drafts 400 — subject/to now stateful with useEffect sync during streaming, prevents undefined values. (2) Chat sidebar click-into-other-chats — loadConversation now fe",
-      "when": "29 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "473cbec",
       "subject": "SCHEDULED EMAIL SENDING: Complete system. (1) kiko_scheduled_emails table with status tracking. (2) schedule-email API endpoint — accepts time + email params. (3) Scheduled sender cron — every 5min, s",
-      "when": "85 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "005e734",
@@ -89,17 +94,12 @@
     {
       "hash": "5131b91",
       "subject": "FIX: Finance intent routing — added fast-path keywords for pipeline value, weighted pipeline, revenue, forecast, runway, cash flow, burn rate, ROI, cap table, valuation. These now route directly to fi",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "6a7906a",
       "subject": "FULL AUDIT FIXES: (1) All Vercel URL references in API files migrated to api.vanhawke.agency — kiko-tools.js (3 refs), data.js (2 refs), document.js (1 ref), cron-sequence-sender, cron-push-dispatcher",
       "when": "17 hours ago"
-    },
-    {
-      "hash": "ca8ab82",
-      "subject": "CRON MIGRATION TO HETZNER: (1) ALL 16 crons now call local Express (127.0.0.1:3000) instead of Vercel — eliminates 120s timeout and function costs. (2) Added wildcard API route handler — any /api/* wi",
-      "when": "18 hours ago"
     }
   ]
 }

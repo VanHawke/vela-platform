@@ -120,6 +120,8 @@ export default function EmailDraft({ text }) {
   const [senderDropdownOpen, setSenderDropdownOpen] = useState(false)
   const [scheduleOpen, setScheduleOpen] = useState(false)
   const [scheduled, setScheduled] = useState(null) // { display: 'Mon 29 Apr at 09:00' }
+  const [customDateTime, setCustomDateTime] = useState('')
+  const [showCustomPicker, setShowCustomPicker] = useState(false)
   const [teamMembers, setTeamMembers] = useState([])
   const [selectedMember, setSelectedMember] = useState(null) // whose Gmail drafts folder
   const [selectedSender, setSelectedSender] = useState(null) // who the email is FROM (determines signature)
@@ -191,13 +193,26 @@ export default function EmailDraft({ text }) {
   const getScheduleOptions = () => {
     const now = new Date()
     const opts = []
+    // Optimum time for recipient (based on email domain timezone guess)
+    const recipientDomain = (currentTo || '').split('@')[1] || ''
+    const isUS = recipientDomain.endsWith('.com') || recipientDomain.endsWith('.ai') || recipientDomain.endsWith('.io')
+    const isUK = recipientDomain.endsWith('.co.uk') || recipientDomain.endsWith('.uk')
+    const isEU = recipientDomain.endsWith('.de') || recipientDomain.endsWith('.fr') || recipientDomain.endsWith('.eu')
+    // Default: US East Coast 9am = 2pm UK. For UK/EU recipients, 9am their time
+    const optTime = new Date(now)
+    optTime.setDate(optTime.getDate() + 1)
+    if (isUS) { optTime.setHours(14, 0, 0, 0) } // 2pm UK = 9am ET
+    else if (isEU) { optTime.setHours(8, 0, 0, 0) } // 8am UK = 9am CET
+    else { optTime.setHours(9, 0, 0, 0) } // 9am local for UK recipients
+    const tzLabel = isUS ? '9:00 AM ET' : isEU ? '9:00 AM CET' : '9:00 AM'
+    opts.push({ label: `⚡ Optimum — Tomorrow ${tzLabel}`, value: optTime.toISOString(), highlight: true })
     // In 1 hour
     const h1 = new Date(now.getTime() + 3600000)
     opts.push({ label: `In 1 hour (${h1.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })})`, value: h1.toISOString() })
-    // Tomorrow 9am
+    // Tomorrow 9am local
     const tom9 = new Date(now); tom9.setDate(tom9.getDate() + 1); tom9.setHours(9, 0, 0, 0)
     opts.push({ label: `Tomorrow 9:00 AM`, value: tom9.toISOString() })
-    // Tomorrow 2pm
+    // Tomorrow 2pm local
     const tom14 = new Date(now); tom14.setDate(tom14.getDate() + 1); tom14.setHours(14, 0, 0, 0)
     opts.push({ label: `Tomorrow 2:00 PM`, value: tom14.toISOString() })
     // Next Monday 9am
@@ -405,17 +420,35 @@ export default function EmailDraft({ text }) {
             <Clock size={11} /> {scheduled ? `Scheduled: ${scheduled.display}` : 'Schedule'}
           </button>
           {scheduleOpen && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 220, overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 250, overflow: 'hidden' }}>
               <div style={{ padding: '8px 12px', fontSize: 10, color: '#A0A0A0', borderBottom: '0.5px solid rgba(0,0,0,0.05)', fontFamily: T.font }}>
                 Schedule send from {selectedSender?.email?.split('@')[0] || 'sunny'}:
               </div>
               {getScheduleOptions().map((opt, i) => (
-                <button key={i} onClick={() => handleSchedule(opt.value)} style={{ width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: '#0A0A0A', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s' }}
-                  onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
-                  <Clock size={12} style={{ color: '#A0A0A0' }} />
+                <button key={i} onClick={() => handleSchedule(opt.value)} style={{ width: '100%', padding: '10px 12px', background: opt.highlight ? 'rgba(124,92,252,0.04)' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: opt.highlight ? '#7C5CFC' : '#0A0A0A', fontWeight: opt.highlight ? 600 : 400, fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s', borderLeft: opt.highlight ? '2px solid #7C5CFC' : '2px solid transparent' }}
+                  onMouseOver={e => e.currentTarget.style.background = opt.highlight ? 'rgba(124,92,252,0.08)' : 'rgba(0,0,0,0.04)'} onMouseOut={e => e.currentTarget.style.background = opt.highlight ? 'rgba(124,92,252,0.04)' : 'transparent'}>
+                  <Clock size={12} style={{ color: opt.highlight ? '#7C5CFC' : '#A0A0A0' }} />
                   {opt.label}
                 </button>
               ))}
+              <div style={{ borderTop: '0.5px solid rgba(0,0,0,0.05)', padding: '8px 12px' }}>
+                {!showCustomPicker ? (
+                  <button onClick={() => setShowCustomPicker(true)} style={{ width: '100%', padding: '8px 0', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: '#6B6B6B', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Pen size={11} style={{ color: '#A0A0A0' }} /> Custom date & time
+                  </button>
+                ) : (
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <input type="datetime-local" value={customDateTime} onChange={e => setCustomDateTime(e.target.value)}
+                      style={{ flex: 1, padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(0,0,0,0.12)', fontSize: 12, fontFamily: T.font, color: '#0A0A0A', outline: 'none' }}
+                      min={new Date().toISOString().slice(0, 16)} />
+                    <button onClick={() => { if (customDateTime) { handleSchedule(new Date(customDateTime).toISOString()); setShowCustomPicker(false); setCustomDateTime('') } }}
+                      disabled={!customDateTime}
+                      style={{ padding: '6px 10px', borderRadius: 6, border: 'none', background: customDateTime ? '#7C5CFC' : 'rgba(0,0,0,0.06)', color: customDateTime ? '#fff' : '#A0A0A0', fontSize: 11, fontWeight: 600, cursor: customDateTime ? 'pointer' : 'default', fontFamily: T.font }}>
+                      Set
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
