@@ -51,7 +51,7 @@ export default function Settings({ user }) {
   const saveBranding = async (patch) => {
     if (!user?.id) { setSaveError('Not signed in'); return null }
     try {
-      const res = await fetch('/api/org-branding', {
+      const res = await fetch('https://api.vanhawke.agency/api/org-branding', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user.id, patch }),
@@ -151,7 +151,7 @@ export default function Settings({ user }) {
       const { data: { session } } = await supabase.auth.getSession()
       const userEmail = session?.user?.email || null
       const currentStyle = VOICE_STYLES.find(s => s.id === (settings.kiko_voice_style || 'natural'))
-      const res = await fetch('/api/voice-preview', {
+      const res = await fetch('https://api.vanhawke.agency/api/voice-preview', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           voice: voiceId,
@@ -186,16 +186,16 @@ export default function Settings({ user }) {
     if (!user?.id) return
     try {
       // Use team-list endpoint (service_role) to reliably get org_id — avoids RLS timing issues on anon client
-      const teamRes = await fetch(`/api/team-list?user_id=${user.id}`)
+      const teamRes = await fetch(`https://api.vanhawke.agency/api/team-list?user_id=${user.id}`)
       if (teamRes.ok) {
         const teamData = await teamRes.json()
         if (teamData.org?.id) {
           setUserOrgId(teamData.org.id)
-          const orgRes = await fetch(`/api/org-bible?org_id=${teamData.org.id}`)
+          const orgRes = await fetch(`https://api.vanhawke.agency/api/org-bible?org_id=${teamData.org.id}`)
           if (orgRes.ok) { const d = await orgRes.json(); setOrgBibleContent(d.content || ''); setOrgBibleUpdatedAt(d.updated_at) }
         }
       }
-      const userRes = await fetch(`/api/user-bible?user_id=${user.id}`)
+      const userRes = await fetch(`https://api.vanhawke.agency/api/user-bible?user_id=${user.id}`)
       if (userRes.ok) { const d = await userRes.json(); setUserBibleContent(d.content || ''); setUserBibleUpdatedAt(d.updated_at) }
     } catch {}
   }
@@ -204,7 +204,7 @@ export default function Settings({ user }) {
     if (!userOrgId || !user?.id) return
     setOrgBibleSaving(true)
     try {
-      const res = await fetch('/api/org-bible', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ org_id: userOrgId, content: orgBibleContent, user_id: user.id }) })
+      const res = await fetch('https://api.vanhawke.agency/api/org-bible', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ org_id: userOrgId, content: orgBibleContent, user_id: user.id }) })
       if (res.ok) { setOrgBibleUpdatedAt(new Date().toISOString()); setSaved(true); setTimeout(() => setSaved(false), 2500) }
       else { const d = await res.json(); setSaveError(d.error || 'Save failed') }
     } catch (e) { setSaveError(e.message) }
@@ -215,7 +215,7 @@ export default function Settings({ user }) {
     if (!user?.id) return
     setUserBibleSaving(true)
     try {
-      const res = await fetch('/api/user-bible', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: user.id, content: userBibleContent }) })
+      const res = await fetch('https://api.vanhawke.agency/api/user-bible', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: user.id, content: userBibleContent }) })
       if (res.ok) { setUserBibleUpdatedAt(new Date().toISOString()); setSaved(true); setTimeout(() => setSaved(false), 2500) }
       else { const d = await res.json(); setSaveError(d.error || 'Save failed') }
     } catch (e) { setSaveError(e.message) }
@@ -312,7 +312,7 @@ export default function Settings({ user }) {
   }
 
   const checkGoogleStatus = async () => {
-    try { const res = await fetch(`/api/google-token?email=${encodeURIComponent(email)}`); setGoogleStatus(await res.json()) }
+    try { const res = await fetch(`https://api.vanhawke.agency/api/google-token?email=${encodeURIComponent(email)}`); setGoogleStatus(await res.json()) }
     catch { setGoogleStatus({ connected: false }) }
   }
 
@@ -522,7 +522,7 @@ export default function Settings({ user }) {
               {!settings.email_voice_profile && (
                 <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(251,191,36,0.05)', border: '0.5px solid rgba(251,191,36,0.20)', marginBottom: 14, fontSize: 12, color: T.textSecondary, fontFamily: T.font }}>
                   ⚠ No voice profile yet — runs Sundays at 4am, or trigger manually:&nbsp;
-                  <button onClick={async () => { await fetch('/api/cron-email-voice-learning', { method: 'POST' }); alert('Voice learning queued — refresh in ~30s') }} style={{ padding: '3px 10px', borderRadius: 5, background: 'rgba(0,0,0,0.06)', color: T.accent, border: '0.5px solid rgba(0,0,0,0.10)', fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>Run now</button>
+                  <button onClick={async () => { await fetch('https://api.vanhawke.agency/api/cron-email-voice-learning', { method: 'POST' }); alert('Voice learning queued — refresh in ~30s') }} style={{ padding: '3px 10px', borderRadius: 5, background: 'rgba(0,0,0,0.06)', color: T.accent, border: '0.5px solid rgba(0,0,0,0.10)', fontSize: 11, cursor: 'pointer', fontFamily: T.font }}>Run now</button>
                 </div>
               )}
 
@@ -924,7 +924,7 @@ export default function Settings({ user }) {
                       <button onClick={async () => {
                         setPermModalMember(m)
                         try {
-                          const res = await fetch(`/api/user-permissions?user_id=${m.user_id}&organization_id=${userOrgId}`)
+                          const res = await fetch(`https://api.vanhawke.agency/api/user-permissions?user_id=${m.user_id}&organization_id=${userOrgId}`)
                           if (res.ok) { const d = await res.json(); setPermEffective(d.effective || {}); setPermOverrides(d.overrides || {}) }
                         } catch {}
                       }} title="Page permissions" style={{ background: 'none', border: `1px solid ${T.border}`, borderRadius: 6, cursor: 'pointer', color: T.textTertiary, padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontFamily: T.font }}>
@@ -977,10 +977,10 @@ export default function Settings({ user }) {
                         setPermSaving(true)
                         try {
                           if ((newVal === roleDefault) && isOverridden) {
-                            await fetch('/api/user-permissions', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: permModalMember.user_id, organization_id: userOrgId, page_key: page.key, caller_id: user?.id }) })
+                            await fetch('https://api.vanhawke.agency/api/user-permissions', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: permModalMember.user_id, organization_id: userOrgId, page_key: page.key, caller_id: user?.id }) })
                             setPermOverrides(prev => { const n = { ...prev }; delete n[page.key]; return n })
                           } else {
-                            const res = await fetch('/api/user-permissions', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: permModalMember.user_id, organization_id: userOrgId, page_key: page.key, can_view: newVal, caller_id: user?.id }) })
+                            const res = await fetch('https://api.vanhawke.agency/api/user-permissions', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: permModalMember.user_id, organization_id: userOrgId, page_key: page.key, can_view: newVal, caller_id: user?.id }) })
                             if (res.ok) { const d = await res.json(); setPermEffective(d.effective || {}); setPermOverrides(prev => ({ ...prev, [page.key]: newVal })) }
                           }
                         } catch {}

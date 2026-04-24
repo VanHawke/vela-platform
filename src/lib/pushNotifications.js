@@ -2,7 +2,7 @@
 // Call registerPush() on mobile after login to subscribe for notifications
 
 export async function getVapidKey() {
-  const res = await fetch('/api/push-subscribe', {
+  const res = await fetch('https://api.vanhawke.agency/api/push-subscribe', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'vapid-key' }),
@@ -57,7 +57,7 @@ export async function registerPush(userId, userEmail) {
     }
 
     // Send subscription to server
-    const res = await fetch('/api/push-subscribe', {
+    const res = await fetch('https://api.vanhawke.agency/api/push-subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -89,7 +89,7 @@ export async function unregisterPush() {
     const registration = await navigator.serviceWorker.ready
     const subscription = await registration.pushManager.getSubscription()
     if (subscription) {
-      await fetch('/api/push-subscribe', {
+      await fetch('https://api.vanhawke.agency/api/push-subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'unsubscribe', subscription: { endpoint: subscription.endpoint } }),

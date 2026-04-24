@@ -14,7 +14,7 @@ export function useUserRole(user) {
     if (cacheUserId === user.id && cachedRole) { setRole(cachedRole); setLoading(false); return }
 
     setLoading(true)
-    fetch(`/api/team-list?user_id=${user.id}`)
+    fetch(`https://api.vanhawke.agency/api/team-list?user_id=${user.id}`)
       .then(r => r.json())
       .then(d => {
         const r = d.role || 'user'

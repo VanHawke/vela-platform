@@ -44,7 +44,7 @@ export default function DocumentSection({ linkedCompanyId, linkedDealId, linkedT
       if (upErr) throw new Error(upErr.message)
       const { data: { publicUrl } } = supabase.storage.from('vela-assets').getPublicUrl(path)
       setUploadStatus('Analysing…')
-      const res = await fetch('/api/documents', {
+      const res = await fetch('https://api.vanhawke.agency/api/documents', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'process', storagePath: path, publicUrl, fileName: file.name,

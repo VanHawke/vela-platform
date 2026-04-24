@@ -20,7 +20,7 @@ export function usePagePermissions(user, orgId) {
 
     // Share one in-flight fetch across all concurrent callers on mount
     if (!inFlight || cacheUserId !== user.id) {
-      inFlight = fetch(`/api/user-permissions?user_id=${user.id}&organization_id=${orgId}`)
+      inFlight = fetch(`https://api.vanhawke.agency/api/user-permissions?user_id=${user.id}&organization_id=${orgId}`)
         .then(r => r.json())
         .then(d => {
           const eff = d.effective || {}

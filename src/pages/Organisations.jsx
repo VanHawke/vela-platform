@@ -220,7 +220,7 @@ export default function Organisations({ user }) {
     // Fetch news signals in background (non-blocking)
     setOrgSignals([])
     setLoadingSignals(true)
-    fetch('/api/news-signals', {
+    fetch('https://api.vanhawke.agency/api/news-signals', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ company: company.name, industry: company.industry, country: company.country })
     }).then(r => r.json()).then(data => {
@@ -232,7 +232,7 @@ export default function Organisations({ user }) {
     setOrgCompetitors(company.competitors || [])
     if (!company.competitors?.length) {
       setLoadingCompetitors(true)
-      fetch('/api/competitor-research', {
+      fetch('https://api.vanhawke.agency/api/competitor-research', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId: company.id, companyName: company.name, industry: company.industry, country: company.country })
       }).then(r => r.json()).then(data => {
@@ -782,7 +782,7 @@ export default function Organisations({ user }) {
                     <button onClick={() => {
                       setLoadingCompetitors(true)
                       setOrgCompetitors([])
-                      fetch('/api/competitor-research', {
+                      fetch('https://api.vanhawke.agency/api/competitor-research', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ companyId: selectedOrg.id, companyName: selectedOrg.name, industry: selectedOrg.industry, country: selectedOrg.country, forceRefresh: true })
                       }).then(r => r.json()).then(data => {

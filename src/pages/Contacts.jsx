@@ -46,7 +46,7 @@ export default function Contacts({ user }) {
   async function findDuplicates() {
     setDedupLoading(true)
     try {
-      const res = await fetch('/api/contact-dedup')
+      const res = await fetch('https://api.vanhawke.agency/api/contact-dedup')
       const data = await res.json()
       setDedupGroups(data.groups || [])
       setShowDedup(true)
@@ -56,7 +56,7 @@ export default function Contacts({ user }) {
 
   async function mergeContacts(keepId, deleteId) {
     try {
-      await fetch('/api/contact-dedup', {
+      await fetch('https://api.vanhawke.agency/api/contact-dedup', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ keepId, deleteId }),
       })

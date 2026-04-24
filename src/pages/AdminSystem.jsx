@@ -25,7 +25,7 @@ export default function AdminSystem() {
     setRefreshing(true)
     try {
       // 1. Live selfcheck
-      const selfRes = await fetch('/api/selfcheck', { cache: 'no-store' })
+      const selfRes = await fetch('https://api.vanhawke.agency/api/selfcheck', { cache: 'no-store' })
       const selfData = await selfRes.json()
       setSelfcheck(selfData)
 

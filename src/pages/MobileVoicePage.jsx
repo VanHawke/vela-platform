@@ -51,7 +51,7 @@ export default function MobileVoicePage() {
 
         // Get ephemeral token
         const voice = localStorage.getItem('kiko_voice') || 'coral'
-        const tokenRes = await fetch('/api/realtime-token', {
+        const tokenRes = await fetch('https://api.vanhawke.agency/api/realtime-token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ voice }),

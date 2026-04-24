@@ -55,7 +55,7 @@ export function OrgProvider({ children }) {
   // for login-page branding and the initial paint on authenticated pages
   const loadPublicBranding = useCallback(async () => {
     try {
-      const res = await fetch('/api/public-branding')
+      const res = await fetch('https://api.vanhawke.agency/api/public-branding')
       if (!res.ok) return null
       const data = await res.json()
       if (data?.branding) {

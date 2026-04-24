@@ -72,7 +72,7 @@ export default function MemoryTab({ user, canExport = true }) {
       const params = new URLSearchParams({ user_id: user.id, limit: String(PAGE_SIZE), offset: String(offset) })
       if (category !== 'all') params.set('category', category)
       if (query.trim()) params.set('q', query.trim())
-      const r = await fetch(`/api/memory-tab?${params}`)
+      const r = await fetch(`https://api.vanhawke.agency/api/memory-tab?${params}`)
       const data = await r.json()
       if (data.error) throw new Error(data.error)
       const newRows = data.rows || []
@@ -101,7 +101,7 @@ export default function MemoryTab({ user, canExport = true }) {
   const onDelete = async (id) => {
     if (!confirm('Delete this fact? This cannot be undone.')) return
     try {
-      const r = await fetch(`/api/memory-tab?id=${id}`, { method: 'DELETE' })
+      const r = await fetch(`https://api.vanhawke.agency/api/memory-tab?id=${id}`, { method: 'DELETE' })
       if (!r.ok) throw new Error((await r.json())?.error || 'delete failed')
       setRows(prev => prev.filter(x => x.id !== id))
       setTotal(t => Math.max(0, t - 1))
@@ -113,7 +113,7 @@ export default function MemoryTab({ user, canExport = true }) {
   const onSaveEdit = async (id) => {
     if (!editValue || editValue.length < 3) return
     try {
-      const r = await fetch('/api/memory-tab', {
+      const r = await fetch('https://api.vanhawke.agency/api/memory-tab', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, value: editValue }),
@@ -133,7 +133,7 @@ export default function MemoryTab({ user, canExport = true }) {
       return
     }
     try {
-      const r = await fetch('/api/memory-tab', {
+      const r = await fetch('https://api.vanhawke.agency/api/memory-tab', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...newFact, user_id: user.id }),
@@ -169,7 +169,7 @@ export default function MemoryTab({ user, canExport = true }) {
     if (!confirm(`Delete ${selectedIds.size} facts? This cannot be undone.`)) return
     try {
       const ids = [...selectedIds].join(',')
-      const r = await fetch(`/api/memory-tab?ids=${encodeURIComponent(ids)}`, { method: 'DELETE' })
+      const r = await fetch(`https://api.vanhawke.agency/api/memory-tab?ids=${encodeURIComponent(ids)}`, { method: 'DELETE' })
       if (!r.ok) throw new Error((await r.json())?.error || 'bulk delete failed')
       setRows(prev => prev.filter(x => !selectedIds.has(x.id)))
       setTotal(t => Math.max(0, t - selectedIds.size))

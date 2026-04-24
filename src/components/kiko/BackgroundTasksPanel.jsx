@@ -164,7 +164,7 @@ export default function BackgroundTasksPanel({ user }) {
   // Retry handler
   const retryTask = async (task) => {
     try {
-      await fetch('/api/kiko-task-create', {
+      await fetch('https://api.vanhawke.agency/api/kiko-task-create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -179,7 +179,7 @@ export default function BackgroundTasksPanel({ user }) {
   // Dismiss single task
   const dismissTask = async (task) => {
     if (task.status === 'running' && !window.confirm('Cancel this running task?')) return
-    try { await fetch(`/api/kiko-task-dismiss?id=${task.id}`, { method: 'DELETE' }) } catch {}
+    try { await fetch(`https://api.vanhawke.agency/api/kiko-task-dismiss?id=${task.id}`, { method: 'DELETE' }) } catch {}
     setTasks(prev => prev.filter(t => t.id !== task.id))
   }
 
@@ -190,7 +190,7 @@ export default function BackgroundTasksPanel({ user }) {
     if (toClear.length === 0) return
     if (!window.confirm(`Clear ${toClear.length} completed task${toClear.length > 1 ? 's' : ''}?`)) return
     const ids = toClear.map(t => t.id).join(',')
-    try { await fetch(`/api/kiko-task-dismiss?ids=${ids}`, { method: 'DELETE' }) } catch {}
+    try { await fetch(`https://api.vanhawke.agency/api/kiko-task-dismiss?ids=${ids}`, { method: 'DELETE' }) } catch {}
     setTasks(prev => prev.filter(t => !['done', 'error', 'cancelled'].includes(t.status)))
   }
 

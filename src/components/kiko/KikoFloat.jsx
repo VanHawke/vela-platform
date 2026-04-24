@@ -266,7 +266,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
     const controller = new AbortController()
     abortRef.current = controller
     try {
-      const res = await fetch('/api/kiko', {
+      const res = await fetch('https://api.vanhawke.agency/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
         body: JSON.stringify({
@@ -313,7 +313,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           await supabase.from('conversations').update({ messages: allMsgs, updated_at: new Date().toISOString() }).eq('id', convId)
         } else {
           let autoTitle = msg.slice(0, 60)
-          try { const tr = await fetch('/api/kiko', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'title', message: msg, response: full.slice(0, 300) }) }); const tj = await tr.json(); if (tj.title) autoTitle = tj.title } catch {}
+          try { const tr = await fetch('https://api.vanhawke.agency/api/kiko', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'title', message: msg, response: full.slice(0, 300) }) }); const tj = await tr.json(); if (tj.title) autoTitle = tj.title } catch {}
           const { data } = await supabase.from('conversations').insert({ user_id: user.id, org_id: orgId, title: autoTitle, messages: allMsgs }).select('id').single()
           if (data?.id) { setConvId(data.id); savedConvId = data.id }
         }
@@ -344,7 +344,7 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
       const { error: uploadError } = await supabase.storage.from('vela-assets').upload(path, file)
       if (uploadError) throw new Error(uploadError.message)
       const { data: { publicUrl } } = supabase.storage.from('vela-assets').getPublicUrl(path)
-      const res = await fetch('/api/documents', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'process', storagePath: path, publicUrl, fileName: file.name, fileType: file.type, accessLevel: 'workspace', userEmail: user.email }) })
+      const res = await fetch('https://api.vanhawke.agency/api/documents', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'process', storagePath: path, publicUrl, fileName: file.name, fileType: file.type, accessLevel: 'workspace', userEmail: user.email }) })
       const result = await res.json()
       if (!res.ok) throw new Error(result.error || 'Processing failed')
       const intel = result.intelligence || {}

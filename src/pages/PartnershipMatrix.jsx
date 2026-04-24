@@ -61,7 +61,7 @@ export default function PartnershipMatrix({ user }) {
   const fetchMatrix = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/partnership-matrix?action=matrix')
+      const res = await fetch('https://api.vanhawke.agency/api/partnership-matrix?action=matrix')
       const d = await res.json()
       setData(d)
       if (!selectedTeam && d.teams?.length) setSelectedTeam(d.teams[0].id)
@@ -72,13 +72,13 @@ export default function PartnershipMatrix({ user }) {
 
   const addPartnership = async () => {
     if (!addForm.team_id || !addForm.partner_name) return
-    await fetch('/api/partnership-matrix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'add', ...addForm }) })
+    await fetch('https://api.vanhawke.agency/api/partnership-matrix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'add', ...addForm }) })
     setShowAdd(false); setAddForm({ team_id: '', partner_name: '', category_id: '', tier: 'partner' }); fetchMatrix()
   }
 
   const removePartnership = async (id) => {
     if (!confirm('Remove this partnership?')) return
-    await fetch('/api/partnership-matrix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'remove', id }) })
+    await fetch('https://api.vanhawke.agency/api/partnership-matrix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'remove', id }) })
     fetchMatrix()
   }
 

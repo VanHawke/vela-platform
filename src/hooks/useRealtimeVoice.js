@@ -22,7 +22,7 @@ async function executeTool(name, args) {
       // FULL KIKO BRAIN: hits /api/kiko (Sonnet + KIKO_BIBLE.md + memory + 39 tools).
       // The lite Haiku /api/kiko-voice was a mistake — left voice Kiko hallucinating.
       const userEmail = (await supabase.auth.getSession()).data?.session?.user?.email || ''
-      const r = await fetch('/api/kiko', {
+      const r = await fetch('https://api.vanhawke.agency/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: args.query,
@@ -179,7 +179,7 @@ export function useRealtimeVoice({ active, onClose, onMessage }) {
       const voiceProfile = await fetchVoiceProfile(supabase)
       const sessionInstructions = buildVoiceInstructions(voiceProfile)
       const voice = localStorage.getItem('kiko_voice') || 'coral'
-      const tokenRes = await fetch('/api/realtime-token', {
+      const tokenRes = await fetch('https://api.vanhawke.agency/api/realtime-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ voice }),

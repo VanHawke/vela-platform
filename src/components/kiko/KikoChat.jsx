@@ -555,7 +555,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     setBgTaskLoading(true)
     setBgTaskMsg('')
     try {
-      const res = await fetch('/api/kiko-task-create', {
+      const res = await fetch('https://api.vanhawke.agency/api/kiko-task-create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ conversation_id: activeConvId || null, query, user_id: user.id }),
@@ -908,7 +908,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               } else {
                 extractBody = JSON.stringify({ filename: file.name, data: base64 })
               }
-              const res = await fetch('/api/file-extract', {
+              const res = await fetch('https://api.vanhawke.agency/api/file-extract', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: extractBody

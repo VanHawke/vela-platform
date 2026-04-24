@@ -134,7 +134,7 @@ export default function CommercialCalendar({ user }) {
     let cancelled = false
     ;(async () => {
       try {
-        const res = await fetch(`/api/calendar-events?email=${encodeURIComponent(user.email)}`)
+        const res = await fetch(`https://api.vanhawke.agency/api/calendar-events?email=${encodeURIComponent(user.email)}`)
         if (!res.ok) { setCalLoading(false); return }
         const data = await res.json()
         if (!cancelled) setCalEvents(data.events || [])

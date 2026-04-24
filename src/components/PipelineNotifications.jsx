@@ -37,7 +37,7 @@ export default function PipelineNotifications() {
 
   const fetchNotifications = useCallback(async () => {
     try {
-      const res = await fetch('/api/pipeline-notifications?action=list&limit=15')
+      const res = await fetch('https://api.vanhawke.agency/api/pipeline-notifications?action=list&limit=15')
       const d = await res.json()
       setNotifications(d.notifications || [])
       setUnread(d.unread || 0)
@@ -52,7 +52,7 @@ export default function PipelineNotifications() {
   }, [fetchNotifications])
 
   const markRead = async (id) => {
-    await fetch('/api/pipeline-notifications', {
+    await fetch('https://api.vanhawke.agency/api/pipeline-notifications', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'mark_read', id }),
     })
@@ -60,7 +60,7 @@ export default function PipelineNotifications() {
   }
 
   const dismiss = async (id) => {
-    await fetch('/api/pipeline-notifications', {
+    await fetch('https://api.vanhawke.agency/api/pipeline-notifications', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'dismiss', id }),
     })

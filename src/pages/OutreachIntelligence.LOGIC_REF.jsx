@@ -150,7 +150,7 @@ Provide a concise recommendation:
 
 Be direct. Use web search for current company intelligence if needed.`
 
-      const res = await fetch('/api/kiko', {
+      const res = await fetch('https://api.vanhawke.agency/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: prompt, currentPage: 'outreach-intelligence', userEmail: user?.email || '', conversationHistory: [] })
       })

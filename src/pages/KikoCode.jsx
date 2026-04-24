@@ -35,7 +35,7 @@ export default function KikoCode({ user }) {
 
   const fetchTree = async () => {
     try {
-      const res = await fetch('/api/kiko-code?action=files')
+      const res = await fetch('https://api.vanhawke.agency/api/kiko-code?action=files')
       const data = await res.json()
       if (data.tree) setTree(data.tree)
     } catch (err) {
@@ -47,7 +47,7 @@ export default function KikoCode({ user }) {
     setLoadingFile(true)
     setActiveFile(path)
     try {
-      const res = await fetch(`/api/kiko-code?action=file&path=${encodeURIComponent(path)}`)
+      const res = await fetch(`https://api.vanhawke.agency/api/kiko-code?action=file&path=${encodeURIComponent(path)}`)
       const data = await res.json()
       setContent(data.content || '')
       setOriginalContent(data.content || '')
@@ -74,7 +74,7 @@ export default function KikoCode({ user }) {
     setChatStreaming(true)
 
     try {
-      const res = await fetch('/api/kiko-code', {
+      const res = await fetch('https://api.vanhawke.agency/api/kiko-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -137,7 +137,7 @@ export default function KikoCode({ user }) {
     setDeploying(true)
     try {
       // Save file to GitHub
-      const res = await fetch('/api/kiko-code', {
+      const res = await fetch('https://api.vanhawke.agency/api/kiko-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'save', path: activeFile, content }),

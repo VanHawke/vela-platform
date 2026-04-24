@@ -281,7 +281,7 @@ export default function Campaigns({ user }) {
       const { data: existing } = await supabase.from('kiko_sequence_enrollments').select('contact_email').eq('sequence_id', selectedId)
       const existingEmails = (existing || []).map(e => e.contact_email?.toLowerCase()).filter(Boolean)
 
-      const resp = await fetch('/api/source-prospects', {
+      const resp = await fetch('https://api.vanhawke.agency/api/source-prospects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -419,7 +419,7 @@ export default function Campaigns({ user }) {
     try {
       const payload = { category: buildCategory, job_id: jobId, user_id: user?.id }
       if (buildTeam && buildTeam !== 'auto') payload.preferredTeam = buildTeam
-      const r = await fetch('/api/build-campaign', {
+      const r = await fetch('https://api.vanhawke.agency/api/build-campaign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -438,7 +438,7 @@ export default function Campaigns({ user }) {
     if (!buildResult?.sequence_id) return
     setBuildPhase('enrolling')
     try {
-      const r = await fetch('/api/build-campaign-enroll', {
+      const r = await fetch('https://api.vanhawke.agency/api/build-campaign-enroll', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ campaign_id: buildResult.sequence_id }),
@@ -1256,7 +1256,7 @@ export default function Campaigns({ user }) {
                     try {
                       const userId = user?.id || '9f486437-4bf5-4111-abfe-fe19bfa76063'
                       const category = addProspectsQuery || selectedCampaign?.description || selectedCampaign?.target_persona || selectedCampaign?.name || ''
-                      await fetch(`/api/kiko-jobs?user_id=${userId}`, {
+                      await fetch(`https://api.vanhawke.agency/api/kiko-jobs?user_id=${userId}`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ job_type: 'source_companies_bg', title: `Source contacts for "${selectedCampaign?.name}"`, params: { category, count: 15, sequence_id: selectedId }, related_entity_type: 'sequence', related_entity_id: selectedId, user_id: userId }),
                       })
@@ -1278,7 +1278,7 @@ export default function Campaigns({ user }) {
                   try {
                     const userId = user?.id || '9f486437-4bf5-4111-abfe-fe19bfa76063'
                     const category = selectedCampaign?.description || selectedCampaign?.target_persona || selectedCampaign?.name || ''
-                    await fetch(`/api/kiko-jobs?user_id=${userId}`, {
+                    await fetch(`https://api.vanhawke.agency/api/kiko-jobs?user_id=${userId}`, {
                       method: 'POST', headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ job_type: 'source_companies_bg', title: `Source contacts for "${selectedCampaign?.name}"`, params: { category, count: 15, sequence_id: selectedId }, related_entity_type: 'sequence', related_entity_id: selectedId, user_id: userId }),
                     })
@@ -1381,7 +1381,7 @@ function CrmMatchPreview({ category }) {
     if (!category) return
     setLoading(true)
     setData(null)
-    fetch(`/api/crm-match-preview?category=${category}`)
+    fetch(`https://api.vanhawke.agency/api/crm-match-preview?category=${category}`)
       .then(r => r.json())
       .then(d => { setData(d); setLoading(false) })
       .catch(() => setLoading(false))
@@ -1459,7 +1459,7 @@ function BuildingProgress({ jobId }) {
     if (jobId) {
       pollInterval = setInterval(async () => {
         try {
-          const r = await fetch(`/api/job-status?id=${jobId}`, { cache: 'no-store' })
+          const r = await fetch(`https://api.vanhawke.agency/api/job-status?id=${jobId}`, { cache: 'no-store' })
           if (!r.ok) return  // 404 ok — backend might not have inserted the row yet
           const job = await r.json()
           if (job?.current_stage != null) {

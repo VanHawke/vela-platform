@@ -34,7 +34,7 @@ export default function Admin() {
 
   async function fetchOrgs() {
     const token = await getToken()
-    const res = await fetch('/api/admin/orgs', { headers: { Authorization: `Bearer ${token}` } })
+    const res = await fetch('https://api.vanhawke.agency/api/admin/orgs', { headers: { Authorization: `Bearer ${token}` } })
     const data = await res.json()
     setOrgs(Array.isArray(data) ? data : [])
   }
@@ -52,7 +52,7 @@ export default function Admin() {
     if (!selected) return
     setSaving(true)
     const token = await getToken()
-    const res = await fetch('/api/admin/orgs', {
+    const res = await fetch('https://api.vanhawke.agency/api/admin/orgs', {
       method: 'PATCH',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: selected.id, modules: editModules, branding: editBranding })
@@ -67,7 +67,7 @@ export default function Admin() {
     if (!newOrg.name || !newOrg.slug) return
     setCreating(true)
     const token = await getToken()
-    const res = await fetch('/api/admin/orgs', {
+    const res = await fetch('https://api.vanhawke.agency/api/admin/orgs', {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...newOrg, modules: DEFAULT_MODULES })

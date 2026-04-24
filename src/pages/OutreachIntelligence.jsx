@@ -342,7 +342,7 @@ export default function OutreachIntelligence({ user }) {
       try {
         // Enrich the prompt with live data from Supabase for task/deal/reply
         const enriched = await enrichSelectedForBrief(selected)
-        const res = await fetch('/api/kiko', {
+        const res = await fetch('https://api.vanhawke.agency/api/kiko', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

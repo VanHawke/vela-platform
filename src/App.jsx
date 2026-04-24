@@ -100,7 +100,7 @@ export default function App() {
         }
         // Auto-sync Google token to user_tokens table on sign-in
         if (sess?.provider_token && sess?.user?.email) {
-          fetch('/api/sync-google-token', {
+          fetch('https://api.vanhawke.agency/api/sync-google-token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

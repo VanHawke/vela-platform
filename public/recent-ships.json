@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-24T07:18:10.755Z",
+  "generated_at": "2026-04-24T07:26:44.151Z",
   "commits": [
+    {
+      "hash": "4896321",
+      "subject": "MAJOR: (1) Supabase Realtime listener — instant CRM change detection via WebSocket. Watches deals (stage changes), contacts (new), campaign_targets (replies). Auto-reconnection. 308 deal stages cached",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "bf24f13",
       "subject": "FIX NAVIGATION: Removed 'take me to' and 'navigate me to' from Google Maps directions regex. These now correctly route through the intent classifier to platform navigation. Directions handler only mat",
-      "when": "19 minutes ago"
+      "when": "28 minutes ago"
     },
     {
       "hash": "5131b91",
       "subject": "FIX: Finance intent routing — added fast-path keywords for pipeline value, weighted pipeline, revenue, forecast, runway, cash flow, burn rate, ROI, cap table, valuation. These now route directly to fi",
-      "when": "23 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "6a7906a",
@@ -54,12 +59,12 @@
     {
       "hash": "ebe5103",
       "subject": "BATCH EMAIL DRAFTING: New batch_draft_emails tool — drafts re-engagement emails for multiple stalled deals. Queries pipeline for idle deals, generates personalised drafts via Haiku (fast), creates Gma",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "91d2688",
       "subject": "Add monitor files to repo: email-monitor (user-specific alerts, campaign detection), pipeline-monitor (stale deal detection), scheduler (cron registration), webhooks (Gmail Pub/Sub receiver)",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "c3b088a",
@@ -94,11 +99,6 @@
     {
       "hash": "a768113",
       "subject": "FIX: (1) KIKO LOGO — always navigates to homepage with fallback to window.location.href if router fails. (2) KIKO'S PLAN — switched from maxHeight CSS animation to display:block/none for reliable expa",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "6c07fb2",
-      "subject": "FIX COMMAND PALETTE: Dark background (rgba(14,14,20,0.95)) had dark text (#0A0A0A) — everything invisible. Fixed theme to light text (#FAFAFF), light grey sub-text (#B0B0BB), light borders (rgba(255,2",
       "when": "13 hours ago"
     }
   ]

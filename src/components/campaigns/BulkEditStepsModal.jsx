@@ -37,7 +37,7 @@ export default function BulkEditStepsModal({ onClose, initialCategory }) {
     setLoading(true)
     setResults(null)
     try {
-      const r = await fetch(`/api/bulk-edit-steps?category=${category}`)
+      const r = await fetch(`https://api.vanhawke.agency/api/bulk-edit-steps?category=${category}`)
       const data = await r.json()
       if (data.error) throw new Error(data.error)
       setSequences(data.sequences || [])
@@ -69,7 +69,7 @@ export default function BulkEditStepsModal({ onClose, initialCategory }) {
 
     setRunning(true)
     try {
-      const r = await fetch('/api/bulk-edit-steps', {
+      const r = await fetch('https://api.vanhawke.agency/api/bulk-edit-steps', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

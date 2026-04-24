@@ -113,7 +113,7 @@ export default function SequenceDetail() {
       const userId = r?.data?.user?.id || r?.data?.session?.user?.id
       if (!userId) return
       try {
-        const res = await fetch(`/api/team-list?user_id=${userId}`)
+        const res = await fetch(`https://api.vanhawke.agency/api/team-list?user_id=${userId}`)
         if (res.ok) { const d = await res.json(); setOrgMembers(d.members || []) }
       } catch {}
     })
@@ -145,7 +145,7 @@ export default function SequenceDetail() {
     let cancelled = false
     ;(async () => {
       try {
-        const r = await fetch(`/api/sequence-conditions?sequence_id=${id}`)
+        const r = await fetch(`https://api.vanhawke.agency/api/sequence-conditions?sequence_id=${id}`)
         const j = await r.json()
         if (!cancelled && Array.isArray(j.conditions)) setConditions(j.conditions)
       } catch {}
@@ -155,7 +155,7 @@ export default function SequenceDetail() {
 
   async function addCondition() {
     try {
-      const r = await fetch('/api/sequence-conditions', {
+      const r = await fetch('https://api.vanhawke.agency/api/sequence-conditions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...newCondition, sequence_id: id, step_number: selStep + 1 }),
@@ -171,7 +171,7 @@ export default function SequenceDetail() {
 
   async function deleteCondition(condId) {
     try {
-      await fetch(`/api/sequence-conditions?id=${condId}`, { method: 'DELETE' })
+      await fetch(`https://api.vanhawke.agency/api/sequence-conditions?id=${condId}`, { method: 'DELETE' })
       setConditions(conditions.filter(c => c.id !== condId))
     } catch (e) { console.error(e) }
   }
@@ -203,7 +203,7 @@ export default function SequenceDetail() {
       // Call the proper /api/activate-campaign endpoint that runs sanity checks
       // (no placeholder steps, all targets verified, no moved/left contacts)
       // before flipping the sequence + enrollments live.
-      const res = await fetch('/api/activate-campaign', {
+      const res = await fetch('https://api.vanhawke.agency/api/activate-campaign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ campaign_id: id }),
@@ -235,7 +235,7 @@ export default function SequenceDetail() {
   async function verifyTargets() {
     setVerifying(true)
     try {
-      const res = await fetch('/api/verify-campaign-targets', {
+      const res = await fetch('https://api.vanhawke.agency/api/verify-campaign-targets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ campaign_id: id }),
@@ -263,7 +263,7 @@ export default function SequenceDetail() {
   async function enrichSponsorship() {
     setEnriching(true)
     try {
-      const res = await fetch('/api/enrich-campaign-sponsorship', {
+      const res = await fetch('https://api.vanhawke.agency/api/enrich-campaign-sponsorship', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ campaign_id: id, top_n: 10 }),
@@ -294,7 +294,7 @@ export default function SequenceDetail() {
     // not just the bare sequence (steps/name/description). Old client-side
     // duplicate left clones with zero targets which forced a full rebuild.
     try {
-      const r = await fetch('/api/clone-campaign', {
+      const r = await fetch('https://api.vanhawke.agency/api/clone-campaign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sequence_id: id }),
@@ -370,7 +370,7 @@ export default function SequenceDetail() {
     try {
       const category = (seq?.name || '').includes(' - ') ? seq.name.split(' - ').slice(1).join(' - ') : seq?.name || 'Technology'
       const team = (seq?.name || '').includes('Haas') ? 'Haas F1 Team' : 'Haas F1 Team'
-      const res = await fetch('/api/generate-sequence', {
+      const res = await fetch('https://api.vanhawke.agency/api/generate-sequence', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ category, team, persona: seq?.target_persona || `C-suite at ${category} companies`, numSteps: 7 }),
       })
@@ -394,7 +394,7 @@ export default function SequenceDetail() {
   async function askKiko(i) {
     const s = steps[i]; if (!s) return; upd(i, 'template', '⏳ Kiko is writing...')
     try {
-      const r = await fetch('/api/kiko', {
+      const r = await fetch('https://api.vanhawke.agency/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: `Write a ${s.channel === 'email' ? 'outreach email' : '300-char LinkedIn message'} for step ${s.step} of a sequence.\n\nSTYLE RULES (non-negotiable):\n- ${s.channel === 'email' ? 'Start with "Dear {firstName}," and end with "Kind regards,\\n\\n{signature}"' : 'Start with "Hi {firstName},"'}\n- Write at principal/board level. No generic filler. No "I hope this finds you well".\n- Tone: "We work at principal level on the structuring of Formula One partnerships for teams and rights-holders."\n- Category-specific: explain WHY this category matters operationally for Formula One.\n- Soft CTA: "The relevant question at this stage is simply whether this is strategic from your perspective."\n- Subject format uses x not special characters (e.g. "Haas F1 Team x Cloud Infrastructure")\n- 50-125 words for emails. 300 chars max for LinkedIn.\n\nContext: Approach: ${s.approach}. Psychology: ${s.psychology}. Target: ${seq?.target_persona || 'C-suite'}. Subject: ${s.subject || 'F1 partnership'}.\n\nReturn ONLY the message text, nothing else.`,
@@ -466,7 +466,7 @@ export default function SequenceDetail() {
     const originalDraft = currentDraft
     upd(i, 'template', '⏳ Kiko is refining...')
     try {
-      const r = await fetch('/api/kiko', {
+      const r = await fetch('https://api.vanhawke.agency/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: `Refine this ${s.channel === 'email' ? 'outreach email' : 'LinkedIn message'} based on my feedback.
@@ -541,7 +541,7 @@ RULES:
     // Resolve sender email from send_from_user_id
     const senderMember = seq?.send_from_user_id ? orgMembers.find(m => m.user_id === seq.send_from_user_id) : null
     const senderEmail = senderMember?.email || null
-    const r = await fetch('/api/gmail-draft', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: recipient, subject, body, send: true, contactStatus: 'cold', senderEmail }) })
+    const r = await fetch('https://api.vanhawke.agency/api/gmail-draft', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: recipient, subject, body, send: true, contactStatus: 'cold', senderEmail }) })
     const data = await r.json().catch(() => ({}))
     if (!r.ok) throw new Error(data.error || r.statusText)
     return data
@@ -605,7 +605,7 @@ RULES:
 
       // If CRM came up empty, fall back to the build-campaign endpoint
       if (results.length === 0) {
-        const r = await fetch('/api/build-campaign', {
+        const r = await fetch('https://api.vanhawke.agency/api/build-campaign', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ category: categoryId, preferredTeam: (seq.name.split(' F1')[0] || '').toLowerCase() })
@@ -631,7 +631,7 @@ RULES:
         setBgSourcing(true)
         try {
           const userId = '9f486437-4bf5-4111-abfe-fe19bfa76063'
-          const res = await fetch(`/api/kiko-jobs?user_id=${userId}`, {
+          const res = await fetch(`https://api.vanhawke.agency/api/kiko-jobs?user_id=${userId}`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               job_type: 'source_companies_bg',
@@ -713,7 +713,7 @@ RULES:
     try {
       const userId = '9f486437-4bf5-4111-abfe-fe19bfa76063'
       const category = seq?.target_persona || seq?.name || 'cybersecurity'
-      const res = await fetch(`/api/kiko-jobs?user_id=${userId}`, {
+      const res = await fetch(`https://api.vanhawke.agency/api/kiko-jobs?user_id=${userId}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           job_type: 'source_companies_bg',
@@ -1434,7 +1434,7 @@ RULES:
                       status: 'pending', priority: 10,
                     })
                     if (error) { alert('Insert failed: ' + error.message); return }
-                    fetch('/api/linkedin-trigger', { method: 'POST' }).catch(() => {})
+                    fetch('https://api.vanhawke.agency/api/linkedin-trigger', { method: 'POST' }).catch(() => {})
                     setLiTestSent(true)
                   } catch (err) { alert('Error: ' + err.message) }
                 }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#0077B5', color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font }}>Send test</button>

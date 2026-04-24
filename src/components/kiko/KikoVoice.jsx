@@ -35,7 +35,7 @@ async function executeTool(name, args) {
       // endpoint was a mistake — it left voice Kiko hallucinating from training.
       // Streaming SSE response, accumulate deltas into final string.
       const userEmail = (await supabase.auth.getSession()).data?.session?.user?.email || ''
-      const r = await fetch('/api/kiko', {
+      const r = await fetch('https://api.vanhawke.agency/api/kiko', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: args.query,
@@ -217,7 +217,7 @@ export default function KikoVoice({ onClose, user, onVoiceState, onMessage, micS
         // 1. Get ephemeral token
         console.log('[KikoVoice] Getting ephemeral token...')
         const voice = localStorage.getItem('kiko_voice') || 'coral'
-        const tokenRes = await fetch('/api/realtime-token', {
+        const tokenRes = await fetch('https://api.vanhawke.agency/api/realtime-token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ voice }),
