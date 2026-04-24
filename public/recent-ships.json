@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-24T12:18:34.603Z",
+  "generated_at": "2026-04-24T12:27:24.213Z",
   "commits": [
+    {
+      "hash": "c2ece87",
+      "subject": "FIX TWO CRITICAL BUGS: (1) Memory tools hanging — update_kiko_preference, learning_save, master_brief_digest all used 'await sbFetch' which blocked the response if Supabase was slow. Changed to fire-a",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "8974005",
       "subject": "FIX EMAIL BODY BLANK: renderBody regex .replace(/---.*​/s, '') with s flag was stripping EVERYTHING after --- separator including the entire email body. Replaced with safe indexOf check that only stri",
-      "when": "16 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "c09e9ad",
       "subject": "FIX: Email draft body blank during streaming. useState only initializes once — when EmailDraft first renders during streaming, only Subject+To have arrived so body is empty. Added useEffect to sync cu",
-      "when": "49 minutes ago"
+      "when": "58 minutes ago"
     },
     {
       "hash": "fc7d8b2",
@@ -19,7 +24,7 @@
     {
       "hash": "328a2f9",
       "subject": "REASONING DISCIPLINE: (1) web_search added to email tools — enables fact verification during drafts. (2) Email tool rounds 2→4, timeout 30s→60s. (3) Mandatory pre-draft verification routing: verify→CR",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "bebae24",
@@ -44,12 +49,12 @@
     {
       "hash": "5131b91",
       "subject": "FIX: Finance intent routing — added fast-path keywords for pipeline value, weighted pipeline, revenue, forecast, runway, cash flow, burn rate, ROI, cap table, valuation. These now route directly to fi",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "6a7906a",
       "subject": "FULL AUDIT FIXES: (1) All Vercel URL references in API files migrated to api.vanhawke.agency — kiko-tools.js (3 refs), data.js (2 refs), document.js (1 ref), cron-sequence-sender, cron-push-dispatcher",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "ca8ab82",
@@ -89,16 +94,11 @@
     {
       "hash": "ebe5103",
       "subject": "BATCH EMAIL DRAFTING: New batch_draft_emails tool — drafts re-engagement emails for multiple stalled deals. Queries pipeline for idle deals, generates personalised drafts via Haiku (fast), creates Gma",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "91d2688",
       "subject": "Add monitor files to repo: email-monitor (user-specific alerts, campaign detection), pipeline-monitor (stale deal detection), scheduler (cron registration), webhooks (Gmail Pub/Sub receiver)",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "c3b088a",
-      "subject": "Update session brief with remaining tasks and Hetzner migration status",
       "when": "16 hours ago"
     }
   ]

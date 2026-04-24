@@ -63,11 +63,11 @@ export default async function handler(req, res) {
   const { to, subject, body, htmlBody, draftFor, sender } = req.body;
   const targetEmail = draftFor || 'sunny@vanhawke.com';
   const senderEmail = sender || targetEmail; // sender determines From + signature
-  if (!to || !subject) return res.status(400).json({ error: 'to and subject required' });
+  if (!to || !subject) { console.error('[gmail-draft] 400: missing to or subject', { to, subject: subject?.slice(0,30) }); return res.status(400).json({ error: 'to and subject required' }); }
 
   try {
     const token = await forceRefreshToken(targetEmail);
-    if (!token) return res.status(400).json({ error: `Token refresh failed for ${targetEmail}` });
+    if (!token) { console.error('[gmail-draft] 400: token refresh failed for', targetEmail); return res.status(400).json({ error: `Token refresh failed for ${targetEmail}` }); }
 
     // Get signature for the SENDER — needs sender's token if sender != recipient
     let signature = '', sendAs = SEND_AS_ALIAS[senderEmail] || senderEmail;

@@ -1741,12 +1741,15 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     const toolOpts = skipTools ? { noTools: true, maxTokens: voiceMode ? 300 : 1500, useHaiku: useHaikuForGreeting } : isEmailIntent ? { lightTools: lightEmailTools } : {};
 
     // ── REASONING ENGINE — gather intelligence BEFORE Claude sees the message ──
-    if (!skipTools && !isGreeting) {
+    // Only runs for substantive queries about specific entities — NOT for follow-ups, greetings, or simple commands
+    const SKIP_REASONING = ['navigate', 'screen', 'calendar', 'self_monitor', 'identity', 'greeting', 'knowledge', 'conversation_search', 'code_review'];
+    const isShortFollowUp = message.length < 30 && /^(yes|no|ok|sure|thanks|do it|go ahead|continue|proceed|sounds good|perfect|great|send it|approved)/i.test(message.trim());
+    const shouldReason = !skipTools && !isGreeting && !isShortFollowUp && !SKIP_REASONING.includes(intent);
+    if (shouldReason) {
       try {
         write({ toolStatus: 'Gathering intelligence...' });
         const preResult = await preProcess(message, intent);
-        if (preResult.context) {
-          // Inject pre-verified context into the last user message
+        if (preResult.context && preResult.context.length > 80) {
           const lastMsg = messages[messages.length - 1];
           if (lastMsg && typeof lastMsg.content === 'string') {
             messages[messages.length - 1] = { role: 'user', content: lastMsg.content + preResult.context };
