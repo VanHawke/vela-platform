@@ -1,271 +1,240 @@
-# KIKO SESSION BRIEF — Complete Architecture & State
+# KIKO INTELLIGENCE OS — COMPLETE ARCHITECTURE & BUILD HISTORY
 
-## Last updated: 2026-04-24 (end of marathon April 23-24 session)
+## For session handoff — read THIS before writing ANY code
 
-## Previous transcripts: /mnt/transcripts/2026-04-24-13-51-37-kiko-platform-full-session-apr23-24.txt
+## Last updated: 2026-04-24 21:00 UTC
+
+## 58 build sessions spanning April 7-24, 2026
+
+## Transcripts: /mnt/transcripts/ (read journal.txt for session index)
+
+---
+
+## IDENTITY
+
+**Platform:** Kiko Intelligence OS — AI executive operating partner for Van Hawke Group **Owner:** Sunny Sidhu, CEO of Van Hawke Group (Weybridge, UK) **Entities:** Van Hawke Agency (F1/Formula E sponsorship advisory), Van Hawke Maison Inc. (luxury eyewear), Van Hawke Group Inc. (US holding/IP) **Primary client:** Haas F1 Team (TGR Haas) **Team:** Sunny (super_admin), Matt Smith (user, Head of Commercial Partnerships, Newark DE)
 
 ---
 
 ## ENVIRONMENT
 
-### Repo & Deploy
+ComponentLocationDetailsRepo`/Users/sunny/Desktop/vela-platform/`Git → auto-deploys to VercelFrontend`https://kiko.vanhawke.agency`Vercel (static only, free tier)API`https://api.vanhawke.agency`Hetzner 178.104.73.22, Express port 3000, nginx SSLSupabaseproject_id `dwiywqeleyckzcxbwrlb`62 kiko\_\* tables, 4,500+ entriesLinkedInHetznerPlaywright + Decodo proxy ([isp.decodo.com:10001](http://isp.decodo.com:10001))VoiceOpenAI GPT-4o Realtime APIWebRTC, api/realtime-token.js
 
-- **Repo:** `/Users/sunny/Desktop/vela-platform/` → `https://kiko.vanhawke.agency` (frontend/Vercel)
-- **API:** `https://api.vanhawke.agency` (Hetzner — ALL API calls route here)
-- **Supabase:** project_id `dwiywqeleyckzcxbwrlb`
-- **Deploy frontend:** `npm run build` → `git add -A` → `git commit --no-verify -m "msg"` → `git push origin main` (auto-deploys to Vercel)
-- **Deploy Hetzner:** `scp file root@178.104.73.22:/home/kiko/kiko-worker/path/` → `chown kiko:kiko` → `pm2 restart kiko-worker`
-- **NEVER** use `--force`, `VERCEL_FORCE_NO_BUILD_CACHE=1`, or `npx vercel --prod` (caused $830 overage)
+### Deploy Rules (NEVER BREAK)
 
-### Hetzner Server (178.104.73.22)
-
-- **kiko-worker:** PM2 under `kiko` user, Express port 3000, MUST run from `/home/kiko/kiko-worker` for `.env` to load
-- **kiko-crons:** PM2 under root, 22 scheduled jobs
-- **Nginx:** SSL via Let's Encrypt, reverse proxy to port 3000, SSE streaming with `proxy_buffering off`
-- **Nginx timeouts:** `/api/kiko` = 300s, `/api/generate-document` = 300s, `/api/*` = 120s
-- **Static docs:** `/docs/` served from `/home/kiko/kiko-worker/public/docs/` (auth whitelisted)
-- **LinkedIn:** Playwright + Decodo proxy (`isp.decodo.com:10001`)
-- **Worker secret:** `kiko-hetzner-2026-vanhawke`
-
-### Users
-
-- **Sunny:** super_admin, user_id `9f486437`, [sunny@vanhawke.com](mailto:sunny@vanhawke.com), Weybridge UK (Europe/London)
-- **Matt:** user, user_id `f1cb67ee`, [matt.smith@vanhawke.com](mailto:matt.smith@vanhawke.com), Newark DE (America/New_York)
+- `npm run build` → `git add -A` → `git commit --no-verify -m "msg"` → `git push origin main`
+- Hetzner: `scp` → `chown kiko:kiko` → `su - kiko -c 'cd /home/kiko/kiko-worker && pm2 restart kiko-worker'`
+- NEVER use `--force`, `VERCEL_FORCE_NO_BUILD_CACHE=1`, or `npx vercel --prod` (caused $830 overage)
+- NEVER modify `api/kiko.js`, `api/kiko-tools.js`, `api/kiko-self-knowledge.js` without permission
+- Always `node --check` before deploying server files
+- After PM2 changes: `pm2 save`
 
 ---
 
-## RING-FENCE RULES (NEVER BREAK)
+## COMPLETE BUILD HISTORY (April 7-24, 2026)
 
-- NEVER modify `api/kiko.js`, `api/kiko-tools.js`, `api/kiko-self-knowledge.js` without explicit permission
-- Always `node --check` syntax verify before deploying
-- Always `Array.isArray()` on Supabase query results
-- Always `npm run build` before `git push`
-- PM2 must run from `/home/kiko/kiko-worker` directory (not `/home/kiko`)
-- After PM2 restart: `pm2 save` to persist across reboots
+### Week 1 (Apr 7-9): Foundation
+
+- Kiko Master Plan v1.0 architecture designed and executed
+- 5 of 16 sprints shipped (A1-A2, B1 partial)
+- Lemlist removal + contacts cleanup (11,876→4,193)
+- 72% cron cost reduction
+- Command Centre built
+- Campaign sequencer wired
+- Kiko Bible + self-learning feedback loop + meta-learning + rule promotion
+- Intent classifier built
+- Voice-in-chat transcription wiring
+- Parallel multi-task conversations (schema + UI)
+- Deterministic campaign builder
+- F1 partnership matrix data hygiene
+- System-wide audit (27 agent files, 4,829 lines)
+- Morning Brief system
+- Self-test endpoint (18 checks)
+
+### Week 2 (Apr 10-13): Multi-User & Polish
+
+- v0.0.11 → v0.0.62 deployed (51 versions)
+- Build campaign timeout fix
+- Voice mode hardening (auto-reconnect, heartbeat, status indicator)
+- Gmail signature fix (sendAs API alias matching)
+- Multi-conversation foundation + ThreadIndicator UI
+- Memory extraction quality (642 rows cleaned, 8-pass filter)
+- Complete 7-sub-phase multi-user migration:
+  - A: Audit → B: Org schema → C: Three-layer Bible split → D: Settings tabs
+  - E: Export role gating → F: Campaign send-as + onboarding → G: Page permissions
+- Matt Smith onboarding (Google OAuth fix, RLS provisioning, kiko_user_config)
+- Background Tasks Phase 1-4 (fire-and-switch, SSE streaming)
+- Domain migration: vela-platform-one.vercel.app → kiko.vanhawke.agency
+- Vela→Kiko rename across all user-facing surfaces
+- DB-backed branding refactor
+- Embeddings backfill
+- 8 unread warm replies recovered from Lemlist inbox
+
+### Week 2b (Apr 14-15): LinkedIn & UI Redesign
+
+- v0.0.63 → v0.0.70 (Lemlist webhook safety net, LinkedIn Layers 1+2)
+- Complete native LinkedIn integration:
+  - Layer 1: Tools (search, send invite, send message)
+  - Layer 2: Sequence engine with safety (25/day→40, kill switch, audit log)
+  - Voyager API blocked by Cloudflare → Playwright stealth engine on Hetzner
+  - Chrome extension for cookie sync
+  - Decodo residential proxy integration (dedicated Germany IPs)
+- Hetzner VPS provisioned (CX21 Falkenstein)
+- [Legora.com](http://Legora.com) UI redesign:
+  - Complete design system extraction (free fonts, exact colour tokens)
+  - 8 HTML mockup pages built and approved
+  - Phase 1 token swap across entire platform
+  - kiko-polish.css/js with 21st.dev-inspired patterns
+  - 3 navigation option mockups (Option A locked)
+  - Calendar Option C with outreach intelligence
+
+### Week 2c (Apr 15-17): React Port & Platform Buildout
+
+- Full Legora React port committed (all 8 pages)
+- Supabase outreach intelligence tables + RLS
+- Settings overhaul (11 tabs)
+- Pipeline deal panel consistency
+- Hetzner cron migration (48→49 crons from Vercel)
+- Voice settings (5 tone presets)
+- Google Calendar integration (read + write)
+- Knowledge seeder expanded (15→26 domains)
+- Pipeline analytics + activity history + inline editing
+- Contacts enrichment badges
+- LinkedIn connect UI in Settings
+- Notification bell with real data
+- F1 2026 calendar (22 races) + MotoGP + WEC + Formula E calendars
+- Knowledge versioning
+- Sequence visual builder with drag-to-reorder
+- Contact dedup
+- Campaign section Legora theme overhaul
+- Prospect detail panel + campaign stats bar
+- Google Maps directions tool
+- Supabase backup setup
+
+### Week 3 (Apr 19-22): Mobile + Campaign Engine
+
+- Mobile PWA buildout (page-by-page approval, bottom nav, service worker)
+- KikoAvatar 5-dot identity system
+- Voice mode mobile fixes
+- Command Centre mobile panel
+- Campaign engine completion (multi-user email + LinkedIn sending + reply detection)
+- Knowledge domain expansion to 28 domains
+- Formula E calendar fix (17 races)
+- SequenceDetail Legora theme alignment (81 fixes)
+- Lemlist-style campaign builder rebuild (flow view + conditions + multichannel)
+- Prospect management (bulk select/sort/duplicate/delete)
+- Add Prospects deep research pipeline
+- Email intelligence engine (6 APIs)
+- Gmail draft creation for team members with signatures
+- Multi-file upload system
+- Condition evaluation engine
+- Platform audit with dead code cleanup
+- Self-improvement engine (learned rules, preferences, user awareness)
+- Document library page
+- Push notifications infrastructure
+
+### Week 3b (Apr 22-24): Hetzner Migration + Intelligence Engine
+
+- ALL API calls migrated to Hetzner (62 frontend fetch() calls updated)
+- Wildcard Express route handler + nested path support
+- SSL (Let's Encrypt) + DNS (api.vanhawke.agency)
+- nginx SSE streaming config
+- Missing directories synced (api/lib/, api/\_lib/, api/admin/)
+- Reasoning engine built and deployed:
+  - Pre-processing: entity extraction (Haiku), CRM lookup, knowledge search
+  - 8-second hard timeout, skips lightweight intents
+  - Web verification removed (delegated to Claude's tools)
+  - Results injected as PRE-VERIFIED INTELLIGENCE
+- Email draft fixes: body blank (renderBody regex), subject/to stateful, memory fire-and-forget
+- Real-time monitors: pipeline (30min), email (2min), follow-ups (2hrs), scheduled sender (5min)
+- Supabase Realtime listener (3 channels)
+- All 16 crons migrated from Vercel to Hetzner
+- Full platform audit (22 tools tested, 25 agents verified)
+- Model migration to claude-sonnet-4-6
+- Follow-up tracking system (kiko_follow_ups table, 7 prospects seeded)
+- Scheduled email sending (table, cron, UI with timezone picker)
+- Auto-tracking hook (every sent email auto-logged)
+- Chat sidebar fixes (rename event + correct JSONB query)
+- Dynamic timezone detection (browser Intl API)
+- Display names ("Matt Smith [matt.smith@vanhawke.agency](mailto:matt.smith@vanhawke.agency)") across all email paths
+- Campaign sender display name fix (was hardcoded "Sunny Sidhu")
+- Simple drafts use Haiku (\~12s vs 22-37s Sonnet)
+- Proactive Intelligence Engine (2x daily — scans F1/fashion/business, creates strategic alerts)
+- 8 competitive research domains in learning director
+- Complete memory architecture awareness (62 tables, 4,500+ entries documented)
+- 3 deep query tools (relationships, thought journal, conversation insights)
+- Document generation pipeline (research → structure → branded HTML/PPTX)
+- Homepage fixes (greeting, background tasks icon, nav CSS grid centering)
 
 ---
 
-## KEY FILES (with current line counts)
+## CURRENT ARCHITECTURE (April 24, 2026)
 
-FileLinesRole`api/kiko.js`\~2091Main API — system prompt, reasoning engine, streaming, tool routing`api/kiko-tools.js`\~176042+ tools — agents, Gmail drafts, follow-ups, scheduled emails, documents, relationships, thought journal, conversation insights`api/kiko-self-knowledge.js`\~530Full capability map, memory architecture docs, proactive intel docs, cross-referencing rules`api/reasoning-engine.js`\~163Pre-processing layer — entity extraction (Haiku), CRM lookup, knowledge search. Runs BEFORE Claude.`api/create-gmail-draft.js`\~138Gmail draft creation with display names, auto follow-up tracking`api/schedule-email.js`33Schedule email API endpoint`api/generate-document.js`\~312Document generation pipeline (research → structure → branded PDF/PPTX)`api/gmail-webhook.js`\~110Pub/Sub webhook (built but inactive — Workspace policy blocks it)`api/cron-learning-director.js`\~604Nightly research — 8 VH competitive domains + academic curriculum`api/cron-sequence-sender.js`\~336Campaign sequence email sender with display names`monitors/proactive-intel.js`\~175Proactive strategic intelligence — runs 8am + 2pm, scans F1/fashion/business news`monitors/follow-up-monitor.js`\~101Checks for overdue follow-ups, scans Gmail for replies`monitors/scheduled-sender.js`\~111Sends scheduled emails at their time via Gmail API`monitors/email-monitor.js`—Scans both inboxes every 2min for replies`monitors/pipeline-monitor.js`—Pipeline health every 30min`monitors/scheduler.js`\~55Registers all monitors with node-cron`monitors/realtime-listener.js`—Supabase Realtime — 3 channels (deals, contacts, campaign_targets)`src/components/kiko/KikoChat.jsx`\~1958Main chat UI — greeting, prompt bar, message rendering, EmailDraft, ChatHistory`src/components/kiko/EmailDraft.jsx`\~458Email preview — send to drafts, schedule send, tone rewrite, display names`src/components/kiko/ChatHistory.jsx`—Chat sidebar — rename event listener, conversation loading`src/components/layout/LegoraTopNav.jsx`\~339Top nav — CSS grid layout, activity pulse icon for background tasks`src/styles/kiko-polish.css`\~535Nav styling — grid centering, link positioning`KIKO_BIBLE.md`81Operational knowledge base — updated April 24
+### Monitors (all on Hetzner, weekdays only)
+| Monitor | Schedule | Purpose |
+|---------|----------|---------|
+| Pipeline | 30min | 308 deals health scan |
+| Email replies | 2min (7am-9pm) | Gmail inbox scan for replies |
+| Follow-ups | 2hrs (8am-8pm) | Overdue follow-up alerts |
+| Scheduled sender | 5min (7am-9pm) | Send emails at scheduled time |
+| Proactive intel | 8am + 2pm | F1/fashion/business strategic alerts |
+| Learning director | 3am | 1 competitive research topic per night |
+| Realtime | Always | 3 Supabase channels |
 
----
+### Tools (42+ in kiko-tools.js)
+Agents: navigator, deal, data, outreach, document, memory, strategy, negotiation, category, finance, ea, legal, dispute, content, investment, pricing, signal, travel, specialist, code_review
+Actions: navigate_page, log_activity, google_maps_link, create_email_draft, batch_draft_emails, read_email, read_calendar, manage_knowledge, linkedin_search/invite/message, get_platform_users, update_kiko_preference, search_conversations, trigger_triage
+New: check_follow_ups, check_scheduled_emails, generate_document, query_relationships, query_thought_journal, query_conversation_insights
 
-## MONITORS & CRONS (all on Hetzner)
+### Memory Systems (62 tables, 4,500+ entries)
+Loaded every conversation: Core Bible, Org Bible, User Bible, Knowledge Base (28+ domains), Learned Rules (43), Preferences (8), Personal Context (486), Conversation Insights (last 5 of 1,591), User Profiles (1)
+Queryable via tools: Thought Journal (196), Relationships (94), Email Style (16), AI Memory (153), Learning Log (433), Memories (1,431), Skills (35)
 
-MonitorScheduleWhat it doesPipelineEvery 30min (Mon-Fri)Scans 308 deals for health alertsEmail repliesEvery 2min (Mon-Fri, 7am-9pm)Checks both Gmail inboxes for replies from CRM contactsFollow-upsEvery 2hrs (Mon-Fri, 8am-8pm)Checks 7+ tracked follow-ups for overdue/replied statusScheduled senderEvery 5min (Mon-Fri, 7am-9pm)Sends emails at their scheduled time via Gmail APIProactive intel8am + 2pm (Mon-Fri)Scans F1/fashion/business news, creates strategic alertsLearning director3am dailyResearches 1 competitive topic (8 VH domains prioritized 2/3 of nights)RealtimeAlways3 Supabase channels SUBSCRIBED (deals, contacts, campaign_targets)
-
----
-
-## WHAT WAS BUILT THIS SESSION (April 23-24, 2026)
-
-### Reasoning Engine ✅
-
-- Pre-processing layer in `api/reasoning-engine.js`
-- Runs BEFORE Claude: extracts entities (Haiku \~1s), CRM lookup (\~1s), knowledge search (\~0.5s)
-- 8-second hard timeout — skips if slow
-- Injects `PRE-VERIFIED INTELLIGENCE` block into user message
-- Tells Claude "data already loaded, do NOT re-fetch"
-- Web verification REMOVED from pre-processing (delegated to Claude's own tools)
-
-### Follow-up Tracking ✅
-
-- `kiko_follow_ups` table with auto-calculated due dates (trigger function)
-- 7 prospects seeded: Proofpoint, Nscale, SEALSQ, Illumio, PostHog, Stord, StarTree
-- Auto-tracking hook in `create-gmail-draft.js` — every sent email auto-inserts
-- Follow-up monitor cron checks Gmail for replies, creates HIGH alerts when overdue
-- `check_follow_ups` tool — Kiko can query and report follow-up status
-
-### Scheduled Email Sending ✅
-
-- `kiko_scheduled_emails` table
-- `schedule-email.js` API endpoint
-- `scheduled-sender.js` cron — every 5min, sends via Gmail API with correct sender + signature
-- Auto-tracks sent emails in `kiko_follow_ups`
-- UI: Clock button in EmailDraft with 3 sections:
-  - Quick options: In 1hr, Tomorrow 9am/2pm, Monday 9am
-  - Recipient timezone optimum: US East/West, UK, CET, Middle East, Asia Pacific
-  - Custom date/time picker with native datetime-local input
-
-### Email Fixes ✅
-
-- **Body blank:** `renderBody()` regex `.replace(/---.*​/s, '')` stripped everything — fixed with safe `indexOf`
-- **Subject/To undefined:** Made stateful with `useEffect` sync during streaming
-- **Memory tools hanging:** `update_kiko_preference`, `learning_save`, `master_brief_digest` changed to fire-and-forget
-- **Team-members called 9x:** Cached check prevents re-fetch
-- **Draft speed:** Simple drafts (re-engagement, follow-up) use Haiku (\~12s vs 22-37s Sonnet)
-- **Display names:** "Matt Smith [matt.smith@vanhawke.agency](mailto:matt.smith@vanhawke.agency)" in recipient inbox (all paths: drafts, scheduled, campaigns)
-- **Send-to-drafts 400:** Subject/To now stateful with useEffect sync
-
-### Chat Sidebar ✅
-
-- **Rename:** Dispatches `kiko-chat-updated` event, ChatHistory listens and reloads
-- **Click-into-other-chats:** `loadConversation` now queries `conversations.messages` JSONB (was querying non-existent `messages` table)
-
-### Proactive Intelligence Engine ✅
-
-- `monitors/proactive-intel.js` — runs 2x daily (8am + 2pm)
-- Scans: F1 deals, sponsor exits, new GPs, funding rounds, CMO hires, competitor agencies, eyewear launches, viral campaigns, business building
-- Self-discovery: finds NEW competitors not on the list
-- Multi-lens analysis: CFO/CCO/psychologist/strategist/legal
-- Cross-references with CRM pipeline
-- Creates `proactive_intel` alerts on Command Centre
-- First scan found: Cadillac F1 $55-70M open seat, Omni AI $120M Series C, Kering/Google smart glasses, D&G x Ray-Ban
-
-### Competitive Research Domains ✅ (8 Van Hawke domains in learning director)
-
-1. `vh_agency_competitive` — CAA, WME, Octagon, CSM, Wasserman, Excel Sports + self-discovery
-2. `vh_f1_deal_intel` — F1 grid deals, sponsor entries/exits, valuations
-3. `vh_prospect_intel` — Funding signals, CMO hires, budget indicators
-4. `vh_agency_positioning` — Messaging, differentiation, zero-budget growth
-5. `vh_business_building` — Zero to global agency, CEO biographies, bootstrap strategies
-6. `vh_marketing_playbook` — Viral campaigns, LinkedIn, social, content, PR
-7. `vh_maison_competitive` — JMM, Gentle Monster, Mykita, EssilorLuxottica + self-discovery
-8. `vh_maison_marketing` — Fashion campaigns, celebrity seeding, DTC, zero-budget launch
-
-### Kiko Awareness ✅
-
-- Full memory architecture documented (62 tables, 4,500+ entries)
-- 7 mandatory cross-referencing rules
-- Autonomous expertise switching (CFO/CCO/GC/CTO/psychologist)
-- Proactive advisory rules (push recommendations, challenge assumptions)
-- Deep query tools: `query_relationships`, `query_thought_journal`, `query_conversation_insights`
-- `check_follow_ups`, `check_scheduled_emails`, `generate_document` tools
-
-### Document Generation Pipeline ✅ (partially working)
-
-- `api/generate-document.js` — research (Haiku) → structure (Sonnet 8000 tokens) → branded HTML/PPTX
-- Van Hawke brand system: purple `#7C5CFC`, dark `#0A0A0C`, teal `#00D4AA`, Inter font
-- First document generated successfully (24KB branded HTML)
-- PPTX via pptxgenjs (installed on Hetzner)
-- **ISSUE:** JSON truncation on long structure responses — robust repair added but needs testing
-- **ISSUE:** Total generation time \~150s (research 53s + structure 97s) — needs optimization
-
-### UI Fixes ✅
-
-- **Wrong day greeting:** `getGreeting()` uses fresh `new Date()` for both day and hash
-- **Background tasks icon:** Changed to activity pulse zigzag (was rectangle-with-lines)
-- **Nav centering:** CSS grid with `auto 1fr auto` columns, links `justify-self: center`
-- **Content alignment:** `marginLeft: -14px` when sidebar collapsed to center on viewport
-- **Dynamic timezone:** Browser Intl API sends timezone + locale with every request
-- **Email reply detection:** Reduced from 15min to 2min polling
-
-### Infrastructure ✅
-
-- ALL 62 frontend fetch() calls migrated to `https://api.vanhawke.agency/api/`
-- Wildcard Express route handler with nested path support
-- Webhook route BEFORE wildcard handler
-- `kiko_memories` URL encoding for Cloudflare WAF
-- Model migration: `claude-sonnet-4-6` across all files
-
----
-
-## DATABASE — KEY TABLES
-
-### Core CRM
-| Table | Entries | Purpose |
-|-------|---------|---------|
-| deals | 308 | Pipeline deals |
-| contacts | 4,991+ | Contact records with job titles |
-| companies | 2,232+ | Company records with industries |
-| conversations | — | Chat history (messages in JSONB column) |
-
-### Kiko Memory (62 kiko_* tables, key ones)
-| Table | Entries | Loaded into prompt? | Has tool? |
-|-------|---------|-------------------|-----------|
-| kiko_personal_context | 486 | ✅ | — |
-| kiko_conversation_insights | 1,591 | ✅ (last 5) | ✅ query_conversation_insights |
-| kiko_memories | 1,431 | ✅ | ✅ manage_knowledge |
-| kiko_learning_log | 433 | — | ✅ learning_save |
-| kiko_thought_journal | 196 | ✅ | ✅ query_thought_journal |
-| kiko_relationships | 94 | ✅ (outreach) | ✅ query_relationships |
-| kiko_knowledge | 31+ | ✅ (top 10) | ✅ manage_knowledge |
-| kiko_learned_rules | 43 active | ✅ | ✅ update via tools |
-| kiko_preferences | 8 | ✅ | ✅ update_kiko_preference |
-| kiko_follow_ups | 7+ | — | ✅ check_follow_ups |
-| kiko_scheduled_emails | 4+ | — | ✅ check_scheduled_emails |
-| kiko_alerts | many | ✅ (morning brief) | ✅ via proactive intel |
-| kiko_core_bible | 1 | ✅ | — |
-| kiko_user_profiles | 1 | ✅ | — |
-| kiko_email_style_reference | 16 | — (outreach agent) | — |
-| kiko_skills | 35 | — | — |
-| ai_memory | 153 | — | — |
-| kiko_meta_learning | 2 | — | — |
-
-### Email Infrastructure
-| Table | Purpose |
-|-------|---------|
-| user_tokens | Google OAuth refresh tokens per user |
-| kiko_follow_ups | Auto-tracks sent emails, 5-day reply window, status tracking |
-| kiko_scheduled_emails | Queued emails with scheduled_for timestamp |
+### Research Domains (8 Van Hawke competitive + academic curriculum)
+VH Agency: competitive landscape, F1 deal intel, prospect signals, positioning
+VH Business: zero-to-global building, marketing/social playbook
+VH Maison: eyewear competitive, fashion marketing
+Academic: 15+ pillars (sales, negotiation, psychology, legal, etc.)
 
 ---
 
 ## WHAT'S PENDING (prioritized)
 
-### Priority 1 — Fix
-1. **Homepage alignment** — Nav grid centering deployed but user says nothing changed. May need hard refresh or further CSS investigation. Nav uses CSS grid `auto 1fr auto`, content has `marginLeft: -14` offset when sidebar collapsed.
-2. **Document generation speed** — Total ~150s (research 53s + structure 97s). Needs optimization. JSON truncation repair added but not fully tested with PPTX.
-3. **Email draft still ~22s for complex drafts** — Simple drafts use Haiku (~12s). Complex drafts (Sonnet) still ~22s. Fundamental Claude thinking time.
+### Must Fix
+1. **Homepage alignment** — CSS grid deployed but user says nothing changed. Needs verification + possible cache issue
+2. **Document generation speed** — 150s total (53s research + 97s structure). JSON repair added. Needs PPTX test
+3. **Email drafts still ~22s** for complex (Sonnet). Simple use Haiku (~12s)
 
-### Priority 2 — Build
-4. **Brand asset library** — No logos, fonts, or brand guidelines uploaded. Document generation uses hardcoded colors but no actual Van Hawke logo files. Need: logo PNG/SVG, colour palette confirmation, font files.
-5. **ChatGPT conversation re-import** — User has been talking more with ChatGPT. Import pipeline exists in Knowledge Library. Needs export + upload.
-6. **Van Hawke Maison competitive domains** — Added to curriculum but not yet researched (will populate over next 3-4 nights via learning director cron).
+### Should Build
+4. **Brand asset library** — No logos/fonts uploaded. Documents use hardcoded colours only
+5. **ChatGPT re-import** — User has extensive ChatGPT conversations to import
+6. **Proactive synthesis** — Beyond alerts, generate full strategic playbooks with recommendations
+7. **Self-discovery enhancement** — Kiko should identify competitors herself, not just track listed ones
 
-### Priority 3 — Future
-7. **Google Cloud Pub/Sub** — Webhook endpoint built (`api/gmail-webhook.js`) but blocked by Workspace domain-restricted sharing policy. 2-minute polling as workaround.
-8. **Meeting transcription** — Parked. BlackHole + Whisper approach designed but not built.
-9. **Full Vercel elimination** — Serve frontend from Hetzner.
-10. **SponsorSignal LinkedIn posting system**
+### Future
+8. **Google Pub/Sub** — Webhook built but blocked by Workspace policy. 2min polling as workaround
+9. **Meeting transcription** — BlackHole + Whisper approach designed, parked
+10. **Full Vercel elimination** — Serve frontend from Hetzner
+11. **SponsorSignal LinkedIn posting system**
 
 ---
 
-## OPERATING RULES (from user preferences)
+## OPERATING RULES
 
-### Email/Messaging
-- NEVER include sponsorship pricing in early-stage outreach
-- NEVER use generic openings ("I hope this note finds you well")
-- All messaging must be direct, corporate, specific
-- Always use "intelligent age" NOT "AI generation"
-- Always use "Cultural Performance Eyewear" for Van Hawke Maison
+### Email
+- NEVER include pricing in early-stage outreach
+- NEVER use generic openings ("I hope this finds you well")
+- Always "intelligent age" not "AI generation"
+- Always "Cultural Performance Eyewear" for Van Hawke Maison
 - Never reference "secured funding" with prospects
-- Always use USD, never GBP
-- Emails under 150 words, no attachments until reply
+- Always USD, never GBP
+- Emails under 150 words
+- Display: "Matt Smith <matt.smith@vanhawke.agency>" (all paths)
 
-### Output Style
+### Code
 - Deliverables first, commentary second
-- Jump straight to output without meta-commentary
 - If asked to "tighten," cut 25-40%
-
-### Strategic Advisor Mode
-- Brutally honest, direct, high-IQ reasoning
-- Start with the hard truth, follow with specific actionable steps
-- End with a direct challenge or assignment
-
-### Brand Language
-- Display names: "Sunny Sidhu" / "Matt Smith" (not email usernames)
-- Email domain: @vanhawke.agency (not @vanhawke.com)
-- DISPLAY_NAMES mapping in: EmailDraft.jsx, create-gmail-draft.js, scheduled-sender.js, cron-sequence-sender.js
-
----
-
-## VERIFIED WORKING (as of end of session)
-
-| System | Status | Last verified |
-|--------|--------|--------------|
-| Kiko Chat API | ✅ 200 | April 24 |
-| Reasoning engine | ✅ 1.7s | April 24 |
-| Team members | ✅ 200 | April 24 |
-| Webhook status | ✅ 200 | April 24 |
-| Selfcheck | ✅ 200 | April 24 |
-| Pipeline notifications | ✅ 200 | April 24 |
-| Partnership matrix | ✅ 200 | April 24 |
-| Sequence sender | ✅ 200 | April 24 |
-| Reply detection | ✅ 200 | April 24 |
-| Follow-up monitor | ✅ 7 checked | April 24 |
-| Scheduled sender | ✅ Email sent | April 24 |
-| Proactive intel | ✅ 5 alerts | April 24 |
-| Email draft (simple) | ✅ ~12s Haiku | April 24 |
-| Document generation | ⚠️ Works but slow (150s) | April 24 |
-| Error log | ✅ EMPTY | April 24 |
+- Strategic advisor: brutally honest, start with hard truth
+- Before API work: search current official docs first
+- Every Kiko session: read KIKO_SESSION_BRIEF.md + KIKO_EVOLUTION_PLAN.md
+- Update KIKO_BIBLE.md after every ship
