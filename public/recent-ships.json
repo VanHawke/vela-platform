@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-24T13:10:57.452Z",
+  "generated_at": "2026-04-24T13:13:50.334Z",
   "commits": [
+    {
+      "hash": "3cd9e53",
+      "subject": "FIX HANGING PERMANENTLY: (1) Reasoning engine now tells Claude 'data already loaded, do NOT re-fetch' — prevents redundant tool calls after pre-processing. (2) Email tool rounds reduced from 4 to 2 — ",
+      "when": "3 minutes ago"
+    },
     {
       "hash": "373c23a",
       "subject": "FIX KIKO HANGING: (1) Reasoning engine web verification REMOVED from pre-processing — was taking 15-20s per company. Now does CRM+knowledge only (~2s). Claude's own web_search tool handles fact verifi",
-      "when": "15 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "f78de2f",
       "subject": "FIX HANGING + DRAFT 400: (1) Reasoning engine now skips short follow-ups, navigation, calendar, identity, greeting, knowledge queries. Only fires for substantive entity-based queries. Prevents 10-20s ",
-      "when": "43 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "c2ece87",
       "subject": "FIX TWO CRITICAL BUGS: (1) Memory tools hanging — update_kiko_preference, learning_save, master_brief_digest all used 'await sbFetch' which blocked the response if Supabase was slow. Changed to fire-a",
-      "when": "52 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "8974005",
       "subject": "FIX EMAIL BODY BLANK: renderBody regex .replace(/---.*​/s, '') with s flag was stripping EVERYTHING after --- separator including the entire email body. Replaced with safe indexOf check that only stri",
-      "when": "69 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "c09e9ad",
@@ -94,11 +99,6 @@
     {
       "hash": "91e46f0",
       "subject": "KIKO INTELLIGENCE UPGRADE: (1) FACT VERIFICATION — mandatory verification of all claims (funding rounds, acquisitions, exec changes) before including in emails. Check CRM → emails → web search. Never ",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "4c4f1d6",
-      "subject": "FIX: Empty response recovery — (1) Shortened fallback message from confusing specific instructions to simple 'try again'. (2) finally block now clears toolStatus and streamText alongside streaming fla",
       "when": "16 hours ago"
     }
   ]

@@ -1764,12 +1764,17 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
       } catch (e) { console.error('[kiko] Reasoning engine error:', e.message); }
     }
 
-    let response = await streamCall(messages, toolOpts);
+    // If reasoning engine loaded CRM data AND intent is outreach, skip tools — draft directly from pre-loaded context
+    const reasoningHadData = shouldReason && messages[messages.length - 1]?.content?.includes('PRE-VERIFIED INTELLIGENCE');
+    const skipToolsForDraft = isEmailIntent && reasoningHadData;
+    const finalToolOpts = skipToolsForDraft ? { noTools: false, lightTools: lightEmailTools } : toolOpts;
+
+    let response = await streamCall(messages, finalToolOpts);
     let toolRounds = 0;
     const toolsUsedList = [];
 
     // Tool execution loop — time-aware, stops before timeout
-    const maxRounds = isEmailIntent ? 2 : (voiceMode ? 5 : 5);
+    const maxRounds = (isEmailIntent && reasoningHadData) ? 1 : isEmailIntent ? 2 : (voiceMode ? 5 : 5);
     const timeLimit = isEmailIntent ? 45000 : (voiceMode ? 45000 : 90000);
     while (response.stop_reason === 'tool_use' && toolRounds < maxRounds) {
       const elapsed = Date.now() - requestStart;
