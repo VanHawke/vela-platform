@@ -6,6 +6,7 @@ import { TOOL_DEFINITIONS, DIGEST_BRIEF_TOOL, executeTool, fetchEntityContext, s
 import { classifyIntent, INTENT_TO_AGENT } from './agents/intent-classifier.js';
 import { generateSelfKnowledge } from './kiko-self-knowledge.js';
 import { describeScreen } from './agents/screen-reader.js';
+import { preProcess } from './reasoning-engine.js';
 import { lookupCompany } from './company-lookup.js';
 import { callEAAgent } from './agents/ea.js';
 
@@ -1631,6 +1632,10 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
       } catch {}
     }
 
+    // ── REASONING ENGINE — Pre-process context before Claude sees the message ──
+    // Moved to after skipTools declaration — see below
+    let reasoningContext = '';
+
     const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + activeThreadsHint + inboxHint + morningBrief + modeHint + identityHint + attributionHint + emailStyleHint + conversationSummary;
 
     // ── Prompt Caching ──
@@ -1734,6 +1739,23 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     const skipTools = isSimpleGreeting || casualQuery;
     const isEmailIntent = intent === 'email' || intent === 'email2' || intent === 'outreach';
     const toolOpts = skipTools ? { noTools: true, maxTokens: voiceMode ? 300 : 1500, useHaiku: useHaikuForGreeting } : isEmailIntent ? { lightTools: lightEmailTools } : {};
+
+    // ── REASONING ENGINE — gather intelligence BEFORE Claude sees the message ──
+    if (!skipTools && !isGreeting) {
+      try {
+        write({ toolStatus: 'Gathering intelligence...' });
+        const preResult = await preProcess(message, intent);
+        if (preResult.context) {
+          // Inject pre-verified context into the last user message
+          const lastMsg = messages[messages.length - 1];
+          if (lastMsg && typeof lastMsg.content === 'string') {
+            messages[messages.length - 1] = { role: 'user', content: lastMsg.content + preResult.context };
+          }
+          console.log(`[kiko] Reasoning engine: ${preResult.duration}ms`);
+        }
+      } catch (e) { console.error('[kiko] Reasoning engine error:', e.message); }
+    }
+
     let response = await streamCall(messages, toolOpts);
     let toolRounds = 0;
     const toolsUsedList = [];
