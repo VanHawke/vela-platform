@@ -22,7 +22,7 @@ export async function runProactiveIntel() {
   try {
     // Step 1: Scan for actionable market events
     const scanResult = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6', max_tokens: 3000,
+      model: 'claude-sonnet-4-6', max_tokens: 5000,
       tools: [{ type: 'web_search_20250305', name: 'web_search' }],
       messages: [{ role: 'user', content: `You are the strategic intelligence engine for Van Hawke Group — an F1 sponsorship advisory (primary client: Haas F1 Team) and luxury eyewear company (Van Hawke Maison).
 
@@ -65,9 +65,46 @@ Return 3-6 events max. Only HIGH-IMPACT events that Van Hawke can act on. No fil
     });
 
     const text = scanResult.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
-    const cleaned = text.replace(/```json\s*/g, '').replace(/```/g, '').trim();
+    // Extract JSON — handle markdown fences, truncation, partial responses
     let events = [];
-    try { events = JSON.parse(cleaned).events || []; } catch { console.error('[proactive-intel] Failed to parse events JSON'); return; }
+    try {
+      // Try to find the events array directly
+      const jsonMatch = text.match(/```json\s*([\s\S]*?)```/) || text.match(/(\{[\s\S]*"events"[\s\S]*\})/);
+      if (jsonMatch) {
+        let raw = (jsonMatch[1] || jsonMatch[0]).trim();
+        // If JSON is truncated (common with max_tokens), try to fix it
+        if (!raw.endsWith('}')) {
+          // Find last complete event object
+          const lastBrace = raw.lastIndexOf('}');
+          if (lastBrace > 0) raw = raw.slice(0, lastBrace + 1) + ']}';
+        }
+        events = JSON.parse(raw).events || [];
+      } else {
+        console.log('[proactive-intel] No JSON found, text length:', text.length);
+        return;
+      }
+    } catch (e) {
+      // Fallback: try to extract individual events with a more lenient approach
+      try {
+        const eventsMatch = text.match(/"headline"\s*:\s*"([^"]+)"/g);
+        if (eventsMatch && eventsMatch.length > 0) {
+          // Create simple events from headlines found
+          events = eventsMatch.slice(0, 5).map(m => ({
+            headline: m.match(/"headline"\s*:\s*"([^"]+)"/)?.[1] || 'Market update',
+            detail: 'See full scan for details',
+            relevance: 'Strategic market movement',
+            opportunity: 'Review and assess',
+            urgency: 'medium',
+            division: 'both',
+            lenses: ['strategy']
+          }));
+          console.log(`[proactive-intel] Partial parse: extracted ${events.length} headlines from malformed JSON`);
+        } else {
+          console.error('[proactive-intel] JSON parse failed completely:', e.message);
+          return;
+        }
+      } catch { return; }
+    }
 
     if (!events.length) { console.log('[proactive-intel] No actionable events found'); return; }
 
