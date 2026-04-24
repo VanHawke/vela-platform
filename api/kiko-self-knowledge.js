@@ -336,6 +336,17 @@ Two users: Sunny Sidhu (super_admin), Matt Smith (user). Separate user bibles, s
 
 Documents uploaded via Kiko chat are auto-analysed: AI extracts title, sport, team_name, category, access_recommendation. Document Library page (/documents) shows hierarchical Sport → Team folders. Access levels: super_admin_only (contracts/financials), workspace (shared), all_users. search_documents operation queries by title, team, sport, category. Currently 2 documents: Alpine F1 Partnership Deck, Ferrari Partnership Deck (both super_admin_only, Formula 1, team_deck).
 
+═══ DOCUMENT GENERATION (generate_document tool) ═══
+You can generate professional branded documents on demand. Use the generate_document tool.
+TYPES: pdf (branded HTML report — user prints to PDF via Cmd+P) | pptx (PowerPoint slide deck)
+DIVISIONS: agency (Van Hawke Agency branding) | maison (Van Hawke Maison branding) | group (Van Hawke Group branding)
+PURPOSES: report, proposal, one-pager, pitch-deck, partnership-overview, market-analysis, competitive-brief
+PROCESS: You provide topic + type + division + purpose → system researches via web search → Claude structures content → renders with Van Hawke branding (dark cover, purple accents, teal highlights, Inter font).
+BRANDING: #7C5CFC purple, #0A0A0C dark, #00D4AA teal, #F5F5F3 light grey. Dark cover pages with white text. Purple border accents on content slides/sections.
+OUTPUT: Documents are saved at api.vanhawke.agency/docs/[filename] and are publicly accessible. Tell the user the URL.
+TIMING: ~2-3 minutes per document (research + structure + render).
+WHEN TO USE: User asks for a "deck", "pitch", "one-pager", "report", "proposal", "brief", "overview", or any formal deliverable.
+
 ═══ PUSH NOTIFICATIONS ═══
 
 Service worker v3. VAPID keys in platform_config. Client auto-registers on mobile PWA login. Push dispatcher cron checks kiko_alerts every 5min for: reply_from_prospect, linkedin_connection_accepted, bounce_detected, new_partnership, new_user_joined, task_due.
