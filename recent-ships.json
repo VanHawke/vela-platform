@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-24T15:29:18.519Z",
+  "generated_at": "2026-04-24T15:39:45.177Z",
   "commits": [
+    {
+      "hash": "1965d4a",
+      "subject": "CLEAN DISPLAY NAMES: Email preview now shows 'Sunny Sidhu' and 'Matt Smith' instead of email usernames. All email addresses display as @vanhawke.agency instead of @vanhawke.com. Applies to: From selec",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "d64af12",
       "subject": "SCHEDULE SEND ENHANCED: (1) Optimum send time — detects recipient timezone from email domain (.com/.ai/.io = US East 9am, .co.uk = UK 9am, .de/.fr = CET 9am). Highlighted in purple at top of dropdown.",
-      "when": "4 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "cf3221a",
@@ -14,7 +19,7 @@
     {
       "hash": "d0442aa",
       "subject": "FIX ALL RELIABILITY: (1) Send-to-drafts 400 — subject/to now stateful with useEffect sync during streaming, prevents undefined values. (2) Chat sidebar click-into-other-chats — loadConversation now fe",
-      "when": "37 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "473cbec",
@@ -59,7 +64,7 @@
     {
       "hash": "8974005",
       "subject": "FIX EMAIL BODY BLANK: renderBody regex .replace(/---.*​/s, '') with s flag was stripping EVERYTHING after --- separator including the entire email body. Replaced with safe indexOf check that only stri",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "c09e9ad",
@@ -94,11 +99,6 @@
     {
       "hash": "bf24f13",
       "subject": "FIX NAVIGATION: Removed 'take me to' and 'navigate me to' from Google Maps directions regex. These now correctly route through the intent classifier to platform navigation. Directions handler only mat",
-      "when": "9 hours ago"
-    },
-    {
-      "hash": "5131b91",
-      "subject": "FIX: Finance intent routing — added fast-path keywords for pipeline value, weighted pipeline, revenue, forecast, runway, cash flow, burn rate, ROI, cap table, valuation. These now route directly to fi",
       "when": "9 hours ago"
     }
   ]

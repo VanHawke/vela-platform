@@ -198,19 +198,6 @@ export default function EmailDraft({ text }) {
   const getScheduleOptions = () => {
     const now = new Date()
     const opts = []
-    // Optimum time for recipient (based on email domain timezone guess)
-    const recipientDomain = (currentTo || '').split('@')[1] || ''
-    const isUS = recipientDomain.endsWith('.com') || recipientDomain.endsWith('.ai') || recipientDomain.endsWith('.io')
-    const isUK = recipientDomain.endsWith('.co.uk') || recipientDomain.endsWith('.uk')
-    const isEU = recipientDomain.endsWith('.de') || recipientDomain.endsWith('.fr') || recipientDomain.endsWith('.eu')
-    // Default: US East Coast 9am = 2pm UK. For UK/EU recipients, 9am their time
-    const optTime = new Date(now)
-    optTime.setDate(optTime.getDate() + 1)
-    if (isUS) { optTime.setHours(14, 0, 0, 0) } // 2pm UK = 9am ET
-    else if (isEU) { optTime.setHours(8, 0, 0, 0) } // 8am UK = 9am CET
-    else { optTime.setHours(9, 0, 0, 0) } // 9am local for UK recipients
-    const tzLabel = isUS ? '9:00 AM ET' : isEU ? '9:00 AM CET' : '9:00 AM'
-    opts.push({ label: `⚡ Optimum — Tomorrow ${tzLabel}`, value: optTime.toISOString(), highlight: true })
     // In 1 hour
     const h1 = new Date(now.getTime() + 3600000)
     opts.push({ label: `In 1 hour (${h1.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })})`, value: h1.toISOString() })
@@ -224,6 +211,25 @@ export default function EmailDraft({ text }) {
     const mon = new Date(now); mon.setDate(mon.getDate() + ((8 - mon.getDay()) % 7 || 7)); mon.setHours(9, 0, 0, 0)
     if (mon > now) opts.push({ label: `Monday 9:00 AM`, value: mon.toISOString() })
     return opts
+  }
+
+  // Recipient timezone options for optimum send time
+  const recipientTimezones = [
+    { label: 'US East Coast (9 AM ET)', offset: 5 },    // ET = UTC-5 (or -4 DST)
+    { label: 'US West Coast (9 AM PT)', offset: 8 },    // PT = UTC-8 (or -7 DST)
+    { label: 'UK (9 AM GMT)', offset: 0 },
+    { label: 'Central Europe (9 AM CET)', offset: -1 },  // CET = UTC+1
+    { label: 'Middle East (9 AM GST)', offset: -4 },
+    { label: 'Asia Pacific (9 AM SGT)', offset: -8 },
+  ]
+
+  const handleOptimumSend = (offsetHours) => {
+    // Calculate tomorrow at 9am in recipient's timezone
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    // 9am UTC + offset = 9am in recipient's local
+    tomorrow.setUTCHours(9 + offsetHours, 0, 0, 0)
+    handleSchedule(tomorrow.toISOString())
   }
 
   const handleSchedule = async (scheduledFor) => {
@@ -425,20 +431,32 @@ export default function EmailDraft({ text }) {
             <Clock size={11} /> {scheduled ? `Scheduled: ${scheduled.display}` : 'Schedule'}
           </button>
           {scheduleOpen && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 250, overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 270, overflow: 'hidden' }}>
               <div style={{ padding: '8px 12px', fontSize: 10, color: '#A0A0A0', borderBottom: '0.5px solid rgba(0,0,0,0.05)', fontFamily: T.font }}>
-                Schedule send from {displayName(selectedSender?.email)}:
+                Schedule from {displayName(selectedSender?.email)}
               </div>
+              {/* Quick schedule options */}
               {getScheduleOptions().map((opt, i) => (
-                <button key={i} onClick={() => handleSchedule(opt.value)} style={{ width: '100%', padding: '10px 12px', background: opt.highlight ? 'rgba(124,92,252,0.04)' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: opt.highlight ? '#7C5CFC' : '#0A0A0A', fontWeight: opt.highlight ? 600 : 400, fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s', borderLeft: opt.highlight ? '2px solid #7C5CFC' : '2px solid transparent' }}
-                  onMouseOver={e => e.currentTarget.style.background = opt.highlight ? 'rgba(124,92,252,0.08)' : 'rgba(0,0,0,0.04)'} onMouseOut={e => e.currentTarget.style.background = opt.highlight ? 'rgba(124,92,252,0.04)' : 'transparent'}>
-                  <Clock size={12} style={{ color: opt.highlight ? '#7C5CFC' : '#A0A0A0' }} />
+                <button key={i} onClick={() => handleSchedule(opt.value)} style={{ width: '100%', padding: '9px 12px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: '#0A0A0A', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s' }}
+                  onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
+                  <Clock size={11} style={{ color: '#A0A0A0' }} />
                   {opt.label}
                 </button>
               ))}
+              {/* Recipient timezone section */}
+              <div style={{ padding: '6px 12px 4px', fontSize: 10, color: '#7C5CFC', borderTop: '0.5px solid rgba(0,0,0,0.05)', fontFamily: T.font, fontWeight: 600, letterSpacing: '0.03em' }}>
+                Optimum for recipient
+              </div>
+              {recipientTimezones.map((tz, i) => (
+                <button key={`tz-${i}`} onClick={() => handleOptimumSend(tz.offset)} style={{ width: '100%', padding: '8px 12px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 11, color: '#6B6B6B', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s' }}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(124,92,252,0.04)'; e.currentTarget.style.color = '#7C5CFC' }} onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6B6B6B' }}>
+                  <span style={{ fontSize: 10 }}>⚡</span> {tz.label}
+                </button>
+              ))}
+              {/* Custom picker */}
               <div style={{ borderTop: '0.5px solid rgba(0,0,0,0.05)', padding: '8px 12px' }}>
                 {!showCustomPicker ? (
-                  <button onClick={() => setShowCustomPicker(true)} style={{ width: '100%', padding: '8px 0', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: '#6B6B6B', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <button onClick={() => setShowCustomPicker(true)} style={{ width: '100%', padding: '6px 0', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: '#6B6B6B', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8 }}>
                     <Pen size={11} style={{ color: '#A0A0A0' }} /> Custom date & time
                   </button>
                 ) : (
