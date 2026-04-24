@@ -115,7 +115,21 @@ export default async function handler(req, res) {
       body: JSON.stringify({ message: { raw: Buffer.from(raw).toString('base64url') } }),
     });
     const gData = await gRes.json();
-    if (gData.error) return res.status(400).json({ error: gData.error.message });
+    if (gData.error) { console.error('[gmail-draft] Gmail API error:', gData.error.message); return res.status(400).json({ error: gData.error.message }); }
+
+    // Auto-track for follow-up monitoring (fire-and-forget)
+    if (to && subject && !subject.toLowerCase().includes('test')) {
+      const SB = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+      const SK = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (SB && SK) {
+        fetch(`${SB}/rest/v1/kiko_follow_ups`, {
+          method: 'POST',
+          headers: { apikey: SK, Authorization: `Bearer ${SK}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+          body: JSON.stringify({ sender_email: senderEmail, recipient_email: to, subject, sent_at: new Date().toISOString(), follow_up_after_days: 5 }),
+        }).catch(e => console.error('[gmail-draft] Follow-up tracking failed:', e.message));
+      }
+    }
+
     return res.json({ ok: true, draftId: gData.id, draftFor: targetEmail, subject, to });
   } catch (err) {
     console.error('[gmail-draft]', err);

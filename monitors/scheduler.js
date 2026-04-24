@@ -2,6 +2,7 @@
 import cron from 'node-cron';
 import { runPipelineMonitor } from './pipeline-monitor.js';
 import { runEmailMonitor } from './email-monitor.js';
+import { runFollowUpMonitor } from './follow-up-monitor.js';
 import { startRealtimeListener } from './realtime-listener.js';
 
 export function startMonitors() {
@@ -17,16 +18,23 @@ export function startMonitors() {
     try { await runEmailMonitor(); } catch (e) { console.error('[cron] email-monitor:', e.message); }
   }, { timezone: 'Europe/London' });
 
+  // Follow-up monitor — every 2 hours, weekdays 8am-8pm
+  cron.schedule('0 8-20/2 * * 1-5', async () => {
+    try { await runFollowUpMonitor(); } catch (e) { console.error('[cron] follow-up-monitor:', e.message); }
+  }, { timezone: 'Europe/London' });
+
   console.log('[monitors] Pipeline: every 30min (Mon-Fri)');
   console.log('[monitors] Email: every 15min (Mon-Fri, 7am-9pm)');
+  console.log('[monitors] Follow-ups: every 2hrs (Mon-Fri, 8am-8pm)');
 
-  // Start Supabase Realtime listener for instant CRM change detection
+  // Start Supabase Realtime listener
   startRealtimeListener().catch(e => console.error('[monitors] Realtime listener failed:', e.message));
 
-  // Run cron monitors once on startup (delayed 10s)
+  // Initial scan on startup (delayed 10s)
   setTimeout(async () => {
     console.log('[monitors] Running initial scan...');
     try { await runPipelineMonitor(); } catch (e) { console.error('[monitors] Pipeline:', e.message); }
     try { await runEmailMonitor(); } catch (e) { console.error('[monitors] Email:', e.message); }
+    try { await runFollowUpMonitor(); } catch (e) { console.error('[monitors] Follow-up:', e.message); }
   }, 10000);
 }

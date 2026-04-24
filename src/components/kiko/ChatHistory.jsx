@@ -74,6 +74,12 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
 
   useEffect(() => { loadAll() }, [user?.id, orgId])
   useEffect(() => { if (open) loadAll() }, [open, activeConvId])
+  // Listen for rename events from KikoChat
+  useEffect(() => {
+    const handler = () => loadAll()
+    window.addEventListener('kiko-chat-updated', handler)
+    return () => window.removeEventListener('kiko-chat-updated', handler)
+  }, [])
   useEffect(() => {
     const handler = (e) => { if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpenId(null) }
     document.addEventListener('mousedown', handler)

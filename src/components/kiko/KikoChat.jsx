@@ -641,6 +641,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     setConvTitle(renameValue.trim())
     setIsRenaming(false)
     await supabase.from('conversations').update({ title: renameValue.trim() }).eq('id', activeConvId)
+    window.dispatchEvent(new Event('kiko-chat-updated'))
   }
   const deleteConversation = async () => {
     if (!activeConvId) return

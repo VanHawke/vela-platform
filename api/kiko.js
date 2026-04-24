@@ -1743,7 +1743,7 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     // ── REASONING ENGINE — gather intelligence BEFORE Claude sees the message ──
     // Only runs for substantive queries about specific entities — NOT for follow-ups, greetings, or simple commands
     const SKIP_REASONING = ['navigate', 'screen', 'calendar', 'self_monitor', 'identity', 'greeting', 'knowledge', 'conversation_search', 'code_review', 'email_read'];
-    const isShortFollowUp = message.length < 40 && /^(yes|no|ok|sure|thanks|do it|go ahead|continue|proceed|sounds good|perfect|great|send it|approved|draft|write|compose)/i.test(message.trim());
+    const isShortFollowUp = message.length < 40 && /^(yes|no|ok|sure|thanks|do it|go ahead|continue|proceed|sounds good|perfect|great|send it|approved)/i.test(message.trim());
     const shouldReason = !skipTools && !isGreeting && !isShortFollowUp && !SKIP_REASONING.includes(intent);
     if (shouldReason) {
       try {
