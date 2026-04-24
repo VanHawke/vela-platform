@@ -160,6 +160,9 @@ export async function classifyIntent(message, currentPage = 'home', conversation
   }
   if (lower.includes('correspondence with') || lower.includes('last email') || lower.includes('email from') || lower.includes('email to') || lower.includes('emails from') || lower.includes('emails to') || lower.includes('check my email') || lower.includes('check my inbox') || lower.includes('unread email')) return { intent: 'email_read' };
 
+  // Finance shortcuts — pipeline value, revenue, forecast, runway
+  if (/\b(pipeline value|weighted.*pipeline|weighted.*value|revenue.*projec|forecast|runway|cash.*flow|burn.*rate|financial.*analy|roi.*calc|cap.*table|valuation)\b/i.test(message)) return { intent: 'finance' };
+
   // Knowledge management shortcuts (includes agent creation)
   if (lower.includes('learn from') || lower.includes('add this source') || lower.includes('add source') || lower.includes('show me your sources') || lower.includes('your knowledge') || lower.includes('what do you know about') || lower.includes('save this insight') || lower.includes('remember this fact') || lower.includes('create an agent') || lower.includes('create a new agent') || lower.includes('build an agent') || lower.includes('show my agents') || lower.includes('list agents') || lower.includes('custom agent') || lower.includes('dynamic agent') || lower.includes('switch to') && lower.includes('mode') || lower.includes('fundraising mode') || lower.includes('race week mode') || lower.includes('what mode') || lower.includes('operational mode')) return { intent: 'knowledge' };
 

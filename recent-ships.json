@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-23T21:57:25.520Z",
+  "generated_at": "2026-04-24T06:54:51.160Z",
   "commits": [
+    {
+      "hash": "6a7906a",
+      "subject": "FULL AUDIT FIXES: (1) All Vercel URL references in API files migrated to api.vanhawke.agency — kiko-tools.js (3 refs), data.js (2 refs), document.js (1 ref), cron-sequence-sender, cron-push-dispatcher",
+      "when": "9 hours ago"
+    },
     {
       "hash": "ca8ab82",
       "subject": "CRON MIGRATION TO HETZNER: (1) ALL 16 crons now call local Express (127.0.0.1:3000) instead of Vercel — eliminates 120s timeout and function costs. (2) Added wildcard API route handler — any /api/* wi",
-      "when": "18 minutes ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "669e967",
       "subject": "FULL PLATFORM AUDIT: Comprehensive A-Z audit document covering endpoint routing (62 Vercel / 5 Hetzner), 39 tools, 25 agents, cron jobs, database schema, self-knowledge accuracy, frontend components, ",
-      "when": "29 minutes ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "ca0a960",
       "subject": "FIX: rewrite-email endpoint now points to Hetzner (was still hitting Vercel). Tone rewrite buttons in email drafts now work via Hetzner.",
-      "when": "30 minutes ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "8fed273",
       "subject": "FIX KIKO REASONING: Remove separate research endpoint routing. All prompts now go through /api/kiko which has full conversation history + web_search + all 39 tools. The research triggers ('research', ",
-      "when": "36 minutes ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "0fbbe4e",
       "subject": "FIX AUTO-SCROLL: (1) Always scroll to bottom during streaming unless user manually scrolls up. (2) Detects user scroll-up during streaming and pauses auto-scroll. (3) Resets scroll tracking when strea",
-      "when": "38 minutes ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "91e46f0",
       "subject": "KIKO INTELLIGENCE UPGRADE: (1) FACT VERIFICATION — mandatory verification of all claims (funding rounds, acquisitions, exec changes) before including in emails. Check CRM → emails → web search. Never ",
-      "when": "49 minutes ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "4c4f1d6",
       "subject": "FIX: Empty response recovery — (1) Shortened fallback message from confusing specific instructions to simple 'try again'. (2) finally block now clears toolStatus and streamText alongside streaming fla",
-      "when": "53 minutes ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "ebe5103",
       "subject": "BATCH EMAIL DRAFTING: New batch_draft_emails tool — drafts re-engagement emails for multiple stalled deals. Queries pipeline for idle deals, generates personalised drafts via Haiku (fast), creates Gma",
-      "when": "60 minutes ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "91d2688",
       "subject": "Add monitor files to repo: email-monitor (user-specific alerts, campaign detection), pipeline-monitor (stale deal detection), scheduler (cron registration), webhooks (Gmail Pub/Sub receiver)",
-      "when": "65 minutes ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "c3b088a",
       "subject": "Update session brief with remaining tasks and Hetzner migration status",
-      "when": "74 minutes ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "679c59e",
       "subject": "MOBILE POLISH: (1) Copy/Edit buttons increased from 28px to 36px (better touch targets). (2) Icon sizes increased from 12-13px to 14-15px. (3) Tone buttons padding increased from 5px to 7px. (4) Dropd",
-      "when": "75 minutes ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "1cd95dc",
       "subject": "CONVERSATION SUMMARY + SELF-KNOWLEDGE: (1) Conversation summary now kicks in at 6 messages (was 20). Older messages summarised as bullet points with 200 chars each. Kiko told to maintain continuity. L",
-      "when": "81 minutes ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "d9e3ad6",
       "subject": "HETZNER MIGRATION LIVE: Kiko API now runs on Hetzner (api.vanhawke.agency) with ZERO timeout limits. SSL via Let's Encrypt. Frontend updated: Kiko chat, title gen, Gmail drafts, team members all point",
-      "when": "2 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "476fccc",
       "subject": "HETZNER MIGRATION PREP: (1) All 112 API files + agents copied to Hetzner kiko-worker. (2) @anthropic-ai/sdk + @supabase/supabase-js installed on Hetzner. (3) Express route /api/kiko wired to Kiko hand",
-      "when": "3 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "e10fc05",
       "subject": "FIX KIKO HANGING ON FOLLOW-UP: ROOT CAUSE — conversation history was sending 20 messages at 5000 chars each (100KB). After Kiko's long strategic analysis + draft, the follow-up 'create the draft' payl",
-      "when": "3 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "a768113",
       "subject": "FIX: (1) KIKO LOGO — always navigates to homepage with fallback to window.location.href if router fails. (2) KIKO'S PLAN — switched from maxHeight CSS animation to display:block/none for reliable expa",
-      "when": "3 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "6c07fb2",
       "subject": "FIX COMMAND PALETTE: Dark background (rgba(14,14,20,0.95)) had dark text (#0A0A0A) — everything invisible. Fixed theme to light text (#FAFAFF), light grey sub-text (#B0B0BB), light borders (rgba(255,2",
-      "when": "4 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "f75272a",
       "subject": "BATCH FIX: (1) SEARCH ICON — wired up to command palette (was calling nonexistent function). Swapped to appear BEFORE bg tasks icon. Order: [Search] [BG Tasks] [Avatar]. (2) RETRY ICON on user message",
-      "when": "4 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "ab84268",
       "subject": "FIX EMAIL SCANNING + NAV: (1) REWRITTEN read_email handler — now uses sbFetch helper (proven working) instead of inline VITE_SUPABASE_URL which may not resolve. Uses parallel token refresh via Promise",
-      "when": "4 hours ago"
-    },
-    {
-      "hash": "b21f100",
-      "subject": "MAJOR: EMAIL PERMISSIONS + LEARNING + GREETINGS: (1) EMAIL PERMISSION MODEL — super_admin scans ALL team Gmail accounts, regular users scan ONLY their own. Zero data leakage. Full body extraction (not",
-      "when": "5 hours ago"
+      "when": "13 hours ago"
     }
   ]
 }
