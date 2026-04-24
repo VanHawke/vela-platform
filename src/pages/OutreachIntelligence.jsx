@@ -208,6 +208,12 @@ function buildBriefPrompt(sel) {
   if (sel.kind === 'signal') {
     return `Brief me on this market signal: "${sel.title}". Entity: ${p.entity_name || 'unknown'}. Detail: "${p.detail || ''}". Give me: (1) what this actually means commercially, (2) whether we should act on it and how, (3) a draft outreach if there's an opening.`
   }
+  if (sel.kind === 'followup') {
+    return `I need a re-engagement brief for ${p.recipient_name || p.recipient_email} at ${p.company || 'their company'}.\n\nOriginal email subject: "${p.subject || ''}"\nSent: ${p.sent_at ? new Date(p.sent_at).toLocaleDateString('en-GB') : 'unknown'}\nFollow-up due: ${p.follow_up_due_at ? new Date(p.follow_up_due_at).toLocaleDateString('en-GB') : 'unknown'}\nStatus: ${p.status}\n\nGive me: (1) where we stand — check CRM for deal context, (2) why they haven't replied — psychological analysis, (3) recommended approach for the follow-up, (4) a DRAFT follow-up email — Subject: line, Dear [Name], body, Kind regards. Use a different angle from the original — don't just "check in."`
+  }
+  if (sel.kind === 'campaign') {
+    return `Brief me on campaign prospect: ${p.contact_name || 'Unknown'} at ${p.company || 'their company'}.\n\nCurrent step: ${p.current_step}\nNext send scheduled: ${p.next_send_at ? new Date(p.next_send_at).toLocaleDateString('en-GB') : 'pending'}\n\nGive me: (1) company background, (2) where they are in the sequence, (3) whether we should continue, pause, or escalate this prospect.`
+  }
   return `Brief me on: ${sel.title}.`
 }
 
@@ -219,6 +225,8 @@ export default function OutreachIntelligence({ user }) {
   const [taskFilter, setTaskFilter] = useState('overdue')
   const [hotReplies, setHotReplies] = useState([])
   const [signals, setSignals] = useState([])
+  const [followUps, setFollowUps] = useState([])
+  const [campaignActivity, setCampaignActivity] = useState([])
   const [showNewTask, setShowNewTask] = useState(false)
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [newTaskCompany, setNewTaskCompany] = useState('')
@@ -235,7 +243,7 @@ export default function OutreachIntelligence({ user }) {
     try {
       const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-      const [dealsRes, tasksRes, hotRes, signalRes] = await Promise.all([
+      const [dealsRes, tasksRes, hotRes, signalRes, followUpRes, campaignRes] = await Promise.all([
         supabase.from('deals').select('id, data, updated_at')
           .not('data->>status', 'in', '("won","lost")')
           .order('updated_at', { ascending: false }),
@@ -248,16 +256,28 @@ export default function OutreachIntelligence({ user }) {
           .limit(10),
         supabase.from('kiko_alerts')
           .select('id, type, severity, title, detail, entity_name, created_at')
-          .in('type', ['partnership_detected', 'new_partnership', 'convergence', 'category_recommendation', 'competitive_change', 'funding', 'promotion'])
+          .in('type', ['partnership_detected', 'new_partnership', 'convergence', 'category_recommendation', 'competitive_change', 'funding', 'promotion', 'prediction', 'self_discovery', 'proactive_intel', 'company_signal'])
           .in('severity', ['high', 'critical', 'medium'])
           .gte('created_at', weekAgo)
           .order('created_at', { ascending: false })
+          .limit(20),
+        supabase.from('kiko_follow_ups')
+          .select('id, sender_email, recipient_email, recipient_name, company, subject, sent_at, follow_up_due_at, status')
+          .in('status', ['awaiting_reply', 'followed_up'])
+          .order('follow_up_due_at', { ascending: true })
+          .limit(20),
+        supabase.from('kiko_sequence_enrollments')
+          .select('id, contact_name, company, status, current_step, next_send_at, sequence_id, updated_at')
+          .eq('status', 'active')
+          .order('next_send_at', { ascending: true })
           .limit(15),
       ])
       setDeals(dealsRes.data || [])
       setTasks((tasksRes.data || []).filter(t => !t.data?.completed))
       setHotReplies(hotRes.data || [])
       setSignals(signalRes.data || [])
+      setFollowUps(followUpRes.data || [])
+      setCampaignActivity(campaignRes.data || [])
     } catch (err) {
       console.error('[CommandCentre] load', err)
     }
@@ -274,6 +294,28 @@ export default function OutreachIntelligence({ user }) {
     await supabase.from('tasks').update({ data: updated, updated_at: new Date().toISOString() }).eq('id', task.id)
     showToast('Task completed', 'success')
   }
+
+  const markFollowUpDone = async (fu, e) => {
+    e?.stopPropagation()
+    setFollowUps(prev => prev.filter(f => f.id !== fu.id))
+    if (selected?.kind === 'followup' && selected.id === fu.id) setSelected(null)
+    await supabase.from('kiko_follow_ups').update({ status: 'closed', updated_at: new Date().toISOString() }).eq('id', fu.id)
+    showToast('Follow-up cleared', 'success')
+  }
+
+  const selectFollowUp = (fu) => setSelected({
+    kind: 'followup', id: fu.id,
+    title: `${fu.recipient_name || fu.recipient_email} — ${fu.company || ''}`,
+    meta: `${fu.subject || '(no subject)'} · Sent ${relativeTime(fu.sent_at)} · Due ${dueLabel(fu.follow_up_due_at)}`,
+    payload: fu,
+  })
+
+  const selectCampaign = (c) => setSelected({
+    kind: 'campaign', id: c.id,
+    title: `${c.contact_name || 'Unknown'} — ${c.company || ''}`,
+    meta: `Step ${c.current_step} · Next send ${c.next_send_at ? relativeTime(c.next_send_at) : 'pending'}`,
+    payload: c,
+  })
 
   const createTask = async () => {
     if (!newTaskTitle.trim()) return
@@ -426,7 +468,8 @@ export default function OutreachIntelligence({ user }) {
         stats={[
           { value: deals.length, label: 'Active deals' },
           { value: fmtCurrency(weightedPipeline), label: 'Weighted' },
-          { value: hotReplies.length, label: 'Replies & connections' },
+          { value: hotReplies.length, label: 'Replies' },
+          { value: followUps.length, label: 'Awaiting reply' },
           { value: tasks.length, label: 'Open tasks' },
         ]}
         toolbar={
@@ -568,6 +611,65 @@ export default function OutreachIntelligence({ user }) {
               ))}
             </div>
 
+            {/* FOLLOW-UP TRACKER */}
+            {followUps.length > 0 && (
+              <div className="cc-group">
+                <div className="cc-group-h">
+                  <h3><Send size={10} />Awaiting replies</h3>
+                  <span className="cc-group-count">{followUps.length}</span>
+                </div>
+                {followUps.map(fu => {
+                  const isOverdue = fu.follow_up_due_at && new Date(fu.follow_up_due_at) < new Date()
+                  return (
+                    <div
+                      key={fu.id}
+                      className={`cc-row ${isSelected('followup', fu.id) ? 'selected' : ''}`}
+                      onClick={() => selectFollowUp(fu)}
+                    >
+                      <button className="cc-row-icon sage" onClick={e => markFollowUpDone(fu, e)} title="Mark done">
+                        <CheckSquare size={10} />
+                      </button>
+                      <div className="cc-row-body">
+                        <div className="cc-row-title">{fu.recipient_name || fu.recipient_email}</div>
+                        <div className="cc-row-meta">
+                          {fu.company && <>{fu.company} · </>}
+                          {fu.subject && <>{fu.subject.slice(0, 40)} · </>}
+                          {dueLabel(fu.follow_up_due_at)}
+                          {isOverdue && <span className="cc-row-tag overdue">OVERDUE</span>}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* CAMPAIGN ACTIVITY */}
+            {campaignActivity.length > 0 && (
+              <div className="cc-group">
+                <div className="cc-group-h">
+                  <h3><Zap size={10} />Active sequences</h3>
+                  <span className="cc-group-count">{campaignActivity.length}</span>
+                </div>
+                {campaignActivity.slice(0, 8).map(c => (
+                  <div
+                    key={c.id}
+                    className={`cc-row ${isSelected('campaign', c.id) ? 'selected' : ''}`}
+                    onClick={() => selectCampaign(c)}
+                  >
+                    <div className="cc-row-icon purple"><Send size={10} /></div>
+                    <div className="cc-row-body">
+                      <div className="cc-row-title">{c.contact_name || 'Unknown'}</div>
+                      <div className="cc-row-meta">
+                        {c.company && <>{c.company} · </>}
+                        Step {c.current_step} · {c.next_send_at ? `Next: ${relativeTime(c.next_send_at)}` : 'pending'}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* THIS WEEK TASKS */}
             <div className="cc-group">
               <div className="cc-group-h">
@@ -639,6 +741,8 @@ export default function OutreachIntelligence({ user }) {
                     {selected.kind === 'task' && <><CheckSquare size={10} /> TASK</>}
                     {selected.kind === 'deal' && <><TrendingUp size={10} /> DEAL</>}
                     {selected.kind === 'signal' && <><Zap size={10} /> SIGNAL</>}
+                    {selected.kind === 'followup' && <><Send size={10} /> FOLLOW-UP</>}
+                    {selected.kind === 'campaign' && <><Zap size={10} /> CAMPAIGN</>}
                   </div>
                   <h2 className="cc-detail-title">{selected.title}</h2>
                   <div className="cc-detail-sub">{selected.meta}</div>
@@ -680,6 +784,25 @@ export default function OutreachIntelligence({ user }) {
                               Research deeper <ExternalLink size={11} />
                             </button>
                           )}
+                        </>
+                      )}
+                      {selected.kind === 'followup' && (
+                        <>
+                          <button className="cc-detail-btn primary" onClick={e => markFollowUpDone(selected.payload, e)}>
+                            Mark cleared <CheckSquare size={11} />
+                          </button>
+                          {selected.payload?.company && (
+                            <button className="cc-detail-btn secondary" onClick={() => nav('/pipeline')}>
+                              View deal <ExternalLink size={11} />
+                            </button>
+                          )}
+                        </>
+                      )}
+                      {selected.kind === 'campaign' && (
+                        <>
+                          <button className="cc-detail-btn primary" onClick={() => selected.payload?.sequence_id && nav(`/campaigns/${selected.payload.sequence_id}`)}>
+                            Open campaign <ExternalLink size={11} />
+                          </button>
                         </>
                       )}
                       <button className="cc-detail-btn secondary" onClick={() => setSelected(null)}>Close</button>

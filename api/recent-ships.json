@@ -1,25 +1,35 @@
 {
-  "generated_at": "2026-04-24T22:37:10.788Z",
+  "generated_at": "2026-04-24T22:48:45.176Z",
   "commits": [
+    {
+      "hash": "3f291c1",
+      "subject": "Session 59: Updated session brief + bible with new capabilities",
+      "when": "10 minutes ago"
+    },
+    {
+      "hash": "0ac9f22",
+      "subject": "Hetzner consolidation: 16 dormant crons activated, full API sync, Vercel decoupled",
+      "when": "11 minutes ago"
+    },
     {
       "hash": "aed1953",
       "subject": "Knowledge visibility fix + search_knowledge upgrade",
-      "when": "18 minutes ago"
+      "when": "29 minutes ago"
     },
     {
       "hash": "b8c800a",
       "subject": "Proactive Intelligence v2 — Hetzner-native monitors",
-      "when": "51 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "e7dbcdc",
       "subject": "Proactive Intelligence v2: Self-Discovery Engine + Predictive Synthesis + Agency Structure Intelligence",
-      "when": "65 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "fecd3bb",
       "subject": "COMPLETE SESSION BRIEF: 242-line definitive architecture document covering ALL 58 sessions (April 7-24). Full build history, current state, all monitors, all tools, all memory systems, all research do",
-      "when": "88 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "e0d5069",
@@ -64,7 +74,7 @@
     {
       "hash": "3497dd1",
       "subject": "PROACTIVE INTEL WORKING: First scan found 6 events, created 5 strategic alerts — Cadillac F1 title sponsorship open, Omni AI M Series C prospect signal, Kering/Google smart glasses (Maison competitive",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "9b5c75b",
@@ -89,16 +99,6 @@
     {
       "hash": "1ebe7df",
       "subject": "KIKO AWARENESS + CLEANUP: (1) Added check_follow_ups tool — Kiko can now show pending, overdue, replied follow-ups. (2) Added check_scheduled_emails tool — Kiko can show scheduled, sent, failed emails",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "894837c",
-      "subject": "EMAIL DETECTION: Reduced from 15min to 2min polling. Pub/Sub blocked by Google Workspace domain-restricted sharing policy — 2min polling achieves near-instant detection without admin policy changes. W",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "d306de3",
-      "subject": "GMAIL PUB/SUB WEBHOOK: (1) gmail-webhook.js — receives push notifications from Google, checks for replies to tracked follow-ups, creates instant alerts. Always returns 200 to prevent Pub/Sub retries. ",
       "when": "6 hours ago"
     }
   ]
