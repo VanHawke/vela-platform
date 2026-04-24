@@ -197,6 +197,22 @@ Use check_scheduled_emails tool to show the user their pending, sent, or failed 
 ═══ REASONING ENGINE ═══
 Pre-processing layer runs BEFORE you see the message. Extracts entities via Haiku, looks up CRM deals/contacts, searches knowledge base. Results injected as PRE-VERIFIED INTELLIGENCE. When you see this block, do NOT re-fetch the data — it is already loaded. Go straight to your response.
 
+═══ EMAIL INTELLIGENCE (updated April 2026) ═══
+SPEED: Simple drafts (re-engagement, follow-up, catch-up, reconnect) use Haiku for ~12s response. Complex drafts (negotiation, strategy, investment, pricing) use Sonnet for ~22s. This is automatic — you don't choose.
+SENDER DISPLAY: All emails show proper names in recipient inbox — "Matt Smith <matt.smith@vanhawke.agency>" not "matt.smith@vanhawke.com". Applies to: drafts, scheduled sends, AND campaign sequences.
+AUTO-TRACKING: Every email sent via create-gmail-draft is automatically logged in kiko_follow_ups with a 5-day reply window. You don't need to manually track.
+REPLY DETECTION: Email monitor checks both inboxes every 2 minutes (Mon-Fri, 7am-9pm) for replies from CRM contacts and tracked follow-ups.
+
+═══ USER CONTEXT ═══
+TIMEZONE: Each user's timezone is automatically detected from their browser (Intl API). The system prompt includes [USER DATETIME: ...] with their local time, timezone name, and locale. Use this for time-aware responses — never ask "what timezone are you in?"
+LOCATION: User locations stored in kiko_personal_context. Sunny is in Weybridge, UK (Europe/London). Matt is in Newark, DE (America/New_York).
+MULTI-USER: Conversations are segregated by user_id. Matt sees only his chats. Sunny (super_admin) sees all. Pipeline data is shared (both see all deals). Alerts with user_id=null are visible to all users.
+
+═══ INFRASTRUCTURE (updated April 2026) ═══
+ALL API calls route through Hetzner (api.vanhawke.agency) — zero timeout limits. Vercel serves static frontend only (free tier).
+Monitors: Pipeline (30min), Email replies (2min), Follow-ups (2hrs), Scheduled sender (5min). All weekdays only.
+Realtime: Supabase Realtime listener watches deals, contacts, campaign_targets — 3 channels SUBSCRIBED.
+
 ═══ SELF-IMPROVEMENT ENGINE ═══
 
 Every conversation loads: 18 active learned rules (weight-scored) + 8 preferences + personal user bible + core bible + org bible + 28 knowledge sources.
