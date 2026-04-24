@@ -3,6 +3,11 @@ import { useState, useRef, useEffect } from 'react'
 import { Send, Pen, RotateCcw, Copy, Check, ChevronDown, Clock } from 'lucide-react'
 import T from '@/lib/theme'
 
+// Display name + agency email mapping
+const DISPLAY_NAMES = { 'sunny@vanhawke.com': 'Sunny Sidhu', 'matt.smith@vanhawke.com': 'Matt Smith' }
+function displayName(email) { return DISPLAY_NAMES[email] || email?.split('@')[0] || 'Unknown' }
+function agencyEmail(email) { return email?.replace('@vanhawke.com', '@vanhawke.agency') || email }
+
 export function isEmailDraft(text) {
   if (!text || text.length < 60) return false
   const lower = text.toLowerCase()
@@ -254,7 +259,7 @@ export default function EmailDraft({ text }) {
       if (!res.ok) { const errText = await res.text(); console.error('[EmailDraft] HTTP error:', res.status, errText); throw new Error(`HTTP ${res.status}`) }
       const data = await res.json()
       if (data.ok) {
-        const label = targetEmail === 'sunny@vanhawke.com' ? 'done' : `done-${targetEmail.split('@')[0]}`
+        const label = targetEmail === 'sunny@vanhawke.com' ? 'done' : `done-${targetEmail}`
         setSent(label)
         setTimeout(() => setSent(false), 3000)
       } else {
@@ -286,7 +291,7 @@ export default function EmailDraft({ text }) {
     { label: 'Shorter', prompt: 'Make this email body much shorter while keeping the key message.' },
   ]
 
-  const sentLabel = typeof sent === 'string' && sent.startsWith('done-') ? `Saved to ${sent.replace('done-', '')}'s drafts` : sent === 'done' ? 'Saved to your drafts' : sent === 'sending' ? 'Creating draft...' : sent === 'error' ? 'Failed — retry' : null
+  const sentLabel = typeof sent === 'string' && sent.startsWith('done-') ? `Saved to ${displayName(sent.replace('done-', ''))}'s drafts` : sent === 'done' ? 'Saved to your drafts' : sent === 'sending' ? 'Creating draft...' : sent === 'error' ? 'Failed — retry' : null
 
   return (
     <div style={{ margin: '12px 0', borderRadius: 14, border: '0.5px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)' }}>
@@ -349,7 +354,7 @@ export default function EmailDraft({ text }) {
             fontSize: 11, cursor: 'pointer', fontFamily: T.font,
             display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.15s',
           }} onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.06)'} onMouseOut={e => e.currentTarget.style.background = 'rgba(0,0,0,0.02)'}>
-            From: {selectedSender?.email?.split('@')[0] || 'sunny'} <ChevronDown size={10} />
+            From: {displayName(selectedSender?.email)} <ChevronDown size={10} />
           </button>
           {senderDropdownOpen && (
             <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 200, maxWidth: 'calc(100vw - 32px)', overflow: 'hidden' }}>
@@ -359,8 +364,8 @@ export default function EmailDraft({ text }) {
                   onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'} onMouseOut={e => { if (selectedSender?.id !== m.id) e.currentTarget.style.background = 'transparent' }}>
                   <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 600, color: '#6B6B6B' }}>{m.email[0].toUpperCase()}</div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 500 }}>{m.email.split('@')[0]}</div>
-                    <div style={{ fontSize: 10, color: '#A0A0A0' }}>{m.email.replace('@vanhawke.com', '@vanhawke.agency')}</div>
+                    <div style={{ fontWeight: 500 }}>{displayName(m.email)}</div>
+                    <div style={{ fontSize: 10, color: '#A0A0A0' }}>{agencyEmail(m.email)}</div>
                   </div>
                   {selectedSender?.id === m.id && <Check size={14} style={{ color: '#00B464' }} />}
                 </button>
@@ -380,7 +385,7 @@ export default function EmailDraft({ text }) {
               fontSize: 12, cursor: sent ? 'default' : 'pointer', fontFamily: T.font,
               display: 'flex', alignItems: 'center', gap: 5, fontWeight: 500, transition: 'all 0.15s',
             }}>
-              <Send size={11} /> {sentLabel || `Send to ${selectedMember?.email?.split('@')[0] || 'my'} drafts`}
+              <Send size={11} /> {sentLabel || `Send to ${displayName(selectedMember?.email)} drafts`}
             </button>
             <button onClick={() => setSendDropdownOpen(!sendDropdownOpen)} disabled={sent === 'sending'} style={{
               padding: '6px 8px', borderRadius: '0 50px 50px 0',
@@ -398,8 +403,8 @@ export default function EmailDraft({ text }) {
                   onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'} onMouseOut={e => { if (selectedMember?.id !== m.id) e.currentTarget.style.background = 'transparent' }}>
                   <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 600, color: '#6B6B6B' }}>{m.email[0].toUpperCase()}</div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 500 }}>{m.email.split('@')[0]}</div>
-                    <div style={{ fontSize: 10, color: '#A0A0A0' }}>{m.email}</div>
+                    <div style={{ fontWeight: 500 }}>{displayName(m.email)}</div>
+                    <div style={{ fontSize: 10, color: '#A0A0A0' }}>{agencyEmail(m.email)}</div>
                   </div>
                   {selectedMember?.id === m.id && <Check size={14} style={{ color: '#00B464' }} />}
                 </button>
@@ -422,7 +427,7 @@ export default function EmailDraft({ text }) {
           {scheduleOpen && (
             <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 250, overflow: 'hidden' }}>
               <div style={{ padding: '8px 12px', fontSize: 10, color: '#A0A0A0', borderBottom: '0.5px solid rgba(0,0,0,0.05)', fontFamily: T.font }}>
-                Schedule send from {selectedSender?.email?.split('@')[0] || 'sunny'}:
+                Schedule send from {displayName(selectedSender?.email)}:
               </div>
               {getScheduleOptions().map((opt, i) => (
                 <button key={i} onClick={() => handleSchedule(opt.value)} style={{ width: '100%', padding: '10px 12px', background: opt.highlight ? 'rgba(124,92,252,0.04)' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: opt.highlight ? '#7C5CFC' : '#0A0A0A', fontWeight: opt.highlight ? 600 : 400, fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s', borderLeft: opt.highlight ? '2px solid #7C5CFC' : '2px solid transparent' }}

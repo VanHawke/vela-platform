@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-24T15:25:09.897Z",
+  "generated_at": "2026-04-24T15:29:18.519Z",
   "commits": [
+    {
+      "hash": "d64af12",
+      "subject": "SCHEDULE SEND ENHANCED: (1) Optimum send time — detects recipient timezone from email domain (.com/.ai/.io = US East 9am, .co.uk = UK 9am, .de/.fr = CET 9am). Highlighted in purple at top of dropdown.",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "cf3221a",
       "subject": "TIMEZONE DETECTION: Dynamic timezone/location from browser Intl API. (1) Frontend sends Intl.DateTimeFormat().resolvedOptions().timeZone + navigator.language with every Kiko request. (2) Backend injec",
@@ -9,12 +14,12 @@
     {
       "hash": "d0442aa",
       "subject": "FIX ALL RELIABILITY: (1) Send-to-drafts 400 — subject/to now stateful with useEffect sync during streaming, prevents undefined values. (2) Chat sidebar click-into-other-chats — loadConversation now fe",
-      "when": "33 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "473cbec",
       "subject": "SCHEDULED EMAIL SENDING: Complete system. (1) kiko_scheduled_emails table with status tracking. (2) schedule-email API endpoint — accepts time + email params. (3) Scheduled sender cron — every 5min, s",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "005e734",
@@ -39,7 +44,7 @@
     {
       "hash": "373c23a",
       "subject": "FIX KIKO HANGING: (1) Reasoning engine web verification REMOVED from pre-processing — was taking 15-20s per company. Now does CRM+knowledge only (~2s). Claude's own web_search tool handles fact verifi",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "f78de2f",
@@ -69,7 +74,7 @@
     {
       "hash": "328a2f9",
       "subject": "REASONING DISCIPLINE: (1) web_search added to email tools — enables fact verification during drafts. (2) Email tool rounds 2→4, timeout 30s→60s. (3) Mandatory pre-draft verification routing: verify→CR",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "bebae24",
@@ -89,17 +94,12 @@
     {
       "hash": "bf24f13",
       "subject": "FIX NAVIGATION: Removed 'take me to' and 'navigate me to' from Google Maps directions regex. These now correctly route through the intent classifier to platform navigation. Directions handler only mat",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "5131b91",
       "subject": "FIX: Finance intent routing — added fast-path keywords for pipeline value, weighted pipeline, revenue, forecast, runway, cash flow, burn rate, ROI, cap table, valuation. These now route directly to fi",
       "when": "9 hours ago"
-    },
-    {
-      "hash": "6a7906a",
-      "subject": "FULL AUDIT FIXES: (1) All Vercel URL references in API files migrated to api.vanhawke.agency — kiko-tools.js (3 refs), data.js (2 refs), document.js (1 ref), cron-sequence-sender, cron-push-dispatcher",
-      "when": "17 hours ago"
     }
   ]
 }
