@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-24T07:26:44.151Z",
+  "generated_at": "2026-04-24T09:56:17.071Z",
   "commits": [
+    {
+      "hash": "bebae24",
+      "subject": "AUDIT FINAL: (1) Nested API route handler for /api/admin/* paths on Hetzner. (2) Created missing _orgGuard.js (super admin auth guard). (3) All API subdirectories synced: api/lib, api/_lib, api/admin.",
+      "when": "44 minutes ago"
+    },
+    {
+      "hash": "8e86392",
+      "subject": "COMPLETE VERCEL ELIMINATION: All 62 frontend API calls migrated from relative /api/ URLs to https://api.vanhawke.agency/api/. 34 files updated. Zero remaining relative API calls. Combined with the wil",
+      "when": "2 hours ago"
+    },
     {
       "hash": "4896321",
       "subject": "MAJOR: (1) Supabase Realtime listener — instant CRM change detection via WebSocket. Watches deals (stage changes), contacts (new), campaign_targets (replies). Auto-reconnection. 308 deal stages cached",
-      "when": "9 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "bf24f13",
       "subject": "FIX NAVIGATION: Removed 'take me to' and 'navigate me to' from Google Maps directions regex. These now correctly route through the intent classifier to platform navigation. Directions handler only mat",
-      "when": "28 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "5131b91",
       "subject": "FIX: Finance intent routing — added fast-path keywords for pipeline value, weighted pipeline, revenue, forecast, runway, cash flow, burn rate, ROI, cap table, valuation. These now route directly to fi",
-      "when": "32 minutes ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "6a7906a",
       "subject": "FULL AUDIT FIXES: (1) All Vercel URL references in API files migrated to api.vanhawke.agency — kiko-tools.js (3 refs), data.js (2 refs), document.js (1 ref), cron-sequence-sender, cron-push-dispatcher",
-      "when": "9 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "ca8ab82",
       "subject": "CRON MIGRATION TO HETZNER: (1) ALL 16 crons now call local Express (127.0.0.1:3000) instead of Vercel — eliminates 120s timeout and function costs. (2) Added wildcard API route handler — any /api/* wi",
-      "when": "10 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "669e967",
       "subject": "FULL PLATFORM AUDIT: Comprehensive A-Z audit document covering endpoint routing (62 Vercel / 5 Hetzner), 39 tools, 25 agents, cron jobs, database schema, self-knowledge accuracy, frontend components, ",
-      "when": "10 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "ca0a960",
       "subject": "FIX: rewrite-email endpoint now points to Hetzner (was still hitting Vercel). Tone rewrite buttons in email drafts now work via Hetzner.",
-      "when": "10 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "8fed273",
       "subject": "FIX KIKO REASONING: Remove separate research endpoint routing. All prompts now go through /api/kiko which has full conversation history + web_search + all 39 tools. The research triggers ('research', ",
-      "when": "10 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "0fbbe4e",
       "subject": "FIX AUTO-SCROLL: (1) Always scroll to bottom during streaming unless user manually scrolls up. (2) Detects user scroll-up during streaming and pauses auto-scroll. (3) Resets scroll tracking when strea",
-      "when": "10 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "91e46f0",
       "subject": "KIKO INTELLIGENCE UPGRADE: (1) FACT VERIFICATION — mandatory verification of all claims (funding rounds, acquisitions, exec changes) before including in emails. Check CRM → emails → web search. Never ",
-      "when": "10 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "4c4f1d6",
       "subject": "FIX: Empty response recovery — (1) Shortened fallback message from confusing specific instructions to simple 'try again'. (2) finally block now clears toolStatus and streamText alongside streaming fla",
-      "when": "10 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "ebe5103",
       "subject": "BATCH EMAIL DRAFTING: New batch_draft_emails tool — drafts re-engagement emails for multiple stalled deals. Queries pipeline for idle deals, generates personalised drafts via Haiku (fast), creates Gma",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "91d2688",
       "subject": "Add monitor files to repo: email-monitor (user-specific alerts, campaign detection), pipeline-monitor (stale deal detection), scheduler (cron registration), webhooks (Gmail Pub/Sub receiver)",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "c3b088a",
       "subject": "Update session brief with remaining tasks and Hetzner migration status",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "679c59e",
       "subject": "MOBILE POLISH: (1) Copy/Edit buttons increased from 28px to 36px (better touch targets). (2) Icon sizes increased from 12-13px to 14-15px. (3) Tone buttons padding increased from 5px to 7px. (4) Dropd",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "1cd95dc",
       "subject": "CONVERSATION SUMMARY + SELF-KNOWLEDGE: (1) Conversation summary now kicks in at 6 messages (was 20). Older messages summarised as bullet points with 200 chars each. Kiko told to maintain continuity. L",
-      "when": "11 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "d9e3ad6",
       "subject": "HETZNER MIGRATION LIVE: Kiko API now runs on Hetzner (api.vanhawke.agency) with ZERO timeout limits. SSL via Let's Encrypt. Frontend updated: Kiko chat, title gen, Gmail drafts, team members all point",
-      "when": "12 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "476fccc",
       "subject": "HETZNER MIGRATION PREP: (1) All 112 API files + agents copied to Hetzner kiko-worker. (2) @anthropic-ai/sdk + @supabase/supabase-js installed on Hetzner. (3) Express route /api/kiko wired to Kiko hand",
-      "when": "12 hours ago"
-    },
-    {
-      "hash": "e10fc05",
-      "subject": "FIX KIKO HANGING ON FOLLOW-UP: ROOT CAUSE — conversation history was sending 20 messages at 5000 chars each (100KB). After Kiko's long strategic analysis + draft, the follow-up 'create the draft' payl",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "a768113",
-      "subject": "FIX: (1) KIKO LOGO — always navigates to homepage with fallback to window.location.href if router fails. (2) KIKO'S PLAN — switched from maxHeight CSS animation to display:block/none for reliable expa",
-      "when": "13 hours ago"
+      "when": "15 hours ago"
     }
   ]
 }

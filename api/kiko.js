@@ -1036,7 +1036,7 @@ export default async function handler(req, res) {
       : [...nativeTools, ...TOOL_DEFINITIONS];
     const allTools = voiceTools;
     // Light tool set for email/simple intents — dramatically reduces prompt size
-    const EMAIL_TOOL_NAMES = ['create_email_draft', 'read_email', 'ask_data_agent', 'ask_memory_engine', 'search_conversations', 'navigate_page', 'log_activity'];
+    const EMAIL_TOOL_NAMES = ['create_email_draft', 'read_email', 'ask_data_agent', 'ask_memory_engine', 'search_conversations', 'navigate_page', 'log_activity', 'manage_knowledge', 'learning_search', 'search_knowledge', 'web_search'];
     const lightEmailTools = allTools.filter(t => EMAIL_TOOL_NAMES.includes(t.name));
 
     // ── PHASE 1: Intent Classification ──
@@ -1312,6 +1312,23 @@ DEAL STAGE MAPPING:
 - In Dialogue → Commitment/Consistency + Liking (reference their words, build rapport)
 - Qualified → Scarcity + Authority (closing window, board-level framing)
 - Stale >30d → Pattern interrupt (completely new angle, different stakeholder, or strategic news hook)]`;
+
+        // MANDATORY FACT VERIFICATION FOR ALL EMAIL DRAFTS
+        routingHint += `\n\n[MANDATORY PRE-DRAFT VERIFICATION — THIS IS NOT OPTIONAL]:
+Before drafting ANY email that references specific facts about a company or person, you MUST:
+1. SEARCH your knowledge base (learning_search or search_knowledge) for existing verified data
+2. If the fact is NOT in your knowledge base, call web_search to verify it BEFORE including it in the draft
+3. SPECIFIC CLAIMS THAT ALWAYS REQUIRE VERIFICATION: funding rounds, Series A/B/C/D, acquisitions, revenue figures, executive appointments, partnerships, product launches, IPO status, board changes
+4. If you CANNOT verify a claim, DO NOT include it. Use general positioning instead.
+5. NEVER assume a funding round, acquisition, or financial event occurred — always verify.
+
+REASONING DISCIPLINE:
+You have 4 tool rounds for email tasks. Use them wisely:
+Round 1: Verify claims (web_search or learning_search)
+Round 2: Check CRM for contact context (ask_data_agent)
+Round 3: Check email history if relevant (read_email)
+Round 4: Draft the email (ask_outreach_agent)
+Do NOT skip to drafting without verifying first. The cost of an unverified claim in a C-suite email is higher than the cost of an extra tool call.]`;
       }
     } else if (intent === 'email_read') {
       routingHint = '\n\n[ROUTING HINT: This is an EMAIL query. Use the read_email tool. Operations: search (Gmail query like "from:matthew proofpoint"), read_thread (get full thread by threadId), unread, inbox_summary. IMPORTANT: For super_admin, search scans ALL team members inboxes automatically. For regular users, only their own inbox. When user says "check emails with X" or "correspondence with X", use search with the person/company name. If you find relevant threads, use read_thread to get the FULL conversation. Always give dates, senders, key content, and summarise the relationship history.]';
@@ -1722,8 +1739,8 @@ DEAL STAGE MAPPING:
     const toolsUsedList = [];
 
     // Tool execution loop — time-aware, stops before timeout
-    const maxRounds = isEmailIntent ? 2 : (voiceMode ? 5 : 5);
-    const timeLimit = isEmailIntent ? 30000 : (voiceMode ? 45000 : 90000);
+    const maxRounds = isEmailIntent ? 4 : (voiceMode ? 5 : 5);
+    const timeLimit = isEmailIntent ? 60000 : (voiceMode ? 45000 : 90000);
     while (response.stop_reason === 'tool_use' && toolRounds < maxRounds) {
       const elapsed = Date.now() - requestStart;
       if (elapsed > timeLimit) {
