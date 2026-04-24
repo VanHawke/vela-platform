@@ -1742,7 +1742,11 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     const useHaikuForGreeting = intent === 'greeting' && (voiceMode || !isFirstMessage);
     const skipTools = isSimpleGreeting || casualQuery;
     const isEmailIntent = intent === 'email' || intent === 'email2' || intent === 'outreach';
-    const toolOpts = skipTools ? { noTools: true, maxTokens: voiceMode ? 300 : 1500, useHaiku: useHaikuForGreeting } : isEmailIntent ? { lightTools: lightEmailTools } : {};
+    // Simple email drafts use Haiku (~5s) — complex strategy emails use Sonnet (~15s)
+    const isSimpleDraft = isEmailIntent && /\b(re-?engag|catch.?up|follow.?up|check.?in|reconnect|hello|introduction|touching base|quick email|brief email|short email|keeping in touch|reaching out)\b/i.test(message);
+    const isComplexDraft = isEmailIntent && /\b(negotiat|strateg|invest|disput|pricing|proposal|partner|board|acquisition|due diligence|term sheet)\b/i.test(message);
+    const useHaikuForEmail = isSimpleDraft && !isComplexDraft;
+    const toolOpts = skipTools ? { noTools: true, maxTokens: voiceMode ? 300 : 1500, useHaiku: useHaikuForGreeting } : isEmailIntent ? { lightTools: lightEmailTools, useHaiku: useHaikuForEmail } : {};
 
     // ── REASONING ENGINE — gather intelligence BEFORE Claude sees the message ──
     // Only runs for substantive queries about specific entities — NOT for follow-ups, greetings, or simple commands

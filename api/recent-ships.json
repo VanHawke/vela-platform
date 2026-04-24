@@ -1,20 +1,30 @@
 {
-  "generated_at": "2026-04-24T15:49:17.341Z",
+  "generated_at": "2026-04-24T16:03:22.344Z",
   "commits": [
+    {
+      "hash": "3dcd31c",
+      "subject": "FIX CAMPAIGN SENDER: Display name was hardcoded as 'Sunny Sidhu' regardless of sender. Now uses DISPLAY_NAMES mapping — campaigns from Matt show 'Matt Smith' in recipient inbox.",
+      "when": "2 minutes ago"
+    },
+    {
+      "hash": "3733e73",
+      "subject": "FIX SENDER DISPLAY NAME: From header now shows 'Matt Smith <matt.smith@vanhawke.agency>' instead of just 'matt.smith@vanhawke.agency'. Recipients see proper names in their inbox. Applied to both creat",
+      "when": "14 minutes ago"
+    },
     {
       "hash": "734467a",
       "subject": "SCHEDULE MENU REDESIGN: (1) Removed auto-ET default — no more guessing recipient timezone from domain. (2) Three-section dropdown: Quick schedule (In 1hr, Tomorrow 9am/2pm, Monday 9am), Optimum for re",
-      "when": "9 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "1965d4a",
       "subject": "CLEAN DISPLAY NAMES: Email preview now shows 'Sunny Sidhu' and 'Matt Smith' instead of email usernames. All email addresses display as @vanhawke.agency instead of @vanhawke.com. Applies to: From selec",
-      "when": "20 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "d64af12",
       "subject": "SCHEDULE SEND ENHANCED: (1) Optimum send time — detects recipient timezone from email domain (.com/.ai/.io = US East 9am, .co.uk = UK 9am, .de/.fr = CET 9am). Highlighted in purple at top of dropdown.",
-      "when": "24 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "cf3221a",
@@ -24,7 +34,7 @@
     {
       "hash": "d0442aa",
       "subject": "FIX ALL RELIABILITY: (1) Send-to-drafts 400 — subject/to now stateful with useEffect sync during streaming, prevents undefined values. (2) Chat sidebar click-into-other-chats — loadConversation now fe",
-      "when": "57 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "473cbec",
@@ -39,7 +49,7 @@
     {
       "hash": "0750757",
       "subject": "FOLLOW-UP SYSTEM + CHAT FIX: (1) Follow-up monitor cron — runs every 2hrs, checks for overdue replies, scans Gmail for responses, creates HIGH severity alerts. (2) Auto-tracking hook in create-gmail-d",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "c5d79d8",
@@ -59,7 +69,7 @@
     {
       "hash": "f78de2f",
       "subject": "FIX HANGING + DRAFT 400: (1) Reasoning engine now skips short follow-ups, navigation, calendar, identity, greeting, knowledge queries. Only fires for substantive entity-based queries. Prevents 10-20s ",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "c2ece87",
@@ -74,12 +84,12 @@
     {
       "hash": "c09e9ad",
       "subject": "FIX: Email draft body blank during streaming. useState only initializes once — when EmailDraft first renders during streaming, only Subject+To have arrived so body is empty. Added useEffect to sync cu",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "fc7d8b2",
       "subject": "REASONING ENGINE LIVE: Architecturally enforced pre-processing layer. Every substantive query now runs through: (1) Entity extraction via Haiku, (2) CRM lookup (deals + contacts), (3) Knowledge base s",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "328a2f9",
@@ -90,16 +100,6 @@
       "hash": "bebae24",
       "subject": "AUDIT FINAL: (1) Nested API route handler for /api/admin/* paths on Hetzner. (2) Created missing _orgGuard.js (super admin auth guard). (3) All API subdirectories synced: api/lib, api/_lib, api/admin.",
       "when": "7 hours ago"
-    },
-    {
-      "hash": "8e86392",
-      "subject": "COMPLETE VERCEL ELIMINATION: All 62 frontend API calls migrated from relative /api/ URLs to https://api.vanhawke.agency/api/. 34 files updated. Zero remaining relative API calls. Combined with the wil",
-      "when": "8 hours ago"
-    },
-    {
-      "hash": "4896321",
-      "subject": "MAJOR: (1) Supabase Realtime listener — instant CRM change detection via WebSocket. Watches deals (stage changes), contacts (new), campaign_targets (replies). Auto-reconnection. 308 deal stages cached",
-      "when": "9 hours ago"
     }
   ]
 }
