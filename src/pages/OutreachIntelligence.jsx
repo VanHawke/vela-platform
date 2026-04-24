@@ -238,11 +238,17 @@ export default function OutreachIntelligence({ user }) {
   const [briefLoading, setBriefLoading] = useState(false)
   const briefAbortRef = useRef(null)
 
+  const isSuperAdmin = user?.app_metadata?.role === 'super_admin'
+
   const loadData = async () => {
     setLoading(true)
     try {
       const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      // Super admin sees ALL signal types. Regular users see sponsorship-relevant only.
+      const signalTypes = isSuperAdmin
+        ? ['partnership_detected', 'new_partnership', 'convergence', 'category_recommendation', 'competitive_change', 'funding', 'promotion', 'prediction', 'self_discovery', 'proactive_intel', 'company_signal']
+        : ['partnership_detected', 'new_partnership', 'convergence', 'category_recommendation', 'competitive_change', 'funding', 'prediction', 'company_signal']
       const [dealsRes, tasksRes, hotRes, signalRes, followUpRes, campaignRes] = await Promise.all([
         supabase.from('deals').select('id, data, updated_at')
           .not('data->>status', 'in', '("won","lost")')
@@ -256,7 +262,7 @@ export default function OutreachIntelligence({ user }) {
           .limit(10),
         supabase.from('kiko_alerts')
           .select('id, type, severity, title, detail, entity_name, created_at')
-          .in('type', ['partnership_detected', 'new_partnership', 'convergence', 'category_recommendation', 'competitive_change', 'funding', 'promotion', 'prediction', 'self_discovery', 'proactive_intel', 'company_signal'])
+          .in('type', signalTypes)
           .in('severity', ['high', 'critical', 'medium'])
           .gte('created_at', weekAgo)
           .order('created_at', { ascending: false })
