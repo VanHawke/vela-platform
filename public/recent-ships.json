@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-24T15:39:45.177Z",
+  "generated_at": "2026-04-24T15:49:17.341Z",
   "commits": [
+    {
+      "hash": "734467a",
+      "subject": "SCHEDULE MENU REDESIGN: (1) Removed auto-ET default — no more guessing recipient timezone from domain. (2) Three-section dropdown: Quick schedule (In 1hr, Tomorrow 9am/2pm, Monday 9am), Optimum for re",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "1965d4a",
       "subject": "CLEAN DISPLAY NAMES: Email preview now shows 'Sunny Sidhu' and 'Matt Smith' instead of email usernames. All email addresses display as @vanhawke.agency instead of @vanhawke.com. Applies to: From selec",
-      "when": "10 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "d64af12",
       "subject": "SCHEDULE SEND ENHANCED: (1) Optimum send time — detects recipient timezone from email domain (.com/.ai/.io = US East 9am, .co.uk = UK 9am, .de/.fr = CET 9am). Highlighted in purple at top of dropdown.",
-      "when": "15 minutes ago"
+      "when": "24 minutes ago"
     },
     {
       "hash": "cf3221a",
@@ -19,7 +24,7 @@
     {
       "hash": "d0442aa",
       "subject": "FIX ALL RELIABILITY: (1) Send-to-drafts 400 — subject/to now stateful with useEffect sync during streaming, prevents undefined values. (2) Chat sidebar click-into-other-chats — loadConversation now fe",
-      "when": "47 minutes ago"
+      "when": "57 minutes ago"
     },
     {
       "hash": "473cbec",
@@ -39,12 +44,12 @@
     {
       "hash": "c5d79d8",
       "subject": "SPEED FIX: When reasoning engine pre-loads CRM data, email drafts limited to 1 tool round max. Claude told to draft directly from pre-loaded context instead of re-fetching.",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "3cd9e53",
       "subject": "FIX HANGING PERMANENTLY: (1) Reasoning engine now tells Claude 'data already loaded, do NOT re-fetch' — prevents redundant tool calls after pre-processing. (2) Email tool rounds reduced from 4 to 2 — ",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "373c23a",
@@ -59,7 +64,7 @@
     {
       "hash": "c2ece87",
       "subject": "FIX TWO CRITICAL BUGS: (1) Memory tools hanging — update_kiko_preference, learning_save, master_brief_digest all used 'await sbFetch' which blocked the response if Supabase was slow. Changed to fire-a",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "8974005",
@@ -84,7 +89,7 @@
     {
       "hash": "bebae24",
       "subject": "AUDIT FINAL: (1) Nested API route handler for /api/admin/* paths on Hetzner. (2) Created missing _orgGuard.js (super admin auth guard). (3) All API subdirectories synced: api/lib, api/_lib, api/admin.",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "8e86392",
@@ -94,11 +99,6 @@
     {
       "hash": "4896321",
       "subject": "MAJOR: (1) Supabase Realtime listener — instant CRM change detection via WebSocket. Watches deals (stage changes), contacts (new), campaign_targets (replies). Auto-reconnection. 308 deal stages cached",
-      "when": "8 hours ago"
-    },
-    {
-      "hash": "bf24f13",
-      "subject": "FIX NAVIGATION: Removed 'take me to' and 'navigate me to' from Google Maps directions regex. These now correctly route through the intent classifier to platform navigation. Directions handler only mat",
       "when": "9 hours ago"
     }
   ]

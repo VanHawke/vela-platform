@@ -42,6 +42,11 @@ const SEND_AS_ALIAS = {
   'matt.smith@vanhawke.com': 'matt.smith@vanhawke.agency',
 };
 
+const DISPLAY_NAMES = {
+  'sunny@vanhawke.com': 'Sunny Sidhu',
+  'matt.smith@vanhawke.com': 'Matt Smith',
+};
+
 async function getGmailSignature(token, email) {
   // Try the agency alias first (primary sending identity), fall back to registered email
   const alias = SEND_AS_ALIAS[email] || email;
@@ -101,7 +106,7 @@ export default async function handler(req, res) {
     // Build RFC 2822 email — use alias as From address
     const encSubj = `=?UTF-8?B?${Buffer.from(subject, 'utf-8').toString('base64')}?=`;
     const raw = [
-      `From: ${sendAs}`,
+      `From: ${DISPLAY_NAMES[senderEmail] || senderEmail.split('@')[0]} <${sendAs}>`,
       `To: ${Array.isArray(to) ? to.join(', ') : to}`,
       `Subject: ${encSubj}`,
       'MIME-Version: 1.0',

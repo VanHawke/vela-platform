@@ -29,6 +29,11 @@ const SEND_AS_ALIAS = {
   'matt.smith@vanhawke.com': 'matt.smith@vanhawke.agency',
 };
 
+const DISPLAY_NAMES = {
+  'sunny@vanhawke.com': 'Sunny Sidhu',
+  'matt.smith@vanhawke.com': 'Matt Smith',
+};
+
 async function getGmailSignature(token, email) {
   const alias = SEND_AS_ALIAS[email] || email;
   try {
@@ -63,7 +68,7 @@ export async function runScheduledSender() {
         const encodedSubject = `=?UTF-8?B?${Buffer.from(email.subject).toString('base64')}?=`;
 
         const raw = [
-          `From: ${sendAs}`,
+          `From: ${DISPLAY_NAMES[email.sender_email] || email.sender_email.split('@')[0]} <${sendAs}>`,
           `To: ${email.recipient_email}`,
           `Subject: ${encodedSubject}`,
           'MIME-Version: 1.0',
