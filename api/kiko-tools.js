@@ -435,7 +435,8 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
   if (name === 'update_kiko_preference') {
     try {
       const { category, preference, confidence } = input;
-      await sbFetch('kiko_preferences', {
+      // Fire-and-forget — don't block the response waiting for DB writes
+      sbFetch('kiko_preferences', {
         method: 'POST',
         body: JSON.stringify({
           category: category || 'behaviour',
@@ -444,9 +445,8 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
           source: 'user_instruction',
           updated_at: new Date().toISOString(),
         })
-      });
-      // Also log to learning_log for the self-improvement loop
-      await sbFetch('kiko_learning_log', {
+      }).catch(e => console.error('[update_kiko_preference] Write failed:', e.message));
+      sbFetch('kiko_learning_log', {
         method: 'POST',
         body: JSON.stringify({
           user_id: userId,
@@ -454,8 +454,8 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
           content: `[${category}] ${preference} (confidence: ${confidence || 'high'})`,
           entity_name: userEmail,
         })
-      });
-      return `Preference saved: "${preference}" [${category}, ${confidence || 'high'}]. This will be applied in all future conversations.`;
+      }).catch(e => console.error('[update_kiko_preference] Log failed:', e.message));
+      return `Preference saved: "${preference}" [${category}, ${confidence || 'high'}]. Applied to all future conversations.`;
     } catch (e) { return agentError('PreferenceUpdate', e); }
   }
 
@@ -503,17 +503,17 @@ Document:\n${document_text.slice(0, 25000)}` }],
       }
       if (Array.isArray(parsed.preferences)) {
         for (const p of parsed.preferences.slice(0, 20)) {
-          await sbFetch('kiko_preferences', { method: 'POST', body: JSON.stringify({ category: p.category || 'behaviour', preference: p.content, confidence: p.confidence || 'high', updated_at: new Date().toISOString() }) });
+          sbFetch('kiko_preferences', { method: 'POST', body: JSON.stringify({ category: p.category || 'behaviour', preference: p.content, confidence: p.confidence || 'high', updated_at: new Date().toISOString() }) }).catch(() => {});
           results.preferences++;
         }
       }
       if (Array.isArray(parsed.learned_rules)) {
         for (const r of parsed.learned_rules.slice(0, 15)) {
-          await sbFetch('kiko_learned_rules', { method: 'POST', body: JSON.stringify({ category: r.category || 'general', rule_text: r.rule_text, active: true, evidence_count: 5, weight: 1.5, source: 'master_brief' }) });
+          sbFetch('kiko_learned_rules', { method: 'POST', body: JSON.stringify({ category: r.category || 'general', rule_text: r.rule_text, active: true, evidence_count: 5, weight: 1.5, source: 'master_brief' }) }).catch(() => {});
           results.rules++;
         }
       }
-      await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({ user_id: userId, category: 'master_brief_digest', content: `Digested brief (${document_text.length} chars, mode: ${mode || 'merge'}). Bible=${results.bible}, prefs=${results.preferences}, rules=${results.rules}`, entity_name: userEmail }) });
+      sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({ user_id: userId, category: 'master_brief_digest', content: `Digested brief (${document_text.length} chars, mode: ${mode || 'merge'}). Bible=${results.bible}, prefs=${results.preferences}, rules=${results.rules}`, entity_name: userEmail }) }).catch(() => {});
       return `Master brief digested.\n- Personal bible: ${results.bible ? 'Updated' : 'No changes'}\n- Preferences: ${results.preferences} saved\n- Rules: ${results.rules} activated\n${parsed.specialist_roles?.length ? `- Roles: ${parsed.specialist_roles.join(', ')}\n` : ''}${parsed.restricted_topics?.length ? `- ${parsed.restricted_topics.length} restricted topics marked private\n` : ''}All changes private to you.`;
     } catch (e) { return agentError('DigestBrief', e); }
   }
@@ -979,7 +979,7 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
       if (operation === 'save_insight') {
         const { insight, entity, category } = params;
         if (!insight) return 'Error: insight text is required';
-        await sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({ user_id: userId, category: category || 'conversation_insight', content: insight, entity_name: entity || null }) });
+        sbFetch('kiko_learning_log', { method: 'POST', body: JSON.stringify({ user_id: userId, category: category || 'conversation_insight', content: insight, entity_name: entity || null }) }).catch(e => console.error('[learning_save] Failed:', e.message));
         return `Insight saved: "${insight.slice(0, 100)}${insight.length > 100 ? '...' : ''}"`;
       }
 

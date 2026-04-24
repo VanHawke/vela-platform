@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-24T12:02:04.109Z",
+  "generated_at": "2026-04-24T12:18:34.603Z",
   "commits": [
+    {
+      "hash": "8974005",
+      "subject": "FIX EMAIL BODY BLANK: renderBody regex .replace(/---.*​/s, '') with s flag was stripping EVERYTHING after --- separator including the entire email body. Replaced with safe indexOf check that only stri",
+      "when": "16 minutes ago"
+    },
     {
       "hash": "c09e9ad",
       "subject": "FIX: Email draft body blank during streaming. useState only initializes once — when EmailDraft first renders during streaming, only Subject+To have arrived so body is empty. Added useEffect to sync cu",
-      "when": "33 minutes ago"
+      "when": "49 minutes ago"
     },
     {
       "hash": "fc7d8b2",
@@ -49,7 +54,7 @@
     {
       "hash": "ca8ab82",
       "subject": "CRON MIGRATION TO HETZNER: (1) ALL 16 crons now call local Express (127.0.0.1:3000) instead of Vercel — eliminates 120s timeout and function costs. (2) Added wildcard API route handler — any /api/* wi",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "669e967",
@@ -94,12 +99,7 @@
     {
       "hash": "c3b088a",
       "subject": "Update session brief with remaining tasks and Hetzner migration status",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "679c59e",
-      "subject": "MOBILE POLISH: (1) Copy/Edit buttons increased from 28px to 36px (better touch targets). (2) Icon sizes increased from 12-13px to 14-15px. (3) Tone buttons padding increased from 5px to 7px. (4) Dropd",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     }
   ]
 }
