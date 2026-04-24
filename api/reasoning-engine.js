@@ -110,12 +110,12 @@ export async function preProcess(message, intent) {
   
   console.log(`[reasoning-engine] Entities: ${JSON.stringify(entities)}`);
   
-  // Steps 2-4: Run in parallel
-  const [crmData, knowledgeData, webData] = await Promise.all([
+  // Steps 2-3: CRM + Knowledge only (fast, ~1-2s). Web verification delegated to Claude's tool loop.
+  const [crmData, knowledgeData] = await Promise.all([
     lookupCRM(entities).catch(() => ({ deals: [], contacts: [], companies: [] })),
     searchKnowledge(entities).catch(() => []),
-    entities.needsVerification ? webVerify(entities).catch(() => []) : Promise.resolve([]),
   ]);
+  const webData = []; // Web verification delegated to Claude's tool loop for speed
   
   // Build enriched context block
   let context = '\n\n═══ PRE-VERIFIED INTELLIGENCE (gathered before you respond) ═══';

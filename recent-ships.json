@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-24T12:27:24.213Z",
+  "generated_at": "2026-04-24T12:56:10.550Z",
   "commits": [
+    {
+      "hash": "f78de2f",
+      "subject": "FIX HANGING + DRAFT 400: (1) Reasoning engine now skips short follow-ups, navigation, calendar, identity, greeting, knowledge queries. Only fires for substantive entity-based queries. Prevents 10-20s ",
+      "when": "29 minutes ago"
+    },
     {
       "hash": "c2ece87",
       "subject": "FIX TWO CRITICAL BUGS: (1) Memory tools hanging — update_kiko_preference, learning_save, master_brief_digest all used 'await sbFetch' which blocked the response if Supabase was slow. Changed to fire-a",
-      "when": "9 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "8974005",
       "subject": "FIX EMAIL BODY BLANK: renderBody regex .replace(/---.*​/s, '') with s flag was stripping EVERYTHING after --- separator including the entire email body. Replaced with safe indexOf check that only stri",
-      "when": "25 minutes ago"
+      "when": "54 minutes ago"
     },
     {
       "hash": "c09e9ad",
       "subject": "FIX: Email draft body blank during streaming. useState only initializes once — when EmailDraft first renders during streaming, only Subject+To have arrived so body is empty. Added useEffect to sync cu",
-      "when": "58 minutes ago"
+      "when": "87 minutes ago"
     },
     {
       "hash": "fc7d8b2",
       "subject": "REASONING ENGINE LIVE: Architecturally enforced pre-processing layer. Every substantive query now runs through: (1) Entity extraction via Haiku, (2) CRM lookup (deals + contacts), (3) Knowledge base s",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "328a2f9",
@@ -29,7 +34,7 @@
     {
       "hash": "bebae24",
       "subject": "AUDIT FINAL: (1) Nested API route handler for /api/admin/* paths on Hetzner. (2) Created missing _orgGuard.js (super admin auth guard). (3) All API subdirectories synced: api/lib, api/_lib, api/admin.",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "8e86392",
@@ -39,12 +44,12 @@
     {
       "hash": "4896321",
       "subject": "MAJOR: (1) Supabase Realtime listener — instant CRM change detection via WebSocket. Watches deals (stage changes), contacts (new), campaign_targets (replies). Auto-reconnection. 308 deal stages cached",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "bf24f13",
       "subject": "FIX NAVIGATION: Removed 'take me to' and 'navigate me to' from Google Maps directions regex. These now correctly route through the intent classifier to platform navigation. Directions handler only mat",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "5131b91",
@@ -74,31 +79,26 @@
     {
       "hash": "8fed273",
       "subject": "FIX KIKO REASONING: Remove separate research endpoint routing. All prompts now go through /api/kiko which has full conversation history + web_search + all 39 tools. The research triggers ('research', ",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "0fbbe4e",
       "subject": "FIX AUTO-SCROLL: (1) Always scroll to bottom during streaming unless user manually scrolls up. (2) Detects user scroll-up during streaming and pauses auto-scroll. (3) Resets scroll tracking when strea",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "91e46f0",
       "subject": "KIKO INTELLIGENCE UPGRADE: (1) FACT VERIFICATION — mandatory verification of all claims (funding rounds, acquisitions, exec changes) before including in emails. Check CRM → emails → web search. Never ",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "4c4f1d6",
       "subject": "FIX: Empty response recovery — (1) Shortened fallback message from confusing specific instructions to simple 'try again'. (2) finally block now clears toolStatus and streamText alongside streaming fla",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "ebe5103",
       "subject": "BATCH EMAIL DRAFTING: New batch_draft_emails tool — drafts re-engagement emails for multiple stalled deals. Queries pipeline for idle deals, generates personalised drafts via Haiku (fast), creates Gma",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "91d2688",
-      "subject": "Add monitor files to repo: email-monitor (user-specific alerts, campaign detection), pipeline-monitor (stale deal detection), scheduler (cron registration), webhooks (Gmail Pub/Sub receiver)",
       "when": "16 hours ago"
     }
   ]

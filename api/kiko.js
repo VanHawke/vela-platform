@@ -1742,13 +1742,18 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
 
     // ── REASONING ENGINE — gather intelligence BEFORE Claude sees the message ──
     // Only runs for substantive queries about specific entities — NOT for follow-ups, greetings, or simple commands
-    const SKIP_REASONING = ['navigate', 'screen', 'calendar', 'self_monitor', 'identity', 'greeting', 'knowledge', 'conversation_search', 'code_review'];
-    const isShortFollowUp = message.length < 30 && /^(yes|no|ok|sure|thanks|do it|go ahead|continue|proceed|sounds good|perfect|great|send it|approved)/i.test(message.trim());
+    const SKIP_REASONING = ['navigate', 'screen', 'calendar', 'self_monitor', 'identity', 'greeting', 'knowledge', 'conversation_search', 'code_review', 'email_read'];
+    const isShortFollowUp = message.length < 40 && /^(yes|no|ok|sure|thanks|do it|go ahead|continue|proceed|sounds good|perfect|great|send it|approved|draft|write|compose)/i.test(message.trim());
     const shouldReason = !skipTools && !isGreeting && !isShortFollowUp && !SKIP_REASONING.includes(intent);
     if (shouldReason) {
       try {
         write({ toolStatus: 'Gathering intelligence...' });
-        const preResult = await preProcess(message, intent);
+        // 8 second timeout — if reasoning takes longer, skip it and let Claude verify via tools
+        const preResult = await Promise.race([
+          preProcess(message, intent),
+          new Promise(resolve => setTimeout(() => resolve({ context: '', duration: 0, timedOut: true }), 8000))
+        ]);
+        if (preResult.timedOut) console.log('[kiko] Reasoning engine timed out at 8s — skipping');
         if (preResult.context && preResult.context.length > 80) {
           const lastMsg = messages[messages.length - 1];
           if (lastMsg && typeof lastMsg.content === 'string') {
