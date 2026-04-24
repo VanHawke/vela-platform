@@ -3,6 +3,7 @@ import cron from 'node-cron';
 import { runPipelineMonitor } from './pipeline-monitor.js';
 import { runEmailMonitor } from './email-monitor.js';
 import { runFollowUpMonitor } from './follow-up-monitor.js';
+import { runScheduledSender } from './scheduled-sender.js';
 import { startRealtimeListener } from './realtime-listener.js';
 
 export function startMonitors() {
@@ -26,6 +27,12 @@ export function startMonitors() {
   console.log('[monitors] Pipeline: every 30min (Mon-Fri)');
   console.log('[monitors] Email: every 15min (Mon-Fri, 7am-9pm)');
   console.log('[monitors] Follow-ups: every 2hrs (Mon-Fri, 8am-8pm)');
+  console.log('[monitors] Scheduled sender: every 5min (Mon-Fri, 7am-9pm)');
+
+  // Scheduled email sender — every 5 min, weekdays 7am-9pm
+  cron.schedule('*/5 7-21 * * 1-5', async () => {
+    try { await runScheduledSender(); } catch (e) { console.error('[cron] scheduled-sender:', e.message); }
+  }, { timezone: 'Europe/London' });
 
   // Start Supabase Realtime listener
   startRealtimeListener().catch(e => console.error('[monitors] Realtime listener failed:', e.message));

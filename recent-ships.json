@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-24T13:43:13.392Z",
+  "generated_at": "2026-04-24T13:56:17.643Z",
   "commits": [
+    {
+      "hash": "005e734",
+      "subject": "FIX: Mobile chat history now synced with desktop. (1) Mobile queries by org_id (same as desktop) instead of user_id only. (2) Filters out archived conversations. (3) Limit increased from 30 to 50 (mat",
+      "when": "13 minutes ago"
+    },
     {
       "hash": "0750757",
       "subject": "FOLLOW-UP SYSTEM + CHAT FIX: (1) Follow-up monitor cron — runs every 2hrs, checks for overdue replies, scans Gmail for responses, creates HIGH severity alerts. (2) Auto-tracking hook in create-gmail-d",
-      "when": "20 minutes ago"
+      "when": "33 minutes ago"
     },
     {
       "hash": "c5d79d8",
       "subject": "SPEED FIX: When reasoning engine pre-loads CRM data, email drafts limited to 1 tool round max. Claude told to draft directly from pre-loaded context instead of re-fetching.",
-      "when": "29 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "3cd9e53",
       "subject": "FIX HANGING PERMANENTLY: (1) Reasoning engine now tells Claude 'data already loaded, do NOT re-fetch' — prevents redundant tool calls after pre-processing. (2) Email tool rounds reduced from 4 to 2 — ",
-      "when": "32 minutes ago"
+      "when": "45 minutes ago"
     },
     {
       "hash": "373c23a",
       "subject": "FIX KIKO HANGING: (1) Reasoning engine web verification REMOVED from pre-processing — was taking 15-20s per company. Now does CRM+knowledge only (~2s). Claude's own web_search tool handles fact verifi",
-      "when": "47 minutes ago"
+      "when": "60 minutes ago"
     },
     {
       "hash": "f78de2f",
       "subject": "FIX HANGING + DRAFT 400: (1) Reasoning engine now skips short follow-ups, navigation, calendar, identity, greeting, knowledge queries. Only fires for substantive entity-based queries. Prevents 10-20s ",
-      "when": "76 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "c2ece87",
       "subject": "FIX TWO CRITICAL BUGS: (1) Memory tools hanging — update_kiko_preference, learning_save, master_brief_digest all used 'await sbFetch' which blocked the response if Supabase was slow. Changed to fire-a",
-      "when": "85 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "8974005",
@@ -44,7 +49,7 @@
     {
       "hash": "fc7d8b2",
       "subject": "REASONING ENGINE LIVE: Architecturally enforced pre-processing layer. Every substantive query now runs through: (1) Entity extraction via Haiku, (2) CRM lookup (deals + contacts), (3) Knowledge base s",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "328a2f9",
@@ -64,7 +69,7 @@
     {
       "hash": "4896321",
       "subject": "MAJOR: (1) Supabase Realtime listener — instant CRM change detection via WebSocket. Watches deals (stage changes), contacts (new), campaign_targets (replies). Auto-reconnection. 308 deal stages cached",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "bf24f13",
@@ -94,11 +99,6 @@
     {
       "hash": "ca0a960",
       "subject": "FIX: rewrite-email endpoint now points to Hetzner (was still hitting Vercel). Tone rewrite buttons in email drafts now work via Hetzner.",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "8fed273",
-      "subject": "FIX KIKO REASONING: Remove separate research endpoint routing. All prompts now go through /api/kiko which has full conversation history + web_search + all 39 tools. The research triggers ('research', ",
       "when": "16 hours ago"
     }
   ]

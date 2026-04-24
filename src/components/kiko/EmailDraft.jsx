@@ -1,6 +1,6 @@
 // src/components/kiko/EmailDraft.jsx — Email draft frame with tone CTAs, copy, edit, and team Gmail send
 import { useState, useRef, useEffect } from 'react'
-import { Send, Pen, RotateCcw, Copy, Check, ChevronDown } from 'lucide-react'
+import { Send, Pen, RotateCcw, Copy, Check, ChevronDown, Clock } from 'lucide-react'
 import T from '@/lib/theme'
 
 export function isEmailDraft(text) {
@@ -118,6 +118,8 @@ export default function EmailDraft({ text }) {
   const [editText, setEditText] = useState('')
   const [sendDropdownOpen, setSendDropdownOpen] = useState(false)
   const [senderDropdownOpen, setSenderDropdownOpen] = useState(false)
+  const [scheduleOpen, setScheduleOpen] = useState(false)
+  const [scheduled, setScheduled] = useState(null) // { display: 'Mon 29 Apr at 09:00' }
   const [teamMembers, setTeamMembers] = useState([])
   const [selectedMember, setSelectedMember] = useState(null) // whose Gmail drafts folder
   const [selectedSender, setSelectedSender] = useState(null) // who the email is FROM (determines signature)
@@ -175,6 +177,42 @@ export default function EmailDraft({ text }) {
   }
 
   const handleCancelEdit = () => { setEditing(false) }
+
+  const getScheduleOptions = () => {
+    const now = new Date()
+    const opts = []
+    // In 1 hour
+    const h1 = new Date(now.getTime() + 3600000)
+    opts.push({ label: `In 1 hour (${h1.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })})`, value: h1.toISOString() })
+    // Tomorrow 9am
+    const tom9 = new Date(now); tom9.setDate(tom9.getDate() + 1); tom9.setHours(9, 0, 0, 0)
+    opts.push({ label: `Tomorrow 9:00 AM`, value: tom9.toISOString() })
+    // Tomorrow 2pm
+    const tom14 = new Date(now); tom14.setDate(tom14.getDate() + 1); tom14.setHours(14, 0, 0, 0)
+    opts.push({ label: `Tomorrow 2:00 PM`, value: tom14.toISOString() })
+    // Next Monday 9am
+    const mon = new Date(now); mon.setDate(mon.getDate() + ((8 - mon.getDay()) % 7 || 7)); mon.setHours(9, 0, 0, 0)
+    if (mon > now) opts.push({ label: `Monday 9:00 AM`, value: mon.toISOString() })
+    return opts
+  }
+
+  const handleSchedule = async (scheduledFor) => {
+    const senderEmail = selectedSender?.email || 'sunny@vanhawke.com'
+    if (!to || !subject || !currentBody) return
+    setScheduleOpen(false)
+    try {
+      const res = await fetch('https://api.vanhawke.agency/api/schedule-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to, subject, body: currentBody, sender: senderEmail, scheduledFor, recipientName: to.split('@')[0] }),
+      })
+      const data = await res.json()
+      if (data.ok) {
+        setScheduled({ display: data.display || 'Scheduled' })
+        setTimeout(() => setScheduled(null), 5000)
+      }
+    } catch (e) { console.error('[EmailDraft] Schedule failed:', e) }
+  }
 
   const handleSendGmail = async (member) => {
     const targetEmail = member?.email || selectedMember?.email || 'sunny@vanhawke.com'
@@ -339,6 +377,33 @@ export default function EmailDraft({ text }) {
                     <div style={{ fontSize: 10, color: '#A0A0A0' }}>{m.email}</div>
                   </div>
                   {selectedMember?.id === m.id && <Check size={14} style={{ color: '#00B464' }} />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        {/* Schedule send button */}
+        <div style={{ position: 'relative' }}>
+          <button onClick={() => setScheduleOpen(!scheduleOpen)} style={{
+            padding: '6px 12px', borderRadius: 50,
+            background: scheduled ? 'rgba(34,197,94,0.08)' : 'rgba(0,0,0,0.04)',
+            border: scheduled ? '1px solid rgba(34,197,94,0.15)' : '1px solid rgba(0,0,0,0.08)',
+            color: scheduled ? 'rgba(34,197,94,0.8)' : 'rgba(0,0,0,0.55)',
+            fontSize: 12, cursor: 'pointer', fontFamily: T.font,
+            display: 'flex', alignItems: 'center', gap: 5, fontWeight: 500, transition: 'all 0.15s',
+          }}>
+            <Clock size={11} /> {scheduled ? `Scheduled: ${scheduled.display}` : 'Schedule'}
+          </button>
+          {scheduleOpen && (
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 6, background: '#FEFEFC', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, minWidth: 220, overflow: 'hidden' }}>
+              <div style={{ padding: '8px 12px', fontSize: 10, color: '#A0A0A0', borderBottom: '0.5px solid rgba(0,0,0,0.05)', fontFamily: T.font }}>
+                Schedule send from {selectedSender?.email?.split('@')[0] || 'sunny'}:
+              </div>
+              {getScheduleOptions().map((opt, i) => (
+                <button key={i} onClick={() => handleSchedule(opt.value)} style={{ width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 12, color: '#0A0A0A', fontFamily: T.font, display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.1s' }}
+                  onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
+                  <Clock size={12} style={{ color: '#A0A0A0' }} />
+                  {opt.label}
                 </button>
               ))}
             </div>
