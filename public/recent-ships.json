@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-24T06:54:51.160Z",
+  "generated_at": "2026-04-24T06:59:00.826Z",
   "commits": [
+    {
+      "hash": "5131b91",
+      "subject": "FIX: Finance intent routing — added fast-path keywords for pipeline value, weighted pipeline, revenue, forecast, runway, cash flow, burn rate, ROI, cap table, valuation. These now route directly to fi",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "6a7906a",
       "subject": "FULL AUDIT FIXES: (1) All Vercel URL references in API files migrated to api.vanhawke.agency — kiko-tools.js (3 refs), data.js (2 refs), document.js (1 ref), cron-sequence-sender, cron-push-dispatcher",
@@ -14,12 +19,12 @@
     {
       "hash": "669e967",
       "subject": "FULL PLATFORM AUDIT: Comprehensive A-Z audit document covering endpoint routing (62 Vercel / 5 Hetzner), 39 tools, 25 agents, cron jobs, database schema, self-knowledge accuracy, frontend components, ",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "ca0a960",
       "subject": "FIX: rewrite-email endpoint now points to Hetzner (was still hitting Vercel). Tone rewrite buttons in email drafts now work via Hetzner.",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "8fed273",
@@ -94,11 +99,6 @@
     {
       "hash": "f75272a",
       "subject": "BATCH FIX: (1) SEARCH ICON — wired up to command palette (was calling nonexistent function). Swapped to appear BEFORE bg tasks icon. Order: [Search] [BG Tasks] [Avatar]. (2) RETRY ICON on user message",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "ab84268",
-      "subject": "FIX EMAIL SCANNING + NAV: (1) REWRITTEN read_email handler — now uses sbFetch helper (proven working) instead of inline VITE_SUPABASE_URL which may not resolve. Uses parallel token refresh via Promise",
       "when": "13 hours ago"
     }
   ]
