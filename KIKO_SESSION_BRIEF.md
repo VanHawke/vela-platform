@@ -2,9 +2,9 @@
 
 ## For session handoff — read THIS before writing ANY code
 
-## Last updated: 2026-04-24 21:00 UTC
+## Last updated: 2026-04-24 23:00 UTC
 
-## 58 build sessions spanning April 7-24, 2026
+## 59 build sessions spanning April 7-24, 2026
 
 ## Transcripts: /mnt/transcripts/ (read journal.txt for session index)
 
@@ -166,13 +166,27 @@ ComponentLocationDetailsRepo`/Users/sunny/Desktop/vela-platform/`Git → auto-de
 - Document generation pipeline (research → structure → branded HTML/PPTX)
 - Homepage fixes (greeting, background tasks icon, nav CSS grid centering)
 
+### Session 59 (Apr 24): Proactive Intelligence v2 + Hetzner Consolidation
+
+- Self-Discovery Engine (monitors/competitive-discovery.js) — 5 domains rotating weekly: agency competitors, prospect signals, eyewear disruptors, agency structures, F1 commercial shifts. Sonnet + web search, Haiku extraction, writes to kiko_knowledge + kiko_alerts
+- Predictive Synthesis added to proactive-intel monitor — 5 prediction types: deal velocity, conversion windows, competitive threats, category timing, churn risk. Confidence levels, timeframes, preemptive actions
+- Agency Org Intel domain (12 topics) in learning director — competitor team structures, revenue models, pitch processes, client churn, tech stacks. Total research domains: 29
+- Knowledge Visibility Fix — changed from "last 10 entries" to domain-aware loading (latest per domain, up to 28). All research domains permanently visible
+- search_knowledge now searches kiko_knowledge table — Kiko can actively retrieve her own competitive research
+- CRITICAL: Discovered cron-scheduler.js was NEVER imported by server.js — 16 crons with real API files were completely dormant. Wired startScheduler() into server.js, 21 local cron jobs now active (calling localhost:3000)
+- Removed 26 dead cron entries (archived files), excluded 11 already handled by Supabase pg_cron
+- Full API sync: all 120 api/ files synced from repo to Hetzner
+- cron-job-processor URL fixed: Vercel → Hetzner (api.vanhawke.agency)
+- Vercel now serves ONLY static frontend (free tier). All API + cron + monitor work on Hetzner
+- Predictive synthesis in api/cron-proactive.js also enhanced (convergence-level predictions)
+
 ---
 
 ## CURRENT ARCHITECTURE (April 24, 2026)
 
 ### Monitors (all on Hetzner, weekdays only)
 
-MonitorSchedulePurposePipeline30min308 deals health scanEmail replies2min (7am-9pm)Gmail inbox scan for repliesFollow-ups2hrs (8am-8pm)Overdue follow-up alertsScheduled sender5min (7am-9pm)Send emails at scheduled timeProactive intel8am + 2pmF1/fashion/business strategic alertsLearning director3am1 competitive research topic per nightRealtimeAlways3 Supabase channels
+MonitorSchedulePurposePipeline30min308 deals health scanEmail replies2min (7am-9pm)Gmail inbox scan for repliesFollow-ups2hrs (8am-8pm)Overdue follow-up alertsScheduled sender5min (7am-9pm)Send emails at scheduled timeProactive intel + predictions8am + 2pmF1/fashion/business strategic alerts + predictive synthesisCompetitive discoverySunday 5amSelf-discovers new competitors, prospects, disruptorsLearning director3am1 competitive research topic per night (29 domains)RealtimeAlways3 Supabase channelsCron scheduler21 jobsAPI crons calling localhost (previously dormant, activated Session 59)
 
 ### Tools (42+ in kiko-tools.js)
 
@@ -182,9 +196,9 @@ Agents: navigator, deal, data, outreach, document, memory, strategy, negotiation
 
 Loaded every conversation: Core Bible, Org Bible, User Bible, Knowledge Base (28+ domains), Learned Rules (43), Preferences (8), Personal Context (486), Conversation Insights (last 5 of 1,591), User Profiles (1) Queryable via tools: Thought Journal (196), Relationships (94), Email Style (16), AI Memory (153), Learning Log (433), Memories (1,431), Skills (35)
 
-### Research Domains (8 Van Hawke competitive + academic curriculum)
+### Research Domains (9 Van Hawke competitive + academic curriculum)
 
-VH Agency: competitive landscape, F1 deal intel, prospect signals, positioning VH Business: zero-to-global building, marketing/social playbook VH Maison: eyewear competitive, fashion marketing Academic: 15+ pillars (sales, negotiation, psychology, legal, etc.)
+VH Agency: competitive landscape, F1 deal intel, prospect signals, positioning, agency org structures VH Business: zero-to-global building, marketing/social playbook VH Maison: eyewear competitive, fashion marketing Academic: 15+ pillars (sales, negotiation, psychology, legal, etc.) Self-Discovery: agency competitors, prospect signals, eyewear disruptors, agency structures, F1 commercial shifts
 
 ---
 
@@ -193,15 +207,15 @@ VH Agency: competitive landscape, F1 deal intel, prospect signals, positioning V
 ### Must Fix
 
 1. **Homepage alignment** — CSS grid deployed but user says nothing changed. Needs verification + possible cache issue
-2. **Document generation speed** — 150s total (53s research + 97s structure). JSON repair added. Needs PPTX test
+2. **Document generation speed** — 150s total (53s research + 97s structure). JSON repair added. Needs PPTX test + move to background job
 3. **Email drafts still \~22s** for complex (Sonnet). Simple use Haiku (\~12s)
 
 ### Should Build
 
-4. **Brand asset library** — No logos/fonts uploaded. Documents use hardcoded colours only
-5. **ChatGPT re-import** — User has extensive ChatGPT conversations to import
-6. **Proactive synthesis** — Beyond alerts, generate full strategic playbooks with recommendations
-7. **Self-discovery enhancement** — Kiko should identify competitors herself, not just track listed ones
+4. **ChatGPT re-import** — User has extensive ChatGPT conversations to import
+5. **Supabase pg_cron audit** — 11 crons run via pg_cron, some may overlap with the newly activated cron-scheduler. Verify no double execution
+6. **Proactive synthesis feedback** — Predictions should feed into morning brief and greeting. Verify alert → brief pipeline works
+7. **Vercel cleanup** — Remove api/ serverless function config from vercel.json since all API runs on Hetzner now
 
 ### Future
 
@@ -211,7 +225,6 @@ VH Agency: competitive landscape, F1 deal intel, prospect signals, positioning V
 11. **SponsorSignal LinkedIn posting system**
 
 ---
-
 ## OPERATING RULES
 
 ### Email
