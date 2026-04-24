@@ -644,11 +644,11 @@ const PAGE_ROLES = {
 };
 
 // ── Native Tools (built per-user in handler) ──
-function buildNativeTools(userConfig) {
+function buildNativeTools(userConfig, userTimezone) {
   const loc = userConfig?.location || '';
   const city = loc.split(',')[0].trim();
   const country = loc.includes('UK') ? 'GB' : loc.includes('US') ? 'US' : '';
-  const tz = userConfig?.timezone || 'Europe/London';
+  const tz = userTimezone || userConfig?.timezone || 'Europe/London';
   const tool = { type: 'web_search_20250305', name: 'web_search', max_uses: 5 };
   if (city || country) {
     tool.user_location = { type: 'approximate' };
@@ -775,7 +775,7 @@ export default async function handler(req, res) {
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const { message: rawMessage, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null, pageContext = null, attachments = [], deepThink = false, personality = 'executive', voiceMode = false } = req.body;
+  const { message: rawMessage, action, userEmail = 'sunny@vanhawke.com', conversationHistory = [], currentPage = 'home', pageEntity = null, pageContext = null, attachments = [], deepThink = false, personality = 'executive', voiceMode = false, timezone = 'Europe/London', locale = 'en-GB' } = req.body;
   const message = sanitizeUnicode(rawMessage);
   if (!message && action !== 'title') return res.status(400).json({ error: 'message required' });
 
@@ -1031,7 +1031,7 @@ export default async function handler(req, res) {
       messages.push({ role: 'user', content: message });
     }
 
-    const nativeTools = buildNativeTools(userConfig);
+    const nativeTools = buildNativeTools(userConfig, timezone);
     const voiceTools = voiceMode
       ? [...nativeTools.filter(t => t.name !== 'memory'), ...TOOL_DEFINITIONS]
       : [...nativeTools, ...TOOL_DEFINITIONS];
@@ -1636,7 +1636,11 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     // Moved to after skipTools declaration — see below
     let reasoningContext = '';
 
-    const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + activeThreadsHint + inboxHint + morningBrief + modeHint + identityHint + attributionHint + emailStyleHint + conversationSummary;
+    // User timezone/datetime context
+    const userNow = new Date().toLocaleString('en-GB', { timeZone: timezone, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const timezoneHint = `\n\n[USER DATETIME: ${userNow} | Timezone: ${timezone} | Locale: ${locale}]`;
+
+    const systemWithHint = system + identityContext + routingHint + preferencesHint + personalHint + profileHint + memoryHint + activeThreadsHint + inboxHint + morningBrief + modeHint + identityHint + attributionHint + emailStyleHint + conversationSummary + timezoneHint;
 
     // ── Prompt Caching ──
     // Split system content into stable (cached) and dynamic (not cached) blocks

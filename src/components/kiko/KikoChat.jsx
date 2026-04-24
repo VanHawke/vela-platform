@@ -813,6 +813,8 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
             return null
           })(),
           personality: (() => { try { const s = JSON.parse(localStorage.getItem('kiko_settings') || '{}'); return s.kiko_personality || 'executive' } catch { return 'executive' } })(),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          locale: navigator.language || 'en-GB',
         }),
       })
       const reader = res.body.getReader(); const dec = new TextDecoder()
