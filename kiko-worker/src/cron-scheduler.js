@@ -67,7 +67,6 @@ const SCHEDULES = [
 
   // Weekly (Sunday)
   { schedule: '0 3 * * 0',      path: '/api/cron-rule-promotion',          name: 'rule-promotion' },
-  { schedule: '0 4 * * 0',      path: '/api/cron-competitive-discovery',   name: 'competitive-discovery' },
   { schedule: '0 4 * * *',      path: '/api/cron-profile-synthesis',       name: 'profile-synthesis' },
   { schedule: '0 4 * * 0,3',    path: '/api/cron-email-voice-learning',    name: 'email-voice' },
   { schedule: '0 4 * * *',      path: '/api/cron-job-cleanup',             name: 'job-cleanup' },

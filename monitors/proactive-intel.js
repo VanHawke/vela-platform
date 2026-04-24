@@ -170,5 +170,88 @@ Return 4-8 events. Only HIGH-IMPACT intelligence Van Hawke can act on. No filler
     });
 
     console.log(`[proactive-intel] Complete. ${events.length} events found, ${alertsCreated} alerts created.`);
+
+    // ═══ STEP 5: PREDICTIVE SYNTHESIS ═══
+    // Go beyond "what happened" → predict "what's likely to happen next"
+    try {
+      // Pull stale deals and recent pipeline state for prediction context
+      const staleDeals = await sbFetch('deals?select=data&limit=200');
+      const safe = v => Array.isArray(v) ? v : [];
+      const now = Date.now();
+      const stale = safe(staleDeals).filter(d => {
+        const last = d.data?.lastActivity ? new Date(d.data.lastActivity) : null;
+        return last && Math.floor((now - last) / 86400000) > 14;
+      }).map(d => ({ company: d.data?.company, daysSince: Math.floor((now - new Date(d.data?.lastActivity)) / 86400000), stage: d.data?.stage }));
+
+      // Pull recent discoveries for competitive context
+      const discoveries = await sbFetch('kiko_knowledge?source=eq.self-discovery&select=content&order=researched_at.desc&limit=3');
+      const discoveryContext = safe(discoveries).map(d => (d.content || '').slice(0, 400)).join('\n');
+
+      // Pull upcoming races
+      const races = await sbFetch(`race_calendar?date=gt.${new Date().toISOString().split('T')[0]}&order=date&limit=5&select=name,date,series`);
+      const raceWindows = safe(races).map(r => ({
+        name: r.name, series: r.series,
+        daysTo: Math.ceil((new Date(r.date) - now) / 86400000),
+      })).filter(r => r.daysTo <= 60);
+
+      if (stale.length > 0 || events.length > 0 || raceWindows.length > 0) {
+        const predPayload = JSON.stringify({
+          staleDeals: stale.slice(0, 15),
+          todaysEvents: events.slice(0, 5).map(e => ({ headline: e.headline, urgency: e.urgency, division: e.division })),
+          raceWindows,
+          competitiveIntel: discoveryContext.slice(0, 1000),
+          pipelineSize: safe(staleDeals).length,
+        });
+
+        const predResp = await anthropic.messages.create({
+          model: 'claude-haiku-4-5-20251001', max_tokens: 1200,
+          system: `You are Kiko's predictive intelligence module. Based on pipeline data, market events, race calendar, and competitive intel, generate FORWARD-LOOKING PREDICTIONS about the next 7-30 days.
+
+Types:
+- DEAL VELOCITY: "Company X will go cold within 14 days based on engagement decline"
+- CONVERSION WINDOW: "Company Y + race in 21 days = proposal window closing in ~7 days"  
+- COMPETITIVE THREAT: "Competitor Z circling same prospects — act first"
+- CATEGORY TIMING: "Sector Q2 budgets suggest outreach window opens in 2 weeks"
+- CHURN RISK: "3 deals at Negotiation static 20+ days — will stall without intervention"
+
+Return ONLY valid JSON array. Each: { "prediction": "What will happen", "confidence": "high|medium|low", "timeframe": "7d|14d|30d", "category": "deal_velocity|conversion_window|competitive_threat|category_timing|churn_risk", "entities": ["Company"], "preemptive_action": "What to do NOW" }. Max 4. Only predictions with analytical basis.`,
+          messages: [{ role: 'user', content: predPayload }],
+        });
+
+        let preds = [];
+        try {
+          preds = JSON.parse((predResp.content[0]?.text || '[]').replace(/```json|```/g, '').trim());
+          if (!Array.isArray(preds)) preds = [];
+        } catch { preds = []; }
+
+        let predCount = 0;
+        for (const pred of preds.slice(0, 4)) {
+          if (pred.confidence === 'low') continue;
+          try {
+            await sbFetch('kiko_alerts', {
+              method: 'POST',
+              body: JSON.stringify({
+                id: crypto.randomUUID(),
+                type: 'prediction',
+                severity: pred.confidence === 'high' ? 'high' : 'medium',
+                title: `🔮 ${(pred.category || 'prediction').replace(/_/g, ' ')}: ${(pred.entities || []).join(', ') || 'Portfolio'}`,
+                detail: `${pred.prediction}\n\nTimeframe: ${pred.timeframe || '14d'} | Confidence: ${pred.confidence}\n→ ${pred.preemptive_action || 'Review in Kiko'}`,
+                entity_name: (pred.entities || [])[0] || 'Portfolio',
+                metadata: { category: pred.category, confidence: pred.confidence, timeframe: pred.timeframe },
+                user_id: null,
+                dismissed: false,
+                created_at: new Date().toISOString(),
+                expires_at: new Date(now + (pred.timeframe === '7d' ? 7 : pred.timeframe === '30d' ? 30 : 14) * 86400000).toISOString(),
+              }),
+            });
+            predCount++;
+          } catch {}
+        }
+        console.log(`[proactive-intel] Predictive synthesis: ${predCount} predictions generated.`);
+      }
+    } catch (predErr) {
+      console.error('[proactive-intel] Predictive synthesis error:', predErr.message);
+    }
+
   } catch (err) { console.error('[proactive-intel] Error:', err.message); }
 }

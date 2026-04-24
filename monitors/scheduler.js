@@ -5,6 +5,7 @@ import { runEmailMonitor } from './email-monitor.js';
 import { runFollowUpMonitor } from './follow-up-monitor.js';
 import { runScheduledSender } from './scheduled-sender.js';
 import { runProactiveIntel } from './proactive-intel.js';
+import { runCompetitiveDiscovery } from './competitive-discovery.js';
 import { startRealtimeListener } from './realtime-listener.js';
 
 export function startMonitors() {
@@ -30,10 +31,16 @@ export function startMonitors() {
   console.log('[monitors] Follow-ups: every 2hrs (Mon-Fri, 8am-8pm)');
   console.log('[monitors] Scheduled sender: every 5min (Mon-Fri, 7am-9pm)');
   console.log('[monitors] Proactive intel: 8am + 2pm (Mon-Fri)');
+  console.log('[monitors] Competitive discovery: Sunday 5am');
 
   // Proactive intelligence — 2x daily, weekdays 8am and 2pm
   cron.schedule('0 8,14 * * 1-5', async () => {
     try { await runProactiveIntel(); } catch (e) { console.error('[cron] proactive-intel:', e.message); }
+  }, { timezone: 'Europe/London' });
+
+  // Competitive self-discovery — weekly, Sunday 5am
+  cron.schedule('0 5 * * 0', async () => {
+    try { await runCompetitiveDiscovery(); } catch (e) { console.error('[cron] competitive-discovery:', e.message); }
   }, { timezone: 'Europe/London' });
 
   // Scheduled email sender — every 5 min, weekdays 7am-9pm

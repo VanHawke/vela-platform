@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-24T21:32:04.475Z",
+  "generated_at": "2026-04-24T21:45:45.955Z",
   "commits": [
+    {
+      "hash": "e7dbcdc",
+      "subject": "Proactive Intelligence v2: Self-Discovery Engine + Predictive Synthesis + Agency Structure Intelligence",
+      "when": "13 minutes ago"
+    },
     {
       "hash": "fecd3bb",
       "subject": "COMPLETE SESSION BRIEF: 242-line definitive architecture document covering ALL 58 sessions (April 7-24). Full build history, current state, all monitors, all tools, all memory systems, all research do",
-      "when": "23 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "e0d5069",
       "subject": "SESSION BRIEF: Complete architecture document for session handoff — every system, every file, every tool, every table, every monitor, every pending task documented. 289 lines covering environment, rin",
-      "when": "28 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "842493c",
       "subject": "FIX HOMEPAGE ALIGNMENT: (1) Top nav switched from flexbox space-between to CSS grid with 3 columns — links are now TRUE center, not pushed-between. (2) Home content offset: when sidebar collapsed (28p",
-      "when": "52 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "c66c6dd",
       "subject": "FIX ALIGNMENT: Homepage content padding matched to nav padding (32px both). Document generation pipeline: research uses Haiku (53s vs 105s), structure max_tokens 8000, robust JSON repair for truncatio",
-      "when": "63 minutes ago"
+      "when": "76 minutes ago"
     },
     {
       "hash": "828ea5d",
       "subject": "FIX: (1) Wrong day greeting — getGreeting now uses fresh new Date() for both day name and hash index, prevents stale day showing. (2) Background tasks icon changed from rectangle-with-lines (mistaken ",
-      "when": "67 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "f774ee1",
@@ -49,12 +54,12 @@
     {
       "hash": "3497dd1",
       "subject": "PROACTIVE INTEL WORKING: First scan found 6 events, created 5 strategic alerts — Cadillac F1 title sponsorship open, Omni AI M Series C prospect signal, Kering/Google smart glasses (Maison competitive",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "9b5c75b",
       "subject": "PROACTIVE INTELLIGENCE ENGINE: (1) New proactive-intel monitor runs 2x daily (8am + 2pm). Scans F1 sponsorship news, luxury/fashion market, competitor agencies (CAA/WME/Octagon/CSM), new GP announceme",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "5161991",
@@ -79,26 +84,21 @@
     {
       "hash": "894837c",
       "subject": "EMAIL DETECTION: Reduced from 15min to 2min polling. Pub/Sub blocked by Google Workspace domain-restricted sharing policy — 2min polling achieves near-instant detection without admin policy changes. W",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "d306de3",
       "subject": "GMAIL PUB/SUB WEBHOOK: (1) gmail-webhook.js — receives push notifications from Google, checks for replies to tracked follow-ups, creates instant alerts. Always returns 200 to prevent Pub/Sub retries. ",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "14b1fe2",
       "subject": "EMAIL SPEED: Simple drafts (re-engagement, follow-up, catch-up) now use Haiku (~12s vs 22-37s with Sonnet). Complex drafts (negotiation, strategy, investment, pricing) still use Sonnet. Campaign sende",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "3dcd31c",
       "subject": "FIX CAMPAIGN SENDER: Display name was hardcoded as 'Sunny Sidhu' regardless of sender. Now uses DISPLAY_NAMES mapping — campaigns from Matt show 'Matt Smith' in recipient inbox.",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "3733e73",
-      "subject": "FIX SENDER DISPLAY NAME: From header now shows 'Matt Smith <matt.smith@vanhawke.agency>' instead of just 'matt.smith@vanhawke.agency'. Recipients see proper names in their inbox. Applied to both creat",
       "when": "6 hours ago"
     }
   ]
