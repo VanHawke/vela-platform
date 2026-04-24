@@ -367,6 +367,30 @@ export const TOOL_DEFINITIONS = [
       status: { type: 'string', description: 'Filter: "scheduled" (default), "sent", "failed", "all"', enum: ['scheduled', 'sent', 'failed', 'all'] },
     } },
   },
+  // ── Relationship Intelligence ──
+  {
+    name: 'query_relationships',
+    description: 'Query relationship data between contacts — who knows who, interaction history, relationship strength. Use when user asks about relationships, connections, or "who do we know at X".',
+    input_schema: { type: 'object', properties: {
+      query: { type: 'string', description: 'Company name, contact email, or person name to search relationships for' },
+    }, required: ['query'] },
+  },
+  // ── Thought Journal ──
+  {
+    name: 'query_thought_journal',
+    description: 'Search your strategic thought journal — insights and reflections from past tool executions. Use when user asks "what have you learned", "what do you think about X", or for strategic reflection.',
+    input_schema: { type: 'object', properties: {
+      query: { type: 'string', description: 'Topic or keyword to search journal entries for' },
+    }, required: ['query'] },
+  },
+  // ── Conversation History Search ──
+  {
+    name: 'query_conversation_insights',
+    description: 'Search past conversation insights — decisions made, open threads, key facts from previous chats. Use when user asks "what did we discuss about X", "what was decided", or references past conversations.',
+    input_schema: { type: 'object', properties: {
+      query: { type: 'string', description: 'Topic, company, or keyword to search conversation history for' },
+    }, required: ['query'] },
+  },
 ];
 
 // Conditional tool — only injected when intent is master_brief
@@ -1415,6 +1439,42 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
       if (!Array.isArray(rows) || !rows.length) return `No scheduled emails with status: ${status}`;
       return rows.map(r => `To: ${r.recipient_email} | Subject: "${r.subject}" | From: ${r.sender_email} | Scheduled: ${new Date(r.scheduled_for).toLocaleString('en-GB')} | Status: ${r.status}${r.error ? ` | Error: ${r.error}` : ''}`).join('\n');
     } catch (e) { return `Error checking scheduled emails: ${e.message}`; }
+  }
+
+  // ── Relationship Intelligence ──
+  if (name === 'query_relationships') {
+    try {
+      const q = (input.query || '').toLowerCase();
+      const rows = await sbFetch(`kiko_relationships?or=(contact_email.ilike.*${encodeURIComponent(q)}*,contact_name.ilike.*${encodeURIComponent(q)}*,company.ilike.*${encodeURIComponent(q)}*,notes.ilike.*${encodeURIComponent(q)}*)&user_id=eq.${userId}&select=*&order=last_interaction.desc&limit=10`);
+      if (!Array.isArray(rows) || !rows.length) return `No relationships found matching "${input.query}"`;
+      return rows.map(r => `${r.contact_name || r.contact_email} (${r.company || '?'}) — Strength: ${r.strength || '?'}/10 | Last interaction: ${r.last_interaction ? new Date(r.last_interaction).toLocaleDateString('en-GB') : 'unknown'} | ${r.notes || ''}`).join('\n');
+    } catch (e) { return `Error: ${e.message}`; }
+  }
+
+  // ── Thought Journal ──
+  if (name === 'query_thought_journal') {
+    try {
+      const q = (input.query || '').toLowerCase();
+      const rows = await sbFetch(`kiko_thought_journal?content=ilike.*${encodeURIComponent(q)}*&select=content,context,created_at&order=created_at.desc&limit=8`);
+      if (!Array.isArray(rows) || !rows.length) return `No thought journal entries matching "${input.query}"`;
+      return rows.map(r => `[${new Date(r.created_at).toLocaleDateString('en-GB')}] ${r.context ? `(${r.context}) ` : ''}${r.content?.slice(0, 300)}`).join('\n\n');
+    } catch (e) { return `Error: ${e.message}`; }
+  }
+
+  // ── Conversation Insights ──
+  if (name === 'query_conversation_insights') {
+    try {
+      const q = (input.query || '').toLowerCase();
+      const rows = await sbFetch(`kiko_conversation_insights?or=(summary.ilike.*${encodeURIComponent(q)}*,entities_discussed.cs.{${encodeURIComponent(q)}},key_facts.cs.{${encodeURIComponent(q)}})&user_id=eq.${userId}&select=summary,key_facts,decisions_made,open_threads,entities_discussed,created_at&order=created_at.desc&limit=8`);
+      if (!Array.isArray(rows) || !rows.length) return `No conversation insights found matching "${input.query}"`;
+      return rows.map(r => {
+        let out = `[${new Date(r.created_at).toLocaleDateString('en-GB')}]`;
+        if (r.summary) out += ` ${r.summary}`;
+        if (r.decisions_made?.length) out += `\n  Decisions: ${r.decisions_made.join('; ')}`;
+        if (r.open_threads?.length) out += `\n  Open: ${r.open_threads.join('; ')}`;
+        return out;
+      }).join('\n\n');
+    } catch (e) { return `Error: ${e.message}`; }
   }
 
   return { error: `Unknown tool: ${name}` };
