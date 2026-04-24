@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     let candidates = [];
     try {
       const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 2000,
         system: `You are Kiko's rule promoter. You extract APPLIED RULES from raw learning data — patterns Kiko should follow on every future request because they have been corroborated across multiple days.
 

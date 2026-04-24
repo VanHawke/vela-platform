@@ -41,7 +41,7 @@ export default async function handler(req, res) {
         const existing = intelMap[company.name.toLowerCase()];
         
         const result = await anthropic.messages.create({
-          model: 'claude-sonnet-4-20250514',
+          model: 'claude-sonnet-4-6',
           max_tokens: 1000,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
           messages: [{ role: 'user', content: `Search for recent news about "${company.name}" from the last 30 days. Focus on: funding rounds, acquisitions, leadership changes, major partnerships, product launches, revenue milestones, layoffs, or any significant business developments.

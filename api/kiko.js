@@ -12,7 +12,7 @@ import { callEAAgent } from './agents/ea.js';
 export const config = { supportsResponseStreaming: true, maxDuration: 120, api: { bodyParser: { sizeLimit: '12mb' } } };
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = 'claude-sonnet-4-6';
 
 // ── User config loader — replaces all hardcoded user references ──
 const userConfigCache = new Map();
@@ -1743,9 +1743,12 @@ DEAL STAGE MAPPING:
           const toolPromise = block.name === 'memory'
             ? handleMemory(block.input, userId)
             : executeTool(block.name, block.input, userEmail, pageContext, userId);
+          // Opus-based agents (negotiation, strategy, investment, dispute) need longer timeouts
+          const OPUS_TOOLS = ['ask_negotiation_agent', 'ask_strategy_agent', 'ask_investment_agent', 'ask_dispute_agent'];
+          const toolTimeoutMs = OPUS_TOOLS.includes(block.name) ? 60000 : 25000;
           result = await Promise.race([
             toolPromise,
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Tool timeout: took longer than 25s')), 25000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error(`Tool timeout: ${block.name} took longer than ${toolTimeoutMs/1000}s`)), toolTimeoutMs))
           ]);
         } catch (toolErr) {
           const errMsg = toolErr.message || String(toolErr);

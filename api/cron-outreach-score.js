@@ -113,7 +113,7 @@ export default async function handler(req, res) {
     }))
 
     const classifyRes = await client.messages.create({
-      model: 'claude-sonnet-4-20250514', max_tokens: 4000,
+      model: 'claude-sonnet-4-6', max_tokens: 4000,
       messages: [{ role: 'user', content: `Classify these outbound sales/sponsorship emails. For each, return JSON array with objects matching this schema:
 {
   "gmail_id": "string",

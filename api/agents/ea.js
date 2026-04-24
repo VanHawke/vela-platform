@@ -148,7 +148,7 @@ async function morningBrief() {
 
   try {
     const briefResponse = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', max_tokens: 800,
+      model: 'claude-sonnet-4-6', max_tokens: 800,
       system: `You are Kiko, Sunny's Chief of Staff at Van Hawke Group. Compose a morning brief.
 
 RULES:
@@ -217,7 +217,7 @@ async function prioritiseTasks() {
   }).join('\n');
   try {
     const res = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', max_tokens: 600,
+      model: 'claude-sonnet-4-6', max_tokens: 600,
       system: EA_PROMPT,
       messages: [{ role: 'user', content: `Prioritise these ${outstanding.length} tasks. Rank by revenue impact × urgency. Top 5 with specific recommended actions.\n\n${taskList}` }],
     });

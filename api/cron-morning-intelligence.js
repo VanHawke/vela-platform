@@ -147,7 +147,7 @@ export default async function handler(req, res) {
 
     // Synthesise via Sonnet into actionable morning brief
     const synthesis = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', max_tokens: 1200,
+      model: 'claude-sonnet-4-6', max_tokens: 1200,
       system: `You are Kiko, writing Sunny's morning intelligence brief. Be DIRECT. Lead with what needs action TODAY. Structure:
 
 1. 🔴 IMMEDIATE (things that need action in the next 4 hours)

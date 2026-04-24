@@ -1,6 +1,6 @@
 // api/agents/content.js — Content Agent (Phase 2 Rebuild)
 // Data-backed authority content. Pulls news + sponsors before composing.
-// Model: claude-sonnet-4-20250514
+// Model: claude-sonnet-4-6
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from '../kiko-tools.js';
 
@@ -85,7 +85,7 @@ async function generate(type, topic, extraContext = '') {
   const dataContext = await gatherContext(topic);
   try {
     const res = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', max_tokens: 1200,
+      model: 'claude-sonnet-4-6', max_tokens: 1200,
       system: CONTENT_PROMPT,
       messages: [{ role: 'user', content: `Generate a ${type} about: ${topic}\n\n${dataContext}${extraContext ? `\nADDITIONAL CONTEXT: ${extraContext}` : ''}` }],
     });

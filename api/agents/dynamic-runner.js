@@ -30,7 +30,7 @@ export async function runDynamicAgent(agentName, question, context = '') {
   // 3. Call Claude with the agent's system prompt + data context + question
   try {
     const res = await anthropic.messages.create({
-      model: agent.model || 'claude-sonnet-4-20250514',
+      model: agent.model || 'claude-sonnet-4-6',
       max_tokens: agent.max_tokens || 1200,
       system: agent.system_prompt + dataContext,
       messages: [{ role: 'user', content: `${question}${context ? `\nContext: ${context}` : ''}` }],

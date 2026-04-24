@@ -266,7 +266,7 @@ async function learnTopic(pillarKey, pillar, topic) {
   try {
     // Step 1: Use Claude with web search to research the topic
     const research = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', max_tokens: 2000,
+      model: 'claude-sonnet-4-6', max_tokens: 2000,
       tools: [{ type: 'web_search_20250305', name: 'web_search' }],
       messages: [{ role: 'user', content: `Research this topic thoroughly for a CEO running an F1 sponsorship advisory and luxury eyewear business: "${topic}". 
         

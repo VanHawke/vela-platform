@@ -1,6 +1,6 @@
 // api/agents/category-control.js — Category Control Agent
 // Pricing power through enforced scarcity. One partner per category.
-// Model: claude-sonnet-4-20250514
+// Model: claude-sonnet-4-6
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from '../kiko-tools.js';
 

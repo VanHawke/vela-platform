@@ -130,7 +130,7 @@ async function deepAnalysis(text, fileName) {
   const { default: Anthropic } = await import('@anthropic-ai/sdk')
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY })
   const r = await client.messages.create({
-    model: 'claude-sonnet-4-20250514', max_tokens: 2000,
+    model: 'claude-sonnet-4-6', max_tokens: 2000,
     messages: [{ role: 'user', content: `You are analysing a business document. The document is titled "${fileName}".
 
 This could be from any industry — F1, Formula E, other motorsports, technology, luxury, finance, consulting, or any other business. Analyse it universally.

@@ -283,7 +283,7 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
 [{"company":"...","revenue":"...","hq":"...","rationale":"...","decision_makers":[{"name":"...","title":"..."},{"name":"...","title":"..."}]}]`;
 
     const sourcingRes = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 8000,
       tools: [{ type: 'web_search_20250305', name: 'web_search' }],
       messages: [{ role: 'user', content: sourcingPrompt }],
@@ -608,7 +608,7 @@ Return ONLY a valid JSON array of EXACTLY 5 entries, no markdown, no preamble, n
 
   try {
     const res = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 3000,
       messages: [{ role: 'user', content: prompt }],
     });

@@ -93,7 +93,7 @@ Extract his voice profile and return ONLY valid JSON in this exact shape:
 Be specific. Use REAL observations from the emails above, not generic templates. If he uses a specific phrase repeatedly, include it verbatim.`;
 
   const res = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 2000,
     messages: [{ role: 'user', content: prompt }],
   });

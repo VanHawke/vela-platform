@@ -572,7 +572,7 @@ async function refreshTeamPartnerships(params) {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
 
     const res = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 2000,
       tools: [{ type: 'web_search_20250305', name: 'web_search' }],
       messages: [{
@@ -685,7 +685,7 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
           const Anthropic = (await import('@anthropic-ai/sdk')).default;
           const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
           const enrichRes = await client.messages.create({
-            model: 'claude-sonnet-4-20250514', max_tokens: 1500,
+            model: 'claude-sonnet-4-6', max_tokens: 1500,
             tools: [{ type: 'web_search_20250305', name: 'web_search' }],
             messages: [{ role: 'user', content: `Research "${name}" and return ONLY valid JSON: { "company_name": "${name}", "domain": "website", "funding_total": "$X", "last_funding_round": "Series X", "last_funding_date": "YYYY-MM-DD", "last_funding_amount": "$X", "revenue_estimate": "$X", "employee_count": "N", "employee_growth": "+X%", "ceo": "name", "cto": "name or null", "cmo": "name or null", "cfo": "name or null", "vp_marketing": "name or null", "vp_engineering": "name or null", "industry": "X", "sub_sector": "X", "business_model": "X", "key_products": [], "competitors": [], "recent_acquisitions": [], "existing_sponsorships": [], "marketing_budget_signal": "high/medium/low", "brand_awareness_signal": "high/medium/low", "sponsorship_fit_score": 0-100 }. Return ONLY JSON.` }]
           });
@@ -839,7 +839,7 @@ export async function callDataAgent(operation, params = {}, userEmail = 'sunny@v
         const Anthropic = (await import('@anthropic-ai/sdk')).default;
         const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
         const searchRes = await anthropic.messages.create({
-          model: 'claude-sonnet-4-20250514', max_tokens: 6000,
+          model: 'claude-sonnet-4-6', max_tokens: 6000,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
           messages: [{ role: 'user', content: `Find exactly 50 companies in the ${category} sector that would be strong Formula One sponsorship prospects. This is a real outreach campaign — quality matters.
 
@@ -906,7 +906,7 @@ Return ONLY a JSON array of exactly 50 entries with no other text: [{"company":"
         const Anthropic = (await import('@anthropic-ai/sdk')).default;
         const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
         const searchRes = await anthropic.messages.create({
-          model: 'claude-sonnet-4-20250514', max_tokens: 1500,
+          model: 'claude-sonnet-4-6', max_tokens: 1500,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
           messages: [{ role: 'user', content: `Find senior executives at ${company} who would be decision-makers for Formula One sponsorship partnerships. Look for: CMO, VP Marketing, VP Partnerships, VP Brand, Head of Sponsorship, CEO, CTO (if tech company). Return ONLY a JSON array: [{"name":"Full Name","title":"Job Title","linkedin":"URL if found","email_guess":"first.last@domain.com if determinable"}]` }]
         });

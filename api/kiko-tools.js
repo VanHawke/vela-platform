@@ -467,7 +467,7 @@ export async function executeTool(name, input, userEmail = 'sunny@vanhawke.com',
       const { default: Anthropic } = await import('@anthropic-ai/sdk');
       const client = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY });
       const extraction = await client.messages.create({
-        model: 'claude-sonnet-4-20250514', max_tokens: 4000,
+        model: 'claude-sonnet-4-6', max_tokens: 4000,
         messages: [{ role: 'user', content: `Extract operating instructions from this master brief for an AI Chief of Staff. Return raw JSON only (no markdown):
 {
   "user_bible": "Comprehensive personal context: name, role, company, responsibilities, priorities, communication style, decision-making, key relationships, industry focus. Use § headers. Max 3000 words.",

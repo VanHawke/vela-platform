@@ -1,6 +1,6 @@
 // api/agents/travel.js — Travel & Logistics Agent
 // F1/FE calendar alignment, travel planning, visa tracking.
-// Model: claude-sonnet-4-20250514
+// Model: claude-sonnet-4-6
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from '../kiko-tools.js';
 
@@ -23,7 +23,7 @@ async function planTrip(destination, context = '') {
   } catch {}
   try {
     const res = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', max_tokens: 800,
+      model: 'claude-sonnet-4-6', max_tokens: 800,
       system: TRAVEL_PROMPT,
       messages: [{ role: 'user', content: `Plan travel to ${destination}.${raceContext}${context ? `\nContext: ${context}` : ''}` }],
     });

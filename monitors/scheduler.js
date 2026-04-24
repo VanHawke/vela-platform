@@ -1,7 +1,8 @@
-// monitors/scheduler.js — Registers all monitors with node-cron
+// monitors/scheduler.js — Registers all monitors with node-cron + Realtime
 import cron from 'node-cron';
 import { runPipelineMonitor } from './pipeline-monitor.js';
 import { runEmailMonitor } from './email-monitor.js';
+import { startRealtimeListener } from './realtime-listener.js';
 
 export function startMonitors() {
   console.log('[monitors] Starting scheduled monitors...');
@@ -19,7 +20,10 @@ export function startMonitors() {
   console.log('[monitors] Pipeline: every 30min (Mon-Fri)');
   console.log('[monitors] Email: every 15min (Mon-Fri, 7am-9pm)');
 
-  // Run once on startup (delayed 10s)
+  // Start Supabase Realtime listener for instant CRM change detection
+  startRealtimeListener().catch(e => console.error('[monitors] Realtime listener failed:', e.message));
+
+  // Run cron monitors once on startup (delayed 10s)
   setTimeout(async () => {
     console.log('[monitors] Running initial scan...');
     try { await runPipelineMonitor(); } catch (e) { console.error('[monitors] Pipeline:', e.message); }

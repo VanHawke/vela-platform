@@ -1,6 +1,6 @@
 // api/agents/pricing.js — Pricing & ROI Agent (Phase 5 Rebuild)
 // Data-backed pricing. Pulls company enrichment + partnership landscape.
-// Model: claude-sonnet-4-20250514
+// Model: claude-sonnet-4-6
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from '../kiko-tools.js';
 
@@ -57,7 +57,7 @@ async function buildROI(company, tier = '', context = '') {
   }
   try {
     const res = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', max_tokens: 1200,
+      model: 'claude-sonnet-4-6', max_tokens: 1200,
       system: PRICING_PROMPT,
       messages: [{ role: 'user', content: `Build ROI case for ${company}${tier ? ` at ${tier} tier` : ''}.\n\n${dataContext}${context ? `\nADDITIONAL: ${context}` : ''}` }],
     });

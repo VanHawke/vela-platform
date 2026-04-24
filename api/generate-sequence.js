@@ -104,7 +104,7 @@ For condition steps: {"step":N,"delay_days":D,"type":"condition","condition_type
 For regular steps: {"step":N,"delay_days":D,"channel":"email"|"linkedin","action":"invite"|"message","approach":"...","psychology":"...","subject":"...","template":"..."}`;
 
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', max_tokens: 6000,
+      model: 'claude-sonnet-4-6', max_tokens: 6000,
       messages: [{ role: 'user', content: prompt }]
     });
     const text = response.content[0]?.text?.trim();

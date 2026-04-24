@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-24T06:59:00.826Z",
+  "generated_at": "2026-04-24T07:18:10.755Z",
   "commits": [
+    {
+      "hash": "bf24f13",
+      "subject": "FIX NAVIGATION: Removed 'take me to' and 'navigate me to' from Google Maps directions regex. These now correctly route through the intent classifier to platform navigation. Directions handler only mat",
+      "when": "19 minutes ago"
+    },
     {
       "hash": "5131b91",
       "subject": "FIX: Finance intent routing — added fast-path keywords for pipeline value, weighted pipeline, revenue, forecast, runway, cash flow, burn rate, ROI, cap table, valuation. These now route directly to fi",
-      "when": "4 minutes ago"
+      "when": "23 minutes ago"
     },
     {
       "hash": "6a7906a",
@@ -14,7 +19,7 @@
     {
       "hash": "ca8ab82",
       "subject": "CRON MIGRATION TO HETZNER: (1) ALL 16 crons now call local Express (127.0.0.1:3000) instead of Vercel — eliminates 120s timeout and function costs. (2) Added wildcard API route handler — any /api/* wi",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "669e967",
@@ -59,22 +64,22 @@
     {
       "hash": "c3b088a",
       "subject": "Update session brief with remaining tasks and Hetzner migration status",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "679c59e",
       "subject": "MOBILE POLISH: (1) Copy/Edit buttons increased from 28px to 36px (better touch targets). (2) Icon sizes increased from 12-13px to 14-15px. (3) Tone buttons padding increased from 5px to 7px. (4) Dropd",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "1cd95dc",
       "subject": "CONVERSATION SUMMARY + SELF-KNOWLEDGE: (1) Conversation summary now kicks in at 6 messages (was 20). Older messages summarised as bullet points with 200 chars each. Kiko told to maintain continuity. L",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "d9e3ad6",
       "subject": "HETZNER MIGRATION LIVE: Kiko API now runs on Hetzner (api.vanhawke.agency) with ZERO timeout limits. SSL via Let's Encrypt. Frontend updated: Kiko chat, title gen, Gmail drafts, team members all point",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "476fccc",
@@ -84,21 +89,16 @@
     {
       "hash": "e10fc05",
       "subject": "FIX KIKO HANGING ON FOLLOW-UP: ROOT CAUSE — conversation history was sending 20 messages at 5000 chars each (100KB). After Kiko's long strategic analysis + draft, the follow-up 'create the draft' payl",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "a768113",
       "subject": "FIX: (1) KIKO LOGO — always navigates to homepage with fallback to window.location.href if router fails. (2) KIKO'S PLAN — switched from maxHeight CSS animation to display:block/none for reliable expa",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "6c07fb2",
       "subject": "FIX COMMAND PALETTE: Dark background (rgba(14,14,20,0.95)) had dark text (#0A0A0A) — everything invisible. Fixed theme to light text (#FAFAFF), light grey sub-text (#B0B0BB), light borders (rgba(255,2",
-      "when": "13 hours ago"
-    },
-    {
-      "hash": "f75272a",
-      "subject": "BATCH FIX: (1) SEARCH ICON — wired up to command palette (was calling nonexistent function). Swapped to appear BEFORE bg tasks icon. Order: [Search] [BG Tasks] [Avatar]. (2) RETRY ICON on user message",
       "when": "13 hours ago"
     }
   ]

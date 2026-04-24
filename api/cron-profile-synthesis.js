@@ -97,7 +97,7 @@ export default async function handler(req, res) {
 
     // Analyse via Sonnet — 6 dimensions
     const analysis = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 2000,
       system: `You analyse a person's sent emails to build a comprehensive communication profile. Return ONLY valid JSON with these exact keys:
 

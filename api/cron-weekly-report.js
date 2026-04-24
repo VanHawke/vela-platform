@@ -94,7 +94,7 @@ export default async function handler(req, res) {
     });
 
     const synthesis = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', max_tokens: 600,
+      model: 'claude-sonnet-4-6', max_tokens: 600,
       system: `You write the weekly report for Sunny Sidhu, CEO of Van Hawke Group. Write TWO things only:
 1. INSIGHT (2-3 sentences): The single most important takeaway this week — a reply, a signal, a stale deal, a campaign performing well or badly. Be specific with names and numbers. No fluff.
 2. PRIORITIES (exactly 3 numbered items): What to do Monday. Each item is one sentence with the company/person name and specific action.

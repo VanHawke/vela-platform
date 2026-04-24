@@ -44,7 +44,7 @@ async function reviewFile(filename) {
   if (!code) return `File not found: ${filename}`;
   try {
     const res = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', max_tokens: 1500,
+      model: 'claude-sonnet-4-6', max_tokens: 1500,
       system: `You are reviewing Kiko's own source code. Kiko is an AI operating system for Van Hawke Group. Analyse this file for:
 1. BUGS: Anything that could fail silently, missing error handling, logic errors
 2. PERFORMANCE: Unnecessary queries, slow patterns, missing caching
@@ -107,7 +107,7 @@ async function suggestImprovements() {
   try {
     const [arch, perf] = await Promise.all([analyseArchitecture(), getPerformanceAnalytics()]);
     const res = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', max_tokens: 1500,
+      model: 'claude-sonnet-4-6', max_tokens: 1500,
       system: `You are Kiko analysing your own architecture and performance data. Identify the TOP 5 improvements that would make you more useful to Sunny (CEO of Van Hawke Group, F1 sponsorship advisory + luxury eyewear). Rank by impact. For each: PROBLEM → SOLUTION → EXPECTED IMPACT. Be specific and technical.`,
       messages: [{ role: 'user', content: `${arch}\n\n${perf}` }],
     });

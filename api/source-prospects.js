@@ -4,7 +4,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 export const config = { maxDuration: 300 };
 
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = 'claude-sonnet-4-6';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });

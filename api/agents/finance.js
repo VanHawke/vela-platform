@@ -1,6 +1,6 @@
 // api/agents/finance.js — Finance Agent
 // Cash flow, revenue forecasting, cost tracking, runway awareness.
-// Model: claude-sonnet-4-20250514
+// Model: claude-sonnet-4-6
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from '../kiko-tools.js';
 
@@ -90,7 +90,7 @@ async function analyse(question) {
 
   try {
     const res = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514', max_tokens: 800,
+      model: 'claude-sonnet-4-6', max_tokens: 800,
       system: FINANCE_PROMPT,
       messages: [{ role: 'user', content: `${question}\n\nCONTEXT:\n${pipelineContext}` }],
     });

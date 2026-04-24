@@ -26,7 +26,7 @@ async function draftEmail({ to, subject, body, cc, thread_id, contact_status = '
       try {
         const voicePrompt = voiceProfileToPrompt(voiceProfile);
         const alignRes = await anthropic.messages.create({
-          model: 'claude-sonnet-4-20250514',
+          model: 'claude-sonnet-4-6',
           max_tokens: 800,
           messages: [{ role: 'user', content: `${voicePrompt}\n\nRewrite the following email in the user's voice above. Preserve the meaning and structure but match tone, length, openings, closings, and avoid any forbidden phrases. Return ONLY the rewritten email body — no commentary, no subject line.\n\nEmail to rewrite:\n${body}` }],
         });
