@@ -215,8 +215,89 @@ export default async function handler(req, res) {
     // const users = await getActiveUsers();
     // for (const u of users) { try { await sendAlertEmail(alerts, u.email); } catch {} }
 
+    // ═══ PREDICTIVE SYNTHESIS ENGINE ═══
+    // Goes beyond "what happened" → predicts "what's likely to happen next"
+    // Uses convergence data + pipeline state + race calendar to forecast
+    let predictions = 0;
+    if (Date.now() - __hbStart < 35000 && (stale.length > 0 || outreachReplies.length > 0 || raceWindows.filter(r => r.urgency !== 'normal').length > 0)) {
+      try {
+        // Pull recent discovery intelligence if available
+        const discoveries = await sbFetch('kiko_knowledge?source=eq.self-discovery&select=content&order=researched_at.desc&limit=3').catch(() => []);
+        const discoveryContext = (discoveries || []).map(d => (d.content || '').slice(0, 500)).join('\n---\n');
+
+        // Pull recent decision history for pattern matching
+        const recentDecisions = await sbFetch('kiko_learning_log?category=eq.decision&select=user_message,agent_output&order=created_at.desc&limit=10').catch(() => []);
+        const decisionContext = (recentDecisions || []).map(d => `Q: ${(d.user_message || '').slice(0, 80)} → ${(d.agent_output || '').slice(0, 120)}`).join('\n');
+
+        const predictionPayload = JSON.stringify({
+          staleDeals: stale.slice(0, 15).map(s => ({ company: s.company, daysSince: s.daysSince, stage: s.stage, contact: s.contact })),
+          recentReplies: outreachReplies.slice(0, 10).map(r => ({ name: r.recipient_name, company: r.company })),
+          raceWindows: raceWindows.filter(r => r.daysTo <= 60),
+          activeAlerts: alerts.slice(0, 5).map(a => ({ entity: a.entity, title: a.title })),
+          pipelineSize: staleDeals.length,
+          recentDecisions: decisionContext.slice(0, 800),
+          competitiveIntel: discoveryContext.slice(0, 1200),
+        });
+
+        const predResp = await anthropic.messages.create({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 1200,
+          system: `You are Kiko's predictive intelligence module. Based on pipeline data, reply patterns, race calendar proximity, decision history, and competitive intelligence, generate FORWARD-LOOKING PREDICTIONS about what is likely to happen in the next 7-30 days.
+
+Types of predictions:
+- DEAL VELOCITY: "Company X will likely go cold within 14 days based on declining engagement pattern"
+- CONVERSION WINDOW: "Company Y replied + race in 21 days = optimal proposal window closing in ~7 days"
+- COMPETITIVE THREAT: "Competitor Z is circling the same prospects based on recent intel — act before they do"
+- CATEGORY TIMING: "Banking sector Q2 budget cycles suggest outreach window opens in 2 weeks"
+- CHURN RISK: "3 deals at Negotiation stage have been static for 20+ days — likely to stall without intervention"
+
+Return ONLY valid JSON array. Each item:
+{
+  "prediction": "What will likely happen",
+  "confidence": "high|medium|low",
+  "timeframe": "7d|14d|30d",
+  "category": "deal_velocity|conversion_window|competitive_threat|category_timing|churn_risk",
+  "entities": ["Company A"],
+  "preemptive_action": "What to do NOW to get ahead of this"
+}
+
+Maximum 4 predictions. Only include predictions with genuine analytical basis — no generic advice.`,
+          messages: [{ role: 'user', content: `Generate predictions from this intelligence snapshot:\n\n${predictionPayload}` }],
+        });
+
+        let preds = [];
+        try {
+          preds = JSON.parse((predResp.content[0]?.text || '[]').replace(/```json|```/g, '').trim());
+          if (!Array.isArray(preds)) preds = [];
+        } catch { preds = []; }
+
+        for (const pred of preds.slice(0, 4)) {
+          if (pred.confidence === 'low') continue;
+          try {
+            await sbFetch('kiko_alerts', {
+              method: 'POST',
+              body: JSON.stringify({
+                type: 'prediction',
+                severity: pred.confidence === 'high' ? 'high' : 'medium',
+                title: `🔮 ${pred.category?.replace(/_/g, ' ') || 'Prediction'}: ${(pred.entities || []).join(', ') || 'Portfolio'}`,
+                detail: `${pred.prediction}\n\nTimeframe: ${pred.timeframe || '14d'} | Confidence: ${pred.confidence}\n→ ${pred.preemptive_action || 'Review in Kiko'}`,
+                entity_name: (pred.entities || [])[0] || 'Portfolio',
+                dismissed: false,
+                expires_at: new Date(now.getTime() + (pred.timeframe === '7d' ? 7 : pred.timeframe === '30d' ? 30 : 14) * 24 * 60 * 60 * 1000).toISOString(),
+              }),
+            });
+            predictions++;
+            written++;
+          } catch {}
+        }
+        console.log(`[Proactive] Predictive synthesis: ${predictions} predictions generated`);
+      } catch (predErr) {
+        console.error('[Proactive] Predictive synthesis error:', predErr.message);
+      }
+    }
+
     await cronHeartbeat('cron-proactive', 'finished', { heartbeatId: __hbId, durationMs: Date.now() - __hbStart, recordsProcessed: written });
-    return res.status(200).json({ ok: true, alerts: written, drafts, total_signals: hasData });
+    return res.status(200).json({ ok: true, alerts: written, drafts, predictions, total_signals: hasData });
   } catch (err) {
     console.error('[Proactive] Engine error:', err.message);
     await cronHeartbeat('cron-proactive', 'error', { heartbeatId: __hbId, errorMessage: err.message, durationMs: Date.now() - __hbStart });

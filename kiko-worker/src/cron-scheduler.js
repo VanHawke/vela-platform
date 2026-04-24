@@ -25,7 +25,8 @@ const SCHEDULES = [
   { schedule: '0 6 * * 1-5',    path: '/api/cron-sequence-enqueue',        name: 'seq-enqueue' },
   { schedule: '30 6 * * 1-5',   path: '/api/cron-task-automation',         name: 'task-automation' },
   { schedule: '0 7 * * 1-5',    path: '/api/cron-segment-enroller',        name: 'seg-enroller' },
-  { schedule: '0 7 * * 1-5',    path: '/api/cron-proactive',              name: 'proactive' },
+  { schedule: '0 7 * * 1-5',    path: '/api/cron-proactive',              name: 'proactive-am' },
+  { schedule: '0 14 * * 1-5',   path: '/api/cron-proactive',              name: 'proactive-pm' },
   { schedule: '0 7 * * 1-5',    path: '/api/cron-meeting-prep',            name: 'meeting-prep' },
   { schedule: '15 7 * * 1-5',   path: '/api/cron-inbox-triage',            name: 'inbox-triage' },
   { schedule: '30 7 * * 1-5',   path: '/api/cron-morning-intelligence',    name: 'morning-intel' },
@@ -66,6 +67,7 @@ const SCHEDULES = [
 
   // Weekly (Sunday)
   { schedule: '0 3 * * 0',      path: '/api/cron-rule-promotion',          name: 'rule-promotion' },
+  { schedule: '0 4 * * 0',      path: '/api/cron-competitive-discovery',   name: 'competitive-discovery' },
   { schedule: '0 4 * * *',      path: '/api/cron-profile-synthesis',       name: 'profile-synthesis' },
   { schedule: '0 4 * * 0,3',    path: '/api/cron-email-voice-learning',    name: 'email-voice' },
   { schedule: '0 4 * * *',      path: '/api/cron-job-cleanup',             name: 'job-cleanup' },

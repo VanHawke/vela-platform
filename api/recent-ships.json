@@ -1,40 +1,55 @@
 {
-  "generated_at": "2026-04-24T20:40:24.534Z",
+  "generated_at": "2026-04-24T21:32:04.475Z",
   "commits": [
+    {
+      "hash": "fecd3bb",
+      "subject": "COMPLETE SESSION BRIEF: 242-line definitive architecture document covering ALL 58 sessions (April 7-24). Full build history, current state, all monitors, all tools, all memory systems, all research do",
+      "when": "23 minutes ago"
+    },
+    {
+      "hash": "e0d5069",
+      "subject": "SESSION BRIEF: Complete architecture document for session handoff — every system, every file, every tool, every table, every monitor, every pending task documented. 289 lines covering environment, rin",
+      "when": "28 minutes ago"
+    },
+    {
+      "hash": "842493c",
+      "subject": "FIX HOMEPAGE ALIGNMENT: (1) Top nav switched from flexbox space-between to CSS grid with 3 columns — links are now TRUE center, not pushed-between. (2) Home content offset: when sidebar collapsed (28p",
+      "when": "52 minutes ago"
+    },
     {
       "hash": "c66c6dd",
       "subject": "FIX ALIGNMENT: Homepage content padding matched to nav padding (32px both). Document generation pipeline: research uses Haiku (53s vs 105s), structure max_tokens 8000, robust JSON repair for truncatio",
-      "when": "11 minutes ago"
+      "when": "63 minutes ago"
     },
     {
       "hash": "828ea5d",
       "subject": "FIX: (1) Wrong day greeting — getGreeting now uses fresh new Date() for both day name and hash index, prevents stale day showing. (2) Background tasks icon changed from rectangle-with-lines (mistaken ",
-      "when": "15 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "f774ee1",
       "subject": "Kiko self-knowledge: document generation capability documented — types, divisions, purposes, branding, timing, when to use.",
-      "when": "40 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "a992019",
       "subject": "DOCUMENT GENERATION PIPELINE — COMPLETE: (1) generate-document.js: researches topic via Haiku + web search, structures via Sonnet, renders branded HTML or PPTX. (2) Van Hawke brand system: #7C5CFC pur",
-      "when": "42 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "0b6f37d",
       "subject": "COMPLETE PROACTIVE INTELLIGENCE: (1) Self-knowledge updated with full proactive intel docs — 8 competitive domains, self-discovery rules, proactive advisory rules. (2) Forced first research runs: vh-a",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "e52ccf7",
       "subject": "STRATEGIC INTELLIGENCE EXPANSION: (1) 8 Van Hawke competitive domains replacing 4 — now covers agency competitors (self-discovering), F1 deal economics, prospect signals, positioning, business buildin",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "3497dd1",
       "subject": "PROACTIVE INTEL WORKING: First scan found 6 events, created 5 strategic alerts — Cadillac F1 title sponsorship open, Omni AI M Series C prospect signal, Kering/Google smart glasses (Maison competitive",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "9b5c75b",
@@ -44,27 +59,27 @@
     {
       "hash": "5161991",
       "subject": "COMPLETE AWARENESS PATCH: (1) 3 new deep query tools: query_relationships (94 entries), query_thought_journal (196 entries), query_conversation_insights (1,591 entries). (2) Self-knowledge: autonomous",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "c7f2bed",
       "subject": "CRITICAL: Complete memory architecture awareness. Kiko now knows about ALL 62 tables, 4,500+ entries, cross-referencing rules, accumulated knowledge stats. Added: memory stack documentation (what's lo",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "bbb8bbd",
       "subject": "KIKO FULL AWARENESS: Updated self-knowledge with ALL session changes — email speed (Haiku for simple drafts), sender display names, auto-tracking hook, 2min reply detection, timezone detection, multi-",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "1ebe7df",
       "subject": "KIKO AWARENESS + CLEANUP: (1) Added check_follow_ups tool — Kiko can now show pending, overdue, replied follow-ups. (2) Added check_scheduled_emails tool — Kiko can show scheduled, sent, failed emails",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "894837c",
       "subject": "EMAIL DETECTION: Reduced from 15min to 2min polling. Pub/Sub blocked by Google Workspace domain-restricted sharing policy — 2min polling achieves near-instant detection without admin policy changes. W",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "d306de3",
@@ -79,27 +94,12 @@
     {
       "hash": "3dcd31c",
       "subject": "FIX CAMPAIGN SENDER: Display name was hardcoded as 'Sunny Sidhu' regardless of sender. Now uses DISPLAY_NAMES mapping — campaigns from Matt show 'Matt Smith' in recipient inbox.",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "3733e73",
       "subject": "FIX SENDER DISPLAY NAME: From header now shows 'Matt Smith <matt.smith@vanhawke.agency>' instead of just 'matt.smith@vanhawke.agency'. Recipients see proper names in their inbox. Applied to both creat",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "734467a",
-      "subject": "SCHEDULE MENU REDESIGN: (1) Removed auto-ET default — no more guessing recipient timezone from domain. (2) Three-section dropdown: Quick schedule (In 1hr, Tomorrow 9am/2pm, Monday 9am), Optimum for re",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "1965d4a",
-      "subject": "CLEAN DISPLAY NAMES: Email preview now shows 'Sunny Sidhu' and 'Matt Smith' instead of email usernames. All email addresses display as @vanhawke.agency instead of @vanhawke.com. Applies to: From selec",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "d64af12",
-      "subject": "SCHEDULE SEND ENHANCED: (1) Optimum send time — detects recipient timezone from email domain (.com/.ai/.io = US East 9am, .co.uk = UK 9am, .de/.fr = CET 9am). Highlighted in purple at top of dropdown.",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     }
   ]
 }

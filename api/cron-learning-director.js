@@ -360,6 +360,24 @@ const CURRICULUM = {
       'fashion collaboration strategy brand x brand limited edition co-creation methodology what works',
     ]
   },
+  // ═══ AGENCY STRUCTURE DEEP INTELLIGENCE ═══
+  'vh_agency_org_intel': {
+    name: 'Agency Organisational Intelligence — How Competitors Are Built',
+    topics: [
+      'CAA Sports organizational structure how many people work there team breakdown departments reporting lines leadership 2026',
+      'Octagon sports agency business model revenue streams retainer vs commission fee structure how they make money',
+      'Wasserman agency structure clients team size growth trajectory acquisitions how they scaled from boutique to global',
+      'CSM Sport Entertainment org chart key people who runs motorsport practice team size client roster pitch approach',
+      'IMG WME sports agency F1 motorsport division who works there what clients deal flow how they win',
+      'boutique sports agencies that beat big agencies specific case studies how they won deals against CAA Octagon CSM',
+      'sports sponsorship agency employee backgrounds where do they hire from universities careers profiles LinkedIn data',
+      'agency client churn rates why sponsors leave their agencies what triggers a review pitch competitive displacement',
+      'sports agency technology stack CRM tools valuation platforms analytics what software powers top agencies',
+      'sponsorship agency pitch deck structure what goes in a winning pitch to F1 teams and to brands case studies examples',
+      'agency new business development how do Octagon Wasserman CSM prospect and win new clients process methodology',
+      'agency revenue per employee headcount economics what is the right team size for a motorsport sponsorship practice',
+    ]
+  },
 };
 
 async function getLearnedTopicCount() {
@@ -507,7 +525,7 @@ export default async function handler(req, res) {
     }
 
     // Prioritize competitive intelligence domains (vh_*) — these refresh regularly, not just once
-    const COMPETITIVE_KEYS = ['vh_agency_competitive', 'vh_f1_deal_intel', 'vh_prospect_intel', 'vh_agency_positioning', 'vh_business_building', 'vh_marketing_playbook', 'vh_maison_competitive', 'vh_maison_marketing'];
+    const COMPETITIVE_KEYS = ['vh_agency_competitive', 'vh_f1_deal_intel', 'vh_prospect_intel', 'vh_agency_positioning', 'vh_business_building', 'vh_marketing_playbook', 'vh_maison_competitive', 'vh_maison_marketing', 'vh_agency_org_intel'];
     const isCompetitive = (key) => COMPETITIVE_KEYS.includes(key);
 
     // Competitive domains: pick a random topic each run (they need FRESH data, not one-time coverage)

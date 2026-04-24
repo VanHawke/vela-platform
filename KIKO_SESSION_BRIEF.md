@@ -171,49 +171,42 @@ ComponentLocationDetailsRepo`/Users/sunny/Desktop/vela-platform/`Git → auto-de
 ## CURRENT ARCHITECTURE (April 24, 2026)
 
 ### Monitors (all on Hetzner, weekdays only)
-| Monitor | Schedule | Purpose |
-|---------|----------|---------|
-| Pipeline | 30min | 308 deals health scan |
-| Email replies | 2min (7am-9pm) | Gmail inbox scan for replies |
-| Follow-ups | 2hrs (8am-8pm) | Overdue follow-up alerts |
-| Scheduled sender | 5min (7am-9pm) | Send emails at scheduled time |
-| Proactive intel | 8am + 2pm | F1/fashion/business strategic alerts |
-| Learning director | 3am | 1 competitive research topic per night |
-| Realtime | Always | 3 Supabase channels |
+
+MonitorSchedulePurposePipeline30min308 deals health scanEmail replies2min (7am-9pm)Gmail inbox scan for repliesFollow-ups2hrs (8am-8pm)Overdue follow-up alertsScheduled sender5min (7am-9pm)Send emails at scheduled timeProactive intel8am + 2pmF1/fashion/business strategic alertsLearning director3am1 competitive research topic per nightRealtimeAlways3 Supabase channels
 
 ### Tools (42+ in kiko-tools.js)
-Agents: navigator, deal, data, outreach, document, memory, strategy, negotiation, category, finance, ea, legal, dispute, content, investment, pricing, signal, travel, specialist, code_review
-Actions: navigate_page, log_activity, google_maps_link, create_email_draft, batch_draft_emails, read_email, read_calendar, manage_knowledge, linkedin_search/invite/message, get_platform_users, update_kiko_preference, search_conversations, trigger_triage
-New: check_follow_ups, check_scheduled_emails, generate_document, query_relationships, query_thought_journal, query_conversation_insights
+
+Agents: navigator, deal, data, outreach, document, memory, strategy, negotiation, category, finance, ea, legal, dispute, content, investment, pricing, signal, travel, specialist, code_review Actions: navigate_page, log_activity, google_maps_link, create_email_draft, batch_draft_emails, read_email, read_calendar, manage_knowledge, linkedin_search/invite/message, get_platform_users, update_kiko_preference, search_conversations, trigger_triage New: check_follow_ups, check_scheduled_emails, generate_document, query_relationships, query_thought_journal, query_conversation_insights
 
 ### Memory Systems (62 tables, 4,500+ entries)
-Loaded every conversation: Core Bible, Org Bible, User Bible, Knowledge Base (28+ domains), Learned Rules (43), Preferences (8), Personal Context (486), Conversation Insights (last 5 of 1,591), User Profiles (1)
-Queryable via tools: Thought Journal (196), Relationships (94), Email Style (16), AI Memory (153), Learning Log (433), Memories (1,431), Skills (35)
+
+Loaded every conversation: Core Bible, Org Bible, User Bible, Knowledge Base (28+ domains), Learned Rules (43), Preferences (8), Personal Context (486), Conversation Insights (last 5 of 1,591), User Profiles (1) Queryable via tools: Thought Journal (196), Relationships (94), Email Style (16), AI Memory (153), Learning Log (433), Memories (1,431), Skills (35)
 
 ### Research Domains (8 Van Hawke competitive + academic curriculum)
-VH Agency: competitive landscape, F1 deal intel, prospect signals, positioning
-VH Business: zero-to-global building, marketing/social playbook
-VH Maison: eyewear competitive, fashion marketing
-Academic: 15+ pillars (sales, negotiation, psychology, legal, etc.)
+
+VH Agency: competitive landscape, F1 deal intel, prospect signals, positioning VH Business: zero-to-global building, marketing/social playbook VH Maison: eyewear competitive, fashion marketing Academic: 15+ pillars (sales, negotiation, psychology, legal, etc.)
 
 ---
 
 ## WHAT'S PENDING (prioritized)
 
 ### Must Fix
+
 1. **Homepage alignment** — CSS grid deployed but user says nothing changed. Needs verification + possible cache issue
 2. **Document generation speed** — 150s total (53s research + 97s structure). JSON repair added. Needs PPTX test
-3. **Email drafts still ~22s** for complex (Sonnet). Simple use Haiku (~12s)
+3. **Email drafts still \~22s** for complex (Sonnet). Simple use Haiku (\~12s)
 
 ### Should Build
+
 4. **Brand asset library** — No logos/fonts uploaded. Documents use hardcoded colours only
 5. **ChatGPT re-import** — User has extensive ChatGPT conversations to import
 6. **Proactive synthesis** — Beyond alerts, generate full strategic playbooks with recommendations
 7. **Self-discovery enhancement** — Kiko should identify competitors herself, not just track listed ones
 
 ### Future
-8. **Google Pub/Sub** — Webhook built but blocked by Workspace policy. 2min polling as workaround
-9. **Meeting transcription** — BlackHole + Whisper approach designed, parked
+
+ 8. **Google Pub/Sub** — Webhook built but blocked by Workspace policy. 2min polling as workaround
+ 9. **Meeting transcription** — BlackHole + Whisper approach designed, parked
 10. **Full Vercel elimination** — Serve frontend from Hetzner
 11. **SponsorSignal LinkedIn posting system**
 
@@ -222,6 +215,7 @@ Academic: 15+ pillars (sales, negotiation, psychology, legal, etc.)
 ## OPERATING RULES
 
 ### Email
+
 - NEVER include pricing in early-stage outreach
 - NEVER use generic openings ("I hope this finds you well")
 - Always "intelligent age" not "AI generation"
@@ -229,9 +223,10 @@ Academic: 15+ pillars (sales, negotiation, psychology, legal, etc.)
 - Never reference "secured funding" with prospects
 - Always USD, never GBP
 - Emails under 150 words
-- Display: "Matt Smith <matt.smith@vanhawke.agency>" (all paths)
+- Display: "Matt Smith [matt.smith@vanhawke.agency](mailto:matt.smith@vanhawke.agency)" (all paths)
 
 ### Code
+
 - Deliverables first, commentary second
 - If asked to "tighten," cut 25-40%
 - Strategic advisor: brutally honest, start with hard truth
