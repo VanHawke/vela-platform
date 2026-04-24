@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-04-24T11:29:10.430Z",
+  "generated_at": "2026-04-24T12:02:04.109Z",
   "commits": [
+    {
+      "hash": "c09e9ad",
+      "subject": "FIX: Email draft body blank during streaming. useState only initializes once — when EmailDraft first renders during streaming, only Subject+To have arrived so body is empty. Added useEffect to sync cu",
+      "when": "33 minutes ago"
+    },
     {
       "hash": "fc7d8b2",
       "subject": "REASONING ENGINE LIVE: Architecturally enforced pre-processing layer. Every substantive query now runs through: (1) Entity extraction via Haiku, (2) CRM lookup (deals + contacts), (3) Knowledge base s",
-      "when": "68 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "328a2f9",
@@ -14,17 +19,17 @@
     {
       "hash": "bebae24",
       "subject": "AUDIT FINAL: (1) Nested API route handler for /api/admin/* paths on Hetzner. (2) Created missing _orgGuard.js (super admin auth guard). (3) All API subdirectories synced: api/lib, api/_lib, api/admin.",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "8e86392",
       "subject": "COMPLETE VERCEL ELIMINATION: All 62 frontend API calls migrated from relative /api/ URLs to https://api.vanhawke.agency/api/. 34 files updated. Zero remaining relative API calls. Combined with the wil",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "4896321",
       "subject": "MAJOR: (1) Supabase Realtime listener — instant CRM change detection via WebSocket. Watches deals (stage changes), contacts (new), campaign_targets (replies). Auto-reconnection. 308 deal stages cached",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "bf24f13",
@@ -49,32 +54,32 @@
     {
       "hash": "669e967",
       "subject": "FULL PLATFORM AUDIT: Comprehensive A-Z audit document covering endpoint routing (62 Vercel / 5 Hetzner), 39 tools, 25 agents, cron jobs, database schema, self-knowledge accuracy, frontend components, ",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "ca0a960",
       "subject": "FIX: rewrite-email endpoint now points to Hetzner (was still hitting Vercel). Tone rewrite buttons in email drafts now work via Hetzner.",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "8fed273",
       "subject": "FIX KIKO REASONING: Remove separate research endpoint routing. All prompts now go through /api/kiko which has full conversation history + web_search + all 39 tools. The research triggers ('research', ",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "0fbbe4e",
       "subject": "FIX AUTO-SCROLL: (1) Always scroll to bottom during streaming unless user manually scrolls up. (2) Detects user scroll-up during streaming and pauses auto-scroll. (3) Resets scroll tracking when strea",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "91e46f0",
       "subject": "KIKO INTELLIGENCE UPGRADE: (1) FACT VERIFICATION — mandatory verification of all claims (funding rounds, acquisitions, exec changes) before including in emails. Check CRM → emails → web search. Never ",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "4c4f1d6",
       "subject": "FIX: Empty response recovery — (1) Shortened fallback message from confusing specific instructions to simple 'try again'. (2) finally block now clears toolStatus and streamText alongside streaming fla",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "ebe5103",
@@ -94,11 +99,6 @@
     {
       "hash": "679c59e",
       "subject": "MOBILE POLISH: (1) Copy/Edit buttons increased from 28px to 36px (better touch targets). (2) Icon sizes increased from 12-13px to 14-15px. (3) Tone buttons padding increased from 5px to 7px. (4) Dropd",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "1cd95dc",
-      "subject": "CONVERSATION SUMMARY + SELF-KNOWLEDGE: (1) Conversation summary now kicks in at 6 messages (was 20). Older messages summarised as bullet points with 200 chars each. Kiko told to maintain continuity. L",
       "when": "15 hours ago"
     }
   ]

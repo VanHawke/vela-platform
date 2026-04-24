@@ -74,11 +74,22 @@ function parseEmail(text) {
 }
 
 function renderBody(text) {
-  return text
-    .replace(/\n\s*(Best regards|Kind regards|Warm regards|Regards|Sincerely|Cheers|Thanks|Thank you),?\s*$/im, '')
+  if (!text || !text.trim()) return ''
+  // Strip commentary after --- separator (preserve body before it)
+  let cleaned = text
+  const dashIdx = cleaned.indexOf('\n---\n')
+  if (dashIdx > 20) cleaned = cleaned.slice(0, dashIdx)
+  // Strip sign-offs for display (Gmail signature handles these)
+  cleaned = cleaned
+    .replace(/\n\s*(Best regards|Kind regards|Warm regards|Regards|Sincerely|Cheers|Thanks|Thank you|Best),?\s*$/im, '')
     .replace(/\n\s*(Sunny\s*Sidhu|Matt\s*Smith)\s*$/im, '')
     .replace(/\n\s*(Van\s*Hawke\s*(Group|Agency|Maison)?\s*(Inc\.?)?)\s*$/im, '')
-    .replace(/\n\s*---\s*\n.*/s, '')
+    .trim()
+  // Fallback: if processing stripped everything, show raw text
+  if (!cleaned && text.trim()) {
+    cleaned = text.replace(/\n---\n[\s\S]*$/, '').trim()
+  }
+  return cleaned
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/\n\s*\n\s*\n/g, '\n\n')
     .replace(/\n/g, '<br/>')
