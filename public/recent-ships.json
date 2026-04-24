@@ -1,30 +1,45 @@
 {
-  "generated_at": "2026-04-24T16:03:22.344Z",
+  "generated_at": "2026-04-24T16:20:54.290Z",
   "commits": [
+    {
+      "hash": "894837c",
+      "subject": "EMAIL DETECTION: Reduced from 15min to 2min polling. Pub/Sub blocked by Google Workspace domain-restricted sharing policy — 2min polling achieves near-instant detection without admin policy changes. W",
+      "when": "6 minutes ago"
+    },
+    {
+      "hash": "d306de3",
+      "subject": "GMAIL PUB/SUB WEBHOOK: (1) gmail-webhook.js — receives push notifications from Google, checks for replies to tracked follow-ups, creates instant alerts. Always returns 200 to prevent Pub/Sub retries. ",
+      "when": "10 minutes ago"
+    },
+    {
+      "hash": "14b1fe2",
+      "subject": "EMAIL SPEED: Simple drafts (re-engagement, follow-up, catch-up) now use Haiku (~12s vs 22-37s with Sonnet). Complex drafts (negotiation, strategy, investment, pricing) still use Sonnet. Campaign sende",
+      "when": "17 minutes ago"
+    },
     {
       "hash": "3dcd31c",
       "subject": "FIX CAMPAIGN SENDER: Display name was hardcoded as 'Sunny Sidhu' regardless of sender. Now uses DISPLAY_NAMES mapping — campaigns from Matt show 'Matt Smith' in recipient inbox.",
-      "when": "2 minutes ago"
+      "when": "20 minutes ago"
     },
     {
       "hash": "3733e73",
       "subject": "FIX SENDER DISPLAY NAME: From header now shows 'Matt Smith <matt.smith@vanhawke.agency>' instead of just 'matt.smith@vanhawke.agency'. Recipients see proper names in their inbox. Applied to both creat",
-      "when": "14 minutes ago"
+      "when": "31 minutes ago"
     },
     {
       "hash": "734467a",
       "subject": "SCHEDULE MENU REDESIGN: (1) Removed auto-ET default — no more guessing recipient timezone from domain. (2) Three-section dropdown: Quick schedule (In 1hr, Tomorrow 9am/2pm, Monday 9am), Optimum for re",
-      "when": "23 minutes ago"
+      "when": "41 minutes ago"
     },
     {
       "hash": "1965d4a",
       "subject": "CLEAN DISPLAY NAMES: Email preview now shows 'Sunny Sidhu' and 'Matt Smith' instead of email usernames. All email addresses display as @vanhawke.agency instead of @vanhawke.com. Applies to: From selec",
-      "when": "34 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "d64af12",
       "subject": "SCHEDULE SEND ENHANCED: (1) Optimum send time — detects recipient timezone from email domain (.com/.ai/.io = US East 9am, .co.uk = UK 9am, .de/.fr = CET 9am). Highlighted in purple at top of dropdown.",
-      "when": "38 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "cf3221a",
@@ -34,7 +49,7 @@
     {
       "hash": "d0442aa",
       "subject": "FIX ALL RELIABILITY: (1) Send-to-drafts 400 — subject/to now stateful with useEffect sync during streaming, prevents undefined values. (2) Chat sidebar click-into-other-chats — loadConversation now fe",
-      "when": "71 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "473cbec",
@@ -44,7 +59,7 @@
     {
       "hash": "005e734",
       "subject": "FIX: Mobile chat history now synced with desktop. (1) Mobile queries by org_id (same as desktop) instead of user_id only. (2) Filters out archived conversations. (3) Limit increased from 30 to 50 (mat",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "0750757",
@@ -85,21 +100,6 @@
       "hash": "c09e9ad",
       "subject": "FIX: Email draft body blank during streaming. useState only initializes once — when EmailDraft first renders during streaming, only Subject+To have arrived so body is empty. Added useEffect to sync cu",
       "when": "5 hours ago"
-    },
-    {
-      "hash": "fc7d8b2",
-      "subject": "REASONING ENGINE LIVE: Architecturally enforced pre-processing layer. Every substantive query now runs through: (1) Entity extraction via Haiku, (2) CRM lookup (deals + contacts), (3) Knowledge base s",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "328a2f9",
-      "subject": "REASONING DISCIPLINE: (1) web_search added to email tools — enables fact verification during drafts. (2) Email tool rounds 2→4, timeout 30s→60s. (3) Mandatory pre-draft verification routing: verify→CR",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "bebae24",
-      "subject": "AUDIT FINAL: (1) Nested API route handler for /api/admin/* paths on Hetzner. (2) Created missing _orgGuard.js (super admin auth guard). (3) All API subdirectories synced: api/lib, api/_lib, api/admin.",
-      "when": "7 hours ago"
     }
   ]
 }

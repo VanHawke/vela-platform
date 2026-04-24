@@ -351,6 +351,22 @@ export const TOOL_DEFINITIONS = [
       tone: { type: 'string', description: 'Tone directive: "direct", "warm", "formal", "casual". Default: "direct"' },
     } },
   },
+  // ── Follow-up Tracking ──
+  {
+    name: 'check_follow_ups',
+    description: 'Check pending follow-ups, overdue items, and reply status. Use when user asks about follow-ups, pending replies, or outreach status.',
+    input_schema: { type: 'object', properties: {
+      status: { type: 'string', description: 'Filter: "awaiting_reply" (default), "replied", "overdue", "all"', enum: ['awaiting_reply', 'replied', 'overdue', 'all'] },
+    } },
+  },
+  // ── Scheduled Emails ──
+  {
+    name: 'check_scheduled_emails',
+    description: 'Check scheduled emails waiting to be sent. Use when user asks about scheduled sends, pending emails, or email queue.',
+    input_schema: { type: 'object', properties: {
+      status: { type: 'string', description: 'Filter: "scheduled" (default), "sent", "failed", "all"', enum: ['scheduled', 'sent', 'failed', 'all'] },
+    } },
+  },
 ];
 
 // Conditional tool — only injected when intent is master_brief
@@ -1369,6 +1385,36 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
       const { linkedinSendMessage } = await import('./linkedin-client.js');
       return await linkedinSendMessage(input.profile_url_or_conversation_urn, input.message);
     } catch (e) { return `LinkedIn message error: ${e.message}`; }
+  }
+
+  // ── Follow-up Tracking ──
+  if (name === 'check_follow_ups') {
+    try {
+      const status = input.status || 'awaiting_reply';
+      const now = new Date().toISOString();
+      let query = 'kiko_follow_ups?select=*&order=follow_up_due_at.asc&limit=20';
+      if (status === 'overdue') query = `kiko_follow_ups?status=eq.awaiting_reply&follow_up_due_at=lt.${now}&select=*&order=follow_up_due_at.asc&limit=20`;
+      else if (status !== 'all') query = `kiko_follow_ups?status=eq.${status}&select=*&order=follow_up_due_at.asc&limit=20`;
+      const rows = await sbFetch(query);
+      if (!Array.isArray(rows) || !rows.length) return `No follow-ups found with status: ${status}`;
+      return rows.map(r => {
+        const days = Math.floor((new Date(r.follow_up_due_at) - new Date()) / 86400000);
+        const dueLabel = days < 0 ? `OVERDUE by ${Math.abs(days)} days` : days === 0 ? 'DUE TODAY' : `due in ${days} days`;
+        return `${r.recipient_name || r.recipient_email} (${r.company || '?'}) — "${r.subject}" | Sent: ${new Date(r.sent_at).toLocaleDateString('en-GB')} | ${dueLabel} | Status: ${r.status}`;
+      }).join('\n');
+    } catch (e) { return `Error checking follow-ups: ${e.message}`; }
+  }
+
+  // ── Scheduled Emails ──
+  if (name === 'check_scheduled_emails') {
+    try {
+      const status = input.status || 'scheduled';
+      let query = 'kiko_scheduled_emails?select=*&order=scheduled_for.asc&limit=20';
+      if (status !== 'all') query = `kiko_scheduled_emails?status=eq.${status}&select=*&order=scheduled_for.asc&limit=20`;
+      const rows = await sbFetch(query);
+      if (!Array.isArray(rows) || !rows.length) return `No scheduled emails with status: ${status}`;
+      return rows.map(r => `To: ${r.recipient_email} | Subject: "${r.subject}" | From: ${r.sender_email} | Scheduled: ${new Date(r.scheduled_for).toLocaleString('en-GB')} | Status: ${r.status}${r.error ? ` | Error: ${r.error}` : ''}`).join('\n');
+    } catch (e) { return `Error checking scheduled emails: ${e.message}`; }
   }
 
   return { error: `Unknown tool: ${name}` };
