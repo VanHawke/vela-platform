@@ -967,10 +967,15 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
         const query = (params.query || '').toLowerCase();
         const sources = await sbFetch('kiko_knowledge_sources?active=eq.true&select=name,category,summary,key_facts&order=relevance_score.desc&limit=30');
         const learning = await sbFetch(`kiko_learning_log?category=in.(curriculum,knowledge_source,imported_knowledge)&order=created_at.desc&limit=50&select=content,entity_name,category`);
+        // Also search kiko_knowledge (competitive intel, proactive intel, discovery findings)
+        const research = await sbFetch(`kiko_knowledge?content=ilike.*${encodeURIComponent(query)}*&select=domain,content,researched_at&order=researched_at.desc&limit=10`).catch(() => []);
         let matches = [];
         for (const s of (sources || [])) {
           const text = `${s.name} ${s.summary || ''} ${JSON.stringify(s.key_facts || [])}`.toLowerCase();
           if (text.includes(query)) matches.push({ type: 'source', name: s.name, category: s.category, summary: (s.summary || '').slice(0, 150) });
+        }
+        for (const r of (research || [])) {
+          matches.push({ type: 'research', domain: r.domain, content: (r.content || '').slice(0, 300), date: r.researched_at });
         }
         for (const l of (learning || [])) {
           if ((l.content || '').toLowerCase().includes(query) || (l.entity_name || '').toLowerCase().includes(query)) {
@@ -998,8 +1003,10 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
           return `No knowledge found for "${params.query}". I can learn about this — ask me to "learn about ${params.query}".`;
         }
         let out = `KNOWLEDGE SEARCH: "${params.query}" — ${matches.length} results\n\n`;
-        for (const m of matches.slice(0, 10)) {
-          out += m.type === 'source' ? `📚 [${m.category}] ${m.name}: ${m.summary}\n` : `🧠 [${m.category}] ${m.content}\n`;
+        for (const m of matches.slice(0, 12)) {
+          if (m.type === 'source') out += `📚 [${m.category}] ${m.name}: ${m.summary}\n`;
+          else if (m.type === 'research') out += `🔬 [${m.domain} — ${m.date ? new Date(m.date).toLocaleDateString('en-GB') : '?'}] ${m.content}\n`;
+          else out += `🧠 [${m.category}] ${m.content}\n`;
         }
         return out;
       }

@@ -870,7 +870,7 @@ export default async function handler(req, res) {
     sbFetch('kiko_core_bible?select=content&order=version.desc&limit=1').catch(() => []),
     orgId ? sbFetch(`org_bibles?organization_id=eq.${orgId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
     isRegistered ? sbFetch(`user_bibles?user_id=eq.${userId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
-    isLightweight ? Promise.resolve([]) : sbFetch('kiko_knowledge?select=domain,content,researched_at&order=researched_at.desc&limit=10').catch(() => []),
+    isLightweight ? Promise.resolve([]) : sbFetch('kiko_knowledge?select=domain,content,researched_at&order=researched_at.desc&limit=60').catch(() => []),
     isLightweight ? Promise.resolve([]) : sbFetch(`kiko_learned_rules?active=eq.true&select=id,rule_text,category,evidence_count,weight&order=weight.desc&limit=20`).catch(() => []),
     isLightweight ? Promise.resolve([]) : sbFetch(`kiko_preferences?select=category,preference,confidence&order=confidence.desc&limit=15`).catch(() => []),
   ]);
@@ -879,7 +879,14 @@ export default async function handler(req, res) {
   const coreBible = coreBibleResult?.[0]?.content || '';
   const orgBible = orgBibleResult?.[0]?.content || '';
   const userBible = userBibleResult?.[0]?.content || '';
-  const knowledgeBase = (knowledgeBaseResult || []).filter(k => k.content).map(k => `[${k.domain} — researched ${new Date(k.researched_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}]\n${k.content.slice(0, 2000)}`).join('\n\n');
+  const knowledgeBase = (() => {
+    // Domain-aware: keep latest entry per domain so ALL research areas are represented
+    const byDomain = new Map();
+    for (const k of (knowledgeBaseResult || []).filter(k => k.content)) {
+      if (!byDomain.has(k.domain)) byDomain.set(k.domain, k);
+    }
+    return [...byDomain.values()].slice(0, 28).map(k => `[${k.domain} — ${new Date(k.researched_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}]\n${k.content.slice(0, 1500)}`).join('\n\n');
+  })();
   const bibleBlock = [
     coreBible ? `\n\n═══ KIKO CORE BIBLE ═══\n${coreBible}` : '',
     orgBible ? `\n\n═══ ORGANISATION DOCTRINE ═══\n${orgBible}` : '',

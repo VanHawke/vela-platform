@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-24T21:45:45.955Z",
+  "generated_at": "2026-04-24T22:19:18.400Z",
   "commits": [
+    {
+      "hash": "b8c800a",
+      "subject": "Proactive Intelligence v2 — Hetzner-native monitors",
+      "when": "33 minutes ago"
+    },
     {
       "hash": "e7dbcdc",
       "subject": "Proactive Intelligence v2: Self-Discovery Engine + Predictive Synthesis + Agency Structure Intelligence",
-      "when": "13 minutes ago"
+      "when": "47 minutes ago"
     },
     {
       "hash": "fecd3bb",
       "subject": "COMPLETE SESSION BRIEF: 242-line definitive architecture document covering ALL 58 sessions (April 7-24). Full build history, current state, all monitors, all tools, all memory systems, all research do",
-      "when": "37 minutes ago"
+      "when": "70 minutes ago"
     },
     {
       "hash": "e0d5069",
       "subject": "SESSION BRIEF: Complete architecture document for session handoff — every system, every file, every tool, every table, every monitor, every pending task documented. 289 lines covering environment, rin",
-      "when": "42 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "842493c",
       "subject": "FIX HOMEPAGE ALIGNMENT: (1) Top nav switched from flexbox space-between to CSS grid with 3 columns — links are now TRUE center, not pushed-between. (2) Home content offset: when sidebar collapsed (28p",
-      "when": "65 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "c66c6dd",
       "subject": "FIX ALIGNMENT: Homepage content padding matched to nav padding (32px both). Document generation pipeline: research uses Haiku (53s vs 105s), structure max_tokens 8000, robust JSON repair for truncatio",
-      "when": "76 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "828ea5d",
       "subject": "FIX: (1) Wrong day greeting — getGreeting now uses fresh new Date() for both day name and hash index, prevents stale day showing. (2) Background tasks icon changed from rectangle-with-lines (mistaken ",
-      "when": "81 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "f774ee1",
@@ -44,12 +49,12 @@
     {
       "hash": "0b6f37d",
       "subject": "COMPLETE PROACTIVE INTELLIGENCE: (1) Self-knowledge updated with full proactive intel docs — 8 competitive domains, self-discovery rules, proactive advisory rules. (2) Forced first research runs: vh-a",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "e52ccf7",
       "subject": "STRATEGIC INTELLIGENCE EXPANSION: (1) 8 Van Hawke competitive domains replacing 4 — now covers agency competitors (self-discovering), F1 deal economics, prospect signals, positioning, business buildin",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "3497dd1",
@@ -64,22 +69,22 @@
     {
       "hash": "5161991",
       "subject": "COMPLETE AWARENESS PATCH: (1) 3 new deep query tools: query_relationships (94 entries), query_thought_journal (196 entries), query_conversation_insights (1,591 entries). (2) Self-knowledge: autonomous",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "c7f2bed",
       "subject": "CRITICAL: Complete memory architecture awareness. Kiko now knows about ALL 62 tables, 4,500+ entries, cross-referencing rules, accumulated knowledge stats. Added: memory stack documentation (what's lo",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "bbb8bbd",
       "subject": "KIKO FULL AWARENESS: Updated self-knowledge with ALL session changes — email speed (Haiku for simple drafts), sender display names, auto-tracking hook, 2min reply detection, timezone detection, multi-",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "1ebe7df",
       "subject": "KIKO AWARENESS + CLEANUP: (1) Added check_follow_ups tool — Kiko can now show pending, overdue, replied follow-ups. (2) Added check_scheduled_emails tool — Kiko can show scheduled, sent, failed emails",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "894837c",
@@ -94,11 +99,6 @@
     {
       "hash": "14b1fe2",
       "subject": "EMAIL SPEED: Simple drafts (re-engagement, follow-up, catch-up) now use Haiku (~12s vs 22-37s with Sonnet). Complex drafts (negotiation, strategy, investment, pricing) still use Sonnet. Campaign sende",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "3dcd31c",
-      "subject": "FIX CAMPAIGN SENDER: Display name was hardcoded as 'Sunny Sidhu' regardless of sender. Now uses DISPLAY_NAMES mapping — campaigns from Matt show 'Matt Smith' in recipient inbox.",
       "when": "6 hours ago"
     }
   ]
