@@ -126,8 +126,9 @@ export default function EmailDraft({ text }) {
   const editRef = useRef(null)
   const { subject, to } = parsed
 
-  // Load team members via API (bypasses RLS)
+  // Load team members via API (bypasses RLS) — cached to prevent re-fetch on re-mount
   useEffect(() => {
+    if (teamMembers.length > 0) return // already loaded
     const load = async () => {
       try {
         const res = await fetch('https://api.vanhawke.agency/api/team-members')

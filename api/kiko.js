@@ -865,7 +865,7 @@ export default async function handler(req, res) {
     sbFetch(`kiko_memories?path=eq./memories/identity.md&user_id=eq.${userId}&select=content&limit=1`).catch(() => []),
     isLightweight ? Promise.resolve('') : generateSelfKnowledge(userId).catch(() => 'Self-knowledge unavailable.'),
     (voiceMode || currentPage === 'voice')
-      ? sbFetch(`kiko_memories?select=path,content&is_directory=eq.false&user_id=eq.${userId}&path=like./memories/%_profile.md&order=path.asc`).catch(() => [])
+      ? sbFetch(`kiko_memories?select=path,content&is_directory=eq.false&user_id=eq.${userId}&path=like.${encodeURIComponent('/memories/%_profile.md')}&order=path.asc`).catch(() => [])
       : Promise.resolve([]),
     sbFetch('kiko_core_bible?select=content&order=version.desc&limit=1').catch(() => []),
     orgId ? sbFetch(`org_bibles?organization_id=eq.${orgId}&select=content&limit=1`).catch(() => []) : Promise.resolve([]),
@@ -1757,7 +1757,7 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
         if (preResult.context && preResult.context.length > 80) {
           const lastMsg = messages[messages.length - 1];
           if (lastMsg && typeof lastMsg.content === 'string') {
-            messages[messages.length - 1] = { role: 'user', content: lastMsg.content + preResult.context };
+            messages[messages.length - 1] = { role: 'user', content: lastMsg.content + preResult.context + '\n\n⚠️ The CRM data, contacts, and knowledge above were ALREADY gathered for you. Do NOT call ask_data_agent, read_email, or learning_search to re-fetch this data — it is already here. Go straight to your response or draft.' };
           }
           console.log(`[kiko] Reasoning engine: ${preResult.duration}ms`);
         }
@@ -1769,8 +1769,8 @@ Do NOT skip to drafting without verifying first. The cost of an unverified claim
     const toolsUsedList = [];
 
     // Tool execution loop — time-aware, stops before timeout
-    const maxRounds = isEmailIntent ? 4 : (voiceMode ? 5 : 5);
-    const timeLimit = isEmailIntent ? 60000 : (voiceMode ? 45000 : 90000);
+    const maxRounds = isEmailIntent ? 2 : (voiceMode ? 5 : 5);
+    const timeLimit = isEmailIntent ? 45000 : (voiceMode ? 45000 : 90000);
     while (response.stop_reason === 'tool_use' && toolRounds < maxRounds) {
       const elapsed = Date.now() - requestStart;
       if (elapsed > timeLimit) {

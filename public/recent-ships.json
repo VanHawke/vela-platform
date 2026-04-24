@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-24T12:56:10.550Z",
+  "generated_at": "2026-04-24T13:10:57.452Z",
   "commits": [
+    {
+      "hash": "373c23a",
+      "subject": "FIX KIKO HANGING: (1) Reasoning engine web verification REMOVED from pre-processing — was taking 15-20s per company. Now does CRM+knowledge only (~2s). Claude's own web_search tool handles fact verifi",
+      "when": "15 minutes ago"
+    },
     {
       "hash": "f78de2f",
       "subject": "FIX HANGING + DRAFT 400: (1) Reasoning engine now skips short follow-ups, navigation, calendar, identity, greeting, knowledge queries. Only fires for substantive entity-based queries. Prevents 10-20s ",
-      "when": "29 minutes ago"
+      "when": "43 minutes ago"
     },
     {
       "hash": "c2ece87",
       "subject": "FIX TWO CRITICAL BUGS: (1) Memory tools hanging — update_kiko_preference, learning_save, master_brief_digest all used 'await sbFetch' which blocked the response if Supabase was slow. Changed to fire-a",
-      "when": "37 minutes ago"
+      "when": "52 minutes ago"
     },
     {
       "hash": "8974005",
       "subject": "FIX EMAIL BODY BLANK: renderBody regex .replace(/---.*​/s, '') with s flag was stripping EVERYTHING after --- separator including the entire email body. Replaced with safe indexOf check that only stri",
-      "when": "54 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "c09e9ad",
       "subject": "FIX: Email draft body blank during streaming. useState only initializes once — when EmailDraft first renders during streaming, only Subject+To have arrived so body is empty. Added useEffect to sync cu",
-      "when": "87 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "fc7d8b2",
@@ -39,7 +44,7 @@
     {
       "hash": "8e86392",
       "subject": "COMPLETE VERCEL ELIMINATION: All 62 frontend API calls migrated from relative /api/ URLs to https://api.vanhawke.agency/api/. 34 files updated. Zero remaining relative API calls. Combined with the wil",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "4896321",
@@ -64,17 +69,17 @@
     {
       "hash": "ca8ab82",
       "subject": "CRON MIGRATION TO HETZNER: (1) ALL 16 crons now call local Express (127.0.0.1:3000) instead of Vercel — eliminates 120s timeout and function costs. (2) Added wildcard API route handler — any /api/* wi",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "669e967",
       "subject": "FULL PLATFORM AUDIT: Comprehensive A-Z audit document covering endpoint routing (62 Vercel / 5 Hetzner), 39 tools, 25 agents, cron jobs, database schema, self-knowledge accuracy, frontend components, ",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "ca0a960",
       "subject": "FIX: rewrite-email endpoint now points to Hetzner (was still hitting Vercel). Tone rewrite buttons in email drafts now work via Hetzner.",
-      "when": "15 hours ago"
+      "when": "16 hours ago"
     },
     {
       "hash": "8fed273",
@@ -94,11 +99,6 @@
     {
       "hash": "4c4f1d6",
       "subject": "FIX: Empty response recovery — (1) Shortened fallback message from confusing specific instructions to simple 'try again'. (2) finally block now clears toolStatus and streamText alongside streaming fla",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "ebe5103",
-      "subject": "BATCH EMAIL DRAFTING: New batch_draft_emails tool — drafts re-engagement emails for multiple stalled deals. Queries pipeline for idle deals, generates personalised drafts via Haiku (fast), creates Gma",
       "when": "16 hours ago"
     }
   ]
