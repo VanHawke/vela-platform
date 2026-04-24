@@ -14,8 +14,8 @@ export function startMonitors() {
     try { await runPipelineMonitor(); } catch (e) { console.error('[cron] pipeline-monitor:', e.message); }
   }, { timezone: 'Europe/London' });
 
-  // Email replies — every 15 min, weekdays 7am-9pm
-  cron.schedule('*/15 7-21 * * 1-5', async () => {
+  // Email replies — every 2 min, weekdays 7am-9pm (near-instant detection without Pub/Sub)
+  cron.schedule('*/2 7-21 * * 1-5', async () => {
     try { await runEmailMonitor(); } catch (e) { console.error('[cron] email-monitor:', e.message); }
   }, { timezone: 'Europe/London' });
 
@@ -25,7 +25,7 @@ export function startMonitors() {
   }, { timezone: 'Europe/London' });
 
   console.log('[monitors] Pipeline: every 30min (Mon-Fri)');
-  console.log('[monitors] Email: every 15min (Mon-Fri, 7am-9pm)');
+  console.log('[monitors] Email: every 2min (Mon-Fri, 7am-9pm)');
   console.log('[monitors] Follow-ups: every 2hrs (Mon-Fri, 8am-8pm)');
   console.log('[monitors] Scheduled sender: every 5min (Mon-Fri, 7am-9pm)');
 
