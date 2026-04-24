@@ -24,44 +24,62 @@ export async function runProactiveIntel() {
     const scanResult = await anthropic.messages.create({
       model: 'claude-sonnet-4-6', max_tokens: 5000,
       tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [{ role: 'user', content: `You are the strategic intelligence engine for Van Hawke Group — an F1 sponsorship advisory (primary client: Haas F1 Team) and luxury eyewear company (Van Hawke Maison).
+      messages: [{ role: 'user', content: `You are the strategic intelligence engine for Van Hawke Group — an F1 sponsorship advisory (primary client: Haas F1 Team) and luxury eyewear company (Van Hawke Maison — "Cultural Performance Eyewear").
 
-Scan for HIGH-IMPACT market events from the last 48 hours across these areas:
+Van Hawke is currently pre-revenue. Your job is to find intelligence that DIRECTLY helps generate revenue, build credibility, and outmanoeuvre competitors.
 
-FOR VAN HAWKE AGENCY (F1 SPONSORSHIP):
-- New F1 sponsorship deals announced (any team)
-- Companies LEAVING F1 sponsorship (potential clients for competitor teams)
-- New Grand Prix locations confirmed (target brands from those countries)
-- F1 team commercial restructuring or leadership changes
-- Companies completing funding rounds ($50M+) that could afford F1 sponsorship
-- Marketing/CMO hires at tech companies (signals sponsorship budget)
-- CAA, WME, Octagon, CSM major wins or losses
-- Competitor agency news (hiring, restructuring, client wins/losses)
+Scan for HIGH-IMPACT developments from the last 48 hours:
 
-FOR VAN HAWKE MAISON (LUXURY EYEWEAR):
-- New luxury eyewear launches or collaborations
-- EssilorLuxottica, Kering Eyewear, Safilo strategic moves
-- Independent eyewear brands gaining traction (Gentle Monster, JMM, Mykita)
-- Fashion x sport crossover collaborations
-- Viral marketing campaigns in luxury/fashion
-- DTC luxury brand strategies that are working
+═══ VAN HAWKE AGENCY (F1 SPONSORSHIP ADVISORY) ═══
+- New F1/motorsport sponsorship deals announced — who's spending, how much, which team
+- Companies LEAVING F1 — potential clients who need a new home
+- New Grand Prix locations confirmed — target brands from those countries/regions
+- F1 team commercial restructuring, leadership changes, available inventory
+- Companies completing funding rounds ($50M+) — sponsorship budget signals
+- CMO/VP Marketing hires at tech companies — new marketing leadership = new budgets
+- Competitor agencies (CAA, WME, Octagon, CSM, Wasserman, Excel Sports, AND any others you discover) — wins, losses, hires, restructuring
+- Any agency or advisory firm you discover that competes in this space — identify them for future tracking
+- Industry conferences, events, networking opportunities in the next 60 days
 
-Respond ONLY in JSON format:
+═══ VAN HAWKE MAISON (LUXURY EYEWEAR) ═══
+- New luxury eyewear launches, collaborations, or brand moves
+- EssilorLuxottica, Kering Eyewear, Safilo strategic decisions
+- Independent eyewear brands gaining traction — who's emerging, what's working
+- Fashion x sport crossover collaborations — who's doing this well
+- Viral marketing campaigns in luxury/fashion — what worked and why
+- Any eyewear or luxury brand you discover that's relevant — identify for tracking
+
+═══ BUSINESS BUILDING INTELLIGENCE ═══
+- Relevant startup or agency success stories — how they grew from zero
+- Marketing techniques that work RIGHT NOW for pre-revenue businesses
+- Any content, framework, or strategy that Van Hawke could directly apply TODAY
+
+For each event, think through multiple lenses:
+- CFO: What are the financial implications?
+- CCO/CMO: How does this affect positioning and messaging?
+- Psychologist: What's the behavioural driver behind this move?
+- Strategist: How can Van Hawke exploit this?
+- Legal/GC: Any regulatory or contractual considerations?
+
+SELF-DISCOVERY RULE: If you find companies, agencies, or brands NOT on the list above that are relevant to Van Hawke — INCLUDE THEM. You are not limited to tracking only what's been named. Discover new threats and opportunities.
+
+Respond ONLY in JSON:
 {
   "events": [
     {
       "headline": "Short factual headline",
-      "detail": "What happened, specific numbers/names/dates",
+      "detail": "What happened — specific numbers, names, dates",
       "relevance": "Why Van Hawke should care",
-      "opportunity": "Specific actionable recommendation",
+      "opportunity": "Specific actionable recommendation — what to DO",
       "urgency": "high|medium|low",
       "division": "agency|maison|both",
-      "lenses": ["Which expertise lenses apply: cfo, cco, legal, psychology, strategy, etc"]
+      "lenses": ["cfo", "cco", "strategy", "psychology", "legal"],
+      "new_entity_discovered": "Name of any new competitor/brand/agency discovered (null if none)"
     }
   ]
 }
 
-Return 3-6 events max. Only HIGH-IMPACT events that Van Hawke can act on. No filler.` }],
+Return 4-8 events. Only HIGH-IMPACT intelligence Van Hawke can act on. No filler. Prioritise revenue-generating opportunities.` }],
     });
 
     const text = scanResult.content.filter(b => b.type === 'text').map(b => b.text).join('\n');

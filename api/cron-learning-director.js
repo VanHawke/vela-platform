@@ -254,55 +254,110 @@ const CURRICULUM = {
   },
   // ═══ COMPETITIVE INTELLIGENCE — Van Hawke Agency ═══
   'vh_agency_competitive': {
-    name: 'Van Hawke Agency — Competitive Landscape',
+    name: 'Van Hawke Agency — Competitive Landscape (Self-Discovering)',
     topics: [
-      'CAA Sports sponsorship deals 2026 clients portfolio strategy latest news',
-      'WME IMG Endeavor sports sponsorship division latest deals clients 2026',
-      'Octagon sponsorship agency clients deals strategy F1 motorsport 2026',
-      'CSM Sport Entertainment sponsorship agency latest deals strategy 2026',
-      'Wasserman Sports sponsorship agency deals clients strategy 2026',
-      'boutique sports sponsorship agencies competing with large agencies market positioning',
-      'independent sponsorship advisory firms competitive advantages vs large agencies',
-      'sports agency M&A acquisitions consolidation market trends 2026',
+      'top sports sponsorship agencies globally 2026 ranking revenue clients who are the players',
+      'CAA Sports WME Octagon CSM Wasserman Excel Sports Management latest deals wins losses 2026',
+      'boutique sports marketing agencies challenging big agencies how they win what makes them different',
+      'sports sponsorship agency business models revenue streams how they make money fee structures',
+      'sports agency organizational structures teams departments how top agencies are built internally',
+      'sports sponsorship agency pitch decks case studies client presentations how they sell',
+      'sports sponsorship agency client acquisition strategies how they win new clients prospecting methods',
+      'emerging sports marketing agencies nobody is watching yet startups disrupting sponsorship industry 2026',
     ]
   },
   'vh_f1_deal_intel': {
     name: 'F1 Deal Intelligence & Grid Economics',
     topics: [
-      'F1 2026 sponsorship deals new sponsors entering grid team announcements',
-      'F1 team sponsorship valuations 2026 principal partner title sponsor costs',
-      'F1 sponsorship categories technology crypto finance consumer brands 2026',
-      'F1 sponsor exits departures 2026 why companies leave Formula 1',
-      'F1 cost cap impact on sponsorship structure team budgets commercial revenue',
-      'Haas F1 Team sponsors partners 2026 commercial strategy grid position',
-      'F1 teams sponsorship revenue breakdown Mercedes Red Bull Ferrari McLaren',
-      'Formula 1 Liberty Media commercial strategy Sprint growth digital audience',
+      'F1 2026 sponsorship deals new sponsors entering grid every team announcements latest',
+      'F1 team sponsorship valuations 2026 principal partner title sponsor costs tier pricing',
+      'F1 sponsor exits departures 2026 2025 why companies leave Formula 1 what went wrong',
+      'F1 cost cap impact sponsorship structure team budgets commercial revenue distribution 2026',
+      'Haas F1 Team TGR sponsors partners 2026 commercial strategy available inventory opportunities',
+      'F1 teams sponsorship revenue breakdown Mercedes Red Bull Ferrari McLaren Alpine Williams Sauber Cadillac',
+      'Formula 1 new markets countries Grand Prix locations 2027 2028 expansion target brands from those regions',
+      'F1 sponsorship category analysis technology crypto finance consumer healthcare which sectors growing',
     ]
   },
   'vh_prospect_intel': {
-    name: 'Prospect & Target Intelligence',
+    name: 'Prospect & Target Intelligence — Predictive Signals',
     topics: [
-      'fast growing technology companies 2026 Series B C D funding sponsorship potential',
-      'cybersecurity companies marketing budgets brand awareness sponsorship interest 2026',
-      'AI companies enterprise marketing strategy brand building sponsorship 2026',
-      'cloud infrastructure companies brand sponsorship sports marketing 2026',
-      'fintech companies IPO pipeline 2026 marketing spend brand awareness',
-      'B2B SaaS companies entering sports sponsorship F1 motorsport 2026',
-      'companies increasing marketing budgets 2026 brand sponsorship appetite signals',
-      'predictive indicators company ready for F1 sponsorship funding revenue growth CMO hire',
+      'companies raising Series B C D 2026 $50M+ funding rounds technology cybersecurity AI cloud fintech',
+      'companies hiring CMO VP Marketing Head of Brand 2026 signals of sponsorship budget increase',
+      'B2B technology companies first time sports sponsorship what triggered the decision case studies',
+      'IPO pipeline 2026 2027 pre-IPO companies brand awareness marketing spend increase patterns',
+      'cybersecurity AI infrastructure companies marketing budgets brand building strategies 2026',
+      'predictive indicators company ready for F1 sponsorship funding growth revenue CMO hire board pressure',
+      'companies expanding into Europe UK market entry brand awareness needs sponsorship as vehicle',
+      'venture backed companies marketing spend ratios when do startups invest in brand vs performance marketing',
     ]
   },
   'vh_agency_positioning': {
-    name: 'Agency Positioning & Messaging',
+    name: 'Agency Positioning Messaging & Sales Methodology',
     topics: [
-      'how top sports sponsorship agencies pitch to prospects messaging frameworks',
-      'sponsorship agency differentiation strategy boutique vs full service positioning',
-      'authority led sales methodology thought leadership content sponsorship advisory',
-      'C-suite engagement strategies CMO CEO CFO sponsorship decision making process',
-      'sponsorship sales cycle enterprise B2B timing decision makers budget cycles',
-      'sports sponsorship industry trends conferences events networking opportunities 2026',
-      'digital content strategy LinkedIn thought leadership sponsorship advisory positioning',
-      'case study led selling sponsorship ROI evidence based advisory methodology',
+      'how top sports agencies position themselves messaging differentiation what language they use',
+      'authority led thought leadership strategy LinkedIn content sponsorship advisory positioning 2026',
+      'C-suite engagement CMO CEO CFO sponsorship decision making process who decides budget cycles timing',
+      'sponsorship sales psychology persuasion techniques enterprise B2B closing high value deals',
+      'case study led selling sponsorship ROI evidence based advisory methodology best practices',
+      'zero budget agency growth strategies how to build a sports agency with no capital bootstrap methods',
+      'agency credibility building without revenue how startups establish authority before first big client',
+      'sports business networking conferences events relationships paddock access strategy 2026',
+    ]
+  },
+  // ═══ BUSINESS BUILDING & CEO INTELLIGENCE ═══
+  'vh_business_building': {
+    name: 'Business Building — Zero to Global (Applied to Van Hawke)',
+    topics: [
+      'how to build a global agency from zero capital bootstrapping strategies real examples founders who did it',
+      'agency business models retainer vs commission vs hybrid revenue structures sports marketing advisory',
+      'hiring first employees zero budget equity compensation advisory board building startup team design',
+      'CEO leadership techniques scaling businesses biographies lessons Branson Arnault Ecclestone Ari Emanuel',
+      'startup to scale playbook first 12 months revenue generation client acquisition without marketing budget',
+      'building credibility as unknown brand thought leadership content strategy personal branding CEO visibility',
+      'partnership and joint venture strategies for small agencies leveraging bigger brands relationships',
+      'financial management zero revenue startup cash flow management when to invest when to hold runway planning',
+    ]
+  },
+  // ═══ MARKETING & SOCIAL PLAYBOOK ═══
+  'vh_marketing_playbook': {
+    name: 'Marketing Social Media & Growth — What Works Now',
+    topics: [
+      'viral marketing campaigns 2026 what went viral why it worked analysis of best campaigns this year',
+      'LinkedIn thought leadership strategy B2B what content performs best engagement tactics 2026',
+      'social media marketing best practices 2026 Instagram TikTok LinkedIn X what works per platform',
+      'content marketing for professional services agencies advisory firms how to create authority content',
+      'email marketing cold outreach best practices 2026 subject lines open rates response optimization',
+      'brand storytelling techniques luxury premium positioning narrative frameworks that convert',
+      'influencer marketing sports fashion luxury how brands select partners ROI measurement 2026',
+      'traditional media PR strategy press coverage how to get featured in Forbes Bloomberg SportBusiness',
+    ]
+  },
+  // ═══ VAN HAWKE MAISON — Fashion & Eyewear Intelligence ═══
+  'vh_maison_competitive': {
+    name: 'Van Hawke Maison — Luxury Eyewear Competitive Intelligence',
+    topics: [
+      'luxury independent eyewear brands 2026 Jacques Marie Mage Gentle Monster Mykita who else emerging',
+      'EssilorLuxottica Kering Eyewear Safilo strategy acquisitions collaborations 2026 what are they doing',
+      'luxury eyewear pricing strategies $500+ frames how brands justify premium positioning scarcity models',
+      'eyewear brand launch strategies how successful indie brands launched their first collection playbook',
+      'fashion x sport crossover collaborations 2026 which brands are merging sport and luxury successfully',
+      'DTC luxury brand building Warby Parker Gentle Monster retail strategy experiential stores online mix',
+      'limited edition drop model fashion streetwear luxury how brands create scarcity and hype release strategy',
+      'cultural performance eyewear positioning how to create a new category in luxury fashion branding',
+    ]
+  },
+  'vh_maison_marketing': {
+    name: 'Van Hawke Maison — Fashion Marketing & Viral Strategy',
+    topics: [
+      'luxury fashion marketing campaigns 2026 what brands are doing best creative social digital',
+      'fashion brand social media strategy Instagram TikTok content that drives luxury sales 2026',
+      'celebrity seeding product placement strategy luxury eyewear fashion how to get on the right faces',
+      'fashion PR media relations getting coverage Vogue GQ Hypebeast editorial placement strategy',
+      'luxury brand launch with zero budget guerrilla marketing creative strategies fashion startups',
+      'fashion ecommerce conversion optimization luxury DTC website design UX best practices 2026',
+      'sustainability in luxury fashion how brands communicate ethical sourcing materials innovation',
+      'fashion collaboration strategy brand x brand limited edition co-creation methodology what works',
     ]
   },
 };
@@ -452,7 +507,7 @@ export default async function handler(req, res) {
     }
 
     // Prioritize competitive intelligence domains (vh_*) — these refresh regularly, not just once
-    const COMPETITIVE_KEYS = ['vh_agency_competitive', 'vh_f1_deal_intel', 'vh_prospect_intel', 'vh_agency_positioning'];
+    const COMPETITIVE_KEYS = ['vh_agency_competitive', 'vh_f1_deal_intel', 'vh_prospect_intel', 'vh_agency_positioning', 'vh_business_building', 'vh_marketing_playbook', 'vh_maison_competitive', 'vh_maison_marketing'];
     const isCompetitive = (key) => COMPETITIVE_KEYS.includes(key);
 
     // Competitive domains: pick a random topic each run (they need FRESH data, not one-time coverage)
