@@ -1,105 +1,105 @@
 {
-  "generated_at": "2026-04-24T13:56:17.643Z",
+  "generated_at": "2026-04-24T14:52:10.125Z",
   "commits": [
+    {
+      "hash": "473cbec",
+      "subject": "SCHEDULED EMAIL SENDING: Complete system. (1) kiko_scheduled_emails table with status tracking. (2) schedule-email API endpoint — accepts time + email params. (3) Scheduled sender cron — every 5min, s",
+      "when": "56 minutes ago"
+    },
     {
       "hash": "005e734",
       "subject": "FIX: Mobile chat history now synced with desktop. (1) Mobile queries by org_id (same as desktop) instead of user_id only. (2) Filters out archived conversations. (3) Limit increased from 30 to 50 (mat",
-      "when": "13 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "0750757",
       "subject": "FOLLOW-UP SYSTEM + CHAT FIX: (1) Follow-up monitor cron — runs every 2hrs, checks for overdue replies, scans Gmail for responses, creates HIGH severity alerts. (2) Auto-tracking hook in create-gmail-d",
-      "when": "33 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "c5d79d8",
       "subject": "SPEED FIX: When reasoning engine pre-loads CRM data, email drafts limited to 1 tool round max. Claude told to draft directly from pre-loaded context instead of re-fetching.",
-      "when": "42 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "3cd9e53",
       "subject": "FIX HANGING PERMANENTLY: (1) Reasoning engine now tells Claude 'data already loaded, do NOT re-fetch' — prevents redundant tool calls after pre-processing. (2) Email tool rounds reduced from 4 to 2 — ",
-      "when": "45 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "373c23a",
       "subject": "FIX KIKO HANGING: (1) Reasoning engine web verification REMOVED from pre-processing — was taking 15-20s per company. Now does CRM+knowledge only (~2s). Claude's own web_search tool handles fact verifi",
-      "when": "60 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "f78de2f",
       "subject": "FIX HANGING + DRAFT 400: (1) Reasoning engine now skips short follow-ups, navigation, calendar, identity, greeting, knowledge queries. Only fires for substantive entity-based queries. Prevents 10-20s ",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "c2ece87",
       "subject": "FIX TWO CRITICAL BUGS: (1) Memory tools hanging — update_kiko_preference, learning_save, master_brief_digest all used 'await sbFetch' which blocked the response if Supabase was slow. Changed to fire-a",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "8974005",
       "subject": "FIX EMAIL BODY BLANK: renderBody regex .replace(/---.*​/s, '') with s flag was stripping EVERYTHING after --- separator including the entire email body. Replaced with safe indexOf check that only stri",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "c09e9ad",
       "subject": "FIX: Email draft body blank during streaming. useState only initializes once — when EmailDraft first renders during streaming, only Subject+To have arrived so body is empty. Added useEffect to sync cu",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "fc7d8b2",
       "subject": "REASONING ENGINE LIVE: Architecturally enforced pre-processing layer. Every substantive query now runs through: (1) Entity extraction via Haiku, (2) CRM lookup (deals + contacts), (3) Knowledge base s",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "328a2f9",
       "subject": "REASONING DISCIPLINE: (1) web_search added to email tools — enables fact verification during drafts. (2) Email tool rounds 2→4, timeout 30s→60s. (3) Mandatory pre-draft verification routing: verify→CR",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "bebae24",
       "subject": "AUDIT FINAL: (1) Nested API route handler for /api/admin/* paths on Hetzner. (2) Created missing _orgGuard.js (super admin auth guard). (3) All API subdirectories synced: api/lib, api/_lib, api/admin.",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "8e86392",
       "subject": "COMPLETE VERCEL ELIMINATION: All 62 frontend API calls migrated from relative /api/ URLs to https://api.vanhawke.agency/api/. 34 files updated. Zero remaining relative API calls. Combined with the wil",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "4896321",
       "subject": "MAJOR: (1) Supabase Realtime listener — instant CRM change detection via WebSocket. Watches deals (stage changes), contacts (new), campaign_targets (replies). Auto-reconnection. 308 deal stages cached",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "bf24f13",
       "subject": "FIX NAVIGATION: Removed 'take me to' and 'navigate me to' from Google Maps directions regex. These now correctly route through the intent classifier to platform navigation. Directions handler only mat",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "5131b91",
       "subject": "FIX: Finance intent routing — added fast-path keywords for pipeline value, weighted pipeline, revenue, forecast, runway, cash flow, burn rate, ROI, cap table, valuation. These now route directly to fi",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "6a7906a",
       "subject": "FULL AUDIT FIXES: (1) All Vercel URL references in API files migrated to api.vanhawke.agency — kiko-tools.js (3 refs), data.js (2 refs), document.js (1 ref), cron-sequence-sender, cron-push-dispatcher",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "ca8ab82",
       "subject": "CRON MIGRATION TO HETZNER: (1) ALL 16 crons now call local Express (127.0.0.1:3000) instead of Vercel — eliminates 120s timeout and function costs. (2) Added wildcard API route handler — any /api/* wi",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "669e967",
       "subject": "FULL PLATFORM AUDIT: Comprehensive A-Z audit document covering endpoint routing (62 Vercel / 5 Hetzner), 39 tools, 25 agents, cron jobs, database schema, self-knowledge accuracy, frontend components, ",
-      "when": "16 hours ago"
-    },
-    {
-      "hash": "ca0a960",
-      "subject": "FIX: rewrite-email endpoint now points to Hetzner (was still hitting Vercel). Tone rewrite buttons in email drafts now work via Hetzner.",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     }
   ]
 }

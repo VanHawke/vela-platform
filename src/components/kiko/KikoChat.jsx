@@ -506,15 +506,17 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const loadConversation = async (conv) => {
     if (!conv?.id) return
     let msgs = conv.messages
-    // If messages not populated, fetch from database
+    // If messages not populated, fetch from conversations table (JSONB column)
     if (!msgs || msgs.length === 0) {
-      const { data } = await supabase.from('messages').select('role, content').eq('conversation_id', conv.id).order('created_at', { ascending: true })
-      msgs = data || []
+      const { data } = await supabase.from('conversations').select('messages, title').eq('id', conv.id).single()
+      msgs = data?.messages || []
+      if (!conv.title && data?.title) conv.title = data.title
     }
-    if (msgs.length === 0) return
     justLoadedRef.current = true
     setMessages(msgs.map(m => ({ role: m.role, content: m.content })))
-    setActiveConvId(conv.id); setStreamText(''); setStreaming(false); setShowAllMsgs(false)
+    setActiveConvId(conv.id)
+    if (conv.title) setConvTitle(conv.title)
+    setStreamText(''); setStreaming(false); setShowAllMsgs(false)
   }
 
   // Listen for cross-thread switch events from ThreadIndicator

@@ -126,7 +126,17 @@ export default function EmailDraft({ text }) {
   const dropdownRef = useRef(null)
   const senderDropdownRef = useRef(null)
   const editRef = useRef(null)
-  const { subject, to } = parsed
+  const { subject: parsedSubject, to: parsedTo } = parsed
+  const [currentSubject, setCurrentSubject] = useState(parsedSubject)
+  const [currentTo, setCurrentTo] = useState(parsedTo)
+
+  // Keep subject and to in sync with streaming updates
+  useEffect(() => {
+    if (parsedSubject && parsedSubject.length > (currentSubject || '').length) setCurrentSubject(parsedSubject)
+  }, [parsedSubject])
+  useEffect(() => {
+    if (parsedTo && parsedTo.length > (currentTo || '').length) setCurrentTo(parsedTo)
+  }, [parsedTo])
 
   // Load team members via API (bypasses RLS) — cached to prevent re-fetch on re-mount
   useEffect(() => {
@@ -159,7 +169,7 @@ export default function EmailDraft({ text }) {
   useEffect(() => { if (editing && editRef.current) editRef.current.focus() }, [editing])
 
   const handleCopy = () => {
-    const fullEmail = `Subject: ${subject}\nTo: ${to}\n\n${currentBody}`
+    const fullEmail = `Subject: ${currentSubject}\nTo: ${currentTo}\n\n${currentBody}`
     navigator.clipboard.writeText(fullEmail)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -198,13 +208,13 @@ export default function EmailDraft({ text }) {
 
   const handleSchedule = async (scheduledFor) => {
     const senderEmail = selectedSender?.email || 'sunny@vanhawke.com'
-    if (!to || !subject || !currentBody) return
+    if (!currentTo || !currentSubject || !currentBody) return
     setScheduleOpen(false)
     try {
       const res = await fetch('https://api.vanhawke.agency/api/schedule-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to, subject, body: currentBody, sender: senderEmail, scheduledFor, recipientName: to.split('@')[0] }),
+        body: JSON.stringify({ to: currentTo, subject: currentSubject, body: currentBody, sender: senderEmail, scheduledFor, recipientName: currentTo.split('@')[0] }),
       })
       const data = await res.json()
       if (data.ok) {
@@ -217,14 +227,14 @@ export default function EmailDraft({ text }) {
   const handleSendGmail = async (member) => {
     const targetEmail = member?.email || selectedMember?.email || 'sunny@vanhawke.com'
     const senderEmail = selectedSender?.email || 'sunny@vanhawke.com'
-    if (!to || !subject) { setSent('error'); setTimeout(() => setSent(false), 3000); return }
+    if (!currentTo || !currentSubject) { setSent('error'); setTimeout(() => setSent(false), 3000); return }
     setSent('sending')
     setSendDropdownOpen(false)
     try {
       const res = await fetch('https://api.vanhawke.agency/api/create-gmail-draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to, subject, body: currentBody, draftFor: targetEmail, sender: senderEmail })
+        body: JSON.stringify({ to: currentTo, subject: currentSubject, body: currentBody, draftFor: targetEmail, sender: senderEmail })
       })
       if (!res.ok) { const errText = await res.text(); console.error('[EmailDraft] HTTP error:', res.status, errText); throw new Error(`HTTP ${res.status}`) }
       const data = await res.json()
@@ -269,8 +279,8 @@ export default function EmailDraft({ text }) {
       <div style={{ padding: '14px 18px 12px', borderBottom: '0.5px solid rgba(0,0,0,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 10, color: '#A0A0A0', fontFamily: T.font, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 500 }}>Email Draft</div>
-          {to && <div style={{ fontSize: 13, color: '#6B6B6B', fontFamily: T.font, marginBottom: 4 }}><span style={{ color: '#A0A0A0' }}>To:</span> {to}</div>}
-          <div style={{ fontSize: 15, color: '#0A0A0A', fontFamily: T.font, fontWeight: 500 }}>{subject}</div>
+          {currentTo && <div style={{ fontSize: 13, color: '#6B6B6B', fontFamily: T.font, marginBottom: 4 }}><span style={{ color: '#A0A0A0' }}>To:</span> {currentTo}</div>}
+          <div style={{ fontSize: 15, color: '#0A0A0A', fontFamily: T.font, fontWeight: 500 }}>{currentSubject}</div>
         </div>
         <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
           <button onClick={handleCopy} title="Copy email" style={{ width: 36, height: 36, borderRadius: 8, border: '0.5px solid rgba(0,0,0,0.08)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: copied ? '#00B464' : '#A0A0A0', transition: 'all 0.15s' }}
