@@ -91,6 +91,15 @@ export default function EmailDraft({ text }) {
   const [currentBody, setCurrentBody] = useState(parsed.body)
   const originalBodyRef = useRef(parsed.body)
   const [hasRewritten, setHasRewritten] = useState(false)
+
+  // CRITICAL: Update body when streaming delivers new content
+  // useState only initializes once — this keeps body in sync with streaming text
+  useEffect(() => {
+    if (!hasRewritten && parsed.body && parsed.body.length > (currentBody || '').length) {
+      setCurrentBody(parsed.body)
+      originalBodyRef.current = parsed.body
+    }
+  }, [parsed.body])
   const [rewriting, setRewriting] = useState(false)
   const [sent, setSent] = useState(false)
   const [copied, setCopied] = useState(false)
