@@ -1,74 +1,85 @@
 // kiko-worker/server.js
 // Main Express server running on kiko-server (Hetzner VPS)
-// Handles LinkedIn automation + heavy background jobs that don't fit Vercel's 300s limit
+// Handles: Kiko Chat API + LinkedIn automation + heavy background jobs
+// NO timeout limits — unlike Vercel's 120s cap
 
-import express from 'express';
-import bodyParser from 'body-parser';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import { readFileSync } from 'fs';
-import 'dotenv/config';
+import express from "express";
+import bodyParser from "body-parser";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+import { readFileSync } from "fs";
+import "dotenv/config";
 
-import healthRoutes from './routes/health.js';
-import linkedinRoutes from './routes/linkedin.js';
-import linkedinQueueRoutes from './routes/linkedin-queue.js';
+import healthRoutes from "./routes/health.js";
+import linkedinRoutes from "./routes/linkedin.js";
+import linkedinQueueRoutes from "./routes/linkedin-queue.js";
+import emailIntelRoutes from "./routes/email-intel.js";
+import kikoChatRoutes from "./routes/kiko-chat.js";
+import webhookRoutes from "./routes/webhooks.js";
+import { startMonitors } from "./monitors/scheduler.js";
+import { startScheduler } from "./src/cron-scheduler.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const pkg = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf8'));
+const pkg = JSON.parse(readFileSync(join(__dirname, "package.json"), "utf8"));
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SHARED_SECRET = process.env.KIKO_WORKER_SECRET || 'dev-secret-change-me';
+const SHARED_SECRET = process.env.KIKO_WORKER_SECRET || "dev-secret-change-me";
 
-// Basic middleware
-app.use(bodyParser.json({ limit: '5mb' }));
+// Body parser — 12mb for file uploads via Kiko
+app.use(bodyParser.json({ limit: "12mb" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Request logging (minimal, no secrets)
+// Request logging
 app.use((req, res, next) => {
   const start = Date.now();
-  res.on('finish', () => {
+  res.on("finish", () => {
     const ms = Date.now() - start;
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} ${res.statusCode} ${ms}ms`);
   });
   next();
 });
 
-// Auth middleware for /linkedin/* routes (skip /health)
+// Auth middleware — /api/* routes are PUBLIC (browser calls them directly)
+// /linkedin/* routes require shared secret
 app.use((req, res, next) => {
-  if (req.path === '/health' || req.path === '/') return next();
-  const auth = req.headers['authorization'] || '';
-  const token = auth.replace(/^Bearer\s+/i, '');
+  if (req.path === "/health" || req.path === "/" || req.path.startsWith("/api/") || req.path.startsWith("/docs/")) return next();
+  const auth = req.headers["authorization"] || "";
+  const token = auth.replace(/^Bearer\s+/i, "");
   if (token !== SHARED_SECRET) {
-    return res.status(401).json({ error: 'unauthorized' });
+    return res.status(401).json({ error: "unauthorized" });
   }
   next();
 });
 
 // Root
-app.get('/', (req, res) => {
-  res.type('text/plain').send(`kiko-worker v${pkg.version} - running\nEndpoints: /health, /linkedin/*, /linkedin-queue/*\n`);
+app.get("/", (req, res) => {
+  res.type("text/plain").send(`kiko-worker v${pkg.version} - running\nEndpoints: /health, /api/kiko, /api/create-gmail-draft, /linkedin/*, /email-intel/*\n`);
 });
 
-// Routes
-app.use('/', healthRoutes);
-app.use('/linkedin', linkedinRoutes);
-app.use('/linkedin-queue', linkedinQueueRoutes);
+// Routes — Kiko Chat API (no timeout limits!)
+app.use("/docs", express.static("/home/kiko/kiko-worker/public/docs"));
+app.use("/api/webhooks", webhookRoutes);
+app.use("/api", kikoChatRoutes);
+
+// Routes — existing
+app.use("/", healthRoutes);
+app.use("/linkedin", linkedinRoutes);
+app.use("/linkedin-queue", linkedinQueueRoutes);
+app.use("/email-intel", emailIntelRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error('[error]', err);
-  res.status(500).json({ error: err.message || 'internal error' });
+  console.error("[error]", err);
+  if (!res.headersSent) res.status(500).json({ error: err.message || "internal error" });
 });
 
-app.listen(PORT, '127.0.0.1', () => {
+app.listen(PORT, "127.0.0.1", () => {
   console.log(`[kiko-worker] v${pkg.version} listening on 127.0.0.1:${PORT}`);
+  console.log(`[kiko-worker] Kiko Chat API on /api/kiko (NO timeout limits)`);
   console.log(`[kiko-worker] Nginx proxies public traffic → this port`);
-  console.log(`[kiko-worker] Shared secret auth required for /linkedin/*`);
+  startMonitors();
+  startScheduler();
 });
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('[kiko-worker] SIGTERM received, shutting down');
-  process.exit(0);
-});
+process.on("SIGTERM", () => { console.log("[kiko-worker] SIGTERM"); process.exit(0); });

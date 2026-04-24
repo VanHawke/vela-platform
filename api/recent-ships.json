@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-24T22:19:18.400Z",
+  "generated_at": "2026-04-24T22:37:10.788Z",
   "commits": [
+    {
+      "hash": "aed1953",
+      "subject": "Knowledge visibility fix + search_knowledge upgrade",
+      "when": "18 minutes ago"
+    },
     {
       "hash": "b8c800a",
       "subject": "Proactive Intelligence v2 — Hetzner-native monitors",
-      "when": "33 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "e7dbcdc",
       "subject": "Proactive Intelligence v2: Self-Discovery Engine + Predictive Synthesis + Agency Structure Intelligence",
-      "when": "47 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "fecd3bb",
       "subject": "COMPLETE SESSION BRIEF: 242-line definitive architecture document covering ALL 58 sessions (April 7-24). Full build history, current state, all monitors, all tools, all memory systems, all research do",
-      "when": "70 minutes ago"
+      "when": "88 minutes ago"
     },
     {
       "hash": "e0d5069",
       "subject": "SESSION BRIEF: Complete architecture document for session handoff — every system, every file, every tool, every table, every monitor, every pending task documented. 289 lines covering environment, rin",
-      "when": "75 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "842493c",
@@ -39,12 +44,12 @@
     {
       "hash": "f774ee1",
       "subject": "Kiko self-knowledge: document generation capability documented — types, divisions, purposes, branding, timing, when to use.",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "a992019",
       "subject": "DOCUMENT GENERATION PIPELINE — COMPLETE: (1) generate-document.js: researches topic via Haiku + web search, structures via Sonnet, renders branded HTML or PPTX. (2) Van Hawke brand system: #7C5CFC pur",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "0b6f37d",
@@ -64,7 +69,7 @@
     {
       "hash": "9b5c75b",
       "subject": "PROACTIVE INTELLIGENCE ENGINE: (1) New proactive-intel monitor runs 2x daily (8am + 2pm). Scans F1 sponsorship news, luxury/fashion market, competitor agencies (CAA/WME/Octagon/CSM), new GP announceme",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "5161991",
@@ -94,11 +99,6 @@
     {
       "hash": "d306de3",
       "subject": "GMAIL PUB/SUB WEBHOOK: (1) gmail-webhook.js — receives push notifications from Google, checks for replies to tracked follow-ups, creates instant alerts. Always returns 200 to prevent Pub/Sub retries. ",
-      "when": "6 hours ago"
-    },
-    {
-      "hash": "14b1fe2",
-      "subject": "EMAIL SPEED: Simple drafts (re-engagement, follow-up, catch-up) now use Haiku (~12s vs 22-37s with Sonnet). Complex drafts (negotiation, strategy, investment, pricing) still use Sonnet. Campaign sende",
       "when": "6 hours ago"
     }
   ]

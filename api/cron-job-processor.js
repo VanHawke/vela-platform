@@ -39,7 +39,7 @@ export default async function handler(req, res) {
           }
 
           // Call source-prospects (same logic but via internal fetch)
-          const spRes = await fetch('https://kiko.vanhawke.agency/api/source-prospects', {
+          const spRes = await fetch(`${process.env.HETZNER_URL || 'https://api.vanhawke.agency'}/api/source-prospects`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ campaignName, description: category, targetPersona, maxCompanies: Math.min(count, 20), contactsPerCompany: 2 }),
