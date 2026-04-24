@@ -104,9 +104,10 @@ function getGreeting() {
   const h = new Date().getHours()
   const d = new Date().getDate()
   const timeBase = h >= 5 && h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
+  const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date().getDay()]
   const greetings = [
     [`Good ${timeBase}`],
-    [`Happy ${['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][new Date().getDay()]}`],
+    [`Happy ${dayName}`],
     ['Welcome back'],
     ['Great to see you'],
     [`Hope your ${timeBase} is going well`],
@@ -116,7 +117,8 @@ function getGreeting() {
     ['Another day, another deal'],
     ['Back in the chair'],
   ]
-  const idx = (d + h + Math.floor(Date.now() / 3600000)) % greetings.length
+  // Use date + hour so greeting changes each hour, but day is always fresh from new Date()
+  const idx = (new Date().getDate() + h + Math.floor(Date.now() / 3600000)) % greetings.length
   return greetings[idx][0]
 }
 
