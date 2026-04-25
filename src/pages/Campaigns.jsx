@@ -1257,10 +1257,11 @@ export default function Campaigns({ user }) {
                     try {
                       const userId = user?.id || '9f486437-4bf5-4111-abfe-fe19bfa76063'
                       const category = addProspectsQuery || selectedCampaign?.description || selectedCampaign?.target_persona || selectedCampaign?.name || ''
-                      await fetch(`https://api.vanhawke.agency/api/kiko-jobs?user_id=${userId}`, {
+                      const resp = await fetch(`https://api.vanhawke.agency/api/kiko-jobs?user_id=${userId}`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ job_type: 'source_companies_bg', title: `Source contacts for "${selectedCampaign?.name}"`, params: { category, count: 15, sequence_id: selectedId }, related_entity_type: 'sequence', related_entity_id: selectedId, user_id: userId }),
                       })
+                      if (resp.ok) window.dispatchEvent(new Event('kiko_refresh_tasks'))
                     } catch {}
                     setAddProspectsOpen(false); setAddProspectsPhase('idle')
                   }} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#0A0A0A', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}>↗ Source in background</button>
@@ -1279,10 +1280,11 @@ export default function Campaigns({ user }) {
                   try {
                     const userId = user?.id || '9f486437-4bf5-4111-abfe-fe19bfa76063'
                     const category = selectedCampaign?.description || selectedCampaign?.target_persona || selectedCampaign?.name || ''
-                    await fetch(`https://api.vanhawke.agency/api/kiko-jobs?user_id=${userId}`, {
+                    const resp = await fetch(`https://api.vanhawke.agency/api/kiko-jobs?user_id=${userId}`, {
                       method: 'POST', headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ job_type: 'source_companies_bg', title: `Source contacts for "${selectedCampaign?.name}"`, params: { category, count: 15, sequence_id: selectedId }, related_entity_type: 'sequence', related_entity_id: selectedId, user_id: userId }),
                     })
+                    if (resp.ok) window.dispatchEvent(new Event('kiko_refresh_tasks'))
                   } catch {}
                   setAddProspectsOpen(false); setAddProspectsPhase('idle')
                 }} style={{ marginTop: 14, padding: '8px 16px', borderRadius: 8, border: `1px solid ${C.border}`, background: 'transparent', color: '#0A0A0A', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}>

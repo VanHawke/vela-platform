@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-25T19:50:23.385Z",
+  "generated_at": "2026-04-25T19:56:21.565Z",
   "commits": [
+    {
+      "hash": "292ee43",
+      "subject": "Fix caching: s-maxage=0 forces CDN to always revalidate index.html",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "70a99e0",
       "subject": "Kiko HARD RULE: never ask user for data you can look up yourself",
-      "when": "6 minutes ago"
+      "when": "12 minutes ago"
     },
     {
       "hash": "2ad5261",
       "subject": "CRITICAL: Fix white screen crash — KikoFloat rendering chip objects as React children",
-      "when": "59 minutes ago"
+      "when": "65 minutes ago"
     },
     {
       "hash": "fc8d272",
       "subject": "Fix navigation issues: campaigns refetch + PermissionGate no-flash",
-      "when": "65 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "90d1e70",
@@ -54,7 +59,7 @@
     {
       "hash": "7bca8b4",
       "subject": "Email cascade reordered: free methods first, paid APIs last resort",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "2156e89",
@@ -89,16 +94,11 @@
     {
       "hash": "5bee0b7",
       "subject": "Homepage CSS fix + session brief update",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "c8d32bc",
       "subject": "KikoLiveContext: real-time shared state across all surfaces",
-      "when": "10 hours ago"
-    },
-    {
-      "hash": "aa476ff",
-      "subject": "Clean slate: all overdue cleared, alert CTAs fixed, data synced",
       "when": "10 hours ago"
     }
   ]

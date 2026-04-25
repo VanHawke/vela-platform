@@ -44,8 +44,11 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
       } catch {}
     }
     loadTasks()
-    const interval = setInterval(loadTasks, 30000)
-    return () => clearInterval(interval)
+    const interval = setInterval(loadTasks, 15000)
+    // Listen for immediate refresh requests (e.g. after creating a background job)
+    const onRefresh = () => loadTasks()
+    window.addEventListener('kiko_refresh_tasks', onRefresh)
+    return () => { clearInterval(interval); window.removeEventListener('kiko_refresh_tasks', onRefresh) }
   }, [])
 
   // Close tasks dropdown on outside click
