@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-25T10:24:52.727Z",
+  "generated_at": "2026-04-25T10:30:19.358Z",
   "commits": [
+    {
+      "hash": "5bee0b7",
+      "subject": "Homepage CSS fix + session brief update",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "c8d32bc",
       "subject": "KikoLiveContext: real-time shared state across all surfaces",
-      "when": "8 minutes ago"
+      "when": "13 minutes ago"
     },
     {
       "hash": "aa476ff",
       "subject": "Clean slate: all overdue cleared, alert CTAs fixed, data synced",
-      "when": "28 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "1d44b71",
       "subject": "Pills width fix, inline alert CTAs, CC clear all overdue, stale deal cleanup",
-      "when": "37 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "cd3428b",
       "subject": "Fix 4 bugs: alert actions, pill visibility, count sync, CC reconciliation",
-      "when": "72 minutes ago"
+      "when": "78 minutes ago"
     },
     {
       "hash": "ff6e695",
       "subject": "RLS fix + dynamic pills + Vercel free tier cleanup",
-      "when": "85 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "77a720c",
       "subject": "Alert visibility fix: null user_ids + direct count loading",
-      "when": "89 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "ac86acd",
@@ -94,11 +99,6 @@
     {
       "hash": "828ea5d",
       "subject": "FIX: (1) Wrong day greeting — getGreeting now uses fresh new Date() for both day name and hash index, prevents stale day showing. (2) Background tasks icon changed from rectangle-with-lines (mistaken ",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "f774ee1",
-      "subject": "Kiko self-knowledge: document generation capability documented — types, divisions, purposes, branding, timing, when to use.",
       "when": "14 hours ago"
     }
   ]

@@ -169,6 +169,7 @@ ComponentLocationDetailsRepo`/Users/sunny/Desktop/vela-platform/`Git → auto-de
 ### Session 59 (Apr 24-25): Proactive Intelligence v2 + Hetzner Consolidation + KikoLiveContext
 
 **Intelligence Infrastructure:**
+
 - Self-Discovery Engine (monitors/competitive-discovery.js) — 5 domains rotating weekly
 - Predictive Synthesis added to proactive-intel monitor — 5 prediction types, 2x daily
 - Agency Org Intel domain (12 topics) in learning director. Total: 29 research domains
@@ -180,6 +181,7 @@ ComponentLocationDetailsRepo`/Users/sunny/Desktop/vela-platform/`Git → auto-de
 - Vercel stripped to 1 function (google-auth only) — free tier ready
 
 **KikoLiveContext (src/contexts/KikoLiveContext.jsx):**
+
 - Single source of truth for all intelligence surfaces
 - Supabase Realtime subscriptions on 5 tables (alerts, tasks, follow-ups, draft_actions, activities)
 - All actions logged to activities table — Kiko reads these in her system prompt
@@ -187,6 +189,7 @@ ComponentLocationDetailsRepo`/Users/sunny/Desktop/vela-platform/`Git → auto-de
 - Dismiss alert → all surfaces update. Complete task → pills rebuild. Instant.
 
 **Command Centre:**
+
 - Follow-up tracker + mark-as-done, campaign activity section
 - Expanded signals (predictions, discoveries, proactive intel)
 - Role-based filtering (Matt = sponsorship only, Sunny = all)
@@ -195,18 +198,21 @@ ComponentLocationDetailsRepo`/Users/sunny/Desktop/vela-platform/`Git → auto-de
 - Tasks/followUps/actions from KikoLiveContext — no duplicate queries
 
 **Alert Panel (KikoInsights):**
+
 - Fully rewritten to use KikoLiveContext
 - Inline CTAs on every alert: Brief me, Act on this, × (no expand needed)
 - Suggested actions: Do this, Brief me first, × (was icon-only, now text CTAs)
 - Shows ALL undismissed alerts (count matches pill)
 
 **Homepage:**
+
 - CSS alignment fixed (removed marginLeft: -14 offset when sidebar collapsed)
 - Alert pill hidden when count=0, pills never exceed prompt bar width (660px, nowrap)
 - Dynamic pills from context: follow-ups, replies, stale deals, predictions
 - Labels truncated at 28 chars, 3 chips when alert visible, 4 when hidden
 
 **Data Fixes:**
+
 - 125 null user_id alerts → assigned to Sunny. All monitors now write user_id
 - RLS policies added for kiko_follow_ups + kiko_draft_actions (were invisible to frontend)
 - 37 overdue tasks bulk-cleared. Illumio follow-up closed (Closed Lost deal)
