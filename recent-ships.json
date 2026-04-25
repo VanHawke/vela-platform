@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-25T15:17:04.713Z",
+  "generated_at": "2026-04-25T15:26:39.911Z",
   "commits": [
+    {
+      "hash": "1ba31d1",
+      "subject": "Session 59 final: email speed, Realtime consolidation, deploy script, Bible, doc gen",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "9269446",
       "subject": "Fix homepage centering: collapsed sidebar was stealing 28px",
@@ -24,12 +29,12 @@
     {
       "hash": "aa476ff",
       "subject": "Clean slate: all overdue cleared, alert CTAs fixed, data synced",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "1d44b71",
       "subject": "Pills width fix, inline alert CTAs, CC clear all overdue, stale deal cleanup",
-      "when": "5 hours ago"
+      "when": "6 hours ago"
     },
     {
       "hash": "cd3428b",
@@ -44,7 +49,7 @@
     {
       "hash": "77a720c",
       "subject": "Alert visibility fix: null user_ids + direct count loading",
-      "when": "6 hours ago"
+      "when": "7 hours ago"
     },
     {
       "hash": "ac86acd",
@@ -54,12 +59,12 @@
     {
       "hash": "8005214",
       "subject": "Command Centre: role-based signal filtering",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "3e1afbd",
       "subject": "Command Centre upgrade: follow-up tracker, campaign activity, expanded signals",
-      "when": "16 hours ago"
+      "when": "17 hours ago"
     },
     {
       "hash": "3f291c1",
@@ -95,11 +100,6 @@
       "hash": "e0d5069",
       "subject": "SESSION BRIEF: Complete architecture document for session handoff — every system, every file, every tool, every table, every monitor, every pending task documented. 289 lines covering environment, rin",
       "when": "18 hours ago"
-    },
-    {
-      "hash": "842493c",
-      "subject": "FIX HOMEPAGE ALIGNMENT: (1) Top nav switched from flexbox space-between to CSS grid with 3 columns — links are now TRUE center, not pushed-between. (2) Home content offset: when sidebar collapsed (28p",
-      "when": "19 hours ago"
     }
   ]
 }

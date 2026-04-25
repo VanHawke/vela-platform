@@ -1459,23 +1459,20 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
     } catch (e) { return `Error checking scheduled emails: ${e.message}`; }
   }
 
-  // ── Document Generation ──
+  // ── Document Generation (background job) ──
   if (name === 'generate_document') {
     try {
       const { topic, documentType = 'pdf', division = 'agency', purpose = 'report' } = input;
       if (!topic) return 'Error: topic is required';
-      const baseUrl = process.env.HETZNER_URL || 'http://127.0.0.1:3000';
-      const res = await fetch(`${baseUrl}/api/generate-document`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, documentType, division, purpose }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        const publicUrl = `https://api.vanhawke.agency${data.url}`;
-        return `Document generated!\n\nTitle: ${data.title}\nType: ${data.type === 'pptx' ? 'PowerPoint Presentation' : 'Branded Report (HTML — print to PDF)'}\n${data.slides ? `Slides: ${data.slides}` : `Sections: ${data.sections}`}\nGenerated in: ${Math.round(data.duration / 1000)}s\n\nDownload: ${publicUrl}\n\nFor HTML reports, print to PDF using Cmd+P / Ctrl+P in browser.`;
-      }
-      return `Error generating document: ${data.error || 'Unknown error'}`;
+      // Queue as background job — returns immediately, processor handles generation
+      const jobId = crypto.randomUUID();
+      await sbFetch('kiko_background_jobs', { method: 'POST', body: JSON.stringify({
+        id: jobId, user_id: userId, job_type: 'generate_document', status: 'queued',
+        title: `Generate ${documentType === 'pptx' ? 'presentation' : 'report'}: ${topic}`,
+        params: { topic, documentType, division, purpose },
+        queued_at: new Date().toISOString(),
+      }) });
+      return `📄 Document queued for generation.\n\n**Topic:** ${topic}\n**Type:** ${documentType === 'pptx' ? 'PowerPoint Presentation' : 'Branded Report'}\n**Division:** ${division}\n\nI've started generating this in the background. It typically takes 60-90 seconds. You'll see a notification when it's ready — the download link will appear in your alerts. You can keep chatting in the meantime.`;
     } catch (e) { return `Error: ${e.message}`; }
   }
 

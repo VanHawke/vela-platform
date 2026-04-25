@@ -80,6 +80,39 @@ export default async function handler(req, res) {
               result: { prospects_found: 0, message: 'No prospects found' },
             }) });
           }
+        } else if (job.job_type === 'generate_document') {
+          // Document generation in background
+          const params = job.params || {};
+          await sbFetch(`kiko_background_jobs?id=eq.${job.id}`, { method: 'PATCH', body: JSON.stringify({ progress_message: 'Researching topic...', progress_pct: 20 }) });
+
+          const baseUrl = process.env.HETZNER_URL || 'http://127.0.0.1:3000';
+          const docRes = await fetch(`${baseUrl}/api/generate-document`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topic: params.topic, documentType: params.documentType || 'pdf', division: params.division || 'agency', purpose: params.purpose || 'report' }),
+          });
+          const data = await docRes.json();
+
+          if (data.ok) {
+            const publicUrl = `https://api.vanhawke.agency${data.url}`;
+            await sbFetch(`kiko_background_jobs?id=eq.${job.id}`, { method: 'PATCH', body: JSON.stringify({
+              status: 'completed', finished_at: new Date().toISOString(), progress_pct: 100, progress_message: 'Done',
+              result: { title: data.title, type: data.type, url: publicUrl, sections: data.sections, slides: data.slides, duration: data.duration },
+            }) });
+            // Alert so user sees it via KikoLiveContext
+            await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
+              type: 'job_complete', severity: 'medium',
+              title: `📄 Document ready: ${data.title}`,
+              detail: `${data.type === 'pptx' ? 'Presentation' : 'Report'} generated in ${Math.round((data.duration || 0) / 1000)}s.\n→ Download: ${publicUrl}`,
+              entity_name: params.topic, user_id: job.user_id || '9f486437-4bf5-4111-abfe-fe19bfa76063',
+              dismissed: false, created_at: new Date().toISOString(),
+              expires_at: new Date(Date.now() + 7 * 86400000).toISOString(),
+            }) });
+          } else {
+            await sbFetch(`kiko_background_jobs?id=eq.${job.id}`, { method: 'PATCH', body: JSON.stringify({
+              status: 'failed', finished_at: new Date().toISOString(), error_message: data.error || 'Document generation failed',
+            }) });
+          }
         } else {
           // Unknown job type — mark as failed
           await sbFetch(`kiko_background_jobs?id=eq.${job.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'failed', error_message: `Unknown job type: ${job.job_type}` }) });
