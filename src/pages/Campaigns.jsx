@@ -40,8 +40,9 @@ function statusBadge(status) {
     replied:   { label: 'Replied',  bg: 'rgba(0,0,0,0.06)', fg: '#0A0A0A', br: 'rgba(0,0,0,0.10)' },
     bounced:   { label: 'Bounced',  bg: 'rgba(248,113,113,0.10)', fg: '#f87171', br: 'rgba(248,113,113,0.25)' },
     completed: { label: 'Done',     bg: 'rgba(0,0,0,0.04)', fg: 'rgba(0,0,0,0.35)', br: 'rgba(0,0,0,0.08)' },
-    paused:    { label: 'Paused',   bg: 'rgba(251,191,36,0.10)', fg: '#fbbf24', br: 'rgba(251,191,36,0.25)' },
-    stale:     { label: 'Stale',    bg: 'rgba(148,163,184,0.10)', fg: '#94a3b8', br: 'rgba(148,163,184,0.25)' },
+    paused:      { label: 'Paused',      bg: 'rgba(251,191,36,0.10)', fg: '#fbbf24', br: 'rgba(251,191,36,0.25)' },
+    needs_email: { label: 'Needs Email', bg: 'rgba(124,92,252,0.10)', fg: '#7C5CFC', br: 'rgba(124,92,252,0.25)' },
+    stale:       { label: 'Stale',       bg: 'rgba(148,163,184,0.10)', fg: '#94a3b8', br: 'rgba(148,163,184,0.25)' },
   }
   const c = map[status] || map.active
   return (
@@ -202,7 +203,28 @@ export default function Campaigns({ user }) {
         raw: e,
       }
     })
-    setProspects(rows)
+    
+    // Also load campaign_targets that need emails (no enrollment exists)
+    const { data: targets } = await supabase
+      .from('campaign_targets')
+      .select('company_name, decision_maker_name, decision_maker_title, decision_maker_email, enrollment_status, verification_status, rank')
+      .eq('campaign_id', sequenceId)
+      .eq('enrollment_status', 'needs_email')
+    const needsEmailRows = (targets || []).map(t => ({
+      id: `target-${t.rank}`,
+      contact_email: null,
+      contact_name: t.decision_maker_name || 'Unknown',
+      company: t.company_name || '',
+      title: t.decision_maker_title || '',
+      status: 'needs_email',
+      sent_count: 0, opens_count: 0, clicks_count: 0,
+      replied: false, bounced: false,
+      last_action: null, next_send_at: null,
+      linkedin_url: null,
+      raw: { status: 'needs_email', company: t.company_name, contact_name: t.decision_maker_name },
+    }))
+    
+    setProspects([...rows, ...needsEmailRows])
     setProspectQueue(queue || [])
     setDetailLoading(false)
   }, [])

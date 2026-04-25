@@ -189,6 +189,46 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
   const recorderRef = useRef(null)
 
   const hasMessages = messages.length > 0 || streaming
+  const [followUpChips, setFollowUpChips] = useState([])
+  
+  // Generate contextual follow-up pills after each Kiko response
+  useEffect(() => {
+    if (streaming || messages.length === 0) return
+    const lastMsg = messages[messages.length - 1]
+    if (lastMsg?.role !== 'assistant' || !lastMsg.content) return
+    const text = lastMsg.content.toLowerCase()
+    const chips = []
+    // Campaign context
+    if (text.includes('campaign') || text.includes('sequence') || text.includes('enrolled')) {
+      chips.push({ label: 'Show campaign stats', prompt: 'Show me the campaign performance overview' })
+      if (text.includes('paused')) chips.push({ label: 'Activate campaign', prompt: 'Activate this campaign now' })
+      if (text.includes('enrolled') || text.includes('prospects')) chips.push({ label: 'Draft first emails', prompt: 'Draft the outreach emails for this campaign' })
+    }
+    // Email/outreach context
+    if (text.includes('email') || text.includes('draft') || text.includes('outreach')) {
+      chips.push({ label: 'Review and send', prompt: 'Review the draft and send it' })
+      if (text.includes('follow-up') || text.includes('follow up')) chips.push({ label: 'Check reply status', prompt: 'Have they replied yet?' })
+    }
+    // Pipeline/deal context
+    if (text.includes('deal') || text.includes('pipeline') || text.includes('opportunity')) {
+      chips.push({ label: 'Move deal forward', prompt: 'What should I do to move this deal forward?' })
+      chips.push({ label: 'Draft proposal', prompt: 'Draft a proposal for this opportunity' })
+    }
+    // Research/intelligence
+    if (text.includes('research') || text.includes('company') || text.includes('competitor')) {
+      chips.push({ label: 'Deep dive', prompt: 'Do a deep research dive on this company' })
+    }
+    // Build campaign suggestion
+    if (text.includes('category') || text.includes('sector') || text.includes('build')) {
+      chips.push({ label: 'Build it', prompt: 'Build this campaign now' })
+    }
+    // Generic follow-ups if nothing matched
+    if (chips.length === 0) {
+      chips.push({ label: 'Tell me more', prompt: 'Tell me more about this' })
+      chips.push({ label: 'What next?', prompt: "What should I do next?" })
+    }
+    setFollowUpChips(chips.slice(0, 3))
+  }, [messages, streaming])
 
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 200)
@@ -547,6 +587,22 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                       onMouseOut={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.02)'; e.currentTarget.style.color = '#A0A0A0' }}
                     ><span style={{ width: 8, height: 8, borderRadius: 1.5, background: 'currentColor', display: 'inline-block' }} /> Stop</button>
                   </div>
+                </div>
+              )}
+              {/* Follow-up suggestion pills — shown after Kiko responds */}
+              {hasMessages && !streaming && followUpChips.length > 0 && (
+                <div style={{ padding: '6px 12px 10px', display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                  {followUpChips.map((chip, i) => (
+                    <button key={chip.label + i} onClick={() => { setFollowUpChips([]); handleSubmit(chip.prompt) }} style={{
+                      fontSize: 11, padding: '4px 10px', borderRadius: 50,
+                      border: '0.5px solid rgba(124,92,252,0.2)', background: 'rgba(124,92,252,0.05)',
+                      color: '#7C5CFC', cursor: 'pointer', fontFamily: C.font, fontWeight: 450,
+                      transition: 'all 150ms',
+                    }}
+                      onMouseOver={e => { e.currentTarget.style.background = '#7C5CFC'; e.currentTarget.style.color = '#fff' }}
+                      onMouseOut={e => { e.currentTarget.style.background = 'rgba(124,92,252,0.05)'; e.currentTarget.style.color = '#7C5CFC' }}
+                    >{chip.label}</button>
+                  ))}
                 </div>
               )}
               <div ref={scrollRef} />
