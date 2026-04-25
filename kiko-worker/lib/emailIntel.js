@@ -567,26 +567,6 @@ export async function findEmail({ firstName, lastName, company, domain }) {
   try {
     // Step 1: Check pattern cache
     let pattern = patternCache.get(domainClean);
-
-    // Step 1.5: APOLLO.IO — check 270M+ verified contacts FIRST (free, highest accuracy)
-    if (!pattern || pattern.confidence < 0.8) {
-      log.push('Checking Apollo.io (270M+ contacts)...');
-      const apolloResult = await apolloFindEmail(firstName, lastName, domainClean, company);
-      if (apolloResult && apolloResult.email) {
-        log.push(`✓ Apollo.io: ${apolloResult.email} (${apolloResult.verified ? 'verified' : 'unverified'}, confidence: ${apolloResult.confidence})`);
-        // Cache the pattern from Apollo's result
-        const apolloPattern = detectPattern([apolloResult.email], domainClean);
-        patternCache.set(domainClean, apolloPattern);
-        return {
-          ok: true, email: apolloResult.email,
-          verified: apolloResult.verified, confidence: apolloResult.confidence,
-          pattern: apolloPattern.pattern, reason: 'apollo_io',
-          linkedin_url: apolloResult.linkedin, title: apolloResult.title,
-          duration_ms: Date.now() - startTime, log,
-        };
-      }
-      log.push('Apollo: no match');
-    }
     
     if (!pattern) {
       // Step 2: Scrape domain for existing emails — FREE METHODS ONLY
@@ -734,9 +714,26 @@ export async function findEmail({ firstName, lastName, company, domain }) {
       log.push('Google person search: no match');
     } catch { log.push('Google person search: failed'); }
 
-    // Step 9: PAID API fallback — ONLY when all free methods exhausted
+    // Step 9: APOLLO.IO — 270M contacts, 75 credits/month. Use ONLY after free methods exhausted.
+    log.push('Free methods exhausted. Trying Apollo.io (75 credits/month)...');
+    const apolloResult = await apolloFindEmail(firstName, lastName, domainClean, company);
+    if (apolloResult && apolloResult.email) {
+      log.push(`✓ Apollo.io: ${apolloResult.email} (${apolloResult.verified ? 'verified' : 'unverified'})`);
+      const apolloPattern = detectPattern([apolloResult.email], domainClean);
+      patternCache.set(domainClean, apolloPattern);
+      return {
+        ok: true, email: apolloResult.email,
+        verified: apolloResult.verified, confidence: apolloResult.confidence,
+        pattern: apolloPattern.pattern, reason: 'apollo_io',
+        linkedin_url: apolloResult.linkedin, title: apolloResult.title,
+        duration_ms: Date.now() - startTime, log,
+      };
+    }
+    log.push('Apollo: no match');
+
+    // Step 10: PAID API fallback — ONLY when all free methods AND Apollo exhausted
     // These have limited credits. Use sparingly.
-    log.push('All free methods exhausted. Trying paid API cascade (limited credits)...');
+    log.push('Trying paid API cascade (limited credits)...');
     
     // Try Hunter.io
     const hunterResult = await hunterFindEmail(firstName, lastName, domainClean);
