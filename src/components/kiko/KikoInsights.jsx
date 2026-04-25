@@ -174,14 +174,21 @@ export default function KikoInsights({ onAction, open, onClose }) {
             <div style={{ marginBottom: 16 }}>
               <div style={{ padding: '4px 8px 8px', fontSize: 11, color: '#A0A0A0', fontFamily: T.font, fontWeight: 500, letterSpacing: '0.5px' }}>SUGGESTED ACTIONS</div>
               {draftActions.map(draft => (
-                <div key={draft.id} style={{ ...pillStyle, background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.05)' }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', flexShrink: 0, background: 'rgba(0,0,0,0.35)' }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ fontSize: 13, color: '#6B6B6B', fontWeight: 500, fontFamily: T.font }}>{draft.payload?.entity || 'Action'}: </span>
-                    <span style={{ fontSize: 13, color: '#A0A0A0', fontWeight: 400, fontFamily: T.font }}>{(draft.payload?.suggested_action || 'Follow up').slice(0, 80)}</span>
+                <div key={draft.id} style={{ marginBottom: 6, borderRadius: 12, background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+                  <div style={{ padding: '10px 12px' }}>
+                    <div style={{ fontSize: 13, color: '#4A4A4A', fontWeight: 500, fontFamily: T.font, marginBottom: 2 }}>{draft.payload?.entity || 'Action'}</div>
+                    <div style={{ fontSize: 12, color: '#6B6B6B', fontWeight: 400, fontFamily: T.font, lineHeight: 1.5 }}>{draft.payload?.suggested_action || 'Follow up'}</div>
                   </div>
-                  <button onClick={() => approveDraft(draft)} style={{ ...btnBase, background: 'rgba(0,212,170,0.06)', color: 'rgba(0,212,170,0.6)' }}><Check size={12} /></button>
-                  <button onClick={() => dismissDraft(draft)} style={{ ...btnBase, background: 'transparent', color: '#A0A0A0' }}><Trash2 size={10} /></button>
+                  <div style={{ padding: '0 12px 8px', display: 'flex', gap: 6 }}>
+                    <button onClick={() => approveDraft(draft)}
+                      style={{ padding: '4px 10px', borderRadius: 6, background: '#0A0A0A', color: '#fff', border: 'none', fontSize: 10, fontFamily: T.font, fontWeight: 500, cursor: 'pointer' }}>Do this</button>
+                    <button onClick={() => {
+                      onAction?.(`Brief me on ${draft.payload?.entity || 'this entity'}. Context: ${draft.payload?.context || draft.payload?.suggested_action || ''}. What's our current status and what should I do?`)
+                    }}
+                      style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(0,212,170,0.1)', color: '#06a87d', border: '1px solid rgba(0,212,170,0.2)', fontSize: 10, fontFamily: T.font, fontWeight: 500, cursor: 'pointer' }}>Brief me first</button>
+                    <button onClick={() => dismissDraft(draft)}
+                      style={{ padding: '4px 10px', borderRadius: 6, background: 'transparent', color: '#A0A0A0', border: '1px solid rgba(0,0,0,0.06)', fontSize: 10, fontFamily: T.font, cursor: 'pointer' }}>×</button>
+                  </div>
                 </div>
               ))}
             </div>

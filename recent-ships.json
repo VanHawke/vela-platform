@@ -1,25 +1,30 @@
 {
-  "generated_at": "2026-04-25T09:46:38.931Z",
+  "generated_at": "2026-04-25T09:56:06.377Z",
   "commits": [
+    {
+      "hash": "1d44b71",
+      "subject": "Pills width fix, inline alert CTAs, CC clear all overdue, stale deal cleanup",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "cd3428b",
       "subject": "Fix 4 bugs: alert actions, pill visibility, count sync, CC reconciliation",
-      "when": "34 minutes ago"
+      "when": "44 minutes ago"
     },
     {
       "hash": "ff6e695",
       "subject": "RLS fix + dynamic pills + Vercel free tier cleanup",
-      "when": "47 minutes ago"
+      "when": "56 minutes ago"
     },
     {
       "hash": "77a720c",
       "subject": "Alert visibility fix: null user_ids + direct count loading",
-      "when": "51 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "ac86acd",
       "subject": "Command Centre + Alerts: data sync, actionable alerts, stale deal fix",
-      "when": "60 minutes ago"
+      "when": "69 minutes ago"
     },
     {
       "hash": "8005214",
@@ -44,7 +49,7 @@
     {
       "hash": "aed1953",
       "subject": "Knowledge visibility fix + search_knowledge upgrade",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "b8c800a",
@@ -79,7 +84,7 @@
     {
       "hash": "828ea5d",
       "subject": "FIX: (1) Wrong day greeting — getGreeting now uses fresh new Date() for both day name and hash index, prevents stale day showing. (2) Background tasks icon changed from rectangle-with-lines (mistaken ",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "f774ee1",
@@ -94,11 +99,6 @@
     {
       "hash": "0b6f37d",
       "subject": "COMPLETE PROACTIVE INTELLIGENCE: (1) Self-knowledge updated with full proactive intel docs — 8 competitive domains, self-discovery rules, proactive advisory rules. (2) Forced first research runs: vh-a",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "e52ccf7",
-      "subject": "STRATEGIC INTELLIGENCE EXPANSION: (1) 8 Van Hawke competitive domains replacing 4 — now covers agency competitors (self-discovering), F1 deal economics, prospect signals, positioning, business buildin",
       "when": "15 hours ago"
     }
   ]
