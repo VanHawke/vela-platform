@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-25T18:51:25.398Z",
+  "generated_at": "2026-04-25T19:44:45.594Z",
   "commits": [
+    {
+      "hash": "2ad5261",
+      "subject": "CRITICAL: Fix white screen crash — KikoFloat rendering chip objects as React children",
+      "when": "53 minutes ago"
+    },
     {
       "hash": "fc8d272",
       "subject": "Fix navigation issues: campaigns refetch + PermissionGate no-flash",
-      "when": "6 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "90d1e70",
       "subject": "Fix background task display: show emails_found instead of prospects_found",
-      "when": "50 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "fe96144",
       "subject": "Fix job processor: order by queued_at not created_at (column didn't exist)",
-      "when": "67 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "354021c",
@@ -29,22 +34,22 @@
     {
       "hash": "b6f8f0d",
       "subject": "Apollo moved behind free methods — preserves 75 credits/month",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "7a34ac4",
       "subject": "Apollo.io integration live — 270M verified contacts, Source 1 in cascade",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "a5b70e9",
       "subject": "Fix campaign enrollment: accept all targets, flag email status",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "7bca8b4",
       "subject": "Email cascade reordered: free methods first, paid APIs last resort",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "2156e89",
@@ -54,12 +59,12 @@
     {
       "hash": "2066584",
       "subject": "CRITICAL: Kill fabricated email pipeline + purge bad data",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "2156f7a",
       "subject": "11 dormant crons discovered + activated, doc gen → background job",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "1ba31d1",
@@ -69,17 +74,17 @@
     {
       "hash": "9269446",
       "subject": "Fix homepage centering: collapsed sidebar was stealing 28px",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "c3a4a15",
       "subject": "Nav alignment fix: grid-template-columns auto 1fr auto → 1fr auto 1fr",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "5bee0b7",
       "subject": "Homepage CSS fix + session brief update",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "c8d32bc",
@@ -89,16 +94,11 @@
     {
       "hash": "aa476ff",
       "subject": "Clean slate: all overdue cleared, alert CTAs fixed, data synced",
-      "when": "9 hours ago"
+      "when": "10 hours ago"
     },
     {
       "hash": "1d44b71",
       "subject": "Pills width fix, inline alert CTAs, CC clear all overdue, stale deal cleanup",
-      "when": "9 hours ago"
-    },
-    {
-      "hash": "cd3428b",
-      "subject": "Fix 4 bugs: alert actions, pill visibility, count sync, CC reconciliation",
       "when": "10 hours ago"
     }
   ]

@@ -140,6 +140,8 @@ PagePathFunctionToday/Homepage, greeting, dynamic pills, Kiko chatCommand Centre
 
 ### HARD RULES
 
+- NEVER ask the user for information you can look up yourself. You have 42+ tools. Check campaign status, sequence state, deal stage, email history, task status BEFORE responding. Use your tools first, report what you found, then recommend action.
+- When the user asks you to do something involving existing data, ALWAYS query current state first. Never guess, never ask the user to confirm what you can check in 2 seconds.
 - Never use "I hope this finds you well" or generic openers
 - Always use "intelligent age" not "AI generation"
 - Always use USD for financials
