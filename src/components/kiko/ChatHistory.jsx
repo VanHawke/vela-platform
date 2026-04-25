@@ -106,9 +106,9 @@ export default function ChatHistory({ user, open, onToggle, onSelectConversation
 
   const recents = allConvos.slice(0, 20)
 
-  // Collapsed strip
+  // Collapsed strip — positioned absolute so it doesn't shift content centering
   if (!open) return (
-    <div style={{ width: 28, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight: '1px solid rgba(0,0,0,0.03)', cursor: 'pointer' }} onClick={onToggle}>
+    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight: '1px solid rgba(0,0,0,0.03)', cursor: 'pointer', zIndex: 10 }} onClick={onToggle}>
       <ChevronRight size={14} style={{ color: T.textTertiary }} />
     </div>
   )

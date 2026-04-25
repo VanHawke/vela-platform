@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-25T10:30:19.358Z",
+  "generated_at": "2026-04-25T10:34:35.088Z",
   "commits": [
+    {
+      "hash": "c3a4a15",
+      "subject": "Nav alignment fix: grid-template-columns auto 1fr auto → 1fr auto 1fr",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "5bee0b7",
       "subject": "Homepage CSS fix + session brief update",
-      "when": "4 minutes ago"
+      "when": "9 minutes ago"
     },
     {
       "hash": "c8d32bc",
       "subject": "KikoLiveContext: real-time shared state across all surfaces",
-      "when": "13 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "aa476ff",
       "subject": "Clean slate: all overdue cleared, alert CTAs fixed, data synced",
-      "when": "34 minutes ago"
+      "when": "38 minutes ago"
     },
     {
       "hash": "1d44b71",
       "subject": "Pills width fix, inline alert CTAs, CC clear all overdue, stale deal cleanup",
-      "when": "42 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "cd3428b",
       "subject": "Fix 4 bugs: alert actions, pill visibility, count sync, CC reconciliation",
-      "when": "78 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "ff6e695",
@@ -84,7 +89,7 @@
     {
       "hash": "e0d5069",
       "subject": "SESSION BRIEF: Complete architecture document for session handoff — every system, every file, every tool, every table, every monitor, every pending task documented. 289 lines covering environment, rin",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "842493c",
@@ -94,11 +99,6 @@
     {
       "hash": "c66c6dd",
       "subject": "FIX ALIGNMENT: Homepage content padding matched to nav padding (32px both). Document generation pipeline: research uses Haiku (53s vs 105s), structure max_tokens 8000, robust JSON repair for truncatio",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "828ea5d",
-      "subject": "FIX: (1) Wrong day greeting — getGreeting now uses fresh new Date() for both day name and hash index, prevents stale day showing. (2) Background tasks icon changed from rectangle-with-lines (mistaken ",
       "when": "14 hours ago"
     }
   ]
