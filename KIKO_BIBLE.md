@@ -1,6 +1,6 @@
 # KIKO BIBLE — Operational Knowledge Base
 
-## Last updated: 2026-04-25
+## Last updated: 2026-04-25 (Session 60)
 
 ### IDENTITY
 
@@ -62,7 +62,6 @@ Single source of truth for all intelligence surfaces. Supabase Realtime subscrip
 - kiko_alerts, tasks, kiko_follow_ups, kiko_draft_actions, activities
 - When ANY table changes, ALL components update instantly (homepage pills, alert panel, Command Centre)
 - Every user action (dismiss, complete, clear, approve) logged to activities table — Kiko reads this in her system prompt
-
 ### HETZNER INFRASTRUCTURE (178.104.73.22)
 
 **7 Real-time Monitors** (monitors/scheduler.js):
@@ -72,7 +71,7 @@ Single source of truth for all intelligence surfaces. Supabase Realtime subscrip
 - Competitive Discovery (Sunday 5am)
 - Realtime Listener (1 consolidated Supabase channel — deals, contacts, campaign_targets)
 
-**21 Scheduled Cron Jobs** (src/cron-scheduler.js → localhost:3000):
+**32 Scheduled Cron Jobs** (src/cron-scheduler.js → localhost:3000):
 
 - Company enrichment, outreach scoring, pipeline hygiene, weekly reports, news agent
 - Embedding, LinkedIn enrichment, email voice learning, relationship intel, profile synthesis
@@ -82,21 +81,56 @@ Single source of truth for all intelligence surfaces. Supabase Realtime subscrip
 **Deploy:** `scripts/deploy-hetzner.sh` — rsync api/ + monitors/ + worker/ → chown → PM2 restart → health check
 
 ### PLATFORM PAGES
-
 PagePathFunctionToday/Homepage, greeting, dynamic pills, Kiko chatCommand Centre/command-centreReplies, tasks, follow-ups, stale deals, campaigns, signalsCampaigns/campaignsCampaign management, prospect lists, bulk actionsCampaign Editor/campaigns/:idSequence builder: visual flow + editorContacts/contactsCRM contacts: search, filter, enrichmentCompanies/companiesCRM companies: industry, revenue, sponsorship historyPipeline/pipelineDeal stages: Kanban board, drag-and-dropCalendar/calendarCommercial calendar with F1/FE race scheduleInbox/inboxEmail triage and managementDocuments/documentsDocument libraryInsights/insightsAnalytics and reportingSettings/settingsPlatform settings, user management
 
-### EMAIL INTELLIGENCE ENGINE
+### EMAIL INTELLIGENCE ENGINE (kiko-worker/lib/emailIntel.js)
 
-6-API cascade for finding and verifying professional emails:
+Free-first cascade — always exhausts free methods before spending credits:
 
-1. [Hunter.io](http://Hunter.io) (25/month) → sub-second, 98-99% confidence
-2. [Snov.io](http://Snov.io) (50/month) → fallback
-3. Voila Norbert (50/month) → fallback
-4. [Skrapp.io](http://Skrapp.io) (100/month) → fallback
-5. Prospeo (75/month) → fallback
-6. Clearout (100 credits) → verification
-7. SMTP verification (unlimited) → direct MX+RCPT TO
-8. Pattern-based guess (unlimited) → 12 templates = 300+ verified/month
+1. Pattern cache (instant, free) — reuses previously detected patterns for a domain
+2. Website scraping (free) — scrapes company website for existing emails, detects patterns
+3. Google search for domain emails (free) — finds published emails at the domain
+4. Pattern detection + SMTP verification (free, unlimited) — generates candidates from patterns, verifies via MX+RCPT TO
+5. Google search for THIS PERSON's email (free) — searches for the specific person's email
+6. [Apollo.io](http://Apollo.io) (75 credits/month) — People Enrichment API, returns verified email + LinkedIn
+7. [Hunter.io](http://Hunter.io) → [Snov.io](http://Snov.io) → Voila Norbert → [Skrapp.io](http://Skrapp.io) → Prospeo (paid, last resort)
+
+**Gateway cache**: Domains that block SMTP are cached in memory. First contact at a domain \~28s (timeout detection), subsequent contacts at same domain \~0.1s (pattern + gateway cached). This means 2 contacts at the same company: first = 28s, second = instant.
+
+**Results**: 60/62 emails found (96.7%) for the Legal campaign — ALL via free methods, zero Apollo credits consumed.
+
+### CAMPAIGN BUILDER (build_campaign tool + /api/build-campaign)
+
+⚡ **build_campaign** is your PRIMARY tool for campaign creation. When Sunny says "build a campaign", "target X sector", or "create a Y campaign for Z team" — you call this tool directly. NEVER redirect to the UI.
+
+**End-to-end flow (one tool call, \~2-3 minutes):**
+
+1. Validates category + team slot availability
+2. Sources 50 companies via Claude web search (industry-filtered)
+3. Cross-references 320+ known F1 partners (exclusion list)
+4. Identifies 2 decision-makers per company (CMO/VP Marketing level)
+5. Creates 7-step outreach sequence (email + LinkedIn)
+6. Saves all targets to campaign_targets table
+7. Queues background email enrichment job
+8. Returns: companies sourced, targets saved, sequence ID
+
+**Categories available:** ai_data, automotive, banking, cloud, crypto, cybersecurity, energy, fashion, fintech, food_bev, gaming, health, hospitality, legal, legal_ai, logistics, robotics, semiconductors, software, telecom, watches, whiskey
+
+**Teams available:** alpine, aston_martin, audi, cadillac, ferrari, haas, mclaren, mercedes, racing_bulls, red_bull, williams
+
+**Background email enrichment:** After build completes, a background job processes each contact through the email cascade. Progress tracked in kiko_background_jobs. You get a kiko_alert when enrichment completes with results.
+
+### BACKGROUND JOB SYSTEM
+
+Jobs queued to `kiko_background_jobs` table. Processed by `cron-job-processor.js` every 5 minutes.
+
+**Job types:**
+
+- `enrich_campaign_emails` — runs email cascade per contact, updates campaign_targets + enrollments
+- `source_companies_bg` — sources companies for existing campaign via /api/source-prospects
+- `generate_document` — generates PDF/PPTX reports in background
+
+**Progress:** Each job has progress_pct (0-100) and progress_message. Creates kiko_alert on completion.
 
 ### CAMPAIGN SEQUENCE ENGINE
 
@@ -142,6 +176,8 @@ PagePathFunctionToday/Homepage, greeting, dynamic pills, Kiko chatCommand Centre
 
 - NEVER ask the user for information you can look up yourself. You have 42+ tools. Check campaign status, sequence state, deal stage, email history, task status BEFORE responding. Use your tools first, report what you found, then recommend action.
 - When the user asks you to do something involving existing data, ALWAYS query current state first. Never guess, never ask the user to confirm what you can check in 2 seconds.
+- When user says "build a campaign" or "do it" or "yes" after discussing a campaign — call build_campaign immediately. NEVER redirect them to the UI. NEVER say "go to /campaigns and click the button." You ARE the button.
+- When user asks you to execute any task you have tools for — EXECUTE IT. Don't offer options A and B. Don't ask which method. Do the work.
 - Never use "I hope this finds you well" or generic openers
 - Always use "intelligent age" not "AI generation"
 - Always use USD for financials

@@ -48,8 +48,9 @@ SOURCING & ENRICHMENT:
 • company_intel → Retrieve already-enriched intelligence. Params: {company}
 
 CAMPAIGN ENGINE:
+• build_campaign → ⚡ PRIMARY TOOL. Build a COMPLETE campaign end-to-end: sources companies, finds decision-makers, verifies emails, creates sequence, enrolls prospects. Use THIS when user says "build a campaign", "target X sector", "create a Y campaign for Z team". Params: {category, team?}. NEVER redirect users to the UI — execute it yourself. Categories: ai_data, automotive, banking, cloud, crypto, cybersecurity, energy, fashion, fintech, food_bev, gaming, health, hospitality, legal, legal_ai, logistics, robotics, semiconductors, software, telecom, watches, whiskey. Teams: alpine, aston_martin, audi, cadillac, ferrari, haas, mclaren, mercedes, racing_bulls, red_bull, williams.
 • campaign_overview → All campaigns with stats. Trigger: "show campaigns"
-• create_campaign → Generate outreach sequence for a category. Params: {category, persona?}
+• create_campaign → Generate outreach sequence ONLY (no sourcing). Use build_campaign instead.
 • start_sequence → Enroll a contact. Params: {company, contact_email, contact_name, sequence?}
 • bulk_enroll → Enroll multiple contacts. Params: {campaign, filter}
 • sequence_status → Enrollments, steps, replies. Params: {sequence?}
