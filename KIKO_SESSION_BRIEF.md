@@ -2,12 +2,55 @@
 
 ## For session handoff — read THIS before writing ANY code
 
-## Last updated: 2026-04-24 23:00 UTC
+## Last updated: 2026-04-25 21:00 UTC
 
-## 59 build sessions spanning April 7-24, 2026
+## 59 build sessions spanning April 7-25, 2026
 
 ## Transcripts: /mnt/transcripts/ (read journal.txt for session index)
 
+---
+
+## ⚡ SESSION 60 PRIORITIES (in order)
+
+### 1. CAMPAIGN BUILDER — Kiko executes builds directly via tools
+Kiko must be able to build campaigns when the user says "do it" — no redirecting to the UI.
+She should call `build-campaign` endpoint directly with the team + category as params.
+This is the #1 revenue-critical feature.
+
+### 2. CAMPAIGN BUILDER — Dynamic categories
+Categories are hardcoded in `build-campaign.js` (CATEGORY_CRITERIA object).
+Need: `campaign_categories` Supabase table, Kiko can create new categories (e.g. "Legal AI Technology"),
+categories + team names alphabetically sorted in the UI dropdown.
+
+### 3. CAMPAIGN BUILDER — "Add Prospects" sourcing quality
+When user types "legal AI companies" in the Add Prospects modal, the sourcing prompt must use that
+description, not just the generic category name. Currently sources generic law firms instead of
+legal AI tech companies like Harvey AI, Luminance, Ironclad etc.
+
+### 4. BACKGROUND TASK SYSTEM — Realtime updates
+Task icon in top nav polls every 15s. Needs Supabase Realtime subscription on `kiko_background_jobs`
+so status changes appear instantly. Cancel/retry/remove buttons needed on each task.
+"Clear finished" button needs to properly update UI state after deletion.
+Progress bar should show real percentage from `progress_pct` column.
+
+### 5. CAMPAIGN BUILDER — End-to-end test
+Full flow: Build → Enroll → Activate → First email sends via sequence sender.
+Test with the Alpine F1 Legal AI Technology campaign.
+Verify: no fabricated emails, real verified addresses, correct sequence steps.
+
+### 6. SESSION 59 COMPLETED (reference)
+- Apollo.io integrated (75 credits/month, positioned after free methods in cascade)
+- Email cascade: pattern+SMTP → Google → Apollo → paid APIs
+- Gateway cache: domains blocking SMTP cached, subsequent contacts instant
+- Campaign builder: background email enrichment via job processor
+- 60/62 emails found for legal campaign (96.7%, zero credits)
+- KikoFloat white screen crash fixed (chip objects → .label)
+- 11 dormant crons activated (32 total + 7 monitors)
+- Vercel cache headers fixed (s-maxage=0)
+- PermissionGate no-flash fix
+- Kiko hard rule: never ask user for data you can look up
+
+---
 ---
 
 ## IDENTITY

@@ -38,11 +38,12 @@ export default async function handler(req, res) {
             if (seq?.[0]) { campaignName = seq[0].name || category; targetPersona = seq[0].target_persona || targetPersona; }
           }
 
-          // Call source-prospects (same logic but via internal fetch)
-          const spRes = await fetch(`${process.env.HETZNER_URL || 'https://api.vanhawke.agency'}/api/source-prospects`, {
+          // Call source-prospects with timeout — it's an SSE endpoint so must abort after reasonable time
+          const spRes = await fetch(`${process.env.HETZNER_URL || 'http://127.0.0.1:3000'}/api/source-prospects`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ campaignName, description: category, targetPersona, maxCompanies: Math.min(count, 20), contactsPerCompany: 2 }),
+            signal: AbortSignal.timeout(180000), // 3 min max
           });
 
           // Read the SSE stream to get final results
