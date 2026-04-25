@@ -174,7 +174,7 @@ async function discoverDomain(domain) {
           detail: `${d.summary}${d.action ? '\n→ ' + d.action : ''}`,
           entity_name: d.entity,
           metadata: { discovery_domain: domain.id, entity_type: d.type },
-          user_id: null,
+          user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
           dismissed: false,
           created_at: new Date().toISOString(),
           expires_at: new Date(Date.now() + 14 * 86400000).toISOString(),

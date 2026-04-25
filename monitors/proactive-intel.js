@@ -148,7 +148,7 @@ Return 4-8 events. Only HIGH-IMPACT intelligence Van Hawke can act on. No filler
           entity_type: 'market_intel',
           entity_name: event.headline?.slice(0, 100),
           metadata: { division: event.division, urgency: event.urgency, lenses: event.lenses, related_deal: relatedDeal || null },
-          user_id: null, // visible to all users
+          user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063', // Sunny — super_admin sees all
           dismissed: false,
           created_at: now,
           expires_at: new Date(Date.now() + 3 * 86400000).toISOString(), // 3-day expiry
@@ -238,7 +238,7 @@ Return ONLY valid JSON array. Each: { "prediction": "What will happen", "confide
                 detail: `${pred.prediction}\n\nTimeframe: ${pred.timeframe || '14d'} | Confidence: ${pred.confidence}\n→ ${pred.preemptive_action || 'Review in Kiko'}`,
                 entity_name: (pred.entities || [])[0] || 'Portfolio',
                 metadata: { category: pred.category, confidence: pred.confidence, timeframe: pred.timeframe },
-                user_id: null,
+                user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
                 dismissed: false,
                 created_at: new Date().toISOString(),
                 expires_at: new Date(now + (pred.timeframe === '7d' ? 7 : pred.timeframe === '30d' ? 30 : 14) * 86400000).toISOString(),

@@ -59,7 +59,7 @@ export async function runFollowUpMonitor() {
               detail: `Original subject: "${fu.subject}". Reply detected in ${fu.sender_email.split('@')[0]}'s inbox.`,
               entity_type: 'follow_up', entity_id: fu.id, entity_name: fu.recipient_name || fu.recipient_email,
               metadata: { original_subject: fu.subject, sender: fu.sender_email, recipient: fu.recipient_email },
-              user_id: null, dismissed: false, created_at: now.toISOString(),
+              user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063', dismissed: false, created_at: now.toISOString(),
               expires_at: new Date(now.getTime() + 7 * 86400000).toISOString(),
             }),
           });
@@ -85,7 +85,7 @@ export async function runFollowUpMonitor() {
             detail: `Original: "${fu.subject}" sent ${daysSince} days ago from ${fu.sender_email.split('@')[0]}. Follow-up recommended.`,
             entity_type: 'follow_up', entity_id: fu.id, entity_name: fu.recipient_name || fu.recipient_email,
             metadata: { original_subject: fu.subject, sender: fu.sender_email, recipient: fu.recipient_email, company: fu.company, days_since: daysSince },
-            user_id: null, dismissed: false, created_at: now.toISOString(),
+            user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063', dismissed: false, created_at: now.toISOString(),
             expires_at: new Date(now.getTime() + 3 * 86400000).toISOString(),
           }),
         });

@@ -253,9 +253,19 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     return () => window.removeEventListener('kiko-chat-updated', handler)
   }, [loadMobileHistory])
 
-  // Poll alert count from KikoInsights
+  // Load alert count directly — don't depend on KikoInsights window global
   useEffect(() => {
-    const iv = setInterval(() => { if (window.__kikoAlertCount !== undefined) setAlertCount(window.__kikoAlertCount) }, 2000)
+    const loadAlerts = async () => {
+      try {
+        const { count } = await supabase.from('kiko_alerts').select('id', { count: 'exact', head: true }).eq('dismissed', false)
+        setAlertCount(count || 0)
+      } catch {}
+    }
+    loadAlerts()
+    // Also poll from KikoInsights for live updates when panel is open
+    const iv = setInterval(() => {
+      if (window.__kikoAlertCount !== undefined) setAlertCount(window.__kikoAlertCount)
+    }, 5000)
     return () => clearInterval(iv)
   }, [])
   const toggleHistory = (val) => {

@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-04-25T08:46:18.872Z",
+  "generated_at": "2026-04-25T08:55:17.760Z",
   "commits": [
+    {
+      "hash": "ac86acd",
+      "subject": "Command Centre + Alerts: data sync, actionable alerts, stale deal fix",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "8005214",
       "subject": "Command Centre: role-based signal filtering",
@@ -24,7 +29,7 @@
     {
       "hash": "aed1953",
       "subject": "Knowledge visibility fix + search_knowledge upgrade",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "b8c800a",
@@ -59,7 +64,7 @@
     {
       "hash": "828ea5d",
       "subject": "FIX: (1) Wrong day greeting — getGreeting now uses fresh new Date() for both day name and hash index, prevents stale day showing. (2) Background tasks icon changed from rectangle-with-lines (mistaken ",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "f774ee1",
@@ -79,7 +84,7 @@
     {
       "hash": "e52ccf7",
       "subject": "STRATEGIC INTELLIGENCE EXPANSION: (1) 8 Van Hawke competitive domains replacing 4 — now covers agency competitors (self-discovering), F1 deal economics, prospect signals, positioning, business buildin",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "3497dd1",
@@ -95,11 +100,6 @@
       "hash": "5161991",
       "subject": "COMPLETE AWARENESS PATCH: (1) 3 new deep query tools: query_relationships (94 entries), query_thought_journal (196 entries), query_conversation_insights (1,591 entries). (2) Self-knowledge: autonomous",
       "when": "15 hours ago"
-    },
-    {
-      "hash": "c7f2bed",
-      "subject": "CRITICAL: Complete memory architecture awareness. Kiko now knows about ALL 62 tables, 4,500+ entries, cross-referencing rules, accumulated knowledge stats. Added: memory stack documentation (what's lo",
-      "when": "16 hours ago"
     }
   ]
 }
