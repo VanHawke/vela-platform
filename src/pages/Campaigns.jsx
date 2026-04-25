@@ -1254,7 +1254,7 @@ export default function Campaigns({ user }) {
               <button onClick={() => { setAddProspectsOpen(false); setAddProspectsPhase('idle') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A0A0A0' }}><X size={18} /></button>
             </div>
             <div style={{ fontSize: 12, color: '#6B6B6B', lineHeight: 1.5, marginBottom: 16, fontFamily: C.font }}>
-              Kiko will research and source new companies and decision-makers matching your campaign criteria, then let you review and enroll them. Existing prospects won't be duplicated.
+              Kiko will research and source new companies and decision-makers in the background. Progress appears in the tasks icon in the top nav. Prospects are added to the campaign automatically — no duplicates.
             </div>
             {addProspectsPhase === 'idle' && (
               <>
@@ -1275,19 +1275,18 @@ export default function Campaigns({ user }) {
                 />
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
                   <button onClick={() => { setAddProspectsOpen(false); setAddProspectsPhase('idle') }} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid rgba(0,0,0,0.1)`, background: 'transparent', color: '#6B6B6B', fontSize: 12, cursor: 'pointer', fontFamily: C.font }}>Cancel</button>
-                  <button onClick={() => addMoreProspects()} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}><UserPlus size={12} /> Source now</button>
                   <button onClick={async () => {
                     try {
                       const userId = user?.id || '9f486437-4bf5-4111-abfe-fe19bfa76063'
                       const description = addProspectsQuery || selectedCampaign?.description || selectedCampaign?.target_persona || selectedCampaign?.name || ''
                       const resp = await fetch(`https://api.vanhawke.agency/api/kiko-jobs?user_id=${userId}`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ job_type: 'source_companies_bg', title: `Source contacts for "${selectedCampaign?.name}"`, params: { category: description, description, campaignName: selectedCampaign?.name, count: 15, sequence_id: selectedId }, related_entity_type: 'sequence', related_entity_id: selectedId, user_id: userId }),
+                        body: JSON.stringify({ job_type: 'source_companies_bg', title: `Source prospects for "${selectedCampaign?.name}"`, params: { category: description, description, campaignName: selectedCampaign?.name, count: 15, sequence_id: selectedId }, related_entity_type: 'sequence', related_entity_id: selectedId, user_id: userId }),
                       })
                       if (resp.ok) window.dispatchEvent(new Event('kiko_refresh_tasks'))
                     } catch {}
                     setAddProspectsOpen(false); setAddProspectsPhase('idle')
-                  }} style={{ padding: '8px 16px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: '#0A0A0A', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}>↗ Source in background</button>
+                  }} style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#0A0A0A', color: '#FEFEFC', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: C.font, display: 'flex', alignItems: 'center', gap: 6 }}><UserPlus size={12} /> Source prospects</button>
                 </div>
               </>
             )}

@@ -1,45 +1,55 @@
 {
-  "generated_at": "2026-04-25T21:48:10.771Z",
+  "generated_at": "2026-04-25T21:58:02.535Z",
   "commits": [
+    {
+      "hash": "474ffee",
+      "subject": "KIKO_BIBLE final: KikoFloat conversation pills + Campaign UI sections added",
+      "when": "2 minutes ago"
+    },
+    {
+      "hash": "e539743",
+      "subject": "Campaign targets display + KikoFloat conversation pills + sequence verified",
+      "when": "10 minutes ago"
+    },
     {
       "hash": "2c4048b",
       "subject": "Session 60: Sequence engine rewrite + task panel buttons + all fixes",
-      "when": "8 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "701c5c9",
       "subject": "Background tasks: Realtime subscription + sourcing quality fix",
-      "when": "17 minutes ago"
+      "when": "27 minutes ago"
     },
     {
       "hash": "efb347e",
       "subject": "Fix: build-campaign now creates enrollments so prospects appear in UI",
-      "when": "21 minutes ago"
+      "when": "30 minutes ago"
     },
     {
       "hash": "172c2f4",
       "subject": "KIKO_BIBLE comprehensive update: sequence quality + all knowledge gaps",
-      "when": "24 minutes ago"
+      "when": "34 minutes ago"
     },
     {
       "hash": "33a4ab4",
       "subject": "Fix: source_companies_bg now populates campaign_targets + async job processor",
-      "when": "27 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "13f0091",
       "subject": "KIKO_BIBLE + self-knowledge: full Session 59-60 update",
-      "when": "63 minutes ago"
+      "when": "73 minutes ago"
     },
     {
       "hash": "f596d01",
       "subject": "Session 60: build_campaign tool + legal_ai category + alphabetical sorting",
-      "when": "72 minutes ago"
+      "when": "82 minutes ago"
     },
     {
       "hash": "8c2d8b7",
       "subject": "Session 59 close: Session 60 priorities logged in KIKO_SESSION_BRIEF.md",
-      "when": "80 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "ad6dcf0",
@@ -84,21 +94,11 @@
     {
       "hash": "354021c",
       "subject": "Campaign builder: background email enrichment + end-to-end fix",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "44dd241",
       "subject": "Auth fix + gateway cache for email cascade",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "b6f8f0d",
-      "subject": "Apollo moved behind free methods — preserves 75 credits/month",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "7a34ac4",
-      "subject": "Apollo.io integration live — 270M verified contacts, Source 1 in cascade",
       "when": "5 hours ago"
     }
   ]
