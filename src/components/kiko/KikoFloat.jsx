@@ -150,7 +150,7 @@ function EqIcon({ size = 18, color = 'currentColor' }) {
 export default function KikoFloat({ user, messages: sharedMessages, setMessages: setSharedMessages, convId: sharedConvId, setConvId: setSharedConvId, onNavigate, autoVoice, onAutoVoiceConsumed }) {
   const loc = useLocation()
   const isHome = loc.pathname === '/'
-  const currentPage = loc.pathname.replace('/', '') || 'home'
+  const currentPage = loc.pathname.split('/').filter(Boolean)[0] || 'home'
   const dynamicChips = useDynamicChips(currentPage, true)
   const [open, setOpen] = useState(sharedMessages?.length > 0)
   const [hasPanel, setHasPanel] = useState(sharedMessages?.length > 0)

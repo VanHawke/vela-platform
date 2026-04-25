@@ -15,10 +15,12 @@ const FALLBACK_HOME = [
 const PAGE_CHIPS = {
   pipeline: ['Show stale deals', 'Pipeline forecast', 'Move a deal forward', 'Draft outreach'],
   contacts: ['Who needs follow-up?', 'Stale contacts', 'Enrich new contacts', 'Search contacts'],
+  campaigns: ['Campaign performance', 'Add prospects', 'Which categories are open?', 'Draft sequence emails'],
   'command-centre': ['Overdue tasks', "This week's priorities", 'Create a task', 'Check emails'],
   'partnership-matrix': ['Open categories on Haas', 'Recent partner changes', 'Category conflicts', 'Competitor analysis'],
   organisations: ['Top prospects by funding', 'Due diligence check', 'Sponsorship readiness', 'Compare organisations'],
   calendar: ["What's on today?", 'Schedule a meeting', 'F1 race calendar', 'Free time this week'],
+  documents: ['Generate a report', 'Recent documents', 'Create a deck', 'Brand guidelines'],
   news: ['Deal signals this week', 'F1 partnership news', 'Funding announcements', 'Industry trends'],
 }
 
