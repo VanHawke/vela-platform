@@ -67,13 +67,13 @@ async function loadHomeChips() {
         .order('created_at', { ascending: false }).limit(2),
     ])
 
-    // 1. Follow-ups due — "Follow up with [Name]"
-    const followUps = (followUpRes.data || []).filter(f => f.follow_up_due_at && new Date(f.follow_up_due_at) <= new Date(now + 2 * 86400000))
-    if (followUps.length > 0) {
-      const fu = followUps[0]
+    // 1. Follow-ups due — "Follow up with [Name]" (up to 2)
+    const followUps = (followUpRes.data || []).filter(f => f.follow_up_due_at && new Date(f.follow_up_due_at) <= new Date(now + 7 * 86400000))
+    for (const fu of followUps.slice(0, 2)) {
       const name = fu.recipient_name || fu.company || 'prospect'
+      const isOverdue = new Date(fu.follow_up_due_at) < new Date()
       chips.push({
-        label: `Follow up with ${name.split(' ')[0]}`,
+        label: isOverdue ? `⚡ ${name.split(' ')[0]} overdue` : `Follow up with ${name.split(' ')[0]}`,
         prompt: `Draft a follow-up email for ${name}${fu.company ? ' at ' + fu.company : ''}. Use a fresh angle — don't just "check in."`,
         navigate: '/command-centre',
       })
@@ -149,7 +149,8 @@ async function loadHomeChips() {
     }
 
     return chips.slice(0, 5)
-  } catch {
+  } catch (err) {
+    console.error('[useDynamicChips] loadHomeChips failed:', err)
     return FALLBACK_HOME
   }
 }

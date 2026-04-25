@@ -1,78 +1,14 @@
 {
   "git": {
     "deploymentEnabled": {
-      "main": true,
-      "redesign/legora": true
+      "main": true
     }
   },
-  "ignoreCommand": "bash -c 'git diff HEAD^ HEAD --quiet ./src ./api ./public ./package.json ./package-lock.json ./vite.config.js ./vercel.json'",
+  "ignoreCommand": "bash -c 'git diff HEAD^ HEAD --quiet ./src ./public ./package.json ./package-lock.json ./vite.config.js ./vercel.json'",
   "crons": [],
   "functions": {
-    "api/kiko.js": {
-      "maxDuration": 120
-    },
-    "api/source-prospects.js": {
-      "maxDuration": 300
-    },
-    "api/linkedin-trigger.js": {
-      "maxDuration": 120
-    },
-    "api/generate-sequence.js": {
-      "maxDuration": 60
-    },
-    "api/file-extract.js": {
+    "api/google-auth.js": {
       "maxDuration": 30
-    },
-    "api/kiko-research.js": {
-      "maxDuration": 120
-    },
-    "api/kiko-code.js": {
-      "maxDuration": 30
-    },
-    "api/news-agent.js": {
-      "maxDuration": 120
-    },
-    "api/health.js": {
-      "maxDuration": 45
-    },
-    "api/generate-doc.js": {
-      "maxDuration": 30
-    },
-    "api/generate-image.js": {
-      "maxDuration": 30
-    },
-    "api/fetch-url.js": {
-      "maxDuration": 20
-    },
-    "api/email.js": {
-      "maxDuration": 30
-    },
-    "api/calendar.js": {
-      "maxDuration": 20
-    },
-    "api/enrichment-agent.js": {
-      "maxDuration": 45
-    },
-    "api/documents.js": {
-      "maxDuration": 30
-    },
-    "api/import-conversations.js": {
-      "maxDuration": 120
-    },
-    "api/ingest-knowledge.js": {
-      "maxDuration": 60
-    },
-    "api/kiko-draft-actions.js": {
-      "maxDuration": 30
-    },
-    "api/kiko-async.js": {
-      "maxDuration": 300
-    },
-    "api/cron-*.js": {
-      "maxDuration": 120
-    },
-    "api/push-*.js": {
-      "maxDuration": 20
     }
   },
   "rewrites": [
@@ -81,8 +17,8 @@
       "destination": "/api/google-auth"
     },
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "source": "/api/google-auth",
+      "destination": "/api/google-auth"
     },
     {
       "source": "/((?!api/).*)",
