@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-25T10:16:39.580Z",
+  "generated_at": "2026-04-25T10:24:52.727Z",
   "commits": [
+    {
+      "hash": "c8d32bc",
+      "subject": "KikoLiveContext: real-time shared state across all surfaces",
+      "when": "8 minutes ago"
+    },
     {
       "hash": "aa476ff",
       "subject": "Clean slate: all overdue cleared, alert CTAs fixed, data synced",
-      "when": "20 minutes ago"
+      "when": "28 minutes ago"
     },
     {
       "hash": "1d44b71",
       "subject": "Pills width fix, inline alert CTAs, CC clear all overdue, stale deal cleanup",
-      "when": "28 minutes ago"
+      "when": "37 minutes ago"
     },
     {
       "hash": "cd3428b",
       "subject": "Fix 4 bugs: alert actions, pill visibility, count sync, CC reconciliation",
-      "when": "64 minutes ago"
+      "when": "72 minutes ago"
     },
     {
       "hash": "ff6e695",
       "subject": "RLS fix + dynamic pills + Vercel free tier cleanup",
-      "when": "77 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "77a720c",
       "subject": "Alert visibility fix: null user_ids + direct count loading",
-      "when": "81 minutes ago"
+      "when": "89 minutes ago"
     },
     {
       "hash": "ac86acd",
@@ -34,12 +39,12 @@
     {
       "hash": "8005214",
       "subject": "Command Centre: role-based signal filtering",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "3e1afbd",
       "subject": "Command Centre upgrade: follow-up tracker, campaign activity, expanded signals",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "3f291c1",
@@ -94,11 +99,6 @@
     {
       "hash": "f774ee1",
       "subject": "Kiko self-knowledge: document generation capability documented — types, divisions, purposes, branding, timing, when to use.",
-      "when": "14 hours ago"
-    },
-    {
-      "hash": "a992019",
-      "subject": "DOCUMENT GENERATION PIPELINE — COMPLETE: (1) generate-document.js: researches topic via Haiku + web search, structures via Sonnet, renders branded HTML or PPTX. (2) Van Hawke brand system: #7C5CFC pur",
       "when": "14 hours ago"
     }
   ]

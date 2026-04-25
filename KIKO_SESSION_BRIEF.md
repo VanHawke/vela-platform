@@ -166,19 +166,52 @@ ComponentLocationDetailsRepo`/Users/sunny/Desktop/vela-platform/`Git → auto-de
 - Document generation pipeline (research → structure → branded HTML/PPTX)
 - Homepage fixes (greeting, background tasks icon, nav CSS grid centering)
 
-### Session 59 (Apr 24): Proactive Intelligence v2 + Hetzner Consolidation
+### Session 59 (Apr 24-25): Proactive Intelligence v2 + Hetzner Consolidation + KikoLiveContext
 
-- Self-Discovery Engine (monitors/competitive-discovery.js) — 5 domains rotating weekly: agency competitors, prospect signals, eyewear disruptors, agency structures, F1 commercial shifts. Sonnet + web search, Haiku extraction, writes to kiko_knowledge + kiko_alerts
-- Predictive Synthesis added to proactive-intel monitor — 5 prediction types: deal velocity, conversion windows, competitive threats, category timing, churn risk. Confidence levels, timeframes, preemptive actions
-- Agency Org Intel domain (12 topics) in learning director — competitor team structures, revenue models, pitch processes, client churn, tech stacks. Total research domains: 29
-- Knowledge Visibility Fix — changed from "last 10 entries" to domain-aware loading (latest per domain, up to 28). All research domains permanently visible
-- search_knowledge now searches kiko_knowledge table — Kiko can actively retrieve her own competitive research
-- CRITICAL: Discovered cron-scheduler.js was NEVER imported by server.js — 16 crons with real API files were completely dormant. Wired startScheduler() into server.js, 21 local cron jobs now active (calling localhost:3000)
-- Removed 26 dead cron entries (archived files), excluded 11 already handled by Supabase pg_cron
-- Full API sync: all 120 api/ files synced from repo to Hetzner
-- cron-job-processor URL fixed: Vercel → Hetzner (api.vanhawke.agency)
-- Vercel now serves ONLY static frontend (free tier). All API + cron + monitor work on Hetzner
-- Predictive synthesis in api/cron-proactive.js also enhanced (convergence-level predictions)
+**Intelligence Infrastructure:**
+- Self-Discovery Engine (monitors/competitive-discovery.js) — 5 domains rotating weekly
+- Predictive Synthesis added to proactive-intel monitor — 5 prediction types, 2x daily
+- Agency Org Intel domain (12 topics) in learning director. Total: 29 research domains
+- Knowledge Visibility Fix — domain-aware loading (latest per domain, up to 28)
+- search_knowledge now searches kiko_knowledge table
+- 16 dormant crons activated (cron-scheduler.js wired into server.js, 21 local jobs)
+- 26 dead cron entries removed, pg_cron audit confirmed zero jobs
+- Full API sync: 120 files to Hetzner. cron-job-processor URL: Vercel → Hetzner
+- Vercel stripped to 1 function (google-auth only) — free tier ready
+
+**KikoLiveContext (src/contexts/KikoLiveContext.jsx):**
+- Single source of truth for all intelligence surfaces
+- Supabase Realtime subscriptions on 5 tables (alerts, tasks, follow-ups, draft_actions, activities)
+- All actions logged to activities table — Kiko reads these in her system prompt
+- Homepage pills, alert panel, Command Centre all share live state
+- Dismiss alert → all surfaces update. Complete task → pills rebuild. Instant.
+
+**Command Centre:**
+- Follow-up tracker + mark-as-done, campaign activity section
+- Expanded signals (predictions, discoveries, proactive intel)
+- Role-based filtering (Matt = sponsorship only, Sunny = all)
+- Auto-reconciliation checks 3 sources (activities, outreach queue, follow-ups)
+- Stale deals 30-365d only (excludes never-touched). Clear all overdue button
+- Tasks/followUps/actions from KikoLiveContext — no duplicate queries
+
+**Alert Panel (KikoInsights):**
+- Fully rewritten to use KikoLiveContext
+- Inline CTAs on every alert: Brief me, Act on this, × (no expand needed)
+- Suggested actions: Do this, Brief me first, × (was icon-only, now text CTAs)
+- Shows ALL undismissed alerts (count matches pill)
+
+**Homepage:**
+- CSS alignment fixed (removed marginLeft: -14 offset when sidebar collapsed)
+- Alert pill hidden when count=0, pills never exceed prompt bar width (660px, nowrap)
+- Dynamic pills from context: follow-ups, replies, stale deals, predictions
+- Labels truncated at 28 chars, 3 chips when alert visible, 4 when hidden
+
+**Data Fixes:**
+- 125 null user_id alerts → assigned to Sunny. All monitors now write user_id
+- RLS policies added for kiko_follow_ups + kiko_draft_actions (were invisible to frontend)
+- 37 overdue tasks bulk-cleared. Illumio follow-up closed (Closed Lost deal)
+- Nscale + Stord deal lastActivity updated from follow-up sent dates
+- Old noise alerts dismissed. Draft actions cleared. Clean slate.
 
 ---
 

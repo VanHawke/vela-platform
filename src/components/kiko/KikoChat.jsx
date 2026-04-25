@@ -1572,7 +1572,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
         )}
 
         {/* Center content */}
-        <div id="kikoHomeContent" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: trans, minHeight: 0, padding: isMobile ? '0 24px' : '20px 32px 40px', marginLeft: (!isMobile && !historyOpen) ? -14 : 0 }}>
+        <div id="kikoHomeContent" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', transition: trans, minHeight: 0, padding: isMobile ? '0 24px' : '20px 32px 40px' }}>
 
           {/* Top spacer — desktop only, mobile content is naturally centred */}
           {!isMobile && <div style={{ flex: voiceActive ? 1 : 0.5, transition: 'flex 0.7s cubic-bezier(0.34,1.56,0.64,1)' }} />}
