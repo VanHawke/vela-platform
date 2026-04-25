@@ -9,6 +9,77 @@ import { promisify } from 'util';
 const resolveMx = promisify(dns.resolveMx);
 
 // ══════════════════════════════════════════════
+// APOLLO.IO — 270M+ verified contacts, free tier
+// Source 1 in the cascade. Unlimited email credits.
+// ══════════════════════════════════════════════
+const APOLLO_API_KEY = process.env.APOLLO_API_KEY;
+
+async function apolloFindEmail(firstName, lastName, domain, company) {
+  if (!APOLLO_API_KEY) return null;
+  try {
+    const params = new URLSearchParams({
+      first_name: firstName,
+      last_name: lastName,
+      organization_name: company || domain,
+      domain: domain,
+      reveal_personal_emails: 'false',
+      reveal_phone_number: 'false',
+    });
+    const res = await fetch(`https://api.apollo.io/api/v1/people/match?${params}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+        'x-api-key': APOLLO_API_KEY,
+      },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const person = data.person;
+    if (!person) return null;
+    const email = person.email;
+    if (!email || !email.includes('@')) return null;
+    return {
+      email,
+      verified: person.email_status === 'verified',
+      confidence: person.email_status === 'verified' ? 0.95 : 0.7,
+      source: 'apollo.io',
+      title: person.title || null,
+      linkedin: person.linkedin_url || null,
+      company: person.organization?.name || company,
+    };
+  } catch { return null; }
+}
+
+// Apollo People Search — find decision-makers at a company (no credits consumed)
+async function apolloSearchPeople(companyName, titles = ['CMO', 'VP Marketing', 'Head of Marketing']) {
+  if (!APOLLO_API_KEY) return [];
+  try {
+    const params = new URLSearchParams();
+    params.append('q_organization_name', companyName);
+    for (const t of titles) params.append('person_titles[]', t);
+    params.append('per_page', '5');
+    const res = await fetch(`https://api.apollo.io/api/v1/mixed_people/api_search?${params}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache', 'x-api-key': APOLLO_API_KEY },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.people || []).map(p => ({
+      id: p.id,
+      name: p.name,
+      firstName: p.first_name,
+      lastName: p.last_name,
+      title: p.title,
+      company: p.organization?.name,
+      linkedin: p.linkedin_url,
+    }));
+  } catch { return []; }
+}
+
+// ══════════════════════════════════════════════
 // EMAIL PATTERNS — 12 common corporate formats
 // ══════════════════════════════════════════════
 const PATTERNS = [
@@ -496,6 +567,26 @@ export async function findEmail({ firstName, lastName, company, domain }) {
   try {
     // Step 1: Check pattern cache
     let pattern = patternCache.get(domainClean);
+
+    // Step 1.5: APOLLO.IO — check 270M+ verified contacts FIRST (free, highest accuracy)
+    if (!pattern || pattern.confidence < 0.8) {
+      log.push('Checking Apollo.io (270M+ contacts)...');
+      const apolloResult = await apolloFindEmail(firstName, lastName, domainClean, company);
+      if (apolloResult && apolloResult.email) {
+        log.push(`✓ Apollo.io: ${apolloResult.email} (${apolloResult.verified ? 'verified' : 'unverified'}, confidence: ${apolloResult.confidence})`);
+        // Cache the pattern from Apollo's result
+        const apolloPattern = detectPattern([apolloResult.email], domainClean);
+        patternCache.set(domainClean, apolloPattern);
+        return {
+          ok: true, email: apolloResult.email,
+          verified: apolloResult.verified, confidence: apolloResult.confidence,
+          pattern: apolloPattern.pattern, reason: 'apollo_io',
+          linkedin_url: apolloResult.linkedin, title: apolloResult.title,
+          duration_ms: Date.now() - startTime, log,
+        };
+      }
+      log.push('Apollo: no match');
+    }
     
     if (!pattern) {
       // Step 2: Scrape domain for existing emails — FREE METHODS ONLY
@@ -755,3 +846,7 @@ export async function verifyEmail(email) {
   
   return await smtpCheck(mxHost, email);
 }
+
+
+// Export Apollo search for use by build-campaign
+export { apolloSearchPeople, apolloFindEmail };
