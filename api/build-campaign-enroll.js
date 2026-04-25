@@ -14,14 +14,12 @@ export default async function handler(req, res) {
   if (!campaign_id) return res.status(400).json({ error: 'campaign_id required' });
 
   try {
-    // Pull ALL sourced targets for this campaign (no cap — Sunny's spec).
-    // Volume is fine because cron-sequence-sender staggers sends per-contact timezone
-    // across business hours, not all at once. Whatever volume is sourced gets enrolled.
+    // Pull ALL targets for this campaign — sourced, needs_email, or any status except 'enrolled'
     const { data: targets, error: tErr } = await supabase
       .from('campaign_targets')
       .select('*')
       .eq('campaign_id', campaign_id)
-      .eq('enrollment_status', 'sourced')
+      .not('enrollment_status', 'eq', 'enrolled')
       .order('rank');
     if (tErr) throw tErr;
     if (!targets || targets.length === 0) {
@@ -44,18 +42,11 @@ export default async function handler(req, res) {
 
     // ONLY enroll targets with VERIFIED real emails — never fabricate
     const validTargets = targets.filter(t => isValidEmail(t.decision_maker_email));
-    const skipped = targets.length - validTargets.length;
-
-    if (validTargets.length === 0) {
-      return res.status(200).json({
-        success: false,
-        enrolled: 0,
-        skipped,
-        error: `${targets.length} targets found but none have verified email addresses. Run email enrichment first (ask Kiko to "enrich emails for this campaign").`,
-      });
-    }
+    const noEmailTargets = targets.filter(t => !isValidEmail(t.decision_maker_email));
 
     const now = new Date().toISOString();
+
+    // Enroll targets WITH verified emails — ready to send
     const enrollments = validTargets.map(t => ({
       sequence_id: campaign_id,
       contact_email: t.decision_maker_email.trim(),
@@ -68,9 +59,27 @@ export default async function handler(req, res) {
       next_send_at: null,
     }));
 
+    // Enroll targets WITHOUT emails — visible in campaign but marked for enrichment
+    const pendingEnrollments = noEmailTargets.map(t => ({
+      sequence_id: campaign_id,
+      contact_email: `pending.${(t.decision_maker_name || 'unknown').toLowerCase().replace(/\s+/g, '.')}@needs-enrichment.local`,
+      contact_name: t.decision_maker_name || t.company_name,
+      title: t.decision_maker_title || null,
+      company: t.company_name,
+      current_step: 0,
+      status: 'needs_email',
+      enrolled_at: now,
+      next_send_at: null,
+    }));
+
+    const allEnrollments = [...enrollments, ...pendingEnrollments];
+    if (allEnrollments.length === 0) {
+      return res.status(200).json({ success: false, enrolled: 0, error: 'No targets found for this campaign.' });
+    }
+
     const { data: inserted, error: eErr } = await supabase
       .from('kiko_sequence_enrollments')
-      .insert(enrollments)
+      .insert(allEnrollments)
       .select();
     if (eErr) throw eErr;
 
@@ -87,14 +96,15 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       enrolled: inserted?.length || 0,
-      skipped,
+      with_email: validTargets.length,
+      needs_email: noEmailTargets.length,
       sequence_activated: false,
       status: 'paused',
       campaign_id,
-      enrolled_companies: validTargets.map(t => ({ rank: t.rank, company: t.company_name, dm: t.decision_maker_name, email: t.decision_maker_email })),
-      next_step: skipped > 0
-        ? `${skipped} targets skipped (no verified email). Ask Kiko to "enrich emails for this campaign" to find real addresses. Then re-run enrollment.`
-        : 'Review sequence drafts, refine messaging, send test email to yourself, then click Activate to go live.',
+      enrolled_companies: allEnrollments.map(t => ({ company: t.company, dm: t.contact_name, email: t.contact_email, status: t.status })),
+      next_step: noEmailTargets.length > 0
+        ? `${validTargets.length} contacts ready to send, ${noEmailTargets.length} need email enrichment. Ask Kiko to "enrich emails for this campaign" to find real addresses. Then activate.`
+        : 'All contacts have verified emails. Review sequence drafts, then click Activate to go live.',
     });
   } catch (err) {
     console.error('[build-campaign-enroll] error:', err);
