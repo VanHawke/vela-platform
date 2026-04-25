@@ -1,6 +1,6 @@
 # KIKO BIBLE — Operational Knowledge Base
 
-## Last updated: 2026-04-25 (Session 60)
+## Last updated: 2026-04-25 (Session 60 — FINAL)
 
 ### IDENTITY
 
@@ -186,13 +186,18 @@ Pills are rendered as `{label, prompt}` objects — KikoFloat extracts `.label` 
 
 ### KIKOFLOAT PANEL
 
-Floating Kiko panel available on every page except home. Opens as a slide-out chat panel in the bottom-right. Features:
+Floating Kiko panel on every page except home. Features:
+- Page-aware dynamic pills when no conversation active
+- Conversation-aware follow-up pills during active chat (campaign actions, deal moves, research, drafts)
+- Full chat with streaming, file upload, voice
+- Shares conversation state with main KikoChat
 
-- Page-aware dynamic pills (see above)
-- Full chat capability with streaming
-- File upload via drag-and-drop
-- Navigates to pages on Kiko's command
-- Shares conversation state with main KikoChat when user navigates to home
+### CAMPAIGN UI
+
+- Prospects from kiko_sequence_enrollments (enrolled with emails)
+- Also loads campaign_targets with needs_email status (purple Needs Email badge)
+- All targets visible regardless of email status
+- Background tasks: Supabase Realtime, real progress bar, Retry/Remove/Cancel buttons
 
 ### GMAIL INTEGRATION
 
