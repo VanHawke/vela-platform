@@ -340,63 +340,33 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
       }
     }
 
-    // ─── STEP 10.5: EMAIL ENRICHMENT — find REAL verified emails via intelligence cascade ───
-    // This is the critical step that was missing. Never use AI-guessed emails.
-    // Calls Hetzner email-intel engine: Hunter.io → Snov.io → Voila Norbert → Skrapp → 
-    // Prospeo → Pattern detection + SMTP verification
-    await stageStart(5.5, 'Finding verified emails', `Running email intelligence cascade for ${webTargetRows.length} contacts`);
-    const emailIntelUrl = 'http://127.0.0.1:3000/email-intel/find';
-    const emailIntelAuth = process.env.KIKO_WORKER_SECRET || 'kiko-hetzner-2026-vanhawke';
-    let emailsFound = 0;
-    let emailsFailed = 0;
-
-    for (const target of webTargetRows) {
-      try {
-        // Split decision_maker_name into first/last
-        const nameParts = (target.decision_maker_name || '').trim().split(/\s+/);
-        if (nameParts.length < 2) { emailsFailed++; continue; }
-        const firstName = nameParts[0];
-        const lastName = nameParts.slice(1).join(' ');
-
-        // Get domain from the sourcing data
-        const companyObj = filtered.find(c => c.company === target.company_name);
-        let domain = companyObj?.domain;
-        
-        // If no domain provided, derive from company name (simple heuristic)
-        if (!domain) {
-          domain = target.company_name
-            .toLowerCase()
-            .replace(/[&,.'"\-()]/g, '')
-            .replace(/\s+(inc|llc|ltd|plc|corp|co|group|holdings|international|global)$/i, '')
-            .replace(/\s+/g, '')
-            + '.com';
-        }
-
-        const res = await fetch(emailIntelUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${emailIntelAuth}` },
-          body: JSON.stringify({ firstName, lastName, company: target.company_name, domain }),
-          signal: AbortSignal.timeout(15000),
-        });
-        const data = await res.json();
-
-        if (data.ok && data.email && isValidEmail(data.email)) {
-          target.decision_maker_email = data.email;
-          target.verification_status = data.verified ? 'verified' : 'pattern_matched';
-          target.enrollment_status = 'sourced'; // Ready for enrollment
-          emailsFound++;
-        } else {
-          target.decision_maker_email = null;
-          target.enrollment_status = 'needs_email';
-          emailsFailed++;
-        }
-      } catch (err) {
-        target.decision_maker_email = null;
-        target.enrollment_status = 'needs_email';
-        emailsFailed++;
-      }
+    // ─── STEP 10.5: Queue email enrichment as BACKGROUND JOB ───
+    // Don't block the campaign build waiting for email lookups.
+    // Queue a background job that enriches each contact's email via the cascade.
+    // User gets notified via KikoLiveContext when enrichment completes.
+    const webContactsNeedingEmail = webTargetRows.filter(t => !t.decision_maker_email);
+    if (webContactsNeedingEmail.length > 0) {
+      const enrichJobId = crypto.randomUUID();
+      await supabase.from('kiko_background_jobs').insert({
+        id: enrichJobId,
+        user_id: '9f486437-4bf5-4111-abfe-fe19bfa76063',
+        job_type: 'enrich_campaign_emails',
+        status: 'queued',
+        title: `Find emails for ${webContactsNeedingEmail.length} contacts in ${catRow.name} campaign`,
+        params: {
+          campaign_id: sequenceId,
+          contacts: webContactsNeedingEmail.map(t => ({
+            target_rank: t.rank,
+            name: t.decision_maker_name,
+            title: t.decision_maker_title,
+            company: t.company_name,
+            domain: filtered.find(c => c.company === t.company_name)?.domain || null,
+          })),
+        },
+        queued_at: new Date().toISOString(),
+      });
+      console.log(`[build-campaign] Queued email enrichment job ${enrichJobId} for ${webContactsNeedingEmail.length} contacts`);
     }
-    console.log(`[build-campaign] Email enrichment: ${emailsFound} found, ${emailsFailed} failed out of ${webTargetRows.length}`);
 
     // ─── STEP 11: Insert all targets (CRM-first, then web) ───
     await stageStart(6, 'Saving targets', `Persisting ${crmTargetRows.length + webTargetRows.length} target rows to database`);
@@ -456,13 +426,14 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
       sourced_total: sourced.length,
       filtered_count: filtered.length,
       violations_caught: violations.length,
-      emails_found: emailsFound,
-      emails_pending: emailsFailed,
+      emails_found: crmTargetRows.filter(t => t.decision_maker_email).length,
+      emails_pending: webContactsNeedingEmail.length,
+      email_enrichment: webContactsNeedingEmail.length > 0 ? 'running_in_background' : 'not_needed',
       excluded_companies_count: exclusionSet.size,
       blocked_teams: [...blockedTeamIds],
-      next_action: emailsFailed > 0
-        ? `${emailsFound} contacts have verified emails. ${emailsFailed} still need enrichment. Review targets, then enroll those with verified emails.`
-        : `All ${emailsFound} contacts have verified emails. Review top 8 then enroll.`,
+      next_action: webContactsNeedingEmail.length > 0
+        ? `${crmTargetRows.filter(t => t.decision_maker_email).length} CRM contacts have emails. ${webContactsNeedingEmail.length} web-sourced contacts are being enriched in the background — you'll get a notification when done. Enroll now to start with CRM contacts.`
+        : `All contacts have verified emails. Review and enroll.`,
     };
     await stageDone('completed', { sequence_id: sequenceId, inserted_count: insertedCount, sourced_total: sourced.length });
     return res.status(200).json(responsePayload);

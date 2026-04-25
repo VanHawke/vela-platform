@@ -80,6 +80,83 @@ export default async function handler(req, res) {
               result: { prospects_found: 0, message: 'No prospects found' },
             }) });
           }
+        } else if (job.job_type === 'enrich_campaign_emails') {
+          // Email enrichment for campaign contacts — runs cascade per contact
+          const params = job.params || {};
+          const contacts = params.contacts || [];
+          const campaignId = params.campaign_id;
+          const emailIntelUrl = 'http://127.0.0.1:3000/email-intel/find';
+          const emailIntelAuth = process.env.KIKO_WORKER_SECRET || 'kiko-hetzner-2026-vanhawke';
+
+          let found = 0, failed = 0;
+          for (let i = 0; i < contacts.length; i++) {
+            const c = contacts[i];
+            await sbFetch(`kiko_background_jobs?id=eq.${job.id}`, { method: 'PATCH', body: JSON.stringify({
+              progress_pct: Math.round(((i + 1) / contacts.length) * 100),
+              progress_message: `Enriching ${i + 1}/${contacts.length}: ${c.name} at ${c.company}`,
+            }) });
+
+            try {
+              const nameParts = (c.name || '').trim().split(/\s+/);
+              if (nameParts.length < 2) { failed++; continue; }
+              const firstName = nameParts[0];
+              const lastName = nameParts.slice(1).join(' ');
+              let domain = c.domain;
+              if (!domain) {
+                domain = (c.company || '').toLowerCase().replace(/[&,.'"\-()]/g, '').replace(/\s+(inc|llc|ltd|plc|corp|co|group|holdings|international|global)$/i, '').replace(/\s+/g, '') + '.com';
+              }
+
+              const res = await fetch(emailIntelUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${emailIntelAuth}` },
+                body: JSON.stringify({ firstName, lastName, company: c.company, domain }),
+                signal: AbortSignal.timeout(35000),
+              });
+              const data = await res.json();
+
+              // Validate the email before saving
+              const isValid = data.ok && data.email && data.email.includes('@') && !data.email.includes('&') && !data.email.includes(',') && data.email.split('@')[1]?.length < 40;
+
+              if (isValid) {
+                // Update campaign_targets with the found email
+                if (campaignId) {
+                  await sbFetch(`campaign_targets?campaign_id=eq.${campaignId}&decision_maker_name=eq.${encodeURIComponent(c.name)}&rank=eq.${c.target_rank}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({
+                      decision_maker_email: data.email,
+                      verification_status: data.verified ? 'verified' : (data.reason || 'pattern_matched'),
+                      enrollment_status: 'sourced',
+                    }),
+                  });
+                  // Also update enrollment if it exists
+                  await sbFetch(`kiko_sequence_enrollments?sequence_id=eq.${campaignId}&company=eq.${encodeURIComponent(c.company)}&status=eq.needs_email`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({
+                      contact_email: data.email,
+                      status: 'paused',
+                    }),
+                  });
+                }
+                found++;
+              } else { failed++; }
+            } catch { failed++; }
+          }
+
+          await sbFetch(`kiko_background_jobs?id=eq.${job.id}`, { method: 'PATCH', body: JSON.stringify({
+            status: 'completed', finished_at: new Date().toISOString(), progress_pct: 100,
+            progress_message: `Done: ${found} emails found, ${failed} not found`,
+            result: { emails_found: found, emails_failed: failed, total: contacts.length },
+          }) });
+          // Alert the user
+          await sbFetch('kiko_alerts', { method: 'POST', body: JSON.stringify({
+            type: 'job_complete', severity: 'medium',
+            title: `✉️ Email enrichment complete: ${found}/${contacts.length} found`,
+            detail: `Campaign email enrichment finished.\n${found} verified emails found, ${failed} not found.\nContacts with emails are ready to activate.`,
+            entity_name: `${params.contacts?.[0]?.company || 'Campaign'} + ${contacts.length - 1} more`,
+            user_id: job.user_id || '9f486437-4bf5-4111-abfe-fe19bfa76063',
+            dismissed: false, created_at: new Date().toISOString(),
+          }) });
+
         } else if (job.job_type === 'generate_document') {
           // Document generation in background
           const params = job.params || {};

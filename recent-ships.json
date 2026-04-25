@@ -1,35 +1,40 @@
 {
-  "generated_at": "2026-04-25T17:14:58.813Z",
+  "generated_at": "2026-04-25T17:19:10.701Z",
   "commits": [
+    {
+      "hash": "44dd241",
+      "subject": "Auth fix + gateway cache for email cascade",
+      "when": "4 minutes ago"
+    },
     {
       "hash": "b6f8f0d",
       "subject": "Apollo moved behind free methods — preserves 75 credits/month",
-      "when": "8 minutes ago"
+      "when": "12 minutes ago"
     },
     {
       "hash": "7a34ac4",
       "subject": "Apollo.io integration live — 270M verified contacts, Source 1 in cascade",
-      "when": "10 minutes ago"
+      "when": "14 minutes ago"
     },
     {
       "hash": "a5b70e9",
       "subject": "Fix campaign enrollment: accept all targets, flag email status",
-      "when": "27 minutes ago"
+      "when": "32 minutes ago"
     },
     {
       "hash": "7bca8b4",
       "subject": "Email cascade reordered: free methods first, paid APIs last resort",
-      "when": "49 minutes ago"
+      "when": "53 minutes ago"
     },
     {
       "hash": "2156e89",
       "subject": "Wire email intelligence cascade into campaign builder",
-      "when": "57 minutes ago"
+      "when": "61 minutes ago"
     },
     {
       "hash": "2066584",
       "subject": "CRITICAL: Kill fabricated email pipeline + purge bad data",
-      "when": "71 minutes ago"
+      "when": "75 minutes ago"
     },
     {
       "hash": "2156f7a",
@@ -69,7 +74,7 @@
     {
       "hash": "1d44b71",
       "subject": "Pills width fix, inline alert CTAs, CC clear all overdue, stale deal cleanup",
-      "when": "7 hours ago"
+      "when": "8 hours ago"
     },
     {
       "hash": "cd3428b",
@@ -89,16 +94,11 @@
     {
       "hash": "ac86acd",
       "subject": "Command Centre + Alerts: data sync, actionable alerts, stale deal fix",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "8005214",
       "subject": "Command Centre: role-based signal filtering",
-      "when": "18 hours ago"
-    },
-    {
-      "hash": "3e1afbd",
-      "subject": "Command Centre upgrade: follow-up tracker, campaign activity, expanded signals",
       "when": "18 hours ago"
     }
   ]
