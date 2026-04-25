@@ -1,30 +1,40 @@
 {
-  "generated_at": "2026-04-25T21:21:29.055Z",
+  "generated_at": "2026-04-25T21:27:32.032Z",
   "commits": [
+    {
+      "hash": "172c2f4",
+      "subject": "KIKO_BIBLE comprehensive update: sequence quality + all knowledge gaps",
+      "when": "3 minutes ago"
+    },
+    {
+      "hash": "33a4ab4",
+      "subject": "Fix: source_companies_bg now populates campaign_targets + async job processor",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "13f0091",
       "subject": "KIKO_BIBLE + self-knowledge: full Session 59-60 update",
-      "when": "36 minutes ago"
+      "when": "42 minutes ago"
     },
     {
       "hash": "f596d01",
       "subject": "Session 60: build_campaign tool + legal_ai category + alphabetical sorting",
-      "when": "45 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "8c2d8b7",
       "subject": "Session 59 close: Session 60 priorities logged in KIKO_SESSION_BRIEF.md",
-      "when": "53 minutes ago"
+      "when": "59 minutes ago"
     },
     {
       "hash": "ad6dcf0",
       "subject": "KikoFloat dynamic pills: page-aware chips + campaigns/documents pages",
-      "when": "74 minutes ago"
+      "when": "80 minutes ago"
     },
     {
       "hash": "2b988ae",
       "subject": "Fix background task visibility: instant refresh + 15s polling",
-      "when": "85 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "292ee43",
@@ -90,16 +100,6 @@
       "hash": "2156e89",
       "subject": "Wire email intelligence cascade into campaign builder",
       "when": "5 hours ago"
-    },
-    {
-      "hash": "2066584",
-      "subject": "CRITICAL: Kill fabricated email pipeline + purge bad data",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "2156f7a",
-      "subject": "11 dormant crons discovered + activated, doc gen → background job",
-      "when": "6 hours ago"
     }
   ]
 }

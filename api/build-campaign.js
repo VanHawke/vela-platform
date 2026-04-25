@@ -399,6 +399,27 @@ Return ONLY a JSON array of EXACTLY ${webGap} entries. No explanation, no markdo
       }
       console.log(`[build-campaign] Inserted ${insertedCount} of ${allTargetRows.length} target rows`);
     }
+    
+    // ─── STEP 11.5: Create enrollments for targets WITH emails ───
+    // The campaigns UI reads from kiko_sequence_enrollments, not campaign_targets.
+    // Without this step, prospects won't appear in the campaign page.
+    const targetsWithEmail = allTargetRows.filter(t => t.decision_maker_email);
+    if (targetsWithEmail.length > 0) {
+      const enrollRows = targetsWithEmail.map(t => ({
+        sequence_id: sequenceId,
+        contact_name: t.decision_maker_name,
+        contact_email: t.decision_maker_email,
+        company: t.company_name,
+        status: 'paused',
+        current_step: 1,
+        enrolled_at: new Date().toISOString(),
+      }));
+      for (let i = 0; i < enrollRows.length; i += 50) {
+        await supabase.from('kiko_sequence_enrollments').insert(enrollRows.slice(i, i + 50));
+      }
+      console.log(`[build-campaign] Created ${targetsWithEmail.length} enrollments (paused)`);
+    }
+    
     const top50 = allTargetRows;  // for the response shape below
 
     // ─── STEP 10: Build competitive landscape from real data ───
