@@ -48,6 +48,8 @@ if [ "$MODE" = "full" ] || [ "$MODE" = "worker" ]; then
   rsync -avz \
     "$LOCAL/kiko-worker/src/" "$SERVER:$REMOTE/src/"
   rsync -avz \
+    "$LOCAL/kiko-worker/lib/" "$SERVER:$REMOTE/lib/"
+  rsync -avz \
     "$LOCAL/kiko-worker/server.js" "$SERVER:$REMOTE/server.js"
   rsync -avz \
     "$LOCAL/kiko-worker/ecosystem.config.cjs" "$SERVER:$REMOTE/ecosystem.config.cjs"
@@ -56,7 +58,7 @@ fi
 
 # Step 3: Fix ownership
 echo "[3/5] Setting file ownership..."
-ssh "$SERVER" "chown -R kiko:kiko $REMOTE/api/ $REMOTE/monitors/ $REMOTE/src/ $REMOTE/server.js"
+ssh "$SERVER" "chown -R kiko:kiko $REMOTE/api/ $REMOTE/monitors/ $REMOTE/src/ $REMOTE/lib/ $REMOTE/server.js"
 echo "  ✓ Ownership set to kiko:kiko"
 
 # Step 4: Restart PM2
