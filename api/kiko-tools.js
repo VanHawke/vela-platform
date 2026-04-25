@@ -402,6 +402,15 @@ export const TOOL_DEFINITIONS = [
       purpose: { type: 'string', description: 'Document purpose: report, proposal, one-pager, pitch-deck, partnership-overview, market-analysis, competitive-brief' },
     }, required: ['topic'] },
   },
+  // ── Campaign Builder (full end-to-end) ──
+  {
+    name: 'build_campaign',
+    description: 'Build a COMPLETE outreach campaign end-to-end. Sources companies, finds decision-makers, verifies emails, creates sequence, enrolls prospects — all in one action. Use when user says "build a campaign for X" or "target Y sector" or "create a Z campaign for [team]". This is the PREFERRED tool for campaign creation — do NOT redirect users to the UI.',
+    input_schema: { type: 'object', properties: {
+      category: { type: 'string', description: 'Sector/category to target. E.g. "legal_ai", "banking", "cybersecurity", "fintech". Can also be a free-text description like "Legal AI Technology companies".' },
+      team: { type: 'string', description: 'F1 team name. Default: auto-selects based on category availability. E.g. "alpine", "haas".' },
+    }, required: ['category'] },
+  },
 ];
 
 // Conditional tool — only injected when intent is master_brief
@@ -1457,6 +1466,40 @@ Rules: Start with "Hi ${contactName.split(' ')[0]}," — reference our previous 
       if (!Array.isArray(rows) || !rows.length) return `No scheduled emails with status: ${status}`;
       return rows.map(r => `To: ${r.recipient_email} | Subject: "${r.subject}" | From: ${r.sender_email} | Scheduled: ${new Date(r.scheduled_for).toLocaleString('en-GB')} | Status: ${r.status}${r.error ? ` | Error: ${r.error}` : ''}`).join('\n');
     } catch (e) { return `Error checking scheduled emails: ${e.message}`; }
+  }
+
+  // ── Campaign Builder (full end-to-end) ──
+  if (name === 'build_campaign') {
+    try {
+      const { category, team } = input;
+      if (!category) return 'Error: category is required (e.g. "legal_ai", "banking", "cybersecurity")';
+      const baseUrl = 'http://127.0.0.1:3000';
+      
+      // Call the build-campaign endpoint directly
+      const res = await fetch(`${baseUrl}/api/build-campaign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: category.toLowerCase().replace(/\s+/g, '_'), team: team || undefined, user_id: userId }),
+        signal: AbortSignal.timeout(240000), // 4 min max
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        const emailStatus = data.email_enrichment === 'running_in_background'
+          ? `\n📧 Email enrichment running in background for ${data.emails_pending} web-sourced contacts. You'll get a notification when done.`
+          : '';
+        return `✅ CAMPAIGN BUILT: "${data.sequence_name}"\n\n` +
+          `Team: ${data.team?.name || 'Auto-selected'}\n` +
+          `Category: ${data.category?.name || category}\n` +
+          `Companies sourced: ${data.sourced_total || 0} (${data.filtered_count || 0} after filtering)\n` +
+          `Decision-makers found: ${data.inserted_count || 0}\n` +
+          `Emails verified: ${data.emails_found || 0}\n` +
+          `Sequence ID: ${data.sequence_id}\n` +
+          emailStatus +
+          `\n\n${data.next_action || 'Review the campaign in /campaigns, then activate when ready.'}`;
+      }
+      return `Campaign build failed: ${data.error || JSON.stringify(data).slice(0, 300)}`;
+    } catch (e) { return `Campaign build error: ${e.message}`; }
   }
 
   // ── Document Generation (background job) ──

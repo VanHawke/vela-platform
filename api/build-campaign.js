@@ -39,6 +39,7 @@ const CATEGORY_CRITERIA = {
   health:        { revenue_min: '$500M', funding_min: '$100M', geography: 'Global', dm_seniority: 'CMO / VP Marketing' },
   logistics:     { revenue_min: '$2B', funding_min: null, geography: 'Global', dm_seniority: 'CMO / VP Brand' },
   legal:         { revenue_min: '$200M', funding_min: null, geography: 'Global', dm_seniority: 'CMO / Head of Marketing' },
+  legal_ai:      { revenue_min: '$50M', funding_min: '$20M', geography: 'Global', dm_seniority: 'CMO / VP Marketing / Head of Brand' },
   robotics:      { revenue_min: '$200M', funding_min: '$100M', geography: 'Global', dm_seniority: 'CMO / VP Marketing' },
   whiskey:       { revenue_min: '$100M', funding_min: null, geography: 'Global', dm_seniority: 'CMO / Brand Director / Head of Marketing' },
 };
@@ -474,6 +475,7 @@ const CATEGORY_INDUSTRY_MAP = {
   health:         ['HealthTech', 'Healthcare'],
   logistics:      ['Supply Chain', 'Logistics'],
   legal:          ['Legal Tech', 'Legal'],
+  legal_ai:       ['Legal Tech', 'AI/ML', 'Legal'],
   robotics:       ['Robotics'],
 };
 

@@ -97,7 +97,7 @@ export default function Campaigns({ user }) {
   // Build-campaign modal state
   const [buildOpen, setBuildOpen] = useState(false)
   const [bulkEditOpen, setBulkEditOpen] = useState(false)
-  const [buildCategory, setBuildCategory] = useState('banking')
+  const [buildCategory, setBuildCategory] = useState('ai_data')
   const [buildTeam, setBuildTeam] = useState('auto') // 'auto' or a team id
   const [buildPhase, setBuildPhase] = useState('idle') // idle, building, review, enrolling, done, error
   const [buildResult, setBuildResult] = useState(null)
@@ -1021,43 +1021,44 @@ export default function Campaigns({ user }) {
               <div>
                 <div style={{ fontSize: 11, color: C.textSecondary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Category</div>
                 <select value={buildCategory} onChange={e => setBuildCategory(e.target.value)} style={{ width: '100%', padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: '#FFFFFF', color: C.text, fontSize: 14, fontFamily: 'inherit', marginBottom: 16 }}>
-                  <option value="banking">Banking / Financial Services</option>
-                  <option value="fintech">FinTech / Payments</option>
-                  <option value="cybersecurity">Cybersecurity</option>
-                  <option value="cloud">Cloud / IT Infrastructure</option>
                   <option value="ai_data">AI / Data Analytics</option>
-                  <option value="software">Enterprise Software</option>
-                  <option value="semiconductors">Semiconductors / Hardware</option>
-                  <option value="telecom">Telecoms / Connectivity</option>
-                  <option value="gaming">Gaming / Entertainment</option>
-                  <option value="crypto">Crypto / Web3</option>
-                  <option value="energy">Energy / Petrochemical</option>
                   <option value="automotive">Automotive / Engineering</option>
-                  <option value="hospitality">Hospitality / Travel</option>
+                  <option value="banking">Banking / Financial Services</option>
+                  <option value="cloud">Cloud / IT Infrastructure</option>
+                  <option value="crypto">Crypto / Web3</option>
+                  <option value="cybersecurity">Cybersecurity</option>
+                  <option value="energy">Energy / Petrochemical</option>
                   <option value="fashion">Fashion / Lifestyle</option>
-                  <option value="watches">Watches / Luxury</option>
+                  <option value="fintech">FinTech / Payments</option>
                   <option value="food_bev">Food & Beverage</option>
+                  <option value="gaming">Gaming / Entertainment</option>
                   <option value="health">Health / Wellness</option>
-                  <option value="logistics">Logistics / Shipping</option>
+                  <option value="hospitality">Hospitality / Travel</option>
                   <option value="legal">Legal / Professional Services</option>
+                  <option value="legal_ai">Legal AI / Technology</option>
+                  <option value="logistics">Logistics / Shipping</option>
                   <option value="robotics">Robotics / Manufacturing</option>
+                  <option value="semiconductors">Semiconductors / Hardware</option>
+                  <option value="software">Enterprise Software</option>
+                  <option value="telecom">Telecoms / Connectivity</option>
+                  <option value="watches">Watches / Luxury</option>
                   <option value="whiskey">Whiskey / Premium Spirits</option>
                 </select>
 
                 <div style={{ fontSize: 11, color: C.textSecondary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>F1 Team</div>
                 <select value={buildTeam} onChange={e => setBuildTeam(e.target.value)} style={{ width: '100%', padding: '12px 14px', borderRadius: 8, border: `1px solid ${C.border}`, background: '#FFFFFF', color: C.text, fontSize: 14, fontFamily: 'inherit', marginBottom: 16 }}>
                   <option value="auto">Auto — pick first open team alphabetically</option>
-                  <option value="haas">Haas F1</option>
-                  <option value="cadillac">Cadillac F1</option>
-                  <option value="audi">Audi F1</option>
-                  <option value="aston_martin">Aston Martin</option>
                   <option value="alpine">Alpine</option>
-                  <option value="williams">Williams</option>
-                  <option value="racing_bulls">Racing Bulls</option>
-                  <option value="mclaren">McLaren</option>
+                  <option value="aston_martin">Aston Martin</option>
+                  <option value="audi">Audi F1</option>
+                  <option value="cadillac">Cadillac F1</option>
                   <option value="ferrari">Ferrari</option>
+                  <option value="haas">Haas F1</option>
+                  <option value="mclaren">McLaren</option>
                   <option value="mercedes">Mercedes</option>
+                  <option value="racing_bulls">Racing Bulls</option>
                   <option value="red_bull">Red Bull</option>
+                  <option value="williams">Williams</option>
                 </select>
                 <div style={{ fontSize: 11, color: C.textTertiary, marginBottom: 12, lineHeight: 1.5 }}>
                   Pipeline: pick team (your choice or alphabetical default) → verify slot is open → source 50 companies via web search with 320+ company exclusion list → identify decision-makers for top 8. ~80 seconds. If you pick a team that's already blocked in this category, the builder will refuse and tell you why.

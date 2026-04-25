@@ -7,7 +7,6 @@
 ## 59 build sessions spanning April 7-25, 2026
 
 ## Transcripts: /mnt/transcripts/ (read journal.txt for session index)
-
 ---
 
 ## ⚡ SESSION 60 PRIORITIES (in order)
@@ -51,6 +50,7 @@ Verify: no fabricated emails, real verified addresses, correct sequence steps.
 - Kiko hard rule: never ask user for data you can look up
 
 ---
+
 ---
 
 ## IDENTITY
@@ -60,7 +60,6 @@ Verify: no fabricated emails, real verified addresses, correct sequence steps.
 ---
 
 ## ENVIRONMENT
-
 ComponentLocationDetailsRepo`/Users/sunny/Desktop/vela-platform/`Git → auto-deploys to VercelFrontend`https://kiko.vanhawke.agency`Vercel (static only, free tier)API`https://api.vanhawke.agency`Hetzner 178.104.73.22, Express port 3000, nginx SSLSupabaseproject_id `dwiywqeleyckzcxbwrlb`62 kiko\_\* tables, 4,500+ entriesLinkedInHetznerPlaywright + Decodo proxy ([isp.decodo.com:10001](http://isp.decodo.com:10001))VoiceOpenAI GPT-4o Realtime APIWebRTC, api/realtime-token.js
 
 ### Deploy Rules (NEVER BREAK)
@@ -328,3 +327,4 @@ VH Agency: competitive landscape, F1 deal intel, prospect signals, positioning, 
 - Before API work: search current official docs first
 - Every Kiko session: read KIKO_SESSION_BRIEF.md + KIKO_EVOLUTION_PLAN.md
 - Update KIKO_BIBLE.md after every ship
+BIBLE.md after every ship

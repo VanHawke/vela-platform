@@ -1,40 +1,50 @@
 {
-  "generated_at": "2026-04-25T20:07:03.733Z",
+  "generated_at": "2026-04-25T20:35:58.217Z",
   "commits": [
+    {
+      "hash": "8c2d8b7",
+      "subject": "Session 59 close: Session 60 priorities logged in KIKO_SESSION_BRIEF.md",
+      "when": "8 minutes ago"
+    },
+    {
+      "hash": "ad6dcf0",
+      "subject": "KikoFloat dynamic pills: page-aware chips + campaigns/documents pages",
+      "when": "29 minutes ago"
+    },
     {
       "hash": "2b988ae",
       "subject": "Fix background task visibility: instant refresh + 15s polling",
-      "when": "11 minutes ago"
+      "when": "40 minutes ago"
     },
     {
       "hash": "292ee43",
       "subject": "Fix caching: s-maxage=0 forces CDN to always revalidate index.html",
-      "when": "17 minutes ago"
+      "when": "46 minutes ago"
     },
     {
       "hash": "70a99e0",
       "subject": "Kiko HARD RULE: never ask user for data you can look up yourself",
-      "when": "22 minutes ago"
+      "when": "51 minutes ago"
     },
     {
       "hash": "2ad5261",
       "subject": "CRITICAL: Fix white screen crash — KikoFloat rendering chip objects as React children",
-      "when": "76 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "fc8d272",
       "subject": "Fix navigation issues: campaigns refetch + PermissionGate no-flash",
-      "when": "81 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "90d1e70",
       "subject": "Fix background task display: show emails_found instead of prospects_found",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "fe96144",
       "subject": "Fix job processor: order by queued_at not created_at (column didn't exist)",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "354021c",
@@ -54,12 +64,12 @@
     {
       "hash": "7a34ac4",
       "subject": "Apollo.io integration live — 270M verified contacts, Source 1 in cascade",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "a5b70e9",
       "subject": "Fix campaign enrollment: accept all targets, flag email status",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "7bca8b4",
@@ -74,7 +84,7 @@
     {
       "hash": "2066584",
       "subject": "CRITICAL: Kill fabricated email pipeline + purge bad data",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "2156f7a",
@@ -89,16 +99,6 @@
     {
       "hash": "9269446",
       "subject": "Fix homepage centering: collapsed sidebar was stealing 28px",
-      "when": "10 hours ago"
-    },
-    {
-      "hash": "c3a4a15",
-      "subject": "Nav alignment fix: grid-template-columns auto 1fr auto → 1fr auto 1fr",
-      "when": "10 hours ago"
-    },
-    {
-      "hash": "5bee0b7",
-      "subject": "Homepage CSS fix + session brief update",
       "when": "10 hours ago"
     }
   ]
