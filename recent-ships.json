@@ -1,40 +1,50 @@
 {
-  "generated_at": "2026-04-25T20:35:58.217Z",
+  "generated_at": "2026-04-25T21:21:29.055Z",
   "commits": [
+    {
+      "hash": "13f0091",
+      "subject": "KIKO_BIBLE + self-knowledge: full Session 59-60 update",
+      "when": "36 minutes ago"
+    },
+    {
+      "hash": "f596d01",
+      "subject": "Session 60: build_campaign tool + legal_ai category + alphabetical sorting",
+      "when": "45 minutes ago"
+    },
     {
       "hash": "8c2d8b7",
       "subject": "Session 59 close: Session 60 priorities logged in KIKO_SESSION_BRIEF.md",
-      "when": "8 minutes ago"
+      "when": "53 minutes ago"
     },
     {
       "hash": "ad6dcf0",
       "subject": "KikoFloat dynamic pills: page-aware chips + campaigns/documents pages",
-      "when": "29 minutes ago"
+      "when": "74 minutes ago"
     },
     {
       "hash": "2b988ae",
       "subject": "Fix background task visibility: instant refresh + 15s polling",
-      "when": "40 minutes ago"
+      "when": "85 minutes ago"
     },
     {
       "hash": "292ee43",
       "subject": "Fix caching: s-maxage=0 forces CDN to always revalidate index.html",
-      "when": "46 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "70a99e0",
       "subject": "Kiko HARD RULE: never ask user for data you can look up yourself",
-      "when": "51 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "2ad5261",
       "subject": "CRITICAL: Fix white screen crash — KikoFloat rendering chip objects as React children",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "fc8d272",
       "subject": "Fix navigation issues: campaigns refetch + PermissionGate no-flash",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "90d1e70",
@@ -44,22 +54,22 @@
     {
       "hash": "fe96144",
       "subject": "Fix job processor: order by queued_at not created_at (column didn't exist)",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "354021c",
       "subject": "Campaign builder: background email enrichment + end-to-end fix",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "44dd241",
       "subject": "Auth fix + gateway cache for email cascade",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "b6f8f0d",
       "subject": "Apollo moved behind free methods — preserves 75 credits/month",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "7a34ac4",
@@ -69,17 +79,17 @@
     {
       "hash": "a5b70e9",
       "subject": "Fix campaign enrollment: accept all targets, flag email status",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "7bca8b4",
       "subject": "Email cascade reordered: free methods first, paid APIs last resort",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "2156e89",
       "subject": "Wire email intelligence cascade into campaign builder",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "2066584",
@@ -89,17 +99,7 @@
     {
       "hash": "2156f7a",
       "subject": "11 dormant crons discovered + activated, doc gen → background job",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "1ba31d1",
-      "subject": "Session 59 final: email speed, Realtime consolidation, deploy script, Bible, doc gen",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "9269446",
-      "subject": "Fix homepage centering: collapsed sidebar was stealing 28px",
-      "when": "10 hours ago"
+      "when": "6 hours ago"
     }
   ]
 }
