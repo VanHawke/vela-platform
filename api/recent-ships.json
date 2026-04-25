@@ -1,20 +1,25 @@
 {
-  "generated_at": "2026-04-25T18:45:33.322Z",
+  "generated_at": "2026-04-25T18:51:25.398Z",
   "commits": [
+    {
+      "hash": "fc8d272",
+      "subject": "Fix navigation issues: campaigns refetch + PermissionGate no-flash",
+      "when": "6 minutes ago"
+    },
     {
       "hash": "90d1e70",
       "subject": "Fix background task display: show emails_found instead of prospects_found",
-      "when": "44 minutes ago"
+      "when": "50 minutes ago"
     },
     {
       "hash": "fe96144",
       "subject": "Fix job processor: order by queued_at not created_at (column didn't exist)",
-      "when": "61 minutes ago"
+      "when": "67 minutes ago"
     },
     {
       "hash": "354021c",
       "subject": "Campaign builder: background email enrichment + end-to-end fix",
-      "when": "86 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "44dd241",
@@ -44,7 +49,7 @@
     {
       "hash": "2156e89",
       "subject": "Wire email intelligence cascade into campaign builder",
-      "when": "2 hours ago"
+      "when": "3 hours ago"
     },
     {
       "hash": "2066584",
@@ -59,7 +64,7 @@
     {
       "hash": "1ba31d1",
       "subject": "Session 59 final: email speed, Realtime consolidation, deploy script, Bible, doc gen",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "9269446",
@@ -79,7 +84,7 @@
     {
       "hash": "c8d32bc",
       "subject": "KikoLiveContext: real-time shared state across all surfaces",
-      "when": "8 hours ago"
+      "when": "9 hours ago"
     },
     {
       "hash": "aa476ff",
@@ -94,11 +99,6 @@
     {
       "hash": "cd3428b",
       "subject": "Fix 4 bugs: alert actions, pill visibility, count sync, CC reconciliation",
-      "when": "10 hours ago"
-    },
-    {
-      "hash": "ff6e695",
-      "subject": "RLS fix + dynamic pills + Vercel free tier cleanup",
       "when": "10 hours ago"
     }
   ]

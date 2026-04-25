@@ -556,8 +556,11 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
           {/* Chips — only when no conversation yet */}
           {!hasMessages && (
             <div style={{ padding: '10px 12px 4px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {dynamicChips.map((chip, i) => (
-                <button key={chip} onClick={() => handleSubmit(chip)} style={{
+              {dynamicChips.map((chip, i) => {
+                const label = typeof chip === 'string' ? chip : chip.label
+                const prompt = typeof chip === 'string' ? chip : (chip.prompt || chip.label)
+                return (
+                <button key={label + i} onClick={() => handleSubmit(prompt)} style={{
                   fontSize: 12, padding: '5px 10px', borderRadius: 50,
                   border: '0.5px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.04)',
                   color: C.textSec, cursor: 'pointer', fontFamily: C.font,
@@ -567,9 +570,10 @@ export default function KikoFloat({ user, messages: sharedMessages, setMessages:
                   onMouseOver={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)' }}
                   onMouseOut={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.04)' }}
                 >
-                  {chip}
+                  {label}
                 </button>
-              ))}
+                )
+              })}
             </div>
           )}
 
