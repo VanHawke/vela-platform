@@ -1660,14 +1660,14 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
               {/* Alerts pill (permanent sage, left) + 4 dynamic chips — hidden on mobile */}
               {!isMobile && <div id="kikoChipsWrap" style={{
                 display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center', maxWidth: 720, marginBottom: voiceActive ? 0 : 20,
-                opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 60,
+                opacity: voiceActive ? 0 : 1, maxHeight: voiceActive ? 0 : 44,
                 transform: voiceActive ? 'translateY(30px)' : 'translateY(0)',
                 transition: 'all 0.5s cubic-bezier(0.4,0,0,1) 0.1s',
                 overflow: 'hidden', pointerEvents: voiceActive ? 'none' : 'auto',
-                flexWrap: 'wrap',
+                flexWrap: 'nowrap',
               }}>
-                {/* Permanent alerts pill — orange bg, white text, pulsating */}
-                <button onClick={() => setInsightsOpen(true)} style={{
+                {/* Alerts pill — only visible when there are alerts */}
+                {alertCount > 0 && <button onClick={() => setInsightsOpen(true)} style={{
                   padding: '6px 14px', borderRadius: 50,
                   background: alertCount > 0 ? '#E8700A' : 'rgba(184,100,62,0.10)',
                   border: alertCount > 0 ? '1px solid #E8700A' : '1px solid rgba(184,100,62,0.20)',
@@ -1684,9 +1684,9 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
                 >
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
                   {alertCount || 0} alerts
-                </button>
-                {/* Dynamic chips — live data, up to 5 */}
-                {dynamicChips.slice(0, 5).map((c, i) => {
+                </button>}
+                {/* Dynamic chips — live data, up to 4 */}
+                {dynamicChips.slice(0, alertCount > 0 ? 4 : 5).map((c, i) => {
                   const label = typeof c === 'string' ? c : c.label
                   const prompt = typeof c === 'string' ? c : c.prompt
                   const navTo = typeof c === 'string' ? null : c.navigate

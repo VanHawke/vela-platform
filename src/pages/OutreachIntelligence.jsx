@@ -285,11 +285,26 @@ export default function OutreachIntelligence({ user }) {
       // Pull recent activities (last 14 days) to check if emails were sent to task contacts/companies
       try {
         const twoWeeksAgo = new Date(Date.now() - 14 * 86400000).toISOString()
-        const { data: recentActivity } = await supabase.from('activities')
-          .select('entity_name, type, created_at')
-          .in('type', ['email_sent', 'sequence_sent', 'email', 'outreach'])
-          .gte('created_at', twoWeeksAgo)
-        const sentTo = new Set((recentActivity || []).map(a => (a.entity_name || '').toLowerCase().trim()).filter(Boolean))
+        const [activityRes, queueRes] = await Promise.all([
+          supabase.from('activities')
+            .select('entity_name, type, created_at')
+            .in('type', ['email_sent', 'sequence_sent', 'email', 'outreach'])
+            .gte('created_at', twoWeeksAgo),
+          // Also check sequence outreach queue — emails sent by the sequence sender
+          supabase.from('kiko_outreach_queue')
+            .select('to_name, company, status')
+            .eq('status', 'sent'),
+        ])
+        // Build set of all contacted entities (from activities, outreach queue, AND follow-ups)
+        const followUpContacts = (followUpRes.data || []).map(f => (f.recipient_name || '').toLowerCase().trim()).filter(Boolean)
+        const followUpCompanies = (followUpRes.data || []).map(f => (f.company || '').toLowerCase().trim()).filter(Boolean)
+        const sentTo = new Set([
+          ...(activityRes.data || []).map(a => (a.entity_name || '').toLowerCase().trim()),
+          ...(queueRes.data || []).map(q => (q.to_name || '').toLowerCase().trim()),
+          ...(queueRes.data || []).map(q => (q.company || '').toLowerCase().trim()),
+          ...followUpContacts,
+          ...followUpCompanies,
+        ].filter(Boolean))
 
         // Also check sequence enrollments — if contact is enrolled and active, task is redundant
         const enrolledContacts = new Set((campaignRes.data || []).map(c => (c.contact_name || '').toLowerCase().trim()).filter(Boolean))

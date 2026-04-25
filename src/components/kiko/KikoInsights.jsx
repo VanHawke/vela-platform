@@ -39,18 +39,15 @@ export default function KikoInsights({ onAction, open, onClose }) {
 
   const loadData = async () => {
     try {
-      const [alertRes, partnerRes, signalRes, draftRes] = await Promise.all([
+      const [alertRes, allAlertsRes, draftRes] = await Promise.all([
         supabase.from('kiko_alerts').select('id', { count: 'exact', head: true }).eq('dismissed', false),
-        supabase.from('kiko_alerts').select('id,title,detail,entity_name,type,metadata,created_at')
-          .in('type', ['new_partnership', 'partnership_detected', 'convergence', 'competitive_change', 'funding', 'category_recommendation', 'promotion'])
-          .eq('dismissed', false).order('created_at', { ascending: false }).limit(10),
+        // Pull ALL undismissed alerts — panel should match the pill count
         supabase.from('kiko_alerts').select('id,title,detail,entity_name,type,severity,metadata,created_at')
-          .in('type', ['company_signal', 'prediction', 'self_discovery', 'proactive_intel'])
-          .eq('dismissed', false).order('created_at', { ascending: false }).limit(10),
+          .eq('dismissed', false).order('created_at', { ascending: false }).limit(50),
         supabase.from('kiko_draft_actions').select('id,action_type,payload,created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(10),
       ])
       setAlertCount(alertRes.count || 0)
-      setPartnershipAlerts([...(partnerRes.data || []), ...(signalRes.data || [])].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)))
+      setPartnershipAlerts(allAlertsRes.data || [])
       setDraftActions(draftRes.data || [])
     } catch (e) { console.error('[KikoInsights]', e) }
     finally { setLoading(false) }
@@ -146,14 +143,12 @@ export default function KikoInsights({ onAction, open, onClose }) {
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         <button onClick={() => { onAction?.(`Brief me on "${alert.title}" for ${alert.entity_name || 'this entity'}. The alert says: "${alert.detail || ''}". Search the web for latest details, then give me your strategic assessment and recommended next steps.`); onClose?.() }}
                           style={{ padding: '5px 12px', borderRadius: 6, background: '#0A0A0A', color: '#fff', border: 'none', fontSize: 11, fontFamily: T.font, fontWeight: 500, cursor: 'pointer' }}>Brief me</button>
-                        {alert.detail?.includes('→') && (
-                          <button onClick={() => {
-                            const action = alert.detail.split('→').pop().trim()
-                            onAction?.(`Execute this recommended action for ${alert.entity_name || 'the entity'}: ${action}. Context: ${alert.title}. ${alert.detail || ''}`)
-                            onClose?.()
-                          }}
-                            style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(0,212,170,0.1)', color: '#06a87d', border: '1px solid rgba(0,212,170,0.2)', fontSize: 11, fontFamily: T.font, fontWeight: 500, cursor: 'pointer' }}>Take action</button>
-                        )}
+                        <button onClick={() => {
+                          const action = alert.detail?.includes('→') ? alert.detail.split('→').pop().trim() : alert.detail?.slice(0, 200) || alert.title
+                          onAction?.(`Take action on this alert for ${alert.entity_name || 'the entity'}: ${action}. Full context: ${alert.title}. Do what needs to be done — draft an email, update the pipeline, research the company, or whatever the right next step is.`)
+                          onClose?.()
+                        }}
+                          style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(0,212,170,0.1)', color: '#06a87d', border: '1px solid rgba(0,212,170,0.2)', fontSize: 11, fontFamily: T.font, fontWeight: 500, cursor: 'pointer' }}>Act on this</button>
                         {alert.entity_name && (
                           <button onClick={() => { onAction?.(`Search the web for the latest news about ${alert.entity_name}. What are they doing right now? Any sponsorship activity, partnerships, leadership changes, or funding?`); onClose?.() }}
                             style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.04)', color: '#6B6B6B', border: '1px solid rgba(0,0,0,0.08)', fontSize: 11, fontFamily: T.font, fontWeight: 500, cursor: 'pointer' }}>Research</button>
@@ -162,6 +157,8 @@ export default function KikoInsights({ onAction, open, onClose }) {
                           <button onClick={() => { onAction?.(`Add this to the partnership matrix: "${alert.title}". Search the web for details — identify the team, the sponsor, the category, and update the matrix.`); onClose?.() }}
                             style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(124,92,252,0.06)', color: '#7C5CFC', border: '1px solid rgba(124,92,252,0.15)', fontSize: 11, fontFamily: T.font, fontWeight: 500, cursor: 'pointer' }}>Add to matrix</button>
                         )}
+                        <button onClick={(e) => { e.stopPropagation(); dismissPartnership(alert) }}
+                          style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(220,38,38,0.06)', color: '#dc2626', border: '1px solid rgba(220,38,38,0.12)', fontSize: 11, fontFamily: T.font, fontWeight: 500, cursor: 'pointer' }}>Dismiss</button>
                       </div>
                     </div>
                   )}

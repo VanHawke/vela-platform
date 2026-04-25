@@ -1,15 +1,20 @@
 {
-  "generated_at": "2026-04-25T08:59:30.754Z",
+  "generated_at": "2026-04-25T09:12:01.347Z",
   "commits": [
+    {
+      "hash": "ff6e695",
+      "subject": "RLS fix + dynamic pills + Vercel free tier cleanup",
+      "when": "12 minutes ago"
+    },
     {
       "hash": "77a720c",
       "subject": "Alert visibility fix: null user_ids + direct count loading",
-      "when": "4 minutes ago"
+      "when": "17 minutes ago"
     },
     {
       "hash": "ac86acd",
       "subject": "Command Centre + Alerts: data sync, actionable alerts, stale deal fix",
-      "when": "12 minutes ago"
+      "when": "25 minutes ago"
     },
     {
       "hash": "8005214",
@@ -24,12 +29,12 @@
     {
       "hash": "3f291c1",
       "subject": "Session 59: Updated session brief + bible with new capabilities",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "0ac9f22",
       "subject": "Hetzner consolidation: 16 dormant crons activated, full API sync, Vercel decoupled",
-      "when": "10 hours ago"
+      "when": "11 hours ago"
     },
     {
       "hash": "aed1953",
@@ -44,7 +49,7 @@
     {
       "hash": "e7dbcdc",
       "subject": "Proactive Intelligence v2: Self-Discovery Engine + Predictive Synthesis + Agency Structure Intelligence",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "fecd3bb",
@@ -59,7 +64,7 @@
     {
       "hash": "842493c",
       "subject": "FIX HOMEPAGE ALIGNMENT: (1) Top nav switched from flexbox space-between to CSS grid with 3 columns — links are now TRUE center, not pushed-between. (2) Home content offset: when sidebar collapsed (28p",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "c66c6dd",
@@ -84,7 +89,7 @@
     {
       "hash": "0b6f37d",
       "subject": "COMPLETE PROACTIVE INTELLIGENCE: (1) Self-knowledge updated with full proactive intel docs — 8 competitive domains, self-discovery rules, proactive advisory rules. (2) Forced first research runs: vh-a",
-      "when": "14 hours ago"
+      "when": "15 hours ago"
     },
     {
       "hash": "e52ccf7",
@@ -94,11 +99,6 @@
     {
       "hash": "3497dd1",
       "subject": "PROACTIVE INTEL WORKING: First scan found 6 events, created 5 strategic alerts — Cadillac F1 title sponsorship open, Omni AI M Series C prospect signal, Kering/Google smart glasses (Maison competitive",
-      "when": "15 hours ago"
-    },
-    {
-      "hash": "9b5c75b",
-      "subject": "PROACTIVE INTELLIGENCE ENGINE: (1) New proactive-intel monitor runs 2x daily (8am + 2pm). Scans F1 sponsorship news, luxury/fashion market, competitor agencies (CAA/WME/Octagon/CSM), new GP announceme",
       "when": "15 hours ago"
     }
   ]
