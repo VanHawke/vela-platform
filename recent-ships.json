@@ -1,40 +1,45 @@
 {
-  "generated_at": "2026-04-25T21:30:57.917Z",
+  "generated_at": "2026-04-25T21:39:46.969Z",
   "commits": [
+    {
+      "hash": "701c5c9",
+      "subject": "Background tasks: Realtime subscription + sourcing quality fix",
+      "when": "9 minutes ago"
+    },
     {
       "hash": "efb347e",
       "subject": "Fix: build-campaign now creates enrollments so prospects appear in UI",
-      "when": "3 minutes ago"
+      "when": "12 minutes ago"
     },
     {
       "hash": "172c2f4",
       "subject": "KIKO_BIBLE comprehensive update: sequence quality + all knowledge gaps",
-      "when": "7 minutes ago"
+      "when": "15 minutes ago"
     },
     {
       "hash": "33a4ab4",
       "subject": "Fix: source_companies_bg now populates campaign_targets + async job processor",
-      "when": "9 minutes ago"
+      "when": "18 minutes ago"
     },
     {
       "hash": "13f0091",
       "subject": "KIKO_BIBLE + self-knowledge: full Session 59-60 update",
-      "when": "46 minutes ago"
+      "when": "55 minutes ago"
     },
     {
       "hash": "f596d01",
       "subject": "Session 60: build_campaign tool + legal_ai category + alphabetical sorting",
-      "when": "55 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "8c2d8b7",
       "subject": "Session 59 close: Session 60 priorities logged in KIKO_SESSION_BRIEF.md",
-      "when": "62 minutes ago"
+      "when": "71 minutes ago"
     },
     {
       "hash": "ad6dcf0",
       "subject": "KikoFloat dynamic pills: page-aware chips + campaigns/documents pages",
-      "when": "84 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "2b988ae",
@@ -64,7 +69,7 @@
     {
       "hash": "90d1e70",
       "subject": "Fix background task display: show emails_found instead of prospects_found",
-      "when": "3 hours ago"
+      "when": "4 hours ago"
     },
     {
       "hash": "fe96144",
@@ -84,21 +89,16 @@
     {
       "hash": "b6f8f0d",
       "subject": "Apollo moved behind free methods — preserves 75 credits/month",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "7a34ac4",
       "subject": "Apollo.io integration live — 270M verified contacts, Source 1 in cascade",
-      "when": "4 hours ago"
+      "when": "5 hours ago"
     },
     {
       "hash": "a5b70e9",
       "subject": "Fix campaign enrollment: accept all targets, flag email status",
-      "when": "5 hours ago"
-    },
-    {
-      "hash": "7bca8b4",
-      "subject": "Email cascade reordered: free methods first, paid APIs last resort",
       "when": "5 hours ago"
     }
   ]

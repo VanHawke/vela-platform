@@ -294,11 +294,23 @@ export default function LegoraTopNav({ user, profile, customLogo, onSearchClick,
                       </div>
                     </div>}
                     {isCompleted && <div>
-                      <div style={{ fontSize: 10, color: '#6B6B6B' }}>{t.result ? (t.result.emails_found != null ? `${t.result.emails_found}/${t.result.total || '?'} emails found` : t.result.prospects_found != null ? `${t.result.prospects_found} prospects, ${t.result.enrolled || 0} enrolled` : t.result.title || 'Done') : 'Done'} · {new Date(t.queued_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</div>
-                      {t.related_entity_id && <button onClick={() => { nav(`/campaigns/${t.related_entity_id}`); setTasksOpen(false) }} style={{ fontSize: 10, color: '#7C5CFC', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 500, marginTop: 2 }}>View campaign →</button>}
+                      <div style={{ fontSize: 10, color: '#6B6B6B' }}>{t.result ? (t.result.emails_found != null ? `${t.result.emails_found}/${t.result.total || '?'} emails found` : t.result.targets_added != null ? `${t.result.targets_added} targets, ${t.result.enrolled || 0} enrolled` : t.result.prospects_found != null ? `${t.result.prospects_found} prospects` : t.result.title || 'Done') : 'Done'} · {new Date(t.queued_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</div>
+                      <div style={{ display: 'flex', gap: 8, marginTop: 3 }}>
+                        {t.related_entity_id && <button onClick={() => { nav(`/campaigns/${t.related_entity_id}`); setTasksOpen(false) }} style={{ fontSize: 10, color: '#7C5CFC', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 500 }}>View campaign →</button>}
+                        <button onClick={async (e) => { e.stopPropagation(); await supabase.from('kiko_background_jobs').delete().eq('id', t.id); setBgTasks(prev => prev.filter(x => x.id !== t.id)) }} style={{ fontSize: 10, color: '#A0A0A0', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Remove</button>
+                      </div>
                     </div>}
-                    {isFailed && <div style={{ fontSize: 10, color: '#f87171' }}>{t.error_message || 'Failed'}</div>}
-                    {t.status === 'cancelled' && <div style={{ fontSize: 10, color: '#A0A0A0' }}>Cancelled</div>}
+                    {isFailed && <div>
+                      <div style={{ fontSize: 10, color: '#f87171', marginBottom: 3 }}>{t.error_message?.slice(0, 80) || 'Failed'}</div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={async (e) => { e.stopPropagation(); await supabase.from('kiko_background_jobs').update({ status: 'queued', started_at: null, finished_at: null, error_message: null }).eq('id', t.id); setBgTasks(prev => prev.map(x => x.id === t.id ? { ...x, status: 'queued' } : x)) }} style={{ fontSize: 10, color: '#7C5CFC', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 500 }}>Retry</button>
+                        <button onClick={async (e) => { e.stopPropagation(); await supabase.from('kiko_background_jobs').delete().eq('id', t.id); setBgTasks(prev => prev.filter(x => x.id !== t.id)) }} style={{ fontSize: 10, color: '#A0A0A0', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Remove</button>
+                      </div>
+                    </div>}
+                    {t.status === 'cancelled' && <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <span style={{ fontSize: 10, color: '#A0A0A0' }}>Cancelled</span>
+                      <button onClick={async (e) => { e.stopPropagation(); await supabase.from('kiko_background_jobs').delete().eq('id', t.id); setBgTasks(prev => prev.filter(x => x.id !== t.id)) }} style={{ fontSize: 10, color: '#A0A0A0', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Remove</button>
+                    </div>}
                   </div>)
                 })}
               </div>

@@ -1,6 +1,6 @@
 // api/generate-sequence.js — AI-powered sequence generation
-// Takes category + team + persona → returns fully formed 5-step sequence
-// with correct tone, psychology, company intelligence, race calendar awareness
+// Takes category + team + persona → returns fully formed 7-step multichannel sequence
+// Uses real Van Hawke email style references, race calendar, partnership context
 import Anthropic from '@anthropic-ai/sdk';
 import { sbFetch } from './kiko-tools.js';
 
@@ -14,94 +14,119 @@ export default async function handler(req, res) {
 
   const teamName = team || 'Haas F1 Team';
   const targetPersona = persona || `C-suite at $500M-$5B ${category} companies`;
-  const steps = numSteps || 5;
+  const steps = numSteps || 7;
 
   try {
-    // Pull real context: race calendar, existing partnerships, identity, STYLE REFERENCE
-    const [races, partnerships, identity, styleEmails] = await Promise.all([
+    // Pull real context: race calendar, partnerships, identity, STYLE REFERENCE
+    const categoryClean = category.replace(/\//g, ' ').replace(/\s+/g, ' ').trim();
+    const [races, partnerships, identity, categoryStyle, fallbackStyle] = await Promise.all([
       sbFetch('race_calendar?date=gte.' + new Date().toISOString().split('T')[0] + '&series=eq.F1&order=date&limit=6').catch(() => []),
       sbFetch(`partnerships?team=ilike.*${encodeURIComponent(teamName.split(' ')[0])}*&limit=20`).catch(() => []),
       sbFetch('kiko_identity?category=in.(communication_style,strategic_position)&limit=10').catch(() => []),
-      sbFetch('kiko_email_style_reference?order=step_number&limit=6').catch(() => []),
+      // Load style examples for THIS category first
+      sbFetch(`kiko_email_style_reference?category=ilike.*${encodeURIComponent(categoryClean.split(' ')[0])}*&order=step_number&limit=4`).catch(() => []),
+      // Fallback: load best-performing style examples
+      sbFetch('kiko_email_style_reference?category=in.(Cloud Computing,Cybersecurity)&order=step_number&limit=4').catch(() => []),
     ]);
+
     const raceArr = Array.isArray(races) ? races : [];
     const partArr = Array.isArray(partnerships) ? partnerships : [];
-    const idArr = Array.isArray(identity) ? identity : [];
-    const styleArr = Array.isArray(styleEmails) ? styleEmails : [];
-
+    const styleArr = (Array.isArray(categoryStyle) && categoryStyle.length > 0) ? categoryStyle : (Array.isArray(fallbackStyle) ? fallbackStyle : []);
     const nextRace = raceArr[0];
-    const existingSponsors = partArr.map(p => p.company).filter(Boolean).slice(0, 5);
-    const styleRules = idArr.map(i => i.content).join('\n');
-    const styleExamples = styleArr.slice(0, 4).map(e => `[${e.category} Step ${e.step_number}]\nSubject: ${e.subject}\n${e.body}`).join('\n\n---\n\n');
+    const existingSponsors = partArr.map(p => p.company || p.partner_name).filter(Boolean).slice(0, 5);
 
-    const prompt = `Generate a ${steps}-step B2B outreach sequence for the ${category} category with ${teamName}.
+    // Build style examples section
+    const styleExamples = styleArr.slice(0, 4).map(e => 
+      `[${e.category} Step ${e.step_number}]\nSubject: ${e.subject}\n${e.body}`
+    ).join('\n\n---\n\n');
 
-REAL EMAIL EXAMPLES FROM VAN HAWKE'S ACTIVE CAMPAIGNS — match this exact tone and structure:
+    const prompt = `Generate a ${steps}-step B2B outreach sequence for the "${categoryClean}" category with ${teamName}.
 
-${styleExamples || 'No style examples available — use the style rules below.'}
+═══ REAL VAN HAWKE EMAIL EXAMPLES — MATCH THIS EXACT TONE ═══
 
---- END EXAMPLES ---
+${styleExamples || 'No category-specific examples available.'}
 
-THIS IS HOW THE EMAILS MUST READ (real examples from Van Hawke's active campaigns):
+═══ END EXAMPLES ═══
 
-EMAIL STYLE:
-"Dear {firstName},
+═══ VOICE & LANGUAGE RULES (NON-NEGOTIABLE) ═══
 
-We work at principal level on the structuring of Formula One partnerships for teams and rights-holders.
+Every email MUST:
+- Start with "Dear {firstName}," — no other greeting ever
+- End with "Kind regards,\n\n{signature}"
+- Be 50-125 words (not one word more)
+- Use complete sentences, short paragraphs (2-3 sentences per paragraph)
+- Sound like a senior advisor writing to a board member, not a salesperson pitching
 
-Our role is not to place sponsorship assets, but to design closed, category-exclusive partnership systems tied to governance, access, and institutional credibility.
+NEVER use:
+- Dashes (—) or bullet points in email body
+- "I hope this finds you well", "I wanted to reach out", "I'm writing to"
+- "leveraging", "synergies", "exciting opportunity", "game-changing"
+- "I think", "I believe", "maybe", "hopefully", "if possible"
+- Questions in subject lines or exclamation marks anywhere
 
-[Category-specific paragraph: explain WHY ${category} matters operationally for F1 — not brand exposure, but how the team actually uses this technology in simulation, telemetry, data pipelines, factory-to-track workflows, race strategy, etc.]
+ALWAYS use these language anchors naturally:
+- "principal level", "category-exclusive", "closed bundle"
+- "governance, access, institutional credibility"
+- "operating dependency", "category control", "scarcity by design"
+- "board-level platform", "intelligent age"
 
-The relevant question at this stage is simply whether this is strategic from your perspective.
+═══ 5-TOUCH PSYCHOLOGY FRAMEWORK ═══
 
-If it is, we can outline how the ${category} category is being approached within ${teamName.replace(' Team', '')}'s Formula One programme and assess whether a conversation is warranted.
+Each step MUST use a DIFFERENT psychological angle. Not variations of the same email.
 
-Kind regards,
+Step 1 (Email): AUTHORITY + RECIPROCITY
+- Establish Van Hawke's position ("We work at principal level on the structuring of Formula One partnerships")
+- Explain why ${categoryClean} matters OPERATIONALLY for F1 (not brand exposure — how the team actually uses this technology in simulation, telemetry, data pipelines, factory-to-track workflows)
+- Close with an open strategic question, not a pitch
+- Subject: "${teamName.replace(' Team', '')} x ${categoryClean}"
 
-{signature}"
+Step 2 (LinkedIn): CONNECTION REQUEST
+- LinkedIn connection request with personalised note (MAX 300 characters)
+- Reference something specific about the prospect's company or role
+- No pitch, no ask — just a reason to connect
+- Format: "Hi {firstName}, [reason]. [one-line context]. Worth connecting."
 
-FOLLOW-UP EMAIL STYLE:
-"Dear {firstName},
+Step 3 (Condition): CONNECTION CHECK
+- System checks if LinkedIn connection was accepted
+- YES branch → Step 5 (LinkedIn message)
+- NO branch → Step 4 (email follow-up)
 
-Within Formula One, ${teamName.replace(' Team', '')} operates with a lean and highly exposed technical model — privately owned, independent of OEM infrastructure, and directly accountable for the performance of its data and compute workflows.
+Step 4 (Email — NO branch): REVENUE + SOCIAL PROOF
+- Deeper operational detail about how ${categoryClean} impacts the team's competitive position
+- Reference what similar companies have done in F1 (if any: ${existingSponsors.length ? existingSponsors.join(', ') : 'category is currently open'})
+- Mention contract value tier implicitly: "partnerships at this level typically reflect a $500K-$2M annual commitment"
+- Subject: "${teamName.replace(' Team', '')} — ${categoryClean} Operating Model"
 
-[Deeper operational detail about how ${category} specifically impacts the team's competitive position — use technical language that shows deep understanding of both F1 operations and the ${category} space]
+Step 5 (LinkedIn — YES branch): COMMITMENT + EXCLUSIVITY
+- Short LinkedIn message (max 300 chars) referencing the email sent
+- Create urgency: "Category is being formalised this quarter"
+- Ask for a specific next step: "Worth a 15-minute call this week?"
 
-For organisations operating seriously in ${category}, this distinction matters.
+Step 6 (Email): SCARCITY + RACE CALENDAR
+- Reference upcoming race: ${nextRace ? `${nextRace.name} in ${Math.ceil((new Date(nextRace.date) - new Date()) / 86400000)} days` : 'next race TBC'}
+- Create urgency through calendar: "Activation windows are structured around the race calendar"
+- Mention remaining category availability
+- Subject: "${teamName.replace(' Team', '')} — Category Availability Update"
 
-Kind regards,
+Step 7 (Email): STRATEGIC WITHDRAWAL
+- Final touch — respectful close, not desperate
+- Frame it as protecting their option: "I wanted to ensure you had the opportunity to consider this before the category is committed"
+- Leave the door open without begging
+- Subject: "${teamName.replace(' Team', '')} x ${categoryClean} — Final Note"
 
-{signature}"
-
-ABSOLUTE RULES:
-- Every email MUST start with "Dear {firstName}," and end with "Kind regards,\\n\\n{signature}"
-- Subject format: "${teamName.replace(' Team', '')} x ${category}" for first email, variations for follow-ups
-- NO "I hope this finds you well", "I wanted to reach out", "I'm writing to", or ANY generic opener
-- NO "I think", "maybe", "hopefully" — declarative authority only
-- Explain why ${category} matters OPERATIONALLY for F1, not as brand exposure
-- Language: "principal level", "category-exclusive", "governance, access, institutional credibility", "operating dependency"
-- Each email 50-125 words (research-backed optimal length)
-- LinkedIn messages max 300 characters, start with "Hi {firstName},"
-
-CONTEXT:
-- Target: ${targetPersona}
+═══ CONTEXT ═══
+- Target persona: ${targetPersona}
 - Team: ${teamName}
-- Next race: ${nextRace ? `${nextRace.name} (${Math.ceil((new Date(nextRace.date) - new Date()) / 86400000)} days)` : 'TBC'}
-- Existing ${category} F1 sponsors: ${existingSponsors.length ? existingSponsors.join(', ') : 'limited — category is open'}
+- Next race: ${nextRace ? `${nextRace.name} (${nextRace.date})` : 'TBC'}
+- Existing ${categoryClean} sponsors in F1: ${existingSponsors.length ? existingSponsors.join(', ') : 'Limited — category is open'}
 
-STRUCTURE (${steps} steps — multichannel Email + LinkedIn with conditions):
-Step 1: Day 0, email, authority hook + reciprocity — first touch
-Step 2: Day 2, linkedin, action=invite (connection request with note, max 300 chars), liking
-Step 3: Day 3, condition, condition_type=connection_accepted — checks if LinkedIn invite was accepted
-Step 4: Day 1, email, deeper operational context + social proof (only if NOT accepted — NO branch continues email)
-Step 5: Day 3, linkedin, action=message (sent only to accepted connections — YES branch), commitment
-Step 6: Day 5, email, scarcity + race calendar urgency (continues for all prospects)
-Step 7: Day 7, email, strategic withdrawal — final touch
+═══ OUTPUT FORMAT ═══
+Return ONLY a valid JSON array. No markdown, no backticks, no explanation.
 
-Return ONLY valid JSON array, no markdown, no backticks.
-For condition steps: {"step":N,"delay_days":D,"type":"condition","condition_type":"connection_accepted","yes_steps":[linkedin message step],"no_steps":[email step]}
-For regular steps: {"step":N,"delay_days":D,"channel":"email"|"linkedin","action":"invite"|"message","approach":"...","psychology":"...","subject":"...","template":"..."}`;
+For email steps: {"step":N,"delay_days":D,"channel":"email","approach":"...","psychology":"...","subject":"...","template":"Dear {firstName},\\n\\n[body]\\n\\nKind regards,\\n\\n{signature}"}
+For LinkedIn invite: {"step":N,"delay_days":D,"channel":"linkedin","action":"invite","template":"Hi {firstName}, [300 char max note]"}
+For LinkedIn message: {"step":N,"delay_days":D,"channel":"linkedin","action":"message","template":"Hi {firstName}, [300 char max message]"}
+For condition: {"step":N,"delay_days":D,"type":"condition","condition_type":"connection_accepted","yes_steps":[5],"no_steps":[4]}`;
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6', max_tokens: 6000,
@@ -117,10 +142,16 @@ For regular steps: {"step":N,"delay_days":D,"channel":"email"|"linkedin","action
     }
 
     // Create the sequence in the database
-    const seqName = `${teamName.replace(' Team', '')} - ${category}`;
+    const seqName = `${teamName.replace(' Team', '')} - ${categoryClean}`;
     const created = await sbFetch('kiko_sequences', {
       method: 'POST', headers: { Prefer: 'return=representation' },
-      body: JSON.stringify({ name: seqName, description: `AI-generated ${steps}-step ${category} outreach for ${teamName}`, target_persona: targetPersona, steps: generatedSteps, is_active: false })
+      body: JSON.stringify({
+        name: seqName,
+        description: `${steps}-step authority-led ${categoryClean} outreach for ${teamName}. 5-touch psychology: authority, social proof, scarcity, commitment, strategic withdrawal.`,
+        target_persona: targetPersona,
+        steps: generatedSteps,
+        is_active: false,
+      })
     });
     const seqId = Array.isArray(created) ? created[0]?.id : created?.id;
 
