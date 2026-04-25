@@ -1,30 +1,35 @@
 {
-  "generated_at": "2026-04-25T09:56:06.377Z",
+  "generated_at": "2026-04-25T10:16:39.580Z",
   "commits": [
+    {
+      "hash": "aa476ff",
+      "subject": "Clean slate: all overdue cleared, alert CTAs fixed, data synced",
+      "when": "20 minutes ago"
+    },
     {
       "hash": "1d44b71",
       "subject": "Pills width fix, inline alert CTAs, CC clear all overdue, stale deal cleanup",
-      "when": "8 minutes ago"
+      "when": "28 minutes ago"
     },
     {
       "hash": "cd3428b",
       "subject": "Fix 4 bugs: alert actions, pill visibility, count sync, CC reconciliation",
-      "when": "44 minutes ago"
+      "when": "64 minutes ago"
     },
     {
       "hash": "ff6e695",
       "subject": "RLS fix + dynamic pills + Vercel free tier cleanup",
-      "when": "56 minutes ago"
+      "when": "77 minutes ago"
     },
     {
       "hash": "77a720c",
       "subject": "Alert visibility fix: null user_ids + direct count loading",
-      "when": "61 minutes ago"
+      "when": "81 minutes ago"
     },
     {
       "hash": "ac86acd",
       "subject": "Command Centre + Alerts: data sync, actionable alerts, stale deal fix",
-      "when": "69 minutes ago"
+      "when": "2 hours ago"
     },
     {
       "hash": "8005214",
@@ -39,12 +44,12 @@
     {
       "hash": "3f291c1",
       "subject": "Session 59: Updated session brief + bible with new capabilities",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "0ac9f22",
       "subject": "Hetzner consolidation: 16 dormant crons activated, full API sync, Vercel decoupled",
-      "when": "11 hours ago"
+      "when": "12 hours ago"
     },
     {
       "hash": "aed1953",
@@ -54,12 +59,12 @@
     {
       "hash": "b8c800a",
       "subject": "Proactive Intelligence v2 — Hetzner-native monitors",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "e7dbcdc",
       "subject": "Proactive Intelligence v2: Self-Discovery Engine + Predictive Synthesis + Agency Structure Intelligence",
-      "when": "12 hours ago"
+      "when": "13 hours ago"
     },
     {
       "hash": "fecd3bb",
@@ -74,12 +79,12 @@
     {
       "hash": "842493c",
       "subject": "FIX HOMEPAGE ALIGNMENT: (1) Top nav switched from flexbox space-between to CSS grid with 3 columns — links are now TRUE center, not pushed-between. (2) Home content offset: when sidebar collapsed (28p",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "c66c6dd",
       "subject": "FIX ALIGNMENT: Homepage content padding matched to nav padding (32px both). Document generation pipeline: research uses Haiku (53s vs 105s), structure max_tokens 8000, robust JSON repair for truncatio",
-      "when": "13 hours ago"
+      "when": "14 hours ago"
     },
     {
       "hash": "828ea5d",
@@ -95,11 +100,6 @@
       "hash": "a992019",
       "subject": "DOCUMENT GENERATION PIPELINE — COMPLETE: (1) generate-document.js: researches topic via Haiku + web search, structures via Sonnet, renders branded HTML or PPTX. (2) Van Hawke brand system: #7C5CFC pur",
       "when": "14 hours ago"
-    },
-    {
-      "hash": "0b6f37d",
-      "subject": "COMPLETE PROACTIVE INTELLIGENCE: (1) Self-knowledge updated with full proactive intel docs — 8 competitive domains, self-discovery rules, proactive advisory rules. (2) Forced first research runs: vh-a",
-      "when": "15 hours ago"
     }
   ]
 }

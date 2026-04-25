@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { showToast } from '@/components/ui/Toast'
+import { useKikoLive } from '@/contexts/KikoLiveContext'
 import PageHeader from '@/components/layout/PageHeader'
 import {
   Mail, Linkedin, MessageSquare, CheckSquare, Square, AlertTriangle,
@@ -221,16 +222,19 @@ export default function OutreachIntelligence({ user }) {
   const nav = useNavigate()
   const [loading, setLoading] = useState(true)
   const [deals, setDeals] = useState([])
-  const [tasks, setTasks] = useState([])
-  const [taskFilter, setTaskFilter] = useState('overdue')
   const [hotReplies, setHotReplies] = useState([])
   const [signals, setSignals] = useState([])
-  const [followUps, setFollowUps] = useState([])
   const [campaignActivity, setCampaignActivity] = useState([])
+  const [taskFilter, setTaskFilter] = useState('overdue')
   const [showNewTask, setShowNewTask] = useState(false)
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [newTaskCompany, setNewTaskCompany] = useState('')
   const [newTaskDue, setNewTaskDue] = useState('')
+
+  // Shared live state — tasks, followUps, actions all from context
+  const live = useKikoLive()
+  const tasks = live.tasks
+  const followUps = live.followUps
 
   // Selected item state — drives right pane
   const [selected, setSelected] = useState(null) // { kind, id, title, meta, payload }
@@ -245,15 +249,13 @@ export default function OutreachIntelligence({ user }) {
     try {
       const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-      // Super admin sees ALL signal types. Regular users see sponsorship-relevant only.
       const signalTypes = isSuperAdmin
         ? ['partnership_detected', 'new_partnership', 'convergence', 'category_recommendation', 'competitive_change', 'funding', 'promotion', 'prediction', 'self_discovery', 'proactive_intel', 'company_signal']
         : ['partnership_detected', 'new_partnership', 'convergence', 'category_recommendation', 'competitive_change', 'funding', 'prediction', 'company_signal']
-      const [dealsRes, tasksRes, hotRes, signalRes, followUpRes, campaignRes] = await Promise.all([
+      const [dealsRes, hotRes, signalRes, campaignRes] = await Promise.all([
         supabase.from('deals').select('id, data, updated_at')
           .not('data->>status', 'in', '("won","lost")')
           .order('updated_at', { ascending: false }),
-        supabase.from('tasks').select('*').order('updated_at', { ascending: false }).limit(80),
         supabase.from('kiko_alerts')
           .select('id, type, title, detail, entity_name, entity_id, metadata, created_at')
           .or('type.like.reply_from%,type.eq.linkedin_reply,type.eq.email_reply,type.eq.linkedin_connection_accepted,type.like.linkedin_connection%')
@@ -267,11 +269,6 @@ export default function OutreachIntelligence({ user }) {
           .gte('created_at', weekAgo)
           .order('created_at', { ascending: false })
           .limit(20),
-        supabase.from('kiko_follow_ups')
-          .select('id, sender_email, recipient_email, recipient_name, company, subject, sent_at, follow_up_due_at, status')
-          .in('status', ['awaiting_reply', 'followed_up'])
-          .order('follow_up_due_at', { ascending: true })
-          .limit(20),
         supabase.from('kiko_sequence_enrollments')
           .select('id, contact_name, company, status, current_step, next_send_at, sequence_id, updated_at')
           .eq('status', 'active')
@@ -279,72 +276,8 @@ export default function OutreachIntelligence({ user }) {
           .limit(15),
       ])
       setDeals(dealsRes.data || [])
-      const openTasks = (tasksRes.data || []).filter(t => !t.data?.completed)
-
-      // ── Auto-reconcile: close follow-up tasks where outreach was already sent ──
-      // Pull recent activities (last 14 days) to check if emails were sent to task contacts/companies
-      try {
-        const twoWeeksAgo = new Date(Date.now() - 14 * 86400000).toISOString()
-        const [activityRes, queueRes] = await Promise.all([
-          supabase.from('activities')
-            .select('entity_name, type, created_at')
-            .in('type', ['email_sent', 'sequence_sent', 'email', 'outreach'])
-            .gte('created_at', twoWeeksAgo),
-          // Also check sequence outreach queue — emails sent by the sequence sender
-          supabase.from('kiko_outreach_queue')
-            .select('to_name, company, status')
-            .eq('status', 'sent'),
-        ])
-        // Build set of all contacted entities (from activities, outreach queue, AND follow-ups)
-        const followUpContacts = (followUpRes.data || []).map(f => (f.recipient_name || '').toLowerCase().trim()).filter(Boolean)
-        const followUpCompanies = (followUpRes.data || []).map(f => (f.company || '').toLowerCase().trim()).filter(Boolean)
-        const sentTo = new Set([
-          ...(activityRes.data || []).map(a => (a.entity_name || '').toLowerCase().trim()),
-          ...(queueRes.data || []).map(q => (q.to_name || '').toLowerCase().trim()),
-          ...(queueRes.data || []).map(q => (q.company || '').toLowerCase().trim()),
-          ...followUpContacts,
-          ...followUpCompanies,
-        ].filter(Boolean))
-
-        // Also check sequence enrollments — if contact is enrolled and active, task is redundant
-        const enrolledContacts = new Set((campaignRes.data || []).map(c => (c.contact_name || '').toLowerCase().trim()).filter(Boolean))
-        const enrolledCompanies = new Set((campaignRes.data || []).map(c => (c.company || '').toLowerCase().trim()).filter(Boolean))
-
-        const tasksToClose = []
-        const stillOpen = []
-        for (const t of openTasks) {
-          const d = t.data || {}
-          const taskType = (d.type || '').toLowerCase()
-          if (!['follow_up', 'reengagement', 're-engagement', 'follow-up', 'outreach'].includes(taskType)) {
-            stillOpen.push(t); continue
-          }
-          const contact = (d.contact || '').toLowerCase().trim()
-          const company = (d.company || '').toLowerCase().trim()
-          const wasContacted = (contact && sentTo.has(contact)) || (company && sentTo.has(company))
-            || (contact && enrolledContacts.has(contact)) || (company && enrolledCompanies.has(company))
-          if (wasContacted) tasksToClose.push(t)
-          else stillOpen.push(t)
-        }
-
-        // Auto-close matched tasks in background
-        if (tasksToClose.length > 0) {
-          for (const t of tasksToClose) {
-            supabase.from('tasks').update({
-              data: { ...t.data, completed: true, completedAt: new Date().toISOString(), autoCompleted: 'outreach_detected' },
-              updated_at: new Date().toISOString()
-            }).eq('id', t.id).then(() => {})
-          }
-          console.log(`[CC] Auto-closed ${tasksToClose.length} tasks (outreach detected)`)
-        }
-
-        setTasks(stillOpen)
-      } catch {
-        setTasks(openTasks)
-      }
-
       setHotReplies(hotRes.data || [])
       setSignals(signalRes.data || [])
-      setFollowUps(followUpRes.data || [])
       setCampaignActivity(campaignRes.data || [])
     } catch (err) {
       console.error('[CommandCentre] load', err)
@@ -356,18 +289,15 @@ export default function OutreachIntelligence({ user }) {
 
   const completeTask = async (task, e) => {
     e?.stopPropagation()
-    const updated = { ...task.data, completed: true, completedAt: new Date().toISOString() }
-    setTasks(prev => prev.filter(t => t.id !== task.id))
     if (selected?.kind === 'task' && selected.id === task.id) setSelected(null)
-    await supabase.from('tasks').update({ data: updated, updated_at: new Date().toISOString() }).eq('id', task.id)
+    live.completeTask(task)
     showToast('Task completed', 'success')
   }
 
   const markFollowUpDone = async (fu, e) => {
     e?.stopPropagation()
-    setFollowUps(prev => prev.filter(f => f.id !== fu.id))
     if (selected?.kind === 'followup' && selected.id === fu.id) setSelected(null)
-    await supabase.from('kiko_follow_ups').update({ status: 'closed', updated_at: new Date().toISOString() }).eq('id', fu.id)
+    live.clearFollowUp(fu)
     showToast('Follow-up cleared', 'success')
   }
 
@@ -385,18 +315,10 @@ export default function OutreachIntelligence({ user }) {
     payload: c,
   })
 
-  const clearAllOverdue = async () => {
-    const toClose = overdueTasks.map(t => t.id)
-    if (!toClose.length) return
-    setTasks(prev => prev.filter(t => !toClose.includes(t.id)))
-    if (selected?.kind === 'task' && toClose.includes(selected.id)) setSelected(null)
-    for (const id of toClose) {
-      await supabase.from('tasks').update({
-        data: { ...(tasks.find(t => t.id === id)?.data || {}), completed: true, completedAt: new Date().toISOString(), autoCompleted: 'bulk_cleared' },
-        updated_at: new Date().toISOString()
-      }).eq('id', id)
-    }
-    showToast(`${toClose.length} overdue tasks cleared`, 'success')
+  const handleClearAllOverdue = async () => {
+    if (selected?.kind === 'task') setSelected(null)
+    live.clearAllOverdue()
+    showToast('Overdue tasks cleared', 'success')
   }
 
   const createTask = async () => {
@@ -646,7 +568,7 @@ export default function OutreachIntelligence({ user }) {
                 <h3><AlertTriangle size={10} />{taskFilter === 'overdue' ? 'Overdue' : taskFilter === 'week' ? 'This week' : 'All tasks'}</h3>
                 <span className="cc-group-count">{(taskFilter === 'overdue' ? overdueTasks : taskFilter === 'week' ? thisWeekTasks : tasks).length}</span>
                 {taskFilter === 'overdue' && overdueTasks.length > 0 && (
-                  <button onClick={clearAllOverdue} style={{ marginLeft: 'auto', padding: '3px 10px', borderRadius: 6, background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.12)', color: '#dc2626', fontSize: 11, fontFamily: 'Inter, system-ui, sans-serif', fontWeight: 500, cursor: 'pointer' }}>Clear all overdue</button>
+                  <button onClick={handleClearAllOverdue} style={{ marginLeft: 'auto', padding: '3px 10px', borderRadius: 6, background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.12)', color: '#dc2626', fontSize: 11, fontFamily: 'Inter, system-ui, sans-serif', fontWeight: 500, cursor: 'pointer' }}>Clear all overdue</button>
                 )}
               </div>
               {(() => {

@@ -32,6 +32,7 @@ import KikoAvatar from './KikoAvatar'
 import HomeDashboard from './HomeDashboard'
 // DraftPreview disabled — EmailDraft handles all email drafts
 import KikoInsights, { InsightsBadge } from './KikoInsights'
+import { useKikoLive } from '@/contexts/KikoLiveContext'
 import EmailDraft, { isEmailDraft, extractEmailSection } from './EmailDraft'
 import { useDynamicChips } from '@/hooks/useDynamicChips'
 
@@ -202,7 +203,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
   const [expandedSteps, setExpandedSteps] = useState(null)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [insightsOpen, setInsightsOpen] = useState(false)
-  const [alertCount, setAlertCount] = useState(0)
+  const { alertCount } = useKikoLive()
   const [mobileCommandOpen, setMobileCommandOpen] = useState(false)
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false)
   const [mobileHistoryConvos, setMobileHistoryConvos] = useState([])
@@ -253,21 +254,7 @@ export default function KikoChat({ user, compact = false, initialMessage = '' })
     return () => window.removeEventListener('kiko-chat-updated', handler)
   }, [loadMobileHistory])
 
-  // Load alert count directly — don't depend on KikoInsights window global
-  useEffect(() => {
-    const loadAlerts = async () => {
-      try {
-        const { count } = await supabase.from('kiko_alerts').select('id', { count: 'exact', head: true }).eq('dismissed', false)
-        setAlertCount(count || 0)
-      } catch {}
-    }
-    loadAlerts()
-    // Also poll from KikoInsights for live updates when panel is open
-    const iv = setInterval(() => {
-      if (window.__kikoAlertCount !== undefined) setAlertCount(window.__kikoAlertCount)
-    }, 5000)
-    return () => clearInterval(iv)
-  }, [])
+  // KikoLive context handles alert count via Realtime — no polling needed
   const toggleHistory = (val) => {
     const next = typeof val === 'boolean' ? val : !historyOpen
     setHistoryOpen(next)

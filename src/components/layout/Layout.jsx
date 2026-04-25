@@ -39,6 +39,7 @@ import OnboardingModal from '../onboarding/OnboardingModal'
 import { usePagePermissions } from '@/lib/usePagePermissions'
 import { useUserSettings } from '@/lib/useUserSettings'
 import { useOrg } from '@/contexts/OrgContext'
+import { KikoLiveProvider } from '@/contexts/KikoLiveContext'
 import KikoVoice from '../kiko/KikoVoice'
 import KikoToast from '../kiko/KikoToast'
 import CommandPalette from './CommandPalette'
@@ -427,6 +428,7 @@ export default function Layout({ user }) {
   }, [isHome, voiceFullscreen])
 
   return (
+    <KikoLiveProvider user={user}>
     <div className={isMobile ? 'kiko-mobile-root' : ''} style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden', background: C.bg }}>
       {/* Aurora gradient orbs */}
       {!isMobile && <AuroraCanvas extraOrb={loc.pathname === '/pipeline' ? 'amber' : null} />}
@@ -595,5 +597,6 @@ export default function Layout({ user }) {
       {/* Mobile bottom tab bar */}
       {/* Bottom nav removed — mobile is Kiko-only with bell for Command Centre */}
     </div>
+    </KikoLiveProvider>
   )
 }
